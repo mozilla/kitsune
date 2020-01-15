@@ -40,7 +40,7 @@
     <p>{{ _('Soon, Firefox Accounts will replace Mozilla Support logins. You can upgrade your existing Mozilla account to Firefox Accounts today.') }} <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">{{ _('Read more') }}</a>.</p>
   </div>
   <div class="notification-actions">
-    <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
+    <a href="{{ url('users.fxa_authentication_init') }}?next={{ request.META.get('HTTP_REFERER', '') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
   </div>
 </div>
 {%- endmacro %}
