@@ -461,7 +461,6 @@ def class_selected(a, b):
     else:
         return ''
 
-
 @library.filter
 def f(format_string, *args, **kwargs):
     """

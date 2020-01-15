@@ -25,10 +25,12 @@
 
   &--list {
     display: flex;
+    margin: 0;
   }
 
   &--link,
-  &--button {
+  &--button,
+  a {
     appearance: none;
     white-space: nowrap;
     text-align: left;
@@ -49,7 +51,8 @@
       color: var(--color-link);
     }
 
-    &.is-active {
+    &.is-active,
+    &.selected {
       color: var(--color-link);
       font-weight: bold;
 
@@ -109,7 +112,8 @@
       }
     }
 
-    .tabs--link {
+    .tabs--link,
+    a {
       padding: 8px;
     }
   }
