@@ -1,0 +1,37 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+// this class is added to the body when the instant search is active. It should
+// be added by default once that is removed.
+.search-results-visible {
+  .home-search-section {
+    text-align: left;
+
+    &--content {
+      @media #{p.$mq-md} {
+        max-width: c.col-width(4, 6);
+      }
+
+      @media #{p.$mq-lg} {
+        max-width: c.col-width(6, 8);
+      }
+
+      @media #{p.$mq-xl} {
+        max-width: c.col-width(7, 10);
+      }
+    }
+  }
+}
+
+.home-search-section {
+  text-align: center;
+
+  .simple-search-form {
+    margin-bottom: 16px;
+
+    @media #{p.$mq-lg} {
+      margin-bottom: 32px;
+    }
+  }
+}

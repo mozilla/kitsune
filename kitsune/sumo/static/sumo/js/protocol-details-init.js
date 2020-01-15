@@ -1,4 +1,4 @@
-(function() {
+function detailsInit() {
   'use strict';
   var _mqWide = matchMedia('(max-width: 767px)');
 
@@ -23,4 +23,6 @@
       window.Mzp.Details.destroy('.details-heading');
     }
   });
-})();
+};
+
+detailsInit();

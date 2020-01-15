@@ -6,7 +6,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input type="search" autocomplete="off" name="q" required="required" aria-required="true" placeholder="{{ _('Find help...')|truncate(12) }}" class="searchbox" id="search-q" />
+    <input type="search" autocomplete="off" name="q" aria-required="true" placeholder="{{ _('Find help...')|truncate(12) }}" class="searchbox" id="search-q" />
     <button type="submit" title="{{ _('Search') }}" class="search-button">{{ _('Search') }}</button>
   </form>
 {% endmacro %}
