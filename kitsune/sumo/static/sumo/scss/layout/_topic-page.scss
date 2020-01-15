@@ -21,15 +21,34 @@
     flex: 1 1 100%;
   }
 
+  &--meta-list {
+    display: flex;
+    @include c.text-body-sm;
+    line-height: 1;
+
+    li {
+      padding-right: 8px;
+      margin-right: 8px;
+      border-right: 1px solid var(--color-text);
+
+      &:last-child {
+        padding-right: 0;
+        margin-right: 0;
+        border-right: 0 none;
+      }
+    }
+  }
+
   @media #{p.$mq-md} {
     margin-bottom: p.$spacing-xl;
   }
 }
 
 .sidebar-subheading {
-  @include c.text-body-lg;
+  @include c.text-body-md;
 
   @media #{p.$mq-md} {
+    @include c.text-body-lg;
     margin: 72px 0 p.$spacing-lg;
   }
 
