@@ -279,7 +279,7 @@ class ForParser(object):
             prespace, tag, attrs, postspace = match.groups()
 
             if tag != "{/for}":
-                i = indexes.next()
+                i = next(indexes)
                 dehydrations[i] = cls._wiki_to_tag(attrs)
                 token = u"\x07%i\x07" % i
             else:
