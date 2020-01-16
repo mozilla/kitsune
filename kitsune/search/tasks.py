@@ -82,7 +82,7 @@ def index_chunk_task(write_index, batch_id, rec_id, chunk):
 
     except Exception:
         if rec is not None:
-            rec.mark_fail(u'Errored out %s %s' % (sys.exc_type, sys.exc_value))
+            rec.mark_fail(u'Errored out %s %s' % (sys.exc_info()[0], sys.exc_info()[1]))
 
         log.exception('Error while indexing a chunk')
         # Some exceptions aren't pickleable and we need this to throw
