@@ -136,11 +136,12 @@ def has_perm_or_owns_or_403(perm, owner_attr, obj_lookup, perm_obj_lookup,
     return decorator
 
 
-def _resolve_lookup((model, lookup, arg_name), view_kwargs):
+def _resolve_lookup(obj_lookup, view_kwargs):
     """Return the object indicated by the lookup triple and the kwargs passed
     to the view.
 
     """
+    (model, lookup, arg_name) = obj_lookup
     value = view_kwargs.get(arg_name)
     if value is None:
         raise ValueError("Expected kwarg '%s' not found." % arg_name)
