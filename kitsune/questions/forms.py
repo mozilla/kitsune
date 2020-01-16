@@ -224,7 +224,7 @@ class EditQuestionForm(forms.ModelForm):
         def metadata_filter(x):
             return x not in non_metadata_fields
 
-        return filter(metadata_filter, self.fields.keys())
+        return list(filter(metadata_filter, self.fields.keys()))
 
     @property
     def cleaned_metadata(self):
