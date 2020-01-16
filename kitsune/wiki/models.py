@@ -956,8 +956,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
             if self.document.current_revision:
                 new_revs = new_revs.filter(
                     id__gt=self.document.current_revision.id)
-            new_contributors = set(
-                [r.creator for r in new_revs.select_related('creator')])
+            new_contributors = {r.creator for r in new_revs.select_related('creator')}
             for user in new_contributors:
                 if user not in contributors:
                     self.document.contributors.add(user)
