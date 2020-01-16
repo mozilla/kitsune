@@ -779,7 +779,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             # any other way to filter in one view and not the other.
             # BTW, OK means the translation is up to date. Those are
             # the ones we are skipping.
-            rows = filter(lambda x: x['status_class'] != 'ok', rows)
+            rows = [x for x in rows if x['status_class'] != 'ok']
             rows = rows[:max_rows]
 
         return super(MostVisitedTranslationsReadout, self).render(rows=rows)
