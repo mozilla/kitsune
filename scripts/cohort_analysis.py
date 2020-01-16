@@ -30,7 +30,7 @@ def run_():
         first_day_of_previous_month = (boundaries[-1] - timedelta(days=1)).replace(day=1)
         boundaries.append(first_day_of_previous_month)
     boundaries.reverse()
-    ranges = zip(boundaries[:-1], boundaries[1:])
+    ranges = list(zip(boundaries[:-1], boundaries[1:]))
 
     reports = [
         ('L10n', Revision.objects.exclude(document__locale='en-US')),
