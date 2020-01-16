@@ -28,6 +28,7 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 
 # We do this gooftastic thing because nose uses unittest.SkipTest in
 # Python 2.7 which doesn't work with the whole --no-skip thing.
+# TODO: Investigate and remove if possible after upgrade to Python 3.7.
 if '--no-skip' in sys.argv or 'NOSE_WITHOUT_SKIP' in os.environ:
     class SkipTest(Exception):
         pass
