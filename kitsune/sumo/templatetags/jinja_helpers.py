@@ -107,7 +107,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
             for v in l:
                 new_query_dict.appendlist(k, v)
 
-    for k, v in query.items():
+    for k, v in list(query.items()):
         new_query_dict[k] = v  # Replace, don't append.
 
     query_string = urlencode(

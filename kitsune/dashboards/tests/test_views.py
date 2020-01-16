@@ -72,7 +72,7 @@ class ContributorDashTests(TestCase):
     def test_detail_view(self):
         """Assert the detail page of the contributor dash resolves, renders.
         """
-        readoutKey = CONTRIBUTOR_READOUTS.keys()[0]
+        readoutKey = list(CONTRIBUTOR_READOUTS.keys())[0]
         response = self.client.get(
             reverse('dashboards.contributors_detail',
                     args=[CONTRIBUTOR_READOUTS[readoutKey].slug],

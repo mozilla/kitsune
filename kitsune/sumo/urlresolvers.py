@@ -65,7 +65,7 @@ def get_non_supported(lang):
     """Find known non-supported locales with fallbacks."""
     lang = lang.lower()
     langs = dict((k.lower(), v) for k, v in
-                 settings.NON_SUPPORTED_LOCALES.items())
+                 list(settings.NON_SUPPORTED_LOCALES.items()))
     if lang in langs:
         if langs[lang] is None:
             return settings.LANGUAGE_CODE
@@ -81,9 +81,9 @@ def get_best_language(accept_lang):
     LC = settings.LANGUAGE_CODE
     langs = dict(LUM)
     # Add in non-supported first to allow overriding prefix behavior.
-    langs.update((k.lower(), v if v else LC) for k, v in NSL.items() if
+    langs.update((k.lower(), v if v else LC) for k, v in list(NSL.items()) if
                  k.lower() not in langs)
-    langs.update((k.split('-')[0], v) for k, v in LUM.items() if
+    langs.update((k.split('-')[0], v) for k, v in list(LUM.items()) if
                  k.split('-')[0] not in langs)
     ranked = parse_accept_lang_header(accept_lang)
     for lang, _ in ranked:

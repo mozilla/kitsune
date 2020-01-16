@@ -35,7 +35,7 @@ class Command(BaseCommand):
         startdatetime = datetime.now() - timedelta(hours=8)
         enddatetime = datetime.now() - timedelta(hours=4)
 
-        for survey in SURVEYS.keys():
+        for survey in list(SURVEYS.keys()):
             if (
                 not SURVEYS[survey]["active"] or
                 "email_collection_survey_id" not in SURVEYS[survey]

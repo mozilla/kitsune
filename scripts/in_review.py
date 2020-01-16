@@ -89,7 +89,7 @@ def print_bugzilla_stats(from_date, to_date):
     print('Bugs created: %s' % creation_count)
     print('Creators: %s' % len(creators))
     print('')
-    creators = sorted(creators.items(), reverse=True, key=lambda item: item[1])
+    creators = sorted(list(creators.items()), reverse=True, key=lambda item: item[1])
     for person, count in creators:
         print(' %34s : %s' % (person[:30].encode('utf-8'), count))
     print('')
@@ -173,7 +173,7 @@ def print_bugzilla_stats(from_date, to_date):
 
     print('Bugs resolved: %s' % resolved_count)
     print('')
-    for resolution, count in resolved_map.items():
+    for resolution, count in list(resolved_map.items()):
         print(' %34s : %s' % (resolution, count))
 
     print('')
@@ -199,7 +199,7 @@ def print_bugzilla_stats(from_date, to_date):
     print('')
     print('Resolvers: %s' % len(resolvers))
     print('')
-    resolvers = sorted(resolvers.items(), reverse=True,
+    resolvers = sorted(list(resolvers.items()), reverse=True,
                        key=lambda item: item[1])
     for person, count in resolvers:
         print(' %34s : %s' % (person[:30].encode('utf-8'), count))
@@ -207,7 +207,7 @@ def print_bugzilla_stats(from_date, to_date):
     print('')
     print('Commenters: %s' % len(commenters))
     print('')
-    commenters = sorted(commenters.items(), reverse=True,
+    commenters = sorted(list(commenters.items()), reverse=True,
                         key=lambda item: item[1])
     for person, count in commenters:
         print(' %34s : %s' % (person[:30].encode('utf-8'), count))
@@ -272,7 +272,7 @@ def print_git_stats(from_date, to_date):
     print('')
 
     committers = sorted(
-        committers.items(), key=lambda item: item[1], reverse=True)
+        list(committers.items()), key=lambda item: item[1], reverse=True)
     for person, count in committers:
         print('  %20s : %5s  (+%s, -%s, files %s)' % (
             person.encode('utf-8'), count,
@@ -281,9 +281,9 @@ def print_git_stats(from_date, to_date):
 
     # This is goofy summing, but whatevs.
     print('')
-    print('Total lines added:', sum([item[0] for item in changes.values()]))
-    print('Total lines deleted:', sum([item[1] for item in changes.values()]))
-    print('Total files changed:', sum([item[2] for item in changes.values()]))
+    print('Total lines added:', sum([item[0] for item in list(changes.values())]))
+    print('Total lines deleted:', sum([item[1] for item in list(changes.values())]))
+    print('Total files changed:', sum([item[2] for item in list(changes.values())]))
 
 
 def print_all_people():

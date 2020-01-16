@@ -22,7 +22,7 @@ def showfor_data(products):
     all_versions = dict((p.slug, p.versions.all())
                         for p in products)
     # data['versions'] = dict((p.slug, p.versions.all()) for p in products)
-    for slug, versions in all_versions.items():
+    for slug, versions in list(all_versions.items()):
         data['versions'][slug] = []
         for version in versions:
             data['versions'][slug].append({
@@ -41,7 +41,7 @@ def showfor_data(products):
     for prod in products:
         platforms[prod.slug] = prod.platforms.all()
     data['platforms'] = {}
-    for prod_slug, plats in platforms.items():
+    for prod_slug, plats in list(platforms.items()):
         for plat in sorted(plats, key=order):
             data['platforms'].setdefault(prod_slug, []).append({
                 'name': plat.name,

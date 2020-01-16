@@ -20,7 +20,7 @@ class InvalidFilterNameException(exceptions.APIException):
     def __init__(self, detail, **kwargs):
         self.status_code = 400
         self.detail = detail
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             setattr(self, key, val)
 
 
@@ -45,11 +45,11 @@ class TopContributorsBase(views.APIView):
         self.query_values = self.get_default_query()
         # request.GET is a multidict, so simple `.update(request.GET)` causes
         # everything to be a list. This converts it into a plain single dict.
-        self.query_values.update(dict(self.request.GET.items()))
+        self.query_values.update(dict(list(self.request.GET.items())))
 
         f = F()
 
-        for key, value in self.query_values.items():
+        for key, value in list(self.query_values.items()):
             filter_method = getattr(self, 'filter_' + key, None)
             if filter_method is None:
                 self.warnings.append('Unknown filter {}'.format(key))
@@ -244,7 +244,7 @@ class TopContributorsQuestions(TopContributorsBase):
         else:
             sort_reverse = False
 
-        top_contributors = combined.values()
+        top_contributors = list(combined.values())
         top_contributors.sort(key=lambda d: d[sort_key], reverse=sort_reverse)
         user_ids = [c['user_id'] for c in top_contributors]
         full_count = len(user_ids)
@@ -349,7 +349,7 @@ class TopContributorsLocalization(TopContributorsBase):
         else:
             sort_reverse = False
 
-        top_contributors = combined.values()
+        top_contributors = list(combined.values())
         top_contributors.sort(key=lambda d: d[sort_key], reverse=sort_reverse)
         user_ids = [c['user_id'] for c in top_contributors]
         full_count = len(user_ids)

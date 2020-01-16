@@ -50,7 +50,7 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None, p
     data = {
         'readouts': OrderedDict((slug, class_(request, locale=locale,
                                               product=product))
-                                for slug, class_ in readouts.iteritems()
+                                for slug, class_ in readouts.items()
                                 if class_.should_show_to(request)),
         'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
         'default_locale_name': LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
@@ -93,7 +93,7 @@ def get_locales_by_visit(start_date, end_date):
     if sorted_locales is None:
         try:
             results = visitors_by_locale(start_date, end_date)
-            locales_and_visits = results.items()
+            locales_and_visits = list(results.items())
             sorted_locales = list(reversed(sorted(
                 locales_and_visits, key=lambda x: x[1])))
             cache.add(cache_key, sorted_locales, CACHE_TIMEOUT)
