@@ -71,7 +71,7 @@ class Reply(ModelBase, SearchMixin):
 
     def __unicode__(self):
         tweet = json.loads(self.raw_json)
-        return u'@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])
+        return '@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])
 
     @classmethod
     def get_mapping_type(cls):

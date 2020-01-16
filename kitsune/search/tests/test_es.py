@@ -32,10 +32,10 @@ class ElasticSearchSuggestionsTests(ElasticTestCase):
         """Suggestions API is well-formatted."""
         get_current.return_value.domain = 'testserver'
 
-        doc = DocumentFactory(title=u'doc1 audio', locale=u'en-US', is_archived=False)
-        ApprovedRevisionFactory(document=doc, summary=u'audio', content=u'audio')
+        doc = DocumentFactory(title='doc1 audio', locale='en-US', is_archived=False)
+        ApprovedRevisionFactory(document=doc, summary='audio', content='audio')
 
-        ques = QuestionFactory(title=u'q1 audio', tags=[u'desktop'])
+        ques = QuestionFactory(title='q1 audio', tags=['desktop'])
         # ques.tags.add(u'desktop')
         ans = AnswerFactory(question=ques)
         AnswerVoteFactory(answer=ans, helpful=True)
@@ -150,11 +150,11 @@ class TestAnalyzers(ElasticTestCase):
             },
             'ar': {
                 'analyzer': 'arabic',
-                'content': u'لدي اثنين من القطط',
+                'content': 'لدي اثنين من القطط',
             },
             'he': {
                 'analyzer': 'standard',
-                'content': u'גאולוגיה היא אחד',
+                'content': 'גאולוגיה היא אחד',
             }
         }
 
@@ -237,7 +237,7 @@ class TestAnalyzers(ElasticTestCase):
         if p_tag:
             # Since `expected` is a set, there is no problem adding this
             # twice, since duplicates will be ignored.
-            expected.add(u'p')
+            expected.add('p')
         actual = set(t['term'] for t in facets['tokens'])
         eq_(actual, expected)
 
@@ -263,11 +263,11 @@ class TestAnalyzers(ElasticTestCase):
         it to analyze an Arabic text as Arabic. If someone who reads
         Arabic can improve this test, go for it!
         """
-        self._check_locale_tokenization('ar', [u'لد', u'اثن', u'قطط'])
+        self._check_locale_tokenization('ar', ['لد', 'اثن', 'قطط'])
 
     def test_herbrew_tokenization(self):
         """Test that Hebrew uses the standard analyzer."""
-        tokens = [u'גאולוגיה', u'היא', u'אחד']
+        tokens = ['גאולוגיה', 'היא', 'אחד']
         self._check_locale_tokenization('he', tokens)
 
 

@@ -96,8 +96,8 @@ def update_question_vote_chunk(data):
             for doc in es_docs:
                 # Note: Need to keep this in sync with
                 # Question.extract_document.
-                num = id_to_num[int(doc[u'id'])]
-                doc[u'question_num_votes_past_week'] = num
+                num = id_to_num[int(doc['id'])]
+                doc['question_num_votes_past_week'] = num
 
                 QuestionMappingType.index(doc, id_=doc['id'])
         except ES_EXCEPTIONS:
@@ -170,8 +170,8 @@ def escalate_question(question_id):
         submit_ticket(
             email='support@mozilla.com',
             category='Escalated',
-            subject=u'[Escalated] {title}'.format(title=question.title),
-            body=u'{url}\n\n{content}'.format(url=url,
+            subject='[Escalated] {title}'.format(title=question.title),
+            body='{url}\n\n{content}'.format(url=url,
                                               content=question.content),
             tags=[t.slug for t in question.tags.all()])
     except ZendeskError:

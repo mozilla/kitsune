@@ -13,117 +13,111 @@ from kitsune.questions.models import Answer, Question
 from kitsune.upload.models import ImageAttachment
 
 # labels and help text
-SITE_AFFECTED_LABEL = _lazy(u"URL of affected site")
-CRASH_ID_LABEL = _lazy(u"Crash ID(s)")
+SITE_AFFECTED_LABEL = _lazy("URL of affected site")
+CRASH_ID_LABEL = _lazy("Crash ID(s)")
 CRASH_ID_HELP = _lazy(
-    u"If you submit information to Mozilla when you crash, "
-    u"you'll be given a crash ID which uniquely identifies "
-    u"your crash and lets us look at details that may help "
-    u"identify the cause. To find your recently submitted "
-    u"crash IDs, go to <strong>about:crashes</strong> in "
-    u"your location bar. <a href='https://support.mozilla."
-    u"com/en-US/kb/Firefox+crashes#Getting_the_most_"
-    u"accurate_help_with_your_Firefox_crash' "
-    u"target='_blank'>Click for detailed instructions</a>."
+    "If you submit information to Mozilla when you crash, "
+    "you'll be given a crash ID which uniquely identifies "
+    "your crash and lets us look at details that may help "
+    "identify the cause. To find your recently submitted "
+    "crash IDs, go to <strong>about:crashes</strong> in "
+    "your location bar. <a href='https://support.mozilla."
+    "com/en-US/kb/Firefox+crashes#Getting_the_most_"
+    "accurate_help_with_your_Firefox_crash' "
+    "target='_blank'>Click for detailed instructions</a>."
 )
-TROUBLESHOOTING_LABEL = _lazy(u"Troubleshooting Information")
+TROUBLESHOOTING_LABEL = _lazy("Troubleshooting Information")
 TROUBLESHOOTING_HELP = _lazy(
-    u"This information gives details about the "
-    u"internal workings of your browser that will "
-    u"help in answering your question."
+    "This information gives details about the "
+    "internal workings of your browser that will "
+    "help in answering your question."
 )
-FREQUENCY_LABEL = _lazy(u"This happens")
+FREQUENCY_LABEL = _lazy("This happens")
 FREQUENCY_CHOICES = [
-    (u"", u""),
-    (u"NOT_SURE", _lazy(u"Not sure how often")),
-    (u"ONCE_OR_TWICE", _lazy(u"Just once or twice")),
-    (u"FEW_TIMES_WEEK", _lazy(u"A few times a week")),
-    (u"EVERY_TIME", _lazy(u"Every time Firefox opened")),
+    ("", ""),
+    ("NOT_SURE", _lazy("Not sure how often")),
+    ("ONCE_OR_TWICE", _lazy("Just once or twice")),
+    ("FEW_TIMES_WEEK", _lazy("A few times a week")),
+    ("EVERY_TIME", _lazy("Every time Firefox opened")),
 ]
-STARTED_LABEL = _lazy(u"This started when...")
-TITLE_LABEL = _lazy(u"Subject")
-CONTENT_LABEL = _lazy(u"How can we help?")
-FF_VERSION_LABEL = _lazy(u"Firefox version")
-OS_LABEL = _lazy(u"Operating system")
-PLUGINS_LABEL = _lazy(u"Installed plugins")
-ADDON_LABEL = _lazy(u"Extension/plugin you are having trouble with")
-DEVICE_LABEL = _lazy(u"Mobile device")
-CATEGORY_LABEL = _lazy(u"Which topic best describes your question?")
-NOTIFICATIONS_LABEL = _lazy(u"Email me when someone answers the thread")
+STARTED_LABEL = _lazy("This started when...")
+TITLE_LABEL = _lazy("Subject")
+CONTENT_LABEL = _lazy("How can we help?")
+FF_VERSION_LABEL = _lazy("Firefox version")
+OS_LABEL = _lazy("Operating system")
+PLUGINS_LABEL = _lazy("Installed plugins")
+ADDON_LABEL = _lazy("Extension/plugin you are having trouble with")
+DEVICE_LABEL = _lazy("Mobile device")
+CATEGORY_LABEL = _lazy("Which topic best describes your question?")
+NOTIFICATIONS_LABEL = _lazy("Email me when someone answers the thread")
 
-REPLY_PLACEHOLDER = _lazy(u"Enter your reply here.")
+REPLY_PLACEHOLDER = _lazy("Enter your reply here.")
 
 # Marketplace AAQ form
-EMAIL_PLACEHOLDER = _lazy(u"Enter your email address here.")
-SUBJECT_PLACEHOLDER = _lazy(u"Enter a subject here.")
-SUBJECT_CONTENT_REQUIRED = _lazy(u"Please provide a subject.")
+EMAIL_PLACEHOLDER = _lazy("Enter your email address here.")
+SUBJECT_PLACEHOLDER = _lazy("Enter a subject here.")
+SUBJECT_CONTENT_REQUIRED = _lazy("Please provide a subject.")
 SUBJECT_CONTENT_SHORT = _lazy(
-    u"The subject is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
+    "The subject is too short (%(show_value)s "
+    "characters). It must be at least %(limit_value)s "
+    "characters."
 )
 SUBJECT_CONTENT_LONG = _lazy(
-    u"Please keep the length of the subject to "
-    u"%(limit_value)s characters or less. It is "
-    u"currently %(show_value)s characters."
+    "Please keep the length of the subject to "
+    "%(limit_value)s characters or less. It is "
+    "currently %(show_value)s characters."
 )
-BODY_PLACEHOLDER = _lazy(u"Describe your issue here.")
-BODY_CONTENT_REQUIRED = _lazy(u"Please describe your issue in the body.")
+BODY_PLACEHOLDER = _lazy("Describe your issue here.")
+BODY_CONTENT_REQUIRED = _lazy("Please describe your issue in the body.")
 BODY_CONTENT_SHORT = _lazy(
-    u"The body content is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
+    "The body content is too short (%(show_value)s "
+    "characters). It must be at least %(limit_value)s "
+    "characters."
 )
 BODY_CONTENT_LONG = _lazy(
-    u"Please keep the length of the body content to "
-    u"%(limit_value)s characters or less. It is "
-    u"currently %(show_value)s characters."
+    "Please keep the length of the body content to "
+    "%(limit_value)s characters or less. It is "
+    "currently %(show_value)s characters."
 )
 CATEGORY_CHOICES = [
-    (u"account", _lazy(u"Account Issues")),
-    (u"installation", _lazy(u"Installation Issues")),
-    (u"payment", _lazy(u"Payment Issues")),
-    (u"application", _lazy(u"Application Issues")),
+    ("account", _lazy("Account Issues")),
+    ("installation", _lazy("Installation Issues")),
+    ("payment", _lazy("Payment Issues")),
+    ("application", _lazy("Application Issues")),
 ]
 
 # Marketplace Request Refund form
 TRANSACTION_ID_PLACEHOLDER = _lazy(u"Enter the Transaction ID here.")
 TRANSACTION_ID_REQUIRED = _lazy(u"Please provide the Transaction ID.")
 REFUND_CATEGORY_CHOICES = [
-    (u"Defective", _lazy(u"Defective")),
-    (u"Malware", _lazy(u"Malware")),
-    (u"Did not work as expected", _lazy(u"Did not work as expected")),
-    (u"Seller will not provide support", _lazy(u"Seller will not provide support")),
+    ("Defective", _lazy("Defective")),
+    ("Malware", _lazy("Malware")),
+    ("Did not work as expected", _lazy("Did not work as expected")),
+    ("Seller will not provide support", _lazy("Seller will not provide support")),
 ]
-
 
 # Marketplace Developer Request form
 DEVELOPER_REQUEST_CATEGORY_CHOICES = [
-    (u"Account Administration", _lazy(u"Account Administration")),
-    (u"Review Process", _lazy(u"Review Process")),
-    (u"Payments/Settlement", _lazy(u"Payments/Settlement")),
+    ("Account Administration", _lazy("Account Administration")),
+    ("Review Process", _lazy("Review Process")),
+    ("Payments/Settlement", _lazy("Payments/Settlement")),
 ]
 
 
 class EditQuestionForm(forms.ModelForm):
     """Form to edit an existing question"""
 
-    title = forms.CharField(
-        label=TITLE_LABEL,
-        min_length=5
-    )
+    title = forms.CharField(label=TITLE_LABEL, min_length=5)
 
     content = forms.CharField(
-        label=CONTENT_LABEL,
-        min_length=5,
-        widget=forms.Textarea()
+        label=CONTENT_LABEL, min_length=5, widget=forms.Textarea()
     )
 
     class Meta:
         model = Question
         fields = [
-            'title',
-            'content',
+            "title",
+            "content",
         ]
 
     def __init__(self, product=None, *args, **kwargs):
@@ -233,7 +227,7 @@ class EditQuestionForm(forms.ModelForm):
         fields with empty string value."""
         clean = {}
         for key in self.metadata_field_keys:
-            if key in self.data and self.data[key] != u"":
+            if key in self.data and self.data[key] != "":
                 clean[key] = self.cleaned_data[key]
 
         # Clean up the troubleshooting data if we have it.
@@ -246,12 +240,13 @@ class EditQuestionForm(forms.ModelForm):
 
             if parsed:
                 # Clean out unwanted garbage preferences.
-                if ('modifiedPreferences' in parsed and
-                        isinstance(parsed['modifiedPreferences'], dict)):
-                    for pref in list(parsed['modifiedPreferences'].keys()):
-                        if pref.startswith('print.macosx.pagesetup'):
-                            del parsed['modifiedPreferences'][pref]
-                    clean['troubleshooting'] = json.dumps(parsed)
+                if "modifiedPreferences" in parsed and isinstance(
+                    parsed["modifiedPreferences"], dict
+                ):
+                    for pref in list(parsed["modifiedPreferences"].keys()):
+                        if pref.startswith("print.macosx.pagesetup"):
+                            del parsed["modifiedPreferences"][pref]
+                    clean["troubleshooting"] = json.dumps(parsed)
 
                 # Override ff_version with the version in troubleshooting
                 # which is more precise for the dot releases.
@@ -265,34 +260,21 @@ class EditQuestionForm(forms.ModelForm):
 class NewQuestionForm(EditQuestionForm):
     """Form to start a new question"""
 
-    category = forms.ChoiceField(
-        label=CATEGORY_LABEL,
-        choices=[],
-    )
+    category = forms.ChoiceField(label=CATEGORY_LABEL, choices=[],)
 
     # Collect user agent only when making a question for the first time.
     # Otherwise, we could grab moderators' user agents.
-    useragent = forms.CharField(
-        widget=forms.HiddenInput(), required=False
-    )
+    useragent = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     notifications = forms.BooleanField(
-        label=NOTIFICATIONS_LABEL,
-        initial=True,
-        required=False
+        label=NOTIFICATIONS_LABEL, initial=True, required=False
     )
 
-    field_order = [
-        'title',
-        'category',
-        'content'
-    ]
+    field_order = ["title", "category", "content"]
 
     def __init__(self, product=None, *args, **kwargs):
         """Add fields particular to new questions."""
-        super(NewQuestionForm, self).__init__(
-            product=product, *args, **kwargs
-        )
+        super(NewQuestionForm, self).__init__(product=product, *args, **kwargs)
 
         if product:
             category_choices = [
@@ -306,7 +288,7 @@ class NewQuestionForm(EditQuestionForm):
         self.instance.locale = locale
         self.instance.product = product
 
-        category_config = product_config['categories'][self.cleaned_data['category']]
+        category_config = product_config["categories"][self.cleaned_data["category"]]
         if category_config:
             t = category_config.get("topic")
             if t:
@@ -314,15 +296,13 @@ class NewQuestionForm(EditQuestionForm):
 
         question = super(NewQuestionForm, self).save(*args, **kwargs)
 
-        if self.cleaned_data.get('notifications', False):
+        if self.cleaned_data.get("notifications", False):
             QuestionReplyEvent.notify(question.creator, question)
 
         user_ct = ContentType.objects.get_for_model(user)
         qst_ct = ContentType.objects.get_for_model(question)
         # Move over to the question all of the images I added to the reply form
-        up_images = ImageAttachment.objects.filter(
-            creator=user, content_type=user_ct
-        )
+        up_images = ImageAttachment.objects.filter(creator=user, content_type=user_ct)
         up_images.update(content_type=qst_ct, object_id=question.id)
 
         # User successfully submitted a new question
@@ -346,7 +326,7 @@ class AnswerForm(forms.Form):
         label=_lazy("Content:"),
         min_length=5,
         max_length=10000,
-        widget=forms.Textarea(attrs={"placeholder": REPLY_PLACEHOLDER})
+        widget=forms.Textarea(attrs={"placeholder": REPLY_PLACEHOLDER}),
     )
 
     class Meta:
@@ -392,13 +372,13 @@ class BaseZendeskForm(forms.Form):
         # Add email field for users not logged in.
         if not user.is_authenticated():
             email = forms.EmailField(
-                label=_lazy(u"Email:"),
+                label=_lazy("Email:"),
                 widget=forms.TextInput(attrs={"placeholder": EMAIL_PLACEHOLDER}),
             )
             self.fields["email"] = email
 
     subject = forms.CharField(
-        label=_lazy(u"Subject:"),
+        label=_lazy("Subject:"),
         min_length=4,
         max_length=255,
         widget=forms.TextInput(attrs={"placeholder": SUBJECT_PLACEHOLDER}),
@@ -410,7 +390,7 @@ class BaseZendeskForm(forms.Form):
     )
 
     body = forms.CharField(
-        label=_lazy(u"Body:"),
+        label=_lazy("Body:"),
         min_length=5,
         max_length=10000,
         widget=forms.Textarea(attrs={"placeholder": BODY_PLACEHOLDER}),
@@ -444,18 +424,18 @@ class BaseZendeskForm(forms.Form):
 
 
 class MarketplaceAaqForm(BaseZendeskForm):
-    category = forms.ChoiceField(label=_lazy(u"Category:"), choices=CATEGORY_CHOICES)
+    category = forms.ChoiceField(label=_lazy("Category:"), choices=CATEGORY_CHOICES)
 
 
 class MarketplaceRefundForm(BaseZendeskForm):
     transaction_id = forms.CharField(
-        label=_lazy(u"Transaction ID:"),
+        label=_lazy("Transaction ID:"),
         widget=forms.TextInput(attrs={"placeholder": TRANSACTION_ID_PLACEHOLDER}),
         error_messages={"required": TRANSACTION_ID_REQUIRED},
     )
 
     category = forms.ChoiceField(
-        label=_lazy(u"Category:"), choices=REFUND_CATEGORY_CHOICES
+        label=_lazy("Category:"), choices=REFUND_CATEGORY_CHOICES
     )
 
     def ticket_body(self, email):
@@ -470,7 +450,7 @@ class MarketplaceRefundForm(BaseZendeskForm):
 
 class MarketplaceDeveloperRequestForm(BaseZendeskForm):
     category = forms.ChoiceField(
-        label=_lazy(u"Category:"), choices=DEVELOPER_REQUEST_CATEGORY_CHOICES
+        label=_lazy("Category:"), choices=DEVELOPER_REQUEST_CATEGORY_CHOICES
     )
 
     def ticket_body(self, email):
@@ -489,11 +469,11 @@ class StatsForm(forms.Form):
     bucket = forms.IntegerField(
         min_value=1,
         required=False,
-        label=_lazy(u"Interval"),
+        label=_lazy("Interval"),
         widget=forms.Select(choices=bucket_choices),
     )
-    start = forms.DateField(required=False, label=_lazy(u"Start"))
-    end = forms.DateField(required=False, label=_lazy(u"End"))
+    start = forms.DateField(required=False, label=_lazy("Start"))
+    end = forms.DateField(required=False, label=_lazy("End"))
 
     def clean_bucket(self):
         if self.cleaned_data.get("bucket") is None:

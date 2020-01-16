@@ -80,11 +80,11 @@ L10N_TOP100_CODE = 'percent_localized_top100'
 L10N_ALL_CODE = 'percent_localized_all'
 L10N_ACTIVE_CONTRIBUTORS_CODE = 'active_contributors'
 METRIC_CODE_CHOICES = (
-    (L10N_TOP20_CODE, _lazy(u'Percent Localized: Top 20')),
-    (L10N_TOP100_CODE, _lazy(u'Percent Localized: Top 100')),
-    (L10N_ALL_CODE, _lazy(u'Percent Localized: All')),
+    (L10N_TOP20_CODE, _lazy('Percent Localized: Top 20')),
+    (L10N_TOP100_CODE, _lazy('Percent Localized: Top 100')),
+    (L10N_ALL_CODE, _lazy('Percent Localized: All')),
     (L10N_ACTIVE_CONTRIBUTORS_CODE,
-     _lazy(u'Monthly Active Contributors')),
+     _lazy('Monthly Active Contributors')),
 )
 
 
@@ -104,6 +104,6 @@ class WikiMetric(ModelBase):
         ordering = ['-date']
 
     def __unicode__(self):
-        return u'[{date}][{locale}][{product}] {code}: {value}'.format(
+        return '[{date}][{locale}][{product}] {code}: {value}'.format(
             date=self.date, code=self.code, locale=self.locale,
             value=self.value, product=self.product)

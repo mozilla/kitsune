@@ -43,7 +43,7 @@ class GroupAvatarForm(forms.ModelForm):
         return self.cleaned_data["avatar"]
 
 
-USERS_PLACEHOLDER = _lazy(u'username')
+USERS_PLACEHOLDER = _lazy('username')
 
 
 class AddUserForm(forms.Form):

@@ -68,13 +68,13 @@ most_visited_translation_from = (
 
 
 REVIEW_STATUSES = {
-    1: (_lazy(u'Review Needed'), 'wiki.document_revisions', 'review'),
-    0: (u'', '', 'ok')}
+    1: (_lazy('Review Needed'), 'wiki.document_revisions', 'review'),
+    0: ('', '', 'ok')}
 SIGNIFICANCE_STATUSES = {
     MEDIUM_SIGNIFICANCE: (
-        _lazy(u'Update Needed'), 'wiki.edit_document', 'update'),
+        _lazy('Update Needed'), 'wiki.edit_document', 'update'),
     MAJOR_SIGNIFICANCE: (
-        _lazy(u'Immediate Update Needed'), 'wiki.edit_document',
+        _lazy('Immediate Update Needed'), 'wiki.edit_document',
         'out-of-date')}
 
 # The most significant approved change to the English article between {the
@@ -169,7 +169,7 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
         slug = eng_slug
         title = eng_title
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        status = _(u'Translation Needed')
+        status = _('Translation Needed')
         # When calling the translate view, specify locale to translate to:
         status_url = reverse('wiki.translate', args=[slug],
                              locale=readout_locale)
@@ -447,8 +447,8 @@ class Readout(object):
     # short_title= = _lazy(u'Short Title of Readout for In-Page Links')
     # slug = 'Unique URL slug for detail page'
     # details_link_text = _lazy(u'All articles from this readout...')
-    column3_label = _lazy(u'Visits in last 30 days')
-    column4_label = _lazy(u'Status')
+    column3_label = _lazy('Visits in last 30 days')
+    column4_label = _lazy('Status')
     modes = [(MOST_VIEWED, _lazy('Most Viewed')),
              (MOST_RECENT, _lazy('Most Recent'))]
     default_mode = MOST_VIEWED
@@ -561,11 +561,11 @@ class Readout(object):
 
 class MostVisitedDefaultLanguageReadout(Readout):
     """Most-Visited readout for the default language"""
-    title = _lazy(u'Most Visited')
+    title = _lazy('Most Visited')
     # No short_title; the Contributors dash lacks an Overview readout
-    details_link_text = _lazy(u'All knowledge base articles...')
+    details_link_text = _lazy('All knowledge base articles...')
     slug = 'most-visited'
-    column3_label = _lazy(u'Visits')
+    column3_label = _lazy('Visits')
     modes = PERIODS
     default_mode = LAST_30_DAYS
 
@@ -630,7 +630,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
 class CategoryReadout(Readout):
     """Abstract class representing a readout ordered by visits and intended
     to be filtered by category."""
-    column3_label = _lazy(u'Visits')
+    column3_label = _lazy('Visits')
     modes = []
     default_mode = None
     where_clause = ''
@@ -672,10 +672,10 @@ class CategoryReadout(Readout):
         if needs_review:
             status, view_name, dummy = REVIEW_STATUSES[needs_review]
         elif needs_changes:
-            status = _lazy(u'Changes Needed')
+            status = _lazy('Changes Needed')
             view_name = 'wiki.document_revisions'
         elif unready_for_l10n:
-            status = _lazy(u'Changes Not Ready For Localization')
+            status = _lazy('Changes Not Ready For Localization')
             view_name = 'wiki.document_revisions'
         else:
             status, view_name, dummy = REVIEW_STATUSES[0]
@@ -691,23 +691,23 @@ class CategoryReadout(Readout):
 
 
 class TemplateReadout(CategoryReadout):
-    title = _lazy(u'Templates')
+    title = _lazy('Templates')
     slug = 'templates'
-    details_link_text = _lazy(u'All templates...')
+    details_link_text = _lazy('All templates...')
     where_clause = 'AND engdoc.is_template '
 
 
 class HowToContributeReadout(CategoryReadout):
-    title = _lazy(u'How To Contribute')
+    title = _lazy('How To Contribute')
     slug = 'how-to-contribute'
-    details_link_text = _lazy(u'All How To Contribute articles...')
+    details_link_text = _lazy('All How To Contribute articles...')
     where_clause = 'AND engdoc.category=%s ' % HOW_TO_CONTRIBUTE_CATEGORY
 
 
 class AdministrationReadout(CategoryReadout):
-    title = _lazy(u'Administration')
+    title = _lazy('Administration')
     slug = 'administration'
-    details_link_text = _lazy(u'All Administration articles...')
+    details_link_text = _lazy('All Administration articles...')
     where_clause = 'AND engdoc.category=%s ' % ADMINISTRATION_CATEGORY
 
 
@@ -721,9 +721,9 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     we should drop everything to translate.
 
     """
-    short_title = _lazy(u'Most Visited')
+    short_title = _lazy('Most Visited')
     slug = 'most-visited-translations'
-    details_link_text = _lazy(u'All translations...')
+    details_link_text = _lazy('All translations...')
 
     def _query_and_params(self, max):
         if self.mode in [m[0] for m in self.modes]:
@@ -795,10 +795,10 @@ class TemplateTranslationsReadout(Readout):
     translate.
 
     """
-    title = _lazy(u'Templates')
-    short_title = _lazy(u'Templates')
+    title = _lazy('Templates')
+    short_title = _lazy('Templates')
     slug = 'template-translations'
-    details_link_text = _lazy(u'All templates...')
+    details_link_text = _lazy('All templates...')
     column3_label = ''
     modes = []
     default_mode = None
@@ -849,19 +849,19 @@ class TemplateTranslationsReadout(Readout):
         # Python is 1 and 1 comes after 0... Therefore, False comes
         # first in ordering.
         rows.sort(key=lambda row: (
-                  row['status'] == u'', row['status_class'], row['title']))
+                  row['status'] == '', row['status_class'], row['title']))
         return rows[:max]
 
 
 class UnreviewedReadout(Readout):
     # L10n: Not just changes to translations but also unreviewed changes to
     # docs in this locale that are not translations
-    title = _lazy(u'Unreviewed Changes')
+    title = _lazy('Unreviewed Changes')
 
-    short_title = pgettext_lazy('document', u'Unreviewed')
-    details_link_text = _lazy(u'All articles requiring review...')
+    short_title = pgettext_lazy('document', 'Unreviewed')
+    details_link_text = _lazy('All articles requiring review...')
     slug = 'unreviewed'
-    column4_label = _lazy(u'Changed')
+    column4_label = _lazy('Changed')
 
     def _query_and_params(self, max):
         english_id = ('id' if self.locale == settings.WIKI_DEFAULT_LANGUAGE
@@ -919,13 +919,13 @@ class UnreviewedReadout(Readout):
 
 
 class UnhelpfulReadout(Readout):
-    title = _lazy(u'Unhelpful Documents')
+    title = _lazy('Unhelpful Documents')
 
-    short_title = pgettext_lazy('document', u'Unhelpful')
-    details_link_text = _lazy(u'All unhelpful articles...')
+    short_title = pgettext_lazy('document', 'Unhelpful')
+    details_link_text = _lazy('All unhelpful articles...')
     slug = 'unhelpful'
-    column3_label = _lazy(u'Total Votes')
-    column4_label = _lazy(u'Helpfulness')
+    column3_label = _lazy('Total Votes')
+    column4_label = _lazy('Helpfulness')
     modes = []
     default_mode = None
 
@@ -970,7 +970,7 @@ class UnhelpfulReadout(Readout):
                              (float(result[3]) * 100, float(result[2]) * 100))
         return dict(title=result[6].decode('utf-8'),
                     url=reverse('wiki.document_revisions',
-                                args=[unicode(result[5], "utf-8")],
+                                args=[str(result[5], "utf-8")],
                                 locale=self.locale),
                     visits=int(float(result[1])),
                     custom=True,
@@ -980,14 +980,14 @@ class UnhelpfulReadout(Readout):
 class UnreadyForLocalizationReadout(Readout):
     """Articles which have approved but unready revisions newer than their
     latest ready-for-l10n ones"""
-    title = _lazy(u'Changes Not Ready For Localization')
-    description = _lazy(u'Articles which have approved revisions newer than '
-                        u'the latest ready-for-localization one')
+    title = _lazy('Changes Not Ready For Localization')
+    description = _lazy('Articles which have approved revisions newer than '
+                        'the latest ready-for-localization one')
     # No short_title; the Contributors dash lacks an Overview readout
-    details_link_text = _lazy(u'All articles with changes not ready for '
-                              u'localization...')
+    details_link_text = _lazy('All articles with changes not ready for '
+                              'localization...')
     slug = 'unready'
-    column4_label = _lazy(u'Approved')
+    column4_label = _lazy('Approved')
 
     def _query_and_params(self, max):
         # Filter by product if specified.
@@ -1051,12 +1051,12 @@ class UnreadyForLocalizationReadout(Readout):
 
 class NeedsChangesReadout(Readout):
     """Articles which need change."""
-    title = _lazy(u'Need Changes')
-    description = _lazy(u'Articles that require changes.')
+    title = _lazy('Need Changes')
+    description = _lazy('Articles that require changes.')
     # No short_title; the Contributors dash lacks an Overview readout
-    details_link_text = _lazy(u'All articles that require changes...')
+    details_link_text = _lazy('All articles that require changes...')
     slug = 'need-changes'
-    column4_label = _lazy(u'Comment')
+    column4_label = _lazy('Comment')
     modes = [(MOST_VIEWED, _lazy('Most Viewed'))]
     default_mode = MOST_VIEWED
 
@@ -1105,10 +1105,10 @@ class NeedsChangesReadout(Readout):
 
 
 class CannedResponsesReadout(Readout):
-    title = _lazy(u'Canned Responses')
-    description = _lazy(u'Localization status of all canned responses')
+    title = _lazy('Canned Responses')
+    description = _lazy('Localization status of all canned responses')
     slug = 'canned-responses'
-    details_link_text = _lazy(u'All canned responses articles...')
+    details_link_text = _lazy('All canned responses articles...')
 
     @classmethod
     def should_show_to(cls, request):

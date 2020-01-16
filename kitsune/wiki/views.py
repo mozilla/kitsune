@@ -268,7 +268,7 @@ def list_documents(request, category=None):
         except ValueError:
             raise Http404
         try:
-            category = unicode(dict(CATEGORIES)[category_id])
+            category = str(dict(CATEGORIES)[category_id])
         except KeyError:
             raise Http404
 
@@ -810,7 +810,7 @@ def translate(request, document_slug, revision_id=None):
             args=[parent_doc.slug]))
 
     if not parent_doc.is_localizable:
-        message = _lazy(u'You cannot translate this document.')
+        message = _lazy('You cannot translate this document.')
         return render(request, 'handlers/400.html', {
             'message': message},
             status=400)
@@ -1275,7 +1275,7 @@ def get_helpful_votes_async(request, document_slug):
         rdate = rev.reviewed or rev.created
         rev_data.append({
             'x': int(time.mktime(rdate.timetuple())),
-            'text': unicode(_('Revision %s')) % rev.created
+            'text': str(_('Revision %s')) % rev.created
         })
 
     # Rickshaw wants data like

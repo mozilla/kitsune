@@ -73,7 +73,7 @@ def index_chunk_task(write_index, batch_id, rec_id, chunk):
         # Update record data.
         rec = Record.objects.get(pk=rec_id)
         rec.start_time = datetime.datetime.now()
-        rec.message = u"Reindexing into %s" % write_index
+        rec.message = 'Reindexing into %s' % write_index
         rec.status = Record.STATUS_IN_PROGRESS
         rec.save()
 
@@ -82,7 +82,7 @@ def index_chunk_task(write_index, batch_id, rec_id, chunk):
 
     except Exception:
         if rec is not None:
-            rec.mark_fail(u'Errored out %s %s' % (sys.exc_info()[0], sys.exc_info()[1]))
+            rec.mark_fail('Errored out %s %s' % (sys.exc_info()[0], sys.exc_info()[1]))
 
         log.exception("Error while indexing a chunk")
         # Some exceptions aren't pickleable and we need this to throw

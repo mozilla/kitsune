@@ -61,8 +61,8 @@ from kitsune.wiki.utils import get_featured_articles
 log = logging.getLogger("k.questions")
 
 
-UNAPPROVED_TAG = _lazy(u"That tag does not exist.")
-NO_TAG = _lazy(u"Please provide a tag.")
+UNAPPROVED_TAG = _lazy('That tag does not exist.')
+NO_TAG = _lazy('Please provide a tag.')
 IMG_LIMIT = settings.IMAGE_ATTACHMENT_USER_LIMIT
 
 FILTER_GROUPS = {
@@ -496,11 +496,11 @@ def aaq(
         path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
 
         old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-        msg = _(
-            u"The questions forum isn't available in {old_lang}, we "
-            u"have redirected you to the {new_lang} questions forum."
-        ).format(old_lang=old_lang, new_lang=new_lang)
+        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE
+                                           .lower()]
+        msg = (_("The questions forum isn't available in {old_lang}, we "
+                 "have redirected you to the {new_lang} questions forum.")
+               .format(old_lang=old_lang, new_lang=new_lang))
         messages.add_message(request, messages.WARNING, msg)
 
         return HttpResponseRedirect(path)
@@ -544,13 +544,10 @@ def aaq(
                 path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
 
                 old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-                new_lang = settings.LANGUAGES_DICT[
-                    settings.WIKI_DEFAULT_LANGUAGE.lower()
-                ]
-                msg = _(
-                    u"The questions forum isn't available for {product} in {old_lang}, we "
-                    u"have redirected you to the {new_lang} questions forum."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+                new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+                msg = (_("The questions forum isn't available for {product} in {old_lang}, we "
+                         "have redirected you to the {new_lang} questions forum.")
+                       .format(product=product.title, old_lang=old_lang, new_lang=new_lang))
                 messages.add_message(request, messages.WARNING, msg)
 
                 return HttpResponseRedirect(path)
@@ -981,26 +978,23 @@ def add_tag_async(request, question_id):
     try:
         question, canonical_name = _add_tag(request, question_id)
     except Tag.DoesNotExist:
-        return HttpResponse(
-            json.dumps({"error": unicode(UNAPPROVED_TAG)}),
-            content_type="application/json",
-            status=400,
-        )
+        return HttpResponse(json.dumps({'error': str(UNAPPROVED_TAG)}),
+                            content_type='application/json',
+                            status=400)
 
     if canonical_name:
         question.clear_cached_tags()
         tag = Tag.objects.get(name=canonical_name)
-        tag_url = urlparams(
-            reverse("questions.list", args=[question.product_slug]), tagged=tag.slug
-        )
-        data = {"canonicalName": canonical_name, "tagUrl": tag_url}
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        tag_url = urlparams(reverse(
+            'questions.list', args=[question.product_slug]), tagged=tag.slug)
+        data = {'canonicalName': canonical_name,
+                'tagUrl': tag_url}
+        return HttpResponse(json.dumps(data),
+                            content_type='application/json')
 
-    return HttpResponse(
-        json.dumps({"error": unicode(NO_TAG)}),
-        content_type="application/json",
-        status=400,
-    )
+    return HttpResponse(json.dumps({'error': str(NO_TAG)}),
+                        content_type='application/json',
+                        status=400)
 
 
 @permission_required("questions.tag_question")
@@ -1038,9 +1032,8 @@ def remove_tag_async(request, question_id):
         question.clear_cached_tags()
         return HttpResponse("{}", content_type="application/json")
 
-    return HttpResponseBadRequest(
-        json.dumps({"error": unicode(NO_TAG)}), content_type="application/json"
-    )
+    return HttpResponseBadRequest(json.dumps({'error': str(NO_TAG)}),
+                                  content_type='application/json')
 
 
 @permission_required("flagit.can_moderate")
@@ -1339,8 +1332,7 @@ def marketplace(request):
 
 
 ZENDESK_ERROR_MESSAGE = _lazy(
-    u"There was an error submitting the ticket. " u"Please try again later."
-)
+    'There was an error submitting the ticket. Please try again later.')
 
 
 def marketplace_category(request, category_slug):
@@ -1582,15 +1574,10 @@ def screen_share(request, question_id):
     if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
-    content = _(
-        u"I invited {user} to a screen sharing session, "
-        u"and I'll give an update here once we are done."
-    )
-    answer = Answer(
-        question=question,
-        creator=request.user,
-        content=content.format(user=display_name(question.creator)),
-    )
+    content = _("I invited {user} to a screen sharing session, "
+                "and I'll give an update here once we are done.")
+    answer = Answer(question=question, creator=request.user,
+                    content=content.format(user=display_name(question.creator)))
     answer.save()
     statsd.incr("questions.answer")
 

@@ -4,20 +4,20 @@ from django.utils.translation import ugettext_lazy as _lazy
 from kitsune.forums.models import Thread, Post
 
 
-MSG_TITLE_REQUIRED = _lazy(u'Please provide a title.')
+MSG_TITLE_REQUIRED = _lazy('Please provide a title.')
 MSG_TITLE_SHORT = _lazy(
-    u'Your title is too short (%(show_value)s characters). It must be '
-    u'at least %(limit_value)s characters.')
+    'Your title is too short (%(show_value)s characters). It must be '
+    'at least %(limit_value)s characters.')
 MSG_TITLE_LONG = _lazy(
-    u'Please keep the length of your title to %(limit_value)s characters'
-    u' or less. It is currently %(show_value)s characters.')
-MSG_CONTENT_REQUIRED = _lazy(u'Please provide a message.')
+    'Please keep the length of your title to %(limit_value)s characters'
+    ' or less. It is currently %(show_value)s characters.')
+MSG_CONTENT_REQUIRED = _lazy('Please provide a message.')
 MSG_CONTENT_SHORT = _lazy(
-    u'Your message is too short (%(show_value)s characters). It must be '
-    u'at least %(limit_value)s characters.')
+    'Your message is too short (%(show_value)s characters). It must be '
+    'at least %(limit_value)s characters.')
 MSG_CONTENT_LONG = _lazy(
-    u'Please keep the length of your message to %(limit_value)s '
-    u'characters or less. It is currently %(show_value)s characters.')
+    'Please keep the length of your message to %(limit_value)s '
+    'characters or less. It is currently %(show_value)s characters.')
 
 
 class ReplyForm(forms.ModelForm):

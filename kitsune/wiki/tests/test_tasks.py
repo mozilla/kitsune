@@ -149,7 +149,7 @@ class ReviewMailTestCase(TestCaseBase):
 
         rev = RevisionFactory()
         doc = rev.document
-        doc.title = u'Foo \xe8 incode'
+        doc.title = 'Foo \xe8 incode'
         msg = 'foo'
         self._approve_and_send(rev, self.user, msg)
 
@@ -191,11 +191,11 @@ class TestDocumentRenderCascades(TestCaseBase):
             '[[T:D1]] two', title=TEMPLATE_TITLE_PREFIX + 'D2', category=TEMPLATES_CATEGORY)
         d3, _, _ = doc_rev_parser('[[T:D1]] [[T:D2]] three', title='D3')
 
-        eq_(self._clean(d3), u'one one two three')
+        eq_(self._clean(d3), 'one one two three')
 
         RevisionFactory(document=d1, content='ONE', is_approved=True)
         render_document_cascade(d1)
 
-        eq_(self._clean(d1), u'ONE')
-        eq_(self._clean(d2), u'ONE two')
-        eq_(self._clean(d3), u'ONE ONE two three')
+        eq_(self._clean(d1), 'ONE')
+        eq_(self._clean(d2), 'ONE two')
+        eq_(self._clean(d3), 'ONE ONE two three')

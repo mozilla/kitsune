@@ -147,7 +147,7 @@ class Command(BaseCommand):
 
         for entry in sorted_final:
             doc = Document.objects.get(pk=entry[0])
-            redis.rpush(REDIS_KEY, (u'%s::%s::%s::%s::%s::%s::%s' % (
+            redis.rpush(REDIS_KEY, ('%s::%s::%s::%s::%s::%s::%s' % (
                 entry[0],  # Document ID
                 entry[1],  # Total Votes
                 entry[2],  # Current Percentage

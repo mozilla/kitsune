@@ -19,17 +19,17 @@ class FlaggedObject(ModelBase):
     """A flag raised on an object."""
 
     REASONS = (
-        ('spam', _lazy(u'Spam or other unrelated content')),
-        ('language', _lazy(u'Inappropriate language/dialog')),
-        ('bug_support', _lazy(u'Misplaced bug report or support request')),
-        ('abuse', _lazy(u'Abusive content')),
-        ('other', _lazy(u'Other (please specify)')),
+        ('spam', _lazy('Spam or other unrelated content')),
+        ('language', _lazy('Inappropriate language/dialog')),
+        ('bug_support', _lazy('Misplaced bug report or support request')),
+        ('abuse', _lazy('Abusive content')),
+        ('other', _lazy('Other (please specify)')),
     )
 
     STATUSES = (
-        (0, _lazy(u'Pending')),
-        (1, _lazy(u'Accepted and Fixed')),
-        (2, _lazy(u'Rejected')),
+        (0, _lazy('Pending')),
+        (1, _lazy('Accepted and Fixed')),
+        (2, _lazy('Rejected')),
     )
 
     content_type = models.ForeignKey(ContentType)

@@ -10,7 +10,7 @@ def _activate_users(admin, request, qs):
     admin.message_user(request, msg)
 
 
-_activate_users.short_description = u"Activate selected users"
+_activate_users.short_description = "Activate selected users"
 
 
 def _deactivate_users(admin, request, qs):
@@ -19,7 +19,7 @@ def _deactivate_users(admin, request, qs):
     admin.message_user(request, msg)
 
 
-_deactivate_users.short_description = u"Deactivate selected users"
+_deactivate_users.short_description = "Deactivate selected users"
 
 
 def patch_user_admin():

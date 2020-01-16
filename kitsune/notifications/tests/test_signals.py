@@ -101,7 +101,7 @@ class TestSimplePushNotifier(TestCase):
         requests.put.return_value = response
 
         u = UserFactory()
-        url = u'http://example.com/simple_push/asdf'
+        url = 'http://example.com/simple_push/asdf'
         PushNotificationRegistration.objects.create(creator=u, push_url=url)
         n = NotificationFactory(owner=u)
 

@@ -17,7 +17,7 @@ from kitsune.wiki.tests import DocumentFactory
 # Some of these contain a locale prefix on included links, while others don't.
 # This depends on whether the tests use them inside or outside the scope of a
 # request. See the long explanation in questions.tests.test_notifications.
-REPLY_EMAIL = u"""Reply to thread: Sticky Thread
+REPLY_EMAIL = """Reply to thread: Sticky Thread
 
 %(user)s has replied to a thread you're watching. Here is their reply:
 
@@ -37,7 +37,7 @@ utm_medium=email&utm_source=notification#post-%(post_id)s
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
-NEW_THREAD_EMAIL = u"""New thread: a title
+NEW_THREAD_EMAIL = """New thread: a title
 
 %(user)s has posted a new thread in a forum you're watching. Here is the \
 thread:
@@ -171,7 +171,7 @@ class NotificationsTests(KBForumTestCase):
 
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[u.email],
-                 subject=u'an article title - a title')
+                 subject='an article title - a title')
         starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % {
             'user': u2.profile.name,
             'document_slug': d.slug,
@@ -361,7 +361,7 @@ class NotificationsTests(KBForumTestCase):
         # Email was sent as expected.
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[u.email],
-                 subject=u'an article title - a title')
+                 subject='an article title - a title')
         starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % {
             'user': u2.profile.name,
             'document_slug': d.slug,

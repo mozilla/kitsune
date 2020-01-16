@@ -76,7 +76,7 @@ class RedirectTestCase(TestCase):
 
     def _targets(self, urls, querystring):
         for input, output in urls:
-            response = self.client.get(u'/1/%s' % input, follow=True)
+            response = self.client.get('/1/%s' % input, follow=True)
             if output == 404:
                 eq_(404, response.status_code)
             elif output.startswith('http'):
@@ -97,6 +97,6 @@ class RedirectTestCase(TestCase):
         sample_is_active.return_value = True
 
         response = self.client.get(
-            u'/1/firefox/4.0/Linux/en-US/prefs-applications')
+            '/1/firefox/4.0/Linux/en-US/prefs-applications')
         eq_(302, response.status_code)
         assert response['location'].startswith('https://example.com/')

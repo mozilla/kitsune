@@ -107,10 +107,10 @@ class FileNameTestCase(TestCase):
             'bdaf1a.gif')
 
     def test_high_unicode(self):
-        self._match_file_name(get_file_name(u'\u6709\u52b9.jpeg'),
+        self._match_file_name(get_file_name('\u6709\u52b9.jpeg'),
                               'ce1518.jpeg')
 
     def test_full_mixed(self):
         self._match_file_name(
-            get_file_name(u'123\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9.png'),
+            get_file_name('123\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9.png'),
             '686c11.png')
