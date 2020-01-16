@@ -12,8 +12,9 @@ import django_cache_url
 import djcelery
 from decouple import Csv, config
 
-from bundles import PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
+
+from .bundles import PIPELINE_JS
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 DEV = config('DEV', default=False, cast=bool)

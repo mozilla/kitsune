@@ -360,19 +360,19 @@ def parse_troubleshooting(troubleshooting_json):
     # An empty path means the parsed json.
     spec = (
         ((), dict),
-        (("accessibility",), dict),
-        (("accessibility", "isActive"), bool),
-        (("application",), dict),
-        (("application", "name"), basestring),
-        (("application", "supportURL"), basestring),
-        (("application", "userAgent"), basestring),
-        (("application", "version"), basestring),
-        (("extensions",), list),
-        (("graphics",), dict),
-        (("javaScript",), dict),
-        (("modifiedPreferences",), dict),
-        (("userJS",), dict),
-        (("userJS", "exists"), bool),
+        (('accessibility', ), dict),
+        (('accessibility', 'isActive'), bool),
+        (('application', ), dict),
+        (('application', 'name'), str),
+        (('application', 'supportURL'), str),
+        (('application', 'userAgent'), str),
+        (('application', 'version'), str),
+        (('extensions', ), list),
+        (('graphics', ), dict),
+        (('javaScript', ), dict),
+        (('modifiedPreferences', ), dict),
+        (('userJS', ), dict),
+        (('userJS', 'exists'), bool),
     )
 
     for path, type_ in spec:
