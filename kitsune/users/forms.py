@@ -79,7 +79,7 @@ class ProfileForm(forms.ModelForm):
         required=False,
         label=_lazy(u"Involved with Mozilla from"),
         widget=MonthYearWidget(
-            years=range(1998, datetime.today().year + 1), required=False
+            years=list(range(1998, datetime.today().year + 1)), required=False
         ),
     )
 

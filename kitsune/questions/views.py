@@ -768,10 +768,10 @@ def solve(request, question_id, answer_id):
                 secret=watch_secret, event_type="question reply", user=question.creator
             )
             # Create a new secret.
-            distinguishable_letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ"
-            new_secret = "".join(
-                random.choice(distinguishable_letters) for x in xrange(10)
-            )
+            distinguishable_letters = \
+                'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ'
+            new_secret = ''.join(random.choice(distinguishable_letters)
+                                 for x in range(10))
             watch.update(secret=new_secret)
             request.user = question.creator
         except Watch.DoesNotExist:
