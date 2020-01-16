@@ -3,7 +3,7 @@ import datetime
 import subprocess
 import sys
 import textwrap
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import requests
 
@@ -46,7 +46,7 @@ def fetch(url):
 
 
 def fetch_bugs(params):
-    url = BUGZILLA_API_URL + '/bug' + '?' + urllib.urlencode(params)
+    url = BUGZILLA_API_URL + '/bug' + '?' + urllib.parse.urlencode(params)
     return fetch(url)
 
 
