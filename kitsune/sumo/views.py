@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import socket
-import StringIO
+import io
 
 import django
 from celery.messaging import establish_connection
@@ -178,7 +178,7 @@ def monitor(request):
     # Check Libraries and versions
     libraries_results = []
     try:
-        Image.new('RGB', (16, 16)).save(StringIO.StringIO(), 'JPEG')
+        Image.new('RGB', (16, 16)).save(io.StringIO(), 'JPEG')
         libraries_results.append((INFO, 'PIL+JPEG: Got it!'))
     except Exception as exc:
         libraries_results.append(

@@ -3,32 +3,33 @@ import json as jsonlib
 import logging
 import os
 import re
-import urlparse
-
-from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
-from django.http import QueryDict
-from django.template.loader import render_to_string
-from django.utils.encoding import smart_str, smart_text
-from django.utils.http import urlencode
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _, ungettext
-from django.utils.timezone import get_default_timezone
+import urllib.parse
 
 import bleach
 import jinja2
 from babel import localedata
-from babel.dates import format_date, format_time, format_datetime
+from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
+from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import \
+    static as django_static
+from django.http import QueryDict
+from django.template.loader import render_to_string
+from django.utils.encoding import smart_str, smart_text
+from django.utils.http import urlencode
+from django.utils.timezone import get_default_timezone
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import ungettext
 from django_jinja import library
 from jinja2.utils import Markup
 from pytz import timezone
 
+from kitsune.products.models import Product
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.products.models import Product
 from kitsune.wiki.showfor import showfor_data as _showfor_data
-
 
 ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS + ["p"]
 ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
@@ -93,7 +94,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     New query params will be appended to exising parameters, except duplicate
     names, which will be replaced.
     """
-    url_ = urlparse.urlparse(url_)
+    url_ = urllib.parse.urlparse(url_)
     fragment = hash if hash is not None else url_.fragment
 
     q = url_.query
@@ -112,7 +113,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     query_string = urlencode(
         [(k, v) for k, l in new_query_dict.lists() for v in l if v is not None]
     )
-    new = urlparse.ParseResult(
+    new = urlparse.parse.ParseResult(
         url_.scheme, url_.netloc, url_.path, url_.params, query_string, fragment
     )
     return new.geturl()

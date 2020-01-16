@@ -2,7 +2,7 @@ import logging
 import re
 import time
 from datetime import datetime, timedelta, date
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
