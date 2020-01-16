@@ -593,7 +593,7 @@ def es_delete_cmd(index, noinput=False, log=log):
         return
 
     if index in all_read_indexes() and not noinput:
-        ret = raw_input('"%s" is a read index. Are you sure you want '
+        ret = input('"%s" is a read index. Are you sure you want '
                         'to delete it? (yes/no) ' % index)
         if ret != 'yes':
             log.info('Not deleting the index.')
