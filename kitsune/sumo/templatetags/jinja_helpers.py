@@ -3,7 +3,7 @@ import json as jsonlib
 import logging
 import os
 import re
-import urlparse
+import urllib.parse
 
 from django.conf import settings
 from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
@@ -86,7 +86,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     New query params will be appended to exising parameters, except duplicate
     names, which will be replaced.
     """
-    url_ = urlparse.urlparse(url_)
+    url_ = urllib.parse.urlparse(url_)
     fragment = hash if hash is not None else url_.fragment
 
     q = url_.query
@@ -103,7 +103,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 
     query_string = urlencode([(k, v) for k, l in new_query_dict.lists() for
                               v in l if v is not None])
-    new = urlparse.ParseResult(url_.scheme, url_.netloc, url_.path,
+    new = urllib.parse.ParseResult(url_.scheme, url_.netloc, url_.path,
                                url_.params, query_string, fragment)
     return new.geturl()
 

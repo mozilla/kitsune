@@ -1,5 +1,5 @@
 from os.path import basename
-from urlparse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 
 from django.conf import settings
 from django.template.loader import render_to_string
