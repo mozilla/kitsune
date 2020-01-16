@@ -125,8 +125,8 @@ def pageviews_by_document(start_date, end_date, verbose=False):
             start_date_step = start_date
 
         if verbose:
-            print 'Fetching data for %s to %s:' % (start_date_step,
-                                                   end_date_step)
+            print('Fetching data for %s to %s:' % (start_date_step,
+                                                   end_date_step))
 
         start_index = 1
 
@@ -151,8 +151,8 @@ def pageviews_by_document(start_date, end_date, verbose=False):
                 d = (max_results - 1
                      if start_index + max_results - 1 < results['totalResults']
                      else results['totalResults'] - start_index)
-                print '- Got %s of %s results.' % (start_index + d,
-                                                   results['totalResults'])
+                print('- Got %s of %s results.' % (start_index + d,
+                                                   results['totalResults']))
 
             for result in results.get('rows', []):
                 path = result[0]
@@ -198,8 +198,8 @@ def pageviews_by_question(start_date, end_date, verbose=False):
             start_date_step = start_date
 
         if verbose:
-            print 'Fetching data for %s to %s:' % (start_date_step,
-                                                   end_date_step)
+            print('Fetching data for %s to %s:' % (start_date_step,
+                                                   end_date_step))
 
         start_index = 1
 
@@ -223,8 +223,8 @@ def pageviews_by_question(start_date, end_date, verbose=False):
                 d = (max_results - 1
                      if start_index + max_results - 1 < results['totalResults']
                      else results['totalResults'] - start_index)
-                print '- Got %s of %s results.' % (start_index + d,
-                                                   results['totalResults'])
+                print('- Got %s of %s results.' % (start_index + d,
+                                                   results['totalResults']))
 
             for result in results['rows']:
                 path = result[0]

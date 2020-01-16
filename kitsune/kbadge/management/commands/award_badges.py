@@ -39,8 +39,8 @@ class Command(BaseCommand):
             for user in User.objects.filter(id__in=user_ids):
                 if maybe_award_wiki_badge(
                         wiki_badges.WIKI_BADGES['kb-badge'], year, user):
-                    print '{year} KB Badge awarded to {user}'.format(
-                        year=year, user=user.username)
+                    print('{year} KB Badge awarded to {user}'.format(
+                        year=year, user=user.username))
 
             # L10n Badge
             # Figure out who the L10n contributors are for the year and
@@ -57,8 +57,8 @@ class Command(BaseCommand):
             for user in User.objects.filter(id__in=user_ids):
                 if maybe_award_wiki_badge(
                         wiki_badges.WIKI_BADGES['l10n-badge'], year, user):
-                    print '{year} L10n Badge awarded to {user}'.format(
-                        year=year, user=user.username)
+                    print('{year} L10n Badge awarded to {user}'.format(
+                        year=year, user=user.username))
 
             # Support Forum Badge
             # Figure out who the Support Forum contributors are for the year
@@ -75,7 +75,7 @@ class Command(BaseCommand):
                         questions_badges.QUESTIONS_BADGES['answer-badge'],
                         year,
                         user):
-                    print ('{year} Support Forum Badge awarded to {user}'
+                    print('{year} Support Forum Badge awarded to {user}'
                            .format(year=year, user=user.username))
 
             # Army of Awesome Badge
@@ -91,5 +91,5 @@ class Command(BaseCommand):
             for user in User.objects.filter(id__in=user_ids):
                 if maybe_award_aoa_badge(
                         aoa_badges.AOA_BADGE, year, user):
-                    print ('{year} AoA Badge awarded to {user}'
+                    print('{year} AoA Badge awarded to {user}'
                            .format(year=year, user=user.username))

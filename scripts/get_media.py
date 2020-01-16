@@ -34,6 +34,6 @@ def run():
         try:
             urllib.urlretrieve(url, path)
         except urllib.ContentTooShortError:
-            print "Couldn't download", path
+            print("Couldn't download", path)
         progress.tick()
-    print '\nDone'
+    print('\nDone')
