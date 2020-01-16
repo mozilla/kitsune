@@ -15,7 +15,7 @@ from decouple import Csv, config
 
 import djcelery
 
-from bundles import PIPELINE_CSS, PIPELINE_JS
+from .bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
