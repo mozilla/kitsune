@@ -427,7 +427,7 @@ class TestWikiImageTags(TestCase):
         # then, create an English version
         en_img = ImageFactory(title="test.jpg", locale="en-US")
         # Ensure they're not equal
-        self.assertNotEquals(en_img.file.url, self.img.file.url)
+        self.assertNotEqual(en_img.file.url, self.img.file.url)
 
         # make sure there is no fallback
         img = pq_img(self.p, "[[Image:test.jpg]]", selector="img", locale="ja")
