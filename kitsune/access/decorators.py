@@ -144,7 +144,7 @@ def _resolve_lookup((model, lookup, arg_name), view_kwargs):
     value = view_kwargs.get(arg_name)
     if value is None:
         raise ValueError("Expected kwarg '%s' not found." % arg_name)
-    if isinstance(model, basestring):
+    if isinstance(model, str):
         model_class = apps.get_model(*model.split('.'))
     else:
         model_class = model
