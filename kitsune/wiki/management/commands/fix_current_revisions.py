@@ -25,7 +25,7 @@ class Command(BaseCommand):
                     if d.current_revision != rev:
                         d.current_revision = rev
                         d.save()
-                        print d.get_absolute_url()
+                        print(d.get_absolute_url())
                         statsd.incr('wiki.cron.fix-current-revision')
         finally:
             unpin_this_thread()

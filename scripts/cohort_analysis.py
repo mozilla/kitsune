@@ -42,7 +42,7 @@ def run_():
         data = report_for(queryset, ranges)
         headers = [title] + [s.strftime('%b') for s, _ in ranges]
         print(tabulate(data, headers=headers))
-        print
+        print()
 
 
 def count_contributors_in_range(queryset, users, date_range):

@@ -239,33 +239,33 @@ def sprint_timeline(bugs, sprint):
 
     timeline.sort(key=lambda item: item[0])
     for mem in timeline:
-        print '%s: %s: %s' % (mem[0], mem[1], mem[2])
-        print '    %s -> %s' % (mem[3] if mem[3] else 'unassigned', mem[4])
-        print wrap(mem[5])
-        print ''
+        print('%s: %s: %s' % (mem[0], mem[1], mem[2]))
+        print('    %s -> %s' % (mem[3] if mem[3] else 'unassigned', mem[4]))
+        print(wrap(mem[5]))
+        print('')
 
 
 def print_header(text):
-    print text
-    print '=' * len(text)
-    print ''
+    print(text)
+    print('=' * len(text))
+    print('')
 
 
 def main(argv):
     # logging.basicConfig(level=logging.DEBUG)
 
     if not argv:
-        print USAGE
-        print 'Error: Must specify the sprint to report on. e.g. 2012.19'
+        print(USAGE)
+        print('Error: Must specify the sprint to report on. e.g. 2012.19')
         return 1
 
     sprint = argv[0]
 
-    print HEADER
+    print(HEADER)
 
-    print ''
-    print 'Working on %s' % sprint
-    print ''
+    print('')
+    print('Working on %s' % sprint)
+    print('')
 
     bugzilla = BugzillaAPI(
         BZ_URL,

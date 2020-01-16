@@ -13,8 +13,8 @@ from kitsune.forums.models import Post
 def run():
     two_weeks_ago = datetime.now() - timedelta(days=24)
 
-    print 'Data since {0}'.format(two_weeks_ago)
-    print ''
+    print('Data since {0}'.format(two_weeks_ago))
+    print('')
 
     query = Post.objects.filter(created__gte=two_weeks_ago)
 
@@ -33,14 +33,14 @@ def run():
     top_total = 0
 
     for name, count in top_posters:
-        print '{0:>20}: {1}'.format(name, count)
+        print('{0:>20}: {1}'.format(name, count))
         top_total += count
 
-    print ''
-    print 'Total posts:', total_posts
-    print 'Top total:  ', top_total
-    print 'Percent:    ', float(top_total) / float(total_posts)
+    print('')
+    print('Total posts:', total_posts)
+    print('Top total:  ', top_total)
+    print('Percent:    ', float(top_total) / float(total_posts))
 
 
 if __name__ == '__main__':
-    print 'Run with "./manage.py runscript contributor_counts"'
+    print('Run with "./manage.py runscript contributor_counts"')

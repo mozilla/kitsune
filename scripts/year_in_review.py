@@ -391,8 +391,8 @@ def git_stats(year):
             old_changes[2] + total_files
         )
 
-    print 'Total commits:', len(all_commits)
-    print ''
+    print('Total commits:', len(all_commits))
+    print('')
 
     committers = sorted(
         committers.items(), key=lambda item: item[1], reverse=True)
@@ -429,12 +429,12 @@ def main(argv):
     do_json = False
 
     if not argv:
-        print USAGE
-        print 'Error: Must specify the year. e.g. 2012'
+        print(USAGE)
+        print('Error: Must specify the year. e.g. 2012')
         return 1
 
     if '--json' in argv:
-        print '>>> OMGWTFBBQ! You want it in JSON!'
+        print('>>> OMGWTFBBQ! You want it in JSON!')
         do_json = True
         argv.remove('--json')
 
@@ -443,25 +443,25 @@ def main(argv):
     output = []
     output.append(('Year', year))
 
-    print '>>> Generating bugzilla stats....'
+    print('>>> Generating bugzilla stats....')
     output.extend(bugzilla_stats(year))
 
-    print '>>> Generating git stats....'
+    print('>>> Generating git stats....')
     output.extend(git_stats(year))
 
-    print ''
+    print('')
 
     if do_json:
-        print json.dumps(output, indent=2)
+        print(json.dumps(output, indent=2))
 
     else:
         for mem in output:
-            print ''
-            print mem[0]
-            print '=' * len(mem[0])
-            print ''
+            print('')
+            print(mem[0])
+            print('=' * len(mem[0]))
+            print('')
             # FIXME - this is gross
-            print json.dumps(mem[1], indent=2)
+            print(json.dumps(mem[1], indent=2))
 
 
 if __name__ == '__main__':

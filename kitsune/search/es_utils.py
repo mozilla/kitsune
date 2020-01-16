@@ -710,7 +710,7 @@ def es_status_cmd(checkindex=False, log=log):
                             missing_docs += 1
 
         if missing_docs:
-            print 'There were %d missing_docs' % missing_docs
+            print('There were %d missing_docs' % missing_docs)
 
 
 def es_search_cmd(query, pages=1, log=log):
