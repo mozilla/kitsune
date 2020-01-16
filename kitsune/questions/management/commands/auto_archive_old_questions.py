@@ -65,8 +65,8 @@ class Command(BaseCommand):
                         # For each document, update the data and stick it
                         # back in the index.
                         for doc in es_docs:
-                            doc[u'question_is_archived'] = True
-                            doc[u'indexed_on'] = int(time.time())
+                            doc['question_is_archived'] = True
+                            doc['indexed_on'] = int(time.time())
                             documents.append(doc)
 
                         QuestionMappingType.bulk_index(documents)

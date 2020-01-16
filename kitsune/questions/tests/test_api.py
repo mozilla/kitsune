@@ -60,8 +60,8 @@ class TestQuestionSerializerDeserialization(TestCase):
             context=self.context, data=self.data)
         ok_(not serializer.is_valid())
         eq_(serializer.errors, {
-            'product': [u'This field is required.'],
-            'topic': [u'A product must be specified to select a topic.'],
+            'product': ['This field is required.'],
+            'topic': ['A product must be specified to select a topic.'],
         })
 
     def test_topic_required(self):
@@ -70,7 +70,7 @@ class TestQuestionSerializerDeserialization(TestCase):
             context=self.context, data=self.data)
         ok_(not serializer.is_valid())
         eq_(serializer.errors, {
-            'topic': [u'This field is required.'],
+            'topic': ['This field is required.'],
         })
 
     def test_topic_disambiguation(self):
@@ -454,7 +454,7 @@ class TestQuestionViewSet(TestCase):
 
     def test_bleaching(self):
         """Tests whether question content is bleached."""
-        q = QuestionFactory(content=u'<unbleached>Cupcakes are the best</unbleached>')
+        q = QuestionFactory(content='<unbleached>Cupcakes are the best</unbleached>')
         url = reverse('question-detail', args=[q.id])
         res = self.client.get(url)
         eq_(res.status_code, 200)
@@ -611,7 +611,7 @@ class TestAnswerViewSet(TestCase):
 
     def test_bleaching(self):
         """Tests whether answer content is bleached."""
-        a = AnswerFactory(content=u'<unbleached>Cupcakes are the best</unbleached>')
+        a = AnswerFactory(content='<unbleached>Cupcakes are the best</unbleached>')
         url = reverse('answer-detail', args=[a.id])
         res = self.client.get(url)
         eq_(res.status_code, 200)

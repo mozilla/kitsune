@@ -97,8 +97,8 @@ def update_question_vote_chunk(data):
             for doc in es_docs:
                 # Note: Need to keep this in sync with
                 # Question.extract_document.
-                num = id_to_num[int(doc[u"id"])]
-                doc[u"question_num_votes_past_week"] = num
+                num = id_to_num[int(doc["id"])]
+                doc["question_num_votes_past_week"] = num
 
                 QuestionMappingType.index(doc, id_=doc["id"])
         except ES_EXCEPTIONS:

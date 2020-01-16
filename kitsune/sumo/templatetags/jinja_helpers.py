@@ -200,7 +200,7 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
     Accepts: [(url, label)]
     """
     if add_default:
-        first_crumb = u"Home"
+        first_crumb = 'Home'
 
         crumbs = [(reverse("home"), _lazy(first_crumb))]
     else:
@@ -277,9 +277,9 @@ def datetimeformat(context, value, format="shortdatetime"):
         # Check if the date is today
         today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
         if convert_value.toordinal() == today:
-            formatted = _lazy(u"Today at %s") % format_time(
-                convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
-            )
+            formatted = _lazy('Today at %s') % format_time(
+                convert_value, format='short', tzinfo=convert_tzinfo,
+                locale=locale)
         else:
             formatted = format_datetime(
                 convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
@@ -363,7 +363,7 @@ def timesince(d, now=None):
 
     """
     if d is None:
-        return u""
+        return ''
     chunks = [
         (
             60 * 60 * 24 * 365,
@@ -402,7 +402,7 @@ def timesince(d, now=None):
     since = delta.days * 24 * 60 * 60 + delta.seconds
     if since <= 0:
         # d is in the future compared to now, stop processing.
-        return u""
+        return ''
     for i, (seconds, name) in enumerate(chunks):
         count = since // seconds
         if count != 0:
@@ -414,13 +414,13 @@ def timesince(d, now=None):
 def label_with_help(f):
     """Print the label tag for a form field, including the help_text
     value as a title attribute."""
-    label = u'<label for="%s" title="%s">%s</label>'
+    label = '<label for="%s" title="%s">%s</label>'
     return jinja2.Markup(label % (f.auto_id, f.help_text, f.label))
 
 
 @library.filter
 def yesno(boolean_value):
-    return jinja2.Markup(_lazy(u"Yes") if boolean_value else _lazy(u"No"))
+    return jinja2.Markup(_lazy('Yes') if boolean_value else _lazy('No'))
 
 
 @library.filter
@@ -458,7 +458,7 @@ def add_utm(url_, campaign, source="notification", medium="email"):
 
 @library.global_function
 def to_unicode(str):
-    return unicode(str)
+    return str(str)
 
 
 @library.global_function
@@ -499,7 +499,7 @@ def f(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return format_string.format(*args, **kwargs)
 
@@ -516,7 +516,7 @@ def fe(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return jinja2.Markup(format_string.format(*args, **kwargs))
 

@@ -20,11 +20,11 @@ class Product(ModelBase):
                               blank=True,
                               max_length=settings.MAX_FILEPATH_LENGTH,
                               # no l10n in admin
-                              help_text=u'Used on the the home page. Must be 484x244.')
+                              help_text='Used on the the home page. Must be 484x244.')
     image_alternate = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
                                         blank=True,
                                         max_length=settings.MAX_FILEPATH_LENGTH,
-                                        help_text=(u'Used everywhere except the home '
+                                        help_text=('Used everywhere except the home '
                                                    'page. Must be 96x96.'))
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
@@ -46,7 +46,7 @@ class Product(ModelBase):
         ordering = ['display_order']
 
     def __unicode__(self):
-        return u'%s' % self.title
+        return '%s' % self.title
 
     @property
     def image_url(self):
@@ -92,14 +92,14 @@ class Topic(ModelBase):
     visible = models.BooleanField(default=False)
     # Whether or not this topic is used in the AAQ.
     in_aaq = models.BooleanField(
-        default=False, help_text=_lazy(u'Whether this topic is shown to users in the AAQ or not.'))
+        default=False, help_text=_lazy('Whether this topic is shown to users in the AAQ or not.'))
 
     class Meta(object):
         ordering = ['product', 'display_order']
         unique_together = ('slug', 'product')
 
     def __unicode__(self):
-        return u'[%s] %s' % (self.product.title, self.title)
+        return '[%s] %s' % (self.product.title, self.title)
 
     @property
     def image_url(self):
@@ -167,4 +167,4 @@ class Platform(ModelBase):
     display_order = models.IntegerField()
 
     def __unicode__(self):
-        return u'%s' % self.name
+        return '%s' % self.name

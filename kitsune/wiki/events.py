@@ -21,8 +21,8 @@ log = logging.getLogger("k.wiki.events")
 
 
 def get_diff_for(doc, old_rev, new_rev):
-    fromfile = u"[%s] %s #%s" % (doc.locale, doc.title, old_rev.id)
-    tofile = u"[%s] %s #%s" % (doc.locale, doc.title, new_rev.id)
+    fromfile = "[%s] %s #%s" % (doc.locale, doc.title, old_rev.id)
+    tofile = "[%s] %s #%s" % (doc.locale, doc.title, new_rev.id)
     # difflib expects these to be bytes, not unicode
     fromfile = fromfile.encode("utf8")
     tofile = tofile.encode("utf8")
@@ -37,9 +37,9 @@ def get_diff_for(doc, old_rev, new_rev):
 
     # Join diff parts
     # XXX this is super goofy
-    acc = u""
+    acc = ""
     for d in diff_parts:
-        if isinstance(d, unicode):
+        if isinstance(d, str):
             acc = acc + d
         else:
             acc = acc + d.decode("utf8")
@@ -91,7 +91,7 @@ class EditDocumentEvent(InstanceEvent):
             "Sending edited notification email for document (id=%s)" % document.id
         )
 
-        subject = _lazy(u"{title} was edited by {creator}")
+        subject = _lazy("{title} was edited by {creator}")
         url = reverse(
             "wiki.document_revisions", locale=document.locale, args=[document.slug]
         )
@@ -210,7 +210,7 @@ class ReviewableRevisionInLocaleEvent(
         revision = self.revision
         document = revision.document
         log.debug("Sending ready for review email for revision (id=%s)" % revision.id)
-        subject = _lazy(u"{title} is ready for review ({creator})")
+        subject = _lazy("{title} is ready for review ({creator})")
         url = reverse(
             "wiki.review_revision",
             locale=document.locale,
@@ -250,7 +250,7 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
         document = revision.document
         log.debug("Sending ready notifications for revision (id=%s)" % revision.id)
 
-        subject = _lazy(u"{title} has a revision ready for localization")
+        subject = _lazy("{title} has a revision ready for localization")
 
         url = django_reverse("wiki.translate", args=[document.slug])
 
@@ -322,7 +322,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 url = reverse("wiki.translate", args=[document.slug], locale=locale)
                 c["l10n_url"] = add_utm(url, "wiki-ready-l10n")
 
-                subject = _(u"{title} has a revision ready for " "localization")
+                subject = _("{title} has a revision ready for " "localization")
                 text_template = "wiki/email/ready_for_l10n.ltxt"
                 html_template = "wiki/email/ready_for_l10n.html"
 
@@ -338,7 +338,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 c["reviewer"] = revision.reviewer
 
                 subject = _(
-                    u"{title} ({locale}) has a new approved " "revision ({reviewer})"
+                    "{title} ({locale}) has a new approved " "revision ({reviewer})"
                 )
                 text_template = "wiki/email/approved.ltxt"
                 html_template = "wiki/email/approved.html"

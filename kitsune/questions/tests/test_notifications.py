@@ -29,7 +29,7 @@ from kitsune.users.tests import UserFactory
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
-ANSWER_EMAIL_TO_ANONYMOUS = u"""{replier} commented on a Firefox question on \
+ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on \
 testserver:
 
 {title}
@@ -59,9 +59,9 @@ You might just make someone's day!
 Unsubscribe from these emails:
 https://testserver/{locale}unsubscribe"""
 
-ANSWER_EMAIL = u'Hi {to_user},\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
+ANSWER_EMAIL = 'Hi {to_user},\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
 
-ANSWER_EMAIL_TO_ASKER = u"""Hi {asker},
+ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 
 {replier} has posted an answer to your question on testserver:
 {title}
@@ -77,7 +77,7 @@ questions-reply&utm_medium=email&utm_source=notification\
 
 If this answer solves your problem, please mark it as "solved":"""
 
-SOLUTION_EMAIL_TO_ANONYMOUS = u"""We just wanted to let you know that \
+SOLUTION_EMAIL_TO_ANONYMOUS = """We just wanted to let you know that \
 {replier} has found a solution to a Firefox question that you're following.
 
 The question:
@@ -102,7 +102,7 @@ day!
 Unsubscribe from these emails:
 https://testserver/{locale}unsubscribe/"""
 
-SOLUTION_EMAIL = u'Hi {to_user},\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
+SOLUTION_EMAIL = 'Hi {to_user},\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
 
 
 class NotificationsTests(TestCaseBase):
@@ -301,7 +301,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
 
         eq_([ANON_EMAIL], notification.to)
-        eq_(u'Re: {0}'.format(self.question.title), notification.subject)
+        eq_('Re: {0}'.format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS
@@ -318,7 +318,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
 
         eq_([watcher.email], notification.to)
-        eq_(u'Re: {0}'.format(self.question.title), notification.subject)
+        eq_('Re: {0}'.format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL.format(to_user=display_name(watcher), **self.format_args()))
@@ -331,7 +331,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = mail.outbox[0]
 
         eq_([self.question.creator.email], notification.to)
-        eq_(u'{0} posted an answer to your question "{1}"'
+        eq_('{0} posted an answer to your question "{1}"'
             .format(display_name(self.answer.creator), self.question.title),
             notification.subject)
 

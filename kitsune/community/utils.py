@@ -17,11 +17,9 @@ def top_contributors_questions(
 ):
     """Get the top Support Forum contributors."""
     if use_cache:
-        cache_key = u"{}_{}_{}_{}_{}_{}".format(
-            start, end, locale, product, count, page
-        )
-        cache_key = hashlib.sha1(cache_key.encode("utf-8")).hexdigest()
-        cache_key = "top_contributors_questions_{}".format(cache_key)
+        cache_key = '{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
+        cache_key = hashlib.sha1(cache_key.encode('utf-8')).hexdigest()
+        cache_key = 'top_contributors_questions_{}'.format(cache_key)
         cached = cache.get(cache_key, None)
         if cached:
             return cached
@@ -72,11 +70,9 @@ def top_contributors_l10n(
 ):
     """Get the top l10n contributors for the KB."""
     if use_cache:
-        cache_key = u"{}_{}_{}_{}_{}_{}".format(
-            start, end, locale, product, count, page
-        )
-        cache_key = hashlib.sha1(cache_key.encode("utf-8")).hexdigest()
-        cache_key = u"top_contributors_l10n_{}".format(cache_key)
+        cache_key = '{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
+        cache_key = hashlib.sha1(cache_key.encode('utf-8')).hexdigest()
+        cache_key = 'top_contributors_l10n_{}'.format(cache_key)
         cached = cache.get(cache_key, None)
         if cached:
             return cached

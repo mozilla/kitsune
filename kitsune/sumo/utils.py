@@ -58,7 +58,7 @@ def build_paged_url(request):
 
     qsa = urlencode(items)
 
-    return u'%s?%s' % (base, qsa)
+    return '%s?%s' % (base, qsa)
 
 
 # By Ned Batchelder.

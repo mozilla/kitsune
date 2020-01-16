@@ -60,8 +60,8 @@ def profile_avatar(user, size=200):
     # to gravatar because it can't use it.
     if avatar.startswith("https") and profile and profile.is_fxa_migrated:
         url = avatar
-    elif avatar.startswith('http'):
-        url = url + '&d=%s' % urllib.parse.quote(avatar)
+    elif avatar.startswith("http"):
+        url = url + "&d=%s" % urllib.parse.quote(avatar)
 
     return url
 
@@ -84,17 +84,17 @@ def public_email(email):
 
 def unicode_to_html(text):
     """Turns all unicode into html entities, e.g. &#69; -> E."""
-    return "".join([u"&#%s;" % ord(i) for i in text])
+    return "".join(["&#%s;" % ord(i) for i in text])
 
 
 @library.global_function
 def user_list(users):
     """Turn a list of users into a list of links to their profiles."""
-    link = u'<a class="user secondary-color" href="%s">%s</a>'
-    list = u", ".join(
+    link = '<a class="user secondary-color" href="%s">%s</a>'
+    result_list = ", ".join(
         [link % (escape(profile_url(u)), escape(display_name(u))) for u in users]
     )
-    return Markup(list)
+    return Markup(result_list)
 
 
 @library.global_function
@@ -103,7 +103,7 @@ def private_message(user):
     url = urlparams(reverse("messages.new"), to=user.username)
     msg = _("Private message")
     return Markup(
-        u'<p class="pm"><a class="sumo-button primary-button button-lg" href="{url}">{msg}</a></p>'.format(  # noqa
+        '<p class="pm"><a class="sumo-button primary-button button-lg" href="{url}">{msg}</a></p>'.format(  # noqa
             url=url, msg=msg
         )
     )
@@ -114,11 +114,7 @@ def private_message_link(user):
     """Return a link to private message the user."""
     url = urlparams(reverse("messages.new"), to=user.username)
     msg = _("Private message")
-    return Markup(
-        u'<a href="{url}">{msg}</a>'.format(  # noqa
-            url=url, msg=msg
-        )
-    )
+    return Markup('<a href="{url}">{msg}</a>'.format(url=url, msg=msg))  # noqa
 
 
 @library.global_function

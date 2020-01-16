@@ -14,24 +14,38 @@ from kitsune.sumo.tests import SumoPyQuery as pq
 from kitsune.sumo.tests import attrs_eq, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
-                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
-                                 MEDIUM_SIGNIFICANCE, SIGNIFICANCES,
-                                 TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY,
-                                 TROUBLESHOOTING_CATEGORY)
-from kitsune.wiki.events import (ApproveRevisionInLocaleEvent,
-                                 EditDocumentEvent, ReadyRevisionEvent,
-                                 ReviewableRevisionInLocaleEvent, get_diff_for)
-from kitsune.wiki.models import (Document, HelpfulVote, HelpfulVoteMetadata,
-                                 Revision)
+from kitsune.wiki.config import (
+    ADMINISTRATION_CATEGORY,
+    CANNED_RESPONSES_CATEGORY,
+    CATEGORIES,
+    MEDIUM_SIGNIFICANCE,
+    SIGNIFICANCES,
+    TEMPLATE_TITLE_PREFIX,
+    TEMPLATES_CATEGORY,
+    TROUBLESHOOTING_CATEGORY,
+)
+from kitsune.wiki.events import (
+    ApproveRevisionInLocaleEvent,
+    EditDocumentEvent,
+    ReadyRevisionEvent,
+    ReviewableRevisionInLocaleEvent,
+    get_diff_for,
+)
+from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Revision
 from kitsune.wiki.tasks import send_reviewed_notification
-from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
-                                DraftRevisionFactory, LocaleFactory,
-                                RedirectRevisionFactory, RevisionFactory,
-                                TestCaseBase, TranslatedRevisionFactory,
-                                new_document_data)
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    DraftRevisionFactory,
+    LocaleFactory,
+    RedirectRevisionFactory,
+    RevisionFactory,
+    TestCaseBase,
+    TranslatedRevisionFactory,
+    new_document_data,
+)
 
-READY_FOR_REVIEW_EMAIL_CONTENT = u"""\
+READY_FOR_REVIEW_EMAIL_CONTENT = """\
 %(user)s submitted a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -55,7 +69,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
-DOCUMENT_EDITED_EMAIL_CONTENT = u"""\
+DOCUMENT_EDITED_EMAIL_CONTENT = """\
 %(user)s created a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -79,7 +93,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
-APPROVED_EMAIL_CONTENT = u"""\
+APPROVED_EMAIL_CONTENT = """\
 %(reviewer)s has approved the revision to the document %(document_title)s.
 
 To view the updated document, click the following link, or paste it into \
@@ -863,7 +877,7 @@ class NewRevisionTests(TestCaseBase):
         eq_(2, len(mail.outbox))
         attrs_eq(
             mail.outbox[0],
-            subject=u"%s is ready for review (%s)" % (self.d.title, new_rev.creator),
+            subject="%s is ready for review (%s)" % (self.d.title, new_rev.creator),
             body=READY_FOR_REVIEW_EMAIL_CONTENT
             % {
                 "user": self.user.profile.name,
@@ -879,7 +893,7 @@ class NewRevisionTests(TestCaseBase):
         )
         attrs_eq(
             mail.outbox[1],
-            subject=u"%s was edited by %s" % (self.d.title, new_rev.creator),
+            subject="%s was edited by %s" % (self.d.title, new_rev.creator),
             body=DOCUMENT_EDITED_EMAIL_CONTENT
             % {
                 "user": self.user.profile.name,
@@ -1546,7 +1560,7 @@ class ReviewRevisionTests(TestCaseBase):
         attrs_eq(
             mail.outbox[0],
             subject=(
-                u"{0} ({1}) has a new approved revision ({2})".format(
+                "{0} ({1}) has a new approved revision ({2})".format(
                     self.document.title, self.document.locale, self.user.username
                 )
             ),
@@ -2601,10 +2615,11 @@ class HelpfulVoteTests(TestCaseBase):
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         eq_(200, response.status_code)
-        eq_('{"message": "Great to hear &mdash; thanks for the feedback!'
+        eq_(
+            '{"message": "Great to hear &mdash; thanks for the feedback!'
             ' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
             response.content,
-            )
+        )
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())
