@@ -172,7 +172,7 @@ class ForParser(object):
             # Why lxml couldn't just have text nodes, I'll never understand.
             # Text nodes that come other than first are automatically stuffed
             # into the tail attrs of the preceding elements by html5lib.
-            if top_level_elements and isinstance(top_level_elements[0], basestring):
+            if top_level_elements and isinstance(top_level_elements[0], str):
                 container.text = top_level_elements.pop(0)
 
             container.extend(top_level_elements)
