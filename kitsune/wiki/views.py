@@ -459,7 +459,7 @@ def edit_document(request, document_slug, revision_id=None):
 
                 topics = []
                 for t in post_data.getlist('topics'):
-                    topics.append(long(t))
+                    topics.append(int(t))
                 post_data.setlist('topics', topics)
 
                 doc_form = DocumentForm(
