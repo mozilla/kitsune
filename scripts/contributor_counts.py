@@ -26,7 +26,7 @@ def run():
         username = post.author.username
         posts_by_author[username] = posts_by_author[username] + 1
 
-    posts_by_author = sorted(posts_by_author.items(), key=lambda mem: -mem[1])
+    posts_by_author = sorted(list(posts_by_author.items()), key=lambda mem: -mem[1])
 
 
     top_posters = posts_by_author[:10]

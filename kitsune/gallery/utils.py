@@ -13,7 +13,7 @@ from kitsune.upload.tasks import _scale_dimensions
 
 def create_image(files, user):
     """Given an uploaded file, a user, and other data, it creates an Image"""
-    up_file = files.values()[0]
+    up_file = list(files.values())[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     try:

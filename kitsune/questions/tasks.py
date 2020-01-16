@@ -104,7 +104,7 @@ def update_question_vote_chunk(data):
             # Something happened with ES, so let's push index updating
             # into an index_task which retries when it fails because
             # of ES issues.
-            index_task.delay(QuestionMappingType, id_to_num.keys())
+            index_task.delay(QuestionMappingType, list(id_to_num.keys()))
 
 
 @task(rate_limit='4/m')

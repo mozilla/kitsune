@@ -70,7 +70,7 @@ def count_out_of_date():
         r'index\.analysis\.filter\.synonyms-.*\.synonyms\.\d+')
 
     synonyms_in_es = set()
-    for key, val in settings.items():
+    for key, val in list(settings.items()):
         if synonym_key_re.match(key):
             synonyms_in_es.add(val)
 

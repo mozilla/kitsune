@@ -35,11 +35,11 @@ def write_index(group):
 
 
 def all_read_indexes():
-    return [read_index(group) for group in settings.ES_INDEXES.keys()]
+    return [read_index(group) for group in list(settings.ES_INDEXES.keys())]
 
 
 def all_write_indexes():
-    return [write_index(group) for group in settings.ES_WRITE_INDEXES.keys()]
+    return [write_index(group) for group in list(settings.ES_WRITE_INDEXES.keys())]
 
 
 # The number of things in a chunk. This is for parallel indexing via
@@ -206,11 +206,11 @@ def get_indexes(all_indexes=False):
     indexes = status['indices']
 
     if not all_indexes:
-        indexes = dict((k, v) for k, v in indexes.items()
+        indexes = dict((k, v) for k, v in list(indexes.items())
                        if k.startswith(settings.ES_INDEX_PREFIX))
 
     return [(name, value['docs']['num_docs'])
-            for name, value in indexes.items()]
+            for name, value in list(indexes.items())]
 
 
 def get_doctype_stats(index):
@@ -261,7 +261,7 @@ def get_documents(cls, ids):
     """
     # FIXME: We pull the field names from the mapping, but I'm not
     # sure if this works in all cases or not and it's kind of hacky.
-    fields = cls.get_mapping()['properties'].keys()
+    fields = list(cls.get_mapping()['properties'].keys())
     ret = cls.search().filter(id__in=ids).values_dict(*fields)[:len(ids)]
     return cls.reshape(ret)
 
@@ -297,7 +297,7 @@ def get_analysis():
         'tr': 'Turkish',
     }
 
-    for locale, language in snowball_langs.items():
+    for locale, language in list(snowball_langs.items()):
         analyzer_name = es_analyzer_for_locale(locale, synonyms=False)
         analyzers[analyzer_name] = {
             'type': 'snowball',
@@ -573,7 +573,7 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
 
     finally:
         # Re-enable automatic refreshing
-        for index, old_refresh in old_refreshes.items():
+        for index, old_refresh in list(old_refreshes.items()):
             es.indices.put_settings(
                 index=index,
                 body={'index': {'refresh_interval': old_refresh}})
@@ -668,7 +668,7 @@ def es_status_cmd(checkindex=False, log=log):
         log.info('  No read indexes exist. (%s)', read_index_names)
     else:
         log.info('  Read indexes:')
-        for index, stats in read_doctype_stats.items():
+        for index, stats in list(read_doctype_stats.items()):
             if stats is None:
                 log.info('    %s does not exist', index)
             else:
@@ -684,7 +684,7 @@ def es_status_cmd(checkindex=False, log=log):
             log.info('  No write indexes exist. (%s)', write_index_names)
         else:
             log.info('  Write indexes:')
-            for index, stats in write_doctype_stats.items():
+            for index, stats in list(write_doctype_stats.items()):
                 if stats is None:
                     log.info('    %s does not exist', index)
                 else:
@@ -775,9 +775,9 @@ def es_verify_cmd(log=log):
         log.info('Verifying mappings for index: {index}'.format(index=index))
 
         start_time = time.time()
-        for cls_name, mapping in get_mappings(index).items():
+        for cls_name, mapping in list(get_mappings(index).items()):
             mapping = mapping['properties']
-            for key, val in mapping.items():
+            for key, val in list(mapping.items()):
                 if key not in merged_mapping:
                     merged_mapping[key] = (val, [cls_name])
                     continue
@@ -831,7 +831,7 @@ def es_query_with_analyzer(query, locale):
     for mt in get_mapping_types():
         localized_fields.extend(mt.get_localized_fields())
 
-    for k, v in query.items():
+    for k, v in list(query.items()):
         field, action = k.split('__')
         if field in localized_fields:
             new_query[k + '_analyzer'] = (v, analyzer)

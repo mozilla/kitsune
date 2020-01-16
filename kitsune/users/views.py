@@ -191,7 +191,7 @@ def edit_settings(request):
         return render(request, template, {'form': form})
 
     # Pass the current user's settings as the initial values.
-    values = request.user.settings.values()
+    values = list(request.user.settings.values())
     initial = dict()
     for val in values:
         try:

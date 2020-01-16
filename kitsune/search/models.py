@@ -25,7 +25,7 @@ _search_mapping_types = {}
 def get_mapping_types(mapping_types=None):
     """Returns a list of MappingTypes"""
     if mapping_types is None:
-        values = _search_mapping_types.values()
+        values = list(_search_mapping_types.values())
     else:
         values = [_search_mapping_types[name] for name in mapping_types]
 
@@ -148,7 +148,7 @@ class SearchMappingType(MappingType, Indexable):
         # cheaper to do it in-place.
         return [
             dict((key, (val if key in list_keys else val[0]))
-                 for key, val in result.items())
+                 for key, val in list(result.items()))
             for result in results
         ]
 

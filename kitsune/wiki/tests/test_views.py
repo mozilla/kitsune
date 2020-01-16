@@ -530,7 +530,7 @@ class VoteTests(TestCase):
         eq_('survey', vote_meta[0].key)
 
         survey = json.loads(vote_meta[0].value)
-        eq_(3, len(survey.keys()))
+        eq_(3, len(list(survey.keys())))
         assert 'confusing' in survey
         assert 'too-long' in survey
         eq_('lorem ipsum dolor', survey['comment'])

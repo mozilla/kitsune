@@ -14,7 +14,7 @@ class RawJsonFactory(factory.Factory):
         def model(**kwargs):
             # Unpack keys like foo__bar=1 into {'foo': {'bar': 1}}
             data = {}
-            for key_path, val in kwargs.items():
+            for key_path, val in list(kwargs.items()):
                 keys = key_path.split('__')
                 cursor = data
                 for key in keys[:-1]:

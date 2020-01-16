@@ -63,7 +63,7 @@ class SettingsForm(forms.Form):
     )
 
     def save_for_user(self, user):
-        for field in self.fields.keys():
+        for field in list(self.fields.keys()):
             value = str(self.cleaned_data[field])
             setting = user.settings.filter(name=field)
             update_count = setting.update(value=value)
@@ -108,7 +108,7 @@ class ProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
 
-        for field in self.fields.values():
+        for field in list(self.fields.values()):
             if isinstance(field, forms.CharField):
                 field.empty_value = ""
 

@@ -180,7 +180,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         question.add_metadata(ff_version='3.6.3', os='Linux')
 
         """
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             QuestionMetaData.objects.create(question=self, name=key, value=value)
         self._metadata = None
 
@@ -924,7 +924,7 @@ class QuestionVisits(ModelBase):
             # them out at 5 minutes and the GA calls take forever.
             close_old_connections()
 
-            for question_id, visits in counts.iteritems():
+            for question_id, visits in counts.items():
                 # We are trying to minimize db calls here. Let's try to update
                 # first, that will be the common case.
                 num = cls.objects.filter(question_id=question_id).update(visits=visits)
@@ -1434,7 +1434,7 @@ def _has_beta(version, dev_releases):
     dev_releases dict. If you pass '6.0', it returns False.
     """
     return version in [
-        re.search(r"(\d+\.)+\d+", s).group(0) for s in dev_releases.keys()
+        re.search(r"(\d+\.)+\d+", s).group(0) for s in list(dev_releases.keys())
     ]
 
 

@@ -3,13 +3,14 @@ from datetime import date, timedelta
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
 
+from kitsune.products.models import Topic
+from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.questions.models import Answer, Question
-from kitsune.questions.events import QuestionReplyEvent
 from kitsune.upload.models import ImageAttachment
-from kitsune.products.models import Topic
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy(u"URL of affected site")
@@ -224,7 +225,7 @@ class EditQuestionForm(forms.ModelForm):
         def metadata_filter(x):
             return x not in non_metadata_fields
 
-        return list(filter(metadata_filter, self.fields.keys()))
+        return list(filter(metadata_filter, list(self.fields.keys())))
 
     @property
     def cleaned_metadata(self):
@@ -245,13 +246,12 @@ class EditQuestionForm(forms.ModelForm):
 
             if parsed:
                 # Clean out unwanted garbage preferences.
-                if "modifiedPreferences" in parsed and isinstance(
-                    parsed["modifiedPreferences"], dict
-                ):
-                    for pref in parsed["modifiedPreferences"].keys():
-                        if pref.startswith("print.macosx.pagesetup"):
-                            del parsed["modifiedPreferences"][pref]
-                    clean["troubleshooting"] = json.dumps(parsed)
+                if ('modifiedPreferences' in parsed and
+                        isinstance(parsed['modifiedPreferences'], dict)):
+                    for pref in list(parsed['modifiedPreferences'].keys()):
+                        if pref.startswith('print.macosx.pagesetup'):
+                            del parsed['modifiedPreferences'][pref]
+                    clean['troubleshooting'] = json.dumps(parsed)
 
                 # Override ff_version with the version in troubleshooting
                 # which is more precise for the dot releases.

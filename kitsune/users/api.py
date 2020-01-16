@@ -258,7 +258,7 @@ class ProfileViewSet(
         }
 
         # Get all the profiles mentioned in the above.
-        profiles = Profile.objects.filter(user__username__in=username_to_count.keys())
+        profiles = Profile.objects.filter(user__username__in=list(username_to_count.keys()))
         result = ProfileFKSerializer(instance=profiles, many=True).data
 
         # Pair up the profiles and the solution counts.
