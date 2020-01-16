@@ -1,12 +1,13 @@
 import hashlib
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 from django.utils.encoding import force_str
 from django.utils.translation import ugettext as _
-
 from django_jinja import library
-from jinja2 import escape, Markup
+from jinja2 import Markup, escape
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -59,8 +60,8 @@ def profile_avatar(user, size=200):
     # to gravatar because it can't use it.
     if avatar.startswith("https") and profile and profile.is_fxa_migrated:
         url = avatar
-    elif avatar.startswith("http"):
-        url = url + "&d=%s" % urllib.quote(avatar)
+    elif avatar.startswith('http'):
+        url = url + '&d=%s' % urllib.parse.quote(avatar)
 
     return url
 
