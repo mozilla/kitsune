@@ -221,7 +221,7 @@ def twitter_post(request):
         result = request.twitter.api.update_status(
             status=content,
             in_reply_to_status_id=reply_to_id)
-    except (TwythonError, TwythonAuthError), e:
+    except (TwythonError, TwythonAuthError) as e:
         # L10n: {message} is an error coming from our twitter api library
         return HttpResponseBadRequest(
             _('An error occured: {message}').format(message=e))
@@ -306,7 +306,7 @@ def hide_tweet(request):
     try:
         tweet.hidden = True
         tweet.save(force_update=True)
-    except Exception, e:
+    except Exception as e:
         return HttpResponseServerError(
             _('An error occured: {message}').format(message=e))
 
