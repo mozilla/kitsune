@@ -81,6 +81,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='topic',
-            unique_together=set([('slug', 'product')]),
+            unique_together={('slug', 'product')},
         ),
     ]

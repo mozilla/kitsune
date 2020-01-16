@@ -93,7 +93,7 @@ class NewThreadEvent(InstanceEvent):
 
 
 class _NewActivityInLocaleEvent(Event):
-    filters = set(['locale'])
+    filters = {'locale'}
 
     def __init__(self, locale):
         super(_NewActivityInLocaleEvent, self).__init__()
