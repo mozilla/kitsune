@@ -1,5 +1,7 @@
 venv
 .git
+.vscode*
+.devcontainer*
 *.pyc
 *.poc
 /static
