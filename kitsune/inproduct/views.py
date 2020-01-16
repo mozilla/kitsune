@@ -56,7 +56,7 @@ def redirect(request, product, version, platform, locale, topic=None):
                 score += 1 << i
         return score, redirect
 
-    ordered = map(ordinal, redirects)
+    ordered = list(map(ordinal, redirects))
     ordered.sort(key=lambda x: x[0], reverse=True)
 
     # A redirect matches if all its fields match. A field matches if it is
