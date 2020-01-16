@@ -58,7 +58,7 @@ def main(argv):
             else:
                 app_string_count['vendor/' + path[2]] += 1
 
-    for key, val in sorted(app_string_count.items(), key=lambda item: item[1]):
+    for key, val in sorted(list(app_string_count.items()), key=lambda item: item[1]):
         print('{0:22}: {1}'.format(key, val))
 
 

@@ -139,7 +139,7 @@ print('Number of snitches: {}'.format(len(SNITCHES)))
 
 if input('Proceed? (y/n) ').lower() == 'y':
     print('Generating snitches:')
-    for name, properties in SNITCHES.items():
+    for name, properties in list(SNITCHES.items()):
         properties['name'] = name
         if ENVIRONMENT:
             properties['name'] = '[{}] {}'.format(ENVIRONMENT, name)

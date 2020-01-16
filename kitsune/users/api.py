@@ -237,7 +237,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             user_data['password'],
             user_data['email'])
         p = u.profile
-        for key, val in validated_data.items():
+        for key, val in list(validated_data.items()):
             setattr(p, key, val)
         p.save()
         return p
@@ -245,7 +245,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if 'user' in validated_data:
             user_data = validated_data.pop('user')
-            for key, val in user_data.items():
+            for key, val in list(user_data.items()):
                 setattr(instance.user, key, val)
             instance.user.save()
         return super(ProfileSerializer, self).update(instance, validated_data)
@@ -376,7 +376,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         username_to_count = {u['creator__username']: u['creator__count'] for u in raw_counts}
 
         # Get all the profiles mentioned in the above.
-        profiles = Profile.objects.filter(user__username__in=username_to_count.keys())
+        profiles = Profile.objects.filter(user__username__in=list(username_to_count.keys()))
         result = ProfileFKSerializer(instance=profiles, many=True).data
 
         # Pair up the profiles and the solution counts.

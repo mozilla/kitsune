@@ -114,10 +114,10 @@ class TestMappings(unittest.TestCase):
         for index in es_utils.all_read_indexes():
             merged_mapping = {}
 
-            for cls_name, mapping in es_utils.get_mappings(index).items():
+            for cls_name, mapping in list(es_utils.get_mappings(index).items()):
                 mapping = mapping['properties']
 
-                for key, val in mapping.items():
+                for key, val in list(mapping.items()):
                     if key not in merged_mapping:
                         merged_mapping[key] = (val, [cls_name])
                         continue
@@ -159,7 +159,7 @@ class TestAnalyzers(ElasticTestCase):
         }
 
         self.docs = {}
-        for locale, data in self.locale_data.items():
+        for locale, data in list(self.locale_data.items()):
             d = DocumentFactory(locale=locale)
             ApprovedRevisionFactory(document=d, content=data['content'])
             self.locale_data[locale]['doc'] = d
@@ -169,7 +169,7 @@ class TestAnalyzers(ElasticTestCase):
     def test_analyzer_choices(self):
         """Check that the indexer picked the right analyzer."""
 
-        ids = [d.id for d in self.docs.values()]
+        ids = [d.id for d in list(self.docs.values())]
         docs = es_utils.get_documents(DocumentMappingType, ids)
         for doc in docs:
             locale = doc['locale']

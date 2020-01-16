@@ -153,7 +153,7 @@ def monitor(request):
     # Check memcached.
     memcache_results = []
     try:
-        for cache_name, cache_props in settings.CACHES.items():
+        for cache_name, cache_props in list(settings.CACHES.items()):
             result = True
             backend = cache_props['BACKEND']
             location = cache_props['LOCATION']
@@ -281,7 +281,7 @@ def monitor(request):
     status_code = 200
 
     status_summary = {}
-    for component, output in status.items():
+    for component, output in list(status.items()):
         if ERROR in [item[0] for item in output]:
             status_code = 500
             status_summary[component] = False

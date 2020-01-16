@@ -148,7 +148,7 @@ class BugzillaAPI(xmlrpc.client.ServerProxy):
         except xmlrpc.client.Fault:
             log.exception('Problem getting comments for bug ids: %s', bug_ids)
             return {}
-        return dict((int(bid), cids) for bid, cids in comments.iteritems())
+        return dict((int(bid), cids) for bid, cids in comments.items())
 
 
 def wrap(text, indent='    '):

@@ -129,7 +129,7 @@ class TestCase(OriginalTestCase):
 
 def attrs_eq(received, **expected):
     """Compares received's attributes with expected's kwargs."""
-    for k, v in expected.iteritems():
+    for k, v in expected.items():
         eq_(v, getattr(received, k))
 
 
@@ -246,7 +246,7 @@ class set_waffle_flag(object):
         if inspect.isclass(func_or_class):
             # If func_or_class is a class, decorate all of its methods
             # that start with 'test'.
-            for attr in func_or_class.__dict__.keys():
+            for attr in list(func_or_class.__dict__.keys()):
                 prop = getattr(func_or_class, attr)
                 if attr.startswith('test') and callable(prop):
                     setattr(func_or_class, attr, self.decorate(prop))
@@ -290,7 +290,7 @@ class SumoPyQuery(PyQuery):
     """Extends PyQuery with some niceties to alleviate its bugs"""
     def first(self):
         """:first doesn't work, so this is a meh substitute"""
-        return next(self.items())
+        return next(list(self.items()))
 
 
 def template_used(response, template_name):

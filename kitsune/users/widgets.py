@@ -46,7 +46,7 @@ class MonthYearWidget(Widget):
         else:
             id_ = 'id_%s' % name
 
-        month_choices = MONTHS.items()
+        month_choices = list(MONTHS.items())
         if not (self.required and value):
             month_choices.append(self.none_value)
         month_choices.sort()

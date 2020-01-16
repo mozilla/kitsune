@@ -403,7 +403,7 @@ def edit_settings(request, template):
         return render(request, template, {'form': form})
 
     # Pass the current user's settings as the initial values.
-    values = request.user.settings.values()
+    values = list(request.user.settings.values())
     initial = dict()
     for v in values:
         try:

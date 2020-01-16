@@ -66,7 +66,7 @@ class WikiDocumentVisits(ModelBase):
                 [period])
 
             # Now we create them again with fresh data.
-            for doc_id, visits in counts.iteritems():
+            for doc_id, visits in counts.items():
                 cls.objects.create(document=Document(pk=doc_id), visits=visits,
                                    period=period)
         else:

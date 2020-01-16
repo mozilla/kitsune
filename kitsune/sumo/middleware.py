@@ -91,7 +91,7 @@ class LocaleURLMiddleware(object):
             prefixer.locale = ''
             new_path = prefixer.fix(prefixer.shortened_path)
             query = dict((smart_str(k), v) for
-                         k, v in request.GET.iteritems() if k != 'lang')
+                         k, v in request.GET.items() if k != 'lang')
 
             # 'lang' is only used on the language selection page. If this is
             # present it is safe to set language preference for the current

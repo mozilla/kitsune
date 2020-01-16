@@ -491,9 +491,9 @@ products = OrderedDict([
 
 def add_backtrack_keys(products):
     """Insert 'key' keys so we can go from product or category back to key."""
-    for p_k, p_v in products.iteritems():
+    for p_k, p_v in products.items():
         p_v['key'] = p_k
-        for c_k, c_v in p_v['categories'].iteritems():
+        for c_k, c_v in p_v['categories'].items():
             c_v['key'] = c_k
 
 
