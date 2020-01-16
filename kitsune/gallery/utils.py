@@ -26,7 +26,7 @@ def create_image(files, user):
 
     # Async uploads fallback to these defaults.
     image.title = get_draft_title(user)
-    image.description = u'Autosaved draft.'
+    image.description = 'Autosaved draft.'
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
     (up_file, is_animated) = _image_to_png(up_file)
@@ -64,5 +64,5 @@ def check_media_permissions(media, user, perm_type):
 
 
 def get_draft_title(user):
-    return u'Draft for user %s. Created at: %s' % (user.username,
+    return 'Draft for user %s. Created at: %s' % (user.username,
                                                    datetime.now())

@@ -161,7 +161,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # something went terribly wrong. Return None
         if not fxa_uid:
-            log.warning(u'Failed to get Firefox Account UID.')
+            log.warning('Failed to get Firefox Account UID.')
             return users
 
         # A existing user is attempting to connect a Firefox Account to the SUMO profile
@@ -231,7 +231,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # unless we have a superuser
         if user.email != email and not user.is_staff:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
-                msg = _(u'The email used with this Firefox Account is already '
+                msg = _('The email used with this Firefox Account is already '
                         'linked in another profile.')
                 messages.error(self.request, msg)
                 return None

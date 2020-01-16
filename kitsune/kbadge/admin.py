@@ -10,7 +10,7 @@ from kitsune.kbadge.models import Badge, Award
 
 
 def show_unicode(obj):
-    return unicode(obj)
+    return str(obj)
 
 
 show_unicode.short_description = "Display"

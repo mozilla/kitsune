@@ -16,7 +16,7 @@ class TestSynonymModel(TestCase):
 
     def test_serialize(self):
         syn = SynonymFactory(from_words="foo", to_words="bar")
-        eq_("foo => bar", unicode(syn))
+        eq_("foo => bar", str(syn))
 
 
 class TestFilterGenerator(TestCase):

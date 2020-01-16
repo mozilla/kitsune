@@ -75,8 +75,8 @@ class SimpleSyntaxTestCase(TestCase):
         p = WikiParser()
         doc = pq(p.parse('{key Cmd+Shift+Q}'))
         eq_(1, len(doc('p')))
-        eq_(u'<span class="key">Cmd</span> + <span class="key">Shift</span>'
-            u' + <span class="key">Q</span>', doc.html().replace('\n', ''))
+        eq_('<span class="key">Cmd</span> + <span class="key">Shift</span>'
+            ' + <span class="key">Q</span>', doc.html().replace('\n', ''))
 
     def test_template_inline(self):
         """Inline templates are not wrapped in <p>s"""
@@ -319,10 +319,10 @@ class TestWikiTemplate(TestCase):
         text = '{button start {for mac}mac{/for}{for win}win{/for} rest}'
         p = WikiParser()
         content = p.parse(text)
-        eq_(u'<p><span class="button">start '
-            u'<span class="for" data-for="mac">mac</span>'
-            u'<span class="for" data-for="win">win</span> '
-            u'rest</span>\n</p>', content)
+        eq_('<p><span class="button">start '
+            '<span class="for" data-for="mac">mac</span>'
+            '<span class="for" data-for="win">win</span> '
+            'rest</span>\n</p>', content)
 
     def test_button_image_for_nesting(self):
         """You can nest [[Image:]] inside {for} inside {button}."""
@@ -434,14 +434,14 @@ class TestWikiVideo(TestCase):
         # ridiculous and should be fixed. See bug #892610.
         assert doc('video').html() in [
             # This was the original expected test output.
-            (u'<source src="{0}" '
-             u'type="video/webm"><source src="{1}" type="video/ogg"/>'
-             u'</source>'.format(v.webm.url, v.ogv.url)),
+            ('<source src="{0}" '
+             'type="video/webm"><source src="{1}" type="video/ogg"/>'
+             '</source>'.format(v.webm.url, v.ogv.url)),
 
             # This is the version that Mike and I get.
-            (u'\n          <source src="{0}" type="video/webm">'
-             u'\n          <source src="{1}" type="video/ogg">'
-             u'\n      </source></source>'.format(v.webm.url, v.ogv.url))]
+            ('\n          <source src="{0}" type="video/webm">'
+             '\n          <source src="{1}" type="video/ogg">'
+             '\n      </source></source>'.format(v.webm.url, v.ogv.url))]
 
         eq_(1, len(doc('video')))
         eq_(2, len(doc('source')))
@@ -588,7 +588,7 @@ class ForWikiTests(TestCase):
 
     def test_unicode(self):
         """Make sure non-ASCII chars survive being wrapped in a for."""
-        french = u'Vous parl\u00e9 Fran\u00e7ais'
+        french = 'Vous parl\u00e9 Fran\u00e7ais'
         parsed_eq('<p><span class="for">' + french + '</span></p>',
                   '{for}' + french + '{/for}')
 
@@ -708,7 +708,7 @@ class ForParserTests(TestCase):
 
     def test_unicode(self):
         """Make sure this all works with non-ASCII chars."""
-        html = u'<for>Vous parl\u00e9 Fran\u00e7ais</for>'
+        html = '<for>Vous parl\u00e9 Fran\u00e7ais</for>'
         balanced_eq(html, html)
 
     def test_div(self):
@@ -891,10 +891,10 @@ class WhatLinksHereTests(TestCase):
     def test_unicode(self):
         """Unicode is hard. Test that."""
         # \u03C0 is pi and \u2764 is a heart symbol.
-        d1 = DocumentFactory(title=u'\u03C0', slug='pi')
-        ApprovedRevisionFactory(document=d1, content=u'I \u2764 \u03C0')
-        d2 = DocumentFactory(title=u'\u2764', slug='heart')
-        ApprovedRevisionFactory(document=d2, content=u'What do you think about [[\u03C0]]?')
+        d1 = DocumentFactory(title='\u03C0', slug='pi')
+        ApprovedRevisionFactory(document=d1, content='I \u2764 \u03C0')
+        d2 = DocumentFactory(title='\u2764', slug='heart')
+        ApprovedRevisionFactory(document=d2, content='What do you think about [[\u03C0]]?')
 
         eq_(len(d1.links_to()), 1)
         eq_(len(d1.links_from()), 0)

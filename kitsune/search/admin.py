@@ -139,25 +139,25 @@ def search(request):
         try:
             return handle_reset(request)
         except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
 
     if 'reindex' in request.POST:
         try:
             return handle_reindex(request)
         except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
 
     if 'recreate_index' in request.POST:
         try:
             return handle_recreate_index(request)
         except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
 
     if 'delete_index' in request.POST:
         try:
             return handle_delete(request)
         except DeleteError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
         except ES_EXCEPTIONS as e:
             error_messages.append('Error: {0}'.format(repr(e)))
 
@@ -350,7 +350,7 @@ def synonym_editor(request):
     # If synonyms_text is not None, it came from POST, and there were
     # errors. It shouldn't be modified, so the error messages make sense.
     if synonyms_text is None:
-        synonyms_text = '\n'.join(unicode(s) for s in all_synonyms)
+        synonyms_text = '\n'.join(str(s) for s in all_synonyms)
 
     synonym_add_count, synonym_remove_count = synonym_utils.count_out_of_date()
 

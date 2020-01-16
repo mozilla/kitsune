@@ -74,7 +74,7 @@ def count_out_of_date():
         if synonym_key_re.match(key):
             synonyms_in_es.add(val)
 
-    synonyms_in_db = set(unicode(s) for s in Synonym.objects.all())
+    synonyms_in_db = set(str(s) for s in Synonym.objects.all())
 
     synonyms_to_add = synonyms_in_db - synonyms_in_es
     synonyms_to_remove = synonyms_in_es - synonyms_in_db

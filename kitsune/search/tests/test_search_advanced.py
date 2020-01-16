@@ -61,8 +61,8 @@ class AdvancedSearchTests(ElasticTestCase):
         eq_(response['Content-Type'], 'application/json')
 
     def test_search_products(self):
-        p = ProductFactory(title=u'Product One', slug='product')
-        doc = DocumentFactory(title=u'cookies', locale='en-US', category=10, products=[p])
+        p = ProductFactory(title='Product One', slug='product')
+        doc = DocumentFactory(title='cookies', locale='en-US', category=10, products=[p])
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
@@ -76,9 +76,9 @@ class AdvancedSearchTests(ElasticTestCase):
         assert 'Product One' in response.content
 
     def test_search_multiple_products(self):
-        p1 = ProductFactory(title=u'Product One', slug='product-one', display_order=1)
-        p2 = ProductFactory(title=u'Product Two', slug='product-two', display_order=2)
-        doc1 = DocumentFactory(title=u'cookies', locale='en-US', category=10, products=[p1, p2])
+        p1 = ProductFactory(title='Product One', slug='product-one', display_order=1)
+        p2 = ProductFactory(title='Product Two', slug='product-two', display_order=2)
+        doc1 = DocumentFactory(title='cookies', locale='en-US', category=10, products=[p1, p2])
         RevisionFactory(document=doc1, is_approved=True)
 
         self.refresh()
@@ -96,8 +96,8 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_wiki_no_query(self):
         """Tests advanced search with no query"""
-        doc = DocumentFactory(locale=u'en-US', category=10)
-        doc.tags.add(u'desktop')
+        doc = DocumentFactory(locale='en-US', category=10)
+        doc.tags.add('desktop')
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
@@ -114,7 +114,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_questions_sortby(self):
         """Tests advanced search for questions with a sortby"""
-        QuestionFactory(title=u'tags tags tags')
+        QuestionFactory(title='tags tags tags')
 
         self.refresh()
 
@@ -168,7 +168,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_questions_num_votes(self):
         """Tests advanced search for questions num_votes filter"""
-        q = QuestionFactory(title=u'tags tags tags')
+        q = QuestionFactory(title='tags tags tags')
 
         # Add two question votes
         QuestionVoteFactory(question=q)
@@ -215,7 +215,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_forums_search(self):
         """This tests whether forum posts show up in searches"""
-        thread1 = ThreadFactory(title=u'crash')
+        thread1 = ThreadFactory(title='crash')
         PostFactory(thread=thread1)
 
         self.refresh()
@@ -235,13 +235,13 @@ class AdvancedSearchTests(ElasticTestCase):
     def test_forums_search_authorized_forums(self):
         """Only authorized people can search certain forums"""
         # Create two threads: one in a restricted forum and one not.
-        forum1 = ForumFactory(name=u'ou812forum')
+        forum1 = ForumFactory(name='ou812forum')
         thread1 = ThreadFactory(forum=forum1)
-        PostFactory(thread=thread1, content=u'audio')
+        PostFactory(thread=thread1, content='audio')
 
-        forum2 = RestrictedForumFactory(name=u'restrictedkeepout')
+        forum2 = RestrictedForumFactory(name='restrictedkeepout')
         thread2 = ThreadFactory(forum=forum2)
-        PostFactory(thread=thread2, content=u'audio restricted')
+        PostFactory(thread=thread2, content='audio restricted')
 
         self.refresh()
 
@@ -298,13 +298,13 @@ class AdvancedSearchTests(ElasticTestCase):
     def test_forums_search_authorized_forums_specifying_forums(self):
         """Only authorized people can search certain forums they specified"""
         # Create two threads: one in a restricted forum and one not.
-        forum1 = ForumFactory(name=u'ou812forum')
+        forum1 = ForumFactory(name='ou812forum')
         thread1 = ThreadFactory(forum=forum1)
-        PostFactory(thread=thread1, content=u'audio')
+        PostFactory(thread=thread1, content='audio')
 
-        forum2 = RestrictedForumFactory(name=u'restrictedkeepout')
+        forum2 = RestrictedForumFactory(name='restrictedkeepout')
         thread2 = ThreadFactory(forum=forum2)
-        PostFactory(thread=thread2, content=u'audio restricted')
+        PostFactory(thread=thread2, content='audio restricted')
 
         self.refresh()
 
@@ -364,7 +364,7 @@ class AdvancedSearchTests(ElasticTestCase):
     def test_forums_thread_created(self):
         """Tests created/created_date filtering for forums"""
         post_created_ds = datetime(2010, 1, 1, 12, 00)
-        thread1 = ThreadFactory(title=u'crash', created=post_created_ds)
+        thread1 = ThreadFactory(title='crash', created=post_created_ds)
         PostFactory(thread=thread1, created=(post_created_ds + timedelta(hours=1)))
 
         self.refresh()
@@ -427,8 +427,8 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_multi_word_tag_search(self):
         """Tests searching for tags with spaces in them"""
-        ques = QuestionFactory(title=u'audio')
-        ques.tags.add(u'Windows 7')
+        ques = QuestionFactory(title='audio')
+        ques.tags.add('Windows 7')
 
         self.refresh()
 
@@ -445,17 +445,17 @@ class AdvancedSearchTests(ElasticTestCase):
     def test_category_invalid(self):
         """Tests passing an invalid category"""
         # wiki and questions
-        ques = QuestionFactory(title=u'q1 audio')
-        ques.tags.add(u'desktop')
+        ques = QuestionFactory(title='q1 audio')
+        ques.tags.add('desktop')
         ans = AnswerFactory(question=ques)
         AnswerVoteFactory(answer=ans, helpful=True)
 
         d1 = DocumentFactory(
-            title=u'd1 audio',
-            locale=u'en-US',
+            title='d1 audio',
+            locale='en-US',
             category=10,
             is_archived=False,
-            tags=[u'desktop'])
+            tags=['desktop'])
         ApprovedRevisionFactory(document=d1)
 
         self.refresh()
@@ -469,16 +469,16 @@ class AdvancedSearchTests(ElasticTestCase):
         created_ds = datetime(2010, 6, 19, 12, 00)
 
         # on 6/19/2010
-        q1 = QuestionFactory(title=u'q1 audio', created=created_ds)
-        q1.tags.add(u'desktop')
+        q1 = QuestionFactory(title='q1 audio', created=created_ds)
+        q1.tags.add('desktop')
         ans = AnswerFactory(question=q1)
         AnswerVoteFactory(answer=ans, helpful=True)
 
         # on 6/21/2010
         q2 = QuestionFactory(
-            title=u'q2 audio',
+            title='q2 audio',
             created=(created_ds + timedelta(days=2)),
-            tags=[u'desktop'])
+            tags=['desktop'])
         ans = AnswerFactory(question=q2)
         AnswerVoteFactory(answer=ans, helpful=True)
 
@@ -559,8 +559,8 @@ class AdvancedSearchTests(ElasticTestCase):
         for name, number in author_vals:
             u = UserFactory(username=name)
             for i in range(number):
-                ques = QuestionFactory(title=u'audio', creator=u)
-                ques.tags.add(u'desktop')
+                ques = QuestionFactory(title='audio', creator=u)
+                ques.tags.add('desktop')
                 ans = AnswerFactory(question=ques)
                 AnswerVoteFactory(answer=ans, helpful=True)
 
@@ -604,11 +604,11 @@ class AdvancedSearchTests(ElasticTestCase):
         t2 = TopicFactory(slug='extant')
         t3 = TopicFactory(slug='tagged')
 
-        doc = DocumentFactory(locale=u'en-US', category=10)
+        doc = DocumentFactory(locale='en-US', category=10)
         doc.topics.add(t2)
         RevisionFactory(document=doc, is_approved=True)
 
-        doc = DocumentFactory(locale=u'en-US', category=10)
+        doc = DocumentFactory(locale='en-US', category=10)
         doc.topics.add(t2)
         doc.topics.add(t3)
         RevisionFactory(document=doc, is_approved=True)
@@ -630,11 +630,11 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_wiki_topics_inherit(self):
         """Translations inherit topics from their parents."""
-        doc = DocumentFactory(locale=u'en-US', category=10)
+        doc = DocumentFactory(locale='en-US', category=10)
         doc.topics.add(TopicFactory(slug='extant'))
         RevisionFactory(document=doc, is_approved=True)
 
-        translated = DocumentFactory(locale=u'es', parent=doc, category=10)
+        translated = DocumentFactory(locale='es', parent=doc, category=10)
         RevisionFactory(document=translated, is_approved=True)
 
         self.refresh()
@@ -678,7 +678,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
         for prod, total in prod_vals:
             for i in range(total):
-                doc = DocumentFactory(locale=u'en-US', category=10)
+                doc = DocumentFactory(locale='en-US', category=10)
                 doc.products.add(prod)
                 RevisionFactory(document=doc, is_approved=True)
 
@@ -693,12 +693,12 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_wiki_products_inherit(self):
         """Translations inherit products from their parents."""
-        doc = DocumentFactory(locale=u'en-US', category=10)
-        p = ProductFactory(title=u'Firefox', slug=u'desktop')
+        doc = DocumentFactory(locale='en-US', category=10)
+        p = ProductFactory(title='Firefox', slug='desktop')
         doc.products.add(p)
         RevisionFactory(document=doc, is_approved=True)
 
-        translated = DocumentFactory(locale=u'fr', parent=doc, category=10)
+        translated = DocumentFactory(locale='fr', parent=doc, category=10)
         RevisionFactory(document=translated, is_approved=True)
 
         self.refresh()
@@ -718,7 +718,7 @@ class AdvancedSearchTests(ElasticTestCase):
         for name, number in author_vals:
             u = UserFactory(username=name)
             for i in range(number):
-                thread1 = ThreadFactory(title=u'audio')
+                thread1 = ThreadFactory(title='audio')
                 PostFactory(thread=thread1, author=u)
 
         self.refresh()
@@ -732,7 +732,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_discussion_filter_sticky(self):
         """Filter for sticky threads."""
-        thread1 = ThreadFactory(title=u'audio', is_locked=True, is_sticky=True)
+        thread1 = ThreadFactory(title='audio', is_locked=True, is_sticky=True)
         PostFactory(thread=thread1)
 
         self.refresh()
@@ -744,7 +744,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_discussion_filter_locked(self):
         """Filter for locked threads."""
-        thread1 = ThreadFactory(title=u'audio', is_locked=True)
+        thread1 = ThreadFactory(title='audio', is_locked=True)
         PostFactory(thread=thread1)
 
         self.refresh()
@@ -756,7 +756,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_discussion_filter_sticky_locked(self):
         """Filter for locked and sticky threads."""
-        thread1 = ThreadFactory(title=u'audio', is_locked=True, is_sticky=True)
+        thread1 = ThreadFactory(title='audio', is_locked=True, is_sticky=True)
         PostFactory(thread=thread1)
 
         self.refresh()
@@ -770,10 +770,10 @@ class AdvancedSearchTests(ElasticTestCase):
         """Filter for updated date."""
         post_updated_ds = datetime(2010, 5, 3, 12, 00)
 
-        thread1 = ThreadFactory(title=u't1 audio')
+        thread1 = ThreadFactory(title='t1 audio')
         PostFactory(thread=thread1, created=post_updated_ds)
 
-        thread2 = ThreadFactory(title=u't2 audio')
+        thread2 = ThreadFactory(title='t2 audio')
         PostFactory(thread=thread2, created=(post_updated_ds + timedelta(days=2)))
 
         self.refresh()
@@ -793,8 +793,8 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_archived(self):
         """Ensure archived articles show only when requested."""
-        doc = DocumentFactory(title=u'impalas', locale=u'en-US', is_archived=True)
-        ApprovedRevisionFactory(document=doc, summary=u'impalas', is_approved=True)
+        doc = DocumentFactory(title='impalas', locale='en-US', is_archived=True)
+        ApprovedRevisionFactory(document=doc, summary='impalas', is_approved=True)
 
         self.refresh()
 
@@ -814,12 +814,12 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_discussion_filter_forum(self):
         """Filter by forum in discussion forums."""
-        forum1 = ForumFactory(name=u'Forum 1')
-        thread1 = ThreadFactory(forum=forum1, title=u'audio 1')
+        forum1 = ForumFactory(name='Forum 1')
+        thread1 = ThreadFactory(forum=forum1, title='audio 1')
         PostFactory(thread=thread1)
 
-        forum2 = ForumFactory(name=u'Forum 2')
-        thread2 = ThreadFactory(forum=forum2, title=u'audio 2')
+        forum2 = ForumFactory(name='Forum 2')
+        thread2 = ThreadFactory(forum=forum2, title='audio 2')
         PostFactory(thread=thread2)
 
         self.refresh()
@@ -835,12 +835,12 @@ class AdvancedSearchTests(ElasticTestCase):
         """Tests who can see restricted forums in search form."""
         # This is a long test, but it saves us from doing the setup
         # twice.
-        forum1 = ForumFactory(name=u'ou812forum')
-        thread1 = ThreadFactory(forum=forum1, title=u'audio 2')
+        forum1 = ForumFactory(name='ou812forum')
+        thread1 = ThreadFactory(forum=forum1, title='audio 2')
         PostFactory(thread=thread1)
 
-        forum2 = RestrictedForumFactory(name=u'restrictedkeepout')
-        thread2 = ThreadFactory(forum=forum2, title=u'audio 2')
+        forum2 = RestrictedForumFactory(name='restrictedkeepout')
+        thread2 = ThreadFactory(forum=forum2, title='audio 2')
         PostFactory(thread=thread2)
 
         self.refresh()

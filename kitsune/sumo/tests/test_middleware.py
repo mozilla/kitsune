@@ -81,15 +81,15 @@ class CacheHeadersMiddlewareTestCase(TestCase):
 
 class TrailingSlashMiddlewareTestCase(TestCase):
     def test_no_trailing_slash(self):
-        response = self.client.get(u'/en-US/ohnoez')
+        response = self.client.get('/en-US/ohnoez')
         eq_(response.status_code, 404)
 
     def test_404_trailing_slash(self):
-        response = self.client.get(u'/en-US/ohnoez/')
+        response = self.client.get('/en-US/ohnoez/')
         eq_(response.status_code, 404)
 
     def test_remove_trailing_slash(self):
-        response = self.client.get(u'/en-US/home/?xxx=\xc3')
+        response = self.client.get('/en-US/home/?xxx=\xc3')
         eq_(response.status_code, 301)
         assert response['Location'].endswith('/en-US/home?xxx=%C3%83')
 
@@ -134,7 +134,7 @@ class PlusToSpaceTestCase(TestCase):
 
     def test_smart_query_string(self):
         """The request QUERY_STRING might not be unicode."""
-        request = self.rf.get(u'/pa+th')
+        request = self.rf.get('/pa+th')
         request.LANGUAGE_CODE = 'ja'
         request.META['QUERY_STRING'] = 's=\xe3\x82\xa2'
         response = self.ptsm.process_request(request)
@@ -144,7 +144,7 @@ class PlusToSpaceTestCase(TestCase):
 class MobileSwitchTestCase(TestCase):
 
     def test_mobile_0(self):
-        response = self.client.get(u'/en-US/?mobile=0')
+        response = self.client.get('/en-US/?mobile=0')
         eq_(response.status_code, 200)
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'off')
         # Make sure a mobile template was not used.
@@ -152,7 +152,7 @@ class MobileSwitchTestCase(TestCase):
         eq_(len(doc('header.slide-on-exposed')), 0)
 
     def test_mobile_1(self):
-        response = self.client.get(u'/en-US/?mobile=1', follow=True)
+        response = self.client.get('/en-US/?mobile=1', follow=True)
         eq_(response.status_code, 200)
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'on')
 

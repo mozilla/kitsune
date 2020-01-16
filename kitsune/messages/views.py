@@ -157,8 +157,8 @@ def delete(request, template, msgid=None, msgtype='inbox'):
                                          _("Messages didn't add up. Try again."))
         else:
             messages.delete()
-            msg = ungettext(u'The message was deleted!',
-                            u'The messages were deleted!',
+            msg = ungettext('The message was deleted!',
+                            'The messages were deleted!',
                             len(msgids))
             contrib_messages.add_message(request, contrib_messages.SUCCESS,
                                          msg)

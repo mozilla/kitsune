@@ -24,13 +24,13 @@ from kitsune.search.utils import chunked
 
 def read_index(group):
     """Gets the name of the read index for a group."""
-    return (u'%s_%s' % (settings.ES_INDEX_PREFIX,
+    return ('%s_%s' % (settings.ES_INDEX_PREFIX,
                         settings.ES_INDEXES[group]))
 
 
 def write_index(group):
     """Gets the name of the write index for a group."""
-    return (u'%s_%s' % (settings.ES_INDEX_PREFIX,
+    return ('%s_%s' % (settings.ES_INDEX_PREFIX,
                         settings.ES_WRITE_INDEXES[group]))
 
 
@@ -350,7 +350,7 @@ def es_get_synonym_filter(locale):
     name = 'synonyms-' + locale
     body = {
         'type': 'synonym',
-        'synonyms': [unicode(s) for s in synonyms],
+        'synonyms': [str(s) for s in synonyms],
     }
 
     return name, body
@@ -746,10 +746,10 @@ def es_search_cmd(query, pages=1, log=log):
 
         else:
             content = json.loads(resp.content)
-            results = content[u'results']
+            results = content['results']
 
             for mem in results:
-                output.append(u'%4d  %5.2f  %-10s  %-20s' % (
+                output.append('%4d  %5.2f  %-10s  %-20s' % (
                               mem['rank'], mem['score'], mem['type'],
                               mem['title']))
 

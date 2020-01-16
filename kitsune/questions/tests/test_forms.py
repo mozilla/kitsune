@@ -83,17 +83,17 @@ class TestNewQuestionForm(TestCaseBase):
         eq_(expected, actual)
 
         # Test with metadata
-        data['os'] = u'Linux'
+        data['os'] = 'Linux'
         form = NewQuestionForm(product=product, data=data)
         form.is_valid()
-        expected = {'os': u'Linux'}
+        expected = {'os': 'Linux'}
         actual = form.cleaned_metadata
         eq_(expected, actual)
 
         # Add an empty metadata value
-        data['ff_version'] = u''
+        data['ff_version'] = ''
         form = NewQuestionForm(product=product, data=data)
         form.is_valid()
-        expected = {'os': u'Linux'}
+        expected = {'os': 'Linux'}
         actual = form.cleaned_metadata
         eq_(expected, actual)

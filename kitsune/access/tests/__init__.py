@@ -21,7 +21,7 @@ class PermissionFactory(factory.DjangoModelFactory):
 class AccessTests(TestCase):
     """Test stuff in access/__init__.py"""
     def setUp(self):
-        url = reverse('forums.threads', args=[u'test-forum'])
+        url = reverse('forums.threads', args=['test-forum'])
         self.context = {'request': RequestFactory().get(url)}
 
     def test_admin_perm_thread(self):

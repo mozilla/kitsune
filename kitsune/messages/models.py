@@ -19,7 +19,7 @@ class InboxMessage(ModelBase):
 
     def __unicode__(self):
         s = self.message[0:30]
-        return u'to:%s from:%s %s' % (self.to, self.sender, s)
+        return 'to:%s from:%s %s' % (self.to, self.sender, s)
 
     @property
     def content_parsed(self):
@@ -37,8 +37,8 @@ class OutboxMessage(ModelBase):
     created = models.DateTimeField(default=datetime.now, db_index=True)
 
     def __unicode__(self):
-        to = u', '.join([u.username for u in self.to.all()])
-        return u'from:%s to:%s %s' % (self.sender, to, self.message[0:30])
+        to = ', '.join([u.username for u in self.to.all()])
+        return 'from:%s to:%s %s' % (self.sender, to, self.message[0:30])
 
     @property
     def content_parsed(self):

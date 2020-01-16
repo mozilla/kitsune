@@ -42,8 +42,8 @@ templates_path = ['_templates']
 master_doc = 'index'
 
 # General information about the project.
-project = u'Kitsune'
-copyright = u'2011 - %s Mozilla Foundation' % date.today().year
+project = 'Kitsune'
+copyright = '2011 - %s Mozilla Foundation' % date.today().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -182,8 +182,8 @@ htmlhelp_basename = 'Kitsunedoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Kitsune.tex', u'Kitsune Documentation',
-   u'SUMO devs', 'manual'),
+  ('index', 'Kitsune.tex', 'Kitsune Documentation',
+   'SUMO devs', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -215,8 +215,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'kitsune', u'Kitsune Documentation',
-     [u'SUMO devs'], 1)
+    ('index', 'kitsune', 'Kitsune Documentation',
+     ['SUMO devs'], 1)
 ]
 
 

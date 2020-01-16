@@ -4,28 +4,28 @@ TEMPLATE_TITLE_PREFIX = 'Template:'
 DOCUMENTS_PER_PAGE = 100
 
 COLLAPSIBLE_DOCUMENTS = {
-    u'en-US': [
-        u'firefox-os-support-forum-contributors-training',
-        u'firefox-android-support-forum-contributors',
-        u'firefox-support-forum-contributors',
-        u'introduction-contributor-quality-training',
-        u'angry-user-training',
-        u'evaluating-solution-forum',
-        u'how-answer-escalated-questions',
-        u'navigate-support-forum-platform',
-        u'how-stop-firefox-making-automatic-connections',
+    'en-US': [
+        'firefox-os-support-forum-contributors-training',
+        'firefox-android-support-forum-contributors',
+        'firefox-support-forum-contributors',
+        'introduction-contributor-quality-training',
+        'angry-user-training',
+        'evaluating-solution-forum',
+        'how-answer-escalated-questions',
+        'navigate-support-forum-platform',
+        'how-stop-firefox-making-automatic-connections',
     ],
-    u'cs': [
-        u'jak-firefoxu-zabranit-v-automatickem-navazovani-sp',
+    'cs': [
+        'jak-firefoxu-zabranit-v-automatickem-navazovani-sp',
     ],
-    u'de': [
-        u'Firefox-baut-unaufgeforderte-Verbindungen-auf',
+    'de': [
+        'Firefox-baut-unaufgeforderte-Verbindungen-auf',
     ],
-    u'it': [
-        u'firefox-connessioni-non-richieste',
+    'it': [
+        'firefox-connessioni-non-richieste',
     ],
-    u'pt-BR': [
-        u'como-fazer-o-firefox-parar-de-se-conectar-automati',
+    'pt-BR': [
+        'como-fazer-o-firefox-parar-de-se-conectar-automati',
     ]
 }
 FALLBACK_LOCALES = {
@@ -49,29 +49,29 @@ MAJOR_SIGNIFICANCE = 30
 
 SIGNIFICANCES = [
     (TYPO_SIGNIFICANCE,
-     _lazy(u"Minor details that don't affect the instructions")),
+     _lazy("Minor details that don't affect the instructions")),
     (MEDIUM_SIGNIFICANCE,
-     _lazy(u"Content changes that don't require immediate translation")),
+     _lazy("Content changes that don't require immediate translation")),
     (MAJOR_SIGNIFICANCE,
-     _lazy(u'Major content changes that will make older translations '
+     _lazy('Major content changes that will make older translations '
            'inaccurate')),
 ]
 
 SIGNIFICANCES_HELP = {
     TYPO_SIGNIFICANCE: _lazy(
-        u'These minor changes are not important for localizers and '
-        u'they will not be notified.'),
+        'These minor changes are not important for localizers and '
+        'they will not be notified.'),
     MEDIUM_SIGNIFICANCE: _lazy(
-        u'This will notify localizers and translations will be marked as '
-        u'"needing updates" on dashboards. Most changes&mdash;updating an '
-        u'image, fixing {for} markup, adding or removing non-critical '
-        u'sections&mdash;should use this.'),
+        'This will notify localizers and translations will be marked as '
+        '"needing updates" on dashboards. Most changes&mdash;updating an '
+        'image, fixing {for} markup, adding or removing non-critical '
+        'sections&mdash;should use this.'),
     MAJOR_SIGNIFICANCE: _lazy(
-        u'This will notify localizers and translations will be marked '
-        u'"out of date" on dashboards. Translations will show a warning '
-        u'to users that they are out of date and that the English '
-        u'version is the most accurate. Use this when the old '
-        u'instructions are completely unusable.'),
+        'This will notify localizers and translations will be marked '
+        '"out of date" on dashboards. Translations will show a warning '
+        'to users that they are out of date and that the English '
+        'version is the most accurate. Use this when the old '
+        'instructions are completely unusable.'),
 }
 
 TROUBLESHOOTING_CATEGORY = 10
@@ -83,21 +83,21 @@ TEMPLATES_CATEGORY = 60
 CANNED_RESPONSES_CATEGORY = 70
 
 CATEGORIES = (
-    (TROUBLESHOOTING_CATEGORY, _lazy(u'Troubleshooting')),
-    (HOW_TO_CATEGORY, _lazy(u'How to')),
-    (HOW_TO_CONTRIBUTE_CATEGORY, _lazy(u'How to contribute')),
-    (ADMINISTRATION_CATEGORY, _lazy(u'Administration')),
-    (NAVIGATION_CATEGORY, _lazy(u'Navigation')),
-    (TEMPLATES_CATEGORY, _lazy(u'Templates')),
-    (CANNED_RESPONSES_CATEGORY, _lazy(u'Canned Responses')),
+    (TROUBLESHOOTING_CATEGORY, _lazy('Troubleshooting')),
+    (HOW_TO_CATEGORY, _lazy('How to')),
+    (HOW_TO_CONTRIBUTE_CATEGORY, _lazy('How to contribute')),
+    (ADMINISTRATION_CATEGORY, _lazy('Administration')),
+    (NAVIGATION_CATEGORY, _lazy('Navigation')),
+    (TEMPLATES_CATEGORY, _lazy('Templates')),
+    (CANNED_RESPONSES_CATEGORY, _lazy('Canned Responses')),
 )
 
 REDIRECT_HTML = '<p>REDIRECT <a '  # how a redirect looks as rendered HTML
 REDIRECT_CONTENT = 'REDIRECT [[%s]]'
-REDIRECT_TITLE = _lazy(u'%(old)s Redirect %(number)i')
-REDIRECT_SLUG = _lazy(u'%(old)s-redirect-%(number)i')
+REDIRECT_TITLE = _lazy('%(old)s Redirect %(number)i')
+REDIRECT_SLUG = _lazy('%(old)s-redirect-%(number)i')
 
 # Template for the cache key of the full article html.
-DOC_HTML_CACHE_KEY = u'doc_html:{mobile}:{locale}:{slug}:{minimal}'
+DOC_HTML_CACHE_KEY = 'doc_html:{mobile}:{locale}:{slug}:{minimal}'
 
 SIMPLE_WIKI_LANDING_PAGE_SLUG = 'frequently-asked-questions'

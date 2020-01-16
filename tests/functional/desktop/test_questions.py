@@ -124,5 +124,5 @@ class TestQuestions:
         forum_page.post_reply(reply)
         # 7.2 check if posting a reply finishes without an error
         assert forum_page.is_reply_text_present(user['username'], reply), \
-            u'reply with "%s" text posted by %s is not present' % (
+            'reply with "%s" text posted by %s is not present' % (
                 reply, user['username'])

@@ -370,8 +370,8 @@ class FromUrlTests(TestCase):
     def test_redirect_to_translated_document(self):
         from_url = Document.from_url
 
-        d_en = DocumentFactory(locale='en-US', title=u'How to delete Google Chrome?')
-        d_tr = DocumentFactory(locale='tr', title=u'Google Chrome\'u nasıl silerim?', parent=d_en)
+        d_en = DocumentFactory(locale='en-US', title='How to delete Google Chrome?')
+        d_tr = DocumentFactory(locale='tr', title='Google Chrome\'u nasıl silerim?', parent=d_en)
         # The /tr/kb/how-to-delete-google-chrome URL for Turkish locale
         # should be redirected to /tr/kb/google-chromeu-nasl-silerim
         # if there is a Turkish translation of the document.
@@ -383,19 +383,19 @@ class FromUrlTests(TestCase):
     def test_id_only(self):
         from_url = Document.from_url
 
-        d = DocumentFactory(locale='en-US', title=u'How to delete Google Chrome?')
+        d = DocumentFactory(locale='en-US', title='How to delete Google Chrome?')
         doc = from_url(d.get_absolute_url(), id_only=True)
         self.assertEqual(d.title, doc.title)
         self.assertEqual(d.locale, doc.locale)
 
     def test_document_translate_fallback(self):
-        d_en = DocumentFactory(locale='en-US', title=u'How to delete Google Chrome?')
+        d_en = DocumentFactory(locale='en-US', title='How to delete Google Chrome?')
         invalid_translate = reverse('wiki.document', locale='tr', args=[d_en.slug])
         self.assertEqual(d_en, Document.from_url(invalid_translate))
 
     def test_check_host(self):
         from_url = Document.from_url
-        d_en = DocumentFactory(locale='en-US', title=u'How to delete Google Chrome?')
+        d_en = DocumentFactory(locale='en-US', title='How to delete Google Chrome?')
         sumo_host = 'https://support.mozilla.org'
         invalid_url = urllib.parse.urljoin(sumo_host, d_en.get_absolute_url())
         self.assertIsNone(from_url(invalid_url))
@@ -569,7 +569,7 @@ class RevisionTests(TestCase):
 
     def test_revision_unicode(self):
         """Revision containing unicode characters is saved successfully."""
-        str = u' \r\nFirefox informa\xe7\xf5es \u30d8\u30eb'
+        str = ' \r\nFirefox informa\xe7\xf5es \u30d8\u30eb'
         r = ApprovedRevisionFactory(content=str)
         eq_(str, r.content)
 
