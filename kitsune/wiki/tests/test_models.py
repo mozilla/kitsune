@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import urlparse
+import urllib.parse
 from datetime import datetime
 
 from nose.tools import eq_
@@ -397,7 +397,7 @@ class FromUrlTests(TestCase):
         from_url = Document.from_url
         d_en = DocumentFactory(locale='en-US', title=u'How to delete Google Chrome?')
         sumo_host = 'https://support.mozilla.org'
-        invalid_url = urlparse.urljoin(sumo_host, d_en.get_absolute_url())
+        invalid_url = urllib.parse.urljoin(sumo_host, d_en.get_absolute_url())
         self.assertIsNone(from_url(invalid_url))
         self.assertEqual(d_en, from_url(invalid_url, check_host=False))
 

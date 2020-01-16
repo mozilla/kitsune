@@ -2,7 +2,7 @@ import hashlib
 import logging
 import time
 from datetime import datetime, timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User

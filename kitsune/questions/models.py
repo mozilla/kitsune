@@ -2,7 +2,7 @@ import logging
 import re
 import time
 from datetime import date, datetime, timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import actstream
 import actstream.actions
