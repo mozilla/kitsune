@@ -10,7 +10,7 @@
   <div class="grid_9">
     <article id="review-revision">
       <h1>{{ _('Review Revision of {title}')|f(title=document.title) }}</h1>
-      <p>{{ _('Reviewing Revision {id} by {user}')|f(id=revision.id, user=revision.creator) }}.
+      <p>{{ _('Reviewing Revision {id} by {user}.')|f(id=revision.id, user=revision.creator) }}
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a>
       <br>
       {{ _('Revision Comment: {comment}')|f(comment=revision.comment) }}
@@ -23,7 +23,7 @@
           <ul class="revision-comment">
             {% for revision in unreviewed_revisions %}
               <li>
-                {{ _('Revision {id} by {user}')|f(id=revision.id, user=revision.creator) }}.
+                {{ _('Revision {id} by {user}.')|f(id=revision.id, user=revision.creator) }}
                 <br>
                 {{ _('<label>Revision Comment:</label> {comment}')|fe(comment=revision.comment) }}
                 <br>
