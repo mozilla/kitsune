@@ -4,15 +4,14 @@ import sys
 import traceback
 
 from celery import task
-from multidb.pinning import pin_this_thread, unpin_this_thread
 from django_statsd.clients import statsd
+from elasticutils.contrib.django import get_es
+from multidb.pinning import pin_this_thread, unpin_this_thread
 
-from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis
+from kitsune.search.es_utils import (UnindexMeBro, get_analysis, index_chunk,
+                                     write_index)
 from kitsune.search.utils import from_class_path
 from kitsune.sumo.decorators import timeit
-
-from elasticutils.contrib.django import get_es
-
 
 # This is present in memcached when reindexing is in progress and
 # holds the number of outstanding index chunks. Once it hits 0,
@@ -83,7 +82,7 @@ def index_chunk_task(write_index, batch_id, rec_id, chunk):
 
     except Exception:
         if rec is not None:
-            rec.mark_fail(u"Errored out %s %s" % (sys.exc_type, sys.exc_value))
+            rec.mark_fail(u'Errored out %s %s' % (sys.exc_info()[0], sys.exc_info()[1]))
 
         log.exception("Error while indexing a chunk")
         # Some exceptions aren't pickleable and we need this to throw
