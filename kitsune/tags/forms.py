@@ -3,7 +3,7 @@ import json
 from django.forms import MultipleChoiceField, Widget
 from django.forms.utils import flatatt
 from django.utils.datastructures import MultiValueDict
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
@@ -50,7 +50,7 @@ class TagWidget(Widget):
             # Hidden input for form state:
             if not self.async_urls:
                 output += '<input%s />' % flatatt({
-                    'value': force_unicode(tag.name),
+                    'value': force_text(tag.name),
                     'type': 'hidden',
                     'name': control_name})
 
