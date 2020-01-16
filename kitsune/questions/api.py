@@ -91,7 +91,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_involved(self, obj):
-        involved = set([obj.creator.profile])
+        involved = {obj.creator.profile}
         involved.update(a.creator.profile for a in obj.answers.all())
         return ProfileFKSerializer(involved, many=True).data
 

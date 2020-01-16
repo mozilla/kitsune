@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='retentionmetric',
-            unique_together=set([('cohort', 'start', 'end')]),
+            unique_together={('cohort', 'start', 'end')},
         ),
         migrations.AddField(
             model_name='cohort',
@@ -59,6 +59,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='cohort',
-            unique_together=set([('kind', 'start', 'end')]),
+            unique_together={('kind', 'start', 'end')},
         ),
     ]

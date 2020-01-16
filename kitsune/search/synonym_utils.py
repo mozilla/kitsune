@@ -79,7 +79,7 @@ def count_out_of_date():
     synonyms_to_add = synonyms_in_db - synonyms_in_es
     synonyms_to_remove = synonyms_in_es - synonyms_in_db
 
-    if synonyms_to_remove == set(['firefox => firefox']):
+    if synonyms_to_remove == {'firefox => firefox'}:
         synonyms_to_remove = set()
 
     return (len(synonyms_to_add), len(synonyms_to_remove))

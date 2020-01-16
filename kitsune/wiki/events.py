@@ -163,7 +163,7 @@ class _ProductFilter(_BaseProductFilter):
     """An event that receives a revision when constructed and filters according
     to that revision's document's products"""
 
-    filters = set(["product"])
+    filters = {"product"}
 
     # notify(), stop_notifying(), and is_notifying() take...
     # (user_or_email, product=optional_product)
@@ -181,7 +181,7 @@ class _LocaleAndProductFilter(_BaseProductFilter):
     """An event that receives a revision when constructed and filters according
     to that revision's document's locale and products."""
 
-    filters = set(["locale", "product"])
+    filters = {"locale", "product"}
 
     # notify(), stop_notifying(), and is_notifying() take...
     # (user_or_email, locale=some_locale, product=optional_product)
