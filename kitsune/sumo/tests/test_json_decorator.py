@@ -47,7 +47,7 @@ class JsonViewTests(TestCase):
     def test_404(self):
         @json_view
         def temp(req):
-            raise http.Http404, 'foo'
+            raise http.Http404('foo')
 
         res = temp(rf.get('/'))
         eq_(404, res.status_code)
