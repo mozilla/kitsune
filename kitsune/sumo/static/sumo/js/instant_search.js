@@ -10,6 +10,9 @@
     $('#main-content').hide();
     $('#main-content').siblings('aside').hide();
     $('#main-breadcrumbs').hide();
+    $('body').addClass('search-results-visible');
+    $('.home-search-section .mzp-l-content').removeClass('narrow');
+    $('.popular-searches').addClass('is-hidden');
 
     if ($('#support-search-wiki:visible').length === 0) {
       $('.support-search-main').show();
@@ -18,6 +21,8 @@
   }
 
   function showContent() {
+    $('body').removeClass('search-results-visible');
+    $('.popular-searches').removeClass('is-hidden');
     $('.support-search-main').hide();
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
@@ -25,6 +30,8 @@
     $('#instant-search-content').remove();
     $('.search-form-large:visible').find('input[name=q]').focus().val('');
     $('#support-search').find('input[name=q]').val('');
+    $(".home-search-section--content .search-results-heading").remove();
+    $('.home-search-section .mzp-l-content').addClass('narrow');
   }
 
   function render(data) {
@@ -41,6 +48,12 @@
     }
 
     $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
+
+    detailsInit(); // fold up sidebar on mobile.
+    tabsInit();
+    // remove and append search results heading
+    $(".home-search-section--content .search-results-heading").remove();
+    $(".search-results-heading").appendTo(".home-search-section--content");
   }
 
   window.k.InstantSearchSettings = {

@@ -140,20 +140,20 @@
                 {% endif %}
               </div>
 
-              <div class="thread-meta">
-                <div class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
+              <ul class="topic-article--meta-list thread-meta">
+                <li class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
                   {{ _('Solved') }}
-                </div>
-                <div class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
+                </li>
+                <li class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
                   {{ _('Contributed') }}
-                </div>
+                </li>
                 {% if question.is_locked %}
-                  <div class="thread-locked highlighted">{{ _('Locked') }}</div>
+                  <li class="thread-locked highlighted">{{ _('Locked') }}</li>
                 {% endif %}
                 {% if question.is_archived %}
-                  <div class="thread-archived highlighted">{{ _('Archived') }}</div>
+                  <li class="thread-archived highlighted">{{ _('Archived') }}</li>
                 {% endif %}
-              </div>
+              </ul>
 
               <div class="content ui-truncatable truncated">
                 <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>

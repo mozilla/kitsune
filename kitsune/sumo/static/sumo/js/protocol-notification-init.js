@@ -10,11 +10,13 @@
     }
     var notificationButton = document.querySelector('.mzp-js-notification-trigger');
 
-    notificationButton.addEventListener('click', function(e) {
-      e.preventDefault();
-      Mzp.Notification.init(e.target, {
-        closeText: 'Close notification',
-        hasDismiss: true,
-      });
-    }, false);
+    if (notificationButton) {
+      notificationButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        Mzp.Notification.init(e.target, {
+          closeText: 'Close notification',
+          hasDismiss: true,
+        });
+      }, false);
+    }
   })();

@@ -1,0 +1,11 @@
+<div class="document-vote elevation-01 text-center">
+  <form class="document-vote--form helpful" action="#" method="post">
+      <h4 class="document-vote--heading">Document Vote Text</h4>
+      <div class="document-vote--buttons">
+        <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+        <input type="hidden" name="source" value="{{ source }}" />
+        <button type="submit" class="btn helpful-button" name="helpful"><span class="hidden-text">Yes</span>👍</button>
+        <button type="submit" class="btn not-helpful-button" name="not-helpful"><span class="hidden-text">No</span>👎</button>
+      </div>
+  </form>
+</div>

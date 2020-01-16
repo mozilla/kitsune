@@ -1,19 +1,21 @@
-(function() {
+function detailsInit() {
   'use strict';
   var _mqWide = matchMedia('(max-width: 767px)');
 
+  var sidebarList = document.querySelector('.sidebar-nav');
+
   function swapMobileSubnavText(){
     var button = document.querySelector('.details-heading button');
-    var activeLinkText = document.querySelector('.sidebar-nav--item .selected').innerHTML;
+    var activeLinkText = document.querySelector('.sidebar-nav .selected a').innerHTML;
     button.innerHTML = activeLinkText;
   }
 
-  if (_mqWide.matches) {
+  if (sidebarList && _mqWide.matches) {
     window.Mzp.Details.init('.details-heading');
     swapMobileSubnavText();
   }
   _mqWide.addListener(function(mq) {
-    if (mq.matches) {
+    if (sidebarList && mq.matches) {
       window.Mzp.Details.init('.details-heading');
       swapMobileSubnavText();
 
@@ -21,4 +23,6 @@
       window.Mzp.Details.destroy('.details-heading');
     }
   });
-})();
+};
+
+detailsInit();

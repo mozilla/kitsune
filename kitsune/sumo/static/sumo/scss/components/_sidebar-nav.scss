@@ -37,15 +37,15 @@
       text-decoration: none;
       color: var(--color-heading);
     }
+  }
 
-    &.selected {
-      &:link,
-      &:visited {
-        background-color: var(--color-link-active-bg);
-        font-weight: bold;
-        color: var(--color-heading);
-      }
-    }
+  li.selected > :link,
+  li.selected > :visited,
+  a.selected:link,
+  a.selected:visited {
+    background-color: var(--color-link-active-bg);
+    font-weight: bold;
+    color: var(--color-heading);
   }
 
   &--sublist {
@@ -109,6 +109,16 @@
 
     @media #{p.$mq-md} {
       display: none;
+
+      @at-root .break-on-lg & {
+        display: block;
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      @at-root .break-on-lg & {
+        display: none;
+      }
     }
   }
 }

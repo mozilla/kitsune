@@ -62,7 +62,7 @@
       {% else %}
         <h2>
           {# L10n: {q} is the search query, {l} is the language searched. #}
-          {{ _("We couldn't find any results for <strong>{q}</strong> in <strong>{l}</strong>. Maybe one of these articles will be helpful?")|fe(q=q, l=lang_name) }}
+          {{ _("We couldn't find any results for ‘{q}’ in ‘{l}’. Maybe one of these articles will be helpful?")|fe(q=q, l=lang_name) }}
         </h2>
 
         <div class="content-box">
