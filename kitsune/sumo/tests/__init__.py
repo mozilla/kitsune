@@ -52,7 +52,7 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
             # because collectstatic somehow retains emotional baggage
             # which causes all the tests to take FOREVER to run.
             cmdline = [sys.executable, 'manage.py', 'collectstatic', '--noinput']
-            print 'Running %r' % cmdline
+            print('Running %r' % cmdline)
             subprocess.call(cmdline)
 
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
