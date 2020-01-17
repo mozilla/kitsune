@@ -168,5 +168,6 @@
     console.log('thisLink', thisLink);
     $('#support-search-masthead input[name=q]').focus().val(thisLink);
     $mainInput.trigger( "keyup" );
+    ev.preventDefault();
   });
 })(jQuery);
