@@ -9,7 +9,7 @@ before_install:
   - docker pull itsre/sumo-kitsune:full-latest
 install:
   - pip install -U docker-compose
-  - cp .env-travis .env
+  - cp .env-test .env
   - docker-compose up -d mariadb
   - docker-compose up -d elasticsearch
   - docker-compose up -d redis
