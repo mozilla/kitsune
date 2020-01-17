@@ -279,13 +279,9 @@
   {% endcall %}
 #}
 {% macro announcement_bar(id, level) -%}
-  <div class="announce-bar {{ level }}" id="announce-{{ id }}">
-    <div class="container_12">
-      <div class="grid_12">
-        <div class="close-button" data-close-id="announce-{{ id }}"></div>
-        {{ caller() }}
-      </div>
-    </div>
+  <div id="announce-{{ id }}" class="mzp-c-notification-bar mzp-t-{{ level }}">
+    <button class="mzp-c-notification-bar-button close-button" data-close-id="announce-{{ id }}" type="button"></button>
+    <p>{{ caller() }}</p>
   </div>
 {% endmacro %}
 

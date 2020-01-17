@@ -21,7 +21,8 @@
       countryData = data;
     })
     .fail(function(error) {
-      throw new Error('Error retrieving geoip data');
+      console.warn('Error retrieving geoip data');
+      $('#announce-geoip-suggestion').remove();
     })
     .always(function() {
       handleLocale(countryData.country_name);
