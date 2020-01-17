@@ -242,6 +242,12 @@
         (left, auto, 4px),
       ));
     }
+
+    .sumo-nav--list-wrap-right {
+      .sumo-button {
+        display: none;
+      }
+    }
   }
 
   .sumo-nav--mobile-search-form {
