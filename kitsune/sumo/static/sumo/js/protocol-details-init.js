@@ -23,6 +23,6 @@ function detailsInit() {
       window.Mzp.Details.destroy('.details-heading');
     }
   });
-};
+}
 
 detailsInit();
