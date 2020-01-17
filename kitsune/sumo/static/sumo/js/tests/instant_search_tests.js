@@ -30,13 +30,18 @@ describe('instant search', () => {
       clock = sinon.useFakeTimers();
       cxhrMock = sinon.mock({request: () => {}});
       window.k.CachedXHR = () => cxhrMock.object;
+      window.matchMedia = () => {
+        return {
+          matches: false,
+          addListener: () => {}
+        }
+      }
+      global.matchMedia = window.matchMedia;
+      window.Mzp = {};
 
       rerequire('../i18n.js');
       global.interpolate = global.window.interpolate;
       rerequire('../search_utils.js');
-      rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-base.js');
-      rerequire('../protocol-details-init.js');
-      rerequire('../sumo-tabs.js');
       rerequire('../instant_search.js');
 
       let content = (
