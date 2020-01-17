@@ -157,4 +157,13 @@
       success: k.InstantSearchSettings.render
     });
   });
+
+  // 'Popular searches' feature
+  $(document).on('click', '[data-featured-search]', function(ev) {
+    var $mainInput = $('#support-search-home input[name=q]');
+    var thisLink = $(this).text();
+    console.log('thisLink', thisLink);
+    $('#support-search-home input[name=q]').focus().val(thisLink);
+    $mainInput.trigger( "keyup" );
+  });
 })(jQuery);
