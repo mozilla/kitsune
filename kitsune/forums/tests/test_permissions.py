@@ -12,7 +12,7 @@ class ForumTestPermissions(ForumTestCase):
     """Make sure access helpers work on the forums."""
 
     def setUp(self):
-        url = reverse('forums.threads', args=[u'test-forum'])
+        url = reverse('forums.threads', args=['test-forum'])
         self.context = {'request': RequestFactory().get(url)}
 
         self.group = GroupFactory()

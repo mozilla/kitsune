@@ -3,7 +3,7 @@ import itertools
 import logging
 import time
 from datetime import datetime, timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -97,15 +97,15 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     is_archived = models.BooleanField(
         default=False, db_index=True, verbose_name='is obsolete',
         help_text=_lazy(
-            u'If checked, this wiki page will be hidden from basic searches '
-            u'and dashboards. When viewed, the page will warn that it is no '
-            u'longer maintained.'))
+            'If checked, this wiki page will be hidden from basic searches '
+            'and dashboards. When viewed, the page will warn that it is no '
+            'longer maintained.'))
 
     # Enable discussion (kbforum) on this document.
     allow_discussion = models.BooleanField(
         default=True, help_text=_lazy(
-            u'If checked, this document allows discussion in an associated '
-            u'forum. Uncheck to hide/disable the forum.'))
+            'If checked, this document allows discussion in an associated '
+            'forum. Uncheck to hide/disable the forum.'))
 
     # List of users that have contributed to this document.
     contributors = models.ManyToManyField(User)
@@ -118,7 +118,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     # Needs change fields.
     needs_change = models.BooleanField(default=False, help_text=_lazy(
-        u'If checked, this document needs updates.'), db_index=True)
+        'If checked, this document needs updates.'), db_index=True)
     needs_change_comment = models.CharField(max_length=500, blank=True)
 
     # A 24 character length gives years before having to alter max_length.
@@ -183,14 +183,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # Can't save this translation if parent not localizable
         if self.parent and not self.parent.is_localizable:
             raise ValidationError('"%s": parent "%s" is not localizable.' % (
-                                  unicode(self), unicode(self.parent)))
+                                  str(self), str(self.parent)))
 
         # Can't make not localizable if it has translations
         # This only applies to documents that already exist, hence self.pk
         if self.pk and not self.is_localizable and self.translations.exists():
             raise ValidationError(
-                u'"{0}": document has {1} translations but is not localizable.'
-                .format(unicode(self), self.translations.count()))
+                '"{0}": document has {1} translations but is not localizable.'
+                .format(str(self), self.translations.count()))
 
     def _ensure_inherited_attr(self, attr):
         """Make sure my `attr` attr is the same as my parent's if I have one.
@@ -223,14 +223,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def _clean_template_status(self):
         if (self.category == TEMPLATES_CATEGORY and
                 not self.title.startswith(TEMPLATE_TITLE_PREFIX)):
-            raise ValidationError(_(u'Documents in the Template category must have titles that '
-                                    u'start with "{prefix}". (Current title is "{title}")')
+            raise ValidationError(_('Documents in the Template category must have titles that '
+                                    'start with "{prefix}". (Current title is "{title}")')
                                   .format(prefix=TEMPLATE_TITLE_PREFIX, title=self.title))
 
         if self.title.startswith(TEMPLATE_TITLE_PREFIX) and self.category != TEMPLATES_CATEGORY:
-            raise ValidationError(_(u'Documents with titles that start with "{prefix}" must be in '
-                                    u'the templates category. (Current category is "{category}". '
-                                    u'Current title is "{title}".)')
+            raise ValidationError(_('Documents with titles that start with "{prefix}" must be in '
+                                    'the templates category. (Current category is "{category}". '
+                                    'Current title is "{title}".)')
                                   .format(prefix=TEMPLATE_TITLE_PREFIX,
                                           category=self.get_category_display(),
                                           title=self.title))
@@ -956,8 +956,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
             if self.document.current_revision:
                 new_revs = new_revs.filter(
                     id__gt=self.document.current_revision.id)
-            new_contributors = set(
-                [r.creator for r in new_revs.select_related('creator')])
+            new_contributors = {r.creator for r in new_revs.select_related('creator')}
             for user in new_contributors:
                 if user not in contributors:
                     self.document.contributors.add(user)
@@ -1024,7 +1023,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
         return qs.exists()
 
     def __unicode__(self):
-        return u'[%s] %s #%s: %s' % (self.document.locale,
+        return '[%s] %s #%s: %s' % (self.document.locale,
                                      self.document.title,
                                      self.id, self.content[:50])
 
@@ -1225,7 +1224,7 @@ class DocumentLink(ModelBase):
         unique_together = ('linked_from', 'linked_to', 'kind')
 
     def __unicode__(self):
-        return (u'<DocumentLink: %s from %s to %s>' %
+        return ('<DocumentLink: %s from %s to %s>' %
                 (self.kind, self.linked_from, self.linked_to))
 
 
@@ -1238,7 +1237,7 @@ class DocumentImage(ModelBase):
         unique_together = ('document', 'image')
 
     def __unicode__(self):
-        return u'<DocumentImage: {doc} includes {img}>'.format(
+        return '<DocumentImage: {doc} includes {img}>'.format(
             doc=self.document, img=self.image)
 
 

@@ -15,8 +15,8 @@ class ESCommandTests(ElasticTestCase):
         """Test that es_search command doesn't fail"""
         call_command('essearch', 'cupcakes')
 
-        p = ProductFactory(title=u'firefox', slug=u'desktop')
-        doc = DocumentFactory(title=u'cupcakes rock', locale=u'en-US', category=10, products=[p])
+        p = ProductFactory(title='firefox', slug='desktop')
+        doc = DocumentFactory(title='cupcakes rock', locale='en-US', category=10, products=[p])
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
@@ -25,8 +25,8 @@ class ESCommandTests(ElasticTestCase):
 
     @mock.patch.object(FakeLogger, '_out')
     def test_reindex(self, _out):
-        p = ProductFactory(title=u'firefox', slug=u'desktop')
-        doc = DocumentFactory(title=u'cupcakes rock', locale=u'en-US', category=10, products=[p])
+        p = ProductFactory(title='firefox', slug='desktop')
+        doc = DocumentFactory(title='cupcakes rock', locale='en-US', category=10, products=[p])
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
@@ -40,8 +40,8 @@ class ESCommandTests(ElasticTestCase):
 
     @mock.patch.object(FakeLogger, '_out')
     def test_status(self, _out):
-        p = ProductFactory(title=u'firefox', slug=u'desktop')
-        doc = DocumentFactory(title=u'cupcakes rock', locale=u'en-US', category=10, products=[p])
+        p = ProductFactory(title='firefox', slug='desktop')
+        doc = DocumentFactory(title='cupcakes rock', locale='en-US', category=10, products=[p])
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()

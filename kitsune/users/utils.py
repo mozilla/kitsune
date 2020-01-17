@@ -42,10 +42,10 @@ def try_send_email_with_form(func, form, field_name, *args, **kwargs):
     try:
         func(*args, **kwargs)
     except SMTPException as e:
-        log.warning(u'Failed to send email: %s' % e)
+        log.warning('Failed to send email: %s' % e)
         if 'email' not in form.errors:
             form.errors[field_name] = []
-        form.errors[field_name].append(unicode(ERROR_SEND_EMAIL))
+        form.errors[field_name].append(str(ERROR_SEND_EMAIL))
     return form
 
 

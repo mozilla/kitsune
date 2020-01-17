@@ -1069,14 +1069,14 @@ class TaggingViewTestsAsTagger(TestCaseBase):
             _add_tag_url(self.question.id), data={"tag-name": "escalate"}, follow=True
         )
 
-        question_url = u"https://example.com/en-US{url}".format(
+        question_url = "https://example.com/en-US{url}".format(
             url=self.question.get_absolute_url()
         )
         submit_ticket.assert_called_with(
             email="support@mozilla.com",
             category="Escalated",
-            subject=u"[Escalated] {title}".format(title=self.question.title),
-            body=u"{url}\n\n{content}".format(
+            subject="[Escalated] {title}".format(title=self.question.title),
+            body="{url}\n\n{content}".format(
                 url=question_url, content=self.question.content
             ),
             tags=["escalate"],
@@ -1306,7 +1306,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
     def test_truncated_text_is_stripped(self):
         """Verify we strip html from truncated text."""
-        long_str = "".join(random.choice(letters) for x in xrange(170))
+        long_str = "".join(random.choice(letters) for x in range(170))
         QuestionFactory(content="<p>%s</p>" % long_str)
         response = self.client.get(reverse("questions.list", args=["all"]))
 

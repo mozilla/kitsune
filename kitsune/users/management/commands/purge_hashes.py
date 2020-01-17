@@ -16,4 +16,4 @@ class Command(BaseCommand):
             user.set_unusable_password()
             user.save()
 
-        print 'Cleared %d passwords.' % len(users)
+        print('Cleared %d passwords.' % len(users))

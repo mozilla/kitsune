@@ -1,5 +1,5 @@
 import hashlib
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from django.conf import settings
 from django.utils.encoding import force_str
@@ -60,7 +60,7 @@ def profile_avatar(user, size=48):
     if avatar.startswith('https') and profile and profile.is_fxa_migrated:
         url = avatar
     elif avatar.startswith('http'):
-        url = url + '&d=%s' % urllib.quote(avatar)
+        url = url + '&d=%s' % urllib.parse.quote(avatar)
 
     return url
 
@@ -83,14 +83,14 @@ def public_email(email):
 
 def unicode_to_html(text):
     """Turns all unicode into html entities, e.g. &#69; -> E."""
-    return ''.join([u'&#%s;' % ord(i) for i in text])
+    return ''.join(['&#%s;' % ord(i) for i in text])
 
 
 @library.global_function
 def user_list(users):
     """Turn a list of users into a list of links to their profiles."""
-    link = u'<a class="user" href="%s">%s</a>'
-    list = u', '.join([link % (escape(profile_url(u)), escape(display_name(u))) for
+    link = '<a class="user" href="%s">%s</a>'
+    list = ', '.join([link % (escape(profile_url(u)), escape(display_name(u))) for
                        u in users])
     return Markup(list)
 
@@ -100,7 +100,7 @@ def private_message(user):
     """Return a link to private message the user."""
     url = urlparams(reverse('messages.new'), to=user.username)
     msg = _('Private message')
-    return Markup(u'<p class="pm"><a href="{url}">{msg}</a></p>'.format(
+    return Markup('<p class="pm"><a href="{url}">{msg}</a></p>'.format(
         url=url, msg=msg))
 
 

@@ -29,7 +29,7 @@ from kitsune.wiki.tests import (
     RedirectRevisionFactory, TranslatedRevisionFactory, LocaleFactory, new_document_data)
 
 
-READY_FOR_REVIEW_EMAIL_CONTENT = u"""\
+READY_FOR_REVIEW_EMAIL_CONTENT = """\
 %(user)s submitted a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -53,7 +53,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
-DOCUMENT_EDITED_EMAIL_CONTENT = u"""\
+DOCUMENT_EDITED_EMAIL_CONTENT = """\
 %(user)s created a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -77,7 +77,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
-APPROVED_EMAIL_CONTENT = u"""\
+APPROVED_EMAIL_CONTENT = """\
 %(reviewer)s has approved the revision to the document %(document_title)s.
 
 To view the updated document, click the following link, or paste it into \
@@ -878,7 +878,7 @@ class NewRevisionTests(TestCaseBase):
         eq_(2, len(mail.outbox))
         attrs_eq(
             mail.outbox[0],
-            subject=u'%s is ready for review (%s)' % (
+            subject='%s is ready for review (%s)' % (
                 self.d.title, new_rev.creator),
             body=READY_FOR_REVIEW_EMAIL_CONTENT % {
                 'user': self.user.profile.name,
@@ -893,7 +893,7 @@ class NewRevisionTests(TestCaseBase):
             to=['joe@example.com'])
         attrs_eq(
             mail.outbox[1],
-            subject=u'%s was edited by %s' % (
+            subject='%s was edited by %s' % (
                 self.d.title, new_rev.creator),
             body=DOCUMENT_EDITED_EMAIL_CONTENT % {
                 'user': self.user.profile.name,
@@ -1510,7 +1510,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],
-                 subject=(u'{0} ({1}) has a new approved revision ({2})'
+                 subject=('{0} ({1}) has a new approved revision ({2})'
                           .format(self.document.title, self.document.locale, self.user.username)),
                  body=expected_body,
                  to=['joe@example.com'])

@@ -157,7 +157,7 @@ class DocumentEditingTests(TestCase):
     def test_retitling_accent(self):
         d = DocumentFactory(title='Umlaut test')
         RevisionFactory(document=d, is_approved=True)
-        new_title = u'Ümlaut test'
+        new_title = 'Ümlaut test'
         data = new_document_data()
         data.update({'title': new_title,
                      'slug': d.slug,
@@ -225,8 +225,8 @@ class DocumentEditingTests(TestCase):
         """Changing products works as expected."""
         r = ApprovedRevisionFactory()
         d = r.document
-        prod_desktop = ProductFactory(title=u'desktop')
-        prod_mobile = ProductFactory(title=u'mobile')
+        prod_desktop = ProductFactory(title='desktop')
+        prod_mobile = ProductFactory(title='mobile')
 
         data = new_document_data()
         data.update({'products': [prod_desktop.id, prod_mobile.id],
@@ -530,7 +530,7 @@ class VoteTests(TestCase):
         eq_('survey', vote_meta[0].key)
 
         survey = json.loads(vote_meta[0].value)
-        eq_(3, len(survey.keys()))
+        eq_(3, len(list(survey.keys())))
         assert 'confusing' in survey
         assert 'too-long' in survey
         eq_('lorem ipsum dolor', survey['comment'])

@@ -155,7 +155,7 @@ def activate(request, template, activation_key, user_id=None):
     if user and user.is_active:
         messages.add_message(
             request, messages.INFO,
-            _(u'Your account is already activated, log in below.'))
+            _('Your account is already activated, log in below.'))
         return HttpResponseRedirect(reverse('users.login'))
 
     account = RegistrationProfile.objects.activate_user(activation_key,
@@ -397,13 +397,13 @@ def edit_settings(request, template):
         if form.is_valid():
             form.save_for_user(request.user)
             messages.add_message(request, messages.INFO,
-                                 _(u'Your settings have been saved.'))
+                                 _('Your settings have been saved.'))
             return HttpResponseRedirect(reverse('users.edit_settings'))
         # Invalid form
         return render(request, template, {'form': form})
 
     # Pass the current user's settings as the initial values.
-    values = request.user.settings.values()
+    values = list(request.user.settings.values())
     initial = dict()
     for v in values:
         try:
@@ -717,8 +717,8 @@ def forgot_username(request, template):
             # Don't leak existence of email addresses.
             messages.add_message(
                 request, messages.INFO,
-                _(u"We've sent an email with the username to any account"
-                  u" using {email}.").format(email=form.data['email']))
+                _("We've sent an email with the username to any account"
+                  " using {email}.").format(email=form.data['email']))
 
             return HttpResponseRedirect(reverse('users.login'))
     else:

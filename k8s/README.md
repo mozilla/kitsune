@@ -30,7 +30,7 @@ The production branch maintains an image that can be released in production with
 - Install needed packages
 
   ```sh
-  virtualenv venv
+  python -m venv venv
   pip install -r ./requirements.txt
   ```
 

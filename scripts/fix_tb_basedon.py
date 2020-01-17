@@ -49,7 +49,7 @@ def run_():
         products__slug='thunderbird'))
 
     if len(to_process) == 0:
-        print 'Nothing to do.'
+        print('Nothing to do.')
 
     prog = Progress(len(to_process))
 

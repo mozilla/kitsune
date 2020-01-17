@@ -4,7 +4,7 @@ import logging
 import subprocess
 import sys
 import textwrap
-import xmlrpclib
+import xmlrpc.client
 
 
 USAGE = 'Usage: year_in_review.py [--json] <YEAR>'
@@ -59,7 +59,7 @@ UNWANTED_COMPONENT_FIELDS = [
 ]
 
 
-class SessionTransport(xmlrpclib.SafeTransport):
+class SessionTransport(xmlrpc.client.SafeTransport):
     """
     XML-RPC HTTPS transport that stores auth cookies in the cache.
     """
@@ -80,7 +80,7 @@ class SessionTransport(xmlrpclib.SafeTransport):
             cache.set(SESSION_COOKIES_CACHE_KEY,
                       self._session_cookies, 0)
             log.debug('Got cookie: %s', self._session_cookies)
-        return xmlrpclib.Transport.parse_response(self, response)
+        return xmlrpc.client.Transport.parse_response(self, response)
 
     def send_host(self, connection, host):
         cookies = self.session_cookies
@@ -88,7 +88,7 @@ class SessionTransport(xmlrpclib.SafeTransport):
             for cookie in cookies:
                 connection.putheader('Cookie', cookie)
                 log.debug('Sent cookie: %s', cookie)
-        return xmlrpclib.Transport.send_host(self, connection, host)
+        return xmlrpc.client.Transport.send_host(self, connection, host)
 
     def get_cookies(self, response):
         cookie_headers = None
@@ -100,7 +100,7 @@ class SessionTransport(xmlrpclib.SafeTransport):
         return cookie_headers
 
 
-class BugzillaAPI(xmlrpclib.ServerProxy):
+class BugzillaAPI(xmlrpc.client.ServerProxy):
     def get_bug_ids(self, **kwargs):
         """Return list of ids of bugs from a search."""
         kwargs.update({
@@ -147,7 +147,7 @@ class BugzillaAPI(xmlrpclib.ServerProxy):
         log.debug('Getting history for bugs: %s', bug_ids)
         try:
             history = self.Bug.history({'ids': bug_ids}).get('bugs')
-        except xmlrpclib.Fault:
+        except xmlrpc.client.Fault:
             log.exception('Problem getting history for bug ids: %s', bug_ids)
             return {}
         return dict((h['id'], h['history']) for h in history)
@@ -159,10 +159,10 @@ class BugzillaAPI(xmlrpclib.ServerProxy):
                 'ids': bug_ids,
                 'include_fields': ['id', 'creator', 'time', 'text'],
                 }).get('bugs')
-        except xmlrpclib.Fault:
+        except xmlrpc.client.Fault:
             log.exception('Problem getting comments for bug ids: %s', bug_ids)
             return {}
-        return dict((int(bid), cids) for bid, cids in comments.iteritems())
+        return dict((int(bid), cids) for bid, cids in comments.items())
 
 
 def wrap(text, indent='    '):
@@ -221,7 +221,7 @@ def bugzilla_stats(year):
         total += 1
         creators[bug['creator']] = creators.get(bug['creator'], 0) + 1
 
-    creators = sorted(creators.items(), key=lambda item: item[1], reverse=True)
+    creators = sorted(list(creators.items()), key=lambda item: item[1], reverse=True)
 
     stats.append(('Bugs created', {
         'total': total,
@@ -292,13 +292,13 @@ def bugzilla_stats(year):
                 resolutions[change['added']] = resolutions.get(
                     change['added'], 0) + 1
 
-    peeps = sorted(peeps.items(), key=lambda item: sum(item[1].values()), reverse=True)
+    peeps = sorted(list(peeps.items()), key=lambda item: sum(item[1].values()), reverse=True)
     stats.append(('Bugs resolved', {
         'total': total,
         'breakdown': [
             {'name': mem[0].split('@')[0],
              'total': sum(mem[1].values()),
-             'breakdown': mem[1].items()}
+             'breakdown': list(mem[1].items())}
             for mem in peeps[:10]
         ]
     }))
@@ -307,7 +307,7 @@ def bugzilla_stats(year):
     # Resolution stats
     # -------------------------------------------
 
-    resolutions = sorted(resolutions.items(), key=lambda item: item[1])
+    resolutions = sorted(list(resolutions.items()), key=lambda item: item[1])
     stats.append(('Bugs resolved breakdown', resolutions))
 
     # -------------------------------------------
@@ -391,11 +391,11 @@ def git_stats(year):
             old_changes[2] + total_files
         )
 
-    print 'Total commits:', len(all_commits)
-    print ''
+    print('Total commits:', len(all_commits))
+    print('')
 
     committers = sorted(
-        committers.items(), key=lambda item: item[1], reverse=True)
+        list(committers.items()), key=lambda item: item[1], reverse=True)
 
     committers_data = []
     for person, count in committers:
@@ -412,9 +412,9 @@ def git_stats(year):
 
     stats.append(('Git commit data', {
             'total commits': len(all_commits),
-            'total lines added': sum([item[0] for item in changes.values()]),
-            'total lines deleted': sum([item[1] for item in changes.values()]),
-            'total files changed': sum([item[2] for item in changes.values()])
+            'total lines added': sum([item[0] for item in list(changes.values())]),
+            'total lines deleted': sum([item[1] for item in list(changes.values())]),
+            'total files changed': sum([item[2] for item in list(changes.values())])
     }))
 
     stats.append(('Git committer data', committers_data))
@@ -429,12 +429,12 @@ def main(argv):
     do_json = False
 
     if not argv:
-        print USAGE
-        print 'Error: Must specify the year. e.g. 2012'
+        print(USAGE)
+        print('Error: Must specify the year. e.g. 2012')
         return 1
 
     if '--json' in argv:
-        print '>>> OMGWTFBBQ! You want it in JSON!'
+        print('>>> OMGWTFBBQ! You want it in JSON!')
         do_json = True
         argv.remove('--json')
 
@@ -443,25 +443,25 @@ def main(argv):
     output = []
     output.append(('Year', year))
 
-    print '>>> Generating bugzilla stats....'
+    print('>>> Generating bugzilla stats....')
     output.extend(bugzilla_stats(year))
 
-    print '>>> Generating git stats....'
+    print('>>> Generating git stats....')
     output.extend(git_stats(year))
 
-    print ''
+    print('')
 
     if do_json:
-        print json.dumps(output, indent=2)
+        print(json.dumps(output, indent=2))
 
     else:
         for mem in output:
-            print ''
-            print mem[0]
-            print '=' * len(mem[0])
-            print ''
+            print('')
+            print(mem[0])
+            print('=' * len(mem[0]))
+            print('')
             # FIXME - this is gross
-            print json.dumps(mem[1], indent=2)
+            print(json.dumps(mem[1], indent=2))
 
 
 if __name__ == '__main__':

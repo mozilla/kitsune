@@ -59,7 +59,7 @@ class Command(BaseCommand):
             num_questions=num_questions,
             num_answered=num_answered)
 
-        for username, count in num_answered_by_tracked.items():
+        for username, count in list(num_answered_by_tracked.items()):
             email_body += 'Number of questions answered by {username}: {count}\n'.format(
                 username=username, count=count)
 

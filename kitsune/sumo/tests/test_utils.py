@@ -109,7 +109,7 @@ class JSONTests(TestCase):
 
     def test_unicode(self):
         """Unicode should not be treated as longer than it is."""
-        d = {'formula': u'A=πr²'}
+        d = {'formula': 'A=πr²'}
         trunc = truncated_json_dumps(d, 25, 'formula')
         eq_(json.dumps(d, ensure_ascii=False), trunc)
 

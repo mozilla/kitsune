@@ -23,4 +23,4 @@ class Redirect(ModelBase):
             self.locale or '*',
             self.topic or '',
             self.target)
-        return u'%s/%s/%s/%s/%s -> %s' % parts
+        return '%s/%s/%s/%s/%s -> %s' % parts

@@ -13,12 +13,12 @@ def get_kubectl():
 def todict(obj, classkey=None):
     if isinstance(obj, dict):
         data = {}
-        for (k, v) in obj.items():
+        for (k, v) in list(obj.items()):
             data[k] = todict(v, classkey)
         return data
     elif isinstance(obj, DataProxy):
         data = dict(obj)
-        for (k, v) in obj.items():
+        for (k, v) in list(obj.items()):
             data[k] = todict(v, classkey)
         return data
     return obj

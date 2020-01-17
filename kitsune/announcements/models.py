@@ -42,8 +42,8 @@ class Announcement(ModelBase):
     def __unicode__(self):
         excerpt = self.content[:50]
         if self.group:
-            return u"[{group}] {excerpt}".format(group=self.group, excerpt=excerpt)
-        return u"{excerpt}".format(excerpt=excerpt)
+            return "[{group}] {excerpt}".format(group=self.group, excerpt=excerpt)
+        return "{excerpt}".format(excerpt=excerpt)
 
     def is_visible(self):
         now = datetime.now()

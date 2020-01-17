@@ -17,7 +17,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None,
                                count=10, page=1, use_cache=True):
     """Get the top Support Forum contributors."""
     if use_cache:
-        cache_key = u'{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
+        cache_key = '{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
         cache_key = hashlib.sha1(cache_key.encode('utf-8')).hexdigest()
         cache_key = 'top_contributors_questions_{}'.format(cache_key)
         cached = cache.get(cache_key, None)
@@ -65,9 +65,9 @@ def top_contributors_l10n(start=None, end=None, locale=None, product=None,
                           count=10, page=1, use_cache=True):
     """Get the top l10n contributors for the KB."""
     if use_cache:
-        cache_key = u'{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
+        cache_key = '{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
         cache_key = hashlib.sha1(cache_key.encode('utf-8')).hexdigest()
-        cache_key = u'top_contributors_l10n_{}'.format(cache_key)
+        cache_key = 'top_contributors_l10n_{}'.format(cache_key)
         cached = cache.get(cache_key, None)
         if cached:
             return cached
@@ -118,7 +118,7 @@ def _get_creator_counts(query, count, page):
 
     query_data = {obj['id']: obj['query_count'] for obj in query_data}
 
-    users_data = (UserMappingType.search().filter(id__in=query_data.keys())
+    users_data = (UserMappingType.search().filter(id__in=list(query_data.keys()))
                                  .values_dict('id', 'username', 'display_name',
                                               'avatar', 'twitter_usernames',
                                               'last_contribution_date')[:count])

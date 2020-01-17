@@ -2,7 +2,7 @@ import logging
 import re
 import time
 from datetime import datetime, timedelta, date
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
@@ -110,10 +110,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     taken_by = models.ForeignKey(User, blank=True, null=True)
     taken_until = models.DateTimeField(blank=True, null=True)
 
-    html_cache_key = u"question:html:%s"
-    tags_cache_key = u"question:tags:%s"
-    images_cache_key = u"question:images:%s"
-    contributors_cache_key = u"question:contributors:%s"
+    html_cache_key = "question:html:%s"
+    tags_cache_key = "question:tags:%s"
+    images_cache_key = "question:images:%s"
+    contributors_cache_key = "question:contributors:%s"
 
     objects = QuestionManager()
 
@@ -187,7 +187,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         question.add_metadata(ff_version='3.6.3', os='Linux')
 
         """
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             QuestionMetaData.objects.create(question=self, name=key, value=value)
         self._metadata = None
 
@@ -909,7 +909,7 @@ class QuestionMetaData(ModelBase):
         unique_together = ("question", "name")
 
     def __unicode__(self):
-        return u"%s: %s" % (self.name, self.value[:50])
+        return "%s: %s" % (self.name, self.value[:50])
 
 
 class QuestionVisits(ModelBase):
@@ -931,7 +931,7 @@ class QuestionVisits(ModelBase):
             # them out at 5 minutes and the GA calls take forever.
             close_old_connections()
 
-            for question_id, visits in counts.iteritems():
+            for question_id, visits in counts.items():
                 # We are trying to minimize db calls here. Let's try to update
                 # first, that will be the common case.
                 num = cls.objects.filter(question_id=question_id).update(visits=visits)
@@ -992,8 +992,8 @@ class Answer(ModelBase, SearchMixin):
     images = GenericRelation(ImageAttachment)
     flags = GenericRelation(FlaggedObject)
 
-    html_cache_key = u"answer:html:%s"
-    images_cache_key = u"answer:images:%s"
+    html_cache_key = "answer:html:%s"
+    images_cache_key = "answer:images:%s"
 
     objects = AnswerManager()
 
@@ -1002,7 +1002,7 @@ class Answer(ModelBase, SearchMixin):
         permissions = (("bypass_answer_ratelimit", "Can bypass answering ratelimit"),)
 
     def __unicode__(self):
-        return u"%s: %s" % (self.question.title, self.content[:50])
+        return "%s: %s" % (self.question.title, self.content[:50])
 
     @property
     def content_parsed(self):
@@ -1441,7 +1441,7 @@ def _has_beta(version, dev_releases):
     dev_releases dict. If you pass '6.0', it returns False.
     """
     return version in [
-        re.search(r"(\d+\.)+\d+", s).group(0) for s in dev_releases.keys()
+        re.search(r"(\d+\.)+\d+", s).group(0) for s in list(dev_releases.keys())
     ]
 
 

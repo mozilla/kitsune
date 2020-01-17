@@ -91,7 +91,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_involved(self, obj):
-        involved = set([obj.creator.profile])
+        involved = {obj.creator.profile}
         involved.update(a.creator.profile for a in obj.answers.all())
         return ProfileFKSerializer(involved, many=True).data
 
@@ -210,7 +210,7 @@ class QuestionFilter(django_filters.FilterSet):
         except ValueError:
             raise GenericAPIException(400, 'metadata must be valid JSON.')
 
-        for key, values in value.items():
+        for key, values in list(value.items()):
             if not isinstance(values, list):
                 values = [values]
             query = Q()

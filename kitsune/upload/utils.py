@@ -1,5 +1,5 @@
 import os
-import StringIO
+import io
 
 from django.conf import settings
 from django.core.files import File
@@ -22,7 +22,7 @@ def check_file_size(f, max_allowed_size):
 
     """
     if f.size > max_allowed_size:
-        message = _lazy(u'"%s" is too large (%sKB), the limit is %sKB') % (
+        message = _lazy('"%s" is too large (%sKB), the limit is %sKB') % (
             f.name, f.size >> 10, max_allowed_size >> 10)
         raise FileTooLargeError(message)
 
@@ -32,7 +32,7 @@ def create_imageattachment(files, user, obj):
     Given an uploaded file, a user and an object, it creates an ImageAttachment
     owned by `user` and attached to `obj`.
     """
-    up_file = files.values()[0]
+    up_file = list(files.values())[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     (up_file, is_animated) = _image_to_png(up_file)
@@ -59,7 +59,7 @@ def create_imageattachment(files, user, obj):
 
 def _image_to_png(up_file):
     # PIL cannot directly open an InMemoryUploadedFile, so read into StringIO.
-    fileio = StringIO.StringIO(up_file.read())
+    fileio = io.StringIO(up_file.read())
     pil_image = Image.open(fileio)
 
     # Detect animated GIFS since we don't convert them.
@@ -76,7 +76,7 @@ def _image_to_png(up_file):
         is_animated = True
 
     if not is_animated:
-        converted_image = StringIO.StringIO()
+        converted_image = io.StringIO()
         options = {}
         if 'transparency' in pil_image.info:
             options['transparency'] = pil_image.info['transparency']

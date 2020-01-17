@@ -36,6 +36,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='flaggedobject',
-            unique_together=set([('content_type', 'object_id', 'creator')]),
+            unique_together={('content_type', 'object_id', 'creator')},
         ),
     ]

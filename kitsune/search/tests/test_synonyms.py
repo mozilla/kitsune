@@ -16,7 +16,7 @@ class TestSynonymModel(TestCase):
 
     def test_serialize(self):
         syn = SynonymFactory(from_words="foo", to_words="bar")
-        eq_("foo => bar", unicode(syn))
+        eq_("foo => bar", str(syn))
 
 
 class TestFilterGenerator(TestCase):
@@ -59,11 +59,11 @@ class TestSynonymParser(TestCase):
             three => orange, grape
             four, five => jellybean
             """)
-        synonyms = set([
+        synonyms = {
             ('one, two', 'apple, banana'),
             ('three', 'orange, grape'),
             ('four, five', 'jellybean'),
-        ])
+        }
         eq_(synonyms, synonym_utils.parse_synonyms(synonym_text))
 
     def testTooManyArrows(self):

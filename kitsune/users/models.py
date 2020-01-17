@@ -43,50 +43,50 @@ class Profile(ModelBase, SearchMixin):
     """Profile model for django users."""
 
     user = models.OneToOneField(User, primary_key=True,
-                                verbose_name=_lazy(u'User'))
+                                verbose_name=_lazy('User'))
     name = models.CharField(max_length=255, null=True, blank=True,
-                            verbose_name=_lazy(u'Display name'))
+                            verbose_name=_lazy('Display name'))
     public_email = models.BooleanField(  # show/hide email
-        default=False, verbose_name=_lazy(u'Make my email public'))
+        default=False, verbose_name=_lazy('Make my email public'))
     avatar = models.ImageField(upload_to=settings.USER_AVATAR_PATH, null=True,
-                               blank=True, verbose_name=_lazy(u'Avatar'),
+                               blank=True, verbose_name=_lazy('Avatar'),
                                max_length=settings.MAX_FILEPATH_LENGTH)
     bio = models.TextField(null=True, blank=True,
-                           verbose_name=_lazy(u'Biography'),
-                           help_text=_lazy(u'Some HTML supported: &#x3C;abbr title&#x3E; ' +
+                           verbose_name=_lazy('Biography'),
+                           help_text=_lazy('Some HTML supported: &#x3C;abbr title&#x3E; ' +
                                            '&#x3C;acronym title&#x3E; &#x3C;b&#x3E; ' +
                                            '&#x3C;blockquote&#x3E; &#x3C;code&#x3E; ' +
                                            '&#x3C;em&#x3E; &#x3C;i&#x3E; &#x3C;li&#x3E; ' +
                                            '&#x3C;ol&#x3E; &#x3C;strong&#x3E; &#x3C;ul&#x3E;. ' +
                                            'Links are forbidden.'))
     website = models.URLField(max_length=255, null=True, blank=True,
-                              verbose_name=_lazy(u'Website'))
+                              verbose_name=_lazy('Website'))
     twitter = models.CharField(max_length=15, null=True, blank=True, validators=[TwitterValidator],
-                               verbose_name=_lazy(u'Twitter Username'))
+                               verbose_name=_lazy('Twitter Username'))
     facebook = models.URLField(max_length=255, null=True, blank=True,
-                               verbose_name=_lazy(u'Facebook URL'))
+                               verbose_name=_lazy('Facebook URL'))
     mozillians = models.CharField(max_length=255, null=True, blank=True,
-                                  verbose_name=_lazy(u'Mozillians Username'))
+                                  verbose_name=_lazy('Mozillians Username'))
     irc_handle = models.CharField(max_length=255, null=True, blank=True,
-                                  verbose_name=_lazy(u'IRC nickname'))
+                                  verbose_name=_lazy('IRC nickname'))
     timezone = TimeZoneField(null=True, blank=True, default='US/Pacific',
-                             verbose_name=_lazy(u'Timezone'))
+                             verbose_name=_lazy('Timezone'))
     country = models.CharField(max_length=2, choices=COUNTRIES, null=True,
-                               blank=True, verbose_name=_lazy(u'Country'))
+                               blank=True, verbose_name=_lazy('Country'))
     # No city validation
     city = models.CharField(max_length=255, null=True, blank=True,
-                            verbose_name=_lazy(u'City'))
+                            verbose_name=_lazy('City'))
     locale = LocaleField(default=settings.LANGUAGE_CODE,
-                         verbose_name=_lazy(u'Preferred language'))
+                         verbose_name=_lazy('Preferred language'))
     first_answer_email_sent = models.BooleanField(
-        default=False, help_text=_lazy(u'Has been sent a first answer contribution email.'))
+        default=False, help_text=_lazy('Has been sent a first answer contribution email.'))
     first_l10n_email_sent = models.BooleanField(
-        default=False, help_text=_lazy(u'Has been sent a first revision contribution email.'))
+        default=False, help_text=_lazy('Has been sent a first revision contribution email.'))
     involved_from = models.DateField(null=True, blank=True,
-                                     verbose_name=_lazy(u'Involved with Mozilla from'))
+                                     verbose_name=_lazy('Involved with Mozilla from'))
     csat_email_sent = models.DateField(null=True, blank=True,
-                                       verbose_name=_lazy(u'When the user was sent a community '
-                                                          u'health survey'))
+                                       verbose_name=_lazy('When the user was sent a community '
+                                                          'health survey'))
     is_fxa_migrated = models.BooleanField(default=False)
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
     fxa_avatar = models.URLField(max_length=512, blank=True, default='')
@@ -99,9 +99,9 @@ class Profile(ModelBase, SearchMixin):
 
     def __unicode__(self):
         try:
-            return unicode(self.user)
+            return str(self.user)
         except Exception as exc:
-            return unicode('%d (%r)' % (self.pk, exc))
+            return str('%d (%r)' % (self.pk, exc))
 
     def get_absolute_url(self):
         return reverse('users.profile', args=[self.user_id])
@@ -291,7 +291,7 @@ class UserMappingType(SearchMappingType):
                 d['iusername'],
                 d['idisplay_name']
             ],
-            'output': _(u'{displayname} ({username})').format(
+            'output': _('{displayname} ({username})').format(
                 displayname=d['display_name'], username=d['username']),
             'payload': {'user_id': d['id']},
         }
@@ -337,24 +337,24 @@ register_for_indexing(
 
 class Setting(ModelBase):
     """User specific value per setting"""
-    user = models.ForeignKey(User, verbose_name=_lazy(u'User'),
+    user = models.ForeignKey(User, verbose_name=_lazy('User'),
                              related_name='settings')
 
     name = models.CharField(max_length=100)
     value = models.CharField(blank=True, max_length=60,
-                             verbose_name=_lazy(u'Value'))
+                             verbose_name=_lazy('Value'))
 
     class Meta(object):
         unique_together = (('user', 'name'),)
 
     def __unicode__(self):
-        return u'%s %s:%s' % (self.user, self.name, self.value or u'[none]')
+        return '%s %s:%s' % (self.user, self.name, self.value or '[none]')
 
     @classmethod
     def get_for_user(cls, user, name):
         from kitsune.users.forms import SettingsForm
         form = SettingsForm()
-        if name not in form.fields.keys():
+        if name not in list(form.fields.keys()):
             raise KeyError(("'{name}' is not a field in "
                             "user.forms.SettingsFrom()").format(name=name))
         try:
@@ -490,7 +490,7 @@ class RegistrationManager(ConfirmationManager):
             statsd.incr('user.activate-error.invalid-key')
             reason = 'invalid key'
 
-        log.warning(u'User activation failure ({r}): {k}'.format(
+        log.warning('User activation failure ({r}): {k}'.format(
             r=reason, k=activation_key))
 
         return False
@@ -566,7 +566,7 @@ class RegistrationManager(ConfirmationManager):
 
 @task
 def _delete_registration_profiles_chunk(data):
-    log_msg = u'Deleting {num} expired registration profiles.'
+    log_msg = 'Deleting {num} expired registration profiles.'
     log.info(log_msg.format(num=len(data)))
     qs = RegistrationProfile.objects.filter(id__in=data)
     for profile in qs.select_related('user'):
@@ -598,18 +598,18 @@ class RegistrationProfile(models.Model):
     of this model; the provided manager includes methods
     for creating and activating new accounts.
     """
-    user = models.ForeignKey(User, unique=True, verbose_name=_lazy(u'user'))
-    activation_key = models.CharField(verbose_name=_lazy(u'activation key'),
+    user = models.ForeignKey(User, unique=True, verbose_name=_lazy('user'))
+    activation_key = models.CharField(verbose_name=_lazy('activation key'),
                                       max_length=40)
 
     objects = RegistrationManager()
 
     class Meta:
-        verbose_name = _lazy(u'registration profile')
-        verbose_name_plural = _lazy(u'registration profiles')
+        verbose_name = _lazy('registration profile')
+        verbose_name_plural = _lazy('registration profiles')
 
     def __unicode__(self):
-        return u'Registration information for %s' % self.user
+        return 'Registration information for %s' % self.user
 
     def activation_key_expired(self):
         """
@@ -633,27 +633,27 @@ class RegistrationProfile(models.Model):
 
 class EmailChange(models.Model):
     """Stores email with activation key when user requests a change."""
-    ACTIVATED = u"ALREADY_ACTIVATED"
+    ACTIVATED = "ALREADY_ACTIVATED"
 
-    user = models.ForeignKey(User, unique=True, verbose_name=_lazy(u'user'))
-    activation_key = models.CharField(verbose_name=_lazy(u'activation key'),
+    user = models.ForeignKey(User, unique=True, verbose_name=_lazy('user'))
+    activation_key = models.CharField(verbose_name=_lazy('activation key'),
                                       max_length=40)
     email = models.EmailField(db_index=True, null=True)
 
     objects = EmailChangeManager()
 
     def __unicode__(self):
-        return u'Change email request to %s for %s' % (self.email, self.user)
+        return 'Change email request to %s for %s' % (self.email, self.user)
 
 
 class Deactivation(models.Model):
     """Stores user deactivation logs."""
-    user = models.ForeignKey(User, verbose_name=_lazy(u'user'),
+    user = models.ForeignKey(User, verbose_name=_lazy('user'),
                              related_name='+')
-    moderator = models.ForeignKey(User, verbose_name=_lazy(u'moderator'),
+    moderator = models.ForeignKey(User, verbose_name=_lazy('moderator'),
                                   related_name='deactivations')
     date = models.DateTimeField(default=datetime.now)
 
     def __unicode__(self):
-        return u'%s was deactivated by %s on %s' % (self.user, self.moderator,
+        return '%s was deactivated by %s on %s' % (self.user, self.moderator,
                                                     self.date)

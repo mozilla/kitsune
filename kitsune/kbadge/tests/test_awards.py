@@ -20,7 +20,7 @@ class AwardNotificationTests(TestCase):
         eq_(0, len(mail.outbox))
 
         # Create an award and save it. This triggers the notification.
-        AwardFactory(description=u'yay!', badge=new_badge)
+        AwardFactory(description='yay!', badge=new_badge)
 
         eq_(1, len(mail.outbox))
 

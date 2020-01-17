@@ -15,17 +15,17 @@ class GroupProfile(ModelBase):
                             null=False, max_length=80)
     group = models.ForeignKey(Group, related_name='profile')
     leaders = models.ManyToManyField(User)
-    information = models.TextField(help_text=u'Use Wiki Syntax')
+    information = models.TextField(help_text='Use Wiki Syntax')
     information_html = models.TextField(editable=False)
     avatar = models.ImageField(upload_to=settings.GROUP_AVATAR_PATH, null=True,
-                               blank=True, verbose_name=_lazy(u'Avatar'),
+                               blank=True, verbose_name=_lazy('Avatar'),
                                max_length=settings.MAX_FILEPATH_LENGTH)
 
     class Meta:
         ordering = ['slug']
 
     def __unicode__(self):
-        return unicode(self.group)
+        return str(self.group)
 
     def get_absolute_url(self):
         return reverse('groups.profile', args=[self.slug])

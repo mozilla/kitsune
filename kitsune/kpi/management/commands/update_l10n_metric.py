@@ -42,11 +42,11 @@ class Command(BaseCommand):
         locale_visits = googleanalytics.visitors_by_locale(start, end)
 
         # Total visits.
-        total_visits = sum(locale_visits.itervalues())
+        total_visits = sum(locale_visits.values())
 
         # Calculate the coverage.
         coverage = 0
-        for locale, visits in locale_visits.iteritems():
+        for locale, visits in locale_visits.items():
             if locale == settings.WIKI_DEFAULT_LANGUAGE:
                 num_docs = utils.MAX_DOCS_UP_TO_DATE
                 up_to_date_docs = utils.MAX_DOCS_UP_TO_DATE

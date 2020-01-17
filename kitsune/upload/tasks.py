@@ -1,6 +1,6 @@
 import logging
 import os
-import StringIO
+import io
 import subprocess
 from tempfile import NamedTemporaryFile
 
@@ -63,7 +63,7 @@ def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE,
     width, height = _scale_dimensions(file_width, file_height, longest_side)
     resized_image = original_image.resize((width, height), Image.ANTIALIAS)
 
-    io = StringIO.StringIO()
+    io = io.StringIO()
 
     if pad:
         padded_image = _make_image_square(resized_image, longest_side)

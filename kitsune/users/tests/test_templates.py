@@ -168,7 +168,7 @@ class PasswordResetTests(TestCaseBase):
         pwform_save.side_effect = raise_smtp
         r = self.client.post(reverse('users.pw_reset'),
                              {'email': self.u.email})
-        self.assertContains(r, unicode(ERROR_SEND_EMAIL))
+        self.assertContains(r, str(ERROR_SEND_EMAIL))
 
     def _get_reset_url(self):
         return reverse('users.pw_reset_confirm',
@@ -537,7 +537,7 @@ class ResendConfirmationTests(TestCaseBase):
         send_confirmation_email.side_effect = raise_smtp
         r = self.client.post(reverse('users.resend_confirmation'),
                              {'email': 'testuser@email.com'})
-        self.assertContains(r, unicode(ERROR_SEND_EMAIL))
+        self.assertContains(r, str(ERROR_SEND_EMAIL))
 
 
 class FlagProfileTests(TestCaseBase):
@@ -598,7 +598,7 @@ class EditWatchListTests(TestCaseBase):
     def test_GET(self):
         r = self.client.get(reverse('users.edit_watch_list'))
         eq_(200, r.status_code)
-        assert u'question: ' + self.question.title in r.content.decode('utf8')
+        assert 'question: ' + self.question.title in r.content.decode('utf8')
 
     def test_POST(self):
         w = Watch.objects.get(object_id=self.question.id, user=self.user)

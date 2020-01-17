@@ -8,97 +8,97 @@ from kitsune.questions.marketplace import submit_ticket
 from kitsune.questions.models import Answer
 
 # labels and help text
-SITE_AFFECTED_LABEL = _lazy(u'URL of affected site')
-CRASH_ID_LABEL = _lazy(u'Crash ID(s)')
-CRASH_ID_HELP = _lazy(u"If you submit information to Mozilla when you crash, "
-                      u"you'll be given a crash ID which uniquely identifies "
-                      u"your crash and lets us look at details that may help "
-                      u"identify the cause. To find your recently submitted "
-                      u"crash IDs, go to <strong>about:crashes</strong> in "
-                      u"your location bar. <a href='https://support.mozilla."
-                      u"com/en-US/kb/Firefox+crashes#Getting_the_most_"
-                      u"accurate_help_with_your_Firefox_crash' "
-                      u"target='_blank'>Click for detailed instructions</a>.")
-TROUBLESHOOTING_LABEL = _lazy(u'Troubleshooting Information')
-TROUBLESHOOTING_HELP = _lazy(u'This information gives details about the '
-                             u'internal workings of your browser that will '
-                             u'help in answering your question.')
-FREQUENCY_LABEL = _lazy(u'This happens')
-FREQUENCY_CHOICES = [(u'', u''),
-                     (u'NOT_SURE', _lazy(u'Not sure how often')),
-                     (u'ONCE_OR_TWICE', _lazy(u'Just once or twice')),
-                     (u'FEW_TIMES_WEEK', _lazy(u'A few times a week')),
-                     (u'EVERY_TIME', _lazy(u'Every time Firefox opened')), ]
-STARTED_LABEL = _lazy(u'This started when...')
-TITLE_LABEL = _lazy(u'Question')
-CONTENT_LABEL = _lazy(u'Details')
-EMAIL_LABEL = _lazy(u'Email')
-EMAIL_HELP = _lazy(u'A confirmation email will be sent to this address in '
-                   u'order to post your question.')
-FF_VERSION_LABEL = _lazy(u'Firefox version')
-OS_LABEL = _lazy(u'Operating system')
-PLUGINS_LABEL = _lazy(u'Installed plugins')
-ADDON_LABEL = _lazy(u'Extension/plugin you are having trouble with')
-DEVICE_LABEL = _lazy(u'Mobile device')
+SITE_AFFECTED_LABEL = _lazy('URL of affected site')
+CRASH_ID_LABEL = _lazy('Crash ID(s)')
+CRASH_ID_HELP = _lazy("If you submit information to Mozilla when you crash, "
+                      "you'll be given a crash ID which uniquely identifies "
+                      "your crash and lets us look at details that may help "
+                      "identify the cause. To find your recently submitted "
+                      "crash IDs, go to <strong>about:crashes</strong> in "
+                      "your location bar. <a href='https://support.mozilla."
+                      "com/en-US/kb/Firefox+crashes#Getting_the_most_"
+                      "accurate_help_with_your_Firefox_crash' "
+                      "target='_blank'>Click for detailed instructions</a>.")
+TROUBLESHOOTING_LABEL = _lazy('Troubleshooting Information')
+TROUBLESHOOTING_HELP = _lazy('This information gives details about the '
+                             'internal workings of your browser that will '
+                             'help in answering your question.')
+FREQUENCY_LABEL = _lazy('This happens')
+FREQUENCY_CHOICES = [('', ''),
+                     ('NOT_SURE', _lazy('Not sure how often')),
+                     ('ONCE_OR_TWICE', _lazy('Just once or twice')),
+                     ('FEW_TIMES_WEEK', _lazy('A few times a week')),
+                     ('EVERY_TIME', _lazy('Every time Firefox opened')), ]
+STARTED_LABEL = _lazy('This started when...')
+TITLE_LABEL = _lazy('Question')
+CONTENT_LABEL = _lazy('Details')
+EMAIL_LABEL = _lazy('Email')
+EMAIL_HELP = _lazy('A confirmation email will be sent to this address in '
+                   'order to post your question.')
+FF_VERSION_LABEL = _lazy('Firefox version')
+OS_LABEL = _lazy('Operating system')
+PLUGINS_LABEL = _lazy('Installed plugins')
+ADDON_LABEL = _lazy('Extension/plugin you are having trouble with')
+DEVICE_LABEL = _lazy('Mobile device')
 
 # Validation error messages
-MSG_TITLE_REQUIRED = _lazy(u'Please provide a question.')
-MSG_TITLE_SHORT = _lazy(u'Your question is too short (%(show_value)s '
-                        u'characters). It must be at least %(limit_value)s '
-                        u'characters.')
-MSG_TITLE_LONG = _lazy(u'Please keep the length of your question to '
-                       u'%(limit_value)s characters or less. It is currently '
-                       u'%(show_value)s characters.')
-MSG_CONTENT_REQUIRED = _lazy(u'Please provide content.')
-MSG_CONTENT_SHORT = _lazy(u'Your content is too short (%(show_value)s '
-                          u'characters). It must be at least %(limit_value)s '
-                          u'characters.')
-MSG_CONTENT_LONG = _lazy(u'Please keep the length of your content to '
-                         u'%(limit_value)s characters or less. It is '
-                         u'currently %(show_value)s characters.')
+MSG_TITLE_REQUIRED = _lazy('Please provide a question.')
+MSG_TITLE_SHORT = _lazy('Your question is too short (%(show_value)s '
+                        'characters). It must be at least %(limit_value)s '
+                        'characters.')
+MSG_TITLE_LONG = _lazy('Please keep the length of your question to '
+                       '%(limit_value)s characters or less. It is currently '
+                       '%(show_value)s characters.')
+MSG_CONTENT_REQUIRED = _lazy('Please provide content.')
+MSG_CONTENT_SHORT = _lazy('Your content is too short (%(show_value)s '
+                          'characters). It must be at least %(limit_value)s '
+                          'characters.')
+MSG_CONTENT_LONG = _lazy('Please keep the length of your content to '
+                         '%(limit_value)s characters or less. It is '
+                         'currently %(show_value)s characters.')
 
-REPLY_PLACEHOLDER = _lazy(u'Enter your reply here.')
+REPLY_PLACEHOLDER = _lazy('Enter your reply here.')
 
 # Marketplace AAQ form
-EMAIL_PLACEHOLDER = _lazy(u'Enter your email address here.')
-SUBJECT_PLACEHOLDER = _lazy(u'Enter a subject here.')
-SUBJECT_CONTENT_REQUIRED = _lazy(u'Please provide a subject.')
+EMAIL_PLACEHOLDER = _lazy('Enter your email address here.')
+SUBJECT_PLACEHOLDER = _lazy('Enter a subject here.')
+SUBJECT_CONTENT_REQUIRED = _lazy('Please provide a subject.')
 SUBJECT_CONTENT_SHORT = _lazy(
-    u'The subject is too short (%(show_value)s '
-    u'characters). It must be at least %(limit_value)s '
-    u'characters.')
-SUBJECT_CONTENT_LONG = _lazy(u'Please keep the length of the subject to '
-                             u'%(limit_value)s characters or less. It is '
-                             u'currently %(show_value)s characters.')
-BODY_PLACEHOLDER = _lazy(u'Describe your issue here.')
-BODY_CONTENT_REQUIRED = _lazy(u'Please describe your issue in the body.')
-BODY_CONTENT_SHORT = _lazy(u'The body content is too short (%(show_value)s '
-                           u'characters). It must be at least %(limit_value)s '
-                           u'characters.')
-BODY_CONTENT_LONG = _lazy(u'Please keep the length of the body content to '
-                          u'%(limit_value)s characters or less. It is '
-                          u'currently %(show_value)s characters.')
-CATEGORY_CHOICES = [(u'account', _lazy(u'Account Issues')),
-                    (u'installation', _lazy(u'Installation Issues')),
-                    (u'payment', _lazy(u'Payment Issues')),
-                    (u'application', _lazy(u'Application Issues')), ]
+    'The subject is too short (%(show_value)s '
+    'characters). It must be at least %(limit_value)s '
+    'characters.')
+SUBJECT_CONTENT_LONG = _lazy('Please keep the length of the subject to '
+                             '%(limit_value)s characters or less. It is '
+                             'currently %(show_value)s characters.')
+BODY_PLACEHOLDER = _lazy('Describe your issue here.')
+BODY_CONTENT_REQUIRED = _lazy('Please describe your issue in the body.')
+BODY_CONTENT_SHORT = _lazy('The body content is too short (%(show_value)s '
+                           'characters). It must be at least %(limit_value)s '
+                           'characters.')
+BODY_CONTENT_LONG = _lazy('Please keep the length of the body content to '
+                          '%(limit_value)s characters or less. It is '
+                          'currently %(show_value)s characters.')
+CATEGORY_CHOICES = [('account', _lazy('Account Issues')),
+                    ('installation', _lazy('Installation Issues')),
+                    ('payment', _lazy('Payment Issues')),
+                    ('application', _lazy('Application Issues')), ]
 
 # Marketplace Request Refund form
-TRANSACTION_ID_PLACEHOLDER = _lazy(u'Enter the Transaction ID here.')
-TRANSACTION_ID_REQUIRED = _lazy(u'Please provide the Transaction ID.')
+TRANSACTION_ID_PLACEHOLDER = _lazy('Enter the Transaction ID here.')
+TRANSACTION_ID_REQUIRED = _lazy('Please provide the Transaction ID.')
 REFUND_CATEGORY_CHOICES = [
-    (u'Defective', _lazy(u'Defective')),
-    (u'Malware', _lazy(u'Malware')),
-    (u'Did not work as expected', _lazy(u'Did not work as expected')),
-    (u'Seller will not provide support',
-     _lazy(u'Seller will not provide support')), ]
+    ('Defective', _lazy('Defective')),
+    ('Malware', _lazy('Malware')),
+    ('Did not work as expected', _lazy('Did not work as expected')),
+    ('Seller will not provide support',
+     _lazy('Seller will not provide support')), ]
 
 
 # Marketplace Developer Request form
 DEVELOPER_REQUEST_CATEGORY_CHOICES = [
-    (u'Account Administration', _lazy(u'Account Administration')),
-    (u'Review Process', _lazy(u'Review Process')),
-    (u'Payments/Settlement', _lazy(u'Payments/Settlement')), ]
+    ('Account Administration', _lazy('Account Administration')),
+    ('Review Process', _lazy('Review Process')),
+    ('Payments/Settlement', _lazy('Payments/Settlement')), ]
 
 
 class EditQuestionForm(forms.Form):
@@ -228,7 +228,7 @@ class EditQuestionForm(forms.Form):
         def metadata_filter(x):
             return x not in non_metadata_fields
 
-        return filter(metadata_filter, self.fields.keys())
+        return list(filter(metadata_filter, list(self.fields.keys())))
 
     @property
     def cleaned_metadata(self):
@@ -236,7 +236,7 @@ class EditQuestionForm(forms.Form):
         fields with empty string value."""
         clean = {}
         for key in self.metadata_field_keys:
-            if key in self.data and self.data[key] != u'':
+            if key in self.data and self.data[key] != '':
                 clean[key] = self.cleaned_data[key]
 
         # Clean up the troubleshooting data if we have it.
@@ -251,7 +251,7 @@ class EditQuestionForm(forms.Form):
                 # Clean out unwanted garbage preferences.
                 if ('modifiedPreferences' in parsed and
                         isinstance(parsed['modifiedPreferences'], dict)):
-                    for pref in parsed['modifiedPreferences'].keys():
+                    for pref in list(parsed['modifiedPreferences'].keys()):
                         if pref.startswith('print.macosx.pagesetup'):
                             del parsed['modifiedPreferences'][pref]
                     clean['troubleshooting'] = json.dumps(parsed)
@@ -335,14 +335,14 @@ class BaseZendeskForm(forms.Form):
         # Add email field for users not logged in.
         if not user.is_authenticated():
             email = forms.EmailField(
-                label=_lazy(u'Email:'),
+                label=_lazy('Email:'),
                 widget=forms.TextInput(attrs={
                     'placeholder': EMAIL_PLACEHOLDER
                 }))
             self.fields['email'] = email
 
     subject = forms.CharField(
-        label=_lazy(u'Subject:'),
+        label=_lazy('Subject:'),
         min_length=4,
         max_length=255,
         widget=forms.TextInput(attrs={'placeholder': SUBJECT_PLACEHOLDER}),
@@ -351,7 +351,7 @@ class BaseZendeskForm(forms.Form):
                         'max_length': SUBJECT_CONTENT_LONG})
 
     body = forms.CharField(
-        label=_lazy(u'Body:'),
+        label=_lazy('Body:'),
         min_length=5,
         max_length=10000,
         widget=forms.Textarea(attrs={'placeholder': BODY_PLACEHOLDER}),
@@ -382,20 +382,20 @@ class BaseZendeskForm(forms.Form):
 
 class MarketplaceAaqForm(BaseZendeskForm):
     category = forms.ChoiceField(
-        label=_lazy(u'Category:'),
+        label=_lazy('Category:'),
         choices=CATEGORY_CHOICES)
 
 
 class MarketplaceRefundForm(BaseZendeskForm):
     transaction_id = forms.CharField(
-        label=_lazy(u'Transaction ID:'),
+        label=_lazy('Transaction ID:'),
         widget=forms.TextInput(attrs={
             'placeholder': TRANSACTION_ID_PLACEHOLDER
         }),
         error_messages={'required': TRANSACTION_ID_REQUIRED})
 
     category = forms.ChoiceField(
-        label=_lazy(u'Category:'),
+        label=_lazy('Category:'),
         choices=REFUND_CATEGORY_CHOICES)
 
     def ticket_body(self, email):
@@ -409,7 +409,7 @@ class MarketplaceRefundForm(BaseZendeskForm):
 
 class MarketplaceDeveloperRequestForm(BaseZendeskForm):
     category = forms.ChoiceField(
-        label=_lazy(u'Category:'),
+        label=_lazy('Category:'),
         choices=DEVELOPER_REQUEST_CATEGORY_CHOICES)
 
     def ticket_body(self, email):
@@ -425,10 +425,10 @@ bucket_choices = [(1, '1 day'), (7, '1 week'), (30, '1 month')]
 
 class StatsForm(forms.Form):
     bucket = forms.IntegerField(
-        min_value=1, required=False, label=_lazy(u'Interval'),
+        min_value=1, required=False, label=_lazy('Interval'),
         widget=forms.Select(choices=bucket_choices))
-    start = forms.DateField(required=False, label=_lazy(u'Start'))
-    end = forms.DateField(required=False, label=_lazy(u'End'))
+    start = forms.DateField(required=False, label=_lazy('Start'))
+    end = forms.DateField(required=False, label=_lazy('End'))
 
     def clean_bucket(self):
         if self.cleaned_data.get('bucket') is None:

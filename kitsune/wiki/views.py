@@ -75,7 +75,7 @@ def doc_page_cache(view):
         if html is not None:
             statsd.incr('wiki.document_view.cache.hit')
             res = HttpResponse(html)
-            for key, val in headers.items():
+            for key, val in list(headers.items()):
                 res[key] = val
             return res
 
@@ -84,7 +84,7 @@ def doc_page_cache(view):
 
         # We only cache if the response returns HTTP 200.
         if response.status_code == 200:
-            cache.set(cache_key, (response.content, dict(response._headers.values())))
+            cache.set(cache_key, (response.content, dict(list(response._headers.values()))))
 
         return response
     return _doc_page_cache_view
@@ -260,7 +260,7 @@ def list_documents(request, category=None):
         except ValueError:
             raise Http404
         try:
-            category = unicode(dict(CATEGORIES)[category_id])
+            category = str(dict(CATEGORIES)[category_id])
         except KeyError:
             raise Http404
 
@@ -459,7 +459,7 @@ def edit_document(request, document_slug, revision_id=None):
 
                 topics = []
                 for t in post_data.getlist('topics'):
-                    topics.append(long(t))
+                    topics.append(int(t))
                 post_data.setlist('topics', topics)
 
                 doc_form = DocumentForm(
@@ -802,7 +802,7 @@ def translate(request, document_slug, revision_id=None):
             args=[parent_doc.slug]))
 
     if not parent_doc.is_localizable:
-        message = _lazy(u'You cannot translate this document.')
+        message = _lazy('You cannot translate this document.')
         return render(request, 'handlers/400.html', {
             'message': message},
             status=400)
@@ -1266,7 +1266,7 @@ def get_helpful_votes_async(request, document_slug):
         rdate = rev.reviewed or rev.created
         rev_data.append({
             'x': int(time.mktime(rdate.timetuple())),
-            'text': unicode(_('Revision %s')) % rev.created
+            'text': str(_('Revision %s')) % rev.created
         })
 
     # Rickshaw wants data like

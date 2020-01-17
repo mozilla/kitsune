@@ -3,7 +3,7 @@ import json as jsonlib
 import logging
 import os
 import re
-import urlparse
+import urllib.parse
 
 from django.conf import settings
 from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
@@ -86,7 +86,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     New query params will be appended to exising parameters, except duplicate
     names, which will be replaced.
     """
-    url_ = urlparse.urlparse(url_)
+    url_ = urllib.parse.urlparse(url_)
     fragment = hash if hash is not None else url_.fragment
 
     q = url_.query
@@ -98,12 +98,12 @@ def urlparams(url_, hash=None, query_dict=None, **query):
             for v in l:
                 new_query_dict.appendlist(k, v)
 
-    for k, v in query.items():
+    for k, v in list(query.items()):
         new_query_dict[k] = v  # Replace, don't append.
 
     query_string = urlencode([(k, v) for k, l in new_query_dict.lists() for
                               v in l if v is not None])
-    new = urlparse.ParseResult(url_.scheme, url_.netloc, url_.path,
+    new = urllib.parse.ParseResult(url_.scheme, url_.netloc, url_.path,
                                url_.params, query_string, fragment)
     return new.geturl()
 
@@ -169,7 +169,7 @@ class Paginator(object):
             lower, upper = total - span * 2, total
         else:
             lower, upper = page - span, page + span - 1
-        return range(max(lower + 1, 1), min(total, upper) + 1)
+        return list(range(max(lower + 1, 1), min(total, upper) + 1))
 
     def render(self):
         c = {'pager': self.pager, 'num_pages': self.num_pages,
@@ -185,7 +185,7 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
     Accepts: [(url, label)]
     """
     if add_default:
-        first_crumb = u'Home'
+        first_crumb = 'Home'
 
         crumbs = [(reverse('home'), _lazy(first_crumb))]
     else:
@@ -260,7 +260,7 @@ def datetimeformat(context, value, format='shortdatetime'):
         # Check if the date is today
         today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
         if convert_value.toordinal() == today:
-            formatted = _lazy(u'Today at %s') % format_time(
+            formatted = _lazy('Today at %s') % format_time(
                 convert_value, format='short', tzinfo=convert_tzinfo,
                 locale=locale)
         else:
@@ -346,7 +346,7 @@ def timesince(d, now=None):
 
     """
     if d is None:
-        return u''
+        return ''
     chunks = [
         (60 * 60 * 24 * 365, lambda n: ungettext('%(number)d year ago',
                                                  '%(number)d years ago', n)),
@@ -376,7 +376,7 @@ def timesince(d, now=None):
     since = delta.days * 24 * 60 * 60 + delta.seconds
     if since <= 0:
         # d is in the future compared to now, stop processing.
-        return u''
+        return ''
     for i, (seconds, name) in enumerate(chunks):
         count = since // seconds
         if count != 0:
@@ -388,13 +388,13 @@ def timesince(d, now=None):
 def label_with_help(f):
     """Print the label tag for a form field, including the help_text
     value as a title attribute."""
-    label = u'<label for="%s" title="%s">%s</label>'
+    label = '<label for="%s" title="%s">%s</label>'
     return jinja2.Markup(label % (f.auto_id, f.help_text, f.label))
 
 
 @library.filter
 def yesno(boolean_value):
-    return jinja2.Markup(_lazy(u'Yes') if boolean_value else _lazy(u'No'))
+    return jinja2.Markup(_lazy('Yes') if boolean_value else _lazy('No'))
 
 
 @library.filter
@@ -433,7 +433,7 @@ def add_utm(url_, campaign, source='notification', medium='email'):
 
 @library.global_function
 def to_unicode(str):
-    return unicode(str)
+    return str(str)
 
 
 @library.global_function
@@ -474,7 +474,7 @@ def f(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return format_string.format(*args, **kwargs)
 
@@ -491,7 +491,7 @@ def fe(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return jinja2.Markup(format_string.format(*args, **kwargs))
 
