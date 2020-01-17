@@ -76,6 +76,7 @@
 
   &--product {
     @include c.elevation-01;
+    display: flex;
     flex-direction: column;
   }
 

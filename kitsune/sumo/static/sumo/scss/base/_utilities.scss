@@ -73,6 +73,14 @@
   text-align: center;
 }
 
+.text-center-to-left-on-large {
+  text-align: center;
+
+  @media #{p.$mq-lg} {
+    text-align: left;
+  }
+}
+
 .text-right {
   text-align: right;
 }
