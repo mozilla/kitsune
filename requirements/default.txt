@@ -161,7 +161,7 @@ https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e97
     --hash=sha256:8d375db708bc87f6df9bb3ae94edd01bed2cbb6a6894a927785ded9aede983ef
 https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline \
     --hash=sha256:8137ed0a643560ae2300e11278e04907f0a1208031a0069474771cab6800f325
-https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=recaptcha-client \
+https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=django-recaptcha \
     --hash=sha256:9f6cf9632838c9a2e78b29ca74f8213d2201125fe4b4d3b168af25b495a4081d
 django-statsd-mozilla==0.3.16 \
      --hash=sha256:925f0f13e5a1e7863e5ed1179fd0f6f1a519e5a0293714ba76745286aad7ed02
