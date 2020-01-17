@@ -34,6 +34,9 @@ describe('instant search', () => {
       rerequire('../i18n.js');
       global.interpolate = global.window.interpolate;
       rerequire('../search_utils.js');
+      rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-base.js');
+      rerequire('../protocol-details-init.js');
+      rerequire('../sumo-tabs.js');
       rerequire('../instant_search.js');
 
       let content = (
@@ -92,8 +95,8 @@ describe('instant search', () => {
         q: query,
       });
 
-      const $searchResultHeader = $('#search-results-list h2');
-      expect($searchResultHeader.find('strong').first().text()).to.equal(query);
+      const $searchResultHeader = $('.search-results-heading');
+      expect($searchResultHeader.find('span').first().text()).to.equal(query);
     });
 
     it('escapes the search query at the top of the page', () => {
@@ -111,7 +114,7 @@ describe('instant search', () => {
         q: query,
       });
 
-      const queryElem = document.querySelectorAll('#search-results-list h2 strong')[0];
+      const queryElem = document.querySelectorAll('.search-results-heading span')[0];
       expect(queryElem.innerHTML).to.equal('&lt;');
     });
 
