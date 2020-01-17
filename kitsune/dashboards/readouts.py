@@ -667,8 +667,8 @@ class CategoryReadout(Readout):
         return query, params
 
     def _format_row(self, row):
-        (slug, title, visits, needs_changes, needs_review,
-                           unready_for_l10n) = row
+        (slug, title, visits, needs_changes, needs_review, unready_for_l10n) = row
+
         if needs_review:
             status, view_name, dummy = REVIEW_STATUSES[needs_review]
         elif needs_changes:
@@ -833,8 +833,8 @@ class TemplateTranslationsReadout(Readout):
         return query, params
 
     def _format_row(self, row):
-        (eng_slug, eng_title, slug, title, significance,
-                           needs_review) = row
+        (eng_slug, eng_title, slug, title, significance, needs_review) = row
+
         return _format_row_with_out_of_dateness(
             self.locale, eng_slug, eng_title, slug, title, None, significance,
             needs_review)

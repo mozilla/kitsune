@@ -172,7 +172,7 @@ def escalate_question(question_id):
             category='Escalated',
             subject='[Escalated] {title}'.format(title=question.title),
             body='{url}\n\n{content}'.format(url=url,
-                                              content=question.content),
+                                             content=question.content),
             tags=[t.slug for t in question.tags.all()])
     except ZendeskError:
         # This is unpickleable, so we need to unwrap it a bit

@@ -1,6 +1,8 @@
 import contextlib
 import re
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 from django.contrib import messages
@@ -193,7 +195,7 @@ class PlusToSpaceMiddleware(object):
             new = p.sub(' ', request.path_info)
             if request.META.get('QUERY_STRING'):
                 new = '%s?%s' % (new,
-                                  smart_text(request.META['QUERY_STRING']))
+                                 smart_text(request.META['QUERY_STRING']))
             if hasattr(request, 'LANGUAGE_CODE'):
                 new = '/%s%s' % (request.LANGUAGE_CODE, new)
             return HttpResponsePermanentRedirect(new)

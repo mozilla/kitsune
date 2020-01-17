@@ -1,5 +1,7 @@
 import hashlib
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 from django.utils.encoding import force_bytes
@@ -91,7 +93,7 @@ def user_list(users):
     """Turn a list of users into a list of links to their profiles."""
     link = '<a class="user" href="%s">%s</a>'
     list = ', '.join([link % (escape(profile_url(u)), escape(display_name(u))) for
-                       u in users])
+                     u in users])
     return Markup(list)
 
 

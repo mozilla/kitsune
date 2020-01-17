@@ -118,8 +118,8 @@ class TagWidget(Widget):
 
             # Add the Add button:
             output += '<input%s />' % flatatt(dict(type='submit',
-                                                    value=_('Add'),
-                                                    **{'class': 'adder'}))
+                                                   value=_('Add'),
+                                                   **{'class': 'adder'}))
 
         output += '</div>'
         return mark_safe(output)

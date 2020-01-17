@@ -1024,8 +1024,8 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
     def __unicode__(self):
         return '[%s] %s #%s: %s' % (self.document.locale,
-                                     self.document.title,
-                                     self.id, self.content[:50])
+                                    self.document.title,
+                                    self.id, self.content[:50])
 
     def __repr__(self):
         return '<Revision [{!r}] {!r} #{!r}: {!r:.50}>'.format(
