@@ -163,11 +163,10 @@
 
   // 'Popular searches' feature
   $(document).on('click', '[data-featured-search]', function(ev) {
-    var $mainInput = $('#support-search-masthead input[name=q]');
+    var $mainInput = $('#support-search-home input[name=q]');
     var thisLink = $(this).text();
     console.log('thisLink', thisLink);
-    $('#support-search-masthead input[name=q]').focus().val(thisLink);
+    $('#support-search-home input[name=q]').focus().val(thisLink);
     $mainInput.trigger( "keyup" );
-    ev.preventDefault();
   });
 })(jQuery);
