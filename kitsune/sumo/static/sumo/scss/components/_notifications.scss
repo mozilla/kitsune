@@ -27,6 +27,7 @@
   justify-content: center;
   align-items: center;
 
+
   .mzp-c-notification-bar-button {
     position: absolute;
     top: 0;
@@ -38,5 +39,12 @@
   p {
     line-height: 20px;
     margin: 0;
+  }
+
+  @at-root .sumo-l-two-col--main & {
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: p.remify(24px);
+    max-width: none;
   }
 }

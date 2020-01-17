@@ -126,7 +126,7 @@
 </li>
 {% endif %}
 
-<li class="mzp-c-menu-category {% if user.is_authenticated() %}mzp-has-drop-down mzp-js-expandable{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
+<li class="mzp-c-menu-category {% if user.is_authenticated() %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
   {% if show_header_fx_download() %}
     {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
     <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden sumo-button primary-button button-lg" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
@@ -307,7 +307,7 @@
         data-event-label="{{ latest_version }}">
         {{ _('Download Firefox') }}
       </a>
-      <ul class="download-firefox--info body-xs">
+      <ul class="download-firefox--info text-body-xs">
         <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
         <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
         <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
@@ -323,7 +323,7 @@
       <a data-mozilla-ui-reset="reset" class="download-button sumo-button primary-button button-lg">
         {{ _('Refresh Firefox') }}
       </a>
-      <ul class="download-firefox--info body-xs">
+      <ul class="download-firefox--info text-body-xs">
         <li><a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
           {{ _('How does it work?') }}
         </a></li>

@@ -216,7 +216,7 @@
     </ul>
   {% endif %}
 
-  {% block above_main %}{% endblock %}
+
   <div class="sumo-l-two-col {% block columns_modifier %}{% endblock %}">
     {% block outer_side %}
     <aside class="sumo-l-two-col--sidebar">
@@ -229,6 +229,8 @@
     {% block breadcrumbs %}
       {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
     {% endblock %}
+
+    {% block above_main %}{% endblock %}
 
     {% block content %}{% endblock %}
     </main>
