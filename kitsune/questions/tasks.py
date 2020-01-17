@@ -11,7 +11,7 @@ import tidings.events  # noqa
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from django_statsd.clients import statsd
-from zendesk import ZendeskError
+from zdesk import ZendeskError
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE

@@ -39,5 +39,5 @@ class RegisterPage(Base):
     def get_random_word(self, length):
         random_word = ''
         for _ in range(length):
-            random_word += random.choice(string.letters)
+            random_word += random.choice(string.ascii_letters)
         return random_word

@@ -1,7 +1,7 @@
 import random
 import re
 from datetime import datetime, timedelta
-from string import letters
+from string import ascii_letters
 
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -328,7 +328,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
             return Response({"error": 'Unable to generate username.'},
                             status=500)
 
-        password = ''.join(random.choice(letters) for _ in range(10))
+        password = ''.join(random.choice(ascii_letters) for _ in range(10))
         # Capitalize the 'b' in 'buddy'
         display_name = 'B' + username[1:]
 

@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
 from django.http import QueryDict
 from django.template.loader import render_to_string
-from django.utils.encoding import smart_str, smart_text
+from django.utils.encoding import smart_text
 from django.utils.http import urlencode
 from django.utils.translation import ugettext_lazy as _lazy, ugettext as _, ungettext
 from django.utils.timezone import get_default_timezone
@@ -90,7 +90,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     fragment = hash if hash is not None else url_.fragment
 
     q = url_.query
-    new_query_dict = (QueryDict(smart_str(q), mutable=True) if
+    new_query_dict = (QueryDict(smart_bytes(q), mutable=True) if
                       q else QueryDict('', mutable=True))
     if query_dict:
         for k, l in query_dict.lists():

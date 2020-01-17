@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _lazy
 
 from django_statsd.clients import statsd
-from zendesk import Zendesk, ZendeskError
+from zdesk import Zendesk, ZendeskError
 
 
 log = logging.getLogger('k.questions.marketplace')
