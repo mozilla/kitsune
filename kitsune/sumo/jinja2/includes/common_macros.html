@@ -279,12 +279,10 @@
   {% endcall %}
 #}
 {% macro announcement_bar(id, level) -%}
-{% if caller %}
   <div id="announce-{{ id }}" class="mzp-c-notification-bar mzp-t-{{ level }}">
     <button class="mzp-c-notification-bar-button close-button" data-close-id="announce-{{ id }}" type="button"></button>
     <p>{{ caller() }}</p>
   </div>
-{% endif %}
 {% endmacro %}
 
 {% macro favicon() %}
