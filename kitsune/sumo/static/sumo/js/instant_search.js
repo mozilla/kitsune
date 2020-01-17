@@ -99,7 +99,7 @@
           if (formId === 'support-search-results') {
             $('#support-search').find('input[name=q]').val(value);
           } else if (formId === 'support-search') {
-            $('.search-form-large').find('input[name=q]').val(value);
+            $('.home-search-section').find('input[name=q]').val(value);
           } else {
             $('#support-search').find('input[name=q]').val(value);
             $('#support-search-results').find('input[name=q]').val(value);
