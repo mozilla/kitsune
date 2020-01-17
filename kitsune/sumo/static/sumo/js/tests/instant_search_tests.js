@@ -25,16 +25,27 @@ describe('instant search', () => {
     let $sandbox;
     let clock;
     let cxhrMock;
+    let matchMediaStub;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers();
       cxhrMock = sinon.mock({request: () => {}});
       window.k.CachedXHR = () => cxhrMock.object;
-
+      window.matchMedia = window.matchMedia || () => {
+        return {
+          matches: false,
+          addListener: () => {}
+        }
+      }
+      global.matchMedia = window.matchMedia;
       rerequire('../i18n.js');
       global.interpolate = global.window.interpolate;
       rerequire('../search_utils.js');
       rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-base.js');
+      // rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-utils.js');
+      rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-supports.js');
+      rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-details.js');
+      rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-tabs.js');
       rerequire('../protocol-details-init.js');
       rerequire('../sumo-tabs.js');
       rerequire('../instant_search.js');
