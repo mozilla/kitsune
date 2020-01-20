@@ -21,7 +21,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
 import waffle
-from ordereddict import OrderedDict
+from collections import OrderedDict
 from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
 from taggit.models import Tag

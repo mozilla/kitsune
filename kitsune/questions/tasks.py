@@ -11,7 +11,7 @@ import tidings.events  # noqa
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from django_statsd.clients import statsd
-from zendesk import ZendeskError
+from zdesk import ZendeskError
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
@@ -172,7 +172,7 @@ def escalate_question(question_id):
             category='Escalated',
             subject='[Escalated] {title}'.format(title=question.title),
             body='{url}\n\n{content}'.format(url=url,
-                                              content=question.content),
+                                             content=question.content),
             tags=[t.slug for t in question.tags.all()])
     except ZendeskError:
         # This is unpickleable, so we need to unwrap it a bit

@@ -205,7 +205,7 @@
       <div class="sidebar-header">{{ _('Filter by') }}</div>
       <ul class="sidebar-nav">
         <li {% if filter == None and escalated == None %}class="selected"{% endif %}><a href="{{ questions_url(filter=None, escalated=None, page=None) }}">{{ _('All') }}</a></li>
-        {% for f, desc in filters.iteritems() %}
+        {% for f, desc in filters.items() %}
           <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, page=None) }}">{{ desc }}</a></li>
         {% endfor %}
         <li {% if filter == None and escalated %}class="selected"{% endif %}><a href="{{ questions_url(escalated=1, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
@@ -213,7 +213,7 @@
 
       <div class="sidebar-header">{{ _('Sort options') }}</div>
       <ul class="sidebar-nav">
-        {% for o, details in orders.iteritems() %}
+        {% for o, details in orders.items() %}
           <li {{ order|class_selected(o) }}><a {% if order == o %}class="sort-{{ sort }}"{% endif %} href="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}">{{ details[1] }}</a></li>
         {% endfor %}
       </ul>

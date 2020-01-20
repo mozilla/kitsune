@@ -1,8 +1,10 @@
 import hashlib
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
-from django.utils.encoding import force_str
+from django.utils.encoding import force_bytes
 from django.utils.translation import ugettext as _
 
 from django_jinja import library
@@ -49,7 +51,7 @@ def profile_avatar(user, size=48):
         avatar = 'https:%s' % avatar
 
     if user and hasattr(user, 'email'):
-        email_hash = hashlib.md5(force_str(user.email.lower())).hexdigest()
+        email_hash = hashlib.md5(force_bytes(user.email.lower())).hexdigest()
     else:
         email_hash = '00000000000000000000000000000000'
 
@@ -91,7 +93,7 @@ def user_list(users):
     """Turn a list of users into a list of links to their profiles."""
     link = '<a class="user" href="%s">%s</a>'
     list = ', '.join([link % (escape(profile_url(u)), escape(display_name(u))) for
-                       u in users])
+                     u in users])
     return Markup(list)
 
 

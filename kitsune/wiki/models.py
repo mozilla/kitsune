@@ -13,7 +13,7 @@ from django.core.urlresolvers import resolve
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.http import Http404
-from django.utils.encoding import smart_str
+from django.utils.encoding import smart_bytes
 
 import waffle
 from pyquery import PyQuery
@@ -1024,8 +1024,8 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
     def __unicode__(self):
         return '[%s] %s #%s: %s' % (self.document.locale,
-                                     self.document.title,
-                                     self.id, self.content[:50])
+                                    self.document.title,
+                                    self.id, self.content[:50])
 
     def __repr__(self):
         return '<Revision [{!r}] {!r} #{!r}: {!r:.50}>'.format(
@@ -1306,4 +1306,4 @@ def doc_html_cache_key(locale, slug, mobile, minimal):
     """Returns the cache key for the document html."""
     cache_key = DOC_HTML_CACHE_KEY.format(
         locale=locale, slug=slug, mobile=str(mobile), minimal=str(minimal))
-    return hashlib.sha1(smart_str(cache_key)).hexdigest()
+    return hashlib.sha1(smart_bytes(cache_key)).hexdigest()

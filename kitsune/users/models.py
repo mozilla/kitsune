@@ -656,4 +656,4 @@ class Deactivation(models.Model):
 
     def __unicode__(self):
         return '%s was deactivated by %s on %s' % (self.user, self.moderator,
-                                                    self.date)
+                                                   self.date)

@@ -23,7 +23,7 @@
       <h2>{{ _('Products') }}</h2>
       <div id="product-switcher" class="swipeable">
         <ul>
-          {% for key, product in products.iteritems() %}
+          {% for key, product in products.items() %}
             <li class="{% if product == current_product %}selected{% endif %}">
               <a href="{{ url('questions.aaq_step2', product_key=key) }}" data-event-category="link click"
               data-event-action="product" data-event-label="{{ product.name }}">

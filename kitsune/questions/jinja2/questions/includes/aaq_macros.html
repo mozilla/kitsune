@@ -21,7 +21,7 @@
 {% macro select_product(products) -%}
   <h2>{{ _('Which product would you like to post a question about?') }}</h2>
   <ul id="product-picker" class="card-grid cf">
-    {% for key, product in products.iteritems() %}
+    {% for key, product in products.items() %}
       <li>
           <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}"
               data-event-category="link click"
@@ -58,7 +58,7 @@
   <div class="highlight-box">
     <h2>{{ _('Which category best describes your problem?') }}</h2>
     <ul class="select-one">
-      {% for key, category in product.categories.iteritems() %}
+      {% for key, category in product.categories.items() %}
         <li>
           <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}"
           data-event-category="link click"

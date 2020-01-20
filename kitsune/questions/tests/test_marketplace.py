@@ -1,7 +1,7 @@
 import mock
 from nose.tools import eq_, nottest
 from pyquery import PyQuery as pq
-from zendesk import Zendesk
+from zdesk import Zendesk
 
 import kitsune.questions.forms
 from kitsune import questions

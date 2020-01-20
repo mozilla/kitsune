@@ -363,7 +363,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_forums_thread_created(self):
         """Tests created/created_date filtering for forums"""
-        post_created_ds = datetime(2010, 1, 1, 12, 00)
+        post_created_ds = datetime(2010, 1, 1, 12, 0)
         thread1 = ThreadFactory(title='crash', created=post_created_ds)
         PostFactory(thread=thread1, created=(post_created_ds + timedelta(hours=1)))
 
@@ -466,7 +466,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_created(self):
         """Basic functionality of created filter."""
-        created_ds = datetime(2010, 6, 19, 12, 00)
+        created_ds = datetime(2010, 6, 19, 12, 0)
 
         # on 6/19/2010
         q1 = QuestionFactory(title='q1 audio', created=created_ds)
@@ -768,7 +768,7 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_forums_filter_updated(self):
         """Filter for updated date."""
-        post_updated_ds = datetime(2010, 5, 3, 12, 00)
+        post_updated_ds = datetime(2010, 5, 3, 12, 0)
 
         thread1 = ThreadFactory(title='t1 audio')
         PostFactory(thread=thread1, created=post_updated_ds)
