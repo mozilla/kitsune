@@ -39,6 +39,19 @@
     }
   }
 
+  &.no-label {
+    margin-bottom: 0;
+    min-width: 20px;
+
+    label {
+      margin: 0;
+
+      &:before {
+        margin-right: 0;
+      }
+    }
+  }
+
   [type=radio]:checked + label,
   [type=checkbox]:checked + label {
     &:before { // background, checked state

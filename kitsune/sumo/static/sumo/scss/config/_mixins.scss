@@ -53,6 +53,13 @@
   }
 }
 
+@mixin card() {
+  @include bottomless;
+  position: relative;
+  padding: p.$spacing-lg;
+  border-radius: var(--global-radius);
+}
+
 // function to retrieve color from $colors map ie. `color(base, primary)`
 @function color($name, $variant: '01') {
   $color: null;

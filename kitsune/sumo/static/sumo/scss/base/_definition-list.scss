@@ -1,0 +1,23 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.sumo-dl {
+  display: flex;
+  flex-wrap: wrap;
+
+  dt,
+  dd {
+    margin-bottom: 8px;
+  }
+
+  dt {
+    flex: 1 1 calc(20% - 8px);
+    margin-right: 8px;
+    min-width: 100px;
+    @include c.text-body-xs;
+  }
+
+  dd {
+    flex: 1 1 80%;
+  }
+}

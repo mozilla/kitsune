@@ -1,0 +1,34 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+a.edit,
+.edit > a,
+a.yes,
+a.no,
+a.markasready {
+  &:before {
+    display: inline-flex;
+    align-self: center;
+    height: 16px;
+    width: 16px;
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.81 29.81"><path fill="#0060DF" d="M0 29.81l8.29-2.22-6.07-6.07L0 29.81zM18.214 5.532l6.067 6.067-15.04 15.04-6.067-6.067zM23.746-.003l6.067 6.067-4.59 4.59-6.066-6.068z"/></svg>');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    content: "";
+  }
+
+  &:not(:empty):before {
+    margin-right: 8px;
+  }
+}
+
+a.yes:before {
+  background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#3FE1B0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M17 1L6 12 1 7"/></svg>');
+}
+
+a.no:before,
+a.markasready:before {
+  background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#FF6A75" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></g></svg>');
+}
