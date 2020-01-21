@@ -99,7 +99,7 @@
           if (formId === 'support-search-results') {
             $('#support-search').find('input[name=q]').val(value);
           } else if (formId === 'support-search') {
-            $('.search-form-large').find('input[name=q]').val(value);
+            $('.home-search-section').find('input[name=q]').val(value);
           } else {
             $('#support-search').find('input[name=q]').val(value);
             $('#support-search-results').find('input[name=q]').val(value);
@@ -156,5 +156,14 @@
       dataType: 'json',
       success: k.InstantSearchSettings.render
     });
+  });
+
+  // 'Popular searches' feature
+  $(document).on('click', '[data-featured-search]', function(ev) {
+    var $mainInput = $('#support-search-home input[name=q]');
+    var thisLink = $(this).text();
+    console.log('thisLink', thisLink);
+    $('#support-search-home input[name=q]').focus().val(thisLink);
+    $mainInput.trigger( "keyup" );
   });
 })(jQuery);
