@@ -54,3 +54,47 @@
     }
   }
 }
+
+
+.avatar-wrap {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  &--item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    max-width: 400px;
+    @include c.card();
+    padding: p.$spacing-sm;
+    border: 1px solid transparent;
+
+    .avatar {
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      color: var(--color-text);
+      text-decoration: none;
+
+      img {
+        margin-right: 12px;
+      }
+    }
+
+    &:hover {
+      @include c.elevation-00;
+    }
+
+    .remove-button {
+      font-size: 20px;
+      text-decoration: none;
+      color: var(--color-error);
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+  }
+}

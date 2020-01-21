@@ -1,0 +1,142 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+// Tables
+//
+// This is the base style for tables. They can be used to organize list views,
+// standard content, or complicated forms. Several modifier classes are
+// available for added flexibility.
+//
+// For the sake of mobile compatibility, a `.table-scroll` container class can
+// be applied to a parent element to allow for horizontal scrolling in cases
+// where the table is too wide for its container.
+//
+// .condensed - Remove default cell padding for increased data density.
+// .expanded - Add additional cell padding.
+// .stretch-column - Expand this column to the maximum width.
+// .shrink-column - Contract this column to the minimum width.
+// .small-header-text - Smaller header text size.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/table.njk
+//
+// Weight: 4
+//
+// Style guide: tables
+
+table {
+  margin-bottom: 1rem;
+  width: 100%;
+  border-color: var(--color-border);
+  border-radius: 0;
+  border-collapse: collapse;
+  font-size: .95rem;
+
+  td, th {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+
+    &.stretch-column {
+      width: 100%;
+    }
+
+    &.shrink-column {
+      width: 1px;
+    }
+  }
+
+  th {
+    background-color: var(--border-color);
+  }
+
+  &.condensed {
+    td, th {
+      padding: 0 4px;
+    }
+  }
+
+  &.expanded {
+    td, th {
+      padding-top: p.remify(12px);
+      padding-bottom: p.remify(12px);
+    }
+  }
+
+  &.large-text {
+    font-size: 1.25rem;
+
+    .field.checkbox {
+      margin: 0.375rem 0 0.5rem 0;
+
+      label {
+        vertical-align: middle;
+      }
+    }
+  }
+
+  &.small-header-text {
+    th {
+      font-size: 0.8rem;
+    }
+  }
+
+  &.no-h-pad {
+    td, th {
+      &:first-child {
+        padding-left: 0;
+      }
+
+      &:last-child {
+        padding-right: 0;
+      }
+
+      &.highlight-row {
+        padding-right: p.remify(8px);
+        padding-left: p.remify(8px);
+      }
+    }
+  }
+}
+
+.table-scroll {
+  position: relative;
+  margin-right: p.remify(-10px);
+  margin-bottom: 1rem;
+  max-width: calc(100vw - 32px);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  table {
+    margin-bottom: 0;
+
+    td {
+      position: relative;
+
+      &:last-child:after {
+        position: absolute;
+        right: p.remify(-10px);
+        display: block;
+        width: p.remify(10px);
+        height: 1px;
+        content: "";
+      }
+    }
+  }
+
+  @media #{p.$mq-md} {
+    margin-right: 0;
+
+    table td:last-child:after {
+      content: none;
+    }
+  }
+}

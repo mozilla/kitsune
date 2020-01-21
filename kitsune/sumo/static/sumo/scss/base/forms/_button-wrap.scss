@@ -75,10 +75,17 @@
 
   .push-right {
     margin-left: auto;
+    @include p.bidi((
+      (margin-left, auto, 0),
+      (margin-right, 0, auto),
+    ));
   }
 
   .push-left {
-    margin-right: auto;
+    @include p.bidi((
+      (margin-right, auto, 0),
+      (margin-left, 0, auto),
+    ));
   }
 
   .last-on-mobile {
