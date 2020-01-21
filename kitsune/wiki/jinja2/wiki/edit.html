@@ -13,15 +13,14 @@
 {% set scripts = ('wiki', 'wiki.diff', 'wiki.editor', 'jqueryui') %}
 
 {% block content %}
-  <div class="grid_9">
+  <div class="user-messages">
+    {{ edit_messages(document, show_revision_warning) }}
+    {{ document_lock_warning() }}
+  </div>
 
-    <ul class="user-messages">
-      {{ edit_messages(document, show_revision_warning) }}
-      {{ document_lock_warning() }}
-    </ul>
-
+  <div class="sumo-page-section">
     <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
-      <h1>{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
+      <h1 class="text-display-md">{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
       {% if document.needs_change %}
         <p>
           {% trans comment=document.needs_change_comment %}
@@ -32,25 +31,23 @@
 
       {% if document_form %}
         <div id="document-form">
-          <details class="h2"{% if disclose_description %} open="open"{% endif %}>
-            <summary>{{ _('Edit Description') }}</summary>
+          <details {% if disclose_description %} open="open"{% endif %}>
+            <summary class="text-display-sm">{{ _('Edit Description') }}</summary>
             {{ errorlist(document_form) }}
             <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
               {% csrf_token %}
-              <ul>
                 {% for field in document_form.visible_fields() if
                    (field.name != 'is_localizable' or not document.translations.exists()) %}
-                  <li{% if field.name == 'needs_change_comment' %} class="comment"{% endif %}>
+                  <div class="field {% if field.name == 'needs_change_comment' %}has-large-textarea comment{% endif %}">
                     {{ field|label_with_help }}{{ field }}
-                  </li>
+                  </div>
                 {% endfor %}
-              </ul>
               {% if document.translations.exists() %}
                 {{ document_form.is_localizable.as_hidden()|safe }}
               {% endif %}
               <input type="hidden" name="form" value="doc" />
-              <div class="submit">
-                <button class="btn btn-important" type="submit">{{ _('Save description') }}</button>
+              <div class="submit sumo-button-wrap">
+                <button class="sumo-button primary-button" type="submit">{{ _('Save description') }}</button>
               </div>
             </form>
           </details>
@@ -58,8 +55,8 @@
       {% endif %}
       {% if revision_form %}
         <div id="revision-form">
-          <details class="h2" open="open">
-            <summary>{{ _('Edit Content') }}</summary>
+          <details open="open">
+            <summary class="text-display-sm">{{ _('Edit Content') }}</summary>
             <p>
               {% trans url=url('wiki.document', 'support-document-guide') %}For help with writing articles, check out the
                 <a href="{{ url }}">Support Document Guide</a>.{% endtrans %}
@@ -67,9 +64,8 @@
             {{ errorlist(revision_form) }}
             <form action="" method="post">
               {% csrf_token %}
-              <ul>
                 {% for field in revision_form.visible_fields() %}
-                  <li>
+                  <div class="field {% if field.name == 'content' %}has-large-textarea{% endif %}">
                     {% if field.name not in ['comment', 'content'] %}
                       {% if not field.name == 'keywords' or document.allows(user, 'edit_keywords') %}
                         {{ field|label_with_help }}{{ field|safe }}
@@ -81,9 +77,8 @@
                     {% if field.name == 'summary' %}
                       <p><span id="remaining-characters">{{ field.field.max_length }}</span> {{_('characters remaining.') }}</p>
                     {% endif %}
-                  </li>
+                  </div>
                 {% endfor %}
-              </ul>
               {{ revision_form.hidden_fields()|join|safe }}
               <input type="hidden" name="form" value="rev" />
               <input type="hidden" name="slug" value="{{ document.slug }}" />

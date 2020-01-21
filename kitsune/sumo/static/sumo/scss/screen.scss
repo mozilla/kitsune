@@ -6,3 +6,6 @@
 @use 'components';
 
 @use 'examples/examples'; // styleguide-only comment files
+
+@import "../../../../../node_modules/codemirror/lib/codemirror";
+@import "../../../../../node_modules/codemirror/addon/hint/show-hint";

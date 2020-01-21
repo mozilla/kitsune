@@ -9,6 +9,8 @@
 {% endif %}
 {% set meta = (('robots', 'noindex'),) %}
 
+{% block columns_modifier %}sidebar-on-right{% endblock %}
+
 {% block side_top %}
   {% block side_top_top %}{% endblock %}
   {% if document %}
