@@ -137,13 +137,15 @@
     color: var(--color-link);
     text-decoration: underline;
     appearance: none;
-    border: 0 none;
+    height: auto;
     margin: 0;
     padding: 0;
+    border: 0 none;
     background: transparent;
     font-weight: normal;
     font-size: var(--base-font-size);
     font-family: var(--base-font-family);
+    text-align: left;
 
     &:hover {
       text-decoration: none;
