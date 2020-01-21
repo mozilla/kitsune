@@ -81,6 +81,14 @@ label {
     margin-bottom: p.$spacing-xs;
   }
 
+  &.has-large-textarea {
+    max-width: 100%;
+
+    textarea {
+      min-height: 340px;
+    }
+  }
+
   &.has-error,
   &.has-success {
     .field-wrap {
