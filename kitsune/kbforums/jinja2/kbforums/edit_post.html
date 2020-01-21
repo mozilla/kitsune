@@ -12,9 +12,9 @@
 {% set scripts = ('forums', 'jqueryui') %}
 
 {% block content %}
-  <article id="edit-post" class="grid_9">
+  <article id="edit-post" class="sumo-page-section">
     {{ kbforums_warning(document, user) }}
-    <h1>{{ _('Edit a post') }}</h1>
+    <h1 class="text-display-sm">{{ _('Edit a post') }}</h1>
 
     <form action="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}" method="post" class="edit-post">
       {% csrf_token %}
@@ -27,14 +27,14 @@
         </div>
       </div>
 
-      <div class="form-widget submit">
-        <button type="submit" class="btn btn-submit big">{{ _('Update post') }}</button>
-        <button type="submit" id="preview" name="preview" class="btn"
+      <div class="sumo-button-wrap form-widget submit">
+        <button type="submit" class="sumo-button primary-button">{{ _('Update post') }}</button>
+        <button type="submit" id="preview" name="preview" class="sumo-button"
             data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
             data-preview-container-id="post-preview"
             data-preview-content-id="id_content">{{ _('Preview') }}
         </button>
-        <a class="btn" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+        <a class="sumo-button link-button push-right" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
       </div>
     </form>
 

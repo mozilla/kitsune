@@ -19,7 +19,9 @@
     </div>
   {% endif %}
   {% if document.is_majorly_outdated() and not document.is_archived %}
-    <div class="warning-box">
+  <div class="mzp-c-notification-bar mzp-t-warning" >
+    <button class="mzp-c-notification-bar-button" type="button"></button>
+    <div>
       {% trans url=document.parent.get_absolute_url(), title=document.parent.title %}
         <p>This article may be out of date.</p>
         <p>
@@ -29,16 +31,20 @@
         </p>
       {% endtrans %}
     </div>
+  </div>
   {% endif %}
   {% if document.is_archived %}
-    <div class="warning-box">
-        <p>
-          {% trans %}
-            This article is no longer maintained, so its content might be out
-            of date.
-          {% endtrans %}
-        </p>
+  <div class="mzp-c-notification-bar mzp-t-warning">
+    <button class="mzp-c-notification-bar-button" type="button"></button>
+    <div>
+      <p>
+        {% trans %}
+          This article is no longer maintained, so its content might be out
+          of date.
+        {% endtrans %}
+      </p>
     </div>
+  </div>
   {% endif %}
 {%- endmacro %}
 
@@ -48,7 +54,9 @@
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
       {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
-        <div id="doc-pending-fallback" class="warning-box">
+      <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
+        <button class="mzp-c-notification-bar-button" type="button"></button>
+        <div>
           {% trans help_link=url('wiki.document', 'localize-firefox-help'), document_trans_link=url('wiki.translate', document.slug) %}
             No one has helped translate this article yet. If you already know how localizing for SUMO works,
             <a href="{{ document_trans_link }}">start translating now</a>.
@@ -56,10 +64,15 @@
             <a href="{{ help_link }}">please start here</a>.
           {% endtrans %}
         </div>
+      </div>
       {% endif %}
+
       {{ document.html|safe }}
+
     {% elif fallback_reason == 'translation_not_approved' %}
-      <div id="doc-pending-fallback" class="warning-box">
+    <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
+      <button class="mzp-c-notification-bar-button" type="button"></button>
+      <div>
         {# L10n: This is shown for existing, never-approved translations #}
         {% trans help_link=url('wiki.document', 'localize-firefox-help') %}
           Our volunteers are working on translating this article.
@@ -68,6 +81,8 @@
           <a href="{{ help_link }}">please click here</a>.
         {% endtrans %}
       </div>
+    </div>
+
       {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
         {# This is the actual fallback document, show it. #}
         {{ document.html|safe }}
@@ -75,16 +90,20 @@
         {{ document.parent.html|safe }}
       {% endif %}
     {% elif fallback_reason == 'fallback_locale' %}
-      <div id="doc-pending-fallback" class="warning-box">
-        {% trans locale=full_locale_name[request.LANGUAGE_CODE], fallback_locale=full_locale_name[document.locale], help_link=url('wiki.document', 'localize-firefox-help'), eng_link=document.parent.get_absolute_url() %}
-          This page does not exist in {{ locale }}. You have been redirected to the {{ fallback_locale }} version instead.
-          If you would like to localize it into {{ locale }}, <a href="{{ help_link }}">click here</a>.
-          You can also see the <a href="{{ eng_link }}">English</a> version of this page.
-        {% endtrans %}
+      <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
+        <button class="mzp-c-notification-bar-button" type="button"></button>
+        <div>
+          {% trans locale=full_locale_name[request.LANGUAGE_CODE], fallback_locale=full_locale_name[document.locale], help_link=url('wiki.document', 'localize-firefox-help'), eng_link=document.parent.get_absolute_url() %}
+            This page does not exist in {{ locale }}. You have been redirected to the {{ fallback_locale }} version instead.
+            If you would like to localize it into {{ locale }}, <a href="{{ help_link }}">click here</a>.
+            You can also see the <a href="{{ eng_link }}">English</a> version of this page.
+          {% endtrans %}
+        </div>
       </div>
+
       {{ document.html|safe }}
     {% else %}
-      {{ _("This article doesn't have approved content yet.") }}
+      <p>{{ _("This article doesn't have approved content yet.") }}</p>
     {% endif %}
   </section>
 {%- endmacro %}
@@ -97,17 +116,22 @@
   {%- endfor %}
 {%- endmacro %}
 
+
 {% macro edit_messages(document, show_revision_warning) -%}
   {% if show_revision_warning %}
-    <li class="warning">
-      <h2>{{ _('Warning: There are newer unreviewed revisions of this article.') }}</h2>
-      <p>
-        {% trans url=url('wiki.document_revisions', document.slug) %}
-          See <a href="{{url}}">the history</a> to base your edit on an
-          existing unreviewed revision.
-        {% endtrans %}
-      </p>
-    </li>
+  <div class="mzp-c-notification-bar mzp-t-warning">
+    <button class="mzp-c-notification-bar-button" type="button"></button>
+    <div>
+    <p>{{ _('Warning: There are newer unreviewed revisions of this article.') }}</p>
+    <p>
+      {% trans url=url('wiki.document_revisions', document.slug) %}
+        See <a href="{{url}}">the history</a> to base your edit on an
+        existing unreviewed revision.
+      {% endtrans %}
+    </p>
+    </div>
+  </div>
+
   {% endif %}
 {%- endmacro %}
 
@@ -186,43 +210,41 @@
 {%- endmacro %}
 
 {% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, translate=False) -%}
-  <div class="submit">
-    <button class="btn btn-important btn-submit" type="submit">{{ _('Submit for Review') }}</button>
+  <div class="submit sumo-button-wrap">
+    <button class="sumo-button primary-button btn-submit" type="submit" data-sumo-modal="submit-modal">{{ _('Submit for Review') }}</button>
     {% if translate %}
-      <button class="btn btn-important btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
+      <button class="sumo-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
     {% endif %}
-    <button class="btn btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
+    <button class="sumo-button btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
     {% if include_diff %}
-      <button class="btn btn-diff" type="button">{{ _('Preview Changes') }}</button>
+      <button class="sumo-button btn-diff" type="button">{{ _('Preview Changes') }}</button>
     {% endif %}
   </div>
   {% if not buttons_only %}
     <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
-      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target=".btn-submit" data-modal="true">
+
+      <div id="submit-modal" class="kbox mzp-u-modal-content" title="{{ _('Submit Your Changes') }}">
         <p>
           {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
           can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
         </p>
-        <div class="comment">
+        <div class="field comment">
           <label for="id_comment">{{ _('Briefly describe your changes:') }}</label>
           {{ form.comment|safe }}
         </div>
         {% if show_no_update_checkbox %}
-          <div class="no-update">
-            <label>
-              <input type="checkbox" name="no-update" value="Yes" />
-              {{ _('This edit does not make this article up to date. The English differences should not change on the next edit.') }}
-            </label>
+          <div class="field checkbox no-update">
+            <input type="checkbox" name="no-update" value="Yes" id="id_no_update" />
+            <label for="id_no_update">{{ _('This edit does not make this article up to date. The English differences should not change on the next edit.') }}</label>
           </div>
         {% endif %}
-        <div class="notifications">
-          <label>
-            <input type="checkbox" name="notify-future-changes" value="Yes" />
-            {{ _('Notify me of any future changes to this page') }}
-          </label>
+        <div class="field checkbox  notifications">
+          <input type="checkbox" name="notify-future-changes" id="id_notify-future-changes" value="Yes" />
+          <label for="id_notify-future-changes">{{ _('Notify me of any future changes to this page') }}</label>
         </div>
-        <button class="btn btn-important" type="submit">{{ _('Submit') }}</button>
-        <a class="kbox-cancel" href="#cancel">{{ _('Cancel') }}</a>
+        <div class="sumo-button-wrap align-full">
+          <button class="sumo-button primary-button" type="submit">{{ _('Submit') }}</button>
+        </div>
       </div>
     </div>
   {% endif %}
@@ -336,13 +358,18 @@
 
 {% macro document_lock_warning() -%}
   {% if locked %}
-    <li id="locked-warning" class="warning">
-      <h2>{% trans user=locked_by.username %}
+  <div id="locked-warning" class="mzp-c-notification-bar mzp-t-warning">
+    <button class="mzp-c-notification-bar-button" type="button"></button>
+    <div>
+      <p>{% trans user=locked_by.username %}
         Warning: This page is also being edited by {{ user }}!
-      {% endtrans %}</h2>
+      {% endtrans %}</p>
       <p>{{ _('If you know what you are doing, you can edit the document anyway.') }}</p>
 
-      <a href="#" id="unlock-button" class="btn btn-warning">{{ _('Edit anyway') }}</a>
-    </li>
+      <a href="#" id="unlock-button" class="sumo-button link-button">{{ _('Edit anyway') }}</a>
+    </div>
+  </div>
+
+
   {% endif %}
 {%- endmacro %}
