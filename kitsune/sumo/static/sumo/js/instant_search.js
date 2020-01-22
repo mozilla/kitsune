@@ -49,8 +49,11 @@
 
     $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
 
+    // These two functions are coming from the global scope, but should be proper
+    // modules when we replace django-compressor with a FE build process.
     detailsInit(); // fold up sidebar on mobile.
     tabsInit();
+
     // remove and append search results heading
     $(".home-search-section--content .search-results-heading").remove();
     $(".search-results-heading").appendTo(".home-search-section--content");

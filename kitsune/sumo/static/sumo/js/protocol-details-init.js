@@ -25,4 +25,9 @@ function detailsInit() {
   });
 }
 
+// This is patched here to help the tests locate the referenced function
+if (typeof module != 'undefined' && module.exports) {
+  module.exports.detailsInit = detailsInit;
+}
+
 detailsInit();

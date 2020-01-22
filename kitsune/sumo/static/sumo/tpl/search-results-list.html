@@ -3,8 +3,8 @@
 {% if num_results > 0 %}
   <h2 class="text-display-xs search-results-heading">
     {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
-    {{ ngettext('Found %(n)s result for <span>‘%(q)s’</span> for <span>‘%(product)s’</span>',
-                'Found %(n)s results for <span>‘%(q)s’</span> for <span>‘%(product)s’</span>',
+    {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
                 num_results)
        | f({n: num_results, q: q, product: product_titles}, true)
        | safe }}
@@ -37,7 +37,7 @@
 {% else %}
   <h2 class="text-display-xs search-results-heading">
     {# L10n: {q} is the search query, {l} is the language searched. #}
-    {{ _("We couldn't find any results for ‘%(q)s’ in ‘%(l)s’. Maybe one of these articles will be helpful?")
+    {{ _("We couldn't find any results for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’. Maybe one of these articles will be helpful?")
         | f({q: q, l: lang_name}, true)
         | safe }}
   </h2>

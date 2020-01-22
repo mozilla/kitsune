@@ -36,8 +36,17 @@ describe('instant search', () => {
           addListener: () => {}
         }
       }
+
       global.matchMedia = window.matchMedia;
       window.Mzp = {};
+
+      // These functions are pulled from the global scope. They're not
+      // actually tested below, but are required to get the rest of the
+      // tests to pass. This should be revisited when we have a frontend
+      // build process in place.
+      global.tabsInit = require('../sumo-tabs.js').tabsInit;
+      global.detailsInit = require('../protocol-details-init.js').detailsInit;
+
 
       rerequire('../i18n.js');
       global.interpolate = global.window.interpolate;
