@@ -6,29 +6,40 @@
 
 {% block content %}
   <div class="sumo-page-section">
-    <section class="actions sumo-button-wrap">
-      <a class="sumo-button primary-button" href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
-    </section>
-
     <article id="inbox" class="main">
       <h1 class="text-display-md">{{ title }}</h1>
+      <div class="actions sumo-button-wrap">
+        <a class="sumo-button primary-button" href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
+      </div>
 
       {% if msgs %}
         <form action="{{ url('messages.bulk_action') }}" method="POST">
-          <input type="submit" name="mark_read" value="{{ _('Mark Selected as Read') }}">
-          <input type="submit" name="delete" value="{{ _('Delete Selected') }}">
+          <div class="sumo-button-wrap">
+            <input class="sumo-button" type="submit" name="mark_read" value="{{ _('Mark Selected as Read') }}">
+            <input class="sumo-button" type="submit" name="delete" value="{{ _('Delete Selected') }}">
+          </div>
+
           <ol class="message-list">
             {% for message in msgs.object_list %}
-              <li class="{% if message.unread %}unread{% endif %}
-              {% if message.replied %}replied{% endif %} cf">
-                <input type="checkbox" name="id" value="{{ message.id }}">
-                <span class="avatar">
-                  {{ avatar_link(message.sender) }}
-                </span>
-                <span class="from user">
-                  {{ name_link(message.sender) }}
-                  {{ datetimeformat(message.created) }}
-                </span>
+              <li
+                class="message-list--item
+                  {% if message.unread %}unread{% endif %}
+                  {% if message.replied %}replied{% endif %}"
+              >
+                <div class="field checkbox no-label">
+                  <input type="checkbox" name="id" value="{{ message.id }}" id="id_checkbox_{{ message.id }}">
+                  <label for="id_checkbox_{{ message.id }}"></label>
+                </div>
+                <div class="avatar-details">
+                  <span class="avatar">
+                    {{ avatar_link(message.sender) }}
+                  </span>
+                  <div class="from user">
+                    {{ name_link(message.sender) }}
+                    {{ datetimeformat(message.created) }}
+                  </div>
+                </div>
+
                 <a class="read" href="{{ url('messages.read', message.id) }}" title="{{ _('Read message') }}">
                   {{ message.content_parsed|striptags|truncate(length=160) }}
                 </a>

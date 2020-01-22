@@ -6,32 +6,39 @@
 {% set active_tab = 'outbox' %}
 
 {% block content %}
-  <div class="grid_9">
+  <div class="sumo-page-section">
     <article id="outbox" class="main">
-      <h1>{{ title }}</h1>
+      <h1 class="text-display-sm">{{ title }}</h1>
       {% if msgs %}
         <form action="{{ url('messages.outbox_bulk_action') }}" method="POST">
-          <input type="submit" name="delete" value="{{ _('Delete Selected') }}">
+          <div class="sumo-button-wrap">
+            <button type="submit" name="delete" class="sumo-button">{{ _('Delete Selected') }}</button>
+          </div>
           <ol class="message-list">
             {% for message in msgs.object_list %}
-              <li class="cf">
-                <input type="checkbox" name="id" value="{{ message.id }}">
-                <span class="avatar">
-                  {% if message.recipients > 1 -%}
-                    {{ avatar_link(request.user) }}
-                  {% else %}
-                    {{ avatar_link(message.recipient) }}
-                  {% endif %}
-                </span>
-                <span class="to user">
-                  {% if message.recipients > 1 -%}
-                    {{ name_link(request.user, name=_('You')) }}
-                  {% else %}
-                    {{ name_link(message.recipient) }}
-                  {%- endif %}
-                  {{ datetimeformat(message.created) }}
-                </span>
-                <a class="read" href="{{ url('messages.read_outbox', message.id) }}">
+              <li class="message-list--item">
+                <div class="field checkbox no-label">
+                  <input type="checkbox" name="id" value="{{ message.id }}" id="id_checkbox_{{ message.id }}">
+                  <label for="id_checkbox_{{ message.id }}"></label>
+                </div>
+                <div class="avatar-details">
+                  <span class="avatar">
+                    {% if message.recipients > 1 -%}
+                      {{ avatar_link(request.user) }}
+                    {% else %}
+                      {{ avatar_link(message.recipient) }}
+                    {% endif %}
+                  </span>
+                  <span class="to user">
+                    {% if message.recipients > 1 -%}
+                      {{ name_link(request.user, name=_('You')) }}
+                    {% else %}
+                      {{ name_link(message.recipient) }}
+                    {%- endif %}
+                    {{ datetimeformat(message.created) }}
+                  </span>
+                </div>
+                <a class="read text-body-sm" href="{{ url('messages.read_outbox', message.id) }}">
                   {{ message.content_parsed|striptags|truncate(length=160) }}
                 </a>
                 <a class="delete" href="{{ url('messages.delete_outbox', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
