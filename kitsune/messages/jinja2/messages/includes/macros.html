@@ -67,7 +67,7 @@
   {{ form.hidden_fields()|join|safe }}
   <ul>
     {% for field in form.visible_fields() %}
-      <li {% if field.errors %}class="invalid"{% endif %}>
+      <div class="field {% if field.name == 'message' %}has-large-textarea{% endif %} {% if field.errors %}has-error{% endif %}">
         {{ field.label_tag()|safe }}
         {% if field.name == 'message' %}
           {{ field.errors }}
@@ -77,7 +77,7 @@
         {% else %}
           {{ field|safe }}
         {% endif %}
-      </li>
+      </div>
     {% endfor %}
   </ul>
 {%- endmacro %}

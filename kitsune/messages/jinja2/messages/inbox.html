@@ -5,12 +5,14 @@
 {% set active_tab = 'inbox' %}
 
 {% block content %}
-  <div class="grid_9">
-    <section class="actions">
-      <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
+  <div class="sumo-page-section">
+    <section class="actions sumo-button-wrap">
+      <a class="sumo-button primary-button" href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
     </section>
+
     <article id="inbox" class="main">
-      <h1>{{ title }}</h1>
+      <h1 class="text-display-md">{{ title }}</h1>
+
       {% if msgs %}
         <form action="{{ url('messages.bulk_action') }}" method="POST">
           <input type="submit" name="mark_read" value="{{ _('Mark Selected as Read') }}">

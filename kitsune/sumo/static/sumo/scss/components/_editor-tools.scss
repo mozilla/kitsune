@@ -50,7 +50,7 @@ div.editor-tools {
 button {
   &.markup-toolbar-button {
     border: 0;
-    background: url(/static/sumo/img/markup.svg) no-repeat 0 0;
+    background: url(/static/sumo/img/markup.svg) no-repeat 10px 7px;
     background-size: 369.04px 22px;
     cursor: pointer;
     height: 36px;
@@ -65,11 +65,11 @@ button {
   }
 
   &.btn-h2 {
-    background-position: -44px 0px;
+    background-position: -34px 7px;
   }
 
   &.btn-h3 {
-    background-position: -88px 0px;
+    background-position: -78px 7px;
   }
 
   &.btn-bold {
