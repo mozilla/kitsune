@@ -30,13 +30,27 @@ describe('instant search', () => {
       clock = sinon.useFakeTimers();
       cxhrMock = sinon.mock({request: () => {}});
       window.k.CachedXHR = () => cxhrMock.object;
+      window.matchMedia = () => {
+        return {
+          matches: false,
+          addListener: () => {}
+        }
+      }
+
+      // These functions are pulled from the global scope. They're not
+      // actually tested below, but are required to get the rest of the
+      // tests to pass. This should be revisited when we have a frontend
+      // build process in place.
+      global.tabsInit = require('../sumo-tabs.js').tabsInit;
+      global.detailsInit = require('../protocol-details-init.js').detailsInit;
+
+
+      global.matchMedia = window.matchMedia;
+      window.Mzp = {};
 
       rerequire('../i18n.js');
       global.interpolate = global.window.interpolate;
       rerequire('../search_utils.js');
-      rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-base.js');
-      rerequire('../protocol-details-init.js');
-      rerequire('../sumo-tabs.js');
       rerequire('../instant_search.js');
 
       let content = (

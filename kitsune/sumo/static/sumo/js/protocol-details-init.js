@@ -25,4 +25,9 @@ function detailsInit() {
   });
 };
 
+if (typeof module != 'undefined' && module.exports) {
+  module.exports.detailsInit = detailsInit;
+}
+
+
 detailsInit();
