@@ -1,6 +1,6 @@
 /* globals k:false, jQuery:false, trackEvent:false */
-const detailsInitModule = require('./protocol-details-init');
-const tabsInitModule = require('./sumo-tabs');
+// const detailsInitModule = require('./protocol-details-init');
+// const tabsInitModule = require('./sumo-tabs');
 
 (function($) {
   var searchTimeout;
@@ -52,8 +52,8 @@ const tabsInitModule = require('./sumo-tabs');
 
     $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
 
-    detailsInitModule.detailsInit(); // fold up sidebar on mobile.
-    tabsInitModule.tabsInit();
+    // detailsInit(); // fold up sidebar on mobile.
+    // tabsInit();
     // remove and append search results heading
     $(".home-search-section--content .search-results-heading").remove();
     $(".search-results-heading").appendTo(".home-search-section--content");

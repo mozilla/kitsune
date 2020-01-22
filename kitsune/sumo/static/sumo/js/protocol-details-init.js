@@ -25,8 +25,8 @@ function detailsInit() {
   });
 };
 
-module.exports = {
-  detailsInit
-};
+// module.exports = {
+//   detailsInit
+// };
 
 detailsInit();

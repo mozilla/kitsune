@@ -85,7 +85,7 @@ function tabsInit() {
   }
 }
 
-module.exports = {
-  tabsInit
-};
+// module.exports = {
+//   tabsInit
+// };
 tabsInit();
