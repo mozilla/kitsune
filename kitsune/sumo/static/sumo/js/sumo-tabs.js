@@ -85,4 +85,7 @@ function tabsInit() {
   }
 }
 
+module.exports = {
+  tabsInit
+};
 tabsInit();
