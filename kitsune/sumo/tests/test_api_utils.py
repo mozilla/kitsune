@@ -108,11 +108,11 @@ class TestPermissionMod(TestCase):
 class TestJsonRenderer(TestCase):
 
     def test_it_works(self):
-        expected = '{"foo":"bar"}'
+        expected = b'{"foo":"bar"}'
         actual = api_utils.JSONRenderer().render({'foo': 'bar'})
         eq_(expected, actual)
 
     def test_it_escapes_bracket_slash(self):
-        expected = r'{"xss":"<\/script>"}'
+        expected = rb'{"xss":"<\/script>"}'
         actual = api_utils.JSONRenderer().render({'xss': '</script>'})
         eq_(expected, actual)
