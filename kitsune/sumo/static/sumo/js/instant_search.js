@@ -1,6 +1,4 @@
 /* globals k:false, jQuery:false, trackEvent:false */
-// const detailsInitModule = require('./protocol-details-init');
-// const tabsInitModule = require('./sumo-tabs');
 
 (function($) {
   var searchTimeout;
@@ -52,9 +50,10 @@
 
     $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
 
-    // TODO: These functions are necessary to search to match the required functionality.
-    // detailsInit(); // fold up sidebar on mobile.
-    // tabsInit();
+    // These two functions are coming from the global scope, but should be proper
+    // modules when we replace django-compressor with a FE build process.
+    detailsInit(); // fold up sidebar on mobile.
+    tabsInit();
 
     // remove and append search results heading
     $(".home-search-section--content .search-results-heading").remove();

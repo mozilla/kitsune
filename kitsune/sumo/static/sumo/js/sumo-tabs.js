@@ -85,7 +85,9 @@ function tabsInit() {
   }
 }
 
-// module.exports = {
-//   tabsInit
-// };
+if (typeof module != 'undefined' && module.exports) {
+  module.exports.tabsInit = tabsInit;
+}
+
+
 tabsInit();
