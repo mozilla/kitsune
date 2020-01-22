@@ -41,6 +41,10 @@ describe('instant search', () => {
 
       rerequire('../i18n.js');
       global.interpolate = global.window.interpolate;
+      // rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-base.js');
+      // rerequire('../../../../../../node_modules/@mozilla-protocol/core/protocol/js/protocol-details.js');
+      // rerequire('../protocol-details-init.js');
+      // rerequire('../sumo-tabs.js');
       rerequire('../search_utils.js');
       rerequire('../instant_search.js');
 

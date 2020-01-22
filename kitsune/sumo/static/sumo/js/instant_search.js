@@ -52,8 +52,10 @@
 
     $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
 
+    // TODO: These functions are necessary to search to match the required functionality.
     // detailsInit(); // fold up sidebar on mobile.
     // tabsInit();
+
     // remove and append search results heading
     $(".home-search-section--content .search-results-heading").remove();
     $(".search-results-heading").appendTo(".home-search-section--content");
