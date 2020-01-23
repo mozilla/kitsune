@@ -24,6 +24,12 @@
     left: 0;
     z-index: 2;
     content: "";
+    border-radius: var(--global-radius);
+    transition: box-shadow .1s ease-in-out;
+  }
+
+  &:hover:after {
+    box-shadow: 0 0 0 4px var(--color-border);
   }
 }
 
