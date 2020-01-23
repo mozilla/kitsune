@@ -19,7 +19,9 @@
 {%- endmacro %}
 
 {% macro message_tabs(active_tab) -%}
-  <ul id="pm-nav" class="sidebar-nav">
+<nav class="sidebar-nav topics">
+  <span class="details-heading"></span>
+  <ul id="pm-nav" class="sidebar-nav--list">
     <li {{ active_tab|class_selected('inbox') }}>
       <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
     </li>
@@ -30,6 +32,7 @@
       <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
     </li>
   </ul>
+</nav>
 {%- endmacro %}
 
 {% macro inbox_message(message) -%}

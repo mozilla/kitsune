@@ -24,10 +24,7 @@
 // Style guide: card
 
 .card {
-  @include c.bottomless;
-  position: relative;
-  padding: p.$spacing-lg;
-  border-radius: var(--global-radius);
+  @include c.card;
 
   &.lg-pad {
     padding: p.$spacing-xl;

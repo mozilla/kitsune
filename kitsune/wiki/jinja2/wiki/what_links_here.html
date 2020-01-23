@@ -9,7 +9,7 @@
 {% macro relations_list(name, title) %}
   {% if relations[name] %}
     <section>
-      <h2>{{ title }}</h2>
+      <h2 class="text-display-xxs">{{ title }}</h2>
       <ul>
         {% for doc in relations[name] %}
           <li>
@@ -23,10 +23,8 @@
     {% endif %}
 {% endmacro %}
 
-
 {% block content %}
-  <div class="grid_9">
-    <article id="what-links-here">
+    <article id="what-links-here" class="sumo-page-section">
       {% if relations %}
         {{ relations_list('link', _('Documents that link to "{title}"')|fe(title=document.title)) }}
         {{ relations_list('include', _('Documents that include "{title}"')|fe(title=document.title)) }}
@@ -37,7 +35,6 @@
         </p>
       {% endif %}
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

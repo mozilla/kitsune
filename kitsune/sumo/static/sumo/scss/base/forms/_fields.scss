@@ -28,7 +28,7 @@ fieldset {
 legend {
   margin: 0;
   padding: 1em 0 0.5em; // margin was collapsing strangely here.
-  font-size: rem-calc(24);
+  font-size: p.remify(24px);
   font-weight: var(--global-weight-semibold);
   color: var(--primary-heading-color);
 }
@@ -79,6 +79,14 @@ label {
 
   &.is-condensed {
     margin-bottom: p.$spacing-xs;
+  }
+
+  &.has-large-textarea {
+    max-width: 100%;
+
+    textarea {
+      min-height: 340px;
+    }
   }
 
   &.has-error,

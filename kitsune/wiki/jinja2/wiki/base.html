@@ -8,3 +8,6 @@
 {% if product %}
   {% set search_params = {'product': product.slug} %}
 {% endif %}
+
+
+{% block columns_modifier %}sidebar-on-right{% endblock %}

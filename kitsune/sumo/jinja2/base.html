@@ -203,19 +203,9 @@
 {% block contentwrap %}
 
 <div class="sumo-page-section mzp-l-content {% block base_container_classes %}{% endblock %}" id="main-container">
-  {% if messages %}
-    <ul class="user-messages">
-      {% for message in messages %}
-        {% if not message.message.startswith('fxa_notification') %}
-        <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
-          <button class="mzp-c-notification-bar-button" type="button"></button>
-          <p>{{ message }}</p>
-        </li>
-        {% endif %}
-      {% endfor %}
-    </ul>
-  {% endif %}
-
+  {% block breadcrumbs %}
+    {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+  {% endblock %}
 
   <div class="sumo-l-two-col {% block columns_modifier %}{% endblock %}">
     {% block outer_side %}
@@ -226,11 +216,18 @@
     </aside>
     {% endblock %}
     <main id="main-content" role="main" class="sumo-l-two-col--main">
-    {% block breadcrumbs %}
-      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
-    {% endblock %}
-
-    {% block above_main %}{% endblock %}
+    {% if messages %}
+      <ul class="user-messages">
+        {% for message in messages %}
+          {% if not message.message.startswith('fxa_notification') %}
+          <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
+            <button class="mzp-c-notification-bar-button" type="button"></button>
+            <p>{{ message }}</p>
+          </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endif %}
 
     {% block content %}{% endblock %}
     </main>

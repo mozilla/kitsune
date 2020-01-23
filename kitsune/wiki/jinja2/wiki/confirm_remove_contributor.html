@@ -5,18 +5,16 @@
                  (None, _('Remove Contributor'))] %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="remove-member">
-      <h1>{{ _('Are you sure you want to remove {user} from the document contributors?')|f(user=display_name(contributor)) }}</h1>
+    <article id="remove-member" class="sumo-page-section">
+      <h1 class="title text-display-xs">{{ _('Are you sure you want to remove {user} from the document contributors?')|f(user=display_name(contributor)) }}</h1>
       <form action="" method="post">
         {% csrf_token %}
-        <div class="form-actions">
-          <input type="submit" class="btn" value="{{ _('Remove contributor') }}" />
+        <div class="form-actions sumo-button-wrap align-full">
+          <input type="submit" class="sumo-button" value="{{ _('Remove contributor') }}" />
           <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
         </div>
       </form>
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

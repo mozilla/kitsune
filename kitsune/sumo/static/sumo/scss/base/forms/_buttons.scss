@@ -13,7 +13,7 @@
 // .button-sm - small modifier
 // .button-lg - large modifier
 // .button-xl - extra large modifier
-// .button-warning - normal button with red hover state
+// .warning-button - normal button with red hover state
 // .primary-button    - This is the primary variation.
 // .secondary-button - This is the secondary button.
 // .link-button - style a button like a link
@@ -137,13 +137,15 @@
     color: var(--color-link);
     text-decoration: underline;
     appearance: none;
-    border: 0 none;
+    height: auto;
     margin: 0;
     padding: 0;
+    border: 0 none;
     background: transparent;
     font-weight: normal;
     font-size: var(--base-font-size);
     font-family: var(--base-font-family);
+    text-align: left;
 
     &:hover {
       text-decoration: none;
@@ -154,6 +156,28 @@
     &:active {
       background: var(--color-link-active-bg);
     }
+  }
+
+  &.compare-revisions-button-down,
+  &.compare-revisions-button-up {
+    padding-left: 4px;
+    &:before {
+      display: inline-flex;
+      align-self: flex-end;
+      margin-right: 8px;
+      width: 58px;
+      height: 20px;
+      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 1H4.14v9.78M37.63 10.78V1"/><path fill="#5e5e72" d="M4.14 14.4l4.14-7.17H0l4.14 7.17zM37.63 14.4l4.14-7.17h-8.28l4.14 7.17z"/></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center center;
+      content: "";
+    }
+  }
+
+  &.compare-revisions-button-up:before {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 13.4H4.14V3.62M37.63 3.62v9.78"/><path fill="#5e5e72" d="M4.14 0l4.14 7.17H0L4.14 0zM37.63 0l4.14 7.17h-8.28L37.63 0z"/></svg>');
+    align-self: flex-start;
   }
 }
 
