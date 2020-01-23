@@ -23,6 +23,11 @@ function detailsInit() {
       window.Mzp.Details.destroy('.details-heading');
     }
   });
-};
+}
+
+// This is patched here to help the tests locate the referenced function
+if (typeof module != 'undefined' && module.exports) {
+  module.exports.detailsInit = detailsInit;
+}
 
 detailsInit();
