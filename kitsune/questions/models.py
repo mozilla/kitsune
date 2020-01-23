@@ -990,7 +990,7 @@ class Answer(ModelBase, SearchMixin):
         new = self.id is None
 
         if new:
-            page = self.question.num_answers / config.ANSWERS_PER_PAGE + 1
+            page = self.question.num_answers // config.ANSWERS_PER_PAGE + 1
             self.page = page
         else:
             self.updated = datetime.now()

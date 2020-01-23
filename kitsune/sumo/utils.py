@@ -259,10 +259,10 @@ class Progress(object):
         if self.current and self.current % self.milestone_stride == 0:
             now = datetime.now()
             duration = now - self.milestone_time
-            duration = duration.seconds + duration.microseconds / 1e6
-            rate = self.milestone_stride / duration
+            duration = duration.seconds + duration.microseconds // 1e6
+            rate = self.milestone_stride // duration
             remaining = self.total - self.current
-            self.estimated = int(remaining / rate / 60)
+            self.estimated = int(remaining // rate // 60)
             self.milestone_time = now
 
         self.draw()
