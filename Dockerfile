@@ -21,6 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
+RUN pip install --upgrade pip"<20"
 RUN virtualenv /venv
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
