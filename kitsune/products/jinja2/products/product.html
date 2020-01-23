@@ -71,17 +71,21 @@
   </div>
 
   {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+
+  <div class="sumo-page-section">
+    <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
+    {% include "landings/includes/featured_articles.html" %}
+    <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
+  </div>
+
+  <div class="sumo-page-section">
+    {% include "landings/includes/join-our-community-callout.html" %}
+  </div>
+
 </section>
 
-<section class="mzp-l-content sumo-page-section">
-  <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
-  {% include "landings/includes/featured_articles.html" %}
-  <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
-</section>
 
-<section class="mzp-l-content sumo-page-section">
-  {% include "landings/includes/join-our-community-callout.html" %}
-</section>
+
 
 
 {% endblock %}
