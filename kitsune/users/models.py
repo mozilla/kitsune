@@ -87,7 +87,7 @@ class Profile(ModelBase, SearchMixin):
                        ('deactivate_users', 'Can deactivate users'),
                        ('screen_share', 'Can screen share'),)
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return str(self.user)
         except Exception as exc:
@@ -337,7 +337,7 @@ class Setting(ModelBase):
     class Meta(object):
         unique_together = (('user', 'name'),)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s %s:%s' % (self.user, self.name, self.value or '[none]')
 
     @classmethod
@@ -373,7 +373,7 @@ class RegistrationProfile(models.Model):
         verbose_name = _lazy('registration profile')
         verbose_name_plural = _lazy('registration profiles')
 
-    def __unicode__(self):
+    def __str__(self):
         return 'Registration information for %s' % self.user
 
     def activation_key_expired(self):
@@ -404,7 +404,7 @@ class EmailChange(models.Model):
                                       max_length=40)
     email = models.EmailField(db_index=True, null=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return 'Change email request to %s for %s' % (self.email, self.user)
 
 
@@ -416,6 +416,6 @@ class Deactivation(models.Model):
                                   related_name='deactivations')
     date = models.DateTimeField(default=datetime.now)
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s was deactivated by %s on %s' % (self.user, self.moderator,
                                                     self.date)

@@ -365,7 +365,7 @@ class Record(ModelBase):
         self._complete(self.STATUS_SUCCESS, msg[:255])
         self.save()
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s:%s%s' % (self.batch_id, self.name, self.status)
 
 
@@ -374,5 +374,5 @@ class Synonym(ModelBase):
     from_words = models.CharField(max_length=1024)
     to_words = models.CharField(max_length=1024)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} => {1}'.format(self.from_words, self.to_words)

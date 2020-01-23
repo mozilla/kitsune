@@ -53,7 +53,7 @@ class Thread(NotificationsMixin, ModelBase):
         """Returns the page number for the last post."""
         return self.replies // kbforums.POSTS_PER_PAGE + 1
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def new_post(self, creator, content):
@@ -91,7 +91,7 @@ class Post(ModelBase):
     class Meta:
         ordering = ["created"]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.content[:50]
 
     def save(self, *args, **kwargs):

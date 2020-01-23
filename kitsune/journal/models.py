@@ -41,5 +41,5 @@ class Record(models.Model):
 
     objects = RecordManager()
 
-    def __unicode__(self):
+    def __str__(self):
         return '<Record {self.src} {self.msg}>'.format(self=self)

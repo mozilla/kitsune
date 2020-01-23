@@ -25,7 +25,7 @@ class Media(ModelBase):
         ordering = ['-created']
         unique_together = (('locale', 'title'), ('is_draft', 'creator'))
 
-    def __unicode__(self):
+    def __str__(self):
         return '[%s] %s' % (self.locale, self.title)
 
 

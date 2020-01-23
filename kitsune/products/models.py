@@ -45,7 +45,7 @@ class Product(ModelBase):
     class Meta(object):
         ordering = ['display_order']
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s' % self.title
 
     @property
@@ -98,7 +98,7 @@ class Topic(ModelBase):
         ordering = ['product', 'display_order']
         unique_together = ('slug', 'product')
 
-    def __unicode__(self):
+    def __str__(self):
         return '[%s] %s' % (self.product.title, self.title)
 
     @property
@@ -166,5 +166,5 @@ class Platform(ModelBase):
     # lists.
     display_order = models.IntegerField()
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s' % self.name

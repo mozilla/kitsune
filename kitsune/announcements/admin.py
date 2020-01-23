@@ -4,7 +4,7 @@ from kitsune.announcements.models import Announcement
 
 
 class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ['__unicode__', 'group', 'locale', 'creator', 'is_visible']
+    list_display = ['__str__', 'group', 'locale', 'creator', 'is_visible']
     exclude = ['created']
     readonly_fields = ['creator']
     date_hierarchy = 'created'

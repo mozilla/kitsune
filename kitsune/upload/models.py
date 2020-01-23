@@ -22,7 +22,7 @@ class ImageAttachment(ModelBase):
 
     content_object = GenericForeignKey()
 
-    def __unicode__(self):
+    def __str__(self):
         return self.file.name
 
     def get_absolute_url(self):
