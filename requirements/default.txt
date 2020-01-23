@@ -498,8 +498,9 @@ certifi==2019.6.16 \
 sentry-sdk==0.7.6 \
     --hash=sha256:dc207c083604bae01761866b3145ca9dcf5a45f3de048c4da22eac88889d49e7 \
     --hash=sha256:f94cca2eb41d29fd2bdbedaf9d9a262ab3b4660e5d648d9920fae262e240c368
-git+https://github.com/jazzband/django-authority.git@e3e4cd713ef084009a98b035109326cd168a7e47#egg=django-authority \
-    --hash=sha256:a331066f72e0eb2fbdc374b96b355f0f927a346159dabb1968e40594d1a08d5d
+django-authority==0.13.2 \
+    --hash=sha256:3baf6cc05d8a73ae1ac46edb7e179fcf1b305f1324f0535284ce003afc20fe1e \
+    --hash=sha256:81754c8c7dac391ad068524efebff5f6450210bae3daaac6cdefd5480594ff8f
 django-ratelimit==1.1.0 \
     --hash=sha256:3c954ca36ad66675a3bb079f526b4234a3d0092954f8e84820132b77e87c00e0 \
     --hash=sha256:6e1c88b22055c49dc5abf721340fdc39a35de5f310f81acc3752c689ece71a15
