@@ -15,6 +15,7 @@
 // .radius-md - 24px border-radius
 // .radius-lg - 36px border-radius
 // .is-inverse - dark background with light text
+// .zoom-on-hover - card is eleveated slightly on hover. To be used with `.expand-on-hover` to denote full-card links.
 //
 //
 // Markup: ../../../../../../styleguide/styleguide-examples/card.njk
@@ -40,6 +41,15 @@
 
   &.radius-lg {
     border-radius: 36px;
+  }
+
+  &.zoom-on-hover {
+    will-change: transform;
+    transition: transform .1s ease-in-out;
+
+    &:hover {
+      transform: scale(1.02);
+    }
   }
 
 
