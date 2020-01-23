@@ -7,12 +7,18 @@
   flex-direction: column-reverse;
 
   @media #{p.$mq-md} {
+    flex-direction: row;
     justify-content: space-between;
   }
 }
 
 .firefox-download-button {
   text-align: center;
+  margin-bottom: p.$spacing-md;
+
+  @media #{p.$mq-md} {
+    margin-bottom: 0;
+  }
 }
 
 .download-firefox--info {

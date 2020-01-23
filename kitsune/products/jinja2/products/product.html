@@ -27,19 +27,20 @@
       <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
       <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
     </h1>
-    {{ search_box(settings, id='support-search-product', params=search_params) }}
+    {{ search_box(settings, id='support-search-masthead', params=search_params) }}
 
     <p class="popular-searches">
       <span>Popular Searches:</span>
-      <a href="#TODO">Firefox Accounts</a>
-      <a href="#TODO">Log In</a>
-      <a href="#TODO">Item</a>
-      <a href="#TODO">Item</a>
+      <a href="#popular_search_1" data-featured-search>Firefox Accounts</a>
+      <a href="#popular_search_2" data-featured-search>Log In</a>
+      <a href="#popular_search_3" data-featured-search>Installation</a>
+      <a href="#popular_search_4" data-featured-search>Sample</a>
+      <a href="#popular_search_5" data-featured-search>Item 5</a>
     </p>
   </div>
 </section>
 
-<section class="mzp-l-content sumo-page-section">
+<section class="mzp-l-content sumo-page-section" id="main-content">
   <div class="sumo-page-subheader">
     <div class="sumo-page-subheader--text">
       <h2 class="text-display-xs">{{ _('Frequent Topics') }}</h2>
@@ -73,14 +74,11 @@
 </section>
 
 <section class="mzp-l-content sumo-page-section">
-  {% include "landings/includes/ask-our-community.html" %}
-</section>
-
-<section class="mzp-l-content sumo-page-section">
   <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
   {% include "landings/includes/featured_articles.html" %}
   <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
 </section>
+
 <section class="mzp-l-content sumo-page-section">
   {% include "landings/includes/join-our-community-callout.html" %}
 </section>

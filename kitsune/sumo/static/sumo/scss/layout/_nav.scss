@@ -335,6 +335,11 @@
   }
 
   .mzp-c-menu-category {
+    &.logged-out-button-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
     @media #{p.$mq-md} {
       display: flex;
     }
