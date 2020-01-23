@@ -103,7 +103,7 @@ class WikiMetric(ModelBase):
         unique_together = ('code', 'product', 'locale', 'date')
         ordering = ['-date']
 
-    def __unicode__(self):
+    def __str__(self):
         return '[{date}][{locale}][{product}] {code}: {value}'.format(
             date=self.date, code=self.code, locale=self.locale,
             value=self.value, product=self.product)

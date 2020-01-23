@@ -33,7 +33,7 @@ class MetricKind(ModelBase):
     """A programmer-readable identifier of a metric, like 'clicks: search'"""
     code = CharField(max_length=255, unique=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.code
 
 
@@ -69,7 +69,7 @@ class Metric(ModelBase):
     class Meta(object):
         unique_together = [('kind', 'start', 'end')]
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s (%s thru %s): %s' % (
             self.kind, self.start, self.end, self.value)
 
@@ -78,7 +78,7 @@ class CohortKind(ModelBase):
     """A programmer-readable identifier of a cohort, like 'contributor'"""
     code = CharField(max_length=255, unique=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.code
 
 
@@ -92,7 +92,7 @@ class Cohort(ModelBase):
     class Meta(object):
         unique_together = [('kind', 'start', 'end')]
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s (%s thru %s): %s' % (self.kind, self.start, self.end, self.size)
 
 

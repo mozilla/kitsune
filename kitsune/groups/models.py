@@ -24,7 +24,7 @@ class GroupProfile(ModelBase):
     class Meta:
         ordering = ['slug']
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.group)
 
     def get_absolute_url(self):
