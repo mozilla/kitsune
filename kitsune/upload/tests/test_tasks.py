@@ -29,7 +29,7 @@ class ScaleDimensionsTestCase(TestCase):
 
     def test_small(self):
         """A small image is not scaled."""
-        ts = settings.THUMBNAIL_SIZE / 2
+        ts = settings.THUMBNAIL_SIZE // 2
         (width, height) = _scale_dimensions(ts, ts)
         eq_(ts, width)
         eq_(ts, height)

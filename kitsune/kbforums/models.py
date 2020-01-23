@@ -51,7 +51,7 @@ class Thread(NotificationsMixin, ModelBase):
     @property
     def last_page(self):
         """Returns the page number for the last post."""
-        return self.replies / kbforums.POSTS_PER_PAGE + 1
+        return self.replies // kbforums.POSTS_PER_PAGE + 1
 
     def __unicode__(self):
         return self.title
@@ -133,7 +133,7 @@ class Post(ModelBase):
         earlier = t.post_set.filter(created__lte=self.created).count() - 1
         if earlier < 1:
             return 1
-        return earlier / kbforums.POSTS_PER_PAGE + 1
+        return earlier // kbforums.POSTS_PER_PAGE + 1
 
     def get_absolute_url(self):
         query = {}

@@ -148,7 +148,7 @@ class Paginator(object):
         self.pager = pager
 
         self.max = 10
-        self.span = (self.max - 1) / 2
+        self.span = (self.max - 1) // 2
 
         self.page = pager.number
         self.num_pages = pager.paginator.num_pages
