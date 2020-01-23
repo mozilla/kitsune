@@ -113,23 +113,19 @@ h5, h6, .text-display-sm {
 }
 
 .text-body-lg {
-  @include p.font-size(18px);
-  @include c.line-height(28px);
+  @include c.text-body-lg();
 }
 
 .text-body-md {
-  @include p.font-size(16px);
-  @include c.line-height(28px);
+  @include c.text-body-md();
 }
 
 .text-body-sm {
-  @include p.font-size(14px);
-  @include c.line-height(22px);
+  @include c.text-body-sm();
 }
 
 .text-body-xs {
-  @include p.font-size(12px);
-  @include c.line-height(18px);
+  @include c.text-body-xs();
 }
 
 .page-heading {

@@ -52,12 +52,11 @@
         <ul class="form-as-ul">
           {% if request.user == profile.user %}
             <li>
-              <label>{{ _('Avatar:') }}</label>
               <section class="avatar-group">
                 <figure class="avatar-group--figure">
                   <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
                   {% if not profile.is_fxa_migrated %}
-                    <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
+                    <a class="change-avatar text-body-sm display-block" href="https://gravatar.com/emails" target="_blank">
                       {{ pgettext('avatar', 'Choose Photo') }}
                       <span class="tip">
                         {% trans %}
