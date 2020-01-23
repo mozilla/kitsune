@@ -285,7 +285,7 @@ class SumoPyQuery(PyQuery):
 
     def first(self):
         """:first doesn't work, so this is a meh substitute"""
-        return next(list(self.items()))
+        return next(self.items())
 
 
 def template_used(response, template_name):

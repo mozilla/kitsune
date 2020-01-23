@@ -235,9 +235,9 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
 
         eq_(3, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 3)
-        assert '%d::%.1f:' % (r2.document.id, 242.0) in result[0]
-        assert '%d::%.1f:' % (r3.document.id, 122.0) in result[1]
-        assert '%d::%.1f:' % (r.document.id, 102.0) in result[2]
+        assert '%d::%.1f:' % (r2.document.id, 242.0) in result[0].decode()
+        assert '%d::%.1f:' % (r3.document.id, 122.0) in result[1].decode()
+        assert '%d::%.1f:' % (r.document.id, 102.0) in result[2].decode()
 
 
 class L10nMetricsTests(TestCase):

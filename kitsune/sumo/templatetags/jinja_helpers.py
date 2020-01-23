@@ -457,8 +457,8 @@ def add_utm(url_, campaign, source="notification", medium="email"):
 
 
 @library.global_function
-def to_unicode(str):
-    return str(str)
+def to_unicode(value):
+    return str(value)
 
 
 @library.global_function
