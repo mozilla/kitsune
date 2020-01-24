@@ -27,18 +27,18 @@
     <p>{{ _('Pick your product') }}</p>
   </div>
   {{ product_cards(products) }}
-</section>
 
-<section class="mzp-l-content sumo-page-section">
-  <div class="text-center-to-left-on-large">
-    <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
+  <div class="sumo-page-section">
+    <div class="text-center-to-left-on-large">
+      <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
+    </div>
+    {% include "landings/includes/featured_articles.html" %}
+    <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
   </div>
-  {% include "landings/includes/featured_articles.html" %}
-  <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
-</section>
 
-<section class="mzp-l-content sumo-page-section">
-  {% include "landings/includes/join-our-community-callout.html" %}
+  <div class="sumo-page-section">
+    {% include "landings/includes/join-our-community-callout.html" %}
+  </div>
 </section>
 {% endblock %}
 

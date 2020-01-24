@@ -192,8 +192,9 @@ class ThreadsTemplateTests(KBForumTestCase):
         t.new_post(creator=u, content="foo")
         p2 = t.new_post(creator=u, content="bar")
         response = get(self.client, "wiki.discuss.threads", args=[t.document.slug])
+
         doc = pq(response.content)
-        last_post_link = doc("ol.threads div.last-post a:not(.username)")[0]
+        last_post_link = doc("tr.threads td.last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
         eq_(href.split("#")[1], "post-%d" % p2.id)
 

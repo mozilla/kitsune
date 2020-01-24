@@ -98,3 +98,26 @@
 
   }
 }
+
+
+.change-avatar {
+  position: relative;
+
+  > .tip {
+    background: var(--color-inverse-bg);
+    color:  var(--color-inverse);
+    display: none;
+    margin-top: 5px;
+    padding: 10px;
+    position: absolute;
+    width: 300px;
+    z-index: 10;
+    @include c.text-body-sm();
+  }
+
+  &:hover {
+    > .tip {
+      display: block;
+    }
+  }
+}

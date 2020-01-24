@@ -2,7 +2,7 @@
 <div class="sumo-card-grid" style="--cg-count: {{ products|length }};">
   <div class="scroll-wrap">
     {% for product in products %}
-      <div class="card card--product">
+      <div class="card card--product zoom-on-hover">
         {% if topic %}
           {% set prod_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
         {% else %}

@@ -24,6 +24,7 @@
     left: 0;
     z-index: 2;
     content: "";
+    border-radius: var(--global-radius);
   }
 }
 
@@ -79,6 +80,10 @@
   @media #{p.$mq-lg} {
     text-align: left;
   }
+}
+
+.display-block {
+  display: block;
 }
 
 .text-right {
