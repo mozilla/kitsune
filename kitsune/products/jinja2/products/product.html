@@ -16,27 +16,28 @@
 {% block base_container_classes %}container_wide{% endblock %}
 
 {% block contentwrap %}
-<section class="sumo-page-section shade-bg text-center">
+<section class="home-search-section sumo-page-section shade-bg">
   <div class="mzp-l-content">
     {% block breadcrumbs %}
       {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
     {% endblock %}
   </div>
-<div class="mzp-l-content narrow">
-    <h1 class="page-heading">
-      <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
-      <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
-    </h1>
-    {{ search_box(settings, id='support-search-masthead', params=search_params) }}
-
-    <p class="popular-searches">
-      <span>Popular Searches:</span>
-      <a href="#popular_search_1" data-featured-search>Firefox Accounts</a>
-      <a href="#popular_search_2" data-featured-search>Log In</a>
-      <a href="#popular_search_3" data-featured-search>Installation</a>
-      <a href="#popular_search_4" data-featured-search>Sample</a>
-      <a href="#popular_search_5" data-featured-search>Item 5</a>
-    </p>
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="text-display-xl">
+        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
+        <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
+      </h1>
+      {{ search_box(settings, id='support-search-masthead', params=search_params) }}
+      <p class="popular-searches">
+        <span>Popular Searches:</span>
+        <a href="#popular_search_1" data-featured-search>Firefox Accounts</a>
+        <a href="#popular_search_2" data-featured-search>Log In</a>
+        <a href="#popular_search_3" data-featured-search>Installation</a>
+        <a href="#popular_search_4" data-featured-search>Sample</a>
+        <a href="#popular_search_5" data-featured-search>Item 5</a>
+      </p>
+    </div>
   </div>
 </section>
 
