@@ -205,7 +205,7 @@ class ForParser(object):
         container_len = len(self.CONTAINER_TAG) + 2  # 2 for the <>
         walker = getTreeWalker(self.TREEBUILDER)
         stream = walker(self._root)
-        serializer = HTMLSerializer(quote_attr_values=True, omit_optional_tags=False)
+        serializer = HTMLSerializer(quote_attr_values='always', omit_optional_tags=False)
         return serializer.render(stream)[container_len : -container_len - 1]
 
     @staticmethod
