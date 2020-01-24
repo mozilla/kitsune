@@ -1,5 +1,6 @@
 import json
 import logging
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from email.utils import parsedate
 
@@ -7,7 +8,6 @@ from django.conf import settings
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseServerError)
 from django.shortcuts import render
-from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from django.views.decorators.http import require_POST, require_GET
 
@@ -26,7 +26,7 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 log = logging.getLogger('k.customercare')
 
 MAX_TWEETS = 20
-FILTERS = SortedDict([('recent', _lazy('Most Recent')),
+FILTERS = OrderedDict([('recent', _lazy('Most Recent')),
                       ('unanswered', _lazy('Unanswered')),
                       ('answered', _lazy('Answered')),
                       ('all', _lazy('All'))])
