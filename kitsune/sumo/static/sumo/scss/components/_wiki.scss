@@ -914,48 +914,6 @@ textarea[name="content"] {
   width: 100%;
 }
 
-#related-docs-list {
-  margin-top: 10px;
-
-  > li {
-    background: #f0f0f0;
-    border: 1px solid #eee;
-    display: block;
-    margin-bottom: 8px;
-    padding: 8px 26px 8px 5px;
-    position: relative;
-    width: auto;
-
-    input {
-      display: none;
-    }
-
-    .close-button {
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-      height: 16px;
-      line-height: 16px;
-      margin-top: -8px;
-      position: absolute;
-      right: 5px;
-      text-align: center;
-      top: 50%;
-      width: 16px;
-
-      &:before {
-        content: '\2715'; /* ✕ */
-      }
-    }
-  }
-
-  > li.empty-message {
-    background: transparent;
-    border: 0;
-    padding: 0;
-  }
-}
-
 /* Translate specific */
 
 .translate {
@@ -1485,32 +1443,6 @@ article {
   }
 }
 
-.document {
-  #related-documents {
-    padding-left: 80px;
-
-    h4 {
-      font-size: 16px;
-      margin: 0;
-    }
-
-    ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-
-      > li {
-        margin-top: 8px;
-
-        > a {
-          color: #000;
-          font-weight: bold;
-        }
-      }
-    }
-  }
-}
-
 /* Ace syntax custom CSS */
 #editor {
   border: 2px solid #F7F7F7;
@@ -1620,14 +1552,5 @@ article {
     font-size: 16px;
     margin-bottom: 20px;
     padding: 8px 40px;
-  }
-}
-
-.download-buttons {
-  height: 80px;
-  margin-top: -20px;
-
-  > .download-firefox {
-    padding-right: 10px;
   }
 }
