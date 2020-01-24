@@ -118,21 +118,38 @@
           {% include "landings/includes/volunteer-callout.html" %}
         </section>
 
-
-        {# TODO: This needs hooked up with the markup below #}
         {% if document.related_documents.count() %}
-        {% for related in document.related_documents.all() %}
-          <li><a href="{{ url('wiki.document', related.slug) }}">{{ related.title }}</a></li>
-        {% endfor %}
-        {% endif %}
-
         <section id="related-documents" class="sumo-page-section wiki-related-documents">
           <div class="text-center">
-            <h2 class="text-display-xs">{{ _('Related Articles') }}</h2>
+            <h2 class="text-display-xs">{{ _('Related Articles') }}: {{ document.related_documents.length }}</h2>
           </div>
-          {% include "landings/includes/related_articles.html" %}
-          <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
+          <div class="sumo-card-grid" style="--cg-count: {{ document.related_documents.count }};">
+            <div class="scroll-wrap">
+              {% for related in document.related_documents.all() %}
+              <div class="card card--article">
+                  <img class="card--icon-sm" src="{{STATIC_URL}}protocol/img/icons/blog.svg" alt="todo: title" />
+                  <div class="card--details">
+                    <h3 class="card--title">
+                      <a
+                        class="expand-this-link"
+                        href="{{ url('wiki.document', related.slug) }}"
+                        data-event-category="link click"
+                        data-event-action="product"
+                        data-event-label="{{ related.title }}"
+                      >
+                        {{ related.title }}
+                      </a>
+                    </h3>
+                    <div class="card--desc">
+                      {{ related.html|truncate(length=100)|safe }}
+                    </div>
+                  </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
         </section>
+        {% endif %}
     </section>
 {% endblock %}
 
