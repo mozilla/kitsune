@@ -1421,12 +1421,11 @@ class DocumentRevisionsTests(TestCaseBase):
         response = self.client.get(reverse("wiki.document_revisions", args=[d.slug]))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(4, len(doc("#revision-list li")))
+        eq_(4, len(doc("#revision-list tr")))
         # Verify there is no Review link
-        eq_(0, len(doc("#revision-list div.status a")))
+        eq_(0, len(doc("#revision-list th.status a")))
         eq_(
-            "Unreviewed",
-            doc("#revision-list li:not(.header) div.status").first().text(),
+            "Unreviewed", doc("#revision-list td.status").first().text(),
         )
 
         # Log in as user with permission to review
@@ -1438,13 +1437,13 @@ class DocumentRevisionsTests(TestCaseBase):
         doc = pq(response.content)
 
         # Verify there are Review links now
-        eq_(2, len(doc("#revision-list div.status a")))
-        eq_("Review", doc("#revision-list li:not(.header) div.status").first().text())
+        eq_(2, len(doc("#revision-list td.status a")))
+        eq_("Review", doc("#revision-list td.status").first().text())
 
         # Verify edit revision link
         eq_(
             "/en-US/kb/{slug}/edit/{rev_id}".format(slug=d.slug, rev_id=r2.id),
-            doc("#revision-list div.edit a")[0].attrib["href"],
+            doc("#revision-list td.edit a")[0].attrib["href"],
         )
 
     def test_revisions_ready_for_l10n(self):
@@ -1473,14 +1472,14 @@ class DocumentRevisionsTests(TestCaseBase):
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("#revision-list li.header div.l10n")))
+        eq_(1, len(doc("#revision-list table th.l10n")))
 
         response = self.client.get(
             reverse("wiki.document_revisions", args=[d2.slug], locale="es")
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc("#revision-list div.l10n-head")))
+        eq_(0, len(doc("#revision-list th.l10n-head")))
 
 
 class ReviewRevisionTests(TestCaseBase):
@@ -2285,7 +2284,7 @@ class TranslateTests(TestCaseBase):
         url = reverse("wiki.translate", locale="es", args=[en_revision.document.slug])
         response = self.client.get(url)
         doc = pq(response.content)
-        assert doc(".mzp-t-warning").text()
+        assert doc(".user-messages .warning").text()
 
     def test_skip_unready_when_first_translation(self):
         """Never offer an unready-for-localization revision as initial
