@@ -103,7 +103,7 @@
 
       {{ document.html|safe }}
     {% else %}
-      <p>{{ _("This article doesn't have approved content yet.") }}</p>
+      {{ _("This article doesn't have approved content yet.") }}
     {% endif %}
   </section>
 {%- endmacro %}
