@@ -133,6 +133,10 @@ class TestSimplePushNotifier(TestCase):
         """
         Test that when an action is created, it results in a realtime notification being sent.
         """
+        response = mock.Mock()
+        response.status_code = 200
+        requests.put.return_value = response
+
         # Create a user
         u = UserFactory()
         # Register realtime notifications for that user on a question
