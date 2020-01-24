@@ -9,10 +9,8 @@
   function hideContent() {
     $('#main-content').hide();
     $('#main-content').siblings('aside').hide();
-    $('#main-breadcrumbs').hide();
     $('body').addClass('search-results-visible');
     $('.home-search-section .mzp-l-content').removeClass('narrow');
-    $('.popular-searches').addClass('is-hidden');
 
     if ($('#support-search-wiki:visible').length === 0) {
       $('.support-search-main').show();
@@ -22,11 +20,9 @@
 
   function showContent() {
     $('body').removeClass('search-results-visible');
-    $('.popular-searches').removeClass('is-hidden');
     $('.support-search-main').hide();
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
-    $('#main-breadcrumbs').show();
     $('#instant-search-content').remove();
     $('.search-form-large:visible').find('input[name=q]').focus().val('');
     $('#support-search').find('input[name=q]').val('');
@@ -165,7 +161,6 @@
   $(document).on('click', '[data-featured-search]', function(ev) {
     var $mainInput = $('#support-search-masthead input[name=q]');
     var thisLink = $(this).text();
-    console.log('thisLink', thisLink);
     $('#support-search-masthead input[name=q]').focus().val(thisLink);
     $mainInput.trigger( "keyup" );
     ev.preventDefault();
