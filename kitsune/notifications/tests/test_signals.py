@@ -83,6 +83,10 @@ class TestSimplePushNotifier(TestCase):
 
     def test_simple_push_send(self, requests):
         """Verify that SimplePush registrations are called."""
+        response = mock.Mock()
+        response.status_code = 200
+        requests.put.return_value = response
+
         u = UserFactory()
         url = 'http://example.com/simple_push/asdf'
         PushNotificationRegistration.objects.create(creator=u, push_url=url)
@@ -115,6 +119,10 @@ class TestSimplePushNotifier(TestCase):
 
     def test_from_action_to_simple_push(self, requests):
         """Test that when an action is created, it results in a push notification being sent."""
+        response = mock.Mock()
+        response.status_code = 200
+        requests.put.return_value = response
+
         # Create a user.
         u = UserFactory()
         # Register them to receive push notifications.

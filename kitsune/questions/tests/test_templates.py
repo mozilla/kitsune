@@ -1230,7 +1230,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # Verify that the <p> was stripped
         assert b'<p class="short-text"><p>' not in response.content
-        assert b'<p class="short-text">%s' % long_str[:5] in response.content
+        assert b'<p class="short-text">%s' % long_str[:5].encode() in response.content
 
     def test_views(self):
         """Verify the view count is displayed correctly."""

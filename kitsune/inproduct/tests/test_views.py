@@ -72,7 +72,7 @@ class RedirectTestCase(TestCase):
 
     def test_eu_target(self):
         """Test that all URLs work with the extra 'eu'."""
-        self._targets(self.test_eu_urls, 'eu=1&as=u&utm_source=inproduct')
+        self._targets(self.test_eu_urls, 'as=u&utm_source=inproduct&eu=1')
 
     def _targets(self, urls, querystring):
         for input, output in urls:
