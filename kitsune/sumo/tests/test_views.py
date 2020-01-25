@@ -51,7 +51,7 @@ class RobotsTestCase(TestCase):
     @override_settings(ENGAGE_ROBOTS=False)
     def test_disengaged(self):
         response = self.client.get('/robots.txt')
-        eq_('User-Agent: *\nDisallow: /', response.content)
+        eq_(b'User-Agent: *\nDisallow: /', response.content)
         eq_('text/plain', response['content-type'])
 
     @override_settings(ENGAGE_ROBOTS=True)
