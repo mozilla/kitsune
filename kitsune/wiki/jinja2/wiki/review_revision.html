@@ -38,7 +38,7 @@
         <p>
           {{ _('This revision was already reviewed by {user} on {date}.')|fe(user=revision.reviewer, date=datetimeformat(revision.reviewed, format='longdatetime')) }}
         </p>
-      {% elif current_revision_id > revision.id %}
+      {% elif current_revision_id and current_revision_id > revision.id %}
         <p>
           {% if latest_unapproved_revision_id > current_revision_id %}
             {{ _('This revision is outdated, but there is a new revision available.') }}
