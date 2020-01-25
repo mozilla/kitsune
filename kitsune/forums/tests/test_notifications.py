@@ -71,6 +71,7 @@ def get_watch_for(obj):
     ct = ContentType.objects.get_for_model(obj)
     return Watch.objects.filter(content_type=ct, object_id=obj.id)
 
+
 class NotificationsTests(ForumTestCase):
     """Test that notifications get sent."""
 
