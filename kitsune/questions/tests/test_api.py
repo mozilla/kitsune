@@ -133,14 +133,16 @@ class TestQuestionSerializerSerialization(TestCase):
         self._answer(self.helper1)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']), self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
+            self._names(self.asker, self.helper1))
 
     def test_asker_and_response(self):
         self._answer(self.helper1)
         self._answer(self.asker)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']), self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
+            self._names(self.asker, self.helper1))
 
     def test_asker_and_two_answers(self):
         self._answer(self.helper1)
