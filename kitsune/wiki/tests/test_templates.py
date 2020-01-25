@@ -2492,7 +2492,7 @@ class HelpfulVoteTests(TestCaseBase):
                        'referrer': referrer, 'query': query},
             HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(200, response.status_code)
-        eq_('{"message": "Glad to hear it &mdash; thanks for the feedback!"}',
+        eq_(b'{"message": "Glad to hear it &mdash; thanks for the feedback!"}',
             response.content)
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)

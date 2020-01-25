@@ -114,7 +114,7 @@ class WhatLinksWhereTests(TestCase):
         url = reverse('wiki.what_links_here', args=[d1.slug])
         resp = self.client.get(url, follow=True)
         eq_(200, resp.status_code)
-        assert 'D2' in resp.content
+        assert b'D2' in resp.content
 
     def test_what_links_here_locale_filtering(self):
         d1 = DocumentFactory(title='D1', locale='de')
@@ -125,7 +125,7 @@ class WhatLinksWhereTests(TestCase):
         url = reverse('wiki.what_links_here', args=[d1.slug], locale='de')
         resp = self.client.get(url, follow=True)
         eq_(200, resp.status_code)
-        assert 'No other documents link to D1.' in resp.content
+        assert b'No other documents link to D1.' in resp.content
 
 
 class DocumentEditingTests(TestCase):
@@ -184,8 +184,8 @@ class DocumentEditingTests(TestCase):
         res = self.client.post(url, data, follow=True)
         eq_(Document.objects.get(id=d.id).title, old_title)
         # This message gets HTML encoded.
-        assert ('Documents in the Template category must have titles that start with '
-                '&#34;Template:&#34;.'
+        assert (b'Documents in the Template category must have titles that start with '
+                b'&#34;Template:&#34;.'
                 in res.content)
 
         # Now try and change the title while also changing the category.
@@ -212,8 +212,8 @@ class DocumentEditingTests(TestCase):
         res = self.client.post(url, data, follow=True)
         eq_(Document.objects.get(id=d.id).category, TEMPLATES_CATEGORY)
         # This message gets HTML encoded.
-        assert ('Documents with titles that start with &#34;Template:&#34; must be in the '
-                'templates category.' in res.content)
+        assert (b'Documents with titles that start with &#34;Template:&#34; must be in the '
+                b'templates category.' in res.content)
 
         # Now try and change the title while also changing the category.
         data['title'] = 'not a template'
@@ -522,7 +522,7 @@ class VoteTests(TestCase):
                 'comment': 'lorem ipsum dolor'}
         response = self.client.post(url, data)
         eq_(200, response.status_code)
-        eq_('{"message": "Thanks for making us better!"}',
+        eq_(b'{"message": "Thanks for making us better!"}',
             response.content)
 
         vote_meta = vote.metadata.all()
@@ -614,13 +614,13 @@ class TestDocumentLocking(TestCase):
         eq_(_document_lock_check(doc.id), None)
         # u1 should be able to lock the doc
         eq_(_document_lock_steal(doc.id, u1.username), True)
-        eq_(_document_lock_check(doc.id), u1.username)
+        eq_(_document_lock_check(doc.id).decode(), u1.username)
         # u2 should be able to steal the lock
         eq_(_document_lock_steal(doc.id, u2.username), True)
-        eq_(_document_lock_check(doc.id), u2.username)
+        eq_(_document_lock_check(doc.id).decode(), u2.username)
         # u1 can't release the lock, because u2 stole it
         eq_(_document_lock_clear(doc.id, u1.username), False)
-        eq_(_document_lock_check(doc.id), u2.username)
+        eq_(_document_lock_check(doc.id).decode(), u2.username)
         # u2 can release the lock
         eq_(_document_lock_clear(doc.id, u2.username), True)
         eq_(_document_lock_check(doc.id), None)

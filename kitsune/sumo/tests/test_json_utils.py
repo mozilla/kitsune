@@ -79,7 +79,7 @@ class TestMarkupJson(TestCase):
         req = self.factory.get("/", {"format": "json", "callback": '">'})
         resp = jsonified_fun(req)
         eq_(resp.status_code, 400)
-        eq_(resp.content, '{"error": "Invalid callback function."}')
+        eq_(resp.content, b'{"error": "Invalid callback function."}')
 
     def test_content_type_not_json(self):
         req = self.factory.get("/")
