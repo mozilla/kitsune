@@ -34,7 +34,8 @@
   text-align: center;
 
   .simple-search-form {
-    margin-bottom: 16px;
+    margin-top: 32px;
+    margin-bottom: 32px;
 
     @media #{p.$mq-lg} {
       margin-bottom: 32px;

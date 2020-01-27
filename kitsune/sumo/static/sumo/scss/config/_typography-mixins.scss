@@ -11,18 +11,23 @@ $text-display-line-height: 1.1 !default;
   line-height: $text-display-line-height;
   font-family: var(--heading-font-family);
 
-  @media #{p.$mq-md} {
+  @media #{p.$mq-lg} {
     @include p.font-size(64px);
     @include c.line-height(72px);
   }
 }
 
 @mixin text-display-xl {
-  @include p.font-size(40px);
-  line-height: $text-display-line-height;
+  @include p.font-size(32px);
+  @include c.line-height(36px);
   font-family: var(--heading-font-family);
 
   @media #{p.$mq-md} {
+    @include p.font-size(48px);
+    @include c.line-height(56px);
+  }
+
+  @media #{p.$mq-lg} {
     @include p.font-size(56px);
     @include c.line-height(64px);
   }
@@ -33,7 +38,7 @@ $text-display-line-height: 1.1 !default;
   line-height: $text-display-line-height;
   font-family: var(--heading-font-family);
 
-  @media #{p.$mq-md} {
+  @media #{p.$mq-lg} {
     @include p.font-size(48px);
     @include c.line-height(56px);
   }
@@ -41,10 +46,10 @@ $text-display-line-height: 1.1 !default;
 
 @mixin text-display-md {
   @include p.font-size(24px);
-  font-family: var(--base-font-family);
+  font-family: var(--heading-font-family);
   line-height: $text-display-line-height;
 
-  @media #{p.$mq-md} {
+  @media #{p.$mq-lg} {
     @include p.font-size(40px);
     @include c.line-height(44px);
   }
@@ -52,9 +57,9 @@ $text-display-line-height: 1.1 !default;
 
 @mixin text-display-sm {
   @include p.font-size(21px);
-  font-family: var(--base-font-family);
+  font-family: var(--heading-font-family);
 
-  @media #{p.$mq-md} {
+  @media #{p.$mq-lg} {
     @include p.font-size(32px);
     @include c.line-height(36px);
   }
@@ -62,10 +67,10 @@ $text-display-line-height: 1.1 !default;
 
 @mixin text-display-xs {
   @include p.font-size(18px);
-  font-family: var(--base-font-family);
-  line-height: $text-display-line-height;
+  @include c.line-height(28px);
+  font-family: var(--heading-font-family);
 
-  @media #{p.$mq-md} {
+  @media #{p.$mq-lg} {
     @include p.font-size(24px);
     @include c.line-height(28px);
   }
@@ -74,13 +79,13 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-xxs {
   @include p.font-size(20px);
   @include c.line-height(24px);
-  font-family: var(--base-font-family);
+  font-family: var(--heading-font-family);
 }
 
 @mixin text-display-xxxs {
   @include p.font-size(16px);
   @include c.line-height(20px);
-  font-family: var(--base-font-family);
+  font-family: var(--heading-font-family);
 }
 
 // body copy

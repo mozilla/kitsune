@@ -18,50 +18,6 @@ article {
     font-weight: bold;
 }
 
-#editing-tools-sidebar {
-  .showfor {
-    background: #eee;
-    font-size: 14px;
-    line-height: 14px;
-    padding: 10px 0 20px 30px;
-
-    > div {
-      padding-left: 10px;
-      position: relative;
-      text-transform: none;
-
-      &:first-child {
-        margin-top: 10px;
-      }
-      &:not(:last-child) {
-        margin-bottom: 10px;
-      }
-
-      h2 {
-        font-size: 14px;
-        margin: 0 0 3px;
-      }
-
-      .selectbox-wrapper {
-        select {
-          width: 150px;
-          text-transform: none;
-        }
-      }
-    }
-  }
-
-  .html-rtl & .showfor {
-    padding-left: 0;
-    padding-right: 30px;
-
-    > div {
-      padding-left: 0;
-      padding-right: 10px;
-    }
-  }
-}
-
 .sidebar-nav {
   font-size: 14px;
 
