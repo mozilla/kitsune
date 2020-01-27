@@ -59,6 +59,12 @@
 {% endif %}
 
 {% if pagination.num_pages > 1 %}
+<div class="pagination--wrap">
+  <p>
+  {{ _("Page %(current)s of %(total)s")
+      | f({current: x, total: pagination.num_pages}, true)
+      | safe }}
+  </p>
   <ol class="pagination">
   {% if pagination.has_previous %}
     <li class="prev">
@@ -102,4 +108,5 @@
     </li>
   {% endif %}
   </ol>
+</div>
 {% endif %}
