@@ -10,6 +10,7 @@
 // Style guide: nav.sidebar
 
 .sidebar-nav {
+  margin-bottom: 32px;
   &--list,
   &--sublist {
     list-style: none;
@@ -36,6 +37,10 @@
     &:hover {
       text-decoration: none;
       color: var(--color-heading);
+    }
+
+    &.details-heading {
+      padding-left: 0;
     }
   }
 
