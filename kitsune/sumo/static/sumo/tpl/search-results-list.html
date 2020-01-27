@@ -59,11 +59,22 @@
 {% endif %}
 
 {% if pagination.num_pages > 1 %}
-  <ol class="pagination cf">
+<div class="pagination--wrap">
+  <p>
+  {{ _("Page %(current)s of %(total)s")
+      | f({current: x, total: pagination.num_pages}, true)
+      | safe }}
+  </p>
+  <ol class="pagination">
   {% if pagination.has_previous %}
     <li class="prev">
       <a class="btn-page btn-page-prev" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number - 1}) }}">
-        {{ _('Previous') }}
+        <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                <polyline stroke="currentColor" stroke-width="2" points="15 5 8 12 15 19"></polyline>
+            </g>
+        </svg>
+        <span class="sr-only">{{ _('Previous') }}</span>
       </a>
     </li>
   {% endif %}
@@ -86,10 +97,16 @@
   {% endif %}
   {% if pagination.has_next %}
     <li class="next">
-      <a class="btn-page btn-page-next" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number + 1}) }}">
-        {{ _('Next') }}
+      <a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number + 1}) }}">
+        <span class="sr-only">{{ _('Next') }}</span>
+        <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                <polyline stroke="currentColor" stroke-width="2" points="9 19 16 12 9 5"></polyline>
+            </g>
+        </svg>
       </a>
     </li>
   {% endif %}
   </ol>
+</div>
 {% endif %}
