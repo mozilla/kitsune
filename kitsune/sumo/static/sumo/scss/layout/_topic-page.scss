@@ -47,6 +47,10 @@
 .sidebar-subheading {
   @include c.text-body-md;
 
+  &:first-child {
+    margin-top: 0;
+  }
+
   @media #{p.$mq-md} {
     @include c.text-body-lg;
     margin: 72px 0 p.$spacing-lg;

@@ -48,6 +48,14 @@
   display: none !important;
 }
 
+.sr-only {
+  position: absolute;
+  left: -1000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .m-0 {
   margin: 0;
 }

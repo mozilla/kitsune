@@ -1,0 +1,62 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Pagination
+//
+// This is the pagination component.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/pagination.njk
+//
+// Weight: 5
+//
+// Style guide: pagination
+
+.pagination {
+  display: flex;
+  align-items: center;
+
+  a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--global-radius);
+    color: var(--color-text);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: none;
+      color: var(--color-heading);
+      background-color: var(--color-shade-bg);
+    }
+  }
+
+  li {
+    margin: 0 4px;
+
+    &.selected a {
+      background-color: var(--color-link);
+      color: var(--color-inverse);
+    }
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &--wrap {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 12px 0;
+
+    p {
+      margin-right: 16px;
+      white-space: nowrap;
+    }
+  }
+
+}
