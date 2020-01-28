@@ -314,7 +314,7 @@ class EditAvatarTests(TestCaseBase):
     def test_large_avatar(self):
         url = reverse('users.edit_avatar')
         self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             r = self.client.post(url, {'avatar': f})
         eq_(200, r.status_code)
         doc = pq(r.content)
@@ -324,7 +324,7 @@ class EditAvatarTests(TestCaseBase):
     def test_avatar_extensions(self):
         url = reverse('users.edit_avatar')
         self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test_invalid.ext') as f:
+        with open('kitsune/upload/tests/media/test_invalid.ext', 'rb') as f:
             r = self.client.post(url, {'avatar': f})
         eq_(200, r.status_code)
         doc = pq(r.content)
@@ -334,7 +334,7 @@ class EditAvatarTests(TestCaseBase):
     def test_upload_avatar(self):
         """Upload a valid avatar."""
         user_profile = Profile.objects.get(user__username=self.u.username)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             user_profile.avatar.save('test_old.jpg', File(f), save=True)
         assert user_profile.avatar.name.endswith('92b516.jpg')
         old_path = user_profile.avatar.path
@@ -342,7 +342,7 @@ class EditAvatarTests(TestCaseBase):
 
         url = reverse('users.edit_avatar')
         self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             r = self.client.post(url, {'avatar': f})
 
         eq_(302, r.status_code)

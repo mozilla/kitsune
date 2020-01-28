@@ -41,14 +41,14 @@ class CheckFileSizeTestCase(TestCase):
     """Tests for check_file_size"""
     def test_check_file_size_under(self):
         """No exception should be raised"""
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             up_file = File(f)
             check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     @raises(FileTooLargeError)
     def test_check_file_size_over(self):
         """FileTooLargeError should be raised"""
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             up_file = File(f)
             # This should raise
             check_file_size(up_file, 0)
@@ -71,7 +71,7 @@ class CreateImageAttachmentTestCase(TestCase):
 
         Verifies all appropriate fields are correctly set.
         """
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             up_file = File(f)
             file_info = create_imageattachment(
                 {'image': up_file}, self.user, self.obj)

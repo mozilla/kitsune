@@ -80,7 +80,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_answer_upload(self):
         """Posting answer attaches an existing uploaded image to the answer."""
-        f = open("kitsune/upload/tests/media/test.jpg")
+        f = open("kitsune/upload/tests/media/test.jpg", "rb")
         post(
             self.client,
             "upload.up_image_async",

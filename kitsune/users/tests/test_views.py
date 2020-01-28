@@ -168,7 +168,7 @@ class AvatarTests(TestCase):
 
     def test_upload_avatar(self):
         assert not self.profile.avatar, 'User has no avatar.'
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             url = reverse('users.edit_avatar', locale='en-US')
             data = {'avatar': f}
             r = self.client.post(url, data)
@@ -183,7 +183,7 @@ class AvatarTests(TestCase):
         self.profile.avatar = 'path/does/not/exist.jpg'
         self.profile.save()
         assert self.profile.avatar, 'User has a bad avatar.'
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             url = reverse('users.edit_avatar', locale='en-US')
             data = {'avatar': f}
             r = self.client.post(url, data)
