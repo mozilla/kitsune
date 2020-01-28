@@ -63,15 +63,15 @@ def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE,
     width, height = _scale_dimensions(file_width, file_height, longest_side)
     resized_image = original_image.resize((width, height), Image.ANTIALIAS)
 
-    io = io.StringIO()
+    data = io.BytesIO()
 
     if pad:
         padded_image = _make_image_square(resized_image, longest_side)
-        padded_image.save(io, 'PNG')
+        padded_image.save(data, 'PNG')
     else:
-        resized_image.save(io, 'PNG')
+        resized_image.save(data, 'PNG')
 
-    return ContentFile(io.getvalue())
+    return ContentFile(data.getvalue())
 
 
 def _make_image_square(source_image, side=settings.THUMBNAIL_SIZE):
