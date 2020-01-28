@@ -179,19 +179,6 @@ article {
 }
 
 .wiki-doc {
-  color: #000;
-  padding-left: 80px;
-
-  h1 {
-    &:first-child {
-      border: 0;
-    }
-  }
-
-  .document-vote {
-    margin: 10px 0 0 0;
-  }
-
   #doc-contributors {
     display: block;
     min-height: 100px;
@@ -1147,56 +1134,7 @@ div.video .kbox-container {
     text-align: right;
 }
 
-/* document vote form */
-.vote-wrap {
-  background: #e7e7e7;
-  margin: 20px 0;
-  padding: 0 30px 6px 30px;
-  position: relative;
-
-  .document-vote {
-    color: #000;
-    font-size: 16px;
-
-    input[type=submit], .btn {
-      background-color: #000;
-      border: none;
-      border-radius: 4px;
-      background: #000000;
-      font-size: 16px;
-      box-shadow: none;
-      color: #fff;
-      height: 32px;
-      transition: all .1s;
-      width: 94px;
-
-      &:hover,
-      &:focus {
-        transform: scale(1.05);
-      }
-    }
-
-    .header {
-      padding-left: 10px;
-      padding-right: 30px;
-    }
-  }
-
-  .html-rtl & .document-vote .header {
-    padding-left: 30px;
-    padding-right: 10px;
-  }
-}
-
 .document-vote {
-  display: inline-block;
-  vertical-align: top;
-
-  input.active {
-    background: #bbb;
-    color: #fff;
-  }
-
   form.busy {
     .wait {
       display: inline;
@@ -1213,32 +1151,6 @@ div.video .kbox-container {
       .wait {
         margin: 0 15px 0 0;
       }
-    }
-  }
-}
-
-/* Unhelpful vote survey */
-aside {
-  h4 {
-    margin-bottom: 6px;
-    margin-top: 24px;
-    font-size: 12px;
-    text-transform: uppercase;
-  }
-
-  .document-vote {
-    span {
-      display: block;
-    }
-  }
-  #unhelpful-survey {
-    margin-top: 10px;
-
-    textarea {
-      height: 65px;
-      margin: 6px 12px;
-      resize: vertical;
-      width: calc(~"100% - 24px");
     }
   }
 }

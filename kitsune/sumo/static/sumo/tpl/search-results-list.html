@@ -37,25 +37,37 @@
 {% else %}
   <h2 class="text-display-xs search-results-heading">
     {# L10n: {q} is the search query, {l} is the language searched. #}
-    {{ _("We couldn't find any results for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’. Maybe one of these articles will be helpful?")
+    {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’")
         | f({q: q, l: lang_name}, true)
         | safe }}
   </h2>
 
 
-  <div class="topic-list content-box">
-    {% for doc in fallback_results %}
-    <article class="topic-article {{ result.type }}">
-      <div class="topic-article--icon-wrap">
-        <img class="topic-article--icon" src="/static/protocol/img/icons/reader-mode.svg" alt="">
+  <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
+
+  <section class="sumo-card-grid is-four-wide content-box" style="--cg-count: {{ fallback_results|length }};">
+    <div class="scroll-wrap">
+      {% for doc in fallback_results %}
+      <div class="card card--article result document">
+          <img class="card--icon-sm" src="/static/protocol/img/icons/reader-mode.svg" alt="todo: title" />
+          <div class="card--details">
+            <h3 class="card--title">
+              <a
+                tabindex="-1"
+                class="expand-this-link title"
+                href="{{ doc.url }}"
+              >
+                {{ doc.document_title }}
+              </a>
+            </h3>
+            <p class="card--desc">
+              {{ doc.document_summary }}
+            </p>
+          </div>
       </div>
-      <div class="topic-article--text">
-        <h3 class="text-display-xxs"><a class="title" href="{{ doc.url }}">{{ doc.document_title }}</a></h3>
-        <p>{{ doc.document_summary }}</p>
-      </div>
-    </article>
-    {% endfor %}
-  </div>
+      {% endfor %}
+    </div>
+  </section>
 {% endif %}
 
 {% if pagination.num_pages > 1 %}
@@ -108,5 +120,36 @@
     </li>
   {% endif %}
   </ol>
+</div>
+{% endif %}
+
+
+{% if num_results == 0 %}
+<div class="card card--ribbon is-inverse">
+  <div class="card--details">
+    <h3 class="card--title">
+      <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+          <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
+            <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+            <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+          </g>
+        </g>
+      </svg>
+      {{ _('Need more help?') }}
+    </h3>
+
+    <p class="card--desc">
+      Our support forums are a great place to ask a question, learn and discover new ways to use TODO.
+    </p>
+    <a
+      class="sumo-button primary-button button-lg"
+      href="#TODO"
+      data-event-category="link click"
+      data-event-action="topic"
+      data-event-label="Get community support">
+      {{ _('Ask the Community') }}
+    </a>
+  </div>
 </div>
 {% endif %}

@@ -62,17 +62,34 @@
       {% else %}
         <h2>
           {# L10n: {q} is the search query, {l} is the language searched. #}
-          {{ _("We couldn't find any results for ‘{q}’ in ‘{l}’. Maybe one of these articles will be helpful?")|fe(q=q, l=lang_name) }}
+          {{ _("Sorry! 0 results found for ‘{q}’ in ‘{l}’")|fe(q=q, l=lang_name) }}
         </h2>
 
-        <div class="content-box">
-          {% for doc in fallback_results %}
-            <div class="result document">
-              <h3><a class="title" href="{{ doc.url }}">{{ doc.document_title }}</a></h3>
-              <a tabindex="-1" href="{{ doc.url }}">{{ doc.document_summary }}</a>
+        <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
+
+        <section class="sumo-card-grid content-box" style="--cg-count: {{ fallback_results|length }};">
+          <div class="scroll-wrap">
+            {% for doc in fallback_results %}
+            <div class="card card--article result document">
+                <img class="card--icon-sm" src="/static/protocol/img/icons/blog.svg" alt="todo: title" />
+                <div class="card--details">
+                  <h3 class="card--title">
+                    <a
+                      tabindex="-1"
+                      class="expand-this-link title"
+                      href="{{ doc.url }}"
+                    >
+                      {{ doc.document_title }}
+                    </a>
+                  </h3>
+                  <p class="card--desc">
+                    {{ doc.document_summary }}
+                  </p>
+                </div>
             </div>
-          {% endfor %}
-        </div>
+            {% endfor %}
+          </div>
+        </section>
       {% endif %}
     </div>
     <div class="clear-floats">

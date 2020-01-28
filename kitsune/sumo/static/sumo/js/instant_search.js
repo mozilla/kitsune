@@ -12,10 +12,8 @@
     $('body').addClass('search-results-visible');
     $('.home-search-section .mzp-l-content').removeClass('narrow');
 
-    if ($('#support-search-wiki:visible').length === 0) {
-      $('.support-search-main').show();
-      $('.support-search-main').find('input[name=q]').focus();
-    }
+    // clear sidebar form and focus if is's there.
+    $('#support-search-wiki').find('input[name=q]').val('');
   }
 
   function showContent() {
@@ -28,6 +26,12 @@
     $('#support-search').find('input[name=q]').val('');
     $(".home-search-section--content .search-results-heading").remove();
     $('.home-search-section .mzp-l-content').addClass('narrow');
+
+    // move form back to sidebar if in the document.html template.
+    if ($('#support-search-wiki:visible').length > 0) {
+      $('.hidden-search-masthead').hide();
+      // $('#support-search-wiki').appendTo('.search-form-sidebar')
+    }
   }
 
   function render(data) {
@@ -98,10 +102,18 @@
           if (formId === 'support-search-results') {
             $('#support-search').find('input[name=q]').val(value);
           } else if (formId === 'support-search') {
-            $('.home-search-section').find('input[name=q]').val(value);
+            $('.hidden-search-masthead').show();
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+            // $form.appendTo(".search-form-placeholder");
+            window.scrollTo(0, 0);
+
+          } else if (formId === 'support-search-wiki') {
+            $('.hidden-search-masthead').show();
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+            // $form.appendTo(".search-form-placeholder");
           } else {
             $('#support-search').find('input[name=q]').val(value);
-            $('#support-search-results').find('input[name=q]').val(value);
+            $('#support-search-results').find('input[name=q]').val(value).focus();
           }
 
           return true;

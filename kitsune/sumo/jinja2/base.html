@@ -199,9 +199,23 @@
   </div>
 </header><!--/.mzp-c-navigation -->
 
+{% block hidden_search_masthead %}
+<!-- This is only displayed when the instant search is active.
+     This block is overriden in home.html and product.html,
+     and can likely be removed when frontend search is replaced. -->
+<section class="home-search-section sumo-page-section shade-bg hidden-search-masthead">
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="text-display-xl">{{ _('Search Support') }}</h1>
+      {{ search_box(settings, id='hidden-search', params=search_params) }}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+
 
 {% block contentwrap %}
-
 <div class="sumo-page-section mzp-l-content {% block base_container_classes %}{% endblock %}" id="main-container">
   {% block breadcrumbs %}
     {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
