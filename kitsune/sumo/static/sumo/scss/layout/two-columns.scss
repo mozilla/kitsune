@@ -5,7 +5,8 @@
   @include c.grid-row();
 
   &--sidebar,
-  &--main {
+  &--main,
+  &--full {
     @include c.col;
   }
 
