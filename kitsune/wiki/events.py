@@ -23,9 +23,6 @@ log = logging.getLogger("k.wiki.events")
 def get_diff_for(doc, old_rev, new_rev):
     fromfile = "[%s] %s #%s" % (doc.locale, doc.title, old_rev.id)
     tofile = "[%s] %s #%s" % (doc.locale, doc.title, new_rev.id)
-    # difflib expects these to be bytes, not unicode
-    fromfile = fromfile.encode("utf8")
-    tofile = tofile.encode("utf8")
 
     # Get diff
     diff_parts = difflib.unified_diff(
