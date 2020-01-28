@@ -29,7 +29,7 @@
   scroll-padding-left: var(--cg-gutter);
   scrollbar-width: none;
   scroll-snap-type: x proximity;
-  width: 100vw;
+  width: calc(100vw - #{c.$gutter-width * .5});
 
   &.is-four-wide {
     padding-top: var(--cg-gutter);

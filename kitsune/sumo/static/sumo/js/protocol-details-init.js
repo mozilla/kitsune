@@ -1,6 +1,6 @@
 function detailsInit() {
   'use strict';
-  var _mqWide = matchMedia('(max-width: 767px)');
+  var _mqWide = matchMedia('(max-width: 1055px)');
 
   var sidebarList = document.querySelector('.sidebar-nav');
 

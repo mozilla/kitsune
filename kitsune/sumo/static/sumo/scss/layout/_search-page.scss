@@ -4,6 +4,7 @@
 
 // this class is added to the body when the instant search is active. It should
 // be added by default once that is removed.
+
 .search-results-visible {
   .home-search-section {
     text-align: left;
@@ -21,13 +22,21 @@
         max-width: c.col-width(7, 10);
       }
     }
-
-    .page-heading--logo,
-    .popular-searches,
-    .breadcrumbs {
-      display: none;
-    }
   }
+
+  .page-heading--logo,
+  .popular-searches,
+  .breadcrumbs {
+    display: none;
+  }
+
+  .wiki-search-masthead {
+    display: block;
+  }
+}
+
+.wiki-search-masthead {
+  display: none;
 }
 
 .home-search-section {

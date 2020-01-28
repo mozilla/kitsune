@@ -12,9 +12,8 @@
     $('body').addClass('search-results-visible');
     $('.home-search-section .mzp-l-content').removeClass('narrow');
 
-    if ($('#support-search-wiki:visible').length === 0) {
-      $('.support-search-main').show();
-      $('.support-search-main').find('input[name=q]').focus();
+    if ($('#support-search-wiki:visible').length > 0) {
+      $('.simple-search-form:visible').find('input[name=q]').focus();
     }
   }
 
@@ -28,6 +27,11 @@
     $('#support-search').find('input[name=q]').val('');
     $(".home-search-section--content .search-results-heading").remove();
     $('.home-search-section .mzp-l-content').addClass('narrow');
+
+    if ($('#support-search-wiki:visible').length > 0) {
+      $('.home-search-section').hide();
+      $('#support-search-wiki').appendTo('.search-form-sidebar')
+    }
   }
 
   function render(data) {
@@ -98,6 +102,10 @@
           if (formId === 'support-search-results') {
             $('#support-search').find('input[name=q]').val(value);
           } else if (formId === 'support-search') {
+            $('.home-search-section').find('input[name=q]').val(value);
+          } else if (formId === 'support-search-wiki') {
+            $('.home-search-section').show();
+            $form.appendTo(".search-form-placeholder");
             $('.home-search-section').find('input[name=q]').val(value);
           } else {
             $('#support-search').find('input[name=q]').val(value);

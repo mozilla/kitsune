@@ -34,10 +34,21 @@
   {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
 {% endblock %}
 
-{% block columns_modifier %}sidebar-on-right break-on-lg{% endblock %}
+{% block columns_modifier %}sidebar-on-right break-on-lg show-sidebar-on-lg{% endblock %}
+
+{% block masthead %}
+<section class="home-search-section sumo-page-section shade-bg wiki-search-masthead">
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="text-display-xl">{{ _('Search Support') }}</h1>
+      <div class="search-form-placeholder"></div>
+    </div>
+  </div>
+</section>
+{% endblock masthead %}
 
 {% block side %}
-  <div class="search-form-large hide-on-mobile">
+  <div class="search-form-sidebar hide-on-mobile">
     {{ search_box(settings, id='support-search-wiki', params=search_params) }}
   </div>
 
@@ -119,13 +130,14 @@
         </section>
 
         {% if document.related_documents.count() %}
+        {% set docs = document.related_documents.all() %}
         <section id="related-documents" class="sumo-page-section wiki-related-documents">
           <div class="text-center">
-            <h2 class="text-display-xs">{{ _('Related Articles') }}: {{ document.related_documents.length }}</h2>
+            <h2 class="text-display-xs">{{ _('Related Articles') }}</h2>
           </div>
-          <div class="sumo-card-grid" style="--cg-count: {{ document.related_documents.count }};">
+          <div class="sumo-card-grid" style="--cg-count: {{ docs|length }};">
             <div class="scroll-wrap">
-              {% for related in document.related_documents.all() %}
+              {% for related in docs %}
               <div class="card card--article">
                   <img class="card--icon-sm" src="{{STATIC_URL}}protocol/img/icons/blog.svg" alt="todo: title" />
                   <div class="card--details">
