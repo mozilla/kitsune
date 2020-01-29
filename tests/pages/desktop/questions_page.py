@@ -20,8 +20,8 @@ class QuestionsPage(Base):
     _ask_question_link_locator = '/en-US/questions/new'
 
     _all_products_locator = (By.CSS_SELECTOR, '.product a[href$="/all"]')
-    _questions_done_tab_locator = (By.CSS_SELECTOR, '#owner-tabs > a[href*="done"]')
-    _all_questions_tab_locator = (By.CSS_SELECTOR, '#owner-tabs > a[href*="show=all"]')
+    _questions_done_tab_locator = (By.CSS_SELECTOR, '#owner-tabs a[href*="done"]')
+    _all_questions_tab_locator = (By.CSS_SELECTOR, '#owner-tabs a[href*="show=all"]')
     _sort_solved_link_locator = (By.CSS_SELECTOR, 'a[href*="filter=solved"]')
     _sort_unanswered_locator = (
         By.CSS_SELECTOR, '.questions-sidebar ul > li > a[href*="unanswered"]')

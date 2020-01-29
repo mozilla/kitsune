@@ -1095,7 +1095,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         questions_list = urlparams(reverse('questions.list', args=['all']))
         response = self.client.get(questions_list)
         doc = pq(response.content)
-        eq_(1, len(doc('#owner-tabs > .selected')))
+        eq_(1, len(doc('#owner-tabs .selected')))
 
         # Test one tab is selected for all show args
         show_args = ['needs-attention', 'responded', 'done', 'all']
@@ -1103,7 +1103,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
             questions_list = urlparams(reverse('questions.list', args=['all']), show=show_arg)
             response = self.client.get(questions_list)
             doc = pq(response.content)
-            eq_(1, len(doc('#owner-tabs > .selected')))
+            eq_(1, len(doc('#owner-tabs .selected')))
 
     def test_product_filter(self):
         p1 = ProductFactory()
