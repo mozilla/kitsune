@@ -36,17 +36,6 @@
 
 {% block columns_modifier %}sidebar-on-right break-on-lg show-sidebar-on-lg{% endblock %}
 
-{% block masthead %}
-<section class="home-search-section sumo-page-section shade-bg wiki-search-masthead">
-  <div class="mzp-l-content narrow">
-    <div class="home-search-section--content">
-      <h1 class="text-display-xl">{{ _('Search Support') }}</h1>
-      <div class="search-form-placeholder"></div>
-    </div>
-  </div>
-</section>
-{% endblock masthead %}
-
 {% block side %}
   <div class="search-form-sidebar hide-on-mobile">
     {{ search_box(settings, id='support-search-wiki', params=search_params) }}
