@@ -614,13 +614,13 @@ class TestDocumentLocking(TestCase):
         eq_(_document_lock_check(doc.id), None)
         # u1 should be able to lock the doc
         eq_(_document_lock_steal(doc.id, u1.username), True)
-        eq_(_document_lock_check(doc.id).decode(), u1.username)
+        eq_(_document_lock_check(doc.id), u1.username)
         # u2 should be able to steal the lock
         eq_(_document_lock_steal(doc.id, u2.username), True)
-        eq_(_document_lock_check(doc.id).decode(), u2.username)
+        eq_(_document_lock_check(doc.id), u2.username)
         # u1 can't release the lock, because u2 stole it
         eq_(_document_lock_clear(doc.id, u1.username), False)
-        eq_(_document_lock_check(doc.id).decode(), u2.username)
+        eq_(_document_lock_check(doc.id), u2.username)
         # u2 can release the lock
         eq_(_document_lock_clear(doc.id, u2.username), True)
         eq_(_document_lock_check(doc.id), None)

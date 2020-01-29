@@ -329,12 +329,12 @@ django-cache-url==2.0.0 \
 asn1crypto==0.23.0 \
     --hash=sha256:654b7db3b120e23474e9a1e5e38d268c77e58a9e17d2cb595456c37309846494 \
     --hash=sha256:0874981329cfebb366d6584c3d16e913f2a0eb026c9463efcc4aaf42a9d94d70
-django-redis==4.10.0 \
-    --hash=sha256:af0b393864e91228dd30d8c85b5c44d670b5524cb161b7f9e41acc98b6e5ace7 \
-    --hash=sha256:f46115577063d00a890867c6964ba096057f07cb756e78e0503b89cd18e4e083
-redis==2.10.6 \
-    --hash=sha256:8a1900a9f2a0a44ecf6e8b5eb3e967a9909dfed219ad66df094f27f7d6f330fb \
-    --hash=sha256:a22ca993cea2962dbb588f9f30d0015ac4afcc45bee27d3978c0dbe9e97c6c0f
+django-redis==4.11.0 \
+    --hash=sha256:a5b1e3ffd3198735e6c529d9bdf38ca3fcb3155515249b98dc4d966b8ddf9d2b \
+    --hash=sha256:e1aad4cc5bd743d8d0b13d5cae0cef5410eaace33e83bff5fc3a139ad8db50b4
+redis==3.3.11 \
+    --hash=sha256:3613daad9ce5951e426f460deddd5caf469e08a3af633e9578fc77d362becf62 \
+    --hash=sha256:8d0fc278d3f5e1249967cba2eb4a5632d19e45ce5c09442b8422d15ee2c22cc2
 newrelic==4.18.0.118 \
     --hash=sha256:3cd496022c6906ee3cdbf27c67ec3e03922830bfebbca4549ef6f2e58cf719e2
 meinheld==1.0.2 \
