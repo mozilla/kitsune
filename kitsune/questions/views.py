@@ -48,7 +48,7 @@ from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
-from kitsune.sumo.api_utils import JSONRenderer
+from kitsune.sumo.json_utils import template_json
 from kitsune.sumo.decorators import ssl_required, ratelimit
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -454,15 +454,14 @@ def edit_details(request, question_id):
 @ssl_required
 def aaq_react(request):
     request.session['in-aaq'] = True
-    to_json = JSONRenderer().render
     products = ProductSerializer(
         Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE),
         many=True)
     topics = TopicSerializer(Topic.objects.filter(in_aaq=True), many=True)
 
     ctx = {
-        'products_json': to_json(products.data),
-        'topics_json': to_json(topics.data),
+        'products_json': template_json(products.data),
+        'topics_json': template_json(topics.data),
     }
 
     if request.user.is_authenticated():
@@ -472,9 +471,9 @@ def aaq_react(request):
                 creator=request.user,
                 content_type=user_ct,
             ).order_by('-id')[:IMG_LIMIT], many=True)
-        ctx['images_json'] = to_json(images.data)
+        ctx['images_json'] = template_json(images.data)
     else:
-        ctx['images_json'] = to_json([])
+        ctx['images_json'] = template_json([])
 
     return render(request, 'questions/new_question_react.html', ctx)
 

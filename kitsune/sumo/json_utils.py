@@ -4,6 +4,22 @@ import re
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 
+from kitsune.sumo.api_utils import JSONRenderer
+
+
+def template_json(data):
+    """Returns json as a str
+
+    Normally json is rendered as bytes, but putting bytes in a template that
+    is itself encoded to bytes causes problems when trying to re-read the
+    json from the template (with javascript).
+
+    :arg data: the data to jsonify.
+
+    :returns: str
+    """
+    return JSONRenderer().render(data).decode()
+
 
 def jsonp_is_valid(funcname):
     """Returns whether the jsonp function name is valid
