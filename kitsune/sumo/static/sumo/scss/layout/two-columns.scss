@@ -42,7 +42,8 @@
 
   @media #{p.$mq-lg} {
     &.show-sidebar-on-lg,
-    &.break-on-lg {
+    &.break-on-lg,
+    & {
       .sumo-l-two-col--sidebar {
         display: block;
         width: c.col-width(2, 8);
@@ -59,7 +60,8 @@
   }
 
   @media #{p.$mq-xl} {
-    &.break-on-lg {
+    &.break-on-lg,
+    & {
       .sumo-l-two-col--sidebar {
         display: block;
         width: c.col-width(2, 10);

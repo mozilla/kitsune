@@ -29,19 +29,19 @@
 {% endmacro %}
 
 {% block content %}
-  <div class="grid_12">
+<div class="sumo-page-seciton">
     {% if topic_list %}
       {{ topic_selector(topic_list, topic) }}
     {% endif %}
 
-    <h1>{{ title }}</h1>
+    <h1 class="text-display-lg">{{ title }}</h1>
 
     <div id="recent-stats" class="cf">
         <div class="total">
-          <h3>{{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}</h3>
+          <h3 class="text-display-xs">{{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}</h3>
         </div>
         <div class="no-reply">
-          <h3>
+          <h3 class="text-display-xs">
             {% if recent_unanswered_count > 0 %}
               {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
                 <strong>{{recent_unanswered_count}}</strong> question in the last <strong>24 hours</strong> has no reply.
@@ -61,7 +61,8 @@
         <div class="progress-bar {% if recent_answered_percent == 100 %} complete{% endif %}">
           <div style="width: {{ recent_answered_percent }}%;"></div>
         </div>
-      </div>
+  </div>
+
       {% if tags %}
         <div id="tagged">
           {{ _('Showing questions tagged:') }}
@@ -74,43 +75,36 @@
           <a class="show-all" href="{{ questions_url(tagged=None) }}">{{ _('Show all questions') }}</a>
         </div>
       {% endif %}
-    </div>
 
-    <div class="grid_9">
-      <div id="owner-tabs" class="cf">
-        <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>
-          {% include "includes/icons/alert-icon.svg" %}
-          {{ _('Attention needed') }}
-        </a>
-        <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>
-          {% include "includes/icons/message-icon.svg" %}
-          {{ _('Responded') }}
-        </a>
-        <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>
-          {% include "includes/icons/check-icon.svg" %}
-          {{ _('Done') }}
-        </a>
-        <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>
-          {% include "includes/icons/list-icon.svg" %}
-          {{ _('All questions') }}
-        </a>
-      </div>
-    </div>
 
-    <div class="grid_3">
-      <section id="top-contributors">
-        {% set query_product = '?product={}'.format(products[0].slug) if products and products|length == 1 else '' %}
-        <a class="feature-box" href="{{ url('community.top_contributors', area='questions') }}{{ query_product }}">
-          {{ _('Top Contributors') }}
-        </a>
-      </section>
-    </div>
-  </div>
+      <nav id="owner-tabs" class="tabs">
+        <ul class="tabs--list subtopics">
+          <li class="tabs--item">
+            <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>
+              <span>{{ _('Attention needed') }}</span>
+            </a>
+          </li>
+          <li class="tabs--item">
+            <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>
+              <span>{{ _('Responded') }}</span>
+            </a>
+          </li>
+          <li class="tabs--item">
+            <a class="tabs--link" href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>
+              <span>{{ _('Done') }}</span>
+            </a>
+          </li>
+          <li class="tabs--item">
+            <a class="tabs--link" href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>
+              <span>{{ _('All questions') }}</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div id="filter-section"></div>
 
-  <div id="filter-section"></div>
-
-  <div id="questions-list" class="container_12 cf">
-    <div class="grid_9">
+      <div id="questions-list" class="container_12 cf">
+        <div class="grid_9">
       {% if questions.object_list %}
         <article class="questions">
           {% for question in questions.object_list %}
@@ -200,39 +194,46 @@
         <p>{{ _('There are no questions that match the current filter settings.') }}</p>
       {% endif %}
     </div>
-
-    <div class="grid_3 questions-sidebar">
-      <div class="sidebar-header">{{ _('Filter by') }}</div>
-      <ul class="sidebar-nav">
-        <li {% if filter == None and escalated == None %}class="selected"{% endif %}><a href="{{ questions_url(filter=None, escalated=None, page=None) }}">{{ _('All') }}</a></li>
-        {% for f, desc in filters.iteritems() %}
-          <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, page=None) }}">{{ desc }}</a></li>
-        {% endfor %}
-        <li {% if filter == None and escalated %}class="selected"{% endif %}><a href="{{ questions_url(escalated=1, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
-      </ul>
-
-      <div class="sidebar-header">{{ _('Sort options') }}</div>
-      <ul class="sidebar-nav">
-        {% for o, details in orders.iteritems() %}
-          <li {{ order|class_selected(o) }}><a {% if order == o %}class="sort-{{ sort }}"{% endif %} href="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}">{{ details[1] }}</a></li>
-        {% endfor %}
-      </ul>
-
-      <div class="sidebar-header">{{ _('Show me') }}</div>
-      <ul class="sidebar-nav">
-        <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
-        {% if request.user.is_authenticated() %}
-          <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
-        {% endif %}
-      </ul>
-
-      <div class="toggler">
-        <span class="expand" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
-        <span class="collapse" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
-      </div>
-    </div>
   </div>
+</div>
 {% endblock %}
 
+
 {% block side %}
+<div class="questions-sidebar">
+  <nav class="sidebar-nav">
+    <span class="details-heading"></span>
+    <ul class="sidebar-nav--list">
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Filter by') }}</li>
+      <li class="{% if filter == None and escalated == None %}selected{% endif %}"><a href="{{ questions_url(filter=None, escalated=None, page=None) }}">{{ _('All') }}</a></li>
+      {% for f, desc in filters.iteritems() %}
+      <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, page=None) }}">{{ desc }}</a></li>
+      {% endfor %}
+      <li class="{% if filter == None and escalated %}selected{% endif %}"><a href="{{ questions_url(escalated=1, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
+
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Sort options') }}</li>
+      {% for o, details in orders.iteritems() %}
+        <li {{ order|class_selected(o) }}><a {% if order == o %}class="sort-{{ sort }}"{% endif %} href="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}">{{ details[1] }}</a></li>
+      {% endfor %}
+
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
+      <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
+      {% if request.user.is_authenticated() %}
+      <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
+      {% endif %}
+
+      <li id="top-contributors">
+        {% set query_product = '?product={}'.format(products[0].slug) if products and products|length == 1 else '' %}
+        <a class="feature-box" href="{{ url('community.top_contributors', area='questions') }}{{ query_product }}">
+          {{ _('Top Contributors') }}
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="toggler">
+    <span class="expand" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
+    <span class="collapse" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
+  </div>
+</div>
 {% endblock %}
