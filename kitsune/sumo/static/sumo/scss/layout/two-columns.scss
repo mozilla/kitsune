@@ -10,48 +10,13 @@
     @include c.col;
   }
 
-  &.show-sidebar-on-lg {
-    .sumo-l-two-col--sidebar {
-      display: none;
-    }
-  }
-
-  @media #{p.$mq-md} {
-    justify-content: space-between;
-
-    &.sidebar-on-right {
-      flex-direction: row-reverse;
-    }
-
-    &.break-on-lg {
-      .sumo-l-two-col--sidebar,
-      .sumo-l-two-col--main {
-        @include c.col;
-      }
-    }
-
-    .sumo-l-two-col--sidebar {
-      position: relative;
-      width: c.col-width(2, 6);
-
-    }
-    .sumo-l-two-col--main {
-      width: c.col-width(4, 6);
-    }
-  }
-
   @media #{p.$mq-lg} {
-    &.show-sidebar-on-lg,
-    &.break-on-lg,
-    & {
-      .sumo-l-two-col--sidebar {
-        display: block;
-        width: c.col-width(2, 8);
-      }
+    justify-content: space-between;
+    flex-direction: row-reverse;
 
-      .sumo-l-two-col--main {
-        width: c.col-width(6, 8);
-      }
+    &--sidebar {
+      display: block;
+      width: c.col-width(2, 8);
     }
 
     &--main {
@@ -60,12 +25,9 @@
   }
 
   @media #{p.$mq-xl} {
-    &.break-on-lg,
-    & {
-      .sumo-l-two-col--sidebar {
-        display: block;
-        width: c.col-width(2, 10);
-      }
+    &--sidebar {
+      display: block;
+      width: c.col-width(2, 10);
     }
 
     &--main {
