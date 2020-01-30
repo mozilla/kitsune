@@ -1103,7 +1103,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
             questions_list = urlparams(reverse('questions.list', args=['all']), show=show_arg)
             response = self.client.get(questions_list)
             doc = pq(response.content)
-            eq_(1, len(doc('#owner-tabs .selected')))
+            eq_(1, len(doc('#owner-tabs > ul > li > .selected')))
 
     def test_product_filter(self):
         p1 = ProductFactory()
