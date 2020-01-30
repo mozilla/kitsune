@@ -14,6 +14,7 @@
 
     // clear sidebar form and focus if is's there.
     $('#support-search-wiki').find('input[name=q]').val('');
+    $('#support-search-documents').find('input[name=q]').val('');
   }
 
   function showContent() {
@@ -26,12 +27,7 @@
     $('#support-search').find('input[name=q]').val('');
     $(".home-search-section--content .search-results-heading").remove();
     $('.home-search-section .mzp-l-content').addClass('narrow');
-
-    // move form back to sidebar if in the document.html template.
-    if ($('#support-search-wiki:visible').length > 0) {
-      $('.hidden-search-masthead').hide();
-      // $('#support-search-wiki').appendTo('.search-form-sidebar')
-    }
+    $('.hidden-search-masthead').hide();
   }
 
   function render(data) {
@@ -104,13 +100,12 @@
           } else if (formId === 'support-search') {
             $('.hidden-search-masthead').show();
             $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
-            // $form.appendTo(".search-form-placeholder");
             window.scrollTo(0, 0);
 
-          } else if (formId === 'support-search-wiki') {
+          } else if (formId === 'support-search-wiki' || formId === 'support-search-documents') {
             $('.hidden-search-masthead').show();
             $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
-            // $form.appendTo(".search-form-placeholder");
+
           } else {
             $('#support-search').find('input[name=q]').val(value);
             $('#support-search-results').find('input[name=q]').val(value).focus();
