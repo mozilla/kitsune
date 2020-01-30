@@ -3,12 +3,17 @@ function tabsInit() {
 
   // insert "more" button and duplicate the list
   if (container) {
+
+    const existingMoreBtn = container.querySelector('.tabs--item-more')
     const primary = container.querySelector('.tabs--list')
     const primaryItems = container.querySelectorAll('.tabs--list > li:not(.tabs--item-more)')
     container.classList.add('is-js-enhanced')
 
+    if (existingMoreBtn) {
+      existingMoreBtn.remove();
+    }
 
-  primary.insertAdjacentHTML('beforeend', `
+    primary.insertAdjacentHTML('beforeend', `
     <li class="tabs--item-more">
       <button class="tabs--button" type="button" aria-haspopup="true" aria-expanded="false">
         More
@@ -51,7 +56,7 @@ function tabsInit() {
     })
 
     // toggle the visibility of More button and items in Secondary
-    if(!hiddenItems.length) {
+    if(!hiddenItems.length || hiddenItems.length == allItems.length) {
       moreLi.classList.add('is-hidden')
       container.classList.remove('dropdown-is-open')
       moreBtn.setAttribute('aria-expanded', false)
