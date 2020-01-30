@@ -34,8 +34,6 @@
   {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
 {% endblock %}
 
-{% block columns_modifier %}sidebar-on-right break-on-lg show-sidebar-on-lg{% endblock %}
-
 {% block side %}
   <div class="search-form-sidebar hide-on-mobile">
     {{ search_box(settings, id='support-search-wiki', params=search_params) }}
@@ -50,7 +48,7 @@
     {% set parent = doc.parent %}
   {% endif %}
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
-  {{ topic_sidebar(product_topics[:10], [], product) }}
+
 {% endblock %}
 
 

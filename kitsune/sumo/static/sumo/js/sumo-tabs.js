@@ -9,6 +9,7 @@ function tabsInit() {
     const primaryItems = container.querySelectorAll('.tabs--list > li:not(.tabs--item-more)')
     container.classList.add('is-js-enhanced')
 
+    // reset in the event that this is run twice.
     if (existingMoreBtn) {
       existingMoreBtn.remove();
     }
@@ -56,7 +57,7 @@ function tabsInit() {
     })
 
     // toggle the visibility of More button and items in Secondary
-    if(!hiddenItems.length || hiddenItems.length == allItems.length) {
+    if(!hiddenItems.length) {
       moreLi.classList.add('is-hidden')
       container.classList.remove('dropdown-is-open')
       moreBtn.setAttribute('aria-expanded', false)
