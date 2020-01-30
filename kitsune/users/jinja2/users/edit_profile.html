@@ -79,15 +79,18 @@
                 </figure>
                 <div class="avatar-group--details">
                   {% if not profile.is_fxa_migrated %}
-                    <li>
-                      <label>{{ _('Password:') }}</label>
+                  <ul class="avatar-group--details-list">
+                    <li class="avatar-group--details-item">
+                      <label class="avatar-group--details-label">{{ _('Password:') }}</label>
                       <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
                     </li>
-                    <li>
-                    <label>{{ _('Email:') }}</label>
-                    {{ user.email }}
-                      <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
+                    <li class="avatar-group--details-item">
+                      <label class="avatar-group--details-label">{{ _('Email:') }}</label>
+                      <span>{{ user.email }}<br>
+                        <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
+                      </span>
                     </li>
+                  </ul>
                   {% endif %}
                 </div>
               </section>
