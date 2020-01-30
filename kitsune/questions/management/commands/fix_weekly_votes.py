@@ -1,10 +1,10 @@
 import time
 
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = 'Recalculate question weekly votes.'
 
     def handle_noargs(self, *a, **kw):

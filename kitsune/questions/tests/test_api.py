@@ -103,13 +103,13 @@ class TestQuestionSerializerSerialization(TestCase):
         self.question = QuestionFactory(creator=self.asker)
 
     def _names(self, *users):
-        return sorted(
+        return sorted((
             {
                 'username': u.username,
                 'display_name': Profile.objects.get(user=u).name,
                 'avatar': profile_avatar(u),
             }
-            for u in users)
+            for u in users), key=lambda d: d['username'])
 
     def _answer(self, user):
         return AnswerFactory(question=self.question, creator=user)
@@ -133,14 +133,16 @@ class TestQuestionSerializerSerialization(TestCase):
         self._answer(self.helper1)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']), self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
+            self._names(self.asker, self.helper1))
 
     def test_asker_and_response(self):
         self._answer(self.helper1)
         self._answer(self.asker)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']), self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
+            self._names(self.asker, self.helper1))
 
     def test_asker_and_two_answers(self):
         self._answer(self.helper1)
@@ -148,7 +150,7 @@ class TestQuestionSerializerSerialization(TestCase):
         self._answer(self.helper2)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']),
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
             self._names(self.asker, self.helper1, self.helper2))
 
     def test_solution_is_id(self):

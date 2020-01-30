@@ -148,7 +148,7 @@ class Paginator(object):
         self.pager = pager
 
         self.max = 10
-        self.span = (self.max - 1) / 2
+        self.span = (self.max - 1) // 2
 
         self.page = pager.number
         self.num_pages = pager.paginator.num_pages
@@ -432,8 +432,8 @@ def add_utm(url_, campaign, source='notification', medium='email'):
 
 
 @library.global_function
-def to_unicode(str):
-    return str(str)
+def to_unicode(value):
+    return str(value)
 
 
 @library.global_function

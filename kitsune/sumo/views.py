@@ -190,7 +190,7 @@ def monitor(request):
     # Check Libraries and versions
     libraries_results = []
     try:
-        Image.new('RGB', (16, 16)).save(io.StringIO(), 'JPEG')
+        Image.new('RGB', (16, 16)).save(io.BytesIO(), 'JPEG')
         libraries_results.append((INFO, 'PIL+JPEG: Got it!'))
     except Exception as exc:
         libraries_results.append(

@@ -17,7 +17,7 @@ class InboxMessage(ModelBase):
 
     unread = property(lambda self: not self.read)
 
-    def __unicode__(self):
+    def __str__(self):
         s = self.message[0:30]
         return 'to:%s from:%s %s' % (self.to, self.sender, s)
 
@@ -36,7 +36,7 @@ class OutboxMessage(ModelBase):
     message = models.TextField()
     created = models.DateTimeField(default=datetime.now, db_index=True)
 
-    def __unicode__(self):
+    def __str__(self):
         to = ', '.join([u.username for u in self.to.all()])
         return 'from:%s to:%s %s' % (self.sender, to, self.message[0:30])
 

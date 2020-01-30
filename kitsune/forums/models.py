@@ -64,7 +64,7 @@ class Forum(NotificationsMixin, ModelBase):
             ("post_in_forum", "Can post in restricted forums"),
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_absolute_url(self):
@@ -144,9 +144,9 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     @property
     def last_page(self):
         """Returns the page number for the last post."""
-        return self.replies / forums.POSTS_PER_PAGE + 1
+        return self.replies // forums.POSTS_PER_PAGE + 1
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def delete(self, *args, **kwargs):
@@ -305,7 +305,7 @@ class Post(ModelBase):
     class Meta:
         ordering = ["created"]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.content[:50]
 
     def save(self, *args, **kwargs):
@@ -353,7 +353,7 @@ class Post(ModelBase):
         earlier = t.post_set.filter(created__lte=self.created).count() - 1
         if earlier < 1:
             return 1
-        return earlier / forums.POSTS_PER_PAGE + 1
+        return earlier // forums.POSTS_PER_PAGE + 1
 
     def get_absolute_url(self):
         query = {}

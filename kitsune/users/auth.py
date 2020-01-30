@@ -59,7 +59,7 @@ class TokenLoginBackend(object):
 
     def authenticate(self, auth):
         try:
-            decoded = base64.b64decode(auth)
+            decoded = base64.b64decode(auth).decode()
         except (TypeError, UnicodeDecodeError):
             return None
 
@@ -90,7 +90,7 @@ def get_auth_str(user):
     """Creates an auth string based on {username}:{token}"""
     token = default_token_generator.make_token(user)
     auth = '{0}:{1}'.format(user.username, token)
-    return base64.b64encode(auth)
+    return base64.b64encode(auth.encode())
 
 
 class SumoOIDCAuthBackend(OIDCAuthenticationBackend):

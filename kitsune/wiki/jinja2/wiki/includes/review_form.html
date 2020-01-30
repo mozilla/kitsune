@@ -1,6 +1,6 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% from "wiki/includes/document_macros.html" import revision_contributors_label %}
-{% if revision.reviewed or current_revision_id > revision.id %}
+{% if revision.reviewed or current_revision_id and current_revision_id > revision.id %}
   <p><a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a></p>
 {% else %}
   <div id="actions">

@@ -82,7 +82,7 @@
       <p class="share-link">
         <br/>
         {% set link='<a href="' + share_link + '">' + share_link + '</a>' %}
-        {{ _('Share this article: {link}')|f(link=link|safe) }}
+        {{ _('Share this article: {link}')|f(link=link)|safe }}
       </p>
     {% endif %}
 

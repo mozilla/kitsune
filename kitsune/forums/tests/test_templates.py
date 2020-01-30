@@ -180,14 +180,14 @@ class PostsTemplateTests(ForumTestCase):
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
-        assert '0 Replies' in response.content
+        assert b'0 Replies' in response.content
 
         PostFactory(thread=t)
         PostFactory(thread=t)
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
-        assert '2 Replies' in response.content
+        assert b'2 Replies' in response.content
 
     def test_youtube_in_post(self):
         """Verify youtube video embedding."""

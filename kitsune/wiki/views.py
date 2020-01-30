@@ -1224,7 +1224,7 @@ def get_helpful_votes_async(request, document_slug):
     for res in results:
         revisions.add(int(res[0]))
         created_list.append(res[3])
-        date = int(time.mktime(res[3].timetuple()) / 86400) * 86400
+        date = int(time.mktime(res[3].timetuple()) // 86400) * 86400
 
         datums.append({
             'yes': int(res[1]),
@@ -1241,7 +1241,7 @@ def get_helpful_votes_async(request, document_slug):
     max_created = max(created_list)
 
     # Zero fill data
-    timestamp = int(time.mktime(res[3].timetuple()) / 86400) * 86400
+    timestamp = int(time.mktime(res[3].timetuple()) // 86400) * 86400
     end = time.mktime(datetime.now().timetuple())
     while timestamp <= end:
         if timestamp not in dates_with_data:

@@ -69,9 +69,9 @@ class AAQSearchTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert "CupcakesQuestion" in response.content
-        assert "<unbleached>" not in response.content
-        assert "cupcakes are best with" in response.content
+        assert b"CupcakesQuestion" in response.content
+        assert b"<unbleached>" not in response.content
+        assert b"cupcakes are best with" in response.content
 
     # TODO: test whether when _search_suggetions fails with a handled
     # error that the user can still ask a question.
@@ -99,8 +99,8 @@ class AAQSearchTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert "CupcakesQuestion" in response.content
-        assert "CupcakesKB" in response.content
+        assert b"CupcakesQuestion" in response.content
+        assert b"CupcakesKB" in response.content
 
         # Verify that archived articles and questions aren't shown...
         # Archive both and they shouldn't appear anymore.
@@ -114,8 +114,8 @@ class AAQSearchTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert "CupcakesQuestion" not in response.content
-        assert "CupcakesKB" not in response.content
+        assert b"CupcakesQuestion" not in response.content
+        assert b"CupcakesKB" not in response.content
 
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
@@ -820,7 +820,7 @@ class TestStats(ElasticTestCase):
 
         # If there's histogram data, this is probably good enough to
         # denote its existence.
-        assert ' data-graph="[' in response.content
+        assert b' data-graph="[' in response.content
 
 
 class TestEditDetails(TestCaseBase):

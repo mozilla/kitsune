@@ -22,7 +22,7 @@ class UserSearchTests(ElasticTestCase):
         self.refresh()
         response = self.client.get(urlparams(reverse('community.search'), q='baz'))
         eq_(response.status_code, 200)
-        assert 'No users were found' in response.content
+        assert b'No users were found' in response.content
 
     def test_results(self):
         UserFactory(username='foo', profile__name='Foo Bar')

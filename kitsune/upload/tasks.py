@@ -63,22 +63,22 @@ def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE,
     width, height = _scale_dimensions(file_width, file_height, longest_side)
     resized_image = original_image.resize((width, height), Image.ANTIALIAS)
 
-    str_io = io.StringIO()
+    data = io.BytesIO()
 
     if pad:
         padded_image = _make_image_square(resized_image, longest_side)
-        padded_image.save(str_io, 'PNG')
+        padded_image.save(data, 'PNG')
     else:
-        resized_image.save(str_io, 'PNG')
+        resized_image.save(data, 'PNG')
 
-    return ContentFile(str_io.getvalue())
+    return ContentFile(data.getvalue())
 
 
 def _make_image_square(source_image, side=settings.THUMBNAIL_SIZE):
     """Pads a rectangular image with transparency to make it square."""
     square_image = Image.new('RGBA', (side, side), (255, 255, 255, 0))
-    width = (side - source_image.size[0]) / 2
-    height = (side - source_image.size[1]) / 2
+    width = (side - source_image.size[0]) // 2
+    height = (side - source_image.size[1]) // 2
     square_image.paste(source_image, (width, height))
     return square_image
 
@@ -94,11 +94,11 @@ def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
 
     if width > height:
         new_width = longest_side
-        new_height = (new_width * height) / width
+        new_height = (new_width * height) // width
         return (new_width, new_height)
 
     new_height = longest_side
-    new_width = (new_height * width) / height
+    new_width = (new_height * width) // height
     return (new_width, new_height)
 
 

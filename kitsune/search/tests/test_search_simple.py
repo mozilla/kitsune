@@ -123,7 +123,7 @@ class SimpleSearchTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {'q': 'piranha'})
         eq_(200, response.status_code)
 
-        assert "We couldn't find any results for" in response.content
+        assert b"We couldn't find any results for" in response.content
         doc = pq(response.content)
         eq_(2, len(doc('#search-results .result')))
 

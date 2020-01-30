@@ -22,7 +22,7 @@ class HelperTestCase(TestCase):
         eq_('/user/%s' % self.u.username, profile_url(self.u))
 
     def test_profile_avatar_default(self):
-        email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
+        email_hash = hashlib.md5(self.u.email.lower().encode()).hexdigest()
         gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48' % (
             email_hash)
         assert profile_avatar(self.u).startswith(gravatar_url)
@@ -36,7 +36,7 @@ class HelperTestCase(TestCase):
     def test_profile_avatar(self):
         self.u.profile.avatar = 'images/foo.png'
         self.u.profile.save()
-        email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
+        email_hash = hashlib.md5(self.u.email.lower().encode()).hexdigest()
         gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48' % (
             email_hash)
         assert profile_avatar(self.u).startswith(gravatar_url)

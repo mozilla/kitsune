@@ -314,7 +314,7 @@ class EditAvatarTests(TestCaseBase):
     def test_large_avatar(self):
         url = reverse('users.edit_avatar')
         self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             r = self.client.post(url, {'avatar': f})
         eq_(200, r.status_code)
         doc = pq(r.content)
@@ -324,7 +324,7 @@ class EditAvatarTests(TestCaseBase):
     def test_avatar_extensions(self):
         url = reverse('users.edit_avatar')
         self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test_invalid.ext') as f:
+        with open('kitsune/upload/tests/media/test_invalid.ext', 'rb') as f:
             r = self.client.post(url, {'avatar': f})
         eq_(200, r.status_code)
         doc = pq(r.content)
@@ -334,7 +334,7 @@ class EditAvatarTests(TestCaseBase):
     def test_upload_avatar(self):
         """Upload a valid avatar."""
         user_profile = Profile.objects.get(user__username=self.u.username)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             user_profile.avatar.save('test_old.jpg', File(f), save=True)
         assert user_profile.avatar.name.endswith('92b516.jpg')
         old_path = user_profile.avatar.path
@@ -342,7 +342,7 @@ class EditAvatarTests(TestCaseBase):
 
         url = reverse('users.edit_avatar')
         self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             r = self.client.post(url, {'avatar': f})
 
         eq_(302, r.status_code)
@@ -404,7 +404,7 @@ class ViewProfileTests(TestCaseBase):
         self.profile.save()
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
-        assert '<p>my dude image </p>' in r.content
+        assert b'<p>my dude image </p>' in r.content
 
     def test_num_documents(self):
         """Verify the number of documents contributed by user."""
@@ -414,26 +414,26 @@ class ViewProfileTests(TestCaseBase):
 
         r = self.client.get(reverse('users.profile', args=[u.username]))
         eq_(200, r.status_code)
-        assert '2 documents' in r.content
+        assert b'2 documents' in r.content
 
     def test_deactivate_button(self):
         """Check that the deactivate button is shown appropriately"""
         u = UserFactory()
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert 'Deactivate this user' not in r.content
+        assert b'Deactivate this user' not in r.content
 
         add_permission(self.u, Profile, 'deactivate_users')
         self.client.login(username=self.u.username, password='testpass')
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert 'Deactivate this user' in r.content
+        assert b'Deactivate this user' in r.content
 
         u.is_active = False
         u.save()
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert 'This user has been deactivated.' in r.content
+        assert b'This user has been deactivated.' in r.content
 
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
-        assert 'Deactivate this user' not in r.content
+        assert b'Deactivate this user' not in r.content
 
     def test_badges_listed(self):
         """Verify that awarded badges appear on the profile page."""
@@ -442,7 +442,7 @@ class ViewProfileTests(TestCaseBase):
         u = UserFactory()
         AwardFactory(user=u, badge=b)
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert badge_title in r.content
+        assert badge_title.encode() in r.content
 
 
 class PasswordChangeTests(TestCaseBase):
