@@ -1,0 +1,16 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.forum {
+
+  &--question-list {
+
+  }
+
+  &--question-item {
+    padding-top: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--color-heading);
+  }
+
+}

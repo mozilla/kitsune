@@ -138,8 +138,13 @@ h5, h6, .text-display-sm {
 
   &--logo {
     display: block;
-    width: 56px;
-    margin: 0 auto 8px;
+    width: 48px;
+    margin: 68px 0 8px;
+
+    @at-root .home-search-section & {
+      width: 56px;
+      margin: 0 auto 8px;
+    }
   }
 }
 

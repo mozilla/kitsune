@@ -21,3 +21,23 @@
     flex: 1 1 80%;
   }
 }
+
+.sumo-dl-inline {
+  display: flex;
+
+  dt,
+  dd {
+    padding: 0 8px;
+    color: var(--color-heading);
+  }
+
+  dt {
+    border-left: 1px solid var(--color-border);
+    font-weight: bold;
+
+    &:first-child {
+      border-left: 0 none;
+    }
+  }
+
+}
