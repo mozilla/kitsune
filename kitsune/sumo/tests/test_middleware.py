@@ -64,14 +64,14 @@ class CacheHeadersMiddlewareTestCase(TestCase):
         req = self.rf.get('/')
         resp = HttpResponse('OK')
         resp = self.mw.process_response(req, resp)
-        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
+        assert resp['cache-control'] == 'max-age=0, no-cache, no-store, must-revalidate'
 
     @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
     def test_post_request(self):
         req = self.rf.post('/')
         resp = HttpResponse('OK')
         resp = self.mw.process_response(req, resp)
-        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
+        assert resp['cache-control'] == 'max-age=0, no-cache, no-store, must-revalidate'
 
 
 class TrailingSlashMiddlewareTestCase(TestCase):
