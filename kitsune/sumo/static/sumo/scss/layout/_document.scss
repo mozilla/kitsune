@@ -50,6 +50,7 @@
 
   &--form {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
   }
@@ -57,6 +58,7 @@
   &--heading {
     @include c.text-display-xxxs;
     margin: 0;
+    margin-bottom: p.$spacing-md;
   }
 
   &--buttons {
@@ -111,6 +113,18 @@
     &:hover {
       transform: scale(1.2);
     }
+  }
+
+  @media #{p.$mq-md} {
+
+    &--form {
+      flex-direction: row;
+    }
+
+    &--heading {
+      margin-bottom: 0;
+    }
+
   }
 }
 

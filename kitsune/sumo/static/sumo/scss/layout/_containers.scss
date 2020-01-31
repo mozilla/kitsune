@@ -32,6 +32,21 @@
     padding-top: 40px;
     padding-bottom: 40px;
   }
+
+  &--lg {
+    padding-top: 32px;
+    padding-bottom: 24px;
+
+    @media #{p.$mq-md} {
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: 70px;
+      padding-bottom: 70px;
+    }
+  }
 }
 
 .section-break {
