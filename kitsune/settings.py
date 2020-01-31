@@ -627,7 +627,7 @@ ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = 'sumo/img/avatar.png'
-AVATAR_SIZE = 48  # in pixels
+AVATAR_SIZE = 200  # in pixels
 MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
 GROUP_AVATAR_PATH = 'uploads/groupavatars/'
 

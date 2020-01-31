@@ -193,7 +193,7 @@
 
 {% macro document_watch(document, user) -%}
   {% if user.is_authenticated() and document %}
-    <div id="doc-watch">
+    <div class="doc-watch" id="doc-watch">
       {% if document.is_watched_by(user) %}
         <form action="{{ url('wiki.document_unwatch', document.slug) }}" method="post">
           {% csrf_token %}
@@ -202,7 +202,7 @@
       {% else %}
         <form action="{{ url('wiki.document_watch', document.slug) }}" method="post">
           {% csrf_token %}
-          <input type="submit" class="sumo-button link-button" value="{{ _('Email me article changes') }}" />
+          <input type="submit" class="sumo-button" value="{{ _('Email me article changes') }}" />
         </form>
       {% endif %}
     </div>
@@ -265,7 +265,7 @@
       <p>
         {{ header }}
         {% if close_button %}
-          <div class="exit close-button" data-close-id="showfor-panel">x</div>
+          <span class="exit close-button" data-close-id="showfor-panel">&times;</span>
         {% endif %}
       </p>
     {% endif %}

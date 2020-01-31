@@ -46,12 +46,19 @@
 
 .sidebar-subheading {
   @include c.text-body-md;
+  font-weight: bold;
+  color: var(--color-heading);
+  margin-top: p.$spacing-md;
+  margin-bottom: p.$spacing-sm;
+
+  &:first-child {
+    margin-top: 0;
+  }
 
   @media #{p.$mq-md} {
     @include c.text-body-lg;
     margin: 72px 0 p.$spacing-lg;
   }
-
 }
 
 .sumo-article-header {

@@ -3,12 +3,18 @@ function tabsInit() {
 
   // insert "more" button and duplicate the list
   if (container) {
+
+    const existingMoreBtn = container.querySelector('.tabs--item-more')
     const primary = container.querySelector('.tabs--list')
     const primaryItems = container.querySelectorAll('.tabs--list > li:not(.tabs--item-more)')
     container.classList.add('is-js-enhanced')
 
+    // reset in the event that this is run twice.
+    if (existingMoreBtn) {
+      existingMoreBtn.remove();
+    }
 
-  primary.insertAdjacentHTML('beforeend', `
+    primary.insertAdjacentHTML('beforeend', `
     <li class="tabs--item-more">
       <button class="tabs--button" type="button" aria-haspopup="true" aria-expanded="false">
         More

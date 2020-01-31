@@ -34,10 +34,8 @@
   {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
 {% endblock %}
 
-{% block columns_modifier %}sidebar-on-right break-on-lg{% endblock %}
-
 {% block side %}
-  <div class="search-form-large hide-on-mobile">
+  <div class="search-form-sidebar hide-on-mobile">
     {{ search_box(settings, id='support-search-wiki', params=search_params) }}
   </div>
 
@@ -50,7 +48,7 @@
     {% set parent = doc.parent %}
   {% endif %}
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
-  {{ topic_sidebar(product_topics[:10], [], product) }}
+
 {% endblock %}
 
 
@@ -118,21 +116,39 @@
           {% include "landings/includes/volunteer-callout.html" %}
         </section>
 
-
-        {# TODO: This needs hooked up with the markup below #}
         {% if document.related_documents.count() %}
-        {% for related in document.related_documents.all() %}
-          <li><a href="{{ url('wiki.document', related.slug) }}">{{ related.title }}</a></li>
-        {% endfor %}
-        {% endif %}
-
+        {% set docs = document.related_documents.all() %}
         <section id="related-documents" class="sumo-page-section wiki-related-documents">
           <div class="text-center">
             <h2 class="text-display-xs">{{ _('Related Articles') }}</h2>
           </div>
-          {% include "landings/includes/related_articles.html" %}
-          <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
+          <div class="sumo-card-grid" style="--cg-count: {{ docs|length }};">
+            <div class="scroll-wrap">
+              {% for related in docs %}
+              <div class="card card--article">
+                  <img class="card--icon-sm" src="{{STATIC_URL}}protocol/img/icons/blog.svg" alt="todo: title" />
+                  <div class="card--details">
+                    <h3 class="card--title">
+                      <a
+                        class="expand-this-link"
+                        href="{{ url('wiki.document', related.slug) }}"
+                        data-event-category="link click"
+                        data-event-action="product"
+                        data-event-label="{{ related.title }}"
+                      >
+                        {{ related.title }}
+                      </a>
+                    </h3>
+                    <div class="card--desc">
+                      {{ related.html|truncate(length=100)|safe }}
+                    </div>
+                  </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
         </section>
+        {% endif %}
     </section>
 {% endblock %}
 

@@ -4,6 +4,7 @@
 
 // this class is added to the body when the instant search is active. It should
 // be added by default once that is removed.
+
 .search-results-visible {
   .home-search-section {
     text-align: left;
@@ -22,13 +23,28 @@
       }
     }
   }
+
+  .page-heading--logo,
+  .popular-searches,
+  .breadcrumbs {
+    display: none;
+  }
+
+  .hidden-search-masthead {
+    display: block;
+  }
+}
+
+.hidden-search-masthead {
+  display: none;
 }
 
 .home-search-section {
   text-align: center;
 
   .simple-search-form {
-    margin-bottom: 16px;
+    margin-top: 32px;
+    margin-bottom: 32px;
 
     @media #{p.$mq-lg} {
       margin-bottom: 32px;

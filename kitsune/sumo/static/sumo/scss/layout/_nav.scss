@@ -76,6 +76,8 @@
         margin-bottom: -6px;
         margin-left: 20px;
         width: 36px;
+        height: 36px;
+        border-radius: 50%;
       }
     }
   }
@@ -86,6 +88,8 @@
 
     .avatar {
       width: 32px;
+      height: 32px;
+      border-radius: 50%;
     }
 
     @media #{p.$mq-md} {

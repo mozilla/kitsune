@@ -3,11 +3,13 @@
 {% set styles = ('home',) %}
 {% set canonical_url = canonicalize(viewname='home') %}
 
+{% block hidden_search_masthead %}{% endblock %}
+
 {% block contentwrap %}
 <section class="home-search-section sumo-page-section shade-bg">
   <div class="mzp-l-content narrow">
     <div class="home-search-section--content">
-      <h1 class="text-display-xl">{{ _('Search Mozilla Support') }}</h1>
+      <h1 class="text-display-xl">{{ _('Search Support') }}</h1>
       {{ search_box(settings, id='support-search-masthead', params=search_params) }}
 
       <p class="popular-searches">
@@ -33,7 +35,6 @@
       <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
     </div>
     {% include "landings/includes/featured_articles.html" %}
-    <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
   </div>
 
   <div class="sumo-page-section">

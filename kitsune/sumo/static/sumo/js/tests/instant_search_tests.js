@@ -76,13 +76,11 @@ describe('instant search', () => {
     it('shows and hides the main content correctly', () => {
       const $searchInput = $('#search-q');
       expect($('#main-content').css('display')).to.not.equal('none');
-      expect($('#main-breadcrumbs').css('display')).to.not.equal('none');
       expect($('#aside').css('display')).to.not.equal('none');
 
       $searchInput.val('test');
       $searchInput.keyup();
       expect($('#main-content').css('display')).to.equal('none');
-      expect($('#main-breadcrumbs').css('display')).to.equal('none');
       expect($('#aside').css('display')).to.equal('none');
 
       $searchInput.val('');

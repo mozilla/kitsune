@@ -46,9 +46,10 @@
   &.zoom-on-hover {
     will-change: transform;
     transition: transform .1s ease-in-out;
+    transform: translateZ(0);
 
     &:hover {
-      transform: scale(1.02);
+      transform: translateZ(0) scale(1.02);
     }
   }
 

@@ -9,29 +9,25 @@
   function hideContent() {
     $('#main-content').hide();
     $('#main-content').siblings('aside').hide();
-    $('#main-breadcrumbs').hide();
     $('body').addClass('search-results-visible');
     $('.home-search-section .mzp-l-content').removeClass('narrow');
-    $('.popular-searches').addClass('is-hidden');
 
-    if ($('#support-search-wiki:visible').length === 0) {
-      $('.support-search-main').show();
-      $('.support-search-main').find('input[name=q]').focus();
-    }
+    // clear sidebar form and focus if is's there.
+    $('#support-search-wiki').find('input[name=q]').val('');
+    $('#support-search-documents').find('input[name=q]').val('');
   }
 
   function showContent() {
     $('body').removeClass('search-results-visible');
-    $('.popular-searches').removeClass('is-hidden');
     $('.support-search-main').hide();
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
-    $('#main-breadcrumbs').show();
     $('#instant-search-content').remove();
     $('.search-form-large:visible').find('input[name=q]').focus().val('');
     $('#support-search').find('input[name=q]').val('');
     $(".home-search-section--content .search-results-heading").remove();
     $('.home-search-section .mzp-l-content').addClass('narrow');
+    $('.hidden-search-masthead').hide();
   }
 
   function render(data) {
@@ -102,10 +98,17 @@
           if (formId === 'support-search-results') {
             $('#support-search').find('input[name=q]').val(value);
           } else if (formId === 'support-search') {
-            $('.home-search-section').find('input[name=q]').val(value);
+            $('.hidden-search-masthead').show();
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+            window.scrollTo(0, 0);
+
+          } else if (formId === 'support-search-wiki' || formId === 'support-search-documents') {
+            $('.hidden-search-masthead').show();
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+
           } else {
             $('#support-search').find('input[name=q]').val(value);
-            $('#support-search-results').find('input[name=q]').val(value);
+            $('#support-search-results').find('input[name=q]').val(value).focus();
           }
 
           return true;
@@ -165,7 +168,6 @@
   $(document).on('click', '[data-featured-search]', function(ev) {
     var $mainInput = $('#support-search-masthead input[name=q]');
     var thisLink = $(this).text();
-    console.log('thisLink', thisLink);
     $('#support-search-masthead input[name=q]').focus().val(thisLink);
     $mainInput.trigger( "keyup" );
     ev.preventDefault();

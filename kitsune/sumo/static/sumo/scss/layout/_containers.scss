@@ -17,11 +17,16 @@
   &.narrow {
     max-width: 1000px;
   }
+
+  & & {
+    padding-right: c.$gutter-width /2;
+    padding-left: c.$gutter-width /2;
+  }
 }
 
 .sumo-page-section {
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding-top: 32px;
+  padding-bottom: 32px;
 
   @media #{p.$mq-md} {
     padding-top: 40px;
