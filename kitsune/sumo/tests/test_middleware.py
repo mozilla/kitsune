@@ -89,7 +89,7 @@ class TrailingSlashMiddlewareTestCase(TestCase):
         eq_(response.status_code, 404)
 
     def test_remove_trailing_slash(self):
-        response = self.client.get('/en-US/home/?xxx=\xc3')
+        response = self.client.get('/en-US/home/?xxx=%C3%83')
         eq_(response.status_code, 301)
         assert response['Location'].endswith('/en-US/home?xxx=%C3%83')
 
@@ -136,7 +136,7 @@ class PlusToSpaceTestCase(TestCase):
         """The request QUERY_STRING might not be unicode."""
         request = self.rf.get('/pa+th')
         request.LANGUAGE_CODE = 'ja'
-        request.META['QUERY_STRING'] = 's=\xe3\x82\xa2'
+        request.META['QUERY_STRING'] = 's=%E3%82%A2'
         response = self.ptsm.process_request(request)
         eq_('/ja/pa%20th?s=%E3%82%A2', response['location'])
 
