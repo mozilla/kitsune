@@ -53,7 +53,7 @@ legend {
 label {
   display: block;
   margin-bottom: p.$spacing-sm;
-  @include p.font-size(14px);
+  @include c.text-body-md;
   color: var(--color-marketing-gray-07);
   font-weight: bold;
 }
@@ -73,7 +73,7 @@ label {
       display: block;
       margin: p.$spacing-sm 0 0 0;
       color: var(--color-red-08);
-      @include p.font-size(12px);
+      @include c.text-body-sm;
     }
   }
 
@@ -136,7 +136,7 @@ textarea {
   outline:0;
   transition-duration:150ms;
   transition-property:border-color;
-  @include p.font-size(16px);
+  @include c.text-body-sm;
 
   &:hover {
     border-color: var(--field-border-color-hover);
@@ -176,6 +176,10 @@ textarea {
     background-color: var(--field-background-color-disabled);
     color: var(--field-color-disabled);
     cursor: default;
+  }
+
+  @media #{p.$mq-md} {
+    @include c.text-body-md;
   }
 }
 
@@ -263,7 +267,7 @@ textarea {
 .helptext {
   display: block;
   margin: p.$spacing-sm 0 0 0;
-  @include p.font-size(12px);
+  @include c.text-body-xs;
 }
 
 .delete-account-link {
