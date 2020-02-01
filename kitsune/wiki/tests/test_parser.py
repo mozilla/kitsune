@@ -740,12 +740,12 @@ class ForParserTests(TestCase):
         on_own_line_eq((True, False, False), '\n{for} \nq')
 
     def test_strip(self):
-        strip_eq('\x070\x07inline\x07/sf\x07', '{for}inline{/for}')
-        strip_eq('\x070\x07\n\nblock\n\n\x07/sf\x07',
+        strip_eq('\x910\x91inline\x91/sf\x91', '{for}inline{/for}')
+        strip_eq('\x910\x91\n\nblock\n\n\x91/sf\x91',
                  '{for}\nblock\n{/for}')
-        strip_eq('\x070\x07inline\n\n\x07/sf\x07',
+        strip_eq('\x910\x91inline\n\n\x91/sf\x91',
                  '{for}inline\n{/for}')
-        strip_eq('\x070\x07\n\nblock\x07/sf\x07', '{for}\nblock{/for}')
+        strip_eq('\x910\x91\n\nblock\x91/sf\x91', '{for}\nblock{/for}')
 
     def test_whitespace_lookbehind(self):
         """Assert strip_fors is aware of newlines preceding the current match.
@@ -756,7 +756,7 @@ class ForParserTests(TestCase):
         and take preceding newlines into account.
 
         """
-        strip_eq('\x070\x07\n\n\x071\x07inline\x07/sf\x07\n\n\x07/sf\x07',
+        strip_eq('\x910\x91\n\n\x911\x91inline\x91/sf\x91\n\n\x91/sf\x91',
                  '{for}\n{for}inline{/for}\n{/for}')
 
     def test_matches_see_replacements(self):
@@ -769,8 +769,8 @@ class ForParserTests(TestCase):
         original string, without the replacements applied.
 
         """
-        strip_eq('\x070\x07\n\n\x071\x07Fx4\x07/sf\x07\n\n\x07/sf\x07\n\n'
-                 '\x072\x07\n\n\x073\x07Fx3\x07/sf\x07\n\n\x07/sf\x07',
+        strip_eq('\x910\x91\n\n\x911\x91Fx4\x91/sf\x91\n\n\x91/sf\x91\n\n'
+                 '\x912\x91\n\n\x913\x91Fx3\x91/sf\x91\n\n\x91/sf\x91',
                  '{for fx4}\n'
                  '{for mac}Fx4{/for}\n'
                  '{/for}\n'
