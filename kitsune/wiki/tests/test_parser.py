@@ -320,8 +320,8 @@ class TestWikiTemplate(TestCase):
         p = WikiParser()
         content = p.parse(text)
         eq_('<p><span class="button">start '
-            '<span class="for" data-for="mac">mac</span>'
-            '<span class="for" data-for="win">win</span> '
+            '<span data-for="mac" class="for">mac</span>'
+            '<span data-for="win" class="for">win</span> '
             'rest</span>\n</p>', content)
 
     def test_button_image_for_nesting(self):
@@ -510,44 +510,34 @@ class TestWikiVideo(TestCase):
                 '//www.youtube.com/embed/oHg5SJYRHA0')
 
 
-def parsed_eq(want, to_parse):
-    p = WikiParser()
-    eq_(want, p.parse(to_parse).strip().replace('\n', ''))
-
-
 class ForWikiTests(TestCase):
     """Tests for the wiki implementation of the {for} directive, which
     arranges for certain parts of the page to show only when viewed on certain
     OSes or browser versions"""
 
+    def assertWikiHtmlEqual(self, wiki, html, msg=None):
+        self.assertHTMLEqual(WikiParser().parse(wiki), html, msg=msg)
+
     def test_block(self):
         """A {for} set off by itself or wrapping a block-level element should
         be a paragraph or other kind of block-level thing."""
-        parsed_eq('<p>Joe</p><p><span class="for">Red</span></p>'
-                  '<p>Blow</p>',
-                  'Joe\n\n{for}Red{/for}\n\nBlow')
-        parsed_eq('<p>Joe</p><div class="for"><ul><li> Red</li></ul></div>'
-                  '<p>Blow</p>',
-                  'Joe\n\n{for}\n* Red\n{/for}\n\nBlow')
+        self.assertWikiHtmlEqual(
+            'Joe\n\n{for}Red{/for}\n\nBlow',
+            '<p>Joe</p><p><span class="for">Red</span></p><p>Blow</p>')
+        self.assertWikiHtmlEqual(
+            'Joe\n\n{for}\n* Red\n{/for}\n\nBlow',
+            '<p>Joe</p><div class="for"><ul><li> Red</li></ul></div><p>Blow</p>')
 
     def test_inline(self):
         """A for not meeting the conditions in test_block should be inline.
         """
-        parsed_eq('<p>Joe</p>'
-                  '<p>Red <span class="for">riding</span> hood</p>'
-                  '<p>Blow</p>',
-
-                  'Joe\n\nRed {for}riding{/for} hood\n\nBlow')
+        self.assertWikiHtmlEqual(
+            'Joe\n\nRed {for}riding{/for} hood\n\nBlow',
+            '<p>Joe</p><p>Red <span class="for">riding</span> hood</p><p>Blow</p>')
 
     def test_nested(self):
         """{for} tags should be nestable."""
-        parsed_eq('<div class="for" data-for="mac">'
-                  '<p>Joe</p>'
-                  '<p>Red <span class="for"><span class="for">riding'
-                  '</span> hood</span></p>'
-                  '<p>Blow</p>'
-                  '</div>',
-
+        self.assertWikiHtmlEqual(
                   '{for mac}\n'
                   'Joe\n'
                   '\n'
@@ -555,51 +545,60 @@ class ForWikiTests(TestCase):
                   '{/for} hood{/for}\n'
                   '\n'
                   'Blow\n'
-                  '{/for}')
+                  '{/for}',
+
+                  '<div data-for="mac" class="for">'
+                  '<p>Joe</p>'
+                  '<p>Red <span class="for"><span class="for">riding'
+                  '</span> hood</span></p>'
+                  '<p>Blow</p>'
+                  '</div>')
 
     def test_data_attrs(self):
         """Make sure the correct attributes are set on the for element."""
-        parsed_eq('<p><span class="for" data-for="mac,linux,3.6">'
-                  'One</span></p>',
-                  '{for mac,linux,3.6}One{/for}')
+        self.assertWikiHtmlEqual(
+            '{for mac,linux,3.6}One{/for}',
+            '<p><span class="for" data-for="mac,linux,3.6">One</span></p>')
 
     def test_early_close(self):
         """Make sure the parser closes the for tag at the right place when
         its closer is early."""
-        parsed_eq('<div class="for"><p>One</p>'
-                  '<ul><li>Fish</li></ul></div>',
-                  '{for}\nOne\n\n*Fish{/for}')
+        self.assertWikiHtmlEqual(
+            '{for}\nOne\n\n*Fish{/for}',
+            '<div class="for"><p>One</p><ul><li>Fish</li></ul></div>')
 
     def test_late_close(self):
         """If the closing for tag is not closed by the time the enclosing
         element of the opening for tag is closed, close the for tag
         just before the enclosing element."""
-        parsed_eq(
+        self.assertWikiHtmlEqual(
+            '*{for}One\n*Fish\n\nTwo\n{/for}',
             '<ul><li><span class="for">One</span></li>'
-            '<li>Fish</li></ul><p>Two</p>',
-            '*{for}One\n*Fish\n\nTwo\n{/for}')
+            '<li>Fish</li></ul><p>Two</p>')
 
     def test_missing_close(self):
         """If the closing for tag is missing, close the for tag just
         before the enclosing element."""
-        parsed_eq(
-            '<p><span class="for">One fish</span></p><p>Two fish</p>',
-            '{for}One fish\n\nTwo fish')
+        self.assertWikiHtmlEqual(
+            '{for}One fish\n\nTwo fish',
+            '<p><span class="for">One fish</span></p><p>Two fish</p>')
 
     def test_unicode(self):
         """Make sure non-ASCII chars survive being wrapped in a for."""
         french = 'Vous parl\u00e9 Fran\u00e7ais'
-        parsed_eq('<p><span class="for">' + french + '</span></p>',
-                  '{for}' + french + '{/for}')
+        self.assertWikiHtmlEqual(
+            '{for}' + french + '{/for}',
+            '<p><span class="for">' + french + '</span></p>')
 
     def test_boolean_attr(self):
         """Make sure empty attributes don't raise exceptions."""
-        parsed_eq('<p><video controls height="120">'
-                  '  <source src="/some/path/file.ogv" type="video/ogv">'
-                  '</video></p>',
-                  '<p><video controls="" height="120">'
-                  '  <source src="/some/path/file.ogv" type="video/ogv">'
-                  '</video></p>')
+        self.assertWikiHtmlEqual(
+            '<p><video controls="" height="120">'
+            '  <source src="/some/path/file.ogv" type="video/ogv">'
+            '</video></p>',
+            '<p><video controls height="120">'
+            '  <source src="/some/path/file.ogv" type="video/ogv">'
+            '</video></p>')
 
     def test_adjacent_blocks(self):
         """Make sure one block-level {for} doesn't absorb an adjacent one."""
@@ -622,22 +621,22 @@ class ForWikiTests(TestCase):
 
     def test_big_swath(self):
         """Enclose a big section containing many tags."""
-        parsed_eq('<div class="for"><h1 id="w_h1">H1</h1>'
-                  '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
-                  '<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>'
-                  '<p>They have high melting points.</p></div>',
-
-                  '{for}\n'
-                  '=H1=\n'
-                  '==H2==\n'
-                  'Llamas are fun:\n'
-                  '\n'
-                  '*Jumping\n'
-                  '*Rolling\n'
-                  '*Grazing\n'
-                  '\n'
-                  'They have high melting points.\n'
-                  '{/for}')
+        self.assertWikiHtmlEqual(
+            '{for}\n'
+            '=H1=\n'
+            '==H2==\n'
+            'Llamas are fun:\n'
+            '\n'
+            '*Jumping\n'
+            '*Rolling\n'
+            '*Grazing\n'
+            '\n'
+            'They have high melting points.\n'
+            '{/for}',
+            '<div class="for"><h1 id="w_h1">H1</h1>'
+            '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
+            '<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>'
+            '<p>They have high melting points.</p></div>')
 
     def test_block_level_section(self):
         """Make sure we recognize <section> as a block element."""
@@ -723,7 +722,7 @@ class ForParserTests(TestCase):
 
     def test_data_attrs(self):
         """Make sure the data- attributes look good."""
-        expanded_eq('<span class="for" data-for="mac,linux">One</span>',
+        expanded_eq('<span data-for="mac,linux" class="for">One</span>',
                     '<for data-for="mac,linux">One</for>')
 
     def test_on_own_line(self):
