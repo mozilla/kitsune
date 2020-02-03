@@ -98,3 +98,12 @@
     margin: 88px 0 p.$spacing-md;
   }
 }
+
+// pull search up inline with breadcrumbs on large
+@media #{p.$mq-md} {
+  .breadcrumbs + .sumo-l-two-col {
+    .search-form-sidebar {
+      margin: -48px 0 40px 0;
+    }
+  }
+}

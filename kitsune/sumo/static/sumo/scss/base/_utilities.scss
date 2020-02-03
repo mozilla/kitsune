@@ -35,10 +35,20 @@
   }
 }
 
-.mobile-only {
-  display: block;
+@media screen and (max-width: 1055px) {
+  .large-only {
+    display: none !important;
+  }
+}
 
+.mobile-only {
   @media #{p.$mq-md} {
+    display: none !important;
+  }
+}
+
+.hide-on-large {
+  @media #{p.$mq-lg} {
     display: none !important;
   }
 }

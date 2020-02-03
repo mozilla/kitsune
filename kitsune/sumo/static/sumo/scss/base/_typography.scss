@@ -42,8 +42,8 @@ body {
 h1, h2, h3, h4, h5, h6,
 [class*=text-display] {
   font-family: var(--heading-font-family);
-  color: var(--color-heading);
   font-weight: bold;
+  color: var(--color-heading);
 
   a, :link {
     text-decoration: none;
@@ -52,6 +52,10 @@ h1, h2, h3, h4, h5, h6,
     &:hover {
       text-decoration: underline;
     }
+  }
+
+  @at-root .has-moz-headings & {
+    font-family: var(--heading-font-family-moz);
   }
 }
 

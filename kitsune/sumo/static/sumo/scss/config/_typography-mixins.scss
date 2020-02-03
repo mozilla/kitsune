@@ -6,10 +6,15 @@ $text-body-line-height: 1.5 !default;
 $text-display-line-height: 1.1 !default;
 
 // display copy: headings, blockquotes, other fancy stuff
-@mixin text-display-xxl { // Use this one sparingly.
+@mixin text-display-xxl($family: false) { // Use this one sparingly.
   @include p.font-size(48px);
   line-height: $text-display-line-height;
-  font-family: var(--heading-font-family);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+    font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 
   @media #{p.$mq-lg} {
     @include p.font-size(64px);
@@ -17,10 +22,15 @@ $text-display-line-height: 1.1 !default;
   }
 }
 
-@mixin text-display-xl {
+@mixin text-display-xl($family: false) {
   @include p.font-size(32px);
   @include c.line-height(36px);
-  font-family: var(--heading-font-family);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+    font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 
   @media #{p.$mq-md} {
     @include p.font-size(48px);
@@ -33,10 +43,15 @@ $text-display-line-height: 1.1 !default;
   }
 }
 
-@mixin text-display-lg {
+@mixin text-display-lg($family: false) {
   @include p.font-size(32px);
   line-height: $text-display-line-height;
-  font-family: var(--heading-font-family);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+    font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 
   @media #{p.$mq-lg} {
     @include p.font-size(48px);
@@ -44,10 +59,16 @@ $text-display-line-height: 1.1 !default;
   }
 }
 
-@mixin text-display-md {
+@mixin text-display-md($family: false) {
   @include p.font-size(24px);
-  font-family: var(--heading-font-family);
   line-height: $text-display-line-height;
+
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 
   @media #{p.$mq-lg} {
     @include p.font-size(40px);
@@ -55,9 +76,15 @@ $text-display-line-height: 1.1 !default;
   }
 }
 
-@mixin text-display-sm {
+@mixin text-display-sm($family: false) {
   @include p.font-size(21px);
-  font-family: var(--heading-font-family);
+
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 
   @media #{p.$mq-lg} {
     @include p.font-size(32px);
@@ -65,10 +92,15 @@ $text-display-line-height: 1.1 !default;
   }
 }
 
-@mixin text-display-xs {
+@mixin text-display-xs($family: false) {
   @include p.font-size(18px);
   @include c.line-height(28px);
-  font-family: var(--heading-font-family);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 
   @media #{p.$mq-lg} {
     @include p.font-size(24px);
@@ -76,16 +108,26 @@ $text-display-line-height: 1.1 !default;
   }
 }
 
-@mixin text-display-xxs {
+@mixin text-display-xxs($family: false) {
   @include p.font-size(20px);
   @include c.line-height(24px);
-  font-family: var(--heading-font-family);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 }
 
-@mixin text-display-xxxs {
+@mixin text-display-xxxs($family: false) {
   @include p.font-size(16px);
   @include c.line-height(20px);
-  font-family: var(--heading-font-family);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
 }
 
 // body copy

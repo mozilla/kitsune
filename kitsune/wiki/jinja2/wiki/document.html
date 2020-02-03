@@ -35,7 +35,7 @@
 {% endblock %}
 
 {% block side %}
-  <div class="search-form-sidebar hide-on-mobile">
+  <div class="search-form-sidebar large-only">
     {{ search_box(settings, id='support-search-wiki', params=search_params) }}
   </div>
 
@@ -106,7 +106,7 @@
           {% endif %}
         </article>
 
-        <section class="sumo-page-section">
+        <section class="sumo-page-section hide-on-large">
           {{ vote_form(document, 'footer') }}
         </section>
 
