@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.client import RequestFactory
-from tidings.models import Watch
 
 import mock
 from nose.tools import eq_
@@ -42,7 +41,7 @@ forums-post&utm_source=notification&utm_medium=email#post-{post_id}
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/{watch_id}?s={watch_secret}"""
+https://testserver/en-US/unsubscribe/"""
 
 NEW_THREAD_EMAIL = """New thread: {thread}
 
@@ -63,13 +62,7 @@ forums-thread&utm_source=notification&utm_medium=email
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/{watch_id}?s={watch_secret}"""
-
-
-def get_watch_for(obj):
-    """"""
-    ct = ContentType.objects.get_for_model(obj)
-    return Watch.objects.filter(content_type=ct, object_id=obj.id)
+https://testserver/en-US/unsubscribe/"""
 
 
 class NotificationsTests(ForumTestCase):
@@ -142,7 +135,6 @@ class NotificationsTests(ForumTestCase):
              args=[t.forum.slug, t.id])
 
         p = Post.objects.all().order_by('-id')[0]
-        w = get_watch_for(f).order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
                  subject='Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
@@ -150,9 +142,7 @@ class NotificationsTests(ForumTestCase):
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
-            post_id=p.id,
-            watch_id=w.id,
-            watch_secret=w.secret)
+            post_id=p.id)
         starts_with(mail.outbox[0].body, body)
 
     def test_watch_other_thread_then_reply(self):
@@ -185,15 +175,12 @@ class NotificationsTests(ForumTestCase):
              {'title': 'a title', 'content': 'a post'}, args=[f.slug])
 
         t = Thread.objects.all().order_by('-id')[0]
-        w = get_watch_for(f).order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email], subject='{f} - {t}'.format(f=f, t=t))
         body = NEW_THREAD_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
-            thread_id=t.id,
-            watch_id=w.id,
-            watch_secret=w.secret)
+            thread_id=t.id)
         starts_with(mail.outbox[0].body, body)
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -229,7 +216,6 @@ class NotificationsTests(ForumTestCase):
              args=[f.slug, t.id])
 
         p = Post.objects.all().order_by('-id')[0]
-        w = get_watch_for(f).order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
                  subject='Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
@@ -237,9 +223,7 @@ class NotificationsTests(ForumTestCase):
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
-            post_id=p.id,
-            watch_id=w.id,
-            watch_secret=w.secret)
+            post_id=p.id)
         starts_with(mail.outbox[0].body, body)
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -280,7 +264,6 @@ class NotificationsTests(ForumTestCase):
 
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
-        w = get_watch_for(f).order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
                  subject='Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
@@ -288,9 +271,7 @@ class NotificationsTests(ForumTestCase):
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
-            post_id=p.id,
-            watch_id=w.id,
-            watch_secret=w.secret)
+            post_id=p.id)
         starts_with(mail.outbox[0].body, body)
 
     @mock.patch.object(Site.objects, 'get_current')
