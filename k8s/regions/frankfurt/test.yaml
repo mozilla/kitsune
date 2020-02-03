@@ -108,7 +108,7 @@ app:
     ga_key: SECRET
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
-    media_url: "https://user-media-dev-cdn.itsre-sumo.mozilla.net/"
+    media_url: "https://user-media-stage-cdn.itsre-sumo.mozilla.net/"
     new_relic_app_name: "sumo-test-frankfurt"
     new_relic_license_key: SECRET
     pipeline_enabled: True
