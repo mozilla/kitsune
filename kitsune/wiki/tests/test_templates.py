@@ -54,7 +54,7 @@ To review this revision, click the following link, or paste it into your \
 browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/review/%(new_id)s?utm_campaign=\
-wiki-ready-review&utm_medium=email&utm_source=notification
+wiki-ready-review&utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -78,7 +78,7 @@ To view this document's history, click the following link, or paste it \
 into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/history?utm_campaign=wiki-edit&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -100,7 +100,7 @@ To view the updated document, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s?utm_campaign=wiki-approved&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:

@@ -50,7 +50,7 @@ class TestInequalityFilterBackend(TestCase):
         self.view.filter_fields = ['x', 'y']
         self.request.query_params = {'x__gte': 10, 'y__lt': 5}
         self.backend.filter_queryset(self.request, self.queryset, self.view)
-        calls = sorted(self.queryset.method_calls)
+        calls = self.queryset.method_calls
         # Since both variables are in `filter_fields`, they both get processed.
         expected = [('filter', (), {'x__gte': 10}),
                     ('filter', (), {'y__lt': 5})]
