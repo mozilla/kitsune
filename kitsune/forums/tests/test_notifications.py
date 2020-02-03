@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.client import RequestFactory
