@@ -35,7 +35,7 @@ testserver:
 {title}
 
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_medium=email&utm_source=notification\
+questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
 {replier} wrote:
@@ -43,12 +43,12 @@ questions-reply&utm_medium=email&utm_source=notification\
 
 See the comment:
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_medium=email&utm_source=notification\
+questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
 If this comment is helpful, vote on it:
 https://testserver/{locale}questions/{question_id}/vote/{answer_id}\
-?utm_campaign=questions-reply&utm_medium=email&helpful=&utm_source=notification
+?helpful=&utm_campaign=questions-reply&utm_source=notification&utm_medium=email
 
 Help other Firefox users by browsing for unsolved questions on testserver:
 https://testserver/questions?filter=unsolved
@@ -57,7 +57,7 @@ You might just make someone's day!
 
 --
 Unsubscribe from these emails:
-https://testserver/{locale}unsubscribe"""
+https://testserver/{locale}unsubscribe/"""
 
 ANSWER_EMAIL = 'Hi {to_user},\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
 
@@ -91,7 +91,7 @@ Did this answer also help you? Did you find another post more helpful? Let \
 other Firefox users know by voting next to the answer.
 
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-solved&utm_medium=email&utm_source=notification#answer-{answer_id}
+questions-solved&utm_source=notification&utm_medium=email#answer-{answer_id}
 
 Did you know that {replier} is a Firefox user just like you? Get started \
 helping other Firefox users by browsing questions at \
