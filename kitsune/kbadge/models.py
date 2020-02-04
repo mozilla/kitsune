@@ -356,9 +356,8 @@ class Award(models.Model):
         by = self.creator and (" by %s" % self.creator) or ""
         return "Award of %s to %s%s" % (self.badge, self.user, by)
 
-    @models.permalink
     def get_absolute_url(self):
-        return ("kbadge.award_detail", (self.badge.slug, self.pk))
+        return reverse("kbadge.award_detail", args=(self.badge.slug, self.pk))
 
     def get_upload_meta(self):
         u = self.user.username
