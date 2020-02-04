@@ -1230,9 +1230,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         response = self.client.get(urlparams(reverse('questions.list', args=['all']), show=''))
         doc = pq(response.content)
-        tag = doc('#question-{id} .tag-list li img'.format(id=q.id))
+        tag = doc('#question-{id} .tag-list li a'.format(id=q.id))
         # Even though there are no tags, the product should be displayed.
-        assert 'logo-sprite-tiny' in tag.attr('class')
+        assert p.title in tag[0].text
 
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
