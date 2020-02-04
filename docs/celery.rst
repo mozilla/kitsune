@@ -41,7 +41,7 @@ Configuring and Running
 
 We set some reasonable defaults for Celery in ``settings.py``. These can be
 overriden either in ``settings_local.py`` or via the command line when running
-``manage.py celeryd``.
+``celery -A kitsune``.
 
 In ``settings_local.py`` you should set at least this, if you want to use
 Celery::
@@ -59,11 +59,11 @@ You can also configure the log level or concurrency. Here are the defaults::
 
 Then to start the Celery workers, you just need to run::
 
-    ./manage.py celeryd
+    celery -A kitsune
 
 This will start Celery with the default number of worker threads and the
 default logging level. You can change those with::
 
-    ./manage.py celeryd --log-level=DEBUG -c 10
+    celery -A kitsune --log-level=DEBUG -c 10
 
 This would start Celery with 10 worker threads and a log level of ``DEBUG``.

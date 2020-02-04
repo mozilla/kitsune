@@ -9,7 +9,6 @@ from datetime import date
 
 import dj_database_url
 import django_cache_url
-import djcelery
 from decouple import Csv, config
 
 from kitsune.lib.sumo_locales import LOCALES
@@ -661,7 +660,6 @@ INSTALLED_APPS = (
     'kitsune.sumo',
     'kitsune.search',
     'kitsune.forums',
-    'djcelery',
     'tidings',
     'rest_framework.authtoken',
     'kitsune.questions',
@@ -908,8 +906,6 @@ if EMAIL_LOGGING_REAL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
 
 
 # Celery
-djcelery.setup_loader()
-
 CELERY_IGNORE_RESULT = config('CELERY_IGNORE_RESULT', default=True, cast=bool)
 if not CELERY_IGNORE_RESULT:
     # E.g. redis://localhost:6479/1

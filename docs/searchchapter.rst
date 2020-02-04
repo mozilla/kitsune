@@ -225,7 +225,7 @@ See ``--help`` for more details::
    chunks by celery tasks. If you need to halt indexing, you can purge
    the tasks with::
 
-       $ ./manage.py celeryctl purge
+       $ celery -A kitsune purge
 
    If you do this often, it helps to write a shell script for it.
 

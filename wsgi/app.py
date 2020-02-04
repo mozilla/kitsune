@@ -23,9 +23,6 @@ from django.core.wsgi import get_wsgi_application
 from decouple import config
 
 
-# For django-celery
-os.environ['CELERY_LOADER'] = 'django'
-
 application = get_wsgi_application()
 
 if config('ENABLE_WHITENOISE', default=False, cast=bool):
