@@ -123,7 +123,8 @@ def get_next_url(request):
     else:
         url = request.META.get('HTTP_REFERER')
 
-    if not settings.DEBUG and not is_safe_url(url, Site.objects.get_current().domain):
+    if not settings.DEBUG and not is_safe_url(url,
+                                              allowed_hosts={Site.objects.get_current().domain}):
         return None
 
     return url
