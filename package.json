@@ -10,10 +10,10 @@
     "postinstall": "node prepare_django_assets.js",
     "development": "npm run install-dev",
     "stylelint": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run stylelint",
-    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core' --load-path 'kitsune/sumo/static/sumo/scss'",
+    "copy:protocol": "mkdir -p static/protocol && cp -r node_modules/@mozilla-protocol/core/protocol/* static/protocol",
+    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'static' --load-path 'kitsune/sumo/static/sumo/scss'",
     "build:postcss": "npx postcss static/build/screen-noprefixes.css --map --use autoprefixer -o static/build/screen.css",
     "build:styles": "npm run build:scss && npm run build:postcss",
-    "build:copyprotocolimgs": "mkdir -p static/protocol/img && cp -r node_modules/@mozilla-protocol/core/protocol/img static/protocol",
     "build:docs:copyfonts": "cp -r node_modules/@mozilla-protocol/core/protocol/fonts styleguide/build/static",
     "build:docs:copyprotocol": "cp -r node_modules/@mozilla-protocol/core/protocol styleguide/build/static",
     "build:docs:copyprotocolimgs": "mkdir -p styleguide/build/static && cp -r node_modules/@mozilla-protocol/core/protocol/img styleguide/build/static",
@@ -32,7 +32,7 @@
     "browser-sync": "browser-sync start --no-open --files \"kitsune/**/*.html\" \"static/build/screen.css\" \"kitsune/**/.py\" \"kitsune/**/.js\" \"kitsune/**/.json\" --proxy 127.0.0.1:8000 --reload-delay=300",
     "browser-sync:docs": "browser-sync start --no-open --serveStatic \"styleguide/build\" --files \"styleguide/build/**/*\" --port 4000 --reload-delay=300",
     "start": "concurrently --raw --kill-others \"make run\" \"npm run watch\" \"npm run browser-sync\"",
-    "production": "npm run postinstall && npm run build:scss && npm run build:postcss && npm run build:copyprotocolimgs"
+    "production": "npm run copy:protocol && npm run postinstall && npm run build:scss && npm run build:postcss"
   },
   "license": "MPL-2.0",
   "dependencies": {
@@ -50,7 +50,6 @@
     "moment": "2.8.3",
     "normalize.css": "~3.0.2",
     "nunjucks": "^1.3.4",
-    "@mozilla-protocol/core": "10.0.1",
     "pikaday": "~1.3.2",
     "react": "0.13.3",
     "react-select": "0.6.7",
@@ -74,6 +73,7 @@
     "less-plugin-autoprefix": "1.4.2",
     "mocha": "2.3.2",
     "mocha-jsdom": "1.1.0",
+    "@mozilla-protocol/core": "10.0.1",
     "nunjucks": "^1.3.4",
     "onchange": "^6.1.0",
     "postcss-cli": "^6.1.3",
