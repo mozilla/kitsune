@@ -10,6 +10,20 @@
     @include c.col;
   }
 
+  @media #{p.$mq-md} {
+    &.cols-on-medium {
+      flex-direction: row;
+
+      .sumo-l-two-col--main {
+        width: c.col-width(4, 6);
+      }
+
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 6);
+      }
+    }
+  }
+
   @media #{p.$mq-lg} {
     justify-content: space-between;
     flex-direction: row-reverse;
@@ -20,6 +34,18 @@
 
     &.align-center {
       align-items: center;
+    }
+
+    &.cols-on-medium {
+      flex-direction: row;
+
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 8);
+      }
+
+      .sumo-l-two-col--main {
+        width: c.col-width(6, 8);
+      }
     }
 
     &--sidebar {
@@ -40,6 +66,19 @@
 
     &--main {
       width: c.col-width(7, 10);
+    }
+
+    &.cols-on-medium {
+      flex-direction: row;
+
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 10);
+      }
+
+      .sumo-l-two-col--main {
+        width: c.col-width(7, 10);
+      }
+
     }
   }
 }

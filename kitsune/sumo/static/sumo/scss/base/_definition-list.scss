@@ -24,20 +24,30 @@
 
 .sumo-dl-inline {
   display: flex;
-
-  dt,
-  dd {
-    padding: 0 8px;
-    color: var(--color-heading);
-  }
+  @include c.text-body-sm;
+  color: var(--color-heading);
+  margin: 16px 0;
 
   dt {
+    padding: 0 8px;
     border-left: 1px solid var(--color-border);
     font-weight: bold;
 
     &:first-child {
       border-left: 0 none;
     }
+  }
+
+  dd {
+    padding: 0 8px 0 0;
+
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+
+  @media #{p.mq-md} {
+    margin: 0;
   }
 
 }
