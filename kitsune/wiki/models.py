@@ -9,7 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.http import Http404

@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
 

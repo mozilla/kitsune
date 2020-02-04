@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.conf import settings
 from django.dispatch import receiver
 from django.db import models, connection, close_old_connections
