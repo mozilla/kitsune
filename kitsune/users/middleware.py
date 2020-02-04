@@ -7,7 +7,13 @@ from django.utils.translation import ugettext_lazy as _lazy
 from kitsune.sumo.urlresolvers import reverse
 
 
-class TokenLoginMiddleware(object):
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
+
+class TokenLoginMiddleware(MiddlewareMixin):
     """Allows users to be logged in via one time tokens."""
 
     def process_request(self, request):
@@ -27,7 +33,7 @@ class TokenLoginMiddleware(object):
             messages.success(request, msg)
 
 
-class LogoutDeactivatedUsersMiddleware(object):
+class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
     """Verifies that user.is_active == True.
 
     If a user has been deactivated, we log them out.

@@ -29,6 +29,12 @@ import time
 from django.conf import settings
 from django.utils.http import cookie_date
 
+
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
 # Use the system (hardware-based) random number generator if it exists.
 if hasattr(random, 'SystemRandom'):
     randrange = random.SystemRandom().randrange
@@ -74,7 +80,7 @@ class AnonymousIdentity(object):
         return md5.hexdigest()
 
 
-class AnonymousIdentityMiddleware(object):
+class AnonymousIdentityMiddleware(MiddlewareMixin):
     """Middleware for identifying anonymous users via a cookie."""
     def process_request(self, request):
         anonymous_id = request.COOKIES.get(settings.ANONYMOUS_COOKIE_NAME,

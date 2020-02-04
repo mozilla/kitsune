@@ -10,6 +10,12 @@ from twython import TwythonError, TwythonAuthError
 from kitsune.twitter import get_twitter_api
 
 
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
+
 log = logging.getLogger("k")
 
 
@@ -17,7 +23,7 @@ def validate_token(token):
     return bool(token and (len(token) < 100) and re.search(r"\w+", token))
 
 
-class SessionMiddleware(object):
+class SessionMiddleware(MiddlewareMixin):
     def process_request(self, request):
 
         request.twitter = Session.from_request(request)
