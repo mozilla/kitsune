@@ -13,9 +13,10 @@
     "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core' --load-path 'kitsune/sumo/static/sumo/scss'",
     "build:postcss": "npx postcss static/build/screen-noprefixes.css --map --use autoprefixer -o static/build/screen.css",
     "build:styles": "npm run build:scss && npm run build:postcss",
+    "build:copyprotocolimgs": "mkdir -p static/protocol/img && cp -r node_modules/@mozilla-protocol/core/protocol/img static/protocol",
     "build:docs:copyfonts": "cp -r node_modules/@mozilla-protocol/core/protocol/fonts styleguide/build/static",
     "build:docs:copyprotocol": "cp -r node_modules/@mozilla-protocol/core/protocol styleguide/build/static",
-    "build:docs:copyprotocolimgs": "cp -r node_modules/@mozilla-protocol/core/protocol/img styleguide/build/static",
+    "build:docs:copyprotocolimgs": "mkdir -p styleguide/build/static && cp -r node_modules/@mozilla-protocol/core/protocol/img styleguide/build/static",
     "build:docs:copysumoimgs": "mkdir -p styleguide/build/static/sumo && cp -r kitsune/sumo/static/sumo/img styleguide/build/static/sumo",
     "build:docs:copyproductimgs": "mkdir -p styleguide/build/static/products/img && cp -r kitsune/products/static/products/img styleguide/build/static/products",
     "build:docs:copyjs": "cp -r kitsune/sumo/static/sumo/js styleguide/build/static/sumo",
@@ -31,7 +32,7 @@
     "browser-sync": "browser-sync start --no-open --files \"kitsune/**/*.html\" \"static/build/screen.css\" \"kitsune/**/.py\" \"kitsune/**/.js\" \"kitsune/**/.json\" --proxy 127.0.0.1:8000 --reload-delay=300",
     "browser-sync:docs": "browser-sync start --no-open --serveStatic \"styleguide/build\" --files \"styleguide/build/**/*\" --port 4000 --reload-delay=300",
     "start": "concurrently --raw --kill-others \"make run\" \"npm run watch\" \"npm run browser-sync\"",
-    "production": "npm run postinstall && npm run build:scss && npm run build:postcss"
+    "production": "npm run postinstall && npm run build:scss && npm run build:postcss && npm run build:copyprotocolimgs"
   },
   "license": "MPL-2.0",
   "dependencies": {
