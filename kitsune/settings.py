@@ -494,7 +494,7 @@ TEMPLATES = [
 ]
 
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'kitsune.sumo.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'kitsune.sumo.middleware.FilterByUserAgentMiddleware',
@@ -502,7 +502,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
-    'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
+    'kitsune.sumo.middleware.SetRemoteAddrFromForwardedFor',
     'kitsune.sumo.middleware.EnforceHostIPMiddleware',
 
     # VaryNoCacheMiddleware must be above LocaleURLMiddleware
@@ -513,7 +513,6 @@ MIDDLEWARE_CLASSES = (
     # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 
     # This has to come after NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -536,10 +535,10 @@ MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.ReadOnlyMiddleware',
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
-    'commonware.middleware.ScrubRequestOnException',
+    'kitsune.sumo.middleware.ScrubRequestOnException',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
-    'commonware.middleware.RobotsTagHeader',
+    'kitsune.sumo.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
 
     'kitsune.sumo.middleware.InAAQMiddleware',

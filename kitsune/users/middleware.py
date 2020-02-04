@@ -4,7 +4,13 @@ from django.http import HttpResponseRedirect
 from kitsune.sumo.urlresolvers import reverse
 
 
-class LogoutDeactivatedUsersMiddleware(object):
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
+
+class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
     """Verifies that user.is_active == True.
 
     If a user has been deactivated, we log them out.
