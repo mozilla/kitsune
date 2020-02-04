@@ -363,7 +363,6 @@ TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
 
-USE_ETAGS = config('USE_ETAGS', default=False, cast=bool)
 USE_I18N = True
 USE_L10N = True
 
