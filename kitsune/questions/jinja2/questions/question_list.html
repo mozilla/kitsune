@@ -193,7 +193,7 @@
                     <dt class="forum--meta-val">{{ question.num_votes_past_week }}</dt>
                     <dd class="forum--meta-key">{{ _('votes this week') }}</dd>
                     {% if question.num_visits %}
-                    <dt class="forum--meta-val">{{ question.num_visits }}</dt>
+                    <dt class="forum--meta-val views-val">{{ question.num_visits }}</dt>
                     <dd class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</dd>
                     {% endif %}
                   </dl>
