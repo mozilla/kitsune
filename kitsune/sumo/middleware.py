@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
-from django.core.urlresolvers import is_valid_path
+from django.urls import is_valid_path
 from django.core.validators import ValidationError, validate_ipv4_address
 from django.db.utils import DatabaseError
 from django.http import (HttpResponse, HttpResponseForbidden,

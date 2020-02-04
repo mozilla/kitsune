@@ -12,7 +12,7 @@ from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.core.urlresolvers import resolve
+from django.urls import resolve
 from django.db import close_old_connections, connection, models
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_save

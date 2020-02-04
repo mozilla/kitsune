@@ -9,10 +9,10 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.urlresolvers import resolve
 from django.db import IntegrityError, models
 from django.db.models import Q
 from django.http import Http404
+from django.urls import resolve
 from django.utils.encoding import smart_bytes
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
