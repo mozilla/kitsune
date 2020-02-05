@@ -134,7 +134,11 @@
   {% if user.is_authenticated() %}
   <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="#">
     <span class="sumo-nav--username">{{ display_name(user) }}</span>
+    {% if user.is_authenticated() %}
     <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+    {% else %}
+    <img class="avatar" src="{{ STATIC_URL }}sumo/img/default-FFA-avatar.png" alt="Avatar for Username">
+    {% endif %}
   </a>
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
     <div class="sumo-nav--dropdown-container">
@@ -200,11 +204,11 @@
 {% endmacro %}
 
 {% macro content_editor(field) %}
-  <div class="editor{% if field.errors %} invalid{% endif %}" data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
+  <div class="field has-large-textarea editor{% if field.errors %} invalid{% endif %}" data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
     <div class="editor-tools"></div>
     <div>{{ field|safe }}</div>
   </div>
-  <div style="display: none;">
+  <div class="field" style="display: none;">
     <select id="_languages-select-box">
       {% for lang in settings.LANGUAGE_CHOICES %}
         <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>

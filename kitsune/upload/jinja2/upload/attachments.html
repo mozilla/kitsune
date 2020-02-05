@@ -31,6 +31,7 @@
 {% macro attachments_form(model_name, object_id, images, settings, user=None) -%}
   <div class="attachments-upload"
        data-post-url={{ url('upload.up_image_async', model_name, object_id)}}>
+
     <div class="uploaded{% if not images %} empty{% endif %}">
       <div>{{ _('Uploaded images:') }}</div>
       <div class="attachments attachments-list">
@@ -45,13 +46,13 @@
                value="{{ _('Delete selected images') }}"/>
       </noscript>
     </div>
-    <div class="add-attachment">
+    <div class="field add-attachment">
       <label for="id_image">{{ _('Add images:') }}</label>
       <input type="file" id="id_image" name="image" size="30"
              accept="{{ settings.IMAGE_ALLOWED_MIMETYPES }}"
              title="{{ _('Browse for an image to upload.') }}"/>
       <noscript>
-        <input type="submit" name="upload_image" class="btn"
+        <input type="submit" name="upload_image" class="sumo-button"
                value="{{ _('Upload') }}"/>
       </noscript>
     </div>

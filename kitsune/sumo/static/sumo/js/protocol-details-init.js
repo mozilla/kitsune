@@ -23,6 +23,13 @@ function detailsInit() {
       window.Mzp.Details.destroy('.details-heading');
     }
   });
+
+  // built for quote dropdowns in forum pages –
+  // this is a global selector to always show dropdowns
+  var forumDropdown = '[data-has-dropdown]';
+  if ( forumDropdown ) {
+    window.Mzp.Details.init('[data-has-dropdown]');
+  }
 }
 
 // This is patched here to help the tests locate the referenced function
