@@ -81,8 +81,8 @@ urlpatterns = [
 ]
 
 # Handle 404 and 500 errors
-handler404 = 'kitsune.sumo.views.handle404'
-handler500 = 'kitsune.sumo.views.handle500'
+handler404 = sumo_views.handle404
+handler500 = sumo_views.handle500
 
 if settings.DEBUG:
     media_url = settings.MEDIA_URL.lstrip('/').rstrip('/')
