@@ -15,6 +15,7 @@
 // .radius-md - 24px border-radius
 // .radius-lg - 36px border-radius
 // .is-inverse - dark background with light text
+// .is-shaded - card has slightly darker background with normal text
 // .zoom-on-hover - card is eleveated slightly on hover. To be used with `.expand-on-hover` to denote full-card links.
 //
 //
@@ -53,6 +54,9 @@
     }
   }
 
+  &.is-shaded {
+    background: var(--color-shade-bg);
+  }
 
   &.is-inverse {
     background: var(--color-inverse-bg);

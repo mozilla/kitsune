@@ -150,16 +150,4 @@ $(document).ready(function () {
     });
   }
   initImageModal();
-
-  // Workaround to IE6's lack of div:hover support
-  if ($.browser.msie && $.browser.version === '6.0') {
-    $('div.attachments-upload').delegate('div.attachment', 'hover',
-    function(ev) {
-      if (ev.type === 'mouseover' || ev.type === 'mouseenter') {
-        $(this).addClass('hover');
-      } else {
-        $(this).removeClass('hover');
-      }
-    });
-  }
 });

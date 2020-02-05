@@ -73,6 +73,10 @@
   }
 }
 
+.avatar-row {
+  display: flex;
+  justify-content: space-between;
+}
 
 .avatar-details {
   display: flex;

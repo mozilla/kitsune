@@ -224,6 +224,33 @@
 
 
 // forum post page
+.question {
+  .main-content {
+    padding-bottom: 40px;
+  }
+}
+
+.ask-a-question {
+  margin: 40px 0 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+
+  @media #{p.$mq-md} {
+    flex-direction: row-reverse;
+    text-align: left;
+  }
+  .sumo-button {
+    flex: 0 0 auto;
+    @include p.bidi((
+      (margin, 0 0 0 32px, 0 32px 0 0),
+    ));
+    white-space: nowrap;
+
+  }
+}
+
 .question-meta {
   display: flex;
   flex-wrap: wrap;
