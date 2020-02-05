@@ -62,8 +62,9 @@ cffi==1.11.2 \
     --hash=sha256:5357b465e3d6b98972b7810f9969c913d365e75b09b7ba813f5f0577fe1ac9f4 \
     --hash=sha256:75e1de9ba7c155d89bcf67d149b1c741df553c8158536e8d27e63167403159af \
     --hash=sha256:ab87dd91c0c4073758d07334c1e5f712ce8fe48f007b86f8238773963ee700a6
-https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400ce9cbd.tar.gz#egg=commonware \
-    --hash=sha256:93d8231145d43ca02e1ec3cee355333afa8e72adb9cf815767e17595749774d4
+commonware==0.5.0 \
+    --hash=sha256:97c2409834a328e47093932422cc7754b0439a6ad6849c5fa845f947239ad827 \
+    --hash=sha256:a812a700a7f29627e832b509b284694bf4634672ea66e8a83fea486288eb1f19
 cssselect==0.9.1 \
     --hash=sha256:0535a7e27014874b27ae3a4d33e8749e345bdfa62766195208b7996bf1100682
 factory_boy==2.6.0 \
@@ -127,9 +128,9 @@ django-adminplus==0.5 \
     --hash=sha256:e9497b409b28466e0f24119e3bc62d668a0eeec9229660ea3ae7d14dbc3c6353
 https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6 \
     --hash=sha256:30ba613a0e8617555888185dd958407b6ec6255bbaf3718803e0e8771db5bd45
-django-cors-headers==2.4.0 \
-    --hash=sha256:5545009c9b233ea7e70da7dbab7cb1c12afa01279895086f98ec243d7eab46fa \
-    --hash=sha256:c4c2ee97139d18541a1be7d96fe337d1694623816d83f53cb7c00da9b94acae1
+django-cors-headers==3.2.1 \
+    --hash=sha256:a5960addecc04527ab26617e51b8ed42f0adab4594b24bb0f3c33e2bd3857c3f \
+    --hash=sha256:a785b5f446f6635810776d9f5f5d23e6a2a2f728ea982648370afaf0dfdf2627
 https://github.com/mozilla/django-csp/archive/5c5f5a6b55fb78e99db939c79f0f0d8003a62c98.tar.gz#egg=django-csp \
     --hash=sha256:d6ed80738b07d60d2e985ccc284448e7dbd7c41682dc4cf65734d0da576f700e
 django-filter==1.1.0 \
@@ -140,9 +141,9 @@ django-jinja==2.4.1 \
     --hash=sha256:8a49d73de616a12075eee14c6d3bbab936261a463457d40348d8b8e2995cfbed
 django-jsonfield==1.0.1 \
     --hash=sha256:6c0afd5554739365b55d86e285cf966cc3a45682fff963463364ea1f6511ca3e
-django-multidb-router==0.7 \
-    --hash=sha256:682d2be38ca1e2a12bc33528b3d4ccddf9775c926a5667b53f840df620094a86 \
-    --hash=sha256:8e802c09ed69a1f4ce5716524a1dc1668a8a2e25d9112369dc92c2b963e70332
+django-multidb-router==0.9 \
+    --hash=sha256:38a006455fa1141a332029791863461c0b1f287b8c479b411b4d9f728e86e97a \
+    --hash=sha256:d8096eff3a42743a795bb943260758d169bc78de61e12eeb0893d6dbfbae72d0
 django-nose==1.4.6 \
     --hash=sha256:f515d903cfaeda52c7a9198e0c8ed51563e82802b62a4e5fbd056fd830095318 \
     --hash=sha256:58934a06a6932696e54c9e8af3fab49bf67ca9e9c840ad668cb7f51219808a07
@@ -152,20 +153,21 @@ https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f
     --hash=sha256:8137ed0a643560ae2300e11278e04907f0a1208031a0069474771cab6800f325
 https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=django-recaptcha \
     --hash=sha256:9f6cf9632838c9a2e78b29ca74f8213d2201125fe4b4d3b168af25b495a4081d
-django-statsd-mozilla==0.3.16 \
-     --hash=sha256:925f0f13e5a1e7863e5ed1179fd0f6f1a519e5a0293714ba76745286aad7ed02
-statsd==3.1 \
-     --hash=sha256:788ffa29dfb754900e08b90881f7ea16c3c25ca2949548eea7b43d2ca739e33f \
-     --hash=sha256:fbae5feb33ae9394c275bc834ab94684b94de03acc8f36387bd0bf0c51ef28ee
+django-statsd-mozilla==0.4.0 \
+    --hash=sha256:0d87cb63de8107279cbb748caad9aa74c6a44e7e96ccc5dbf07b89f77285a4b8 \
+    --hash=sha256:81084f3d426f5184f0a0f1dbfe035cc26b66f041d2184559d916a228d856f0d3
+statsd==3.3.0 \
+    --hash=sha256:c610fb80347fca0ef62666d241bce64184bd7cc1efe582f9690e045c25535eaa \
+    --hash=sha256:e3e6db4c246f7c59003e51c9720a51a7f39a396541cb9b147ff4b14d15b5dd1f
 django-taggit==0.22.2 \
     --hash=sha256:58aa3e59e0643446e102523f22d137300298e2a537b1c5b0c310d99143f2c2b8 \
     --hash=sha256:fd13e304ba37ff09e601c4797d893fb7d3e699a789b5afb0b09d686f94470441
 django-timezone-field==3.0 \
     --hash=sha256:d9fdab77c443b78c362ffaeb50fe7d7b54692c89aaae8ca1cae67848139b82ac \
     --hash=sha256:7d7a37cfeacec5b1e81cd2f0aa334d46ebaa369cd516028579ed343cbc676c38
-django-waffle==0.11 \
-    --hash=sha256:9cd9e3a976849a3cd816830d7811b93543c1dc9da9f3cb1ccc2f9da831b8b025 \
-    --hash=sha256:914b4b874fa6250a0897bc30b67e02034d92a7235ab72a91bf6da49b71751de4
+django-waffle==0.19.0 \
+    --hash=sha256:24e24d21df1f6710c1e6654786da414ad461371d73828a60ee42561b537ceb95 \
+    --hash=sha256:714d64307458c71daf22ef607d36034d56a538e04bde774f13a2c67c58faa055
 djangorestframework==3.9.2 \
     --hash=sha256:8a435df9007c8b7d8e69a21ef06650e3c0cbe0d4b09e55dd1bd74c89a75a9fcd \
     --hash=sha256:f7a266260d656e1cf4ca54d7a7349609dc8af4fe2590edd0ecd7d7643ea94a17
@@ -336,10 +338,10 @@ django-redis==4.11.0 \
 redis==3.3.11 \
     --hash=sha256:3613daad9ce5951e426f460deddd5caf469e08a3af633e9578fc77d362becf62 \
     --hash=sha256:8d0fc278d3f5e1249967cba2eb4a5632d19e45ce5c09442b8422d15ee2c22cc2
-newrelic==4.18.0.118 \
-    --hash=sha256:3cd496022c6906ee3cdbf27c67ec3e03922830bfebbca4549ef6f2e58cf719e2
 meinheld==1.0.2 \
     --hash=sha256:008c76937ac2117cc69e032dc69cea9f85fc605de9bac1417f447c41c16a56d6
+newrelic==5.6.0.135 \
+    --hash=sha256:8283dd54299b3fd2818a262f38f9193a2ee52b2a02fecca1a1d04764be533c92
 greenlet==0.4.15 \
     --hash=sha256:000546ad01e6389e98626c1367be58efa613fa82a1be98b0c6fc24b563acc6d0 \
     --hash=sha256:0d48200bc50cbf498716712129eef819b1729339e34c3ae71656964dac907c28 \
@@ -403,9 +405,9 @@ funcsigs==1.0.2 \
     --hash=sha256:a7bb0f2cf3a3fd1ab2732cb49eba4252c2af4240442415b4abce3b87022a8f50
 tzlocal==1.5.1 \
     --hash=sha256:4ebeb848845ac898da6519b9b31879cf13b6626f7184c496037b818e238f2c4e
-django-allow-cidr==0.3.0 \
-    --hash=sha256:63436f3820dd788863ef35f4fad5499f5ad23063b52033b03afdb1df7929797f \
-    --hash=sha256:f19558a27ea558ad2174d15874f8eaf36d9e50e16587c7558d2a3bdc69c0d3bb
+django-allow-cidr==0.3.1 \
+    --hash=sha256:d9a3b22c14e91c26ddd010c278ddf7e2c69a5421c862a3a3cd448ae57fd833e8 \
+    --hash=sha256:e8708c0511a78b80d9b74f718ee46685a1425e6d3520143bd00c773fdca56cc7
 netaddr==0.7.19 \
     --hash=sha256:56b3558bd71f3f6999e4c52e349f38660e54a7a8a9943335f73dfc96883e08ca \
     --hash=sha256:38aeec7cdd035081d3a4c306394b19d677623bf76fa0913f6695127c7753aefd
