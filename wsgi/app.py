@@ -33,4 +33,4 @@ if config('ENABLE_WHITENOISE', default=False, cast=bool):
 if newrelic:
     newrelic_license_key = config('NEW_RELIC_LICENSE_KEY', default=None)
     if newrelic_license_key:
-        application = newrelic.agent.wsgi_application()(application)
+        application = newrelic.agent.WSGIApplicationWrapper(application)
