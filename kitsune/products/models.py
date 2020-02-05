@@ -79,10 +79,10 @@ class Topic(ModelBase):
                               max_length=settings.MAX_FILEPATH_LENGTH)
 
     # Topics are product-specific
-    product = models.ForeignKey(Product, related_name='topics')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='topics')
 
     # Topics can optionally have a parent.
-    parent = models.ForeignKey('self', related_name='subtopics',
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='subtopics',
                                null=True, blank=True)
 
     # Dictates the order in which topics are displayed in topic lists.
@@ -150,7 +150,7 @@ class Version(ModelBase):
     slug = models.CharField(max_length=255, db_index=True)
     min_version = models.FloatField()
     max_version = models.FloatField()
-    product = models.ForeignKey('Product', related_name='versions')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='versions')
     visible = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
 

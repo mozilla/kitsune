@@ -6,7 +6,7 @@ from kitsune.wiki.models import Document
 
 class Signature(ModelBase):
     signature = models.CharField(max_length=255, db_index=True, unique=True)
-    document = models.ForeignKey(Document)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
 
     def __str__(self):
         return '<%s> %s' % (self.signature, self.document.title)

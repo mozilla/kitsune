@@ -21,8 +21,8 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
                 ('read', models.BooleanField(default=False, db_index=True)),
                 ('replied', models.BooleanField(default=False)),
-                ('sender', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('to', models.ForeignKey(related_name='inbox', to=settings.AUTH_USER_MODEL)),
+                ('sender', models.ForeignKey(on_delete=models.CASCADE, blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('to', models.ForeignKey(on_delete=models.CASCADE, related_name='inbox', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'messages_inboxmessage',
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('message', models.TextField()),
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
-                ('sender', models.ForeignKey(related_name='outbox', to=settings.AUTH_USER_MODEL)),
+                ('sender', models.ForeignKey(on_delete=models.CASCADE, related_name='outbox', to=settings.AUTH_USER_MODEL)),
                 ('to', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
             ],
             options={

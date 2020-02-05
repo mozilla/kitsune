@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('information', models.TextField(help_text='Use Wiki Syntax')),
                 ('information_html', models.TextField(editable=False)),
                 ('avatar', models.ImageField(max_length=250, upload_to=b'uploads/groupavatars/', null=True, verbose_name='Avatar', blank=True)),
-                ('group', models.ForeignKey(related_name='profile', to='auth.Group')),
+                ('group', models.ForeignKey(on_delete=models.CASCADE, related_name='profile', to='auth.Group')),
                 ('leaders', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
             ],
             options={

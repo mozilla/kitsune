@@ -36,7 +36,7 @@ def period_dates(period):
 class WikiDocumentVisits(ModelBase):
     """Web stats for Knowledge Base Documents"""
 
-    document = models.ForeignKey(Document, related_name='visits')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='visits')
     visits = models.IntegerField(db_index=True)
     period = models.IntegerField(choices=PERIODS)  # indexed by unique_together
 
@@ -95,7 +95,7 @@ class WikiMetric(ModelBase):
     code = models.CharField(
         db_index=True, max_length=255, choices=METRIC_CODE_CHOICES)
     locale = LocaleField(db_index=True, null=True, blank=True)
-    product = models.ForeignKey(Product, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, null=True, blank=True)
     date = models.DateField()
     value = models.FloatField()
 

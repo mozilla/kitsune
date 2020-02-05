@@ -27,9 +27,9 @@ class Migration(migrations.Migration):
                 ('slug', models.CharField(max_length=255, blank=True)),
                 ('summary', models.TextField(blank=True)),
                 ('title', models.CharField(max_length=255, blank=True)),
-                ('based_on', models.ForeignKey(to='wiki.Revision')),
-                ('creator', models.ForeignKey(related_name='created_draftrevisions', to=settings.AUTH_USER_MODEL)),
-                ('document', models.ForeignKey(related_name='draftrevisions', to='wiki.Document')),
+                ('based_on', models.ForeignKey(on_delete=models.CASCADE, to='wiki.Revision')),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='created_draftrevisions', to=settings.AUTH_USER_MODEL)),
+                ('document', models.ForeignKey(on_delete=models.CASCADE, related_name='draftrevisions', to='wiki.Document')),
             ],
             options={
                 'abstract': False,

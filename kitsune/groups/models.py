@@ -13,7 +13,7 @@ class GroupProfile(ModelBase):
     """Profile model for groups."""
     slug = models.SlugField(unique=True, editable=False, blank=False,
                             null=False, max_length=80)
-    group = models.ForeignKey(Group, related_name='profile')
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='profile')
     leaders = models.ManyToManyField(User)
     information = models.TextField(help_text='Use Wiki Syntax')
     information_html = models.TextField(editable=False)

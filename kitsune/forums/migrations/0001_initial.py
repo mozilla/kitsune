@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('content', models.TextField()),
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
                 ('updated', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
-                ('author', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('author', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['created'],
@@ -54,8 +54,8 @@ class Migration(migrations.Migration):
                 ('replies', models.IntegerField(default=0)),
                 ('is_locked', models.BooleanField(default=False)),
                 ('is_sticky', models.BooleanField(default=False, db_index=True)),
-                ('creator', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
-                ('forum', models.ForeignKey(to='forums.Forum')),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('forum', models.ForeignKey(on_delete=models.CASCADE, to='forums.Forum')),
                 ('last_post', models.ForeignKey(related_name='last_post_in', on_delete=django.db.models.deletion.SET_NULL, to='forums.Post', null=True)),
             ],
             options={
@@ -66,13 +66,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='post',
             name='thread',
-            field=models.ForeignKey(to='forums.Thread'),
+            field=models.ForeignKey(on_delete=models.CASCADE, to='forums.Thread'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='post',
             name='updated_by',
-            field=models.ForeignKey(related_name='post_last_updated_by', to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='post_last_updated_by', to=settings.AUTH_USER_MODEL, null=True),
             preserve_default=True,
         ),
         migrations.AddField(

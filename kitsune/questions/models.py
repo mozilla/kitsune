@@ -61,19 +61,20 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     """A support question."""
 
     title = models.CharField(max_length=255)
-    creator = models.ForeignKey(User, related_name="questions")
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions")
     content = models.TextField()
 
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(
-        User, null=True, blank=True, related_name="questions_updated"
+        User, on_delete=models.CASCADE, null=True, blank=True, related_name="questions_updated"
     )
     last_answer = models.ForeignKey(
-        "Answer", related_name="last_reply_in", null=True, blank=True
+        "Answer", on_delete=models.CASCADE, related_name="last_reply_in", null=True, blank=True
     )
     num_answers = models.IntegerField(default=0, db_index=True)
-    solution = models.ForeignKey("Answer", related_name="solution_for", null=True)
+    solution = models.ForeignKey("Answer", on_delete=models.CASCADE,
+                                 related_name="solution_for", null=True)
     is_locked = models.BooleanField(default=False)
     is_archived = models.NullBooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
@@ -81,20 +82,20 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     is_spam = models.BooleanField(default=False)
     marked_as_spam = models.DateTimeField(default=None, null=True)
     marked_as_spam_by = models.ForeignKey(
-        User, null=True, related_name="questions_marked_as_spam"
+        User, on_delete=models.CASCADE, null=True, related_name="questions_marked_as_spam"
     )
 
     images = GenericRelation(ImageAttachment)
     flags = GenericRelation(FlaggedObject)
 
     product = models.ForeignKey(
-        Product, null=True, default=None, related_name="questions"
+        Product, on_delete=models.CASCADE, null=True, default=None, related_name="questions"
     )
-    topic = models.ForeignKey(Topic, null=True, related_name="questions")
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="questions")
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 
-    taken_by = models.ForeignKey(User, blank=True, null=True)
+    taken_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     taken_until = models.DateTimeField(blank=True, null=True)
 
     html_cache_key = "question:html:%s"
@@ -868,7 +869,7 @@ register_for_indexing(
 class QuestionMetaData(ModelBase):
     """Metadata associated with a support question."""
 
-    question = models.ForeignKey("Question", related_name="metadata_set")
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="metadata_set")
     name = models.SlugField(db_index=True)
     value = models.TextField()
 
@@ -882,7 +883,7 @@ class QuestionMetaData(ModelBase):
 class QuestionVisits(ModelBase):
     """Web stats for questions."""
 
-    question = models.ForeignKey(Question, unique=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, unique=True)
     visits = models.IntegerField(db_index=True)
 
     @classmethod
@@ -941,19 +942,19 @@ class QuestionLocale(ModelBase):
 class Answer(ModelBase, SearchMixin):
     """An answer to a support question."""
 
-    question = models.ForeignKey("Question", related_name="answers")
-    creator = models.ForeignKey(User, related_name="answers")
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="answers")
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="answers")
     created = models.DateTimeField(default=datetime.now, db_index=True)
     content = models.TextField()
     updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(
-        User, null=True, blank=True, related_name="answers_updated"
+        User, on_delete=models.CASCADE, null=True, blank=True, related_name="answers_updated"
     )
     page = models.IntegerField(default=1)
     is_spam = models.BooleanField(default=False)
     marked_as_spam = models.DateTimeField(default=None, null=True)
     marked_as_spam_by = models.ForeignKey(
-        User, null=True, related_name="answers_marked_as_spam"
+        User, on_delete=models.CASCADE, null=True, related_name="answers_marked_as_spam"
     )
 
     images = GenericRelation(ImageAttachment)
@@ -1321,9 +1322,10 @@ class QuestionVote(ModelBase):
     """I have this problem too.
     Keeps track of users that have problem over time."""
 
-    question = models.ForeignKey("Question", related_name="votes")
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="votes")
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name="question_votes", null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                related_name="question_votes", null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
@@ -1340,10 +1342,11 @@ register_for_indexing(
 class AnswerVote(ModelBase):
     """Helpful or Not Helpful vote on Answer."""
 
-    answer = models.ForeignKey("Answer", related_name="votes")
+    answer = models.ForeignKey("Answer", on_delete=models.CASCADE, related_name="votes")
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name="answer_votes", null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                related_name="answer_votes", null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
@@ -1364,7 +1367,7 @@ register_for_indexing(
 class VoteMetadata(ModelBase):
     """Metadata for question and answer votes."""
 
-    content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
     vote = GenericForeignKey()
     key = models.CharField(max_length=40, db_index=True)
