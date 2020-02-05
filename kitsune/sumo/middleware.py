@@ -345,7 +345,9 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
             patch_vary_headers(response, ['User-Agent'])
             return response
 
-class SetRemoteAddrFromForwardedFor(MiddlewareMixin, commonware.request.middleware.SetRemoteAddrFromForwardedFor):
+
+class SetRemoteAddrFromForwardedFor(MiddlewareMixin,
+                                    commonware.request.middleware.SetRemoteAddrFromForwardedFor):
     pass
 
 
