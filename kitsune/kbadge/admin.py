@@ -10,13 +10,6 @@ from django.utils.safestring import mark_safe
 from kitsune.kbadge.models import Badge, Award
 
 
-def show_unicode(obj):
-    return str(obj)
-
-
-show_unicode.short_description = "Display"
-
-
 def show_image(obj):
     if not obj.image:
         return "None"
@@ -99,7 +92,7 @@ badge_link.short_description = "Badge"
 
 class AwardAdmin(admin.ModelAdmin):
     list_display = (
-        show_unicode,
+        "__str__",
         badge_link,
         show_image,
         "user",
