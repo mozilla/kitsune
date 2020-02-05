@@ -200,7 +200,7 @@ class ForParser(object):
             )
             for_el.attrib["class"] = "for"
 
-    def to_unicode(self):
+    def __str__(self):
         """Return the unicode serialization of myself."""
         container_len = len(self.CONTAINER_TAG) + 2  # 2 for the <>
         walker = getTreeWalker(self.TREEBUILDER)
@@ -412,7 +412,7 @@ class WikiParser(sumo_parser.WikiParser):
         # Convert them to spans and divs:
         for_parser.expand_fors()
 
-        html = for_parser.to_unicode()
+        html = str(for_parser)
 
         html = self.add_youtube_embeds(html)
 

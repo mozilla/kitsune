@@ -649,7 +649,7 @@ def balanced_eq(want, to_balance):
     """Run `to_balance` through the expander to get its tags balanced, and
     assert the result is `want`."""
     expander = ForParser(to_balance)
-    eq_(want, expander.to_unicode())
+    eq_(want, str(expander))
 
 
 def expanded_eq(want, to_expand):
@@ -657,7 +657,7 @@ def expanded_eq(want, to_expand):
     `want`."""
     expander = ForParser(to_expand)
     expander.expand_fors()
-    eq_(want, expander.to_unicode())
+    eq_(want, str(expander))
 
 
 def strip_eq(want, text):
@@ -792,7 +792,7 @@ class ForParserTests(TestCase):
         """
         html = 'A<i>hi</i>B<i>there</i>C'
         p = ForParser(html)
-        eq_(html, p.to_unicode())
+        eq_(html, str(p))
 
 
 class WhatLinksHereTests(TestCase):
