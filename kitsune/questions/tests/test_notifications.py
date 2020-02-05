@@ -348,7 +348,7 @@ class TestAnswerNotifications(TestCaseBase):
             user = ctx['to_user']
             if user.id == asker_id:
                 auth = get_auth_token(ctx)
-                eq_(user, auth_backend.authenticate(auth))
+                eq_(user, auth_backend.authenticate(None, auth))
             else:
                 assert auth_re.search(ctx['answer_url']) is None
 

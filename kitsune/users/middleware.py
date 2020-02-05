@@ -26,7 +26,7 @@ class TokenLoginMiddleware(MiddlewareMixin):
 
         if auth is None or (request.user and request.user.is_authenticated()):
             return
-        user = authenticate(auth=auth)
+        user = authenticate(request, auth=auth)
         if user and user.is_active:
             login(request, user)
             msg = _lazy('You have been automatically logged in.')

@@ -57,7 +57,7 @@ class TokenLoginBackend(object):
         None if the user was not authenticated.
     """
 
-    def authenticate(self, auth):
+    def authenticate(self, request, auth):
         try:
             decoded = base64.b64decode(auth).decode()
         except (TypeError, UnicodeDecodeError):
