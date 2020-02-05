@@ -70,13 +70,6 @@
     }
   }
 
-
-  &--meta {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
   &--user-meta {
     display: flex;
     flex-wrap: wrap;
@@ -218,5 +211,48 @@
     .long-text {
       display: none;
     }
+  }
+}
+
+
+// flexbox utility
+.push-right {
+  @include p.bidi((
+    (margin, 0 auto 0 0, 0 0 0 auto),
+  ));
+}
+
+
+// forum post page
+.question-meta {
+  display: flex;
+  flex-wrap: wrap;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+
+  &--details {
+    @include p.bidi((
+      (margin, 0 0 0 12px, 0 12px 0 0),
+    ));
+    @include c.text-body-sm;
+  }
+}
+
+.user-meta {
+  display: flex;
+  margin-bottom: 24px;
+
+  .avatar {
+    // margin-right: 16px;
+    img {
+      display: block;
+      border-radius: 50%;
+    }
+  }
+
+  &,
+  .user time {
+    @include c.text-body-sm;
   }
 }

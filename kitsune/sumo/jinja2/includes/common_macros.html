@@ -134,7 +134,11 @@
   {% if user.is_authenticated() %}
   <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="#">
     <span class="sumo-nav--username">{{ display_name(user) }}</span>
+    {% if user.is_authenticated() %}
     <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+    {% else %}
+    <img class="avatar" src="{{ STATIC_URL }}sumo/img/default-FFA-avatar.png" alt="Avatar for Username">
+    {% endif %}
   </a>
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
     <div class="sumo-nav--dropdown-container">

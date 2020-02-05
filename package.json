@@ -10,7 +10,8 @@
     "postinstall": "node prepare_django_assets.js",
     "development": "npm run install-dev",
     "stylelint": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run stylelint",
-    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core' --load-path 'kitsune/sumo/static/sumo/scss'",
+    "copy:protocol": "mkdir -p static/protocol && cp -r node_modules/@mozilla-protocol/core/protocol/* static/protocol",
+    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'static' --load-path 'kitsune/sumo/static/sumo/scss'",
     "build:postcss": "npx postcss static/build/screen-noprefixes.css --map --use autoprefixer -o static/build/screen.css",
     "build:styles": "npm run build:scss && npm run build:postcss",
     "build:copyprotocolimgs": "mkdir -p static/protocol/img && cp -r node_modules/@mozilla-protocol/core/protocol/img static/protocol",
@@ -32,7 +33,7 @@
     "browser-sync": "browser-sync start --no-open --files \"kitsune/**/*.html\" \"static/build/screen.css\" \"kitsune/**/.py\" \"kitsune/**/.js\" \"kitsune/**/.json\" --proxy 127.0.0.1:8000 --reload-delay=300",
     "browser-sync:docs": "browser-sync start --no-open --serveStatic \"styleguide/build\" --files \"styleguide/build/**/*\" --port 4000 --reload-delay=300",
     "start": "concurrently --raw --kill-others \"make run\" \"npm run watch\" \"npm run browser-sync\"",
-    "production": "npm run postinstall && npm run build:scss && npm run build:postcss && npm run build:copyprotocolimgs"
+    "production": "npm run copy:protocol && npm run postinstall && npm run build:scss && npm run build:postcss"
   },
   "license": "MPL-2.0",
   "dependencies": {

@@ -307,7 +307,6 @@ PIPELINE_JS = {
             'protocol/js/protocol-navigation.js',
             'protocol/js/protocol-newsletter.js',
             'protocol/js/protocol-notification-bar.js',
-            # 'protocol/js/protocol-sidemenu.js',
             'protocol/js/protocol-lang-switcher.js',
             'sumo/js/protocol-nav.js',
             'sumo/js/protocol-details-init.js',
