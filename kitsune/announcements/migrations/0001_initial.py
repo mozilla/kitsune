@@ -23,9 +23,9 @@ class Migration(migrations.Migration):
                 ('show_after', models.DateTimeField(default=datetime.datetime.now, help_text=b'When this announcement will start appearing. (US/Pacific)', verbose_name=b'Start displaying', db_index=True)),
                 ('show_until', models.DateTimeField(help_text=b'When this announcement will stop appearing. Leave blank for indefinite. (US/Pacific)', null=True, verbose_name=b'Stop displaying', db_index=True, blank=True)),
                 ('content', models.TextField(help_text=b"Use wiki syntax or HTML. It will display similar to a document's content.", max_length=10000)),
-                ('creator', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
-                ('group', models.ForeignKey(blank=True, to='auth.Group', null=True)),
-                ('locale', models.ForeignKey(blank=True, to='wiki.Locale', null=True)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('group', models.ForeignKey(on_delete=models.CASCADE, blank=True, to='auth.Group', null=True)),
+                ('locale', models.ForeignKey(on_delete=models.CASCADE, blank=True, to='wiki.Locale', null=True)),
             ],
             options={
                 'abstract': False,

@@ -13,8 +13,8 @@ from kitsune.sumo.models import ModelBase
 
 
 class Notification(ModelBase):
-    owner = models.ForeignKey(User, db_index=True)
-    action = models.ForeignKey(Action)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    action = models.ForeignKey(Action, on_delete=models.CASCADE)
     read_at = models.DateTimeField(blank=True, null=True)
 
     @property
@@ -31,7 +31,7 @@ class Notification(ModelBase):
 
 
 class PushNotificationRegistration(ModelBase):
-    creator = models.ForeignKey(User, db_index=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     created = models.DateTimeField(default=datetime.now)
     push_url = models.CharField(max_length=256)
 
@@ -54,11 +54,11 @@ def send_notification(sender, instance, created, **kwargs):
 
 
 class RealtimeRegistration(ModelBase):
-    creator = models.ForeignKey(User)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.now)
     endpoint = models.CharField(max_length=256)
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     target = GenericForeignKey('content_type', 'object_id')
 

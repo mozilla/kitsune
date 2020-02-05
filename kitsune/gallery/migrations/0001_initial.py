@@ -28,8 +28,8 @@ class Migration(migrations.Migration):
                 ('thumbnail', models.ImageField(max_length=250, null=True, upload_to=b'uploads/gallery/images/thumbnails/')),
                 ('height', models.IntegerField(null=True)),
                 ('width', models.IntegerField(null=True)),
-                ('creator', models.ForeignKey(related_name='gallery_images', to=settings.AUTH_USER_MODEL)),
-                ('updated_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='gallery_images', to=settings.AUTH_USER_MODEL)),
+                ('updated_by', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'ordering': ['-created'],
@@ -52,8 +52,8 @@ class Migration(migrations.Migration):
                 ('flv', models.FileField(max_length=250, null=True, upload_to=b'uploads/gallery/videos/')),
                 ('poster', models.ImageField(max_length=250, null=True, upload_to=b'uploads/gallery/videos/thumbnails/')),
                 ('thumbnail', models.ImageField(max_length=250, null=True, upload_to=b'uploads/gallery/videos/thumbnails/')),
-                ('creator', models.ForeignKey(related_name='gallery_videos', to=settings.AUTH_USER_MODEL)),
-                ('updated_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='gallery_videos', to=settings.AUTH_USER_MODEL)),
+                ('updated_by', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'ordering': ['-created'],

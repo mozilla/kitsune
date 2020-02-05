@@ -212,7 +212,7 @@ class Badge(models.Model):
         help_text=("Should awards of this badge be limited to " "one-per-person?"),
     )
 
-    creator = models.ForeignKey(User, blank=True, null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False)
     modified = models.DateTimeField(auto_now=True, blank=False)
 
@@ -334,13 +334,13 @@ class Award(models.Model):
     description = models.TextField(
         blank=True, help_text="Explanation and evidence for the badge award"
     )
-    badge = models.ForeignKey(Badge)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
     image = models.ImageField(
         blank=True, null=True, upload_to=settings.BADGE_IMAGE_PATH
     )
-    user = models.ForeignKey(User, related_name="award_user")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="award_user")
     creator = models.ForeignKey(
-        User, related_name="award_creator", blank=True, null=True
+        User, on_delete=models.CASCADE, related_name="award_creator", blank=True, null=True
     )
     hidden = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False)
