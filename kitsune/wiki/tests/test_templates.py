@@ -228,17 +228,9 @@ class DocumentTests(TestCaseBase):
         redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
         response = self.client.get(redirect_url, follow=True)
-        # TODO:DJ2: In Django 2.2 the assertsRedirects method properly checks
-        # the URLs using its new assertURLEqual method. But for now this is
-        # failing because of the order of items in the query string.
-        # self.assertRedirects(
-        #     response,
-        #     urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
-        self.assertURLEqual(response.redirect_chain[0][0],
-                            urlparams(target_url,
-                                      redirectlocale=redirect.locale,
-                                      redirectslug=redirect.slug))
-        self.assertEqual(response.redirect_chain[0][1], 302)
+        self.assertRedirects(
+            response,
+            urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
         self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
