@@ -486,7 +486,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # voted will see a "You already voted on this Article." message
         # if they try voting again.
         authed_and_voted = (
-            request.user.is_authenticated() and
+            request.user.is_authenticated and
             self.current_revision and
             self.current_revision.has_voted(request))
 
@@ -1010,7 +1010,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
     def has_voted(self, request):
         """Did the user already vote for this revision?"""
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             qs = HelpfulVote.objects.filter(revision=self,
                                             creator=request.user)
         elif request.anonymous.has_id:

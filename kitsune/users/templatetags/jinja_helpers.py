@@ -109,5 +109,5 @@ def private_message(user):
 @library.global_function
 def is_contributor(user):
     """Return whether the user is in the 'Registered as contributor' group."""
-    return (user.is_authenticated() and
+    return (user.is_authenticated and
             user.groups.filter(name='Registered as contributor').count() > 0)

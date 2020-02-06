@@ -18,10 +18,10 @@
     <article id="threads" class="content-box">
       <h1>{{ forum.name }}</h1>
       <div class="forum-actions">
-        {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
+        {% if not user.is_authenticated or forum.allows_posting_by(user) %}
           <a id="new-thread" class="btn btn-submit" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
         {% endif %}
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
           <form action="{{ url('forums.watch_forum', forum_slug=forum.slug) }}" method="post">
             {% csrf_token %}
             {% if is_watching_forum %}

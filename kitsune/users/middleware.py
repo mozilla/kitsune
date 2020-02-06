@@ -24,7 +24,7 @@ class TokenLoginMiddleware(MiddlewareMixin):
             # data.
             return
 
-        if auth is None or (request.user and request.user.is_authenticated()):
+        if auth is None or (request.user and request.user.is_authenticated):
             return
         user = authenticate(request, auth=auth)
         if user and user.is_active:
@@ -43,7 +43,7 @@ class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
     def process_request(self, request):
         user = request.user
 
-        if (user.is_authenticated() and not user.is_active and
+        if (user.is_authenticated and not user.is_active and
                 not request.session.get('in-aaq', False)):
 
             # The user is auth'd, not active and not in AAQ. /KICK

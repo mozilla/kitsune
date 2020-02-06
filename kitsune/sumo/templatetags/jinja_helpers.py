@@ -242,7 +242,7 @@ def datetimeformat(context, value, format='shortdatetime'):
 
     if hasattr(request, 'session'):
         if 'timezone' not in request.session:
-            if hasattr(request, 'user') and request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated:
                 try:
                     convert_tzinfo = (Profile.objects.get(user=request.user).timezone or
                                       default_tzinfo)

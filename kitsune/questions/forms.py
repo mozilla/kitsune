@@ -316,9 +316,9 @@ class WatchQuestionForm(forms.Form):
         super(WatchQuestionForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
-        if not self.user.is_authenticated() and not self.cleaned_data['email']:
+        if not self.user.is_authenticated and not self.cleaned_data['email']:
             raise forms.ValidationError(_('Please provide an email.'))
-        elif not self.user.is_authenticated():
+        elif not self.user.is_authenticated:
             return self.cleaned_data['email']
         # Clear out the email for logged in users, we don't want to use it.
         return None
@@ -333,7 +333,7 @@ class BaseZendeskForm(forms.Form):
         self.user = user
 
         # Add email field for users not logged in.
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             email = forms.EmailField(
                 label=_lazy('Email:'),
                 widget=forms.TextInput(attrs={
@@ -367,7 +367,7 @@ class BaseZendeskForm(forms.Form):
 
     def submit_ticket(self):
         """Submit the ticket to Zendesk."""
-        if self.user.is_authenticated():
+        if self.user.is_authenticated:
             email = self.user.email
         else:
             email = self.cleaned_data['email']

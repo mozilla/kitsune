@@ -5,7 +5,7 @@
   {% set title = _('Email changed for user {username}')|f(username=username) %}
 {% endif %}
 {% set classes = 'register' %}
-{% if user.is_authenticated() %}
+{% if user.is_authenticated %}
   {% set crumbs = [(profile_url(user), user.username),
                    (None, title)] %}
 {% else %}

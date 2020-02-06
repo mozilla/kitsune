@@ -491,7 +491,7 @@
             data-preview-content-id="id_content" />
         </div>
       </form>
-    {% elif question.editable and not user.is_authenticated() %}
+    {% elif question.editable and not user.is_authenticated %}
       <div class="question-tools nopadding">
         {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
           {% set ask_url = url('questions.aaq_step1') %}

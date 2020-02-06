@@ -81,7 +81,7 @@ def threads(request, forum_slug):
     feed_urls = ((reverse('forums.threads.feed', args=[forum_slug]),
                   ThreadsFeed().title(forum)),)
 
-    is_watching_forum = (request.user.is_authenticated() and
+    is_watching_forum = (request.user.is_authenticated and
                          NewThreadEvent.is_notifying(request.user, forum))
     return render(request, 'forums/threads.html', {
         'forum': forum, 'threads': threads_,
@@ -127,7 +127,7 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None,
                                   'thread_id': thread_id}),
                   PostsFeed().title(thread)),)
 
-    is_watching_thread = (request.user.is_authenticated() and
+    is_watching_thread = (request.user.is_authenticated and
                           NewPostEvent.is_notifying(request.user, thread))
     return render(request, 'forums/posts.html', {
         'forum': forum, 'thread': thread,

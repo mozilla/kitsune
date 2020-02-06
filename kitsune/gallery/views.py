@@ -257,7 +257,7 @@ def _get_media_info(media_id, media_type):
 def _get_drafts(user):
     """Get video and image drafts for a given user."""
     drafts = {'image': None, 'video': None}
-    if user.is_authenticated():
+    if user.is_authenticated:
         drafts['image'] = Image.objects.filter(creator=user, is_draft=True)
         drafts['video'] = Video.objects.filter(creator=user, is_draft=True)
     return drafts

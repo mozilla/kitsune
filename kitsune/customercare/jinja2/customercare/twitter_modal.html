@@ -1,11 +1,11 @@
-{% if user.is_authenticated() %}
+{% if user.is_authenticated %}
   {% set title = _('Connect to your Twitter account') %}
 {% else %}
   {% set title = _('Sign in to Mozilla Support') %}
 {% endif %}
 <div id="twitter-modal" class="kbox" title="{{ title }}" data-modal="true" data-authed="{{ authed }}" data-twitter-user="{{ twitter_user }}">
   <div class="inner-container">
-    {% if user.is_authenticated() %}
+    {% if user.is_authenticated %}
       <p>{% trans %}
         Before you join, you need to give Army of Awesome the permission to post
         tweets on your behalf.{% endtrans %}

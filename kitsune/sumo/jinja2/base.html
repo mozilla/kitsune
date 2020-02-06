@@ -86,7 +86,7 @@
   {# end TrafficCop #}
 
 </head>
-<body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
+<body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
@@ -190,7 +190,7 @@
       </a>
       <div class="nav-wrap-scroll">
         {% if not hide_aux_nav %}
-        <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
+        <nav id="aux-nav" class="logged-{% if user.is_authenticated %}in{% else %}out{% endif %}" role="navigation">
           <ul>
             {{ aux_nav(user, hide_aaq_link) }}
           </ul>
@@ -211,7 +211,7 @@
                 <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
               </li>
             {% endif %}
-            {% if not user.is_authenticated() %}
+            {% if not user.is_authenticated %}
               <li>
                 <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
                   {{ _('Log in / Sign up') }}

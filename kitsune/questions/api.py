@@ -121,7 +121,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = getattr(self.context.get('request'), 'user')
-        if user and not user.is_anonymous() and data.get('creator') is None:
+        if user and not user.is_anonymous and data.get('creator') is None:
             data['creator'] = user
         return data
 
@@ -423,7 +423,7 @@ class AnswerSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = getattr(self.context.get('request'), 'user')
-        if user and not user.is_anonymous() and data.get('creator') is None:
+        if user and not user.is_anonymous and data.get('creator') is None:
             data['creator'] = user
         return data
 

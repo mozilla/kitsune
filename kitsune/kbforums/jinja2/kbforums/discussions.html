@@ -7,7 +7,7 @@
   <div class="grid_9">
     <article id="threads" class="content-box">
       <h1>{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
-      {% if user.is_authenticated() %}
+      {% if user.is_authenticated %}
         <form id="watch_locale" action="{{ url('wiki.discuss.watch_locale') }}" method="post">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.get_full_path() }}">
@@ -22,7 +22,7 @@
         </form>
       {% endif %}
       <ol class="threads-columns cf {% if not desc_toggle %}desc{% endif %}">
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
           <li class="watch">{{ _('Watch') }}</li>
         {% endif %}
         <li class="title">{{ _('Title') }}</li>
@@ -34,7 +34,7 @@
         <ol class="threads">
         {% for thread in threads.object_list %}
           <li class="cf">
-            {% if user.is_authenticated() %}
+            {% if user.is_authenticated %}
               <div class="watch">
                 <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', thread.document.slug, thread.id) }}" method="post">
                     {% csrf_token %}

@@ -62,7 +62,7 @@
                 profile.facebook or profile.mozillians or profile.irc_handle %}
             <section class="contact">
               <ul>
-                {% if profile.public_email and request.user.is_authenticated() %}
+                {% if profile.public_email and request.user.is_authenticated %}
                   <li>
                     <label>{{ _('Email') }}:</label>
                     {{ profile.user.email|public_email }}
