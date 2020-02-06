@@ -448,7 +448,7 @@ class CohortSerializer(serializers.ModelSerializer):
 
 
 class CohortFilter(django_filters.FilterSet):
-    kind = django_filters.CharFilter(name='kind__code')
+    kind = django_filters.CharFilter(field_name='kind__code')
     start = django_filters.DateFilter(lookup_expr='gte')
     end = django_filters.DateFilter(lookup_expr='lte')
 
@@ -464,7 +464,7 @@ class CohortFilter(django_filters.FilterSet):
 class CohortViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Cohort.objects.all()
     serializer_class = CohortSerializer
-    filter_class = CohortFilter
+    filterset_class = CohortFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
