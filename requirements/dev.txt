@@ -42,6 +42,7 @@ https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b
 https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline --hash=sha256:8137ed0a643560ae2300e11278e04907f0a1208031a0069474771cab6800f325
 django-sslserver==0.22 \
     --hash=sha256:c598a363d2ccdc2421c08ddb3d8b0973f80e8e47a3a5b74e4a2896f21c2947c5
+https://github.com/lincolnloop/django-statsd/archive/3cf2eac133e59971923fa04d6c61113acede6876.tar.gz#egg=django-statsd-mozilla --hash=sha256:1c0c60e17b7b59bff322c6c13a80296beabe55e7df1570bca35b36108a124471
 filelock==3.0.12 \
     --hash=sha256:18d82244ee114f543149c66a6e0c14e9c4f8a1044b5cdaadd0f82159d6a6ff59 \
     --hash=sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836 \
