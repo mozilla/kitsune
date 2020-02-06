@@ -15,7 +15,7 @@ from decouple import Csv, config
 
 import djcelery
 
-from bundles import PIPELINE_CSS, PIPELINE_JS
+from bundles import PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -778,24 +778,15 @@ STATICI18N_ROOT = path('jsi18n')
 # Django Pipline
 PIPELINE = {
     'COMPILERS': (
-        'pipeline.compilers.less.LessCompiler',
         'kitsune.lib.pipeline_compilers.BrowserifyCompiler',
     ),
     'JAVASCRIPT': PIPELINE_JS,
-    'STYLESHEETS': PIPELINE_CSS,
 
     'DISABLE_WRAPPER': True,
 
     'JS_COMPRESSOR': 'pipeline.compressors.uglifyjs.UglifyJSCompressor',
     'UGLIFYJS_BINARY': path('node_modules/.bin/uglifyjs'),
     'UGLIFYJS_ARGUMENTS': '',
-
-    'CSS_COMPRESSOR': 'pipeline.compressors.cssmin.CSSMinCompressor',
-    'CSSMIN_BINARY': path('node_modules/.bin/cssmin'),
-
-    'LESS_BINARY': path('node_modules/.bin/lessc'),
-    # TODO: Cannot make less work with autoprefix plugin
-    # 'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
 
     'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
     'BROWSERIFY_ARGUMENTS': '-t babelify',
