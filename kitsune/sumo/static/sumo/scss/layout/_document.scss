@@ -52,8 +52,14 @@
   &.is-forum-answer {
     padding: p.$spacing-sm p.$spacing-lg;
 
+    .document-vote--form {
+      flex-direction: row;
+      align-items: center;
+    }
+
     .document-vote--heading {
       font-weight: normal;
+      margin: 0;
     }
   }
 

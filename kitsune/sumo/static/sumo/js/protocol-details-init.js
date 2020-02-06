@@ -6,8 +6,18 @@ function detailsInit() {
 
   function swapMobileSubnavText(){
     var button = document.querySelector('.details-heading button');
-    var activeLinkText = document.querySelector('.sidebar-nav .selected a').innerHTML;
-    button.innerHTML = activeLinkText;
+    var activeLink = document.querySelector('.sidebar-nav .selected a');
+    var firstHeadingText = document.querySelector('.sidebar-nav .sidebar-subheading');
+
+    if (activeLink) {
+      var mobileButtonText = activeLink.innerHTML;
+    } else if (firstHeadingText) {
+      var mobileButtonText = firstHeadingText.innerHTML;
+    } else {
+      var mobileButtonText = 'debug this';
+    }
+
+    button.innerHTML = mobileButtonText;
   }
 
   if (sidebarList && _mqWide.matches) {
