@@ -94,7 +94,7 @@ if settings.DEBUG:
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [
-        url(r'^admin/', include(admin.site.urls)),
+        url(r'^admin/', admin.site.urls),
     ]
 elif settings.ADMIN_REDIRECT_URL:
     urlpatterns.append(
