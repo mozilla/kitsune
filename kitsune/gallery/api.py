@@ -31,7 +31,7 @@ class ImageList(LocaleNegotiationMixin, generics.ListAPIView):
     """List all image ids."""
     queryset = Image.objects.all()
     serializer_class = ImageShortSerializer
-    filter_fields = ['height', 'width']
+    filterset_fields = ['height', 'width']
     filter_backends = [InequalityFilterBackend]
 
     def get_queryset(self):
