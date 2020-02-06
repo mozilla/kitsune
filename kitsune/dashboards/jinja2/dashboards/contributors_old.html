@@ -29,7 +29,7 @@
         </div>
       {% endif %}
 
-      {% if not user.is_anonymous() %}
+      {% if not user.is_anonymous %}
         {{ print_subscription_menu(default_locale_name,
                                    request_locale_name,
                                    on_default_locale,

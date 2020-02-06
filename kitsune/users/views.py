@@ -60,7 +60,7 @@ def login(request):
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         # We re-direct to the profile screen
         user_profile_url = urlparams(
             reverse('users.profile', args=[request.user.username]),

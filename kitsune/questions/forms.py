@@ -303,9 +303,9 @@ class WatchQuestionForm(forms.Form):
         super(WatchQuestionForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
-        if not self.user.is_authenticated() and not self.cleaned_data["email"]:
+        if not self.user.is_authenticated and not self.cleaned_data["email"]:
             raise forms.ValidationError(_("Please provide an email."))
-        elif not self.user.is_authenticated():
+        elif not self.user.is_authenticated:
             return self.cleaned_data["email"]
         # Clear out the email for logged in users, we don't want to use it.
         return None

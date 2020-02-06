@@ -7,12 +7,12 @@
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
       <li id="editing-tools-sidebar">
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
           <h3 class="sidebar-subheading large-only">{{ _('Editing Tools') }}</h3>
         {% endif %}
         <span class="details-heading"></span>
         <ul class="sidebar-nav--list">
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
           {% if document %}
             <li {{ active|class_selected('article') }}>
               <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
@@ -72,7 +72,7 @@
 {%- endmacro %}
 
 {% macro document_notifications(document, user) -%}
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
     <div id="doc-watch">
       {% if document.is_watched_by(user) %}
         <form action="{{ url('wiki.document_unwatch', document.slug) }}" method="post">

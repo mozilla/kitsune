@@ -187,7 +187,7 @@ def question_list(request, product_slug):
     if not request.user.has_perm("flagit.can_moderate"):
         question_qs = question_qs.filter(is_spam=False)
 
-    if owner == "mine" and request.user.is_authenticated():
+    if owner == 'mine' and request.user.is_authenticated:
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
     else:
@@ -286,7 +286,7 @@ def question_list(request, product_slug):
         topic_list = []
 
     # Store current filters in the session
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         request.session["questions_owner"] = owner
 
     data = {
@@ -401,7 +401,7 @@ def question_details(
         troubleshooting_json
     )
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         ct = ContentType.objects.get_for_model(request.user)
         ans_["images"] = list(
             ImageAttachment.objects.filter(creator=request.user, content_type=ct)
@@ -739,7 +739,7 @@ def solve(request, question_id, answer_id):
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
 
     # It is possible this was clicked from the email.
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         watch_secret = request.GET.get("watch", None)
         try:
             watch = Watch.objects.get(
@@ -822,7 +822,7 @@ def question_vote(request, question_id):
     if not question.has_voted(request):
         vote = QuestionVote(question=question)
 
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             vote.creator = request.user
         else:
             vote.anonymous_id = request.anonymous.anonymous_id
@@ -884,7 +884,7 @@ def answer_vote(request, question_id, answer_id):
         else:
             message = _("Sorry to hear that.")
 
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             vote.creator = request.user
         else:
             vote.anonymous_id = request.anonymous.anonymous_id
@@ -1195,7 +1195,7 @@ def watch_question(request, question_id):
     if form.is_valid():
         user_or_email = (
             request.user
-            if request.user.is_authenticated()
+            if request.user.is_authenticated
             else form.cleaned_data["email"]
         )
         try:
@@ -1212,7 +1212,7 @@ def watch_question(request, question_id):
         if form.is_valid():
             msg = msg or (
                 _("You will be notified of updates by email.")
-                if request.user.is_authenticated()
+                if request.user.is_authenticated
                 else _(
                     "You should receive an email shortly "
                     "to confirm your subscription."
@@ -1484,7 +1484,7 @@ def _answers_data(
     )
     frequencies = dict(FREQUENCY_CHOICES)
 
-    is_watching_question = request.user.is_authenticated() and (
+    is_watching_question = request.user.is_authenticated and (
         QuestionReplyEvent.is_notifying(request.user, question)
         or QuestionSolvedEvent.is_notifying(request.user, question)
     )

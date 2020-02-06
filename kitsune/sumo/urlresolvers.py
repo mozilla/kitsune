@@ -134,7 +134,7 @@ class Prefixer(object):
         # We also need to check to see if locale is already given in the url,
         # as that serves as an override.
         if not self.locale and request:
-            if request.user.is_anonymous():
+            if request.user.is_anonymous:
                 language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
                 if language:
                     self.locale = language

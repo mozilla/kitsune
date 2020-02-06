@@ -81,7 +81,7 @@
       </div>
     </div>
   </li>
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
     <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation"
        data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
@@ -144,8 +144,8 @@
 </li>
 {% endif %}
 
-<li class="mzp-c-menu-category {% if user.is_authenticated() %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
-  {% if user.is_authenticated() %}
+<li class="mzp-c-menu-category {% if user.is_authenticated %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
+  {% if user.is_authenticated %}
     <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="{{ url('users.auth') }}">
       <span class="sumo-nav--username">{{ display_name(user) }}</span>
       <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
@@ -242,7 +242,7 @@
 {% endmacro %}
 
 {% macro for_contributors_sidebar(user, default_language, li_only=False, active=None) -%}
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
   <nav class="sidebar-nav" id="for-contributors-sidebar">
     <span class="details-heading"></span>
     {% if not li_only %}

@@ -155,7 +155,7 @@
         <div class="mzp-c-menu-list">
           <span class="icon-button" data-has-dropdown>more options</span>
           <ul class="mzp-c-menu-list-list">
-            {% if user.is_authenticated() and question.allows_flag(user) %}
+            {% if user.is_authenticated and question.allows_flag(user) %}
               <li class="mzp-c-menu-list-item">{{ flag_form(url('questions.flag', question.id)) }}</li>
             {% endif %}
             <li class="mzp-c-menu-list-item"><a class="quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Quote') }}</a></li>
@@ -267,7 +267,7 @@
               data-preview-content-id="id_content" />
           </div>
         </form>
-      {% elif question.editable and not user.is_authenticated() %}
+      {% elif question.editable and not user.is_authenticated %}
         <div class="question-tools ask-a-question card is-shaded">
           {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
             {% set ask_url = url('questions.aaq_step1') %}

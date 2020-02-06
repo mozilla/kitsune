@@ -54,7 +54,7 @@ def product_landing(request, slug):
             "latest_version": latest_version,
             "subscribed_products_ids": (
                 user.profile.products.all().values_list("id", flat=True)
-                if user.is_authenticated()
+                if user.is_authenticated
                 else []
             ),
             "featured": get_featured_articles(product)

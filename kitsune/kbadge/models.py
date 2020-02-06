@@ -166,7 +166,7 @@ class BadgeManager(models.Manager, SearchManagerMixin):
     )
 
     def allows_add_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if getattr(settings, "BADGER_ALLOW_ADD_BY_ANYONE", False):
             return True
@@ -175,7 +175,7 @@ class BadgeManager(models.Manager, SearchManagerMixin):
         return False
 
     def allows_grant_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.has_perm("badger.grant_deferredaward"):
             return True
@@ -249,7 +249,7 @@ class Badge(models.Model):
         return True
 
     def allows_edit_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.has_perm("badger.change_badge"):
             return True
@@ -258,7 +258,7 @@ class Badge(models.Model):
         return False
 
     def allows_delete_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.has_perm("badger.change_badge"):
             return True
@@ -270,7 +270,7 @@ class Badge(models.Model):
         """Is award_to() allowed for this user?"""
         if user is None:
             return True
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.is_staff or user.is_superuser:
             return True
@@ -368,7 +368,7 @@ class Award(models.Model):
         return True
 
     def allows_delete_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user == self.user:
             return True

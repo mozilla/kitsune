@@ -295,7 +295,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def has_voted(self, request):
         """Did the user already vote?"""
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             qs = QuestionVote.objects.filter(question=self, creator=request.user)
         elif request.anonymous.has_id:
             anon_id = request.anonymous.anonymous_id
@@ -335,7 +335,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def is_contributor(self, user):
         """Did the passed in user contribute to this question?"""
-        if user.is_authenticated():
+        if user.is_authenticated:
             return user.id in self.contributors
 
         return False
@@ -614,7 +614,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def allows_new_answer(self, user):
         """Return whether `user` can answer (reply to) this question."""
         return user.has_perm("questions.add_answer") or (
-            self.editable and user.is_authenticated()
+            self.editable and user.is_authenticated
         )
 
     def allows_solve(self, user):
@@ -631,7 +631,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def allows_flag(self, user):
         """Return whether `user` can flag this question."""
-        return user.is_authenticated() and user != self.creator and self.editable
+        return user.is_authenticated and user != self.creator and self.editable
 
     def mark_as_spam(self, by_user):
         """Mark the question as spam by the specified user."""
@@ -1109,7 +1109,7 @@ class Answer(ModelBase, SearchMixin):
 
     def has_voted(self, request):
         """Did the user already vote for this answer?"""
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             qs = AnswerVote.objects.filter(answer=self, creator=request.user)
         elif request.anonymous.has_id:
             anon_id = request.anonymous.anonymous_id
@@ -1149,7 +1149,7 @@ class Answer(ModelBase, SearchMixin):
         if question is None:
             question = self.question
 
-        return user.is_authenticated() and user != self.creator and question.editable
+        return user.is_authenticated and user != self.creator and question.editable
 
     def get_images(self):
         """A cached version of self.images.all().

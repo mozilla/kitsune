@@ -52,7 +52,7 @@ def usernames(request):
 
     if not pre:
         return []
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return []
     with statsd.timer("users.api.usernames.search"):
         profiles = Profile.objects.filter(Q(name__istartswith=pre)).values_list(

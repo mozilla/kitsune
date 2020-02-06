@@ -72,7 +72,7 @@ def threads(request, document_slug):
     feed_urls = ((reverse('wiki.discuss.threads.feed', args=[document_slug]),
                   ThreadsFeed().title(doc)),)
 
-    is_watching_forum = (request.user.is_authenticated() and
+    is_watching_forum = (request.user.is_authenticated and
                          NewThreadEvent.is_notifying(request.user, doc))
     return render(request, 'kbforums/threads.html', {
         'document': doc, 'threads': threads_,
@@ -103,7 +103,7 @@ def posts(request, document_slug, thread_id, form=None, post_preview=None):
                                   'thread_id': thread_id}),
                   PostsFeed().title(thread)),)
 
-    is_watching_thread = (request.user.is_authenticated() and
+    is_watching_thread = (request.user.is_authenticated and
                           NewPostEvent.is_notifying(request.user, thread))
     return render(request, 'kbforums/posts.html', {
         'document': doc, 'thread': thread,
@@ -431,7 +431,7 @@ def locale_discussions(request):
     threads_ = threads_.order_by('-last_post__created')
     threads_ = paginate(request, threads_,
                         per_page=kbforums.THREADS_PER_PAGE)
-    is_watching_locale = (request.user.is_authenticated() and
+    is_watching_locale = (request.user.is_authenticated and
                           NewThreadInLocaleEvent.is_notifying(
                               request.user, locale=request.LANGUAGE_CODE))
     return render(request, 'kbforums/discussions.html', {

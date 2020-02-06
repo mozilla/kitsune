@@ -99,7 +99,7 @@ class LocaleURLMiddleware(MiddlewareMixin):
             # 'lang' is only used on the language selection page. If this is
             # present it is safe to set language preference for the current
             # user.
-            if request.user.is_anonymous():
+            if request.user.is_anonymous:
                 cookie = settings.LANGUAGE_COOKIE_NAME
                 request.session[cookie] = request.GET['lang']
 

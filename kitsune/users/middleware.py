@@ -19,7 +19,7 @@ class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
 
         user = request.user
 
-        if user.is_authenticated() and not user.is_active:
+        if user.is_authenticated and not user.is_active:
 
             logout(request)
             return HttpResponseRedirect(reverse('home'))
