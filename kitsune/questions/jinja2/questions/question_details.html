@@ -93,8 +93,8 @@
           {% endif %}
 
           {% if question.last_answer %}
-          <dd class="forum--meta-key"></dd>
-          <dt class="forum--meta-val visits">{{ _('Last reply by') }}
+          <dd class="forum--meta-key">{{ _('Last reply by') }}</dd>
+          <dt class="forum--meta-val visits">
             <a href="{{ question.last_answer.get_absolute_url() }}">
               {{ display_name(question.last_answer.creator) }}
             </a>
@@ -131,11 +131,13 @@
             </span>
           </div>
         </div>
+
         <div class="mzp-c-menu-list">
           <span class="icon-button" data-has-dropdown>more options</span>
           <ul class="mzp-c-menu-list-list">
-            {% if question.allows_flag(user) %}{% endif %}
+            {% if question.allows_flag(user) %}
             <li class="mzp-c-menu-list-item">{{ flag_form(url('questions.flag', question.id)) }}</li>
+            {% endif %}
             <li class="mzp-c-menu-list-item"><a class="quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Quote') }}</a></li>
           </ul>
         </div>
@@ -144,7 +146,7 @@
       <div class="main-content">
         <div itemprop="text">{{ question.content_parsed|safe }}</div>
         {# Note: this is not vulnerable to injection because Jinja autoescapes the strings. #}
-        <div class="content-raw">{{ question.content }}</div>
+        <div class="content-raw" style="display:none;">{{ question.content }}</div>
         {% if question_images %}
           <div class="attachments-title">
             {{ _('Attached screenshots') }}
@@ -175,21 +177,30 @@
         {% endif %}
       </div>
 
-      {% if question.editable %}{% endif %}
+      {% if question.editable %}
         <div class="question-tools sumo-button-wrap align-end">
-          {% if not question.has_voted(request) %}{% endif %}
+          {% if not question.has_voted(request) %}
             <div class="me-too">
               <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
                 <button class="sumo-button button-lg secondary-button" type="submit">{{ _('I have this problem, too') }}</button>
               </form>
             </div>
-
+          {% endif %}
         </div>
-
+        {% endif %}
     </div>
 
+    {% if answers.object_list %}
+    <h3 class="text-body-lg">{{ _('All Replies')}} ({{ answers.object_list|length }})</h3>
+      {% set helpful_replies = question.helpful_replies %}
+      {% for answer in answers.object_list %}
+        {% include "questions/includes/answer.html" %}
+      {% endfor %}
+      {{ answers|paginator }}
+    {% endif %}
 
-    <div id="question-reply">
+
+    <div class="question-reply-form" id="question-reply">
       {% if request.limited %}
         <div class="warning-box">
           {% trans url=url('forums.threads', 'contributors') %}
@@ -202,9 +213,7 @@
       {% endif %}
 
       {% if question.allows_new_answer(user) %}
-        <div class="answer-tools nopadding">
-          <h3 class="text-display-sm">{{ _('Post a Reply') }}</h3>
-        </div>
+        <h3 class="text-body-lg">{{ _('Post a Reply') }}</h3>
         <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data" data-take-question-url="{{ url('question-take', question.pk) }}">
           {% csrf_token %}
           {{ errorlist(form) }}
@@ -267,6 +276,10 @@
 {% endblock content %}
 
 {% block side %}
+<div class="search-form-sidebar large-only">
+  {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
+</div>
+
 <div class="questions-sidebar">
   <nav class="sidebar-nav is-action-list" id="question-tools">
     <span class="details-heading"></span>
@@ -284,7 +297,6 @@
       </li>
       {% endfor %}
       {% endif %}
-
 
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Question Tools') }}</li>
       {% if question.allows_edit(user) %}

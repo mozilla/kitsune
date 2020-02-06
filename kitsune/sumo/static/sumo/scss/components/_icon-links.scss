@@ -2,11 +2,11 @@
 @use '../protocol' as p;
 
 
-a.edit,
-.edit > a,
-a.yes,
-a.no,
-a.markasready {
+a.edit.has-icon,
+.edit.has-icon > a,
+a.yes.has-icon,
+a.no.has-icon,
+a.markasready.has-icon {
   &:before {
     display: inline-flex;
     align-self: center;

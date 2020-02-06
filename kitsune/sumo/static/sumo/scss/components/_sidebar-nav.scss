@@ -147,6 +147,10 @@
 
       .tag-list {
         margin-bottom: 16px;
+
+        a {
+          padding: 0;
+        }
       }
     }
 
@@ -178,25 +182,29 @@
     margin-top: 0;
   }
 
+  &.is-accordion-heading {
+    margin-top: 72px;
+
+    button {
+      padding-left: 0;
+      padding-bottom: 8px;
+
+      &:before {
+        top: 8px;
+      }
+
+      &[aria-expanded="false"] {
+        border-bottom: 1px solid var(--color-heading);
+      }
+    }
+  }
+
   @media #{p.$mq-md} {
     @include c.text-body-lg;
     margin: 72px 0 p.$spacing-lg;
 
     &.is-accordion-heading {
       margin-top: 72px;
-
-      button {
-        padding-left: 0;
-        padding-bottom: 8px;
-
-        &:before {
-          top: 8px;
-        }
-
-        &[aria-expanded="false"] {
-          border-bottom: 1px solid var(--color-heading);
-        }
-      }
     }
   }
 }

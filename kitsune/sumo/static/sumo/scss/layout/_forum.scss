@@ -174,31 +174,24 @@
   margin: 0;
 
   li {
+    display: flex;
+    align-items: center;
+    padding: 4px 16px;
     margin: 0 8px 8px 0;
+    background-color: var(--color-light-gray-03);
+    border-radius: 20px;
+    white-space: nowrap;
 
     &:last-child {
       margin-right: 0;
     }
   }
 
-  // for tags with a 'remove' button, add .tag to the LI
-  li.tag,
   a {
     @include c.text-body-xs;
-    display: flex;
-    align-items: center;
-    padding: 4px 16px;
-    text-decoration: none;
     color: var(--color-text);
-    background-color: var(--color-light-gray-03);
-    border-radius: 20px;
-    white-space: nowrap;
-
-    &.tag-name {
-      display: inline;
-      padding: 0;
-      margin-right: 8px;
-    }
+    text-decoration: none;
+    padding: 0;
   }
 
   .remover {
@@ -208,17 +201,13 @@
     appearance: none;
     background: transparent;
     padding: 0;
-    margin: -2px -4px 0 0;
+    margin: -2px -4px 0 8px;
     border: 0 none;
 
     &:hover {
       color: var(--color-error);
     }
   }
-
-
-
-
 }
 
 // truncate text UI, ported from old system
@@ -262,19 +251,18 @@
   margin: 40px 0 20px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
   text-align: center;
 
   @media #{p.$mq-md} {
     flex-direction: row-reverse;
     text-align: left;
   }
-  .sumo-button {
-    flex: 0 0 auto;
+
+  .sumo-button-stack {
     @include p.bidi((
       (margin, 0 0 0 32px, 0 32px 0 0),
     ));
-    white-space: nowrap;
   }
 }
 
@@ -325,6 +313,11 @@
       margin-bottom: 16px;
     }
 
+    .sumo-button-wrap {
+      display: block;
+      margin: -16px 0 16px;
+    }
+
     .detail {
       display: none;
     }
@@ -341,12 +334,7 @@
 
 
 
-
-
-
-
-
-
+// TODO: test this on prod, as my database doesn't support it.
 .attachments-upload,
 .ans-attachments {
   .adding-attachment {
@@ -423,5 +411,117 @@
   img {
     max-height: 120px;
     max-width: 120px;
+  }
+}
+
+.author-name {
+  display: flex;
+  align-items: center;
+}
+
+.karma-titles {
+  display: flex;
+  margin: 0 0 0 8px;
+  padding-left: 8px;
+  line-height: 1;
+  border-left: 1px solid var(--color-heading);
+
+  li {
+    margin-right: 8px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+.is-solution,
+.is-helpful,
+.is-spam,
+.is-owner {
+  @include c.text-body-xs;
+  color: var(--color-heading);
+  padding: 4px 16px;
+  margin: 0 0 8px 0;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.is-solution {
+  background-color: var(--color-green-04);
+}
+
+.is-helpful {
+  background-color: var(--color-blue-01);
+}
+
+.is-spam {
+  background-color: var(--color-yellow-05);
+}
+
+.is-owner {
+  background-color: var(--color-light-gray-03);
+}
+
+.answer-tools {
+  &.align-end {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.tag-adder {
+  padding: 16px 0;
+}
+.answer {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+
+  &--tools {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-shade-bg);
+    border-radius: 0 var(--global-radius) var(--global-radius) 0;
+    padding: 8px;
+    margin-top: -1px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+
+    .title {
+      margin: 0 16px 0 0;
+    }
+  }
+
+  &--tools-form {
+    margin-right: auto;
+    margin-bottom: 16px;
+
+    .solution {
+      display: flex;
+    }
+
+  }
+
+  @media #{p.$mq-md} {
+    &--tools {
+      flex-direction: row;
+      padding-left: 55px;
+    }
+
+    &--tools-form {
+      margin-bottom: 0;
+    }
+
+    .main-content {
+      padding-left: 55px;
+    }
+  }
+}
+
+.question-reply-form {
+  padding-top: 20px;
+
+  @media #{p.$mq-md} {
+    padding-top: 40px;
   }
 }

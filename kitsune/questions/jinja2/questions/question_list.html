@@ -37,10 +37,12 @@
     {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
   </div>
   <div class="mzp-l-content">
+    {% if logo %}
     <img class="page-heading--logo" src="{{ logo }}" alt="{{ title }} logo" />
+    {% endif %}
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main">
-        <h1 class="text-display-lg">
+        <h1 class="text-display-lg {% if not logo %}no-logo{% endif %}">
           <span class="product-title-text">{{ title }}</span>
         </h1>
         <div id="recent-stats">
@@ -176,14 +178,14 @@
                   <ul class="tag-list push-right">
                   {% if question.topic %}
                     {% set topic = question.topic %}
-                    <li>
-                      <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
+                    <li class="tag">
+                      <a class="tag-name" href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
                         {{ pgettext('DB: products.Product.title', topic.product.title) }}
                       </a>
                     </li>
                   {% endif %}
                   {% for tag in tags %}
-                    <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
+                    <li class="tag"><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
                   {% endfor %}
                   </ul>
 

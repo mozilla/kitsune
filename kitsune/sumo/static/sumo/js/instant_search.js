@@ -13,8 +13,7 @@
     $('.home-search-section .mzp-l-content').removeClass('narrow');
 
     // clear sidebar form and focus if is's there.
-    $('#support-search-wiki').find('input[name=q]').val('');
-    $('#support-search-documents').find('input[name=q]').val('');
+    $('#support-search-sidebar').find('input[name=q]').val('');
   }
 
   function showContent() {
@@ -102,7 +101,7 @@
             $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
             window.scrollTo(0, 0);
 
-          } else if (formId === 'support-search-wiki' || formId === 'support-search-documents') {
+          } else if (formId === 'support-search-sidebar') {
             $('.hidden-search-masthead').show();
             $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
 

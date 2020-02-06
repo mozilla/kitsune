@@ -476,10 +476,10 @@ class TestQuestionList(TestCaseBase):
                 'questions.list', args=['all'], locale=locale))
             response = self.client.get(url, follow=True)
             doc = pq(response.content)
-            eq_msg(len(doc('section[id^=question]')), len(titles),
+            eq_msg(len(doc('article[id^=question]')), len(titles),
                    'Wrong number of results for {0}'.format(locale))
             for substr in titles:
-                assert substr in doc('.questions section .content h2 a').text()
+                assert substr in doc('.forum--question-item-heading a').text()
 
         # en-US and pt-BR are both in AAQ_LANGUAGES, so should be filtered.
         sub_test('en-US', 'cupcakes?', 'donuts?')

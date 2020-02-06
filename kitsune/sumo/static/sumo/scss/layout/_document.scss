@@ -44,9 +44,24 @@
 // Weight: 21
 //
 // Style guide: footer
+
 .document-vote {
   border-radius: 36px;
   padding: p.$spacing-md p.$spacing-lg;
+
+  &.is-forum-answer {
+    padding: p.$spacing-sm p.$spacing-lg;
+
+    .document-vote--form {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .document-vote--heading {
+      font-weight: normal;
+      margin: 0;
+    }
+  }
 
   &--form {
     display: flex;
@@ -110,9 +125,26 @@
       color: transparent;
     }
 
-    &:hover {
+    &:not([disabled]):hover {
       transform: scale(1.2);
     }
+
+    &[disabled] {
+      opacity: 1;
+      cursor: default;
+      color: var(--color-heading);
+
+      .emoji {
+        opacity: 0.5;
+      }
+    }
+
+    .helpful-count {
+      display: inline-flex;
+      @include c.text-body-md;
+      transform: translateY(-3px);
+    }
+
   }
 
   @media #{p.$mq-md} {
