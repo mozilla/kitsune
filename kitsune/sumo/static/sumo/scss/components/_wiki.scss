@@ -579,20 +579,7 @@ textarea[name="content"] {
     height: 500px;
 }
 
-.editor {
-    padding: 0;
-}
-
-.html-rtl {
-  .editor {
-    float: right;
-  }
-}
-
 #preview {
-  margin: 20px 0 0;
-  position: relative;
-
   .showfor {
     background: #fff;
     border-radius: 10px;
@@ -787,12 +774,6 @@ div.localized {
     textarea {
       resize: none;
     }
-  }
-
-  .editor {
-    margin: 10px 0 0;
-    padding: 0;
-    width: 100%;
   }
 
   #content-or-diff {

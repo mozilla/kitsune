@@ -742,9 +742,9 @@
             '</div>' +
             '</div>' +
             '</div>' +
-            '<div class="placeholder" /><div class="submit" id="response-submit-area">' +
-            '<button id="insert-response" class="btn btn-important">' + gettext('Insert Response') + '</button>' +
-            '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') + '</a>' +
+            '<div class="placeholder" /><div class="submit sumo-button-row" id="response-submit-area">' +
+            '<button id="insert-response" class="sumo-button primary-button">' + gettext('Insert Response') + '</button>' +
+            '<a href="#cancel" class="sumo-button secondary-button kbox-cancel">' + gettext('Cancel') + '</a>' +
             '</div>' +
             '</section>'
         ),

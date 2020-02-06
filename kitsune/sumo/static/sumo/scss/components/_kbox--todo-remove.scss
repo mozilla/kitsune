@@ -1,3 +1,6 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
 // This component should be replaced with Protocol's modal system, because
 // it doesn't make sense to include two of them. However, this plugin is doing
 // some things with ajax in questions.js that I'm unclear on how to replace.
@@ -37,7 +40,7 @@
   &:visited,
   &:active,
   &:hover {
-    color: @textLightGrey;
+    color: var(--color-heading);
     text-decoration: none;
   }
 }
@@ -50,9 +53,10 @@
 }
 
 .kbox-title {
+  @include c.text-display-sm;
+  font-weight: bold;
+  color: var(--color-heading);
   display: block;
-  font-family: @OpenSansLight;
-  font-size: 30px;
   margin: 0;
   padding: 10px 25px 0;
 }
@@ -62,10 +66,8 @@
 }
 
 #kbox-overlay {
-  background: #000;
+  background: rgba(0, 0, 0, 0.3);
   height: 100%;
-  opacity: 0.3;
-  filter: alpha(opacity=30);
   left: 0;
   position: fixed;
   top: 0;

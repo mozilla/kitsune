@@ -80,7 +80,7 @@
       {% if user.is_authenticated() and not thread.is_locked %}
         <form id="post-a-reply" action="{{ url('wiki.discuss.reply', document.slug, thread.id)|urlparams(hash='post-a-reply') }}" method="post">
           {% csrf_token %}
-          <h3 id="thread-reply-title">{{ _('Post a reply') }}</h3>
+          <h3 class="text-display-sm" id="thread-reply-title">{{ _('Post a reply') }}</h3>
           {{ errorlist(form) }}
 
           {% if request.limited %}

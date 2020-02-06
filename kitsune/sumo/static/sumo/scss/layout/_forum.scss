@@ -181,16 +181,44 @@
     }
   }
 
+  // for tags with a 'remove' button, add .tag to the LI
+  li.tag,
   a {
     @include c.text-body-xs;
     display: flex;
+    align-items: center;
     padding: 4px 16px;
     text-decoration: none;
     color: var(--color-text);
     background-color: var(--color-light-gray-03);
     border-radius: 20px;
     white-space: nowrap;
+
+    &.tag-name {
+      display: inline;
+      padding: 0;
+      margin-right: 8px;
+    }
   }
+
+  .remover {
+    @include c.text-body-md;
+    color: var(--color-text-light);
+    line-height: 1;
+    appearance: none;
+    background: transparent;
+    padding: 0;
+    margin: -2px -4px 0 0;
+    border: 0 none;
+
+    &:hover {
+      color: var(--color-error);
+    }
+  }
+
+
+
+
 }
 
 // truncate text UI, ported from old system
@@ -247,7 +275,6 @@
       (margin, 0 0 0 32px, 0 32px 0 0),
     ));
     white-space: nowrap;
-
   }
 }
 
@@ -281,5 +308,120 @@
   &,
   .user time {
     @include c.text-body-sm;
+  }
+}
+
+.question-details {
+  .sumo-button-wrap,
+  select {
+    display: none;
+  }
+
+
+  &.editing {
+    select {
+      display: block;
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+
+    .detail {
+      display: none;
+    }
+
+    #details-submit {
+      display: block;
+    }
+
+    #details-edit {
+      display: none;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+.attachments-upload,
+.ans-attachments {
+  .adding-attachment {
+    display: none;
+  }
+
+  .empty,
+  .upload-progress {
+    display: none;
+  }
+
+  .attachment {
+    display: inline-block;
+    position: relative;
+
+    .overlay {
+      background: #ccc url('../img/wait-trans.gif') no-repeat center;
+      bottom: 5px;
+      left: 5px;
+      opacity: .5;
+      position: absolute;
+      right: 5px;
+      top: 5px;
+    }
+
+    img {
+      background: url('../img/wait-trans.gif') no-repeat center;
+      margin: 5px;
+      text-align: center;
+      vertical-align: top;
+    }
+
+    input.delete {
+      background: #000;
+      border: 2px solid #fff;
+      border-radius: 1em;
+      color: #fff;
+      cursor: pointer;
+      display: none;
+      font-family: Verdana;
+      font-weight: bold;
+      opacity: .5;
+      padding: 0 .2em;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    &:hover input.delete {
+      display: block;
+    }
+  }
+
+  .upload-progress {
+    background: url('../img/wait-trans.gif') no-repeat center;
+    border: 1px solid #ccc;
+    margin: 5px;
+    text-align: center;
+    vertical-align: top;
+
+    &.show {
+      display: inline-block;
+    }
+  }
+
+  input.image-delete {
+    margin-top: 1em;
+  }
+
+  img {
+    max-height: 120px;
+    max-width: 120px;
   }
 }
