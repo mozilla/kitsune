@@ -470,6 +470,25 @@ products = OrderedDict([
             }),
         ])
     }),
+    ('product-test-aaq', {
+        'name': _lazy(u'Testing AAQ without displayed product'),
+        'subtitle': _lazy(u'Product test aaq'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'product-test-aaq',
+        'categories': OrderedDict([
+            ('technical', {
+                'name': _lazy(u'Technical'),
+                'topic': 'technical',
+                'tags': ['technical'],
+            }),
+            ('Troubleshooting', {
+                'name': _lazy(u'Troubleshooting'),
+                'topic': 'troubleshooting',
+                'tags': ['troubleshooting'],
+            }),
+        ])
+    }),
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
