@@ -14,3 +14,40 @@
     border-radius: 50%;
   }
 }
+
+.media-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  li {
+    width: 200px;
+    height: 200px;
+
+    a {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+    }
+  }
+
+  img {
+    max-width: 184px;
+    max-height: 184px;
+  }
+}
+
+.media-search {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.media-filters {
+  display: flex;
+  justify-content: space-between;
+
+  > * {
+    width: 48%;
+  }
+}
