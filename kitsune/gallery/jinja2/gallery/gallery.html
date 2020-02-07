@@ -7,52 +7,73 @@
 {% set scripts = ('wiki', 'gallery') %}
 {% set crumbs = [(None, _('Media Gallery'))] %}
 
-{% block above_main %}
-  {% if user.is_authenticated() %}
-    <a id="btn-upload" class="btn btn-submit" href="#">{{ _('Upload a New Media File') }}</a>
-  {% endif %}
-  <h1>{{ _('Media Gallery') }}</h1>
-{% endblock %}
+{% block contentwrap %}
 
-{% block content %}
-  <div class="cf">
-    <div class="grid_6">
-      <form action="{{ url('gallery.search', media_type=media_type) }}" method="get" class="simple-search-form" id="gallery-search">
-        <input class="searchbox" type="search" autocomplete="off" name="q" required="required" placeholder="{{ _('Search Gallery') }}" />
-        <button class="submit-button" title="{{ _('Search') }}" type="submit">
-        </button>
-      </form>
-    </div>
-
-    <div class="grid_6">
-      <div id="locale-filter">
-        <form action="#" method="get">
-          <label for="select-locale">{{ _('Show media for:') }}</label>
-          <select id="select-locale" name="lang" class="autosubmit">
-            {% for lang in settings.LANGUAGE_CHOICES %}
-              <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
-            {% endfor %}
-          </select>
-          <noscript>
-            <input type="submit" value="{{ _('Go') }}">
-          </noscript>
-        </form>
+<section class="sumo-page-section--lg shade-bg">
+  <div class="mzp-l-content">
+    {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
+      <div class="sumo-l-two-col--main">
+        <h1 class="text-display-lg no-logo">
+          <span class="product-title-text">{{ _('Media Gallery') }}</span>
+        </h1>
       </div>
-
-      <div id="media-type-filter">
-        <span>{{ _("Show:") }}</span>
-        <select id="media-type-select">
-          <option {% if media_type == 'image' %}selected="selected"{% endif %} value="{{ url('gallery.gallery', 'image') }}">{{ _('Images') }}</option>
-          <option {% if media_type == 'video' %}selected="selected"{% endif %} value="{{ url('gallery.gallery', 'video') }}">{{ _('Videos') }}</option>
-        </select>
-        <noscript>
-          <a href="{{ url('gallery.gallery', 'image') }}">{{ _('Images') }}</a> |
-          <a href="{{ url('gallery.gallery', 'video') }}">{{ _('Videos') }}</a>
-        </noscript>
+      <div class="sumo-l-two-col--sidebar forum--masthead-cta">
+        {% if user.is_authenticated() %}
+          <a id="btn-upload" class="sumo-button primary-button" href="#">{{ _('Upload a New Media File') }}</a>
+        {% endif %}
       </div>
     </div>
   </div>
+</section>
 
+<section class="sumo-page-section">
+  <div class="mzp-l-content">
+    <div class="sumo-l-two-col sidebar-on-right contributors">
+      <div class="sumo-l-two-col--one-half">
+        <form action="{{ url('gallery.search', media_type=media_type) }}" method="get" class="media-search simple-search-form" id="gallery-search">
+          <input class="searchbox" type="search" autocomplete="off" name="q" required="required" placeholder="{{ _('Search Gallery') }}" />
+          <button class="submit-button search-button" title="{{ _('Search') }}" type="submit">{{ _('Search') }}
+          </button>
+        </form>
+      </div>
+      <div class="sumo-l-two-col--one-half">
+        <div class="media-filters">
+          <div id="locale-filter">
+            <form action="#" method="get">
+              <div class="field">
+                <label for="select-locale">{{ _('Show media for:') }}</label>
+                <select id="select-locale" name="lang" class="autosubmit">
+                  {% for lang in settings.LANGUAGE_CHOICES %}
+                    <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
+                  {% endfor %}
+                </select>
+                <noscript>
+                  <input type="submit" value="{{ _('Go') }}">
+                </noscript>
+              </div>
+            </form>
+          </div>
+
+          <div id="media-type-filter" class="field">
+            <label>{{ _("Show:") }}</label>
+            <select id="media-type-select">
+              <option {% if media_type == 'image' %}selected="selected"{% endif %} value="{{ url('gallery.gallery', 'image') }}">{{ _('Images') }}</option>
+              <option {% if media_type == 'video' %}selected="selected"{% endif %} value="{{ url('gallery.gallery', 'video') }}">{{ _('Videos') }}</option>
+            </select>
+            <noscript>
+              <a href="{{ url('gallery.gallery', 'image') }}">{{ _('Images') }}</a> |
+              <a href="{{ url('gallery.gallery', 'video') }}">{{ _('Videos') }}</a>
+            </noscript>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sumo-page-section">
+  <div class="mzp-l-content">
   {% with media_list=media %}
     {% include 'gallery/includes/media_list.html' %}
   {% endwith %}
@@ -60,4 +81,6 @@
   {% if user.is_authenticated() %}
     {% include 'gallery/includes/upload_media_form.html' %}
   {% endif %}
+  </div>
+</section>
 {% endblock %}

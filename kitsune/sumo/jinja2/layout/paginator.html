@@ -3,7 +3,12 @@
   {% if pager.has_previous() %}
     <li class="prev">
       <a class="btn-page btn-page-prev" href="{{ pager.url|urlparams(page=pager.previous_page_number()) }}">
-        {{ _('Previous') }}
+        <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                <polyline stroke="currentColor" stroke-width="2" points="15 5 8 12 15 19"></polyline>
+            </g>
+        </svg>
+        <span class="sr-only">{{ _('Previous') }}</span>
       </a>
     </li>
   {% endif %}
@@ -27,7 +32,12 @@
   {% if pager.has_next() %}
     <li class="next">
       <a class="btn-page btn-page-next" href="{{ pager.url|urlparams(page=pager.next_page_number()) }}">
-        {{ _('Next') }}
+        <span class="sr-only">{{ _('Next') }}</span>
+        <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                <polyline stroke="currentColor" stroke-width="2" points="9 19 16 12 9 5"></polyline>
+            </g>
+        </svg>
       </a>
     </li>
   {% endif %}

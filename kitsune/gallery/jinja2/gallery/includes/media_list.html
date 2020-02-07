@@ -1,5 +1,5 @@
 {% if media_list.object_list %}
-  <ol id="media-list" class="cf">
+  <ol id="media-list" class="media-list">
     {% for m in media_list.object_list %}
       <li>
         <a href="{{ m.get_absolute_url() }}" title="{{ m.title }}">
@@ -8,11 +8,9 @@
       </li>
     {% endfor %}
   </ol>
-  <div class="grid_12">
-    {{ media_list|paginator }}
-  </div>
+
+  {{ media_list|paginator }}
+
 {% else %}
-  <div class="grid_12">
-    <p>{{ _('No media files found.') }}</p>
-  </div>
+  <p>{{ _('No media files found.') }}</p>
 {% endif %}

@@ -61,6 +61,10 @@
 
 .kbox-wrap {
   padding: 32px;
+
+  .hide-until-expanded {
+    display: block;
+  }
 }
 
 #kbox-overlay {
@@ -71,4 +75,11 @@
   top: 0;
   width: 100%;
   z-index: 98;
+}
+
+#upload-kbox {
+  left: 50%;
+  margin-left: -290px;
+  top: 150px;
+  width: 580px;
 }
