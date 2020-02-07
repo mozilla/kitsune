@@ -19,8 +19,6 @@ from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.encoding import iri_to_uri, smart_bytes, smart_text
-import commonware.middleware
-import commonware.request.middleware
 from mozilla_django_oidc.middleware import SessionRefresh
 from enforce_host import EnforceHostMiddleware
 
@@ -282,6 +280,7 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
             patch_vary_headers(response, ['User-Agent'])
             return response
 
+
 class InAAQMiddleware(MiddlewareMixin):
     """
     Middleware that updates session's keys based on the view used.
@@ -311,15 +310,3 @@ class InAAQMiddleware(MiddlewareMixin):
             if '/questions/new' not in request.META.get('HTTP_REFERER', ''):
                 request.session['product_key'] = ''
         return None
-
-
-class SetRemoteAddrFromForwardedFor(MiddlewareMixin, commonware.request.middleware.SetRemoteAddrFromForwardedFor):
-    pass
-
-
-class ScrubRequestOnException(MiddlewareMixin, commonware.middleware.ScrubRequestOnException):
-    pass
-
-
-class RobotsTagHeader(MiddlewareMixin, commonware.middleware.RobotsTagHeader):
-    pass
