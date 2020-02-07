@@ -280,7 +280,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('form.helpful input[name="helpful"]')))
+        eq_(1, len(doc('form.helpful button[name="helpful"]')))
 
         # Vote
         ua = 'Mozilla/5.0 (DjangoTestClient)'
@@ -326,7 +326,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         Answer.objects.create(question=q, creator=q.creator, content='test')
         response = get(self.client, 'questions.details', args=[q.id])
         doc = pq(response.content)
-        eq_(2, len(doc('form.helpful input[name="helpful"]')))
+        eq_(2, len(doc('form.helpful button[name="helpful"]')))
 
     def test_asker_can_vote(self):
         """The asker can vote Not/Helpful."""
@@ -489,7 +489,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc('ol.answers li.edit')))
+        eq_(0, len(doc('ul.mzp-c-menu-list-list li.edit')))
 
         # Add an answer and verify the edit link shows up
         content = 'lorem ipsum dolor sit amet'
@@ -499,7 +499,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(1, len(doc('li.edit')))
         new_answer = self.question.answers.order_by('-id')[0]
-        eq_(1, len(doc('#answer-%s + div li.edit' % new_answer.id)))
+        eq_(1, len(doc('#answer-%s li.edit' % new_answer.id)))
 
         # Make sure it can be edited
         content = 'New content for answer'
