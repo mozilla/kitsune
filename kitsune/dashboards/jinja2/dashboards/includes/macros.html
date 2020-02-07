@@ -210,6 +210,7 @@
 <div class="mzp-c-menu-list featured-dropdown">
   <h3 class="mzp-c-menu-list-title has-icon text-display-sm" data-has-dropdown>
     {% if current == None %}
+    <img src="{{ STATIC_URL }}sumo/img/sumo-icon-small.png" class="icon-md" alt="All Products logo" />
     {{ _('All Products') }}
     {% else %}
     <img src="{{ current.image_url }}" class="icon-md" alt="{{ current.title }} logo" />
@@ -217,6 +218,13 @@
     {% endif %}
   </h3>
   <ul class="mzp-c-menu-list-list">
+    <li class="mzp-c-menu-list-item {% if current == None %}is-selected{% endif %}">
+      <a class="has-icon" href="{{ request.path }}">
+        <img src="{{ STATIC_URL }}sumo/img/sumo-icon-small.png" class="icon-md" alt="" />
+        <span>{{ _('All Products') }}</span>
+      </a>
+    </li>
+
     {% for p in products %}
     <li class="mzp-c-menu-list-item {% if current == p %}is-selected{% endif %}">
       <a class="has-icon" href="{{ url_|urlparams(product=p.slug, category=category) }}">

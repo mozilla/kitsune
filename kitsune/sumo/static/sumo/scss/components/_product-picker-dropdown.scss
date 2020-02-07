@@ -23,3 +23,17 @@
     @include c.text-body-lg;
   }
 }
+
+
+.mzp-c-menu-list-list {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.contributor-filters {
+  display: flex;
+
+  .mzp-c-menu-list {
+    margin-right: 32px;
+  }
+}
