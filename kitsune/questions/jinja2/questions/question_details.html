@@ -131,13 +131,14 @@
             </span>
           </div>
         </div>
+
         <div class="mzp-c-menu-list">
           <span class="icon-button" data-has-dropdown>more options</span>
           <ul class="mzp-c-menu-list-list">
             {% if question.allows_flag(user) %}
             <li class="mzp-c-menu-list-item">{{ flag_form(url('questions.flag', question.id)) }}</li>
-            <li class="mzp-c-menu-list-item"><a class="quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Quote') }}</a></li>
             {% endif %}
+            <li class="mzp-c-menu-list-item"><a class="quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Quote') }}</a></li>
           </ul>
         </div>
       </section>
@@ -275,6 +276,10 @@
 {% endblock content %}
 
 {% block side %}
+<div class="search-form-sidebar large-only">
+  {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
+</div>
+
 <div class="questions-sidebar">
   <nav class="sidebar-nav is-action-list" id="question-tools">
     <span class="details-heading"></span>
@@ -292,7 +297,6 @@
       </li>
       {% endfor %}
       {% endif %}
-
 
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Question Tools') }}</li>
       {% if question.allows_edit(user) %}

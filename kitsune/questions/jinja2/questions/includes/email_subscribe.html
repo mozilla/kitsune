@@ -12,12 +12,20 @@
     </div>
     {% endif %}
 
-    <div class="field">
-    {{ watch_form.event_type|safe }}
-    </div>
+    {# This is hard-coded to get correct radio layout {{ watch_form.event_type|safe }} #}
+    <ul id="id_event_type">
+      <li class="field radio is-condensed">
+        <input type="radio" name="event_type" value="reply" required="" checked="" id="id_event_type_0">
+        <label for="id_event_type_0">when anybody replies.</label>
+      </li>
+      <li class="field radio is-condensed">
+        <input type="radio" name="event_type" value="solution" required="" id="id_event_type_1">
+        <label for="id_event_type_1">when a solution is found.</label>
+      </li>
+    </ul>
 
     <div class="sumo-button-wrap">
-      <input type="submit" class="sumo-button primary-button" value="{{ _('Send Updates') }}" />
+      <input type="submit" class="sumo-button primary-button button-lg" value="{{ _('Send Updates') }}" />
     <span class="cancel">
       <a class="kbox-cancel" href="{{ question.get_absolute_url() }}">{{ _('Cancel') }}</a>
     </span>

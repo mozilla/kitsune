@@ -174,31 +174,24 @@
   margin: 0;
 
   li {
+    display: flex;
+    align-items: center;
+    padding: 4px 16px;
     margin: 0 8px 8px 0;
+    background-color: var(--color-light-gray-03);
+    border-radius: 20px;
+    white-space: nowrap;
 
     &:last-child {
       margin-right: 0;
     }
   }
 
-  // for tags with a 'remove' button, add .tag to the LI
-  li.tag,
   a {
     @include c.text-body-xs;
-    display: flex;
-    align-items: center;
-    padding: 4px 16px;
-    text-decoration: none;
     color: var(--color-text);
-    background-color: var(--color-light-gray-03);
-    border-radius: 20px;
-    white-space: nowrap;
-
-    &.tag-name {
-      display: inline;
-      padding: 0;
-      margin-right: 8px;
-    }
+    text-decoration: none;
+    padding: 0;
   }
 
   .remover {
@@ -208,17 +201,13 @@
     appearance: none;
     background: transparent;
     padding: 0;
-    margin: -2px -4px 0 0;
+    margin: -2px -4px 0 8px;
     border: 0 none;
 
     &:hover {
       color: var(--color-error);
     }
   }
-
-
-
-
 }
 
 // truncate text UI, ported from old system
