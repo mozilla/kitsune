@@ -69,6 +69,8 @@
     "eslint": "1.10.3",
     "jsdom": "7.0.2",
     "kss": "^3.0.0-beta.25",
+    "less": "~3.10.3",
+    "less-plugin-autoprefix": "1.4.2",
     "mocha": "2.3.2",
     "mocha-jsdom": "1.1.0",
     "@mozilla-protocol/core": "10.0.1",
