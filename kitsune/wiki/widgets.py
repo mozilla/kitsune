@@ -10,7 +10,7 @@ from kitsune.wiki.models import Document
 class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     """A widget to render topics organized by product and with subtopics."""
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         topics_and_subtopics = Topic.objects.all()
         topics = [t for t in topics_and_subtopics if t.parent_id is None]
 
@@ -44,7 +44,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
 class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
     """A widget to render the related documents list and search field."""
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if isinstance(value, int):
             related_documents = Document.objects.filter(id__in=[value])
         elif not isinstance(value, str) and isinstance(value, collections.Iterable):
