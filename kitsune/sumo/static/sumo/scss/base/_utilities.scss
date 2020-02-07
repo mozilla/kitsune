@@ -53,6 +53,10 @@
   }
 }
 
+.hide-until-expanded {
+  display: none;
+}
+
 .hidden,
 .is-hidden {
   display: none !important;

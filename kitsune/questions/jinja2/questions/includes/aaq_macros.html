@@ -9,7 +9,7 @@
   <div id="aaq_progress" class="cf">
     <div class="progress-bar{% if percent == 100 %} complete{% endif %}">
       <div style="width: {{ percent }}%;"></div>
-      <ul class="legend">
+      <ul class="legend mzp-u-list-styled">
         {% for step_name in steps %}
           <li {% if steps.index(step_name) == step %}class="current"{% endif %}><span>{{ step_name }}</span></li>
         {% endfor %}
@@ -56,8 +56,8 @@
 
 {% macro select_category(product) -%}
   <div class="highlight-box">
-    <h2>{{ _('Which category best describes your problem?') }}</h2>
-    <ul class="select-one">
+    <h2 class="text-display-lg">{{ _('Which category best describes your problem?') }}</h2>
+    <ul class="select-one mzp-u-list-styled">
       {% for key, category in product.categories.iteritems() %}
         <li>
           <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}"
@@ -83,9 +83,9 @@
 {% macro current_articles_and_message(articles, category, html=None, all_articles=False) -%}
   <div class="highlight-box" id="try-an-article">
     {% if html %}
-      <h2>{{ html|safe }}</h2>
+      <h2 class="text-display-sm">{{ html|safe }}</h2>
     {% else %}
-      <h2>{{ _('Try one of these articles:') }}</h2>
+      <h2 class="text-display-sm">{{ _('Try one of these articles:') }}</h2>
     {% endif %}
     {% if articles %}
       <ul class="topic-list">
@@ -175,10 +175,10 @@
 
 {% macro troubleshooting_instructions(field) %}
   <div id="addon-section">
-    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="add-troubleshooting-info">
+    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="sumo-button primary-button" id="add-troubleshooting-info">
       {{ _('Automatically add') }}
     </a>
-    <p class="help-text">{{ field.help_text|safe }}</p>
+    <p>{{ field.help_text|safe }}</p>
     <p id="troubleshooting-manual">
       {% trans url='#troubleshooting-help,#troubleshooting-field' %}
         A window will open in the top corner. Click Allow, and then click
@@ -186,16 +186,17 @@
         <a class="expander" href="{{ url }}">try these manual steps</a>.
       {% endtrans %}
     </p>
-    <ol id="troubleshooting-help">
+    <div class="card is-shaded hide-until-expanded" id="troubleshooting-help">
+    <ol class="mzp-u-list-styled">
       <li>{{ _('Open <em>Help &gt; Troubleshooting Information</em>.') }}
-        <ul>
+        <ul class="mzp-u-list-styled">
           <li>{{ _('Look at the top of your screen, and click the menu item called <em>Help</em>.') }}</li>
           <li>{{ _('A small box will open. Click on an item called <em>Troubleshooting Information</em>.') }}</li>
         </ul>
       </li>
       <li>{{ _('A new window will open. Click on a button called <em>Copy text to clipboard</em>.') }}</li>
       <li>{{ _('Paste the info in the text box below.') }}
-        <ul>
+        <ul class="mzp-u-list-styled">
           <li>{{ _('Click on the empty box above this text.') }}</li>
           <li>{{ _('Look at the top of your screen, and click the menu item called <em>Edit</em>.') }}</li>
           <li>
@@ -208,9 +209,10 @@
         </ul>
       </li>
     </ol>
+    </div>
   </div>
   <div id="api-section">
-    <a href="#" class="btn btn-important" id="share-data">
+    <a href="#" class="sumo-button primary-button" id="share-data">
       {{ _('Share Data') }}
     </a>
     <p class="help-text">{{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}</p>
@@ -219,7 +221,7 @@
     {{ _('This field was populated automatically.') }}
     <a href="#troubleshooting-field" class="expander">{{ _('See the data') }}</a>.
   </p>
-  <p id="troubleshooting-field">
+  <div id="troubleshooting-field" class="hide-until-expanded field">
     {{ field }}
-  </p>
+  </div>
 {% endmacro %}

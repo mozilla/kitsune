@@ -93,8 +93,8 @@
           {% endif %}
 
           {% if question.last_answer %}
-          <dd class="forum--meta-key">{{ _('Last reply by') }}</dd>
-          <dt class="forum--meta-val visits">
+          <dd class="forum--meta-key has-border">{{ _('Last reply by') }}</dd>
+          <dt class="forum--meta-val visits no-border">
             <a href="{{ question.last_answer.get_absolute_url() }}">
               {{ display_name(question.last_answer.creator) }}
             </a>
@@ -167,11 +167,11 @@
         {% if question.solution %}
           {% set solver = question.solver %}
           <div class="solution">
-            <h3{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>{{ _('Chosen solution') }}</h3>
+            <h3 class="is-solution" {% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>{{ _('Chosen solution') }}</h3>
             <div class="reply">
               {{ question.solution.content_parsed|safe }}
               <a class="read-more" href="{{ question.solution.get_absolute_url() }}">{{ _('Read this answer in context') }}</a>
-              <span class="helpful-count">{{ question.solution.num_helpful_votes }}</span>
+              <strong class="helpful-count"> 👍 {{ question.solution.num_helpful_votes }}</strong>
             </div>
           </div>
         {% endif %}

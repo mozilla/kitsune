@@ -13,8 +13,6 @@
 
 .kbox-container {
   background: #fff;
-  border-radius: 7px;
-  box-shadow: 1px 2px 15px #aaa;
   display: none;
   font-size: 14px;
   position: absolute;
@@ -58,15 +56,15 @@
   color: var(--color-heading);
   display: block;
   margin: 0;
-  padding: 10px 25px 0;
+  padding: 32px 32px 0;
 }
 
 .kbox-wrap {
-  padding: 10px 25px;
+  padding: 32px;
 }
 
 #kbox-overlay {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.85);
   height: 100%;
   left: 0;
   position: fixed;

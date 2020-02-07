@@ -121,6 +121,10 @@ label {
   }
 }
 
+.form-as-ul.full-width > li {
+  max-width: 100%;
+}
+
 input[type='email'],
 input[type='url'],
 input[type='tel'],

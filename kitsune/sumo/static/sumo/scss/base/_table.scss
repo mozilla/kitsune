@@ -140,3 +140,35 @@ table {
     }
   }
 }
+
+// These are used at /contributors
+.table-filters {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 20px;
+
+  .sumo-button {
+    margin: 16px 0 0 0;
+  }
+
+  .field {
+    margin: 0;
+  }
+
+  @media #{p.$mq-md} {
+    margin-bottom: 32px;
+  }
+}
+
+
+td.needs-update.yes,
+td.stale.yes {
+  background: var(--color-yellow-03);
+}
+
+td.status,
+td.ready-for-l10n.yes {
+  background: var(--color-green-03);
+}
