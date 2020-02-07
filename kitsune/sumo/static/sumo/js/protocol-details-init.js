@@ -36,7 +36,7 @@ function detailsInit() {
 
   // built for quote dropdowns in forum pages –
   // this is a global selector to always show dropdowns
-  var forumDropdown = '[data-has-dropdown]';
+  var forumDropdown = document.querySelector('[data-has-dropdown]');
   if ( forumDropdown ) {
     window.Mzp.Details.init('[data-has-dropdown]');
   }
