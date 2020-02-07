@@ -2,9 +2,9 @@
 <article class="topic-article {{ result.type }}">
   <div class="topic-article--icon-wrap">
     {% if result.type == 'document' %}
-    <img class="topic-article--icon" src="{{ STATIC_URL }}protocol/img/icons/reader-mode.svg" alt="">
+    <img class="topic-article--icon" src="/static/protocol/img/icons/reader-mode.svg" alt="">
     {% elif result.type == 'question' %}
-    <img class="topic-article--icon" src="{{ STATIC_URL}}protocol/img/icons/document.svg" alt="">
+    <img class="topic-article--icon" src="/static/protocol/img/icons/blog.svg" alt="">
     {% endif %}
   </div>
   <div class="topic-article--text">

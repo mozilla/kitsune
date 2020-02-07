@@ -33,13 +33,32 @@
     border-left: 1px solid var(--color-border);
     font-weight: bold;
 
+
+    &.no-border,
     &:first-child {
       border-left: 0 none;
+    }
+
+    &:first-child {
+      @include p.bidi((
+        (padding-left, 0, 8px),
+        (padding-right, 8px, 0),
+      ));
     }
   }
 
   dd {
-    padding: 0 8px 0 0;
+    @include p.bidi((
+      (padding, 0 8px 0 0, 0 0 0 8px),
+    ));
+
+    &.has-border {
+      border-left: 1px solid var(--color-border);
+      @include p.bidi((
+        (padding-right, 0, 8px),
+        (padding-left, 8px, 0),
+      ));
+    }
 
     &:last-child {
       padding-right: 0;

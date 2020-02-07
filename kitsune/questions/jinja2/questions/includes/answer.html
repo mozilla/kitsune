@@ -51,12 +51,12 @@
         </li>
         {% endif %}
         {% if answer.id and answer.allows_edit(user, question) %}
-          <li class="edit">
+          <li class="mzp-c-menu-list-item edit">
             <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
           </li>
         {% endif %}
         {% if answer.id and answer.allows_delete(user) %}
-          <li class="delete">
+          <li class="mzp-c-menu-list-item delete">
             <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
           </li>
         {% endif %}

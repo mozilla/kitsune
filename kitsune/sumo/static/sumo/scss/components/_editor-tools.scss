@@ -111,8 +111,14 @@ button {
   width: 480px;
 
   h2 {
-    font-size: 16px;
-    margin: 10px 0 0;
+    @include c.text-body-lg;
+  }
+
+  h4,
+  .category-list {
+    @include c.text-body-md;
+    font-weight: normal;
+    color: var(--color-text);
   }
 }
 
@@ -284,8 +290,8 @@ section.marky {
   }
 
   div.submit {
-    bottom: 15px;
-    left: 15px;
+    bottom: 32px;
+    left: 32px;
     position: absolute;
   }
 
@@ -294,11 +300,7 @@ section.marky {
   }
 
   .searchbox {
-    width: 630px;
-  }
-
-  .kbox-wrap {
-    padding: 10px 25px
+    margin-bottom: 40px;
   }
 }
 
