@@ -16,8 +16,8 @@ from django.http import (HttpResponse, HttpResponseForbidden,
 from django.http.request import split_domain_port
 from django.shortcuts import render
 from django.utils import translation
-from django.utils.cache import (add_never_cache_headers,
-                                patch_response_headers, patch_vary_headers)
+from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
+from django.utils.deprecation import MiddlewareMixin
 from django.utils.encoding import iri_to_uri, smart_bytes, smart_text
 import commonware.middleware
 import commonware.request.middleware
@@ -27,11 +27,6 @@ from enforce_host import EnforceHostMiddleware
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
 from kitsune.sumo.views import handle403
-
-try:
-    from django.utils.deprecation import MiddlewareMixin
-except ImportError:
-    MiddlewareMixin = object
 
 
 class EnforceHostIPMiddleware(EnforceHostMiddleware):
