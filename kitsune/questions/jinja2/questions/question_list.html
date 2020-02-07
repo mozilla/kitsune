@@ -176,14 +176,14 @@
                   <ul class="tag-list push-right">
                   {% if question.topic %}
                     {% set topic = question.topic %}
-                    <li>
-                      <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
+                    <li class="tag">
+                      <a class="tag-name" href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
                         {{ pgettext('DB: products.Product.title', topic.product.title) }}
                       </a>
                     </li>
                   {% endif %}
                   {% for tag in tags %}
-                    <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
+                    <li class="tag"><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
                   {% endfor %}
                   </ul>
 
