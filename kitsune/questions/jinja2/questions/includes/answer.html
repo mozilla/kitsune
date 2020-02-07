@@ -49,8 +49,16 @@
           {% endif %}
         </li>
         {% endif %}
-
-
+        {% if answer.id and answer.allows_edit(user, question) %}
+          <li>
+            <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
+          </li>
+        {% endif %}
+        {% if answer.id and answer.allows_delete(user) %}
+          <li class="delete">
+            <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
+          </li>
+        {% endif %}
       </ul>
     </div>
   </section>
@@ -120,47 +128,35 @@
 </div>
 
 
-  {% if answer.id %}
+
   {# answer.id is None when previewing #}
+  {% if not question.solution and question.allows_solve(user) %}
   <aside class="answer--tools">
-    {% if question.editable %}
     <div class="answer--tools-form">
-      {% if not question.solution and question.allows_solve(user) %}
       <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
         {% csrf_token %}
         {% if user == question.creator %}
           <p class="text-body-sm title">{{ _('Did this reply solve your problem?') }}</p>
           <input type="submit" class="sumo-button secondary-button button-sm" name="solution" value="{{ _('Solved the problem') }}" />
         {% else %}
-          <span class="text-body-sm title">{{ _('Does this reply solve the problem?') }}</p>
+          <p class="text-body-sm title">{{ _('Does this reply solve the problem?') }}</p>
           <input type="submit" class="sumo-button secondary-button button-sm" name="solution" value="{{ _('Solves the problem') }}" />
         {% endif %}
       </form>
-      {% endif %}
+    </div>
+  </aside>
+  {% endif %}
 
-      {% if answer.id and question.solution == answer %}
-        <span class="title">{{ _('Solution chosen') }}</span>
-        {% if question.allows_unsolve(user) %}
-          <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
-            {% csrf_token %}
-            <input type="submit" name="unsolve" class="sumo-button secondary-button button-sm" value="{{ _('Undo') }}" />
-          </form>
-        {% endif %}
+  {% if answer.id and question.solution == answer %}
+  <aside class="answer--tools">
+    <div class="answer--tools-form">
+      <p class="text-body-sm title">{{ _('Solution chosen') }}</p>
+      {% if question.allows_unsolve(user) %}
+      <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
+        {% csrf_token %}
+        <input type="submit" name="unsolve" class="sumo-button secondary-button button-sm" value="{{ _('Undo') }}" />
+      </form>
       {% endif %}
     </div>
-    {% endif %}
-
-    <ul class="answer--tools-meta">
-      {% if answer.id and answer.allows_edit(user, question) %}
-        <li>
-          <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
-        </li>
-      {% endif %}
-      {% if answer.id and answer.allows_delete(user) %}
-        <li class="delete">
-          <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
-        </li>
-      {% endif %}
-    </ul>
   </aside>
   {% endif %}

@@ -324,6 +324,11 @@
       margin-bottom: 16px;
     }
 
+    .sumo-button-wrap {
+      display: block;
+      margin: -16px 0 16px;
+    }
+
     .detail {
       display: none;
     }
@@ -506,26 +511,6 @@
       display: flex;
     }
 
-  }
-
-  &--tools-meta {
-    display: flex;
-    @include c.text-body-sm;
-    margin: 0;
-    padding: 0;
-
-    li {
-      margin: 0 8px;
-
-      &:last-child {
-        margin-right: 0;
-      }
-    }
-
-    a {
-      color: var(--color-text);
-      text-decoration: none;
-    }
   }
 
   @media #{p.$mq-md} {

@@ -56,9 +56,6 @@ describe('instant search', () => {
       let content = (
         <div>
           <div id="main-content"/>
-          <aside id="aside"/>
-          <div id="main-breadcrumbs"/>
-
           <form data-instant-search="form" action="" method="get" className="simple-search-form">
             <input type="search" name="q" className="searchbox" id="search-q"/>
             <button type="submit" title="{{ _('Search') }}" className="submit-button">Search</button>
@@ -76,18 +73,14 @@ describe('instant search', () => {
     it('shows and hides the main content correctly', () => {
       const $searchInput = $('#search-q');
       expect($('#main-content').css('display')).to.not.equal('none');
-      expect($('#aside').css('display')).to.not.equal('none');
 
       $searchInput.val('test');
       $searchInput.keyup();
       expect($('#main-content').css('display')).to.equal('none');
-      expect($('#aside').css('display')).to.equal('none');
 
       $searchInput.val('');
       $searchInput.keyup();
       expect($('#main-content').css('display')).to.not.equal('none');
-      expect($('#main-breadcrumbs').css('display')).to.not.equal('none');
-      expect($('#aside').css('display')).to.not.equal('none');
     });
 
     it('shows the search query at the top of the page', () => {
