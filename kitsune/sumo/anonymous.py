@@ -27,13 +27,9 @@ import random
 import time
 
 from django.conf import settings
+from django.utils.deprecation import MiddlewareMixin
 from django.utils.http import cookie_date
 
-
-try:
-    from django.utils.deprecation import MiddlewareMixin
-except ImportError:
-    MiddlewareMixin = object
 
 # Use the system (hardware-based) random number generator if it exists.
 if hasattr(random, 'SystemRandom'):
