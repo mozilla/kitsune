@@ -492,7 +492,7 @@ MIDDLEWARE = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
-    'kitsune.sumo.middleware.SetRemoteAddrFromForwardedFor',
+    'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
     'kitsune.sumo.middleware.EnforceHostIPMiddleware',
 
     # VaryNoCacheMiddleware must be above LocaleURLMiddleware
@@ -536,10 +536,10 @@ MIDDLEWARE = (
     'kitsune.sumo.middleware.ReadOnlyMiddleware',
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
-    'kitsune.sumo.middleware.ScrubRequestOnException',
+    'commonware.middleware.ScrubRequestOnException',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
-    'kitsune.sumo.middleware.RobotsTagHeader',
+    'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
 )
 
