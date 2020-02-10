@@ -235,7 +235,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        assert '0\n' in doc('.have-problem')[0].text
+        assert '0' in doc('.have-problem')[0].text
         eq_(me_too_count, len(doc('div.me-too form')))
 
         # Vote
@@ -247,7 +247,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        assert '1\n' in doc('.have-problem')[0].text
+        assert '1' in doc('.have-problem')[0].text
         eq_(0, len(doc('div.me-too form')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -259,7 +259,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        assert '1\n' in doc('.have-problem')[0].text
+        assert '1' in doc('.have-problem')[0].text
 
     def test_question_authenticated_vote(self):
         """Authenticated user vote."""
