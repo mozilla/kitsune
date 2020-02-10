@@ -41,29 +41,28 @@ Configuring and Running
 
 We set some reasonable defaults for Celery in ``settings.py``. These can be
 overriden either in ``settings_local.py`` or via the command line when running
-``celery -A kitsune``.
+``celery -A kitsune worker``.
 
 In ``settings_local.py`` you should set at least this, if you want to use
 Celery::
 
-    CELERY_ALWAYS_EAGER = False
+    CELERY_TASK_ALWAYS_EAGER = False
 
 This defaults to ``True``, which causes all task processing to be done online.
 This lets you run Kitsune even if you don't have Redis or want to deal with
 running workers all the time.
 
-You can also configure the log level or concurrency. Here are the defaults::
+You can also configure the concurrency. Here is the default::
 
-    CELERYD_LOG_LEVEL = logging.INFO
-    CELERYD_CONCURRENCY = 4
+    CELERY_WORKER_CONCURRENCY = 4
 
 Then to start the Celery workers, you just need to run::
 
-    celery -A kitsune
+    celery -A kitsune worker
 
 This will start Celery with the default number of worker threads and the
 default logging level. You can change those with::
 
-    celery -A kitsune --log-level=DEBUG -c 10
+    celery -A kitsune worker --loglevel=DEBUG --concurrency=10
 
 This would start Celery with 10 worker threads and a log level of ``DEBUG``.
