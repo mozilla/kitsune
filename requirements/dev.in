@@ -1,18 +1,20 @@
 -r docs.in
 -r test.in
-appnope~=0.1.0
-argparse~=1.4.0
+appnope~=0.1
+argparse~=1.4
 django-cache-panel~=0.1
-django-debug-toolbar~=1.4
-django-sslserver~=0.16
-hashin~=0.13.4
-ipdb~=0.10.3
-jsonschema~=2.5.1
-pep8~=1.6.2
-pip-compile-multi~=1.5.8
-pip-tools~=4.4.1
-pre-commit~=1.21.0
-python-language-server~=0.31.7
+django-debug-toolbar~=2.2
+django-sslserver~=0.22
+hashin~=0.14
+ipdb~=0.12
+isort
+jsonschema~=2.5
+pep8
+pip-compile-multi~=1.5
+pip-tools~=4.4
+pre-commit~=1.21
+python-language-server
 q~=2.6
-tabulate~=0.7.5
+rope
+tabulate~=0.7
 urlwait~=0.4
