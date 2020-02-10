@@ -24,7 +24,7 @@ from kitsune.users.tests import UserFactory
 # expect a locale in reverse()d URLs. When firing off a celery task outside the
 # scope of a request, expect none.
 #
-# In production, with CELERY_ALWAYS_EAGER=False, celery tasks run in a
+# In production, with CELERY_TASK_ALWAYS_EAGER=False, celery tasks run in a
 # different interpreter (with no access to the thread-local), so reverse() will
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
