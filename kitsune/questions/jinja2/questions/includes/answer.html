@@ -28,7 +28,7 @@
         {% endif %}
       </div>
     </div>
-
+    {% if answer.id %}
     <div class="mzp-c-menu-list">
       <span class="icon-button" data-has-dropdown>more options</span>
       <ul class="mzp-c-menu-list-list">
@@ -62,6 +62,7 @@
         {% endif %}
       </ul>
     </div>
+    {% endif %}
   </section>
 
 
@@ -131,7 +132,7 @@
 
 
   {# answer.id is None when previewing #}
-  {% if not question.solution and question.allows_solve(user) %}
+  {% if answer.id and not question.solution and question.allows_solve(user) %}
   <aside class="answer--tools">
     <div class="answer--tools-form">
       <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">

@@ -283,9 +283,9 @@
 <div class="questions-sidebar">
   <nav class="sidebar-nav is-action-list" id="question-tools">
     <span class="details-heading"></span>
-    <ul class="sidebar-nav--list">
+    <ul class="sidebar-nav--list" id="related-content">
       {% if related_documents or related_questions %}
-      <li id="related-content" class="sidebar-subheading sidebar-nav--heading-item">{{ _('Related') }}</li>
+      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Related') }}</li>
       {% for q in related_questions %}
       <li class="related-question">
         <a href="{{ q.url[0] }}">{{ q.question_title[0] }}</a>
