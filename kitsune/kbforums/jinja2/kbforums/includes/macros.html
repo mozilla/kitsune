@@ -2,7 +2,7 @@
   <section class="warning-box">
     {% if not document.parent %}
       <p>
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
           {% trans title=document.title %}
             This forum is a discussion about improving the "{{ title }}" article.
           {% endtrans %}

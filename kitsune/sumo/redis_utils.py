@@ -41,7 +41,7 @@ def redis_client(name):
         host = server
         port = 6379
     redis = Redis(host=host, port=port, db=db, password=password,
-                  socket_timeout=socket_timeout)
+                  socket_timeout=socket_timeout, decode_responses=True)
     try:
         # Make a cheap call to verify we can connect.
         redis.exists('dummy-key')

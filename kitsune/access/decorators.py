@@ -55,7 +55,7 @@ def logout_required(redirect):
     """Requires that the user *not* be logged in."""
 
     def redirect_func(user):
-        return user.is_authenticated()
+        return user.is_authenticated
 
     if hasattr(redirect, '__call__'):
         return user_access_decorator(
@@ -71,10 +71,10 @@ def login_required(func, login_url=None, redirect=REDIRECT_FIELD_NAME,
     """Requires that the user is logged in."""
     if only_active:
         def redirect_func(user):
-            return not (user.is_authenticated() and user.is_active)
+            return not (user.is_authenticated and user.is_active)
     else:
         def redirect_func(user):
-            return not user.is_authenticated()
+            return not user.is_authenticated
     return user_access_decorator(redirect_func, redirect_field=redirect,
                                  redirect_url_func=lambda: login_url)(func)
 
@@ -90,7 +90,7 @@ def permission_required(perm, login_url=None, redirect=REDIRECT_FIELD_NAME,
         def deny_func(user):
             return not user.has_perm(perm)
 
-    return user_access_decorator(lambda u: not u.is_authenticated(),
+    return user_access_decorator(lambda u: not u.is_authenticated,
                                  redirect_field=redirect,
                                  redirect_url_func=lambda: login_url,
                                  deny_func=deny_func)
@@ -120,7 +120,7 @@ def has_perm_or_owns_or_403(perm, owner_attr, obj_lookup, perm_obj_lookup,
         def _wrapped_view(request, *args, **kwargs):
             # based on authority/decorators.py
             user = request.user
-            if user.is_authenticated():
+            if user.is_authenticated:
                 obj = _resolve_lookup(obj_lookup, kwargs)
                 perm_obj = _resolve_lookup(perm_obj_lookup, kwargs)
                 granted = access.has_perm_or_owns(user, perm, obj, perm_obj,

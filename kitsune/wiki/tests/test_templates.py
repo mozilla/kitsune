@@ -38,7 +38,7 @@ To review this revision, click the following link, or paste it into your \
 browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/review/%(new_id)s?utm_campaign=\
-wiki-ready-review&utm_medium=email&utm_source=notification
+wiki-ready-review&utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -62,7 +62,7 @@ To view this document's history, click the following link, or paste it \
 into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/history?utm_campaign=wiki-edit&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -84,7 +84,7 @@ To view the updated document, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s?utm_campaign=wiki-approved&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -228,9 +228,17 @@ class DocumentTests(TestCaseBase):
         redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
         response = self.client.get(redirect_url, follow=True)
-        self.assertRedirects(
-            response,
-            urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
+        # TODO:DJ2: In Django 2.2 the assertsRedirects method properly checks
+        # the URLs using its new assertURLEqual method. But for now this is
+        # failing because of the order of items in the query string.
+        # self.assertRedirects(
+        #     response,
+        #     urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
+        self.assertURLEqual(response.redirect_chain[0][0],
+                            urlparams(target_url,
+                                      redirectlocale=redirect.locale,
+                                      redirectslug=redirect.slug))
+        self.assertEqual(response.redirect_chain[0][1], 302)
         self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)

@@ -1,6 +1,6 @@
 from django.conf.urls import include, url
 from django.conf import settings
-from django.views.i18n import javascript_catalog
+from django.views.i18n import JavaScriptCatalog
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
@@ -39,11 +39,11 @@ urlpatterns = [
     url(r'^badges/', include('kitsune.kbadge.urls')),
 
     # Javascript translations.
-    url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
+    url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(JavaScriptCatalog.as_view()),
         {'domain': 'djangojs', 'packages': ['kitsune']}, name='jsi18n'),
     # App translations. These don't need cached because they are downloaded
     # in a build step, not on the client.
-    url(r'^jsi18n-yaocho/.*$', javascript_catalog,
+    url(r'^jsi18n-yaocho/.*$', JavaScriptCatalog.as_view(),
         {'domain': 'yaocho', 'packages': ['kitsune']}, name='jsi18n-yaocho'),
     # JavaScript Waffle.
     url(r'^wafflejs$', wafflejs, name='wafflejs'),
@@ -81,8 +81,8 @@ urlpatterns = [
 ]
 
 # Handle 404 and 500 errors
-handler404 = 'kitsune.sumo.views.handle404'
-handler500 = 'kitsune.sumo.views.handle500'
+handler404 = sumo_views.handle404
+handler500 = sumo_views.handle500
 
 if settings.DEBUG:
     media_url = settings.MEDIA_URL.lstrip('/').rstrip('/')
@@ -94,7 +94,7 @@ if settings.DEBUG:
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [
-        url(r'^admin/', include(admin.site.urls)),
+        url(r'^admin/', admin.site.urls),
     ]
 elif settings.ADMIN_REDIRECT_URL:
     urlpatterns.append(

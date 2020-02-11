@@ -32,7 +32,7 @@ class FlaggedObject(ModelBase):
         (2, _lazy('Rejected')),
     )
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -40,11 +40,11 @@ class FlaggedObject(ModelBase):
     reason = models.CharField(max_length=64, choices=REASONS)
     notes = models.TextField(default='', blank=True)
 
-    creator = models.ForeignKey(User, related_name='flags')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='flags')
     created = models.DateTimeField(default=datetime.now, db_index=True)
 
     handled = models.DateTimeField(default=datetime.now, db_index=True)
-    handled_by = models.ForeignKey(User, null=True)
+    handled_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     objects = FlaggedObjectManager()
 

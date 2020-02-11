@@ -49,7 +49,7 @@ def delete(request, announcement_id):
 
 
 def user_can_announce(user, locale):
-    if user.is_anonymous():
+    if user.is_anonymous:
         return False
     return (user.has_perm('announcements.add_announcement') or
             user in locale.leaders.all())

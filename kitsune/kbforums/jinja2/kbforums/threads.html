@@ -12,7 +12,7 @@
       <h1>{{ _('{d} Discussion')|f(d=document.title) }}</h1>
       <div class="forum-actions">
         <a id="new-thread" class="btn btn-submit" href="{{ url('wiki.discuss.new_thread', document_slug=document.slug) }}">{{ _('Post a new thread') }}</a>
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
           <form action="{{ url('wiki.discuss.watch_forum', document.slug) }}" method="post">
             {% csrf_token %}
             {% if is_watching_forum %}

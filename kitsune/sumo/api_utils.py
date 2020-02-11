@@ -227,7 +227,7 @@ class GenericDjangoPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         u = request.user
-        not_inactive = u.is_anonymous() or u.is_active
+        not_inactive = u.is_anonymous or u.is_active
         return not_inactive and all(u.has_perm(p) for p in self.permissions)
 
 
@@ -301,7 +301,7 @@ class InactiveSessionAuthentication(SessionAuthentication):
         user = getattr(request, 'user', None)
 
         # Unauthenticated, CSRF validation not required
-        if not user or user.is_anonymous():
+        if not user or user.is_anonymous:
             return None
 
         self.enforce_csrf(request)

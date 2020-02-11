@@ -51,7 +51,7 @@ def product_landing(request, template, slug):
         'search_params': {'product': slug},
         'latest_version': latest_version,
         'subscribed_products_ids': (user.profile.products.all().values_list('id', flat=True)
-                                    if user.is_authenticated() else [])
+                                    if user.is_authenticated else [])
     })
 
 

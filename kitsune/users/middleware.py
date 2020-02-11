@@ -7,7 +7,13 @@ from django.utils.translation import ugettext_lazy as _lazy
 from kitsune.sumo.urlresolvers import reverse
 
 
-class TokenLoginMiddleware(object):
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
+
+class TokenLoginMiddleware(MiddlewareMixin):
     """Allows users to be logged in via one time tokens."""
 
     def process_request(self, request):
@@ -18,16 +24,16 @@ class TokenLoginMiddleware(object):
             # data.
             return
 
-        if auth is None or (request.user and request.user.is_authenticated()):
+        if auth is None or (request.user and request.user.is_authenticated):
             return
-        user = authenticate(auth=auth)
+        user = authenticate(request, auth=auth)
         if user and user.is_active:
             login(request, user)
             msg = _lazy('You have been automatically logged in.')
             messages.success(request, msg)
 
 
-class LogoutDeactivatedUsersMiddleware(object):
+class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
     """Verifies that user.is_active == True.
 
     If a user has been deactivated, we log them out.
@@ -37,7 +43,7 @@ class LogoutDeactivatedUsersMiddleware(object):
     def process_request(self, request):
         user = request.user
 
-        if (user.is_authenticated() and not user.is_active and
+        if (user.is_authenticated and not user.is_active and
                 not request.session.get('in-aaq', False)):
 
             # The user is auth'd, not active and not in AAQ. /KICK

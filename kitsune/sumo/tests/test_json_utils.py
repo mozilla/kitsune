@@ -3,7 +3,7 @@ from nose.tools import eq_
 from django.http import HttpResponse
 from django.test.client import RequestFactory
 
-from kitsune.sumo.json_utils import jsonp_is_valid, markup_json
+from kitsune.sumo.json_utils import jsonp_is_valid, markup_json, template_json
 from kitsune.sumo.tests import TestCase
 
 
@@ -101,3 +101,8 @@ class TestMarkupJson(TestCase):
         eq_(req.IS_JSON, True)
         eq_(req.CONTENT_TYPE, "application/x-javascript")
         eq_(resp.status_code, 200)
+
+
+def test_template_json():
+    eq_(template_json([]), '[]')
+    eq_(type(template_json([])), str)

@@ -16,7 +16,7 @@
   {% else %}
 	{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='article-discussions') }}
   {% endif %}
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
     <div id="doc-watch">
       {% include "kbforums/includes/watch_locale.html" %}
     </div>

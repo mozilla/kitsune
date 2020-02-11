@@ -3,30 +3,23 @@
 
 from django import forms
 from django.contrib import admin
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
+from django.utils.safestring import mark_safe
 
 from kitsune.kbadge.models import Badge, Award
-
-
-def show_unicode(obj):
-    return str(obj)
-
-
-show_unicode.short_description = "Display"
 
 
 def show_image(obj):
     if not obj.image:
         return "None"
     img_url = obj.image.url
-    return '<a href="%s" target="_new"><img src="%s" width="48" height="48" /></a>' % (
+    return mark_safe('<a href="%s" target="_new"><img src="%s" width="48" height="48" /></a>' % (
         img_url,
         img_url,
-    )
+    ))
 
 
-show_image.allow_tags = True
 show_image.short_description = "Image"
 
 
@@ -50,10 +43,9 @@ def build_related_link(self, model_name, name_single, name_plural, qs):
 
 
 def related_awards_link(self):
-    return build_related_link(self, "award", "award", "awards", self.award_set)
+    return mark_safe(build_related_link(self, "award", "award", "awards", self.award_set))
 
 
-related_awards_link.allow_tags = True
 related_awards_link.short_description = "Awards"
 
 
@@ -92,16 +84,15 @@ class BadgeAdmin(admin.ModelAdmin):
 
 def badge_link(self):
     url = reverse("admin:kbadge_badge_change", args=[self.badge.id])
-    return '<a href="%s">%s</a>' % (url, self.badge)
+    return mark_safe('<a href="%s">%s</a>' % (url, self.badge))
 
 
-badge_link.allow_tags = True
 badge_link.short_description = "Badge"
 
 
 class AwardAdmin(admin.ModelAdmin):
     list_display = (
-        show_unicode,
+        "__str__",
         badge_link,
         show_image,
         "user",
@@ -123,10 +114,9 @@ class AwardAdmin(admin.ModelAdmin):
 
 def award_link(self):
     url = reverse("admin:kbadge_award_change", args=[self.award.id])
-    return '<a href="%s">%s</a>' % (url, self.award)
+    return mark_safe('<a href="%s">%s</a>' % (url, self.award))
 
 
-award_link.allow_tags = True
 award_link.short_description = "award"
 
 

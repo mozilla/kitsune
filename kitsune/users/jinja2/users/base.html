@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block side_top %}
-  {% if not profile and user.is_authenticated() %}
+  {% if not profile and user.is_authenticated %}
     {% set profile = get_profile(user) %}
   {% endif %}
   {% if profile %}

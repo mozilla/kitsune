@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('unique', models.BooleanField(default=True, help_text=b'Should awards of this badge be limited to one-per-person?')),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
-                ('creator', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, blank=True, to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'ordering': ['-modified', '-created'],
@@ -48,17 +48,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='award',
             name='badge',
-            field=models.ForeignKey(to='kbadge.Badge'),
+            field=models.ForeignKey(on_delete=models.CASCADE, to='kbadge.Badge'),
         ),
         migrations.AddField(
             model_name='award',
             name='creator',
-            field=models.ForeignKey(related_name='award_creator', blank=True, to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='award_creator', blank=True, to=settings.AUTH_USER_MODEL, null=True),
         ),
         migrations.AddField(
             model_name='award',
             name='user',
-            field=models.ForeignKey(related_name='award_user', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='award_user', to=settings.AUTH_USER_MODEL),
         ),
         migrations.AlterUniqueTogether(
             name='badge',

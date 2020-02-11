@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse as django_reverse
+from django.urls import reverse as django_reverse
 from django.db import transaction
 from django.utils.translation import ugettext as _
 
@@ -57,7 +57,7 @@ class TokenLoginBackend(object):
         None if the user was not authenticated.
     """
 
-    def authenticate(self, auth):
+    def authenticate(self, request, auth):
         try:
             decoded = base64.b64decode(auth).decode()
         except (TypeError, UnicodeDecodeError):
@@ -166,7 +166,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # A existing user is attempting to connect a Firefox Account to the SUMO profile
         # NOTE: this section will be dropped when the migration is complete
-        if self.request and self.request.user and self.request.user.is_authenticated():
+        if self.request and self.request.user and self.request.user.is_authenticated:
             return [self.request.user]
 
         users = user_model.objects.filter(profile__fxa_uid=fxa_uid)

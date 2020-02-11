@@ -70,7 +70,7 @@
                 <span>{{ revision.readied_for_localization_by }}</span>
               </li>
             {% endif %}
-            {% if user.is_authenticated() %}
+            {% if user.is_authenticated %}
               <li><a href="{{ url('wiki.new_revision_based_on', document.slug, revision.id) }}">{{ _('Edit article based on this revision') }}</a></li>
             {% endif %}
           </ul>

@@ -252,9 +252,9 @@ class TestWikiParser(TestCase):
 
         eq_(
             '<p>&lt;iframe &lt;="" \\="" onload="prompt(1)" p="" '
-            'src=""&gt;</p><p>&lt;iframe onreadystatechange="'
-            'alert(/@blinkms/)" &lt;="" p=""&gt;</p><p>&lt;svg '
-            'onload="alert(1)" &lt;="" p=""&gt;&lt;/iframe&gt;</p>',
+            'src=""&gt;&lt;p&gt;&lt;iframe/onreadystatechange='
+            'alert(/@blinkms/)\n&lt;/p&gt;&lt;p&gt;&lt;'
+            'svg/onload=alert(1)\n&lt;/p&gt;&lt;/iframe&gt;</p>',
             self.p.parse(content),
         )
 
@@ -551,7 +551,7 @@ class TestWikiImageTags(TestCase):
         unsafe_vals = (
             (
                 'an"<script>alert()</script>',
-                "an&quot;&amp;lt;script&amp;gt;alert()&amp;lt;/script&amp;gt;",
+                "an&quot;&amp;amp;lt;script&amp;amp;gt;alert()&amp;amp;lt;/script&amp;amp;gt;",
             ),
             (
                 "an'<script>alert()</script>",

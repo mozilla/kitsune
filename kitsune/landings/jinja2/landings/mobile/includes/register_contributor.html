@@ -7,7 +7,7 @@
         {{ _('Sign up as a volunteer') }}
       {% endif %}
     </h3>
-    {% if user.is_authenticated() %}
+    {% if user.is_authenticated %}
       <form method="post" action="{{ url('users.make_contributor') }}">
         <input type="hidden" name="return_to" value="{{ url('landings.get_involved') }}">
         {% csrf_token %}

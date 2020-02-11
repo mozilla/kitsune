@@ -104,9 +104,6 @@ backports.shutil_get_terminal_size==1.0.0 \
 pexpect==4.3.1 \
     --hash=sha256:144939a072a46d32f6e5ecc866509e1d613276781f7182148a08df52eaa7b022 \
     --hash=sha256:8e287b171dbaf249d0b06b5f2e88cb7e694651d2d0b8c15bccb83170d3c55575
-pathlib2==2.3.0 \
-    --hash=sha256:db3e43032d23787d3e9aec8c7ef1e0d2c3c589d5f303477661ebda2ca6d4bfba \
-    --hash=sha256:d32550b75a818b289bd4c1f96b60c89957811da205afcceab75bc8b4857ea5b3
 traitlets==4.3.2 \
     --hash=sha256:c6cb5e6f57c5a9bdaa40fa71ce7b4af30298fbab9ece9815b5d995ab6217c7d9 \
     --hash=sha256:9c4bd2d267b7153df9152698efb1050a5d84982d3384a37b2c1f7723ba3e7835

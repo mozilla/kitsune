@@ -65,8 +65,8 @@
 
     <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
       <input type="hidden" name="search" value="{{ request.GET.search }}" />
-      <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-      {% set ga_action = 'pre-registered question' if user.is_authenticated() else 'step 1 link' %}
+      <input type="hidden" name="step" value="{% if user.is_authenticated %}aaq-question{% else %}aaq-register{% endif %}" />
+      {% set ga_action = 'pre-registered question' if user.is_authenticated else 'step 1 link' %}
       <button type="submit" data-event-category="Ask A Question Flow" data-event-action="{{ ga_action }}" class="button">
           {{ button_text }}
       </button>

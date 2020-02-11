@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
-from django.core.urlresolvers import is_valid_path
+from django.urls import is_valid_path
 from django.core.validators import validate_ipv4_address, ValidationError
 from django.db.utils import DatabaseError
 from django.http import (HttpResponse, HttpResponseRedirect,
@@ -19,7 +19,9 @@ from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.encoding import iri_to_uri, smart_bytes, smart_text
 
-import mobility
+import commonware.middleware
+import commonware.request.middleware
+import mobility.middleware
 from mozilla_django_oidc.middleware import SessionRefresh
 from enforce_host import EnforceHostMiddleware
 
@@ -54,7 +56,8 @@ class HttpResponseRateLimited(HttpResponse):
 
 
 class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, get_response=None):
+        super(SUMORefreshIDTokenAdminMiddleware, self).__init__(get_response=get_response)
         if not settings.OIDC_ENABLE or settings.DEV:
             raise MiddlewareNotUsed
 
@@ -71,7 +74,7 @@ class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
             return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
 
 
-class LocaleURLMiddleware(object):
+class LocaleURLMiddleware(MiddlewareMixin):
     """
     Based on zamboni.amo.middleware.
     Tried to use localeurl but it choked on 'en-US' with capital letters.
@@ -98,7 +101,7 @@ class LocaleURLMiddleware(object):
             # 'lang' is only used on the language selection page. If this is
             # present it is safe to set language preference for the current
             # user.
-            if request.user.is_anonymous():
+            if request.user.is_anonymous:
                 cookie = settings.LANGUAGE_COOKIE_NAME
                 request.session[cookie] = request.GET['lang']
 
@@ -138,7 +141,7 @@ class LocaleURLMiddleware(object):
         set_url_prefixer(None)
 
 
-class Forbidden403Middleware(object):
+class Forbidden403Middleware(MiddlewareMixin):
     """
     Renders a 403.html page if response.status_code == 403.
     """
@@ -157,7 +160,8 @@ class VaryNoCacheMiddleware(MiddlewareMixin):
     to inspect the near-final response since response middleware is processed
     in reverse.
     """
-    def __init__(self):
+    def __init__(self, get_response=None):
+        super(VaryNoCacheMiddleware, self).__init__(get_response=get_response)
         if not settings.ENABLE_VARY_NOCACHE_MIDDLEWARE:
             raise MiddlewareNotUsed
 
@@ -187,7 +191,7 @@ class CacheHeadersMiddleware(MiddlewareMixin):
         return response
 
 
-class PlusToSpaceMiddleware(object):
+class PlusToSpaceMiddleware(MiddlewareMixin):
     """Replace old-style + with %20 in URLs."""
     def process_request(self, request):
         p = re.compile(r'\+')
@@ -201,8 +205,9 @@ class PlusToSpaceMiddleware(object):
             return HttpResponsePermanentRedirect(new)
 
 
-class ReadOnlyMiddleware(object):
-    def __init__(self):
+class ReadOnlyMiddleware(MiddlewareMixin):
+    def __init__(self, get_response=None):
+        super(ReadOnlyMiddleware, self).__init__(get_response=get_response)
         if not settings.READ_ONLY:
             raise MiddlewareNotUsed
 
@@ -215,7 +220,7 @@ class ReadOnlyMiddleware(object):
             return render(request, 'sumo/read-only.html', status=503)
 
 
-class RemoveSlashMiddleware(object):
+class RemoveSlashMiddleware(MiddlewareMixin):
     """
     Middleware that tries to remove a trailing slash if there was a 404.
 
@@ -261,12 +266,17 @@ MOBILE_UAS = re.compile('android|fennec|mobile|iphone|opera (?:mini|mobi)')
 TABLET_UAS = re.compile('tablet|ipad')
 
 
+class XMobileMiddleware(MiddlewareMixin, mobility.middleware.XMobileMiddleware):
+    pass
+
+
 # This is a modified version of 'mobility.middleware.DetectMobileMiddleware'.
 # We want to exclude tablets from being detected as MOBILE and there is
 # no way to do that by just overriding the detection regex.
 class DetectMobileMiddleware(MiddlewareMixin):
     """Looks at user agent and decides whether the device is mobile."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, get_response=None):
+        super(DetectMobileMiddleware, self).__init__(get_response=get_response)
         if settings.SKIP_MOBILE_DETECTION:
             raise MiddlewareNotUsed()
 
@@ -283,7 +293,7 @@ class DetectMobileMiddleware(MiddlewareMixin):
         return response
 
 
-class MobileSwitchMiddleware(object):
+class MobileSwitchMiddleware(MiddlewareMixin):
     """Looks for query string parameters to switch to the mobile site."""
     def process_request(self, request):
         mobile = request.GET.get('mobile')
@@ -305,7 +315,8 @@ class MobileSwitchMiddleware(object):
 
 
 class HostnameMiddleware(MiddlewareMixin):
-    def __init__(self):
+    def __init__(self, get_response=None):
+        super(HostnameMiddleware, self).__init__(get_response=get_response)
         if getattr(settings, 'DISABLE_HOSTNAME_MIDDLEWARE', False):
             raise MiddlewareNotUsed()
 
@@ -319,7 +330,8 @@ class HostnameMiddleware(MiddlewareMixin):
 
 class FilterByUserAgentMiddleware(MiddlewareMixin):
     """Looks at user agent and decides whether the device is allowed on the site."""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, get_response=None):
+        super(FilterByUserAgentMiddleware, self).__init__(get_response=get_response)
         if not settings.USER_AGENT_FILTERS:
             raise MiddlewareNotUsed()
 
@@ -332,3 +344,16 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
             response = HttpResponseRateLimited()
             patch_vary_headers(response, ['User-Agent'])
             return response
+
+
+class SetRemoteAddrFromForwardedFor(MiddlewareMixin,
+                                    commonware.request.middleware.SetRemoteAddrFromForwardedFor):
+    pass
+
+
+class ScrubRequestOnException(MiddlewareMixin, commonware.middleware.ScrubRequestOnException):
+    pass
+
+
+class RobotsTagHeader(MiddlewareMixin, commonware.middleware.RobotsTagHeader):
+    pass

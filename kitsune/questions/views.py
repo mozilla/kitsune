@@ -48,7 +48,7 @@ from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
-from kitsune.sumo.api_utils import JSONRenderer
+from kitsune.sumo.json_utils import template_json
 from kitsune.sumo.decorators import ssl_required, ratelimit
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -199,7 +199,7 @@ def question_list(request, template, product_slug):
     if not request.user.has_perm('flagit.can_moderate'):
         question_qs = question_qs.filter(is_spam=False)
 
-    if owner == 'mine' and request.user.is_authenticated():
+    if owner == 'mine' and request.user.is_authenticated:
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
     else:
@@ -290,7 +290,7 @@ def question_list(request, template, product_slug):
         topic_list = []
 
     # Store current filters in the session
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         request.session['questions_owner'] = owner
 
     data = {'questions': questions_page,
@@ -399,7 +399,7 @@ def question_details(request, template, question_id, form=None,
     question.metadata['troubleshooting_parsed'] = (
         parse_troubleshooting(troubleshooting_json))
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         ct = ContentType.objects.get_for_model(request.user)
         ans_['images'] = list(ImageAttachment.objects.filter(creator=request.user, content_type=ct)
                                              .only('id', 'creator_id', 'file', 'thumbnail')
@@ -454,27 +454,26 @@ def edit_details(request, question_id):
 @ssl_required
 def aaq_react(request):
     request.session['in-aaq'] = True
-    to_json = JSONRenderer().render
     products = ProductSerializer(
         Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE),
         many=True)
     topics = TopicSerializer(Topic.objects.filter(in_aaq=True), many=True)
 
     ctx = {
-        'products_json': to_json(products.data),
-        'topics_json': to_json(topics.data),
+        'products_json': template_json(products.data),
+        'topics_json': template_json(topics.data),
     }
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user_ct = ContentType.objects.get_for_model(request.user)
         images = ImageAttachmentSerializer(
             ImageAttachment.objects.filter(
                 creator=request.user,
                 content_type=user_ct,
             ).order_by('-id')[:IMG_LIMIT], many=True)
-        ctx['images_json'] = to_json(images.data)
+        ctx['images_json'] = template_json(images.data)
     else:
-        ctx['images_json'] = to_json([])
+        ctx['images_json'] = template_json([])
 
     return render(request, 'questions/new_question_react.html', ctx)
 
@@ -863,7 +862,7 @@ def solve(request, question_id, answer_id):
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
 
     # It is possible this was clicked from the email.
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         watch_secret = request.GET.get('watch', None)
         try:
             watch = Watch.objects.get(secret=watch_secret,
@@ -941,7 +940,7 @@ def question_vote(request, question_id):
     if not question.has_voted(request):
         vote = QuestionVote(question=question)
 
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             vote.creator = request.user
         else:
             vote.anonymous_id = request.anonymous.anonymous_id
@@ -1003,7 +1002,7 @@ def answer_vote(request, question_id, answer_id):
         else:
             message = _('Sorry to hear that.')
 
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             vote.creator = request.user
         else:
             vote.anonymous_id = request.anonymous.anonymous_id
@@ -1307,7 +1306,7 @@ def watch_question(request, question_id):
     # Process the form
     msg = None
     if form.is_valid():
-        user_or_email = (request.user if request.user.is_authenticated()
+        user_or_email = (request.user if request.user.is_authenticated
                          else form.cleaned_data['email'])
         try:
             if form.cleaned_data['event_type'] == 'reply':
@@ -1322,7 +1321,7 @@ def watch_question(request, question_id):
     if request.is_ajax():
         if form.is_valid():
             msg = msg or (_('You will be notified of updates by email.') if
-                          request.user.is_authenticated() else
+                          request.user.is_authenticated else
                           _('You should receive an email shortly '
                             'to confirm your subscription.'))
             return HttpResponse(json.dumps({'message': msg}))
@@ -1794,7 +1793,7 @@ def _answers_data(request, question_id, form=None, watch_form=None,
     frequencies = dict(FREQUENCY_CHOICES)
 
     is_watching_question = (
-        request.user.is_authenticated() and (
+        request.user.is_authenticated and (
             QuestionReplyEvent.is_notifying(request.user, question) or
             QuestionSolvedEvent.is_notifying(request.user, question)))
     return {'question': question,

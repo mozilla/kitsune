@@ -16,8 +16,8 @@ class ImageAttachment(ModelBase):
                              max_length=settings.MAX_FILEPATH_LENGTH)
     thumbnail = models.ImageField(upload_to=settings.THUMBNAIL_UPLOAD_PATH,
                                   null=True)
-    creator = models.ForeignKey(User, related_name='image_attachments')
-    content_type = models.ForeignKey(ContentType)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='image_attachments')
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(db_index=True)
 
     content_object = GenericForeignKey()

@@ -63,7 +63,7 @@ Example::
                 'x': 1000 * int(time.mktime(rdate.timetuple())),
                 # L10n: 'R' is the first letter of "Revision".
                 'title': _('R', 'revision_heading'),
-                'text': unicode(_('Revision %s')) % rev.created
+                'text': str(_('Revision %s')) % rev.created
                 #'url': 'http://www.google.com/'  # Not supported yet
             })
 
@@ -249,7 +249,7 @@ definitions, strings in functions called from outside the context of a view. To
 localize these strings, you need to use the ``_lazy`` versions of the above
 methods, ``ugettext_lazy`` and ``ungettext_lazy``. The result doesn't get
 translated until it is evaluated as a string, for example by being output or
-passed to ``unicode()``::
+passed to ``str()``::
 
     from tower import ugettext_lazy as _lazy
 
@@ -262,7 +262,7 @@ functions. Failure to do so results in significant issues when they are
 evaluated as strings.
 
 If you need to work with a lazily-translated string, you'll first need to
-convert it to a ``unicode`` object::
+convert it to a ``str`` object::
 
     from tower import ugettext_lazy as _lazy
 
@@ -273,7 +273,7 @@ convert it to a ``unicode`` object::
         WELCOME % request.user.username
 
         # Works:
-        unicode(WELCOME) % request.user.username
+        str(WELCOME) % request.user.username
 
 
 Strings in the Database

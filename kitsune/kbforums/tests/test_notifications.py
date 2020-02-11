@@ -31,7 +31,7 @@ To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s/discuss/%(thread_id)s?utm_campaign=kbforums-post&\
-utm_medium=email&utm_source=notification#post-%(post_id)s
+utm_source=notification&utm_medium=email#post-%(post_id)s
 
 --
 Unsubscribe from these emails:
@@ -52,7 +52,7 @@ To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s/discuss/%(thread_id)s?utm_campaign=kbforums-thread&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Unsubscribe from these emails:

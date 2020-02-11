@@ -112,7 +112,7 @@ def make_mail(subject,
 
     if html_template:
         html = transform(render_email(html_template, context_vars),
-                         'https://' + Site.objects.get_current().domain)
+                         base_url='https://' + Site.objects.get_current().domain)
         mail.attach_alternative(html, 'text/html')
 
     return mail

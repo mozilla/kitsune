@@ -200,7 +200,7 @@ class ForParser(object):
             )
             for_el.attrib["class"] = "for"
 
-    def to_unicode(self):
+    def __str__(self):
         """Return the unicode serialization of myself."""
         container_len = len(self.CONTAINER_TAG) + 2  # 2 for the <>
         walker = getTreeWalker(self.TREEBUILDER)
@@ -281,9 +281,9 @@ class ForParser(object):
             if tag != "{/for}":
                 i = next(indexes)
                 dehydrations[i] = cls._wiki_to_tag(attrs)
-                token = "\x07%i\x07" % i
+                token = "\x91%i\x91" % i
             else:
-                token = "\x07/sf\x07"
+                token = "\x91/sf\x91"
 
             # If the {for} or {/for} is on a line by itself (righthand
             # whitespace is allowed; left would indicate a <pre>), make sure it
@@ -329,21 +329,21 @@ class ForParser(object):
         # Whitespace, a {for} token, then more whitespace (including <br>s):
         r"<p>"
         r"(?:\s|<br\s*/?>)*"
-        r"\x07(\d+)\x07"  # The {for} token
+        r"\x91(\d+)\x91"  # The {for} token
         r"(?:\s|<br\s*/?>)*"
         r"</p>"
         # Alternately, a lone {for} token that didn't get wrapped in a <p>:
-        r"|\x07(\d+)\x07"
+        r"|\x91(\d+)\x91"
     )
     _PARSED_STRIPPED_FOR_CLOSER = re.compile(
         # Similar to above, a {/for} token wrapped in <p> and whitespace:
         r"<p>"
         r"(?:\s|<br\s*/?>)*"
-        r"\x07/sf\x07"  # {/for} token
+        r"\x91/sf\x91"  # {/for} token
         r"(?:\s|<br\s*/?>)*"
         r"</p>"
         # Or a lone {/for} token:
-        r"|\x07/sf\x07"
+        r"|\x91/sf\x91"
     )
 
     @classmethod
@@ -412,7 +412,7 @@ class WikiParser(sumo_parser.WikiParser):
         # Convert them to spans and divs:
         for_parser.expand_fors()
 
-        html = for_parser.to_unicode()
+        html = str(for_parser)
 
         html = self.add_youtube_embeds(html)
 

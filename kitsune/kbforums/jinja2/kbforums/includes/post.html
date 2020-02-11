@@ -33,7 +33,7 @@
 <div class="info">
   {{ datetimeformat(post.created, format='longdatetime') }}
   <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
-  {% if post.id and user.is_authenticated() and not thread.is_locked %}
+  {% if post.id and user.is_authenticated and not thread.is_locked %}
     <span class="post-action">
       <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Quote') }}</a>
     </span>

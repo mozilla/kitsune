@@ -60,7 +60,7 @@ def doc_page_cache(view):
     def _doc_page_cache_view(request, document_slug, *args, **kwargs):
         # We skip caching for authed users or if redirect=no
         # is in the query string.
-        if (request.user.is_authenticated() or
+        if (request.user.is_authenticated or
                 request.GET.get('redirect') == 'no'):
             statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
@@ -1141,7 +1141,7 @@ def helpful_vote(request, document_slug):
 
         # If user is over the limit, don't save but pretend everything is ok.
         if not request.limited:
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 vote.creator = request.user
             else:
                 vote.anonymous_id = request.anonymous.anonymous_id

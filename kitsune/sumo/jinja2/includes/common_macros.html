@@ -20,7 +20,7 @@
         {% set ask_url = url('wiki.document', 'get-community-support') %}
       {% endif %}
     {% endif %}
-    {% if user.is_authenticated() %}
+    {% if user.is_authenticated %}
       <li><a href="{{ ask_url }}" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">{{ _('Get Community Support') }}</a></li>
       <li class="dropdown">
         <a href="#" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
@@ -62,7 +62,7 @@
 {% endmacro %}
 
 {% macro for_contributors_sidebar(user, default_language, li_only=False, active=None) -%}
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
     {% if not li_only %}
       <ul class="sidebar-nav sidebar-folding">
     {% endif %}

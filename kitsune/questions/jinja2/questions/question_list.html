@@ -221,7 +221,7 @@
       <div class="sidebar-header">{{ _('Show me') }}</div>
       <ul class="sidebar-nav">
         <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
-        {% if request.user.is_authenticated() %}
+        {% if request.user.is_authenticated %}
           <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
         {% endif %}
       </ul>

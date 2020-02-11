@@ -13,8 +13,6 @@ import django_cache_url
 from datetime import date
 from decouple import Csv, config
 
-import djcelery
-
 from .bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
@@ -356,7 +354,6 @@ TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
 
-USE_ETAGS = config('USE_ETAGS', default=False, cast=bool)
 USE_I18N = True
 USE_L10N = True
 
@@ -487,7 +484,7 @@ TEMPLATES = [
 ]
 
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'kitsune.sumo.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'kitsune.sumo.middleware.FilterByUserAgentMiddleware',
@@ -495,7 +492,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
-    'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
+    'kitsune.sumo.middleware.SetRemoteAddrFromForwardedFor',
     'kitsune.sumo.middleware.EnforceHostIPMiddleware',
 
     # VaryNoCacheMiddleware must be above LocaleURLMiddleware
@@ -506,7 +503,6 @@ MIDDLEWARE_CLASSES = (
     # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 
     # This should come before TokenLoginMiddleware, because
     # TokenLoginMiddleware uses this to tell users they have been
@@ -526,7 +522,7 @@ MIDDLEWARE_CLASSES = (
 
     # Mobile detection should happen in Zeus.
     'kitsune.sumo.middleware.DetectMobileMiddleware',
-    'mobility.middleware.XMobileMiddleware',
+    'kitsune.sumo.middleware.XMobileMiddleware',
     'kitsune.sumo.middleware.MobileSwitchMiddleware',
 
     'kitsune.sumo.middleware.Forbidden403Middleware',
@@ -540,10 +536,10 @@ MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.ReadOnlyMiddleware',
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
-    'commonware.middleware.ScrubRequestOnException',
+    'kitsune.sumo.middleware.ScrubRequestOnException',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
-    'commonware.middleware.RobotsTagHeader',
+    'kitsune.sumo.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
 )
 
@@ -663,7 +659,6 @@ INSTALLED_APPS = (
     'kitsune.sumo',
     'kitsune.search',
     'kitsune.forums',
-    'djcelery',
     'tidings',
     'rest_framework.authtoken',
     'kitsune.questions',
@@ -920,8 +915,6 @@ if EMAIL_LOGGING_REAL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
 
 
 # Celery
-djcelery.setup_loader()
-
 CELERY_IGNORE_RESULT = config('CELERY_IGNORE_RESULT', default=True, cast=bool)
 if not CELERY_IGNORE_RESULT:
     # E.g. redis://localhost:6479/1

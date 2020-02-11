@@ -60,7 +60,7 @@ from kitsune.wiki.models import (
 def _disable_sumo_auth_for_fxa(request):
     """Helper to block access to Firefox Account users to the SUMO auth system."""
     user = request.user
-    if user and user.is_authenticated():
+    if user and user.is_authenticated:
         if user.profile and user.profile.is_fxa_migrated:
             raise Http404
     return
@@ -103,7 +103,7 @@ def login(request):
     only_active = request.POST.get('inactive', '0') != '1'
     form = handle_login(request, only_active=only_active)
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.user.profile.is_fxa_migrated:
             return logout(request, already_migrated=True)
 

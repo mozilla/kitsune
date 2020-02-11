@@ -8,7 +8,7 @@
 {% set crumbs = [(None, _('Media Gallery'))] %}
 
 {% block above_main %}
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
     <a id="btn-upload" class="btn btn-submit" href="#">{{ _('Upload a New Media File') }}</a>
   {% endif %}
   <h1>{{ _('Media Gallery') }}</h1>
@@ -57,7 +57,7 @@
     {% include 'gallery/includes/media_list.html' %}
   {% endwith %}
 
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
     {% include 'gallery/includes/upload_media_form.html' %}
   {% endif %}
 {% endblock %}

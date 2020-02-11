@@ -54,8 +54,8 @@ class Migration(migrations.Migration):
                 ('image', models.ImageField(max_length=250, null=True, upload_to=b'uploads/topics/', blank=True)),
                 ('display_order', models.IntegerField()),
                 ('visible', models.BooleanField(default=False)),
-                ('parent', models.ForeignKey(related_name='subtopics', blank=True, to='products.Topic', null=True)),
-                ('product', models.ForeignKey(related_name='topics', to='products.Product')),
+                ('parent', models.ForeignKey(on_delete=models.CASCADE, related_name='subtopics', blank=True, to='products.Topic', null=True)),
+                ('product', models.ForeignKey(on_delete=models.CASCADE, related_name='topics', to='products.Product')),
             ],
             options={
                 'ordering': ['product', 'display_order'],
@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
                 ('max_version', models.FloatField()),
                 ('visible', models.BooleanField(default=False)),
                 ('default', models.BooleanField(default=False)),
-                ('product', models.ForeignKey(related_name='versions', to='products.Product')),
+                ('product', models.ForeignKey(on_delete=models.CASCADE, related_name='versions', to='products.Product')),
             ],
             options={
                 'ordering': ['-max_version'],

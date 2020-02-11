@@ -44,7 +44,7 @@ class LoginTests(TestCase):
             follow=True
         )
 
-        assert not response.wsgi_request.user.is_authenticated()
+        assert not response.wsgi_request.user.is_authenticated
         assert pq(response.content).find('#fxa-notification-already-migrated')
 
 

@@ -31,7 +31,8 @@ class Tweet(ModelBase):
     # This is different from our usual locale, so not using LocaleField.
     locale = models.CharField(max_length=20, db_index=True)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    reply_to = models.ForeignKey('self', null=True, related_name='replies')
+    reply_to = models.ForeignKey('self', on_delete=models.CASCADE,
+                                 null=True, related_name='replies')
     hidden = models.BooleanField(default=False, db_index=True)
 
     class Meta:
@@ -60,7 +61,7 @@ class Reply(ModelBase, SearchMixin):
     The Tweet table gets truncated regularly so we can't use it for metrics.
     This model is to keep track of contributor counts and such.
     """
-    user = models.ForeignKey(User, null=True, blank=True,
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
                              related_name='tweet_replies')
     twitter_username = models.CharField(max_length=20)
     tweet_id = models.BigIntegerField()

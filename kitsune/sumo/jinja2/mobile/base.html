@@ -66,7 +66,7 @@
   <a href="?{{ request.QUERY_STRING}}&amp;mobile=0">{{ _('Switch to desktop site') }}</a>
 
   <header>{{ _('Profile') }}</header>
-  {% if user.is_authenticated() %}
+  {% if user.is_authenticated %}
     <a href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
     <a href="{{ url('messages.inbox') }}">
       {{ _('Inbox') }}
