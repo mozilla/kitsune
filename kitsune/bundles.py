@@ -26,15 +26,6 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/community-new-min.css'
     },
-    'mobile-common': {
-        'source_filenames': (
-            'fontawesome/css/font-awesome.css',
-            'normalize-css/normalize.css',
-            'sumo/less/mobile/main.less',
-            'sumo/less/mobile/search.less',
-        ),
-        'output_filename': 'build/mobile-common-min.css'
-    },
     'print': {
         'source_filenames': (
             'sumo/css/print.css',
@@ -79,18 +70,6 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/questions.aaq.react-min.css'
     },
-    'mobile-questions': {
-        'source_filenames': (
-            'sumo/less/mobile/questions.less',
-        ),
-        'output_filename': 'build/mobile-questions-min.css'
-    },
-    'mobile-aaq': {
-        'source_filenames': (
-            'sumo/less/mobile/aaq.less',
-        ),
-        'output_filename': 'build/mobile-aaq-min.css'
-    },
     'rickshaw': {
         'source_filenames': (
             'sumo/css/jqueryui/jqueryui.css',
@@ -98,12 +77,6 @@ PIPELINE_CSS = {
             'sumo/less/rickshaw.sumo.less',
         ),
         'output_filename': 'build/rickshaw-min.css'
-    },
-    'mobile-search': {
-        'source_filenames': (
-            'sumo/less/mobile/search.less',
-        ),
-        'output_filename': 'build/mobile-search-min.css'
     },
     'wiki': {
         'source_filenames': (
@@ -121,22 +94,6 @@ PIPELINE_CSS = {
             'codemirror/addon/hint/show-hint.css',
         ),
         'output_filename': 'wiki-editor-min.css'
-    },
-    'mobile-wiki': {
-        'source_filenames': (
-            'sumo/less/mobile/wiki.less',
-            'sumo/less/wiki-content.less',
-        ),
-        'output_filename': 'build/mobile-wiki-min.css'
-    },
-    'mobile-wiki-minimal': {
-        'source_filenames': (
-            'normalize-css/normalize.css',
-            'sumo/less/mobile/main.less',
-            'sumo/less/mobile/wiki.less',
-            'sumo/less/wiki-content.less',
-        ),
-        'output_filename': 'build/mobile-wiki-minimal-min.css'
     },
     'home': {
         'source_filenames': (
@@ -175,12 +132,6 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/users-min.css'
     },
-    'mobile-users': {
-        'source_filenames': (
-            'sumo/less/mobile/users.less',
-        ),
-        'output_filename': 'build/mobile-users-min.css'
-    },
     'monitor': {
         'source_filenames': (
             'sumo/css/monitor.css',
@@ -194,23 +145,11 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/messages-min.css'
     },
-    'mobile-messages': {
-        'source_filenames': (
-            'sumo/less/mobile/messages.less',
-        ),
-        'output_filename': 'build/mobile-messages-min.css'
-    },
     'products': {
         'source_filenames': (
             'sumo/less/products.less',
         ),
         'output_filename': 'build/products-min.css'
-    },
-    'mobile-products': {
-        'source_filenames': (
-            'sumo/less/mobile/products.less',
-        ),
-        'output_filename': 'build/mobile-products-min.css'
     },
     'groups': {
         'source_filenames': (
@@ -233,12 +172,6 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/locale-switcher-min.css'
     },
-    'mobile-locale-switcher': {
-        'source_filenames': (
-            'sumo/less/mobile/locales.less',
-        ),
-        'output_filename': 'build/mobile-locale-switcher-min.css'
-    },
     'kbdashboards': {
         'source_filenames': (
             'sumo/less/kbdashboards.less',
@@ -250,12 +183,6 @@ PIPELINE_CSS = {
             'sumo/less/landings/get-involved.less',
         ),
         'output_filename': 'build/landings-get-involved-min.css'
-    },
-    'mobile-landings-get-involved': {
-        'source_filenames': (
-            'sumo/less/mobile/landings/get-involved.less',
-        ),
-        'output_filename': 'build/mobile-landings-get-involved-min.css'
     },
     'badges': {
         'source_filenames': (
@@ -366,28 +293,6 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/kpi.dashboard-min.js'
     },
-    'mobile-common': {
-        'source_filenames': (
-            'sumo/js/templates/mobile-search-results.js',
-            'moment/moment.js',
-            'sumo/js/i18n.js',
-            'underscore/underscore.js',
-            'jquery/jquery.min.js',
-            'jquery/jquery-migrate.js',
-            'sumo/js/libs/modernizr-custom-build.js',
-            'nunjucks/browser/nunjucks-slim.js',
-            'sumo/js/nunjucks.js',
-            'sumo/js/browserdetect.js',
-            'sumo/js/cached_xhr.js',
-            'sumo/js/search_utils.js',
-            'sumo/js/aaq.js',
-            'sumo/js/mobile/ui.js',
-            'sumo/js/analytics.js',
-            'sumo/js/instant_search.js',
-            'sumo/js/mobile/instant_search.js',
-        ),
-        'output_filename': 'build/mobile-common-min.js'
-    },
     'jqueryui': {
         'source_filenames': (
             'jquery-ui/ui/jquery.ui.core.js',
@@ -445,39 +350,12 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/questions.aaq.react-min.js',
     },
-    'mobile-questions': {
-        'source_filenames': (
-            'sumo/js/mobile/questions.js',
-            'sumo/js/questions.metrics.js',
-        ),
-        'output_filename': 'build/mobile-questions-min.js'
-    },
-    'mobile-aaq': {
-        'source_filenames': (
-            'sumo/js/aaq.js',
-            'sumo/js/mobile/aaq.js',
-        ),
-        'output_filename': 'build/mobile-aaq-min.js'
-    },
     'products': {
         'source_filenames': (
             'sumo/js/compare_versions.js',
             'sumo/js/products.js',
         ),
         'output_filename': 'build/products-min.js'
-    },
-    'mobile-products': {
-        'source_filenames': (
-            'sumo/js/templates/mobile-product-search-results.js',
-            'nunjucks/browser/nunjucks-slim.js',
-            'sumo/js/nunjucks.js',
-            'moment/moment.js',
-            'sumo/js/cached_xhr.js',
-            'sumo/js/search_utils.js',
-            'sumo/js/instant_search.js',
-            'sumo/js/mobile/products.js',
-        ),
-        'output_filename': 'build/mobile-products-min.js'
     },
     'search': {
         'source_filenames': (
@@ -532,38 +410,6 @@ PIPELINE_JS = {
             'sumo/js/rickshaw_utils.js',
         ),
         'output_filename': 'build/rickshaw-min.js'
-    },
-    'mobile-wiki': {
-        'source_filenames': (
-            'underscore/underscore.js',
-            'sumo/js/libs/jquery.cookie.js',
-            'sumo/js/libs/jquery.lazyload.js',
-            'sumo/js/browserdetect.js',
-            'sumo/js/showfor.js',
-            'sumo/js/ajaxform.js',
-            'sumo/js/mobile/wiki.js',
-            'sumo/js/wiki.metrics.js',
-        ),
-        'output_filename': 'build/mobile-wiki-min.js'
-    },
-    'mobile-wiki-minimal': {
-        'source_filenames': (
-            'sumo/js/i18n.js',
-            'underscore/underscore.js',
-            'jquery/jquery.min.js',
-            'jquery/jquery-migrate.js',
-            'sumo/js/libs/modernizr-custom-build.js',
-            'sumo/js/browserdetect.js',
-            'sumo/js/mobile/ui.js',
-            'sumo/js/analytics.js',
-            'sumo/js/libs/jquery.cookie.js',
-            'sumo/js/libs/jquery.lazyload.js',
-            'sumo/js/showfor.js',
-            'sumo/js/ajaxform.js',
-            'sumo/js/mobile/wiki.js',
-            'sumo/js/wiki.metrics.js',
-        ),
-        'output_filename': 'build/mobile-wiki-minimal-min.js'
     },
     'wiki.history': {
         'source_filenames': (
@@ -621,13 +467,6 @@ PIPELINE_JS = {
             'sumo/js/messages.js',
         ),
         'output_filename': 'build/messages-min.js'
-    },
-    'mobile-messages': {
-        'source_filenames': (
-            'sumo/js/libs/jquery.tokeninput.js',
-            'sumo/js/users.autocomplete.js',
-        ),
-        'output_filename': 'build/mobile-messages-min.js'
     },
     'groups': {
         'source_filenames': (
