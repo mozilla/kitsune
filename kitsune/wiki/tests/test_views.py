@@ -12,7 +12,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import redis_client, RedisError
-from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestCase, template_used
+from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (CATEGORIES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
@@ -719,68 +719,6 @@ class TestDocumentLocking(TestCase):
         es_doc = Document.objects.get(slug=data['slug'])
         eq_(es_doc.locale, 'es')
         self._lock_workflow(es_doc, edit_url)
-
-
-class MinimalViewTests(TestCase):
-
-    def setUp(self):
-        super(MinimalViewTests, self).setUp()
-        rev = ApprovedRevisionFactory()
-        self.doc = rev.document
-        p = ProductFactory()
-        self.doc.products.add(p)
-        self.doc.save()
-
-    def test_it_works(self):
-        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
-        url += '?minimal=1&mobile=1'
-        res = self.client.get(url)
-        assert template_used(res, 'wiki/mobile/document-minimal.html')
-
-    def test_only_if_mobile(self):
-        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
-        url += '?minimal=1'
-        res = self.client.get(url)
-        assert template_used(res, 'wiki/document.html')
-
-    def test_xframe_options(self):
-        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
-        url += '?minimal=1&mobile=1'
-        res = self.client.get(url)
-        # If it is not set to "DENY", then it is allowed.
-        eq_(res.get('X-Frame-Options', 'ALLOW').lower(), 'allow')
-
-    def test_xframe_options_deny_not_minimal(self):
-        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
-        res = self.client.get(url)
-        eq_(res['X-Frame-Options'], 'DENY')
-
-    def test_caching(self):
-        """Test that the cached version of the page also allows framing."""
-        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
-        url += '?minimal=1&mobile=1'
-        res = self.client.get(url)
-        eq_(res.get('X-Frame-Options', 'ALLOW').lower(), 'allow')
-        # Now do it again. This one should hit the cache.
-        res = self.client.get(url)
-        eq_(res.get('X-Frame-Options', 'ALLOW').lower(), 'allow')
-
-
-class MobileDocumentTests(MobileTestCase):
-
-    def setUp(self):
-        super(MobileDocumentTests, self).setUp()
-        rev = ApprovedRevisionFactory()
-        self.doc = rev.document
-        p = ProductFactory()
-        self.doc.products.add(p)
-        self.doc.save()
-
-    def test_it_works(self):
-        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
-        res = self.client.get(url)
-        eq_(res.status_code, 200)
-        assert template_used(res, 'wiki/mobile/document.html')
 
 
 class FallbackSystem(TestCase):

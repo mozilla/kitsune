@@ -1,6 +1,5 @@
 from django.shortcuts import render
 
-from mobility.decorators import mobile_template
 
 from kitsune.products.models import Product
 from kitsune.sumo.decorators import ssl_required
@@ -16,27 +15,23 @@ def home(request):
 
 
 @ssl_required
-@mobile_template('landings/{mobile/}get-involved.html')
-def get_involved(request, template):
-    return render(request, template)
+def get_involved(request):
+    return render(request, 'landings/get-involved.html')
 
 
 @ssl_required
-@mobile_template('landings/{mobile/}get-involved-questions.html')
-def get_involved_questions(request, template):
-    return render(request, template)
+def get_involved_questions(request):
+    return render(request, 'landings/get-involved-questions.html')
 
 
 @ssl_required
-@mobile_template('landings/{mobile/}get-involved-kb.html')
-def get_involved_kb(request, template):
-    return render(request, template)
+def get_involved_kb(request):
+    return render(request, 'landings/get-involved-kb.html')
 
 
 @ssl_required
-@mobile_template('landings/{mobile/}get-involved-l10n.html')
-def get_involved_l10n(request, template):
-    return render(request, template)
+def get_involved_l10n(request):
+    return render(request, 'landings/get-involved-l10n.html')
 
 
 def integrity_check(request):

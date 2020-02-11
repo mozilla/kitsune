@@ -11,8 +11,8 @@ from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase, MinimalViewTestCase
-from kitsune.sumo.tests import SumoPyQuery as pq, template_used
+from kitsune.sumo.tests import post, get, attrs_eq
+from kitsune.sumo.tests import SumoPyQuery as pq
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.events import (
@@ -457,43 +457,6 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(r.document.get_absolute_url())
         doc = pq(response.content)
         eq_(doc(".wiki-doc .share-link a").attr("href"), "https://www.example.org")
-
-
-class MobileArticleTemplate(MobileTestCase):
-    def setUp(self):
-        super(MobileArticleTemplate, self).setUp()
-        ProductFactory()
-
-    def test_document_view(self):
-        """Verify mobile template doesn't 500."""
-        r = ApprovedRevisionFactory(content="Some text.")
-        response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
-        assert template_used(response, "wiki/mobile/document.html")
-
-    def test_document_share_link_escape(self):
-        """Ensure that the share link isn't escaped."""
-        r = ApprovedRevisionFactory(
-            content="Test", document__share_link="https://www.example.org",
-        )
-        response = self.client.get(r.document.get_absolute_url())
-        doc = pq(response.content)
-        eq_(doc("#wiki-doc .share-link a").attr("href"), "https://www.example.org")
-
-
-class MinimalArticleTemplate(MinimalViewTestCase):
-    def setUp(self):
-        super(MinimalArticleTemplate, self).setUp()
-        ProductFactory()
-
-    def test_document_share_link_escape(self):
-        """Ensure that the share link isn't escaped."""
-        r = ApprovedRevisionFactory(
-            content="Test", document__share_link="https://www.example.org",
-        )
-        response = self.client.get(self.get_minimal_url(r.document))
-        doc = pq(response.content)
-        eq_(doc("#wiki-doc .share-link a").attr("href"), "https://www.example.org")
 
 
 class RevisionTests(TestCaseBase):

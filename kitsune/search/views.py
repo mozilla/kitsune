@@ -166,10 +166,6 @@ def simple_search(request):
     # 4. Generate search.
     cleaned = search_form.cleaned_data
 
-    # On mobile, we default to just wiki results.
-    if request.MOBILE and cleaned['w'] == constants.WHERE_BASIC:
-        cleaned['w'] = constants.WHERE_WIKI
-
     language = locale_or_default(cleaned['language'] or request.LANGUAGE_CODE)
     lang_name = settings.LANGUAGES_DICT.get(language.lower()) or ''
 
@@ -298,10 +294,6 @@ def advanced_search(request):
 
     # 4. Generate search.
     cleaned = search_form.cleaned_data
-
-    # On mobile, we default to just wiki results.
-    if request.MOBILE and cleaned['w'] == constants.WHERE_BASIC:
-        cleaned['w'] = constants.WHERE_WIKI
 
     # We use a regular S here because we want to search across
     # multiple doctypes.

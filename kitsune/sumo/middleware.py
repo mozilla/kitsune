@@ -17,7 +17,6 @@ from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
-import mobility
 from mozilla_django_oidc.middleware import SessionRefresh
 from enforce_host import EnforceHostMiddleware
 
@@ -249,57 +248,6 @@ def safe_query_string(request):
         yield
     finally:
         request.META['QUERY_STRING'] = qs
-
-
-# Mobile user agents.
-MOBILE_UAS = re.compile('android|fennec|mobile|iphone|opera (?:mini|mobi)')
-
-# Tablet user agents. User agents matching tablets will not be considered
-# to be mobile (for tablets, request.MOBILE = False).
-TABLET_UAS = re.compile('tablet|ipad')
-
-
-# This is a modified version of 'mobility.middleware.DetectMobileMiddleware'.
-# We want to exclude tablets from being detected as MOBILE and there is
-# no way to do that by just overriding the detection regex.
-class DetectMobileMiddleware(MiddlewareMixin):
-    """Looks at user agent and decides whether the device is mobile."""
-    def __init__(self, *args, **kwargs):
-        if settings.SKIP_MOBILE_DETECTION:
-            raise MiddlewareNotUsed()
-
-    def process_request(self, request):
-        ua = request.META.get('HTTP_USER_AGENT', '').lower()
-        mc = request.COOKIES.get(settings.MOBILE_COOKIE)
-        is_tablet = TABLET_UAS.search(ua)
-        is_mobile = not is_tablet and MOBILE_UAS.search(ua)
-        if (is_mobile and mc != 'off') or mc == 'on':
-            request.META['HTTP_X_MOBILE'] = '1'
-
-    def process_response(self, request, response):
-        patch_vary_headers(response, ['User-Agent'])
-        return response
-
-
-class MobileSwitchMiddleware(object):
-    """Looks for query string parameters to switch to the mobile site."""
-    def process_request(self, request):
-        mobile = request.GET.get('mobile')
-
-        if mobile == '0':
-            request.MOBILE = False
-        elif mobile == '1':
-            request.MOBILE = True
-
-    def process_response(self, request, response):
-        mobile = request.GET.get('mobile')
-
-        if mobile == '0':
-            response.set_cookie(mobility.middleware.COOKIE, 'off')
-        elif mobile == '1':
-            response.set_cookie(mobility.middleware.COOKIE, 'on')
-
-        return response
 
 
 class HostnameMiddleware(MiddlewareMixin):
