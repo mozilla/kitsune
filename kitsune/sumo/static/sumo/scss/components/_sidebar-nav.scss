@@ -152,6 +152,14 @@
           padding: 0;
         }
       }
+
+      .selectbox-wrapper {
+        margin-bottom: 8px;
+      }
+
+      .field.checkbox {
+        margin-top: 16px;
+      }
     }
 
     @media #{p.$mq-md} {

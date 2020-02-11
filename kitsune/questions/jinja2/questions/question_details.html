@@ -42,7 +42,7 @@
   <article>
     <div id="question-{{ question.id }}" class="question" itemscope itemtype="http://schema.org/Question">
       {% if question.is_locked or question.is_archived %}
-        <div class="notice">
+        <div class="notice mzp-c-notification-bar mzp-t-warning">
           {% if question.is_locked and not question.is_archived %}
             {{ _('This thread was closed.') }}
           {% elif not question.is_locked and question.is_archived %}
@@ -220,16 +220,15 @@
 
           <div class="main-content">
             {{ content_editor(form.content) }}
-
             {% if question.needs_info %}
             <div class="field checkbox">
-              <label for="id_info_provided">{{ _('I am providing the requested information') }}</label>
               <input id="id_info_provided" type="checkbox" name="clear_needsinfo" {% if user == question.creator %}checked="checked"{% endif %}>
+              <label for="id_info_provided">{{ _('I am providing the requested information') }}</label>
             </div>
             {% else %}
             <div class="field checkbox">
-              <label for="id_needs_info">{{ _('Needs more information') }}</label>
               <input id="id_needs_info" type="checkbox" name="needsinfo">
+              <label for="id_needs_info">{{ _('Needs more information') }}</label>
             </div>
             {% endif %}
           </div>
