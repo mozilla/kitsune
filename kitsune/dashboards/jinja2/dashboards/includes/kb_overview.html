@@ -7,9 +7,7 @@
     <th>{{ _('Ready for L10N') }}</th>
     <th>{{ _('Stale') }}</th>
     <th>{{ _('Expiry Date') }}</th>
-    {% if not request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
-      <th></th>
-    {% endif %}
+    <th></th>
   </tr>
 </thead>
 {% for row in overview_rows %}

@@ -45,3 +45,4 @@ js_assets/
 styleguide/build/
 
 npm-debug.log
+.babel.json

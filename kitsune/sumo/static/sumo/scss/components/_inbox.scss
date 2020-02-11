@@ -102,7 +102,8 @@
       color: var(--color-heading);
       text-decoration: none;
 
-      &:hover {
+      &:hover,
+      &:hover time {
         color: var(--color-link);
       }
     }
@@ -110,6 +111,8 @@
     time {
       display: block;
       @include c.text-body-xs;
+      font-weight: normal;
+      color: var(--color-text);
     }
   }
 }

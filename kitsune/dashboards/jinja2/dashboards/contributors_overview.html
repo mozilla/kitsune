@@ -9,26 +9,32 @@
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
 
 {% block content %}
-  <div class="grid_12">
-    <article class="main dashboards dashboards-detail">
-      <div class="cf">
-        {{ product_selector(products, product) }}
-      </div>
-      <div class="cf">
-        {{ category_filter() }}
-      </div>
-      <h1>{{ title }}</h1>
-      <ul class="readout-modes" data-slug="kb-overview">
-        {% for key, name in overview_modes %}
-          <li class="mode{% if key == 2 %} active{% endif %}" data-url="{{ url('dashboards.contributors_overview_rows')|urlparams(max=10, mode=key, locale=locale, product=product.slug) }}">
-            <a href="#">{{ name }}</a>
-          </li>
-        {% endfor %}
-      </ul>
+<article class="main dashboards dashboards-detail sumo-page-section">
+  <h1 class="text-display-lg">{{ title }}</h1>
+</article>
+{% endblock %}
 
-      <table id="kb-overview-table">
-        {% include 'dashboards/includes/kb_overview.html' %}
-      </table>
-    </article>
-  </div>
+{% block below_main %}
+<div class="table-filters">
+  {{ product_selector(products, product) }}
+  {{ category_filter() }}
+</div>
+
+{% if overview_modes %}
+<nav class="tabs">
+  <ul data-slug="kb-overview" class="tabs--list readout-modes">
+    {% for key, name in overview_modes %}
+      <li class="tabs--item mode {% if key == 2 %}active{% endif %}" data-url="{{ url('dashboards.contributors_overview_rows')|urlparams(max=10, mode=key, locale=locale, product=product.slug) }}">
+        <a class="tabs--link {% if key == 2 %}is-active{% endif %}" href="#">
+          <span>{{ name }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endif %}
+
+<table id="kb-overview-table">
+  {% include 'dashboards/includes/kb_overview.html' %}
+</table>
 {% endblock %}

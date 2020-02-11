@@ -6,7 +6,8 @@
 
   &--sidebar,
   &--main,
-  &--full {
+  &--full,
+  &--one-half {
     @include c.col;
   }
 
@@ -21,6 +22,10 @@
       .sumo-l-two-col--sidebar {
         width: c.col-width(2, 6);
       }
+    }
+
+    &--one-half {
+      width: c.col-width(1, 2);
     }
   }
 

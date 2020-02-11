@@ -132,6 +132,12 @@ h5, h6, .text-display-sm {
   @include c.text-body-xs();
 }
 
+.normalize-headings {
+  h1, h2, h3, h4, h5, h6 {
+    @include c.text-display-xs;
+  }
+}
+
 .page-heading {
   @include c.text-display-xl;
   text-align: center;

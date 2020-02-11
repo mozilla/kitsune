@@ -2,8 +2,10 @@
 
 {# these macros are only used here so it's better to define them locally #}
 {% macro raw_row(html, classes, label) %}
-  <label class="row-left {{ classes }}">{{ label }}</label>
-  <div class="row-right {{ classes }}">{{ html|safe }}</div>
+  <div class="field">
+    <label class="row-left {{ classes }}">{{ label }}</label>
+    <div class="row-right {{ classes }}">{{ html|safe }}</div>
+  </div>
 {% endmacro %}
 
 {% macro row(field, classes, label=None) %}
@@ -25,9 +27,9 @@
 {% endmacro %}
 
 {% macro submit_row(form, type) %}
-  <div class="upload-action">
-    <input type="submit" name="upload" value="{{ _('Upload file') }}">
-    <input type="submit" name="cancel" class="kbox-cancel link-btn{% if form.instance.pk %} draft{% endif %}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}" value="{{ _('Cancel') }}">
+  <div class="upload-action sumo-button-wrap">
+    <input type="submit" class="sumo-button primary-button" name="upload" value="{{ _('Upload file') }}">
+    <input type="submit" name="cancel" class="sumo-button kbox-cancel {% if form.instance.pk %} draft{% endif %}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}" value="{{ _('Cancel') }}">
   </div>
 {% endmacro %}
 
@@ -74,7 +76,14 @@ What JS needs to do:
 TODO: better error messages ("invalid file" means too big, or extension, etc)
 
 #}
-<div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
+<div
+  class="hide-until-expanded"
+  id="gallery-upload-modal"
+  title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}"
+  data-modal="true"
+  data-target="#btn-upload"
+  data-id="upload-kbox"
+  data-position="none"
   data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}">
   <form id="gallery-upload-image" class="upload-form{{ ' draft' if image_form.instance.pk else '' }}"
     data-post-url="{{ url('gallery.upload_async', media_type='image') }}"

@@ -1,0 +1,85 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+.contributor-list {
+  display: flex;
+  flex-wrap: wrap;
+
+  li {
+    width: 48px;
+    margin: 4px;
+  }
+
+  img {
+    display: block;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+  }
+}
+
+.media-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+
+  li {
+    width: 200px;
+    height: 200px;
+
+    a {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+    }
+  }
+
+  img {
+    max-width: 184px;
+    max-height: 184px;
+  }
+}
+
+.media-search {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.media-filters {
+  display: flex;
+  justify-content: space-between;
+
+  > * {
+    width: 48%;
+  }
+}
+
+
+.filter {
+  &.inline-label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    select,
+    input {
+      flex: 1 1 auto;
+      width: 100%;
+      width: 100%;
+      max-width: none;
+      margin: 0 0 16px 0;
+    }
+
+    @media #{p.$mq-md} {
+      flex-wrap: nowrap;
+
+      select,
+      input {
+        margin: 0 10px;
+
+      }
+    }
+  }
+}

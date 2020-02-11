@@ -724,7 +724,7 @@
             '<div class="area">' +
             '<div id="responses-area">' +
             '<h2 class="heading-label">' + gettext('Categories') + '</h2>' +
-            '<ul class="category-list sidebar-nav">' +
+            '<ul class="category-list">' +
             '<li class="status-indicator busy">' + gettext('Loading...') + '</li>' +
             '</ul></div>' +
             '<div id="response-list-area">' +
@@ -735,9 +735,9 @@
             '<div id="response-content-area">' +
             '<h2 class="heading-label preview-label">' + gettext('Response editor') + '</h2>' +
             '<button class="toggle-view btn">' + gettext('Switch to preview mode') + '</button>' +
-            '<p class="response-preview">' +
+            '<div class="field has-md-textarea response-preview">' +
             '<textarea id="response-content">' +
-            '</textarea></p>' +
+            '</textarea></div>' +
             '<p class="response-preview-rendered"></p>' +
             '</div>' +
             '</div>' +

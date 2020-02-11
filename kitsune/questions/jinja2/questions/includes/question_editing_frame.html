@@ -18,11 +18,10 @@ we can compute the edit-title URL.
 {% set hide_aaq_link = True %}
 
 {% block content %}
-  <div class="grid_12">
-    <article class="main">
+    <article class="main sumo-page-section">
       <div id="ask-question">
         {% if not no_headline %}
-          <h1>{% block headline %}Do Something to a Question{% endblock %}</h1>
+          <h1 class="text-display-lg">{% block headline %}Do Something to a Question{% endblock %}</h1>
         {% endif %}
         <div class="inner-wrap">
 
@@ -46,13 +45,13 @@ we can compute the edit-title URL.
                 {% block major_detail_instructions %}
                   <h2>Do some stuff.</h2>
                 {% endblock %}
-                <p>
+                <p class="text-body-lg">
                   {% trans %}
                     Be nice. Our volunteers are Mozilla users just like you,
                     who take the time out of their day to help.
                   {% endtrans %}
                 </p>
-                <div class="info">
+                <div class="info card shade-bg highlight mb">
                   {% trans %}
                     Be descriptive. Saying &quot;Playing video on YouTube is
                     always choppy&quot; will help our volunteers identify
@@ -64,7 +63,7 @@ we can compute the edit-title URL.
                 {% for field in form.hidden_fields() %}
                   {{ field|safe }}
                 {% endfor %}
-                <ul>
+                <ul class="form-as-ul full-width">
                   {% set li_class='' %}
                   {% for field in form.visible_fields() %}
 
@@ -73,7 +72,7 @@ we can compute the edit-title URL.
                         <p>
                           {{ _("We've made some educated guesses about your current browser and operating system.") }}
                           <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
-                          <a href="#hide-details" class="hide">{{ _('Hide details &raquo;')|safe }}</a>
+                          <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
                         </p>
                       </li>
                       {% set li_class='details' %}
@@ -90,7 +89,7 @@ we can compute the edit-title URL.
                       {% endif %}
 
                       {% if field.help_text and field.name != 'troubleshooting' %}
-                        <p class="help-text">{{ field.help_text|safe }}</p>
+                        <p>{{ field.help_text|safe }}</p>
                       {% endif %}
                     </li>
 
@@ -104,17 +103,20 @@ we can compute the edit-title URL.
                   {% endfor %}
                 </ul>
 
-                <div class="info">
+                <div class="info card highlight is-shaded">
+                  <p>
                   {% trans %}
                     Follow through. Sometimes, our volunteers would ask you
                     for more information or to test out certain scenarios.
                     The sooner you can do this, the sooner they would know
                     how to fix it.
                   {% endtrans %}
+                  </p>
                 </div>
-
-                <button type="submit" class="btn btn-submit big" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
-                {% block more_submit_buttons %}{% endblock %}
+                <div class="sumo-button-wrap">
+                  <button type="submit" class="sumo-button primary-button" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
+                  {% block more_submit_buttons %}{% endblock %}
+                </div>
               </form>
             </div>
           {% endif %}
@@ -132,7 +134,6 @@ we can compute the edit-title URL.
         </div>
       </div>
     </article>
-  </div>
 {% endblock %}
 
 {% block side %}

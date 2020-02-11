@@ -32,3 +32,24 @@ a.no:before,
 a.markasready:before {
   background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#FF6A75" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></g></svg>');
 }
+
+
+.has-icon,
+.is-details .mzp-c-menu-list-item a.has-icon {
+  display: flex;
+  align-items: center;
+
+  .icon-md {
+    flex: 0 0 auto;
+    @include p.bidi(((margin, 0 16px 0 0, 0 0 0 16px),));
+  }
+}
+
+.icon-sm {
+
+  width: 20px;
+}
+
+.icon-md {
+  width: 36px;
+}
