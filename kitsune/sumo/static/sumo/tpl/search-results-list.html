@@ -77,7 +77,7 @@
 <div class="pagination--wrap">
   <p>
   {{ _("Page %(current)s of %(total)s")
-      | f({current: x, total: pagination.num_pages}, true)
+      | f({current: pagination.number, total: pagination.num_pages}, true)
       | safe }}
   </p>
   <ol class="pagination">
