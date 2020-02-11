@@ -117,3 +117,17 @@
     }
   }
 }
+
+
+// stack buttons and fit to the biggest one.
+.sumo-button-stack {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: -8px;
+
+  .sumo-button {
+    width: 100%;
+    margin-bottom: 8px;
+    white-space: nowrap;
+  }
+}

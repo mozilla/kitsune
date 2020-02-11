@@ -235,7 +235,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        assert '0\n' in doc('.have-problem')[0].text
+        assert '0' in doc('.have-problem')[0].text
         eq_(me_too_count, len(doc('div.me-too form')))
 
         # Vote
@@ -247,7 +247,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        assert '1\n' in doc('.have-problem')[0].text
+        assert '1' in doc('.have-problem')[0].text
         eq_(0, len(doc('div.me-too form')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -259,7 +259,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        assert '1\n' in doc('.have-problem')[0].text
+        assert '1' in doc('.have-problem')[0].text
 
     def test_question_authenticated_vote(self):
         """Authenticated user vote."""
@@ -280,7 +280,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('form.helpful input[name="helpful"]')))
+        eq_(1, len(doc('form.helpful button[name="helpful"]')))
 
         # Vote
         ua = 'Mozilla/5.0 (DjangoTestClient)'
@@ -326,7 +326,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         Answer.objects.create(question=q, creator=q.creator, content='test')
         response = get(self.client, 'questions.details', args=[q.id])
         doc = pq(response.content)
-        eq_(2, len(doc('form.helpful input[name="helpful"]')))
+        eq_(2, len(doc('form.helpful button[name="helpful"]')))
 
     def test_asker_can_vote(self):
         """The asker can vote Not/Helpful."""
@@ -489,7 +489,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc('ol.answers li.edit')))
+        eq_(0, len(doc('ul.mzp-c-menu-list-list li.edit')))
 
         # Add an answer and verify the edit link shows up
         content = 'lorem ipsum dolor sit amet'
@@ -499,7 +499,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(1, len(doc('li.edit')))
         new_answer = self.question.answers.order_by('-id')[0]
-        eq_(1, len(doc('#answer-%s + div li.edit' % new_answer.id)))
+        eq_(1, len(doc('#answer-%s li.edit' % new_answer.id)))
 
         # Make sure it can be edited
         content = 'New content for answer'
@@ -1063,7 +1063,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # First there should be no questions tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(0, len(doc('article.questions > section')))
+        eq_(0, len(doc('.forum--question-item')))
 
         # Tag a question 'mobile'
         q = QuestionFactory()
@@ -1078,7 +1078,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(1, len(doc('article.questions > section')))
+        eq_(1, len(doc('.forum--question-item')))
         eq_('%s/en-US/questions/all?tagged=mobile&show=all' % settings.CANONICAL_URL,
             doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -1124,10 +1124,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            eq_(len(expected), len(doc('.questions > section')))
+            eq_(len(expected), len(doc('.forum--question-item')))
 
             for q in expected:
-                eq_(1, len(doc('.questions > section[id=question-%s]' % q.id)))
+                eq_(1, len(doc('.forum--question-item[id=question-%s]' % q.id)))
 
         # No filtering -> All questions.
         check('all', [q1, q2, q3])
@@ -1163,10 +1163,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            # eq_(len(expected), len(doc('.questions > section')))
+            # eq_(len(expected), len(doc('.forum--question-item')))
 
             for q in expected:
-                eq_(1, len(doc('.questions > section[id=question-%s]' % q.id)))
+                eq_(1, len(doc('.forum--question-item[id=question-%s]' % q.id)))
 
         # No filtering -> All questions.
         check({}, [q1, q2, q3])
@@ -1211,7 +1211,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q.questionvisits_set.create(visits=1007)
         response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
-        eq_('1007 views', doc('div.views').text())
+        eq_('1007', doc('.views-val').text())
 
     def test_no_unarchive_on_old_questions(self):
         ques = QuestionFactory(created=(datetime.now() - timedelta(days=200)), is_archived=True)
@@ -1230,9 +1230,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         response = self.client.get(urlparams(reverse('questions.list', args=['all']), show=''))
         doc = pq(response.content)
-        tag = doc('#question-{id} .tag-list li img'.format(id=q.id))
+        tag = doc('#question-{id} .tag-list li a'.format(id=q.id))
         # Even though there are no tags, the product should be displayed.
-        assert 'logo-sprite-tiny' in tag.attr('class')
+        assert p.title in tag[0].text
 
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
@@ -1248,7 +1248,7 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         url = urlparams(url, filter='no-replies')
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(2, len(doc('article.questions > section')))
+        eq_(2, len(doc('.forum--question-item')))
 
 
 class QuestionEditingTests(TestCaseBase):

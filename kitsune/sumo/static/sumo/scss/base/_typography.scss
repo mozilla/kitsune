@@ -138,8 +138,26 @@ h5, h6, .text-display-sm {
 
   &--logo {
     display: block;
-    width: 56px;
-    margin: 0 auto 8px;
+    width: 32px;
+    margin: 40px 0 8px;
+
+    @media #{p.$mq-md} {
+      width: 48px;
+      margin: 68px 0 8px;
+    }
+
+    @at-root .home-search-section & {
+      width: 56px;
+      margin: 0 auto 8px;
+    }
+  }
+
+  &--intro-text {
+    @include c.text-body-md();
+
+    @media #{p.$mq-md} {
+      @include c.text-body-lg();
+    }
   }
 }
 

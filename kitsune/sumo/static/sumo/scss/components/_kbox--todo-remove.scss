@@ -1,0 +1,76 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// This component should be replaced with Protocol's modal system, because
+// it doesn't make sense to include two of them. However, this plugin is doing
+// some things with ajax in questions.js that I'm unclear on how to replace.
+// So for now, I'm included the old CSS here so the site is still functional
+// without replacing all of the JS. -kasey@lincolnloop.com.
+
+.kbox {
+  display: none;
+}
+
+.kbox-container {
+  background: #fff;
+  border-radius: 7px;
+  box-shadow: 1px 2px 15px #aaa;
+  display: none;
+  font-size: 14px;
+  position: absolute;
+  width: 500px;
+  z-index: 99;
+}
+
+.kbox-open {
+  display: block;
+
+  .kbox {
+    display: block;
+  }
+}
+
+.kbox-close {
+  font-size: 22px !important;
+  position: absolute;
+  right: 8px;
+  top: 5px;
+
+  &:link,
+  &:visited,
+  &:active,
+  &:hover {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+}
+
+.html-rtl {
+  .kbox-close {
+    left: 8px;
+    right: auto;
+  }
+}
+
+.kbox-title {
+  @include c.text-display-sm;
+  font-weight: bold;
+  color: var(--color-heading);
+  display: block;
+  margin: 0;
+  padding: 10px 25px 0;
+}
+
+.kbox-wrap {
+  padding: 10px 25px;
+}
+
+#kbox-overlay {
+  background: rgba(0, 0, 0, 0.3);
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 98;
+}

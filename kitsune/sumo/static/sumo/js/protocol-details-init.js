@@ -6,8 +6,18 @@ function detailsInit() {
 
   function swapMobileSubnavText(){
     var button = document.querySelector('.details-heading button');
-    var activeLinkText = document.querySelector('.sidebar-nav .selected a').innerHTML;
-    button.innerHTML = activeLinkText;
+    var activeLink = document.querySelector('.sidebar-nav .selected a');
+    var firstHeadingText = document.querySelector('.sidebar-nav .sidebar-subheading');
+
+    if (activeLink) {
+      var mobileButtonText = activeLink.innerHTML;
+    } else if (firstHeadingText) {
+      var mobileButtonText = firstHeadingText.innerHTML;
+    } else {
+      var mobileButtonText = 'debug this';
+    }
+
+    button.innerHTML = mobileButtonText;
   }
 
   if (sidebarList && _mqWide.matches) {
@@ -23,6 +33,13 @@ function detailsInit() {
       window.Mzp.Details.destroy('.details-heading');
     }
   });
+
+  // built for quote dropdowns in forum pages –
+  // this is a global selector to always show dropdowns
+  var forumDropdown = document.querySelector('[data-has-dropdown]');
+  if ( forumDropdown ) {
+    window.Mzp.Details.init('[data-has-dropdown]');
+  }
 }
 
 // This is patched here to help the tests locate the referenced function

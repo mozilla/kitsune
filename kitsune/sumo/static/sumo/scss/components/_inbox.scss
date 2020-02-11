@@ -73,6 +73,10 @@
   }
 }
 
+.avatar-row {
+  display: flex;
+  justify-content: space-between;
+}
 
 .avatar-details {
   display: flex;
@@ -95,7 +99,7 @@
 
     a {
       font-weight: bold;
-      color: var(--color-text);
+      color: var(--color-heading);
       text-decoration: none;
 
       &:hover {
@@ -105,7 +109,7 @@
 
     time {
       display: block;
-      @include c.text-body-xs
+      @include c.text-body-xs;
     }
   }
 }

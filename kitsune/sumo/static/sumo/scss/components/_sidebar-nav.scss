@@ -11,6 +11,7 @@
 
 .sidebar-nav {
   margin-bottom: 32px;
+
   &--list,
   &--sublist {
     list-style: none;
@@ -23,15 +24,14 @@
     margin-bottom: 8px;
   }
 
-  &--heading-item {}
-
   a {
     display: block;
     padding: 4px 8px;
     border-radius: var(--global-radius);
     text-decoration: none;
+    cursor: pointer;
 
-    &:link,
+    &,
     &:visited {
       color: var(--color-text);
     }
@@ -44,6 +44,33 @@
     &.details-heading {
       padding-left: 0;
     }
+  }
+
+  // use this modifier to remove link padding, in the cases where no
+  // .selected classes will be used.
+  &.is-action-list {
+    a {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  .edit > a:before {
+    content: none; // removes pencil icon from sidebar links
+  }
+
+  .related-document,
+  .related-question {
+    @include c.text-body-md;
+    background-image: url("#{p.$image-path}/icons/blog.svg");
+    background-repeat: no-repeat;
+    background-position: 0px 6px;
+    background-size: 16px 16px;
+    padding-left: 24px;
+  }
+
+  .related-document {
+    background-image: url("#{p.$image-path}/icons/reader-mode.svg");
   }
 
   li.selected > :link,
@@ -112,6 +139,19 @@
       &[aria-hidden="false"] {
         display: block;
       }
+
+      .mzp-js-details-wrapper {
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--color-heading);
+      }
+
+      .tag-list {
+        margin-bottom: 16px;
+
+        a {
+          padding: 0;
+        }
+      }
     }
 
     @media #{p.$mq-md} {
@@ -126,6 +166,45 @@
       @at-root .break-on-lg & {
         display: none;
       }
+    }
+  }
+}
+
+
+.sidebar-subheading {
+  @include c.text-body-md;
+  font-weight: bold;
+  color: var(--color-heading);
+  margin-top: p.$spacing-md;
+  margin-bottom: p.$spacing-sm;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &.is-accordion-heading {
+    margin-top: 72px;
+
+    button {
+      padding-left: 0;
+      padding-bottom: 8px;
+
+      &:before {
+        top: 8px;
+      }
+
+      &[aria-expanded="false"] {
+        border-bottom: 1px solid var(--color-heading);
+      }
+    }
+  }
+
+  @media #{p.$mq-md} {
+    @include c.text-body-lg;
+    margin: 72px 0 p.$spacing-lg;
+
+    &.is-accordion-heading {
+      margin-top: 72px;
     }
   }
 }

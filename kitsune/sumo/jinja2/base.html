@@ -163,7 +163,12 @@
       <button data-sumo-toggle-nav="#search-navigation" class="sumo-nav--search-button" type="button" aria-controls="search-navigation">Search</button>
       <button data-sumo-toggle-nav="#main-navigation" class="sumo-nav--toggle-button" type="button" aria-controls="main-navigation">Menu</button>
       <a class="sumo-nav--avatar-button" data-sumo-toggle-nav="#profile-navigation" aria-controls="profile-navigation" aria-role="button">
+        {% if user.is_authenticated() %}
         <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+        {% else %}
+        <img class="avatar" src="{{ STATIC_URL }}sumo/img/default-FFA-avatar.png" alt="Avatar for Username">
+        {% endif %}
+
       </a>
       <div class="mzp-c-navigation-items sumo-nav--list-wrap" id="main-navigation">
         <div class="mzp-c-navigation-menu">
@@ -213,7 +218,8 @@
 </div>
 {% endblock %}
 
-
+{% block masthead %}
+{% endblock %}
 
 {% block contentwrap %}
 <div class="sumo-page-section mzp-l-content {% block base_container_classes %}{% endblock %}" id="main-container">
@@ -223,7 +229,7 @@
 
   <div class="sumo-l-two-col {% block columns_modifier %}{% endblock %}">
     {% block outer_side %}
-    <aside class="sumo-l-two-col--sidebar">
+    <aside id="aside" class="sumo-l-two-col--sidebar">
       {% block side_top %}{% endblock %}
       {% block side %}{% endblock %}
       {% block side_bottom %}{% endblock %}

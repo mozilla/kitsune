@@ -1,16 +1,34 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% set title = _("Get email updates") %}
-<section id="email-subscribe" class="kbox" title="{{ title }}" data-target="#email-subscribe-link" data-id="email-subscribe-kbox" data-position="none" data-close-on-out-click="true">
+
+<section id="email-subscribe" class="mzp-u-modal-content" title="{{ title }}">
+  <h2 class="text-display-sm">{{ title }}</h2>
   <form action="{{ url('questions.watch', question.id) }}" method="post">
     {% csrf_token %}
     {{ errorlist(watch_form) }}
     {% if not user.is_authenticated() %}
+    <div class="field">
       {{ watch_form.email|safe }}
+    </div>
     {% endif %}
-    {{ watch_form.event_type|safe }}
-    <input type="submit" class="btn" value="{{ _('Send Updates') }}" />
+
+    {# This is hard-coded to get correct radio layout {{ watch_form.event_type|safe }} #}
+    <ul id="id_event_type">
+      <li class="field radio is-condensed">
+        <input type="radio" name="event_type" value="reply" required="" checked="" id="id_event_type_0">
+        <label for="id_event_type_0">when anybody replies.</label>
+      </li>
+      <li class="field radio is-condensed">
+        <input type="radio" name="event_type" value="solution" required="" id="id_event_type_1">
+        <label for="id_event_type_1">when a solution is found.</label>
+      </li>
+    </ul>
+
+    <div class="sumo-button-wrap">
+      <input type="submit" class="sumo-button primary-button button-lg" value="{{ _('Send Updates') }}" />
     <span class="cancel">
       <a class="kbox-cancel" href="{{ question.get_absolute_url() }}">{{ _('Cancel') }}</a>
     </span>
+    </div>
   </form>
 </section>

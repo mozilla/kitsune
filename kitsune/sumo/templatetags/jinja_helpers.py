@@ -148,9 +148,9 @@ def truncate_question(text, length, longtext=None):
 
         f = (
             '<p class="short-text">%s&hellip; '
-            + '<span class="show-more-link">('
+            + '<a href="#" class="show-more-link">('
             + _("read more")
-            + ")</span>"
+            + ")</a>"
             + '</p><div class="long-text">%s</div>'
         )
         return f % (stripped_text[:length], longtext)

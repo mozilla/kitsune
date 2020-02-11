@@ -92,12 +92,12 @@
            <td class="l10n">
              {% if rev.is_ready_for_localization %}
                {% set reached_ready_for_l10n = True %}
-               <a class="yes" title="{{ _('This revision is ready for localization.') }}"></a>
+               <a class="yes has-icon" title="{{ _('This revision is ready for localization.') }}"></a>
              {% elif rev.can_be_readied_for_localization() %}
                {% if not reached_ready_for_l10n and document.allows(user, 'mark_ready_for_l10n') %}
-                 <a class="markasready" id="rev-{{ rev.id }}-l10n-no" data-revdate="{{ rev.created }}" data-url="{{ url('wiki.mark_ready_for_l10n_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('This revision is not ready for localization.') }}"></a>
+                 <a class="markasready has-icon" id="rev-{{ rev.id }}-l10n-no" data-revdate="{{ rev.created }}" data-url="{{ url('wiki.mark_ready_for_l10n_revision', document.slug, rev.id, locale=document.locale) }}" title="{{ _('This revision is not ready for localization.') }}"></a>
                {% else %}
-                 <a class="no" title="{{ _('This revision is not ready for localization.') }}"></a>
+                 <a class="no has-icon" title="{{ _('This revision is not ready for localization.') }}"></a>
                {% endif %}
              {% endif %}
            </td>
@@ -106,7 +106,7 @@
            {{ rev.comment }}
          </td>
          {% if not document.is_archived %}
-           <td class="edit">
+           <td class="edit has-icon">
              <a href="{{ url('wiki.new_revision_based_on', document.slug, rev.id, locale=document.locale) }}" title="{{ _('Edit article based on this revision') }}"></a>
            </td>
          {% endif %}

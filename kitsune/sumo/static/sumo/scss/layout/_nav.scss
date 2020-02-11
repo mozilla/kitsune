@@ -390,3 +390,12 @@
     }
   }
 }
+
+// prevent jumping on sticky header
+body.scroll-header:not(.lock-body) {
+  padding-top: 65px;
+
+  @media #{p.$mq-lg} {
+    padding-top: 74px;
+  }
+}
