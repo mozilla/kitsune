@@ -24,6 +24,10 @@
       }
     }
 
+    &.align-center {
+      align-items: center;
+    }
+
     &--one-half {
       width: c.col-width(1, 2);
     }
@@ -35,10 +39,6 @@
 
     &.sidebar-on-right {
       flex-direction: row;
-    }
-
-    &.align-center {
-      align-items: center;
     }
 
     &.cols-on-medium {
