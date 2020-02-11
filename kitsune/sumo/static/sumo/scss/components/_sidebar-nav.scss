@@ -162,18 +162,8 @@
       }
     }
 
-    @media #{p.$mq-md} {
-      display: none;
-
-      @at-root .break-on-lg & {
-        display: block;
-      }
-    }
-
     @media #{p.$mq-lg} {
-      @at-root .break-on-lg & {
-        display: none;
-      }
+      display: none;
     }
   }
 }
@@ -207,7 +197,7 @@
     }
   }
 
-  @media #{p.$mq-md} {
+  @media #{p.$mq-lg} {
     @include c.text-body-lg;
     margin: 72px 0 p.$spacing-lg;
 
