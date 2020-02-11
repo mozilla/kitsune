@@ -1,5 +1,8 @@
 {% from 'macros.html' import search_result %}
 
+{# This is required to get the icons to link properly with nunjucks_precompile #}
+{% set STATIC_URL = "/static/" %}
+
 {% if num_results > 0 %}
   <h2 class="text-display-xs search-results-heading">
     {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
