@@ -1,4 +1,4 @@
-{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, download_firefox, favicon with context %}
+{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, download_firefox, field, checkbox, favicon with context %}
 
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
