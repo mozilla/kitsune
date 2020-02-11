@@ -351,7 +351,7 @@ class TestUserView(TestCase):
         url = reverse('user-detail', args=[p.user.username])
 
         res = self.client.get(url)
-        assert '?s=48' in res.data['avatar']
+        assert '?s=200' in res.data['avatar']
 
         res = self.client.get(url, {'avatar_size': 128})
         assert '?s=128' in res.data['avatar']
