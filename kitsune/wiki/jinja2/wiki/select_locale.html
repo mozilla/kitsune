@@ -9,6 +9,7 @@
   <div class="grid_9">
     <article id="select-locale">
       <h1>{{ _('Select a language to translate to:') }}</h1>
+
       <ul class="locales">
         {% for locale in untranslated_locales %}
           {% if locale[0] != settings.WIKI_DEFAULT_LANGUAGE %}
