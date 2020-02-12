@@ -11,15 +11,15 @@
       <div class="avatar">
         <img src="{{ profile_avatar(profile.user) }}" alt="">
       </div>
-      <h1 class="user">{{ display_name(profile.user) }}
+      <h1 class="text-display-lg user">{{ display_name(profile.user) }}
         {% if profile.name %}
           <span class="username">({{ profile.user.username }})</span>
         {% endif %}
       </h1>
       <section class="documents-contributed">
-        <h1>{{ _('Documents edited or translated') }}</h1>
+        <h2 class="text-display-xs">{{ _('Documents edited or translated') }}</h2>
         {% for group in documents|groupby('locale') %}
-          {% if loop.first %}<ul>{% endif %}
+          {% if loop.first %}<ul class="mzp-u-list-styled">{% endif %}
           <li>[{{ group.grouper }}] {{ settings.LANGUAGES_DICT[group.grouper.lower()] }} ({{ group.list|length }})<ul>
           {% for d in group.list %}
             <li>
@@ -31,8 +31,8 @@
           {% if loop.last %}</ul>{% endif %}
         {% endfor %}
         {% for group in redirects|groupby('locale') %}
-            {% if loop.first %}<h1>{{ _('Redirects') }}</h1><ul>{% endif %}
-            <li>[{{ group.grouper }}] {{ settings.LANGUAGES_DICT[group.grouper.lower()] }} ({{ group.list|length }})<ul>
+            {% if loop.first %}<h2 class="text-display-xs">{{ _('Redirects') }}</h2><ul class="mzp-u-list-styled">{% endif %}
+            <li>[{{ group.grouper }}] {{ settings.LANGUAGES_DICT[group.grouper.lower()] }} ({{ group.list|length }})<ul class="mzp-u-list-styled">
             {% for d in group.list %}
               <li>
                 <a href="{{ d.get_absolute_url() }}">
