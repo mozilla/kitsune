@@ -13,6 +13,43 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
+%link-styles {
+  appearance: none;
+  white-space: nowrap;
+  text-align: left;
+  border: 0 none;
+  display: block;
+  color: var(--color-text);
+  text-decoration: none;
+  background-color: transparent;
+  @include c.text-body-sm;
+
+  span {
+    display: block;
+    padding: 16px 0;
+    margin-right: 16px;
+  }
+
+  &:hover  {
+    color: var(--color-link);
+  }
+
+  &.is-active,
+  &.selected {
+    color: var(--color-link);
+    font-weight: bold;
+
+    span {
+      box-shadow: inset 0 -2px 0 var(--color-link);
+    }
+  }
+
+  &:active {
+    color: var(--color-link);
+    background: transparent;
+  }
+}
+
 .tabs {
   position: relative;
   box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
@@ -31,40 +68,7 @@
   &--link,
   &--button,
   a {
-    appearance: none;
-    white-space: nowrap;
-    text-align: left;
-    border: 0 none;
-    display: block;
-    color: var(--color-text);
-    text-decoration: none;
-    background-color: transparent;
-    @include c.text-body-sm;
-
-    span {
-      display: block;
-      padding: 16px 0;
-      margin-right: 16px;
-    }
-
-    &:hover  {
-      color: var(--color-link);
-    }
-
-    &.is-active,
-    &.selected {
-      color: var(--color-link);
-      font-weight: bold;
-
-      span {
-        box-shadow: inset 0 -2px 0 var(--color-link);
-      }
-    }
-
-    &:active {
-      color: var(--color-link);
-      background: transparent;
-    }
+    @extend %link-styles;
   }
 
   &--button {
@@ -139,4 +143,49 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+
+// jquery UI overrides
+.html-ltr, .html-rtl {
+  .ui-widget.ui-widget-content {
+    border: 0 none;
+  }
+
+  .ui-tabs {
+    .ui-tabs-panel {
+      padding: 2rem 0;
+    }
+
+    .ui-tabs-nav li {
+      background: transparent;
+      border: 0 none;
+
+      a {
+        padding: 0;
+      }
+
+      &.ui-tabs-active a {
+        color: var(--color-link);
+        font-weight: bold;
+
+        span {
+          box-shadow: inset 0 -2px 0 var(--color-link);
+        }
+      }
+    }
+
+
+  }
+
+  .ui-widget-header {
+    border: 0 none;
+    background: transparent;
+    box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
+  }
+
+  .ui-tabs .ui-tabs-nav .ui-tabs-anchor {
+    @extend %link-styles;
+  }
+
 }
