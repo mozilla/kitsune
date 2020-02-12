@@ -172,6 +172,7 @@
   display: flex;
   flex-wrap: wrap;
   margin: 0;
+  @include c.text-body-xs;
 
   li {
     display: flex;
@@ -185,10 +186,14 @@
     &:last-child {
       margin-right: 0;
     }
+
+    &.is-active {
+      background-color: var(--color-link);
+      color: var(--color-inverse);
+    }
   }
 
   a {
-    @include c.text-body-xs;
     color: var(--color-text);
     text-decoration: none;
     padding: 0;
