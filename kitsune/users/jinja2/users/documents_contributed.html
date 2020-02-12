@@ -6,8 +6,7 @@
                  (None, _('Documents'))] %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="profile" class="cf">
+    <article id="profile" class="sumo-page-section">
       <div class="avatar">
         <img src="{{ profile_avatar(profile.user) }}" alt="">
       </div>
@@ -44,5 +43,4 @@
           {% endfor %}
         </section>
     </article>
-  </div>
 {% endblock %}

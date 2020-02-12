@@ -6,61 +6,59 @@
 {% endif %}
 
 {% block content %}
-  <div class="grid_3 hide-mobile">
-    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
-  </div>
-  <div class="grid_9">
+  <section class="sumo-page-section">
     <div class="content-box cf" id="advanced-search">
       {% if advanced %}
-        <h1 class="nomargin">{{ _('Advanced Search') }}</h1>
+        <h1 class="text-display-lg nomargin">{{ _('Advanced Search') }}</h1>
         <div id="search-tabs">
           <span id="where" style="display: none">{{ search_form.w.data or '' }}</span>
-          <ul class="tab-strip cf" id="advanced-search-tabs">
-            <li><a title="{{ _('Search the Knowledge Base') }}" class="tablink" href="#kb">{{ _('Knowledge Base') }}</a></li>
-            <li><a title="{{ _('Search the Support Questions') }}" class="tablink" href="#support">{{ _('Support Questions') }}</a></li>
-            <li><a title="{{ _('Search the Discussion Forums') }}" class="tablink" href="#discussion">{{ _('Discussion Forums') }}</a></li>
+
+          <ul class="tab-strip">
+            <li><a title="{{ _('Search the Knowledge Base') }}" class="tablink" href="#kb"><span>{{ _('Knowledge Base') }}</span></a></li>
+            <li><a title="{{ _('Search the Support Questions') }}" class="tablink" href="#support"><span>{{ _('Support Questions') }}</span></a></li>
+            <li><a title="{{ _('Search the Discussion Forums') }}" class="tablink" href="#discussion"><span>{{ _('Discussion Forums') }}</span></a></li>
           </ul>
           <div id="tab-wrapper">
             <form id="kb" method="get">
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="kb_q">{{ _('Article contains') }}</label>
                 <input name="q" class="auto-fill" id="kb_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or cached_field or '' }}" type="text" />
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="{{ search_form.language.name }}">{{ search_form.language.label_tag() }}</label>
                 {{ search_form.language }}
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.category.label_tag() }}</p>
-                <div class="category checkboxes">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.category.label_tag() }}</h2>
+                <div class="category checkboxes two-col-checkboxes">
                   {{ search_form.category }}
                 </div>
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.product.label_tag() }}</p>
-                <div class="product checkboxes">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.product.label_tag() }}</h2>
+                <div class="product checkboxes two-col-checkboxes">
                   {{ search_form.product }}
                 </div>
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.topics.label_tag() }}</p>
-                <div class="topics checkboxes">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.topics.label_tag() }}</h2>
+                <div class="topics checkboxes two-col-checkboxes">
                   {{ search_form.topics }}
                 </div>
               </div>
 
-              <div class="container cf">
+              <div class="field full-width">
                 <label class="include_archived radios">
                   {{ search_form.include_archived }}
                   {{ search_form.include_archived.label_tag() }}
                 </label>
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width">
                 <label for="{{ search_form.sortby_documents.name }}">{{ search_form.sortby_documents.label_tag() }}</label>
                 {{ search_form.sortby_documents }}
               </div>
@@ -70,53 +68,53 @@
               {% endfor %}
               <input type="hidden" value="1" name="w" />
 
-              <div class="submit">
-                <button class="button dark" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
-                <a class="button transparent" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
+              <div class="submit sumo-button-wrap">
+                <button class="sumo-button primary-button" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
+                <a class="sumo-button secondary-button" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
             </form>{# kb #}
             <form method="get" id="support">
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="support_q">{{ _('Post contains') }}</label>
                 <input name="q" class="auto-fill" id="support_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or '' }}" type="text" />
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.is_locked.label_tag() }}</p>
-                <div class="is_locked radios">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.is_locked.label_tag() }}</h2>
+                <div class="is_locked radios three-col-checkboxes">
                   {{ search_form.is_locked }}
                 </div>
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.is_archived.label_tag() }}</p>
-                <div class="is_archived radios">
+              <div class="field full-width field full-width">
+                <h2 class="text-body-lg">{{ search_form.is_archived.label_tag() }}</h2>
+                <div class="is_archived radios three-col-checkboxes">
                   {{ search_form.is_archived }}
                 </div>
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.is_solved.label_tag() }}</p>
-                <div class="is_solved radios">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.is_solved.label_tag() }}</h2>
+                <div class="is_solved radios three-col-checkboxes">
                   {{ search_form.is_solved }}
                 </div>
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.has_answers.label_tag() }}</p>
-                <div class="has_answer radios">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.has_answers.label_tag() }}</h2>
+                <div class="has_answer radios three-col-checkboxes">
                   {{ search_form.has_answers }}
                 </div>
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.has_helpful.label_tag() }}</p>
-                <div class="has_helpful radios">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.has_helpful.label_tag() }}</h2>
+                <div class="has_helpful radios three-col-checkboxes">
                   {{ search_form.has_helpful }}
                 </div>
               </div>
 
-              <div class="container cf showhide-input inline-label">
+              <div class="field full-width showhide-input inline-label">
                 <label for="{{ search_form.num_voted.name }}">{{ search_form.num_voted.label_tag() }}</label>
                 {{ search_form.num_voted }}
                 <input name="num_votes" type="text" pattern="\d*"
@@ -124,17 +122,17 @@
                        title="{{ _('Number of votes. Must be an integer.') }}" />
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="{{ search_form.asked_by.name }}">{{ search_form.asked_by.label_tag() }}</label>
                 {{ search_form.asked_by }}
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="{{ search_form.answered_by.name }}">{{ search_form.answered_by.label_tag() }}</label>
                 {{ search_form.answered_by }}
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="{{ search_form.q_tags.name }}">{{ search_form.q_tags.label_tag() }}</label>
                 {{ search_form.q_tags }}
               </div>
@@ -142,33 +140,33 @@
                 {{ _('Note: Searching for "tag1, tag2" returns questions tagged with both tag1 and tag2') }}
               </p>
 
-              <div class="container cf">
-                <p>{{ search_form.product.label_tag() }}</p>
-                <div class="product checkboxes">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.product.label_tag() }}</h2>
+                <div class="product checkboxes two-col-checkboxes">
                   {{ search_form.product }}
                 </div>
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.topics.label_tag() }}</p>
-                <div class="topics checkboxes">
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.topics.label_tag() }}</h2>
+                <div class="topics checkboxes two-col-checkboxes">
                   {{ search_form.topics }}
                 </div>
               </div>
 
-              <div class="container showhide-input inline-label">
+              <div class="field full-width showhide-input inline-label">
                 <label for="{{ search_form.created.name }}">{{ search_form.created.label_tag() }}</label>
                 {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
-              <div class="container showhide-input inline-label">
+              <div class="field full-width showhide-input inline-label">
                 <label for="{{ search_form.updated.name }}">{{ search_form.updated.label_tag() }}</label>
                 {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="{{ search_form.sortby.name }}">{{ search_form.sortby.label_tag() }}</label>
                 {{ search_form.sortby }}
               </div>
@@ -178,47 +176,47 @@
               {% endfor %}
               <input type="hidden" value="2" name="w" />
 
-              <div class="submit">
-                <button class="button dark" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
-                <a class="button transparent" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
+              <div class="submit sumo-button-wrap">
+                <button class="sumo-button primary-button" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
+                <a class="sumo-button secondary-button" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
             </form>{# support #}
             <form method="get" id="discussion">
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="discussion_q">{{ _('Thread contains') }}</label>
                 <input name="q" class="auto-fill" id="discussion_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or '' }}" type="text" />
               </div>
 
-              <div class="container cf">
-                <p>{{ search_form.thread_type.label_tag() }}</p>
+              <div class="field full-width">
+                <h2 class="text-body-lg">{{ search_form.thread_type.label_tag() }}</h2>
                 <div class="thread-type checkboxes">
                   {{ search_form.thread_type }}
                 </div>
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width">
                 <label for="{{ search_form.author.name }}">{{ search_form.author.label_tag() }}</label>
                 {{ search_form.author }}
               </div>
 
-              <div class="container showhide-input inline-label">
+              <div class="field full-width showhide-input inline-label">
                 <label for="{{ search_form.created.name }}">{{ search_form.created.label_tag() }}</label>
                 {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
-              <div class="container showhide-input inline-label">
+              <div class="field full-width showhide-input inline-label">
                 <label for="{{ search_form.updated.name }}">{{ search_form.updated.label_tag() }}</label>
                 {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width inline-label">
                 <label for="{{ search_form.sortby.name }}">{{ search_form.sortby.label_tag() }}</label>
                 {{ search_form.sortby }}
               </div>
 
-              <div class="container inline-label">
+              <div class="field full-width">
                 <label for="{{ search_form.forum.name }}">{{ search_form.forum.label_tag() }}</label>
                 {{ search_form.forum }}
               </div>
@@ -228,9 +226,9 @@
               {% endfor %}
               <input type="hidden" value="4" name="w" />
 
-              <div class="submit">
-                <button class="button dark" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
-                <a class="button transparent" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
+              <div class="submit sumo-button-wrap">
+                <button class="sumo-button primary-button" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
+                <a class="sumo-button secondary-button" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
             </form>{# discussion #}
           </div>{# tab-wrapper #}
@@ -241,5 +239,9 @@
         <a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a>
       {% endif %}
     </div>
-  </div>
+  </section>
+{% endblock %}
+
+{% block side %}
+{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}

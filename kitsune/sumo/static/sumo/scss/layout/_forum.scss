@@ -446,6 +446,7 @@
 .is-owner {
   @include c.text-body-xs;
   color: var(--color-heading);
+  font-weight: bold;
   padding: 4px 16px;
   margin: 0 0 8px 0;
   border-radius: 20px;
@@ -532,5 +533,22 @@
 
   @media #{p.$mq-md} {
     padding-top: 40px;
+  }
+}
+
+.thread-meta {
+  display: flex;
+  @include c.text-body-sm;
+
+  li {
+    border-right: 1px solid var(--color-border);
+    padding-right: 12px;
+    margin-right: 12px;
+
+    &:last-child {
+      padding-right: 0;
+      margin-right: 0;
+      border-right: 0 none;
+    }
   }
 }
