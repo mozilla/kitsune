@@ -1,27 +1,29 @@
 {% from "users/includes/macros.html" import login_form as render_login with context %}
 
 <article id="login" class="main login-form">
-  <h1 class="text-display-lg">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
-  <p>
-    {{ _('We are upgrading our log-in system to replace Mozilla Support accounts with Firefox Accounts. Firefox Accounts
-    offers one log-in for convenient and secure access to Mozilla services.') }}
-    <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq"> {{ _('See our FAQ') }}</a>
-    {{ _('for more information') }}.
-  </p>
-
-  <div class="center-on-mobile">
-    <p class="login-button-wrap">
-      <a href="{{ url('users.fxa_authentication_init') }}" class="sumo-button primary-button button-lg">{{ _('Continue with Firefox Accounts') }}</a>
-    </p>
-
+  <div class="sumo-page-section">
+    <h1 class="text-display-lg">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
     <p>
-      <a class="legacy-login-toggle" href="#">{{ _('Continue w/ SUMO account') }}</a>
+      {{ _('We are upgrading our log-in system to replace Mozilla Support accounts with Firefox Accounts. Firefox Accounts
+      offers one log-in for convenient and secure access to Mozilla services.') }}
+      <a href="/kb/firefox-accounts-mozilla-support-faq"> {{ _('See our FAQ') }}</a>
+      {{ _('for more information') }}.
     </p>
 
-    <p class="help-text">
-      {{ _('Continuing with Firefox Accounts means you have agreed with the
-      <a href="https://www.mozilla.org/en-US/about/legal/terms/services/">Term and Conditions</a> and
-      <a href="https://www.mozilla.org/en-US/privacy/firefox/">Privacy Policy</a>' | safe )}}.
-    </p>
+    <div class="center-on-mobile">
+      <p class="login-button-wrap">
+        <a href="{{ url('users.fxa_authentication_init') }}" class="sumo-button primary-button button-lg">{{ _('Continue with Firefox Accounts') }}</a>
+      </p>
+
+      <p>
+        <a class="legacy-login-toggle" href="#">{{ _('Continue w/ SUMO account') }}</a>
+      </p>
+
+      <p class="help-text">
+        {{ _('Continuing with Firefox Accounts means you have agreed with the
+        <a href="https://www.mozilla.org/en-US/about/legal/terms/services/">Term and Conditions</a> and
+        <a href="https://www.mozilla.org/en-US/privacy/firefox/">Privacy Policy</a>' | safe )}}.
+      </p>
+    </div>
   </div>
 </article>
