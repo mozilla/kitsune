@@ -22,7 +22,7 @@
     {% endif %}
   {% endif %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-    <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">Get Help</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">Get Help</a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
@@ -37,12 +37,12 @@
                 </p>
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                <li><a href="/products/firefox">Firefox Browser</a></li>
-                <li><a href="#">Firefox Private Network</a></li>
-                <li><a href="#">Firefox for iOS</a></li>
-                <li><a href="#">Firefox Lockwise</a></li>
-                <li><a href="#">Firefox for Android</a></li>
-                <li><a class="color-link" href="#">See All Products</a></li>
+                <li><a href="/questions/new/desktop">Firefox Browser</a></li>
+                <li><a href="/questions/new/firefox-private-network">Firefox Private Network</a></li>
+                <li><a href="/questions/new/ios">Firefox for iOS</a></li>
+                <li><a href="/questions/new/firefox-lockwise">Firefox Lockwise</a></li>
+                <li><a href="/questions/new/mobile">Firefox for Android</a></li>
+                <li><a class="color-link" href="{{ url('questions.home') }}">See All Products</a></li>
               </ul>
             </section>
            </div>
@@ -52,16 +52,16 @@
                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><rect stroke-linejoin="round" width="18" height="18" rx="2"/><path d="M4 5h10M4 9h10M4 13h4"/></g></svg>
                  <h4 class="mzp-c-menu-item-title">Explore Our Help Articles</h4>
                  <p class="mzp-c-menu-item-desc">
-                   Dig into the knowledge base, tips and tricks, troubleshooting, and so much more
+                   Dig into the knowledge base, tips and tricks, troubleshooting, and so much more.
                  </p>
                </a>
                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                 <li><a href="#">Firefox Browser</a></li>
-                 <li><a href="#">Firefox Private Network</a></li>
-                 <li><a href="#">Firefox for iOS</a></li>
-                 <li><a href="#">Firefox Lockwise</a></li>
-                 <li><a href="#">Firefox for Android</a></li>
-                 <li><a class="color-link" href="#">See All Products</a></li>
+                 <li><a href="/products/firefox">Firefox Browser</a></li>
+                 <li><a href="/products/firefox-private-network">Firefox Private Network</a></li>
+                 <li><a href="/products/ios">Firefox for iOS</a></li>
+                 <li><a href="/products/firefox-lockwise">Firefox Lockwise</a></li>
+                 <li><a href="/products/mobile">Firefox for Android</a></li>
+                 <li><a class="color-link" href="/products">See All Products</a></li>
                </ul>
              </section>
             </div>
@@ -71,7 +71,7 @@
   </li>
   {% if user.is_authenticated() %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-    <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.get_involved') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
@@ -87,7 +87,6 @@
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
                 {{ _discussion_nav_links(user, default_language, active) }}
-
               </ul>
             </section>
            </div>
@@ -130,7 +129,7 @@
     <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden sumo-button primary-button button-lg" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
   {% endif %}
   {% if user.is_authenticated() %}
-  <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="#">
+  <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="{{ url('users.auth') }}">
     <span class="sumo-nav--username">{{ display_name(user) }}</span>
     {% if user.is_authenticated() %}
     <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
@@ -249,7 +248,7 @@
 {% macro _discussion_nav_links(user, default_language, active=None) -%}
 <li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Discussions') }}</a></li>
 <li><a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">{{ _('L10N Discussions') }}</a></li>
-<li {{ active|class_selected('article-discussions') }}><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
+<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
 <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">{{ _('Support Forum') }}</a></li>
 <li><a href="#">(Needs URL) Social Support Forum</a></li>
 <li><a href="#">(Needs URL) New Contributors</a></li>
@@ -261,14 +260,14 @@
 {% macro _tools_nav_links(user, default_language, active=None) -%}
 <li><a href="{{ url('search.advanced') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Advanced Search">{{ _('Advanced Search') }}</a></li>
 <li><a href="#">Templates</a></li>
-<li {{ active|class_selected('kbdashboard') }}><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Knowledge Base Dashboard">{{ _('Knowledge Base Dashboard') }}</a></li>
+<li><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Knowledge Base Dashboard">{{ _('Knowledge Base Dashboard') }}</a></li>
 <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
 <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
-<li><a href="#">Tag Admin</a></li>
+<!-- <li><a href="#">Tag Admin</a></li> -->
 
 <li><a href="{{ url('landings.get_involved') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Quickstart Guide">(remove?) {{ _('Quickstart Guide') }}</a></li>
 <li><a href="{{ url('wiki.document', 'contributor-news-resources') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="News &amp; Resources">(remove?) {{ _('News &amp; Resources') }}</a></li>
-<li {{ active|class_selected('forums') }}><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">(remove?) {{ _('Contributor Forums') }}</a></li>
+<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">(remove?) {{ _('Contributor Forums') }}</a></li>
 <li><a href="{{ url('questions.metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Metrics">(remove?) {{ _('Support Forum Metrics') }}</a></li>
 <li><a href="{{ url('kpi.dashboard') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="KPI Dashboard">(remove?) {{ _('KPI Dashboard') }}</a></li>
 {% endmacro %}
