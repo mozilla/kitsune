@@ -105,7 +105,6 @@ button {
 /* Modals */
 
 #showfor-modal,
-#link-modal,
 #media-modal {
   text-align: left;
   width: 480px;
@@ -147,36 +146,6 @@ section.marky {
 
 #link-modal {
   width: 600px;
-
-  label {
-    clear: both;
-    float: left;
-    padding: 5px 15px 20px 0;
-    text-align: right;
-    width: 75px;
-   }
-
-  ol {
-    float: left;
-    padding: 0;
-    width: 415px;
-  }
-
-  li {
-    list-style: none;
-    padding: 0 0 10px;
-
-    label {
-      float: none;
-      padding: 0;
-      text-align: left;
-      width: auto;
-    }
-  }
-
-  input[type=text] {
-    width: 400px;
-  }
 }
 
 #media-modal {

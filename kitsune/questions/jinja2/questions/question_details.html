@@ -42,8 +42,8 @@
   <article>
     <div id="question-{{ question.id }}" class="question" itemscope itemtype="http://schema.org/Question">
       {% if question.is_locked or question.is_archived %}
-        <div class="notice mzp-c-notification-bar mzp-t-warning">
-          {% if question.is_locked and not question.is_archived %}
+        <div class="notice mzp-c-notification-bar mzp-t-click">
+          <p>{% if question.is_locked and not question.is_archived %}
             {{ _('This thread was closed.') }}
           {% elif not question.is_locked and question.is_archived %}
             {{ _('This thread was archived.') }}
@@ -54,6 +54,7 @@
           <a href="{{ url('questions.aaq_step1') }}">
             {{ _('Please ask a new question if you need help.') }}
           </a>
+          </p>
         </div>
       {% endif %}
 
@@ -276,7 +277,7 @@
 
 {% block side %}
 <div class="search-form-sidebar large-only">
-  {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
+  {{ search_box(settings, id='support-search-sidebar', params=search_params, placeholder=_('Search Support')) }}
 </div>
 
 <div class="questions-sidebar">
