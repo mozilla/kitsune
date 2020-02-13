@@ -357,6 +357,14 @@ SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
 
+SILENCED_SYSTEM_CHECKS = [
+    # Our url patterns are setup so that a leading slash on an included pattern
+    # is correct. This allows us to have APPEND_SLASH=True but still have root
+    # patterns in an include, e.g. ``r'^$'`` that do not have a trailing slash.
+    # See https://stackoverflow.com/a/41450355
+    'urls.W002',
+]
+
 DB_LOCALIZE = {
     'karma': {
         'Title': {
