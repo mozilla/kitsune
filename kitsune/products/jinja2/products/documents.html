@@ -32,7 +32,7 @@
         <div class="sumo-article-header--text">
           <div class="documents-product-title">
             {% set prod_url = url('products.product', slug=product.slug) %}
-            <a href="{{ prod_url }}"><img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" /></a>
+            <a href="{{ prod_url }}"><img src="{{ product.image_url }}" height="48" width="48" alt="" /></a>
           </div>
 
           <h1 class="text-display-lg topic-title">

@@ -59,7 +59,7 @@
         <div class="documents-product-title">
           {% set prod_url = url('products.product', slug=product.slug) %}
           <a href="{{ prod_url }}" title="{{ pgettext('DB: products.Product.title', product.title) }}">
-            <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
+            <img src="{{ product.image_url }}" height="48" width="48" alt="" />
           </a>
         </div>
         {{ document_title(document) }}

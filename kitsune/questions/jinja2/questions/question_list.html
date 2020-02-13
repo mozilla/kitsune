@@ -9,7 +9,7 @@
   {% set product_title = _('Multiple Products') %}
 {% else %}
   {% set product_title = pgettext('DB: products.Product.title', products[0].title) %}
-  {% set logo = pgettext('DB: products.Product.image_alternate_url', products[0].image_alternate_url) %}
+  {% set logo = pgettext('DB: products.Product.image_url', products[0].image_url) %}
 {% endif %}
 
 {% set title = _('{product} Support Forum')|f(product=product_title) %}

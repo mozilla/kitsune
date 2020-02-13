@@ -27,7 +27,7 @@
   <div class="mzp-l-content narrow">
     <div class="home-search-section--content">
       <h1 class="text-display-xl">
-        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
+        <img class="page-heading--logo" src="{{ product.image_url }}" alt="Photo of {{ product.title }}" />
         <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
       </h1>
       {{ search_box(settings, id='support-search-masthead', params=search_params) }}

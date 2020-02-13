@@ -532,7 +532,7 @@ def image_for_product(product_slug):
         return os.path.join(
             settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
         )
-    return obj.image_alternate_url
+    return obj.image_url
 
 
 @jinja2.contextfunction

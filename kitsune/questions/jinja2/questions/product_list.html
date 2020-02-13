@@ -19,7 +19,7 @@
       <div class="scroll-wrap">
         {% for product in products %}
         <div class="card card--product zoom-on-hover product">
-          <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
+          <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
           <div class="card--details">
             <h3 class="card--title">
               <a class="expand-this-link title" href="{{ url('questions.list', product.slug) }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
