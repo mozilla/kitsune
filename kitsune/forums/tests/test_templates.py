@@ -399,7 +399,7 @@ class ForumsTemplateTests(ForumTestCase):
 
         response = get(self.client, "forums.forums")
         doc = pq(response.content)
-        last_post_link = doc("ol.forums div.last-post a:not(.username)")[0]
+        last_post_link = doc(".forums .last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
         eq_(href.split("#")[1], "post-%s" % p.id)
 
@@ -433,7 +433,7 @@ class ForumsTemplateTests(ForumTestCase):
         r = get(self.client, "forums.forums")
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(forum1.name, doc("ol.forums > li a").first().text())
+        eq_(forum1.name, doc(".forums tr a").first().text())
 
         forum1.display_order = 3
         forum1.save()
@@ -442,7 +442,7 @@ class ForumsTemplateTests(ForumTestCase):
         r = get(self.client, "forums.forums")
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(forum2.name, doc("ol.forums > li a").first().text())
+        eq_(forum2.name, doc(".forums tr a").first().text())
 
     def test_is_listed(self):
         """Verify is_listed is respected."""
@@ -453,7 +453,7 @@ class ForumsTemplateTests(ForumTestCase):
         r = get(self.client, "forums.forums")
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(2, len(doc("ol.forums > li")))
+        eq_(2, len(doc(".forums tr")))
 
         forum1.is_listed = False
         forum1.save()
@@ -462,8 +462,8 @@ class ForumsTemplateTests(ForumTestCase):
         r = get(self.client, "forums.forums")
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(1, len(doc("ol.forums > li")))
-        eq_(forum2.name, doc("ol.forums > li a").text())
+        eq_(1, len(doc(".forums tr")))
+        eq_(forum2.name, doc(".forums tr a").text())
 
 
 class NewThreadTemplateTests(ForumTestCase):
