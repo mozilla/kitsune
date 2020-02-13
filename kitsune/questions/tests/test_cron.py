@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-import mock
+from unittest import mock
 from django.core import mail
 from django.core.management import call_command
 from nose.tools import eq_

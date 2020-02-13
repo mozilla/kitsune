@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
 
-import mock
+from unittest import mock
 from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory

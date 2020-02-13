@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
-import mock
+from unittest import mock
 from actstream.models import Action, Follow
 from django.core.management import call_command
 from django.db.models import Q

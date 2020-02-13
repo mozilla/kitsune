@@ -11,7 +11,7 @@ from django.core.files import File
 from django.test import override_settings
 from django.utils.http import int_to_base36
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.models import Watch

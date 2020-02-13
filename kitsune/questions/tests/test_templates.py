@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag

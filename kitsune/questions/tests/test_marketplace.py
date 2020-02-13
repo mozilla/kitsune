@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 from nose.tools import eq_, nottest
 from pyquery import PyQuery as pq
 from zdesk import Zendesk

@@ -1,6 +1,5 @@
 -r default.in
 flake8~=3.7.9
-mock~=0.7.0
 nose-exclude~=0.4.1
 nosenicedots~=0.5
 pytest-selenium~=1.5.0

@@ -4,7 +4,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent, email_utils

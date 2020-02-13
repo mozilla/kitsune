@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
