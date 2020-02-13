@@ -22,7 +22,7 @@ class Product(ModelBase):
                               # no l10n in admin
                               help_text=(u'The largest this image displays is 80x80 '
                                          'so the ideal image size is 160x160 to '
-                                         'account for retina displays' ))
+                                         'account for retina displays'))
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
                                          null=True, editable=False)
