@@ -46,6 +46,9 @@ def create_imageattachment(files, user, obj):
     if not is_animated:
         compress_image.delay(image, 'file')
 
+    # Refresh because the image may have been changed by tasks.
+    image.refresh_from_db()
+
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
 
     # The filename may contain html in it. Escape it.
