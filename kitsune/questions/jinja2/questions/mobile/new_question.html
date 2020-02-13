@@ -17,7 +17,8 @@
 {% set hide_locale_switcher = True %}
 {% set meta = [('robots', 'noindex')] %}
 
-{% block content %}
+{% block below_main %}
+<section class="sumo-page-section">
   {% if not current_category %}
     <div class="filter-bar">
       <h2>{{ _('Products') }}</h2>
@@ -89,4 +90,5 @@
       </ol>
     </form>
   {% endif %}
+</section>
 {% endblock %}
