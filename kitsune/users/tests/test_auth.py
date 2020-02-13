@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import RequestFactory, override_settings
-from mock import Mock, patch
+
+from unittest.mock import Mock, patch
 from nose.tools import eq_, ok_
 
 from kitsune.sumo.tests import TestCase

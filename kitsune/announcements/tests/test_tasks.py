@@ -1,7 +1,7 @@
 from django.contrib.sites.models import Site
 from django.core import mail
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.announcements.tasks import send_group_email

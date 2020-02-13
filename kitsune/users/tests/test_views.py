@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
+
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 

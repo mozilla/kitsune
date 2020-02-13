@@ -1,11 +1,12 @@
 import json
 from datetime import datetime, timedelta
 
-import mock
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
+
+from unittest import mock
 from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory

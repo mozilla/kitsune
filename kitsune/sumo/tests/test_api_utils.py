@@ -1,6 +1,6 @@
 import pytz
 from datetime import datetime
-from mock import Mock
+from unittest.mock import Mock
 from nose.tools import eq_
 
 from django.test.client import RequestFactory

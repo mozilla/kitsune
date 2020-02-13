@@ -1,11 +1,12 @@
 import json
 
 import django
-import mock
 from django.contrib.sites.models import Site
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
+
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 

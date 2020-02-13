@@ -5,7 +5,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.client import RequestFactory
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.forums.events import NewPostEvent, NewThreadEvent

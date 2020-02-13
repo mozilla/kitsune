@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from mock import Mock
+from unittest.mock import Mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 

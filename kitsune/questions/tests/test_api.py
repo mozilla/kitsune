@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
-import mock
+from unittest import mock
 import actstream.actions
 from actstream.models import Follow
 from nose.tools import eq_, ok_, raises

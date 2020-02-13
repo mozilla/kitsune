@@ -9,7 +9,7 @@ from django.test import override_settings
 from django.test.client import RequestFactory
 
 import bleach
-import mock
+from unittest import mock
 import waffle
 from nose.tools import eq_
 

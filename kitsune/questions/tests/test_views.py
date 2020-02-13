@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.test.utils import override_settings
+
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 

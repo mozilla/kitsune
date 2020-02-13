@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from nose.tools import eq_
 from pyquery import PyQuery as pq
