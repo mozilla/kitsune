@@ -36,9 +36,17 @@
 {%- endmacro %}
 
 {% macro inbox_message(message) -%}
-  <span class="avatar">{{ avatar_link(message.sender) }}</span>
-  <span class="from">{{ name_link(message.sender) }} {{ datetimeformat(message.created) }}</span>
-  <div class="message">{{ message.content_parsed }}</div>
+<section class="avatar-row">
+  <div class="avatar-details user-meta">
+    <div class="avatar">
+      {{ avatar_link(message.sender) }}
+    </div>
+    <div class="user from">
+      {{ name_link(message.sender) }} {{ datetimeformat(message.created) }}
+    </div>
+  </div>
+</section>
+<div class="message">{{ message.content_parsed }}</div>
 {%- endmacro %}
 
 

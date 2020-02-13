@@ -301,19 +301,22 @@
       // TODO: look at using a js template solution (jquery-tmpl?)
         $html = $(
             '<section class="marky">' +
+            '<div class="field">' +
             '<label>' + gettext('Link text:') + '</label>' +
             '<input type="text" name="link-text" />' +
+            '</div>' +
+            '<div class="field">' +
             '<label>' + gettext('Link target:') + '</label>' +
-            '<ol><li><label><input type="radio" name="link-type" value="internal" /> ' +
-            gettext('Support article:') + '</label> ' +
+            '<ol><li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-internal" value="internal" /><label for="id_link-type-internal">' +
+            gettext('Support article:') + '</label></div>' +
             '<input type="text" name="internal" placeholder="' +
             gettext('Enter the name of the article') + '" /></li>' +
-            '<li><label><input type="radio" name="link-type" value="external" /> ' +
-            gettext('External link:') + '</label> ' +
+            '<li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-external" value="external" /><label for="id_link-type-external">' +
+            gettext('External link:') + '</label></div>' +
             '<input type="text" name="external" placeholder="' +
             gettext('Enter the URL of the external link') + '" /></li>' +
-            '</ol><div class="submit"><button type="button" class="btn btn-important"></button>' +
-            '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') +
+            '</ol><div class="submit sumo-button-wrap"><button type="button" class="sumo-button primary-button"></button>' +
+            '<a href="#cancel" class="kbox-cancel sumo-button secondary-button">' + gettext('Cancel') +
             '</a></div></section>' // whew, yuck!?
         ),
         selectedText = me.getSelectedText(),
