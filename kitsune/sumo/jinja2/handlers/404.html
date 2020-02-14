@@ -1,8 +1,5 @@
-{% if request.MOBILE %}
-  {% extends 'mobile/base.html' %}
-{% else %}
-  {% extends 'base.html' %}
-{% endif %}
+{% extends 'base.html' %}
+
 {% set title = _('Page Not Found') %}
 {% set hide_header_search = True %}
 

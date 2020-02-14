@@ -147,8 +147,6 @@ django-jinja==2.4.1 \
     --hash=sha256:8a49d73de616a12075eee14c6d3bbab936261a463457d40348d8b8e2995cfbed
 django-jsonfield==1.0.1 \
     --hash=sha256:6c0afd5554739365b55d86e285cf966cc3a45682fff963463364ea1f6511ca3e
-https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b51b5257afa3.tar.gz#egg=django-mobility \
-    --hash=sha256:d75344da8b83ca525b8215609878eb2f1de45c72b285b8392fe2a8a32cb94b30
 django-multidb-router==0.7 \
     --hash=sha256:682d2be38ca1e2a12bc33528b3d4ccddf9775c926a5667b53f840df620094a86 \
     --hash=sha256:8e802c09ed69a1f4ce5716524a1dc1668a8a2e25d9112369dc92c2b963e70332

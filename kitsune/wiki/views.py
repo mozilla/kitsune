@@ -21,7 +21,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
-from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
 
 from kitsune.access.decorators import login_required
@@ -65,11 +64,10 @@ def doc_page_cache(view):
             statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
 
+        # TODO: remove references of minimal since we don't use mobile tmpls any more
         cache_key = doc_html_cache_key(
-            mobile=request.MOBILE,
             locale=request.LANGUAGE_CODE,
-            slug=document_slug,
-            minimal=request.GET.get('minimal', '0'))
+            slug=document_slug)
 
         html, headers = cache.get(cache_key, (None, None))
         if html is not None:
@@ -92,8 +90,7 @@ def doc_page_cache(view):
 
 @require_GET
 @doc_page_cache
-@mobile_template('wiki/{mobile/}')
-def document(request, document_slug, template=None, document=None):
+def document(request, document_slug, document=None):
     """View a wiki document."""
 
     fallback_reason = None
@@ -188,13 +185,6 @@ def document(request, document_slug, template=None, document=None):
     else:
         document_css_class = ''
 
-    if request.MOBILE and 'minimal' in request.GET:
-        template = '%sdocument-minimal.html' % template
-        minimal = True
-    else:
-        template = '%sdocument.html' % template
-        minimal = False
-
     # Build a set of breadcrumbs, ending with the document's title, and
     # starting with the product, with the topic(s) in between.
     # The breadcrumbs are built backwards, and then reversed.
@@ -234,10 +224,7 @@ def document(request, document_slug, template=None, document=None):
         'full_locale_name': full_locale_name
     }
 
-    response = render(request, template, data)
-    if minimal:
-        response['X-Frame-Options'] = 'ALLOW'
-    return response
+    return render(request, 'wiki/document.html', data)
 
 
 def revision(request, document_slug, revision_id):

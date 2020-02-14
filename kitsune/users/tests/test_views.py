@@ -349,7 +349,6 @@ class ProfileNotificationTests(TestCase):
         user = UserFactory()
         request = RequestFactory().get(reverse('users.edit_profile', args=[user.username]))
         request.user = user
-        request.MOBILE = False
         request.LANGUAGE_CODE = 'en'
 
         middleware = SessionMiddleware()

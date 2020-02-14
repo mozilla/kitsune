@@ -22,7 +22,6 @@ from django.views.decorators.http import require_POST, require_GET, require_http
 
 import waffle
 from ordereddict import OrderedDict
-from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
@@ -96,16 +95,14 @@ ORDER_BY = OrderedDict([
 ])
 
 
-@mobile_template('questions/{mobile/}product_list.html')
-def product_list(request, template):
+def product_list(request):
     """View to select a product to see related questions."""
-    return render(request, template, {
+    return render(request, 'questions/product_list.html', {
         'products': Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE)
     })
 
 
-@mobile_template('questions/{mobile/}question_list.html')
-def question_list(request, template, product_slug):
+def question_list(request, product_slug):
     """View the list of questions."""
     if settings.DISABLE_QUESTIONS_LIST_GLOBAL:
         messages.add_message(request, messages.WARNING,
@@ -317,7 +314,7 @@ def question_list(request, template, product_slug):
             'topic': topic}
 
     with statsd.timer('questions.view.render'):
-        return render(request, template, data)
+        return render(request, 'questions/question_list.html', data)
 
 
 def parse_troubleshooting(troubleshooting_json):
@@ -383,8 +380,7 @@ def parse_troubleshooting(troubleshooting_json):
     return parsed
 
 
-@mobile_template('questions/{mobile/}question_details.html')
-def question_details(request, template, question_id, form=None,
+def question_details(request, question_id, form=None,
                      watch_form=None, answer_preview=None, **extra_kwargs):
     """View the answers to a question."""
     ans_ = _answers_data(request, question_id, form, watch_form,
@@ -424,7 +420,7 @@ def question_details(request, template, question_id, form=None,
     if not question.solution_id:
         extra_kwargs.update(robots_noindex=True)
 
-    return render(request, template, extra_kwargs)
+    return render(request, 'questions/question_details.html', extra_kwargs)
 
 
 @require_POST
@@ -481,13 +477,15 @@ def aaq_react(request):
 
 @ssl_required
 @login_required
-@mobile_template('questions/{mobile/}new_question.html')
 def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
     """Ask a new question."""
     # Use react version if waffle flag is set
     if waffle.flag_is_active(request, 'new_aaq'):
         return aaq_react(request)
+
+    if not template:
+        template = 'questions/new_question.html'
 
     # This tells our LogoutDeactivatedUsersMiddleware not to
     # boot this user.
@@ -511,7 +509,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
     if product_key is None:
         product_key = request.GET.get('product')
-        if request.MOBILE and product_key is None:
+        # If there isn't a product key let's try to figure things out through UA
+        if product_key is None:
             ua = request.META.get('HTTP_USER_AGENT', '').lower()
 
             # Firefox OS is weird. The best way we can detect it is to
@@ -1397,10 +1396,9 @@ def answer_preview_async(request):
     return render(request, template, {'answer_preview': answer})
 
 
-@mobile_template('questions/{mobile/}marketplace.html')
-def marketplace(request, template=None):
+def marketplace(request):
     """AAQ landing page for Marketplace."""
-    return render(request, template, {
+    return render(request, 'questions/marketplace.html', {
         'categories': MARKETPLACE_CATEGORIES})
 
 
@@ -1409,9 +1407,9 @@ ZENDESK_ERROR_MESSAGE = _lazy(
     u'Please try again later.')
 
 
-@mobile_template('questions/{mobile/}marketplace_category.html')
-def marketplace_category(request, category_slug, template=None):
+def marketplace_category(request, category_slug):
     """AAQ category page. Handles form post that submits ticket."""
+
     try:
         category_name = MARKETPLACE_CATEGORIES[category_slug]
     except KeyError:
@@ -1434,7 +1432,7 @@ def marketplace_category(request, category_slug, template=None):
             except ZendeskError:
                 error_message = ZENDESK_ERROR_MESSAGE
 
-    return render(request, template, {
+    return render(request, 'questions/marketplace_category.html', {
         'category': category_name,
         'category_slug': category_slug,
         'categories': MARKETPLACE_CATEGORIES,
@@ -1442,8 +1440,7 @@ def marketplace_category(request, category_slug, template=None):
         'error_message': error_message})
 
 
-@mobile_template('questions/{mobile/}marketplace_refund.html')
-def marketplace_refund(request, template):
+def marketplace_refund(request):
     """Form page that handles refund requests for Marketplace."""
     error_message = None
 
@@ -1462,13 +1459,12 @@ def marketplace_refund(request, template):
             except ZendeskError:
                 error_message = ZENDESK_ERROR_MESSAGE
 
-    return render(request, template, {
+    return render(request, 'questions/marketplace_refund.html', {
         'form': form,
         'error_message': error_message})
 
 
-@mobile_template('questions/{mobile/}marketplace_developer_request.html')
-def marketplace_developer_request(request, template):
+def marketplace_developer_request(request):
     """Form page that handles developer requests for Marketplace."""
     error_message = None
 
@@ -1487,15 +1483,14 @@ def marketplace_developer_request(request, template):
             except ZendeskError:
                 error_message = ZENDESK_ERROR_MESSAGE
 
-    return render(request, template, {
+    return render(request, 'questions/marketplace_developer_request.html', {
         'form': form,
         'error_message': error_message})
 
 
-@mobile_template('questions/{mobile/}marketplace_success.html')
-def marketplace_success(request, template=None):
+def marketplace_success(request):
     """Confirmation of ticket submitted successfully."""
-    return render(request, template)
+    return render(request, 'questions/marketplace_success.html')
 
 
 def stats_topic_data(bucket_days, start, end, locale=None, product=None):
@@ -1785,9 +1780,8 @@ def _answers_data(request, question_id, form=None, watch_form=None,
     if not request.user.has_perm('flagit.can_moderate'):
         answers_ = answers_.filter(is_spam=False)
 
-    if not request.MOBILE:
-        answers_ = paginate(request, answers_,
-                            per_page=config.ANSWERS_PER_PAGE)
+    answers_ = paginate(request, answers_,
+                        per_page=config.ANSWERS_PER_PAGE)
     feed_urls = ((reverse('questions.answers.feed',
                           kwargs={'question_id': question_id}),
                   AnswersFeed().title(question)),)

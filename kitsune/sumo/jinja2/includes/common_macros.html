@@ -22,8 +22,6 @@
       {% endif %}
     {% endif %}
   {% endif %}
-
-
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
     <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">Get Help</a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
@@ -342,7 +340,6 @@
   </div>
 </div>
 {% endmacro %}
-
 
 {% macro field(field=None, extra_classes=None) %}
 <div class="field{% if extra_classes %} {{ extra_classes }}{% endif %}{% if field.errors %} has-error{% endif %}">
