@@ -274,6 +274,7 @@
   </select>
 </div>
 
+{% if request.user.is_authenticated() %}
 <div class="questions-sidebar">
   <h3 class="sidebar-subheading">{{ _('Filter by') }}</h3>
   <nav class="sidebar-nav">
@@ -284,12 +285,9 @@
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
       <li class="{% if filter == None and escalated %}selected{% endif %}"><a href="{{ questions_url(escalated=1, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
-
-      {% if request.user.is_authenticated() %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
       <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
       <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
-      {% endif %}
     </ul>
   </nav>
 
@@ -298,4 +296,5 @@
     <span class="collapse" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
   </div>
 </div>
+{% endif %}
 {% endblock %}
