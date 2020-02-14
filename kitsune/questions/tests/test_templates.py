@@ -1431,16 +1431,6 @@ class AAQTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(302, response.status_code)
 
-    def test_no_aaq_link_in_header(self):
-        """Verify the ASK A QUESTION link isn't present in header."""
-        p = ProductFactory(slug='firefox')
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        url = reverse('questions.aaq_step2', args=['desktop'])
-        response = self.client.get(url)
-        eq_(200, response.status_code)
-        assert '/questions/new' not in pq(response.content)('.sumo-nav').html()
-
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
