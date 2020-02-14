@@ -137,7 +137,7 @@
         <section class="forum--question-list questions">
           {% for question in questions.object_list %}
             <article id="question-{{ question.id }}" class="forum--question-item">
-              <ul class="forum--question-item-side thread-meta">
+              <ul class="forum--question-item-side">
                 <li class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
