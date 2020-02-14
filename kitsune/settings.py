@@ -44,8 +44,11 @@ def path(*parts):
 
 # Read-only mode setup.
 READ_ONLY = config('READ_ONLY', default=False, cast=bool)
-SKIP_MOBILE_DETECTION = config('SKIP_MOBILE_DETECTION', default=False, cast=bool)
-ENABLE_VARY_NOCACHE_MIDDLEWARE = config('ENABLE_VARY_NOCACHE_MIDDLEWARE', default=READ_ONLY, cast=bool)
+ENABLE_VARY_NOCACHE_MIDDLEWARE = config(
+    'ENABLE_VARY_NOCACHE_MIDDLEWARE',
+    default=READ_ONLY,
+    cast=bool
+)
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -523,11 +526,6 @@ MIDDLEWARE_CLASSES = (
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
     'kitsune.sumo.middleware.LocaleURLMiddleware',
-
-    # Mobile detection should happen in Zeus.
-    'kitsune.sumo.middleware.DetectMobileMiddleware',
-    'mobility.middleware.XMobileMiddleware',
-    'kitsune.sumo.middleware.MobileSwitchMiddleware',
 
     'kitsune.sumo.middleware.Forbidden403Middleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -1009,8 +1007,6 @@ GA_ACCOUNT = config('GA_ACCOUNT', 'something@developer.gserviceaccount.com')  # 
 GA_PROFILE_ID = config('GA_PROFILE_ID', default='12345678')  # Google Analytics profile id for SUMO prod
 GA_START_DATE = date(2012, 11, 10)
 GTM_CONTAINER_ID = config('GTM_CONTAINER_ID', default='')  # Google container ID
-
-MOBILE_COOKIE = config('MOBILE_COOKIE', default='msumo')
 
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = config('VERSION_CHECK_TOKEN', default=None)

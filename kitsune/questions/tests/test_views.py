@@ -2,10 +2,8 @@ import json
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.test.utils import override_settings
 
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -19,7 +17,12 @@ from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import (
-    get, MobileTestCase, LocalizingClient, eq_msg, set_waffle_flag, template_used)
+    get,
+    LocalizingClient,
+    eq_msg,
+    set_waffle_flag,
+    template_used
+)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.products.tests import TopicFactory
 from kitsune.users.models import Profile
@@ -207,44 +210,6 @@ class AAQSearchTests(ElasticTestCase):
         p.questions_locales.add(l)
         res = self.client.get(url_fi)
         eq_(200, res.status_code)
-
-
-class MobileAAQTests(MobileTestCase):
-    client_class = LocalizingClient
-    data = {'title': 'A test question',
-            'content': 'I have this question that I hope...',
-            'sites_affected': 'http://example.com',
-            'ff_version': '3.6.6',
-            'os': 'Intel Mac OS X 10.6',
-            'plugins': '* Shockwave Flash 10.1 r53',
-            'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
-                         '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
-                         'Firefox/3.6.6'}
-
-    def _new_question(self, post_it=False):
-        """Post a new question and return the response."""
-        p = ProductFactory(slug='mobile')
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        t = TopicFactory(slug='fix-problems', product=p)
-        url = urlparams(
-            reverse('questions.aaq_step5', args=[p.slug, t.slug]),
-            search='A test question')
-        if post_it:
-            return self.client.post(url, self.data, follow=True)
-        return self.client.get(url, follow=True)
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_logged_in_post(self, get_current):
-        """New question is posted through mobile."""
-        get_current.return_value.domain = 'testserver'
-
-        u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
-
-        response = self._new_question(post_it=True)
-        eq_(200, response.status_code)
-        assert Question.objects.filter(title='A test question')
 
 
 class AAQTests(TestCaseBase):

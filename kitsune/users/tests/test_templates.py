@@ -118,13 +118,6 @@ class LoginTests(TestCaseBase):
         eq_(302, response.status_code)
         eq_(self.profile_url, response['location'])
 
-    def test_login_mobile_csrf(self):
-        """The mobile login view should have a CSRF token."""
-        response = self.client.get(reverse('users.login'), {'mobile': 1})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        assert doc('form input[name="csrfmiddlewaretoken"]')
-
     def test_fxa_deprecation_warning(self):
         """
         Test that a SUMO login shows FXA deprecation warning

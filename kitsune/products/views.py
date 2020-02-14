@@ -3,7 +3,6 @@ import json
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
-from mobility.decorators import mobile_template
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
@@ -12,20 +11,20 @@ from kitsune.wiki.facets import topics_for, documents_for
 
 
 @check_simple_wiki_locale
-@mobile_template('products/{mobile/}products.html')
-def product_list(request, template):
+def product_list(request):
     """The product picker page."""
+    template = "products/products.html"
     products = Product.objects.filter(visible=True)
     return render(request, template, {
         'products': products})
 
 
 @check_simple_wiki_locale
-@mobile_template('products/{mobile/}product.html')
-def product_landing(request, template, slug):
+def product_landing(request, slug):
     """The product landing page."""
     product = get_object_or_404(Product, slug=slug)
     user = request.user
+    template = 'products/product.html'
 
     if request.is_ajax():
         # Return a list of topics/subtopics for the product
@@ -56,13 +55,13 @@ def product_landing(request, template, slug):
 
 
 @check_simple_wiki_locale
-@mobile_template('products/{mobile/}documents.html')
-def document_listing(request, template, product_slug, topic_slug,
+def document_listing(request, product_slug, topic_slug,
                      subtopic_slug=None):
     """The document listing page for a product + topic."""
     product = get_object_or_404(Product, slug=product_slug)
     topic = get_object_or_404(Topic, slug=topic_slug, product=product,
                               parent__isnull=True)
+    template = 'products/documents.html'
 
     doc_kw = {'locale': request.LANGUAGE_CODE, 'products': [product]}
 
