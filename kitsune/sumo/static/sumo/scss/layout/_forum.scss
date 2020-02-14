@@ -13,6 +13,10 @@
     }
   }
 
+  &--content {
+    flex: 1 1 auto;
+  }
+
   &--question-item-heading {
     @include c.text-body-md;
   }

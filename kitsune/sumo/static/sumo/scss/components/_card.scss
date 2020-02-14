@@ -147,6 +147,12 @@
       @include c.text-body-xs;
       margin: 20px 0;
     }
+
+    &.heading-is-one-line {
+      .card--title {
+        white-space: nowrap;
+      }
+    }
   }
 
   &--callout {
