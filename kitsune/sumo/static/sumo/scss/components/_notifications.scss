@@ -18,7 +18,6 @@
 
 // override to allow for multi-line text
 .mzp-c-notification-bar {
-  height: auto;
   min-height: 46px;
   line-height: 20px;
   @include p.bidi(((padding, 8px 48px 8px 8px, 8px 8px 8px 48px),));
@@ -26,6 +25,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  @media #{p.$mq-sm} {
+    height: auto;
+  }
+
 
 
   .mzp-c-notification-bar-button {
