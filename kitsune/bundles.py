@@ -390,17 +390,7 @@ PIPELINE_JS = {
     },
     'jqueryui': {
         'source_filenames': (
-            'jquery-ui/ui/jquery.ui.core.js',
-            'jquery-ui/ui/jquery.ui.widget.js',
-            'jquery-ui/ui/jquery.ui.mouse.js',
-            'jquery-ui/ui/jquery.ui.position.js',
-            'jquery-ui/ui/jquery.ui.sortable.js',
-            'jquery-ui/ui/jquery.ui.accordion.js',
-            'jquery-ui/ui/jquery.ui.autocomplete.js',
-            'jquery-ui/ui/jquery.ui.datepicker.js',
-            'jquery-ui/ui/jquery.ui.menu.js',
-            'jquery-ui/ui/jquery.ui.slider.js',
-            'jquery-ui/ui/jquery.ui.tabs.js',
+            'sumo/js/jquery-ui-custom.js',
         ),
         'output_filename': 'build/jqueryui-min.js'
     },

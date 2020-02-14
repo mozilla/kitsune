@@ -349,7 +349,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         response = post(self.client, "wiki.locale_discussions")
         eq_(200, response.status_code)
         doc = pq(response.content)
-        title = doc("ol.threads li div.title a:first").text()
+        title = doc(".threads .title a:first").text()
         assert title.startswith("A thread with a very very long")
 
 

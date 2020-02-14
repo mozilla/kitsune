@@ -130,7 +130,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin: 0;
+      margin: 0 0 16px 0;
+
+      @media #{p.$mq-lg} {
+        margin-bottom: 0;
+      }
     }
 
     .card--icon-sm {
@@ -306,12 +310,12 @@
 
       .card--title {
         margin-right: 40px;
+        line-height: 1.2;
       }
 
-      .card--title,
       .sumo-button {
         flex: 0 0 auto;
-        text-wrap: nowrap;
+        word-wrap: nowrap;
       }
 
       .card--desc {

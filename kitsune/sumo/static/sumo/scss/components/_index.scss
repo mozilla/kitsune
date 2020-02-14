@@ -15,3 +15,8 @@
 @forward 'tabs';
 @forward 'wiki';
 @forward 'product-picker-dropdown';
+
+// for https://support.mozilla.org/en-US/kb/dashboard/metrics/aggregated
+@forward 'jqueryui';
+@forward 'rickshaw';
+@forward 'rickshaw.sumo';

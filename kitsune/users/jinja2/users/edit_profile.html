@@ -24,7 +24,7 @@
 {% endblock %}
 
 {% block content %}
-  <article id="edit-profile">
+  <article id="edit-profile" class="sumo-page-section">
       {% if profile and profile.is_fxa_migrated %}
       <h1 class="text-display-lg">{{ _('Account') }}</h1>
       <p class="mb-0"><strong>{{ user.email }}</strong></p>
@@ -49,9 +49,8 @@
       </p>
       <form method="post" action="">
         {% csrf_token %}
-        <ul class="form-as-ul">
           {% if request.user == profile.user %}
-            <li>
+            <div>
               <section class="avatar-group">
                 <figure class="avatar-group--figure">
                   <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
@@ -94,11 +93,24 @@
                   {% endif %}
                 </div>
               </section>
-            </li>
+            </div>
 
           {% endif %}
-          {{ form.as_ul()|safe }}
-        </ul>
+
+          {{ field(form.name) }}
+          {{ field(form.bio) }}
+          {{ checkbox(form.public_email) }}
+          {{ field(form.website) }}
+          {{ field(form.twitter) }}
+          {{ field(form.facebook) }}
+          {{ field(form.mozillians) }}
+          {{ field(form.irc_handle) }}
+          {{ field(form.country) }}
+          {{ field(form.city) }}
+          {{ field(form.timezone) }}
+          {{ field(form.locale) }}
+          {{ field(form.involved_from) }}
+
         <div class="sumo-button-wrap">
           <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update My Profile') }}</button>
           <button class="sumo-button secondary-button button-lg" type="reset">Cancel</button>

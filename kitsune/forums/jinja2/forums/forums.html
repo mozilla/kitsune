@@ -8,29 +8,28 @@
 {% endif %}
 
 {% block content %}
-  <div class="grid_3">
-    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
-    <br />
-  </div>
-  <article class="grid_9">
+  <article class="sumo-page-section">
     <div id="forums" class="content-box">
-      <h1>{{ title }}</h1>
-
-      <ol class="forums-columns cf">
-        <li class="name">{{ _('Name') }}</li>
-        <li class="threads">{{ _('Threads') }}</li>
-        <li class="last-post">{{ _('Last Post') }}</li>
-      </ol>
-      {% if forums.object_list %}
-        <ol class="forums">
+      <h1 class="text-display-lg">{{ title }}</h1>
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr class="forums-columns">
+            <th class="name">{{ _('Name') }}</th>
+            <th class="threads">{{ _('Threads') }}</th>
+            <th class="last-post">{{ _('Last Post') }}</th>
+          </tr>
+        </thead>
+        {% if forums.object_list %}
+        <tbody class="forums">
           {% for forum in forums.object_list %}
-            <li class="cf">
-              <div class="name">
-                <a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ forum.name }}</a><br/>
+            <tr>
+              <td class="name">
+                <h5 class="text-body-lg"><a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ forum.name }}</a></h5>
                 {{ forum.description|safe }}
-              </div>
-              <div class="threads">{{ forum.thread_count }}</div>
-              <div class="last-post">
+              </td>
+              <td class="threads">{{ forum.thread_count }}</td>
+              <td class="last-post">
                 {% if forum.last_post %}
                   <a href="{{ forum.last_post.get_absolute_url() }}">
                     {{ datetimeformat(forum.last_post.created) }}
@@ -40,10 +39,12 @@
                   {# Not localized because it's not worth localizers time. #}
                   No posts.
                 {% endif %}
-              </div>
-            </li>
+              </td>
+            </tr>
           {% endfor %}
-        </ol>
+        </tbody>
+      </table>
+      </div>
 
         {{ forums|paginator }}
         {% else %}{# if forums #}
@@ -52,4 +53,8 @@
       {% endif %}
     </div>
   </article>
+{% endblock %}
+
+{% block side %}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
 {% endblock %}

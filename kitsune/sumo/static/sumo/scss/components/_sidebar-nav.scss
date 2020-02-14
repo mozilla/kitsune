@@ -152,20 +152,18 @@
           padding: 0;
         }
       }
-    }
 
-    @media #{p.$mq-md} {
-      display: none;
+      .selectbox-wrapper {
+        margin-bottom: 8px;
+      }
 
-      @at-root .break-on-lg & {
-        display: block;
+      .field.checkbox {
+        margin-top: 16px;
       }
     }
 
     @media #{p.$mq-lg} {
-      @at-root .break-on-lg & {
-        display: none;
-      }
+      display: none;
     }
   }
 }
@@ -199,7 +197,7 @@
     }
   }
 
-  @media #{p.$mq-md} {
+  @media #{p.$mq-lg} {
     @include c.text-body-lg;
     margin: 72px 0 p.$spacing-lg;
 

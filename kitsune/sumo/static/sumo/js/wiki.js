@@ -761,7 +761,7 @@
       }
     });
 
-    // $form.find('input[type=date]').datepicker();
+    $form.find('input[type=date]').attr('type','text').datepicker();
   }
 
   $(document).ready(init);

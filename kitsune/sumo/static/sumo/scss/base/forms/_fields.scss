@@ -89,11 +89,41 @@ label {
     }
   }
 
+  &.inline-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    label {
+      width: 175px;
+      margin-right: 12px;
+    }
+
+    input,
+    select {
+      flex: 1 1 auto;
+      width: auto;
+      margin-right: 12px;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+
   &.has-md-textarea {
     max-width: 100%;
 
     textarea {
       min-height: 200px;
+    }
+  }
+
+  &.full-width {
+    max-width: 100%;
+
+    select {
+      max-width: 100%;
     }
   }
 
@@ -230,6 +260,16 @@ select,
   &:disabled,
   .has-disabled & {
     background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#CDCDD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  }
+
+  &[multiple] {
+    height: 200px;
+    background-image: none;
+
+    &:hover,
+    &:focus {
+      background-image: none;
+    }
   }
 }
 

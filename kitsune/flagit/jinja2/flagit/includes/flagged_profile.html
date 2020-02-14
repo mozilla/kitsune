@@ -1,17 +1,17 @@
 {% from 'flagit/includes/macros.html' import date_by_user with context %}
-<h3>{{ _('Content:') }}</h3>
+<h3 class="text-body-lg">{{ _('Content:') }}</h3>
 <div class="content">
-  <h2>{{ object.content_object }}</h2>
+  <h2 class="text-display-sm">{{ object.content_object }}</h2>
   {{ object.content_object.bio|wiki_to_html(nofollow=True) }}
 </div>
-<h3>{{ _('Flagged:') }}</h3>
+<h3 class="text-body-lg">{{ _('Flagged:') }}</h3>
 <p class="flagged">
   {{ date_by_user(object.created, object.creator) }}
 </p>
-<h3>{{ _('Take Action:') }}</h3>
-<div class="actions">
-  <a href="{{ object.content_object.get_absolute_url() }}">View</a>
+<h3 class="text-body-lg">{{ _('Take Action:') }}</h3>
+<div class="actions sumo-button-wrap">
+  <a class="sumo-button button-sm" href="{{ object.content_object.get_absolute_url() }}">View</a>
   {% if user.has_perm('profile.change_profile') %}
-    <a class="edit" href="{{ url('admin:users_profile_change', object.object_id) }}">{{ _('Edit') }}</a>
+    <a class="sumo-button button-sm edit" href="{{ url('admin:users_profile_change', object.object_id) }}">{{ _('Edit') }}</a>
   {% endif %}
 </div>

@@ -10,42 +10,13 @@
 {% endif %}
 
 {% block content %}
-  <div id="search-results">
+  <div id="search-results" class="sumo-page-section" >
     {% if not advanced %}
-      <div class="grid_12">
-        {{ basic_search_form(True) }}
-      </div>
+      {{ basic_search_form(True) }}
     {% endif %}
-    <div class="grid_3">
-      {% if not advanced %}
-        {# Don't show filtering to advanced search users #}
-        {% set base_url = url('search')|urlparams(q=q) %}
-        {% set base_product_url = base_url %}
-        {% if w != 3 %}
-          {% set base_product_url = base_product_url|urlparams(w=w) %}
-        {% endif %}
-        <ul id="product-filter" class="search-filter sidebar-nav">
-          <li {{ product|class_selected(None) }}>
-            <a href="{{ base_product_url|urlparams(all_products=1) }}">
-              {{ _('All Products') }}
-            </a>
-          </li>
-          {% for p in products %}
-            <li {{ product|class_selected(p) }}>
-              <a href="{{ base_product_url|urlparams(product=p.slug) }}">
-                {{ pgettext('DB: products.Product.title', p.title) }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
-      <br />
-    </div>
 
-    <div class="grid_9">
       {% if num_results > 0 %}
-        <h2>
+        <h2 class="text-display-md">
           {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
           {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
                       'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
@@ -60,7 +31,7 @@
 
         {{ pages|paginator }}
       {% else %}
-        <h2>
+        <h2 class="text-display-md">
           {# L10n: {q} is the search query, {l} is the language searched. #}
           {{ _("Sorry! 0 results found for ‘{q}’ in ‘{l}’")|fe(q=q, l=lang_name) }}
         </h2>
@@ -98,4 +69,31 @@
       {% endif %}
     </div>
   </div>
+{% endblock %}
+
+
+{% block side %}
+  {% if not advanced %}
+    {# Don't show filtering to advanced search users #}
+    {% set base_url = url('search')|urlparams(q=q) %}
+    {% set base_product_url = base_url %}
+    {% if w != 3 %}
+      {% set base_product_url = base_product_url|urlparams(w=w) %}
+    {% endif %}
+    <ul id="product-filter" class="search-filter sidebar-nav">
+      <li {{ product|class_selected(None) }}>
+        <a href="{{ base_product_url|urlparams(all_products=1) }}">
+          {{ _('All Products') }}
+        </a>
+      </li>
+      {% for p in products %}
+        <li {{ product|class_selected(p) }}>
+          <a href="{{ base_product_url|urlparams(product=p.slug) }}">
+            {{ pgettext('DB: products.Product.title', p.title) }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}

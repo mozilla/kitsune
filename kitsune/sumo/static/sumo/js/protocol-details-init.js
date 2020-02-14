@@ -6,13 +6,12 @@ function detailsInit() {
 
   function swapMobileSubnavText(){
     var button = document.querySelector('.details-heading button');
-    var activeLink = document.querySelector('.sidebar-nav .selected a');
-    var firstHeadingText = document.querySelector('.sidebar-nav .sidebar-subheading');
+    var activeLink = document.querySelector('.sidebar-nav .selected a') ||
+      document.querySelector('.sidebar-nav a.selected') ||
+      document.querySelector('.sidebar-nav .sidebar-subheading');
 
     if (activeLink) {
       var mobileButtonText = activeLink.innerHTML;
-    } else if (firstHeadingText) {
-      var mobileButtonText = firstHeadingText.innerHTML;
     } else {
       var mobileButtonText = 'debug this';
     }

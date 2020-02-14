@@ -1,16 +1,18 @@
 {% macro search_result(result) %}
   <div class="result {{ result.type }}">
     {% set url =  result.url %}
-    <h3><a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.title }}</a></h3>
-    <a tabindex="-1" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.search_summary }}</a>
+    <h3 class="text-display-xs"><a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.title }}</a></h3>
+    <p>{{ result.search_summary }}</p>
+
     {% if result.type == 'question' %}
-      <p class="question-status cf">
+      <p class="question-status text-body-sm">
         {% if result.is_solved %}
-          <span class="solved">{{ _('Solved') }}</span> &mdash;
+          <span class="is-solution">{{ _('Solved') }}</span>
         {% endif %}
         Last updated {{ result.last_updated|timesince }}
       </p>
-      <ul class="thread-meta cf">
+
+      <ul class="thread-meta">
         <li>
           {% if result.num_answers > 0 %}
             {{ ngettext('1 reply', '{n} replies',

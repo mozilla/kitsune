@@ -30,7 +30,7 @@ def profile_url(user, edit=False):
 
 
 @library.global_function
-def profile_avatar(user, size=48):
+def profile_avatar(user, size=200):
     """Return a URL to the user's avatar."""
     try:  # This is mostly for tests.
         profile = Profile.objects.get(user_id=user.id)
