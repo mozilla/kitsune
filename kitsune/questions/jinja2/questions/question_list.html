@@ -49,29 +49,53 @@
           <div class="no-reply forum--masthead-text">
             <p class="page-heading--intro-text">
               {% if recent_unanswered_count > 0 %}
+                {% if request.user.is_authenticated() %}
+                  {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
+                    {{recent_unanswered_count}} question in the last 24 hours has no reply.
+                    <a href="{{url}}">Help solve it!</a>
+                    {% pluralize recent_unanswered_count %}
+                    {{recent_unanswered_count}} questions in the last 24 hours> have no reply.
+                    <a href="{{url}}">Help solve them!</a>
+                  {% endtrans %}
+                {% else %}
                 {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
                   {{recent_unanswered_count}} question in the last 24 hours has no reply.
-                  <a href="{{url}}">Help solve it!</a>
+                  <a href="/get-involved">Learn how to help solve it!</a>
                   {% pluralize recent_unanswered_count %}
                   {{recent_unanswered_count}} questions in the last 24 hours> have no reply.
-                  <a href="{{url}}">Help solve them!</a>
+                  <a href="/get-involved">Learn how to help solve them!</a>
                 {% endtrans %}
+                {% endif %}
               {% else %}
-                {% trans %}
-                  0 questions in the last 24 hours have no reply. Good job!
-                {% endtrans %}
+                {% if request.user.is_authenticated() %}
+                  {% trans %}
+                    0 questions in the last 24 hours have no reply. Good job!
+                  {% endtrans %}
+                {% else %}
+                  {% trans %}
+                    0 questions in the last 24 hours have no reply. <a href="/get-involved">Learn how to help!</a>
+                  {% endtrans %}
+                {% endif %}
               {% endif %}
             </p>
           </div>
         </div>
       </div>
       <div class="sumo-l-two-col--sidebar forum--masthead-cta">
+        {% if request.user.is_authenticated() %}
         <div id="top-contributors">
           {% set query_product = '?product={}'.format(products[0].slug) if products and products|length == 1 else '' %}
           <a class="sumo-button primary-button button-lg feature-box" href="{{ url('community.top_contributors', area='questions') }}{{ query_product }}">
             {{ _('Top Contributors') }}
           </a>
         </div>
+        {% else %}
+        <a
+          class="sumo-button primary-button button-lg feature-box"
+          href="{{ url('wiki.document', 'get-community-support') }}">
+          {{ _('Ask the Community') }}
+        </a>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -260,9 +284,10 @@
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
       <li class="{% if filter == None and escalated %}selected{% endif %}"><a href="{{ questions_url(escalated=1, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
+
+      {% if request.user.is_authenticated() %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
       <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
-      {% if request.user.is_authenticated() %}
       <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
       {% endif %}
     </ul>
