@@ -167,7 +167,7 @@
 
         {% if question.solution %}
           {% set solver = question.solver %}
-          <div class="solution">
+          <div class="solution card elevation-00">
             <h4 class="is-solution" {% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>{{ _('Chosen solution') }}</h4>
             <div class="reply">
               {{ question.solution.content_parsed|safe }}
