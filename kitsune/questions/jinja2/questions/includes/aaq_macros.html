@@ -19,29 +19,37 @@
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
-  <h2>{{ _('Which product would you like to post a question about?') }}</h2>
-  <ul id="product-picker" class="card-grid cf">
-    {% for key, product in products.iteritems() %}
-      <li>
-          <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}"
+  <h1 class="text-display-md">{{ _('Which product would you like to post a question about?') }}</h1>
+  <div id="product-picker" class="sumo-card-grid" style="--cg-count: {{ products|length }};">
+    <div class="scroll-wrap">
+      {% for key, product in products.iteritems() %}
+      <div class="card card--product zoom-on-hover">
+        {% if key == 'other' %}
+        <img src="{{ static('sumo/img/dino-logo.png') }}"
+            alt="{{ _(product.name) }}"
+            class="card--icon">
+        {% else %}
+        <img src="{{ image_for_product(product.product) }}"
+            alt="{{ pgettext('DB: products.Product.title', product.title) }}"
+            class="card--icon">
+        {% endif %}
+
+        <div class="card--details">
+          <h3 class="card--title">
+            <a class="expand-this-link title"
+              href="{{ url('questions.aaq_step2', product_key=key) }}"
               data-event-category="link click"
               data-event-action="product"
               data-event-label="{{ product.name }}">
-              {% if key == 'other' %}
-                  <img src="{{ static('sumo/img/dino-logo.png') }}"
-                      alt="{{ _(product.name) }}"
-                      class="logo-sprite">
-              {% else %}
-              <img src="{{ image_for_product(product.product) }}"
-                  alt="{{ pgettext('DB: products.Product.title', product.title) }}"
-                  class="logo-sprite">
-              {% endif %}
-          <span class="title">{{ product.name }}</span>
-          <span class="description">{{ product.subtitle }}</span>
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
+              {{ product.name }}
+            </a>
+          </h3>
+          <p class="card--desc">{{ product.subtitle }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 {%- endmacro %}
 
 {% macro selected_product(product, can_change) -%}

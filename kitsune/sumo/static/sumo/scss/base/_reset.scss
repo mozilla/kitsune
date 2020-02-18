@@ -9,6 +9,7 @@ html, body {
 body {
   display: flex;
   flex-direction: column;
+  height: auto;
 }
 *, *:before, *:after {
   box-sizing: border-box;

@@ -6,12 +6,22 @@
 
 {% set canonical_url = canonicalize(viewname='products') %}
 
-{% block content %}
-  <div class="grid_12 search-form-large">
-    {{ search_box(settings, id='support-search-products', params=search_params) }}
-  </div>
-  <section id="products-and-services" class="grid_12">
-    <h1>{{ title }}</h1>
+{% block contentwrap %}
+  <section class="home-search-section sumo-page-section shade-bg" id="products-and-services" >
+    <div class="mzp-l-content">
+      {% block breadcrumbs %}
+        {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+      {% endblock %}
+    </div>
+    <div class="mzp-l-content narrow">
+      <div class="home-search-section--content">
+        <h1 class="text-display-xl">{{ title }}</h1>
+        {{ search_box(settings, id='support-search-masthead', params=search_params) }}
+      </div>
+    </div>
+  </section>
+
+  <section class="mzp-l-content sumo-page-section" id="main-content">
     {{ product_cards(products) }}
   </section>
 {% endblock %}

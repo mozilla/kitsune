@@ -13,6 +13,10 @@
     }
   }
 
+  &--content {
+    flex: 1 1 auto;
+  }
+
   &--question-item-heading {
     @include c.text-body-md;
   }
@@ -550,5 +554,17 @@
       margin-right: 0;
       border-right: 0 none;
     }
+  }
+}
+
+.main-content .solution {
+  position: relative;
+  margin-top: 60px;
+  padding-top: 36px;
+  padding-bottom: 36px;
+
+  .is-solution {
+    top: -12px;
+    position: absolute;
   }
 }

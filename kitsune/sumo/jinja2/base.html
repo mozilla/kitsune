@@ -267,8 +267,8 @@
             <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
             <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
             <li><a href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
-            <li><a href="#TODO">{{ _('Join the Community') }}</a></li>
-            <li><a href="#TODO">{{ _('Explore Help Articles')}}</a></li>
+            <li><a href="{{ url('landings.get_involved') }}">{{ _('Join our Community') }}</a></li>
+            <li><a href="{{ url('home') }}">{{ _('Explore Help Articles')}}</a></li>
           </ul>
         </section>
 
@@ -276,6 +276,7 @@
           <h5 class="mzp-c-footer-heading">{{ _('Firefox') }}</h5>
           <ul class="mzp-c-footer-list">
             <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox Desktop') }}</a></li>
             <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Android Browser') }}</a></li>
             <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('iOS Browser') }}</a></li>
             <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Focus Browser') }}</a></li>
@@ -286,19 +287,24 @@
           <h5 class="mzp-c-footer-heading">{{ _('Firefox for Developers') }}</h5>
           <ul class="mzp-c-footer-list">
             <li><a href="https://www.mozilla.org/en-US/firefox/developer/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Developer Edition') }}</a></li>
-            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/#beta?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta') }}</a></li>
-            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/#beta?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta for Android') }}</a></li>
-            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Nightly') }}</a></li>
-            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/#nightly?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Nightly for Android') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#beta">{{ _('Beta') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#beta">{{ _('Beta for Android') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#nightly">{{ _('Nightly') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#nightly">{{ _('Nightly for Android') }}</a></li>
           </ul>
         </section>
 
         <section class="mzp-c-footer-col">
           <h5 class="mzp-c-footer-heading">{{ _('Firefox Accounts') }}</h5>
           <ul class="mzp-c-footer-list">
-            <li><a href="https://support.mozilla.org/en-US/fxa/authenticate/">{{ _('Sign Up') }} (TODO)</a></li>
-            <li><a href="https://support.mozilla.org/en-US/fxa/authenticate/">{{ _('Sign In') }}</a></li>
+            <li><a href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
             <li><a href="https://www.mozilla.org/en-US/firefox/accounts/">{{ _('Benefits') }}</a></li>
+          </ul>
+
+          <h5 class="mzp-c-footer-heading">{{ _('Firefox Private Network') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="/products/firefox-private-network">{{ _('Browser protection') }}</a></li>
+            <li><a href="/products/firefox-private-network-vpn">{{ _('Desktop protection') }}</a></li>
           </ul>
         </section>
 
