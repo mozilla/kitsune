@@ -7,9 +7,8 @@ set -x
 POSTATUS_FILE=kitsune/sumo/static/postatus.txt
 
 if [[ -d locale ]]; then
-    # We've seen strange local differences
-    git -C locale stash
-    git -C locale pull
+    git -C locale fetch
+    git -C locale checkout origin/master
 else
     git clone https://github.com/mozilla-l10n/sumo-l10n.git locale
 fi
@@ -20,5 +19,5 @@ echo -e "l10n git hash: ${GIT_COMMIT}\n" > $POSTATUS_FILE
 make lint-l10n >> $POSTATUS_FILE
 
 if [[ "$?" -eq 0 && "$1" == "--push" ]]; then
-    git -C locale push sumo-l10n-prod:mozilla-it/sumo-l10n-prod.git
+    git -C locale push -f sumo-l10n-prod:mozilla-it/sumo-l10n-prod.git
 fi
