@@ -6,20 +6,20 @@
 {% set scripts = ('jqueryui', 'rickshaw', 'kpi.dashboard') %}
 {% set styles = ('kpi.dashboard', 'rickshaw',) %}
 
-{% block content %}
-  <article id="kpi-dash">
+{% block below_main %}
+  <article id="kpi-dash" class="sumo-page-section has-moz-headings">
 
     <section id="kpi-cohort-analysis"
       data-url="/api/2/cohort">
 
-      <h2>{{ _('Retention') }}</h2>
+      <h2 class="text-display-sm">{{ _('Retention') }}</h2>
       <div id="retention-chart" class="graph" data-chart-type="d3" data-slug="retention"></div>
     </section>
 
     <section id="kpi-csat"
      data-url="{{ url('api.kpi.csat-contributors') }}">
 
-      <h2>{{ _('Contributor Satisfaction') }}</h2>
+      <h2 class="text-display-sm">{{ _('Contributor Satisfaction') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -33,7 +33,7 @@
     <section id="kpi-questions"
      data-url="{{ url('api.kpi.questions') }}">
 
-     <h2>{{ _('Questions') }}</h2>
+     <h2 class="text-display-sm">{{ _('Questions') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -66,7 +66,7 @@
     <section id="kpi-vote"
      data-url="{{ url('api.kpi.votes') }}">
 
-      <h2>{{ _('Helpful Votes') }}</h2>
+      <h2 class="text-display-sm">{{ _('Helpful Votes') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -92,7 +92,7 @@
     <section id="kpi-active-contributors"
      data-url="{{ url('api.kpi.contributors') }}">
 
-      <h2>{{ _('Active Contributors') }}</h2>
+      <h2 class="text-display-sm">{{ _('Active Contributors') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -159,7 +159,7 @@
     <section id="kpi-ctr"
      data-url="{{ url('api.kpi.search-ctr') }}">
 
-      <h2>{{ _('Search Clickthrough Rate') }}</h2>
+      <h2 class="text-display-sm">{{ _('Search Clickthrough Rate') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -185,7 +185,7 @@
     <section id="kpi-visitors"
      data-url="{{ url('api.kpi.visitors') }}">
 
-      <h2>{{ _('Daily Unique Visitors') }}</h2>
+      <h2 class="text-display-sm">{{ _('Daily Unique Visitors') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -199,7 +199,7 @@
     <section id="kpi-l10n"
      data-url="{{ url('api.kpi.l10n-coverage') }}">
 
-      <h2>{{ _('L10n Coverage') }}</h2>
+      <h2 class="text-display-sm">{{ _('L10n Coverage') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -245,7 +245,7 @@
   <section id="exit-survey"
      data-url="{{ url('api.kpi.exit-survey') }}">
 
-      <h2>{{ _('Exit Survey Results') }}</h2>
+      <h2 class="text-display-sm">{{ _('Exit Survey Results') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>

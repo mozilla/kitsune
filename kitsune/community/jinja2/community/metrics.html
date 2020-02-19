@@ -7,11 +7,11 @@
 {% set styles = ('kpi.dashboard', 'rickshaw',) %}
 {% set scripts = ('rickshaw', 'kpi.dashboard',) %}
 
-{% block content %}
-  <article id="kpi-dash">
-    <h1>{{ _('Contributor Metrics') }}</h1>
+{% block below_main %}
+  <article id="kpi-dash" class="sumo-page-section has-moz-headings">
+    <h1 class="text-display-lg">{{ _('Contributor Metrics') }}</h1>
       <section id="kpi-cohort-analysis" data-url="/api/2/cohort" data-contributor-type="contributor:kb:en-US">
-      <h2>{{ _('Retention') }}</h2>
+      <h2 class="text-display-sm">{{ _('Retention') }}</h2>
       <div id="retention-chart" class="graph" data-chart-type="d3" data-slug="retention">
         <div class="inline-controls">
           <div>
@@ -31,7 +31,7 @@
      data-url="{{ url('api.kpi.csat-contributors-kb-enus') }}">
 
       {# The locale code is not localizable - the data are for English only. #}
-      <h2>{{ _('Contributor Satisfaction: %(locale)s', locale='en-US') }}</h2>
+      <h2 class="text-display-sm">{{ _('Contributor Satisfaction: %(locale)s', locale='en-US') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -45,7 +45,7 @@
     <section id="kpi-csat-l10n"
      data-url="{{ url('api.kpi.csat-contributors-kb-l10n') }}">
 
-      <h2>{{ _('Contributor Satisfaction: l10n') }}</h2>
+      <h2 class="text-display-sm">{{ _('Contributor Satisfaction: l10n') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -59,7 +59,7 @@
     <section id="kpi-csat-support"
      data-url="{{ url('api.kpi.csat-contributors-support-forum') }}">
 
-      <h2>{{ _('Contributor Satisfaction: Support Forum') }}</h2>
+      <h2 class="text-display-sm">{{ _('Contributor Satisfaction: Support Forum') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -73,7 +73,7 @@
     <section id="kpi-csat-aoa"
      data-url="{{ url('api.kpi.csat-contributors-aoa') }}">
 
-      <h2>{{ _('Contributor Satisfaction: Army of Awesome') }}</h2>
+      <h2 class="text-display-sm">{{ _('Contributor Satisfaction: Army of Awesome') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>

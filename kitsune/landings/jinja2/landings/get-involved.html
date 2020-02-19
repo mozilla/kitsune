@@ -6,7 +6,7 @@
 {% set canonical_url = canonicalize(viewname='landings.get_involved') %}
 
 {% block below_main %}
-  <div class="sumo-page-section">
+  <div class="sumo-page-section has-moz-headings">
     <div class="hero-bar sumo-l-two-col">
       <div class="sumo-l-two-col--one-half">
         <img class="hero-butler" src="{{ STATIC_URL }}sumo/img/gi-hero-butler.png" alt="">
@@ -36,7 +36,7 @@
     </div>
   </div>
 
-  <section class="sumo-page-section">
+  <section class="sumo-page-section has-moz-headings">
     <h3 class="text-display-sm">{{ _('Pick a way to get involved') }}</h3>
     <div class="pick-a-way">
         <a href="{{ url('landings.get_involved_questions') }}">
@@ -70,7 +70,7 @@
     </div>
   </section>
 
-  <section class="sumo-page-section">
+  <section class="sumo-page-section has-moz-headings">
     <div class="sumo-l-two-col sidebar-on-right">
       <div class="sumo-l-two-col--one-half">
         <h3>{{ _('About Us') }}</h3>
