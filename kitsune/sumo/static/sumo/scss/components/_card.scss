@@ -49,6 +49,7 @@
     will-change: transform;
     transition: transform .1s ease-in-out;
     transform: translateZ(0);
+    -webkit-font-smoothing: subpixel-antialiased;
 
     &:hover {
       transform: translateZ(0) scale(1.02);
