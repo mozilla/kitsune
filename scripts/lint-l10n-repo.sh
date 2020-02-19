@@ -19,5 +19,6 @@ echo -e "l10n git hash: ${GIT_COMMIT}\n" > $POSTATUS_FILE
 make lint-l10n >> $POSTATUS_FILE
 
 if [[ "$?" -eq 0 && "$1" == "--push" ]]; then
-    git -C locale push -f sumo-l10n-prod:mozilla-it/sumo-l10n-prod.git
+    git -C locale remote add mozilla-it https://github.com/mozilla-it/sumo-l10n-prod.git
+    git -C locale push -f mozilla-it HEAD:master
 fi
