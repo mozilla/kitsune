@@ -250,9 +250,9 @@
 <li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Discussions') }}</a></li>
 <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">{{ _('Support Forum') }}</a></li>
 <li><a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">{{ _('L10N Discussions') }}</a></li>
-<li><a href="#">(Needs URL) Social Support Forum</a></li>
+<li><a href="/forums/social-media">Social Support Forum</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
-<li><a href="#">(Needs URL) New Contributors</a></li>
+<li><a href="/forums/buddies">New Contributors</a></li>
 {% if user.has_perm('flagit.can_moderate') %}
   <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
 {% endif %}
@@ -265,12 +265,7 @@
 <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
 <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
 <!-- <li><a href="#">Tag Admin</a></li> -->
-
-<li><a href="{{ url('landings.get_involved') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Quickstart Guide">(remove?) {{ _('Quickstart Guide') }}</a></li>
-<li><a href="{{ url('wiki.document', 'contributor-news-resources') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="News &amp; Resources">(remove?) {{ _('News &amp; Resources') }}</a></li>
-<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">(remove?) {{ _('Contributor Forums') }}</a></li>
-<li><a href="{{ url('questions.metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Metrics">(remove?) {{ _('Support Forum Metrics') }}</a></li>
-<li><a href="{{ url('kpi.dashboard') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="KPI Dashboard">(remove?) {{ _('KPI Dashboard') }}</a></li>
+<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">{{ _('Support forum home') }}</a></li>
 {% endmacro %}
 
 {# This is designed to be used like this:
