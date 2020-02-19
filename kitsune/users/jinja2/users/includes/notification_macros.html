@@ -37,7 +37,10 @@
       <img class="ff-logo show-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
       {{ _('Heads up!') }}
     </h3>
-    <p>{{ _('Soon, Firefox Accounts will replace Mozilla Support logins. You can upgrade your existing Mozilla account to Firefox Accounts today.') }} <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">{{ _('Read more') }}</a>.</p>
+    <p>{{ _('On <b>March 16, 2020</b>, support.mozilla.org will only allow Firefox Accounts logins.
+            If you have not converted your old account to Firefox Accounts please do so by following the instructions in the') }}
+        <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">{{ _('FAQ') }}</a>.
+    </p>
   </div>
   <div class="notification-actions">
     <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
