@@ -60,10 +60,10 @@
                 {% else %}
                 {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
                   {{recent_unanswered_count}} question in the last 24 hours has no reply.
-                  <a href="{{ url('landings.get_involved') }}">Learn how to help solve it!</a>
+                  <a href="/get-involved">Learn how to help solve it!</a>
                   {% pluralize recent_unanswered_count %}
                   {{recent_unanswered_count}} questions in the last 24 hours> have no reply.
-                  <a href="{{ url('landings.get_involved') }}">Learn how to help solve them!</a>
+                  <a href="/get-involved">Learn how to help solve them!</a>
                 {% endtrans %}
                 {% endif %}
               {% else %}
