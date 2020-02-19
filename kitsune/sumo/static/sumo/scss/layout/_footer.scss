@@ -57,6 +57,10 @@
     @include c.grid-row();
   }
 
+  &-heading {
+    @include c.text-body-md;
+  }
+
   .mzp-c-footer-legal a {
     text-decoration: underline;
   }
