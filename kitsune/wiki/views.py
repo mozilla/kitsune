@@ -64,7 +64,6 @@ def doc_page_cache(view):
             statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
 
-        # TODO: remove references of minimal since we don't use mobile tmpls any more
         cache_key = doc_html_cache_key(
             locale=request.LANGUAGE_CODE,
             slug=document_slug)

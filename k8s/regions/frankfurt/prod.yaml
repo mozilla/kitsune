@@ -119,7 +119,6 @@ app:
     redis_helpfulvotes_url: SECRET
     secret_key: SECRET
     session_cookie_secure: True
-    skip_mobile_detection: True
     stage: False
     static_url: "/static/"
     statsd_client: SECRET
