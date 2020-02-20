@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 
-import mock
+from unittest import mock
 from actstream.actions import follow
 from actstream.signals import action
 from actstream.models import Action, Follow

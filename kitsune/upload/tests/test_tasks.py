@@ -5,7 +5,7 @@ from django.core.files import File
 from django.core.files.images import ImageFile
 from django.test import override_settings
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 import kitsune.upload.tasks

@@ -1,7 +1,7 @@
 from django.core.files.base import ContentFile
 
 from nose.tools import eq_
-from mock import patch
+from unittest.mock import patch
 
 from kitsune.gallery.models import Image
 from kitsune.gallery.tests import ImageFactory

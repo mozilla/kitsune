@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from actstream.actions import follow
 from actstream.signals import action
 from actstream.models import Action, Follow
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from nose.tools import eq_, ok_
 from rest_framework.test import APIClient
 

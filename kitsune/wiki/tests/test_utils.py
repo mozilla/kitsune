@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.products.tests import ProductFactory

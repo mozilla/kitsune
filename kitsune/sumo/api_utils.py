@@ -187,14 +187,14 @@ class InequalityFilterBackend(BaseFilterBackend):
     """A filter backend that allows for field__gt style filtering."""
 
     def filter_queryset(self, request, queryset, view):
-        filter_fields = getattr(view, 'filter_fields', [])
+        filterset_fields = getattr(view, 'filterset_fields', [])
 
         for key, value in list(request.query_params.items()):
             splits = key.split('__')
             if len(splits) != 2:
                 continue
             field, opname = splits
-            if field not in filter_fields:
+            if field not in filterset_fields:
                 continue
             op = getattr(self, 'op_' + opname, None)
             if op:

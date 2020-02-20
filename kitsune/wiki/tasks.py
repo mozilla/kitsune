@@ -141,7 +141,7 @@ def send_contributor_notification(based_on, revision, document, message):
 def schedule_rebuild_kb():
     """Try to schedule a KB rebuild, if we're allowed to."""
     if (not waffle.switch_is_active('wiki-rebuild-on-demand') or
-            settings.CELERY_ALWAYS_EAGER):
+            settings.CELERY_TASK_ALWAYS_EAGER):
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):

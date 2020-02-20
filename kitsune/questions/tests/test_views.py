@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.test.utils import override_settings
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 

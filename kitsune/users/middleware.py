@@ -2,15 +2,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect
+from django.utils.deprecation import MiddlewareMixin
 from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.sumo.urlresolvers import reverse
-
-
-try:
-    from django.utils.deprecation import MiddlewareMixin
-except ImportError:
-    MiddlewareMixin = object
 
 
 class TokenLoginMiddleware(MiddlewareMixin):

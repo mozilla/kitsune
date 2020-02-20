@@ -1,6 +1,6 @@
 from django.core.management import call_command
 
-import mock
+from unittest import mock
 
 from kitsune.products.tests import ProductFactory
 from kitsune.search import es_utils

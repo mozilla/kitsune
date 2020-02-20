@@ -7,7 +7,7 @@ from django.conf import settings
 import httplib2
 from apiclient.discovery import build
 from apiclient.errors import HttpError
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client.client import SignedJwtAssertionCredentials
 
 from kitsune.questions.models import Question
 from kitsune.wiki.models import Document
@@ -42,7 +42,7 @@ def retry_503(f):
 
 def _build_request():
     scope = 'https://www.googleapis.com/auth/analytics.readonly'
-    creds = ServiceAccountCredentials.from_json(account, key, scope)
+    creds = SignedJwtAssertionCredentials(account, key, scope)
     request = creds.authorize(httplib2.Http())
     service = build('analytics', 'v3', request)
     return service.data().ga()

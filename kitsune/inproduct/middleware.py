@@ -1,7 +1,4 @@
-try:
-    from django.utils.deprecation import MiddlewareMixin
-except ImportError:
-    MiddlewareMixin = object
+from django.utils.deprecation import MiddlewareMixin
 
 
 class EuBuildMiddleware(MiddlewareMixin):

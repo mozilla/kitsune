@@ -4,7 +4,7 @@ import json
 from django.contrib.auth.models import Permission
 from django.test.client import RequestFactory
 
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 from nose.tools import eq_
 
 from kitsune.journal.models import Record

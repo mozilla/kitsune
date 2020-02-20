@@ -1,7 +1,7 @@
 from django.contrib.sites.models import Site
 from django.core import mail
 
-import mock
+from unittest import mock
 
 from kitsune.kbforums.tests import KBForumTestCase
 from kitsune.sumo.tests import post, attrs_eq, starts_with
