@@ -94,20 +94,26 @@
         if ($(this).attr('name') === 'q') {
           var value = $(this).val();
 
-          if (formId === 'support-search-results') {
+          if (formId === 'support-search-masthead') {
             $('#support-search').find('input[name=q]').val(value);
           } else if (formId === 'support-search') {
-            $('.hidden-search-masthead').show();
-            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
-            window.scrollTo(0, 0);
+            if ($('.hidden-search-masthead').length > 0) {
+              $('.hidden-search-masthead').show();
+              $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+              window.scrollTo(0, 0);
+            } else {
+              window.scrollTo(0, 0);
+              $('#support-search-masthead').find('input[name=q]').val(value).focus();
+            }
+
 
           } else if (formId === 'support-search-sidebar') {
             $('.hidden-search-masthead').show();
-            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+            $('.hidden-search-masthead').find('input[name=q]').val(value);
 
           } else {
             $('#support-search').find('input[name=q]').val(value);
-            $('#support-search-results').find('input[name=q]').val(value).focus();
+            $('#support-search-masthead').find('input[name=q]').val(value);
           }
 
           return true;

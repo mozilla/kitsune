@@ -212,3 +212,11 @@ a, :link {
 .secondary-color {
   color: var(--color-secondary);
 }
+
+.errorlist {
+  padding: 8px;
+  margin: 0 0 16px 0;
+  border-radius: var(--global-radius);
+  background-color: var(--color-red-02);
+  list-style: none;
+}

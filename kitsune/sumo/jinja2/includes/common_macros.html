@@ -83,7 +83,7 @@
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
                 <h4 class="mzp-c-menu-item-title">Discussions</h4>
                 <p class="mzp-c-menu-item-desc">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                  Meet the community: read announcements, follow discussions and ask questions.
                 </p>
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
@@ -97,7 +97,7 @@
                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
                  <h4 class="mzp-c-menu-item-title">Tools</h4>
                  <p class="mzp-c-menu-item-desc">
-                   Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                   Explore resources to help you with your contributions.
                  </p>
                </a>
                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
@@ -121,14 +121,15 @@
 {% if not hide_header_search %}
 <li class="mzp-c-menu-category sumo-nav--item-right">
   {{ search_box(settings, id='support-search', params=search_params) }}
-</li>
-{% endif %}
 
-<li class="mzp-c-menu-category {% if user.is_authenticated() %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
   {% if show_header_fx_download() %}
     {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
     <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden sumo-button primary-button button-lg" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
   {% endif %}
+</li>
+{% endif %}
+
+<li class="mzp-c-menu-category {% if user.is_authenticated() %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
   {% if user.is_authenticated() %}
   <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="{{ url('users.auth') }}">
     <span class="sumo-nav--username">{{ display_name(user) }}</span>
@@ -148,7 +149,7 @@
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
               <h4 class="mzp-c-menu-item-title">Profile</h4>
               <p class="mzp-c-menu-item-desc">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                Manage your information and see your contributions.
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
@@ -163,7 +164,7 @@
                <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
                <h4 class="mzp-c-menu-item-title">Settings</h4>
                <p class="mzp-c-menu-item-desc">
-                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                 Manage your privacy and notification preferences.
                </p>
              </a>
            </section>
@@ -174,7 +175,7 @@
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <h4 class="mzp-c-menu-item-title">Inbox</h4>
                 <p class="mzp-c-menu-item-desc">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                  Exchange private messages with other contributors.
                 </p>
               </a>
             </section>
@@ -250,9 +251,9 @@
 <li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Discussions') }}</a></li>
 <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">{{ _('Support Forum') }}</a></li>
 <li><a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">{{ _('L10N Discussions') }}</a></li>
-<li><a href="#">(Needs URL) Social Support Forum</a></li>
+<li><a href="/forums/social-media">Social Support Forum</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
-<li><a href="#">(Needs URL) New Contributors</a></li>
+<li><a href="/forums/buddies">New Contributors</a></li>
 {% if user.has_perm('flagit.can_moderate') %}
   <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
 {% endif %}
@@ -265,12 +266,7 @@
 <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
 <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
 <!-- <li><a href="#">Tag Admin</a></li> -->
-
-<li><a href="{{ url('landings.get_involved') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Quickstart Guide">(remove?) {{ _('Quickstart Guide') }}</a></li>
-<li><a href="{{ url('wiki.document', 'contributor-news-resources') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="News &amp; Resources">(remove?) {{ _('News &amp; Resources') }}</a></li>
-<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">(remove?) {{ _('Contributor Forums') }}</a></li>
-<li><a href="{{ url('questions.metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Metrics">(remove?) {{ _('Support Forum Metrics') }}</a></li>
-<li><a href="{{ url('kpi.dashboard') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="KPI Dashboard">(remove?) {{ _('KPI Dashboard') }}</a></li>
+<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">{{ _('Support forum home') }}</a></li>
 {% endmacro %}
 
 {# This is designed to be used like this:
