@@ -1447,7 +1447,7 @@ class ProductForumTemplateTestCase(TestCaseBase):
         response = self.client.get(reverse('questions.home'))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(5, len(doc('.product-list .product')))
+        eq_(4, len(doc('.product-list .product')))
         product_list_html = doc('.product-list').html()
         assert firefox.title in product_list_html
         assert android.title in product_list_html
