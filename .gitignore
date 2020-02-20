@@ -46,3 +46,4 @@ styleguide/build/
 .gitconfig
 npm-debug.log
 .babel.json
+.devcontainer/
