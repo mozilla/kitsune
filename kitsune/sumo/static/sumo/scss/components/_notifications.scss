@@ -26,6 +26,14 @@
   justify-content: center;
   align-items: center;
 
+  a,
+  a:link,
+  a:hover,
+  a:visited,
+  a:active {
+    color: inherit;
+  }
+
   @media #{p.$mq-sm} {
     height: auto;
   }

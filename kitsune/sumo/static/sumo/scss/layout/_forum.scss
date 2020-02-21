@@ -117,6 +117,10 @@
     max-width: 160px;
   }
 
+  &--meta-dl .forum--meta-val {
+    border-left: none;
+  }
+
   @media #{p.$mq-md} {
     &--question-item {
       flex-direction: row;
@@ -280,7 +284,6 @@
   flex-wrap: wrap;
   padding-bottom: 8px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
 
   &--details {
     @include p.bidi((

@@ -236,7 +236,7 @@
 
           {{ attachments_form('auth.User', user.pk, images, settings, user) }}
 
-          <div class="answer-tools sumo-button-wrap">
+          <div class="answer-tools sumo-button-wrap align-end reverse-on-desktop">
             <button type="submit" class="sumo-button primary-button button-lg">{{ _('Post Reply') }}</button>
             <input type="submit" class="sumo-button secondary-button button-lg" id="preview" name="preview" value="{{ _('Preview Reply') }}"
               data-preview-url="{{ url('questions.answer_preview_async') }}"
