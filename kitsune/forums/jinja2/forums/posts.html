@@ -123,13 +123,16 @@
   {% if has_perm('forums_forum.thread_move_forum', forum) %}
     <form id="move-thread-form" class="forum--sidebar-form"  action="{{ url('forums.move_thread', forum.slug, thread.id) }}" method="post">
       {% csrf_token %}
-      <select name="forum">
-        {% for f in forums %}
-          {% if has_perm('forums_forum.thread_move_forum', f) %}
-            <option value="{{ f.id }}" {% if f == forum %}selected="selected"{% endif %}>{{ f.name }}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
+      <div class="field is-condensed">
+        <select name="forum">
+          {% for f in forums %}
+            {% if has_perm('forums_forum.thread_move_forum', f) %}
+              <option value="{{ f.id }}" {% if f == forum %}selected="selected"{% endif %}>{{ f.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      </form>
       <input type="submit" class="sumo-button primary-button button-sm" value="Move Thread" />
     </form>
   {% endif %}

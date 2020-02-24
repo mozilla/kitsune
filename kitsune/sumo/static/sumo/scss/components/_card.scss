@@ -86,6 +86,11 @@
       margin-bottom: 32px;
       padding-bottom: 32px;
       border-bottom: 1px solid var(--color-heading);
+
+      a {
+      	white-space: pre-line;
+      	word-wrap: break-word;
+      }
     }
 
     .card--desc {
