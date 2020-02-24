@@ -75,15 +75,16 @@
 
     @media #{p.$mq-md} {
       .sumo-button {
-        margin-right: p.$spacing-md;
-
+        @include p.bidi((
+          (margin-right, p.$spacing-md, 0),
+          (margin-left, 0, p.$spacing-md),
+        ));
         width: auto;
       }
     }
   }
 
   .push-right {
-    margin-left: auto;
     @include p.bidi((
       (margin-left, auto, 0),
       (margin-right, 0, auto),
@@ -118,6 +119,27 @@
 
       &.align-end {
         justify-content: flex-start;
+      }
+
+      .sumo-button {
+        @include p.bidi((
+          (margin-left, p.$spacing-md, 0),
+          (margin-right, 0, p.$spacing-md),
+        ));
+
+        &.push-right {
+          @include p.bidi((
+            (margin-left, auto, 0),
+            (margin-right, 0, auto),
+          ));
+        }
+
+        &.push-left {
+          @include p.bidi((
+            (margin-right, auto, 0),
+            (margin-left, 0, auto),
+          ));
+        }
       }
     }
 

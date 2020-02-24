@@ -548,18 +548,18 @@
             '<div class="filter cf">' +
             '<form class="simple-search-form" id="gallery-modal-search"><input type="text" name="q" class="searchbox"' +
             'placeholder="' + gettext('Search Gallery') + '" />' +
-            '<button type="submit" class="submit-button" title="' + gettext('Search Gallery') + '">' +
+            '<button type="submit" class="submit-button search-button" title="' + gettext('Search Gallery') + '">' +
             gettext('Search Gallery') + '</button></form>' +
             '<div class="type">' +
             '<span>' + gettext('Show:') + '</span>' +
             '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
             '<li data-type="video">' + gettext('Videos') + '</li></ol></div>' +
             '<div class="locale-filter">' + gettext('Show media for:') + ' <select /></div></div>' +
-            '<div class="placeholder" /><div class="submit">' +
-            '<button class="btn btn-important">' + gettext('Insert Media') + '</button>' +
-            '<a href="' + galleryUrl + '#upload" class="upload" target="_blank">' +
+            '<div class="placeholder" /><div class="submit sumo-button-wrap">' +
+            '<button class="sumo-button primary-button">' + gettext('Insert Media') + '</button>' +
+            '<a href="' + galleryUrl + '#upload" class="upload sumo-button secondary-button" target="_blank">' +
             gettext('Upload Media') + '</a>' +
-            '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') + '</a></div>' +
+            '<a href="#cancel" class="kbox-cancel sumo-button secondary-button">' + gettext('Cancel') + '</a></div>' +
             '</section>'
         ),
         selectedText = me.getSelectedText(),

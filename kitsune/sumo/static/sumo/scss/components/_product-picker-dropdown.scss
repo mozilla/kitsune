@@ -28,6 +28,27 @@
 .mzp-c-menu-list-list {
   max-height: 300px;
   overflow: auto;
+
+  .pm {
+    margin: 0;
+  }
+
+  a.sumo-button { // overrides, because sometimes classes are injected from python.
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+    margin: 0;
+    height: auto;
+    font-weight: inherit;
+    transition: none;
+
+    &:hover:not(:disabled) {
+      background: var(--color-marketing-gray-02);
+      color: inherit;
+    }
+  }
 }
 
 .contributor-filters {

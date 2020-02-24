@@ -104,6 +104,10 @@
     margin-bottom: 40px;
   }
 
+  &--sidebar-form {
+    margin: 32px 0 54px;
+  }
+
   &--masthead-text {
     @include c.bottomless;
   }
@@ -173,6 +177,27 @@
       align-items: center;
       justify-content: flex-start;
     }
+  }
+}
+
+.forum--entry {
+  padding: 32px 0;
+
+  &-content {
+    @include p.bidi((
+      (padding, 0 0 0 54px, 0 54px 0 0),
+    ));
+  }
+
+  .content-raw {
+    display: none;
+  }
+}
+
+#post-preview {
+  .mzp-c-menu-list,
+  .content-raw {
+    display: none;
   }
 }
 
@@ -429,6 +454,16 @@
 .author-name {
   display: flex;
   align-items: center;
+
+  .user-title {
+    line-height: 1;
+    border: 1px solid var(--color-text);
+    @include p.bidi((
+      (padding, 0 0 0 8px, 0 8px 0 0),
+      (margin, 0 0 0 8px, 0 8px 0 0),
+      (border-width, 0 0 0 1px, 0 1px 0 0),
+    ));
+  }
 }
 
 .karma-titles {

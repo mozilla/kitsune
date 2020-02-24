@@ -38,11 +38,13 @@
 {% endblock %}
 
 {% block content %}
-  <div class="grid_9">
+  <div class="sumo-page-section">
     <article id="posts" class="main">
+
       {{ kbforums_warning(document, user) }}
-      <h1>{{ thread.title }}</h1>
-      <ul class="cf" id="thread-meta">
+
+      <h1 class="text-display-lg">{{ thread.title }}</h1>
+      <ul class="topic-article--meta-list" id="thread-meta">
         {% if count %}<li>{{ count - 1 }} {{ _('Replies') }}</li>{% endif %}
         {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.creator) }}</li>{% endif %}
         {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
@@ -93,9 +95,9 @@
             {{ content_editor(form.content) }}
           </div>
 
-          <div class="editor-actions">
-            <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
-            <button type="submit" class="btn" id="preview" name="preview"
+          <div class="editor-actions sumo-button-wrap reverse-on-desktop align-end">
+            <button type="submit" class="sumo-button primary-button">{{ _('Post Reply') }}</button>
+            <button type="submit" class="sumo-button secondary-button" id="preview" name="preview"
                 data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
                 data-preview-container-id="post-preview"
                 data-preview-content-id="id_content">{{ _('Preview Reply') }}
