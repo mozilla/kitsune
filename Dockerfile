@@ -30,7 +30,7 @@ RUN apt-get update && \
             gettext build-essential \
             libxml2-dev libxslt1-dev zlib1g-dev git \
             libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
-            libmariadbclient-dev mariadb-client && \
+            libmariadb3 mariadb-client && \
     rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements/*.txt /app/requirements/
@@ -112,7 +112,7 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    libmariadbclient18 optipng mariadb-client \
+    libmariadb3 optipng mariadb-client \
     libxslt1.1 && \
     rm -rf /var/lib/apt/lists/*
 
