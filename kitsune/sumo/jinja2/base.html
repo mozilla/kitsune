@@ -26,20 +26,7 @@
     {% endfor %}
   {% endif %}
 
-  <!-- {% stylesheet 'common' %}
-  {% stylesheet 'print' %}
-  {% for style in styles %}
-    {% stylesheet style %}
-  {% endfor %} -->
-
   <link href="{{ STATIC_URL }}build/screen.css" rel="stylesheet" type="text/css" />
-
-  <!--[if lte IE 7]>
-    {% stylesheet 'ie' %}
-  <![endif]-->
-  <!--[if IE 8]>
-    {% stylesheet 'ie8' %}
-  <![endif]-->
 
   {% if meta %}
     {% for tag in meta %}
