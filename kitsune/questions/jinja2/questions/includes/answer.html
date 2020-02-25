@@ -78,6 +78,9 @@
           <path stroke="currentColor" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </h3>
+    {% elif answer.id and answer in helpful_replies %}
+    {# Note: this is only here as a flag for tests #}
+      <span class="is-helpful"></span>
     {% elif answer.is_spam %}
       <h3 class="is-spam">{{ _('Marked as spam') }}</h3>
     {% endif %}

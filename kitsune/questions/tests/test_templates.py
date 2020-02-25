@@ -293,7 +293,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         doc = pq(response.content)
 
-        eq_(1, len(doc('#answer-%s h3.is-helpful' % self.answer.id)))
+        eq_(1, len(doc('#answer-%s span.is-helpful' % self.answer.id)))
         eq_(0, len(doc('form.helpful input[name="helpful"]')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
