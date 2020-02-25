@@ -68,7 +68,7 @@
               {% endfor %}
               <input type="hidden" value="1" name="w" />
 
-              <div class="submit sumo-button-wrap">
+              <div class="submit sumo-button-wrap reverse-on-desktop align-end">
                 <button class="sumo-button primary-button" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
                 <a class="sumo-button secondary-button" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
@@ -176,7 +176,7 @@
               {% endfor %}
               <input type="hidden" value="2" name="w" />
 
-              <div class="submit sumo-button-wrap">
+              <div class="submit sumo-button-wrap reverse-on-desktop align-end">
                 <button class="sumo-button primary-button" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
                 <a class="sumo-button secondary-button" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
@@ -226,7 +226,7 @@
               {% endfor %}
               <input type="hidden" value="4" name="w" />
 
-              <div class="submit sumo-button-wrap">
+              <div class="submit sumo-button-wrap reverse-on-desktop align-end">
                 <button class="sumo-button primary-button" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
                 <a class="sumo-button secondary-button" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>

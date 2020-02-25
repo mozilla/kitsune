@@ -27,7 +27,7 @@
 {% endmacro %}
 
 {% macro submit_row(form, type) %}
-  <div class="upload-action sumo-button-wrap">
+  <div class="upload-action sumo-button-wrap reverse-on-desktop align-full">
     <input type="submit" class="sumo-button primary-button" name="upload" value="{{ _('Upload file') }}">
     <input type="submit" name="cancel" class="sumo-button kbox-cancel {% if form.instance.pk %} draft{% endif %}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}" value="{{ _('Cancel') }}">
   </div>

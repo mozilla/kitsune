@@ -14,19 +14,19 @@
 {% set styles = ('forums', 'jqueryui') %}
 {% set scripts = ('forums', 'jqueryui') %}
 
-{% block above_main %}
-  <h1 id="forum-title">{{ forum.name }}</h1>
-{% endblock %}
 
 {% block content %}
   <article id="posts" class="sumo-page-section">
+    <p class="text-display-xs" id="forum-title">{{ forum.name }}</p>
     <h1 class="text-display-lg">{{ thread.title }}</h1>
-    <ul class="cf" id="thread-meta">
+
+    <ul class="topic-article--meta-list" id="thread-meta">
       {% if count %}<li>{{ ngettext('{0} Reply', '{0} Replies', (count - 1))|f(count - 1) }}</li>{% endif %}
       {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.author) }}</li>{% endif %}
       {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
       {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
     </ul>
+
     {% if user.is_authenticated() %}
       <form action="{{ url('forums.watch_thread', forum_slug=forum.slug, thread_id=thread.id) }}" method="post">
         {% csrf_token %}
@@ -37,14 +37,14 @@
           {% set watch = _('Watch this thread') %}
           <input type="hidden" name="watch" value="yes" />
         {% endif %}
-        <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+        <button type="submit" title="{{ watch }}" class="sumo-button button-sm" id="watch-thread-toggle">{{ watch }}</button>
       </form>
     {% endif %}
 
     {% if posts %}
       <ol class="posts">
         {% for post in posts.object_list %}
-          <li class="cf" id="post-{{ post.id }}">
+          <li class="forum--entry" id="post-{{ post.id }}">
             {% include "forums/includes/post.html" %}
           </li>
         {% endfor %}
@@ -57,9 +57,9 @@
     {% endif %}
 
     {% if user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
-      <form action="{{ url('forums.reply', forum.slug, thread.id)|urlparams(hash='post-reply') }}" method="post">
+      <form action="{{ url('forums.reply', forum.slug, thread.id)|urlparams(hash='post-reply') }}" method="post" class="sumo-page-section">
         {% csrf_token %}
-        <h3 class="text-display-sm" id="thread-reply-title">{{ _('Post a reply') }}</h3>
+        <h3 class="text-body-lg" id="thread-reply-title">{{ _('Post a reply') }}</h3>
         {{ errorlist(form) }}
 
         {% if request.limited %}
@@ -71,7 +71,7 @@
         <div id="thread-reply">
           {{ content_editor(form.content) }}
         </div>
-        <div class="editor-actions sumo-button-wrap">
+        <div class="editor-actions sumo-button-wrap reverse-on-desktop align-end">
           <button type="submit" class="sumo-button primary-button">{{ _('Post Reply') }}</button>
           <button type="submit" class="sumo-button secondary-button" id="preview" name="preview"
                  data-preview-url="{{ url('forums.post_preview_async') }}"
@@ -121,15 +121,18 @@
   </ul>
 
   {% if has_perm('forums_forum.thread_move_forum', forum) %}
-    <form id="move-thread-form" action="{{ url('forums.move_thread', forum.slug, thread.id) }}" method="post">
+    <form id="move-thread-form" class="forum--sidebar-form"  action="{{ url('forums.move_thread', forum.slug, thread.id) }}" method="post">
       {% csrf_token %}
-      <select name="forum">
-        {% for f in forums %}
-          {% if has_perm('forums_forum.thread_move_forum', f) %}
-            <option value="{{ f.id }}" {% if f == forum %}selected="selected"{% endif %}>{{ f.name }}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
+      <div class="field is-condensed">
+        <select name="forum">
+          {% for f in forums %}
+            {% if has_perm('forums_forum.thread_move_forum', f) %}
+              <option value="{{ f.id }}" {% if f == forum %}selected="selected"{% endif %}>{{ f.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      </form>
       <input type="submit" class="sumo-button primary-button button-sm" value="Move Thread" />
     </form>
   {% endif %}

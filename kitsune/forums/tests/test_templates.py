@@ -259,7 +259,7 @@ class ThreadsTemplateTests(ForumTestCase):
 
         response = get(self.client, "forums.threads", args=[t.forum.slug])
         doc = pq(response.content)
-        last_post_link = doc("ol.threads div.last-post a:not(.username)")[0]
+        last_post_link = doc(".threads .last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
         eq_(href.split("#")[1], "post-%s" % last.id)
 

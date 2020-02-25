@@ -111,9 +111,9 @@
           {{ field(form.locale) }}
           {{ field(form.involved_from) }}
 
-        <div class="sumo-button-wrap">
+        <div class="sumo-button-wrap reverse-on-desktop align-full">
           <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update My Profile') }}</button>
-          <button class="sumo-button secondary-button button-lg" type="reset">Cancel</button>
+          <button class="sumo-button button-lg" type="reset">Cancel</button>
         </div>
       </form>
       {% if request.user == profile.user %}

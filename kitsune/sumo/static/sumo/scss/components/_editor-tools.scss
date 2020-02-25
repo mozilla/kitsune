@@ -162,10 +162,7 @@ section.marky {
 
   div.placeholder {
     height: 65%;
-    height:  calc(~"100% - 225px");
-    left: 15px;
-    position: absolute;
-    top: 135px;
+    height:  calc(100% - 225px);
   }
 
   &.processing {
@@ -180,7 +177,7 @@ section.marky {
 
   #media-list {
     height: 80%;
-    height: calc(~"100% - 50px");
+    height: calc(100% - 50px);
     overflow: auto;
 
     li {
@@ -213,11 +210,6 @@ section.marky {
   }
 
   div.filter {
-    border-bottom: 1px solid #9ACCF7;
-    border-top: 1px solid #9ACCF7;
-    display: block;
-    padding: 7px 15px;
-
     div.type {
       color: #929292;
       float: right;
