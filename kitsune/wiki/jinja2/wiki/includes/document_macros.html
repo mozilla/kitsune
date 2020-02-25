@@ -210,14 +210,14 @@
 {%- endmacro %}
 
 {% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, translate=False) -%}
-  <div class="submit sumo-button-wrap">
+  <div class="submit sumo-button-wrap reverse-on-desktop align-end">
     <button class="sumo-button primary-button btn-submit" type="submit" data-sumo-modal="submit-modal">{{ _('Submit for Review') }}</button>
     {% if translate %}
-      <button class="sumo-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
+      <button class="sumo-button secondary-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
     {% endif %}
-    <button class="sumo-button btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
+    <button class="sumo-button secondary-button btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
     {% if include_diff %}
-      <button class="sumo-button btn-diff" type="button">{{ _('Preview Changes') }}</button>
+      <button class="sumo-button secondary-button btn-diff" type="button">{{ _('Preview Changes') }}</button>
     {% endif %}
   </div>
   {% if not buttons_only %}
@@ -242,7 +242,7 @@
           <input type="checkbox" name="notify-future-changes" id="id_notify-future-changes" value="Yes" />
           <label for="id_notify-future-changes">{{ _('Notify me of any future changes to this page') }}</label>
         </div>
-        <div class="sumo-button-wrap align-full">
+        <div class="sumo-button-wrap align-end">
           <button class="sumo-button primary-button" type="submit">{{ _('Submit') }}</button>
         </div>
       </div>

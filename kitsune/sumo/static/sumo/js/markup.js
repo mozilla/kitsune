@@ -315,7 +315,7 @@
             gettext('External link:') + '</label></div>' +
             '<input type="text" name="external" placeholder="' +
             gettext('Enter the URL of the external link') + '" /></li>' +
-            '</ol><div class="submit sumo-button-wrap"><button type="button" class="sumo-button primary-button"></button>' +
+            '</ol><div class="submit sumo-button-wrap align-full reverse-on-desktop"><button type="button" class="sumo-button primary-button"></button>' +
             '<a href="#cancel" class="kbox-cancel sumo-button secondary-button">' + gettext('Cancel') +
             '</a></div></section>' // whew, yuck!?
         ),
@@ -555,11 +555,11 @@
             '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
             '<li data-type="video">' + gettext('Videos') + '</li></ol></div>' +
             '<div class="locale-filter">' + gettext('Show media for:') + ' <select /></div></div>' +
-            '<div class="placeholder" /><div class="submit sumo-button-wrap">' +
+            '<div class="placeholder" /><div class="submit sumo-button-wrap reverse-on-desktop align-end">' +
             '<button class="sumo-button primary-button">' + gettext('Insert Media') + '</button>' +
             '<a href="' + galleryUrl + '#upload" class="upload sumo-button secondary-button" target="_blank">' +
             gettext('Upload Media') + '</a>' +
-            '<a href="#cancel" class="kbox-cancel sumo-button secondary-button">' + gettext('Cancel') + '</a></div>' +
+            '<a href="#cancel" class="kbox-cancel sumo-button push-left">' + gettext('Cancel') + '</a></div>' +
             '</section>'
         ),
         selectedText = me.getSelectedText(),

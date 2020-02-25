@@ -224,6 +224,14 @@
       background-color: var(--color-link);
       color: var(--color-inverse);
     }
+
+    &:hover {
+      background: var(--color-light-gray-04);
+    }
+  }
+
+  &.no-hover li:hover {
+    background-color: var(--color-light-gray-03);
   }
 
   a {

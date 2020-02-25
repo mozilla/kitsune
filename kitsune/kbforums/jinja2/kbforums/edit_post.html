@@ -27,14 +27,14 @@
         </div>
       </div>
 
-      <div class="sumo-button-wrap form-widget submit">
+      <div class="sumo-button-wrap reverse-on-desktop form-widget submit">
         <button type="submit" class="sumo-button primary-button">{{ _('Update post') }}</button>
-        <button type="submit" id="preview" name="preview" class="sumo-button"
+        <button type="submit" id="preview" name="preview" class="sumo-button secondary-button"
             data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
             data-preview-container-id="post-preview"
             data-preview-content-id="id_content">{{ _('Preview') }}
         </button>
-        <a class="sumo-button link-button push-right" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+        <a class="sumo-button push-left" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
       </div>
     </form>
 

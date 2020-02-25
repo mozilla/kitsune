@@ -5,10 +5,11 @@
       <img class="card--icon-sm" src="{{STATIC_URL}}protocol/img/icons/blog.svg" alt="{{ doc.title }}" />
       <div class="card--details">
         <h3 class="card--title">
-          <a class="expand-this-link" href="{{ url('wiki.document', doc.slug)  }}" data-event-category="link click"
-            data-event-action="product" data-event-label="#{{ doc.title }}">
-            {{ doc.title }}
-          </a>
+          <a class="expand-this-link"
+            href="{{ url('wiki.document', doc.slug)  }}"
+            data-event-category="link click"
+            data-event-action="product"
+            data-event-label="#{{ doc.title }}">{{ doc.title }}</a>
         </h3>
         <p class="card--desc">
           {{ doc.current_revision.summary }}
