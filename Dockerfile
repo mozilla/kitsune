@@ -11,7 +11,7 @@ RUN npm run development && npm run production
 ################################
 # Python dependencies builder
 #
-FROM python:2-stretch AS base
+FROM python:2-buster AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -73,7 +73,7 @@ RUN cp .env-build .env && \
 ################################
 # Fetch locales
 #
-FROM python:2-stretch AS locales
+FROM python:2-buster AS locales
 
 WORKDIR /app
 
@@ -99,7 +99,7 @@ ENV GIT_SHA ${GIT_SHA}
 ################################
 # Full prod image sans locales
 #
-FROM python:2-slim-stretch AS full-no-locales
+FROM python:2-slim-buster AS full-no-locales
 
 WORKDIR /app
 
