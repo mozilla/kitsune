@@ -72,7 +72,12 @@
 
   <div class="main-content">
     {% if answer.id and question.solution == answer %}
-      <h3 class="is-solution"{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>{{_('Chosen Solution')}}</h3>
+      <h3 class="is-solution"{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>
+        {{_('Chosen Solution')}}
+        <svg class="is-solution--icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path stroke="currentColor" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </h3>
     {% elif answer.is_spam %}
       <h3 class="is-spam">{{ _('Marked as spam') }}</h3>
     {% endif %}
@@ -149,16 +154,14 @@
   </aside>
   {% endif %}
 
-  {% if answer.id and question.solution == answer %}
+  {% if answer.id and question.solution == answer and question.allows_unsolve(user) %}
   <aside class="answer--tools">
     <div class="answer--tools-form">
       <p class="text-body-sm title">{{ _('Solution chosen') }}</p>
-      {% if question.allows_unsolve(user) %}
       <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
         {% csrf_token %}
         <input type="submit" name="unsolve" class="sumo-button secondary-button button-sm" value="{{ _('Undo') }}" />
       </form>
-      {% endif %}
     </div>
   </aside>
   {% endif %}

@@ -47,10 +47,9 @@
 
 .document-vote {
   border-radius: 36px;
-  padding: p.$spacing-md 0;
+  padding: 40px 0 p.$spacing-sm;
 
   &.is-forum-answer {
-    padding: p.$spacing-sm 0;
 
     .document-vote--form {
       flex-direction: row;

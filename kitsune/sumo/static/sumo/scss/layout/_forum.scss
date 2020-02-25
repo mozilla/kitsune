@@ -5,7 +5,7 @@
   &--question-item {
     display: flex;
     flex-direction: column;
-    padding: 24px 0;
+    padding: p.$spacing-lg 0;
     border-bottom: 1px solid var(--color-heading);
 
     &:first-child {
@@ -77,12 +77,12 @@
   &--user-meta {
     display: flex;
     flex-wrap: wrap;
-    padding-top: 16px;
+    padding-top: p.$spacing-md;
     border-top: 1px solid var(--color-border);
     @include c.text-body-sm;
 
     p {
-      margin: 0 24px 0 0;
+      margin: 0 p.$spacing-lg 0 0;
 
       &:last-child {
         margin-right: 0;
@@ -105,7 +105,7 @@
   }
 
   &--sidebar-form {
-    margin: 32px 0 54px;
+    margin: p.$spacing-xl 0 54px;
   }
 
   &--masthead-text {
@@ -128,8 +128,8 @@
   @media #{p.$mq-md} {
     &--question-item {
       flex-direction: row;
-      padding-top: 32px;
-      padding-bottom: 32px;
+      padding-top: p.$spacing-xl;
+      padding-bottom: p.$spacing-xl;
     }
 
     &--question-item-side {
@@ -181,7 +181,7 @@
 }
 
 .forum--entry {
-  padding: 32px 0;
+  padding: p.$spacing-xl 0;
 
   &-content {
     @include p.bidi((
@@ -210,8 +210,8 @@
   li {
     display: flex;
     align-items: center;
-    padding: 4px 16px;
-    margin: 0 8px 8px 0;
+    padding: p.$spacing-xs p.$spacing-md;
+    margin: 0 p.$spacing-sm p.$spacing-sm 0;
     background-color: var(--color-light-gray-03);
     border-radius: 20px;
     white-space: nowrap;
@@ -247,7 +247,7 @@
     appearance: none;
     background: transparent;
     padding: 0;
-    margin: -2px -4px 0 8px;
+    margin: -2px -4px 0 p.$spacing-sm;
     border: 0 none;
 
     &:hover {
@@ -307,7 +307,7 @@
 
   .sumo-button-stack {
     @include p.bidi((
-      (margin, 0 0 0 32px, 0 32px 0 0),
+      (margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0),
     ));
   }
 }
@@ -315,8 +315,8 @@
 .question-meta {
   display: flex;
   flex-wrap: wrap;
-  padding-bottom: 8px;
-  margin-bottom: 16px;
+  padding-bottom: p.$spacing-sm;
+  margin-bottom: p.$spacing-md;
 
   &--details {
     @include p.bidi((
@@ -328,10 +328,10 @@
 
 .user-meta {
   display: flex;
-  margin-bottom: 24px;
+  margin-bottom: p.$spacing-lg;
 
   .avatar {
-    // margin-right: 16px;
+    // margin-right: p.$spacing-md;
     img {
       display: block;
       border-radius: 50%;
@@ -354,13 +354,13 @@
   &.editing {
     select {
       display: block;
-      margin-top: 4px;
-      margin-bottom: 16px;
+      margin-top: p.$spacing-xs;
+      margin-bottom: p.$spacing-md;
     }
 
     .sumo-button-wrap {
       display: block;
-      margin: -16px 0 16px;
+      margin: -1 * p.$spacing-md 0 p.$spacing-md;
     }
 
     .detail {
@@ -467,8 +467,8 @@
     line-height: 1;
     border: 1px solid var(--color-text);
     @include p.bidi((
-      (padding, 0 0 0 8px, 0 8px 0 0),
-      (margin, 0 0 0 8px, 0 8px 0 0),
+      (padding, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
+      (margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
       (border-width, 0 0 0 1px, 0 1px 0 0),
     ));
   }
@@ -476,13 +476,13 @@
 
 .karma-titles {
   display: flex;
-  margin: 0 0 0 8px;
-  padding-left: 8px;
+  margin: 0 0 0 p.$spacing-sm;
+  padding-left: p.$spacing-sm;
   line-height: 1;
   border-left: 1px solid var(--color-heading);
 
   li {
-    margin-right: 8px;
+    margin-right: p.$spacing-sm;
 
     &:last-child {
       margin-right: 0;
@@ -491,32 +491,32 @@
 }
 
 .is-solution,
-.is-helpful,
-.is-spam,
-.is-owner {
+.is-spam {
   @include c.text-body-xs;
   color: var(--color-heading);
   font-weight: bold;
-  padding: 4px 16px;
-  margin: 0 0 8px 0;
+  padding: p.$spacing-xs p.$spacing-md;
+  margin: 0 0 p.$spacing-sm 0;
   border-radius: 20px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
 }
 
 .is-solution {
-  background-color: var(--color-green-04);
-}
+  background-color: var(--color-success);
 
-.is-helpful {
-  background-color: var(--color-blue-01);
+  &--icon {
+    width: 20px;
+    @include p.bidi((
+      (margin-left, p.$spacing-sm, 0),
+      (margin-right, 0, p.$spacing-sm),
+    ));
+
+  }
 }
 
 .is-spam {
-  background-color: var(--color-yellow-05);
-}
-
-.is-owner {
-  background-color: var(--color-light-gray-03);
+  background-color: var(--color-warning);
 }
 
 .answer-tools {
@@ -527,10 +527,10 @@
 }
 
 .tag-adder {
-  padding: 16px 0;
+  padding: p.$spacing-md 0;
 }
 .answer {
-  padding: 16px 0;
+  padding: p.$spacing-2xl 0;
   border-bottom: 1px solid var(--color-border);
 
   &--tools {
@@ -538,22 +538,24 @@
     flex-direction: column;
     background: var(--color-shade-bg);
     border-radius: 0 var(--global-radius) var(--global-radius) 0;
-    padding: 8px;
+    padding: p.$spacing-sm;
     margin-top: -1px;
-    margin-bottom: 16px;
+    margin-bottom: p.$spacing-md;
     border-bottom: 1px solid var(--color-border);
 
     .title {
-      margin: 0 16px 0 0;
+      margin: 0 p.$spacing-md 0 0;
     }
   }
 
   &--tools-form {
-    margin-right: auto;
-    margin-bottom: 16px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
 
     .solution {
       display: flex;
+      align-items: center;
     }
   }
 
@@ -564,7 +566,7 @@
 
   @media #{p.$mq-md} {
     &--tools {
-      flex-direction: row;
+      flex-direction: row-reverse;
       padding-left: 55px;
     }
 
