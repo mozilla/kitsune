@@ -86,11 +86,12 @@
 {%- endmacro %}
 
 
-{% macro topic_tabs(topics, subtopics, topic, product, selected_topic=None, selected_subtopic=None) -%}
+{% macro topic_tabs(topics, subtopics, product, topic, selected_subtopic=None) -%}
 <nav class="tabs">
   <ul class="tabs--list subtopics">
+    {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
     <li class="tabs--item">
-      <a class="tabs--link {% if selected_subtopic == None %}is-active{% endif %}" href="{{ topic_url }}">
+      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}">
         <span class="mobile-only">{{ _('All') }}</span>
         <span class="hide-on-mobile">{{ _('All articles and threads') }}</span>
       </a>
@@ -98,7 +99,7 @@
     {% for subtopic in subtopics %}
       {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
       <li class="tabs--item">
-        <a class="tabs--link {% if selected_subtopic == subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
           <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
         </a>
       </li>
