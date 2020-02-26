@@ -169,8 +169,8 @@
   }
 
   &--callout {
-    @include c.elevation-01;
     padding: 40px;
+    border-radius: 0;
     background-color: var(--color-callout-bg);
 
     &-wrap-narrow {
@@ -196,6 +196,14 @@
 
       &:last-child {
         margin-bottom: 0;
+      }
+
+      a,
+      a:hover,
+      a:visited,
+      a:active {
+        color: var(--color-link);
+        text-decoration: underline;
       }
     }
   }
