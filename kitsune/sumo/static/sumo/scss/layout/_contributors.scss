@@ -127,12 +127,22 @@
     margin: 0 auto;
   }
 
+  li {
+    @include c.text-body-lg;
+  }
+
   a {
-    @include c.text-display-xs;
+    @include c.text-body-lg;
     text-align: center;
     display: block;
     text-decoration: none;
-    color: var(--color-heading);
+    color: var(--color-moz-text);
+
+    &:hover,
+    &:hover:visited {
+      color: var(--color-moz-text);
+      text-decoration: underline;
+    }
   }
 
   &.has-icons {
@@ -180,5 +190,5 @@ ol.headings-list {
 }
 
 .legacy-blue-text {
-  color: #2BBAE7;
+  color: #2BBAE7 !important;
 }

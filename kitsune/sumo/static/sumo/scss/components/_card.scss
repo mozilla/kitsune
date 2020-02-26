@@ -60,6 +60,10 @@
     background: var(--color-shade-bg);
   }
 
+  &.is-callout-bg {
+    background: var(--color-callout-bg);
+  }
+
   &.highlight {
     border-left: 2px solid var(--color-link);
     border-radius: 0;
@@ -146,7 +150,7 @@
 
     .card--icon-sm {
       margin-bottom: 8px;
-      width: 36px;
+      width: 32px;
       height: auto;
     }
 

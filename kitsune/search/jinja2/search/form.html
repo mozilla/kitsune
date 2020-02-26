@@ -9,17 +9,19 @@
 
 {% block masthead %}
 {% if not advanced %}
-<section class="home-search-section sumo-page-section--lg shade-bg">
-  <div class="mzp-l-content narrow">
-    <div class="home-search-section--content">
-      <h1 class="text-display-lg">{{ _('Search Support') }}</h1>
-        {% from "search/includes/macros.html" import basic_search_form with context %}
-        {{ basic_search_form(True) }}
+<div class="search-results-visible">
+  <section class="home-search-section sumo-page-section--lg shade-bg ">
+    <div class="mzp-l-content">
+      <div class="home-search-section--content">
+        <h1 class="text-display-lg">{{ _('Search Support') }}</h1>
+          {% from "search/includes/macros.html" import basic_search_form with context %}
+          {{ basic_search_form(True) }}
 
-        <p class="text-body-sm"><br><a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a></p>
+          <p><a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a></p>
+      </div>
     </div>
-  </div>
-</section>
+  </section>
+</div>
 {% endif %}
 {% endblock %}
 

@@ -23,8 +23,6 @@
 
 
   <section class="support-callouts">
-    {% set listed_product=product.slug|capitalize %}
-
     {% if show_community_support %}
     <div class="card card--ribbon is-inverse has-moz-headings heading-is-one-line">
       <div class="card--details">
@@ -38,9 +36,9 @@
             </g>
           </svg>
 
-          {{ _('Need more help?') }}
+          {{ _('Still need help?') }}
         </h3>
-        <p class="card--desc">{{ _('Our support forums are a great place to ask a question, learn and discover new ways to use {}.'.format(listed_product)) }}</p>
+        <p class="card--desc">{{ _('We're here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
         <a
           class="sumo-button primary-button button-lg"
           href="{{ url('wiki.document', 'get-community-support') }}"
