@@ -128,14 +128,13 @@
         </section>
       {% endif %}
     </article>
+
+    <section id="get-involved-button" class="sumo-page-section document-get-involved">
+      {% include "landings/includes/volunteer-callout.html" %}
+    </section>
 {% endblock %}
 
 {% block below_main %}
-<section id="get-involved-button" class="mzp-l-content sumo-page-section">
-  <div class="sumo-button-wrap align-center document-get-involved">
-    <a class="sumo-button primary-button button-lg" href="{{ url('landings.get_involved') }}">{{ _('Volunteer for Mozilla Support') }}</a>
-  </div>
-</section>
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}

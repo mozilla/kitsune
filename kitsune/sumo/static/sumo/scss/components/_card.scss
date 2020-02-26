@@ -160,6 +160,12 @@
         white-space: nowrap;
       }
     }
+
+    &.no-body-text {
+      .card--details {
+        justify-content: space-between;
+      }
+    }
   }
 
   &--callout {

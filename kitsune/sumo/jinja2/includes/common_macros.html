@@ -23,27 +23,27 @@
     {% endif %}
   {% endif %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">Get Help</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">{{ _('Get Help') }}</a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
-          <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
+          <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
           <div class="sumo-nav--dropdown-col">
             <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
               <a class="mzp-c-menu-item-link" href="{{ ask_url }}">
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6"/><path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z"/></g></svg>
-                <h4 class="mzp-c-menu-item-title">Ask the Community</h4>
+                <h4 class="mzp-c-menu-item-title">{{ _('Ask the Community') }}</h4>
                 <p class="mzp-c-menu-item-desc">
-                  Create a thread and find answers in any of our product support forums.
+                  {{ _('Create a thread and find answers in any of our product support forums.') }}
                 </p>
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                <li><a href="/questions/new/desktop">Firefox Browser</a></li>
-                <li><a href="/questions/new/firefox-private-network">Firefox Private Network</a></li>
-                <li><a href="/questions/new/ios">Firefox for iOS</a></li>
-                <li><a href="/questions/new/firefox-lockwise">Firefox Lockwise</a></li>
-                <li><a href="/questions/new/mobile">Firefox for Android</a></li>
-                <li><a class="color-link" href="{{ url('questions.home') }}">See All Products</a></li>
+                <li><a href="/questions/new/desktop">{{ _('Firefox Browser') }}</a></li>
+                <li><a href="/questions/new/firefox-private-network">{{ _('Firefox Private Network') }}</a></li>
+                <li><a href="/questions/new/ios">{{ _('Firefox for iOS') }}</a></li>
+                <li><a href="/questions/new/firefox-lockwise">{{ _('Firefox Lockwise') }}</a></li>
+                <li><a href="/questions/new/mobile">{{ _('Firefox for Android') }}</a></li>
+                <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('See All Products') }}</a></li>
               </ul>
             </section>
            </div>
@@ -51,18 +51,18 @@
              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
                <a class="mzp-c-menu-item-link" href="/products">
                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><rect stroke-linejoin="round" width="18" height="18" rx="2"/><path d="M4 5h10M4 9h10M4 13h4"/></g></svg>
-                 <h4 class="mzp-c-menu-item-title">Explore Our Help Articles</h4>
+                 <h4 class="mzp-c-menu-item-title">{{ _('Explore Our Help Articles') }}</h4>
                  <p class="mzp-c-menu-item-desc">
-                   Dig into the knowledge base, tips and tricks, troubleshooting, and so much more.
+                   {{ _('Dig into the knowledge base, tips and tricks, troubleshooting, and so much more.') }}
                  </p>
                </a>
                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                 <li><a href="/products/firefox">Firefox Browser</a></li>
-                 <li><a href="/products/firefox-private-network">Firefox Private Network</a></li>
-                 <li><a href="/products/ios">Firefox for iOS</a></li>
-                 <li><a href="/products/firefox-lockwise">Firefox Lockwise</a></li>
-                 <li><a href="/products/mobile">Firefox for Android</a></li>
-                 <li><a class="color-link" href="/products">See All Articles</a></li>
+                 <li><a href="/products/firefox">{{ _('Firefox Browser') }}</a></li>
+                 <li><a href="/products/firefox-private-network">{{ _('Firefox Private Network') }}</a></li>
+                 <li><a href="/products/ios">{{ _('Firefox for iOS') }}</a></li>
+                 <li><a href="/products/firefox-lockwise">{{ _('Firefox Lockwise') }}</a></li>
+                 <li><a href="/products/mobile">{{ _('Firefox for Android') }}</a></li>
+                 <li><a class="color-link" href="/products">{{ _('See All Articles') }}</a></li>
                </ul>
              </section>
             </div>
@@ -76,14 +76,14 @@
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
-          <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
+          <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
           <div class="sumo-nav--dropdown-col">
             <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
               <a class="mzp-c-menu-item-link" href="{{ url('community.home') }}">
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
-                <h4 class="mzp-c-menu-item-title">Discussions</h4>
+                <h4 class="mzp-c-menu-item-title">{{ _('Discussions') }}</h4>
                 <p class="mzp-c-menu-item-desc">
-                  Meet the community: read announcements, follow discussions and ask questions.
+                  {{ _('Meet the community: read announcements, follow discussions and ask questions.') }}
                 </p>
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
@@ -95,9 +95,9 @@
              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
                <a class="mzp-c-menu-item-link" href="{{ url('search.advanced') }}">
                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                 <h4 class="mzp-c-menu-item-title">Tools</h4>
+                 <h4 class="mzp-c-menu-item-title">{{ _('Tools') }}</h4>
                  <p class="mzp-c-menu-item-desc">
-                   Explore resources to help you with your contributions.
+                   {{ _('Explore resources to help you with your contributions.') }}
                  </p>
                </a>
                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
@@ -112,7 +112,7 @@
   {% endif %}
 
   <li class="mzp-c-menu-category">
-    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.get_involved') }}">Volunteer</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.get_involved') }}">{{ _('Volunteer') }}</a>
   </li>
 {% endmacro %}
 
@@ -142,29 +142,29 @@
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
     <div class="sumo-nav--dropdown-container">
       <div class="sumo-nav--dropdown-grid">
-        <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">Close Firefox menu</button>
+        <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <a class="mzp-c-menu-item-link" href="{{ profile_url(user) }}">
-              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
-              <h4 class="mzp-c-menu-item-title">Profile</h4>
+              <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(5 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"><path d="M0 18c1-4 3.333-6 7-6s6 2 7 6" stroke-linecap="round"/><circle cx="7" cy="4" r="4"/></g></svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('View Profile') }}</h4>
               <p class="mzp-c-menu-item-desc">
-                Manage your information and see your contributions.
+                {{ _('Manage your information and see your contributions.') }}
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               <li><a href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
-              <li><a href="{{ url('questions.home') }}">My Questions</a></li>
+              <li><a href="{{ url('search.advanced')|urlparams(a=1, asked_by=user, w=2) }}"">{{ _('My Questions') }}</a></li>
             </ul>
           </section>
          </div>
          <div class="sumo-nav--dropdown-thirds">
            <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
              <a class="mzp-c-menu-item-link" href="{{ url('users.edit_settings') }}">
-               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
-               <h4 class="mzp-c-menu-item-title">Settings</h4>
+               <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(1 1)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="3"/><path d="M18.4 14a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V20a2 2 0 11-4 0v-.09A1.65 1.65 0 008 18.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 110-4h.09A1.65 1.65 0 003.6 8a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8c.26.604.852.997 1.51 1H20a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></g></svg>
+               <h4 class="mzp-c-menu-item-title">{{ _('Settings') }}</h4>
                <p class="mzp-c-menu-item-desc">
-                 Manage your privacy and notification preferences.
+                 {{ _('Manage your privacy and notification preferences.') }}
                </p>
              </a>
            </section>
@@ -172,10 +172,10 @@
           <div class="sumo-nav--dropdown-thirds">
             <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
               <a class="mzp-c-menu-item-link" href="{{ url('messages.inbox') }}">
-                <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <h4 class="mzp-c-menu-item-title">Inbox</h4>
+                <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></g></svg>
+                <h4 class="mzp-c-menu-item-title">{{ _('Inbox') }}</h4>
                 <p class="mzp-c-menu-item-desc">
-                  Exchange private messages with other contributors.
+                  {{ _('Exchange private messages with other contributors.') }}
                 </p>
               </a>
             </section>

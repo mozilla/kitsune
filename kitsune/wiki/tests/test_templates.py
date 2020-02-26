@@ -423,6 +423,8 @@ class DocumentTests(TestCaseBase):
         """The document template falls back to fallback locale if there is
         custom wiki fallback mapping for the locale and the locale have no translation
         exists."""
+        u = UserFactory()
+        self.client.login(username=u.username, password="testpass")
         # Create an English document and a es translated document
         en_rev = ApprovedRevisionFactory(is_ready_for_localization=True)
         trans_doc = DocumentFactory(parent=en_rev.document, locale="es")
