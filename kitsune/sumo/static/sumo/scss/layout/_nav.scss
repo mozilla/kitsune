@@ -251,6 +251,10 @@
       .sumo-button {
         display: none;
       }
+
+      .sumo-nav--dropdown-container .sumo-button {
+        display: inline-flex;
+      }
     }
   }
 
