@@ -18,11 +18,14 @@
 
   a:link,
   a:visited,
-  a:hover,
   a:focus,
   a:active {
     text-decoration: none;
     background-color: transparent;
+  }
+
+  a:hover {
+    text-decoration: underline;
   }
 
   &-links-social {

@@ -4,7 +4,7 @@
   {% if not parent %}
     {% set parent = document %}
   {% endif %}
-
+  {% if user.is_authenticated() %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
       <li id="editing-tools-sidebar">
@@ -65,8 +65,8 @@
         </ul>
       </li>
     </ul>
-
   </nav>
+  {% endif %}
 {%- endmacro %}
 
 {% macro document_notifications(document, user) -%}
