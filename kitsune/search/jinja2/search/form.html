@@ -5,6 +5,24 @@
   {% set classes = 'advanced_search' %}
 {% endif %}
 
+{% block breadcrumbs %}{% endblock %}
+
+{% block masthead %}
+{% if not advanced %}
+<section class="home-search-section sumo-page-section--lg shade-bg">
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="text-display-lg">{{ _('Search Support') }}</h1>
+        {% from "search/includes/macros.html" import basic_search_form with context %}
+        {{ basic_search_form(True) }}
+
+        <p class="text-body-sm"><br><a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a></p>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
 {% block content %}
   <section class="sumo-page-section">
     <div class="content-box cf" id="advanced-search">
@@ -233,10 +251,6 @@
             </form>{# discussion #}
           </div>{# tab-wrapper #}
         </div>{# search-tabs #}
-      {% else %}
-        {% from "search/includes/macros.html" import basic_search_form with context %}
-        {{ basic_search_form(True) }}
-        <a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a>
       {% endif %}
     </div>
   </section>

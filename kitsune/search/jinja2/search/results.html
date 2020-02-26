@@ -9,19 +9,30 @@
   {% set crumbs = [(url('search.advanced'), _('Advanced Search')), (None, _('Results'))] %}
 {% endif %}
 
+{% block masthead %}
+{% if not advanced %}
+<section class="home-search-section sumo-page-section--lg shade-bg">
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="text-display-lg">{{ _('Search Support') }}</h1>
+      {{ basic_search_form(True) }}
+      <p class="text-body-sm"><br><a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a></p>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+
 {% block content %}
   <div id="search-results" class="sumo-page-section" >
-    {% if not advanced %}
-      {{ basic_search_form(True) }}
-    {% endif %}
-
       {% if num_results > 0 %}
-        <h2 class="text-display-md">
+        <p class="text-body-lg">
           {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
           {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
                       'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
                       num_results)|fe(n=num_results, q=q, product=product_titles) }}
-        </h2>
+        </p>
 
         <div class="content-box">
           {% for doc in results %}
@@ -31,10 +42,10 @@
 
         {{ pages|paginator }}
       {% else %}
-        <h2 class="text-display-md">
+        <p class="text-body-lg">
           {# L10n: {q} is the search query, {l} is the language searched. #}
           {{ _("Sorry! 0 results found for ‘{q}’ in ‘{l}’")|fe(q=q, l=lang_name) }}
-        </h2>
+        </p>
 
         <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
 
