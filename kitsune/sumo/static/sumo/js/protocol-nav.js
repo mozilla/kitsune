@@ -33,6 +33,7 @@ if (toggleNavButtons.length > 0) {
 
         // if search nav, focus the field
         if (toggleThisId == "#search-navigation") {
+          window.scrollTo(0,0);
           toggleThisItem.querySelector('.searchbox').focus();
         }
 

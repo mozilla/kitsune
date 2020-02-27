@@ -217,11 +217,17 @@
     display: none;
   }
 
-  .sumo-nav--mobile-search-form .simple-search-form {
-    display: block;
-    @include p.bidi((
-      (margin, 0 20px 0 0, 0 0 0 20px),
-    ));
+  .sumo-nav--mobile-search-form {
+    .simple-search-form {
+      display: block;
+      margin: 0;
+      padding: 0 0 20px 0;
+    }
+
+    .searchbox {
+      width: 100%;
+      height: 40px;
+    }
   }
 
   body.scroll-header:not(.lock-body) & {
@@ -234,9 +240,6 @@
 
     .simple-search-form {
       display: block;
-      @include p.bidi((
-        (margin, 0 20px 0 0, 0 0 0 20px),
-      ));
     }
 
     .search-button {
@@ -255,17 +258,6 @@
       .sumo-nav--dropdown-container .sumo-button {
         display: inline-flex;
       }
-    }
-  }
-
-  .sumo-nav--mobile-search-form {
-    .simple-search-form {
-      margin: 32px 0 0 0;
-      padding: 0 0 32px 0;
-    }
-
-    .searchbox {
-      width: 100%;
     }
   }
 
