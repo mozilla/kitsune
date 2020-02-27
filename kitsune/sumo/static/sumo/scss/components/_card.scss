@@ -214,9 +214,7 @@
   }
 
   &--feature-img {
-    margin-top: -60px;
-    margin-right: -20px;
-    margin-bottom: 20px;
+    @include p.bidi(((margin, -60px -20px 20px 0, -60px 0 20px -20px),));
     width: 40%;
     flex: 0 0 auto;
   }
@@ -313,7 +311,7 @@
     }
 
     &--feature-img {
-      margin: -80px 0 -60px;
+      @include p.bidi(((margin, -80px 0 -60px, -80px 0 -60px),));
       width: 50%;
       max-width: 300px;
     }

@@ -71,7 +71,7 @@
       }
 
       &--icon {
-        margin-right: 20px;
+        @include p.bidi(((margin, 0 20px 0 0, 0 0 0 20px),));
       }
 
       .sumo-button {
