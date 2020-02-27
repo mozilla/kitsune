@@ -284,7 +284,7 @@
         }
 
         .card--feature-img {
-          max-width: 300px;
+          max-width: 320px;
         }
       }
     }
@@ -311,9 +311,9 @@
     }
 
     &--feature-img {
-      @include p.bidi(((margin, -80px 0 -60px, -80px 0 -60px),));
+      @include p.bidi(((margin, -90px 0 -90px, -90px 0 -90px),));
       width: 50%;
-      max-width: 300px;
+      max-width: 320px;
     }
   }
 
