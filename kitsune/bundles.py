@@ -49,6 +49,7 @@ PIPELINE_JS = {
             "sumo/js/protocol-notification-init.js",
             "sumo/js/protocol-language-switcher-init.js",
             "sumo/js/sumo-tabs.js",
+            "sumo/js/sumo-close-this.js",
         ),
         "output_filename": "build/common-min.js",
     },

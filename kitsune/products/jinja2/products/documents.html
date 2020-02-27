@@ -35,21 +35,20 @@
             <a href="{{ prod_url }}"><img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" /></a>
           </div>
 
-          <h1 class="text-display-lg topic-title">
-            {% if subtopic %}
-              <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-            {% endif %}
-            {{ pgettext('DB: products.Topic.title', topic.title) }}
-            {% if subtopic %}
-              </a>
-            {% endif %}
-          </h1>
-
-        {% if subtopic %}
-          <h1 class="topic-title is-subtopic cf">
+          {% if subtopic %}
+          <p class="text-display-xs mb-0">
+            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+              {{ pgettext('DB: products.Topic.title', topic.title) }}
+            </a>
+          </p>
+          <h1 class="topic-title is-subtopic text-display-lg">
             {{ pgettext('DB: products.Topic.title', subtopic.title) }}
           </h1>
-        {% endif %}
+          {% else %}
+          <h1 class="topic-title text-display-lg">
+            {{ pgettext('DB: products.Topic.title', topic.title) }}
+          </h1>
+          {% endif %}
 
         {# Show the description if it is different than the title. Otherwise, don't bother. #}
         {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
@@ -132,6 +131,11 @@
     <section id="get-involved-button" class="sumo-page-section document-get-involved">
       {% include "landings/includes/volunteer-callout.html" %}
     </section>
+
+    <section class="sumo-page-section">
+      {{ ff_alert(text=_('Unlock more from every Firefox product. Get a Firefox account.'), modifier_class="has-abs-close-button", id="ff_alert_doc_page") }}
+    </section>
+
 {% endblock %}
 
 {% block below_main %}

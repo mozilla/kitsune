@@ -26,7 +26,7 @@
   }
 
   @media #{p.$mq-sm} {
-    @include p.bidi(((flex-direction, row, row-reverse),));
+    flex-direction: row;
     margin-bottom: 32px;
 
     &--figure,

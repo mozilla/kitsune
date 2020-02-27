@@ -109,7 +109,7 @@
 
           } else if (formId === 'support-search-sidebar') {
             $('.hidden-search-masthead').show();
-            $('.hidden-search-masthead').find('input[name=q]').val(value);
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
 
           } else {
             $('#support-search').find('input[name=q]').val(value);

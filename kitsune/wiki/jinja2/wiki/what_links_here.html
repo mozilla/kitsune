@@ -9,7 +9,7 @@
 {% macro relations_list(name, title) %}
   {% if relations[name] %}
     <section>
-      <h2 class="text-display-xxs">{{ title }}</h2>
+      <h2 class="text-body-lg">{{ title }}</h2>
       <ul>
         {% for doc in relations[name] %}
           <li>

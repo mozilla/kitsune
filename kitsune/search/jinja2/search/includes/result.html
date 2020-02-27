@@ -1,7 +1,7 @@
 {% macro search_result(result) %}
   <div class="result {{ result.type }}">
     {% set url =  result.url %}
-    <h3 class="text-display-xs"><a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.title }}</a></h3>
+    <h3 class="text-body-lg"><a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.title }}</a></h3>
     <p>{{ result.search_summary }}</p>
 
     {% if result.type == 'question' %}

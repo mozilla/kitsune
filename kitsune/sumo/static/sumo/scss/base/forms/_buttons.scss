@@ -133,6 +133,8 @@
     }
   }
 
+  &.tall-button {}
+
   &.link-button {
     color: var(--color-link);
     text-decoration: underline;
@@ -246,4 +248,18 @@ input[type=submit]:focus {
     height: 20px;
     max-width: none;
   }
+}
+
+
+.sumo-close-button {
+  appearance: none;
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
 }

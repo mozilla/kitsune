@@ -53,10 +53,14 @@ h1, h2, h3, h4, h5, h6,
       text-decoration: underline;
     }
   }
+}
 
-  @at-root .has-moz-headings & {
+.has-moz-headings {
+  color: var(--color-moz-text);
+
+  h1, h2, h3, h4, h5, h6, [class*=text-display] {
     font-family: var(--heading-font-family-moz);
-    color: #000000;
+    color: var(--color-moz-heading);
   }
 }
 

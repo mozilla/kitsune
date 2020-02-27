@@ -30,6 +30,7 @@ div.editor-tools {
   }
 }
 
+
 .html-rtl {
   button {
     &:first-child {
@@ -142,6 +143,24 @@ section.marky {
       margin: 0 15px 0 0;
     }
   }
+
+  .area {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  #responses-area,
+  #response-list-area {
+    flex: 1 1 50%;
+  }
+
+  #response-content-area {
+    flex: 1 1 100%;
+  }
+
+  #response-submit-area {
+    position: static;
+  }
 }
 
 #link-modal {
@@ -159,6 +178,7 @@ section.marky {
   position: fixed;
   top: 7%;
   width: 760px;
+  overflow: auto;
 
   div.placeholder {
     height: 65%;

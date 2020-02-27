@@ -23,8 +23,6 @@
 
 
   <section class="support-callouts">
-    {% set listed_product=product.slug|capitalize %}
-
     {% if show_community_support %}
     <div class="card card--ribbon is-inverse has-moz-headings heading-is-one-line">
       <div class="card--details">
@@ -38,9 +36,9 @@
             </g>
           </svg>
 
-          {{ _('Need more help?') }}
+          {{ _('Still need help?') }}
         </h3>
-        <p class="card--desc">{{ _('Our support forums are a great place to ask a question, learn and discover new ways to use {}.'.format(listed_product)) }}</p>
+        <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
         <a
           class="sumo-button primary-button button-lg"
           href="{{ url('wiki.document', 'get-community-support') }}"
@@ -86,11 +84,12 @@
 {%- endmacro %}
 
 
-{% macro topic_tabs(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}
+{% macro topic_tabs(topics, subtopics, product, topic, selected_subtopic=None) -%}
 <nav class="tabs">
   <ul class="tabs--list subtopics">
+    {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
     <li class="tabs--item">
-      <a class="tabs--link {% if selected_subtopic == None %}is-active{% endif %}" href="{{ topic_url }}">
+      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}">
         <span class="mobile-only">{{ _('All') }}</span>
         <span class="hide-on-mobile">{{ _('All articles and threads') }}</span>
       </a>
@@ -98,7 +97,7 @@
     {% for subtopic in subtopics %}
       {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
       <li class="tabs--item">
-        <a class="tabs--link {% if selected_subtopic == subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
           <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
         </a>
       </li>

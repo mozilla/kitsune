@@ -16,6 +16,7 @@
 // .radius-lg - 36px border-radius
 // .is-inverse - dark background with light text
 // .is-shaded - card has slightly darker background with normal text
+// .is-callout-bg - slightly darker background, intended to be used with no elevation classes.
 // .is-shaded.highlight - border radius is removed and blue border is added to the left side
 // .zoom-on-hover - card is eleveated slightly on hover. To be used with `.expand-on-hover` to denote full-card links.
 //
@@ -58,6 +59,10 @@
 
   &.is-shaded {
     background: var(--color-shade-bg);
+  }
+
+  &.is-callout-bg {
+    background: var(--color-callout-bg);
   }
 
   &.highlight {
@@ -146,7 +151,7 @@
 
     .card--icon-sm {
       margin-bottom: 8px;
-      width: 36px;
+      width: 32px;
       height: auto;
     }
 
@@ -169,8 +174,8 @@
   }
 
   &--callout {
-    @include c.elevation-01;
     padding: 40px;
+    border-radius: 0;
     background-color: var(--color-callout-bg);
 
     &-wrap-narrow {
@@ -196,6 +201,14 @@
 
       &:last-child {
         margin-bottom: 0;
+      }
+
+      a,
+      a:hover,
+      a:visited,
+      a:active {
+        color: var(--color-link);
+        text-decoration: underline;
       }
     }
   }

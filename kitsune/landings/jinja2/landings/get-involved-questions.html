@@ -30,36 +30,37 @@
   {% set signup_headline = _('Help users in the forums') %}
   {% include 'landings/includes/register_contributor.html' %}
 
-<section class="sumo-page-section has-moz-headings pick-a-way text-left">
-  <h2 class="text-display-sm">{{ _('How it works') }}</h2>
-  <div class="sumo-l-two-col">
+<section class="sumo-page-section has-moz-headings">
+  <div class="sumo-l-two-col align-center">
     <div class="sumo-l-two-col--one-half gi-visual text-center">
       <img src="{{ STATIC_URL }}sumo/img/gi-visual-questions.png?v=1" alt="">
       <p class="text-display-xs legacy-blue-text"><em>{{ _('Solving 1 issue helps up to 1,000 users a day') }}</em></p>
     </div>
     <div class="sumo-l-two-col--one-half">
-      <ol class="mzp-u-list-styled headings-list">
-        <li>{% set message =  _('Sign up as a volunteer') %}
-        {% if not user_is_contributor and request.LANGUAGE_CODE in AAQ_LANGUAGES %}
-          <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
-        {% else %}
-          {{ message }}
-        {% endif %}
-        </li>
-        <li>{% set message = _('Go to our support forum and choose a question to answer') %}
-        {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
-          <a href="{{ url('questions.home') }}">{{ message }}</a>
-        {% else %}
-          {{ message }}
-        {% endif %}
-        </li>
-        <li>
-          <strong>{{ _('Start answering!') }}</strong><br>
-          <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
-            {{ _('Read this for some help to get started') }}
-          </a>
+      <h2 class="text-display-sm">{{ _('How it works') }}</h2>
+      <div class="pick-a-way text-left">
+        <ol class="mzp-u-list-styled headings-list">
+          <li>{% set message =  _('Sign up as a volunteer') %}
+          {% if not user_is_contributor and request.LANGUAGE_CODE in AAQ_LANGUAGES %}
+            <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
+          {% else %}
+            {{ message }}
+          {% endif %}
           </li>
-      </ol>
+          <li>{% set message = _('Go to our support forum and choose a question to answer') %}
+          {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
+            <a href="{{ url('questions.home') }}">{{ message }}</a>
+          {% else %}
+            {{ message }}
+          {% endif %}
+          </li>
+          <li><strong>{{ _('Start answering!') }}</strong><br>
+            <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
+              {{ _('Read this for some help to get started') }}
+            </a>
+            </li>
+        </ol>
+        </div>
     </div>
   </div>
 </section>

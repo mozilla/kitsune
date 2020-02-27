@@ -29,6 +29,9 @@
   --color-link-inverse-active-bg: #{rgba(c.color('marketing-gray', '02'), 0.2)};
   --color-border: var(--color-marketing-gray-02);
   --color-callout-bg: var(--color-marketing-gray-02);
+  --color-moz-heading: #000000;
+  --color-moz-text: var(--color-moz-heading);
+  --color-moz-inverse-bg: var(--color-ink-08);
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem;
