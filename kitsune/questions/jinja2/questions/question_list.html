@@ -32,9 +32,16 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block masthead %}
-<section class="sumo-page-section shade-bg">
+<section class="sumo-page-section hide-when-search-is-active shade-bg">
   <div class="mzp-l-content">
-    {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
+      <div class="sumo-l-two-col--main">
+        {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+      </div>
+      <div class="sumo-l-two-col--sidebar hide-on-mobile">
+        {{ search_box(settings, id='support-search-sidebar', params=search_params, placeholder=_('Search Support')) }}
+      </div>
+    </div>
   </div>
   <div class="mzp-l-content">
     {% if logo %}
