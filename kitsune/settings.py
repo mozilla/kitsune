@@ -917,7 +917,7 @@ if not CELERY_TASK_IGNORE_RESULT:
 
 CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=DEBUG, cast=bool)  # For tests. Set to False for use.
 if not CELERY_TASK_ALWAYS_EAGER:
-    CELERY_BROKER_URL = config('CELERY_BROKER_URL')
+    CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='')
 
 # TODO:PY3: Setting gone, use celery worker --loglevel flag.
 # CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
