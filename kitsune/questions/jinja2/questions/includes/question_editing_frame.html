@@ -17,7 +17,7 @@ we can compute the edit-title URL.
 
 {% set hide_aaq_link = True %}
 
-{% block below_main %}
+{% block content %}
     <article class="main sumo-page-section">
       <div id="ask-question">
         {% if not no_headline %}
@@ -75,8 +75,11 @@ we can compute the edit-title URL.
                           <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
                         </p>
                       </li>
-                      {% set li_class='details' %}
                     {% endif %}
+
+                    {% if field.name == 'ff_version' or field.name == 'device' or field.name == 'os' or field.name == 'plugins' %}
+                      {% set li_class='details' %}
+                      {% endif %}
 
                     <li class="{{ li_class }} {% if field.errors %}invalid{% endif %} cf">
                       {{ field.label_tag()|safe }}
