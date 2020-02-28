@@ -96,7 +96,11 @@
 
           if (formId === 'support-search-masthead') {
             $('#support-search').find('input[name=q]').val(value);
-          } else if (formId === 'support-search') {
+          } else if (formId === 'support-search' || formId === 'mobile-search-results') {
+
+            // If applicable, close the mobile search field and move the focus to the main field.
+            $('.sumo-nav--mobile-search-form').removeClass('mzp-is-open').attr('aria-expanded', 'false');
+
             if ($('.hidden-search-masthead').length > 0) {
               $('.hidden-search-masthead').show();
               $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
@@ -106,6 +110,12 @@
               $('#support-search-masthead').find('input[name=q]').val(value).focus();
             }
 
+
+
+
+          } else if (formId === 'support-search-sidebar') {
+            $('.hidden-search-masthead').show();
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
 
           } else if (formId === 'support-search-sidebar') {
             $('.hidden-search-masthead').show();

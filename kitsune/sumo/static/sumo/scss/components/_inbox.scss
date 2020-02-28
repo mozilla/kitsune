@@ -84,7 +84,7 @@
 
   .avatar {
     display: block;
-    margin-right: 12px;
+    @include p.bidi(((margin, 0 12px 0 0, 0 0 0 12px),));
     flex: 0 0 auto;
     width: 44px;
 

@@ -72,9 +72,7 @@
 
       .avatar {
         display: block;
-        margin-top: -6px;
-        margin-bottom: -6px;
-        margin-left: 20px;
+        @include p.bidi(((margin, -6px 0 -6px 20px, -6px 20px -6px 0),));
         width: 36px;
         height: 36px;
         border-radius: 50%;
@@ -84,7 +82,7 @@
 
   &--avatar-button {
     display: flex;
-    margin-left: 12px;
+    @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));
 
     .avatar {
       width: 32px;
@@ -156,7 +154,7 @@
     }
 
     &-item {
-      margin-left: -8px;
+      @include p.bidi(((margin, 0 0 0 -8px, 0 -8px 0 0),));
     }
   }
 
@@ -181,7 +179,7 @@
   &--search-button,
   &--toggle-button {
     appearance: none;
-    margin-left: 10px;
+    @include p.bidi(((margin, 0 0 0 10px, 0 10px 0 0),));
     width: 32px;
     height: 32px;
     border: none;
@@ -217,11 +215,17 @@
     display: none;
   }
 
-  .sumo-nav--mobile-search-form .simple-search-form {
-    display: block;
-    @include p.bidi((
-      (margin, 0 20px 0 0, 0 0 0 20px),
-    ));
+  .sumo-nav--mobile-search-form {
+    .simple-search-form {
+      display: block;
+      margin: 0;
+      padding: 0 0 20px 0;
+    }
+
+    .searchbox {
+      width: 100%;
+      height: 40px;
+    }
   }
 
   body.scroll-header:not(.lock-body) & {
@@ -234,9 +238,6 @@
 
     .simple-search-form {
       display: block;
-      @include p.bidi((
-        (margin, 0 20px 0 0, 0 0 0 20px),
-      ));
     }
 
     .search-button {
@@ -255,17 +256,6 @@
       .sumo-nav--dropdown-container .sumo-button {
         display: inline-flex;
       }
-    }
-  }
-
-  .sumo-nav--mobile-search-form {
-    .simple-search-form {
-      margin: 32px 0 0 0;
-      padding: 0 0 32px 0;
-    }
-
-    .searchbox {
-      width: 100%;
     }
   }
 

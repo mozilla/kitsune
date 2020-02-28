@@ -100,7 +100,7 @@
   text-align: center;
 
   @media #{p.$mq-lg} {
-    text-align: left;
+    @include p.bidi(((text-align, left, right),));
   }
 }
 

@@ -125,14 +125,14 @@ class AskNewQuestionsPage(Base):
 
     _page_title = 'Ask a Question | Mozilla Support'
     _firefox_product_first_link_locator = (
-        By.CSS_SELECTOR, '#product-picker li:nth-child(1) > a.cf > span.title')
+        By.CSS_SELECTOR, '#product-picker .card:nth-child(1) a')
     _category_prob_first_link_locator = (By.CSS_SELECTOR, 'ul.select-one > li > a')
     _type_question_box_locator = (By.NAME, 'search')
-    _ask_this_button_locator = (By.CSS_SELECTOR, '#ask-search-form .btn.btn-important')
-    _none_of_these_button_locator = (By.CSS_SELECTOR, 'form .btn.btn-submit')
+    _ask_this_button_locator = (By.CSS_SELECTOR, '#ask-search-form .primary-button')
+    _none_of_these_button_locator = (By.CSS_SELECTOR, 'form .sumo-button')
     _q_content_box_locator = (By.ID, 'id_content')
     _q_trouble_link_locator = (By.CSS_SELECTOR, '#troubleshooting-manual a')
-    _q_post_button_locator = (By.CSS_SELECTOR, '#question-form button.btn-submit')
+    _q_post_button_locator = (By.CSS_SELECTOR, '#question-form .sumo-button')
     _close_stage_banner_locator = (By.CLASS_NAME, 'close-button')
     _selected_product_locator = (By.CSS_SELECTOR, '#selected-product span')
 
