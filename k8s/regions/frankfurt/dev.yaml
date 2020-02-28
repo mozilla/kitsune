@@ -52,7 +52,7 @@ app:
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
     aws_storage_bucket_name: SECRET
-    broker_url: SECRET
+    celery_broker_url: SECRET
     cache_url: SECRET
     celery_already_eager: False
     csrf_cookie_secure: True
