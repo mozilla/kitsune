@@ -616,3 +616,19 @@
     position: absolute;
   }
 }
+
+
+.system-details-info {
+  &.hide {
+    .show {
+      display: none;
+    }
+    .hide-until-expanded {
+      display: inline;
+    }
+  }
+
+  &.show ~ .details {
+    display: none;
+  }
+}

@@ -113,14 +113,17 @@
 {%- endmacro %}
 
 {% macro aaq_search_form(product, category, settings, host, request, has_searched=False) -%}
+<div class="sumo-page-section">
   <form id="ask-search-form" class="simple-search-form {% if has_searched %}has-searched{% endif %} cf" action="#summarize-question" method="get">
-    <div class="field full-width is-condensed">
-      <input type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" placeholder="{{ _("Can't find an answer? Summarize your question in a sentence.") }}" />
+    <div class="field is-condensed full-width">
+      <label for="id_ask_a_question">{{ _("Can't find an answer? Summarize your question in a sentence.") }}</label>
+      <input id="id_ask_a_question"type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" />
     </div>
     <div class="sumo-button-wrap">
       <span data-type="submit" class="sumo-button primary-button">{{ _('Ask this') }}</span><br>
     </div>
   </form>
+</div>
 {%- endmacro %}
 
 {% macro show_results(search_results, product, category, request) -%}
@@ -146,7 +149,7 @@
   <form action="{{ url('questions.aaq_step5', product_key=product.key, category_key=category.key) }}" method="get">
     <input type="hidden" name="search" value="{{ request.GET.search }}" />
     <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-    <input type="submit" id="show-form-btn" class="button" value="{{ button_text }}" />
+    <input type="submit" id="show-form-btn" class="sumo-button primary-button" value="{{ button_text }}" />
   </form>
 {%- endmacro %}
 
@@ -188,7 +191,7 @@
 
 {% macro troubleshooting_instructions(field) %}
   <div id="addon-section">
-    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="sumo-button primary-button" id="add-troubleshooting-info">
+    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="sumo-button secondary-button" id="add-troubleshooting-info">
       {{ _('Automatically add') }}
     </a>
     <p>{{ field.help_text|safe }}</p>
