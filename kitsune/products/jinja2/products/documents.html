@@ -73,27 +73,6 @@
 
 
       <section class="topic-list">
-        {% if not subtopic and subtopics %}
-          {# only show subtopics on the parent topic page #}
-          {% for subtopic in subtopics %}
-            <article class="topic-article subtopic">
-              <div class="topic-article--icon-wrap">
-                <img class="topic-article--icon" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="" />
-              </div>
-              <div class="topic-article--text">
-                <h2 class="text-display-xxs">
-                  <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
-                    data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">
-                    {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-                  </a>
-                </h2>
-                {% if subtopic.title != subtopic.description %}
-                <p>{{ pgettext('DB: products.Topic.description', subtopic.description) }}</p>
-                {% endif %}
-              </div>
-            </article>
-          {% endfor %}
-        {% endif %}
         {% for document in documents %}
           <article class="topic-article">
             <div class="topic-article--icon-wrap">
