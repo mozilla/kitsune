@@ -21,7 +21,9 @@
       new ShowFor(); // eslint-disable-line
       addReferrerAndQueryToVoteForm();
       new k.AjaxVote('.document-vote form', { // eslint-disable-line
-        positionMessage: true
+        positionMessage: false,
+        replaceFormWithMessage: true,
+        removeForm: true
       });
       initAOABanner();
     } else if ($body.is('.review')) { // Review pages

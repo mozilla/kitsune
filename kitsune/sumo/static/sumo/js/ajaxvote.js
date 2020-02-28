@@ -22,7 +22,7 @@
     init: function(form, options) {
       var self = this,
         $ajaxForm = $(form),
-        $btns = $ajaxForm.find('input[type="submit"], [data-type="submit"]');
+        $btns = $ajaxForm.find('[type="submit"], [data-type="submit"]');
 
       options = $.extend({
         positionMessage: false,
@@ -89,9 +89,10 @@
     showMessage: function(message, $showAbove, $form) {
       // TODO: Tweak KBox to handle this case.
       var self = this,
-        $html = $('<div class="ajax-vote-box"><p class="msg"></p></div>'),
+        $html = $('<div class="ajax-vote-box"><p class="msg document-vote--heading"></p></div>'),
         offset = $showAbove.offset();
       $html.find('p').html(message);
+      console.log('options', self.options)
 
       if (self.options.positionMessage) {
         // on desktop browsers we use absolute positioning

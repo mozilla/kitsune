@@ -73,6 +73,11 @@
     @include c.text-body-md;
     margin: 0;
     margin-bottom: p.$spacing-md;
+
+    @at-root .document-vote--sidebar-wrap & {
+      font-weight: bold;
+      color: var(--color-heading);
+    }
   }
 
   &--buttons {

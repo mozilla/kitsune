@@ -195,9 +195,9 @@
   * Ajaxify the Helpful/Not Helpful form
   */
   function initHelpfulVote() {
-    $('li.answer div.side-section, .answer-tools').each(function() {
+    $('.sumo-l-two-col--sidebar, .answer-tools').each(function() {
       new k.AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
-        positionMessage: true,
+        replaceFormWithMessage: true,
         removeForm: true
       });
     });
