@@ -977,12 +977,6 @@ div.video .kbox-container {
 
 article {
   #unhelpful-survey {
-    margin: 15px 0 0 20px;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 300px;
-
     textarea {
       height: 65px;
       margin: 6px 0 2px 12px;
@@ -1007,18 +1001,13 @@ article {
 }
 
 #unhelpful-survey {
-  background: #fff;
-  border: solid 1px #ccc;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  display: inline-block;
-  z-index: 1;
-
   p {
-    margin: 8px 12px;
+    margin: 8px 0;
+  }
 
-    &.sorry {
-      font-size: 20px;
-    }
+  .helpful-button {
+    display: block;
+    margin-top: 16px;
   }
 
   ul {
@@ -1028,16 +1017,17 @@ article {
   li {
     color: #fff;
     cursor: pointer;
-    padding: 2px 0 2px 12px;
     position: relative;
-
-    input {
-      margin: 0 6px 3px 0;
-    }
 
     label {
       font-weight: normal;
       margin: 0;
+      @include c.text-body-sm;
+      padding:  0 0 0 30px;
+
+      &:before {
+        top: 2px;
+      }
     }
   }
 
@@ -1045,8 +1035,8 @@ article {
     cursor: pointer;
     font-size: 24px;
     position: absolute;
-    right: 8px;
-    top: 0;
+    right: 14px;
+    top: 6px;
 
     &:before {
       content: '\00d7';
@@ -1059,7 +1049,8 @@ article {
   }
 
   .character-counter {
-    font-size: 12px;
+    @include c.text-body-sm;
+
   }
 
   .disabled-reason {

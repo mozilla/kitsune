@@ -1121,7 +1121,7 @@ def helpful_vote(request, document_slug):
 
         if 'helpful' in request.POST:
             vote.helpful = True
-            message = _('Glad to hear it &mdash; thanks for the feedback!')
+            message = _('Great to hear &mdash; thanks for the feedback! <br /><span disabled class="helpful-button">&#x1F44D;</span>')
         else:
             message = _('Sorry to hear that.')
 
