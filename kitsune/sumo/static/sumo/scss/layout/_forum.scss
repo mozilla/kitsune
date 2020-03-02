@@ -122,10 +122,10 @@
   }
 
   &--meta-details {
+    list-style: none;
     display: flex;
     flex-wrap: wrap;
     @include c.text-body-sm;
-    color: var(--color-heading);
     @include p.bidi((
       (margin, 0 auto 16px 0, 0 0 16px auto),
     ));
@@ -134,6 +134,7 @@
       @include p.bidi((
         (padding, 0 8px 0 0, 0 0 0 8px),
       ));
+      white-space: nowrap;
 
       &:last-child {
         flex: 1 1 100%;
@@ -159,7 +160,20 @@
     }
 
     .forum--meta-val {
+      color: var(--color-heading);
       font-weight: bold;
+    }
+
+    @at-root .forum--question-list & {
+      margin: 0 0 auto 0;
+      flex-wrap: nowrap;
+
+      li:last-child {
+        @include p.bidi((
+          (padding-right, 0, 8px),
+          (padding-left, 8px, 0),
+        ));
+      }
     }
   }
 
@@ -291,6 +305,13 @@
     &:hover {
       color: var(--color-error);
     }
+  }
+
+  &.push-right li:last-child {
+    @include p.bidi((
+      (margin-right, 16px, 0),
+      (margin-left, 0, 16px),
+    ));
   }
 }
 
