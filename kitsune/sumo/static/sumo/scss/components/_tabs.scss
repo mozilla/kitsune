@@ -73,6 +73,8 @@
 
   &--button {
     padding: 16px 0;
+    margin: 0;
+    appearance: none;
 
     &:after {
       display: inline-flex;
