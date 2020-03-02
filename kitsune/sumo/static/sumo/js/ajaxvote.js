@@ -131,16 +131,14 @@
       var $commentBox = $survey.find('textarea');
       var maxCount = parseInt($commentCount.text(), 10);
       var $radios = $survey.find('input[type=radio][name=unhelpful-reason]');
-      var $submit = $survey.find('input[type=submit], [data-type=submit]');
+      var $submit = $survey.find('[type=submit], [data-type=submit]');
       var $reason = $survey.find('.disabled-reason');
       var $textbox = $survey.find('textarea');
 
       $container.after($survey);
 
-      // If we are in the sidebar, remove the vote form container.
-      if ($container.closest('aside').length) {
-        $container.remove();
-      }
+      // remove the extra message when the survey opens.
+      $container.remove();
 
       $submit.prop('disabled', true);
 

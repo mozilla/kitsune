@@ -49,6 +49,10 @@
   border-radius: 36px;
   padding: 40px 0 p.$spacing-sm;
 
+  @at-root .hide-on-large & {
+    padding: 20px;
+  }
+
   &.is-forum-answer {
 
     .document-vote--form {
@@ -73,6 +77,13 @@
     @include c.text-body-md;
     margin: 0;
     margin-bottom: p.$spacing-md;
+
+    &.msg { // injected with JS
+      font-weight: bold;
+      color: var(--color-heading);
+      margin: 0;
+      text-align: center;
+    }
   }
 
   &--buttons {
@@ -100,12 +111,6 @@
 
     .document-vote--heading {
       margin-bottom: p.$spacing-md;
-
-      &.msg { // injected with JS
-        font-weight: bold;
-        color: var(--color-heading);
-        margin: 0;
-      }
     }
   }
 

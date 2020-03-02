@@ -195,7 +195,7 @@
   * Ajaxify the Helpful/Not Helpful form
   */
   function initHelpfulVote() {
-    $('.sumo-l-two-col--sidebar, .answer-tools').each(function() {
+    $('.sumo-l-two-col--sidebar, #document-list, .answer-tools').each(function() {
       new k.AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
         replaceFormWithMessage: true,
         removeForm: true
