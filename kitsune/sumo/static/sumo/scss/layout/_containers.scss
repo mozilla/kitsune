@@ -28,14 +28,34 @@
   padding-top: 32px;
   padding-bottom: 32px;
 
-  @media #{p.$mq-md} {
+  &--lg {
     padding-top: 40px;
-    padding-bottom: 40px;
+    padding-bottom: 32px;
+
+    &.extra-pad-bottom {
+      padding-bottom: 40px;
+    }
+
+    @media #{p.$mq-md} {
+      padding-top: 48px;
+
+      &.extra-pad-bottom {
+        padding-bottom: 48px;
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: 72px;
+
+      &.extra-pad-bottom {
+        padding-bottom: 72px;
+      }
+    }
   }
 
-  &--lg {
+  &--md {
     padding-top: 32px;
-    padding-bottom: 24px;
+    padding-bottom: 32px;
 
     @media #{p.$mq-md} {
       padding-top: 40px;
@@ -43,19 +63,55 @@
     }
 
     @media #{p.$mq-lg} {
-      padding-top: 70px;
-      padding-bottom: 70px;
+      padding-top: 48px;
+      padding-bottom: 48px;
     }
   }
 
   &--sm {
-    padding-top: 16px;
-    padding-bottom: 16px;
+    padding-top: 8px;
+    padding-bottom: 8px;
 
     @media #{p.$mq-md} {
-      padding-top: 32px;
-      padding-bottom: 32px;
+      padding-top: 16px;
+      padding-bottom: 16px;
     }
+  }
+
+  &.extra-pad-bottom {
+    @media #{p.$mq-lg} {
+      padding-bottom: 48px;
+    }
+  }
+
+
+  &--inner {
+    padding-top: 24px;
+    padding-bottom: 24px;
+
+    &:first-child {
+      padding-top: 32px;
+    }
+
+    @media #{p.$mq-md} {
+      padding-top: 28px;
+      padding-bottom: 28px;
+
+      &:first-child {
+        padding-top: 40px;
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: 36px;
+      padding-bottom: 36px;
+
+      &:first-child {
+        padding-top: 48px;
+      }
+    }
+
+
   }
 }
 
@@ -67,4 +123,9 @@
   @media #{p.$mq-md} {
     margin: 48px 0;
   }
+}
+
+
+.support-callouts {
+
 }

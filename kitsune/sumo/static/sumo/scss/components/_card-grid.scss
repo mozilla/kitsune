@@ -22,7 +22,8 @@
 .sumo-card-grid {
   margin-right: c.$gutter-width * -.5;
   margin-left: c.$gutter-width * -.5;
-  padding: calc(var(--cg-gutter) /2) 0 0;
+  margin-bottom: -40px;
+  padding: 8px 0 0;
   -webkit-overflow-scrolling: touch;
   overflow-x: scroll;
   scroll-padding-right: var(--cg-gutter);
@@ -32,21 +33,23 @@
   // width: calc(100vw - #{c.$gutter-width * .5});
 
   &.is-four-wide {
-    padding-top: var(--cg-gutter);
+    margin-top: 16px;
+    padding-top: 16px;
   }
 
   .scroll-wrap {
     display: flex;
-    width: calc((var(--cg-card-width) + var(--cg-gutter)) * var(--cg-count));
+    width: 100vw;
   }
 
   .card {
     margin-top: 0;
     margin-right: calc(var(--cg-gutter) / 2);
-    margin-bottom: var(--cg-gutter);
+    margin-bottom: 40px;
     margin-left: calc(var(--cg-gutter) / 2);
     width: var(--cg-card-width);
     scroll-snap-align: start;
+    flex: 0 0 var(--cg-card-width);
 
     &:first-child {
       margin-left: c.$gutter-width * .5;
@@ -63,14 +66,27 @@
 
   @media #{p.$mq-lg} {
     --cg-gutter: #{c.$gutter-width};
-    margin-right: 0;
-    margin-left: 0;
+    margin: 0;
+    padding: 0;
     overflow: visible;
     width: auto;
 
     .scroll-wrap {
       @include c.grid-row;
       width: auto;
+    }
+
+    &.is-product-wrap {
+      margin-bottom: -40px;
+    }
+
+    .card {
+      flex: 0 1 auto;
+
+      &--topic,
+      &--article {
+        margin-bottom: 24px;
+      }
     }
 
     .card,
@@ -80,6 +96,8 @@
     }
 
     &.is-four-wide {
+      margin-bottom: -24px;
+
       .card,
       .card:first-child,
       .card:last-child {

@@ -1,69 +1,71 @@
 {% macro help_topics(topics, show_community_support=False) -%}
-<div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
-  <div class="scroll-wrap">
-    {% for topic in topics %}
-    {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-    <div class="card card--topic">
-      <img
-        class="card--icon"
-        src="{{ topic.image_url }}"
-        alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
-      />
-      <div class="card--details">
-        <h3 class="card--title">
-          <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
-            {{ pgettext('DB: products.Topic.title', topic.title) }}
-          </a>
-        </h3>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
 
-
-  <section class="support-callouts">
-    {% if show_community_support %}
-    <div class="card card--ribbon is-inverse has-moz-headings heading-is-one-line">
-      <div class="card--details">
-        <h3 class="card--title">
-          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
-              <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
-                <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
-                <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
-              </g>
-            </g>
-          </svg>
-
-          {{ _('Still need help?') }}
-        </h3>
-        <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
-        <a
-          class="sumo-button primary-button button-lg"
-          href="{{ url('wiki.document', 'get-community-support') }}"
-          data-event-category="link click"
-          data-event-action="topic"
-          data-event-label="Get community support">
-          {{ _('Ask the Community') }}
-        </a>
-      </div>
-    </div>
-    {% endif %}
-
-    {% if settings.OIDC_ENABLE and product.id in subscribed_products_ids %}
-      <div class="support-callout community-support pos-rel">
-        <figure class="feature-icon-box">
-          {% include "includes/icons/icon-airplane.svg" %}
-        </figure>
-        <div class="support-callout-details">
-          <h3 class="support-callout-title"><span class="highlight">{{ _('Contact Us') }}</span></h3>
-          <p class="support-callout-desc">{{ _('Contact the Support Team for help.') }}</p>
-          <a class="support-callout-button expand-this-link" href="{{ settings.FXA_SUPPORT_FORM }}" data-event-category="link click" data-event-action="topic" data-event-label="Contact Support">{{ _('Ask a Question') }}</a>
+  <div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
+    <div class="scroll-wrap">
+      {% for topic in topics %}
+      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+      <div class="card card--topic">
+        <img
+          class="card--icon"
+          src="{{ topic.image_url }}"
+          alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
+        />
+        <div class="card--details">
+          <h3 class="card--title">
+            <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
+              {{ pgettext('DB: products.Topic.title', topic.title) }}
+            </a>
+          </h3>
         </div>
       </div>
-    {% endif %}
-  </section>
+      {% endfor %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro topic_metadata(topics, show_community_support=False) %}
+<section class="support-callouts mzp-l-content sumo-page-section--inner">
+  {% if show_community_support %}
+  <div class="card card--ribbon is-inverse has-moz-headings heading-is-one-line">
+    <div class="card--details">
+      <h3 class="card--title">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
+              <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+              <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+            </g>
+          </g>
+        </svg>
+
+        {{ _('Still need help?') }}
+      </h3>
+      <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
+      <a
+        class="sumo-button primary-button button-lg"
+        href="{{ url('wiki.document', 'get-community-support') }}"
+        data-event-category="link click"
+        data-event-action="topic"
+        data-event-label="Get community support">
+        {{ _('Ask the Community') }}
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if settings.OIDC_ENABLE and product.id in subscribed_products_ids %}
+    <div class="support-callout community-support pos-rel">
+      <figure class="feature-icon-box">
+        {% include "includes/icons/icon-airplane.svg" %}
+      </figure>
+      <div class="support-callout-details">
+        <h3 class="support-callout-title"><span class="highlight">{{ _('Contact Us') }}</span></h3>
+        <p class="support-callout-desc">{{ _('Contact the Support Team for help.') }}</p>
+        <a class="support-callout-button expand-this-link" href="{{ settings.FXA_SUPPORT_FORM }}" data-event-category="link click" data-event-action="topic" data-event-label="Contact Support">{{ _('Ask a Question') }}</a>
+      </div>
+    </div>
+  {% endif %}
+</section>
 {%- endmacro %}
 
 {% macro topic_sidebar(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}

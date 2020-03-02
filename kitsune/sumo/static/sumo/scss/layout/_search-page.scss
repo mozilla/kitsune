@@ -45,11 +45,11 @@
 
   .simple-search-form {
     margin-top: 32px;
-    margin-bottom: 32px;
+    // margin-bottom: 32px;
 
-    @media #{p.$mq-lg} {
-      margin-bottom: 32px;
-    }
+    // @media #{p.$mq-lg} {
+    //   margin-bottom: 32px;
+    // }
   }
 }
 

@@ -15,6 +15,7 @@
   display: flex;
   list-style: none;
   @include c.text-body-sm;
+  margin-bottom: 16px;
 
   li {
     display: none;
@@ -49,6 +50,8 @@
   }
 
   @media #{p.$mq-md} {
+    margin-bottom: 24px;
+
     li {
       display: flex;
 
@@ -64,5 +67,9 @@
         content: none;
       }
     }
+  }
+
+  @media #{p.$mq-lg} {
+    margin-bottom: 32px;
   }
 }

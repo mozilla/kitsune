@@ -39,9 +39,11 @@
 
 .popular-searches {
   display: none;
+
   @media #{p.$mq-lg} {
     display: block;
     margin-top: 32px;
+    margin-bottom: 0;
     text-align: center;
 
     a, span {
