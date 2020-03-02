@@ -54,7 +54,7 @@ app:
     aws_storage_bucket_name: SECRET
     celery_broker_url: SECRET
     cache_url: SECRET
-    celery_already_eager: False
+    celery_task_always_eager: False
     csrf_cookie_secure: True
     database_url: SECRET
     default_from_email: "notifications-dev@support.mozilla.org"
