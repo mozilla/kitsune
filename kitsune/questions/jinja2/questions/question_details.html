@@ -64,51 +64,60 @@
       <h2 class="text-display-sm summary {% if product %}no-product-heading{% endif %}" itemprop="headline">{{ question.title }}</h2>
 
       <div class="question-meta">
-        <dl class="sumo-dl-inline forum--meta-dl push-right replies">
+        <ul class="forum--meta-details replies">
           {# L10n: {n} is the number of replies. #}
           {% if question.num_answers > 0 %}
-          <dt class="forum--meta-val">{{ question.num_answers }}</dt>
-          <dd class="forum--meta-key">
-            {% trans count=question.num_answers %}
-              reply
-              {% pluralize %}
-              replies
-            {% endtrans %}
-          </dd>
+          <li>
+            <span class="forum--meta-val">{{ question.num_answers }}</span>
+            <span class="forum--meta-key">
+              {% trans count=question.num_answers %}
+                reply
+                {% pluralize %}
+                replies
+              {% endtrans %}
+            </span>
+          </li>
           {% else %}
-          <dd class="forum--meta-key">{{ _('No replies') }}</dd>
+          <li>
+            <span class="forum--meta-key">{{ _('No replies') }}</span>
+          </li>
           {% endif %}
-
-          <dt class="forum--meta-val have-problem">{{ question.num_votes }}</dt>
-          <dd class="forum--meta-key">
-            {% trans count=question.num_votes %}
-              has this problem
-              {% pluralize %}
-              have this problem
-            {% endtrans %}
-          </dd>
+          <li>
+            <span class="forum--meta-val have-problem">{{ question.num_votes }}</span>
+            <span class="forum--meta-key">
+              {% trans count=question.num_votes %}
+                has this problem
+                {% pluralize %}
+                have this problem
+              {% endtrans %}
+            </span>
+          </li>
 
           {% if question.num_visits %}
-          <dt class="forum--meta-val visits">{{ question.num_visits }}</dt>
-          <dd class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</dd>
+          <li>
+            <span class="forum--meta-val visits">{{ question.num_visits }}</span>
+            <span class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</span>
+          </li>
           {% endif %}
 
           {% if question.last_answer %}
-          <dd class="forum--meta-key has-border">{{ _('Last reply by') }}</dd>
-          <dt class="forum--meta-val visits no-border">
-            <a href="{{ question.last_answer.get_absolute_url() }}">
-              {{ display_name(question.last_answer.creator) }}
-            </a>
-          </dt>
+          <li class="border-left-md">
+            <span class="forum--meta-key has-border">{{ _('Last reply by') }}</span>
+            <span class="forum--meta-val visits no-border">
+              <a href="{{ question.last_answer.get_absolute_url() }}">
+                {{ display_name(question.last_answer.creator) }}
+              </a>
+            </span>
+          </li>
           {% endif %}
-        </dl>
+        </ul>
 
         {% if question.last_answer %}
         <p class="question-meta--details last-answer-date"><time itemprop="dateModified" datetime="{{ question.last_answer.created }}">{{ question.last_answer.created|timesince }}</time></p>
         {% endif %}
 
         {% if question.is_spam %}
-          <p class="question-meta--details">
+          <p class="is-spam">
             {% trans marked_by=question.marked_as_spam_by, marked_time=question.marked_as_spam %}
               Marked as spam by {{ marked_by }} at {{ marked_time }}
             {% endtrans %}

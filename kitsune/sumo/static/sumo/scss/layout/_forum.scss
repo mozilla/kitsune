@@ -121,8 +121,46 @@
     max-width: 160px;
   }
 
-  &--meta-dl .forum--meta-val {
-    border-left: none;
+  &--meta-details {
+    display: flex;
+    flex-wrap: wrap;
+    @include c.text-body-sm;
+    color: var(--color-heading);
+    @include p.bidi((
+      (margin, 0 auto 16px 0, 0 0 16px auto),
+    ));
+
+    li {
+      @include p.bidi((
+        (padding, 0 8px 0 0, 0 0 0 8px),
+      ));
+
+      &:last-child {
+        flex: 1 1 100%;
+      }
+
+      @media #{p.$mq-md} {
+        &:last-child {
+          flex: 1 1 auto;
+        }
+
+        &.border-left-md {
+          border-left: 1px solid var(--color-border);
+          padding: 0 12px;
+        }
+      }
+    }
+
+    .forum--meta-val,
+    .forum--meta-key {
+      @include p.bidi((
+        (padding, 0 4px 0 0, 0 0 0 4px),
+      ));
+    }
+
+    .forum--meta-val {
+      font-weight: bold;
+    }
   }
 
   @media #{p.$mq-md} {
