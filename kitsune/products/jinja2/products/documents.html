@@ -52,7 +52,7 @@
 
         {# Show the description if it is different than the title. Otherwise, don't bother. #}
         {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-          <p class="topic-description color-heading text-body-lg">
+          <p class="topic-description color-heading text-body-lg mb-0">
             {% if subtopic %}
                {{ pgettext('DB: products.Topic.description', subtopic.description) }}
             {% else %}

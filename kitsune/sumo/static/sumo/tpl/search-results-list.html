@@ -4,7 +4,7 @@
 {% set STATIC_URL = "/static/" %}
 
 {% if num_results > 0 %}
-  <h2 class="text-display-xs search-results-heading">
+  <h2 class="text-display-xs search-results-heading mb-0">
     {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
     {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
                 'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
@@ -38,14 +38,12 @@
     {% endfor %}
   </section>
 {% else %}
-  <h2 class="text-display-xs search-results-heading">
+  <h2 class="text-display-xs search-results-heading mb-0">
     {# L10n: {q} is the search query, {l} is the language searched. #}
     {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’")
         | f({q: q, l: lang_name}, true)
         | safe }}
   </h2>
-
-
   <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
 
   <section class="sumo-card-grid is-four-wide content-box" style="--cg-count: {{ fallback_results|length }};">

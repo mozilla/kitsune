@@ -15,10 +15,11 @@
   display: flex;
   list-style: none;
   @include c.text-body-sm;
+  margin-bottom: p.$spacing-md;
 
   li {
     display: none;
-    margin-right: 4px;
+    margin-right: p.$spacing-xs;
 
     &:before {
       background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 18"><path d="M9,1,1,9l8,8" fill="none" stroke="#80808F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>');
@@ -39,7 +40,7 @@
   }
 
   a, :visited, {
-    margin-right: 4px;
+    margin-right: p.$spacing-xs;
     color: var(--color-light-gray-10);
     text-decoration: none;
 
@@ -49,6 +50,8 @@
   }
 
   @media #{p.$mq-md} {
+    margin-bottom: p.$spacing-lg;
+
     li {
       display: flex;
 
@@ -64,5 +67,9 @@
         content: none;
       }
     }
+  }
+
+  @media #{p.$mq-lg} {
+    margin-bottom: p.$spacing-xl;
   }
 }

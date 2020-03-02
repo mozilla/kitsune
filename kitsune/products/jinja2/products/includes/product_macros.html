@@ -1,5 +1,5 @@
 {% macro product_cards(products, topic=None) -%}
-<div class="sumo-card-grid" style="--cg-count: {{ products|length }};">
+<div class="sumo-card-grid is-product-wrap" style="--cg-count: {{ products|length }};">
   <div class="scroll-wrap">
     {% for product in products %}
       <div class="card card--product zoom-on-hover">

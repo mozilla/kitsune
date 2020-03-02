@@ -45,7 +45,7 @@
 // Grid columns
 
 
-$gutter-width: 32px !default;
+$gutter-width: p.$spacing-xl !default;
 $max-container-width: 1312px !default;
 
 @mixin container() {
@@ -103,8 +103,8 @@ $max-container-width: 1312px !default;
 // These classes are only used in the styleguide.
 .grid-container-example {
   @include container;
-  margin-bottom: 16px;
-  padding-top: 8px;
+  margin-bottom: p.$spacing-md;
+  padding-top: p.$spacing-sm;
   outline: 1px solid #ddd;
 }
 
@@ -116,7 +116,7 @@ $max-container-width: 1312px !default;
 .grid-sidebar-example,
 .grid-main-example {
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: p.$spacing-sm;
   padding: 10px;
   font-size: 12px;
 

@@ -25,17 +25,37 @@
 }
 
 .sumo-page-section {
-  padding-top: 32px;
-  padding-bottom: 32px;
-
-  @media #{p.$mq-md} {
-    padding-top: 40px;
-    padding-bottom: 40px;
-  }
+  padding-top: p.$spacing-xl;
+  padding-bottom: p.$spacing-xl;
 
   &--lg {
-    padding-top: 32px;
-    padding-bottom: 24px;
+    padding-top: 40px;
+    padding-bottom: p.$spacing-xl;
+
+    &.extra-pad-bottom {
+      padding-bottom: 40px;
+    }
+
+    @media #{p.$mq-md} {
+      padding-top: p.$spacing-2xl;
+
+      &.extra-pad-bottom {
+        padding-bottom: p.$spacing-2xl;
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: 72px;
+
+      &.extra-pad-bottom {
+        padding-bottom: 72px;
+      }
+    }
+  }
+
+  &--md {
+    padding-top: p.$spacing-xl;
+    padding-bottom: p.$spacing-xl;
 
     @media #{p.$mq-md} {
       padding-top: 40px;
@@ -43,28 +63,69 @@
     }
 
     @media #{p.$mq-lg} {
-      padding-top: 70px;
-      padding-bottom: 70px;
+      padding-top: p.$spacing-2xl;
+      padding-bottom: p.$spacing-2xl;
     }
   }
 
   &--sm {
-    padding-top: 16px;
-    padding-bottom: 16px;
+    padding-top: p.$spacing-sm;
+    padding-bottom: p.$spacing-sm;
 
     @media #{p.$mq-md} {
-      padding-top: 32px;
-      padding-bottom: 32px;
+      padding-top: p.$spacing-md;
+      padding-bottom: p.$spacing-md;
     }
+  }
+
+  &.extra-pad-bottom {
+    @media #{p.$mq-lg} {
+      padding-bottom: p.$spacing-2xl;
+    }
+  }
+
+
+  &--inner {
+    padding-top: p.$spacing-lg;
+    padding-bottom: p.$spacing-lg;
+
+    &:first-child {
+      padding-top: p.$spacing-xl;
+    }
+
+    @media #{p.$mq-md} {
+      padding-top: 28px;
+      padding-bottom: 28px;
+
+      &:first-child {
+        padding-top: 40px;
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: 36px;
+      padding-bottom: 36px;
+
+      &:first-child {
+        padding-top: p.$spacing-2xl;
+      }
+    }
+
+
   }
 }
 
 .section-break {
   border: 2px solid var(--color-heading);
   border-width: 1px 0 0 0;
-  margin: 32px 0;
+  margin: p.$spacing-xl 0;
 
   @media #{p.$mq-md} {
-    margin: 48px 0;
+    margin: p.$spacing-2xl 0;
   }
+}
+
+
+.support-callouts {
+
 }

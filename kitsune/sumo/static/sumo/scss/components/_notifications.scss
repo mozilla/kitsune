@@ -20,7 +20,7 @@
 .mzp-c-notification-bar {
   min-height: 46px;
   line-height: 20px;
-  @include p.bidi(((padding, 8px 48px 8px 8px, 8px 8px 8px 48px),));
+  @include p.bidi(((padding, p.$spacing-sm p.$spacing-2xl p.$spacing-sm p.$spacing-sm, p.$spacing-sm p.$spacing-sm p.$spacing-sm p.$spacing-2xl),));
   position: relative;
   display: flex;
   justify-content: center;

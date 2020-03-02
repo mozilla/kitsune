@@ -23,7 +23,7 @@ article {
 
   &.topics {
     background-color: #fff;
-    margin-top: 30px;
+    // margin-top: p.$spacing-md;
 
     > li {
       background-color: #fff;
@@ -33,7 +33,7 @@ article {
         > a:visited {
           background: #f3f3f3;
           border: none;
-          border-left: 4px solid #000;
+          border-left: p.$spacing-xs solid #000;
           color: #000;
           font-weight: bold;
 
@@ -58,7 +58,7 @@ article {
         color: #000;
         background: #fff;
         border: none;
-        border-left: 4px solid #e7e7e7;
+        border-left: p.$spacing-xs solid #e7e7e7;
         text-transform: none;
 
         &:before {
@@ -74,7 +74,7 @@ article {
         > a,
         > a:visited {
           background: #fff;
-          border-left: 4px solid #000;
+          border-left: p.$spacing-xs solid #000;
         }
       }
 
@@ -102,7 +102,7 @@ article {
           &.selected {
             > a,
             > a:visited {
-              border-left: 4px solid #000;
+              border-left: p.$spacing-xs solid #000;
               font-weight: bold;
 
               &:hover {
@@ -119,21 +119,21 @@ article {
         > a,
         > a:visited {
           border-left: none;
-          border-right: 4px solid #000;
+          border-right: p.$spacing-xs solid #000;
         }
       }
 
       > a,
       > a:visited, {
         border-left: none;
-        border-right: 4px solid #e7e7e7;
+        border-right: p.$spacing-xs solid #e7e7e7;
       }
 
       &.subtopic-selected {
         > a,
         > a:visited {
           border-left: none;
-          border-right: 4px solid #000;
+          border-right: p.$spacing-xs solid #000;
         }
       }
     }
@@ -145,7 +145,7 @@ article {
         > span {
           box-sizing: border-box;
           display: block;
-          min-height: 24px;
+          min-height: p.$spacing-lg;
           padding-left: 34px;
           padding-top: 3px;
           position: relative;
@@ -153,12 +153,12 @@ article {
           img {
             background-repeat: no-repeat;
             background-size: cover;
-            height: 24px;
+            height: p.$spacing-lg;
             left: 0;
             margin-top: -12px;
             position: absolute;
             top: 50%;
-            width: 24px;
+            width: p.$spacing-lg;
           }
         }
       }
@@ -187,14 +187,14 @@ article {
     .help-title-prefix {
       color: #000;
       float: left;
-      font-size: 24px;
+      font-size: p.$spacing-lg;
       padding-left: 5px;
     }
 
     .help-title {
       color: #000;
       float: left;
-      font-size: 24px;
+      font-size: p.$spacing-lg;
       padding-left: 15px;
       width: 32%;
     }
@@ -231,7 +231,7 @@ article {
     .alert {
       background: #FFE url("../img/warning-stripes.png") repeat-x scroll left top;
       border: 1px solid transparent;
-      border-radius: 4px;
+      border-radius: p.$spacing-xs;
       padding: 15px;
       margin-bottom: 20px;
     }
@@ -272,7 +272,7 @@ article {
 
     li {
       list-style: none;
-      padding: 4px 0;
+      padding: p.$spacing-xs 0;
 
       > div {
         display: inline-block;
@@ -347,11 +347,11 @@ article {
 
   .showdiff {
     margin: 2px;
-    width: 16px;
+    width: p.$spacing-md;
 
     .loading {
-      height: 16px;
-      width: 16px;
+      height: p.$spacing-md;
+      width: p.$spacing-md;
     }
     .close-diff {
       display: none;
@@ -432,12 +432,12 @@ article {
     text-align: left;
 
     &.top {
-      background: transparent url(../img/wiki/compare.arrows.png) no-repeat 4px 5px;
+      background: transparent url(../img/wiki/compare.arrows.png) no-repeat p.$spacing-xs 5px;
       padding-bottom: 5px;
     }
 
     &.bottom {
-      background: transparent url(../img/wiki/compare.arrows.png) no-repeat 4px -40px;
+      background: transparent url(../img/wiki/compare.arrows.png) no-repeat p.$spacing-xs -40px;
       padding-top: 10px;
     }
   }
@@ -574,7 +574,7 @@ article {
   .showfor {
     background: #fff;
     border-radius: 10px;
-    box-shadow: 0 4px 10px #999;
+    box-shadow: 0 p.$spacing-xs 10px #999;
     left: 10px;
     margin: -90px 0 0;
     padding: 15px;
@@ -631,7 +631,7 @@ article {
   .showfor {
     background: #fff;
     border-radius: 10px;
-    box-shadow: 0 4px 10px #999;
+    box-shadow: 0 p.$spacing-xs 10px #999;
     display: none;
     left: 10px;
     margin: -90px 0 0;
@@ -815,7 +815,7 @@ body.translate {
 
   #localize-document {
     float: left;
-    width: calc(~"100% - 351px");
+    width: calc(100% - 351px);
   }
 
   #main-content > div {
@@ -1002,12 +1002,12 @@ article {
 
 #unhelpful-survey {
   p {
-    margin: 8px 0;
+    margin: p.$spacing-sm 0;
   }
 
   .helpful-button {
     display: block;
-    margin-top: 16px;
+    margin-top: p.$spacing-md;
   }
 
   ul {
@@ -1033,7 +1033,7 @@ article {
 
   .close-button {
     cursor: pointer;
-    font-size: 24px;
+    font-size: p.$spacing-lg;
     position: absolute;
     right: 14px;
     top: 6px;
@@ -1098,7 +1098,7 @@ article {
     background: #ececec;
     border-right: 1px solid #ddd;
     color: #aaa;
-    padding: 0 4px 0 6px;
+    padding: 0 p.$spacing-xs 0 6px;
     text-align: right;
     width: 15px;
   }
@@ -1106,7 +1106,7 @@ article {
   .mark {
     font-family: Courier;
     padding: 0 6px;
-    width: 8px;
+    width: p.$spacing-sm;
   }
 
   ins {
@@ -1188,7 +1188,7 @@ article {
 }
 
 .wiki-product-title {
-  margin-left: 24px;
+  margin-left: p.$spacing-lg;
 
   > img {
     float: left;
@@ -1199,7 +1199,7 @@ article {
     a:visited {
     color: #000;
     float: left;
-    font-size: 16px;
+    font-size: p.$spacing-md;
     padding-left: 20px;
     padding-top: 6px;
     text-decoration: none;
@@ -1208,7 +1208,7 @@ article {
 
   .html-rtl & {
     margin-left: 0;
-    margin-right: 24px;
+    margin-right: p.$spacing-lg;
 
     > img {
       float: right;
@@ -1228,8 +1228,8 @@ article {
   text-align: center;
 
   .btn {
-    font-size: 16px;
+    font-size: p.$spacing-md;
     margin-bottom: 20px;
-    padding: 8px 40px;
+    padding: p.$spacing-sm 40px;
   }
 }

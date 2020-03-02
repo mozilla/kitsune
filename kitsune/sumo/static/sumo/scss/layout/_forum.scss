@@ -27,7 +27,7 @@
 
     li {
       position: relative;
-      width: 48px;
+      width: p.$spacing-2xl;
       display: flex;
       justify-content: center;
       padding: 0 12px;
@@ -127,12 +127,12 @@
     flex-wrap: wrap;
     @include c.text-body-sm;
     @include p.bidi((
-      (margin, 0 auto 16px 0, 0 0 16px auto),
+      (margin, 0 auto p.$spacing-md 0, 0 0 p.$spacing-md auto),
     ));
 
     li {
       @include p.bidi((
-        (padding, 0 8px 0 0, 0 0 0 8px),
+        (padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
       ));
       white-space: nowrap;
 
@@ -155,7 +155,7 @@
     .forum--meta-val,
     .forum--meta-key {
       @include p.bidi((
-        (padding, 0 4px 0 0, 0 0 0 4px),
+        (padding, 0 p.$spacing-xs 0 0, 0 0 0 p.$spacing-xs),
       ));
     }
 
@@ -170,8 +170,8 @@
 
       li:last-child {
         @include p.bidi((
-          (padding-right, 0, 8px),
-          (padding-left, 8px, 0),
+          (padding-right, 0, p.$spacing-sm),
+          (padding-left, p.$spacing-sm, 0),
         ));
       }
     }
@@ -309,8 +309,8 @@
 
   &.push-right li:last-child {
     @include p.bidi((
-      (margin-right, 16px, 0),
-      (margin-left, 0, 16px),
+      (margin-right, p.$spacing-md, 0),
+      (margin-left, 0, p.$spacing-md),
     ));
   }
 }

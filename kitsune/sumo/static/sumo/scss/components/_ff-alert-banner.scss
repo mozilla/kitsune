@@ -21,8 +21,8 @@
       display: flex;
       align-items: center;
       flex-direction: column;
-      padding-top: 24px;
-      padding-bottom: 24px;
+      padding-top: p.$spacing-lg;
+      padding-bottom: p.$spacing-lg;
     }
 
     &--icon {
@@ -34,7 +34,7 @@
       @include c.text-display-xxxs;
       font-weight: bold;
       text-align: center;
-      margin: 16px 0 24px;
+      margin: p.$spacing-md 0 p.$spacing-lg;
       color: var(--color-inverse);
     }
 
@@ -75,16 +75,16 @@
       }
 
       .sumo-button {
-        @include p.bidi(((margin, 0 0 0 16px, 0 16px 0 0),));
+        @include p.bidi(((margin, 0 0 0 p.$spacing-md, 0 p.$spacing-md 0 0),));
       }
 
       .sumo-close-button {
-        @include p.bidi(((margin, 0 0 0 16px, 0 16px 0 0),));
+        @include p.bidi(((margin, 0 0 0 p.$spacing-md, 0 p.$spacing-md 0 0),));
       }
 
       &.has-abs-close-button {
         .sumo-ff-alert--icon {
-          margin-right: 32px;
+          margin-right: p.$spacing-xl;
         }
       }
     }
@@ -97,13 +97,13 @@
       }
 
       &--content {
-        padding-top: 24px;
-        padding-bottom: 24px;
+        padding-top: p.$spacing-lg;
+        padding-bottom: p.$spacing-lg;
       }
 
       .sumo-close-button {
         position: static;
-        @include p.bidi(((margin, 0 0 0 32px, 0 32px 0 0),));
+        @include p.bidi(((margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0),));
       }
     }
 }

@@ -162,11 +162,11 @@
 
   &.compare-revisions-button-down,
   &.compare-revisions-button-up {
-    padding-left: 4px;
+    padding-left: p.$spacing-xs;
     &:before {
       display: inline-flex;
       align-self: flex-end;
-      margin-right: 8px;
+      margin-right: p.$spacing-sm;
       width: 58px;
       height: 20px;
       background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 1H4.14v9.78M37.63 10.78V1"/><path fill="#5e5e72" d="M4.14 14.4l4.14-7.17H0l4.14 7.17zM37.63 14.4l4.14-7.17h-8.28l4.14 7.17z"/></svg>');
@@ -197,7 +197,7 @@ input[type=submit]:focus {
     margin-bottom: auto;
 
     .mzp-c-menu-list-list {
-      top: calc(100% + 8px);
+      top: calc(100% + #{p.$spacing-sm});
       left: auto;
       right: 0;
     }
@@ -207,12 +207,12 @@ input[type=submit]:focus {
         color: var(--color-text);
         @include c.text-body-md;
         border-bottom: 1px solid var(--color-border);
-        margin: 0 8px;
-        padding: 8px 0;
+        margin: 0 p.$spacing-sm;
+        padding: p.$spacing-sm 0;
 
         &:hover {
           margin: 0;
-          padding: 8px;
+          padding: p.$spacing-sm;
           border-color: transparent;
         }
       }
@@ -226,8 +226,8 @@ input[type=submit]:focus {
 
 .is-details .icon-button button { // overriding protocol, remove dropdown arrow on icon buttons
   appearance: none;
-  width: 24px;
-  height: 24px;
+  width: p.$spacing-lg;
+  height: p.$spacing-lg;
   padding: 0;
   margin: 0;
   border: 0;
@@ -235,7 +235,7 @@ input[type=submit]:focus {
   font: 0/0 a;
   color: transparent;
   background-image: url('#{p.$image-path}/icons/more-vertical.svg');
-  background-size: 24px 24px;
+  background-size: p.$spacing-lg p.$spacing-lg;
   background-position: center center;
   background-repeat: no-repeat;
 
