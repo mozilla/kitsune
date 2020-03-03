@@ -24,12 +24,12 @@
 .download-firefox--info {
   display: flex;
   justify-content: center;
-  margin: 8px 0 0 0;
+  margin: p.$spacing-sm 0 0 0;
   padding: 0;
   list-style: none;
 
   li {
-    margin: 0 4px;
+    margin: 0 p.$spacing-xs;
   }
 }
 
@@ -40,7 +40,7 @@
 .documents-product-title {
   display: flex;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: p.$spacing-lg;
   // @include p.bidi(((flex-direction, row, row-reverse),));
   // @include p.bidi(((justify-content, flex-start, flex-end),));
 

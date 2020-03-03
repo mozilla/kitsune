@@ -10,7 +10,7 @@
 // Style guide: nav.sidebar
 
 .sidebar-nav {
-  margin-bottom: 32px;
+  margin-bottom: p.$spacing-xl;
 
   &--list,
   &--sublist {
@@ -21,12 +21,12 @@
 
   &--item {
     @include p.font-size(16px);
-    margin-bottom: 8px;
+    margin-bottom: p.$spacing-sm;
   }
 
   a {
     display: block;
-    padding: 4px 8px;
+    padding: p.$spacing-xs p.$spacing-sm;
     border-radius: var(--global-radius);
     text-decoration: none;
     cursor: pointer;
@@ -65,8 +65,8 @@
     background-image: url("#{p.$image-path}/icons/blog.svg");
     background-repeat: no-repeat;
     background-position: 0px 6px;
-    background-size: 16px 16px;
-    padding-left: 24px;
+    background-size: p.$spacing-md p.$spacing-md;
+    padding-left: p.$spacing-lg;
   }
 
   .related-document {
@@ -141,12 +141,12 @@
       }
 
       .mzp-js-details-wrapper {
-        padding-bottom: 16px;
+        padding-bottom: p.$spacing-md;
         border-bottom: 1px solid var(--color-heading);
       }
 
       .tag-list {
-        margin-bottom: 16px;
+        margin-bottom: p.$spacing-md;
 
         a {
           padding: 0;
@@ -154,11 +154,11 @@
       }
 
       .selectbox-wrapper {
-        margin-bottom: 8px;
+        margin-bottom: p.$spacing-sm;
       }
 
       .field.checkbox {
-        margin-top: 16px;
+        margin-top: p.$spacing-md;
       }
     }
 
@@ -185,10 +185,10 @@
 
     button {
       padding-left: 0;
-      padding-bottom: 8px;
+      padding-bottom: p.$spacing-sm;
 
       &:before {
-        top: 8px;
+        top: p.$spacing-sm;
       }
 
       &[aria-expanded="false"] {

@@ -196,18 +196,18 @@ textarea {
   }
 
   .has-warning & {
-    box-shadow: 0 0 0 4px rgba(c.color('yellow', '04'), 0.3), 0 0 0 2px c.color('yellow', '04'); // compliant colors
-    // box-shadow: 0 0 0 4px rgba(215, 182, 0, 0.3), 0 0 0 2px rgb(215, 182, 0); // noncompliant colors
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('yellow', '04'), 0.3), 0 0 0 2px c.color('yellow', '04'); // compliant colors
+    // box-shadow: 0 0 0 p.$spacing-xs rgba(215, 182, 0, 0.3), 0 0 0 2px rgb(215, 182, 0); // noncompliant colors
   }
 
   .has-success & {
-    box-shadow: 0 0 0 4px rgba(c.color('green', '07'), 0.3), 0 0 0 2px c.color('green', '07'); // compliant colors
-    // box-shadow: 0 0 0 4px rgba(63, 225, 176, 0.3), 0 0 0 2px var(--green-60); // noncompliant colors
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('green', '07'), 0.3), 0 0 0 2px c.color('green', '07'); // compliant colors
+    // box-shadow: 0 0 0 p.$spacing-xs rgba(63, 225, 176, 0.3), 0 0 0 2px var(--green-60); // noncompliant colors
   }
 
   .has-error & {
-    box-shadow: 0 0 0 4px rgba(c.color('red', '08'), 0.4), 0 0 0 2px var(--color-red-08);
-    // box-shadow: 0 0 0 4px rgba(255, 79, 94, 0.4), 0 0 0 2px var(--red-60);
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('red', '08'), 0.4), 0 0 0 2px var(--color-red-08);
+    // box-shadow: 0 0 0 p.$spacing-xs rgba(255, 79, 94, 0.4), 0 0 0 2px var(--red-60);
   }
 
   .has-disabled &,

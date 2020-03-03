@@ -7,12 +7,12 @@
 
   dt,
   dd {
-    margin-bottom: 8px;
+    margin-bottom: p.$spacing-sm;
   }
 
   dt {
-    flex: 1 1 calc(20% - 8px);
-    margin-right: 8px;
+    flex: 1 1 calc(20% - #{p.$spacing-sm});
+    margin-right: p.$spacing-sm;
     min-width: 100px;
     @include c.text-body-xs;
   }
@@ -26,10 +26,10 @@
   display: flex;
   @include c.text-body-sm;
   color: var(--color-heading);
-  margin: 16px 0;
+  margin: p.$spacing-md 0;
 
   dt {
-    padding: 0 8px;
+    padding: 0 p.$spacing-sm;
     border-left: 1px solid var(--color-border);
     font-weight: bold;
 
@@ -41,22 +41,23 @@
 
     &:first-child {
       @include p.bidi((
-        (padding-left, 0, 8px),
         (padding-right, 8px, 0),
+        (padding-left, 0, p.$spacing-sm),
+        (padding-right, p.$spacing-sm, 0),
       ));
     }
   }
 
   dd {
     @include p.bidi((
-      (padding, 0 8px 0 0, 0 0 0 8px),
+      (padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
     ));
 
     &.has-border {
       border-left: 1px solid var(--color-border);
       @include p.bidi((
-        (padding-right, 0, 8px),
-        (padding-left, 8px, 0),
+        (padding-right, 0, p.$spacing-sm),
+        (padding-left, p.$spacing-sm, 0),
       ));
     }
 

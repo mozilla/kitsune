@@ -56,11 +56,11 @@
   // toggle, unchecked state
   label:after {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: p.$spacing-xs;
+    left: p.$spacing-xs;
     width: calc(var(--switch-size) / 2 - 6px);
     height:  calc(var(--switch-size) / 2 - 6px);
-    border-radius: calc(var(--switch-size) / 2 - 4px);
+    border-radius: calc(var(--switch-size) / 2 - #{p.$spacing-xs});
     background: #fff;
     content: "";
     transition: 0.1s;

@@ -12,7 +12,7 @@
 // .elevation-03 - large shadow
 // .lg-pad.elevation-01 - Increase the amount of padding, for use with larger cards
 // .sm-pad - decrease the amount of padding, for use with smaller cards.
-// .radius-md - 24px border-radius
+// .radius-md - p.$spacing-lg border-radius
 // .radius-lg - 36px border-radius
 // .is-inverse - dark background with light text
 // .is-shaded - card has slightly darker background with normal text
@@ -39,7 +39,7 @@
   }
 
   &.radius-md {
-    border-radius: 24px;
+    border-radius: p.$spacing-lg;
   }
 
   &.radius-lg {
@@ -71,7 +71,7 @@
   }
 
   &.mb {
-    margin-bottom: 32px;
+    margin-bottom: p.$spacing-xl;
   }
 
   &.is-inverse {
@@ -88,8 +88,8 @@
     flex-direction: column;
 
     .card--title {
-      margin-bottom: 32px;
-      padding-bottom: 32px;
+      margin-bottom: p.$spacing-xl;
+      padding-bottom: p.$spacing-xl;
       border-bottom: 1px solid var(--color-heading);
 
       a {
@@ -100,7 +100,7 @@
 
     .card--desc {
       display: -webkit-box;
-      margin-bottom: 32px;
+      margin-bottom: p.$spacing-xl;
       overflow: hidden;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
@@ -124,8 +124,8 @@
     }
 
     .card--icon {
-      width: 24px;
-      height: 24px;
+      width: p.$spacing-lg;
+      height: p.$spacing-lg;
       object-fit: contain;
       font-size: 9px;
       line-height: 1;
@@ -142,7 +142,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin: 0 0 16px 0;
+      margin: 0 0 p.$spacing-md 0;
 
       @media #{p.$mq-lg} {
         margin-bottom: 0;
@@ -150,8 +150,8 @@
     }
 
     .card--icon-sm {
-      margin-bottom: 8px;
-      width: 32px;
+      margin-bottom: p.$spacing-sm;
+      width: p.$spacing-xl;
       height: auto;
     }
 
@@ -197,7 +197,7 @@
 
     .card--desc {
       @include c.text-body-md;
-      margin-bottom: 16px;
+      margin-bottom: p.$spacing-md;
 
       &:last-child {
         margin-bottom: 0;
@@ -225,12 +225,12 @@
       (margin-left, 0, 20px),
     ));
     margin-bottom: 10px;
-    width: 48px;
+    width: p.$spacing-2xl;
   }
 
   &--icon-sm {
-    margin-bottom: 24px;
-    width: 24px;
+    margin-bottom: p.$spacing-lg;
+    width: p.$spacing-lg;
   }
 
   &--title {
@@ -304,7 +304,7 @@
 
       .card--desc {
         @include c.text-body-sm;
-        margin: 8px 0 24px 0;
+        margin: p.$spacing-sm 0 p.$spacing-lg 0;
       }
     }
 

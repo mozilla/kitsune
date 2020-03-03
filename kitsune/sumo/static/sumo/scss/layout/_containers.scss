@@ -25,22 +25,22 @@
 }
 
 .sumo-page-section {
-  padding-top: 32px;
-  padding-bottom: 32px;
+  padding-top: p.$spacing-xl;
+  padding-bottom: p.$spacing-xl;
 
   &--lg {
     padding-top: 40px;
-    padding-bottom: 32px;
+    padding-bottom: p.$spacing-xl;
 
     &.extra-pad-bottom {
       padding-bottom: 40px;
     }
 
     @media #{p.$mq-md} {
-      padding-top: 48px;
+      padding-top: p.$spacing-2xl;
 
       &.extra-pad-bottom {
-        padding-bottom: 48px;
+        padding-bottom: p.$spacing-2xl;
       }
     }
 
@@ -54,8 +54,8 @@
   }
 
   &--md {
-    padding-top: 32px;
-    padding-bottom: 32px;
+    padding-top: p.$spacing-xl;
+    padding-bottom: p.$spacing-xl;
 
     @media #{p.$mq-md} {
       padding-top: 40px;
@@ -63,34 +63,34 @@
     }
 
     @media #{p.$mq-lg} {
-      padding-top: 48px;
-      padding-bottom: 48px;
+      padding-top: p.$spacing-2xl;
+      padding-bottom: p.$spacing-2xl;
     }
   }
 
   &--sm {
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: p.$spacing-sm;
+    padding-bottom: p.$spacing-sm;
 
     @media #{p.$mq-md} {
-      padding-top: 16px;
-      padding-bottom: 16px;
+      padding-top: p.$spacing-md;
+      padding-bottom: p.$spacing-md;
     }
   }
 
   &.extra-pad-bottom {
     @media #{p.$mq-lg} {
-      padding-bottom: 48px;
+      padding-bottom: p.$spacing-2xl;
     }
   }
 
 
   &--inner {
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding-top: p.$spacing-lg;
+    padding-bottom: p.$spacing-lg;
 
     &:first-child {
-      padding-top: 32px;
+      padding-top: p.$spacing-xl;
     }
 
     @media #{p.$mq-md} {
@@ -107,7 +107,7 @@
       padding-bottom: 36px;
 
       &:first-child {
-        padding-top: 48px;
+        padding-top: p.$spacing-2xl;
       }
     }
 
@@ -118,10 +118,10 @@
 .section-break {
   border: 2px solid var(--color-heading);
   border-width: 1px 0 0 0;
-  margin: 32px 0;
+  margin: p.$spacing-xl 0;
 
   @media #{p.$mq-md} {
-    margin: 48px 0;
+    margin: p.$spacing-2xl 0;
   }
 }
 

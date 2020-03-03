@@ -23,7 +23,7 @@
   margin-right: c.$gutter-width * -.5;
   margin-left: c.$gutter-width * -.5;
   margin-bottom: -40px;
-  padding: 8px 0 0;
+  padding: p.$spacing-sm 0 0;
   -webkit-overflow-scrolling: touch;
   overflow-x: scroll;
   scroll-padding-right: var(--cg-gutter);
@@ -33,8 +33,8 @@
   // width: calc(100vw - #{c.$gutter-width * .5});
 
   &.is-four-wide {
-    margin-top: 16px;
-    padding-top: 16px;
+    margin-top: p.$spacing-md;
+    padding-top: p.$spacing-md;
   }
 
   .scroll-wrap {
@@ -85,7 +85,7 @@
 
       &--topic,
       &--article {
-        margin-bottom: 24px;
+        margin-bottom: p.$spacing-lg;
       }
     }
 

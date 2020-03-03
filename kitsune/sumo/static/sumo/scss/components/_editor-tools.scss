@@ -7,7 +7,7 @@ div.editor-tools {
     height: 40px;
     line-height: 30px;
     padding: 5px 5px 0;
-    margin-bottom: 8px;
+    margin-bottom: p.$spacing-sm;
   }
 
 
@@ -23,10 +23,10 @@ div.editor-tools {
 
   span.separator {
     border-left: solid 1px var(--color-border);
-    font-size: 24px;
-    margin: 0 8px 0 6px;
+    font-size: p.$spacing-lg;
+    margin: 0 p.$spacing-sm 0 6px;
     position: relative;
-    top: 4px;
+    top: p.$spacing-xs;
   }
 }
 
@@ -43,7 +43,7 @@ div.editor-tools {
     span.separator {
       border: none;
       border-right: solid 1px var(--color-border);
-      margin: 0 6px 0 8px;
+      margin: 0 6px 0 p.$spacing-sm;
     }
   }
 }
@@ -271,8 +271,8 @@ section.marky {
   }
 
   div.submit {
-    bottom: 32px;
-    left: 32px;
+    bottom: p.$spacing-xl;
+    left: p.$spacing-xl;
     position: absolute;
   }
 

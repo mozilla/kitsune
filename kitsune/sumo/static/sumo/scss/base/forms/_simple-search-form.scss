@@ -7,7 +7,7 @@
 
   .search-button {
     position: absolute;
-    top: 4px;
+    top: p.$spacing-xs;
     @include p.bidi((
       (right, 6px, auto),
       (left, auto, 6px),
@@ -18,10 +18,10 @@
 .search-button {
   appearance: none;
   margin-left: 10px;
-  width: 32px;
-  height: 32px;
+  width: p.$spacing-xl;
+  height: p.$spacing-xl;
   border: none;
-  border-radius: 4px;
+  border-radius: p.$spacing-xs;
   background-image: url('#{p.$image-path}/icons/search.svg');
   background-color: transparent;
   background-position: center center;
@@ -42,13 +42,13 @@
 
   @media #{p.$mq-lg} {
     display: block;
-    margin-top: 32px;
+    margin-top: p.$spacing-xl;
     margin-bottom: 0;
     text-align: center;
 
     a, span {
       display: inline-block;
-      padding-right: 8px;
+      padding-right: p.$spacing-sm;
 
       &:last-child {
         padding-right: 0;
@@ -58,5 +58,5 @@
 }
 
 .search-results-heading {
-  margin-top: 32px;
+  margin-top: p.$spacing-xl;
 }

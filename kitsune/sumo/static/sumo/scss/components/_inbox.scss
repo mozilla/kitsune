@@ -8,12 +8,12 @@
   &--item {
 
     display: grid;
-    grid-gap: 4px 10px;
+    grid-gap: p.$spacing-xs 10px;
     grid-template-columns: 36px 1fr 30px;
     grid-template-areas:
       "checkbox avatar  delete"
       "checkbox details delete";
-    padding: 8px 0;
+    padding: p.$spacing-sm 0;
     border-bottom: 1px solid var(--color-border);
 
     .field {
@@ -40,7 +40,7 @@
       font-size: 20px;
       color: var(--color-text);
       text-decoration: none;
-      padding: 16px;
+      padding: p.$spacing-md;
       grid-area: delete;
       align-self: center;
 
@@ -53,7 +53,7 @@
     @media #{p.$mq-md} {
       display: flex;
       align-items: center;
-      padding: 16px 0;
+      padding: p.$spacing-md 0;
 
       .delete {
         opacity: 0;

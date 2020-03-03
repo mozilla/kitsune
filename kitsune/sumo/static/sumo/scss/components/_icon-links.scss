@@ -10,8 +10,8 @@ a.markasready.has-icon {
   &:before {
     display: inline-flex;
     align-self: center;
-    height: 16px;
-    width: 16px;
+    height: p.$spacing-md;
+    width: p.$spacing-md;
     background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.81 29.81"><path fill="#0060DF" d="M0 29.81l8.29-2.22-6.07-6.07L0 29.81zM18.214 5.532l6.067 6.067-15.04 15.04-6.067-6.067zM23.746-.003l6.067 6.067-4.59 4.59-6.066-6.068z"/></svg>');
     background-size: contain;
     background-position: center;
@@ -20,7 +20,7 @@ a.markasready.has-icon {
   }
 
   &:not(:empty):before {
-    margin-right: 8px;
+    margin-right: p.$spacing-sm;
   }
 }
 
@@ -41,7 +41,7 @@ a.markasready:before {
 
   .icon-md {
     flex: 0 0 auto;
-    @include p.bidi(((margin, 0 16px 0 0, 0 0 0 16px),));
+    @include p.bidi(((margin, 0 p.$spacing-md 0 0, 0 0 0 p.$spacing-md),));
   }
 }
 

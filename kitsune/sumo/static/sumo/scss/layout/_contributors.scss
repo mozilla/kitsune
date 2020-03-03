@@ -7,14 +7,14 @@
   flex-wrap: wrap;
 
   li {
-    width: 48px;
-    margin: 4px;
+    width: p.$spacing-2xl;
+    margin: p.$spacing-xs;
   }
 
   img {
     display: block;
-    width: 48px;
-    height: 48px;
+    width: p.$spacing-2xl;
+    height: p.$spacing-2xl;
     border-radius: 50%;
   }
 }
@@ -32,7 +32,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 8px;
+      padding: p.$spacing-sm;
     }
   }
 
@@ -43,8 +43,8 @@
 }
 
 .media-search {
-  margin-top: 32px;
-  margin-bottom: 32px;
+  margin-top: p.$spacing-xl;
+  margin-bottom: p.$spacing-xl;
 }
 
 .media-filters {
@@ -69,7 +69,7 @@
       width: 100%;
       width: 100%;
       max-width: none;
-      margin: 0 0 16px 0;
+      margin: 0 0 p.$spacing-md 0;
     }
 
     @media #{p.$mq-md} {
@@ -86,14 +86,14 @@
 
 .watch-form {
   svg {
-    width: 24px;
-    height: 24px;
+    width: p.$spacing-lg;
+    height: p.$spacing-lg;
   }
 }
 
 .hero-bar {
   .sumo-l-two-col--one-half {
-    margin-bottom: 16px;
+    margin-bottom: p.$spacing-md;
   }
 
   @media #{p.$mq-md} {
@@ -117,7 +117,7 @@
 
   svg {
     display: block;
-    margin: 8px auto;
+    margin: p.$spacing-sm auto;
     width: 80px;
     height: 80px;
   }
@@ -148,8 +148,8 @@
   &.has-icons {
     a {
       flex: 1 1 280px;
-      padding: 8px;
-      margin: 0 8px;
+      padding: p.$spacing-sm;
+      margin: 0 p.$spacing-sm;
       border-radius: var(--global-radius);
       text-align: center;
 

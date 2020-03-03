@@ -26,8 +26,8 @@
 
   span {
     display: block;
-    padding: 16px 0;
-    margin-right: 16px;
+    padding: p.$spacing-md 0;
+    margin-right: p.$spacing-md;
   }
 
   &:hover  {
@@ -53,7 +53,7 @@
 .tabs {
   position: relative;
   box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
-  margin-bottom: 32px;
+  margin-bottom: p.$spacing-xl;
 
   &:not(.is-js-enhanced) {
     overflow-x: auto;
@@ -72,7 +72,7 @@
   }
 
   &--button {
-    padding: 16px 0;
+    padding: p.$spacing-md 0;
     margin: 0;
     appearance: none;
 
@@ -80,7 +80,7 @@
       display: inline-flex;
       width: 12px;
       height: 12px;
-      margin-left: 4px;
+      margin-left: p.$spacing-xs;
       background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
       background-repeat: no-repeat;
       background-size: 12px 12px;
@@ -120,7 +120,7 @@
 
     .tabs--link,
     a {
-      padding: 8px;
+      padding: p.$spacing-sm;
     }
   }
 

@@ -1,4 +1,5 @@
 @use './mixins' as c;
+@use '../protocol' as p;
 @use './color-swatches' as swatches;
 
 :root {
@@ -40,10 +41,10 @@
   --heading-alt-font-family: var(--heading-font-family);
 
   --global-margin: 1rem;
-  --global-radius: 4px;
+  --global-radius: #{p.$spacing-xs};
 
   // form fields
-  --focus-shadow: 0 0 0 4px rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
+  --focus-shadow: 0 0 0 #{p.$spacing-xs} rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
 }
 
 .shade-bg {

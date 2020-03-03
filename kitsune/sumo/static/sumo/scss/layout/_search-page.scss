@@ -44,11 +44,11 @@
   text-align: center;
 
   .simple-search-form {
-    margin-top: 32px;
-    // margin-bottom: 32px;
+    margin-top: p.$spacing-xl;
+    // margin-bottom: p.$spacing-xl;
 
     // @media #{p.$mq-lg} {
-    //   margin-bottom: 32px;
+    //   margin-bottom: p.$spacing-xl;
     // }
   }
 }

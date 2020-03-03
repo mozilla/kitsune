@@ -31,7 +31,7 @@
 .kbox-close {
   font-size: 22px !important;
   position: absolute;
-  right: 8px;
+  right: p.$spacing-sm;
   top: 5px;
 
   &:link,
@@ -45,7 +45,7 @@
 
 .html-rtl {
   .kbox-close {
-    left: 8px;
+    left: p.$spacing-sm;
     right: auto;
   }
 }
@@ -56,11 +56,11 @@
   color: var(--color-heading);
   display: block;
   margin: 0;
-  padding: 32px 32px 0;
+  padding: p.$spacing-xl p.$spacing-xl 0;
 }
 
 .kbox-wrap {
-  padding: 32px;
+  padding: p.$spacing-xl;
 
   .hide-until-expanded {
     display: block;

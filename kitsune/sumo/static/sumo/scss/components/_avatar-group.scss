@@ -27,7 +27,7 @@
 
   @media #{p.$mq-sm} {
     flex-direction: row;
-    margin-bottom: 32px;
+    margin-bottom: p.$spacing-xl;
 
     &--figure,
     &--details {
@@ -65,7 +65,7 @@
   &--item {
     display: flex;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: p.$spacing-sm;
     max-width: 400px;
     @include c.card();
     padding: p.$spacing-sm;
