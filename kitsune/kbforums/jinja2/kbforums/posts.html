@@ -43,7 +43,7 @@
 
       {{ kbforums_warning(document, user) }}
 
-      <h1 class="text-display-lg">{{ thread.title }}</h1>
+      <h1 class="sumo-page-heading">{{ thread.title }}</h1>
       <ul class="topic-article--meta-list" id="thread-meta">
         {% if count %}<li>{{ count - 1 }} {{ _('Replies') }}</li>{% endif %}
         {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.creator) }}</li>{% endif %}

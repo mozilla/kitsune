@@ -130,7 +130,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(r.document.title, doc("h1.text-display-lg").text())
+        eq_(r.document.title, doc("h1.sumo-page-heading").text())
         eq_(pq(r.document.html)("div").text(), doc("#doc-content div").text())
         # There's a canonical URL in the <head>.
         eq_(
@@ -146,7 +146,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(r.document.title, doc("h1.text-display-lg").text())
+        eq_(r.document.title, doc("h1.sumo-page-heading").text())
         eq_(
             "This article doesn't have approved content yet.",
             doc("#doc-content").text(),
@@ -161,7 +161,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(d2.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(d2.title, doc("h1.text-display-lg").text())
+        eq_(d2.title, doc("h1.sumo-page-heading").text())
         # Avoid depending on localization, assert just that there is only text
         # d.html would definitely have a <p> in it, at least.
         eq_(doc("#doc-content").html().strip(), doc("#doc-content").text())
@@ -175,7 +175,7 @@ class DocumentTests(TestCaseBase):
         url = reverse("wiki.document", args=[d2.slug], locale="fr")
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(d2.title, doc("h1.text-display-lg").text())
+        eq_(d2.title, doc("h1.sumo-page-heading").text())
 
         # Fallback message is shown.
         eq_(1, len(doc("#doc-pending-fallback")))
@@ -210,7 +210,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
 
-        eq_(r.document.title, doc("h1.text-display-lg").text())
+        eq_(r.document.title, doc("h1.sumo-page-heading").text())
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()
@@ -439,7 +439,7 @@ class DocumentTests(TestCaseBase):
         url = reverse("wiki.document", args=[en_rev.document.slug], locale="ca")
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(trans_doc.title, doc("h1.text-display-lg").text())
+        eq_(trans_doc.title, doc("h1.sumo-page-heading").text())
 
         # Display fallback message to the user.
         eq_(1, len(doc("#doc-pending-fallback")))

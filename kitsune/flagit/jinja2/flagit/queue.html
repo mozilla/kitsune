@@ -4,7 +4,7 @@
 
 {% block content %}
   <div id="flagged-queue" class="sumo-page-section has-moz-headings">
-    <h1 class="text-display-lg">{{ _('Flagged Content Pending Moderation') }}</h1>
+    <h1 class="sumo-page-heading">{{ _('Flagged Content Pending Moderation') }}</h1>
     <ul>
     {% for object in objects %}
       {% if loop.first %}<ul>{% endif %}
