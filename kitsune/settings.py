@@ -1196,3 +1196,12 @@ BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)
 
 # The canonical, production URL without a trailing slash
 CANONICAL_URL = 'https://support.mozilla.org'
+
+# Products to exclude from featured articles under
+# wiki/utils.py
+EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
+    "firefox-amazon-devices",
+    "firefox-fire-tv",
+    "focus-firefox",
+    "thunderbird",
+]
