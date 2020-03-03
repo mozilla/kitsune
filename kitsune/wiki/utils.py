@@ -138,9 +138,11 @@ def get_featured_articles(product=None):
 
     If a product is passed, it returns 4 random highly visited articles.
     """
-
     featured = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
+        .exclude(
+            document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES
+        )
         .order_by("-visits")
         .select_related("document")
     )
