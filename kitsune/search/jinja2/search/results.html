@@ -15,7 +15,7 @@
   <section class="home-search-section sumo-page-section--lg shade-bg">
     <div class="mzp-l-content">
       <div class="home-search-section--content">
-        <h1 class="text-display-lg">{{ _('Search Support') }}</h1>
+        <h1 class="sumo-page-heading">{{ _('Search Support') }}</h1>
         {{ basic_search_form(True) }}
         <p><a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a></p>
       </div>

@@ -26,7 +26,7 @@
 {% block content %}
   <article id="edit-profile" class="sumo-page-section">
       {% if profile and profile.is_fxa_migrated %}
-      <h1 class="text-display-lg">{{ _('Account') }}</h1>
+      <h1 class="sumo-page-heading">{{ _('Account') }}</h1>
       <p class="mb-0"><strong>{{ user.email }}</strong></p>
       <p>
         {{ _('You can change your email address on Firefox Accounts.') }}
@@ -40,7 +40,7 @@
       <hr class="section-break"/>
       {% endif %}
 
-      <h1 class="text-display-lg">{{ title }}</h1>
+      <h1 class="sumo-page-heading">{{ title }}</h1>
       <p>
         {% trans %}
         Tell users a bit more information about yourself. Most fields are

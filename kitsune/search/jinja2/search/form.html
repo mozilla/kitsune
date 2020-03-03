@@ -13,7 +13,7 @@
   <section class="home-search-section sumo-page-section--lg shade-bg ">
     <div class="mzp-l-content">
       <div class="home-search-section--content">
-        <h1 class="text-display-lg">{{ _('Search Support') }}</h1>
+        <h1 class="sumo-page-heading">{{ _('Search Support') }}</h1>
           {% from "search/includes/macros.html" import basic_search_form with context %}
           {{ basic_search_form(True) }}
 
@@ -29,7 +29,7 @@
   <section class="sumo-page-section">
     <div class="content-box cf" id="advanced-search">
       {% if advanced %}
-        <h1 class="text-display-lg nomargin">{{ _('Advanced Search') }}</h1>
+        <h1 class="sumo-page-heading nomargin">{{ _('Advanced Search') }}</h1>
         <div id="search-tabs">
           <span id="where" style="display: none">{{ search_form.w.data or '' }}</span>
 

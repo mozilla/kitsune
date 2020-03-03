@@ -18,7 +18,7 @@
 {% block content %}
   <article id="posts" class="sumo-page-section">
     <p class="text-display-xs" id="forum-title">{{ forum.name }}</p>
-    <h1 class="text-display-lg">{{ thread.title }}</h1>
+    <h1 class="sumo-page-heading">{{ thread.title }}</h1>
 
     <ul class="topic-article--meta-list" id="thread-meta">
       {% if count %}<li>{{ ngettext('{0} Reply', '{0} Replies', (count - 1))|f(count - 1) }}</li>{% endif %}

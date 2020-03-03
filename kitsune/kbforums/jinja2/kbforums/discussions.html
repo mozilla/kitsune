@@ -5,7 +5,7 @@
 
 {% block content %}
     <article id="threads" class="content-box sumo-page-section">
-      <h1 class="text-display-lg">{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
+      <h1 class="sumo-page-heading">{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
       {% if user.is_authenticated() %}
         <form id="watch_locale" action="{{ url('wiki.discuss.watch_locale') }}" method="post">
           {% csrf_token %}

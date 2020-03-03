@@ -8,7 +8,7 @@
 
 {% block below_main %}
 <section class="sumo-page-section">
-  <h1 class="text-display-lg">{{ _('Support Forum Metrics') }}</h1>
+  <h1 class="sumo-page-heading">{{ _('Support Forum Metrics') }}</h1>
 
   {% if not current_locale %}
     {% set base_url = url('questions.metrics')|urlparams(None, request.GET)|urlparams(product=None) %}
