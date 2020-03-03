@@ -2,7 +2,7 @@
 {% set title = _("Get email updates") %}
 
 <section id="email-subscribe" class="mzp-u-modal-content" title="{{ title }}">
-  <h2 class="text-display-sm">{{ title }}</h2>
+  <h2 class="sumo-page-subheading">{{ title }}</h2>
   <form action="{{ url('questions.watch', question.id) }}" method="post">
     {% csrf_token %}
     {{ errorlist(watch_form) }}

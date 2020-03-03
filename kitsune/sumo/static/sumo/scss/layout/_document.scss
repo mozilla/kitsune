@@ -181,18 +181,18 @@
     margin-bottom: p.$spacing-xl;
 
     h2 {
-      @include c.text-display-xs;
+      @include c.sumo-card-heading;
       margin-top: 0;
     }
   }
 
   h1 {
-    @include c.text-display-xs;
+    @include c.sumo-page-heading;
     margin-top: 2em;
   }
 
   h2, h3, h4, h5, h6 {
-    @include c.text-display-xxs;
+    @include c.sumo-card-heading;
     margin-top: 2em;
   }
 

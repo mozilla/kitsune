@@ -52,7 +52,7 @@
 
         {# Show the description if it is different than the title. Otherwise, don't bother. #}
         {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-          <p class="topic-description color-heading text-body-lg mb-0">
+          <p class="topic-description sumo-page-intro mb-0">
             {% if subtopic %}
                {{ pgettext('DB: products.Topic.description', subtopic.description) }}
             {% else %}
@@ -79,7 +79,7 @@
               <img class="topic-article--icon" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="" />
             </div>
             <div class="topic-article--text">
-              <h2 class="text-display-xxs">
+              <h2 class="sumo-card-heading">
                 <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
                   data-event-label="{{ document['document_title'] }}">
                   {{ document['document_title'] }}
@@ -96,7 +96,7 @@
         <section class="topic-list">
         {% for document in fallback_documents %}
           <article>
-            <h3 class="text-display-xxs">
+            <h3 class="sumo-card-heading">
               <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">
                 {{ document['document_title'] }}
               </a>

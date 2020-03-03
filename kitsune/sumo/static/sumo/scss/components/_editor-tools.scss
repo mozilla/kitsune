@@ -111,7 +111,7 @@ button {
   width: 480px;
 
   h2 {
-    @include c.text-body-lg;
+    @include c.sumo-card-heading;
   }
 
   h4,

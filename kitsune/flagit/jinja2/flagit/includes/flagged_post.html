@@ -1,24 +1,24 @@
 {% from 'flagit/includes/macros.html' import date_by_user with context %}
-<h3 class="text-body-lg">{{ _('Title:') }}</h3>
+<h3 class="sumo-page-intro">{{ _('Title:') }}</h3>
 <p class="title">{{ object.content_object.thread.title }}</p>
-<h3 class="text-body-lg">{{ _('Content:') }}</h3>
+<h3 class="sumo-page-intro">{{ _('Content:') }}</h3>
 <div class="content">{{ object.content_object.content_parsed }}</div>
-<h3 class="text-body-lg">{{ _('Created:') }}</h3>
+<h3 class="sumo-page-intro">{{ _('Created:') }}</h3>
 <p class="created">
   {% set author = object.content_object.author if object.content_object.author else object.content_object.creator %}
   {{ date_by_user(object.content_object.created, author) }}
 </p>
 {% if object.content_object.updated_by %}
-  <h3 class="text-body-lg">{{ _('Updated:') }}</h3>
+  <h3 class="sumo-page-intro">{{ _('Updated:') }}</h3>
   <p class="updated">
     {{ date_by_user(object.content_object.updated, object.content_object.updated_by) }}
   </p>
 {% endif %}
-<h3 class="text-body-lg">{{ _('Flagged:') }}</h3>
+<h3 class="sumo-page-intro">{{ _('Flagged:') }}</h3>
 <p class="flagged">
   {{ date_by_user(object.created, object.creator) }}
 </p>
-<h3 class="text-body-lg">{{ _('Take Action:') }}</h3>
+<h3 class="sumo-page-intro">{{ _('Take Action:') }}</h3>
 <div class="actions sumo-button-wrap">
   <a class="sumo-button button-sm" href="{{ object.content_object.get_absolute_url() }}">View</a>
   {% if object.content_type.name == 'KB Forum Post' %}

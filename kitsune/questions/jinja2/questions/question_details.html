@@ -61,7 +61,7 @@
       {% if product %}
       <img class="page-heading--logo" src="{{ logo }}" alt="{{ product_title }} logo" />
       {% endif %}
-      <h2 class="text-display-sm summary {% if product %}no-product-heading{% endif %}" itemprop="headline">{{ question.title }}</h2>
+      <h2 class="sumo-page-subheading summary {% if product %}no-product-heading{% endif %}" itemprop="headline">{{ question.title }}</h2>
 
       <div class="question-meta">
         <ul class="forum--meta-details replies">
@@ -205,7 +205,7 @@
     </div>
 
     {% if answers.object_list %}
-    <h3 class="text-body-lg">{{ _('All Replies')}} ({{ answers.object_list|length }})</h3>
+    <h3 class="sumo-card-heading">{{ _('All Replies')}} ({{ answers.object_list|length }})</h3>
       {% set helpful_replies = question.helpful_replies %}
       {% for answer in answers.object_list %}
         {% include "questions/includes/answer.html" %}
@@ -227,7 +227,7 @@
       {% endif %}
 
       {% if question.allows_new_answer(user) %}
-        <h3 class="text-body-lg">{{ _('Post a Reply') }}</h3>
+        <h3 class="sumo-card-heading">{{ _('Post a Reply') }}</h3>
         <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data" data-take-question-url="{{ url('question-take', question.pk) }}">
           {% csrf_token %}
           {{ errorlist(form) }}
@@ -505,25 +505,25 @@
               <a id="show-more-details" href="javascript:;" data-sumo-modal="more-system-details">{{ _('More system details') }}</a>
 
               <section id="more-system-details" class="mzp-u-modal-content text-body-md" title="{{ _('Additional System Details') }}" data-target="#show-more-details">
-                <h2 class="text-display-sm">{{ _('Additional System Details') }}</h2>
+                <h2 class="sumo-page-subheading">{{ _('Additional System Details') }}</h2>
                 {% if question.metadata.sites_affected %}
-                <h3 class="text-body-lg">{{ _('Sites Affected') }}</h3>
+                <h3 class="sumo-card-heading">{{ _('Sites Affected') }}</h3>
                 <p>{{ question.metadata.sites_affected }}</p>
                 {% endif %}
                 {% if question.metadata.crash_id %}
-                <h3 class="text-body-lg">{{ _('Crash ID') }}</h3>
+                <h3 class="sumo-card-heading">{{ _('Crash ID') }}</h3>
                 <p>{{ question.metadata.crash_id }}</p>
                 {% endif %}
                 {% if question.metadata.frequency %}
-                <h3 class="text-body-lg">{{ _('This happened') }}</h3>
+                <h3 class="sumo-card-heading">{{ _('This happened') }}</h3>
                 <p>{{ frequencies[question.metadata.frequency] }}</p>
                 {% endif %}
                 {% if question.metadata.started %}
-                <h3 class="text-body-lg">{{ _('This started when...') }}</h3>
+                <h3 class="sumo-card-heading">{{ _('This started when...') }}</h3>
                 <p>{{ question.metadata.started }}</p>
                 {% endif %}
                 {% if question.metadata.plugins %}
-                <h3 class="text-body-lg">{{ _('Installed Plug-ins') }}</h3>
+                <h3 class="sumo-card-heading">{{ _('Installed Plug-ins') }}</h3>
                 <p><span class="plugins">
                   {{ question.metadata.plugins|wiki_to_html }}
                 </span></p>
