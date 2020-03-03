@@ -2617,8 +2617,7 @@ class HelpfulVoteTests(TestCaseBase):
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         eq_(200, response.status_code)
-        eq_(
-            '{"message": "Great to hear &mdash; thanks for the feedback!' +
+        eq_('{"message": "Great to hear &mdash; thanks for the feedback!'
             ' <br /><span class="helpful-button">👍</span>"}',
             response.content,
         )
