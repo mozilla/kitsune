@@ -170,7 +170,7 @@
 
 
 .sidebar-subheading {
-  @include c.text-body-md;
+  @include c.sumo-card-heading;
   font-weight: bold;
   color: var(--color-heading);
   margin-top: p.$spacing-md;
@@ -198,7 +198,6 @@
   }
 
   @media #{p.$mq-lg} {
-    @include c.text-body-lg;
     margin: 72px 0 p.$spacing-lg;
 
     &.is-accordion-heading {

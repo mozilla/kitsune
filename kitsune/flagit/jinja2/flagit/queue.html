@@ -22,7 +22,7 @@
           {% else %}
             <p>{{ _('{t} with id={id} no longer exists.')|f(t=object.content_type, id=object.object_id) }}</p>
           {% endif %}
-          <h3 class="text-body-lg"><br>{{ _('Update Status:') }}</h3>
+          <h3 class="sumo-card-heading"><br>{{ _('Update Status:') }}</h3>
           <form class="update inline-form" action="{{ url('flagit.update', object.id) }}" method="post">
             {% csrf_token %}
             <select name="status">

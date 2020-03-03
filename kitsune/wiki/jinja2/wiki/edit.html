@@ -20,7 +20,7 @@
 
   <div class="sumo-page-section">
     <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
-      <h1 class="text-display-md">{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
+      <h1 class="sumo-page-heading">{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
       {% if document.needs_change %}
         <p>
           {% trans comment=document.needs_change_comment %}
@@ -32,7 +32,7 @@
       {% if document_form %}
         <div id="document-form">
           <details {% if disclose_description %} open="open"{% endif %}>
-            <summary class="text-display-sm">{{ _('Edit Description') }}</summary>
+            <summary class="sumo-page-subheading">{{ _('Edit Description') }}</summary>
             {{ errorlist(document_form) }}
             <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
               {% csrf_token %}
@@ -56,7 +56,7 @@
       {% if revision_form %}
         <div id="revision-form">
           <details open="open">
-            <summary class="text-display-sm">{{ _('Edit Content') }}</summary>
+            <summary class="sumo-page-subheading">{{ _('Edit Content') }}</summary>
             <p>
               {% trans url=url('wiki.document', 'support-document-guide') %}For help with writing articles, check out the
                 <a href="{{ url }}">Support Document Guide</a>.{% endtrans %}

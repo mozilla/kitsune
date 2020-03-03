@@ -2,7 +2,7 @@
   <div class="about-support">
     {% if question.metadata.troubleshooting_parsed %}
       {% set parsed = question.metadata.troubleshooting_parsed %}
-      <h3 class="text-body-lg">{{ _('Application') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('Application') }}</h3>
       <ul>
         <li>
           {% trans app_name=parsed.application.name, app_version=parsed.application.version %}
@@ -13,7 +13,7 @@
         <li>{{ _('Support URL: {support_url}')|fe(support_url=parsed.application.supportURL) }}</li>
       </ul>
 
-      <h3 class="text-body-lg">{{ _('Extensions') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('Extensions') }}</h3>
       <ul>
         {% for ext in parsed.extensions %}
           {# title is to provide a hover tip. #}
@@ -27,7 +27,7 @@
         {% endfor %}
       </ul>
 
-      <h3 class="text-body-lg">{{ _('Javascript') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('Javascript') }}</h3>
       <ul>
         {% for key, value in parsed.javaScript|dictsort %}
           <li>
@@ -36,7 +36,7 @@
         {% endfor %}
       </ul>
 
-      <h3 class="text-body-lg">{{ _('Graphics') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('Graphics') }}</h3>
       <ul>
         {% for key, value in parsed.graphics|dictsort %}
           <li>
@@ -45,7 +45,7 @@
         {% endfor %}
       </ul>
 
-      <h3 class="text-body-lg">{{ _('Modified Preferences') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('Modified Preferences') }}</h3>
       <ul>
         {% for key, value in parsed.modifiedPreferences|dictsort %}
           <li>
@@ -54,7 +54,7 @@
         {% endfor %}
       </ul>
 
-      <h3 class="text-body-lg">{{ _('Misc') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('Misc') }}</h3>
       <ul>
         <li>
           {% if parsed.userJS.exists %}
@@ -72,12 +72,12 @@
         </li>
       </ul>
     {% else %}
-      <h3 class="text-body-lg">{{ _('Application') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('Application') }}</h3>
       <ul>
         <li>{{ _('User Agent: {ua}')|fe(ua=question.metadata.useragent) }}</li>
       </ul>
       {% if question.metadata.troubleshooting %}
-      <h3 class="text-body-lg">{{ _('More Information') }}</h3>
+      <h3 class="sumo-card-heading">{{ _('More Information') }}</h3>
       <p>{{ question.metadata.troubleshooting|trim|collapse_linebreaks|linebreaks }}</p>
       {% endif %}
     {% endif %}

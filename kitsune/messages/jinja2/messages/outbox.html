@@ -8,7 +8,7 @@
 {% block content %}
   <div class="sumo-page-section">
     <article id="outbox" class="main">
-      <h1 class="text-display-sm">{{ title }}</h1>
+      <h1 class="sumo-page-subheading">{{ title }}</h1>
       {% if msgs %}
         <form action="{{ url('messages.outbox_bulk_action') }}" method="POST">
           <div class="sumo-button-wrap">

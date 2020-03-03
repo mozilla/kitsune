@@ -2,7 +2,7 @@
     <span class="close-button"></span>
     <form action="{{ url('wiki.unhelpful_survey') }}" method="post" data-required="unhelpful-reason">
         <input type="hidden" name="vote_id" value="{{ vote_id }}" />
-        <p class="sorry text-display-xxs text-center">{{ _('Sorry to hear that, please tell us why?') }}<br /><span disabled class="helpful-button">👎</span></p>
+        <p class="sorry sumo-card-heading text-center">{{ _('Sorry to hear that, please tell us why?') }}<br /><span disabled class="helpful-button">👎</span></p>
         <ul id="helpful-contents">
             <li class="field is-condensed radio"><input type="radio" name="unhelpful-reason" value="confusing" id="help_1" /><label for="help_2">{{ _('Confusing') }}</label></li>
             <li class="field is-condensed radio"><input type="radio" name="unhelpful-reason" value="didnt-work" id="help_2" /><label for="help_2">{{ _("Solution didn't work") }}</label></li>

@@ -128,11 +128,11 @@
   }
 
   li {
-    @include c.text-body-lg;
+    @include c.sumo-page-intro;
   }
 
   a {
-    @include c.text-body-lg;
+    @include c.sumo-page-intro;
     text-align: center;
     display: block;
     text-decoration: none;

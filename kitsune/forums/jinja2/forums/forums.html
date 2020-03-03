@@ -25,7 +25,7 @@
           {% for forum in forums.object_list %}
             <tr>
               <td class="name">
-                <h5 class="text-body-lg"><a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ forum.name }}</a></h5>
+                <h5 class="sumo-card-heading"><a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ forum.name }}</a></h5>
                 {{ forum.description|safe }}
               </td>
               <td class="threads">{{ forum.thread_count }}</td>
