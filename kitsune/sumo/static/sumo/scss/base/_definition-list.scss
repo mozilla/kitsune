@@ -41,7 +41,6 @@
 
     &:first-child {
       @include p.bidi((
-        (padding-right, 8px, 0),
         (padding-left, 0, p.$spacing-sm),
         (padding-right, p.$spacing-sm, 0),
       ));
