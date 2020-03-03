@@ -7,77 +7,53 @@ $text-display-line-height: 1.1 !default;
 
 // display copy: headings, blockquotes, other fancy stuff
 @mixin text-display-xxl($family: false) { // Use this one sparingly.
-  @include p.font-size(48px);
-  line-height: $text-display-line-height;
+  @include p.font-size(64px);
+  @include c.line-height(72px);
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
     font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
-  }
-
-  @media #{p.$mq-lg} {
-    @include p.font-size(64px);
-    @include c.line-height(72px);
   }
 }
 
 @mixin text-display-xl($family: false) {
-  @include p.font-size(32px);
-  @include c.line-height(36px);
+  @include p.font-size(56px);
+  @include c.line-height(64px);
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
     font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
-  }
-
-  @media #{p.$mq-md} {
-    @include p.font-size(48px);
-    @include c.line-height(56px);
-  }
-
-  @media #{p.$mq-lg} {
-    @include p.font-size(56px);
-    @include c.line-height(64px);
   }
 }
 
 @mixin text-display-lg($family: false) {
-  @include p.font-size(32px);
-  line-height: $text-display-line-height;
+  @include p.font-size(48px);
+  @include c.line-height(56px);
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
     font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
   }
-
-  @media #{p.$mq-lg} {
-    @include p.font-size(48px);
-    @include c.line-height(56px);
-  }
 }
 
 @mixin text-display-md($family: false) {
-  @include p.font-size(24px);
-  line-height: $text-display-line-height;
+  @include p.font-size(40px);
+  @include c.line-height(44px);
 
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
       font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
-  }
-
-  @media #{p.$mq-lg} {
-    @include p.font-size(40px);
-    @include c.line-height(44px);
   }
 }
 
 @mixin text-display-sm($family: false) {
-  @include p.font-size(21px);
+  @include p.font-size(32px);
+  @include c.line-height(36px);
 
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
@@ -85,15 +61,10 @@ $text-display-line-height: 1.1 !default;
   } @else {
     font-family: var(--heading-font-family);
   }
-
-  @media #{p.$mq-lg} {
-    @include p.font-size(32px);
-    @include c.line-height(36px);
-  }
 }
 
 @mixin text-display-xs($family: false) {
-  @include p.font-size(18px);
+  @include p.font-size(24px);
   @include c.line-height(28px);
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
@@ -101,33 +72,20 @@ $text-display-line-height: 1.1 !default;
   } @else {
     font-family: var(--heading-font-family);
   }
-
-  @media #{p.$mq-lg} {
-    @include p.font-size(24px);
-    @include c.line-height(28px);
-  }
 }
 
 @mixin text-display-xxs($family: false) {
-  @include p.font-size(20px);
+  @include p.font-size(18px);
   @include c.line-height(24px);
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
-  } @else {
-    font-family: var(--heading-font-family);
-  }
+  font-family: var(--base-font-family);
+  color: var(--color-heading);
 }
 
 @mixin text-display-xxxs($family: false) {
   @include p.font-size(16px);
-  @include c.line-height(20px);
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
-  } @else {
-    font-family: var(--heading-font-family);
-  }
+  line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
+  color: var(--color-heading);
 }
 
 // body copy
@@ -159,4 +117,99 @@ $text-display-line-height: 1.1 !default;
   @include p.font-size(16px);
   line-height: $text-body-line-height;
   font-family: var(--base-font-family);
+}
+
+
+// The following mixins contain breakpoints, so most of the time, these are what
+// should be used throughout the system to maintain the visual hierarchy as
+// originally designed.
+
+@mixin sumo-page-heading-xl {
+  @include text-display-sm(); //32px
+
+  @media #{p.$mq-md} {
+    @include text-display-lg(); //48px
+  }
+  @media #{p.$mq-lg} {
+    @include text-display-xl(); //56px
+  }
+}
+
+@mixin sumo-page-heading {
+  @include text-display-sm(); //32px
+
+  @media #{p.$mq-md} {
+    @include text-display-md(); //40px
+  }
+  @media #{p.$mq-lg} {
+    @include text-display-lg(); //48px
+  }
+}
+
+// Unnecessary duplicate mixin, but keeping it for the sake of naming conventions
+@mixin sumo-page-subheading {
+  @include text-display-xs(); //24px
+}
+
+@mixin sumo-page-intro {
+  @include text-body-md(); //16px
+
+  @media #{p.$mq-lg} {
+    @include text-body-lg(); //18px
+  }
+}
+
+@mixin sumo-card-heading {
+  @include text-display-xxxs(); //16px
+
+  @media #{p.$mq-md} {
+    @include text-display-xxs(); //18px
+  }
+}
+
+@mixin sumo-callout-heading {
+  @include text-display-xs(); //24px
+
+  @media #{p.$mq-md} {
+    @include text-display-sm(); //32px
+  }
+}
+
+@mixin sumo-callout-heading-feature {
+  @include text-display-sm(); //32px
+
+  @media #{p.$mq-md} {
+    @include text-display-md(); //40px
+  }
+  @media #{p.$mq-lg} {
+    @include text-display-lg(); //48px
+  }
+}
+
+.sumo-page-heading-xl {
+  @include sumo-page-heading-xl; // 32/48/56
+}
+
+.sumo-page-heading {
+  @include sumo-page-heading; // 32/40/48
+}
+
+.sumo-page-subheading {
+  @include sumo-page-subheading; // 24/24/24
+}
+
+.sumo-page-intro {
+  @include sumo-page-intro; // 18/16/16
+}
+
+.sumo-card-heading {
+  @include sumo-card-heading; // 18/18/16
+}
+
+.sumo-callout-heading {
+  @include sumo-callout-heading; // 24/32/32
+}
+
+.sumo-callout-heading-feature {
+  @include sumo-callout-heading-feature; // 32/40/48
 }
