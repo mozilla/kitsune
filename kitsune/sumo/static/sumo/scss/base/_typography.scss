@@ -152,7 +152,6 @@ h5, h6, .text-display-sm {
 }
 
 .page-heading {
-  @include c.text-display-xl;
   text-align: center;
 
   &--logo {
@@ -230,4 +229,33 @@ hr {
   border: 0 none;
   border-top: 1px solid var(--text-color);
   margin: 1em 0;
+}
+
+// TODO: Add these semantic classes to styleguide
+.sumo-page-heading-xl {
+  @include c.sumo-page-heading-xl; // 32/48/56
+}
+
+.sumo-page-heading {
+  @include c.sumo-page-heading; // 32/40/48
+}
+
+.sumo-page-subheading {
+  @include c.sumo-page-subheading; // 24/24/24
+}
+
+.sumo-page-intro {
+  @include c.sumo-page-intro; // 18/16/16
+}
+
+.sumo-card-heading {
+  @include c.sumo-card-heading; // 18/18/16
+}
+
+.sumo-callout-heading {
+  @include c.sumo-callout-heading; // 24/32/32
+}
+
+.sumo-callout-heading-feature {
+  @include c.sumo-callout-heading-feature; // 32/40/48
 }

@@ -117,7 +117,7 @@
     {% set docs = document.related_documents.all() %}
     <section id="related-documents" class="sumo-page-section wiki-related-documents">
       <div class="text-center">
-        <h2 class="text-display-xs">{{ _('Related Articles') }}</h2>
+        <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
       </div>
       <div class="sumo-card-grid" style="--cg-count: {{ docs|length }};">
         <div class="scroll-wrap">

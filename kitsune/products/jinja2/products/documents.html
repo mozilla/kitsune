@@ -36,7 +36,7 @@
           </div>
 
           {% if subtopic %}
-          <p class="text-display-xs mb-0">
+          <p class="sumo-page-subheading mb-0">
             <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
               {{ pgettext('DB: products.Topic.title', topic.title) }}
             </a>
@@ -92,7 +92,7 @@
       </section>
 
       {% if fallback_documents %}
-        <h2 class="text-display-xs">{{ _('In English') }}</h2>
+        <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
         <section class="topic-list">
         {% for document in fallback_documents %}
           <article>

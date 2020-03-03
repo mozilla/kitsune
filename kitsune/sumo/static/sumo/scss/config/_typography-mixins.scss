@@ -74,14 +74,14 @@ $text-display-line-height: 1.1 !default;
   }
 }
 
-@mixin text-display-xxs($family: false) {
+@mixin text-display-xxs() {
   @include p.font-size(18px);
   @include c.line-height(24px);
   font-family: var(--base-font-family);
   color: var(--color-heading);
 }
 
-@mixin text-display-xxxs($family: false) {
+@mixin text-display-xxxs() {
   @include p.font-size(16px);
   line-height: $text-body-line-height;
   font-family: var(--base-font-family);
@@ -124,92 +124,64 @@ $text-display-line-height: 1.1 !default;
 // should be used throughout the system to maintain the visual hierarchy as
 // originally designed.
 
-@mixin sumo-page-heading-xl {
-  @include text-display-sm(); //32px
+@mixin sumo-page-heading-xl($family: false) {
+  @include text-display-sm($family); //32px
 
   @media #{p.$mq-md} {
-    @include text-display-lg(); //48px
+    @include text-display-lg($family); //48px
   }
   @media #{p.$mq-lg} {
-    @include text-display-xl(); //56px
+    @include text-display-xl($family); //56px
   }
 }
 
-@mixin sumo-page-heading {
-  @include text-display-sm(); //32px
+@mixin sumo-page-heading($family: false) {
+  @include text-display-sm($family); //32px
 
   @media #{p.$mq-md} {
-    @include text-display-md(); //40px
+    @include text-display-md($family); //40px
   }
   @media #{p.$mq-lg} {
-    @include text-display-lg(); //48px
+    @include text-display-lg($family); //48px
   }
 }
 
 // Unnecessary duplicate mixin, but keeping it for the sake of naming conventions
-@mixin sumo-page-subheading {
-  @include text-display-xs(); //24px
+@mixin sumo-page-subheading($family: false) {
+  @include text-display-xs($family); //24px
 }
 
 @mixin sumo-page-intro {
-  @include text-body-md(); //16px
+  @include text-body-md; //16px
 
   @media #{p.$mq-lg} {
-    @include text-body-lg(); //18px
+    @include text-body-lg; //18px
   }
 }
 
 @mixin sumo-card-heading {
-  @include text-display-xxxs(); //16px
+  @include text-display-xxxs; //16px
 
   @media #{p.$mq-md} {
-    @include text-display-xxs(); //18px
+    @include text-display-xxs; //18px
   }
 }
 
-@mixin sumo-callout-heading {
-  @include text-display-xs(); //24px
+@mixin sumo-callout-heading($family: false) {
+  @include text-display-xs($family); //24px
 
   @media #{p.$mq-md} {
-    @include text-display-sm(); //32px
+    @include text-display-sm($family); //32px
   }
 }
 
-@mixin sumo-callout-heading-feature {
-  @include text-display-sm(); //32px
+@mixin sumo-callout-heading-feature($family: false) {
+  @include text-display-sm($family); //32px
 
   @media #{p.$mq-md} {
-    @include text-display-md(); //40px
+    @include text-display-md($family); //40px
   }
   @media #{p.$mq-lg} {
-    @include text-display-lg(); //48px
+    @include text-display-lg($family); //48px
   }
-}
-
-.sumo-page-heading-xl {
-  @include sumo-page-heading-xl; // 32/48/56
-}
-
-.sumo-page-heading {
-  @include sumo-page-heading; // 32/40/48
-}
-
-.sumo-page-subheading {
-  @include sumo-page-subheading; // 24/24/24
-}
-
-.sumo-page-intro {
-  @include sumo-page-intro; // 18/16/16
-}
-
-.sumo-card-heading {
-  @include sumo-card-heading; // 18/18/16
-}
-
-.sumo-callout-heading {
-  @include sumo-callout-heading; // 24/32/32
-}
-
-.sumo-callout-heading-feature {
-  @include sumo-callout-heading-feature; // 32/40/48
 }

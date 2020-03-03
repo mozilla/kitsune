@@ -137,7 +137,7 @@
     text-align: center;
 
     .card--title {
-      @include c.sumo-page-heading('no-fam');
+      @include c.sumo-callout-heading('no-fam');
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -192,7 +192,7 @@
     }
 
     .card--title {
-      @include c.text-display-sm('no-fam');
+      @include c.sumo-callout-heading-feature('no-fam');
     }
 
     .card--desc {
@@ -234,7 +234,7 @@
   }
 
   &--title {
-    @include c.text-body-lg();
+    @include c.sumo-card-heading();
     font-family: var(--base-font-family);
     margin-bottom: 0;
 

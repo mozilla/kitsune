@@ -34,7 +34,7 @@
     {% if only_pwreset %}
       <a id="reset_password" target="_blank" href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a>
     {% else %}
-      <h3 class="text-display-xs">{{ _('Login Problems?') }}</h3>
+      <h3 class="sumo-page-subheading">{{ _('Login Problems?') }}</h3>
       <ul>
         <li>
           <a href="{{ url('users.pw_reset') }}">

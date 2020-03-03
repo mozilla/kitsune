@@ -6,7 +6,7 @@
 
 {% block content %}
     <article id="remove-member" class="sumo-page-section">
-      <h1 class="title text-display-xs">{{ _('Are you sure you want to remove {user} from the document contributors?')|f(user=display_name(contributor)) }}</h1>
+      <h1 class="title sumo-page-subheading">{{ _('Are you sure you want to remove {user} from the document contributors?')|f(user=display_name(contributor)) }}</h1>
       <form action="" method="post">
         {% csrf_token %}
         <div class="form-actions sumo-button-wrap align-full reverse-on-desktop">
