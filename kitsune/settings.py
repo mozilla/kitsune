@@ -923,12 +923,6 @@ if EMAIL_LOGGING_REAL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
 
 
 # Celery
-# TODO: Upgrade to task_protocol 2.
-CELERY_TASK_PROTOCOL = 1
-CELERY_TASK_SERIALIZER = config('CELERY_TASK_SERIALIZER', default='pickle')
-CELERY_RESULT_SERIALIZER = config('CELERY_RESULT_SERIALIZER', default='pickle')
-CELERY_ACCEPT_CONTENT = config('CELERY_ACCEPT_CONTENT', default='pickle',
-                               cast=lambda v: [s.strip() for s in v.split(',')])
 CELERY_TASK_IGNORE_RESULT = config('CELERY_TASK_IGNORE_RESULT', default=True, cast=bool)
 if not CELERY_TASK_IGNORE_RESULT:
     # E.g. redis://localhost:6479/1
@@ -938,8 +932,6 @@ CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=DEBUG, cas
 if not CELERY_TASK_ALWAYS_EAGER:
     CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='')
 
-# TODO:PY3: Setting gone, use celery worker --loglevel flag.
-# CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
 CELERY_WORKER_CONCURRENCY = config('CELERY_WORKER_CONCURRENCY', default=4, cast=int)
 CELERY_TASK_EAGER_PROPAGATES = config('CELERY_TASK_EAGER_PROPAGATES', default=True, cast=bool)  # Explode loudly during tests.
 CELERY_WORKER_HIJACK_ROOT_LOGGER = config('CELERY_WORKER_HIJACK_ROOT_LOGGER', default=False, cast=bool)
