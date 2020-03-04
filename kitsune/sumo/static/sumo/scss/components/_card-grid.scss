@@ -20,15 +20,19 @@
   --cg-count: 3; // This should be set in an inline style with a template tag.
 }
 .sumo-card-grid {
+  position: relative;
+  z-index: 1;
   margin-right: c.$gutter-width * -.5;
   margin-left: c.$gutter-width * -.5;
   margin-bottom: -40px;
   padding: p.$spacing-sm 0 0;
   -webkit-overflow-scrolling: touch;
   overflow-x: scroll;
+  overflow-y: hidden;
   scroll-padding-right: var(--cg-gutter);
   scroll-padding-left: var(--cg-gutter);
   scrollbar-width: none;
+  -webkit-scrollbar-width: none;
   scroll-snap-type: x proximity;
   // width: calc(100vw - #{c.$gutter-width * .5});
 
