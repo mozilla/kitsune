@@ -5,13 +5,13 @@
 
 {% block below_main %}
 <section class="sumo-page-section has-moz-headings">
-  <h1 class="text-display-lg">{{ _('Community Hub') }}</h1>
+  <h1 class="sumo-page-heading">{{ _('Community Hub') }}</h1>
 
   <article class="sumo-l-two-col sidebar-on-right contributors">
     <div class="sumo-l-two-col--one-half">
       <article class="community-news">
         <section class="sumo-page-section--sm">
-          <h2 class="text-display-xs">{{ _('Find your fellow contributors') }}</h2>
+          <h2 class="sumo-page-subheading">{{ _('Find your fellow contributors') }}</h2>
           <form class="simple-search-form" name="find-contributor" id="find-contributor" action="{{ url('community.search') }}" method="get">
             <input type="text" name="q" id="search" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
             <button type="submit" title="{{ _('Search') }}" class="search-button">{{ _('Search') }}</button>
@@ -20,7 +20,7 @@
 
         {% if threads %}
         <section id="recent-threads" class="sumo-page-section--sm">
-          <h2 class="text-display-xs">{{ _('Community Discussions') }}</h2>
+          <h2 class="sumo-page-subheading">{{ _('Community Discussions') }}</h2>
 
           <ul>
             {% for thread in threads %}
@@ -52,7 +52,7 @@
     </div>
     <div class="sumo-l-two-col--one-half">
       <section class="sumo-page-section--sm">
-        <h2 class="text-display-xs">{{ _('Community Health Metrics') }}</h2>
+        <h2 class="sumo-page-subheading">{{ _('Community Health Metrics') }}</h2>
         <a href="{{ url('community.metrics') }}">
           <div class="card is-shaded mb">
             <img class="health-metrics" src="{{ STATIC_URL }}sumo/img/community/chart-thumbnail.png" alt="{{ _('View Community Metrics') }}" />
@@ -61,7 +61,7 @@
         </a>
       </section>
       <section class="sumo-page-section--sm">
-        <h2 class="text-display-sm">{{ _('Top Contributors') }}</h2>
+        <h2 class="sumo-page-subheading">{{ _('Top Contributors') }}</h2>
         {# Locale Filter #}
         <div class="contributor-filters">
           <div class="mzp-c-menu-list selector">
@@ -126,28 +126,28 @@
         <article class="contributors">
           {% if top_contributors_questions %}
           <section class="contributor-group sumo-page-section--sm">
-            <h2 class="text-display-xs">{{ _('Support Forum') }}</h2>
+            <h2 class="sumo-page-subheading">{{ _('Support Forum') }}</h2>
             {{ render_contributors(top_contributors_questions, 'questions', locale) }}
           </section>
           {% endif %}
 
           {% if top_contributors_kb %}
             <section class="contributor-group sumo-page-section--sm">
-              <h2 class="text-display-xs">{{ _('Knowledge Base') }}</h2>
+              <h2 class="sumo-page-subheading">{{ _('Knowledge Base') }}</h2>
               {{ render_contributors(top_contributors_kb, 'kb', locale) }}
             </section>
           {% endif %}
 
           {% if top_contributors_aoa %}
             <section class="contributor-group sumo-page-section--sm">
-              <h2 class="text-display-xs">{{ _('Army of Awesome') }}</h2>
+              <h2 class="sumo-page-subheading">{{ _('Army of Awesome') }}</h2>
               {{ render_contributors(top_contributors_aoa, 'army-of-awesome', locale) }}
             </section>
           {% endif %}
 
           {% if top_contributors_l10n %}
             <section class="contributor-group sumo-page-section--sm">
-              <h2 class="text-display-xs">{{ _('Localization') }}</h2>
+              <h2 class="sumo-page-subheading">{{ _('Localization') }}</h2>
               {{ render_contributors(top_contributors_l10n, 'l10n', locale) }}
             </section>
           {% endif %}

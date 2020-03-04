@@ -3,7 +3,7 @@
 
 .topic-article {
   display: flex;
-  margin-bottom: p.$spacing-lg;
+  margin-bottom: p.$spacing-xl;
 
   &--icon-wrap {
     flex: 0 0 auto;
@@ -19,6 +19,10 @@
 
   &--text {
     flex: 1 1 100%;
+
+    p {
+      margin-bottom: 0;
+    }
   }
 
   &--meta-list {
@@ -27,8 +31,8 @@
     line-height: 1;
 
     li {
-      padding-right: 8px;
-      margin-right: 8px;
+      padding-right: p.$spacing-sm;
+      margin-right: p.$spacing-sm;
       border-right: 1px solid var(--color-text);
 
       &:last-child {
@@ -47,7 +51,7 @@
 .sumo-article-header {
   display: flex;
   flex-direction: column-reverse;
-  margin: 48px 0 p.$spacing-md;
+  margin: 0 0 p.$spacing-md;
 
   &.has-border-bottom {
     border-bottom: 1px solid var(--color-text);
@@ -78,7 +82,11 @@
   @media #{p.$mq-md} {
     flex-direction: row;
     align-items: center;
-    margin: 88px 0 p.$spacing-md;
+    margin: p.$spacing-md 0 p.$spacing-xl;
+  }
+
+  @media #{p.$mq-lg} {
+    margin: 40px 0;
   }
 }
 

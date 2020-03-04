@@ -43,7 +43,7 @@
 
       {{ kbforums_warning(document, user) }}
 
-      <h1 class="text-display-lg">{{ thread.title }}</h1>
+      <h1 class="sumo-page-heading">{{ thread.title }}</h1>
       <ul class="topic-article--meta-list" id="thread-meta">
         {% if count %}<li>{{ count - 1 }} {{ _('Replies') }}</li>{% endif %}
         {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.creator) }}</li>{% endif %}
@@ -82,7 +82,7 @@
       {% if user.is_authenticated() and not thread.is_locked %}
         <form id="post-a-reply" action="{{ url('wiki.discuss.reply', document.slug, thread.id)|urlparams(hash='post-a-reply') }}" method="post">
           {% csrf_token %}
-          <h3 class="text-display-sm" id="thread-reply-title">{{ _('Post a reply') }}</h3>
+          <h3 class="sumo-page-subheading" id="thread-reply-title">{{ _('Post a reply') }}</h3>
           {{ errorlist(form) }}
 
           {% if request.limited %}

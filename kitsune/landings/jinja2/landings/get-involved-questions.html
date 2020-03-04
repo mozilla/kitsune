@@ -12,9 +12,9 @@
       <img class="hero-butler questions" src="{{ STATIC_URL }}sumo/img/gi-hero-questions.png" alt="">
     </div>
     <div class="sumo-l-two-col--one-half">
-      <h1 class="text-display-xl">{{ _('Answer questions in the forum') }}</h1>
-      <h2 class="text-display-sm">{{ _('Where all the action happens') }}</h2>
-      <p class="text-body-lg">
+      <h1 class="sumo-page-heading">{{ _('Answer questions in the forum') }}</h1>
+      <h2 class="sumo-page-subheading">{{ _('Where all the action happens') }}</h2>
+      <p class="sumo-page-intro">
         {% trans %}
           From hardcore web developers to "how do I install Firefox" first time
           users, everybody needs your help in the forum! Share your knowledge
@@ -34,10 +34,10 @@
   <div class="sumo-l-two-col align-center">
     <div class="sumo-l-two-col--one-half gi-visual text-center">
       <img src="{{ STATIC_URL }}sumo/img/gi-visual-questions.png?v=1" alt="">
-      <p class="text-display-xs legacy-blue-text"><em>{{ _('Solving 1 issue helps up to 1,000 users a day') }}</em></p>
+      <p class="sumo-page-subheading legacy-blue-text"><em>{{ _('Solving 1 issue helps up to 1,000 users a day') }}</em></p>
     </div>
     <div class="sumo-l-two-col--one-half">
-      <h2 class="text-display-sm">{{ _('How it works') }}</h2>
+      <h2 class="sumo-page-subheading">{{ _('How it works') }}</h2>
       <div class="pick-a-way text-left">
         <ol class="mzp-u-list-styled headings-list">
           <li>{% set message =  _('Sign up as a volunteer') %}
@@ -66,7 +66,7 @@
 </section>
 
 <section class="sumo-page-section has-moz-headings pick-a-way has-icons has-left-heading">
-  <h2 class="text-display-sm">{{ _('Other ways to get involved') }}</h2>
+  <h2 class="sumo-page-subheading">{{ _('Other ways to get involved') }}</h2>
   <a href="{{ url('landings.get_involved_kb') }}">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <g transform="translate(3 3)" stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">

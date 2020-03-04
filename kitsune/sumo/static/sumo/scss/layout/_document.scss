@@ -49,6 +49,10 @@
   border-radius: 36px;
   padding: 40px 0 p.$spacing-sm;
 
+  @at-root .hide-on-large & {
+    padding: 20px;
+  }
+
   &.is-forum-answer {
 
     .document-vote--form {
@@ -73,6 +77,13 @@
     @include c.text-body-md;
     margin: 0;
     margin-bottom: p.$spacing-md;
+
+    &.msg { // injected with JS
+      font-weight: bold;
+      color: var(--color-heading);
+      margin: 0;
+      text-align: center;
+    }
   }
 
   &--buttons {
@@ -90,7 +101,7 @@
     }
 
     .document-vote {
-      border-radius: 24px;
+      border-radius: p.$spacing-lg;
       padding: p.$spacing-lg;
     }
 
@@ -111,7 +122,7 @@
   .not-helpful-button {
     padding: 0;
     margin: 0 p.$spacing-sm;
-    font-size: 24px;
+    font-size: p.$spacing-lg;
     border: 0 none;
     appearance: none;
     background: transparent;
@@ -170,18 +181,18 @@
     margin-bottom: p.$spacing-xl;
 
     h2 {
-      @include c.text-display-xs;
+      @include c.sumo-card-heading;
       margin-top: 0;
     }
   }
 
   h1 {
-    @include c.text-display-xs;
+    @include c.sumo-page-heading;
     margin-top: 2em;
   }
 
   h2, h3, h4, h5, h6 {
-    @include c.text-display-xxs;
+    @include c.sumo-card-heading;
     margin-top: 2em;
   }
 

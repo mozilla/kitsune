@@ -27,7 +27,7 @@
 
     li {
       position: relative;
-      width: 48px;
+      width: p.$spacing-2xl;
       display: flex;
       justify-content: center;
       padding: 0 12px;
@@ -121,8 +121,60 @@
     max-width: 160px;
   }
 
-  &--meta-dl .forum--meta-val {
-    border-left: none;
+  &--meta-details {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    @include c.text-body-sm;
+    @include p.bidi((
+      (margin, 0 auto p.$spacing-md 0, 0 0 p.$spacing-md auto),
+    ));
+
+    li {
+      @include p.bidi((
+        (padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
+      ));
+      white-space: nowrap;
+
+      &:last-child {
+        flex: 1 1 100%;
+      }
+
+      @media #{p.$mq-md} {
+        &:last-child {
+          flex: 1 1 auto;
+        }
+
+        &.border-left-md {
+          border-left: 1px solid var(--color-border);
+          padding: 0 12px;
+        }
+      }
+    }
+
+    .forum--meta-val,
+    .forum--meta-key {
+      @include p.bidi((
+        (padding, 0 p.$spacing-xs 0 0, 0 0 0 p.$spacing-xs),
+      ));
+    }
+
+    .forum--meta-val {
+      color: var(--color-heading);
+      font-weight: bold;
+    }
+
+    @at-root .forum--question-list & {
+      margin: 0 0 auto 0;
+      flex-wrap: nowrap;
+
+      li:last-child {
+        @include p.bidi((
+          (padding-right, 0, p.$spacing-sm),
+          (padding-left, p.$spacing-sm, 0),
+        ));
+      }
+    }
   }
 
   @media #{p.$mq-md} {
@@ -253,6 +305,13 @@
     &:hover {
       color: var(--color-error);
     }
+  }
+
+  &.push-right li:last-child {
+    @include p.bidi((
+      (margin-right, p.$spacing-md, 0),
+      (margin-left, 0, p.$spacing-md),
+    ));
   }
 }
 
@@ -614,5 +673,21 @@
   .is-solution {
     top: -12px;
     position: absolute;
+  }
+}
+
+
+.system-details-info {
+  &.hide {
+    .show {
+      display: none;
+    }
+    .hide-until-expanded {
+      display: inline;
+    }
+  }
+
+  &.show ~ .details {
+    display: none;
   }
 }

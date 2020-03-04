@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox %}
-{% from 'products/includes/topic_macros.html' import help_topics with context %}
+{% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set styles = ('products',) %}
 {% set scripts = ('products',) %}
@@ -18,7 +18,7 @@
 {% block hidden_search_masthead %}{% endblock %}
 
 {% block contentwrap %}
-<section class="home-search-section sumo-page-section shade-bg">
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg">
   <div class="mzp-l-content">
     {% block breadcrumbs %}
       {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
@@ -26,7 +26,7 @@
   </div>
   <div class="mzp-l-content narrow">
     <div class="home-search-section--content">
-      <h1 class="text-display-xl">
+      <h1 class="sumo-page-heading-xl">
         <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
         <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
       </h1>
@@ -116,48 +116,52 @@
   </div>
 </section>
 
-<section class="mzp-l-content sumo-page-section" id="main-content">
-  <div class="sumo-page-subheader">
-    <div class="sumo-page-subheader--text">
-      <h2 class="text-display-xs">{{ _('Frequent Topics') }}</h2>
-      <p>{{ _('Explore the knowledge base.') }}</p>
-    </div>
-    {% if product.slug == 'firefox' %}
-    {{ download_firefox() }}
-    {% endif %}
-
-    {% if product.slug == 'thunderbird' %}
-    <div class="download-buttons">
-      <div class="download-thunderbird">
-        <a href="https://www.thunderbird.net/" class="download-button"
-        data-event-category="Download Button"
-        data-event-action="Download Thunderbird">
-          <span class="download-content">
-            <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
-          </span>
-        </a>
-        <ul class="info">
-          <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
-          <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
-        </ul>
+<div id="main-content">
+  <div class="mzp-l-content sumo-page-section--inner">
+    <div class="sumo-page-subheader">
+      <div class="sumo-page-subheader--text">
+        <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
+        <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
       </div>
+      {% if product.slug == 'firefox' %}
+      {{ download_firefox() }}
+      {% endif %}
+      {% if product.slug == 'thunderbird' %}
+      <div class="download-buttons">
+        <div class="download-thunderbird">
+          <a href="https://www.thunderbird.net/" class="download-button"
+          data-event-category="Download Button"
+          data-event-action="Download Thunderbird">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
+    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
   </div>
 
-  {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+  {{ topic_metadata(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
 
-  <div class="sumo-page-section">
-    <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
+
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+    <h2 class="sumo-page-subheading">{{ _('Featured Articles & Threads') }}</h2>
     {% include "landings/includes/featured_articles.html" %}
-  </div>
+  </section>
 
-  <div class="sumo-page-section">
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
     {% include "landings/includes/join-our-community-callout.html" %}
-  </div>
+  </section>
+</div>
 
-</section>
+
 
 
 

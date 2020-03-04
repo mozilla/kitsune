@@ -19,7 +19,7 @@
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
-  <h1 class="text-display-sm">{{ _('Which product would you like to post a question about?') }}</h1>
+  <h1 class="sumo-page-subheading">{{ _('Which product would you like to post a question about?') }}</h1>
   <div id="product-picker" class="sumo-card-grid" style="--cg-count: {{ products|length }};">
     <div class="scroll-wrap">
       {% for key, product in products.iteritems() %}
@@ -65,8 +65,8 @@
 
 {% macro select_category(product) -%}
   <div class="highlight-box">
-    <h2 class="text-display-sm">{{ _('Which category best describes your problem?') }}</h2>
-    <ul class="select-one text-body-lg">
+    <h2 class="sumo-page-subheading">{{ _('Which category best describes your problem?') }}</h2>
+    <ul class="select-one sumo-page-intro">
       {% for key, category in product.categories.iteritems() %}
         <li>
           <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}"
@@ -92,9 +92,9 @@
 {% macro current_articles_and_message(articles, category, html=None, all_articles=False) -%}
   <div class="highlight-box" id="try-an-article">
     {% if html %}
-      <h2 class="text-display-sm">{{ html|safe }}</h2>
+      <h2 class="sumo-page-subheading">{{ html|safe }}</h2>
     {% else %}
-      <h2 class="text-display-sm">{{ _('Try one of these articles:') }}</h2>
+      <h2 class="sumo-page-subheading">{{ _('Try one of these articles:') }}</h2>
     {% endif %}
     {% if articles %}
       <ul class="topic-list">
@@ -103,7 +103,7 @@
         {% endif %}
         {% for article in articles %}
           <li>
-            <a class="text-body-lg" href="{{ article.url }}" target="_blank"><strong>{{ article.document_title }}</strong></a>
+            <a class="sumo-page-intro" href="{{ article.url }}" target="_blank"><strong>{{ article.document_title }}</strong></a>
             <p>{{ article.document_summary }}</p>
           </li>
         {% endfor %}
@@ -113,14 +113,17 @@
 {%- endmacro %}
 
 {% macro aaq_search_form(product, category, settings, host, request, has_searched=False) -%}
+<div class="sumo-page-section">
   <form id="ask-search-form" class="simple-search-form {% if has_searched %}has-searched{% endif %} cf" action="#summarize-question" method="get">
-    <div class="field full-width is-condensed">
-      <input type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" placeholder="{{ _("Can't find an answer? Summarize your question in a sentence.") }}" />
+    <div class="field is-condensed full-width">
+      <label for="id_ask_a_question">{{ _("Can't find an answer? Summarize your question in a sentence.") }}</label>
+      <input id="id_ask_a_question"type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" />
     </div>
     <div class="sumo-button-wrap">
       <span data-type="submit" class="sumo-button primary-button">{{ _('Ask this') }}</span><br>
     </div>
   </form>
+</div>
 {%- endmacro %}
 
 {% macro show_results(search_results, product, category, request) -%}
@@ -146,13 +149,13 @@
   <form action="{{ url('questions.aaq_step5', product_key=product.key, category_key=category.key) }}" method="get">
     <input type="hidden" name="search" value="{{ request.GET.search }}" />
     <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-    <input type="submit" id="show-form-btn" class="button" value="{{ button_text }}" />
+    <input type="submit" id="show-form-btn" class="sumo-button primary-button" value="{{ button_text }}" />
   </form>
 {%- endmacro %}
 
 {% macro marketplace_category(category_slug, form, error_message) -%}
   {% if category_slug == 'payments' %}
-    <h2 class="text-display-sm">
+    <h2 class="sumo-page-subheading">
       {% trans %}
         Please visit the
         <a href="https://www.paypal.com/cgi-bin/helpweb?cmd=_help">
@@ -160,7 +163,7 @@
       {% endtrans %}
     </h2>
   {% elif category_slug == 'applications' %}
-    <h2 class="text-display-sm">
+    <h2 class="sumo-page-subheading">
       {% trans %}
         Please visit the Marketplace page for the application. There
         you can find the developers' contact information and contact them
@@ -188,7 +191,7 @@
 
 {% macro troubleshooting_instructions(field) %}
   <div id="addon-section">
-    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="sumo-button primary-button" id="add-troubleshooting-info">
+    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="sumo-button secondary-button" id="add-troubleshooting-info">
       {{ _('Automatically add') }}
     </a>
     <p>{{ field.help_text|safe }}</p>

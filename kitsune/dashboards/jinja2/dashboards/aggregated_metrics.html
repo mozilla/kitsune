@@ -12,7 +12,7 @@
 
 {% block content %}
     <article class="dashboards sumo-page-section">
-      <h1 class="text-display-lg">{{ title }}</h1>
+      <h1 class="sumo-page-heading">{{ title }}</h1>
 
       {{ product_choice_list(products, product, url('dashboards.aggregated_metrics')) }}
 
@@ -23,7 +23,7 @@
       <div id="dashboard-readouts" class="sumo-page-section">
         <section id="percent-localized-top100" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
           {# Double % required below to escape % for gettext #}
-          <h2 class="text-display-xs">{{ _('Top 100 Articles: %% Localized') }}</h2>
+          <h2 class="sumo-page-subheading">{{ _('Top 100 Articles: %% Localized') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
             <div class="graph-container">
@@ -35,7 +35,7 @@
 
         <section id="percent-localized-top20" class="sumo-page-section" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
           {# Double % required below to escape % for gettext #}
-          <h2 class="text-display-xs">{{ _('Top 20 Articles: %% Localized') }}</h2>
+          <h2 class="sumo-page-subheading">{{ _('Top 20 Articles: %% Localized') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
             <div class="graph-container">
@@ -47,7 +47,7 @@
 
         <section id="percent-localized-all" class="sumo-page-section" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
           {# Double % required below to escape % for gettext #}
-          <h2 class="text-display-xs">{{ _('All Articles: %% Localized') }}</h2>
+          <h2 class="sumo-page-subheading">{{ _('All Articles: %% Localized') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
             <div class="graph-container">
@@ -58,7 +58,7 @@
         </section>
 
         <section id="active-contributors" class="sumo-page-section" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
-          <h2 class="text-display-xs">{{ _('Active Contributors') }}</h2>
+          <h2 class="sumo-page-subheading">{{ _('Active Contributors') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
             <div class="graph-container">

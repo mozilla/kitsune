@@ -7,10 +7,10 @@
 {% endblock %}
 
 {% block contentwrap %}
-<section class="home-search-section sumo-page-section--lg shade-bg">
+<section class="home-search-section sumo-page-section--lg extra-pad-bottom shade-bg">
   <div class="mzp-l-content narrow">
     <div class="home-search-section--content">
-      <h1 class="text-display-xl">{{ _('Search Support') }}</h1>
+      <h1 class="sumo-page-heading-xl">{{ _('Search Support') }}</h1>
       {{ search_box(settings, id='support-search-masthead', params=search_params) }}
 
       <p class="popular-searches">
@@ -22,24 +22,24 @@
     </div>
   </div>
 </section>
-<section class="mzp-l-content sumo-page-section" id="main-content">
-  <div class="text-center-to-left-on-large">
-    <h2 class="text-display-xs">{{ _('Get Help') }}</h2>
-    <p>{{ _('Pick your product') }}</p>
-  </div>
-  {{ product_cards(products) }}
-
-  <div class="sumo-page-section">
+<div id="main-content">
+  <section class="mzp-l-content sumo-page-section--inner">
     <div class="text-center-to-left-on-large">
-      <h2 class="text-display-xs">{{ _('Featured Articles & Threads') }}</h2>
+      <h2 class="sumo-page-subheading">{{ _('Get Help') }}</h2>
+      <p class="sumo-page-intro">{{ _('Pick your product') }}</p>
+    </div>
+    {{ product_cards(products) }}
+  </section>
+  <section class="mzp-l-content sumo-page-section--inner">
+    <div class="text-center-to-left-on-large">
+      <h2 class="sumo-page-subheading">{{ _('Featured Articles & Threads') }}</h2>
     </div>
     {% include "landings/includes/featured_articles.html" %}
-  </div>
-
-  <div class="sumo-page-section">
+  </section>
+  <section class="mzp-l-content sumo-page-section--inner">
     {% include "landings/includes/join-our-community-callout.html" %}
-  </div>
-</section>
+  </section>
+</div>
 {% endblock %}
 
 {% block outer_side %}

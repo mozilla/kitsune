@@ -11,6 +11,7 @@
     $('#main-content').siblings('aside').hide();
     $('body').addClass('search-results-visible');
     $('.home-search-section .mzp-l-content').removeClass('narrow');
+    $('.home-search-section').removeClass('extra-pad-bottom');
 
     // clear sidebar form and focus if is's there.
     $('#support-search-sidebar').find('input[name=q]').val('');
@@ -18,6 +19,7 @@
 
   function showContent() {
     $('body').removeClass('search-results-visible');
+    $('.home-search-section').addClass('extra-pad-bottom');
     $('.support-search-main').hide();
     $('#main-content').show();
     $('#main-content').siblings('aside').show();

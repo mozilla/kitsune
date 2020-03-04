@@ -152,22 +152,21 @@ h5, h6, .text-display-sm {
 }
 
 .page-heading {
-  @include c.text-display-xl;
   text-align: center;
 
   &--logo {
     display: block;
-    width: 32px;
-    margin: 40px 0 8px;
+    width: p.$spacing-xl;
+    margin: 40px 0 p.$spacing-sm;
 
     @media #{p.$mq-md} {
-      width: 48px;
-      margin: 68px 0 8px;
+      width: p.$spacing-2xl;
+      margin: 72px 0 p.$spacing-sm;
     }
 
     @at-root .home-search-section & {
       width: 56px;
-      margin: 0 auto 8px;
+      margin: 0 auto p.$spacing-sm;
     }
   }
 
@@ -219,8 +218,8 @@ a, :link {
 }
 
 .errorlist {
-  padding: 8px;
-  margin: 0 0 16px 0;
+  padding: p.$spacing-sm;
+  margin: 0 0 p.$spacing-md 0;
   border-radius: var(--global-radius);
   background-color: var(--color-red-02);
   list-style: none;
@@ -230,4 +229,33 @@ hr {
   border: 0 none;
   border-top: 1px solid var(--text-color);
   margin: 1em 0;
+}
+
+// TODO: Add these semantic classes to styleguide
+.sumo-page-heading-xl {
+  @include c.sumo-page-heading-xl; // 32/48/56
+}
+
+.sumo-page-heading {
+  @include c.sumo-page-heading; // 32/40/48
+}
+
+.sumo-page-subheading {
+  @include c.sumo-page-subheading; // 24/24/24
+}
+
+.sumo-page-intro {
+  @include c.sumo-page-intro; // 18/16/16
+}
+
+.sumo-card-heading {
+  @include c.sumo-card-heading; // 18/18/16
+}
+
+.sumo-callout-heading {
+  @include c.sumo-callout-heading; // 24/32/32
+}
+
+.sumo-callout-heading-feature {
+  @include c.sumo-callout-heading-feature; // 32/40/48
 }

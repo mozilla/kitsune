@@ -49,7 +49,7 @@
     {% endif %}
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main">
-        <h1 class="text-display-lg {% if not logo %}no-logo{% endif %}">
+        <h1 class="sumo-page-heading {% if not logo %}no-logo{% endif %}">
           <span class="product-title-text">{{ title }}</span>
         </h1>
         <div id="recent-stats">
@@ -220,14 +220,20 @@
                   {% endfor %}
                   </ul>
 
-                  <dl class="sumo-dl-inline forum--meta-dl replies">
-                    <dt class="forum--meta-val">{{ question.num_answers }}</dt>
-                    <dd class="forum--meta-key">{% trans count=question.num_answers %}reply{% pluralize %}replies{% endtrans %}</dd>
-                    <dt class="forum--meta-val">{{ question.num_votes_past_week }}</dt>
-                    <dd class="forum--meta-key">{{ _('votes this week') }}</dd>
+                  <dl class="forum--meta-details replies">
+                    <li>
+                      <span class="forum--meta-val">{{ question.num_answers }}</span>
+                      <span class="forum--meta-key">{% trans count=question.num_answers %}reply{% pluralize %}replies{% endtrans %}</span>
+                    </li>
+                    <li class="border-left-md">
+                      <span class="forum--meta-val">{{ question.num_votes_past_week }}</span>
+                      <span class="forum--meta-key">{{ _('votes this week') }}</span>
+                    </li>
                     {% if question.num_visits %}
-                    <dt class="forum--meta-val views-val">{{ question.num_visits }}</dt>
-                    <dd class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</dd>
+                    <li class="border-left-md">
+                    <span class="forum--meta-val views-val">{{ question.num_visits }}</span>
+                    <span class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</span>
+                    </li>
                     {% endif %}
                   </dl>
                 </aside>

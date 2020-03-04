@@ -5,7 +5,7 @@
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
-{% set scripts = ('wiki', ) %}
+{% set scripts = ('wiki', 'questions') %}
 {% set extra_body_attrs = {'data-track-url': STATIC_URL + 'img/pixel.gif', 'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
 {% block title %}
@@ -117,7 +117,7 @@
     {% set docs = document.related_documents.all() %}
     <section id="related-documents" class="sumo-page-section wiki-related-documents">
       <div class="text-center">
-        <h2 class="text-display-xs">{{ _('Related Articles') }}</h2>
+        <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
       </div>
       <div class="sumo-card-grid" style="--cg-count: {{ docs|length }};">
         <div class="scroll-wrap">

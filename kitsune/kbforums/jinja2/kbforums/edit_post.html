@@ -14,7 +14,7 @@
 {% block content %}
   <article id="edit-post" class="sumo-page-section">
     {{ kbforums_warning(document, user) }}
-    <h1 class="text-display-sm">{{ _('Edit a post') }}</h1>
+    <h1 class="sumo-page-subheading">{{ _('Edit a post') }}</h1>
 
     <form action="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}" method="post" class="edit-post">
       {% csrf_token %}

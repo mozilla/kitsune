@@ -13,7 +13,7 @@
 {% block content %}
       <article id="profile">
         {% if is_owner and profile.is_fxa_migrated %}
-        <h1 class="text-display-lg">{{ _('Account') }}</h1>
+        <h1 class="sumo-page-heading">{{ _('Account') }}</h1>
         <p class="mb-0"><strong>{{ user.email }}</strong></p>
         <p>
           {{ _('You can change your email address on Firefox Accounts.') }}
@@ -25,13 +25,13 @@
         {% if request.user.is_authenticated and request.user != profile.user %}
           {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
         {% endif %}
-        <h1 class="text-display-lg user">{{ display_name(profile.user) }}
+        <h1 class="sumo-page-heading user">{{ display_name(profile.user) }}
           {% if profile.name %}
             <span class="username">({{ profile.user.username }})</span>
           {% endif %}
         </h1>
 
-        <h2 class="text-display-xs location">
+        <h2 class="sumo-page-subheading location">
           {% if profile.city and profile.country %}
             {{ _('{city}, {country}')|f(city=profile.city,
                                         country=profile.get_country_display() ) }}
@@ -111,7 +111,7 @@
 
       {% if num_answers or num_questions or num_solutions or num_documents or profile.involved_from %}
         <section class="contributions">
-          <h2 class="text-display-xs mt-lg">Contributions</h2>
+          <h2 class="sumo-page-subheading mt-lg">Contributions</h2>
           <ul>
             {% if profile.involved_from %}
               <li>
@@ -151,13 +151,13 @@
 
       {% if profile.bio %}
         <section class="bio">
-          <h2 class="text-display-xs mt-lg">{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
+          <h2 class="sumo-page-subheading mt-lg">{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
           {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
         </section>
       {% endif %}
       {% if groups %}
         <section class="groups">
-          <h2 class="text-display-xs mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
+          <h2 class="sumo-page-subheading mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
           <ul>
             {% for g in groups %}
               <li>{{ group_link(g) }}</li>
@@ -167,7 +167,7 @@
       {% endif %}
       {% if awards %}
         <section class="badges cf">
-          <h2 class="text-display-xs mt-lg">{{ _('Badges') }}</h2>
+          <h2 class="sumo-page-subheading mt-lg">{{ _('Badges') }}</h2>
           {{ awards_list(awards) }}
           <p><a href="{{ url('kbadge.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
         </section>

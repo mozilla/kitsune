@@ -13,7 +13,7 @@
   <section class="home-search-section sumo-page-section--lg shade-bg ">
     <div class="mzp-l-content">
       <div class="home-search-section--content">
-        <h1 class="text-display-lg">{{ _('Search Support') }}</h1>
+        <h1 class="sumo-page-heading">{{ _('Search Support') }}</h1>
           {% from "search/includes/macros.html" import basic_search_form with context %}
           {{ basic_search_form(True) }}
 
@@ -29,7 +29,7 @@
   <section class="sumo-page-section">
     <div class="content-box cf" id="advanced-search">
       {% if advanced %}
-        <h1 class="text-display-lg nomargin">{{ _('Advanced Search') }}</h1>
+        <h1 class="sumo-page-heading nomargin">{{ _('Advanced Search') }}</h1>
         <div id="search-tabs">
           <span id="where" style="display: none">{{ search_form.w.data or '' }}</span>
 
@@ -51,21 +51,21 @@
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.category.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.category.label_tag() }}</h2>
                 <div class="category checkboxes two-col-checkboxes">
                   {{ search_form.category }}
                 </div>
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.product.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.product.label_tag() }}</h2>
                 <div class="product checkboxes two-col-checkboxes">
                   {{ search_form.product }}
                 </div>
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.topics.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.topics.label_tag() }}</h2>
                 <div class="topics checkboxes two-col-checkboxes">
                   {{ search_form.topics }}
                 </div>
@@ -100,35 +100,35 @@
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.is_locked.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.is_locked.label_tag() }}</h2>
                 <div class="is_locked radios three-col-checkboxes">
                   {{ search_form.is_locked }}
                 </div>
               </div>
 
               <div class="field full-width field full-width">
-                <h2 class="text-body-lg">{{ search_form.is_archived.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.is_archived.label_tag() }}</h2>
                 <div class="is_archived radios three-col-checkboxes">
                   {{ search_form.is_archived }}
                 </div>
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.is_solved.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.is_solved.label_tag() }}</h2>
                 <div class="is_solved radios three-col-checkboxes">
                   {{ search_form.is_solved }}
                 </div>
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.has_answers.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.has_answers.label_tag() }}</h2>
                 <div class="has_answer radios three-col-checkboxes">
                   {{ search_form.has_answers }}
                 </div>
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.has_helpful.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.has_helpful.label_tag() }}</h2>
                 <div class="has_helpful radios three-col-checkboxes">
                   {{ search_form.has_helpful }}
                 </div>
@@ -161,14 +161,14 @@
               </p>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.product.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.product.label_tag() }}</h2>
                 <div class="product checkboxes two-col-checkboxes">
                   {{ search_form.product }}
                 </div>
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.topics.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.topics.label_tag() }}</h2>
                 <div class="topics checkboxes two-col-checkboxes">
                   {{ search_form.topics }}
                 </div>
@@ -208,7 +208,7 @@
               </div>
 
               <div class="field full-width">
-                <h2 class="text-body-lg">{{ search_form.thread_type.label_tag() }}</h2>
+                <h2 class="sumo-card-heading">{{ search_form.thread_type.label_tag() }}</h2>
                 <div class="thread-type checkboxes">
                   {{ search_form.thread_type }}
                 </div>

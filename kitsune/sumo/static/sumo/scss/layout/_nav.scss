@@ -85,8 +85,8 @@
     @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));
 
     .avatar {
-      width: 32px;
-      height: 32px;
+      width: p.$spacing-xl;
+      height: p.$spacing-xl;
       border-radius: 50%;
     }
 
@@ -109,8 +109,8 @@
 
       @media #{p.$mq-md} {
         @include c.grid-row;
-        padding-top: 16px;
-        padding-bottom: 16px;
+        padding-top: p.$spacing-md;
+        padding-bottom: p.$spacing-md;
       }
     }
 
@@ -180,10 +180,10 @@
   &--toggle-button {
     appearance: none;
     @include p.bidi(((margin, 0 0 0 10px, 0 10px 0 0),));
-    width: 32px;
-    height: 32px;
+    width: p.$spacing-xl;
+    height: p.$spacing-xl;
     border: none;
-    border-radius: 4px;
+    border-radius: p.$spacing-xs;
     background-image: url('#{p.$image-path}/icons/menu.svg');
     background-color: transparent;
     background-position: center center;
@@ -243,8 +243,8 @@
     .search-button {
       top: 2px;
       @include p.bidi((
-        (right, 4px, auto),
-        (left, auto, 4px),
+        (right, p.$spacing-xs, auto),
+        (left, auto, p.$spacing-xs),
       ));
     }
 
@@ -260,7 +260,7 @@
   }
 
   .firefox-download-button {
-    @include p.bidi(((margin, 0 24px 0 8px, 0 8px 0 24px),));
+    @include p.bidi(((margin, 0 p.$spacing-lg 0 p.$spacing-sm, 0 p.$spacing-sm 0 p.$spacing-lg),));
   }
 
   .searchbox { // #TODO - remove most of this after old CSS is removed.
@@ -302,8 +302,8 @@
   .mzp-c-menu-panel .mzp-c-menu-button-close {
 
     @include p.bidi((
-      (right, 16px, auto),
-      (left, auto, 16px),
+      (right, p.$spacing-md, auto),
+      (left, auto, p.$spacing-md),
     ));
   }
 
@@ -319,7 +319,7 @@
     padding-bottom: 12px;
 
     @media #{p.$mq-md} {
-      padding-top: 8px;
+      padding-top: p.$spacing-sm;
       padding-bottom: 18px;
     }
   }

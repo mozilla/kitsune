@@ -17,8 +17,8 @@
 
 {% block content %}
   <article id="posts" class="sumo-page-section">
-    <p class="text-display-xs" id="forum-title">{{ forum.name }}</p>
-    <h1 class="text-display-lg">{{ thread.title }}</h1>
+    <p class="sumo-page-subheading" id="forum-title">{{ forum.name }}</p>
+    <h1 class="sumo-page-heading">{{ thread.title }}</h1>
 
     <ul class="topic-article--meta-list" id="thread-meta">
       {% if count %}<li>{{ ngettext('{0} Reply', '{0} Replies', (count - 1))|f(count - 1) }}</li>{% endif %}
@@ -59,7 +59,7 @@
     {% if user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
       <form action="{{ url('forums.reply', forum.slug, thread.id)|urlparams(hash='post-reply') }}" method="post" class="sumo-page-section">
         {% csrf_token %}
-        <h3 class="text-body-lg" id="thread-reply-title">{{ _('Post a reply') }}</h3>
+        <h3 class="sumo-card-heading" id="thread-reply-title">{{ _('Post a reply') }}</h3>
         {{ errorlist(form) }}
 
         {% if request.limited %}
