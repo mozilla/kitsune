@@ -738,14 +738,14 @@
             '<div id="response-content-area">' +
             '<h2 class="heading-label preview-label">' + gettext('Response editor') + '</h2>' +
             '<button class="toggle-view btn">' + gettext('Switch to preview mode') + '</button>' +
-            '<div class="field has-md-textarea response-preview">' +
+            '<div class="field has-md-textarea response-preview is-condensed">' +
             '<textarea id="response-content">' +
             '</textarea></div>' +
             '<p class="response-preview-rendered"></p>' +
             '</div>' +
             '</div>' +
             '</div>' +
-            '<div class="placeholder" /><div class="submit sumo-button-row" id="response-submit-area">' +
+            '<div class="placeholder" /><div class="submit sumo-button-wrap" id="response-submit-area">' +
             '<button id="insert-response" class="sumo-button primary-button">' + gettext('Insert Response') + '</button>' +
             '<a href="#cancel" class="sumo-button secondary-button kbox-cancel">' + gettext('Cancel') + '</a>' +
             '</div>' +

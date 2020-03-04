@@ -134,16 +134,6 @@ button {
 }
 
 section.marky {
-  div.submit {
-    clear: both;
-    padding: 20px 0 0;
-
-    a,
-    button {
-      margin: 0 15px 0 0;
-    }
-  }
-
   .area {
     display: flex;
     flex-wrap: wrap;
@@ -168,17 +158,16 @@ section.marky {
 }
 
 #media-modal {
-  height: 80%;
+  height: auto;
+  max-height: 84vh;
   left: 50%;
-  margin-left: -380px;
-  max-height: 510px;
-  max-height: calc(100%); /* let it continue to grow in FF4 */
-  min-height: 400px;
-  min-height: calc(0%); /* let it continue to shrink in FF4 */
   position: fixed;
-  top: 7%;
-  width: 760px;
+  top: 7vh;
+  max-width: 760px;
+  width: 90vw;
+  transform: translateX(-50%);
   overflow: auto;
+
 
   div.placeholder {
     height: 65%;
@@ -270,12 +259,6 @@ section.marky {
     padding: 7px 0;
   }
 
-  div.submit {
-    bottom: p.$spacing-xl;
-    left: p.$spacing-xl;
-    position: absolute;
-  }
-
   .submit-button {
     right: 0;
   }
@@ -302,16 +285,6 @@ section.marky {
       margin: 0 0 0 5px;
     }
   }
-
-  section.marky {
-    div.submit {
-      a,
-      button {
-        margin: 0 0 0 15px;
-      }
-    }
-  }
-
 
   #link-modal {
     label {
