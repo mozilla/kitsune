@@ -47,3 +47,5 @@ styleguide/build/
 npm-debug.log
 .babel.json
 .devcontainer/
+.log
+.python-version
