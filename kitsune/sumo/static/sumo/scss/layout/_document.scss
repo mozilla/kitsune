@@ -186,12 +186,7 @@
     }
   }
 
-  h1 {
-    @include c.sumo-page-heading;
-    margin-top: 2em;
-  }
-
-  h2, h3, h4, h5, h6 {
+  h1, h2, h3, h4, h5, h6 {
     @include c.sumo-card-heading;
     margin-top: 2em;
   }
