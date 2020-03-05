@@ -138,9 +138,7 @@ def question_list(request, product_slug):
     show = request.GET.get("show")
     # Show defaults to NEEDS ATTENTION
     if show not in FILTER_GROUPS:
-        show = "all"
-        if request.user.is_authenticated():
-            show = "needs-attention"
+        show = "needs-attention"
 
     escalated = request.GET.get("escalated")
     tagged = request.GET.get("tagged")

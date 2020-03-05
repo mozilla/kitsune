@@ -1354,25 +1354,11 @@ class QuestionsTemplateTestCase(TestCaseBase):
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient
 
-    def test_locked_questions_appear_anonymous_users(self):
+    def test_locked_questions_dont_appear(self):
         """Locked questions are not listed on the no-replies list."""
         QuestionFactory()
         QuestionFactory()
         QuestionFactory(is_locked=True)
-
-        url = reverse("questions.list", args=["all"])
-        url = urlparams(url, filter="no-replies")
-        response = self.client.get(url)
-        doc = pq(response.content)
-        eq_(3, len(doc(".forum--question-item")))
-
-    def test_locked_questions_do_not_appear_logged_in_users(self):
-        """Locked questions are not listed on the no-replies list."""
-        QuestionFactory()
-        QuestionFactory()
-        QuestionFactory(is_locked=True)
-        self.user = UserFactory()
-        self.client.login(username=self.user.username, password="testpass")
 
         url = reverse("questions.list", args=["all"])
         url = urlparams(url, filter="no-replies")
