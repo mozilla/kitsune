@@ -103,6 +103,8 @@ CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
 
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.11:'
+# User agent cache settings
+USER_AGENTS_CACHE = 'default'
 
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='notifications@support.mozilla.org')
@@ -543,6 +545,7 @@ MIDDLEWARE_CLASSES = (
     'waffle.middleware.WaffleMiddleware',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
+    'django_user_agents.middleware.UserAgentMiddleware',
 )
 
 # SecurityMiddleware settings
@@ -707,6 +710,7 @@ INSTALLED_APPS = (
     # In Django <= 1.6, this "must be placed somewhere after all the apps that
     # are going to be generating activities". Putting it at the end is the safest.
     'actstream',
+    'django_user_agents',
 
     # Last so we can override admin templates.
     'django.contrib.admin',
