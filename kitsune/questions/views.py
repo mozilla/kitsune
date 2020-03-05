@@ -28,6 +28,7 @@ from django.views.decorators.http import require_POST, require_GET, require_http
 import waffle
 from ordereddict import OrderedDict
 from django_statsd.clients import statsd
+from django_user_agents.utils import get_user_agent
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
@@ -532,6 +533,8 @@ def aaq(
     request, product_key=None, category_key=None, showform=False, template=None, step=0
 ):
     """Ask a new question."""
+
+    user_agent = get_user_agent(request)
     # Use react version if waffle flag is set
     if waffle.flag_is_active(request, "new_aaq"):
         return aaq_react(request)
@@ -562,18 +565,13 @@ def aaq(
         return HttpResponseRedirect(path)
 
     if product_key is None:
+
         product_key = request.GET.get("product")
         # If there isn't a product key let's try to figure things out through UA
-        if product_key is None:
+        if user_agent.is_mobile and product_key is None:
             ua = request.META.get("HTTP_USER_AGENT", "").lower()
 
-            # Firefox OS is weird. The best way we can detect it is to
-            # look for a mobile Firefox that is not Android.
-            if "firefox" in ua and "android" not in ua:
-                product_key = "firefox-os"
-            # 'Rocket' is currently in the UA and is expected to remain
-            # https://github.com/mozilla-tw/FirefoxLite/issues/3004#issuecomment-455245375
-            elif "rocket" in ua:
+            if "rocket" in ua:
                 product_key = "firefox-lite"
             elif "fxios" in ua:
                 product_key = "ios"
