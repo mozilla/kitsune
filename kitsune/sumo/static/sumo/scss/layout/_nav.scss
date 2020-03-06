@@ -263,37 +263,11 @@
     @include p.bidi(((margin, 0 p.$spacing-lg 0 p.$spacing-sm, 0 p.$spacing-sm 0 p.$spacing-lg),));
   }
 
-  .searchbox { // #TODO - remove most of this after old CSS is removed.
-    padding: 0 p.$spacing-sm;
+  .searchbox {
     width: 200px;
-    height: 36px;
-    box-shadow: none !important;
-    border: 2px solid var(--field-border-color-default) !important;
-    border-radius: var(--global-radius) !important;
-    background-color: var(--color-white);
-    color:#0c0c0d;
-    outline:0;
-    transition-duration:150ms;
-    transition-property:border-color;
-    @include p.font-size(16px);
 
     @media #{p.$mq-lg} {
       width: 300px;
-    }
-
-    &:hover {
-      border-color: var(--field-border-color-hover);
-    }
-
-    &:focus,
-    .has-warning &,
-    .has-error &,
-    .has-success & {
-      border-color: transparent !important;
-    }
-
-    &:focus {
-      box-shadow: var(--focus-shadow)  !important;
     }
   }
 
