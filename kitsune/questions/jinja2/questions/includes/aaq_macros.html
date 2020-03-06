@@ -19,35 +19,38 @@
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
-  <h1 class="sumo-page-subheading">{{ _('Which product would you like to post a question about?') }}</h1>
-  <div id="product-picker" class="sumo-card-grid" style="--cg-count: {{ products|length }};">
-    <div class="scroll-wrap">
-      {% for key, product in products.iteritems() %}
-      <div class="card card--product zoom-on-hover">
-        {% if key == 'other' %}
-        <img src="{{ static('sumo/img/dino-logo.png') }}"
-            alt="{{ _(product.name) }}"
-            class="card--icon">
-        {% else %}
-        <img src="{{ image_for_product(product.product) }}"
-            alt="{{ pgettext('DB: products.Product.title', product.title) }}"
-            class="card--icon">
-        {% endif %}
+  <h1 class="sumo-page-heading">{{ _('Choose a product') }}</h1>
+  <p class="sumo-page-intro">{{ _('Which product would you like to post a question about?') }}</p>
+  <div class="sumo-page-section--inner">
+    <div id="product-picker" class="sumo-card-grid" style="--cg-count: {{ products|length }};">
+      <div class="scroll-wrap">
+        {% for key, product in products.iteritems() %}
+        <div class="card card--product zoom-on-hover">
+          {% if key == 'other' %}
+          <img src="{{ static('sumo/img/dino-logo.png') }}"
+              alt="{{ _(product.name) }}"
+              class="card--icon">
+          {% else %}
+          <img src="{{ image_for_product(product.product) }}"
+              alt="{{ pgettext('DB: products.Product.title', product.title) }}"
+              class="card--icon">
+          {% endif %}
 
-        <div class="card--details">
-          <h3 class="card--title">
-            <a class="expand-this-link title"
-              href="{{ url('questions.aaq_step2', product_key=key) }}"
-              data-event-category="link click"
-              data-event-action="product"
-              data-event-label="{{ product.name }}">
-              {{ product.name }}
-            </a>
-          </h3>
-          <p class="card--desc">{{ product.subtitle }}</p>
+          <div class="card--details">
+            <h3 class="card--title">
+              <a class="expand-this-link title"
+                href="{{ url('questions.aaq_step2', product_key=key) }}"
+                data-event-category="link click"
+                data-event-action="product"
+                data-event-label="{{ product.name }}">
+                {{ product.name }}
+              </a>
+            </h3>
+            <p class="card--desc">{{ product.subtitle }}</p>
+          </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
   </div>
 {%- endmacro %}
@@ -120,7 +123,7 @@
       <input id="id_ask_a_question"type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" />
     </div>
     <div class="sumo-button-wrap">
-      <span data-type="submit" class="sumo-button primary-button">{{ _('Ask this') }}</span><br>
+      <button data-type="submit" class="sumo-button primary-button">{{ _('Ask this') }}</button><br>
     </div>
   </form>
 </div>
