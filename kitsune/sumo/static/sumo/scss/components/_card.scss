@@ -186,14 +186,14 @@
     &-wrap-narrow {
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
-      max-width: 800px;
-      margin: 0 auto;
     }
 
     .card--details {
       flex: 1 1 100%;
       text-align: center;
+      max-width: 400px;
     }
 
     .card--title {
@@ -202,7 +202,7 @@
 
     .card--desc {
       @include c.text-body-md;
-      margin-bottom: p.$spacing-md;
+      margin: p.$spacing-md 0;
 
       &:last-child {
         margin-bottom: 0;
@@ -264,6 +264,10 @@
     &--callout {
       &-wrap-narrow {
         flex-direction: row;
+      }
+
+      .card--details {
+        margin: 0 40px;
       }
 
       .card--desc {

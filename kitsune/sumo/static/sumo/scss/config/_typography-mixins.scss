@@ -181,7 +181,4 @@ $text-display-line-height: 1.1 !default;
   @media #{p.$mq-md} {
     @include text-display-md($family); //40px
   }
-  @media #{p.$mq-lg} {
-    @include text-display-lg($family); //48px
-  }
 }

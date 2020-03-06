@@ -57,7 +57,6 @@ label {
   color: var(--color-marketing-gray-07);
   font-weight: bold;
 }
-
 .field,
 .form-as-ul > li {
   position: relative;
@@ -66,15 +65,6 @@ label {
 
   .error-text {
     display: none;
-  }
-
-  &.has-error {
-    .error-text {
-      display: block;
-      margin: p.$spacing-sm 0 0 0;
-      color: var(--color-red-08);
-      @include c.text-body-sm;
-    }
   }
 
   &.is-condensed {
@@ -149,6 +139,18 @@ label {
     top: 12px;
     background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#2ac3a2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1L6 12 1 7"/></svg>');
   }
+}
+
+.character-counter {
+  margin: p.$spacing-sm 0 0 0;
+  @include c.text-body-sm;
+}
+
+.error-text {
+  display: block;
+  margin: p.$spacing-sm 0 0 0;
+  color: var(--color-red-08);
+  @include c.text-body-sm;
 }
 
 .form-as-ul.full-width > li {

@@ -1039,14 +1039,9 @@ article {
     float: left;
   }
 
-  .character-counter {
-    @include c.text-body-sm;
-
-  }
-
+  .character-counter,
   .disabled-reason {
-    font-size: 12px;
-    padding-top: 5px;
+    @include c.text-body-xs;
   }
 }
 
