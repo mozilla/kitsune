@@ -803,10 +803,6 @@ body.translate {
     width: auto;
   }
 
-  #main-container {
-    max-width: 100%;
-  }
-
   #doc-tools {
     width: 250px;
     float: left;
@@ -816,11 +812,6 @@ body.translate {
   #localize-document {
     float: left;
     width: calc(100% - 351px);
-  }
-
-  #main-content > div {
-    width: 100%;
-    overflow: auto;
   }
 }
 

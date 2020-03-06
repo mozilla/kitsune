@@ -38,7 +38,7 @@
     {% endfor %}
   </section>
 {% else %}
-  <h2 class="sumo-page-subheading search-results-heading mb-0">
+  <h2 class="sumo-card-heading search-results-heading mb-0">
     {# L10n: {q} is the search query, {l} is the language searched. #}
     {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’")
         | f({q: q, l: lang_name}, true)
