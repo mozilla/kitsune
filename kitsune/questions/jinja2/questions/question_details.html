@@ -61,9 +61,9 @@
       {% if product %}
       <img class="page-heading--logo" src="{{ logo }}" alt="{{ product_title }} logo" />
       {% endif %}
-      <h2 class="sumo-page-subheading summary {% if product %}no-product-heading{% endif %}" itemprop="headline">{{ question.title }}</h2>
+      <h2 class="sumo-callout-heading summary {% if product %}no-product-heading{% endif %}" itemprop="headline">{{ question.title }}</h2>
 
-      <div class="question-meta">
+      <div class="question-meta has-border-bottom">
         <ul class="forum--meta-details replies">
           {# L10n: {n} is the number of replies. #}
           {% if question.num_answers > 0 %}
@@ -82,7 +82,7 @@
             <span class="forum--meta-key">{{ _('No replies') }}</span>
           </li>
           {% endif %}
-          <li>
+          <li class="border-left-md">
             <span class="forum--meta-val have-problem">{{ question.num_votes }}</span>
             <span class="forum--meta-key">
               {% trans count=question.num_votes %}
@@ -94,7 +94,7 @@
           </li>
 
           {% if question.num_visits %}
-          <li>
+          <li class="border-left-md">
             <span class="forum--meta-val visits">{{ question.num_visits }}</span>
             <span class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</span>
           </li>

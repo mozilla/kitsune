@@ -383,6 +383,12 @@
     ));
     @include c.text-body-sm;
   }
+
+  &.has-border-bottom {
+    padding-bottom: 0;
+    border-bottom: 1px solid var(--color-border);
+
+  }
 }
 
 .user-meta {
