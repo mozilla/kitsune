@@ -2,7 +2,7 @@
 {% set title = _('Groups') %}
 
 {% block content %}
-  <article id="group-list" class="main sumo-page-section has-moz-headings">
+  <article id="group-list" class="main sumo-page-section">
     {% if user.is_staff and user.has_perm('groups.add_groupprofile') %}
     <div class="sumo-button-wrap">
       <a class="sumo-button primary-button add" href="{{ url('admin:groups_groupprofile_add') }}">{{ _('Add group profile') }}</a>

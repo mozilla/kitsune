@@ -120,8 +120,10 @@
   <div class="mzp-l-content sumo-page-section--inner">
     <div class="sumo-page-subheader">
       <div class="sumo-page-subheader--text">
-        <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
-        <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
+        <div class="text-center-to-left-on-large">
+          <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
+          <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
+        </div>
       </div>
       {% if product.slug == 'firefox' %}
       {{ download_firefox() }}
@@ -152,7 +154,7 @@
 
 
   <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
-    <h2 class="sumo-page-subheading">{{ _('Featured Articles') }}</h2>
+      <h2 class="sumo-page-subheading text-center-to-left-on-large">{{ _('Featured Articles') }}</h2>
     {% include "landings/includes/featured_articles.html" %}
   </section>
 

@@ -38,7 +38,7 @@
     {% endfor %}
   </section>
 {% else %}
-  <h2 class="sumo-page-subheading search-results-heading mb-0">
+  <h2 class="sumo-card-heading search-results-heading mb-0">
     {# L10n: {q} is the search query, {l} is the language searched. #}
     {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’")
         | f({q: q, l: lang_name}, true)
@@ -126,31 +126,33 @@
 
 
 {% if num_results == 0 %}
-<div class="card card--ribbon is-callout-bg has-moz-headings heading-is-one-line">
-  <div class="card--details">
-    <h3 class="card--title">
-      <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
-          <g transform="translate(2.000000, 1.878680)" stroke="#000000" stroke-width="2">
-            <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
-            <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+<div class="sumo-page-section--inner">
+  <div class="card card--ribbon is-inverse heading-is-one-line">
+    <div class="card--details">
+      <h3 class="card--title">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#fff" stroke-width="2">
+              <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+              <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+            </g>
           </g>
-        </g>
-      </svg>
-      {{ _('Still need help?') }}
-    </h3>
+        </svg>
+        {{ _('Still need help?') }}
+      </h3>
 
-    <p class="card--desc">
-      {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
-    </p>
-    <a
-      class="sumo-button primary-button button-lg"
-      href="/kb/get-community-support"
-      data-event-category="link click"
-      data-event-action="topic"
-      data-event-label="Get community support">
-      {{ _('Ask the Community') }}
-    </a>
+      <p class="card--desc">
+        {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
+      </p>
+      <a
+        class="sumo-button primary-button button-lg"
+        href="/kb/get-community-support"
+        data-event-category="link click"
+        data-event-action="topic"
+        data-event-label="Get community support">
+        {{ _('Ask the Community') }}
+      </a>
+    </div>
   </div>
 </div>
 {% endif %}

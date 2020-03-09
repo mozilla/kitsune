@@ -17,14 +17,17 @@ we can compute the edit-title URL.
 
 {% set hide_aaq_link = True %}
 
-{% block content %}
-    <article class="main sumo-page-section">
-      <div id="ask-question">
+{% block contentwrap %}
+<div id="main-content">
+  <article class="main mzp-l-content sumo-page-section--inner">
+    <div class="sumo-l-two-col" id="ask-question">
+      <aside class="sumo-l-two-col--sidebar"></aside>
+      <article class="sumo-l-two-col--main">
+
         {% if not no_headline %}
           <h1 class="sumo-page-heading">{% block headline %}Do Something to a Question{% endblock %}</h1>
         {% endif %}
         <div class="inner-wrap">
-
           <div class="cf">
             {% if current_step %}
               {# removing steps for now – may revisit during AAQ project, 3/20 {{ aaq_progress(step=current_step) }} #}
@@ -35,108 +38,108 @@ we can compute the edit-title URL.
             {% endblock %}
           </div>
 
-          {% block articles_and_search_results %}
-          {% endblock %}
+        {% block articles_and_search_results %}
+        {% endblock %}
 
-          {% if form %}
-            <div class="highlight-box">
-              <form id="question-form" method="post">
-                {% csrf_token %}
-                {% block major_detail_instructions %}
-                  <h2>Do some stuff.</h2>
-                {% endblock %}
-                <p class="sumo-page-intro">
-                  {% trans %}
-                    Be nice. Our volunteers are Mozilla users just like you,
-                    who take the time out of their day to help.
-                  {% endtrans %}
-                </p>
-                <div class="info card shade-bg highlight mb">
-                  {% trans %}
-                    Be descriptive. Saying &quot;Playing video on YouTube is
-                    always choppy&quot; will help our volunteers identify
-                    your problem better than saying &quot;Something is
-                    wrong&quot; or &quot;Firefox is broken&quot;.
-                  {% endtrans %}
-                </div>
-                {{ errorlist(form) }}
-                {% for field in form.hidden_fields() %}
-                  {{ field|safe }}
-                {% endfor %}
-                <ul class="form-as-ul full-width">
-                  {% set li_class='' %}
-                  {% for field in form.visible_fields() %}
+        {% if form %}
+          <div class="highlight-box">
+            <form id="question-form" method="post">
+              {% csrf_token %}
+              {% block major_detail_instructions %}
+                <h2>Do some stuff.</h2>
+              {% endblock %}
+              <p class="sumo-page-intro">
+                {% trans %}
+                  Be nice. Our volunteers are Mozilla users just like you,
+                  who take the time out of their day to help.
+                {% endtrans %}
+              </p>
+              <div class="info card shade-bg highlight mb">
+                {% trans %}
+                  Be descriptive. Saying &quot;Playing video on YouTube is
+                  always choppy&quot; will help our volunteers identify
+                  your problem better than saying &quot;Something is
+                  wrong&quot; or &quot;Firefox is broken&quot;.
+                {% endtrans %}
+              </div>
+              {{ errorlist(form) }}
+              {% for field in form.hidden_fields() %}
+                {{ field|safe }}
+              {% endfor %}
+              <ul class="form-as-ul full-width">
+                {% set li_class='' %}
+                {% for field in form.visible_fields() %}
 
-                    {% if field.name == 'ff_version' or field.name == 'device' %}
-                      <li class="system-details-info show">
-                        <p>
-                          {{ _("We've made some educated guesses about your current browser and operating system.") }}
-                          <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
-                          <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
-                        </p>
-                      </li>
-                    {% endif %}
-
-                    {% if field.name == 'ff_version' or field.name == 'device' or field.name == 'os' or field.name == 'plugins' %}
-                      {% set li_class='details' %}
-                      {% endif %}
-
-                    <li class="{{ li_class }} {% if field.errors %}invalid{% endif %} cf">
-                      {{ field.label_tag()|safe }}
-                      {% if field.name == 'content' %}
-                        {{ content_editor(field) }}
-                      {% elif field.name == 'troubleshooting' %}
-                        {{ troubleshooting_instructions(field) }}
-                      {% else %}
-                        {{ field|safe }}
-                      {% endif %}
-
-                      {% if field.help_text and field.name != 'troubleshooting' %}
-                        <p>{{ field.help_text|safe }}</p>
-                      {% endif %}
+                  {% if field.name == 'ff_version' or field.name == 'device' %}
+                    <li class="system-details-info show">
+                      <p>
+                        {{ _("We've made some educated guesses about your current browser and operating system.") }}
+                        <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
+                        <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
+                      </p>
                     </li>
+                  {% endif %}
 
-                    {% if field.name == 'content' %}
-                      <li>
-                        {% block attachments_form %}
-                          {{ attachments_form('auth.User', user.pk, images, settings, user) }}
-                        {% endblock %}
-                      </li>
+                  {% if field.name == 'ff_version' or field.name == 'device' or field.name == 'os' or field.name == 'plugins' %}
+                    {% set li_class='details' %}
                     {% endif %}
-                  {% endfor %}
-                </ul>
 
-                <div class="info card highlight is-shaded">
-                  <p>
-                  {% trans %}
-                    Follow through. Sometimes, our volunteers would ask you
-                    for more information or to test out certain scenarios.
-                    The sooner you can do this, the sooner they would know
-                    how to fix it.
-                  {% endtrans %}
-                  </p>
-                </div>
-                <div class="sumo-button-wrap">
-                  <button type="submit" class="sumo-button primary-button" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
-                  {% block more_submit_buttons %}{% endblock %}
-                </div>
-              </form>
-            </div>
-          {% endif %}
+                  <li class="{{ li_class }} {% if field.errors %}invalid{% endif %} cf">
+                    {{ field.label_tag()|safe }}
+                    {% if field.name == 'content' %}
+                      {{ content_editor(field) }}
+                    {% elif field.name == 'troubleshooting' %}
+                      {{ troubleshooting_instructions(field) }}
+                    {% else %}
+                      {{ field|safe }}
+                    {% endif %}
 
-          <div id="product-topic-changer" class="cf">
-            {% if current_product %}
-              {{ selected_product(current_product, can_edit_product) }}
+                    {% if field.help_text and field.name != 'troubleshooting' %}
+                      <p>{{ field.help_text|safe }}</p>
+                    {% endif %}
+                  </li>
 
-              {% if current_category %}
-                {{ selected_category(current_category, current_product, can_edit_category) }}
-              {% endif %}
-            {% endif %}
+                  {% if field.name == 'content' %}
+                    <li>
+                      {% block attachments_form %}
+                        {{ attachments_form('auth.User', user.pk, images, settings, user) }}
+                      {% endblock %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+
+              <div class="info card highlight is-shaded">
+                <p>
+                {% trans %}
+                  Follow through. Sometimes, our volunteers would ask you
+                  for more information or to test out certain scenarios.
+                  The sooner you can do this, the sooner they would know
+                  how to fix it.
+                {% endtrans %}
+                </p>
+              </div>
+              <div class="sumo-button-wrap">
+                <button type="submit" class="sumo-button primary-button" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
+                {% block more_submit_buttons %}{% endblock %}
+              </div>
+            </form>
           </div>
+        {% endif %}
 
+        <div id="product-topic-changer" class="cf">
+          {% if current_product %}
+            {{ selected_product(current_product, can_edit_product) }}
+
+            {% if current_category %}
+              {{ selected_category(current_category, current_product, can_edit_category) }}
+            {% endif %}
+          {% endif %}
         </div>
-      </div>
-    </article>
+      </article>
+    </div>
+  </article>
+</div>
 {% endblock %}
 
 {% block side %}

@@ -137,7 +137,7 @@
     text-align: center;
 
     .card--title {
-      @include c.sumo-callout-heading('no-fam');
+      @include c.sumo-callout-heading;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -147,6 +147,11 @@
       @media #{p.$mq-lg} {
         margin-bottom: 0;
       }
+    }
+
+    &.has-moz-headings .card--title {
+      font-family: var(--heading-font-family-moz);
+      color: var(--color-moz-heading);
     }
 
     .card--icon-sm {
@@ -181,14 +186,14 @@
     &-wrap-narrow {
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
-      max-width: 800px;
-      margin: 0 auto;
     }
 
     .card--details {
       flex: 1 1 100%;
       text-align: center;
+      max-width: 400px;
     }
 
     .card--title {
@@ -197,7 +202,7 @@
 
     .card--desc {
       @include c.text-body-md;
-      margin-bottom: p.$spacing-md;
+      margin: p.$spacing-md 0;
 
       &:last-child {
         margin-bottom: 0;
@@ -261,6 +266,10 @@
         flex-direction: row;
       }
 
+      .card--details {
+        margin: 0 40px;
+      }
+
       .card--desc {
         margin: p.$spacing-md auto;
         max-width: 300px;
@@ -290,7 +299,6 @@
     &--ribbon {
       .card--title {
         flex-direction: row;
-        @include p.font-size(32px);
       }
 
       .card--icon-sm {

@@ -5,6 +5,10 @@
   position: relative;
   margin: 0;
 
+  .searchbox {
+    padding-right: 40px;
+  }
+
   .search-button {
     position: absolute;
     top: p.$spacing-xs;

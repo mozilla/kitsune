@@ -49,7 +49,7 @@
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6"/><path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z"/></g></svg>
                 <h4 class="mzp-c-menu-item-title">{{ _('Ask the Community') }}</h4>
                 <p class="mzp-c-menu-item-desc">
-                  {{ _('Create a thread and find answers in any of our product support forums.') }}
+                  {{ _('Create a thread and find answers by posting a question to any of our product support forums.') }}
                 </p>
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
@@ -58,7 +58,7 @@
                 <li><a href="/questions/new/ios">{{ _('Firefox for iOS') }}</a></li>
                 <li><a href="/questions/new/firefox-lockwise">{{ _('Firefox Lockwise') }}</a></li>
                 <li><a href="/questions/new/mobile">{{ _('Firefox for Android') }}</a></li>
-                <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('See All Product Forums') }}</a></li>
+                <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('Browse All Product Forums') }}</a></li>
               </ul>
             </section>
            </div>
@@ -281,7 +281,7 @@
 <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
 <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
 <!-- <li><a href="#">Tag Admin</a></li> -->
-<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">{{ _('Support forum home') }}</a></li>
+<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">{{ _('Contributor Forums') }}</a></li>
 {% endmacro %}
 
 {# This is designed to be used like this:
