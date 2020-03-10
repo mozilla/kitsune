@@ -535,6 +535,11 @@ def aaq(
     """Ask a new question."""
 
     user_agent = get_user_agent(request)
+    is_mobile_device = user_agent.is_mobile if user_agent else False
+    change_product = False
+
+    if request.GET.get("q") == "change_product":
+        change_product = True
     # Use react version if waffle flag is set
     if waffle.flag_is_active(request, "new_aaq"):
         return aaq_react(request)
@@ -568,7 +573,7 @@ def aaq(
 
         product_key = request.GET.get("product")
         # If there isn't a product key let's try to figure things out through UA
-        if user_agent.is_mobile and product_key is None:
+        if is_mobile_device and product_key is None and not change_product:
             ua = request.META.get("HTTP_USER_AGENT", "").lower()
 
             if "rocket" in ua:
@@ -699,6 +704,7 @@ def aaq(
                 "current_step": step,
                 "deadend": deadend,
                 "host": Site.objects.get_current().domain,
+                "is_mobile_device": is_mobile_device,
             },
         )
 

@@ -60,7 +60,12 @@
     <br />
     <p>{{ _('Product') }}: <strong><span>{{ product.name }}</span></strong>
     {% if can_change %}
-      <a class="text-body-sm" href="{{ url('questions.aaq_step1') }}">{{ _('change product') }}</a>
+      <a class="text-body-sm"
+         {% if is_mobile_device %}
+            href="{{ url('questions.aaq_step1') }}?q=change_product">{{ _('change product') }}</a>
+          {% else %}
+            href="{{ url('questions.aaq_step1') }}">{{ _('change product') }}</a>
+          {% endif %}
     {% endif %}
     </p>
   </div>

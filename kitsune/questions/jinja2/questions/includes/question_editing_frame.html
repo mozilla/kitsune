@@ -11,7 +11,8 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor with context %}
-{% from "questions/includes/aaq_macros.html" import selected_product, selected_category, aaq_progress %}
+{% from "questions/includes/aaq_macros.html" import selected_category, aaq_progress %}
+{% from "questions/includes/aaq_macros.html" import selected_product with context%}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
 
