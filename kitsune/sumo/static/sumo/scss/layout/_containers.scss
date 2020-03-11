@@ -93,6 +93,10 @@
       padding-top: p.$spacing-xl;
     }
 
+    &:last-child {
+      padding-bottom: 72px;
+    }
+
     @media #{p.$mq-md} {
       padding-top: 28px;
       padding-bottom: 28px;
@@ -109,9 +113,11 @@
       &:first-child {
         padding-top: p.$spacing-2xl;
       }
+
+      &:last-child {
+        padding-bottom: 96px;
+      }
     }
-
-
   }
 }
 

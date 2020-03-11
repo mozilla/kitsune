@@ -36,7 +36,7 @@
           </div>
 
           {% if subtopic %}
-          <h2 class="sumo-card-heading mb-0">
+          <h2 class="sumo-card-heading is-subtopic">
             <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
               {{ pgettext('DB: products.Topic.title', topic.title) }}
             </a>
