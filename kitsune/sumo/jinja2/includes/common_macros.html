@@ -221,6 +221,7 @@
   <div class="field has-large-textarea editor{% if field.errors %} invalid{% endif %}" data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
     <div class="editor-tools"></div>
     <div>{{ field|safe }}</div>
+    {{ field.errors }}
   </div>
   <div class="field" style="display: none;">
     <select id="_languages-select-box">

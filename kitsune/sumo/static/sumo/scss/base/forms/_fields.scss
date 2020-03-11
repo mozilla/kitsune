@@ -139,6 +139,27 @@ label {
     top: 12px;
     background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#2ac3a2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1L6 12 1 7"/></svg>');
   }
+
+  &.has-error {
+    .error-text {
+      display: block;
+    }
+
+    .errorlist {
+      background: transparent;
+      margin: 0;
+      padding: 0;
+
+      li {
+        display: block;
+        margin: p.$spacing-sm 0 0 0;
+        color: var(--color-red-08);
+        @include c.text-body-sm;
+      }
+    }
+
+
+  }
 }
 
 .character-counter {
