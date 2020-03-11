@@ -122,20 +122,20 @@ class EditQuestionForm(forms.Form):
             extra_fields += category.get('extra_fields', [])
 
         #  Add the fields to the form
-        error_messages = {'required': MSG_TITLE_REQUIRED,
+        title_error_messages = {'required': MSG_TITLE_REQUIRED,
                           'min_length': MSG_TITLE_SHORT,
                           'max_length': MSG_TITLE_LONG}
-        field = forms.CharField(
+        title_field = forms.CharField(
             label=TITLE_LABEL, min_length=5, max_length=160, widget=forms.TextInput(),
-            error_messages=error_messages)
-        self.fields['title'] = field
+            error_messages=title_error_messages)
+        self.fields['title'] = title_field
 
-        error_messages = {'required': MSG_CONTENT_REQUIRED,
+        content_error_messages = {'required': MSG_CONTENT_REQUIRED,
                           'min_length': MSG_CONTENT_SHORT,
                           'max_length': MSG_CONTENT_LONG}
         field = forms.CharField(
             label=CONTENT_LABEL, min_length=5, max_length=10000, widget=forms.Textarea(),
-            error_messages=error_messages)
+            error_messages=content_error_messages)
         self.fields['content'] = field
 
         if 'sites_affected' in extra_fields:
