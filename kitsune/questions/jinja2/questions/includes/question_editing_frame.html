@@ -10,7 +10,7 @@ we can compute the edit-title URL.
 #}
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "includes/common_macros.html" import content_editor with context %}
+{% from "includes/common_macros.html" import search_box, content_editor with context %}
 {% from "questions/includes/aaq_macros.html" import selected_category, aaq_progress %}
 {% from "questions/includes/aaq_macros.html" import selected_product with context%}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
@@ -20,8 +20,14 @@ we can compute the edit-title URL.
 
 {% block contentwrap %}
 <div id="main-content">
+  {% block category %}
+  {% endblock %}
+
   <article class="main mzp-l-content sumo-page-section--inner">
     {% block product %}
+    {% endblock %}
+
+    {% block articles_and_search_results %}
     {% endblock %}
 
     <div class="sumo-l-two-col" id="ask-question">
@@ -36,12 +42,7 @@ we can compute the edit-title URL.
             {% if current_step %}
               {# removing steps for now – may revisit during AAQ project, 3/20 {{ aaq_progress(step=current_step) }} #}
             {% endif %}
-            {% block category %}
-            {% endblock %}
           </div>
-
-        {% block articles_and_search_results %}
-        {% endblock %}
 
         {% if form %}
           <div class="highlight-box">
@@ -132,16 +133,6 @@ we can compute the edit-title URL.
             </form>
           </div>
         {% endif %}
-
-        <div id="product-topic-changer" class="cf">
-          {% if current_product %}
-            {{ selected_product(current_product, can_edit_product) }}
-
-            {% if current_category %}
-              {{ selected_category(current_category, current_product, can_edit_category) }}
-            {% endif %}
-          {% endif %}
-        </div>
       </article>
     </div>
   </article>
