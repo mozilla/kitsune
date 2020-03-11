@@ -72,7 +72,7 @@
   }
 
   &--button {
-    padding: p.$spacing-md 0;
+    padding: 0 0 p.$spacing-md 0;
     margin: 0;
     appearance: none;
 
@@ -126,11 +126,6 @@
 
   @media #{p.$mq-md} {
     margin-bottom: 40px;
-
-    &--link,
-    &--button {
-      @include c.text-body-md;
-    }
   }
 }
 
@@ -152,6 +147,11 @@
 .html-ltr, .html-rtl {
   .ui-widget.ui-widget-content {
     border: 0 none;
+    @include c.elevation-01;
+    border-radius: var(--global-radius);
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .ui-tabs {

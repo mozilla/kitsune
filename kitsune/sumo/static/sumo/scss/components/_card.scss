@@ -88,9 +88,8 @@
     flex-direction: column;
 
     .card--title {
-      margin-bottom: p.$spacing-xl;
+      margin-bottom: auto;
       padding-bottom: p.$spacing-xl;
-      border-bottom: 1px solid var(--color-heading);
 
       a {
       	white-space: pre-line;
@@ -100,10 +99,20 @@
 
     .card--desc {
       display: -webkit-box;
-      margin-bottom: p.$spacing-xl;
+      margin-top: p.$spacing-lg;
+      margin-bottom: p.$spacing-md;
+      padding-top: p.$spacing-lg;
+      min-height: 88px;
       overflow: hidden;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
+      border-top: 1px solid var(--color-heading);
+    }
+
+    .card--details {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
   }
 

@@ -8,12 +8,12 @@
           {% csrf_token %}
           <input type="submit" name="delete" class="delete"
                  data-url="{{ url('upload.del_image_async', image.pk) }}"
-                 title="{{ _('Delete this image') }}" value="✖"/>
+                 title="{{ _('Delete this image') }}" value="&times;"/>
         </form>
       {% else %}
         <input type="submit" class="delete" name="delete"
                data-url="{{ url('upload.del_image_async', image.pk) }}"
-               title="{{ _('Delete this image') }}" value="✖"/>
+               title="{{ _('Delete this image') }}" value="&times;"/>
         <noscript>
           <label>{{ _('Delete this image') }}
             <input type="checkbox" name="delete_image" value="{{ image.pk }}"/>

@@ -85,7 +85,7 @@ we can compute the edit-title URL.
                     {% set li_class='details' %}
                     {% endif %}
 
-                  <li class="{{ li_class }} {% if field.errors %}invalid{% endif %} cf">
+                  <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
                     {{ field.label_tag()|safe }}
                     {% if field.name == 'content' %}
                       {{ content_editor(field) }}
@@ -97,6 +97,10 @@ we can compute the edit-title URL.
 
                     {% if field.help_text and field.name != 'troubleshooting' %}
                       <p>{{ field.help_text|safe }}</p>
+                    {% endif %}
+
+                    {% if field.name != 'content' %}
+                    {{ field.errors }}
                     {% endif %}
                   </li>
 

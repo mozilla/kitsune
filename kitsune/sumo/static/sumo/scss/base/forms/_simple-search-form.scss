@@ -7,6 +7,10 @@
 
   .searchbox {
     padding-right: 40px;
+
+    // remove x button from Edge and Safari
+    &::-ms-clear { display:none; }
+    &::-webkit-search-cancel-button { display:none; }
   }
 
   .search-button {
