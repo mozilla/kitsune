@@ -147,6 +147,11 @@
 .html-ltr, .html-rtl {
   .ui-widget.ui-widget-content {
     border: 0 none;
+    @include c.elevation-01;
+    border-radius: var(--global-radius);
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .ui-tabs {

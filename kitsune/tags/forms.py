@@ -67,7 +67,7 @@ class TagWidget(Widget):
             # Remove button:
             if not self.read_only:
                 output += (u'<input type="submit" '
-                           u'value="&#x2716;" '
+                           u'value="&times;" '
                            u'class="remover" '
                            u'name="remove-tag-%s" />' % escape(tag.name))
 
