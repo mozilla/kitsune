@@ -83,6 +83,7 @@
   }
 
   &--sublist {
+    @include p.bidi(((margin-left, left, right),));
     margin-bottom: p.$spacing-md;
   }
 
@@ -90,8 +91,8 @@
     @include p.font-size(16px);
   }
 
-  &--sublink {
-    padding-left: p.$spacing-md;
+  a.sidebar-nav--sublink {
+    padding-left: p.$spacing-lg;
   }
 
   .details-heading {
@@ -161,9 +162,22 @@
         margin-top: p.$spacing-md;
       }
     }
+  }
 
-    @media #{p.$mq-lg} {
+  @media #{p.$mq-lg} {
+    // sublist is only used when the sidebar is in dropdown mode for mobile/tablet.
+    &--sublist {
       display: none;
+    }
+
+    .details-heading {
+      display: none;
+    }
+
+    a.show-selected-on-lg {
+      background-color: var(--color-link-active-bg);
+      font-weight: bold;
+      color: var(--color-heading);
     }
   }
 }
