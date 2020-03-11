@@ -126,11 +126,6 @@
 
   @media #{p.$mq-md} {
     margin-bottom: 40px;
-
-    &--link,
-    &--button {
-      @include c.text-body-md;
-    }
   }
 }
 

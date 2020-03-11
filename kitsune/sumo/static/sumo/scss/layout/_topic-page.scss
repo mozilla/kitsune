@@ -90,6 +90,15 @@
   }
 }
 
+// disabling visited color on subtopic page bheadings
+.is-subtopic {
+  margin-bottom: 20px;
+
+  a:visited {
+    color: var(--color-heading);
+  }
+}
+
 // pull search up inline with breadcrumbs on large
 @media #{p.$mq-md} {
   .breadcrumbs + .sumo-l-two-col {
