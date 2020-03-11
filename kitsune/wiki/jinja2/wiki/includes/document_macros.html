@@ -223,7 +223,7 @@
   {% if not buttons_only %}
     <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
 
-      <div id="submit-modal" class="mzp-u-modal-content" title="{{ _('Submit Your Changes') }}">
+      <div id="submit-modal" class="kbox mzp-u-modal-content" title="{{ _('Submit Your Changes') }}">
         <p>
           {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
           can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
@@ -238,7 +238,7 @@
             <label for="id_no_update">{{ _('This edit does not make this article up to date. The English differences should not change on the next edit.') }}</label>
           </div>
         {% endif %}
-        <div class="field checkbox  notifications">
+        <div class="field checkbox notifications">
           <input type="checkbox" name="notify-future-changes" id="id_notify-future-changes" value="Yes" />
           <label for="id_notify-future-changes">{{ _('Notify me of any future changes to this page') }}</label>
         </div>
