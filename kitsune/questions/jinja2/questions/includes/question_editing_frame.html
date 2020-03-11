@@ -21,6 +21,9 @@ we can compute the edit-title URL.
 {% block contentwrap %}
 <div id="main-content">
   <article class="main mzp-l-content sumo-page-section--inner">
+    {% block product %}
+    {% endblock %}
+
     <div class="sumo-l-two-col" id="ask-question">
       <aside class="sumo-l-two-col--sidebar"></aside>
       <article class="sumo-l-two-col--main">
@@ -33,8 +36,6 @@ we can compute the edit-title URL.
             {% if current_step %}
               {# removing steps for now – may revisit during AAQ project, 3/20 {{ aaq_progress(step=current_step) }} #}
             {% endif %}
-            {% block product %}
-            {% endblock %}
             {% block category %}
             {% endblock %}
           </div>
