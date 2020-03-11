@@ -150,6 +150,10 @@
     &-thirds { // This is non-standard.
       @media #{p.$mq-md} {
         @include c.col(2, 6);
+
+        .sumo-button-wrap {
+          margin-top: p.$spacing-lg;
+        }
       }
     }
 
