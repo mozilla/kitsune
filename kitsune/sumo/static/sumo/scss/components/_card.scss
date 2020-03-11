@@ -74,6 +74,12 @@
     margin-bottom: p.$spacing-xl;
   }
 
+  &--title {
+    &.has-bottom-margin {
+      margin-bottom: p.$spacing-sm;
+    }
+  }
+
   &.is-inverse {
     background: var(--color-inverse-bg);
 
