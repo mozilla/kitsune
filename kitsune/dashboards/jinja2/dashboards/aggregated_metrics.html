@@ -76,7 +76,7 @@
   <section id="locale-picker" class="cf" data-locales="{{ locales_json }}">
     <ul>
       {% for locale in locales %}
-        <li class="field is-condensed">
+        <li class="field checkbox is-condensed">
           <input id="id_{{ locale[0] }}" type="checkbox" name="locale" value="{{ locale[0] }}" />
           <label for="id_{{ locale[0] }}" title="{{ _('{count} visitors in the past 30 days')|f(count=locale[1]) }}">
             {{ locale[0] }}
