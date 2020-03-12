@@ -41,7 +41,7 @@
       $('#id_comment').keypress(function(e) {
         if (e.which === 13) {
           $(this).blur();
-          $(this).closest('form').find('input[type=submit]').focus().click();
+          $(this).closest('form').find('[type=submit]').click();
           return false;
         }
       });
