@@ -366,3 +366,21 @@ textarea {
     margin-bottom: 40px;
   }
 }
+
+
+.checkbox-list {
+  margin: 0 0 p.$spacing-xl 0;
+  padding: 0;
+  list-style: none;
+  columns: 2;
+  column-width: 200px;
+  column-gap: 60px;
+
+  &--sublist {
+    margin-left: 32px;
+  }
+}
+
+.products.mzp-c-details .is-summary button {
+  padding-left: 0;
+}
