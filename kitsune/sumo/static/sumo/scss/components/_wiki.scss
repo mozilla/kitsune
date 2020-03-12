@@ -562,26 +562,20 @@ article {
   }
 }
 
-#submit-modal {
-  .comment,
-  .notifications,
-  .no-update {
-    margin: 10px 0;
-  }
-}
-
 #preview {
   .showfor {
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 p.$spacing-xs 10px #999;
-    left: 10px;
-    margin: -90px 0 0;
-    padding: 15px;
+    border-radius: var(--global-radius);
+    @include c.elevation-01;
+    right: 10px;
+    margin: 0;
+    padding: 20px;
     position: fixed;
-    top: 50%;
-    width: 165px;
+    max-height: 85vh;
+    top: 10vh;
+    width: 300px;
     z-index: 5;
+    overflow: auto;
 
     h1 {
       font-size: 20px;

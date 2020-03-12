@@ -211,7 +211,7 @@
 
 {% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, translate=False) -%}
   <div class="submit sumo-button-wrap reverse-on-desktop align-end">
-    <button class="sumo-button primary-button btn-submit" type="submit" data-sumo-modal="submit-modal">{{ _('Submit for Review') }}</button>
+    <button class="sumo-button primary-button btn-submit" type="submit">{{ _('Submit for Review') }}</button>
     {% if translate %}
       <button class="sumo-button secondary-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
     {% endif %}
@@ -223,7 +223,7 @@
   {% if not buttons_only %}
     <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
 
-      <div id="submit-modal" class="kbox mzp-u-modal-content" title="{{ _('Submit Your Changes') }}">
+      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target=".btn-submit" data-modal="true">
         <p>
           {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
           can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
@@ -243,7 +243,7 @@
           <label for="id_notify-future-changes">{{ _('Notify me of any future changes to this page') }}</label>
         </div>
         <div class="sumo-button-wrap align-end">
-          <button class="sumo-button primary-button" type="submit">{{ _('Submit') }}</button>
+          <button class="sumo-button primary-button" type="submit" id="submit-document-form">{{ _('Submit') }}</button>
         </div>
       </div>
     </div>
@@ -260,7 +260,7 @@
       {{ showfor_data(products) }}
     </script>
 
-    <h3 class="sidebar-subheading">{{ _('Customize this article') }}</h3>
+    <h3 class="{% if close_button %}sumo-card-heading{% else %}sidebar-subheading{% endif %}">{{ _('Customize this article') }}</h3>
     {% if header %}
       <p>
         {{ header }}

@@ -13,26 +13,43 @@
 {% block content %}
   <div class="grid_9">
     <article id="edit-document">
-      <h1>{{ _('Create a New Knowledge Base Article') }}</h1>
+      <h1 class="sumo-page-heading">{{ _('Create a New Knowledge Base Article') }}</h1>
       <div id="document-form">
         {{ errorlist(document_form) }}
         {{ errorlist(revision_form) }}
-        <form action="" method="post" data-json-url="{{ url('wiki.json') }}">
+        <form action="" method="post" data-json-url="{{ url('wiki.json') }}" id="id_new_document_form">
           {% csrf_token %}
           <ul>
             {% for field in document_form.visible_fields() if (field.name != 'is_localizable' or settings.WIKI_DEFAULT_LANGUAGE == request.LANGUAGE_CODE) %}
-              <li>{{ field|label_with_help }}{{ field|safe }}</li>
+              <li class="
+                  field
+                  has-large-textarea
+                  {% if field.name in ['allow_discussion', 'is_localizable'] %}checkbox{% endif %}
+                  {% if field.errors %}has-error{% endif %}">
+                {# manually reorder checkboxes #}
+                {% if field.name in ['allow_discussion', 'is_localizable'] %}
+                  {{ field|safe }}
+                  {{ field|label_with_help }}
+                {% else %}
+                  {{ field|label_with_help }}
+                  {{ field|safe }}
+                {% endif %}
+                {{ field.errors }}
+              </li>
             {% endfor %}
           </ul>
           <ul>
             {% for field in revision_form.visible_fields() %}
-              <li>
+              <li class="field has-large-textarea {% if field.errors %}has-error{% endif %}">
                 {% if field.name not in ['comment', 'content'] %}
                   {{ field|label_with_help }}{{ field|safe }}
                 {% elif field.name == 'content' %}
                   {{ revision_form.content.label_tag()|safe }}
                   {{ content_editor(revision_form.content) }}
                 {% endif %}
+                {{ field.errors }}
+
+
                 {% if field.name == 'summary' %}
                   <p><span id="remaining-characters">{{ field.field.max_length }}</span> {{ _('characters remaining.') }}</p>
                 {% endif %}
