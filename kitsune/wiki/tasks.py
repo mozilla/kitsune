@@ -23,11 +23,16 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.models import (
-    Document, points_to_document_view, SlugCollision, TitleCollision, Revision)
+    Document,
+    points_to_document_view,
+    SlugCollision,
+    TitleCollision,
+    Revision,
+)
 from kitsune.wiki.utils import generate_short_url, BitlyRateLimitException
 
 
-log = logging.getLogger('k.task')
+log = logging.getLogger("k.task")
 
 
 @task()
@@ -35,44 +40,47 @@ log = logging.getLogger('k.task')
 def send_reviewed_notification(revision, document, message):
     """Send notification of review to the revision creator."""
     if revision.reviewer == revision.creator:
-        log.debug('Revision (id=%s) reviewed by creator, skipping email' %
-                  revision.id)
+        log.debug("Revision (id=%s) reviewed by creator, skipping email" % revision.id)
         return
 
-    log.debug('Sending reviewed email for revision (id=%s)' % revision.id)
+    log.debug("Sending reviewed email for revision (id=%s)" % revision.id)
 
-    url = reverse('wiki.document_revisions', locale=document.locale,
-                  args=[document.slug])
+    url = reverse(
+        "wiki.document_revisions", locale=document.locale, args=[document.slug]
+    )
 
-    c = {'document_title': document.title,
-         'approved': revision.is_approved,
-         'reviewer': revision.reviewer,
-         'message': message,
-         'revisions_url': url,
-         'host': Site.objects.get_current().domain}
+    c = {
+        "document_title": document.title,
+        "approved": revision.is_approved,
+        "reviewer": revision.reviewer,
+        "message": message,
+        "revisions_url": url,
+        "host": Site.objects.get_current().domain,
+    }
 
     msgs = []
 
     @email_utils.safe_translation
     def _make_mail(locale, user):
         if revision.is_approved:
-            subject = _(u'Your revision has been approved: {title}')
+            subject = _(u"Your revision has been approved: {title}")
         else:
-            subject = _(u'Your revision has been reviewed: {title}')
+            subject = _(u"Your revision has been reviewed: {title}")
         subject = subject.format(title=document.title)
 
         mail = email_utils.make_mail(
             subject=subject,
-            text_template='wiki/email/reviewed.ltxt',
-            html_template='wiki/email/reviewed.html',
+            text_template="wiki/email/reviewed.ltxt",
+            html_template="wiki/email/reviewed.html",
             context_vars=c,
             from_email=settings.TIDINGS_FROM_ADDRESS,
-            to_email=user.email)
+            to_email=user.email,
+        )
 
         msgs.append(mail)
 
     for user in [revision.creator, revision.reviewer]:
-        if hasattr(user, 'profile'):
+        if hasattr(user, "profile"):
             locale = user.profile.locale
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
@@ -87,27 +95,28 @@ def send_reviewed_notification(revision, document, message):
 def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
 
-    text_template = 'wiki/email/reviewed_contributors.ltxt'
-    html_template = 'wiki/email/reviewed_contributors.html'
-    url = reverse('wiki.document_revisions', locale=document.locale,
-                  args=[document.slug])
-    c = {'document_title': document.title,
-         'approved': revision.is_approved,
-         'reviewer': revision.reviewer,
-         'message': message,
-         'revisions_url': url,
-         'host': Site.objects.get_current().domain}
+    text_template = "wiki/email/reviewed_contributors.ltxt"
+    html_template = "wiki/email/reviewed_contributors.html"
+    url = reverse(
+        "wiki.document_revisions", locale=document.locale, args=[document.slug]
+    )
+    c = {
+        "document_title": document.title,
+        "approved": revision.is_approved,
+        "reviewer": revision.reviewer,
+        "message": message,
+        "revisions_url": url,
+        "host": Site.objects.get_current().domain,
+    }
 
     msgs = []
 
     @email_utils.safe_translation
     def _make_mail(locale, user):
         if revision.is_approved:
-            subject = _(u'A revision you contributed to has '
-                        'been approved: {title}')
+            subject = _(u"A revision you contributed to has " "been approved: {title}")
         else:
-            subject = _(u'A revision you contributed to has '
-                        'been reviewed: {title}')
+            subject = _(u"A revision you contributed to has " "been reviewed: {title}")
         subject = subject.format(title=document.title)
 
         mail = email_utils.make_mail(
@@ -116,7 +125,8 @@ def send_contributor_notification(based_on, revision, document, message):
             html_template=html_template,
             context_vars=c,
             from_email=settings.TIDINGS_FROM_ADDRESS,
-            to_email=user.email)
+            to_email=user.email,
+        )
 
         msgs.append(mail)
 
@@ -128,7 +138,7 @@ def send_contributor_notification(based_on, revision, document, message):
 
         user = r.creator
 
-        if hasattr(user, 'profile'):
+        if hasattr(user, "profile"):
             locale = user.profile.locale
         else:
             locale = settings.WIKI_DEFAULT_LANGUAGE
@@ -140,12 +150,14 @@ def send_contributor_notification(based_on, revision, document, message):
 
 def schedule_rebuild_kb():
     """Try to schedule a KB rebuild, if we're allowed to."""
-    if (not waffle.switch_is_active('wiki-rebuild-on-demand') or
-            settings.CELERY_ALWAYS_EAGER):
+    if (
+        not waffle.switch_is_active("wiki-rebuild-on-demand")
+        or settings.CELERY_ALWAYS_EAGER
+    ):
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):
-        log.debug('Rebuild task already scheduled.')
+        log.debug("Rebuild task already scheduled.")
         return
 
     cache.set(settings.WIKI_REBUILD_TOKEN, True)
@@ -157,38 +169,41 @@ def schedule_rebuild_kb():
 @timeit
 def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
-    base_url = 'https://{0}%s'.format(Site.objects.get_current().domain)
+    base_url = "https://{0}%s".format(Site.objects.get_current().domain)
     docs = Document.objects.filter(id__in=doc_ids)
     try:
         pin_this_thread()  # Stick to master.
         for doc in docs:
             # Use django's reverse so the locale isn't included.
-            endpoint = django_reverse('wiki.document', args=[doc.slug])
+            endpoint = django_reverse("wiki.document", args=[doc.slug])
             doc.update(share_link=generate_short_url(base_url % endpoint))
-            statsd.incr('wiki.add_short_links.success')
+            statsd.incr("wiki.add_short_links.success")
     except BitlyRateLimitException:
         # The next run of the `generate_missing_share_links` cron job will
         # catch all documents that were unable to be processed.
-        statsd.incr('wiki.add_short_links.rate_limited')
+        statsd.incr("wiki.add_short_links.rate_limited")
         pass
     finally:
         unpin_this_thread()
 
 
-@task(rate_limit='3/h')
+@task(rate_limit="3/h")
 @timeit
 def rebuild_kb():
     """Re-render all documents in the KB in chunks."""
     cache.delete(settings.WIKI_REBUILD_TOKEN)
 
-    d = (Document.objects.using('default')
-         .filter(current_revision__isnull=False).values_list('id', flat=True))
+    d = (
+        Document.objects.using("default")
+        .filter(current_revision__isnull=False)
+        .values_list("id", flat=True)
+    )
 
     for chunk in chunked(d, 50):
         _rebuild_kb_chunk.apply_async(args=[chunk])
 
 
-@task(rate_limit='5/m')
+@task(rate_limit="5/m")
 @timeit
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
@@ -197,7 +212,7 @@ def _rebuild_kb_chunk(data):
     redirects won't be auto-pruned when they're 404s.
 
     """
-    log.info('Rebuilding %s documents.' % len(data))
+    log.info("Rebuilding %s documents." % len(data))
 
     pin_this_thread()  # Stick to master.
 
@@ -211,9 +226,12 @@ def _rebuild_kb_chunk(data):
             # If we know a redirect link to be broken (i.e. if it looks like a
             # link to a document but the document isn't there), log an error:
             url = document.redirect_url()
-            if (url and points_to_document_view(url) and
-                    not document.redirect_document()):
-                log.warn('Invalid redirect document: %d' % pk)
+            if (
+                url
+                and points_to_document_view(url)
+                and not document.redirect_document()
+            ):
+                log.warn("Invalid redirect document: %d" % pk)
 
             html = document.parse_and_calculate_links()
             if document.html != html:
@@ -222,30 +240,31 @@ def _rebuild_kb_chunk(data):
                 # signal handlers like the one that triggers reindexing.
                 # See bug 797038 and bug 797352.
                 Document.objects.filter(pk=pk).update(html=html)
-                statsd.incr('wiki.rebuild_chunk.change')
+                statsd.incr("wiki.rebuild_chunk.change")
             else:
-                statsd.incr('wiki.rebuild_chunk.nochange')
+                statsd.incr("wiki.rebuild_chunk.nochange")
         except Document.DoesNotExist:
-            message = 'Missing document: %d' % pk
+            message = "Missing document: %d" % pk
         except Revision.DoesNotExist:
-            message = 'Missing revision for document: %d' % pk
+            message = "Missing revision for document: %d" % pk
         except ValidationError as e:
-            message = 'ValidationError for %d: %s' % (pk, e.messages[0])
+            message = "ValidationError for %d: %s" % (pk, e.messages[0])
         except SlugCollision:
-            message = 'SlugCollision: %d' % pk
+            message = "SlugCollision: %d" % pk
         except TitleCollision:
-            message = 'TitleCollision: %d' % pk
+            message = "TitleCollision: %d" % pk
 
         if message:
             log.debug(message)
             messages.append(message)
     d = time.time() - start
-    statsd.timing('wiki.rebuild_chunk', int(round(d * 1000)))
+    statsd.timing("wiki.rebuild_chunk", int(round(d * 1000)))
 
     if messages:
-        subject = ('[%s] Exceptions raised in _rebuild_kb_chunk()' %
-                   settings.PLATFORM_NAME)
-        mail_admins(subject=subject, message='\n'.join(messages))
+        subject = (
+            "[%s] Exceptions raised in _rebuild_kb_chunk()" % settings.PLATFORM_NAME
+        )
+        mail_admins(subject=subject, message="\n".join(messages))
     if not transaction.get_connection().in_atomic_block:
         transaction.commit()
 
@@ -268,8 +287,9 @@ def maybe_award_badge(badge_template, year, user):
         creator=user,
         is_approved=True,
         created__gte=date(year, 1, 1),
-        created__lt=date(year + 1, 1, 1))
-    if badge_template['slug'] == WIKI_BADGES['kb-badge']['slug']:
+        created__lt=date(year + 1, 1, 1),
+    )
+    if badge_template["slug"] == WIKI_BADGES["kb-badge"]["slug"]:
         # kb-badge
         qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
     else:
@@ -310,8 +330,10 @@ def render_document_cascade(base):
             d.html = d.parse_and_calculate_links()
             d.save()
             done.add(d)
-            todo.update(l.linked_from for l in d.links_to()
-                        .filter(kind__in=['template', 'include']))
+            todo.update(
+                l.linked_from
+                for l in d.links_to().filter(kind__in=["template", "include"])
+            )
 
     finally:
         unpin_this_thread()

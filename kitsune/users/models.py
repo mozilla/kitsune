@@ -22,7 +22,7 @@ from kitsune.search.models import (
     SearchMappingType,
     SearchMixin,
     register_for_indexing,
-    register_mapping_type
+    register_mapping_type,
 )
 from kitsune.sumo import email_utils
 from kitsune.sumo.models import ModelBase, LocaleField
@@ -31,95 +31,134 @@ from kitsune.sumo.utils import auto_delete_files, chunked
 from kitsune.users.validators import TwitterValidator
 
 
-log = logging.getLogger('k.users')
+log = logging.getLogger("k.users")
 
 
-SHA1_RE = re.compile('^[a-f0-9]{40}$')
-CONTRIBUTOR_GROUP = 'Registered as contributor'
+SHA1_RE = re.compile("^[a-f0-9]{40}$")
+CONTRIBUTOR_GROUP = "Registered as contributor"
 
 
 @auto_delete_files
 class Profile(ModelBase, SearchMixin):
     """Profile model for django users."""
 
-    user = models.OneToOneField(User, primary_key=True,
-                                verbose_name=_lazy(u'User'))
-    name = models.CharField(max_length=255, null=True, blank=True,
-                            verbose_name=_lazy(u'Display name'))
+    user = models.OneToOneField(User, primary_key=True, verbose_name=_lazy(u"User"))
+    name = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name=_lazy(u"Display name")
+    )
     public_email = models.BooleanField(  # show/hide email
-        default=False, verbose_name=_lazy(u'Make my email public'))
-    avatar = models.ImageField(upload_to=settings.USER_AVATAR_PATH, null=True,
-                               blank=True, verbose_name=_lazy(u'Avatar'),
-                               max_length=settings.MAX_FILEPATH_LENGTH)
-    bio = models.TextField(null=True, blank=True,
-                           verbose_name=_lazy(u'Biography'),
-                           help_text=_lazy(u'Some HTML supported: &#x3C;abbr title&#x3E; ' +
-                                           '&#x3C;acronym title&#x3E; &#x3C;b&#x3E; ' +
-                                           '&#x3C;blockquote&#x3E; &#x3C;code&#x3E; ' +
-                                           '&#x3C;em&#x3E; &#x3C;i&#x3E; &#x3C;li&#x3E; ' +
-                                           '&#x3C;ol&#x3E; &#x3C;strong&#x3E; &#x3C;ul&#x3E;. ' +
-                                           'Links are forbidden.'))
-    website = models.URLField(max_length=255, null=True, blank=True,
-                              verbose_name=_lazy(u'Website'))
-    twitter = models.CharField(max_length=15, null=True, blank=True, validators=[TwitterValidator],
-                               verbose_name=_lazy(u'Twitter Username'))
-    facebook = models.URLField(max_length=255, null=True, blank=True,
-                               verbose_name=_lazy(u'Facebook URL'))
-    mozillians = models.CharField(max_length=255, null=True, blank=True,
-                                  verbose_name=_lazy(u'Mozillians Username'))
-    irc_handle = models.CharField(max_length=255, null=True, blank=True,
-                                  verbose_name=_lazy(u'IRC nickname'))
-    timezone = TimeZoneField(null=True, blank=True, default='US/Pacific',
-                             verbose_name=_lazy(u'Timezone'))
-    country = models.CharField(max_length=2, choices=COUNTRIES, null=True,
-                               blank=True, verbose_name=_lazy(u'Country'))
+        default=False, verbose_name=_lazy(u"Make my email public")
+    )
+    avatar = models.ImageField(
+        upload_to=settings.USER_AVATAR_PATH,
+        null=True,
+        blank=True,
+        verbose_name=_lazy(u"Avatar"),
+        max_length=settings.MAX_FILEPATH_LENGTH,
+    )
+    bio = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name=_lazy(u"Biography"),
+        help_text=_lazy(
+            u"Some HTML supported: &#x3C;abbr title&#x3E; "
+            + "&#x3C;acronym title&#x3E; &#x3C;b&#x3E; "
+            + "&#x3C;blockquote&#x3E; &#x3C;code&#x3E; "
+            + "&#x3C;em&#x3E; &#x3C;i&#x3E; &#x3C;li&#x3E; "
+            + "&#x3C;ol&#x3E; &#x3C;strong&#x3E; &#x3C;ul&#x3E;. "
+            + "Links are forbidden."
+        ),
+    )
+    website = models.URLField(
+        max_length=255, null=True, blank=True, verbose_name=_lazy(u"Website")
+    )
+    twitter = models.CharField(
+        max_length=15,
+        null=True,
+        blank=True,
+        validators=[TwitterValidator],
+        verbose_name=_lazy(u"Twitter Username"),
+    )
+    facebook = models.URLField(
+        max_length=255, null=True, blank=True, verbose_name=_lazy(u"Facebook URL")
+    )
+    mozillians = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name=_lazy(u"Mozillians Username"),
+    )
+    irc_handle = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name=_lazy(u"IRC nickname")
+    )
+    timezone = TimeZoneField(
+        null=True, blank=True, default="US/Pacific", verbose_name=_lazy(u"Timezone")
+    )
+    country = models.CharField(
+        max_length=2,
+        choices=COUNTRIES,
+        null=True,
+        blank=True,
+        verbose_name=_lazy(u"Country"),
+    )
     # No city validation
-    city = models.CharField(max_length=255, null=True, blank=True,
-                            verbose_name=_lazy(u'City'))
-    locale = LocaleField(default=settings.LANGUAGE_CODE,
-                         verbose_name=_lazy(u'Preferred language'))
+    city = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name=_lazy(u"City")
+    )
+    locale = LocaleField(
+        default=settings.LANGUAGE_CODE, verbose_name=_lazy(u"Preferred language")
+    )
     first_answer_email_sent = models.BooleanField(
-        default=False, help_text=_lazy(u'Has been sent a first answer contribution email.'))
+        default=False,
+        help_text=_lazy(u"Has been sent a first answer contribution email."),
+    )
     first_l10n_email_sent = models.BooleanField(
-        default=False, help_text=_lazy(u'Has been sent a first revision contribution email.'))
-    involved_from = models.DateField(null=True, blank=True,
-                                     verbose_name=_lazy(u'Involved with Mozilla from'))
-    csat_email_sent = models.DateField(null=True, blank=True,
-                                       verbose_name=_lazy(u'When the user was sent a community '
-                                                          u'health survey'))
+        default=False,
+        help_text=_lazy(u"Has been sent a first revision contribution email."),
+    )
+    involved_from = models.DateField(
+        null=True, blank=True, verbose_name=_lazy(u"Involved with Mozilla from")
+    )
+    csat_email_sent = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_lazy(u"When the user was sent a community " u"health survey"),
+    )
     is_fxa_migrated = models.BooleanField(default=False)
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
-    fxa_avatar = models.URLField(max_length=512, blank=True, default='')
-    products = models.ManyToManyField(Product, related_name='subscribed_users')
+    fxa_avatar = models.URLField(max_length=512, blank=True, default="")
+    products = models.ManyToManyField(Product, related_name="subscribed_users")
 
     class Meta(object):
-        permissions = (('view_karma_points', 'Can view karma points'),
-                       ('deactivate_users', 'Can deactivate users'),
-                       ('screen_share', 'Can screen share'),)
+        permissions = (
+            ("view_karma_points", "Can view karma points"),
+            ("deactivate_users", "Can deactivate users"),
+            ("screen_share", "Can screen share"),
+        )
 
     def __unicode__(self):
         try:
             return unicode(self.user)
         except Exception as exc:
-            return unicode('%d (%r)' % (self.pk, exc))
+            return unicode("%d (%r)" % (self.pk, exc))
 
     def get_absolute_url(self):
-        return reverse('users.profile', args=[self.user_id])
+        return reverse("users.profile", args=[self.user_id])
 
     def clear(self):
         """Clears out the users profile"""
-        self.name = ''
+        self.name = ""
         self.public_email = False
         self.avatar = None
-        self.bio = ''
-        self.website = ''
-        self.twitter = ''
-        self.facebook = ''
-        self.mozillians = ''
-        self.irc_handle = ''
-        self.city = ''
+        self.bio = ""
+        self.website = ""
+        self.twitter = ""
+        self.facebook = ""
+        self.mozillians = ""
+        self.irc_handle = ""
+        self.city = ""
         self.is_fxa_migrated = False
-        self.fxa_uid = ''
+        self.fxa_uid = ""
 
     @property
     def display_name(self):
@@ -128,22 +167,25 @@ class Profile(ModelBase, SearchMixin):
     @property
     def twitter_usernames(self):
         from kitsune.customercare.models import Reply
+
         return list(
             Reply.objects.filter(user=self.user)
-                         .values_list('twitter_username', flat=True)
-                         .distinct())
+            .values_list("twitter_username", flat=True)
+            .distinct()
+        )
 
     @classmethod
     def get_mapping_type(cls):
         return UserMappingType
 
     @classmethod
-    def get_serializer(cls, serializer_type='full'):
+    def get_serializer(cls, serializer_type="full"):
         # Avoid circular import
         from kitsune.users import api
-        if serializer_type == 'full':
+
+        if serializer_type == "full":
             return api.ProfileSerializer
-        elif serializer_type == 'fk':
+        elif serializer_type == "fk":
             return api.ProfileFKSerializer
         else:
             raise ValueError('Unknown serializer type "{}".'.format(serializer_type))
@@ -159,32 +201,28 @@ class Profile(ModelBase, SearchMixin):
 
         # Latest Army of Awesome reply:
         try:
-            aoa_reply = Reply.objects.filter(
-                user=self.user).latest('created')
+            aoa_reply = Reply.objects.filter(user=self.user).latest("created")
             dates.append(aoa_reply.created)
         except Reply.DoesNotExist:
             pass
 
         # Latest Support Forum answer:
         try:
-            answer = Answer.objects.filter(
-                creator=self.user).latest('created')
+            answer = Answer.objects.filter(creator=self.user).latest("created")
             dates.append(answer.created)
         except Answer.DoesNotExist:
             pass
 
         # Latest KB Revision edited:
         try:
-            revision = Revision.objects.filter(
-                creator=self.user).latest('created')
+            revision = Revision.objects.filter(creator=self.user).latest("created")
             dates.append(revision.created)
         except Revision.DoesNotExist:
             pass
 
         # Latest KB Revision reviewed:
         try:
-            revision = Revision.objects.filter(
-                reviewer=self.user).latest('reviewed')
+            revision = Revision.objects.filter(reviewer=self.user).latest("reviewed")
             # Old revisions don't have the reviewed date.
             dates.append(revision.reviewed or revision.created)
         except Revision.DoesNotExist:
@@ -203,14 +241,17 @@ class Profile(ModelBase, SearchMixin):
     def answer_helpfulness(self):
         # Avoid circular import
         from kitsune.questions.models import AnswerVote
-        return AnswerVote.objects.filter(answer__creator=self.user, helpful=True).count()
+
+        return AnswerVote.objects.filter(
+            answer__creator=self.user, helpful=True
+        ).count()
 
 
 @register_mapping_type
 class UserMappingType(SearchMappingType):
     list_keys = [
-        'twitter_usernames',
-        'itwitter_usernames',
+        "twitter_usernames",
+        "itwitter_usernames",
     ]
 
     @classmethod
@@ -219,41 +260,30 @@ class UserMappingType(SearchMappingType):
 
     @classmethod
     def get_index_group(cls):
-        return 'non-critical'
+        return "non-critical"
 
     @classmethod
     def get_mapping(cls):
         return {
-            'properties': {
-                'id': {'type': 'long'},
-                'model': {'type': 'string', 'index': 'not_analyzed'},
-                'url': {'type': 'string', 'index': 'not_analyzed'},
-                'indexed_on': {'type': 'integer'},
-
-                'username': {'type': 'string', 'index': 'not_analyzed'},
-                'display_name': {'type': 'string', 'index': 'not_analyzed'},
-                'twitter_usernames': {
-                    'type': 'string',
-                    'index': 'not_analyzed'
-                },
-
-                'last_contribution_date': {'type': 'date'},
-
+            "properties": {
+                "id": {"type": "long"},
+                "model": {"type": "string", "index": "not_analyzed"},
+                "url": {"type": "string", "index": "not_analyzed"},
+                "indexed_on": {"type": "integer"},
+                "username": {"type": "string", "index": "not_analyzed"},
+                "display_name": {"type": "string", "index": "not_analyzed"},
+                "twitter_usernames": {"type": "string", "index": "not_analyzed"},
+                "last_contribution_date": {"type": "date"},
                 # lower-cased versions for querying:
-                'iusername': {'type': 'string', 'index': 'not_analyzed'},
-                'idisplay_name': {'type': 'string', 'analyzer': 'whitespace'},
-                'itwitter_usernames': {
-                    'type': 'string',
-                    'index': 'not_analyzed'
+                "iusername": {"type": "string", "index": "not_analyzed"},
+                "idisplay_name": {"type": "string", "analyzer": "whitespace"},
+                "itwitter_usernames": {"type": "string", "index": "not_analyzed"},
+                "avatar": {"type": "string", "index": "not_analyzed"},
+                "suggest": {
+                    "type": "completion",
+                    "analyzer": "whitespace",
+                    "payloads": True,
                 },
-
-                'avatar': {'type': 'string', 'index': 'not_analyzed'},
-
-                'suggest': {
-                    'type': 'completion',
-                    'analyzer': 'whitespace',
-                    'payloads': True,
-                }
             }
         }
 
@@ -262,38 +292,37 @@ class UserMappingType(SearchMappingType):
         """Extracts interesting thing from a Thread and its Posts"""
         if obj is None:
             model = cls.get_model()
-            obj = model.objects.select_related('user').get(pk=obj_id)
+            obj = model.objects.select_related("user").get(pk=obj_id)
 
         if not obj.user.is_active:
             raise UnindexMeBro()
 
         d = {}
-        d['id'] = obj.pk
-        d['model'] = cls.get_mapping_type_name()
-        d['url'] = obj.get_absolute_url()
-        d['indexed_on'] = int(time.time())
+        d["id"] = obj.pk
+        d["model"] = cls.get_mapping_type_name()
+        d["url"] = obj.get_absolute_url()
+        d["indexed_on"] = int(time.time())
 
-        d['username'] = obj.user.username
-        d['display_name'] = obj.display_name
-        d['twitter_usernames'] = obj.twitter_usernames
+        d["username"] = obj.user.username
+        d["display_name"] = obj.display_name
+        d["twitter_usernames"] = obj.twitter_usernames
 
-        d['last_contribution_date'] = obj.last_contribution_date
+        d["last_contribution_date"] = obj.last_contribution_date
 
-        d['iusername'] = obj.user.username.lower()
-        d['idisplay_name'] = obj.display_name.lower()
-        d['itwitter_usernames'] = [u.lower() for u in obj.twitter_usernames]
+        d["iusername"] = obj.user.username.lower()
+        d["idisplay_name"] = obj.display_name.lower()
+        d["itwitter_usernames"] = [u.lower() for u in obj.twitter_usernames]
 
         from kitsune.users.templatetags.jinja_helpers import profile_avatar
-        d['avatar'] = profile_avatar(obj.user, size=120)
 
-        d['suggest'] = {
-            'input': [
-                d['iusername'],
-                d['idisplay_name']
-            ],
-            'output': _(u'{displayname} ({username})').format(
-                displayname=d['display_name'], username=d['username']),
-            'payload': {'user_id': d['id']},
+        d["avatar"] = profile_avatar(obj.user, size=120)
+
+        d["suggest"] = {
+            "input": [d["iusername"], d["idisplay_name"]],
+            "output": _(u"{displayname} ({username})").format(
+                displayname=d["display_name"], username=d["username"]
+            ),
+            "payload": {"user_id": d["id"]},
         }
 
         return d
@@ -301,25 +330,23 @@ class UserMappingType(SearchMappingType):
     @classmethod
     def suggest_completions(cls, text):
         """Suggest completions for the text provided."""
-        USER_SUGGEST = 'user-suggest'
+        USER_SUGGEST = "user-suggest"
         es = UserMappingType.search().get_es()
 
-        results = es.suggest(index=cls.get_index(), body={
-            USER_SUGGEST: {
-                'text': text.lower(),
-                'completion': {
-                    'field': 'suggest'
-                }
-            }
-        })
+        results = es.suggest(
+            index=cls.get_index(),
+            body={
+                USER_SUGGEST: {"text": text.lower(), "completion": {"field": "suggest"}}
+            },
+        )
 
-        if results[USER_SUGGEST][0]['length'] > 0:
-            return results[USER_SUGGEST][0]['options']
+        if results[USER_SUGGEST][0]["length"] > 0:
+            return results[USER_SUGGEST][0]["options"]
 
         return []
 
 
-register_for_indexing('users', Profile)
+register_for_indexing("users", Profile)
 
 
 def get_profile(u):
@@ -329,38 +356,38 @@ def get_profile(u):
         return None
 
 
-register_for_indexing(
-    'users',
-    User,
-    instance_to_indexee=get_profile)
+register_for_indexing("users", User, instance_to_indexee=get_profile)
 
 
 class Setting(ModelBase):
     """User specific value per setting"""
-    user = models.ForeignKey(User, verbose_name=_lazy(u'User'),
-                             related_name='settings')
+
+    user = models.ForeignKey(User, verbose_name=_lazy(u"User"), related_name="settings")
 
     name = models.CharField(max_length=100)
-    value = models.CharField(blank=True, max_length=60,
-                             verbose_name=_lazy(u'Value'))
+    value = models.CharField(blank=True, max_length=60, verbose_name=_lazy(u"Value"))
 
     class Meta(object):
-        unique_together = (('user', 'name'),)
+        unique_together = (("user", "name"),)
 
     def __unicode__(self):
-        return u'%s %s:%s' % (self.user, self.name, self.value or u'[none]')
+        return u"%s %s:%s" % (self.user, self.name, self.value or u"[none]")
 
     @classmethod
     def get_for_user(cls, user, name):
         from kitsune.users.forms import SettingsForm
+
         form = SettingsForm()
         if name not in form.fields.keys():
-            raise KeyError(("'{name}' is not a field in "
-                            "user.forms.SettingsFrom()").format(name=name))
+            raise KeyError(
+                ("'{name}' is not a field in " "user.forms.SettingsFrom()").format(
+                    name=name
+                )
+            )
         try:
             setting = Setting.objects.get(user=user, name=name)
         except Setting.DoesNotExist:
-            value = form.fields[name].initial or ''
+            value = form.fields[name].initial or ""
             setting = Setting.objects.create(user=user, name=name, value=value)
         # Cast to the field's Python type.
         return form.fields[name].to_python(setting.value)
@@ -376,9 +403,17 @@ class ConfirmationManager(models.Manager):
     and sending email confirmations.
     Activation should be done in specific managers.
     """
-    def _send_email(self, confirmation_profile, url,
-                    subject, text_template, html_template,
-                    send_to, **kwargs):
+
+    def _send_email(
+        self,
+        confirmation_profile,
+        url,
+        subject,
+        text_template,
+        html_template,
+        send_to,
+        **kwargs
+    ):
         """
         Send an email using a passed in confirmation profile.
 
@@ -386,17 +421,19 @@ class ConfirmationManager(models.Manager):
         email to send_to.
         """
         current_site = Site.objects.get_current()
-        email_kwargs = {'activation_key': confirmation_profile.activation_key,
-                        'domain': current_site.domain,
-                        'activate_url': url,
-                        'login_url': reverse('users.login'),
-                        'reg': 'main'}
+        email_kwargs = {
+            "activation_key": confirmation_profile.activation_key,
+            "domain": current_site.domain,
+            "activate_url": url,
+            "login_url": reverse("users.login"),
+            "reg": "main",
+        }
         email_kwargs.update(kwargs)
 
         # RegistrationProfile doesn't have a locale attribute. So if
         # we get one of those, then we have to get the real profile
         # from the user.
-        if hasattr(confirmation_profile, 'locale'):
+        if hasattr(confirmation_profile, "locale"):
             locale = confirmation_profile.locale
         else:
             locale = confirmation_profile.user.profile.locale
@@ -409,7 +446,8 @@ class ConfirmationManager(models.Manager):
                 html_template=html_template,
                 context_vars=email_kwargs,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                to_email=send_to)
+                to_email=send_to,
+            )
 
             return mail
 
@@ -459,8 +497,8 @@ class RegistrationManager(ConfirmationManager):
                 profile = self.get(activation_key=activation_key)
             except self.model.DoesNotExist:
                 profile = None
-                statsd.incr('user.activate-error.does-not-exist')
-                reason = 'key not found'
+                statsd.incr("user.activate-error.does-not-exist")
+                reason = "key not found"
             if profile:
                 if not profile.activation_key_expired():
                     user = profile.user
@@ -476,30 +514,40 @@ class RegistrationManager(ConfirmationManager):
                         self._send_email(
                             confirmation_profile=profile,
                             url=None,
-                            subject=_('Welcome to SUMO!'),
-                            text_template='users/email/contributor.ltxt',
-                            html_template='users/email/contributor.html',
+                            subject=_("Welcome to SUMO!"),
+                            text_template="users/email/contributor.ltxt",
+                            html_template="users/email/contributor.html",
                             send_to=user.email,
-                            contributor=user)
+                            contributor=user,
+                        )
 
                     return user
                 else:
-                    statsd.incr('user.activate-error.expired')
-                    reason = 'key expired'
+                    statsd.incr("user.activate-error.expired")
+                    reason = "key expired"
         else:
-            statsd.incr('user.activate-error.invalid-key')
-            reason = 'invalid key'
+            statsd.incr("user.activate-error.invalid-key")
+            reason = "invalid key"
 
-        log.warning(u'User activation failure ({r}): {k}'.format(
-            r=reason, k=activation_key))
+        log.warning(
+            u"User activation failure ({r}): {k}".format(r=reason, k=activation_key)
+        )
 
         return False
 
-    def create_inactive_user(self, username, password, email,
-                             locale=settings.LANGUAGE_CODE,
-                             text_template=None, html_template=None,
-                             subject=None, email_data=None,
-                             volunteer_interest=False, **kwargs):
+    def create_inactive_user(
+        self,
+        username,
+        password,
+        email,
+        locale=settings.LANGUAGE_CODE,
+        text_template=None,
+        html_template=None,
+        subject=None,
+        email_data=None,
+        volunteer_interest=False,
+        **kwargs
+    ):
         """
         Create a new, inactive ``User`` and ``Profile``, generates a
         ``RegistrationProfile`` and email its activation key to the
@@ -518,32 +566,40 @@ class RegistrationManager(ConfirmationManager):
             html_template,
             subject,
             email_data,
-            **kwargs)
+            **kwargs
+        )
 
         if volunteer_interest:
-            statsd.incr('user.registered-as-contributor')
+            statsd.incr("user.registered-as-contributor")
             group = Group.objects.get(name=CONTRIBUTOR_GROUP)
             new_user.groups.add(group)
 
         return new_user
 
-    def send_confirmation_email(self, registration_profile,
-                                text_template=None, html_template=None,
-                                subject=None, email_data=None, **kwargs):
+    def send_confirmation_email(
+        self,
+        registration_profile,
+        text_template=None,
+        html_template=None,
+        subject=None,
+        email_data=None,
+        **kwargs
+    ):
         """Send the user confirmation email."""
         user_id = registration_profile.user.id
         key = registration_profile.activation_key
         self._send_email(
             confirmation_profile=registration_profile,
-            url=reverse('users.activate', args=[user_id, key]),
-            subject=subject or _('Please confirm your email address'),
-            text_template=text_template or 'users/email/activate.ltxt',
-            html_template=html_template or 'users/email/activate.html',
+            url=reverse("users.activate", args=[user_id, key]),
+            subject=subject or _("Please confirm your email address"),
+            text_template=text_template or "users/email/activate.ltxt",
+            html_template=html_template or "users/email/activate.html",
             send_to=registration_profile.user.email,
             expiration_days=settings.ACCOUNT_ACTIVATION_DAYS,
             username=registration_profile.user.username,
             email_data=email_data,
-            **kwargs)
+            **kwargs
+        )
 
     def delete_expired_users(self):
         """
@@ -559,17 +615,17 @@ class RegistrationManager(ConfirmationManager):
         days_valid = settings.ACCOUNT_ACTIVATION_DAYS
         expired = datetime.now() - timedelta(days=days_valid)
         prof_ids = self.filter(user__date_joined__lt=expired)
-        prof_ids = prof_ids.values_list('id', flat=True)
+        prof_ids = prof_ids.values_list("id", flat=True)
         for chunk in chunked(prof_ids, 1000):
             _delete_registration_profiles_chunk.apply_async(args=[chunk])
 
 
 @task
 def _delete_registration_profiles_chunk(data):
-    log_msg = u'Deleting {num} expired registration profiles.'
+    log_msg = u"Deleting {num} expired registration profiles."
     log.info(log_msg.format(num=len(data)))
     qs = RegistrationProfile.objects.filter(id__in=data)
-    for profile in qs.select_related('user'):
+    for profile in qs.select_related("user"):
         user = profile.user
         profile.delete()
         if user and not user.is_active:
@@ -581,12 +637,12 @@ class EmailChangeManager(ConfirmationManager):
         """Ask for confirmation before changing a user's email."""
         self._send_email(
             confirmation_profile=email_change,
-            url=reverse('users.confirm_email',
-                        args=[email_change.activation_key]),
-            subject=_('Please confirm your email address'),
-            text_template='users/email/confirm_email.ltxt',
-            html_template='users/email/confirm_email.html',
-            send_to=new_email)
+            url=reverse("users.confirm_email", args=[email_change.activation_key]),
+            subject=_("Please confirm your email address"),
+            text_template="users/email/confirm_email.ltxt",
+            html_template="users/email/confirm_email.html",
+            send_to=new_email,
+        )
 
 
 class RegistrationProfile(models.Model):
@@ -598,18 +654,20 @@ class RegistrationProfile(models.Model):
     of this model; the provided manager includes methods
     for creating and activating new accounts.
     """
-    user = models.ForeignKey(User, unique=True, verbose_name=_lazy(u'user'))
-    activation_key = models.CharField(verbose_name=_lazy(u'activation key'),
-                                      max_length=40)
+
+    user = models.ForeignKey(User, unique=True, verbose_name=_lazy(u"user"))
+    activation_key = models.CharField(
+        verbose_name=_lazy(u"activation key"), max_length=40
+    )
 
     objects = RegistrationManager()
 
     class Meta:
-        verbose_name = _lazy(u'registration profile')
-        verbose_name_plural = _lazy(u'registration profiles')
+        verbose_name = _lazy(u"registration profile")
+        verbose_name_plural = _lazy(u"registration profiles")
 
     def __unicode__(self):
-        return u'Registration information for %s' % self.user
+        return u"Registration information for %s" % self.user
 
     def activation_key_expired(self):
         """
@@ -628,32 +686,39 @@ class RegistrationProfile(models.Model):
         """
         exp_date = timedelta(days=settings.ACCOUNT_ACTIVATION_DAYS)
         return self.user.date_joined + exp_date <= datetime.now()
+
     activation_key_expired.boolean = True
 
 
 class EmailChange(models.Model):
     """Stores email with activation key when user requests a change."""
+
     ACTIVATED = u"ALREADY_ACTIVATED"
 
-    user = models.ForeignKey(User, unique=True, verbose_name=_lazy(u'user'))
-    activation_key = models.CharField(verbose_name=_lazy(u'activation key'),
-                                      max_length=40)
+    user = models.ForeignKey(User, unique=True, verbose_name=_lazy(u"user"))
+    activation_key = models.CharField(
+        verbose_name=_lazy(u"activation key"), max_length=40
+    )
     email = models.EmailField(db_index=True, null=True)
 
     objects = EmailChangeManager()
 
     def __unicode__(self):
-        return u'Change email request to %s for %s' % (self.email, self.user)
+        return u"Change email request to %s for %s" % (self.email, self.user)
 
 
 class Deactivation(models.Model):
     """Stores user deactivation logs."""
-    user = models.ForeignKey(User, verbose_name=_lazy(u'user'),
-                             related_name='+')
-    moderator = models.ForeignKey(User, verbose_name=_lazy(u'moderator'),
-                                  related_name='deactivations')
+
+    user = models.ForeignKey(User, verbose_name=_lazy(u"user"), related_name="+")
+    moderator = models.ForeignKey(
+        User, verbose_name=_lazy(u"moderator"), related_name="deactivations"
+    )
     date = models.DateTimeField(default=datetime.now)
 
     def __unicode__(self):
-        return u'%s was deactivated by %s on %s' % (self.user, self.moderator,
-                                                    self.date)
+        return u"%s was deactivated by %s on %s" % (
+            self.user,
+            self.moderator,
+            self.date,
+        )
