@@ -60,20 +60,21 @@
             {% set watch = _('Watch this thread') %}
             <input type="hidden" name="watch" value="yes" />
           {% endif %}
-          <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+          <button type="submit" title="{{ watch }}" class="sumo-button button-sm" id="watch-thread-toggle">{{ watch }}</button>
         </form>
       {% endif %}
 
       {% if posts %}
         <ol class="posts">
           {% for post in posts.object_list %}
-            <li class="cf" id="post-{{ post.id }}">
+            <li class="forum--entry" id="post-{{ post.id }}">
               {% include "kbforums/includes/post.html" %}
             </li>
           {% endfor %}
         </ol>
 
         {{ posts|paginator }}
+
 
       {% else %}
         <p>{{ _('Oh, no! Looks like there are no posts!') }}</p>
