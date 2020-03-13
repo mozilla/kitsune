@@ -190,7 +190,8 @@
   margin-top: p.$spacing-md;
   margin-bottom: p.$spacing-sm;
 
-  &:first-child {
+  &:first-child,
+  &:nth-child(2) {
     margin-top: 0;
   }
 
