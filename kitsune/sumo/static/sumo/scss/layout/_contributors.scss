@@ -72,6 +72,10 @@
       margin: 0 0 p.$spacing-md 0;
     }
 
+    img {
+      flex: 0 0 auto;
+    }
+
     @media #{p.$mq-md} {
       flex-wrap: nowrap;
 
