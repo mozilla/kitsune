@@ -111,6 +111,10 @@
 
       &.align-full {
         justify-content: space-between;
+
+        .sumo-button {
+          margin: 0;
+        }
       }
 
       &.align-center {
