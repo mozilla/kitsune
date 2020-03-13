@@ -33,8 +33,8 @@
   <div class="mzp-c-menu-list">
     <span class="icon-button" data-has-dropdown>more options</span>
     <ul class="mzp-c-menu-list-list">
-      {% if post.author != user %}
-      <li class="mzp-c-menu-list-item clear-button-styles">{{ private_message(post.author) }}</li>
+      {% if post.creator != request.user %}
+        <li class="mzp-c-menu-list-item clear-button-styles">{{ private_message(post.creator) }}</li>
       {% endif %}
       {% if post.id and (perms.kbforums.change_post or (post.creator == request.user and not thread.is_locked)) %}
         <li class="mzp-c-menu-list-item"><a href="{{ url('wiki.discuss.edit_post', document.slug, thread.id, post.id) }}">{{ _('Edit this post') }}</a></li>
