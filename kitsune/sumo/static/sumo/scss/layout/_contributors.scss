@@ -89,6 +89,11 @@
     width: p.$spacing-lg;
     height: p.$spacing-lg;
   }
+
+  .no .yes-svg,
+  .yes .no-svg {
+    display: none;
+  }
 }
 
 .hero-bar {

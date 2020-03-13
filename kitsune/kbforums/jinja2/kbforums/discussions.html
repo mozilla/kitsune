@@ -48,15 +48,23 @@
                           {% set watch = _('You are watching this thread') %}
                           <input type="hidden" name="watch" value="no" />
                           <a class="yes" title="{{ watch }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <svg class="yes-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                               <path stroke="var(--color-success)" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <svg  class="no-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                              <g stroke="var(--color-error)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
+                                <path d="M6 6l12 12M6 18L18 6"/>
+                              </g>
                             </svg>
                           </a>
                         {% else %}
                           {% set watch = _('You are not watching this thread') %}
                           <input type="hidden" name="watch" value="yes" />
                           <a class="no" title="{{ watch }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <svg class="yes-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                              <path stroke="var(--color-success)" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <svg  class="no-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                               <g stroke="var(--color-error)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
                                 <path d="M6 6l12 12M6 18L18 6"/>
                               </g>
