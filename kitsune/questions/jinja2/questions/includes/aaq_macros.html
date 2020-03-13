@@ -198,43 +198,6 @@
 
 
 {% macro troubleshooting_instructions(field) %}
-  <div id="addon-section">
-    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="sumo-button secondary-button" id="add-troubleshooting-info">
-      {{ _('Automatically add') }}
-    </a>
-    <p>{{ field.help_text|safe }}</p>
-    <p id="troubleshooting-manual">
-      {% trans url='#troubleshooting-help,#troubleshooting-field' %}
-        A window will open in the top corner. Click Allow, and then click
-        Install. If the automated way doesn't work,
-        <a class="expander" href="{{ url }}">try these manual steps</a>.
-      {% endtrans %}
-    </p>
-    <div class="card is-shaded hide-until-expanded" id="troubleshooting-help">
-    <ol class="mzp-u-list-styled">
-      <li>{{ _('Open <em>Help &gt; Troubleshooting Information</em>.') }}
-        <ul class="mzp-u-list-styled">
-          <li>{{ _('Look at the top of your screen, and click the menu item called <em>Help</em>.') }}</li>
-          <li>{{ _('A small box will open. Click on an item called <em>Troubleshooting Information</em>.') }}</li>
-        </ul>
-      </li>
-      <li>{{ _('A new window will open. Click on a button called <em>Copy text to clipboard</em>.') }}</li>
-      <li>{{ _('Paste the info in the text box below.') }}
-        <ul class="mzp-u-list-styled">
-          <li>{{ _('Click on the empty box above this text.') }}</li>
-          <li>{{ _('Look at the top of your screen, and click the menu item called <em>Edit</em>.') }}</li>
-          <li>
-            {% trans %}
-              A small box will open. Click on the item called <em>Paste</em>.
-              Alternatively, type <em>Ctrl+V</em> or <em>Command+V</em>.
-            {% endtrans %}
-          </li>
-          <li>{{ _('Some text will appear in the empty box.') }}</li>
-        </ul>
-      </li>
-    </ol>
-    </div>
-  </div>
   <div id="api-section">
     <a href="#" class="sumo-button primary-button" id="share-data">
       {{ _('Share Data') }}

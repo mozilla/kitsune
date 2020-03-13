@@ -1030,12 +1030,6 @@ API_LIMIT_PER_PAGE = 0
 # Change the default for XFrameOptionsMiddleware.
 X_FRAME_OPTIONS = 'DENY'
 
-# Where to find the about:support troubleshooting addon.
-# This is a link to the latest version, whatever that may be.
-TROUBLESHOOTER_ADDON_URL = config(
-    'TROUBLESHOOTER_ADDON_URL',
-    default='https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
-
 # SurveyGizmo API
 SURVEYGIZMO_USER = config('SURVEYGIZMO_USER', default=None)
 SURVEYGIZMO_PASSWORD = config('SURVEYGIZMO_PASSWORD', default=None)
