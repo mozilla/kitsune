@@ -107,6 +107,7 @@ def private_message(user):
         )
     )
 
+
 @library.global_function
 def private_message_link(user):
     """Return a link to private message the user."""
