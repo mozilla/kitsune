@@ -173,7 +173,8 @@
 
 // This set of styles overrides defaults so classes don't need to be used
 // on headlines, etc. on articles.
-.document--content {
+.document--content,
+.forum--entry-content {
   #toc {
     padding: p.$spacing-lg;
     border-radius: var(--global-radius);
@@ -189,6 +190,10 @@
   h1, h2, h3, h4, h5, h6 {
     @include c.sumo-card-heading;
     margin-top: 2em;
+
+    &:first-child {
+      margin-top: 0;
+    }
   }
 
   .wiki-image {
