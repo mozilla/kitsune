@@ -77,10 +77,9 @@
   {% with media_list=media %}
     {% include 'gallery/includes/media_list.html' %}
   {% endwith %}
-
-  {% if user.is_authenticated() %}
-    {% include 'gallery/includes/upload_media_form.html' %}
-  {% endif %}
   </div>
 </section>
+{% if user.is_authenticated() %}
+  {% include 'gallery/includes/upload_media_form.html' %}
+{% endif %}
 {% endblock %}

@@ -2,9 +2,9 @@
 
 {# these macros are only used here so it's better to define them locally #}
 {% macro raw_row(html, classes, label) %}
-  <div class="field">
-    <label class="row-left {{ classes }}">{{ label }}</label>
-    <div class="row-right {{ classes }}">{{ html|safe }}</div>
+  <div class="field {{ classes }}">
+    <label>{{ label }}</label>
+    {{ html|safe }}
   </div>
 {% endmacro %}
 
@@ -18,7 +18,7 @@
 {% macro form_row(form, field_name, classes='') %}
   {% set html = form[field_name] %}
   {% if form[field_name].help_text %}
-    {% set html = to_unicode('{old_html}<div class="details">{details}</div>')|f(
+    {% set html = to_unicode('{old_html}<div class="details help-text">{details}</div>')|f(
                     old_html=html, details=form[field_name].help_text) %}
   {% endif %}
   {{ raw_row(html,
@@ -77,7 +77,7 @@ TODO: better error messages ("invalid file" means too big, or extension, etc)
 
 #}
 <div
-  class="hide-until-expanded"
+  class="gallery-upload-modal hide-until-expanded attachments-upload"
   id="gallery-upload-modal"
   title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}"
   data-modal="true"

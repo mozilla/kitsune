@@ -10,30 +10,31 @@
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="locale-listing">
-      <h1>{{ title }}</h1>
 
-      <div id="locale-leaders" class="editable">
+    <article id="locale-listing">
+      <h1 class="sumo-page-heading">{{ title }}</h1>
+
+      <div id="locale-leaders" class="editable sumo-page-section--inner">
+        <h2 class="sumo-page-subheading">{{ _('Locale Leaders') }}</h2>
         {% if user_can_edit %}
-          <a class="edit" href="#group-leaders">{{ _('Edit locale leaders') }}</a>
-        {% endif %}
-        <h2>{{ _('Locale Leaders') }}</h2>
-        {% if user_can_edit %}
-          <form id="add-leader-form" class="edit-mode" action="{{ url('wiki.add_locale_leader', locale.locale) }}" method="POST">
-            {% csrf_token %}
-            {{ errorlist(leader_form) }}
+        <a class="edit" href="#group-leaders">{{ _('Edit locale leaders') }}</a>
+        <form id="add-leader-form" class="edit-mode" action="{{ url('wiki.add_locale_leader', locale.locale) }}" method="POST">
+          {% csrf_token %}
+          <div class="field {% if leader_form.users.errors %}has-error{% endif %}">
             {{ leader_form.users|safe }}
-            <input type="submit" value="{{ _('Add Leader') }}" />
-          </form>
+            {{ leader_form.users.errors }}
+          </div>
+
+          <input type="submit" class="sumo-button secondary-button" value="{{ _('Add Leader') }}" />
+        </form>
         {% endif %}
         <ul class="users leaders cf">
           {% for user in leaders %}
-            <li class="grid_4">
+            <li>
               {{ user_row(user) }}
               {% if user_can_edit %}
                 <div class="remove edit-mode">
-                  <a href="{{ url('wiki.remove_locale_leader', locale.locale, user.id) }}" title="{{ _('Remove user from locale leaders') }}">&#x2716;</a>
+                  <a href="{{ url('wiki.remove_locale_leader', locale.locale, user.id) }}" class="sumo-delete-button" title="{{ _('Remove user from locale leaders') }}">&times;</a>
                 </div>
               {% endif %}
             </li>
@@ -41,26 +42,26 @@
         </ul>
       </div>
 
-      <div id="locale-reviewers" class="editable">
+      <div id="locale-reviewers" class="editable sumo-page-section--inner">
+        <h2 class="sumo-page-subheading">{{ _('Locale Reviewers') }}</h2>
         {% if user_can_edit %}
           <a class="edit" href="#group-members">{{ _('Edit locale reviewers') }}</a>
-        {% endif %}
-        <h2>{{ _('Locale Reviewers') }}</h2>
-        {% if user_can_edit %}
           <form id="add-reviewer-form" class="edit-mode" action="{{ url('wiki.add_locale_reviewer', locale.locale) }}" method="POST">
             {% csrf_token %}
-            {{ errorlist(reviewer_form) }}
+            <div class="field {% if reviewer_form.users.errors %}has-error{% endif %}">
             {{ reviewer_form.users|safe }}
-            <input type="submit" value="{{ _('Add Reviewer') }}" />
+            {{ reviewer_form.users.errors }}
+            </div>
+            <input type="submit" class="sumo-button secondary-button" value="{{ _('Add Reviewer') }}" />
           </form>
         {% endif %}
         <ul class="users reviewers cf">
           {% for user in reviewers %}
-            <li class="grid_4">
+            <li>
               {{ user_row(user) }}
               {% if user_can_edit %}
                 <div class="remove edit-mode">
-                  <a href="{{ url('wiki.remove_locale_reviewer', locale.locale, user.id) }}" title="{{ _('Remove user from locale reviewers') }}">&#x2716;</a>
+                  <a href="{{ url('wiki.remove_locale_reviewer', locale.locale, user.id) }}" class="sumo-delete-button" title="{{ _('Remove user from locale reviewers') }}">&times;</a>
                 </div>
               {% endif %}
             </li>
@@ -68,26 +69,26 @@
         </ul>
       </div>
 
-      <div id="locale-editors" class="editable">
+      <div id="locale-editors" class="editable sumo-page-section--inner">
+        <h2 class="sumo-page-subheading">{{ _('Locale Editors') }}</h2>
         {% if user_can_edit %}
           <a class="edit" href="#group-members">{{ _('Edit locale editors') }}</a>
-        {% endif %}
-        <h2>{{ _('Locale Editors') }}</h2>
-        {% if user_can_edit %}
           <form id="add-editor-form" class="edit-mode" action="{{ url('wiki.add_locale_editor', locale.locale) }}" method="POST">
             {% csrf_token %}
-            {{ errorlist(editor_form) }}
-            {{ editor_form.users|safe }}
-            <input type="submit" value="{{ _('Add Editor') }}" />
+            <div class="field {% if editor_form.users.errors %}has-error{% endif %}">
+              {{ editor_form.users|safe }}
+              {{ editor_form.users.errors }}
+            </div>
+            <input type="submit" class="sumo-button secondary-button" value="{{ _('Add Editor') }}" />
           </form>
         {% endif %}
         <ul class="users editors cf">
           {% for user in editors %}
-            <li class="grid_4">
+            <li>
               {{ user_row(user) }}
               {% if user_can_edit %}
                 <div class="remove edit-mode">
-                  <a href="{{ url('wiki.remove_locale_editor', locale.locale, user.id) }}" title="{{ _('Remove user from locale editors') }}">&#x2716;</a>
+                  <a class="sumo-delete-button" href="{{ url('wiki.remove_locale_editor', locale.locale, user.id) }}" title="{{ _('Remove user from locale editors') }}">&times;</a>
                 </div>
               {% endif %}
             </li>
@@ -95,19 +96,17 @@
         </ul>
       </div>
 
-      <div id="active-contributors">
-        <h2>{{ _('{count} Active Contributors (last 90 days)')|f(count=active|count) }}</h2>
+      <div id="active-contributors sumo-page-section--inner">
+        <h2 class="sumo-page-subheading">{{ _('{count} Active Contributors (last 90 days)')|f(count=active|count) }}</h2>
         <ul class="users active cf">
           {% for user in active %}
-            <li class="grid_4">
+            <li>
               {{ user_row(user) }}
             </li>
           {% endfor %}
         </ul>
       </div>
-
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}
@@ -115,13 +114,19 @@
 {% endblock %}
 
 {% macro user_row(user) -%}
+<div class="avatar-details user-meta">
   <div class="avatar">
     <a href="{{ profile_url(user) }}">
       <img src="{{ profile_avatar(user) }}" alt="" />
     </a>
   </div>
-  <div class="info">
-    <a href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
-    {{ private_message(user) }}
+  <div class="user">
+    <div class="asked-by">
+      <a class="author-name" href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
+    </div>
+    <span class="asked-on">
+      {{ private_message_link(user) }}
+    </span>
   </div>
+</div>
 {%- endmacro %}

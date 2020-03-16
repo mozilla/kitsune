@@ -263,3 +263,15 @@ input[type=submit]:focus {
   }
 
 }
+
+.sumo-delete-button {
+  font-size: 24px;
+  height: 24px;
+  width: 24px;
+  color: var(--color-error);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-red-10) !important;
+  }
+}
