@@ -300,6 +300,12 @@
     color: var(--color-text);
   }
 
+  &--centered-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   @media #{p.$mq-md} {
     &--callout {
       &-wrap-narrow {
