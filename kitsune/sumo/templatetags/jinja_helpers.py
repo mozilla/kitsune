@@ -266,7 +266,7 @@ def datetimeformat(context, value, format="shortdatetime"):
                     pass
             request.session["timezone"] = convert_tzinfo
         else:
-            convert_tzinfo = request.session["timezone"]
+            convert_tzinfo = request.session["timezone"] or default_tzinfo
 
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
