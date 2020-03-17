@@ -19,6 +19,35 @@
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
+  <ul class="progress">
+    <li class="progress--item is-current">
+      <a class="progress--link" href="#" aria-current="page">
+        <span class="progress--link-inner">
+          <span class="progress--dot"></span>
+          <span class="progress--label">Select Product</span>
+        </span>
+      </a>
+    </li>
+    <li class="progress--item">
+      <a class="progress--link" href="#" disabled>
+        <span class="progress--link-inner">
+          <span class="progress--dot"></span>
+          <span class="progress--label">Explore Solutions</span>
+        </span>
+      </a>
+    </li>
+    <li class="progress--item">
+      <a class="progress--link" href="#" disabled>
+        <span class="progress--link-inner">
+          <span class="progress--dot"></span>
+          <span class="progress--label">Create Question</span>
+        </span>
+      </a>
+    </li>
+  </ul>
+
+
+
   <h1 class="sumo-page-heading">{{ _('Ask the Community') }}</h1>
   <h2 class="sumo-page-subheading">{{ _('Which product do you need help with?') }}</h2>
   <div class="sumo-page-section--inner">
@@ -50,6 +79,9 @@
           </div>
         </div>
         {% endfor %}
+        <div class="card card--centered-button">
+          <a class="sumo-button primary-button button-lg" href="{{ url('questions.home') }}">{{ _('See All Product Forums')}}</a>
+        </div>
       </div>
     </div>
   </div>
@@ -74,17 +106,36 @@
 {% macro select_category(product, search_box) -%}
 <section class="sumo-page-section hide-when-search-is-active shade-bg">
   <div class="mzp-l-content">
+
+    <ul class="progress">
+      <li class="progress--item is-complete">
+        <a class="progress--link" href="{{ url('questions.aaq_step1') }}">
+          <span class="progress--link-inner">
+            <span class="progress--dot"></span>
+            <span class="progress--label">Select Product</span>
+          </span>
+        </a>
+      </li>
+      <li class="progress--item is-current">
+        <a class="progress--link" href="#" aria-current="page">
+          <span class="progress--link-inner">
+            <span class="progress--dot"></span>
+            <span class="progress--label">Explore Solutions</span>
+          </span>
+        </a>
+      </li>
+      <li class="progress--item">
+        <a class="progress--link" href="#" disabled>
+          <span class="progress--link-inner">
+            <span class="progress--dot"></span>
+            <span class="progress--label">Create Question</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main">
-
-        <div class="breadcrumbs">
-          <ol class="breadcrumbs--list">
-            <li><a href="#TODO">{{ _('Select Product')}}</a></li>
-            <li>{{ product.name }} (TODO - needs proper breadcrumb config)</li>
-          </ol>
-        </div>
-
-
         <img class="page-heading--logo" src="{{ product.image }}" alt="{{ product.name }} logo #TODO">
         <h1 class="sumo-page-heading ">
           <span class="product-title-text">{{ product.name }} {{ _('Solutions') }}</span>
