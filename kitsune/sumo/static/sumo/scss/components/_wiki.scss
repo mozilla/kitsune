@@ -428,7 +428,7 @@ article {
 
   .compare {
     height: 20px;
-    padding: 0 0 0 50px;
+    padding: 0;
     text-align: left;
 
     &.top {
@@ -836,11 +836,6 @@ body.review {
 #approve-modal {
   p {
     margin: 0 0 10px;
-
-    &.warning {
-      background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
-      padding: .5em 1em .5em 2em;
-    }
   }
 
   label {
@@ -894,10 +889,6 @@ body.review {
 
 .html-rtl {
   #approve-modal {
-    p.warning {
-      padding: .5em 2em .5em 1em;
-    }
-
     li {
       div.help-text {
         left: auto;
@@ -1111,6 +1102,7 @@ article {
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 0;
 
   .CodeMirror {
     color: #666;

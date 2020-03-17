@@ -231,6 +231,11 @@ hr {
   margin: 1em 0;
 }
 
+blockquote {
+  @include c.text-body-md;
+  font-weight: normal;
+}
+
 // TODO: Add these semantic classes to styleguide
 .sumo-page-heading-xl {
   @include c.sumo-page-heading-xl; // 32/48/56
