@@ -79,7 +79,9 @@
 
 #upload-kbox {
   left: 50%;
-  margin-left: -290px;
-  top: 150px;
-  width: 580px;
+  margin: 0 10px;
+  top: 10vh;
+  max-width: 580px;
+  width: calc(100% - 20px);
+  transform: translate(-50%);
 }

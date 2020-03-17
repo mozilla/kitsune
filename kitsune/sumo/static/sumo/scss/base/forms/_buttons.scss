@@ -44,6 +44,7 @@
   cursor: pointer;
   transition-duration: 150ms;
   transition-property: background-color, border-color;
+  appearance: none;
 
   &:visited {
     color: var(--color-marketing-gray-07);
