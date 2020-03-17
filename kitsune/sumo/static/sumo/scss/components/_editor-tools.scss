@@ -154,9 +154,16 @@ section.marky {
 }
 
 #link-modal {
-  width: 600px;
+  .field {
+    max-width: none;
+  }
+
+  .kbox-cancel {
+    margin-right: 0;
+  }
 }
 
+#link-modal,
 #media-modal {
   height: auto;
   max-height: 84vh;
@@ -167,8 +174,10 @@ section.marky {
   width: 90vw;
   transform: translateX(-50%);
   overflow: auto;
+}
 
 
+#media-modal {
   div.placeholder {
     height: 65%;
     height:  calc(100% - 225px);
