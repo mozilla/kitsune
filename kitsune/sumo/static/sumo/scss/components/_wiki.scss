@@ -428,7 +428,7 @@ article {
 
   .compare {
     height: 20px;
-    padding: 0 0 0 50px;
+    padding: 0;
     text-align: left;
 
     &.top {
@@ -562,26 +562,20 @@ article {
   }
 }
 
-#submit-modal {
-  .comment,
-  .notifications,
-  .no-update {
-    margin: 10px 0;
-  }
-}
-
 #preview {
   .showfor {
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 p.$spacing-xs 10px #999;
-    left: 10px;
-    margin: -90px 0 0;
-    padding: 15px;
+    border-radius: var(--global-radius);
+    @include c.elevation-01;
+    right: 10px;
+    margin: 0;
+    padding: 20px;
     position: fixed;
-    top: 50%;
-    width: 165px;
+    max-height: 85vh;
+    top: 10vh;
+    width: 300px;
     z-index: 5;
+    overflow: auto;
 
     h1 {
       font-size: 20px;
@@ -842,11 +836,6 @@ body.review {
 #approve-modal {
   p {
     margin: 0 0 10px;
-
-    &.warning {
-      background: #FFF9DB url(../img/wiki/bkg.warning.png) repeat-y left top;
-      padding: .5em 1em .5em 2em;
-    }
   }
 
   label {
@@ -900,10 +889,6 @@ body.review {
 
 .html-rtl {
   #approve-modal {
-    p.warning {
-      padding: .5em 2em .5em 1em;
-    }
-
     li {
       div.help-text {
         left: auto;
@@ -1117,6 +1102,7 @@ article {
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 0;
 
   .CodeMirror {
     color: #666;

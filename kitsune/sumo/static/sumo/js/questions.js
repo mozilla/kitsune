@@ -12,6 +12,9 @@
   function init() {
     var $body = $('body');
 
+    // if there's an error on page load, focus the field.
+    $('.has-error input, .has-error textarea').first().focus();
+
     if ($body.is('.new-question')) {
       initNewQuestion();
 

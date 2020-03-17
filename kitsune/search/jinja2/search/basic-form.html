@@ -1,7 +1,7 @@
 {% macro form(q='') -%}
   <div id="basic-search" class="search-empty">
   {{ _('Enter your terms in the form below and click <strong>Search</strong>')|safe }}
-    <form data-instant-search="form" role="search" method="get" action="{{ url('search') }}" class="simple-search-form">
+    <form role="search" method="get" action="{{ url('search') }}" class="simple-search-form">
       <input type="text" class="searchbox search-query search-empty-query" id="search-q" value="{{ q }}" name="q">
       <button type="submit" class="search-empty-submit search-button">{{ pgettext('button', 'Search') }}</button>
     </form>

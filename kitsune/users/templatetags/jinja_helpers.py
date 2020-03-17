@@ -109,6 +109,18 @@ def private_message(user):
 
 
 @library.global_function
+def private_message_link(user):
+    """Return a link to private message the user."""
+    url = urlparams(reverse("messages.new"), to=user.username)
+    msg = _("Private message")
+    return Markup(
+        u'<a href="{url}">{msg}</a>'.format(  # noqa
+            url=url, msg=msg
+        )
+    )
+
+
+@library.global_function
 def is_contributor(user):
     """Return whether the user is in the 'Registered as contributor' group."""
     return (

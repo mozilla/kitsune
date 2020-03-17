@@ -72,6 +72,10 @@
       margin: 0 0 p.$spacing-md 0;
     }
 
+    img {
+      flex: 0 0 auto;
+    }
+
     @media #{p.$mq-md} {
       flex-wrap: nowrap;
 
@@ -88,6 +92,11 @@
   svg {
     width: p.$spacing-lg;
     height: p.$spacing-lg;
+  }
+
+  .no .yes-svg,
+  .yes .no-svg {
+    display: none;
   }
 }
 
@@ -191,4 +200,60 @@ ol.headings-list {
 
 .legacy-blue-text {
   color: #2BBAE7 !important;
+}
+
+.content-raw {
+  display: none;
+}
+
+.editable {
+
+  .edit {
+    display: block;
+    margin-bottom: p.$spacing-md;
+  }
+
+  .edit-mode {
+    display: none;
+  }
+
+  &.edit-on {
+    .edit-mode {
+      display: block;
+    }
+  }
+}
+.users {
+  display: flex;
+  flex-wrap: wrap;
+  margin: p.$spacing-lg 0;
+
+  li {
+    flex: 1 1 100%;
+    max-width: 340px;
+    @include p.bidi((
+      (margin, p.$spacing-sm p.$spacing-xl p.$spacing-sm 0, p.$spacing-sm 0 p.$spacing-sm p.$spacing-xl),
+    ));
+    position: relative;
+    padding: p.$spacing-sm;
+    border-radius: var(--global-radius);
+
+    &:hover {
+      background: var(--color-shade-bg);
+    }
+
+    .remove {
+      position: absolute;
+      right: 8px;
+      top: calc(50% - 20px);
+    }
+
+    .avatar-details {
+      margin-bottom: 0;
+
+      .asked-on a {
+        font-weight: normal;
+      }
+    }
+  }
 }

@@ -99,7 +99,9 @@
 
           {{ field(form.name) }}
           {{ field(form.bio) }}
-          {{ checkbox(form.public_email) }}
+          {% if form.public_email %}
+            {{ checkbox(form.public_email) }}
+          {% endif %}
           {{ field(form.website) }}
           {{ field(form.twitter) }}
           {{ field(form.facebook) }}

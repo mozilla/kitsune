@@ -41,7 +41,7 @@
       $('#id_comment').keypress(function(e) {
         if (e.which === 13) {
           $(this).blur();
-          $(this).closest('form').find('input[type=submit]').focus().click();
+          $(this).closest('form').find('[type=submit]').click();
           return false;
         }
       });
@@ -559,7 +559,7 @@
 
     var switch_link = $('<a></a>')
         .text(gettext('Toggle syntax highlighting'))
-        .css({cssFloat: 'right', cursor: 'pointer'})
+        .css({textAlign: 'right', cursor: 'pointer', display: 'block'})
         .toggle(function() {
           editor_wrapper.css('display', 'none');
           $('#id_content').css('display', 'block');

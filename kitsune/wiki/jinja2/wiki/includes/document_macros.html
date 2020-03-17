@@ -145,7 +145,7 @@
           </div>
         {% endif %}
         <div class="col">
-          <h3>
+          <h3 class="sumo-card-heading">
             {% if revision_from_header %}
               {{ revision_from_header}}
             {% else %}
@@ -157,7 +157,7 @@
           <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision_from.id, user=revision_from.creator, date=datetimeformat(revision_from.created, format='longdatetime')) }}</p>
         </div>
         <div class="col">
-          <h3>
+          <h3 class="sumo-card-heading">
             {% if revision_to_header %}
               {{ revision_to_header}}
             {% else %}
@@ -169,19 +169,19 @@
           <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision_to.id, user=revision_to.creator, date=datetimeformat(revision_to.created, format='longdatetime')) }}</p>
         </div>
       </header>
-      <h4>{{ _('Keywords:') }}</h4>
+      <h4 class="sumo-card-heading">{{ _('Keywords:') }}</h4>
       <div class="diff-this">
         <div class="from">{{ revision_from.keywords }}</div>
         <div class="to">{{ revision_to.keywords }}</div>
         <div class="output"></div>
       </div>
-      <h4>{{ _('Search results summary:') }}</h4>
+      <h4 class="sumo-card-heading">{{ _('Search results summary:') }}</h4>
       <div class="diff-this">
         <div class="from">{{ revision_from.summary }}</div>
         <div class="to">{{ revision_to.summary }}</div>
         <div class="output"></div>
       </div>
-      <h4>{{ _('Content:') }}</h4>
+      <h4 class="sumo-card-heading">{{ _('Content:') }}</h4>
       <div id="content-diff" class="diff-this">
         <div class="from">{{ revision_from.content }}</div>
         <div class="to">{{ revision_to.content }}</div>
@@ -211,7 +211,7 @@
 
 {% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, translate=False) -%}
   <div class="submit sumo-button-wrap reverse-on-desktop align-end">
-    <button class="sumo-button primary-button btn-submit" type="submit" data-sumo-modal="submit-modal">{{ _('Submit for Review') }}</button>
+    <button class="sumo-button primary-button btn-submit" type="submit">{{ _('Submit for Review') }}</button>
     {% if translate %}
       <button class="sumo-button secondary-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
     {% endif %}
@@ -223,7 +223,7 @@
   {% if not buttons_only %}
     <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
 
-      <div id="submit-modal" class="mzp-u-modal-content" title="{{ _('Submit Your Changes') }}">
+      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target=".btn-submit" data-modal="true">
         <p>
           {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
           can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
@@ -238,12 +238,12 @@
             <label for="id_no_update">{{ _('This edit does not make this article up to date. The English differences should not change on the next edit.') }}</label>
           </div>
         {% endif %}
-        <div class="field checkbox  notifications">
+        <div class="field checkbox notifications">
           <input type="checkbox" name="notify-future-changes" id="id_notify-future-changes" value="Yes" />
           <label for="id_notify-future-changes">{{ _('Notify me of any future changes to this page') }}</label>
         </div>
         <div class="sumo-button-wrap align-end">
-          <button class="sumo-button primary-button" type="submit">{{ _('Submit') }}</button>
+          <button class="sumo-button primary-button" type="submit" id="submit-document-form">{{ _('Submit') }}</button>
         </div>
       </div>
     </div>
@@ -260,7 +260,7 @@
       {{ showfor_data(products) }}
     </script>
 
-    <h3 class="sidebar-subheading">{{ _('Customize this article') }}</h3>
+    <h3 class="{% if close_button %}sumo-card-heading{% else %}sidebar-subheading{% endif %}">{{ _('Customize this article') }}</h3>
     {% if header %}
       <p>
         {{ header }}

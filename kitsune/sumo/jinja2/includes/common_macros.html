@@ -87,7 +87,7 @@
   </li>
   {% if user.is_authenticated() %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.get_involved') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
@@ -264,9 +264,9 @@
 {%- endmacro %}
 
 {% macro _discussion_nav_links(user, default_language, active=None) -%}
-<li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Discussions') }}</a></li>
+<li><a href="/forums/contributors" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Discussions">{{ _('Community Discussions') }}</a></li>
 <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">{{ _('Support Forum') }}</a></li>
-<li><a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">{{ _('L10N Discussions') }}</a></li>
+<li><a href="/forums/l10n-forum" data-event-category="navigation" data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('L10N Discussions') }}</a></li>
 <li><a href="/forums/social-media">Social Support Forum</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
 <li><a href="/forums/buddies">New Contributors</a></li>

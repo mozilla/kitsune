@@ -66,11 +66,14 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-xs($family: false) {
   @include p.font-size(24px);
   @include c.line-height(28px);
+  font-weight: bold;
   @if $family == 'no-fam' {}
   @else if $family == 'moz' {
       font-family: var(--heading-font-family-moz);
+      color: var(--color-moz-heading);
   } @else {
     font-family: var(--heading-font-family);
+    color: var(--color-heading);
   }
 }
 
@@ -79,6 +82,7 @@ $text-display-line-height: 1.1 !default;
   @include c.line-height(24px);
   font-family: var(--base-font-family);
   color: var(--color-heading);
+  font-weight: bold;
 }
 
 @mixin text-display-xxxs() {
@@ -86,6 +90,7 @@ $text-display-line-height: 1.1 !default;
   line-height: $text-body-line-height;
   font-family: var(--base-font-family);
   color: var(--color-heading);
+  font-weight: bold;
 }
 
 // body copy

@@ -624,11 +624,6 @@
     }
   }
 
-  blockquote {
-    @include c.text-body-md;
-    font-weight: normal;
-  }
-
   @media #{p.$mq-md} {
     &--tools {
       flex-direction: row-reverse;

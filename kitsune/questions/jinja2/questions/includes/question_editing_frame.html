@@ -65,7 +65,7 @@ we can compute the edit-title URL.
                   wrong&quot; or &quot;Firefox is broken&quot;.
                 {% endtrans %}
               </div>
-              {{ errorlist(form) }}
+
               {% for field in form.hidden_fields() %}
                 {{ field|safe }}
               {% endfor %}
@@ -101,8 +101,8 @@ we can compute the edit-title URL.
                       <p>{{ field.help_text|safe }}</p>
                     {% endif %}
 
-                    {% if field.name != 'content' %}
-                    {{ field.errors }}
+                    {% if field.name == 'title' %}
+                      {{ field.errors }}
                     {% endif %}
                   </li>
 
