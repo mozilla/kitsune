@@ -264,9 +264,9 @@
 {%- endmacro %}
 
 {% macro _discussion_nav_links(user, default_language, active=None) -%}
-<li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Discussions') }}</a></li>
+<li><a href="/forums/contributors" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Discussions') }}</a></li>
 <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">{{ _('Support Forum') }}</a></li>
-<li><a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">{{ _('L10N Discussions') }}</a></li>
+<li><a href="/forums/l10n-forum" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">{{ _('L10N Discussions') }}</a></li>
 <li><a href="/forums/social-media">Social Support Forum</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
 <li><a href="/forums/buddies">New Contributors</a></li>
