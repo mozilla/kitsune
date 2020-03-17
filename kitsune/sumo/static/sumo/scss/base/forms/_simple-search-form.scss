@@ -24,6 +24,10 @@
       (left, auto, 6px),
     ));
   }
+
+  + .page-heading--intro-text {
+    margin-top: p.$spacing-lg;
+  }
 }
 
 .search-button {
