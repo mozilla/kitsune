@@ -52,7 +52,7 @@ button {
   &.markup-toolbar-button {
     border: 0;
     background: url(/static/sumo/img/markup.svg) no-repeat 11px 6px;
-    background-size: 369.04px 22px;
+    background-size: 410px 22px;
     cursor: pointer;
     height: 36px;
     margin: 0 2px;
@@ -98,8 +98,7 @@ button {
   }
 
   &.btn-quote {
-    background-image: url(/static/sumo/img/icon.quote.png);
-    background-position: 0 center;
+    background-position: -381px 6px;
   }
 }
 
