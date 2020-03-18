@@ -499,7 +499,8 @@
         destroy: true,
         modal: true,
         id: 'link-modal',
-        container: $('body')
+        container: $('body'),
+        position: 'none'
       });
       kbox.open();
 
