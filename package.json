@@ -43,7 +43,7 @@
     "fetch": "1.0.0",
     "flux": "~2.0.2",
     "fontawesome": "^4.3.0",
-    "jquery": "1.11.3",
+    "jquery": "3.4.0",
     "jquery-ui": "~1.10.2",
     "mailcheck": "1.1.0",
     "modernizr": "3.3.1",
