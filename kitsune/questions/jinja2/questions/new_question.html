@@ -78,35 +78,6 @@
 
 {% endblock %}
 
-{% block progress_bar %}
-<ul class="progress">
-  <li class="progress--item is-complete">
-    <a class="progress--link" href="#TODO">
-      <span class="progress--link-inner">
-        <span class="progress--dot"></span>
-        <span class="progress--label">Select Product</span>
-      </span>
-    </a>
-  </li>
-  <li class="progress--item is-complete">
-    <a class="progress--link" href="#TODO">
-      <span class="progress--link-inner">
-        <span class="progress--dot"></span>
-        <span class="progress--label">Explore Solutions</span>
-      </span>
-    </a>
-  </li>
-  <li class="progress--item is-current">
-    <a class="progress--link" href="#3" disabled>
-      <span class="progress--link-inner">
-        <span class="progress--dot"></span>
-        <span class="progress--label">Create Question</span>
-      </span>
-    </a>
-  </li>
-</ul>
-{% endblock %}
-
 {% block major_detail_instructions %}
   <h2 class="sumo-callout-heading">{{ _('Ask your question to our community of users') }}</h2>
 {% endblock %}

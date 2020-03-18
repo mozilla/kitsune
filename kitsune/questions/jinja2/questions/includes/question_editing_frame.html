@@ -11,20 +11,21 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import search_box, content_editor with context %}
-{% from "questions/includes/aaq_macros.html" import selected_category, aaq_progress %}
-{% from "questions/includes/aaq_macros.html" import selected_product with context%}
+{% from "questions/includes/aaq_macros.html" import selected_category, aaq_progress, progress_bar with context %}
+{% from "questions/includes/aaq_macros.html" import selected_product with context %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
 
 {% set hide_aaq_link = True %}
 
 {% block contentwrap %}
-<div id="main-content">
+<div>
   {% block category %}
   {% endblock %}
 
   <article class="main mzp-l-content sumo-page-section--inner">
     {% block progress_bar %}
+    {{ progress_bar() }}
     {% endblock %}
 
     {% block product %}

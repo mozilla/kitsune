@@ -112,20 +112,21 @@
               $('#support-search-masthead').find('input[name=q]').val(value).focus();
             }
 
-
-
-
           } else if (formId === 'support-search-sidebar') {
             $('.hidden-search-masthead').show();
             $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
 
-          } else if (formId === 'support-search-sidebar') {
-            $('.hidden-search-masthead').show();
-            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+          } else if (formId === 'question-search-masthead') {
+            // undo some default behaviors in order to keep the default masthead
+            $('.hidden-search-masthead').hide();
+            $('.question-masthead').show();
+            $('.page-heading--logo').css('display', 'block');
 
           } else {
             $('#support-search').find('input[name=q]').val(value);
-            $('#support-search-masthead').find('input[name=q]').val(value);
+            $('#support-search-masthead').find('input[name=q]').val(value).focus();
+
+            console.log('or maybe here?')
           }
 
           return true;
