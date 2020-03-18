@@ -16,23 +16,23 @@ def redis_client(name):
     settings.REDIS_BACKEND dict.
     """
     if name not in settings.REDIS_BACKENDS:
-        raise RedisError(
-            '{k} is not defined in settings.REDIS_BACKENDS'.format(k=name))
+        raise RedisError("{k} is not defined in settings.REDIS_BACKENDS".format(k=name))
 
     uri = settings.REDIS_BACKENDS[name]
     _, server, params = parse_backend_uri(uri)
-    db = params.pop('db', 1)
+    db = params.pop("db", 1)
+
     try:
         db = int(db)
     except (ValueError, TypeError):
         db = 1
     try:
-        socket_timeout = float(params.pop('socket_timeout'))
+        socket_timeout = float(params.pop("socket_timeout"))
     except (KeyError, ValueError):
         socket_timeout = None
-    password = params.pop('password', None)
-    if ':' in server:
-        host, port = server.split(':')
+    password = params.pop("password", None)
+    if ":" in server:
+        host, port = server.split(":")
         try:
             port = int(port)
         except (ValueError, TypeError):
@@ -40,14 +40,14 @@ def redis_client(name):
     else:
         host = server
         port = 6379
-    redis = Redis(host=host, port=port, db=db, password=password,
-                  socket_timeout=socket_timeout)
+    redis = Redis(
+        host=host, port=port, db=db, password=password, socket_timeout=socket_timeout
+    )
     try:
         # Make a cheap call to verify we can connect.
-        redis.exists('dummy-key')
+        redis.exists("dummy-key")
     except ConnectionError:
-        raise RedisError(
-            'Unable to connect to redis backend: {k}'.format(k=name))
+        raise RedisError("Unable to connect to redis backend: {k}".format(k=name))
     return redis
 
 
@@ -59,24 +59,26 @@ def parse_backend_uri(backend_uri):
     host and any extra params that are required for the backend. Returns a
     (scheme, host, params) tuple.
     """
-    if backend_uri.find(':') == -1:
+    if backend_uri.find(":") == -1:
         raise InvalidCacheBackendError(
-            "Backend URI must start with scheme://. URI: {}".format(backend_uri))
+            "Backend URI must start with scheme://. URI: {}".format(backend_uri)
+        )
 
-    scheme, rest = backend_uri.split(':', 1)
+    scheme, rest = backend_uri.split(":", 1)
 
-    if not rest.startswith('//'):
+    if not rest.startswith("//"):
         raise InvalidCacheBackendError(
-            "Backend URI must start with scheme://. Split URI: {}".format(backend_uri))
+            "Backend URI must start with scheme://. Split URI: {}".format(backend_uri)
+        )
 
     host = rest[2:]
-    qpos = rest.find('?')
+    qpos = rest.find("?")
     if qpos != -1:
-        params = dict(parse_qsl(rest[qpos+1:]))
+        params = dict(parse_qsl(rest[qpos + 1 :]))
         host = rest[2:qpos]
     else:
         params = {}
-    if host.endswith('/'):
+    if host.endswith("/"):
         host = host[:-1]
 
     return scheme, host, params

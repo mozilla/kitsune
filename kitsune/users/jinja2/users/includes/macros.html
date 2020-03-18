@@ -4,34 +4,37 @@
   <form method="post" action="{{ action if action != None else url('users.login') }}">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next_url }}" />
-      <ul>
-        <li class="cf">
-          <label for="id_username">{{ _('Username:') }}</label>
-          {{ form.username|safe }}
-        </li>
-        <li class="cf">
-          <label for="id_password">{{ _('Password:') }}</label>
-          {{ form.password|safe }}
-        </li>
-      </ul>
-      <div class="login-submit">
-        <div class="button-wrap">
-          <input type="hidden" name="login" value="1">
-          <button type="submit"  data-event-category="account" data-event-action="login" data-type="submit" data-name="login" class="button dark" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
-        </div>
-        <p class="help-text">
-        {% trans %}
-        Support.mozilla.org will soon only support  Firefox Accounts logins.
-        Learn more in our <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">FAQ</a>.
-        {% endtrans %}
-        </p>
+    <div class="field">
+      <label for="id_username">{{ _('Username:') }}</label>
+      <div class="field-wrap">
+        {{ form.username|safe }}
       </div>
+    </div>
+
+    <div class="field">
+      <label for="id_password">{{ _('Password:') }}</label>
+      <div class="field-wrap">
+        {{ form.password|safe }}
+      </div>
+    </div>
+    <div class="login-submit">
+      <div class="button-wrap">
+        <input type="hidden" name="login" value="1">
+        <button type="submit"  data-event-category="account" data-event-action="login" data-type="submit" data-name="login" class="sumo-button primary-button button-lg" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
+      </div>
+      <p class="help-text">
+      {% trans %}
+      Support.mozilla.org will soon only support  Firefox Accounts logins.
+      Learn more in our <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">FAQ</a>.
+      {% endtrans %}
+      </p>
+    </div>
   </form>
-  <div id="login-help">
+  <div id="login-help" class="sumo-auth--login-help">
     {% if only_pwreset %}
       <a id="reset_password" target="_blank" href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a>
     {% else %}
-      <h3>{{ _('Login Problems?') }}</h3>
+      <h3 class="sumo-page-subheading">{{ _('Login Problems?') }}</h3>
       <ul>
         <li>
           <a href="{{ url('users.pw_reset') }}">
@@ -54,18 +57,13 @@
 {%- endmacro %}
 
 {% macro personal_tabs(user, selected) -%}
-  <ul id="user-nav" class="sidebar-nav">
-    <li {{ selected|class_selected('my-profile') }}>
-      <a href="{{ profile_url(user) }}">{{ _('My profile') }}</a>
-    </li>
-    <li {{ selected|class_selected('edit-profile') }}>
-      <a href="{{ url('users.edit_my_profile') }}">{{ _('Edit my profile') }}</a>
-    </li>
-    <li {{ selected|class_selected('edit-settings') }}>
-      <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
-    </li>
-    <li {{ selected|class_selected('edit-watches') }}>
-      <a href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a>
-    </li>
+<nav class="sidebar-nav">
+  <span class="details-heading">My Profile</span>
+  <ul id="user-nav" class="sidebar-nav--list">
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('my-profile') }} href="{{ profile_url(user) }}">{{ _('My profile') }}</a></li>
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-profile') }} href="{{ url('users.edit_my_profile') }}">{{ _('Edit my profile') }}</a></li>
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-settings') }} href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a></li>
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-watches') }} href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a></li>
   </ul>
+</nav>
 {%- endmacro %}

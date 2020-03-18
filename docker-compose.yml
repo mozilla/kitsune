@@ -74,6 +74,14 @@ services:
         - GIT_SHA
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
 
+  node-dev:
+    build:
+      context: .
+      target: frontend-base
+      args:
+        - GIT_SHA
+    image: itsre/sumo-kitsune:node-dev-${GIT_COMMIT_SHORT:-latest}
+
   staticfiles:
     build:
       context: .

@@ -8,7 +8,7 @@ import mochaJquery from './fixtures/mochaJquery.js';
 chai.use(chaiLint);
 
 describe('lazyload', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   /* globals document, $ */
 

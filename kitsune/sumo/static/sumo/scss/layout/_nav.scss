@@ -1,0 +1,373 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Navigation
+//
+// Basic site navigation
+//
+// Markup:
+// {% import 'kitsune/sumo/static/styleguide-examples/nav.njk' as nav %}
+// {{ nav.nav() }}
+// <div class="kss-modifier__default-name kss-style"><br>Logged-in view</div>
+// {{ nav.nav(is_logged_in=true) }}
+// <div class="kss-modifier__default-name kss-style"><br>Download Firefox button enabled</div>
+// {{ nav.nav(not_firefox=true) }}
+//
+//
+// Weight: 20
+//
+// Style guide: nav
+
+.sumo-nav {
+  border-bottom: 1px solid var(--color-border);
+
+  &--container {
+    @include c.container;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    @media #{p.$mq-md} {
+      flex-wrap: nowrap;
+    }
+  }
+
+  &--logo {
+    @include p.bidi(((margin, 0 #{c.$gutter-width} 0 0, 0 0 0 #{c.$gutter-width}),));
+    padding-top: 12px;
+    padding-bottom: 12px;
+    width: 96px;
+    height: auto;
+
+    a, img {
+      display: block;
+    }
+  }
+
+  &--list {
+    display: block;
+
+    @media #{p.$mq-md} {
+      display: flex;
+    }
+  }
+
+  &--list-wrap-right {
+    @include p.bidi((
+      (margin-left, auto, 0),
+      (margin-right, 0, auto)
+    ));
+
+    &.logged-out {
+      .sumo-nav--list {
+        align-items: center;
+        padding-top: 0;
+      }
+    }
+  }
+
+  &--link {
+    &.has-avatar {
+      padding-right: 0;
+
+      .avatar {
+        display: block;
+        @include p.bidi(((margin, -6px 0 -6px 20px, -6px 20px -6px 0),));
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+      }
+    }
+  }
+
+  &--avatar-button {
+    display: flex;
+    @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));
+
+    .avatar {
+      width: p.$spacing-xl;
+      height: p.$spacing-xl;
+      border-radius: 50%;
+    }
+
+    @media #{p.$mq-md} {
+      display: none;
+    }
+  }
+
+  &--mobile-search-form {
+    @media #{p.$mq-md} {
+      .js .mzp-c-navigation-l-content & {
+        display: none;
+      }
+    }
+  }
+
+  &--dropdown {
+    &-grid {
+      position: relative;
+
+      @media #{p.$mq-md} {
+        @include c.grid-row;
+        padding-top: p.$spacing-md;
+        padding-bottom: p.$spacing-md;
+      }
+    }
+
+    &-container {
+      @media #{p.$mq-md} {
+        @include c.container;
+      }
+    }
+
+    &-col {
+      @media #{p.$mq-md} {
+        @include c.col(3, 6);
+      }
+
+      @media #{p.$mq-lg} {
+        width: c.col-width(3, 8);
+      }
+
+      @media #{p.$mq-xl} {
+        width: c.col-width(4, 10);
+      }
+    }
+
+    &-feature {
+      display: none;
+
+      @media #{p.$mq-lg} {
+        display: block;
+        @include c.col(2, 8);
+      }
+
+      @media #{p.$mq-xl} {
+        width: c.col-width(2, 10);
+      }
+    }
+
+    &-thirds { // This is non-standard.
+      @media #{p.$mq-md} {
+        @include c.col(2, 6);
+
+        .sumo-button-wrap {
+          margin-top: p.$spacing-lg;
+        }
+      }
+    }
+
+    &-item {
+      @include p.bidi(((margin, 0 0 0 -8px, 0 -8px 0 0),));
+    }
+  }
+
+  &--button-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+
+    @media #{p.$mq-md} {
+      @include c.col; // adds correct margins
+    }
+  }
+
+  &--sublist {
+    @media #{p.$mq-sm} {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+  }
+
+  &--search-button,
+  &--toggle-button {
+    appearance: none;
+    @include p.bidi(((margin, 0 0 0 10px, 0 10px 0 0),));
+    width: p.$spacing-xl;
+    height: p.$spacing-xl;
+    border: none;
+    border-radius: p.$spacing-xs;
+    background-image: url('#{p.$image-path}/icons/menu.svg');
+    background-color: transparent;
+    background-position: center center;
+    background-repeat: no-repeat;
+    font: 0/0 a;
+    color: transparent;
+
+    &:hover,
+    &:active,
+    &:focus,
+    &.mzp-is-active  {
+      background-color: var(--color-link-active-bg);
+    }
+
+    @media #{p.$mq-md} {
+      display: none;
+    }
+  }
+
+  &--search-button {
+    @include p.bidi((
+      (margin-left, auto, 0),
+      (margin-right, 0, auto),
+    ));
+    background-image: url('#{p.$image-path}/icons/search.svg');
+  }
+
+  .simple-search-form {
+    display: none;
+  }
+
+  .sumo-nav--mobile-search-form {
+    .simple-search-form {
+      display: block;
+      margin: 0;
+      padding: 0 0 20px 0;
+    }
+
+    .searchbox {
+      width: 100%;
+      height: 40px;
+    }
+  }
+
+  body.scroll-header:not(.lock-body) & {
+    position: fixed;
+    top: -100px;
+    z-index: 97;
+    width: 100%;
+    transform: translateY(100px);
+    transition: transform 0.3s;
+
+    .simple-search-form {
+      display: block;
+    }
+
+    .search-button {
+      top: 2px;
+      @include p.bidi((
+        (right, p.$spacing-xs, auto),
+        (left, auto, p.$spacing-xs),
+      ));
+    }
+
+    .sumo-nav--list-wrap-right {
+      .sumo-button {
+        display: none;
+      }
+
+      .sumo-nav--dropdown-container .sumo-button {
+        display: inline-flex;
+      }
+    }
+  }
+
+  .firefox-download-button {
+    @include p.bidi(((margin, 0 p.$spacing-lg 0 p.$spacing-sm, 0 p.$spacing-sm 0 p.$spacing-lg),));
+  }
+
+  .searchbox {
+    width: 200px;
+
+    @media #{p.$mq-lg} {
+      width: 300px;
+    }
+  }
+
+
+  // protocol overrides
+  .mzp-c-menu-panel .mzp-c-menu-button-close {
+
+    @include p.bidi((
+      (right, p.$spacing-md, auto),
+      (left, auto, p.$spacing-md),
+    ));
+  }
+
+  .mzp-c-navigation-menu {
+    @include p.bidi((
+      (margin-left, 0, 0),
+      (margin-right, 0, 0),
+    ));
+  }
+
+  .mzp-c-menu-category .mzp-c-menu-title {
+    padding-top: 12px;
+    padding-bottom: 12px;
+
+    @media #{p.$mq-md} {
+      padding-top: p.$spacing-sm;
+      padding-bottom: 18px;
+    }
+  }
+
+  .mzp-c-navigation-l-content {
+    padding: 0;
+  }
+
+  .mzp-c-menu-item .mzp-c-menu-item-list::after {
+    content: none; // removing clearfix that screws up flexbox
+  }
+
+  .mzp-c-menu-category {
+    &.logged-out-button-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    @media #{p.$mq-md} {
+      display: flex;
+    }
+  }
+
+  .mzp-c-navigation-menu {
+    width: 100%;
+  }
+
+  .mzp-c-menu-panel {
+    top: 74px;
+  }
+}
+
+.js .mzp-c-navigation-l-content .mzp-c-navigation-items.mzp-is-open {
+  width: 100%;
+}
+
+// accessibility tab links
+
+.sumo-nav-access {
+  position: absolute;
+  top: -20em;
+  z-index: 1001;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: #fff;
+
+  a {
+    position: absolute;
+    right: 0;
+    left: 0;
+    margin: 0;
+    padding: 12px 10px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.9);
+    font-weight: bold;
+    text-align: center;
+
+    &:focus {
+      top: 20em;
+      text-decoration: none;
+    }
+  }
+}
+
+// prevent jumping on sticky header
+body.scroll-header:not(.lock-body) {
+  padding-top: 65px;
+
+  @media #{p.$mq-lg} {
+    padding-top: 74px;
+  }
+}

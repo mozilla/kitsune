@@ -15,7 +15,7 @@ from decouple import Csv, config
 
 import djcelery
 
-from bundles import PIPELINE_CSS, PIPELINE_JS
+from bundles import PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -44,8 +44,11 @@ def path(*parts):
 
 # Read-only mode setup.
 READ_ONLY = config('READ_ONLY', default=False, cast=bool)
-SKIP_MOBILE_DETECTION = config('SKIP_MOBILE_DETECTION', default=False, cast=bool)
-ENABLE_VARY_NOCACHE_MIDDLEWARE = config('ENABLE_VARY_NOCACHE_MIDDLEWARE', default=READ_ONLY, cast=bool)
+ENABLE_VARY_NOCACHE_MIDDLEWARE = config(
+    'ENABLE_VARY_NOCACHE_MIDDLEWARE',
+    default=READ_ONLY,
+    cast=bool
+)
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -100,6 +103,8 @@ CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
 
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.11:'
+# User agent cache settings
+USER_AGENTS_CACHE = 'default'
 
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='notifications@support.mozilla.org')
@@ -400,7 +405,7 @@ MEDIA_URL = config('MEDIA_URL', default='/media/')
 STATIC_ROOT = path('static')
 STATIC_URL = config('STATIC_URL', default='/static/')
 STATICFILES_DIRS = (
-    path('bower_components'),
+    path('js_assets'),
     path('jsi18n'),  # Collect jsi18n so that it is cache-busted
 )
 STATICFILES_FINDERS = (
@@ -524,11 +529,6 @@ MIDDLEWARE_CLASSES = (
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
     'kitsune.sumo.middleware.LocaleURLMiddleware',
 
-    # Mobile detection should happen in Zeus.
-    'kitsune.sumo.middleware.DetectMobileMiddleware',
-    'mobility.middleware.XMobileMiddleware',
-    'kitsune.sumo.middleware.MobileSwitchMiddleware',
-
     'kitsune.sumo.middleware.Forbidden403Middleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -545,6 +545,7 @@ MIDDLEWARE_CLASSES = (
     'waffle.middleware.WaffleMiddleware',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
+    'django_user_agents.middleware.UserAgentMiddleware',
 )
 
 # SecurityMiddleware settings
@@ -627,7 +628,7 @@ ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = 'sumo/img/avatar.png'
-AVATAR_SIZE = 48  # in pixels
+AVATAR_SIZE = 200  # in pixels
 MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
 GROUP_AVATAR_PATH = 'uploads/groupavatars/'
 
@@ -709,6 +710,7 @@ INSTALLED_APPS = (
     # In Django <= 1.6, this "must be placed somewhere after all the apps that
     # are going to be generating activities". Putting it at the end is the safest.
     'actstream',
+    'django_user_agents',
 
     # Last so we can override admin templates.
     'django.contrib.admin',
@@ -778,27 +780,18 @@ STATICI18N_ROOT = path('jsi18n')
 # Django Pipline
 PIPELINE = {
     'COMPILERS': (
-        'pipeline.compilers.less.LessCompiler',
         'kitsune.lib.pipeline_compilers.BrowserifyCompiler',
     ),
     'JAVASCRIPT': PIPELINE_JS,
-    'STYLESHEETS': PIPELINE_CSS,
 
     'DISABLE_WRAPPER': True,
 
     'JS_COMPRESSOR': 'pipeline.compressors.uglifyjs.UglifyJSCompressor',
     'UGLIFYJS_BINARY': path('node_modules/.bin/uglifyjs'),
-    'UGLIFYJS_ARGUMENTS': '-r "\$super"',
-
-    'CSS_COMPRESSOR': 'pipeline.compressors.cssmin.CSSMinCompressor',
-    'CSSMIN_BINARY': path('node_modules/.bin/cssmin'),
-
-    'LESS_BINARY': path('node_modules/.bin/lessc'),
-    # TODO: Cannot make less work with autoprefix plugin
-    # 'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
+    'UGLIFYJS_ARGUMENTS': '',
 
     'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
-    'BROWSERIFY_ARGUMENTS': '-t babelify -t debowerify',
+    'BROWSERIFY_ARGUMENTS': '-t babelify',
     'PIPELINE_COLLECTOR_ENABLED': config(
         'PIPELINE_COLLECTOR_ENABLED',
         default=not DEBUG,
@@ -1010,8 +1003,6 @@ GA_PROFILE_ID = config('GA_PROFILE_ID', default='12345678')  # Google Analytics 
 GA_START_DATE = date(2012, 11, 10)
 GTM_CONTAINER_ID = config('GTM_CONTAINER_ID', default='')  # Google container ID
 
-MOBILE_COOKIE = config('MOBILE_COOKIE', default='msumo')
-
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = config('VERSION_CHECK_TOKEN', default=None)
 
@@ -1038,12 +1029,6 @@ API_LIMIT_PER_PAGE = 0
 
 # Change the default for XFrameOptionsMiddleware.
 X_FRAME_OPTIONS = 'DENY'
-
-# Where to find the about:support troubleshooting addon.
-# This is a link to the latest version, whatever that may be.
-TROUBLESHOOTER_ADDON_URL = config(
-    'TROUBLESHOOTER_ADDON_URL',
-    default='https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
 
 # SurveyGizmo API
 SURVEYGIZMO_USER = config('SURVEYGIZMO_USER', default=None)
@@ -1209,3 +1194,12 @@ BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)
 
 # The canonical, production URL without a trailing slash
 CANONICAL_URL = 'https://support.mozilla.org'
+
+# Products to exclude from featured articles under
+# wiki/utils.py
+EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
+    "firefox-amazon-devices",
+    "firefox-fire-tv",
+    "focus-firefox",
+    "thunderbird",
+]

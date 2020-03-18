@@ -309,7 +309,7 @@
                   <td>
                     {% if group_read_index == group_write_index %}
                       <span class="errorspan">
-                        <img src="/static/admin/img/icon_error.gif" />
+                        <img src="{{ STATIC_URL }}admin/img/icon_error.gif" />
                         This group's write index is a read index!
                       </span>
                     {% endif %}

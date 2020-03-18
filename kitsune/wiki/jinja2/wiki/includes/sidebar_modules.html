@@ -4,11 +4,13 @@
   {% if not parent %}
     {% set parent = document %}
   {% endif %}
+  {% if user.is_authenticated() %}
   <nav id="doc-tools">
     <ul class="sidebar-nav sidebar-folding">
-      <li id="editing-tools-sidebar" {% if active != 'article' %} class="selected"{% endif %}>
-        <span>{{ _('Editing Tools') }}</span>
-        <ul class="sidebar-nav">
+      <li id="editing-tools-sidebar">
+        <h3 class="sidebar-subheading large-only">{{ _('Editing Tools') }}</h3>
+        <span class="details-heading"></span>
+        <ul class="sidebar-nav--list">
           {% if document %}
             <li {{ active|class_selected('article') }}>
               <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
@@ -57,11 +59,14 @@
               {{ show_for((document or parent).get_products(), header=False) }}
             </li>
           {% endif %}
+            <li>
+              <div class="email">{{ document_watch(document, user) }}</div>
+            </li>
         </ul>
       </li>
     </ul>
-    <div class="email">{{ document_watch(document, user) }}</div>
   </nav>
+  {% endif %}
 {%- endmacro %}
 
 {% macro document_notifications(document, user) -%}

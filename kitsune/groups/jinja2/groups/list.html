@@ -2,12 +2,16 @@
 {% set title = _('Groups') %}
 
 {% block content %}
-  <article id="group-list" class="main">
+  <article id="group-list" class="main sumo-page-section">
     {% if user.is_staff and user.has_perm('groups.add_groupprofile') %}
-      <a class="add" href="{{ url('admin:groups_groupprofile_add') }}">{{ _('Add group profile') }}</a>
+    <div class="sumo-button-wrap">
+      <a class="sumo-button primary-button add" href="{{ url('admin:groups_groupprofile_add') }}">{{ _('Add group profile') }}</a>
+    </div>
     {% endif %}
-    <h1>{{ title }}</h1>
-    <ul>
+
+    <h1 class="sumo-page-heading">{{ title }}</h1>
+
+    <ul class="mzp-u-list-styled">
       {% for profile in groups %}
         <li><a href="{{ profile.get_absolute_url() }}">{{ profile.group.name }}</a></li>
       {% endfor %}

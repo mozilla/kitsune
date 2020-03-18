@@ -1,0 +1,112 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Card Grid
+//
+// This collection of cards is presented as a scrollable list on mobile and an
+// array of cards on desktop. Any type of card styles can be used in this layout.
+//
+// .is-four-wide - changes the width of the cards to display in rows of four on desktop
+//
+// Markup: ../../../../../../../styleguide/styleguide-examples/card-grid.njk
+//
+// Weight: 2
+//
+// Style guide: card.grid
+
+:root {
+  --cg-card-width: 80vw;
+  --cg-gutter: #{c.$gutter-width * .5};
+  --cg-count: 3; // This should be set in an inline style with a template tag.
+}
+.sumo-card-grid {
+  position: relative;
+  z-index: 1;
+  margin-right: c.$gutter-width * -.5;
+  margin-left: c.$gutter-width * -.5;
+  margin-bottom: -40px;
+  padding: p.$spacing-sm 0 0;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-padding-right: var(--cg-gutter);
+  scroll-padding-left: var(--cg-gutter);
+  scrollbar-width: none;
+  -webkit-scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  // width: calc(100vw - #{c.$gutter-width * .5});
+
+  &.is-four-wide {
+    margin-top: p.$spacing-md;
+    padding-top: p.$spacing-md;
+  }
+
+  .scroll-wrap {
+    display: flex;
+    width: 100vw;
+  }
+
+  .card {
+    margin-top: 0;
+    margin-right: calc(var(--cg-gutter) / 2);
+    margin-bottom: 40px;
+    margin-left: calc(var(--cg-gutter) / 2);
+    width: var(--cg-card-width);
+    scroll-snap-align: start;
+    flex: 0 0 var(--cg-card-width);
+
+    &:first-child {
+      margin-left: c.$gutter-width * .5;
+    }
+
+    &:last-child {
+      margin-right: c.$gutter-width * .5;
+    }
+  }
+
+  @media #{p.$mq-sm} {
+    --cg-card-width: 40vw;
+  }
+
+  @media #{p.$mq-lg} {
+    --cg-gutter: #{c.$gutter-width};
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    width: auto;
+
+    .scroll-wrap {
+      @include c.grid-row;
+      width: auto;
+    }
+
+    &.is-product-wrap {
+      margin-bottom: -40px;
+    }
+
+    .card {
+      flex: 0 1 auto;
+
+      &--topic,
+      &--article {
+        margin-bottom: p.$spacing-lg;
+      }
+    }
+
+    .card,
+    .card:first-child,
+    .card:last-child {
+      @include c.col(1, 3); // This should be an 8 col grid, and it should use a 10-col grid at XL
+    }
+
+    &.is-four-wide {
+      margin-bottom: -24px;
+
+      .card,
+      .card:first-child,
+      .card:last-child {
+        @include c.col(1, 4);
+      }
+    }
+  }
+}

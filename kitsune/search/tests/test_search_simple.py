@@ -24,13 +24,6 @@ class SimpleSearchTests(ElasticTestCase):
         eq_('text/html; charset=utf-8', response['Content-Type'])
         eq_(200, response.status_code)
 
-    def test_content_mobile(self):
-        """Ensure mobile template is rendered."""
-        self.client.cookies[settings.MOBILE_COOKIE] = 'on'
-        response = self.client.get(reverse('search'), {'q': 'audio'})
-        eq_('text/html; charset=utf-8', response['Content-Type'])
-        eq_(200, response.status_code)
-
     def test_search_type_param(self):
         """Ensure that invalid values for search type (a=)
         does not cause errors"""

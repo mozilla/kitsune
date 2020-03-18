@@ -5,71 +5,77 @@
 
 {% set canonical_url = canonicalize(viewname='landings.get_involved_l10n') %}
 
-{% block content %}
-  <div class="grid_12">
-    <img class="hero-img" src="{{ STATIC_URL }}sumo/img/gi-hero-l10n.png" alt="">
-    <div class="hero-bar secondary l10n cf">
-      <div class="column">
-        <h1>{{ _('Translate help articles!') }}</h1>
-        <h2>{{ _("Let's make Mozilla Support speak your language!") }}</h2>
-        <p>
-          {% trans %}
-            Help articles are not available in your language yet? You want to
-            join the amazing team translating them? You will help millions of
-            users in your language. Pretty heroic, right?
-          {% endtrans %}
-        </p>
+{% block below_main %}
+<section class="sumo-page-section has-moz-headings">
+  <div class="hero-bar secondary l10n sumo-l-two-col">
+    <div class="sumo-l-two-col--one-half">
+      <img class="hero-butler questions" src="{{ STATIC_URL }}sumo/img/gi-hero-l10n.png" alt="">
+    </div>
+    <div class="sumo-l-two-col--one-half">
+      <h1 class="sumo-page-heading">{{ _('Translate help articles!') }}</h1>
+      <h2 class="sumo-page-subheading">{{ _("Let's make Mozilla Support speak your language!") }}</h2>
+      <p class="sumo-page-intro">
+        {% trans %}
+          Help articles are not available in your language yet? You want to
+          join the amazing team translating them? You will help millions of
+          users in your language. Pretty heroic, right?
+        {% endtrans %}
+      </p>
+    </div>
+  </div>
+</section>
+{% set user_is_contributor = is_contributor(user) %}
+{% set signup_headline = _('Translate help articles to your language') %}
+{% include 'landings/includes/register_contributor.html' %}
+
+  <section class="sumo-page-section has-moz-headings pick-a-way text-left">
+
+    <div class="sumo-l-two-col align-center">
+      <div class="sumo-l-two-col--one-half gi-visual text-center">
+        <img src="{{ STATIC_URL }}sumo/img/gi-visual-l10n.png?v=1" alt="">
+        <p class="sumo-page-subheading legacy-blue-text"><em>{{ _("Translating 1 article can help 1,000's of users in your language") }}</em></p>
+      </div>
+      <div class="sumo-l-two-col--one-half">
+        <h2 class="sumo-page-subheading">{{ _('How it works') }}</h2>
+        <ol class="mzp-u-list-styled headings-list">
+          <li>
+            {% set message =  _('Sign up as a volunteer') %}
+              {% if not user_is_contributor %}
+                <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
+              {% else %}
+                {{ message }}
+              {% endif %}
+            </li>
+          <li>
+            <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
+              {{ _('Check our documentation') }}
+            </a>
+          </li>
+          <li>{{ _('Just edit articles in your language!') }}</li>
+        </ol>
       </div>
     </div>
-  </div>
+  </section>
 
-  {% set user_is_contributor = is_contributor(user) %}
-  {% set signup_headline = _('Translate help articles to your language') %}
-  {% include 'landings/includes/register_contributor.html' %}
-
-  <div class="row cf pick-a-way">
-    <div class="grid_12">
-      <h3>{{ _('How it works') }}</h3>
-    </div>
-    <div class="grid_6">
-      <ol class="callouts">
-        <li>
-          {% set message =  _('Sign up as a volunteer') %}
-            {% if not user_is_contributor %}
-              <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
-            {% else %}
-              {{ message }}
-            {% endif %}
-          </li>
-        <li>
-          <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
-            {{ _('Check our documentation') }}
-          </a>
-        </li>
-        <li>{{ _('Just edit articles in your language!') }}</li>
-      </ol>
-    </div>
-    <div class="grid_6 gi-visual">
-      <div><img src="{{ STATIC_URL }}sumo/img/gi-visual-l10n.png?v=1" alt=""></div>
-      {{ _("Translating 1 article can help 1,000's of users in your language") }}
-    </div>
-  </div>
-
-  <div class="row cf pick-a-way">
-    <div class="grid_4">
-      <h3>{{ _('Other ways to get involved') }}</h3>
-    </div>
-    <div class="grid_4">
-      <div class="get-involved-icon questions"></div>
-      <a href="{{ url('landings.get_involved_questions') }}">
-        {{ _('Answer questions in the support forum') }} &raquo;
-      </a>
-    </div>
-    <div class="grid_4">
-      <div class="get-involved-icon kb"></div>
-      <a href="{{ url('landings.get_involved_kb') }}">
-        {{ _('Write help articles') }} &raquo;
-      </a>
-    </div>
-  </div>
+  <section class="sumo-page-section has-moz-headings pick-a-way has-icons has-left-heading">
+    <h2 class="sumo-page-subheading">{{ _('Other ways to get involved') }}</h2>
+    <a href="{{ url('landings.get_involved_questions') }}">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <g stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6"/>
+          <path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z"/>
+        </g>
+      </svg>
+      <span>{{ _('Answer questions in the support forum') }} &raquo;</span>
+    </a>
+    <a href="{{ url('landings.get_involved_kb') }}">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <g transform="translate(3 3)" stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
+          <rect stroke-linejoin="round" width="18" height="18" rx="2"/>
+          <path d="M4 5h10M4 9h10M4 13h4"/>
+        </g>
+      </svg>
+      <span>{{ _('Write help articles') }} &raquo;</span>
+    </a>
+  </section>
 {% endblock %}

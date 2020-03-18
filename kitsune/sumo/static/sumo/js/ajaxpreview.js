@@ -32,8 +32,9 @@
                    $('#' + $btn.data('preview-content-id')),
         csrftoken = $btn.closest('form')
         .find('input[name=csrfmiddlewaretoken]').val(),
-        slug = $btn.closest('form').find('input[name=slug]').val(),
-        locale = $btn.closest('form').find('input[name=locale]').val(),
+        slug = ($btn.closest('form').find('input[name=slug]').val()) ||
+                window.location.pathname,
+        locale = $btn.closest('form').find('[name=locale]').val(),
         changeHash = o.changeHash === undefined ? true : o.changeHash;
 
       $btn.click(function(e) {
@@ -71,7 +72,6 @@
           document.location.hash = $preview.attr('id');
         }
         $btn.removeAttr('disabled');
-        $('img.lazy').loadnow();
         $(self).trigger('done', [success]);
       });
     }

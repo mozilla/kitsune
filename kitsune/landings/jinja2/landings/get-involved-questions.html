@@ -5,81 +5,86 @@
 
 {% set canonical_url = canonicalize(viewname='landings.get_involved_questions') %}
 
-{% block content %}
-  <div class="grid_12">
-    <img class="hero-img questions" src="{{ STATIC_URL }}sumo/img/gi-hero-questions.png" alt="">
-    <div class="hero-bar secondary questions cf">
-      <div class="column">
-        <h1>{{ _('Answer questions in the forum') }}</h1>
-        <h2>{{ _('Where all the action happens') }}</h2>
-        <p>
-          {% trans %}
-            From hardcore web developers to "how do I install Firefox" first time
-            users, everybody needs your help in the forum! Share your knowledge
-            by pointing people to the right help articles and providing
-            troubleshooting steps for their individual questions.
-          {% endtrans %}
-        </p>
-      </div>
+{% block below_main %}
+<section class="sumo-page-section has-moz-headings">
+  <div class="hero-bar sumo-l-two-col">
+    <div class="sumo-l-two-col--one-half">
+      <img class="hero-butler questions" src="{{ STATIC_URL }}sumo/img/gi-hero-questions.png" alt="">
+    </div>
+    <div class="sumo-l-two-col--one-half">
+      <h1 class="sumo-page-heading">{{ _('Answer questions in the forum') }}</h1>
+      <h2 class="sumo-page-subheading">{{ _('Where all the action happens') }}</h2>
+      <p class="sumo-page-intro">
+        {% trans %}
+          From hardcore web developers to "how do I install Firefox" first time
+          users, everybody needs your help in the forum! Share your knowledge
+          by pointing people to the right help articles and providing
+          troubleshooting steps for their individual questions.
+        {% endtrans %}
+      </p>
     </div>
   </div>
+</section>
 
   {% set user_is_contributor = is_contributor(user) %}
   {% set signup_headline = _('Help users in the forums') %}
   {% include 'landings/includes/register_contributor.html' %}
 
-  <div class="row cf pick-a-way">
-    <div class="grid_12">
-      <h3>{{ _('How it works') }}</h3>
+<section class="sumo-page-section has-moz-headings">
+  <div class="sumo-l-two-col align-center">
+    <div class="sumo-l-two-col--one-half gi-visual text-center">
+      <img src="{{ STATIC_URL }}sumo/img/gi-visual-questions.png?v=1" alt="">
+      <p class="sumo-page-subheading legacy-blue-text"><em>{{ _('Solving 1 issue helps up to 1,000 users a day') }}</em></p>
     </div>
-    <div class="grid_6">
-      <ol class="callouts">
-        <li>{% set message =  _('Sign up as a volunteer') %}
-        {% if not user_is_contributor and request.LANGUAGE_CODE in AAQ_LANGUAGES %}
-          <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
-        {% else %}
-          {{ message }}
-        {% endif %}
-        </li>
-        <li>{% set message = _('Go to our support forum and choose a question to answer') %}
-        {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
-          <a href="{{ url('questions.home') }}">{{ message }}</a>
-        {% else %}
-          {{ message }}
-        {% endif %}
-        </li>
-        <li>
-          {{ _('Start answering!') }}<br>
-          <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
-            {{ _('Read this for some help to get started') }}
-          </a>
+    <div class="sumo-l-two-col--one-half">
+      <h2 class="sumo-page-subheading">{{ _('How it works') }}</h2>
+      <div class="pick-a-way text-left">
+        <ol class="mzp-u-list-styled headings-list">
+          <li>{% set message =  _('Sign up as a volunteer') %}
+          {% if not user_is_contributor and request.LANGUAGE_CODE in AAQ_LANGUAGES %}
+            <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
+          {% else %}
+            {{ message }}
+          {% endif %}
           </li>
-
-      </ol>
-
-
-    </div>
-    <div class="grid_6 gi-visual">
-      <div><img src="{{ STATIC_URL }}sumo/img/gi-visual-questions.png?v=1" alt=""></div>
-      {{ _('Solving 1 issue helps up to 1,000 users a day') }}
-    </div>
-  </div>
-
-  <div class="row cf pick-a-way">
-    <div class="grid_4">
-      <h3>{{ _('Other ways to get involved') }}</h3>
-    </div>
-    <div class="grid_4">
-      <div class="get-involved-icon kb"></div>
-      <a href="{{ url('landings.get_involved_kb') }}">
-        {{ _('Write help articles') }} &raquo;
-      </a>
-    </div>
-    <div class="grid_4">
-      <div class="get-involved-icon localize"></div>
-      <a href="{{ url('landings.get_involved_l10n') }}">
-        {{ _('Translate help to your languages') }} &raquo;
-      </a>
+          <li>{% set message = _('Go to our support forum and choose a question to answer') %}
+          {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
+            <a href="{{ url('questions.home') }}">{{ message }}</a>
+          {% else %}
+            {{ message }}
+          {% endif %}
+          </li>
+          <li><strong>{{ _('Start answering!') }}</strong><br>
+            <a href="{{ url('wiki.document', 'answering-questions-support-forum') }}">
+              {{ _('Read this for some help to get started') }}
+            </a>
+            </li>
+        </ol>
+        </div>
     </div>
   </div>
+</section>
+
+<section class="sumo-page-section has-moz-headings pick-a-way has-icons has-left-heading">
+  <h2 class="sumo-page-subheading">{{ _('Other ways to get involved') }}</h2>
+  <a href="{{ url('landings.get_involved_kb') }}">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <g transform="translate(3 3)" stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
+        <rect stroke-linejoin="round" width="18" height="18" rx="2"/>
+        <path d="M4 5h10M4 9h10M4 13h4"/>
+      </g>
+    </svg>
+    <span>{{ _('Write help articles') }}</span>
+  </a>
+  <a href="{{ url('landings.get_involved_l10n') }}">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <g stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 20l4-10 4 10"/>
+        <path d="M14 17h6"/>
+        <path d="M3 6h13M9 4l1 2M6 10c1 2.648 2.667 4.315 5 5M4 18.028C8.417 15.343 11.417 11.333 13 6" stroke-linecap="round"/>
+      </g>
+    </svg>
+    <span>{{ _('Translate help to your languages') }}</span>
+  </a>
+</section>
 {% endblock %}

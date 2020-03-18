@@ -5,74 +5,96 @@
 
 {% set canonical_url = canonicalize(viewname='landings.get_involved') %}
 
-{% block content %}
-  <div class="grid_12">
-    <div class="hero-bar cf">
-      <img class="hero-butler" src="{{ STATIC_URL }}sumo/img/gi-hero-butler.png" alt="">
-      <h1>{{ _('Save the world') }}</h1>
-      <h2>{{ _('from the comfort of your couch') }}</h2>
-      <div class="column">
-        <h4>{{ _('We need your help!') }}</h4>
-        {% trans %}
-          Used by more than 400 million people, Mozilla support is fully powered by
-          volunteers, and it’s more important than ever. This is where you come in.
-        {% endtrans %}
+{% block below_main %}
+  <div class="sumo-page-section has-moz-headings">
+    <div class="hero-bar sumo-l-two-col">
+      <div class="sumo-l-two-col--one-half">
+        <img class="hero-butler" src="{{ STATIC_URL }}sumo/img/gi-hero-butler.png" alt="">
       </div>
-      <div class="column">
-        <h4>{{ _('Why should I help?') }}</h4>
-        {% trans %}
-          Help millions of users get the most out of their favourite
-          browser. Your contributions will reach millions of users worldwide, and
-          you can do it from the comfort of your couch!
-        {% endtrans %}
+      <div class="sumo-l-two-col--one-half">
+        <h1 class="sumo-page-heading">{{ _('Save the world') }}</h1>
+        <h2 class="sumo-page-subheading">{{ _('from the comfort of your couch') }}</h2>
+
+        <div class="sumo-l-two-col">
+          <div class="sumo-l-two-col--one-half">
+            <h4 class="sumo-page-subheading">{{ _('We need your help!') }}</h4>
+            {% trans %}
+              Used by more than 400 million people, Mozilla support is fully powered by
+              volunteers, and it’s more important than ever. This is where you come in.
+            {% endtrans %}
+          </div>
+          <div class="sumo-l-two-col--one-half">
+            <h4 class="sumo-page-subheading">{{ _('Why should I help?') }}</h4>
+            {% trans %}
+              Help millions of users get the most out of their favourite
+              browser. Your contributions will reach millions of users worldwide, and
+              you can do it from the comfort of your couch!
+            {% endtrans %}
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="grid_12">
-    <h3>{{ _('Pick a way to get involved') }}</h3>
-  </div>
-  <div class="row cf pick-a-way">
-    <div class="grid_4">
-      <a href="{{ url('landings.get_involved_questions') }}">
-        <span class="get-involved-icon questions"></span>
-        {{ _('Answer questions in the support forum') }} &raquo;
-      </a>
+  <section class="sumo-page-section has-moz-headings">
+    <h3 class="sumo-page-subheading">{{ _('Pick a way to get involved') }}</h3>
+    <div class="pick-a-way has-icons">
+        <a href="{{ url('landings.get_involved_questions') }}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <g stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6"/>
+              <path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z"/>
+            </g>
+          </svg>
+          <span>{{ _('Answer questions in the support forum') }}</span>
+        </a>
+        <a href="{{ url('landings.get_involved_kb') }}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <g transform="translate(3 3)" stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
+              <rect stroke-linejoin="round" width="18" height="18" rx="2"/>
+              <path d="M4 5h10M4 9h10M4 13h4"/>
+            </g>
+          </svg>
+          <span>{{ _('Write help articles') }}</span>
+        </a>
+        <a href="{{ url('landings.get_involved_l10n') }}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <g stroke="var(--color-secondary)" stroke-width="2" fill="none" fill-rule="evenodd">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 20l4-10 4 10"/>
+              <path d="M14 17h6"/>
+              <path d="M3 6h13M9 4l1 2M6 10c1 2.648 2.667 4.315 5 5M4 18.028C8.417 15.343 11.417 11.333 13 6" stroke-linecap="round"/>
+            </g>
+          </svg>
+          <span>{{ _('Translate help to your languages') }}</span>
+        </a>
     </div>
-    <div class="grid_4">
-      <a href="{{ url('landings.get_involved_kb') }}">
-        <span class="get-involved-icon kb"></span>
-        {{ _('Write help articles') }} &raquo;
-      </a>
-    </div>
-    <div class="grid_4">
-      <a href="{{ url('landings.get_involved_l10n') }}">
-        <span class="get-involved-icon localize"></span>
-        {{ _('Translate help to your languages') }} &raquo;
-      </a>
-    </div>
-  </div>
+  </section>
 
-  <div class="row cf">
-    <div class="grid_4">
-      <h3>{{ _('About Us') }}</h3>
-      {% trans %}
-        Mozilla Support is a community of enthusiastic volunteers and employees
-        trying to support our users around the globe. Join us for an incredible
-        adventure!
-      {% endtrans %}
+  <section class="sumo-page-section has-moz-headings">
+    <div class="sumo-l-two-col sidebar-on-right">
+      <div class="sumo-l-two-col--one-half">
+        <h3 class="sumo-page-subheading">{{ _('About Us') }}</h3>
+        <p class="sumo-page-intro">{% trans %}
+          Mozilla Support is a community of enthusiastic volunteers and employees
+          trying to support our users around the globe. Join us for an incredible
+          adventure!
+          {% endtrans %}</p>
+      </div>
+      <div class="sumo-l-two-col--one-half">
+        <img class="moz-heroes" src="{{ STATIC_URL }}sumo/img/moz-heroes.jpg" alt="">
+      </div>
     </div>
-    <div class="grid_8"><img class="moz-heroes" src="{{ STATIC_URL }}sumo/img/moz-heroes.jpg" alt=""></div>
-  </div>
-
-  <div class="row cf">
-    <div class="grid_12">
-      <div class="content-box button-wrapper cf">
-        <a class="btn btn-submit" href="{{ url('questions.aaq_step1') }}">
+  </section>
+  <section class="sumo-page-section">
+    <div class="card card--ribbon is-callout-bg has-moz-headings">
+      <div class="card--details">
+        <h3 class="card--title">
+          {{ _('Having trouble with a Mozilla product and want some help?') }}
+        </h3>
+        <a class="sumo-button primary-button button-lg" href="{{ url('questions.aaq_step1') }}">
           {{ _('Ask a question') }}
         </a>
-        <h3>{{ _('Having trouble with a Mozilla product and want some help?') }}</h3>
       </div>
     </div>
-  </div>
+  </section>
 {% endblock %}

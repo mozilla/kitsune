@@ -5,9 +5,8 @@
                  (None, title)] %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="change-avatar" class="main">
-      <h1>{{ title }}</h1>
+    <article id="change-avatar" class="main sumo-page-section">
+      <h1 class="sumo-page-heading">{{ title }}</h1>
       <form method="post" action="" enctype="multipart/form-data">
         {% csrf_token %}
         <ul>
@@ -18,5 +17,4 @@
         </div>
       </form>
     </article>
-  </div>
 {% endblock %}

@@ -8,9 +8,7 @@
 
 {% block headline %}{{ _('Edit a Question') }}{% endblock %}
 
-{% block major_detail_instructions %}
-  <h2>{{ _('Edit the question.') }}</h2>
-{% endblock %}
+{% block major_detail_instructions %}{% endblock %}
 
 {% block attachments_form %}
   {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
@@ -19,5 +17,5 @@
 {% block submit_button_value %}{{ _('Save Question') }}{% endblock %}
 
 {% block more_submit_buttons %}
-  <a href="{{ url('questions.details', question.id) }}" class="cancel">{{ _('Cancel') }}</a>
+  <a class="sumo-button secondary-button push-right" href="{{ url('questions.details', question.id) }}" class="cancel">{{ _('Cancel') }}</a>
 {% endblock %}

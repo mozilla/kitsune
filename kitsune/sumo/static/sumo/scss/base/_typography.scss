@@ -1,0 +1,266 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Typography
+//
+// All global typography styles and utility classes should live in the
+// typography.scss file. Whenever possible, use good semantics and these utility
+// classes to change type sizes and fonts, and leave typography details out
+// of the component-level files.
+//
+// .inverse - This class provides white text over a darker background
+// .alt-heading-font - Apply this to a heading directly, or any parent element
+// to apply to all headings within that context.
+// .alt-heading-font.inverse - Both classes can be used together.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/typography.njk
+//
+// Weight: 1
+//
+// Style guide: typography
+
+// The following mixins were taken and edited from
+// protocol/css/includes/mixins/_typography.scss.
+// Once protocol is caught up, these can be removed
+// and the protocol mixins can be used throughout the system.
+//
+// Consistent font sizes. Avoid sizing text arbitrarily and use this
+// set of predefined sizes. Sizes adapt at common breakpoints, and
+// there's some redundancy at smaller sizes because we don't want things
+// getting too tiny.
+// Example usage:
+//  .title { @include c.text-display-xl; }
+//  .subtitle { @include c.text-display-lg; }
+//  .intro { @include c.text-body-lg; }
+
+
+
+body {
+  color: var(--color-text);
+}
+
+h1, h2, h3, h4, h5, h6,
+[class*=text-display] {
+  font-family: var(--heading-font-family);
+  font-weight: bold;
+  color: var(--color-heading);
+
+  a, :link {
+    text-decoration: none;
+    color: var(--color-heading);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.has-moz-headings {
+  color: var(--color-moz-text);
+
+  h1, h2, h3, h4, h5, h6, [class*=text-display] {
+    font-family: var(--heading-font-family-moz);
+    color: var(--color-moz-heading);
+  }
+}
+
+.color-heading {
+  color: var(--color-heading);
+}
+
+.color-link {
+  &,
+  &:hover,
+  &:visited {
+    color: var(--color-link) !important;
+  }
+}
+
+// Type scale defined in includes/mixins/_typography.scss
+h1,
+.text-display-xxl {
+  @include c.text-display-xxl;
+}
+
+h2,
+.text-display-xl {
+  @include c.text-display-xl;
+}
+
+h3,
+.text-display-lg {
+  @include c.text-display-lg;
+}
+
+h4,
+.text-display-md {
+  @include c.text-display-md;
+}
+
+h5, h6, .text-display-sm {
+  font-family: var(--base-font-family);
+  @include c.text-display-sm;
+}
+
+.text-display-xs {
+  @include c.text-display-xs;
+}
+
+
+.text-display-xxs {
+  @include c.text-display-xxs;
+}
+
+.text-display-xxxs {
+  @include c.text-display-xxxs;
+}
+
+
+.alt-heading-font {
+  --heading-font-family: var(--heading-alt-font-family);
+}
+
+.inverse {
+  --color-heading: var(--color-inverse);
+  --color-link: var(--color-inverse);
+  --color-link-visited: var(--color-link-inverse-visited);
+  --color-link-active-bg: var(--color-link-inverse-active-bg);
+  background-color: var(--color-inverse-bg);
+  color: var(--color-inverse);
+}
+
+.text-body-lg {
+  @include c.text-body-lg();
+}
+
+.text-body-md {
+  @include c.text-body-md();
+}
+
+.text-body-sm {
+  @include c.text-body-sm();
+}
+
+.text-body-xs {
+  @include c.text-body-xs();
+}
+
+.normalize-headings {
+  h1, h2, h3, h4, h5, h6 {
+    @include c.text-display-xs;
+  }
+}
+
+.page-heading {
+  text-align: center;
+
+  &--logo {
+    display: block;
+    width: p.$spacing-xl;
+    margin: 40px 0 p.$spacing-sm;
+
+    @media #{p.$mq-md} {
+      width: p.$spacing-2xl;
+      margin: 72px 0 p.$spacing-sm;
+    }
+
+    @at-root .home-search-section & {
+      width: 56px;
+      margin: 0 auto p.$spacing-sm;
+    }
+  }
+
+  &--intro-text {
+    @include c.text-body-md();
+
+    @media #{p.$mq-md} {
+      @include c.text-body-lg();
+    }
+  }
+}
+
+a, :link {
+  text-decoration: underline;
+  color: var(--color-link);
+
+  &:hover {
+    text-decoration: none;
+    color: var(--color-link);
+  }
+
+  &:active {
+    background-color: var(--color-link-active-bg);
+  }
+
+  &.secondary-color:hover {
+    color: var(--color-secondary);
+  }
+}
+
+:visited {
+  color: var(--color-link-visited);
+
+  &:hover {
+    color: var(--color-link-visited);
+  }
+}
+
+.warning-link {
+  color: var(--color-red-08);
+
+  &:hover {
+    color: var(--color-red-09);
+  }
+}
+
+.secondary-color {
+  color: var(--color-secondary);
+}
+
+.errorlist {
+  padding: p.$spacing-sm;
+  margin: 0 0 p.$spacing-md 0;
+  border-radius: var(--global-radius);
+  background-color: var(--color-red-02);
+  list-style: none;
+}
+
+hr {
+  border: 0 none;
+  border-top: 1px solid var(--text-color);
+  margin: 1em 0;
+}
+
+blockquote {
+  @include c.text-body-md;
+  font-weight: normal;
+}
+
+// TODO: Add these semantic classes to styleguide
+.sumo-page-heading-xl {
+  @include c.sumo-page-heading-xl; // 32/48/56
+}
+
+.sumo-page-heading {
+  @include c.sumo-page-heading; // 32/40/48
+}
+
+.sumo-page-subheading {
+  @include c.sumo-page-subheading; // 24/24/24
+}
+
+.sumo-page-intro {
+  @include c.sumo-page-intro; // 18/16/16
+}
+
+.sumo-card-heading {
+  @include c.sumo-card-heading; // 18/18/16
+}
+
+.sumo-callout-heading {
+  @include c.sumo-callout-heading; // 24/32/32
+}
+
+.sumo-callout-heading-feature {
+  @include c.sumo-callout-heading-feature; // 32/40/48
+}

@@ -1,0 +1,89 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.sumo-l-two-col {
+  @include c.grid-row();
+
+  &--sidebar,
+  &--main,
+  &--full,
+  &--one-half {
+    @include c.col;
+  }
+
+  @media #{p.$mq-md} {
+    &.cols-on-medium {
+      flex-direction: row;
+
+      .sumo-l-two-col--main {
+        width: c.col-width(4, 6);
+      }
+
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 6);
+      }
+    }
+
+    &.align-center {
+      align-items: center;
+    }
+
+    &--one-half {
+      width: c.col-width(1, 2);
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    justify-content: space-between;
+    flex-direction: row-reverse;
+
+    &.sidebar-on-right {
+      flex-direction: row;
+    }
+
+    &.cols-on-medium {
+      flex-direction: row;
+
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 8);
+      }
+
+      .sumo-l-two-col--main {
+        width: c.col-width(6, 8);
+      }
+    }
+
+    &--sidebar {
+      display: block;
+      width: c.col-width(2, 8);
+    }
+
+    &--main {
+      width: c.col-width(6, 8);
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    &--sidebar {
+      display: block;
+      width: c.col-width(2, 10);
+    }
+
+    &--main {
+      width: c.col-width(7, 10);
+    }
+
+    &.cols-on-medium {
+      flex-direction: row;
+
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 10);
+      }
+
+      .sumo-l-two-col--main {
+        width: c.col-width(7, 10);
+      }
+
+    }
+  }
+}

@@ -50,7 +50,7 @@
 
   env.addFilter('class_selected', function(v1, v2) {
     if (v1 === v2) {
-      return ' class="selected" ';
+      return ' class=selected ';
     }
     return '';
   });

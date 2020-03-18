@@ -4,7 +4,7 @@ import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import mochaUnderscore from './fixtures/mochaUnderscore.js';
 
 describe('BrowserDetect', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaUnderscore();
   /* globals window */
 

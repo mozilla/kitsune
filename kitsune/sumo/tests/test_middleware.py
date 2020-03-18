@@ -2,16 +2,14 @@ from django.http import HttpResponsePermanentRedirect, HttpResponse
 from django.test import override_settings
 from django.test.client import RequestFactory
 
-import mobility
 from nose.tools import eq_
 
 from kitsune.sumo.middleware import (
     PlusToSpaceMiddleware,
-    DetectMobileMiddleware,
     CacheHeadersMiddleware,
     EnforceHostIPMiddleware,
 )
-from kitsune.sumo.tests import TestCase, PyQuery as pq
+from kitsune.sumo.tests import TestCase
 
 
 @override_settings(ENFORCE_HOST=['support.mozilla.org', 'all-your-base.are-belong-to.us'])
@@ -139,71 +137,3 @@ class PlusToSpaceTestCase(TestCase):
         request.META['QUERY_STRING'] = 's=\xe3\x82\xa2'
         response = self.ptsm.process_request(request)
         eq_('/ja/pa%20th?s=%E3%82%A2', response['location'])
-
-
-class MobileSwitchTestCase(TestCase):
-
-    def test_mobile_0(self):
-        response = self.client.get(u'/en-US/?mobile=0')
-        eq_(response.status_code, 200)
-        eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'off')
-        # Make sure a mobile template was not used.
-        doc = pq(response.content)
-        eq_(len(doc('header.slide-on-exposed')), 0)
-
-    def test_mobile_1(self):
-        response = self.client.get(u'/en-US/?mobile=1', follow=True)
-        eq_(response.status_code, 200)
-        eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'on')
-
-
-class MobileDetectTestCase(TestCase):
-
-    def check(self, ua, should_be_mobile):
-        request = RequestFactory().get('/en-US/home', HTTP_USER_AGENT=ua)
-        DetectMobileMiddleware().process_request(request)
-
-        if should_be_mobile:
-            self.assertEqual(request.META['HTTP_X_MOBILE'], '1')
-        else:
-            assert 'HTTP_X_MOBILE' not in request.META
-
-    def test_ipad_isnt_mobile(self):
-        self.check(
-            'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 '
-            '(KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25',
-            False)
-
-    def test_android_tablet_isnt_mobile(self):
-        self.check(
-            'Mozilla/5.0 (Android; Tablet; rv:13.0) Gecko/13.0 Firefox/13.0',
-            False)
-
-    def test_desktop_firefox_isnt_mobile(self):
-        self.check(
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:27.0) '
-            'Gecko/20100101 Firefox/27.0',
-            False)
-
-    def test_firefoxos_is_mobile(self):
-        self.check(
-            'Mozilla/5.0 (Mobile; rv:18.0) Gecko/18.0 Firefox/18.0',
-            True)
-
-    def test_android_firefox_is_mobile(self):
-        self.check(
-            'Mozilla/5.0 (Android; Mobile; rv:13.0) Gecko/13.0 Firefox/13.0',
-            True)
-
-    def test_android_stock_is_mobile(self):
-        self.check(
-            'Mozilla/5.0 (Linux; U; Android 2.3; en-us) AppleWebKit/999+ '
-            '(KHTML, like Gecko) Safari/999.9',
-            True)
-
-    def test_iphone_safari_is_mobile(self):
-        self.check(
-            'Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) '
-            'AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 '
-            'Safari/528.16',
-            True)

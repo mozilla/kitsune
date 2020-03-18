@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import ugettext as _, ungettext
 from django.views.decorators.http import require_POST
 
-from mobility.decorators import mobile_template
 from multidb.pinning import mark_as_write
 from kitsune.sumo.utils import is_ratelimited
 from django_statsd.clients import statsd
@@ -22,8 +21,7 @@ from kitsune.sumo.utils import paginate
 
 
 @login_required
-@mobile_template('messages/{mobile/}inbox.html')
-def inbox(request, template):
+def inbox(request):
     user = request.user
     messages = InboxMessage.objects.filter(to=user).order_by('-created')
     count = messages.count()
@@ -31,19 +29,18 @@ def inbox(request, template):
     messages = paginate(
         request, messages, per_page=MESSAGES_PER_PAGE, count=count)
 
-    return render(request, template, {'msgs': messages})
+    return render(request, 'messages/inbox.html', {'msgs': messages})
 
 
 @login_required
-@mobile_template('messages/{mobile/}read.html')
-def read(request, template, msgid):
+def read(request, msgid):
     message = get_object_or_404(InboxMessage, pk=msgid, to=request.user)
     was_new = message.unread
     if was_new:
         message.update(read=True)
     initial = {'to': message.sender, 'in_reply_to': message.pk}
     form = ReplyForm(initial=initial)
-    response = render(request, template, {
+    response = render(request, 'messages/read.html', {
         'message': message, 'form': form})
     if was_new:
         response = mark_as_write(response)
@@ -51,16 +48,14 @@ def read(request, template, msgid):
 
 
 @login_required
-@mobile_template('messages/{mobile/}read-outbox.html')
-def read_outbox(request, template, msgid):
+def read_outbox(request, msgid):
     message = get_object_or_404(OutboxMessage, pk=msgid, sender=request.user)
-    return render(request, template, {
+    return render(request, 'messages/read-outbox.html', {
         'message': _add_recipients(message)})
 
 
 @login_required
-@mobile_template('messages/{mobile/}outbox.html')
-def outbox(request, template):
+def outbox(request):
     user = request.user
     messages = OutboxMessage.objects.filter(sender=user).order_by('-created')
     count = messages.count()
@@ -71,12 +66,11 @@ def outbox(request, template):
     for msg in messages.object_list:
         _add_recipients(msg)
 
-    return render(request, template, {'msgs': messages})
+    return render(request, 'messages/outbox.html', {'msgs': messages})
 
 
 @login_required
-@mobile_template('messages/{mobile/}new.html')
-def new_message(request, template):
+def new_message(request):
     """Send a new private message."""
     to = request.GET.get('to')
     if to:
@@ -108,7 +102,7 @@ def new_message(request, template):
                                      _('Your message was sent!'))
         return HttpResponseRedirect(reverse('messages.inbox'))
 
-    return render(request, template, {'form': form})
+    return render(request, 'messages/new.html', {'form': form})
 
 
 @login_required
@@ -135,8 +129,7 @@ def bulk_action(request, msgtype='inbox'):
 
 
 @login_required
-@mobile_template('messages/{mobile/}delete.html')
-def delete(request, template, msgid=None, msgtype='inbox'):
+def delete(request, msgid=None, msgtype='inbox'):
     if msgid:
         msgids = [msgid]
     else:
@@ -172,7 +165,7 @@ def delete(request, template, msgid=None, msgtype='inbox'):
         for message in messages:
             _add_recipients(message)
 
-    return render(request, template, {
+    return render(request, 'messages/delete.html', {
         'msgs': messages, 'msgid': msgid, 'msgtype': msgtype})
 
 

@@ -4,9 +4,8 @@
 {% set crumbs = [(None, _('{locale_name} Discussions')|f(locale_name=locale_name))] %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="threads" class="content-box">
-      <h1>{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
+    <article id="threads" class="content-box sumo-page-section">
+      <h1 class="sumo-page-heading">{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
       {% if user.is_authenticated() %}
         <form id="watch_locale" action="{{ url('wiki.discuss.watch_locale') }}" method="post">
           {% csrf_token %}
@@ -18,62 +17,90 @@
             {% set watch = _('Watch this locale') %}
             <input type="hidden" name="watch" value="yes">
           {% endif %}
-          <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+          <div class="sumo-button-wrap">
+            <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="sumo-button primary-button" id="watch-forum-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+          </div>
         </form>
       {% endif %}
-      <ol class="threads-columns cf {% if not desc_toggle %}desc{% endif %}">
-        {% if user.is_authenticated() %}
-          <li class="watch">{{ _('Watch') }}</li>
-        {% endif %}
-        <li class="title">{{ _('Title') }}</li>
-        <li class="author{% if sort == 3 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></li>
-        <li class="replies{% if sort == 4 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></li>
-        <li class="last-post{% if sort == 5 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></li>
-      </ol>
+
       {% if threads.object_list %}
-        <ol class="threads">
-        {% for thread in threads.object_list %}
-          <li class="cf">
-            {% if user.is_authenticated() %}
-              <div class="watch">
-                <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', thread.document.slug, thread.id) }}" method="post">
-                    {% csrf_token %}
-                    {% if thread.watches.filter(user=request.user) %}
-                      {% set watch = _('You are watching this thread') %}
-                      <input type="hidden" name="watch" value="no" />
-                      <a class="yes" title="{{ watch }}"></a>
-                    {% else %}
-                      {% set watch = _('You are not watching this thread') %}
-                      <input type="hidden" name="watch" value="yes" />
-                      <a class="no" title="{{ watch }}"></a>
-                    {% endif %}
-                  </form>
-              </div>
-            {% endif %}
-            <div class="title">
-              {% trans thread_url=thread.get_absolute_url(),
-                       thread_title=thread.title,
-                       document_discussion_url=url('wiki.discuss.threads',thread.document.slug),
-                       document=thread.document %}
-                <a href="{{ thread_url }}">{{ thread_title }}</a><br>
-                in <a href="{{ document_discussion_url }}">{{ document }}</a>
-              {% endtrans %}
-            </div>
-            <div class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></div>
-            <div class="replies">{{ thread.replies }}</div>
-            <div class="last-post">
-              <a href="{{ thread.last_post.get_absolute_url() }}">
-                {{ datetimeformat(thread.last_post.created) }}
-              </a><br/>
-              {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}
-            </div>
-          </li>
-        {% endfor %}
-        </ol>
-        {{ threads|paginator }}
+      <div class="table-scroll">
+        <table class="threads-columns cf {% if not desc_toggle %}desc{% endif %}">
+          <thead>
+            <tr>
+              {% if user.is_authenticated() %}
+                <th class="watch">{{ _('Watch') }}</th>
+              {% endif %}
+              <th class="title">{{ _('Title') }}</th>
+              <th class="author{% if sort == 3 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
+              <th class="replies{% if sort == 4 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
+              <th class="last-post{% if sort == 5 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
+            </tr>
+          </thead>
+          <tbody class="threads">
+            {% for thread in threads.object_list %}
+              <tr>
+                {% if user.is_authenticated() %}
+                  <td class="watch">
+                    <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', thread.document.slug, thread.id) }}" method="post">
+                        {% csrf_token %}
+                        {% if thread.watches.filter(user=request.user) %}
+                          {% set watch = _('You are watching this thread') %}
+                          <input type="hidden" name="watch" value="no" />
+                          <a class="yes" title="{{ watch }}">
+                            <svg class="yes-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                              <path stroke="var(--color-success)" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <svg  class="no-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                              <g stroke="var(--color-error)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
+                                <path d="M6 6l12 12M6 18L18 6"/>
+                              </g>
+                            </svg>
+                          </a>
+                        {% else %}
+                          {% set watch = _('You are not watching this thread') %}
+                          <input type="hidden" name="watch" value="yes" />
+                          <a class="no" title="{{ watch }}">
+                            <svg class="yes-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                              <path stroke="var(--color-success)" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <svg  class="no-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                              <g stroke="var(--color-error)" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
+                                <path d="M6 6l12 12M6 18L18 6"/>
+                              </g>
+                            </svg>
+                          </a>
+                        {% endif %}
+                      </form>
+                  </td>
+                {% endif %}
+                <td class="title">
+                  {% trans thread_url=thread.get_absolute_url(),
+                           thread_title=thread.title,
+                           document_discussion_url=url('wiki.discuss.threads',thread.document.slug),
+                           document=thread.document %}
+                    <a href="{{ thread_url }}">{{ thread_title }}</a><br>
+                    in <a href="{{ document_discussion_url }}">{{ document }}</a>
+                  {% endtrans %}
+                </td>
+                <td class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></td>
+                <td class="replies">{{ thread.replies }}</td>
+                <td class="last-post">
+                  <a href="{{ thread.last_post.get_absolute_url() }}">
+                    {{ datetimeformat(thread.last_post.created) }}
+                  </a><br/>
+                  {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {{ threads|paginator }}
+
       {% else %}
         <p>{{ _('There are no threads. Maybe you should create some!') }}</p>
       {% endif %}
     </article>
-  </div>
 {% endblock %}

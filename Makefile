@@ -11,7 +11,7 @@ help:
 	@echo "run           - docker-compose up the entire system for dev"
 	@echo ""
 	@echo "pull          - pull the latest production images from Docker Hub"
-	@echo "init          - initialize the database and install Node and Bower packages"
+	@echo "init          - initialize the database and install Node packages"
 	@echo "djshell       - start a Django Python shell (ipython)"
 	@echo "dbshell       - start a MySQL shell"
 	@echo "shell         - start a bash shell"
@@ -24,6 +24,8 @@ help:
 	@echo "docs          - generate Sphinx HTML documentation"
 	@echo "build-ci      - build docker images for use in our CI pipeline"
 	@echo "test-ci       - run tests against files in docker image built by CI"
+	@echo "frontend      - build docker images for front-end dependencies and tooling"
+	@echo "styleguide    - build the SUMO's styleguide"
 
 .env:
 	@if [ ! -f .env ]; then \
@@ -41,7 +43,7 @@ help:
 	${MAKE} build-full
 
 build: .docker-build-pull
-	${DC} build base-dev
+	${DC} build node-dev base-dev
 	touch .docker-build
 
 build-full: .docker-build-pull
@@ -86,7 +88,7 @@ clean:
 #	state files
 	-rm -f .docker-build*
 #	node stuff
-	-rm -rf node_modules bower_components
+	-rm -rf node_modules
 
 lint: .docker-build-pull
 	${DC} run test flake8 kitsune
@@ -132,4 +134,22 @@ test-js-ci: .docker-build-ci
 lint-ci: .docker-build-ci
 	${DC_CI} run test-image flake8 kitsune
 
-.PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci
+#####################
+# For use in frontend
+#####################
+frontend:
+	npm run build:scss
+	npm run build:postcss
+
+styleguide: frontend
+	npm run build:docs:copystyles
+	npm run build:docs:copyfonts
+	npm run build:docs:copyjs
+	npm run build:docs:copyprotocol
+	npm run build:docs:copyprotocolimgs
+	npm run build:docs:copysumoimgs
+	npm run build:docs:copyproductimgs
+	npm run build:docs:styles
+	npm run build:docs:kss
+
+.PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci frontend styleguide

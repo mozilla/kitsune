@@ -8,7 +8,7 @@ import mochaGettext from './fixtures/mochaGettext.js';
 import mochaMarky from './fixtures/mochaMarky.js';
 
 describe('k', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   mochaK();
   mochaGettext();

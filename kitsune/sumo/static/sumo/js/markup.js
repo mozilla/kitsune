@@ -301,19 +301,22 @@
       // TODO: look at using a js template solution (jquery-tmpl?)
         $html = $(
             '<section class="marky">' +
+            '<div class="field">' +
             '<label>' + gettext('Link text:') + '</label>' +
             '<input type="text" name="link-text" />' +
+            '</div>' +
+            '<div class="field">' +
             '<label>' + gettext('Link target:') + '</label>' +
-            '<ol><li><label><input type="radio" name="link-type" value="internal" /> ' +
-            gettext('Support article:') + '</label> ' +
+            '<ol><li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-internal" value="internal" /><label for="id_link-type-internal">' +
+            gettext('Support article:') + '</label></div>' +
             '<input type="text" name="internal" placeholder="' +
             gettext('Enter the name of the article') + '" /></li>' +
-            '<li><label><input type="radio" name="link-type" value="external" /> ' +
-            gettext('External link:') + '</label> ' +
+            '<li class="field"><div class="field radio is-condensed"><input type="radio" name="link-type" id="id_link-type-external" value="external" /><label for="id_link-type-external">' +
+            gettext('External link:') + '</label></div>' +
             '<input type="text" name="external" placeholder="' +
             gettext('Enter the URL of the external link') + '" /></li>' +
-            '</ol><div class="submit"><button type="button" class="btn btn-important"></button>' +
-            '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') +
+            '</ol><div class="submit sumo-button-wrap align-full reverse-on-desktop"><button type="button" class="sumo-button primary-button"></button>' +
+            '<a href="#cancel" class="kbox-cancel sumo-button secondary-button">' + gettext('Cancel') +
             '</a></div></section>' // whew, yuck!?
         ),
         selectedText = me.getSelectedText(),
@@ -496,7 +499,8 @@
         destroy: true,
         modal: true,
         id: 'link-modal',
-        container: $('body')
+        container: $('body'),
+        position: 'none'
       });
       kbox.open();
 
@@ -545,18 +549,18 @@
             '<div class="filter cf">' +
             '<form class="simple-search-form" id="gallery-modal-search"><input type="text" name="q" class="searchbox"' +
             'placeholder="' + gettext('Search Gallery') + '" />' +
-            '<button type="submit" class="submit-button" title="' + gettext('Search Gallery') + '">' +
+            '<button type="submit" class="submit-button search-button" title="' + gettext('Search Gallery') + '">' +
             gettext('Search Gallery') + '</button></form>' +
             '<div class="type">' +
             '<span>' + gettext('Show:') + '</span>' +
             '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
             '<li data-type="video">' + gettext('Videos') + '</li></ol></div>' +
             '<div class="locale-filter">' + gettext('Show media for:') + ' <select /></div></div>' +
-            '<div class="placeholder" /><div class="submit">' +
-            '<button class="btn btn-important">' + gettext('Insert Media') + '</button>' +
-            '<a href="' + galleryUrl + '#upload" class="upload" target="_blank">' +
+            '<div class="placeholder" /><div class="submit sumo-button-wrap reverse-on-desktop align-end">' +
+            '<button class="sumo-button primary-button">' + gettext('Insert Media') + '</button>' +
+            '<a href="' + galleryUrl + '#upload" class="upload sumo-button secondary-button" target="_blank">' +
             gettext('Upload Media') + '</a>' +
-            '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') + '</a></div>' +
+            '<a href="#cancel" class="kbox-cancel sumo-button push-left">' + gettext('Cancel') + '</a></div>' +
             '</section>'
         ),
         selectedText = me.getSelectedText(),
@@ -724,7 +728,7 @@
             '<div class="area">' +
             '<div id="responses-area">' +
             '<h2 class="heading-label">' + gettext('Categories') + '</h2>' +
-            '<ul class="category-list sidebar-nav">' +
+            '<ul class="category-list">' +
             '<li class="status-indicator busy">' + gettext('Loading...') + '</li>' +
             '</ul></div>' +
             '<div id="response-list-area">' +
@@ -735,16 +739,16 @@
             '<div id="response-content-area">' +
             '<h2 class="heading-label preview-label">' + gettext('Response editor') + '</h2>' +
             '<button class="toggle-view btn">' + gettext('Switch to preview mode') + '</button>' +
-            '<p class="response-preview">' +
+            '<div class="field has-md-textarea response-preview is-condensed">' +
             '<textarea id="response-content">' +
-            '</textarea></p>' +
+            '</textarea></div>' +
             '<p class="response-preview-rendered"></p>' +
             '</div>' +
             '</div>' +
             '</div>' +
-            '<div class="placeholder" /><div class="submit" id="response-submit-area">' +
-            '<button id="insert-response" class="btn btn-important">' + gettext('Insert Response') + '</button>' +
-            '<a href="#cancel" class="kbox-cancel">' + gettext('Cancel') + '</a>' +
+            '<div class="placeholder" /><div class="submit sumo-button-wrap" id="response-submit-area">' +
+            '<button id="insert-response" class="sumo-button primary-button">' + gettext('Insert Response') + '</button>' +
+            '<a href="#cancel" class="sumo-button secondary-button kbox-cancel">' + gettext('Cancel') + '</a>' +
             '</div>' +
             '</section>'
         ),

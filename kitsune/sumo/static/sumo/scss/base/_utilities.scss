@@ -1,0 +1,117 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Expanded link utility
+//
+// The `.expand-this-link` utility class can be added to a link, in combination
+// with `.uk-position-relative` to make an inline link appear to be a block-level
+// link. This is useful when you want to expand the click target, but for SEO
+// and accessibility reasons, an anchor with complicated nested content is not
+// preferred.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/expanded-link-utility.njk
+//
+// Weight: 4
+//
+// Style guide: Utilities.link-expand
+
+.expand-this-link {
+  &:after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    content: "";
+    border-radius: var(--global-radius);
+  }
+}
+
+
+@media screen and (max-width: 767px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 1055px) {
+  .large-only {
+    display: none !important;
+  }
+}
+
+.mobile-only {
+  @media #{p.$mq-md} {
+    display: none !important;
+  }
+}
+
+.hide-on-large {
+  @media #{p.$mq-lg} {
+    display: none !important;
+  }
+}
+
+.hide-until-expanded {
+  display: none;
+}
+
+.hidden,
+.is-hidden {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  left: -1000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mt-lg {
+  margin-top: p.$spacing-lg;
+}
+
+.lock-body {
+  position: fixed;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-center-to-left-on-large {
+  text-align: center;
+
+  @media #{p.$mq-lg} {
+    @include p.bidi(((text-align, left, right),));
+  }
+}
+
+.display-block {
+  display: block;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.light-grey-bg {
+  background: var(--color-marketing-gray-01);
+}

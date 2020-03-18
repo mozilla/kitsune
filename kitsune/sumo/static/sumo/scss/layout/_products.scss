@@ -1,0 +1,60 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+.sumo-page-subheader {
+  display: flex;
+  flex-direction: column-reverse;
+
+  @media #{p.$mq-lg} {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.firefox-download-button {
+  text-align: center;
+  margin-bottom: p.$spacing-lg;
+
+  @media #{p.$mq-lg} {
+    margin-bottom: 0;
+  }
+}
+
+.download-firefox--info {
+  display: flex;
+  justify-content: center;
+  margin: p.$spacing-sm 0 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    margin: 0 p.$spacing-xs;
+  }
+}
+
+.refresh-firefox {
+  display: none;
+}
+
+.documents-product-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: p.$spacing-lg;
+  // @include p.bidi(((flex-direction, row, row-reverse),));
+  // @include p.bidi(((justify-content, flex-start, flex-end),));
+
+  img {
+    @include p.bidi(((margin-right, 12px, 0),));
+    @include p.bidi(((margin-left, 0, 12px),));
+  }
+
+  a {
+    color: var(--color-text);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
