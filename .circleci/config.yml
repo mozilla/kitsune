@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:2.7.17-stretch
+      - image: circleci/python:2-buster
     steps:
       - checkout
       - setup_remote_docker:
