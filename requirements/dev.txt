@@ -189,3 +189,6 @@ prompt-toolkit==1.0.18 \
 configparser==4.0.2 \
     --hash=sha256:254c1d9c79f60c45dfde850850883d5aaa7f19a23f13561243a050d5a7c3fe4c \
     --hash=sha256:c7d282687a5308319bf3d2e7706e575c635b0a470342641c93bea0ea3b5331df
+entrypoints==0.3 \
+    --hash=sha256:589f874b313739ad35be6e0cd7efde2a4e9b6fea91edcc34e58ecbb8dbe56d19 \
+    --hash=sha256:c70dd71abe5a8c85e55e12c19bd91ccfeec11a6e99044204511f9ed547d48451
