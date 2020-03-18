@@ -352,6 +352,12 @@
   }
 }
 
+.question, .answer, .forum--entry-content {
+  .content {
+    @include c.ulol;
+  }
+}
+
 .ask-a-question {
   margin: 40px 0 20px;
   display: flex;
@@ -636,6 +642,10 @@
 
     .main-content {
       padding-left: 55px;
+
+      ul, ol {
+        padding-left: 0;
+      };
     }
   }
 }

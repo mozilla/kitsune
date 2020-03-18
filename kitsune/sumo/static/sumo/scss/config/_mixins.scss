@@ -60,6 +60,20 @@
   border-radius: var(--global-radius);
 }
 
+@mixin ulol {
+  ul {
+    list-style: disc;
+  }
+
+  ol {
+    list-style: decimal;
+  }
+
+  ul, ol {
+    padding-left: 24px;
+  }
+}
+
 // function to retrieve color from $colors map ie. `color(base, primary)`
 @function color($name, $variant: '01') {
   $color: null;
