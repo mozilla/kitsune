@@ -9,7 +9,7 @@
   <div id="aaq_progress" class="cf">
     <div class="progress-bar{% if percent == 100 %} complete{% endif %}">
       <div style="width: {{ percent }}%;"></div>
-      <ul class="legend">
+      <ul class="legend mzp-u-list-styled">
         {% for step_name in steps %}
           <li {% if steps.index(step_name) == step %}class="current"{% endif %}><span>{{ step_name }}</span></li>
         {% endfor %}
@@ -19,45 +19,62 @@
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
-  <h2>{{ _('Which product would you like to post a question about?') }}</h2>
-  <ul id="product-picker" class="card-grid cf">
-    {% for key, product in products.iteritems() %}
-      <li>
-          <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}"
-              data-event-category="link click"
-              data-event-action="product"
-              data-event-label="{{ product.name }}">
-              {% if key == 'other' %}
-                  <img src="{{ static('sumo/img/dino-logo.png') }}"
-                      alt="{{ _(product.name) }}"
-                      class="logo-sprite">
-              {% else %}
-              <img src="{{ image_for_product(product.product) }}"
-                  alt="{{ pgettext('DB: products.Product.title', product.title) }}"
-                  class="logo-sprite">
-              {% endif %}
-          <span class="title">{{ product.name }}</span>
-          <span class="description">{{ product.subtitle }}</span>
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
+  <h1 class="sumo-page-heading">{{ _('Choose a product') }}</h1>
+  <p class="sumo-page-intro">{{ _('Which product would you like to post a question about?') }}</p>
+  <div class="sumo-page-section--inner">
+    <div id="product-picker" class="sumo-card-grid" style="--cg-count: {{ products|length }};">
+      <div class="scroll-wrap">
+        {% for key, product in products.iteritems() %}
+        <div class="card card--product zoom-on-hover">
+          {% if key == 'other' %}
+          <img src="{{ static('sumo/img/dino-logo.png') }}"
+              alt="{{ _(product.name) }}"
+              class="card--icon">
+          {% else %}
+          <img src="{{ image_for_product(product.product) }}"
+              alt="{{ pgettext('DB: products.Product.title', product.title) }}"
+              class="card--icon">
+          {% endif %}
+
+          <div class="card--details">
+            <h3 class="card--title">
+              <a class="expand-this-link title"
+                href="{{ url('questions.aaq_step2', product_key=key) }}"
+                data-event-category="link click"
+                data-event-action="product"
+                data-event-label="{{ product.name }}">
+                {{ product.name }}
+              </a>
+            </h3>
+            <p class="card--desc">{{ product.subtitle }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 {%- endmacro %}
 
 {% macro selected_product(product, can_change) -%}
   <div id="selected-product">
-    <label>{{ _('Product') }}:</label>
-    <span>{{ product.name }}</span>
+    <br />
+    <p>{{ _('Product') }}: <strong><span>{{ product.name }}</span></strong>
     {% if can_change %}
-      <a href="{{ url('questions.aaq_step1') }}">{{ _('change product') }}</a>
+      <a class="text-body-sm"
+         {% if is_mobile_device %}
+            href="{{ url('questions.aaq_step1') }}?q=change_product">{{ _('change product') }}</a>
+          {% else %}
+            href="{{ url('questions.aaq_step1') }}">{{ _('change product') }}</a>
+          {% endif %}
     {% endif %}
+    </p>
   </div>
 {%- endmacro %}
 
 {% macro select_category(product) -%}
   <div class="highlight-box">
-    <h2>{{ _('Which category best describes your problem?') }}</h2>
-    <ul class="select-one">
+    <h2 class="sumo-page-subheading">{{ _('Which category best describes your problem?') }}</h2>
+    <ul class="select-one sumo-page-intro">
       {% for key, category in product.categories.iteritems() %}
         <li>
           <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}"
@@ -72,30 +89,30 @@
 
 {% macro selected_category(category, product, can_change) -%}
   <div id="selected-category">
-    <label>{{ _('Category') }}:</label>
-    <span>{{ category.name }}</span>
+    <p>{{ _('Category') }}: <strong><span>{{ category.name }}</span></strong>
     {% if can_change %}
-      <a href="{{ url('questions.aaq_step2', product_key=product.key) }}">{{ _('change category') }}</a>
+      <a class="text-body-sm" href="{{ url('questions.aaq_step2', product_key=product.key) }}">{{ _('change category') }}</a>
     {% endif %}
+    </p>
   </div>
 {%- endmacro %}
 
 {% macro current_articles_and_message(articles, category, html=None, all_articles=False) -%}
   <div class="highlight-box" id="try-an-article">
     {% if html %}
-      <h2>{{ html|safe }}</h2>
+      <h2 class="sumo-page-subheading">{{ html|safe }}</h2>
     {% else %}
-      <h2>{{ _('Try one of these articles:') }}</h2>
+      <h2 class="sumo-page-subheading">{{ _('Try one of these articles:') }}</h2>
     {% endif %}
     {% if articles %}
       <ul class="topic-list">
         {% if not all_articles %}
-          {% set articles = articles[:4 if request.MOBILE else 5] %}
+          {% set articles = articles[:5] %}
         {% endif %}
         {% for article in articles %}
           <li>
-            <a href="{{ article.url }}" {% if not request.MOBILE %}target="_blank"{% endif %}>{{ article.document_title }}</a>
-            {{ article.document_summary }}
+            <a class="sumo-page-intro" href="{{ article.url }}" target="_blank"><strong>{{ article.document_title }}</strong></a>
+            <p>{{ article.document_summary }}</p>
           </li>
         {% endfor %}
       </ul>
@@ -104,10 +121,17 @@
 {%- endmacro %}
 
 {% macro aaq_search_form(product, category, settings, host, request, has_searched=False) -%}
+<div class="sumo-page-section">
   <form id="ask-search-form" class="simple-search-form {% if has_searched %}has-searched{% endif %} cf" action="#summarize-question" method="get">
-    <input type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" placeholder="{{ _("Can't find an answer? Summarize your question in a sentence.") }}" />
-    <span data-type="submit" class="button">{{ _('Ask this') }}</span>
+    <div class="field is-condensed full-width">
+      <label for="id_ask_a_question">{{ _("Can't find an answer? Summarize your question in a sentence.") }}</label>
+      <input id="id_ask_a_question"type="text" class="searchbox" name="search" value="{{ request.GET.search }}" required="required" maxlength="160" />
+    </div>
+    <div class="sumo-button-wrap">
+      <button data-type="submit" class="sumo-button primary-button">{{ _('Ask this') }}</button><br>
+    </div>
   </form>
+</div>
 {%- endmacro %}
 
 {% macro show_results(search_results, product, category, request) -%}
@@ -133,13 +157,13 @@
   <form action="{{ url('questions.aaq_step5', product_key=product.key, category_key=category.key) }}" method="get">
     <input type="hidden" name="search" value="{{ request.GET.search }}" />
     <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-    <input type="submit" id="show-form-btn" class="button" value="{{ button_text }}" />
+    <input type="submit" id="show-form-btn" class="sumo-button primary-button" value="{{ button_text }}" />
   </form>
 {%- endmacro %}
 
 {% macro marketplace_category(category_slug, form, error_message) -%}
   {% if category_slug == 'payments' %}
-    <h2>
+    <h2 class="sumo-page-subheading">
       {% trans %}
         Please visit the
         <a href="https://www.paypal.com/cgi-bin/helpweb?cmd=_help">
@@ -147,7 +171,7 @@
       {% endtrans %}
     </h2>
   {% elif category_slug == 'applications' %}
-    <h2>
+    <h2 class="sumo-page-subheading">
       {% trans %}
         Please visit the Marketplace page for the application. There
         you can find the developers' contact information and contact them
@@ -164,8 +188,8 @@
       {% csrf_token %}
       <ol>
         {{ form.as_ul() }}
-        <li class="submit">
-          <button type="submit" class="btn btn-submit big">{{ _('Submit Issue') }}</button>
+        <li class="submit sumo-button-wrap">
+          <button type="submit" class="sumo-button primary-button">{{ _('Submit Issue') }}</button>
         </li>
       </ol>
     </form>
@@ -174,43 +198,8 @@
 
 
 {% macro troubleshooting_instructions(field) %}
-  <div id="addon-section">
-    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="add-troubleshooting-info">
-      {{ _('Automatically add') }}
-    </a>
-    <p class="help-text">{{ field.help_text|safe }}</p>
-    <p id="troubleshooting-manual">
-      {% trans url='#troubleshooting-help,#troubleshooting-field' %}
-        A window will open in the top corner. Click Allow, and then click
-        Install. If the automated way doesn't work,
-        <a class="expander" href="{{ url }}">try these manual steps</a>.
-      {% endtrans %}
-    </p>
-    <ol id="troubleshooting-help">
-      <li>{{ _('Open <em>Help &gt; Troubleshooting Information</em>.') }}
-        <ul>
-          <li>{{ _('Look at the top of your screen, and click the menu item called <em>Help</em>.') }}</li>
-          <li>{{ _('A small box will open. Click on an item called <em>Troubleshooting Information</em>.') }}</li>
-        </ul>
-      </li>
-      <li>{{ _('A new window will open. Click on a button called <em>Copy text to clipboard</em>.') }}</li>
-      <li>{{ _('Paste the info in the text box below.') }}
-        <ul>
-          <li>{{ _('Click on the empty box above this text.') }}</li>
-          <li>{{ _('Look at the top of your screen, and click the menu item called <em>Edit</em>.') }}</li>
-          <li>
-            {% trans %}
-              A small box will open. Click on the item called <em>Paste</em>.
-              Alternatively, type <em>Ctrl+V</em> or <em>Command+V</em>.
-            {% endtrans %}
-          </li>
-          <li>{{ _('Some text will appear in the empty box.') }}</li>
-        </ul>
-      </li>
-    </ol>
-  </div>
   <div id="api-section">
-    <a href="#" class="btn btn-important" id="share-data">
+    <a href="#" class="sumo-button primary-button" id="share-data">
       {{ _('Share Data') }}
     </a>
     <p class="help-text">{{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}</p>
@@ -219,7 +208,7 @@
     {{ _('This field was populated automatically.') }}
     <a href="#troubleshooting-field" class="expander">{{ _('See the data') }}</a>.
   </p>
-  <p id="troubleshooting-field">
+  <div id="troubleshooting-field" class="hide-until-expanded field">
     {{ field }}
-  </p>
+  </div>
 {% endmacro %}

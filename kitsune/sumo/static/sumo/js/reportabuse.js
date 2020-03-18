@@ -4,18 +4,9 @@
 */
 
 (function($) {
-
   'use strict';
 
   $(document).ready(function() {
-    $('#report-abuse > a').on('click', function() {
-      $(this).siblings('.popup').fadeToggle(300);
-    });
-
-    $('#report-abuse [type="cancel"], #report-abuse .kbox-close').on('click', function(ev) {
-      $(this).closest('.popup').fadeToggle(300);
-    });
-
     $('#report-abuse [type="submit"]').on('click', function(ev) {
       ev.preventDefault();
       var $this = $(this);

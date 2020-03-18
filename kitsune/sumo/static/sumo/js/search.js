@@ -12,7 +12,7 @@ $(document).ready(function() {
     });
   });
 
-  $('.datepicker').datepicker();
+  $('.datepicker').attr('type','text').datepicker();
   $('.datepicker').attr('readonly', 'readonly').css('background', '#ddd');
 
   $('select', cache_search_date).change(function () {

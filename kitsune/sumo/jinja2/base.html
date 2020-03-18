@@ -1,4 +1,4 @@
-{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
+{% from 'includes/common_macros.html' import announcement_bar, ff_alert, search_box, aux_nav, profile_nav, download_firefox, field, checkbox, favicon with context %}
 
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
@@ -26,18 +26,7 @@
     {% endfor %}
   {% endif %}
 
-  {% stylesheet 'common' %}
-  {% stylesheet 'print' %}
-  {% for style in styles %}
-    {% stylesheet style %}
-  {% endfor %}
-
-  <!--[if lte IE 7]>
-    {% stylesheet 'ie' %}
-  <![endif]-->
-  <!--[if IE 8]>
-    {% stylesheet 'ie8' %}
-  <![endif]-->
+  <link href="{{ STATIC_URL }}build/screen.css" rel="stylesheet" type="text/css" />
 
   {% if meta %}
     {% for tag in meta %}
@@ -108,37 +97,20 @@
 {% if localizable_url %}
   {% set locale_picker_url = locale_picker_url|urlparams(next=localizable_url) %}
 {% endif %}
-<ul id="nav-access">
+<ul class="sumo-nav-access" id="nav-access">
   <li><a href="#main-content">{{ _('Skip to main content') }}</a></li>
   <li><a href="{{ locale_picker_url }}">{{ _('Switch language') }}</a></li>
   <li><a id="skip-to-search" href="#search-q">{{ _('Skip to search') }}</a></li>
 </ul>
 
 {% if settings.STAGE %}
-  <div id="stage-banner">
-    <div class="close-button">X</div>
-    {{ _('This is a staging site, the content gets overwritten on the 1st of every month.<br>The production site is <a href="https://support.mozilla.org">here</a>.') }}
-  </div>
+<div id="stage-banner"  class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button close-button" type="button"></button>
+  <p>{{ _('This is a staging site, the content gets overwritten on the 1st of every month.<br>The production site is <a href="https://support.mozilla.org">here</a>.') }}</p>
+</div>
 {% endif %}
 
 <div class="media-test"></div>
-
-{# These will only be shown on small-ish screens, by media queries. #}
-{% if request.MOBILE %}
-  <div class="mobile-banner" id="mobile-warning">
-    <div class="close-button" data-close-id="mobile-warning" data-close-memory="remember">X</div>
-    <a href="javascript: history.back();">
-      {{ _("This page doesn't have a mobile optimized version. Tap here to go back.") }}
-    </a>
-  </div>
-{% else %}
-  <div class="mobile-banner" id="mobile-warning">
-    <div class="close-button" data-close-id="mobile-warning" data-close-memory="remember">X</div>
-    <a href="?{{ request.QUERY_STRING }}&amp;mobile=1">
-      {{ _('Tap here to go to the mobile version of the site.') }}
-    </a>
-  </div>
-{% endif %}
 
 {# TrafficCop experiment_fxa_cta_topbar #}
 {% if run_experiments %}
@@ -167,222 +139,206 @@
   {% endif %}
 </div>
 
-<header>
-  <div class="nav-flex">
-    <h2 class="logo">
-      <a href="{{ url('home') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"></a>
-    </h2>
-    <a href="javascript:;" class="menu-toggle" data-toggle-nav>
-      <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8.17 36.47">
-        <title>kebab</title>
-        <circle cx="4.09" cy="4.09" r="4.09" fill="currentColor" />
-        <circle cx="4.09" cy="32.39" r="4.09" fill="currentColor" />
-        <circle cx="4.09" cy="18.24" r="4.09" fill="currentColor" />
-      </svg>
-    </a>
-    <div class="responsive-nav-wrap">
-      <a href="javascript:;" class="close-menu" data-toggle-nav>
-        <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.98 18.98">
-          <title>close</title>
-          <line x1="1.06" y1="1.06" x2="17.92" y2="17.92" fill="none" stroke="currentColor" stroke-width="3"/>
-          <line x1="17.92" y1="1.06" x2="1.06" y2="17.92" fill="none" stroke="currentColor" stroke-width="3"/>
-        </svg>
+
+{{ ff_alert(text=_('Get the account that protects you rather that profits off you.'), modifier_class="hide-on-mobile") }}
+
+<header class="mzp-c-navigation sumo-nav">
+  <div class="mzp-c-navigation-l-content">
+    <div class="sumo-nav--container">
+      <div class="sumo-nav--logo">
+        <a href="{{ url('home') }}"><img src="{{ STATIC_URL }}sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
+      </div>
+
+      <button data-sumo-toggle-nav="#search-navigation" class="sumo-nav--search-button" type="button" aria-controls="search-navigation">Search</button>
+      <button data-sumo-toggle-nav="#main-navigation" class="sumo-nav--toggle-button" type="button" aria-controls="main-navigation">Menu</button>
+      <a class="sumo-nav--avatar-button" data-sumo-toggle-nav="#profile-navigation" aria-controls="profile-navigation" aria-role="button">
+        {% if user.is_authenticated() %}
+        <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+        {% else %}
+        <img class="avatar" src="{{ STATIC_URL }}sumo/img/default-FFA-avatar.png" alt="Avatar for Username">
+        {% endif %}
+
       </a>
-      <div class="nav-wrap-scroll">
-        {% if not hide_aux_nav %}
-        <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
-          <ul>
-            {{ aux_nav(user, hide_aaq_link) }}
-          </ul>
-        </nav>
-        {% endif %}
-        {% if not settings.READ_ONLY %}
-          <nav class="push-right" id="aux-nav-right" role="navigation">
-            <ul>
-            {% if show_header_fx_download() %}
-              {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-              <li class="ff-btn-wrap">
-                <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
-              </li>
-            {% endif %}
-            {% if not hide_locale_switcher %}
-              <li class="lang-switcher-nav-item">
-                {% include "includes/icons/globe-icon.svg" %}
-                <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
-              </li>
-            {% endif %}
-            {% if not user.is_authenticated() %}
-              <li>
-                <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
-                  {{ _('Log in / Sign up') }}
-                </a>
-              </li>
-            {% else %}
-              <li class="dropdown user-dropdown">
-                <a href="javascript:;" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
-                  <span class="hide-on-mobile">{{ display_name(user) }}
-                    <img class="avatar" src="{{ profile_avatar(user) }}">
-                  </span>
-                  <span class="mobile-only">{{ _('My Profile') }}</span>
-                </a>
-                <ul>
-                  <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Profile">{{ _('View Profile') }}</a></li>
-                  <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
-                  <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
-                  <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
-                  <li>
-                    <a href="{{ url('messages.inbox') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Inbox">
-                      {{ _('Inbox') }}
-                      {% if unread_message_count > 0 %}
-                        <span class="unread-message-count">{{ unread_message_count }}</span>
-                      {% endif %}
-                    </a>
-                  </li>
-                  <li>
-                    <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-                      {% csrf_token %}
-                    </form>
-                    <a
-                      data-type="submit"
-                      data-form="sign-out"
-                      href="#sign-out"
-                      data-event-category="navigation"
-                      data-event-action="main navigation"
-                      data-event-label="Sign Out">
-                      {{ _('Sign Out') }}
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            {% endif %}
-            </ul>
+      <div class="mzp-c-navigation-items sumo-nav--list-wrap" id="main-navigation">
+        <div class="mzp-c-navigation-menu">
+          <nav class="mzp-c-menu mzp-is-basic">
+              {% if not hide_aux_nav %}
+              <ul class="mzp-c-menu-category-list sumo-nav--list">
+                {{ aux_nav(user, hide_aaq_link) }}
+              </ul>
+              {% endif %}
           </nav>
-        {% endif %}
+        </div>
+      </div>
+
+      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right {% if not user.is_authenticated() %}logged-out{% endif %}" id="profile-navigation">
+        <div class="mzp-c-navigation-menu">
+          <nav class="mzp-c-menu mzp-is-basic">
+              {% if not hide_aux_nav %}
+              <ul class="mzp-c-menu-category-list sumo-nav--list">
+                {{ profile_nav(user, hide_aaq_link) }}
+              </ul>
+              {% endif %}
+          </nav>
+        </div>
+      </div>
+      <div class="mzp-c-navigation-items sumo-nav--mobile-search-form" id="search-navigation">
+        <div class="mzp-c-navigation-menu">
+          <nav class="mzp-c-menu mzp-is-basic">
+            {{ search_box(settings, id='mobile-search-results', params=search_params) }}
+          </nav>
+        </div>
       </div>
     </div>
   </div>
-  <div class="cf">
-    {% if not hide_header_search %}
-      {{ search_box(settings, id='support-search', params=search_params) }}
-    {% endif %}
-  </div>
-</header>
+</header><!--/.mzp-c-navigation -->
 
-{% block breadcrumbs %}
-  {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+{% block hidden_search_masthead %}
+<!-- This is only displayed when the instant search is active.
+     This block is overriden in home.html and product.html,
+     and can likely be removed when frontend search is replaced. -->
+<div class="home-search-section sumo-page-section--lg shade-bg hidden-search-masthead">
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h4 class="sumo-page-heading-xl">{{ _('Search Support') }}</h4>
+      {{ search_box(settings, id='hidden-search', params=search_params) }}
+    </div>
+  </div>
+</div>
 {% endblock %}
 
-<div class="container_12 cf {% block base_container_classes %}{% endblock %}" id="main-container">
-  <div class="grid_12">
-    {% if messages %}
-      <ul class="user-messages">
-        {% for message in messages %}
-          {% if not message.message.startswith('fxa_notification') %}
-          <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-          {% endif %}
-        {% endfor %}
-      </ul>
-    {% endif %}
+{% block masthead %}
+{% endblock %}
 
-    {% block above_main %}{% endblock %}
-  </div>
+{% block contentwrap %}
+<div class="mzp-l-content {% block base_container_classes %}{% endblock %}" id="main-content">
+  <div class="sumo-page-section--inner">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
+    <div class="sumo-l-two-col {% block columns_modifier %}{% endblock %}">
+      {% block outer_side %}
+      <aside id="aside" class="sumo-l-two-col--sidebar">
+        {% block side_top %}{% endblock %}
+        {% block side %}{% endblock %}
+        {% block side_bottom %}{% endblock %}
+      </aside>
+      {% endblock %}
+      <main role="main" class="sumo-l-two-col--main">
+      {% if messages %}
+        <ul class="user-messages">
+          {% for message in messages %}
+            {% if not message.message.startswith('fxa_notification') %}
+            <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
+              <button class="mzp-c-notification-bar-button" type="button"></button>
+              <p>{{ message }}</p>
+            </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
 
-  {% block outer_side %}
-    <aside class="grid_3 no-min hide-mobile">
-      {% block side_top %}{% endblock %}
-      {% block side %}{% endblock %}
-      {% block side_bottom %}{% endblock %}
-    </aside>
-  {% endblock %}
-
-  <div class="support-search-main cf">
-    <div class="grid_12 search-form-large">
-      {{ search_box(settings, id='support-search-results', params=search_params) }}
+      {% block above_main %}{% endblock %}
+      {% block content %}{% endblock %}
+      </main>
     </div>
   </div>
-
-  <main id="main-content" role="main">
-    {% block content %}{% endblock %}
-  </main>
+  {% block below_main %}{% endblock %}
 </div>
+{% endblock %}
 
-<footer>
-  <div class="container_12 cf">
-    <div class="grid_4">
-      <a href="https://www.mozilla.org">
-        <img class="footer-logo" src="{{ STATIC_URL }}sumo/img/moz-wordmark-light-reverse.svg" alt="Mozilla" />
-      </a>
-    </div>
-    <div class="grid_4">
-      <ul>
-        <li>
-          <h5>
-            <a href="https://www.mozilla.org">{{ _('Mozilla') }}</a>
-          </h5>
-        </li>
-        <li class="hide-mobile"><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
-        <li class="hide-mobile"><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
-        <li class="hide-mobile"><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
-        <li class="hide-mobile"><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
-        <li class="hide-mobile"><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
-        <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
-        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
-        <li><a class="show-mobile" href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
-        <li class="hide-mobile">
-          <ul class="social-links">
-            <li><a class="twitter" href="https://twitter.com/mozilla">{{ _('Twitter') }}<span> (@mozilla)</span></a></li>
-            <li><a class="instagram" href="https://www.instagram.com/mozilla/">{{ _('Instagram') }}<span> (@mozilla)</span></a></li>
+<footer class="mzp-c-footer">
+  <div class="mzp-l-content">
+    <nav class="mzp-c-footer-primary">
+      <div class="mzp-c-footer-cols">
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Mozilla') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
+            <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
+            <li><a href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
+            <li><a href="{{ url('landings.get_involved') }}">{{ _('Join our Community') }}</a></li>
+            <li><a href="{{ url('home') }}">{{ _('Explore Help Articles')}}</a></li>
           </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="grid_4 hide-mobile">
-      <ul>
-        <li>
-          <h5>
-            <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a>
-          </h5>
-        </li>
+        </section>
 
-        <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Mobile') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/features/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Features') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta, Nightly, Developer Edition') }}</a></li>
-        <li>
-          <ul class="social-links">
-            <li><a class="twitter" href="https://twitter.com/firefox">{{ _('Twitter') }}<span> (@firefox)</span></a></li>
-            <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">{{ _('YouTube') }}<span> (firefoxchannel)</span></a></li>
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Firefox') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox Desktop') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Android Browser') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('iOS Browser') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Focus Browser') }}</a></li>
           </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="grid_8 cf">
-      <div class="fineprint">
+        </section>
+
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Firefox for Developers') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="https://www.mozilla.org/en-US/firefox/developer/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Developer Edition') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#beta">{{ _('Beta') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#beta">{{ _('Beta for Android') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#nightly">{{ _('Nightly') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral#nightly">{{ _('Nightly for Android') }}</a></li>
+          </ul>
+        </section>
+
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Firefox Accounts') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/accounts/">{{ _('Benefits') }}</a></li>
+            <li class="mzp-c-footer-heading"><br><a href="https://fpn.firefox.com/">{{ _('Firefox Private Network') }}</a></li>
+          </ul>
+        </section>
+
+        <section class="mzp-c-footer-col lang-col">
+          <form class="mzp-c-language-switcher" method="get" action="#">
+            <a class="mzp-c-language-switcher-link" href="https://www.mozilla.org/locales/">{{ _('Language') }}</a>
+            <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
+            <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
+             name="lang">
+              {% for locale in settings.LANGUAGE_CHOICES %}
+                  <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
+              {% endfor %}
+            </select>
+            <!-- form submit button is shown when JavaScript is not enabled -->
+            <button type="submit">{{ _('Go') }}</button>
+          </form>
+          <ul class="mzp-c-footer-links-social">
+            <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
+            <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">YouTube<span> (firefoxchannel)</span></a></li>
+            <li><a class="instagram" href="https://www.instagram.com/firefox">Instagram<span> (firefox)</span></a></li>
+          </ul>
+        </section>
+
+      </div>
+    </nav>
+
+    <nav class="mzp-c-footer-secondary">
+      <div class="mzp-c-footer-link-col">
+        <div class="mzp-c-footer-primary-logo"><a href="https://www.mozilla.org/">{{ _('Mozilla') }}</a></div>
+        <div class="mzp-c-footer-legal">
+          <ul>
+            <li><a href="https://www.mozilla.org/">{{ _('mozilla.org') }}</a></li>
+            <li><a href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Terms of Service') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/websites/">{{ _('Privacy') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/contact/">{{ _('Contact') }}</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mzp-c-footer-legal-col">
         <p>
-        {% trans year=now().year %}
-          Portions of this content are &copy;1998–{{ year }} by individual mozilla.org contributors. Content available under a <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
-        {% endtrans %}
+          {{ _('Mozilla Corporation’s not-for-profit parent, the Mozilla Foundation.') }}
+        </p>
+        <p>{{ _('Portions of this content are c.1998–2019 by individual mozilla.org contributors. Content availbe under a Creative Common license.') }}
         </p>
       </div>
-    </div>
-    <div class="grid_4 small-links">
-      <ul>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
-      </ul>
-    </div>
-    {% if not hide_locale_switcher %}
-    <div class="grid_2 prefix_2 language-picker">
-      Language <a href="{{ locale_picker_url }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
-    </div>
-    {% endif %}
+    </nav>
   </div>
-</footer>{# /#footer #}
-
-{% csrf_token %}
-
+</footer>
 {# TODO: The JS url changes whenever our js code changes.
    But this should get cached busted whenever a locale is updated.
    It's complicatred to fix. But for now it isn't more broken than

@@ -1,27 +1,23 @@
-{% if request.MOBILE %}
-  {% extends 'mobile/base.html' %}
-{% else %}
-  {% extends 'base.html' %}
-{% endif %}
+{% extends 'base.html' %}
+
 {% set title = _('Page Not Found') %}
 {% set hide_header_search = True %}
 
-{% block content %}
-<article id="error-page" class="page-not-found">
-  <h1>{{ title }}</h1>
+{% block breadcrumbs %}{% endblock %}
 
-  <p>{% trans %}Sorry, we couldn't find the page you were looking for. Please,
-  try searching our site using the form below.{% endtrans %}</p>
+{% block masthead %}
+<div id="error-page"  class="search-results-visible page-not-found">
+  <section class="home-search-section sumo-page-section--lg shade-bg">
+    <div class="mzp-l-content">
+      <div class="home-search-section--content">
+        <h1 class="sumo-page-heading-xl">{{ title }}</h1>
+        <p class="sumo-page-intro">{% trans %}Sorry, we couldn't find the page you were looking for. Please,
+        try searching our site using the form below.{% endtrans %}</p>
 
-  {% import "search/basic-form.html" as form with context %}
-
-  {{ form.form() }}
-</article>
-<div class="footnote">
-  <a rel="license" href="https://creativecommons.org/licenses/by-sa/2.0/"
-     target="_blank"><img src="{{ STATIC_URL }}sumo/img/cc-sa.png"
-     alt="Creative Commons Attribution-Share Alike 2.0 Generic License"
-     title="Creative Commons Attribution-Share Alike 2.0 Generic License"></a>
-  by <a href="https://www.flickr.com/people/nukeador/" target="_blank">Nukeador</a>
+        {% import "search/basic-form.html" as form with context %}
+        {{ form.form() }}
+      </div>
+    </div>
+  </section>
 </div>
 {% endblock %}

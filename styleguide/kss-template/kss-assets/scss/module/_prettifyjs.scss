@@ -1,0 +1,71 @@
+// ------------------------------------------------------------------------------
+// prettify.js styles
+// ------------------------------------------------------------------------------
+.kss-style {
+
+  .prettyprint {
+    font-size: 0.8em;
+    /* SPAN elements with the classes below are added by prettyprint. */
+    .pln { color: #000 }  /* plain text */
+
+    .str { color: #080 }  /* string content */
+    .kwd { color: #008 }  /* a keyword */
+    .com { color: #800 }  /* a comment */
+    .typ { color: #606 }  /* a type name */
+    .lit { color: #066 }  /* a literal value */
+    /* punctuation, lisp open bracket, lisp close bracket */
+    .pun, .opn, .clo { color: #660 }
+    .tag {
+      display: inline;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: #008;
+    }  /* a markup tag name */
+    .atn { color: #606 }  /* a markup attribute name */
+    .atv { color: #080 }  /* a markup attribute value */
+    .dec, .var { color: #606 }  /* a declaration; a variable name */
+    .fun { color: red }  /* a function name */
+
+    /* Use higher contrast and text-weight for printable form. */
+    @media print, projection {
+      .str { color: #060 }
+      .kwd { font-weight: bold; color: #006 }
+      .com { font-style: italic; color: #600 }
+      .typ { font-weight: bold; color: #404 }
+      .lit { color: #044 }
+      .pun, .opn, .clo { color: #440 }
+      .tag { font-weight: bold; color: #006 }
+      .atn { color: #404 }
+      .atv { color: #060 }
+    }
+  }
+
+  /* Specify class=linenums on a pre to get line numbering */
+  ol.linenums {
+    margin: 0;
+    padding: 0;
+    line-height: 2;
+    list-style-type: none;
+
+    li {
+      padding: 0 10px;
+      margin: 0;
+      min-height: var(--kss-vertical-rhythm);
+      border-bottom: 1px solid var(--kss-page-shade);
+      background: var(--kss-page-shade);
+
+      &:first-child {
+        padding-top: 3px;
+      }
+    }
+    /* Alternate shading for lines */
+    li.L0,
+    li.L2,
+    li.L4,
+    li.L6,
+    li.L8 {
+      background: var(--kss-page-bg);
+    }
+  }
+}

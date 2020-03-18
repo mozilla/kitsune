@@ -19,8 +19,9 @@
     {% else %}
       {{ watch_form.email|safe }}
     {% endif %}
-
-    <input type="submit" class="btn" value="{{ _('Send Updates') }}" />
-    <a class="no-thanks kbox-cancel" href="{{ question.get_absolute_url() }}">{{ _('No Thanks') }}</a>
+    <div class="sumo-button-wrap reverse-on-desktop align-full">
+      <input type="submit" class="sumo-button button-sm primary-button" value="{{ _('Send Updates') }}" />
+      <a class="no-thanks kbox-cancel sumo-button button-sm" href="{{ question.get_absolute_url() }}">{{ _('No Thanks') }}</a>
+    </div>
   </form>
 </section>

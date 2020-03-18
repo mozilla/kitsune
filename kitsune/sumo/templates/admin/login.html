@@ -22,9 +22,11 @@
 
     {% if form.non_field_errors %}
         {% for error in form.non_field_errors %}
+        <div class="mzp-c-notification-bar mzp-t-warning">
             <p class="errornote">
                 {{ error }}
             </p>
+          </div>
         {% endfor %}
     {% endif %}
 

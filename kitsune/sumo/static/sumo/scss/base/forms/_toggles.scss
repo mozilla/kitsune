@@ -1,0 +1,113 @@
+@use '../../config' as c;
+@use '../../protocol' as p;
+
+// Toggles
+//
+// The following classes can be applied to either checkboxes or radio groups to
+// build toggles. Toggles are used to convey boolean status of a field. While
+// they won't always replace checkboxes, they can be used in special cases.
+//
+// NOTE: Toggles are not as clear as checkboxes, so we should use these sparingly.
+//
+// .has-disabled - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/field_toggle.njk
+//
+// Weight: 6
+//
+// Style guide: forms.toggle
+:root {
+  --switch-size: 50px;
+  --toggle-bg-color: var(--color-marketing-gray-03);
+  --toggle-value-color: var(--color-text);
+}
+
+.toggle {
+  position: relative;
+
+  label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-left: calc(var(--switch-size) + #{p.$spacing-md});
+    height: calc((var(--switch-size) / 2) + 3px);
+    font-weight: 400;
+    cursor: pointer;
+
+    // switch background, unchecked state
+    &:before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: var(--switch-size);
+      height: calc((var(--switch-size) / 2) + 3px);
+      border: 2px solid var(--toggle-bg-color);
+      border-radius: calc(var(--switch-size) / 2);
+      background: var(--toggle-bg-color);
+      content: "";
+    }
+
+    &:hover:before {
+      border-color: var(--field-border-color-hover);
+    }
+  }
+
+  // toggle, unchecked state
+  label:after {
+    position: absolute;
+    top: p.$spacing-xs;
+    left: p.$spacing-xs;
+    width: calc(var(--switch-size) / 2 - 6px);
+    height:  calc(var(--switch-size) / 2 - 6px);
+    border-radius: calc(var(--switch-size) / 2 - #{p.$spacing-xs});
+    background: #fff;
+    content: "";
+    transition: 0.1s;
+  }
+
+  label:active:after {
+    width:  calc(var(--switch-size) / 2);
+    transform: translateX(0);
+  }
+
+  [type=checkbox],
+  [type=radio] {
+    position: absolute;
+    left: -9999px;
+
+    &:checked + label:before { // background, checked state
+      border-color: var(--checkbox-checked-color);
+      background: var(--checkbox-checked-color);
+
+      &:hover {
+        border-color: var(--field-border-color-hover);
+      }
+    }
+
+    // toggle, checked state
+    &:checked + label:after {
+      left: calc((var(--switch-size) / 2) + 2px);
+    }
+
+    &:checked + label:active:after {
+      transform: translateX(-4px);
+    }
+
+    &:disabled + label,
+    &:checked:disabled + label {
+      &:before {
+        border-color: var(--color-marketing-gray-02);
+        background-color: var(--color-marketing-gray-02);
+      }
+
+      &:after {
+        background-color: var(--color-marketing-gray-04);
+      }
+    }
+
+    &:focus + label:before {
+      box-shadow: var(--focus-shadow);
+    }
+  }
+}

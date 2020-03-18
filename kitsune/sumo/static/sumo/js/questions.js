@@ -12,6 +12,9 @@
   function init() {
     var $body = $('body');
 
+    // if there's an error on page load, focus the field.
+    $('.has-error input, .has-error textarea').first().focus();
+
     if ($body.is('.new-question')) {
       initNewQuestion();
 
@@ -85,17 +88,9 @@
       document.location = document.location.pathname + '?' + $.param(queryParams);
     });
 
-    // topic selector page reloading
-    $('#topic-selector select').on('change', function() {
-      var val = $(this).val();
-      var queryParams = k.getQueryParamsAsDict(document.location.toString());
-
-      if (val === '') {
-        delete queryParams.topic;
-      } else {
-        queryParams.topic = val;
-      }
-      document.location = document.location.pathname + '?' + $.param(queryParams);
+    // sort questions page reloading
+    $('[data-sort-questions]').on('change', function() {
+      document.location = $(this).val()
     });
 
   }
@@ -203,9 +198,9 @@
   * Ajaxify the Helpful/Not Helpful form
   */
   function initHelpfulVote() {
-    $('li.answer div.side-section, .answer-tools').each(function() {
+    $('.sumo-l-two-col--sidebar, #document-list, .answer-tools').each(function() {
       new k.AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
-        positionMessage: true,
+        replaceFormWithMessage: true,
         removeForm: true
       });
     });
@@ -305,7 +300,7 @@
         $content = $('#' + contentId),
         text = $content.find('.content-raw').text(),
         user = $content.find('.author-name').text(),
-        reply = template("''{user} [[#{contentId}|{said}]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+        reply = template("''<p>{user} [[#{contentId}|{said}]]</p>''\n<blockquote>\n{text}\n</blockquote>\n\n"),
         reply_text,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();

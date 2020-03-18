@@ -7,10 +7,9 @@
 {% set scripts = ('wiki', 'wiki.diff') %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="review-revision">
-      <h1>{{ _('Review Revision of {title}')|f(title=document.title) }}</h1>
-      <p>{{ _('Reviewing Revision {id} by {user}.')|f(id=revision.id, user=revision.creator) }}
+<article id="review-revision" class="sumo-page-section--inner">
+      <h1 class="sumo-page-heading">{{ _('Review Revision of {title}')|f(title=document.title) }}</h1>
+      <p>{{ _('Reviewing Revision {id} by {user}')|f(id=revision.id, user=revision.creator) }}.
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a>
       <br>
       {{ _('Revision Comment: {comment}')|f(comment=revision.comment) }}
@@ -48,18 +47,18 @@
           {% endif %}
         </p>
       {% elif document.current_revision %}
-        <details class="h2" open="open">
-          <summary>{{ _('Submitted Revision Changes') }}</summary>
+        <details open="open">
+          <summary class="sumo-card-heading">{{ _('Submitted Revision Changes') }}</summary>
           {{ revision_diff(document.current_revision, revision, _('Current public revision:'), _('Submitted revision:')) }}
         </details>
-        <details class="h2">
-          <summary>{{ _('Revision Source') }}</summary>
+        <details>
+          <summary class="sumo-card-heading">{{ _('Revision Source') }}</summary>
           <div id="doc-source">
             <textarea readonly="readonly">{{ revision.content }}</textarea>
           </div>
         </details>
-        <details class="h2">
-          <summary>{{ _('Revision Content') }}</summary>
+        <details>
+          <summary class="sumo-card-heading">{{ _('Revision Content') }}</summary>
           <div id="doc-content">
             {{ revision.content_parsed|safe }}
           </div>
@@ -67,11 +66,11 @@
         </details>
       {% else %}
         <p>{{ _('This document does not have a current revision.') }}</p>
-        <h3>{{ _('Keywords:') }}</h3>
+        <h3 class="sumo-page-subheading">{{ _('Keywords:') }}</h3>
         <div id="revision-keywords">
           {{ revision.keywords }}
         </div>
-        <h3>{{ _('Search results summary:') }}</h3>
+        <h3 class="sumo-page-subheading">{{ _('Search results summary:') }}</h3>
         <div id="revision-summary">
           {{ revision.summary }}
         </div>
@@ -89,7 +88,6 @@
 
       {% include 'wiki/includes/review_form.html' %}
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

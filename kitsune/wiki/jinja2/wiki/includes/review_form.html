@@ -6,9 +6,11 @@
   <div id="actions">
     <form action="" method="post">
       {% csrf_token %}
-      <button id="btn-approve" class="btn btn-important" type="submit">{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}</button>
-      <button class="btn" id="btn-reject" type="submit">{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}</button>
-      <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
+      <div class="sumo-button-wrap align-end reverse-on-desktop">
+        <button id="btn-approve" class="sumo-button primary-button btn btn-important" type="submit">{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}</button>
+        <button class="sumo-button secondary-button btn" id="btn-reject" type="submit">{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}</button>
+        <a class="sumo-button secondary-button push-right" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
+      </div>
     </form>
 
     {% set self_approving = user == revision.creator %}
@@ -18,10 +20,12 @@
       {% if self_approving and document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
         {# Only show self approving warning to en-US reviewers. In other locales, it
            is usual for the editor and the reviewer to be the same user. #}
-        <p class="warning">
+        <div class="mzp-c-notification-bar mzp-t-warning">
+          <div class="warning">
           {% trans url=url('groups.profile', 'reviewers') %}You are about to approve your own edit.
           Please consider asking our <a href="{{ url }}">reviewers</a> instead.{% endtrans %}
-        </p>
+          </div>
+        </div>
       {% endif %}
       {% if should_ask_significance %}
         <p>
@@ -63,8 +67,10 @@
         </div>
       {% endif %}
       <input type="hidden" name="approve" value="1" />
-      <button class="btn btn-important" type="submit" data-type="submit">{{ _('Accept') }}</button>
-      <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
+      <div class="sumo-button-wrap align-full reverse-on-desktop">
+        <button class="sumo-button primary-button btn btn-important" type="submit" data-type="submit">{{ _('Accept') }}</button>
+        <a class="sumo-button secondary-button kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
+      </div>
     </form>
 
     <form id="reject-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Defer this Translation') }}{% else %}{{ _('Defer this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
@@ -85,8 +91,10 @@
         </div>
       {% endif %}
       <input type="hidden" name="reject" value="1" />
-      <button class="btn" type="submit" data-type="submit">{{ _('Defer') }}</button>
-      <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
+      <div class="sumo-button-wrap align-full reverse-on-desktop">
+        <button class="sumo-button primary-button btn" type="submit" data-type="submit">{{ _('Defer') }}</button>
+        <a class="sumo-button secondary-button kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
+      </div>
     </form>
   </div>
 {% endif %}

@@ -92,19 +92,15 @@ only way ES6 and JSX code should be included in a bundle, and so in practice
 the extensions assigned to those files don't matter to Django Pipeline, and
 should be named to be clear to the reader.
 
-Browserify has been configured with the babelify and bowerify transformers, to
-be able to load ES6 files and files from Bower.
+Browserify has been configured with the babelify transformer, to
+be able to load ES6 files.
 
 .. _ES6 modules syntax: https://github.com/lukehoban/es6features#modules
 
 
-Bower
-=====
+NPM
+===
 
-Frontend dependencies are downloaded using Bower. In a bundle file, they are
+Frontend dependencies are downloaded using NPM. In a bundle file, they are
 listed as ``package-name/path/in/package.js``. Django Pipeline will find the
-correct Bower package to pull files from.
-
-Bower is not normally compatible with Browserify. A Browserify transformer
-called bowerify makes an include request for Bower packages load the primary
-entry point of the Bower package to make them compatible.
+correct npm package to pull files from.

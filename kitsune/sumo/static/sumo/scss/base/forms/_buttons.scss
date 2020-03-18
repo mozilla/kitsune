@@ -1,0 +1,278 @@
+@use '../../config' as c;
+@use '../../protocol' as p;
+
+// Buttons
+//
+// These button classes can be added to buttons, inputs, or links. Size classes
+// and theme classes can be combined.
+//
+// :hover     - Highlight the button when hovered with a cursor.
+// :disabled  - Make the button change appearance to reflect it being disabled.
+// :active    - The button is pressed down.
+// :focus    - The button is focused with keyboard navigaiton.
+// .button-sm - small modifier
+// .button-lg - large modifier
+// .button-xl - extra large modifier
+// .warning-button - normal button with red hover state
+// .primary-button    - This is the primary variation.
+// .secondary-button - This is the secondary button.
+// .link-button - style a button like a link
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/button.njk
+//
+// Weight: 4
+//
+// Style guide: buttons
+
+
+.sumo-button {
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  padding: 0 p.$spacing-lg;
+  height: p.$spacing-xl;
+  border: 2px solid var(--color-marketing-gray-03);
+  border-radius: var(--global-radius);
+  background-color: var(--color-inverse);
+
+  font-family: var(--heading-alt-font-family);
+  @include p.font-size(14px);
+  font-weight:700;
+  text-decoration: none;
+  color: var(--color-marketing-gray-07);
+
+  cursor: pointer;
+  transition-duration: 150ms;
+  transition-property: background-color, border-color;
+  appearance: none;
+
+  &:visited {
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-marketing-gray-04);
+    background-color: var(--color-marketing-gray-02);
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:active:not(:disabled) {
+    border-color: var(--color-marketing-gray-05);
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:focus {
+    box-shadow: var(--focus-shadow);
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:disabled,
+  &.is-disabled {
+    cursor: auto;
+    opacity: .4;
+  }
+
+  &::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+  }
+
+  &.button-sm {
+    padding: 0 p.$spacing-md;
+    height: p.$spacing-lg;
+    border-radius: 2px;
+
+  }
+
+  &.button-lg {
+    height: 40px;
+
+  }
+
+  &.button-xl {
+    height: p.$spacing-2xl;
+  }
+
+  &.primary-button {
+    border-width: 0;
+    background: var(--color-link);
+    color: var(--color-inverse);
+
+    &:hover:not(:disabled) {
+      background: var(--color-blue-07);
+      color: var(--color-inverse);
+    }
+
+    &:active:not(:disabled) {
+      background: var(--color-blue-09);
+    }
+  }
+
+  &.secondary-button {
+    border-color: var(--color-link);
+    background: var(--color-inverse);
+    color: var(--color-link);
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-blue-07);
+      background-color: var(--color-blue-07);
+      color: var(--color-inverse);
+    }
+
+    &:active:not(:disabled) {
+      border-color: var(--color-blue-09);
+      background: var(--color-blue-09);
+      color: var(--color-inverse);
+    }
+  }
+
+  &.warning-button {
+    &:hover:not(:disabled) {
+      border-color: var(--color-red-07);
+      background-color: var(--color-red-07);
+      color: var(--color-inverse);
+    }
+  }
+
+  &.tall-button {}
+
+  &.link-button {
+    color: var(--color-link);
+    text-decoration: underline;
+    appearance: none;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0 none;
+    background: transparent;
+    font-weight: normal;
+    font-size: var(--base-font-size);
+    font-family: var(--base-font-family);
+    text-align: left;
+
+    &:hover {
+      text-decoration: none;
+      background: transparent;
+      color: var(--color-link);
+    }
+
+    &:active {
+      background: var(--color-link-active-bg);
+    }
+  }
+
+  &.compare-revisions-button-down,
+  &.compare-revisions-button-up {
+    padding-left: p.$spacing-xs;
+    &:before {
+      display: inline-flex;
+      align-self: flex-end;
+      margin-right: p.$spacing-sm;
+      width: 58px;
+      height: 20px;
+      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 1H4.14v9.78M37.63 10.78V1"/><path fill="#5e5e72" d="M4.14 14.4l4.14-7.17H0l4.14 7.17zM37.63 14.4l4.14-7.17h-8.28l4.14 7.17z"/></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center center;
+      content: "";
+    }
+  }
+
+  &.compare-revisions-button-up:before {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 13.4H4.14V3.62M37.63 3.62v9.78"/><path fill="#5e5e72" d="M4.14 0l4.14 7.17H0L4.14 0zM37.63 0l4.14 7.17h-8.28L37.63 0z"/></svg>');
+    align-self: flex-start;
+  }
+}
+
+.sumo-button:focus,
+button:focus,
+input[type=submit]:focus {
+  box-shadow: var(--focus-shadow);
+  outline: none;
+}
+
+
+
+.avatar-row {
+  .is-details {
+    margin-bottom: auto;
+
+    .mzp-c-menu-list-list {
+      top: calc(100% + #{p.$spacing-sm});
+      left: auto;
+      right: 0;
+    }
+
+    .mzp-c-menu-list-item {
+      a {
+        color: var(--color-text);
+        @include c.text-body-md;
+        border-bottom: 1px solid var(--color-border);
+        margin: 0 p.$spacing-sm;
+        padding: p.$spacing-sm 0;
+
+        &:hover {
+          margin: 0;
+          padding: p.$spacing-sm;
+          border-color: transparent;
+        }
+      }
+
+      &:last-child a {
+        border: 0 none;
+      }
+    }
+  }
+}
+
+.is-details .icon-button button { // overriding protocol, remove dropdown arrow on icon buttons
+  appearance: none;
+  width: p.$spacing-lg;
+  height: p.$spacing-lg;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  font: 0/0 a;
+  color: transparent;
+  background-image: url('#{p.$image-path}/icons/more-vertical.svg');
+  background-size: p.$spacing-lg p.$spacing-lg;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  &:after {
+    content: none;
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+    max-width: none;
+  }
+}
+
+
+.sumo-close-button {
+  appearance: none;
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+}
+
+.sumo-delete-button {
+  font-size: 24px;
+  height: 24px;
+  width: 24px;
+  color: var(--color-error);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--color-red-10) !important;
+  }
+}

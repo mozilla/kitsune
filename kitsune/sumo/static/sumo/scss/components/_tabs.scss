@@ -1,0 +1,198 @@
+// Tabs
+//
+// Tab component used on the topic listing pages. See
+// [this CSS-tricks article](https://css-tricks.com/container-adapting-tabs-with-more-button/)
+// for a detailed explanation of how it was built.
+//
+// Markup: ../../../../../../../styleguide/styleguide-examples/tabs.njk
+//
+// Weight: 8
+//
+// Style guide: tabs
+
+@use '../config' as c;
+@use '../protocol' as p;
+
+%link-styles {
+  appearance: none;
+  white-space: nowrap;
+  text-align: left;
+  border: 0 none;
+  display: block;
+  color: var(--color-text);
+  text-decoration: none;
+  background-color: transparent;
+  @include c.text-body-sm;
+
+  span {
+    display: block;
+    padding: 0 0 p.$spacing-md 0;
+    margin-right: p.$spacing-md;
+  }
+
+  &:hover  {
+    color: var(--color-link);
+  }
+
+  &.is-active,
+  &.selected {
+    color: var(--color-link);
+    font-weight: bold;
+
+    span {
+      box-shadow: inset 0 -2px 0 var(--color-link);
+    }
+  }
+
+  &:active {
+    color: var(--color-link);
+    background: transparent;
+  }
+}
+
+.tabs {
+  position: relative;
+  box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
+  margin-bottom: p.$spacing-xl;
+
+  &:not(.is-js-enhanced) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  &--list {
+    display: flex;
+    margin: 0;
+  }
+
+  &--link,
+  &--button,
+  a {
+    @extend %link-styles;
+  }
+
+  &--button {
+    padding: 0 0 p.$spacing-md 0;
+    margin: 0;
+    appearance: none;
+
+    &:after {
+      display: inline-flex;
+      width: 12px;
+      height: 12px;
+      margin-left: p.$spacing-xs;
+      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+      background-repeat: no-repeat;
+      background-size: 12px 12px;
+      transition: transform 0.2s;
+      content: "";
+    }
+  }
+
+  &.dropdown-is-open {
+    .tabs--button:after {
+      transform: rotate(180deg);
+    }
+
+    .tabs--dropdown {
+      display: block;
+    }
+  }
+
+  &--dropdown {
+    max-width: 100%;
+    min-width: 10em;
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    border-radius: var(--global-radius);
+    animation: tabs-dropdown 0.2s;
+
+    .tabs--item {
+      border-top: 1px solid var(--color-border);
+      background-color: var(--page-bg);
+
+      span {
+        padding: 0;
+      }
+    }
+
+    .tabs--link,
+    a {
+      padding: p.$spacing-sm;
+    }
+  }
+
+  @media #{p.$mq-md} {
+    margin-bottom: 40px;
+  }
+}
+
+// keyframes
+
+@keyframes tabs-dropdown {
+  0% {
+    opacity: 0;
+    transform: translateY(-1em);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+// jquery UI overrides
+.html-ltr, .html-rtl {
+  .ui-widget.ui-widget-content {
+    border: 0 none;
+
+    &.ui-autocomplete {
+      @include c.elevation-01;
+      border-radius: var(--global-radius);
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  }
+
+
+
+  .ui-tabs {
+    .ui-tabs-panel {
+      padding: 2rem 0;
+    }
+
+    .ui-tabs-nav li {
+      background: transparent;
+      border: 0 none;
+
+      a {
+        padding: 0;
+      }
+
+      &.ui-tabs-active a {
+        color: var(--color-link);
+        font-weight: bold;
+
+        span {
+          box-shadow: inset 0 -2px 0 var(--color-link);
+        }
+      }
+    }
+
+
+  }
+
+  .ui-widget-header {
+    border: 0 none;
+    background: transparent;
+    box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
+  }
+
+  .ui-tabs .ui-tabs-nav .ui-tabs-anchor {
+    @extend %link-styles;
+  }
+
+}

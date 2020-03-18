@@ -1,7 +1,17 @@
 ################################
+# Frontend dependencies builder
+#
+FROM node:12 AS frontend-base
+
+WORKDIR /app
+COPY ["./package.json", "./package-lock.json", "prepare_django_assets.js", "/app/"]
+COPY ./kitsune/sumo/static/sumo /app/kitsune/sumo/static/sumo
+RUN npm run development && npm run production
+
+################################
 # Python dependencies builder
 #
-FROM python:2-stretch AS base
+FROM python:2-buster AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -11,6 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
+RUN pip install --upgrade pip"<20"
 RUN virtualenv /venv
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
@@ -19,7 +30,7 @@ RUN apt-get update && \
             gettext build-essential \
             libxml2-dev libxslt1-dev zlib1g-dev git \
             libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
-            libmariadbclient-dev mariadb-client && \
+            libmariadb3 mariadb-client && \
     rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements/*.txt /app/requirements/
@@ -36,14 +47,9 @@ ENV GIT_SHA=${GIT_SHA}
 # Developer image
 #
 FROM base AS base-dev
-
 RUN apt-get update && apt-get install apt-transport-https && \
-    echo "deb https://deb.nodesource.com/node_6.x stretch main" >> /etc/apt/sources.list && \
-    curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" >> /etc/apt/sources.list && \
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends nodejs yarn optipng && \
+    curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs && \
     rm -rf /var/lib/apt/lists/*
 
 
@@ -52,10 +58,9 @@ RUN apt-get update && apt-get install apt-transport-https && \
 #
 FROM base-dev AS staticfiles
 
-COPY package.json bower.json yarn.lock /app/
-
-RUN yarn install --frozen-lockfile && yarn cache clean
-RUN ./node_modules/.bin/bower install --allow-root
+COPY --from=frontend-base --chown=kitsune:kitsune /app/js_assets /app/js_assets
+COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
+COPY --from=frontend-base --chown=kitsune:kitsune /app/static /app/static
 
 COPY . .
 
@@ -68,7 +73,7 @@ RUN cp .env-build .env && \
 ################################
 # Fetch locales
 #
-FROM python:2-stretch AS locales
+FROM python:2-buster AS locales
 
 WORKDIR /app
 
@@ -94,7 +99,7 @@ ENV GIT_SHA ${GIT_SHA}
 ################################
 # Full prod image sans locales
 #
-FROM python:2-slim-stretch AS full-no-locales
+FROM python:2-slim-buster AS full-no-locales
 
 WORKDIR /app
 
@@ -107,7 +112,7 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    libmariadbclient18 optipng mariadb-client \
+    libmariadb3 optipng mariadb-client \
     libxslt1.1 && \
     rm -rf /var/lib/apt/lists/*
 
@@ -116,7 +121,6 @@ RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sb
 COPY --from=base --chown=kitsune:kitsune /venv /venv
 COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
 COPY --from=staticfiles --chown=kitsune:kitsune /app/jsi18n /app/jsi18n
-COPY --from=staticfiles --chown=kitsune:kitsune /app/bower_components /app/bower_components
 
 COPY --chown=kitsune:kitsune . .
 

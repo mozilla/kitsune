@@ -9,22 +9,26 @@
   function hideContent() {
     $('#main-content').hide();
     $('#main-content').siblings('aside').hide();
-    $('#main-breadcrumbs').hide();
+    $('body').addClass('search-results-visible');
+    $('.home-search-section .mzp-l-content').removeClass('narrow');
+    $('.home-search-section').removeClass('extra-pad-bottom');
 
-    if ($('#support-search-wiki:visible').length === 0) {
-      $('.support-search-main').show();
-      $('.support-search-main').find('input[name=q]').focus();
-    }
+    // clear sidebar form and focus if is's there.
+    $('#support-search-sidebar').find('input[name=q]').val('');
   }
 
   function showContent() {
+    $('body').removeClass('search-results-visible');
+    $('.home-search-section').addClass('extra-pad-bottom');
     $('.support-search-main').hide();
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
-    $('#main-breadcrumbs').show();
     $('#instant-search-content').remove();
     $('.search-form-large:visible').find('input[name=q]').focus().val('');
     $('#support-search').find('input[name=q]').val('');
+    $(".home-search-section--content .search-results-heading").remove();
+    $('.home-search-section .mzp-l-content').addClass('narrow');
+    $('.hidden-search-masthead').hide();
   }
 
   function render(data) {
@@ -41,6 +45,15 @@
     }
 
     $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
+
+    // These two functions are coming from the global scope, but should be proper
+    // modules when we replace django-compressor with a FE build process.
+    detailsInit(); // fold up sidebar on mobile.
+    tabsInit();
+
+    // remove and append search results heading
+    $(".home-search-section--content .search-results-heading").remove();
+    $(".search-results-heading").appendTo(".home-search-section--content");
   }
 
   window.k.InstantSearchSettings = {
@@ -83,13 +96,36 @@
         if ($(this).attr('name') === 'q') {
           var value = $(this).val();
 
-          if (formId === 'support-search-results') {
+          if (formId === 'support-search-masthead') {
             $('#support-search').find('input[name=q]').val(value);
-          } else if (formId === 'support-search') {
-            $('.search-form-large').find('input[name=q]').val(value);
+          } else if (formId === 'support-search' || formId === 'mobile-search-results') {
+
+            // If applicable, close the mobile search field and move the focus to the main field.
+            $('.sumo-nav--mobile-search-form').removeClass('mzp-is-open').attr('aria-expanded', 'false');
+
+            if ($('.hidden-search-masthead').length > 0) {
+              $('.hidden-search-masthead').show();
+              $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+              window.scrollTo(0, 0);
+            } else {
+              window.scrollTo(0, 0);
+              $('#support-search-masthead').find('input[name=q]').val(value).focus();
+            }
+
+
+
+
+          } else if (formId === 'support-search-sidebar') {
+            $('.hidden-search-masthead').show();
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+
+          } else if (formId === 'support-search-sidebar') {
+            $('.hidden-search-masthead').show();
+            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
+
           } else {
             $('#support-search').find('input[name=q]').val(value);
-            $('#support-search-results').find('input[name=q]').val(value);
+            $('#support-search-masthead').find('input[name=q]').val(value);
           }
 
           return true;
@@ -143,5 +179,14 @@
       dataType: 'json',
       success: k.InstantSearchSettings.render
     });
+  });
+
+  // 'Popular searches' feature
+  $(document).on('click', '[data-featured-search]', function(ev) {
+    var $mainInput = $('#support-search-masthead input[name=q]');
+    var thisLink = $(this).text();
+    $('#support-search-masthead input[name=q]').focus().val(thisLink);
+    $mainInput.trigger( "keyup" );
+    ev.preventDefault();
   });
 })(jQuery);

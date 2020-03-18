@@ -4,7 +4,7 @@
 {% set crumbs = [(None, title)] %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
-{% block content %}
+{% block below_main %}
 
   <article id="revision-list">
     <form class="filter inline-label is-condensed" action="{{ url('wiki.revisions') }}">
@@ -13,7 +13,7 @@
         {{ field }}
       {% endfor %}
       <button class="btn btn-submit">{{ _('Submit') }}</button>
-      <img src="/media/img/wait-trans.gif" class="loading" alt="" />
+      <img src="{{ STATIC_URL }}sumo/img/wait-trans.gif" class="loading" alt="" />
     </form>
 
     <div id="revisions-fragment">
