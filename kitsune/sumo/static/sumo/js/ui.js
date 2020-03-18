@@ -26,7 +26,7 @@
     }, 100));
 
     if ($.datepicker) {
-      $('input[type="date"]').datepicker();
+      $('input[type="date"]').attr('type','text').datepicker();
     }
 
     $('.ui-truncatable .show-more-link').click(function(ev) {

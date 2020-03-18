@@ -21,7 +21,9 @@
       new ShowFor(); // eslint-disable-line
       addReferrerAndQueryToVoteForm();
       new k.AjaxVote('.document-vote form', { // eslint-disable-line
-        positionMessage: true
+        positionMessage: false,
+        replaceFormWithMessage: true,
+        removeForm: true
       });
       initAOABanner();
     } else if ($body.is('.review')) { // Review pages
@@ -39,7 +41,7 @@
       $('#id_comment').keypress(function(e) {
         if (e.which === 13) {
           $(this).blur();
-          $(this).closest('form').find('input[type=submit]').focus().click();
+          $(this).closest('form').find('[type=submit]').click();
           return false;
         }
       });
@@ -61,14 +63,14 @@
 
     if ($body.is('.edit, .new')) {
       // collapse the topics listing per product and show only one topic list
-      // at at a time
-      $(function () {
-        $('#accordion').accordion({
-          collapsible: true,
-          heightStyle: 'content',
-          active: false
-        });
-      });
+      // // at at a time
+      // $(function () {
+      //   $('#accordion').accordion({
+      //     collapsible: true,
+      //     heightStyle: 'content',
+      //     active: false
+      //   });
+      // });
     }
 
     if ($body.is('.translate')) {  // Translate page
@@ -557,7 +559,7 @@
 
     var switch_link = $('<a></a>')
         .text(gettext('Toggle syntax highlighting'))
-        .css({cssFloat: 'right', cursor: 'pointer'})
+        .css({textAlign: 'right', cursor: 'pointer', display: 'block'})
         .toggle(function() {
           editor_wrapper.css('display', 'none');
           $('#id_content').css('display', 'block');
@@ -761,7 +763,7 @@
       }
     });
 
-    $form.find('input[type=date]').datepicker();
+    $form.find('input[type=date]').attr('type','text').datepicker();
   }
 
   $(document).ready(init);
@@ -810,7 +812,7 @@
   }
 
   function initExitSupportFor() {
-    $('#support-for-exit').live('click', function() {
+    $('#support-for-exit').on('click', function() {
       $('#support-for').remove();
     });
   }

@@ -3,11 +3,13 @@
 {% set classes = 'flagged' %}
 
 {% block content %}
-  <div id="flagged-queue">
-    <h1>{{ _('Flagged Content Pending Moderation') }}</h1>
+  <div id="flagged-queue" class="sumo-page-section">
+    <h1 class="sumo-page-heading">{{ _('Flagged Content Pending Moderation') }}</h1>
+    <ul>
     {% for object in objects %}
       {% if loop.first %}<ul>{% endif %}
       <li class="{{ object.content_type }}">
+        <hr>
         <hgroup>
           <h2>{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
           {% if object.notes %}
@@ -20,8 +22,8 @@
           {% else %}
             <p>{{ _('{t} with id={id} no longer exists.')|f(t=object.content_type, id=object.object_id) }}</p>
           {% endif %}
-          <h3>{{ _('Update Status:') }}</h3>
-          <form class="update" action="{{ url('flagit.update', object.id) }}" method="post">
+          <h3 class="sumo-card-heading"><br>{{ _('Update Status:') }}</h3>
+          <form class="update inline-form" action="{{ url('flagit.update', object.id) }}" method="post">
             {% csrf_token %}
             <select name="status">
               <option value="">{{ _('Please select...') }}</option>
@@ -36,7 +38,10 @@
     {% else %}
      <p>{{ _('There is no flagged content pending moderation.') }}</p>
     {% endfor %}
-    <p><a href="{{ url('users.deactivation_log') }}">{{ _('View all deactivated users') }}</a></p>
+
+    <div class="sumo-button-wrap">
+      <a class="sumo-button primary-button" href="{{ url('users.deactivation_log') }}">{{ _('View all deactivated users') }}</a>
+    </div>
   </div>
 {% endblock %}
 

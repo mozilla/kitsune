@@ -38,11 +38,13 @@
 {% endblock %}
 
 {% block content %}
-  <div class="grid_9">
+  <div class="sumo-page-section">
     <article id="posts" class="main">
+
       {{ kbforums_warning(document, user) }}
-      <h1>{{ thread.title }}</h1>
-      <ul class="cf" id="thread-meta">
+
+      <h1 class="sumo-page-heading">{{ thread.title }}</h1>
+      <ul class="topic-article--meta-list" id="thread-meta">
         {% if count %}<li>{{ count - 1 }} {{ _('Replies') }}</li>{% endif %}
         {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.creator) }}</li>{% endif %}
         {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
@@ -58,20 +60,21 @@
             {% set watch = _('Watch this thread') %}
             <input type="hidden" name="watch" value="yes" />
           {% endif %}
-          <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+          <button type="submit" title="{{ watch }}" class="sumo-button button-sm" id="watch-thread-toggle">{{ watch }}</button>
         </form>
       {% endif %}
 
       {% if posts %}
         <ol class="posts">
           {% for post in posts.object_list %}
-            <li class="cf" id="post-{{ post.id }}">
+            <li class="forum--entry" id="post-{{ post.id }}">
               {% include "kbforums/includes/post.html" %}
             </li>
           {% endfor %}
         </ol>
 
         {{ posts|paginator }}
+
 
       {% else %}
         <p>{{ _('Oh, no! Looks like there are no posts!') }}</p>
@@ -80,7 +83,7 @@
       {% if user.is_authenticated() and not thread.is_locked %}
         <form id="post-a-reply" action="{{ url('wiki.discuss.reply', document.slug, thread.id)|urlparams(hash='post-a-reply') }}" method="post">
           {% csrf_token %}
-          <h3 id="thread-reply-title">{{ _('Post a reply') }}</h3>
+          <h3 class="sumo-page-subheading" id="thread-reply-title">{{ _('Post a reply') }}</h3>
           {{ errorlist(form) }}
 
           {% if request.limited %}
@@ -93,9 +96,9 @@
             {{ content_editor(form.content) }}
           </div>
 
-          <div class="editor-actions">
-            <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
-            <button type="submit" class="btn" id="preview" name="preview"
+          <div class="editor-actions sumo-button-wrap reverse-on-desktop align-end">
+            <button type="submit" class="sumo-button primary-button">{{ _('Post Reply') }}</button>
+            <button type="submit" class="sumo-button secondary-button" id="preview" name="preview"
                 data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
                 data-preview-container-id="post-preview"
                 data-preview-content-id="id_content">{{ _('Preview Reply') }}

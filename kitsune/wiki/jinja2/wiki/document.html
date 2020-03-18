@@ -5,10 +5,12 @@
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
-{% set scripts = ('wiki', ) %}
+{% set scripts = ('wiki', 'questions') %}
 {% set extra_body_attrs = {'data-track-url': STATIC_URL + 'img/pixel.gif', 'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
-{% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ pgettext('site_title', 'Mozilla Support') }}{% else %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endif %}{% endblock %}
+{% block title %}
+  {{ document.title }} | {% if not products or products|count > 1 %}{{ pgettext('site_title', 'Mozilla Support') }}{% else %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endif %}
+{% endblock %}
 
 {% if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE %}
   {# If we are on a non default locale, use default locale's slug for Google Analytics tracking. #}
@@ -34,87 +36,11 @@
   {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
 {% endblock %}
 
-{% block above_main %}
-  <div class="grid_12 search-form-large">
-    {{ search_box(settings, id='support-search-wiki', params=search_params) }}
+{% block side %}
+  <div class="search-form-sidebar large-only">
+    {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
   </div>
 
-  <h1 class="wiki-product-title cf">
-    {% set prod_url = url('products.product', slug=product.slug) %}
-    <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
-    <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
-  </h1>
-{% endblock %}
-
-{% block content %}
-  <div class="grid_9">
-  {% if product.slug == 'firefox' %}
-    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-    <div class="firefox-download-button hidden">
-      <div class="download-buttons">
-        <div class="download-firefox">
-          <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
-            data-event-category="Download Button"
-            data-event-action="Panel Opening"
-            data-event-label="{{ latest_version }}">
-            <span class="download-content">
-              <strong class="download-title">{{ _('Download Firefox') }}</strong>
-            </span>
-          </a>
-          <ul class="info">
-            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-
-    <article class="wiki-doc">
-      {{ document_title(document) }}
-      {{ document_messages(document, redirected_from) }}
-      <div class="separator"></div>
-      {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
-
-    {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
-    {% if share_link %}
-      <p class="share-link">
-        <br/>
-        {% set link='<a href="' + share_link + '">' + share_link + '</a>' %}
-        {{ _('Share this article: {link}')|f(link=link|safe) }}
-      </p>
-    {% endif %}
-
-      <div class="separator"></div>
-
-      {{ contributor_list(contributors) }}
-
-      <div class="vote-wrap">
-        {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
-        {{ vote_form(document, 'footer') }}
-      </div>
-    </article>
-
-    {% if document.related_documents.count() %}
-      <div id="related-documents" class="wiki-related-documents">
-        <h4>{{ _('See also:') }}</h4>
-        <ul>
-          {% for related in document.related_documents.all() %}
-            <li><a href="{{ url('wiki.document', related.slug) }}">{{ related.title }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
-  </div>
-  <section id="get-involved-box" class="grid_12">
-    <a class="button" href="{{ url('landings.get_involved') }}">
-      {{ _('Volunteer for Mozilla Support') }}
-    </a>
-  </section>
-{% endblock %}
-
-{% block side_top %}
   {% if fallback_reason == 'no_translation' %}
     {# If there is no translation, there is no document and the (future) parent is document. #}
     {% set doc = None %}
@@ -124,6 +50,110 @@
     {% set parent = doc.parent %}
   {% endif %}
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
-  <h4>{{ _('Explore more topics') }}</h4>
-  {{ topic_sidebar(product_topics[:10], [], product) }}
+{% endblock %}
+
+{% block content %}
+  <section id="document-list">
+    <header class="sumo-article-header has-border-bottom">
+      <div class="sumo-article-header--text">
+        <div class="documents-product-title">
+          {% set prod_url = url('products.product', slug=product.slug) %}
+          <a href="{{ prod_url }}" title="{{ pgettext('DB: products.Product.title', product.title) }}">
+            <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
+          </a>
+        </div>
+        {{ document_title(document) }}
+      </div>
+    </header>
+
+    {% if product.slug == 'firefox' %}
+      {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+      <div class="firefox-download-button hidden">
+        <div class="download-buttons">
+          <div class="download-firefox">
+            <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
+              data-event-category="Download Button"
+              data-event-action="Panel Opening"
+              data-event-label="{{ latest_version }}">
+              <span class="download-content">
+                <strong class="download-title">{{ _('Download Firefox') }}</strong>
+              </span>
+            </a>
+            <ul class="info">
+              <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+              <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+              <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <article class="wiki-doc">
+      {{ document_messages(document, redirected_from) }}
+      {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
+
+      {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
+      {% if share_link %}
+        <p class="share-link">
+          <br/>
+          {% set link='<a href="' + share_link + '">' + share_link + '</a>' %}
+          {{ _('Share this article: {link}')|f(link=link|safe) }}
+        </p>
+      {% endif %}
+    </article>
+
+    <section class="sumo-page-section hide-on-large">
+      {{ vote_form(document, 'footer') }}
+    </section>
+
+    {{ contributor_list(contributors) }}
+
+    <section class="sumo-page-section">
+      {% include "landings/includes/volunteer-callout.html" %}
+    </section>
+
+    {% if document.related_documents.count() %}
+    {% set docs = document.related_documents.all() %}
+    <section id="related-documents" class="sumo-page-section wiki-related-documents">
+      <div class="text-center">
+        <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
+      </div>
+      <div class="sumo-card-grid" style="--cg-count: {{ docs|length }};">
+        <div class="scroll-wrap">
+          {% for related in docs %}
+          <div class="card card--article">
+              <img class="card--icon-sm" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="todo: title" />
+              <div class="card--details">
+                <h3 class="card--title">
+                  <a
+                    class="expand-this-link"
+                    href="{{ url('wiki.document', related.slug) }}"
+                    data-event-category="link click"
+                    data-event-action="product"
+                    data-event-label="{{ related.title }}"
+                  >
+                    {{ related.title }}
+                  </a>
+                </h3>
+                <div class="card--desc">
+                  <p>
+                  {{ related.html|striptags|truncate(length=150) }}
+                  </p>
+                </div>
+              </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+  </section>
+{% endblock %}
+
+{% block side_bottom %}
+<div class="document-vote--sidebar-wrap">
+  {# this vote-wrap class is to make the js compatible with old theme. TODO: Remove and fix js. #}
+  {{ vote_form(document, 'footer') }}
+</div>
 {% endblock %}

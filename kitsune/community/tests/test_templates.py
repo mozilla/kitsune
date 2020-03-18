@@ -107,7 +107,7 @@ class LandingTests(ElasticTestCase):
         eq_(response.status_code, 200)
         doc = pq(response.content)
         eq_(1, len(doc('#recent-threads')))
-        assert 'we are SUMO!' in doc('#recent-threads li').html()
+        assert 'we are SUMO!' in doc('#recent-threads td').html()
 
 
 class TopContributorsTests(ElasticTestCase):

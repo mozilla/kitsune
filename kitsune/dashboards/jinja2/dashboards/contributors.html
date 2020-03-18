@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "dashboards/includes/macros.html" import print_readout, product_choice_list, print_subscription_menu, category_filter with context %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
-{% set title = _('[{product}] Knowledge Base Dashboard')|fe(product=pgettext('DB: products.Product.title', product.title) if product else _('All Products')) %}
+{% set title = _('Knowledge Base Dashboard') %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards', ) %}
 {% set crumbs = [(None, title)] %}
@@ -9,18 +9,19 @@
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="localize" class="dashboards">
-      <h1>{{ title }}</h1>
+    <article id="localize" class="dashboards sumo-page-section">
 
       {{ product_choice_list(products, product, url('dashboards.contributors')) }}
 
+      <h1 class="sumo-page-heading">{{ title }}</h1>
+
+      <div class="table-filters">
       {{ category_filter() }}
 
       {% if default_locale_name != request_locale_name %}
         <div class="choice-list">
           <label>{{ _('Show information for:') }}</label>
-          <ul>
+          <ul class="mzp-u-list-styled">
             <li>
               {{ default_locale_name }}
             </li>
@@ -42,28 +43,32 @@
                                    settings.WIKI_DEFAULT_LANGUAGE,
                                    product=product) }}
       {% endif %}
-
-      <details class="h2" open="open">
-        <summary class="with-mode-selectors">
-          <a id="kb-overview">{{ _('Overview') }}</a>
-        </summary>
-        <ul class="readout-modes" data-slug="kb-overview">
-          {% for key, name in overview_modes %}
-            <li class="mode{% if key == 2 %} active{% endif %}" data-url="{{ url('dashboards.contributors_overview_rows')|urlparams(max=10, mode=key, locale=locale, product=product.slug) }}">
-              <a href="#">{{ name }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-        <table id="kb-overview-table">
-          {% include 'dashboards/includes/kb_overview.html' %}
-        </table>
-        <div class="table-footer">
-          <a href="{{ url('dashboards.contributors_overview')|urlparams(product=product.slug, category=category) }}">{{ _('Complete overview...') }}</a>
-        </div>
-      </details>
+      </div>
     </article>
+{% endblock %}
+
+{% block below_main %}
+  <nav class="tabs">
+    <ul data-slug="kb-overview" class="tabs--list readout-modes">
+      {% for key, name in overview_modes %}
+        <li class="tabs--item mode {% if key == 2 %}active{% endif %}" data-url="{{ url('dashboards.contributors_overview_rows')|urlparams(max=10, mode=key, locale=locale, product=product.slug) }}">
+          <a class="tabs--link {% if key == 2 %}is-active{% endif %}" href="#">
+            <span>{{ name }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  <table id="kb-overview-table">
+    {% include 'dashboards/includes/kb_overview.html' %}
+  </table>
+  <div class="table-footer">
+    <a href="{{ url('dashboards.contributors_overview')|urlparams(product=product.slug, category=category) }}">{{ _('Complete overview...') }}</a>
   </div>
 {% endblock %}
+
+
 
 {% block side_top %}
   {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'dashboard', True) }}

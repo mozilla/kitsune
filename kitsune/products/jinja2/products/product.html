@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar %}
-{% from 'products/includes/topic_macros.html' import help_topics with context %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox %}
+{% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set styles = ('products',) %}
 {% set scripts = ('products',) %}
@@ -15,89 +15,160 @@
 
 {% block base_container_classes %}container_wide{% endblock %}
 
-{% block content %}
-  <header class="help-topics-header">
-    <h1 class="product-title">
-      <img class="product-logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
-      <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
-    </h1>
-  </header>
+{% block hidden_search_masthead %}{% endblock %}
 
-  <div class="container_12 search-form-large">
-    {{ search_box(settings, id='support-search-product', params=search_params) }}
+{% block contentwrap %}
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg">
+  <div class="mzp-l-content">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
   </div>
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="sumo-page-heading-xl">
+        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
+        <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
+      </h1>
+      {{ search_box(settings, id='support-search-masthead', params=search_params) }}
 
-  <section class="help-topics">
-    <div class="help-topics-subhead">
+      <p class="popular-searches">
+        <span>Popular Searches:</span>
 
+        {% if product.title == "Firefox" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Update Firefox') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+
+        {% elif product.title == "Firefox for Android" or product.title == "Firefox Preview" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Firefox Sync') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Send tab') }}</a>
+
+        {% elif product.title == "Firefox for iOS" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Send tab') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Night mode') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Block images') }}</a>
+
+        {% elif product.title == "Firefox for Enterprise" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Policies') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Customization') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('extensions') }}</a>
+
+        {% elif product.title == "Firefox for Amazon Devices" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Voice commands') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Receive tabs') }}</a>
+
+        {% elif product.title == "Firefox Private Network Browser level" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('About firefox private network') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Install extension') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Limits') }}</a>
+
+        {% elif product.title == "Firefox Private Network Device level" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Choose server') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Subscription') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Android VPN') }}</a>
+        <a href="#popular_search_4" data-featured-search>{{ _('Windows VPN') }}</a>
+
+        {% elif product.title == "Firefox Lockwise" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Lockwise iOS') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Lockwise Android') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Lockwise desktop') }}</a>
+
+        {% elif product.title == "Firefox Reality" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Voice search') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Full screen') }}</a>
+
+        {% elif product.title == "Firefox Lite" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Rewards') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Games') }}</a>
+
+        {% elif product.title == "Hubs" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Create rooms') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Moderate') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Customize avatar') }}</a>
+
+        {% elif product.title == "Firefox Focus" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Autocomplete') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Default search') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Desktop view') }}</a>
+
+        {% elif product.title == "Firefox Screenshot Go" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Organize') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Screenshots') }}</a>
+
+        {% elif product.title == "Thunderbird" %}
+        <a href="#popular_search_1" data-featured-search>{{ _('Thunderbird profiles') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Migrate') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Themes') }}</a>
+
+        {% else %}
+        <a href="#popular_search_1" data-debug="{{ product.title }}" data-featured-search>{{ _('Update Firefox') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+        {% endif %}
+      </p>
+
+    </div>
+  </div>
+</section>
+
+<div id="main-content">
+  <div class="mzp-l-content sumo-page-section--inner">
+    <div class="sumo-page-subheader">
+      <div class="sumo-page-subheader--text">
+        <div class="text-center-to-left-on-large">
+          <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
+          <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
+        </div>
+      </div>
       {% if product.slug == 'firefox' %}
-        {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-        <div class="firefox-download-button hidden">
-          <div class="download-buttons">
-            <div class="download-firefox">
-              <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
-                data-event-category="Download Button"
-                data-event-action="Panel Opening"
-                data-event-label="{{ latest_version }}">
-                <span class="download-content">
-                  <strong class="download-title">{{ _('Download Firefox') }}</strong>
-                </span>
-              </a>
-              <ul class="info">
-                <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-                <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-                <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-              </ul>
-            </div>
-            {#
-              afaict, this button is never shown. products.js is looking for a
-              data-latest-version attribute on the .download-button element above,
-              but it's not present. this should be fixed?
-            #}
-            <div class="refresh-firefox">
-              <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-              <a data-mozilla-ui-reset="reset" class="btn btn-submit">
-                {{ _('Refresh Firefox') }}
-              </a>
-              <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-                {{ _('How does it work?') }}
-              </a>
-              <a href="https://www.mozilla.org/firefox/new/#download-fx"
-                data-event-category="Download Button"
-                data-event-action="Panel Opening"
-                data-event-label="{{ latest_version }}">
-                {{ _('Download a fresh copy') }}
-              </a>
-            </div>
-          </div>
-        </div>
+      {{ download_firefox() }}
       {% endif %}
-
       {% if product.slug == 'thunderbird' %}
-        <div class="download-buttons">
-          <div class="download-thunderbird">
-            <a href="https://www.thunderbird.net/" class="download-button"
-            data-event-category="Download Button"
-            data-event-action="Download Thunderbird">
-              <span class="download-content">
-                <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
-              </span>
-            </a>
-            <ul class="info">
-              <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
-              <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
-              <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
-            </ul>
-          </div>
+      <div class="download-buttons">
+        <div class="download-thunderbird">
+          <a href="https://www.thunderbird.net/" class="download-button"
+          data-event-category="Download Button"
+          data-event-action="Download Thunderbird">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+          </ul>
         </div>
+      </div>
       {% endif %}
-
-
-      <h2 class="help-topics-title">{{ _('Frequent Topics') }}</h2>
-      <p>{{ _('Explore the knowledge base.') }}</p>
     </div>
     {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+  </div>
+
+  {{ topic_metadata(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+
+
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+      <h2 class="sumo-page-subheading text-center-to-left-on-large">{{ _('Featured Articles') }}</h2>
+    {% include "landings/includes/featured_articles.html" %}
   </section>
+
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+    {% include "landings/includes/join-our-community-callout.html" %}
+  </section>
+</div>
+
+
+
+
+
+
+
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}

@@ -476,7 +476,7 @@
         .appendTo($('<div class="range"/>').appendTo($inlines));
       $presets = $('<div class="range-presets"/>').appendTo($inlines);
 
-      $label.find('input[type=date]').datepicker({
+      $label.find('input[type=date]').attr('type','text').datepicker({
         dateFormat: 'yy-mm-dd'
       });
 

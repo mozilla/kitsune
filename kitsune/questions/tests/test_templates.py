@@ -257,7 +257,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Check that there are no votes and vote form renders
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        assert "0\n" in doc(".have-problem")[0].text
+        assert "0" in doc(".have-problem")[0].text
         eq_(me_too_count, len(doc("div.me-too form")))
 
         # Vote
@@ -269,7 +269,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Check that there is 1 vote and vote form doesn't render
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        assert "1\n" in doc(".have-problem")[0].text
+        assert "1" in doc(".have-problem")[0].text
         eq_(0, len(doc("div.me-too form")))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -280,7 +280,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         post(self.client, "questions.vote", args=[self.question.id])
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        assert "1\n" in doc(".have-problem")[0].text
+        assert "1" in doc(".have-problem")[0].text
 
     def test_question_authenticated_vote(self):
         """Authenticated user vote."""
@@ -300,7 +300,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Check that there are no votes and vote form renders
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('form.helpful input[name="helpful"]')))
+        eq_(1, len(doc('form.helpful button[name="helpful"]')))
 
         # Vote
         ua = "Mozilla/5.0 (DjangoTestClient)"
@@ -314,7 +314,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
 
-        eq_(1, len(doc("#answer-%s h3.is-helpful" % self.answer.id)))
+        eq_(1, len(doc("#answer-%s span.is-helpful" % self.answer.id)))
         eq_(0, len(doc('form.helpful input[name="helpful"]')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -347,7 +347,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         Answer.objects.create(question=q, creator=q.creator, content="test")
         response = get(self.client, "questions.details", args=[q.id])
         doc = pq(response.content)
-        eq_(2, len(doc('form.helpful input[name="helpful"]')))
+        eq_(2, len(doc('form.helpful button[name="helpful"]')))
 
     def test_asker_can_vote(self):
         """The asker can vote Not/Helpful."""
@@ -521,7 +521,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Initially there should be no edit links
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc("ol.answers li.edit")))
+        eq_(0, len(doc("ul.mzp-c-menu-list-list li.edit")))
 
         # Add an answer and verify the edit link shows up
         content = "lorem ipsum dolor sit amet"
@@ -534,7 +534,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(1, len(doc("li.edit")))
         new_answer = self.question.answers.order_by("-id")[0]
-        eq_(1, len(doc("#answer-%s + div li.edit" % new_answer.id)))
+        eq_(1, len(doc("#answer-%s li.edit" % new_answer.id)))
 
         # Make sure it can be edited
         content = "New content for answer"
@@ -1168,7 +1168,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # First there should be no questions tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(0, len(doc("article.questions > section")))
+        eq_(0, len(doc(".forum--question-item")))
 
         # Tag a question 'mobile'
         q = QuestionFactory()
@@ -1183,7 +1183,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(1, len(doc("article.questions > section")))
+        eq_(1, len(doc(".forum--question-item")))
         eq_(
             "%s/en-US/questions/all?tagged=mobile&show=all" % settings.CANONICAL_URL,
             doc('link[rel="canonical"]')[0].attrib["href"],
@@ -1201,7 +1201,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         questions_list = urlparams(reverse("questions.list", args=["all"]))
         response = self.client.get(questions_list)
         doc = pq(response.content)
-        eq_(1, len(doc("#owner-tabs > .selected")))
+        eq_(1, len(doc("#owner-tabs .selected")))
 
         # Test one tab is selected for all show args
         show_args = ["needs-attention", "responded", "done", "all"]
@@ -1211,7 +1211,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
             )
             response = self.client.get(questions_list)
             doc = pq(response.content)
-            eq_(1, len(doc("#owner-tabs > .selected")))
+            eq_(1, len(doc("#owner-tabs .selected")))
 
     def test_product_filter(self):
         p1 = ProductFactory()
@@ -1232,10 +1232,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            eq_(len(expected), len(doc(".questions > section")))
+            eq_(len(expected), len(doc(".forum--question-item")))
 
             for q in expected:
-                eq_(1, len(doc(".questions > section[id=question-%s]" % q.id)))
+                eq_(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
 
         # No filtering -> All questions.
         check("all", [q1, q2, q3])
@@ -1271,10 +1271,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            # eq_(len(expected), len(doc('.questions > section')))
+            # eq_(len(expected), len(doc('.forum--question-item')))
 
             for q in expected:
-                eq_(1, len(doc(".questions > section[id=question-%s]" % q.id)))
+                eq_(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
 
         # No filtering -> All questions.
         check({}, [q1, q2, q3])
@@ -1320,7 +1320,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q.questionvisits_set.create(visits=1007)
         response = self.client.get(reverse("questions.list", args=["all"]))
         doc = pq(response.content)
-        eq_("1007 views", doc("div.views").text())
+        eq_("1007", doc(".views-val").text())
 
     def test_no_unarchive_on_old_questions(self):
         ques = QuestionFactory(
@@ -1345,9 +1345,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
             urlparams(reverse("questions.list", args=["all"]), show="")
         )
         doc = pq(response.content)
-        tag = doc("#question-{id} .tag-list li img".format(id=q.id))
+        tag = doc("#question-{id} .tag-list li a".format(id=q.id))
         # Even though there are no tags, the product should be displayed.
-        assert "logo-sprite-tiny" in tag.attr("class")
+        assert p.title in tag[0].text
 
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
@@ -1363,7 +1363,7 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         url = urlparams(url, filter="no-replies")
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(2, len(doc("article.questions > section")))
+        eq_(2, len(doc(".forum--question-item")))
 
 
 class QuestionEditingTests(TestCaseBase):
@@ -1557,16 +1557,6 @@ class AAQTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(302, response.status_code)
 
-    def test_no_aaq_link_in_header(self):
-        """Verify the ASK A QUESTION link isn't present in header."""
-        p = ProductFactory(slug="firefox")
-        lcl = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(lcl)
-        url = reverse("questions.aaq_step2", args=["desktop"])
-        response = self.client.get(url)
-        eq_(200, response.status_code)
-        assert "/questions/new" not in pq(response.content)("#aux-nav").html()
-
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
@@ -1583,7 +1573,7 @@ class ProductForumTemplateTestCase(TestCaseBase):
         response = self.client.get(reverse("questions.home"))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(5, len(doc(".product-list .product")))
+        eq_(4, len(doc(".product-list .product")))
         product_list_html = doc(".product-list").html()
         assert firefox.title in product_list_html
         assert android.title in product_list_html

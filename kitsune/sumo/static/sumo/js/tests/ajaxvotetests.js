@@ -7,7 +7,7 @@ import mochaK from './fixtures/mochaK.js';
 import mochaJquery from './fixtures/mochaJquery.js';
 
 describe('ajaxvote', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   mochaK();
   /* globals window, document, $, k */

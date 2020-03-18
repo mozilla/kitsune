@@ -19,7 +19,6 @@ from django.utils.translation import ugettext as _
 # from axes.decorators import watch_login
 from django_statsd.clients import statsd
 from mozilla_django_oidc.views import OIDCAuthenticationRequestView, OIDCLogoutView
-from mobility.decorators import mobile_template
 from tidings.models import Watch
 from tidings.tasks import claim_watches
 
@@ -96,7 +95,7 @@ def login(request):
     Legacy view for logging in SUMO users. This is being deprecated
     in favor of FXA login.
     """
-    if request.method == 'GET' and not request.MOBILE:
+    if request.method == 'GET':
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
@@ -141,10 +140,10 @@ def logout(request, already_migrated=False):
     return res
 
 
-@mobile_template('users/{mobile/}activate.html')
-def activate(request, template, activation_key, user_id=None):
+def activate(request, activation_key, user_id=None):
     """Activate a User account."""
     activation_key = activation_key.lower()
+    template = 'users/activate.html'
 
     _disable_sumo_auth_for_fxa(request)
     if user_id:
@@ -179,8 +178,7 @@ def activate(request, template, activation_key, user_id=None):
         'form': form})
 
 
-@mobile_template('users/{mobile/}')
-def resend_confirmation(request, template):
+def resend_confirmation(request):
     """Resend confirmation email."""
 
     _disable_sumo_auth_for_fxa(request)
@@ -235,18 +233,17 @@ def resend_confirmation(request, template):
             # Form may now be invalid if email failed to send.
             if form.is_valid():
                 return render(
-                    request, template + 'resend_confirmation_done.html',
+                    request, 'users/resend_confirmation_done.html',
                     {'email': email})
     else:
         form = EmailConfirmationForm()
-    return render(request, template + 'resend_confirmation.html', {
+    return render(request, 'users/resend_confirmation.html', {
         'form': form})
 
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-@mobile_template('users/{mobile/}')
-def change_email(request, template):
+def change_email(request):
     """Change user's email. Send confirmation first."""
     _disable_sumo_auth_for_fxa(request)
     if request.method == 'POST':
@@ -261,12 +258,12 @@ def change_email(request, template):
             EmailChange.objects.send_confirmation_email(
                 email_change, form.cleaned_data['email'])
             return render(
-                request, template + 'change_email_done.html',
+                request, 'users/change_email_done.html',
                 {'email': form.cleaned_data['email']})
     else:
         form = EmailChangeForm(request.user,
                                initial={'email': request.user.email})
-    return render(request, template + 'change_email.html', {'form': form})
+    return render(request, 'users/change_email.html', {'form': form})
 
 
 @require_GET
@@ -389,9 +386,9 @@ def documents_contributed(request, username):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-@mobile_template('users/{mobile/}edit_settings.html')
-def edit_settings(request, template):
+def edit_settings(request):
     """Edit user settings"""
+    template = 'users/edit_settings.html'
     if request.method == 'POST':
         form = SettingsForm(request.POST)
         if form.is_valid():
@@ -573,8 +570,7 @@ def delete_avatar(request):
         'profile': user_profile})
 
 
-@mobile_template('users/{mobile/}pw_reset_form.html')
-def password_reset(request, template):
+def password_reset(request):
     """Password reset form.
 
     Based on django.contrib.auth.views. This view sends the email.
@@ -613,23 +609,21 @@ def password_reset(request, template):
     else:
         form = PasswordResetForm()
 
-    return render(request, template, {'form': form})
+    return render(request, 'users/pw_reset_form.html', {'form': form})
 
 
-@mobile_template('users/{mobile/}pw_reset_sent.html')
-def password_reset_sent(request, template):
+def password_reset_sent(request):
     """Password reset email sent.
 
     Based on django.contrib.auth.views. This view shows a success message after
     email is sent.
 
     """
-    return render(request, template)
+    return render(request, 'users/pw_reset_sent.html')
 
 
 @ssl_required
-@mobile_template('users/{mobile/}pw_reset_confirm.html')
-def password_reset_confirm(request, template, uidb36=None, token=None):
+def password_reset_confirm(request, uidb36=None, token=None):
     """View that checks the hash in a password reset link and presents a
     form for entering a new password.
 
@@ -657,23 +651,21 @@ def password_reset_confirm(request, template, uidb36=None, token=None):
         context['validlink'] = False
         form = None
     context['form'] = form
-    return render(request, template, context)
+    return render(request, 'users/pw_reset_confirm.html', context)
 
 
-@mobile_template('users/{mobile/}pw_reset_complete.html')
-def password_reset_complete(request, template):
+def password_reset_complete(request):
     """Password reset complete.
 
     Based on django.contrib.auth.views. Show a success message.
 
     """
     form = AuthenticationForm()
-    return render(request, template, {'form': form})
+    return render(request, 'users/pw_reset_complete.html', {'form': form})
 
 
 @login_required
-@mobile_template('users/{mobile/}pw_change.html')
-def password_change(request, template):
+def password_change(request):
     """Change password form page."""
     if request.user.profile.is_fxa_migrated:
         raise Http404
@@ -684,18 +676,16 @@ def password_change(request, template):
             return HttpResponseRedirect(reverse('users.pw_change_complete'))
     else:
         form = PasswordChangeForm(user=request.user)
-    return render(request, template, {'form': form})
+    return render(request, 'users/pw_change.html', {'form': form})
 
 
 @login_required
-@mobile_template('users/{mobile/}pw_change_complete.html')
-def password_change_complete(request, template):
+def password_change_complete(request):
     """Change password complete page."""
-    return render(request, template)
+    return render(request, 'users/pw_change_complete.html')
 
 
-@mobile_template('users/{mobile/}forgot_username.html')
-def forgot_username(request, template):
+def forgot_username(request):
     """Forgot username form page.
 
     On POST, this view sends an email with the username.
@@ -724,7 +714,7 @@ def forgot_username(request, template):
     else:
         form = ForgotUsernameForm()
 
-    return render(request, template, {'form': form})
+    return render(request, 'users/forgot_username.html', {'form': form})
 
 
 class FXAAuthenticateView(OIDCAuthenticationRequestView):

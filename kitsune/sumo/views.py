@@ -15,7 +15,6 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
 from celery.messaging import establish_connection
-from mobility.decorators import mobile_template
 from PIL import Image
 
 from kitsune.lib.sumo_locales import LOCALES
@@ -31,9 +30,9 @@ log = logging.getLogger('k.services')
 
 
 @never_cache
-@mobile_template('sumo/{mobile/}locales.html')
-def locales(request, template):
+def locales(request):
     """The locale switcher page."""
+    template = 'sumo/locales.html'
 
     return render(request, template, dict(
         next_url=get_next_url(request) or reverse('home')))

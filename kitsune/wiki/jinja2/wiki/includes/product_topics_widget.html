@@ -1,29 +1,27 @@
-<ul class="products" id="accordion">
+<section id="accordion" class="mzp-c-details products">
   {% for group in topics|groupby('product_id') %}
-    <li class="cf">
-      <strong>{{ group.list[0].product }}</strong>
-      <ul class="topics">
-        {% for topic in group.list %}
-          <li>
-            <label>
-              <input type="checkbox" name="{{ name }}" value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
-              {{ topic.title }}
-            </label>
-            {% if topic.my_subtopics %}
-              <ul class="subtopics">
-                {% for subtopic in topic.my_subtopics %}
-                  <li>
-                    <label>
-                      <input type="checkbox" name="{{ name }}" value="{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
-                      {{ subtopic.title }}
-                    </label>
-                  </li>
-                {% endfor %}
-              </ul>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
+  <h3 class="sumo-card-heading">{{ group.list[0].product }}</h3>
+  <ul class="checkbox-list">
+    {% for topic in group.list %}
+    <li>
+    <div class="field checkbox is-condensed">
+      <input type="checkbox" name="{{ name }}" id="id_{{ topic.id }}" value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
+      <label for="id_{{ topic.id }}">{{ topic.title }}</label>
+    </div>
+      {% if topic.my_subtopics %}
+        <ul class="checkbox-list--sublist">
+          {% for subtopic in topic.my_subtopics %}
+            <li>
+              <div class="field checkbox is-condensed">
+                <input type="checkbox" name="{{ name }}" id="id_sub_{{ subtopic.id }}" value="{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
+                <label for="id_sub_{{ subtopic.id }}">{{ subtopic.title }}</label>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
     </li>
+    {% endfor %}
+  </ul>
   {% endfor %}
-</ul>
+</section>

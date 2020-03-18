@@ -1,0 +1,60 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.is-details.mzp-c-menu-list.featured-dropdown {
+  .mzp-c-menu-list-title {
+    button {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--color-heading);
+
+      &:after {
+        background: url("data:image/svg+xml,%3Csvg width='24px' height='24px' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='none' stroke-width='1' fill='none' fill-rule='evenodd' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline stroke='%2320133A' stroke-width='2' points='5 9 12 16 19 9'%3E%3C/polyline%3E%3C/g%3E%3C/svg%3E") center center no-repeat;
+      }
+    }
+  }
+
+  .mzp-c-menu-list-list {
+    width: 100%;
+  }
+
+  a {
+    @include c.text-body-lg;
+  }
+}
+
+
+.mzp-c-menu-list-list {
+  max-height: 300px;
+  overflow: auto;
+
+  .pm {
+    margin: 0;
+  }
+
+  a.sumo-button { // overrides, because sometimes classes are injected from python.
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+    margin: 0;
+    height: auto;
+    font-weight: inherit;
+    transition: none;
+
+    &:hover:not(:disabled) {
+      background: var(--color-marketing-gray-02);
+      color: inherit;
+    }
+  }
+}
+
+.contributor-filters {
+  display: flex;
+
+  .mzp-c-menu-list {
+    margin-right: p.$spacing-xl;
+  }
+}

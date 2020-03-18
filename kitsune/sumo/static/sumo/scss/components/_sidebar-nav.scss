@@ -1,0 +1,222 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Sidebar navigation
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/sidebar-nav.njk
+//
+// Weight: 3
+//
+// Style guide: nav.sidebar
+
+.sidebar-nav {
+  margin-bottom: p.$spacing-xl;
+
+  &--list,
+  &--sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &--item {
+    @include p.font-size(16px);
+    margin-bottom: p.$spacing-sm;
+  }
+
+  a {
+    display: block;
+    padding: p.$spacing-xs p.$spacing-sm;
+    border-radius: var(--global-radius);
+    text-decoration: none;
+    cursor: pointer;
+
+    &,
+    &:visited {
+      color: var(--color-text);
+    }
+
+    &:hover {
+      text-decoration: none;
+      color: var(--color-heading);
+    }
+
+    &.details-heading {
+      padding-left: 0;
+    }
+  }
+
+  // use this modifier to remove link padding, in the cases where no
+  // .selected classes will be used.
+  &.is-action-list {
+    a {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  .edit > a:before {
+    content: none; // removes pencil icon from sidebar links
+  }
+
+  .related-document,
+  .related-question {
+    @include c.text-body-md;
+    background-image: url("#{p.$image-path}/icons/blog.svg");
+    background-repeat: no-repeat;
+    background-position: 0px 6px;
+    background-size: p.$spacing-md p.$spacing-md;
+    padding-left: p.$spacing-lg;
+  }
+
+  .related-document {
+    background-image: url("#{p.$image-path}/icons/reader-mode.svg");
+  }
+
+  li.selected > :link,
+  li.selected > :visited,
+  a.selected:link,
+  a.selected:visited {
+    background-color: var(--color-link-active-bg);
+    font-weight: bold;
+    color: var(--color-heading);
+  }
+
+  &--sublist {
+    @include p.bidi(((margin-left, left, right),));
+    margin-bottom: p.$spacing-md;
+  }
+
+  &--subitem {
+    @include p.font-size(16px);
+  }
+
+  a.sidebar-nav--sublink {
+    padding-left: p.$spacing-lg;
+  }
+
+  .details-heading {
+    // button element is injected with JS on Protocol Details init.
+    // See sumo/protocol-details-init.js and
+    // node_modules/@mozilla-protocol/core/protocol/js/protocol-details.js
+    button {
+      appearance: none;
+      @include p.font-size(16px);
+      display: block;
+      width: 100%;
+      color: var(--color-text);
+      margin-bottom: 12px;
+      text-decoration: none;
+      @include p.bidi(((text-align, left, right),));
+      border: none;
+      background-color: transparent;
+      padding: 0;
+
+
+      &:after {
+        @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));
+        display: inline-flex;
+        width: 12px;
+        height: 10px;
+        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#5E5E72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+        background-size: contain;
+        background-position: center center;
+        background-repeat: no-repeat;
+        transition: transform .3s;
+        transform-style: preserve-3d;
+        content: "";
+      }
+
+      &[aria-expanded="true"]:after {
+        transform: rotateX(180deg) translateY(2px);
+      }
+    }
+
+    + .sidebar-nav--list {
+      &[aria-hidden="true"] {
+        display: none;
+      }
+
+      &[aria-hidden="false"] {
+        display: block;
+      }
+
+      .mzp-js-details-wrapper {
+        padding-bottom: p.$spacing-md;
+        border-bottom: 1px solid var(--color-heading);
+      }
+
+      .tag-list {
+        margin-bottom: p.$spacing-md;
+
+        a {
+          padding: 0;
+        }
+      }
+
+      .selectbox-wrapper {
+        margin-bottom: p.$spacing-sm;
+      }
+
+      .field.checkbox {
+        margin-top: p.$spacing-md;
+      }
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    // sublist is only used when the sidebar is in dropdown mode for mobile/tablet.
+    &--sublist {
+      display: none;
+    }
+
+    .details-heading {
+      display: none;
+    }
+
+    a.show-selected-on-lg {
+      background-color: var(--color-link-active-bg);
+      font-weight: bold;
+      color: var(--color-heading);
+    }
+  }
+}
+
+
+.sidebar-subheading {
+  @include c.sumo-card-heading;
+  font-weight: bold;
+  color: var(--color-heading);
+  margin-top: p.$spacing-md;
+  margin-bottom: p.$spacing-sm;
+
+  &:first-child,
+  &:nth-child(2) {
+    margin-top: 0;
+  }
+
+  &.is-accordion-heading {
+    margin-top: 72px;
+
+    button {
+      padding-left: 0;
+      padding-bottom: p.$spacing-sm;
+
+      &:before {
+        top: p.$spacing-sm;
+      }
+
+      &[aria-expanded="false"] {
+        border-bottom: 1px solid var(--color-heading);
+      }
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    margin: 72px 0 p.$spacing-lg;
+
+    &.is-accordion-heading {
+      margin-top: 72px;
+    }
+  }
+}

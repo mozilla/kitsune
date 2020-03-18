@@ -1,5 +1,6 @@
 # http://editorconfig.org/
 # This file is a hint to smart editors about how to behave in this project.
+root = true
 
 [*]
 indent_style = space
@@ -13,6 +14,12 @@ insert_final_newline = true
 indent_size = 2
 
 [*.less]
+indent_size = 2
+
+[*.css]
+indent_size = 2
+
+[*.scss]
 indent_size = 2
 
 [*.svg]
@@ -33,3 +40,6 @@ indent_size = 2
 
 [Makefile]
 indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false

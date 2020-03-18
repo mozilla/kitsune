@@ -1,65 +1,93 @@
 {% from 'macros.html' import search_result %}
 
+{# This is required to get the icons to link properly with nunjucks_precompile #}
+{% set STATIC_URL = "/static/" %}
+
 {% if num_results > 0 %}
-  <h2>
+  <h2 class="sumo-card-heading search-results-heading mb-0">
     {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
-    {{ ngettext('Found <strong>%(n)s</strong> result for <strong>%(q)s</strong> for <strong>%(product)s</strong>',
-                'Found <strong>%(n)s</strong> results for <strong>%(q)s</strong> for <strong>%(product)s</strong>',
+    {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
                 num_results)
        | f({n: num_results, q: q, product: product_titles}, true)
        | safe }}
   </h2>
-
-  <ul id="doctype-filter" class="search-filter cf">
-    <li {{ w|class_selected(3) }}>
-      <a href="#" data-instant-search-set-params="w=3" data-instant-search="link" data-href="{{ base_doctype_url|encodeURI }}">
-        <img alt="copy" class="show-everything" src="/static/sumo/img/icon-copy.png"/>
-        {{ _('Show Everything') }}
+  <nav class="tabs">
+  <ul id="doctype-filter" class="tabs--list search-filter cf">
+    <li class="tabs--item">
+      <a {{ w|class_selected(3) }} href="#" data-instant-search-set-params="w=3" data-instant-search="link" data-href="{{ base_doctype_url|encodeURI }}">
+        <span>{{ _('View All') }}</span>
       </a>
     </li>
-    <li {{ w|class_selected(1) }}>
-      <a href="#" data-instant-search-set-params="w=1" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=1)|encodeURI }}">
-        <img alt="file" class="help-articles" src="/static/sumo/img/icon-file.png"/>
-        {{ _('Help Articles Only') }}
+    <li class="tabs--item">
+      <a {{ w|class_selected(1) }} href="#" data-instant-search-set-params="w=1" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=1)|encodeURI }}">
+        <span>{{ _('Help Articles Only') }}</span>
       </a>
     </li>
-    <li {{ w|class_selected(2) }}>
-      <a href="#" data-instant-search-set-params="w=2" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=2)|encodeURI }}">
-        <img alt="discuss" class="community-discussion" src="/static/sumo/img/icon-discuss.png"/>
-        {{ _('Community Discussion Only') }}
+    <li class="tabs--item">
+      <a {{ w|class_selected(2) }} href="#" data-instant-search-set-params="w=2" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=2)|encodeURI }}">
+        <span>{{ _('Community Discussion Only') }}</span>
       </a>
     </li>
   </ul>
+  </nav>
 
-  <div class="content-box">
+  <section class="topic-list content-box">
     {% for doc in results %}
       {{ search_result(doc) }}
     {% endfor %}
-  </div>
+  </section>
 {% else %}
-  <h2>
+  <h2 class="sumo-card-heading search-results-heading mb-0">
     {# L10n: {q} is the search query, {l} is the language searched. #}
-    {{ _("We couldn't find any results for <strong>%(q)s</strong> in <strong>%(l)s</strong>. Maybe one of these articles will be helpful?")
+    {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’")
         | f({q: q, l: lang_name}, true)
         | safe }}
   </h2>
+  <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
 
-  <div class="content-box">
-    {% for doc in fallback_results %}
-      <div class="result document">
-        <h3><a class="title" href="{{ doc.url }}">{{ doc.document_title }}</a></h3>
-        <a tabindex="-1" href="{{ doc.url }}">{{ doc.document_summary }}</a>
+  <section class="sumo-card-grid is-four-wide content-box" style="--cg-count: {{ fallback_results|length }};">
+    <div class="scroll-wrap">
+      {% for doc in fallback_results %}
+      <div class="card card--article result document">
+          <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/reader-mode.svg" alt="todo: title" />
+          <div class="card--details">
+            <h3 class="card--title">
+              <a
+                tabindex="-1"
+                class="expand-this-link title"
+                href="{{ doc.url }}"
+              >
+                {{ doc.document_title }}
+              </a>
+            </h3>
+            <p class="card--desc">
+              {{ doc.document_summary }}
+            </p>
+          </div>
       </div>
-    {% endfor %}
-  </div>
+      {% endfor %}
+    </div>
+  </section>
 {% endif %}
 
 {% if pagination.num_pages > 1 %}
-  <ol class="pagination cf">
+<div class="pagination--wrap">
+  <p>
+  {{ _("Page %(current)s of %(total)s")
+      | f({current: pagination.number, total: pagination.num_pages}, true)
+      | safe }}
+  </p>
+  <ol class="pagination">
   {% if pagination.has_previous %}
     <li class="prev">
       <a class="btn-page btn-page-prev" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number - 1}) }}">
-        {{ _('Previous') }}
+        <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                <polyline stroke="currentColor" stroke-width="2" points="15 5 8 12 15 19"></polyline>
+            </g>
+        </svg>
+        <span class="sr-only">{{ _('Previous') }}</span>
       </a>
     </li>
   {% endif %}
@@ -82,10 +110,49 @@
   {% endif %}
   {% if pagination.has_next %}
     <li class="next">
-      <a class="btn-page btn-page-next" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number + 1}) }}">
-        {{ _('Next') }}
+      <a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number + 1}) }}">
+        <span class="sr-only">{{ _('Next') }}</span>
+        <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                <polyline stroke="currentColor" stroke-width="2" points="9 19 16 12 9 5"></polyline>
+            </g>
+        </svg>
       </a>
     </li>
   {% endif %}
   </ol>
+</div>
+{% endif %}
+
+
+{% if num_results == 0 %}
+<div class="sumo-page-section--inner">
+  <div class="card card--ribbon is-inverse heading-is-one-line">
+    <div class="card--details">
+      <h3 class="card--title">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#fff" stroke-width="2">
+              <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+              <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+            </g>
+          </g>
+        </svg>
+        {{ _('Still need help?') }}
+      </h3>
+
+      <p class="card--desc">
+        {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
+      </p>
+      <a
+        class="sumo-button primary-button button-lg"
+        href="/kb/get-community-support"
+        data-event-category="link click"
+        data-event-action="topic"
+        data-event-label="Get community support">
+        {{ _('Ask the Community') }}
+      </a>
+    </div>
+  </div>
+</div>
 {% endif %}

@@ -1,0 +1,109 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Firefox Alert Banner
+//
+// This banner can be used above the navigation or within the content area.
+//
+// .hide-on-mobile - use this modifier on the top banner, similar to how it's used on mozilla.org.
+// .has-abs-close-button - add this modifier if the banner is to be used in the middle of a content area
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/ff-alert-banner.njk
+//
+// Weight: 6
+//
+// Style guide: ff-alert-banner
+
+.sumo-ff-alert {
+  background: var(--color-moz-inverse-bg);
+
+    &--content {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      padding-top: p.$spacing-lg;
+      padding-bottom: p.$spacing-lg;
+    }
+
+    &--icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    &--heading {
+      @include c.text-display-xxxs;
+      font-weight: bold;
+      text-align: center;
+      margin: p.$spacing-md 0 p.$spacing-lg;
+      color: var(--color-inverse);
+    }
+
+    .sumo-button {
+      flex: 0 0 auto;
+      margin: 0;
+    }
+
+    .sumo-close-button {
+      margin: 0;
+      flex: 0 0 auto;
+    }
+
+    &.has-abs-close-button {
+      position: relative;
+      padding: 20px;
+      border-radius: var(--global-radius);
+
+      .sumo-close-button {
+        position: absolute;
+        top: -16px;
+        right: -20px;
+      }
+    }
+
+    @media #{p.$mq-sm} {
+      &--content {
+        flex-direction: row;
+      }
+
+      &--heading {
+        @include p.bidi(((margin, 0 auto 0 0, 0 0 0 auto),));
+        text-align: left;
+      }
+
+      &--icon {
+        @include p.bidi(((margin, 0 20px 0 0, 0 0 0 20px),));
+      }
+
+      .sumo-button {
+        @include p.bidi(((margin, 0 0 0 p.$spacing-md, 0 p.$spacing-md 0 0),));
+      }
+
+      .sumo-close-button {
+        @include p.bidi(((margin, 0 0 0 p.$spacing-md, 0 p.$spacing-md 0 0),));
+      }
+
+      &.has-abs-close-button {
+        .sumo-ff-alert--icon {
+          margin-right: p.$spacing-xl;
+        }
+      }
+    }
+
+
+    @media #{p.$mq-md} {
+
+      &--icon {
+        margin-right: 60px;
+      }
+
+      &--content {
+        padding-top: p.$spacing-lg;
+        padding-bottom: p.$spacing-lg;
+      }
+
+      .sumo-close-button {
+        position: static;
+        @include p.bidi(((margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0),));
+      }
+    }
+}

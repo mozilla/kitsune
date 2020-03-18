@@ -29,7 +29,7 @@ function unorderedEquals(arr1, arr2) {
 
 
 describe('ShowFor', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   /* globals window, document, $ */
   let showFor;

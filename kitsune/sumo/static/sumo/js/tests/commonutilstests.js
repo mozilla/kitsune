@@ -14,6 +14,7 @@ chai.use(sinonChai);
 describe('k', () => {
   mochaJsdom({
     useEach: true,
+    url: 'http://localhost',
     document: {
       referrer: 'http://google.com/?q=cookies',
       referer: 'http://google.com/?q=cookies',

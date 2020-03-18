@@ -1,0 +1,68 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+.sumo-auth {
+  @include c.grid-row();
+  align-items: center;
+
+  &--wrap {
+    margin-top: auto;
+    margin-bottom: auto;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &--logo {
+    display: none;
+  }
+
+  &--form {
+    @include c.col;
+  }
+
+  &--login-help {
+    margin-top: 40px;
+  }
+
+  .login-submit {
+    display: flex;
+
+    .button-wrap {
+      margin-right: 60px;
+      flex: 0 0 auto;
+    }
+
+    .help-text {
+      max-width: 300px;
+      margin: 0;
+    }
+  }
+
+  @media #{p.$mq-md} {
+    &--logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 70%;
+        max-width: 300px;
+      }
+    }
+    &--logo,
+    &--form {
+      @include c.col(1, 2);
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    &--wrap {
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+  }
+}

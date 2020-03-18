@@ -10,28 +10,37 @@
 
 {% set canonical_url = canonicalize(viewname='questions.home') %}
 
-{% block content %}
-  <div class="grid_12">
-    <h1>{{ title }}</h1>
+{% block contentwrap %}
+<section id="main-content" class="sumo-page-section--lg mzp-l-content">
+  <div class="home-search-section--content">
+    <h1 class="sumo-page-heading">{{ title }}</h1>
+    <p class="sumo-page-intro">{{ _('Pick your product') }}</p>
 
-    <article class="product-list">
-    {% for product in products %}
-      <div class="product grid_5">
-        <a class="cf" href="{{ url('questions.list', product.slug) }}">
-          <img src="{{ product.image_alternate_url }}" class="logo-sprite" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
-          <div class="title-description-wrapper">
-            <span class="title">{{ _('<strong>{product}</strong> Support Forum')|fe(product=pgettext('DB: products.Product.title', product.title)) }}</span>
-            <span class="description">{{ pgettext('DB: products.Product.description', product.description) }}</span>
+
+
+
+    <div class="product-list sumo-card-grid" style="--cg-count: {{ products|length + 1}};">
+      <div class="scroll-wrap">
+        {% for product in products %}
+        <div class="card card--product zoom-on-hover product">
+          <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
+          <div class="card--details">
+            <h3 class="card--title">
+              <a class="expand-this-link title" href="{{ url('questions.list', product.slug) }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+                {{ _('<strong>{product}</strong> Support Forum')|fe(product=pgettext('DB: products.Product.title', product.title)) }}
+              </a>
+            </h3>
+            <p class="card--desc description">{{ pgettext('DB: products.Product.description', product.description) }}</p>
           </div>
-        </a>
+        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
-      <div class="product grid_5">
-        <a class="no-image cf" href="{{ url('questions.list', 'all') }}">
-          <span class="title">{{ _('<strong>{product}</strong> Support Forum')|fe(product=_('All Products')) }}</span>
-          <span class="description">{{ _('Browse the questions for all the products together in one list.') }}</span>
-        </a>
-      </div>
-    </article>
+    </div>
+    <div class="sumo-button-wrap align-end product">
+      <a class="sumo-button primary-button button-lg title" href="{{ url('questions.list', 'all') }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+        {{ _('{product} Support Forum')|fe(product=_('All Products')) }}
+      </a>
+    </div>
   </div>
+</section>
 {% endblock %}
