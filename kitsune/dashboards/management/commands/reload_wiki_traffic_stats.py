@@ -5,8 +5,8 @@ from kitsune.dashboards.models import PERIODS, WikiDocumentVisits
 
 
 class Command(BaseCommand):
-
     def handle(self, **options):
         for period, _ in PERIODS:
             WikiDocumentVisits.reload_period_from_analytics(
-                period, verbose=settings.DEBUG)
+                period, verbose=settings.DEBUG
+            )

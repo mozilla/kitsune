@@ -15,4 +15,4 @@ def measure_queue_lag(queued_time):
     """
     lag = datetime.now() - queued_time
     lag = (lag.days * 3600 * 24) + lag.seconds
-    statsd.gauge('celery.lag', max(lag, 0))
+    statsd.gauge("celery.lag", max(lag, 0))

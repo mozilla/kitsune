@@ -5,18 +5,22 @@ from kitsune.search.utils import FakeLogger
 
 
 class Command(BaseCommand):
-    help = 'Does a front-page search for given query'
+    help = "Does a front-page search for given query"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--pages', type=int, dest='pages', default=1,
-            help='Number of pages of results you want to see')
+            "--pages",
+            type=int,
+            dest="pages",
+            default=1,
+            help="Number of pages of results you want to see",
+        )
 
     def handle(self, *args, **options):
-        pages = options['pages']
+        pages = options["pages"]
         if not args:
-            raise CommandError('You must specify the search query.')
+            raise CommandError("You must specify the search query.")
 
-        query = u' '.join(args)
+        query = u" ".join(args)
 
         es_search_cmd(query, pages, FakeLogger(self.stdout))

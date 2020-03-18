@@ -10,4 +10,5 @@ def karma_titles(user):
     """Return a list of titles for a given user."""
     # Titles assigned to the user or groups
     return Title.objects.filter(
-        Q(users=user) | Q(groups__in=user.groups.all())).distinct()
+        Q(users=user) | Q(groups__in=user.groups.all())
+    ).distinct()

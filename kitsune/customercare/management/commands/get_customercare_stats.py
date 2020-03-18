@@ -10,7 +10,7 @@ from kitsune.customercare.models import Reply
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.utils import chunked
 
-log = logging.getLogger('k.twitter')
+log = logging.getLogger("k.twitter")
 
 
 class Command(BaseCommand):
@@ -51,42 +51,45 @@ class Command(BaseCommand):
                 user = reply.twitter_username
                 if user not in contributor_stats:
                     raw = json.loads(reply.raw_json)
-                    if 'from_user' in raw:  # For tweets collected using v1 API
+                    if "from_user" in raw:  # For tweets collected using v1 API
                         user_data = raw
                     else:
-                        user_data = raw['user']
+                        user_data = raw["user"]
 
                     contributor_stats[user] = {
-                        'twitter_username': user,
-                        'avatar': user_data['profile_image_url'],
-                        'avatar_https': user_data['profile_image_url_https'],
-                        'all': 0, '1m': 0, '1w': 0, '1d': 0,
+                        "twitter_username": user,
+                        "avatar": user_data["profile_image_url"],
+                        "avatar_https": user_data["profile_image_url_https"],
+                        "all": 0,
+                        "1m": 0,
+                        "1w": 0,
+                        "1d": 0,
                     }
                 contributor = contributor_stats[reply.twitter_username]
 
-                contributor['all'] += 1
+                contributor["all"] += 1
                 if reply.created > one_month_ago:
-                    contributor['1m'] += 1
+                    contributor["1m"] += 1
                     if reply.created > one_week_ago:
-                        contributor['1w'] += 1
+                        contributor["1w"] += 1
                         if reply.created > yesterday:
-                            contributor['1d'] += 1
+                            contributor["1d"] += 1
 
         sort_key = settings.CC_TOP_CONTRIB_SORT
         limit = settings.CC_TOP_CONTRIB_LIMIT
         # Sort by whatever is in settings, break ties with 'all'
         contributor_stats = sorted(
             contributor_stats.values(),
-            key=lambda c: (c[sort_key], c['all']),
+            key=lambda c: (c[sort_key], c["all"]),
             reverse=True,
         )[:limit]
 
         try:
-            redis = redis_client(name='default')
+            redis = redis_client(name="default")
             key = settings.CC_TOP_CONTRIB_CACHE_KEY
             redis.set(key, json.dumps(contributor_stats))
         except RedisError as e:
-            statsd.incr('redis.error')
-            log.error('Redis error: %s' % e)
+            statsd.incr("redis.error")
+            log.error("Redis error: %s" % e)
 
         return contributor_stats

@@ -19,7 +19,8 @@ class Command(BaseCommand):
         """
         # Get all the questions that need attention and haven't been escalated.
         qs = Question.objects.needs_attention().exclude(
-            tags__slug__in=[config.ESCALATE_TAG_NAME])
+            tags__slug__in=[config.ESCALATE_TAG_NAME]
+        )
 
         # Only include English.
         qs = qs.filter(locale=settings.WIKI_DEFAULT_LANGUAGE)
@@ -35,9 +36,8 @@ class Command(BaseCommand):
         start = datetime.now() - timedelta(hours=24)
         end = datetime.now() - timedelta(hours=25)
         qs_no_replies_yet = qs.filter(
-            last_answer__isnull=True,
-            created__lt=start,
-            created__gt=end)
+            last_answer__isnull=True, created__lt=start, created__gt=end
+        )
 
         for question in qs_no_replies_yet:
             escalate_question.delay(question.id)

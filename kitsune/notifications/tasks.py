@@ -12,17 +12,20 @@ from multidb.pinning import use_master
 from requests.exceptions import RequestException
 
 from kitsune.notifications.models import (
-    Notification, RealtimeRegistration, PushNotificationRegistration)
+    Notification,
+    RealtimeRegistration,
+    PushNotificationRegistration,
+)
 from kitsune.notifications.decorators import notification_handler, notification_handlers
 
 
-logger = logging.getLogger('k.notifications.tasks')
+logger = logging.getLogger("k.notifications.tasks")
 
 
 def _ct_query(object, actor_only=None, **kwargs):
     ct = ContentType.objects.get_for_model(object)
     if actor_only is not None:
-        kwargs['actor_only'] = actor_only
+        kwargs["actor_only"] = actor_only
     return Q(content_type=ct.pk, object_id=object.pk, **kwargs)
 
 
@@ -58,13 +61,13 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
     """
 
     try:
-        r = requests.put(endpoint, 'version={}'.format(version))
+        r = requests.put(endpoint, "version={}".format(version))
     except RequestException as e:
         # This is something like connection error, not a server error.
         if _retry_count < max_retries:
             return _send_simple_push(endpoint, version, max_retries, _retry_count + 1)
         else:
-            logger.error('SimplePush PUT failed: %s', e)
+            logger.error("SimplePush PUT failed: %s", e)
             return
 
     # If something does wrong, the SimplePush server should give back json encoded error messages.
@@ -72,13 +75,15 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
         try:
             data = r.json()
         except simplejson.scanner.JSONDecodeError:
-            logger.error('SimplePush error (also not JSON?!): %s %s', r.status_code, r.text)
+            logger.error(
+                "SimplePush error (also not JSON?!): %s %s", r.status_code, r.text
+            )
             return
 
-        if r.status_code == 503 and data['errno'] == 202 and _retry_count < max_retries:
+        if r.status_code == 503 and data["errno"] == 202 and _retry_count < max_retries:
             return _send_simple_push(endpoint, version, max_retries, _retry_count + 1)
         else:
-            logger.error('SimplePush error: %s %s', r.status_code, r.json())
+            logger.error("SimplePush error: %s %s", r.status_code, r.json())
 
 
 @task(ignore_result=True)
@@ -127,6 +132,8 @@ def simple_push(notification):
 
     This will be called as a part of a celery task.
     """
-    registrations = PushNotificationRegistration.objects.filter(creator=notification.owner)
+    registrations = PushNotificationRegistration.objects.filter(
+        creator=notification.owner
+    )
     for reg in registrations:
         _send_simple_push(reg.push_url, notification.id)

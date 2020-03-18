@@ -16,8 +16,7 @@ class ChunkedTests(TestCase):
         eq_(list(chunked([1, 2], 2)), [(1, 2)])
 
         # chunking list where len(list) > n
-        eq_(list(chunked([1, 2, 3, 4, 5], 2)),
-            [(1, 2), (3, 4), (5,)])
+        eq_(list(chunked([1, 2, 3, 4, 5], 2)), [(1, 2), (3, 4), (5,)])
 
 
 class FooBarClassOfAwesome(object):
@@ -25,10 +24,14 @@ class FooBarClassOfAwesome(object):
 
 
 def test_from_class_path():
-    eq_(from_class_path('kitsune.search.tests.test_utils:FooBarClassOfAwesome'),
-        FooBarClassOfAwesome)
+    eq_(
+        from_class_path("kitsune.search.tests.test_utils:FooBarClassOfAwesome"),
+        FooBarClassOfAwesome,
+    )
 
 
 def test_to_class_path():
-    eq_(to_class_path(FooBarClassOfAwesome),
-        'kitsune.search.tests.test_utils:FooBarClassOfAwesome')
+    eq_(
+        to_class_path(FooBarClassOfAwesome),
+        "kitsune.search.tests.test_utils:FooBarClassOfAwesome",
+    )

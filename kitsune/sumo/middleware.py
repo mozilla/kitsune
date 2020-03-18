@@ -9,12 +9,20 @@ from django.core.exceptions import MiddlewareNotUsed
 from django.core.urlresolvers import is_valid_path
 from django.core.validators import validate_ipv4_address, ValidationError
 from django.db.utils import DatabaseError
-from django.http import (HttpResponse, HttpResponseRedirect,
-                         HttpResponsePermanentRedirect, HttpResponseForbidden)
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    HttpResponsePermanentRedirect,
+    HttpResponseForbidden,
+)
 from django.http.request import split_domain_port
 from django.shortcuts import render
 from django.utils import translation
-from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
+from django.utils.cache import (
+    add_never_cache_headers,
+    patch_response_headers,
+    patch_vary_headers,
+)
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 from mozilla_django_oidc.middleware import SessionRefresh
@@ -33,6 +41,7 @@ except ImportError:
 
 class EnforceHostIPMiddleware(EnforceHostMiddleware):
     """Modify the `EnforceHostMiddleware` to allow IP addresses"""
+
     def process_request(self, request):
         host = request.get_host()
         domain, port = split_domain_port(host)
@@ -58,14 +67,16 @@ class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
     def process_request(self, request):
         """Only allow refresh and enforce OIDC auth on admin URLs"""
         # If the admin is targeted let's check the backend used, if any
-        if request.path.startswith('/admin/') and request.path != '/admin/login/':
+        if request.path.startswith("/admin/") and request.path != "/admin/login/":
             backend = request.session.get(BACKEND_SESSION_KEY)
-            if backend and backend.split('.')[-1] != 'SumoOIDCAuthBackend':
+            if backend and backend.split(".")[-1] != "SumoOIDCAuthBackend":
                 logout(request)
-                messages.error(request, 'OIDC login required for admin access')
-                return HttpResponseRedirect('/admin/login/')
+                messages.error(request, "OIDC login required for admin access")
+                return HttpResponseRedirect("/admin/login/")
 
-            return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
+            return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(
+                request
+            )
 
 
 class LocaleURLMiddleware(object):
@@ -83,30 +94,31 @@ class LocaleURLMiddleware(object):
         set_url_prefixer(prefixer)
         full_path = prefixer.fix(prefixer.shortened_path)
 
-        if request.GET.get('lang', '') in settings.SUMO_LANGUAGES:
+        if request.GET.get("lang", "") in settings.SUMO_LANGUAGES:
             # Blank out the locale so that we can set a new one. Remove lang
             # from the query params so we don't have an infinite loop.
 
-            prefixer.locale = ''
+            prefixer.locale = ""
             new_path = prefixer.fix(prefixer.shortened_path)
-            query = dict((smart_str(k), v) for
-                         k, v in request.GET.iteritems() if k != 'lang')
+            query = dict(
+                (smart_str(k), v) for k, v in request.GET.iteritems() if k != "lang"
+            )
 
             # 'lang' is only used on the language selection page. If this is
             # present it is safe to set language preference for the current
             # user.
             if request.user.is_anonymous():
                 cookie = settings.LANGUAGE_COOKIE_NAME
-                request.session[cookie] = request.GET['lang']
+                request.session[cookie] = request.GET["lang"]
 
             return HttpResponseRedirect(urlparams(new_path, **query))
 
         if full_path != request.path:
-            query_string = request.META.get('QUERY_STRING', '')
-            full_path = urllib.quote(full_path.encode('utf-8'))
+            query_string = request.META.get("QUERY_STRING", "")
+            full_path = urllib.quote(full_path.encode("utf-8"))
 
             if query_string:
-                full_path = '%s?%s' % (full_path, query_string)
+                full_path = "%s?%s" % (full_path, query_string)
 
             response = HttpResponseRedirect(full_path)
 
@@ -114,11 +126,11 @@ class LocaleURLMiddleware(object):
             old_locale = prefixer.locale
             new_locale, _ = split_path(full_path)
             if old_locale != new_locale:
-                response['Vary'] = 'Accept-Language'
+                response["Vary"] = "Accept-Language"
 
             return response
 
-        request.path_info = '/' + prefixer.shortened_path
+        request.path_info = "/" + prefixer.shortened_path
         request.LANGUAGE_CODE = prefixer.locale
         translation.activate(prefixer.locale)
 
@@ -139,6 +151,7 @@ class Forbidden403Middleware(object):
     """
     Renders a 403.html page if response.status_code == 403.
     """
+
     def process_response(self, request, response):
         if isinstance(response, HttpResponseForbidden):
             return handle403(request)
@@ -154,13 +167,14 @@ class VaryNoCacheMiddleware(MiddlewareMixin):
     to inspect the near-final response since response middleware is processed
     in reverse.
     """
+
     def __init__(self):
         if not settings.ENABLE_VARY_NOCACHE_MIDDLEWARE:
             raise MiddlewareNotUsed
 
     @staticmethod
     def process_response(request, response):
-        if 'vary' in response and 'accept-language' in response['vary'].lower():
+        if "vary" in response and "accept-language" in response["vary"].lower():
             add_never_cache_headers(response)
 
         return response
@@ -170,12 +184,12 @@ class CacheHeadersMiddleware(MiddlewareMixin):
     """
     Sets no-cache headers normally, and cache for some time in READ_ONLY mode.
     """
+
     def process_response(self, request, response):
-        if 'cache-control' in response or response.status_code >= 400:
+        if "cache-control" in response or response.status_code >= 400:
             return response
 
-        if (request.method in ('GET', 'HEAD') and
-                settings.CACHE_MIDDLEWARE_SECONDS):
+        if request.method in ("GET", "HEAD") and settings.CACHE_MIDDLEWARE_SECONDS:
             # uses CACHE_MIDDLEWARE_SECONDS by default
             patch_response_headers(response)
         else:
@@ -186,15 +200,15 @@ class CacheHeadersMiddleware(MiddlewareMixin):
 
 class PlusToSpaceMiddleware(object):
     """Replace old-style + with %20 in URLs."""
+
     def process_request(self, request):
-        p = re.compile(r'\+')
+        p = re.compile(r"\+")
         if p.search(request.path_info):
-            new = p.sub(' ', request.path_info)
-            if request.META.get('QUERY_STRING'):
-                new = u'%s?%s' % (new,
-                                  smart_unicode(request.META['QUERY_STRING']))
-            if hasattr(request, 'LANGUAGE_CODE'):
-                new = u'/%s%s' % (request.LANGUAGE_CODE, new)
+            new = p.sub(" ", request.path_info)
+            if request.META.get("QUERY_STRING"):
+                new = u"%s?%s" % (new, smart_unicode(request.META["QUERY_STRING"]))
+            if hasattr(request, "LANGUAGE_CODE"):
+                new = u"/%s%s" % (request.LANGUAGE_CODE, new)
             return HttpResponsePermanentRedirect(new)
 
 
@@ -204,12 +218,12 @@ class ReadOnlyMiddleware(object):
             raise MiddlewareNotUsed
 
     def process_request(self, request):
-        if request.method == 'POST':
-            return render(request, 'sumo/read-only.html', status=503)
+        if request.method == "POST":
+            return render(request, "sumo/read-only.html", status=503)
 
     def process_exception(self, request, exception):
         if isinstance(exception, DatabaseError):
-            return render(request, 'sumo/read-only.html', status=503)
+            return render(request, "sumo/read-only.html", status=503)
 
 
 class RemoveSlashMiddleware(object):
@@ -221,15 +235,17 @@ class RemoveSlashMiddleware(object):
     """
 
     def process_response(self, request, response):
-        if (response.status_code == 404 and
-                request.path_info.endswith('/') and
-                not is_valid_path(request.path_info) and
-                is_valid_path(request.path_info[:-1])):
+        if (
+            response.status_code == 404
+            and request.path_info.endswith("/")
+            and not is_valid_path(request.path_info)
+            and is_valid_path(request.path_info[:-1])
+        ):
             # Use request.path because we munged app/locale in path_info.
             newurl = request.path[:-1]
             if request.GET:
                 with safe_query_string(request):
-                    newurl += '?' + request.META['QUERY_STRING']
+                    newurl += "?" + request.META["QUERY_STRING"]
             return HttpResponsePermanentRedirect(newurl)
         return response
 
@@ -242,39 +258,40 @@ def safe_query_string(request):
     We need unicode so it can be combined with a reversed URL, but it has to be
     ascii to go in a Location header.  iri_to_uri seems like a good compromise.
     """
-    qs = request.META['QUERY_STRING']
+    qs = request.META["QUERY_STRING"]
     try:
-        request.META['QUERY_STRING'] = iri_to_uri(qs)
+        request.META["QUERY_STRING"] = iri_to_uri(qs)
         yield
     finally:
-        request.META['QUERY_STRING'] = qs
+        request.META["QUERY_STRING"] = qs
 
 
 class HostnameMiddleware(MiddlewareMixin):
     def __init__(self):
-        if getattr(settings, 'DISABLE_HOSTNAME_MIDDLEWARE', False):
+        if getattr(settings, "DISABLE_HOSTNAME_MIDDLEWARE", False):
             raise MiddlewareNotUsed()
 
-        values = [getattr(settings, x) for x in ['PLATFORM_NAME', 'K8S_DOMAIN']]
-        self.backend_server = '.'.join(x for x in values if x)
+        values = [getattr(settings, x) for x in ["PLATFORM_NAME", "K8S_DOMAIN"]]
+        self.backend_server = ".".join(x for x in values if x)
 
     def process_response(self, request, response):
-        response['X-Backend-Server'] = self.backend_server
+        response["X-Backend-Server"] = self.backend_server
         return response
 
 
 class FilterByUserAgentMiddleware(MiddlewareMixin):
     """Looks at user agent and decides whether the device is allowed on the site."""
+
     def __init__(self, *args, **kwargs):
         if not settings.USER_AGENT_FILTERS:
             raise MiddlewareNotUsed()
 
     def process_request(self, request):
-        client_ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        client_ua = request.META.get("HTTP_USER_AGENT", "").lower()
         # get only ascii chars
-        ua = ''.join(i for i in client_ua if ord(i) < 128)
+        ua = "".join(i for i in client_ua if ord(i) < 128)
 
         if any(x in ua for x in settings.USER_AGENT_FILTERS):
             response = HttpResponseRateLimited()
-            patch_vary_headers(response, ['User-Agent'])
+            patch_vary_headers(response, ["User-Agent"])
             return response

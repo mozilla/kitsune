@@ -14,13 +14,12 @@ from PIL import Image
 from kitsune.sumo.decorators import timeit
 
 
-log = logging.getLogger('k.task')
+log = logging.getLogger("k.task")
 
 
-@task(rate_limit='15/m')
+@task(rate_limit="15/m")
 @timeit
-def generate_thumbnail(for_obj, from_field, to_field,
-                       max_size=settings.THUMBNAIL_SIZE):
+def generate_thumbnail(for_obj, from_field, to_field, max_size=settings.THUMBNAIL_SIZE):
     """Generate a thumbnail, given a model instance with from and to fields.
 
     Optionally specify a max_size.
@@ -31,15 +30,26 @@ def generate_thumbnail(for_obj, from_field, to_field,
 
     # Bail silently if nothing to generate from, image was probably deleted.
     if not (from_ and default_storage.exists(from_.name)):
-        log_msg = 'No file to generate from: {model} {id}, {from_f} -> {to_f}'
-        log.info(log_msg.format(model=for_obj.__class__.__name__,
-                                id=for_obj.id, from_f=from_field,
-                                to_f=to_field))
+        log_msg = "No file to generate from: {model} {id}, {from_f} -> {to_f}"
+        log.info(
+            log_msg.format(
+                model=for_obj.__class__.__name__,
+                id=for_obj.id,
+                from_f=from_field,
+                to_f=to_field,
+            )
+        )
         return
 
-    log_msg = 'Generating thumbnail for {model} {id}: {from_f} -> {to_f}'
-    log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id,
-                            from_f=from_field, to_f=to_field))
+    log_msg = "Generating thumbnail for {model} {id}: {from_f} -> {to_f}"
+    log.info(
+        log_msg.format(
+            model=for_obj.__class__.__name__,
+            id=for_obj.id,
+            from_f=from_field,
+            to_f=to_field,
+        )
+    )
     thumb_content = _create_image_thumbnail(from_.file, longest_side=max_size)
     if to_:  # Clean up old file before creating new one.
         to_.delete(save=False)
@@ -51,13 +61,12 @@ def generate_thumbnail(for_obj, from_field, to_field,
     for_obj.update(**{to_field: to_.name})
 
 
-def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE,
-                            pad=False):
+def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE, pad=False):
     """
     Returns a thumbnail file with a set longest side.
     """
     original_image = Image.open(fileobj)
-    original_image = original_image.convert('RGBA')
+    original_image = original_image.convert("RGBA")
     file_width, file_height = original_image.size
 
     width, height = _scale_dimensions(file_width, file_height, longest_side)
@@ -67,16 +76,16 @@ def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE,
 
     if pad:
         padded_image = _make_image_square(resized_image, longest_side)
-        padded_image.save(io, 'PNG')
+        padded_image.save(io, "PNG")
     else:
-        resized_image.save(io, 'PNG')
+        resized_image.save(io, "PNG")
 
     return ContentFile(io.getvalue())
 
 
 def _make_image_square(source_image, side=settings.THUMBNAIL_SIZE):
     """Pads a rectangular image with transparency to make it square."""
-    square_image = Image.new('RGBA', (side, side), (255, 255, 255, 0))
+    square_image = Image.new("RGBA", (side, side), (255, 255, 255, 0))
     width = (side - source_image.size[0]) / 2
     height = (side - source_image.size[1]) / 2
     square_image.paste(source_image, (width, height))
@@ -102,7 +111,7 @@ def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
     return (new_width, new_height)
 
 
-@task(rate_limit='15/m')
+@task(rate_limit="15/m")
 @timeit
 def compress_image(for_obj, for_field):
     """Compress an image of given field for given object."""
@@ -111,21 +120,28 @@ def compress_image(for_obj, for_field):
 
     # Bail silently if nothing to compress, image was probably deleted.
     if not (for_ and default_storage.exists(for_.name)):
-        log_msg = 'No file to compress for: {model} {id}, {for_f}'
-        log.info(log_msg.format(model=for_obj.__class__.__name__,
-                                id=for_obj.id, for_f=for_field))
+        log_msg = "No file to compress for: {model} {id}, {for_f}"
+        log.info(
+            log_msg.format(
+                model=for_obj.__class__.__name__, id=for_obj.id, for_f=for_field
+            )
+        )
         return
 
     # Bail silently if not a PNG.
-    if not (os.path.splitext(for_.name)[1].lower() == '.png'):
-        log_msg = 'File is not PNG for: {model} {id}, {for_f}'
-        log.info(log_msg.format(model=for_obj.__class__.__name__,
-                                id=for_obj.id, for_f=for_field))
+    if not (os.path.splitext(for_.name)[1].lower() == ".png"):
+        log_msg = "File is not PNG for: {model} {id}, {for_f}"
+        log.info(
+            log_msg.format(
+                model=for_obj.__class__.__name__, id=for_obj.id, for_f=for_field
+            )
+        )
         return
 
-    log_msg = 'Compressing {model} {id}: {for_f}'
-    log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id,
-                            for_f=for_field))
+    log_msg = "Compressing {model} {id}: {for_f}"
+    log.info(
+        log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id, for_f=for_field)
+    )
 
     _optipng(for_.name)
 
@@ -134,10 +150,11 @@ def _optipng(file_name):
     if not settings.OPTIPNG_PATH:
         return
 
-    with default_storage.open(file_name, 'rb') as file_obj:
-        with NamedTemporaryFile(suffix='.png') as tmpfile:
+    with default_storage.open(file_name, "rb") as file_obj:
+        with NamedTemporaryFile(suffix=".png") as tmpfile:
             tmpfile.write(file_obj.read())
-            subprocess.call([settings.OPTIPNG_PATH,
-                            '-quiet', '-preserve', tmpfile.name])
+            subprocess.call(
+                [settings.OPTIPNG_PATH, "-quiet", "-preserve", tmpfile.name]
+            )
             file_content = ContentFile(tmpfile.read())
             default_storage.save(file_name, file_content)

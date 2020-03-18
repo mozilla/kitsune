@@ -6,26 +6,26 @@ from django.conf import settings
 from twython import Twython
 
 
-log = logging.getLogger('k')
+log = logging.getLogger("k")
 
-PREFIX = 'custcare_'
-REDIRECT_NAME = PREFIX + 'redirect'
-REQUEST_KEY_NAME = PREFIX + 'request_key'
-REQUEST_SECRET_NAME = PREFIX + 'request_secret'
+PREFIX = "custcare_"
+REDIRECT_NAME = PREFIX + "redirect"
+REQUEST_KEY_NAME = PREFIX + "request_key"
+REQUEST_SECRET_NAME = PREFIX + "request_secret"
 
 MAX_AGE = 3600
 
 
 def url(request, override=None):
     d = {
-        'scheme': 'https' if request.is_secure() else 'http',
-        'host': request.get_host(),
-        'path': request.get_full_path(),
+        "scheme": "https" if request.is_secure() else "http",
+        "host": request.get_host(),
+        "path": request.get_full_path(),
     }
     if override:
         d.update(override)
 
-    return u'%s://%s%s' % (d['scheme'], d['host'], d['path'])
+    return u"%s://%s%s" % (d["scheme"], d["host"], d["path"])
 
 
 def auth_wanted(view_func):
@@ -33,33 +33,36 @@ def auth_wanted(view_func):
 
     Don't redirect if TWITTER_COOKIE_SECURE is False.
     """
+
     def wrapper(request, *args, **kwargs):
         is_secure = settings.TWITTER_COOKIE_SECURE
-        if (request.COOKIES.get(REDIRECT_NAME) and
-                (is_secure and not request.is_secure())):
-            ssl_url = url(
-                request,
-                {'scheme': 'https' if is_secure else 'http'})
+        if request.COOKIES.get(REDIRECT_NAME) and (
+            is_secure and not request.is_secure()
+        ):
+            ssl_url = url(request, {"scheme": "https" if is_secure else "http"})
             return http.HttpResponseRedirect(ssl_url)
 
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
 def auth_required(view_func):
     """Return a HttpResponseBadRequest if not authed."""
+
     def wrapper(request, *args, **kwargs):
 
         if not request.twitter.authed:
             return http.HttpResponseBadRequest()
 
         return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
 class Session(object):
-    key_key = 'twitter_oauth_key'
-    key_secret = 'twitter_oauth_secret'
+    key_key = "twitter_oauth_key"
+    key_secret = "twitter_oauth_secret"
 
     @property
     def authed(self):
@@ -88,12 +91,13 @@ class Session(object):
     def save(self, request, response):
         request.session[self.key_key] = self.key
         request.session[self.key_secret] = self.secret
-        response.set_cookie(REDIRECT_NAME, '1', max_age=MAX_AGE)
+        response.set_cookie(REDIRECT_NAME, "1", max_age=MAX_AGE)
 
 
 def get_twitter_api(
-        access_token=settings.TWITTER_ACCESS_TOKEN,
-        access_token_secret=settings.TWITTER_ACCESS_TOKEN_SECRET):
+    access_token=settings.TWITTER_ACCESS_TOKEN,
+    access_token_secret=settings.TWITTER_ACCESS_TOKEN_SECRET,
+):
 
     return Twython(
         settings.TWITTER_CONSUMER_KEY,
@@ -103,5 +107,6 @@ def get_twitter_api(
         client_args={
             # 10 second connect timeout, and 10 second read timeout.
             # This is passed to the requests library.
-            'timeout': 10,
-        })
+            "timeout": 10,
+        },
+    )

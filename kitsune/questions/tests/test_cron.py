@@ -15,8 +15,7 @@ from kitsune.users.tests import UserFactory
 
 
 class TestEscalateCron(TestCase):
-
-    @mock.patch.object(kitsune.questions.tasks, 'submit_ticket')
+    @mock.patch.object(kitsune.questions.tasks, "submit_ticket")
     def test_escalate_questions_cron(self, submit_ticket):
         """Verify the escalate cronjob escalates the right questions."""
 
@@ -27,8 +26,10 @@ class TestEscalateCron(TestCase):
         ]
 
         # Question about Firefox OS
-        fxos = ProductFactory(slug='firefox-os')
-        q = QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10), product=fxos)
+        fxos = ProductFactory(slug="firefox-os")
+        q = QuestionFactory(
+            created=datetime.now() - timedelta(hours=24, minutes=10), product=fxos
+        )
         questions_to_escalate.append(q)
 
         # Questions not to escalate
@@ -42,16 +43,22 @@ class TestEscalateCron(TestCase):
         QuestionFactory(created=datetime.now() - timedelta(hours=26))
 
         # Question in the correct time range, but not in the default language.
-        QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10), locale='de')
+        QuestionFactory(
+            created=datetime.now() - timedelta(hours=24, minutes=10), locale="de"
+        )
 
         # Question older than 24 hours with a recent answer.
         q = QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10))
         AnswerFactory(created=datetime.now() - timedelta(hours=10), question=q)
-        AnswerFactory(created=datetime.now() - timedelta(hours=1), creator=q.creator, question=q)
+        AnswerFactory(
+            created=datetime.now() - timedelta(hours=1), creator=q.creator, question=q
+        )
 
         # Question older than 24 hours with a recent answer by the asker.
         q = QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10))
-        AnswerFactory(created=datetime.now() - timedelta(hours=15), creator=q.creator, question=q)
+        AnswerFactory(
+            created=datetime.now() - timedelta(hours=15), creator=q.creator, question=q
+        )
 
         # Question older than 24 hours without an answer already escalated.
         q = QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10))
@@ -60,28 +67,30 @@ class TestEscalateCron(TestCase):
         # Question with an inactive user.
         q = QuestionFactory(
             creator__is_active=False,
-            created=datetime.now() - timedelta(hours=24, minutes=10))
+            created=datetime.now() - timedelta(hours=24, minutes=10),
+        )
 
         # Question about Thunderbird, which is one of the products we exclude.
-        tb = ProductFactory(slug='thunderbird')
-        q = QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10), product=tb)
+        tb = ProductFactory(slug="thunderbird")
+        q = QuestionFactory(
+            created=datetime.now() - timedelta(hours=24, minutes=10), product=tb
+        )
 
         # Run the cron job and verify only 3 questions were escalated.
-        eq_(str(len(questions_to_escalate)), call_command('escalate_questions'))
+        eq_(str(len(questions_to_escalate)), call_command("escalate_questions"))
 
 
 class TestEmployeeReportCron(TestCase):
-
     def test_report_employee_answers(self):
         # Note: This depends on two groups that are created in migrations.
         # If we fix the tests to not run migrations, we'll need to create the
         # two groups here: 'Support Forum Tracked', 'Support Forum Metrics'
 
-        tracked_group = Group.objects.get(name='Support Forum Tracked')
+        tracked_group = Group.objects.get(name="Support Forum Tracked")
         tracked_user = UserFactory()
         tracked_user.groups.add(tracked_group)
 
-        report_group = Group.objects.get(name='Support Forum Metrics')
+        report_group = Group.objects.get(name="Support Forum Metrics")
         report_user = UserFactory()
         report_user.groups.add(report_group)
 
@@ -103,13 +112,13 @@ class TestEmployeeReportCron(TestCase):
         AnswerFactory(question=q)
         QuestionFactory()
 
-        call_command('report_employee_answers')
+        call_command("report_employee_answers")
 
         # Get the last email and verify contents
         email = mail.outbox[len(mail.outbox) - 1]
 
-        assert 'Number of questions asked: 3' in email.body
-        assert 'Number of questions answered: 2' in email.body
-        assert '{username}: 1'.format(username=tracked_user.username) in email.body
+        assert "Number of questions asked: 3" in email.body
+        assert "Number of questions answered: 2" in email.body
+        assert "{username}: 1".format(username=tracked_user.username) in email.body
 
         eq_([report_user.email], email.to)

@@ -23,8 +23,9 @@ def _get_latest_metric(metric_code):
     """Returns the date of the latest metric value."""
     try:
         # Get the latest metric value and return the date.
-        last_metric = Metric.objects.filter(
-            kind__code=metric_code).order_by('-start')[0]
+        last_metric = Metric.objects.filter(kind__code=metric_code).order_by("-start")[
+            0
+        ]
         return last_metric
     except IndexError:
         return None
@@ -32,8 +33,11 @@ def _get_latest_metric(metric_code):
 
 def _get_top_docs(count):
     """Get the top documents by visits."""
-    top_qs = WikiDocumentVisits.objects.select_related('document').filter(
-        period=LAST_90_DAYS).order_by('-visits')[:count]
+    top_qs = (
+        WikiDocumentVisits.objects.select_related("document")
+        .filter(period=LAST_90_DAYS)
+        .order_by("-visits")[:count]
+    )
     return [v.document for v in top_qs]
 
 
@@ -69,13 +73,13 @@ def _get_up_to_date_count(top_60_docs, locale):
             revs = doc.revisions.filter(
                 id__gt=translation.current_revision.based_on_id,
                 is_approved=True,
-                id__lte=cur_rev_id).exclude(significance=TYPO_SIGNIFICANCE)
+                id__lte=cur_rev_id,
+            ).exclude(significance=TYPO_SIGNIFICANCE)
             if not revs.exists():
                 up_to_date_docs += 1
             # If there is only 1 revision of MEDIUM_SIGNIFICANCE, then we
             # count that as half-up-to-date (see bug 790797).
-            elif (len(revs) == 1 and
-                  revs[0].significance == MEDIUM_SIGNIFICANCE):
+            elif len(revs) == 1 and revs[0].significance == MEDIUM_SIGNIFICANCE:
                 up_to_date_docs += 0.5
 
     return up_to_date_docs, num_docs
@@ -99,24 +103,21 @@ def _process_exit_survey_results():
 
     while day < today:
         # Get the aggregated results.
-        results = get_exit_survey_results('general', day)
+        results = get_exit_survey_results("general", day)
 
         # Store them.
         Metric.objects.create(
-            kind=yes_kind,
-            start=day,
-            end=day + timedelta(days=1),
-            value=results['yes'])
+            kind=yes_kind, start=day, end=day + timedelta(days=1), value=results["yes"]
+        )
         Metric.objects.create(
-            kind=no_kind,
-            start=day,
-            end=day + timedelta(days=1),
-            value=results['no'])
+            kind=no_kind, start=day, end=day + timedelta(days=1), value=results["no"]
+        )
         Metric.objects.create(
             kind=dunno_kind,
             start=day,
             end=day + timedelta(days=1),
-            value=results['dont-know'])
+            value=results["dont-know"],
+        )
 
         # Move on to next day.
         day += timedelta(days=1)
@@ -129,7 +130,11 @@ def _count_contributors_in_range(querysets, users, date_range):
 
     for queryset, fields in querysets:
         for field in fields:
-            filters = {'%s__in' % field: users, 'created__gte': start, 'created__lt': end}
+            filters = {
+                "%s__in" % field: users,
+                "created__gte": start,
+                "created__lt": end,
+            }
             retained_users |= set(getattr(o, field) for o in queryset.filter(**filters))
 
     return len(retained_users)
@@ -144,13 +149,15 @@ def _get_cohort(querysets, date_range):
         potential_users = set()
 
         for field in fields:
-            potential_users |= set(getattr(cont, field) for cont in contributions_in_range)
+            potential_users |= set(
+                getattr(cont, field) for cont in contributions_in_range
+            )
 
         def is_in_cohort(u):
             qs = [Q(**{field: u}) for field in fields]
             filters = reduce(operator.or_, qs)
 
-            first_contrib = queryset.filter(filters).order_by('id')[0]
+            first_contrib = queryset.filter(filters).order_by("id")[0]
             return start <= first_contrib.created < end
 
         cohort |= set(filter(is_in_cohort, potential_users))

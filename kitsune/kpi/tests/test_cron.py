@@ -7,23 +7,32 @@ from nose.tools import eq_
 import kitsune.kpi.management.utils
 from kitsune.customercare.tests import ReplyFactory
 from kitsune.kpi import surveygizmo_utils
-from kitsune.kpi.models import (AOA_CONTRIBUTOR_COHORT_CODE,
-                                CONTRIBUTOR_COHORT_CODE,
-                                EXIT_SURVEY_DONT_KNOW_CODE,
-                                EXIT_SURVEY_NO_CODE, EXIT_SURVEY_YES_CODE,
-                                KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-                                KB_L10N_CONTRIBUTOR_COHORT_CODE,
-                                L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
-                                SEARCH_SEARCHES_METRIC_CODE,
-                                SUPPORT_FORUM_HELPER_COHORT_CODE,
-                                VISITORS_METRIC_CODE, Cohort, Metric)
+from kitsune.kpi.models import (
+    AOA_CONTRIBUTOR_COHORT_CODE,
+    CONTRIBUTOR_COHORT_CODE,
+    EXIT_SURVEY_DONT_KNOW_CODE,
+    EXIT_SURVEY_NO_CODE,
+    EXIT_SURVEY_YES_CODE,
+    KB_ENUS_CONTRIBUTOR_COHORT_CODE,
+    KB_L10N_CONTRIBUTOR_COHORT_CODE,
+    L10N_METRIC_CODE,
+    SEARCH_CLICKS_METRIC_CODE,
+    SEARCH_SEARCHES_METRIC_CODE,
+    SUPPORT_FORUM_HELPER_COHORT_CODE,
+    VISITORS_METRIC_CODE,
+    Cohort,
+    Metric,
+)
 from kitsune.kpi.tests import MetricFactory, MetricKindFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
-                                 TYPO_SIGNIFICANCE)
+from kitsune.wiki.config import (
+    MAJOR_SIGNIFICANCE,
+    MEDIUM_SIGNIFICANCE,
+    TYPO_SIGNIFICANCE,
+)
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
@@ -32,145 +41,205 @@ class CohortAnalysisTests(TestCase):
         today = datetime.today()
         self.start_of_first_week = today - timedelta(days=today.weekday(), weeks=12)
 
-        revisions = ApprovedRevisionFactory.create_batch(3, created=self.start_of_first_week)
+        revisions = ApprovedRevisionFactory.create_batch(
+            3, created=self.start_of_first_week
+        )
 
         reviewer = UserFactory()
         ApprovedRevisionFactory(reviewer=reviewer, created=self.start_of_first_week)
 
-        ApprovedRevisionFactory(creator=revisions[1].creator, reviewer=reviewer,
-                                created=self.start_of_first_week + timedelta(weeks=1, days=2))
-        ApprovedRevisionFactory(created=self.start_of_first_week + timedelta(weeks=1, days=1))
+        ApprovedRevisionFactory(
+            creator=revisions[1].creator,
+            reviewer=reviewer,
+            created=self.start_of_first_week + timedelta(weeks=1, days=2),
+        )
+        ApprovedRevisionFactory(
+            created=self.start_of_first_week + timedelta(weeks=1, days=1)
+        )
 
         for r in revisions:
-            lr = ApprovedRevisionFactory(created=self.start_of_first_week + timedelta(days=1),
-                                         document__locale='es')
-            ApprovedRevisionFactory(created=self.start_of_first_week + timedelta(weeks=2, days=1),
-                                    creator=lr.creator, document__locale='es')
+            lr = ApprovedRevisionFactory(
+                created=self.start_of_first_week + timedelta(days=1),
+                document__locale="es",
+            )
+            ApprovedRevisionFactory(
+                created=self.start_of_first_week + timedelta(weeks=2, days=1),
+                creator=lr.creator,
+                document__locale="es",
+            )
 
         answers = AnswerFactory.create_batch(
-            7, created=self.start_of_first_week + timedelta(weeks=1, days=2))
+            7, created=self.start_of_first_week + timedelta(weeks=1, days=2)
+        )
 
-        AnswerFactory(question=answers[2].question, creator=answers[2].question.creator,
-                      created=self.start_of_first_week + timedelta(weeks=1, days=2))
+        AnswerFactory(
+            question=answers[2].question,
+            creator=answers[2].question.creator,
+            created=self.start_of_first_week + timedelta(weeks=1, days=2),
+        )
 
         for a in answers[:2]:
-            AnswerFactory(creator=a.creator,
-                          created=self.start_of_first_week + timedelta(weeks=2, days=5))
+            AnswerFactory(
+                creator=a.creator,
+                created=self.start_of_first_week + timedelta(weeks=2, days=5),
+            )
 
         replies = ReplyFactory.create_batch(2, created=self.start_of_first_week)
 
         for r in replies:
-            ReplyFactory(user=r.user, created=self.start_of_first_week + timedelta(weeks=2))
+            ReplyFactory(
+                user=r.user, created=self.start_of_first_week + timedelta(weeks=2)
+            )
 
-        call_command('cohort_analysis')
+        call_command("cohort_analysis")
 
     def test_contributor_cohort_analysis(self):
-        c1 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week)
+        c1 = Cohort.objects.get(
+            kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week
+        )
         eq_(c1.size, 10)
 
-        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        c1r1 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=1)
+        )
         eq_(c1r1.size, 2)
 
-        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c1r2 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
         eq_(c1r2.size, 5)
 
-        c2 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE,
-                                start=self.start_of_first_week + timedelta(weeks=1))
+        c2 = Cohort.objects.get(
+            kind__code=CONTRIBUTOR_COHORT_CODE,
+            start=self.start_of_first_week + timedelta(weeks=1),
+        )
         eq_(c2.size, 8)
 
-        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c2r1 = c2.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
 
         eq_(c2r1.size, 2)
 
     def test_kb_enus_contributor_cohort_analysis(self):
-        c1 = Cohort.objects.get(kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-                                start=self.start_of_first_week)
+        c1 = Cohort.objects.get(
+            kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week
+        )
         eq_(c1.size, 5)
 
-        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        c1r1 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=1)
+        )
         eq_(c1r1.size, 2)
 
-        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c1r2 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
         eq_(c1r2.size, 0)
 
-        c2 = Cohort.objects.get(kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-                                start=self.start_of_first_week + timedelta(weeks=1))
+        c2 = Cohort.objects.get(
+            kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE,
+            start=self.start_of_first_week + timedelta(weeks=1),
+        )
         eq_(c2.size, 1)
 
-        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c2r1 = c2.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
 
         eq_(c2r1.size, 0)
 
     def test_kb_l10n_contributor_cohort_analysis(self):
-        c1 = Cohort.objects.get(kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE,
-                                start=self.start_of_first_week)
+        c1 = Cohort.objects.get(
+            kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week
+        )
         eq_(c1.size, 3)
 
-        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        c1r1 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=1)
+        )
         eq_(c1r1.size, 0)
 
-        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c1r2 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
         eq_(c1r2.size, 3)
 
-        c2 = Cohort.objects.get(kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE,
-                                start=self.start_of_first_week + timedelta(weeks=1))
+        c2 = Cohort.objects.get(
+            kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE,
+            start=self.start_of_first_week + timedelta(weeks=1),
+        )
         eq_(c2.size, 0)
 
-        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c2r1 = c2.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
 
         eq_(c2r1.size, 0)
 
     def test_support_forum_helper_cohort_analysis(self):
-        c1 = Cohort.objects.get(kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE,
-                                start=self.start_of_first_week)
+        c1 = Cohort.objects.get(
+            kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE, start=self.start_of_first_week
+        )
         eq_(c1.size, 0)
 
-        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        c1r1 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=1)
+        )
         eq_(c1r1.size, 0)
 
-        c2 = Cohort.objects.get(kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE,
-                                start=self.start_of_first_week + timedelta(weeks=1))
+        c2 = Cohort.objects.get(
+            kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE,
+            start=self.start_of_first_week + timedelta(weeks=1),
+        )
         eq_(c2.size, 7)
 
-        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c2r1 = c2.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
 
         eq_(c2r1.size, 2)
 
     def test_aoa_contributor_cohort_analysis(self):
-        c1 = Cohort.objects.get(kind__code=AOA_CONTRIBUTOR_COHORT_CODE,
-                                start=self.start_of_first_week)
+        c1 = Cohort.objects.get(
+            kind__code=AOA_CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week
+        )
         eq_(c1.size, 2)
 
-        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        c1r1 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=1)
+        )
         eq_(c1r1.size, 0)
 
-        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        c1r2 = c1.retention_metrics.get(
+            start=self.start_of_first_week + timedelta(weeks=2)
+        )
         eq_(c1r2.size, 2)
 
-        c2 = Cohort.objects.get(kind__code=AOA_CONTRIBUTOR_COHORT_CODE,
-                                start=self.start_of_first_week + timedelta(weeks=1))
+        c2 = Cohort.objects.get(
+            kind__code=AOA_CONTRIBUTOR_COHORT_CODE,
+            start=self.start_of_first_week + timedelta(weeks=1),
+        )
         eq_(c2.size, 0)
 
 
 class CronJobTests(TestCase):
-    @patch.object(googleanalytics, 'visitors')
+    @patch.object(googleanalytics, "visitors")
     def test_update_visitors_cron(self, visitors):
         """Verify the cron job inserts the right rows."""
         visitor_kind = MetricKindFactory(code=VISITORS_METRIC_CODE)
-        visitors.return_value = {'2012-01-13': 42,
-                                 '2012-01-14': 193,
-                                 '2012-01-15': 33}
+        visitors.return_value = {"2012-01-13": 42, "2012-01-14": 193, "2012-01-15": 33}
 
-        call_command('update_visitors_metric')
+        call_command("update_visitors_metric")
 
-        metrics = Metric.objects.filter(kind=visitor_kind).order_by('start')
+        metrics = Metric.objects.filter(kind=visitor_kind).order_by("start")
         eq_(3, len(metrics))
         eq_(42, metrics[0].value)
         eq_(193, metrics[1].value)
         eq_(date(2012, 1, 15), metrics[2].start)
 
-    @patch.object(kitsune.kpi.management.utils, '_get_top_docs')
-    @patch.object(googleanalytics, 'visitors_by_locale')
+    @patch.object(kitsune.kpi.management.utils, "_get_top_docs")
+    @patch.object(googleanalytics, "visitors_by_locale")
     def test_update_l10n_metric_cron(self, visitors_by_locale, _get_top_docs):
         """Verify the cron job creates the correct metric."""
         l10n_kind = MetricKindFactory(code=L10N_METRIC_CODE)
@@ -180,27 +249,28 @@ class CronJobTests(TestCase):
         rev = ApprovedRevisionFactory(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
-            is_ready_for_localization=True)
+            is_ready_for_localization=True,
+        )
 
         # Create an es translation that is up to date.
-        es_doc = DocumentFactory(parent=doc, locale='es')
+        es_doc = DocumentFactory(parent=doc, locale="es")
         ApprovedRevisionFactory(document=es_doc, based_on=rev)
 
         # Create a de translation without revisions.
-        DocumentFactory(parent=doc, locale='de')
+        DocumentFactory(parent=doc, locale="de")
 
         # Mock some calls.
         visitors_by_locale.return_value = {
-            'en-US': 50,
-            'de': 20,
-            'es': 25,
-            'fr': 5,
+            "en-US": 50,
+            "de": 20,
+            "es": 25,
+            "fr": 5,
         }
         _get_top_docs.return_value = [doc]
 
         # Run it and verify results.
         # Value should be 75% (1/1 * 25/100 + 1/1 * 50/100)
-        call_command('update_l10n_metric')
+        call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(75, metrics[0].value)
@@ -208,11 +278,10 @@ class CronJobTests(TestCase):
         # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
         # affect the results.
         ApprovedRevisionFactory(
-            document=doc,
-            significance=TYPO_SIGNIFICANCE,
-            is_ready_for_localization=True)
+            document=doc, significance=TYPO_SIGNIFICANCE, is_ready_for_localization=True
+        )
         Metric.objects.all().delete()
-        call_command('update_l10n_metric')
+        call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(75, metrics[0].value)
@@ -222,9 +291,10 @@ class CronJobTests(TestCase):
         m1 = ApprovedRevisionFactory(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
-            is_ready_for_localization=True)
+            is_ready_for_localization=True,
+        )
         Metric.objects.all().delete()
-        call_command('update_l10n_metric')
+        call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(62, metrics[0].value)
@@ -234,9 +304,10 @@ class CronJobTests(TestCase):
         m2 = ApprovedRevisionFactory(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
-            is_ready_for_localization=True)
+            is_ready_for_localization=True,
+        )
         Metric.objects.all().delete()
-        call_command('update_l10n_metric')
+        call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(50, metrics[0].value)
@@ -248,31 +319,34 @@ class CronJobTests(TestCase):
         ApprovedRevisionFactory(
             document=doc,
             significance=MAJOR_SIGNIFICANCE,
-            is_ready_for_localization=True)
+            is_ready_for_localization=True,
+        )
         Metric.objects.all().delete()
-        call_command('update_l10n_metric')
+        call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(50, metrics[0].value)
 
-    @patch.object(googleanalytics, 'search_ctr')
+    @patch.object(googleanalytics, "search_ctr")
     def test_update_search_ctr(self, search_ctr):
         """Verify the cron job inserts the right rows."""
         clicks_kind = MetricKindFactory(code=SEARCH_CLICKS_METRIC_CODE)
         MetricKindFactory(code=SEARCH_SEARCHES_METRIC_CODE)
-        search_ctr.return_value = {'2013-06-06': 42.123456789,
-                                   '2013-06-07': 13.7654321,
-                                   '2013-06-08': 99.55555}
+        search_ctr.return_value = {
+            "2013-06-06": 42.123456789,
+            "2013-06-07": 13.7654321,
+            "2013-06-08": 99.55555,
+        }
 
-        call_command('update_search_ctr_metric')
+        call_command("update_search_ctr_metric")
 
-        metrics = Metric.objects.filter(kind=clicks_kind).order_by('start')
+        metrics = Metric.objects.filter(kind=clicks_kind).order_by("start")
         eq_(3, len(metrics))
         eq_(421, metrics[0].value)
         eq_(138, metrics[1].value)
         eq_(date(2013, 6, 8), metrics[2].start)
 
-    @patch.object(surveygizmo_utils, 'requests')
+    @patch.object(surveygizmo_utils, "requests")
     def test_process_exit_surveys(self, requests):
         """Verify the metrics inserted by process_exit_surveys cron job."""
         requests.get.return_value.content = SURVEY_GIZMO_EXIT_SURVEY_RESPONSE
@@ -287,8 +361,9 @@ class CronJobTests(TestCase):
         MetricFactory(kind=yes_kind, start=two_days_back)
 
         # Collect and process.
-        with self.settings(SURVEYGIZMO_API_TOKEN='test',
-                           SURVEYGIZMO_API_TOKEN_SECRET='test'):
+        with self.settings(
+            SURVEYGIZMO_API_TOKEN="test", SURVEYGIZMO_API_TOKEN_SECRET="test"
+        ):
             kitsune.kpi.management.utils._process_exit_survey_results()
 
         # Verify.

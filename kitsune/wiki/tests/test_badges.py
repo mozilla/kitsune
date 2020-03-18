@@ -10,21 +10,22 @@ from kitsune.wiki.tests import ApprovedRevisionFactory, RevisionFactory, Documen
 
 
 class TestWikiBadges(TestCase):
-
     def test_kb_badge(self):
         """Verify the KB Badge is awarded properly."""
         # Create the user and badge.
         year = date.today().year
         u = UserFactory()
         b = BadgeFactory(
-            slug=WIKI_BADGES['kb-badge']['slug'].format(year=year),
-            title=WIKI_BADGES['kb-badge']['title'].format(year=year),
-            description=WIKI_BADGES['kb-badge']['description'].format(year=year))
+            slug=WIKI_BADGES["kb-badge"]["slug"].format(year=year),
+            title=WIKI_BADGES["kb-badge"]["title"].format(year=year),
+            description=WIKI_BADGES["kb-badge"]["description"].format(year=year),
+        )
 
         # Create 9 approved en-US revisions.
         d = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
-        ApprovedRevisionFactory.create_batch(settings.BADGE_LIMIT_L10N_KB - 1,
-                                             creator=u, document=d)
+        ApprovedRevisionFactory.create_batch(
+            settings.BADGE_LIMIT_L10N_KB - 1, creator=u, document=d
+        )
 
         # User should NOT have the badge yet
         assert not b.is_awarded_to(u)
@@ -41,14 +42,16 @@ class TestWikiBadges(TestCase):
         year = date.today().year
         u = UserFactory()
         b = BadgeFactory(
-            slug=WIKI_BADGES['l10n-badge']['slug'].format(year=year),
-            title=WIKI_BADGES['l10n-badge']['title'].format(year=year),
-            description=WIKI_BADGES['l10n-badge']['description'].format(year=year))
+            slug=WIKI_BADGES["l10n-badge"]["slug"].format(year=year),
+            title=WIKI_BADGES["l10n-badge"]["title"].format(year=year),
+            description=WIKI_BADGES["l10n-badge"]["description"].format(year=year),
+        )
 
         # Create 9 approved es revisions.
-        d = DocumentFactory(locale='es')
-        ApprovedRevisionFactory.create_batch(settings.BADGE_LIMIT_L10N_KB - 1,
-                                             creator=u, document=d)
+        d = DocumentFactory(locale="es")
+        ApprovedRevisionFactory.create_batch(
+            settings.BADGE_LIMIT_L10N_KB - 1, creator=u, document=d
+        )
 
         # User should NOT have the badge yet
         assert not b.is_awarded_to(u)

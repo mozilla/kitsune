@@ -16,14 +16,18 @@ from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
 from kitsune.sumo.googleanalytics import visitors_by_locale
 from kitsune.wiki.events import (
-    ApproveRevisionInLocaleEvent, ReadyRevisionEvent,
-    ReviewableRevisionInLocaleEvent)
+    ApproveRevisionInLocaleEvent,
+    ReadyRevisionEvent,
+    ReviewableRevisionInLocaleEvent,
+)
 
 
-log = logging.getLogger('k.dashboards')
+log = logging.getLogger("k.dashboards")
 
 
-def render_readouts(request, readouts, template, locale=None, extra_data=None, product=None):
+def render_readouts(
+    request, readouts, template, locale=None, extra_data=None, product=None
+):
     """Render a readouts, possibly with overview page.
 
     Use the given template, pass the template the given readouts, limit the
@@ -35,48 +39,61 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None, p
     on_default_locale = request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE
 
     default_kwargs = {
-        'locale': settings.WIKI_DEFAULT_LANGUAGE,
+        "locale": settings.WIKI_DEFAULT_LANGUAGE,
     }
     locale_kwargs = {
-        'locale': request.LANGUAGE_CODE,
+        "locale": request.LANGUAGE_CODE,
     }
     ready_kwargs = {}
 
     if product is not None:
-        default_kwargs['product'] = product.slug
-        locale_kwargs['product'] = product.slug
-        ready_kwargs['product'] = product.slug
+        default_kwargs["product"] = product.slug
+        locale_kwargs["product"] = product.slug
+        ready_kwargs["product"] = product.slug
 
     data = {
-        'readouts': OrderedDict((slug, class_(request, locale=locale,
-                                              product=product))
-                                for slug, class_ in readouts.iteritems()
-                                if class_.should_show_to(request)),
-        'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
-        'default_locale_name': LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
-        'current_locale': current_locale,
-        'current_locale_name': LOCALES[current_locale].native,
-        'request_locale_name': LOCALES[request.LANGUAGE_CODE].native,
-        'is_watching_default_approved':
-            ApproveRevisionInLocaleEvent.is_notifying(request.user, **default_kwargs),
-        'is_watching_other_approved': (
-            None if on_default_locale
-            else ApproveRevisionInLocaleEvent.is_notifying(request.user, **locale_kwargs)),
-        'is_watching_default_locale': (
-            ReviewableRevisionInLocaleEvent.is_notifying(request.user, **default_kwargs)),
-        'is_watching_other_locale': (
-            None if on_default_locale
-            else ReviewableRevisionInLocaleEvent.is_notifying(request.user, **locale_kwargs)),
-        'is_watching_default_ready': ReadyRevisionEvent.is_notifying(request.user, **ready_kwargs),
-        'on_default_locale': on_default_locale,
-        'announce_form': AnnouncementForm(),
-        'announcements': Announcement.get_for_locale_name(current_locale),
-        'product': product,
-        'products': Product.objects.filter(visible=True),
+        "readouts": OrderedDict(
+            (slug, class_(request, locale=locale, product=product))
+            for slug, class_ in readouts.iteritems()
+            if class_.should_show_to(request)
+        ),
+        "default_locale": settings.WIKI_DEFAULT_LANGUAGE,
+        "default_locale_name": LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
+        "current_locale": current_locale,
+        "current_locale_name": LOCALES[current_locale].native,
+        "request_locale_name": LOCALES[request.LANGUAGE_CODE].native,
+        "is_watching_default_approved": ApproveRevisionInLocaleEvent.is_notifying(
+            request.user, **default_kwargs
+        ),
+        "is_watching_other_approved": (
+            None
+            if on_default_locale
+            else ApproveRevisionInLocaleEvent.is_notifying(
+                request.user, **locale_kwargs
+            )
+        ),
+        "is_watching_default_locale": (
+            ReviewableRevisionInLocaleEvent.is_notifying(request.user, **default_kwargs)
+        ),
+        "is_watching_other_locale": (
+            None
+            if on_default_locale
+            else ReviewableRevisionInLocaleEvent.is_notifying(
+                request.user, **locale_kwargs
+            )
+        ),
+        "is_watching_default_ready": ReadyRevisionEvent.is_notifying(
+            request.user, **ready_kwargs
+        ),
+        "on_default_locale": on_default_locale,
+        "announce_form": AnnouncementForm(),
+        "announcements": Announcement.get_for_locale_name(current_locale),
+        "product": product,
+        "products": Product.objects.filter(visible=True),
     }
     if extra_data:
         data.update(extra_data)
-    return render(request, 'dashboards/' + template, data)
+    return render(request, "dashboards/" + template, data)
 
 
 # Cache it all day to avoid calling Google Analytics over and over.
@@ -86,21 +103,25 @@ CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 def get_locales_by_visit(start_date, end_date):
     """Get a list of (locale, visits) tuples sorted descending by visits."""
 
-    cache_key = 'locales_sorted_by_visits:{start}:{end}'.format(
-        start=start_date, end=end_date)
+    cache_key = "locales_sorted_by_visits:{start}:{end}".format(
+        start=start_date, end=end_date
+    )
 
     sorted_locales = cache.get(cache_key)
     if sorted_locales is None:
         try:
             results = visitors_by_locale(start_date, end_date)
             locales_and_visits = results.items()
-            sorted_locales = list(reversed(sorted(
-                locales_and_visits, key=lambda x: x[1])))
+            sorted_locales = list(
+                reversed(sorted(locales_and_visits, key=lambda x: x[1]))
+            )
             cache.add(cache_key, sorted_locales, CACHE_TIMEOUT)
         except (GoogleAPIError, Oauth2Error, OpenSSLError):
             # Just return all locales with 0s for visits.
-            log.exception('Something went wrong getting visitors by locale '
-                          'from Google Analytics. Nobody got a 500 though.')
+            log.exception(
+                "Something went wrong getting visitors by locale "
+                "from Google Analytics. Nobody got a 500 though."
+            )
             sorted_locales = [(l, 0) for l in settings.SUMO_LANGUAGES]
 
     return sorted_locales

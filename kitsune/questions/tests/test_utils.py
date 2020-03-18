@@ -3,7 +3,11 @@ from nose.tools import eq_
 from kitsune.questions.models import Question, Answer
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from kitsune.questions.utils import (
-    num_questions, num_answers, num_solutions, mark_content_as_spam)
+    num_questions,
+    num_answers,
+    num_solutions,
+    mark_content_as_spam,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -68,7 +72,6 @@ class ContributionCountTestCase(TestCase):
 
 
 class FlagUserContentAsSpamTestCase(TestCase):
-
     def test_flag_content_as_spam(self):
         # Create some questions and answers by the user.
         u = UserFactory()

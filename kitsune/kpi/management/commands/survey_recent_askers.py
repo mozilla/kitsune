@@ -3,9 +3,7 @@ from datetime import date, timedelta
 from django.core.management.base import BaseCommand
 from django_statsd.clients import statsd
 
-from kitsune.kpi.surveygizmo_utils import (
-    add_email_to_campaign,
-)
+from kitsune.kpi.surveygizmo_utils import add_email_to_campaign
 from kitsune.questions.models import Question
 
 

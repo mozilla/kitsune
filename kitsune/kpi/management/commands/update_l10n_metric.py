@@ -51,7 +51,9 @@ class Command(BaseCommand):
                 num_docs = utils.MAX_DOCS_UP_TO_DATE
                 up_to_date_docs = utils.MAX_DOCS_UP_TO_DATE
             else:
-                up_to_date_docs, num_docs = utils._get_up_to_date_count(top_60_docs, locale)
+                up_to_date_docs, num_docs = utils._get_up_to_date_count(
+                    top_60_docs, locale
+                )
 
             if num_docs and total_visits:
                 coverage += (float(up_to_date_docs) / num_docs) * (

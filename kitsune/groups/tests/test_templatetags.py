@@ -13,7 +13,6 @@ from kitsune.users.tests import GroupFactory
 
 
 class GroupHelperTests(TestCase):
-
     def test_group_link_no_profile(self):
         g = GroupFactory()
         text = group_link(g)
@@ -22,12 +21,11 @@ class GroupHelperTests(TestCase):
     def test_group_link_with_profile(self):
         g = GroupFactory()
         g.save()
-        p = GroupProfile.objects.create(group=g, slug='foo')
+        p = GroupProfile.objects.create(group=g, slug="foo")
         text = group_link(g)
         doc = pq(text)
-        eq_(reverse('groups.profile', args=[p.slug]),
-            doc('a')[0].attrib['href'])
-        eq_(g.name, doc('a')[0].text)
+        eq_(reverse("groups.profile", args=[p.slug]), doc("a")[0].attrib["href"])
+        eq_(g.name, doc("a")[0].text)
 
     def test_right_group_profile(self):
         """Make sure we get the right group profile."""
@@ -37,7 +35,7 @@ class GroupHelperTests(TestCase):
         g2 = GroupFactory(pk=101)
         g2.save()
         eq_(101, g2.pk)
-        p = GroupProfileFactory(pk=100, group=g2, slug='foo')
+        p = GroupProfileFactory(pk=100, group=g2, slug="foo")
         eq_(100, p.pk)
 
         eq_(group_link(g1), g1.name)
@@ -45,10 +43,10 @@ class GroupHelperTests(TestCase):
     def test_group_avatar(self):
         g = GroupFactory()
         g.save()
-        p = GroupProfile.objects.create(group=g, slug='foo')
+        p = GroupProfile.objects.create(group=g, slug="foo")
         url = group_avatar(p)
         eq_(settings.STATIC_URL + settings.DEFAULT_AVATAR, url)
         p.avatar = Mock()
-        p.avatar.url = '/foo/bar'
+        p.avatar.url = "/foo/bar"
         url = group_avatar(p)
-        eq_('/foo/bar', url)
+        eq_("/foo/bar", url)

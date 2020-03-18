@@ -36,8 +36,12 @@ class Command(BaseCommand):
         ctr_data = googleanalytics.search_ctr(start, end)
 
         # Create the metrics.
-        clicks_kind = MetricKind.objects.get_or_create(code=SEARCH_CLICKS_METRIC_CODE)[0]
-        searches_kind = MetricKind.objects.get_or_create(code=SEARCH_SEARCHES_METRIC_CODE)[0]
+        clicks_kind = MetricKind.objects.get_or_create(code=SEARCH_CLICKS_METRIC_CODE)[
+            0
+        ]
+        searches_kind = MetricKind.objects.get_or_create(
+            code=SEARCH_SEARCHES_METRIC_CODE
+        )[0]
         for date_str, ctr in ctr_data.items():
             day = datetime.strptime(date_str, "%Y-%m-%d").date()
 

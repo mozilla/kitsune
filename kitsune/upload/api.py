@@ -13,15 +13,15 @@ class ImageAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageAttachment
         fields = (
-            'file',
-            'thumbnail',
-            'creator',
-            'content_type',
-            'object_id',
-            'url',
-            'thumbnail_url',
-            'thumbnail_size',
-            'delete_url'
+            "file",
+            "thumbnail",
+            "creator",
+            "content_type",
+            "object_id",
+            "url",
+            "thumbnail_url",
+            "thumbnail_size",
+            "delete_url",
         )
 
     def get_url(self, obj):

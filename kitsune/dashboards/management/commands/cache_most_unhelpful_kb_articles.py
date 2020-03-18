@@ -34,7 +34,8 @@ def _get_old_unhelpful():
             WHERE wiki_document.locale="en-US"
             GROUP BY doc_id
             HAVING no > yes
-            ) as calculated""")
+            ) as calculated"""
+    )
 
     old_data = cursor.fetchall()
 
@@ -45,8 +46,7 @@ def _get_old_unhelpful():
         total = yes + no
         if total == 0:
             continue
-        old_formatted[doc_id] = {'total': total,
-                                 'percentage': yes / total}
+        old_formatted[doc_id] = {"total": total, "percentage": yes / total}
 
     return old_formatted
 
@@ -74,7 +74,8 @@ def _get_current_unhelpful(old_formatted):
             WHERE wiki_document.locale="en-US"
             GROUP BY doc_id
             HAVING no > yes
-            ) as calculated""")
+            ) as calculated"""
+    )
 
     current_data = cursor.fetchall()
 
@@ -88,16 +89,12 @@ def _get_current_unhelpful(old_formatted):
         percentage = yes / total
         if doc_id in old_formatted:
             final[doc_id] = {
-                'total': total,
-                'currperc': percentage,
-                'diffperc': percentage - old_formatted[doc_id]['percentage']
+                "total": total,
+                "currperc": percentage,
+                "diffperc": percentage - old_formatted[doc_id]["percentage"],
             }
         else:
-            final[doc_id] = {
-                'total': total,
-                'currperc': percentage,
-                'diffperc': 0.0
-            }
+            final[doc_id] = {"total": total, "currperc": percentage, "diffperc": 0.0}
 
     return final
 
@@ -126,20 +123,25 @@ class Command(BaseCommand):
             # R = mean rating, m = minimum votes to list in topranked
             return (C * m + R * v) / (m + v)
 
-        mean_perc = _mean([float(final[key]['currperc']) for key in final.keys()])
-        mean_total = _mean([float(final[key]['total']) for key in final.keys()])
+        mean_perc = _mean([float(final[key]["currperc"]) for key in final.keys()])
+        mean_total = _mean([float(final[key]["total"]) for key in final.keys()])
 
         #  TODO: Make this into namedtuples
-        sorted_final = [(key,
-                        final[key]['total'],
-                        final[key]['currperc'],
-                        final[key]['diffperc'],
-                        _bayes_avg(
-                            mean_perc, mean_total, final[key]['currperc'], final[key]['total']))
-                        for key in final.keys()]
+        sorted_final = [
+            (
+                key,
+                final[key]["total"],
+                final[key]["currperc"],
+                final[key]["diffperc"],
+                _bayes_avg(
+                    mean_perc, mean_total, final[key]["currperc"], final[key]["total"]
+                ),
+            )
+            for key in final.keys()
+        ]
         sorted_final.sort(key=lambda entry: entry[4])  # Sort by Bayesian Avg
 
-        redis = redis_client('helpfulvotes')
+        redis = redis_client("helpfulvotes")
 
         redis.delete(REDIS_KEY)
 
@@ -147,12 +149,18 @@ class Command(BaseCommand):
 
         for entry in sorted_final:
             doc = Document.objects.get(pk=entry[0])
-            redis.rpush(REDIS_KEY, (u'%s::%s::%s::%s::%s::%s::%s' % (
-                entry[0],  # Document ID
-                entry[1],  # Total Votes
-                entry[2],  # Current Percentage
-                entry[3],  # Difference in Percentage
-                1 - (entry[1] / max_total),  # Graph Color
-                doc.slug,  # Document slug
-                doc.title,  # Document title
-            )))
+            redis.rpush(
+                REDIS_KEY,
+                (
+                    u"%s::%s::%s::%s::%s::%s::%s"
+                    % (
+                        entry[0],  # Document ID
+                        entry[1],  # Total Votes
+                        entry[2],  # Current Percentage
+                        entry[3],  # Difference in Percentage
+                        1 - (entry[1] / max_total),  # Graph Color
+                        doc.slug,  # Document slug
+                        doc.title,  # Document title
+                    )
+                ),
+            )

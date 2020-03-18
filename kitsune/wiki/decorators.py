@@ -15,9 +15,8 @@ def check_simple_wiki_locale(view_func):
     @wraps(view_func)
     def _check_simple_wiki_locale(request, *args, **kwargs):
         if request.LANGUAGE_CODE in settings.SIMPLE_WIKI_LANGUAGES:
-            statsd.incr('wiki.redirect_to_faq')
-            url = reverse(
-                'wiki.document', args=[SIMPLE_WIKI_LANDING_PAGE_SLUG])
+            statsd.incr("wiki.redirect_to_faq")
+            url = reverse("wiki.document", args=[SIMPLE_WIKI_LANDING_PAGE_SLUG])
             return http.HttpResponseRedirect(url)
 
         return view_func(request, *args, **kwargs)

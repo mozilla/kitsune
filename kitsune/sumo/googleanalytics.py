@@ -13,7 +13,7 @@ from kitsune.questions.models import Question
 from kitsune.wiki.models import Document
 
 
-log = logging.getLogger('k.googleanalytics')
+log = logging.getLogger("k.googleanalytics")
 
 
 key = settings.GA_KEY
@@ -27,12 +27,13 @@ def retry_503(f):
     This is what Google Analytics recommends:
     https://developers.google.com/analytics/devguides/config/mgmt/v3/errors
     """
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         try:
             return f(*args, **kwargs)
         except HttpError as e:
-            log.error('HTTP Error calling Google Analytics: %s', e)
+            log.error("HTTP Error calling Google Analytics: %s", e)
 
             if e.resp.status == 503:
                 return f(*args, **kwargs)
@@ -41,10 +42,10 @@ def retry_503(f):
 
 
 def _build_request():
-    scope = 'https://www.googleapis.com/auth/analytics.readonly'
+    scope = "https://www.googleapis.com/auth/analytics.readonly"
     creds = SignedJwtAssertionCredentials(account, key, scope)
     request = creds.authorize(httplib2.Http())
-    service = build('analytics', 'v3', request)
+    service = build("analytics", "v3", request)
     return service.data().ga()
 
 
@@ -61,11 +62,14 @@ def visitors(start_date, end_date):
     date = start_date
     while date <= end_date:
         date_str = str(date)
-        visitors[str(date)] = int(request.get(
-            ids='ga:' + profile_id,
-            start_date=date_str,
-            end_date=date_str,
-            metrics='ga:visitors').execute()['rows'][0][0])
+        visitors[str(date)] = int(
+            request.get(
+                ids="ga:" + profile_id,
+                start_date=date_str,
+                end_date=date_str,
+                metrics="ga:visitors",
+            ).execute()["rows"][0][0]
+        )
         date += timedelta(days=1)
     return visitors
 
@@ -84,15 +88,16 @@ def visitors_by_locale(start_date, end_date):
     @retry_503
     def _make_request():
         return request.get(
-            ids='ga:' + profile_id,
+            ids="ga:" + profile_id,
             start_date=str(start_date),
             end_date=str(end_date),
-            metrics='ga:visitors',
-            dimensions='ga:pagePathLevel1').execute()
+            metrics="ga:visitors",
+            dimensions="ga:pagePathLevel1",
+        ).execute()
 
     results = _make_request()
 
-    for result in results['rows']:
+    for result in results["rows"]:
         path = result[0][1:-1]  # Strip leading and trailing slash.
         visitors = int(result[1])
         if path in settings.SUMO_LANGUAGES:
@@ -125,8 +130,7 @@ def pageviews_by_document(start_date, end_date, verbose=False):
             start_date_step = start_date
 
         if verbose:
-            print 'Fetching data for %s to %s:' % (start_date_step,
-                                                   end_date_step)
+            print "Fetching data for %s to %s:" % (start_date_step, end_date_step)
 
         start_index = 1
 
@@ -135,26 +139,30 @@ def pageviews_by_document(start_date, end_date, verbose=False):
             @retry_503
             def _make_request():
                 return request.get(
-                    ids='ga:' + profile_id,
+                    ids="ga:" + profile_id,
                     start_date=str(start_date_step),
                     end_date=str(end_date_step),
-                    metrics='ga:pageviews',
-                    dimensions='ga:pagePath',
-                    filters=('ga:pagePathLevel2==/kb/;'
-                             'ga:pagePathLevel1==/en-US/'),
+                    metrics="ga:pageviews",
+                    dimensions="ga:pagePath",
+                    filters=("ga:pagePathLevel2==/kb/;" "ga:pagePathLevel1==/en-US/"),
                     max_results=max_results,
-                    start_index=start_index).execute()
+                    start_index=start_index,
+                ).execute()
 
             results = _make_request()
 
             if verbose:
-                d = (max_results - 1
-                     if start_index + max_results - 1 < results['totalResults']
-                     else results['totalResults'] - start_index)
-                print '- Got %s of %s results.' % (start_index + d,
-                                                   results['totalResults'])
+                d = (
+                    max_results - 1
+                    if start_index + max_results - 1 < results["totalResults"]
+                    else results["totalResults"] - start_index
+                )
+                print "- Got %s of %s results." % (
+                    start_index + d,
+                    results["totalResults"],
+                )
 
-            for result in results.get('rows', []):
+            for result in results.get("rows", []):
                 path = result[0]
                 pageviews = int(result[1])
                 doc = Document.from_url(path, id_only=True, check_host=False)
@@ -166,7 +174,7 @@ def pageviews_by_document(start_date, end_date, verbose=False):
 
             # Move to next page of results.
             start_index += max_results
-            if start_index > results.get('totalResults', 0):
+            if start_index > results.get("totalResults", 0):
                 break
 
         end_date_step = start_date_step - timedelta(1)
@@ -198,8 +206,7 @@ def pageviews_by_question(start_date, end_date, verbose=False):
             start_date_step = start_date
 
         if verbose:
-            print 'Fetching data for %s to %s:' % (start_date_step,
-                                                   end_date_step)
+            print "Fetching data for %s to %s:" % (start_date_step, end_date_step)
 
         start_index = 1
 
@@ -208,25 +215,30 @@ def pageviews_by_question(start_date, end_date, verbose=False):
             @retry_503
             def _make_request():
                 return request.get(
-                    ids='ga:' + profile_id,
+                    ids="ga:" + profile_id,
                     start_date=str(start_date_step),
                     end_date=str(end_date_step),
-                    metrics='ga:pageviews',
-                    dimensions='ga:pagePath',
-                    filters='ga:pagePathLevel2==/questions/',
+                    metrics="ga:pageviews",
+                    dimensions="ga:pagePath",
+                    filters="ga:pagePathLevel2==/questions/",
                     max_results=max_results,
-                    start_index=start_index).execute()
+                    start_index=start_index,
+                ).execute()
 
             results = _make_request()
 
             if verbose:
-                d = (max_results - 1
-                     if start_index + max_results - 1 < results['totalResults']
-                     else results['totalResults'] - start_index)
-                print '- Got %s of %s results.' % (start_index + d,
-                                                   results['totalResults'])
+                d = (
+                    max_results - 1
+                    if start_index + max_results - 1 < results["totalResults"]
+                    else results["totalResults"] - start_index
+                )
+                print "- Got %s of %s results." % (
+                    start_index + d,
+                    results["totalResults"],
+                )
 
-            for result in results['rows']:
+            for result in results["rows"]:
                 path = result[0]
                 pageviews = int(result[1])
                 question_id = Question.from_url(path, id_only=True)
@@ -239,7 +251,7 @@ def pageviews_by_question(start_date, end_date, verbose=False):
 
             # Move to next page of results.
             start_index += max_results
-            if start_index > results['totalResults']:
+            if start_index > results["totalResults"]:
                 break
 
         end_date_step = start_date_step - timedelta(1)
@@ -266,12 +278,13 @@ def search_ctr(start_date, end_date):
 
         # This metric name for goals in Google Analytics is gross.
         # Sorry about that. I don't see another way to it.
-        metric_name = 'ga:goal11ConversionRate'
+        metric_name = "ga:goal11ConversionRate"
         ctr_str = request.get(
-            ids='ga:' + profile_id,
+            ids="ga:" + profile_id,
             start_date=date_str,
             end_date=date_str,
-            metrics=metric_name).execute()['rows'][0][0]
+            metrics=metric_name,
+        ).execute()["rows"][0][0]
         ctr[date_str] = float(ctr_str)
 
         date += timedelta(days=1)

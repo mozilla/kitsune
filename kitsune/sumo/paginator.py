@@ -1,19 +1,28 @@
-from django.core.paginator import (Paginator as DjPaginator, EmptyPage,
-                                   InvalidPage, Page, PageNotAnInteger)
+from django.core.paginator import (
+    Paginator as DjPaginator,
+    EmptyPage,
+    InvalidPage,
+    Page,
+    PageNotAnInteger,
+)
 
 
-__all__ = ['Paginator', 'EmptyPage', 'InvalidPage']
+__all__ = ["Paginator", "EmptyPage", "InvalidPage"]
 
 
 class Paginator(DjPaginator):
     """Allows you to pass in a `count` kwarg to avoid running an
     expensive, uncacheable `SELECT COUNT` query."""
 
-    def __init__(self, object_list, per_page,
-                 orphans=0, allow_empty_first_page=True, count=None):
+    def __init__(
+        self, object_list, per_page, orphans=0, allow_empty_first_page=True, count=None
+    ):
         super(Paginator, self).__init__(
-            object_list, per_page, orphans=orphans,
-            allow_empty_first_page=allow_empty_first_page)
+            object_list,
+            per_page,
+            orphans=orphans,
+            allow_empty_first_page=allow_empty_first_page,
+        )
         if count:
             self._count = count
 
@@ -33,9 +42,9 @@ class SimplePaginator(DjPaginator):
         try:
             number = int(number)
         except ValueError:
-            raise PageNotAnInteger('That page number is not an integer')
+            raise PageNotAnInteger("That page number is not an integer")
         if number < 1:
-            raise EmptyPage('That page number is less than 1')
+            raise EmptyPage("That page number is less than 1")
         return number
 
     def page(self, number):
@@ -55,7 +64,7 @@ class SimplePaginator(DjPaginator):
             if number == 1 and self.allow_empty_first_page:
                 pass
             else:
-                raise EmptyPage('That page contains no results')
+                raise EmptyPage("That page contains no results")
 
         # Check if there is a next page.
         has_next = len(page_items) > self.per_page
@@ -80,6 +89,7 @@ class SimplePaginator(DjPaginator):
 
 class SimplePage(Page):
     """A page for the SimplePaginator."""
+
     def __init__(self, object_list, number, paginator, has_next):
         self.object_list = object_list
         self.number = number
@@ -92,5 +102,4 @@ class SimplePage(Page):
 
     def end_index(self):
         """Returns the 1-based index of the last object on this page."""
-        return ((self.number - 1) * self.paginator.per_page +
-                len(self.object_list))
+        return (self.number - 1) * self.paginator.per_page + len(self.object_list)

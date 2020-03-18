@@ -14,6 +14,7 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
     if a field is optional and all you want is value casting.
 
     """
+
     def valid_value(self, val):
         """Override: don't raise validation error in parent, if coerce_only."""
         if self.coerce_only:
@@ -21,8 +22,8 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
         return super(TypedMultipleChoiceField, self).valid_value(val)
 
     def __init__(self, coerce_only=False, *args, **kwargs):
-        self.coerce = kwargs.pop('coerce', lambda val: val)
-        self.empty_value = kwargs.pop('empty_value', [])
+        self.coerce = kwargs.pop("coerce", lambda val: val)
+        self.empty_value = kwargs.pop("empty_value", [])
         self.coerce_only = coerce_only
         super(TypedMultipleChoiceField, self).__init__(*args, **kwargs)
 
@@ -43,8 +44,9 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
             try:
                 new_value.append(self.coerce(choice))
             except (ValueError, TypeError, ValidationError):
-                raise ValidationError(self.error_messages['invalid_choice'] %
-                                      {'value': choice})
+                raise ValidationError(
+                    self.error_messages["invalid_choice"] % {"value": choice}
+                )
         return new_value
 
     def validate(self, value):
@@ -54,22 +56,23 @@ class TypedMultipleChoiceField(forms.MultipleChoiceField):
 class MultiUsernameField(forms.Field):
     """Form field that takes a comma-separated list of usernames as input,
     validates that users exist for each one, and returns the list of users."""
+
     def to_python(self, value):
         if not value:
             if self.required:
-                raise forms.ValidationError(_(u'To field is required.'))
+                raise forms.ValidationError(_(u"To field is required."))
             else:
                 return []
 
         users = []
-        for username in value.split(','):
+        for username in value.split(","):
             username = username.strip()
             if username:
                 try:
                     user = User.objects.get(username=username)
                     users.append(user)
                 except User.DoesNotExist:
-                    msg = _(u'{username} is not a valid username.')
+                    msg = _(u"{username} is not a valid username.")
                     raise forms.ValidationError(msg.format(username=username))
 
         return users

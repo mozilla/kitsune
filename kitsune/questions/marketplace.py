@@ -9,14 +9,16 @@ from django_statsd.clients import statsd
 from zendesk import Zendesk, ZendeskError
 
 
-log = logging.getLogger('k.questions.marketplace')
+log = logging.getLogger("k.questions.marketplace")
 
 
-MARKETPLACE_CATEGORIES = OrderedDict([
-    ('payments', _lazy('Payments')),
-    ('applications', _lazy('Applications')),
-    ('account', _lazy('Account')),
-])
+MARKETPLACE_CATEGORIES = OrderedDict(
+    [
+        ("payments", _lazy("Payments")),
+        ("applications", _lazy("Applications")),
+        ("account", _lazy("Account")),
+    ]
+)
 
 
 class ZendeskSettingsError(ZendeskError):
@@ -30,13 +32,14 @@ def get_zendesk():
     zendesk_email = settings.ZENDESK_USER_EMAIL
     zendesk_password = settings.ZENDESK_USER_PASSWORD
     if not zendesk_url or not zendesk_email or not zendesk_password:
-        log.error('Zendesk settings error: please set ZENDESK_URL, '
-                  'ZENDESK_USER_EMAIL and ZENDESK_USER_PASSWORD.')
-        statsd.incr('questions.zendesk.settingserror')
-        raise ZendeskSettingsError('Missing Zendesk settings.')
+        log.error(
+            "Zendesk settings error: please set ZENDESK_URL, "
+            "ZENDESK_USER_EMAIL and ZENDESK_USER_PASSWORD."
+        )
+        statsd.incr("questions.zendesk.settingserror")
+        raise ZendeskSettingsError("Missing Zendesk settings.")
 
-    return Zendesk(
-        zendesk_url, zendesk_email, zendesk_password, api_version=2)
+    return Zendesk(zendesk_url, zendesk_email, zendesk_password, api_version=2)
 
 
 def submit_ticket(email, category, subject, body, tags):
@@ -52,20 +55,20 @@ def submit_ticket(email, category, subject, body, tags):
 
     # Create the ticket
     new_ticket = {
-        'ticket': {
-            'requester_email': email,
-            'subject': settings.ZENDESK_SUBJECT_PREFIX + subject,
-            'description': body,
-            'set_tags': category,
-            'tags': tags,
+        "ticket": {
+            "requester_email": email,
+            "subject": settings.ZENDESK_SUBJECT_PREFIX + subject,
+            "description": body,
+            "set_tags": category,
+            "tags": tags,
         }
     }
     try:
         ticket_url = zendesk.create_ticket(data=new_ticket)
-        statsd.incr('questions.zendesk.success')
+        statsd.incr("questions.zendesk.success")
     except ZendeskError as e:
-        log.error('Zendesk error: %s' % e.msg)
-        statsd.incr('questions.zendesk.error')
+        log.error("Zendesk error: %s" % e.msg)
+        statsd.incr("questions.zendesk.error")
         raise
 
     return ticket_url

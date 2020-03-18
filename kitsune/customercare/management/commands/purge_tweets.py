@@ -6,7 +6,7 @@ from multidb.pinning import pin_this_thread
 
 from kitsune.customercare.models import Tweet
 
-log = logging.getLogger('k.twitter')
+log = logging.getLogger("k.twitter")
 
 
 class Command(BaseCommand):
@@ -29,14 +29,17 @@ class Command(BaseCommand):
             oldest = _get_oldest_tweet(locale, settings.CC_MAX_TWEETS)
             if oldest:
                 log.debug(
-                    'Truncating tweet list: Removing tweets older than %s, for [%s].' %
-                    (oldest.created, locale))
-                Tweet.objects.filter(locale=locale, created__lte=oldest.created).delete()
+                    "Truncating tweet list: Removing tweets older than %s, for [%s]."
+                    % (oldest.created, locale)
+                )
+                Tweet.objects.filter(
+                    locale=locale, created__lte=oldest.created
+                ).delete()
 
 
 def _get_oldest_tweet(locale, n=0):
     """Returns the nth oldest tweet per locale, defaults to newest."""
     try:
-        return Tweet.objects.filter(locale=locale).order_by('-created')[n]
+        return Tweet.objects.filter(locale=locale).order_by("-created")[n]
     except IndexError:
         return None

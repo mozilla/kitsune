@@ -12,7 +12,7 @@ class TokenLoginMiddleware(object):
 
     def process_request(self, request):
         try:
-            auth = request.GET.get('auth')
+            auth = request.GET.get("auth")
         except IOError:
             # Django can throw an IOError when trying to read the GET
             # data.
@@ -23,7 +23,7 @@ class TokenLoginMiddleware(object):
         user = authenticate(auth=auth)
         if user and user.is_active:
             login(request, user)
-            msg = _lazy(u'You have been automatically logged in.')
+            msg = _lazy(u"You have been automatically logged in.")
             messages.success(request, msg)
 
 
@@ -34,14 +34,18 @@ class LogoutDeactivatedUsersMiddleware(object):
 
     If a user isn't active but is in the AAQ process, we let them be.
     """
+
     def process_request(self, request):
         user = request.user
 
-        if (user.is_authenticated() and not user.is_active and
-                not request.session.get('in-aaq', False)):
+        if (
+            user.is_authenticated()
+            and not user.is_active
+            and not request.session.get("in-aaq", False)
+        ):
 
             # The user is auth'd, not active and not in AAQ. /KICK
             logout(request)
-            res = HttpResponseRedirect(reverse('home'))
+            res = HttpResponseRedirect(reverse("home"))
             res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
             return res

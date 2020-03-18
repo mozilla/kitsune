@@ -3,7 +3,7 @@ import logging
 from kitsune.questions.models import Question, Answer
 
 
-log = logging.getLogger('k.questions')
+log = logging.getLogger("k.questions")
 
 
 def num_questions(user):

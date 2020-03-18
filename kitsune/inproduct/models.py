@@ -12,15 +12,15 @@ class Redirect(ModelBase):
     target = models.CharField(max_length=100)
 
     class Meta:
-        unique_together = ('product', 'version', 'platform',
-                           'locale', 'topic')
+        unique_together = ("product", "version", "platform", "locale", "topic")
 
     def __unicode__(self):
         parts = (
-            self.product or '*',
-            self.version or '*',
-            self.platform or '*',
-            self.locale or '*',
-            self.topic or '',
-            self.target)
-        return u'%s/%s/%s/%s/%s -> %s' % parts
+            self.product or "*",
+            self.version or "*",
+            self.platform or "*",
+            self.locale or "*",
+            self.topic or "",
+            self.target,
+        )
+        return u"%s/%s/%s/%s/%s -> %s" % parts

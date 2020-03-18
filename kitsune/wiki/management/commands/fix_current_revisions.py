@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
             for d in docs:
                 revs = Revision.objects.filter(document=d, is_approved=True)
-                revs = list(revs.order_by('-reviewed')[:1])
+                revs = list(revs.order_by("-reviewed")[:1])
 
                 if len(revs):
                     rev = revs[0]
@@ -26,6 +26,6 @@ class Command(BaseCommand):
                         d.current_revision = rev
                         d.save()
                         print d.get_absolute_url()
-                        statsd.incr('wiki.cron.fix-current-revision')
+                        statsd.incr("wiki.cron.fix-current-revision")
         finally:
             unpin_this_thread()

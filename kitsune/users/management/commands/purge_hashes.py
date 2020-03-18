@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Purge old hashed passwords.'
+    help = "Purge old hashed passwords."
 
     def handle(self, *args, **kw):
         old = datetime.now() - timedelta(365)
@@ -16,4 +16,4 @@ class Command(BaseCommand):
             user.set_unusable_password()
             user.save()
 
-        print 'Cleared %d passwords.' % len(users)
+        print "Cleared %d passwords." % len(users)

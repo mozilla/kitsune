@@ -5,7 +5,11 @@ from nose.tools import eq_
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.wiki.tests import (
-    DocumentFactory, RevisionFactory, HelpfulVoteFactory, RedirectRevisionFactory)
+    DocumentFactory,
+    RevisionFactory,
+    HelpfulVoteFactory,
+    RedirectRevisionFactory,
+)
 from kitsune.wiki.models import DocumentMappingType, RevisionMetricsMappingType
 
 
@@ -26,31 +30,30 @@ class DocumentUpdateTests(ElasticTestCase):
         t1 = TopicFactory(display_order=1)
         t2 = TopicFactory(display_order=2)
         p = ProductFactory()
-        doc1 = DocumentFactory(
-            title=u'Audio too loud',
-            products=[p],
-            topics=[t1, t2])
+        doc1 = DocumentFactory(title=u"Audio too loud", products=[p], topics=[t1, t2])
         RevisionFactory(document=doc1, is_approved=True)
 
-        doc2 = DocumentFactory(title=u'Audio too loud bork bork', parent=doc1, tags=[u'badtag'])
+        doc2 = DocumentFactory(
+            title=u"Audio too loud bork bork", parent=doc1, tags=[u"badtag"]
+        )
         RevisionFactory(document=doc2, is_approved=True)
 
         # Verify the parent has the right tags.
         doc_dict = DocumentMappingType.extract_document(doc1.id)
-        eq_(sorted(doc_dict['topic']), sorted([t1.slug, t2.slug]))
-        eq_(doc_dict['product'], [p.slug])
+        eq_(sorted(doc_dict["topic"]), sorted([t1.slug, t2.slug]))
+        eq_(doc_dict["product"], [p.slug])
 
         # Verify the translation has the parent's tags.
         doc_dict = DocumentMappingType.extract_document(doc2.id)
-        eq_(sorted(doc_dict['topic']), sorted([t1.slug, t2.slug]))
-        eq_(doc_dict['product'], [p.slug])
+        eq_(sorted(doc_dict["topic"]), sorted([t1.slug, t2.slug]))
+        eq_(doc_dict["product"], [p.slug])
 
     def test_wiki_topics(self):
         """Make sure that adding topics to a Document causes it to
         refresh the index.
 
         """
-        t = TopicFactory(slug=u'hiphop')
+        t = TopicFactory(slug=u"hiphop")
         eq_(DocumentMappingType.search().filter(topic=t.slug).count(), 0)
         doc = DocumentFactory()
         RevisionFactory(document=doc, is_approved=True)
@@ -73,7 +76,7 @@ class DocumentUpdateTests(ElasticTestCase):
         refresh the index.
 
         """
-        p = ProductFactory(slug=u'desktop')
+        p = ProductFactory(slug=u"desktop")
         eq_(DocumentMappingType.search().filter(product=p.slug).count(), 0)
         doc = DocumentFactory()
         RevisionFactory(document=doc, is_approved=True)
@@ -108,32 +111,31 @@ class DocumentUpdateTests(ElasticTestCase):
         """Make sure we don't index redirects"""
         # First create a revision that doesn't have a redirect and
         # make sure it's in the index.
-        doc = DocumentFactory(title=u'wool hats')
+        doc = DocumentFactory(title=u"wool hats")
         RevisionFactory(document=doc, is_approved=True)
         self.refresh()
-        eq_(DocumentMappingType.search().query(document_title__match='wool').count(), 1)
+        eq_(DocumentMappingType.search().query(document_title__match="wool").count(), 1)
 
         # Now create a revision that is a redirect and make sure the
         # document is removed from the index.
         RedirectRevisionFactory(document=doc)
         self.refresh()
-        eq_(DocumentMappingType.search().query(document_title__match='wool').count(), 0)
+        eq_(DocumentMappingType.search().query(document_title__match="wool").count(), 0)
 
     def test_wiki_keywords(self):
         """Make sure updating keywords updates the index."""
         # Create a document with a revision with no keywords. It
         # shouldn't show up with a document_keywords term query for
         # 'wool' since it has no keywords.
-        doc = DocumentFactory(title=u'wool hats')
+        doc = DocumentFactory(title=u"wool hats")
         RevisionFactory(document=doc, is_approved=True)
         self.refresh()
-        eq_(DocumentMappingType.search().query(
-            document_keywords='wool').count(), 0)
+        eq_(DocumentMappingType.search().query(document_keywords="wool").count(), 0)
 
-        RevisionFactory(document=doc, is_approved=True, keywords='wool')
+        RevisionFactory(document=doc, is_approved=True, keywords="wool")
         self.refresh()
 
-        eq_(DocumentMappingType.search().query(document_keywords='wool').count(), 1)
+        eq_(DocumentMappingType.search().query(document_keywords="wool").count(), 1)
 
     def test_recent_helpful_votes(self):
         """Recent helpful votes are indexed properly."""
@@ -141,31 +143,47 @@ class DocumentUpdateTests(ElasticTestCase):
         # query for recent_helpful_votes__gt=0.
         r = RevisionFactory(is_approved=True)
         self.refresh()
-        eq_(DocumentMappingType.search().filter(
-            document_recent_helpful_votes__gt=0).count(), 0)
+        eq_(
+            DocumentMappingType.search()
+            .filter(document_recent_helpful_votes__gt=0)
+            .count(),
+            0,
+        )
 
         # Add an unhelpful vote, it still shouldn't show up.
         HelpfulVoteFactory(revision=r, helpful=False)
         r.document.save()  # Votes don't trigger a reindex.
         self.refresh()
-        eq_(DocumentMappingType.search().filter(
-            document_recent_helpful_votes__gt=0).count(), 0)
+        eq_(
+            DocumentMappingType.search()
+            .filter(document_recent_helpful_votes__gt=0)
+            .count(),
+            0,
+        )
 
         # Add an helpful vote created 31 days ago, it still shouldn't show up.
         created = datetime.now() - timedelta(days=31)
         HelpfulVoteFactory(revision=r, helpful=True, created=created)
         r.document.save()  # Votes don't trigger a reindex.
         self.refresh()
-        eq_(DocumentMappingType.search().filter(
-            document_recent_helpful_votes__gt=0).count(), 0)
+        eq_(
+            DocumentMappingType.search()
+            .filter(document_recent_helpful_votes__gt=0)
+            .count(),
+            0,
+        )
 
         # Add an helpful vote created 29 days ago, it should show up now.
         created = datetime.now() - timedelta(days=29)
         HelpfulVoteFactory(revision=r, helpful=True, created=created)
         r.document.save()  # Votes don't trigger a reindex.
         self.refresh()
-        eq_(DocumentMappingType.search().filter(
-            document_recent_helpful_votes__gt=0).count(), 1)
+        eq_(
+            DocumentMappingType.search()
+            .filter(document_recent_helpful_votes__gt=0)
+            .count(),
+            1,
+        )
 
 
 class RevisionMetricsTests(ElasticTestCase):
@@ -185,15 +203,15 @@ class RevisionMetricsTests(ElasticTestCase):
     def test_data_in_index(self):
         """Verify the data we are indexing."""
         p = ProductFactory()
-        base_doc = DocumentFactory(locale='en-US', products=[p])
-        d = DocumentFactory(locale='es', parent=base_doc)
+        base_doc = DocumentFactory(locale="en-US", products=[p])
+        d = DocumentFactory(locale="es", parent=base_doc)
         r = RevisionFactory(document=d, is_approved=True)
 
         self.refresh()
 
         eq_(RevisionMetricsMappingType.search().count(), 1)
         data = RevisionMetricsMappingType.search()[0]
-        eq_(data['is_approved'], r.is_approved)
-        eq_(data['locale'], d.locale)
-        eq_(data['product'], [p.slug])
-        eq_(data['creator_id'], r.creator_id)
+        eq_(data["is_approved"], r.is_approved)
+        eq_(data["locale"], d.locale)
+        eq_(data["product"], [p.slug])
+        eq_(data["creator_id"], r.creator_id)

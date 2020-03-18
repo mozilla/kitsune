@@ -3,8 +3,12 @@ from datetime import date
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from kitsune.dashboards.models import (L10N_ALL_CODE, L10N_TOP20_CODE,
-                                       L10N_TOP100_CODE, WikiMetric)
+from kitsune.dashboards.models import (
+    L10N_ALL_CODE,
+    L10N_TOP20_CODE,
+    L10N_TOP100_CODE,
+    WikiMetric,
+)
 from kitsune.dashboards.readouts import l10n_overview_rows
 from kitsune.products.models import Product
 
@@ -34,10 +38,10 @@ class Command(BaseCommand):
                 rows = l10n_overview_rows(locale=locale, product=product)
 
                 # % of top 20 articles
-                top20 = rows['top-20']
+                top20 = rows["top-20"]
 
                 try:
-                    percent = 100.0 * float(top20['numerator']) / top20['denominator']
+                    percent = 100.0 * float(top20["numerator"]) / top20["denominator"]
                 except ZeroDivisionError:
                     percent = 0.0
 
@@ -46,13 +50,14 @@ class Command(BaseCommand):
                     locale=locale,
                     product=product,
                     date=today,
-                    value=percent)
+                    value=percent,
+                )
 
                 # % of top 100 articles
-                top100 = rows['top-100']
+                top100 = rows["top-100"]
 
                 try:
-                    percent = 100.0 * float(top100['numerator']) / top100['denominator']
+                    percent = 100.0 * float(top100["numerator"]) / top100["denominator"]
                 except ZeroDivisionError:
                     percent = 0.0
 
@@ -61,12 +66,13 @@ class Command(BaseCommand):
                     locale=locale,
                     product=product,
                     date=today,
-                    value=percent)
+                    value=percent,
+                )
 
                 # % of all articles
-                all_ = rows['all']
+                all_ = rows["all"]
                 try:
-                    percent = 100 * float(all_['numerator']) / all_['denominator']
+                    percent = 100 * float(all_["numerator"]) / all_["denominator"]
                 except ZeroDivisionError:
                     percent = 0.0
 
@@ -75,4 +81,5 @@ class Command(BaseCommand):
                     locale=locale,
                     product=product,
                     date=today,
-                    value=percent)
+                    value=percent,
+                )

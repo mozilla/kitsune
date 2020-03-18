@@ -11,7 +11,7 @@ class GroupProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = GroupProfile
-        fields = ['information']
+        fields = ["information"]
 
 
 # Inherit from user's AvatarForm but override the model.
@@ -20,14 +20,17 @@ class GroupAvatarForm(AvatarForm):
 
     class Meta(object):
         model = GroupProfile
-        fields = ['avatar']
+        fields = ["avatar"]
 
 
-USERS_PLACEHOLDER = _lazy(u'username')
+USERS_PLACEHOLDER = _lazy(u"username")
 
 
 class AddUserForm(forms.Form):
     """Form to add members or leaders to group."""
+
     users = MultiUsernameField(
-        widget=forms.TextInput(attrs={'placeholder': USERS_PLACEHOLDER,
-                                      'class': 'user-autocomplete'}))
+        widget=forms.TextInput(
+            attrs={"placeholder": USERS_PLACEHOLDER, "class": "user-autocomplete"}
+        )
+    )

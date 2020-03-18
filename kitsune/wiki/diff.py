@@ -22,6 +22,7 @@ class BetterHtmlDiff(difflib.HtmlDiff):
 
     See tools/scripts/diff.py for an example usage of this class.
     """
+
     def _format_line(self, side, flag, linenum, text):
         """Returns HTML markup of "from" / "to" text lines
 
@@ -31,16 +32,19 @@ class BetterHtmlDiff(difflib.HtmlDiff):
         text -- line text to be marked up
         """
         try:
-            linenum = '%d' % linenum
+            linenum = "%d" % linenum
             id = ' id="%s%s"' % (self._prefix[side], linenum)
         except TypeError:
             # handle blank lines where linenum is '>' or ''
-            id = ''
+            id = ""
         # replace those things that would get confused with HTML symbols
-        text = text.replace('&', '&amp;').replace('>', '&gt;')
-        text = text.replace('<', '&lt;')
+        text = text.replace("&", "&amp;").replace(">", "&gt;")
+        text = text.replace("<", "&lt;")
 
-        text = text.replace('  ', '&nbsp; ').rstrip()
+        text = text.replace("  ", "&nbsp; ").rstrip()
 
-        return '<td class="diff_header"%s>%s</td><td class="text">%s</td>' \
-               % (id, linenum, text)
+        return '<td class="diff_header"%s>%s</td><td class="text">%s</td>' % (
+            id,
+            linenum,
+            text,
+        )
