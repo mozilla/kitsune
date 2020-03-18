@@ -68,7 +68,7 @@
 
     &.is-complete {
       .progress--dot {
-        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="#FFF" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="#000" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>');
         background-color: var(--color-green-06);
         background-position: center center;
         background-repeat: no-repeat;
@@ -81,19 +81,24 @@
     &.is-current {
       display: block;
 
-      .progress--dot:before {
-        width: 8px;
-        height: 8px;
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        border-radius: 50%;
-        background-color: var(--color-marketing-gray-03);
-        content: "";
+      .progress--dot {
+        border-color: var(--color-green-06);
+
+        &:before {
+          width: 8px;
+          height: 8px;
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          border-radius: 50%;
+          background-color: var(--color-green-06);
+          content: "";
+        }
       }
     }
 
-    &:after {
+    &:after,
+    &:before {
       position: absolute;
       top: 20px;
       left: 0;
@@ -102,6 +107,37 @@
       height: 3px;
       background: var(--color-marketing-gray-03);
       content: "";
+    }
+
+    &:before {
+      background: transparent;
+    }
+
+    &.is-current,
+    &.is-complete {
+      &:after {
+        background: var(--color-green-06);
+      }
+    }
+
+    &.is-current {
+      &:before {
+        width: 50%;
+        right: 0;
+        left: auto;
+        background: var(--color-marketing-gray-03);
+        z-index: 2;
+      }
+
+      &:last-child:before {
+        background: transparent;
+      }
+
+      &:first-child {
+        &:after {
+          background: var(--color-marketing-gray-03);
+        }
+      }
     }
   }
 
