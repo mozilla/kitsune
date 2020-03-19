@@ -17,7 +17,6 @@
 :root {
   --cg-card-width: 80vw;
   --cg-gutter: #{c.$gutter-width * .5};
-  --cg-count: 3; // This should be set in an inline style with a template tag.
 }
 .sumo-card-grid {
   position: relative;
