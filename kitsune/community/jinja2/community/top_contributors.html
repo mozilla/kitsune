@@ -16,9 +16,10 @@
   <article class="community-results">
 
     <section class="community-results-header">
-      <h1>{{ title }}</h1>
+      <h1 class="sumo-page-heading">{{ title }}</h1>
 
       {# Locale Filter #}
+      <div class="inline-form locales-selects">
       {% if locales %}
         <div class="selector">
           <button type="button" class="ts-select-trigger">
@@ -93,34 +94,38 @@
           </div>
         </div>
       {% endif %}
+      </div>
 
-      <p>{{ _('There are {total} users with at least one contribution in the last 90 days.')|f(total=total) }}</p>
+      <p class="sumo-page-intro">{{ _('There are {total} users with at least one contribution in the last 90 days.')|f(total=total) }}</p>
 
     </section>
 
-    <ol>
-      {% for result in results %}
-        <li class="results-user">
-          <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results" />
-          <span class="numbered">{{ loop.index + ((page - 1) * page_size) }}</span>
-          <div class="user-details">
-            <h2>{{ result['user']['display_name'] }}</h2>
-            <ul class="results-user-details">
-              <li>{{ result['user']['username'] }}</li>
-              <li>{{ _('Contributions in last 90 days: {count}')|f(count=result['count']) }}</li>
-              <li><a href="{{ url('users.profile', result['user']['id']) }}">{{ _('View Profile') }}</a></li>
-              <li><a href="{{ url('messages.new')|urlparams(to=result['user']['username']) }}">{{ _('Private Message') }}</a></li>
-              {% if result['user']['days_since_last_activity'] != None %}
-                <li>
-                  {{ _('Days since last activity:') }}
-                  {{ result['user']['days_since_last_activity'] }}
-                </li>
-              {% endif %}
-            </ul>
-          </div>
-        </li>
-      {% endfor %}
-    </ol>
+    <section class="sumo-page-section">
+      <div class="sumo-card-grid">
+        <div class="scroll-wrap">
+          {% for result in results %}
+            <div class="card elevation-01 results-user">
+              <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results" />
+              <span class="numbered">{{ loop.index + ((page - 1) * page_size) }}</span>
+              <div class="card--details user-details">
+                <h2 class="card--title">{{ result['user']['display_name'] }}</h2>
+                <ul class="results-user-details">
+                  <li>{{ result['user']['username'] }}</li>
+                  <li>{{ _('Contributions in last 90 days: {count}')|f(count=result['count']) }}</li>
+                  <li><a href="{{ url('users.profile', result['user']['id']) }}">{{ _('View Profile') }}</a></li>
+                  <li><a href="{{ url('messages.new')|urlparams(to=result['user']['username']) }}">{{ _('Private Message') }}</a></li>
+                  {% if result['user']['days_since_last_activity'] != None %}
+                    <li>
+                      {{ _('Days since last activity:') }}
+                      {{ result['user']['days_since_last_activity'] }}
+                    </li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+    </div>
 
     {% if total > page_size %}
       {% set base_url = url('community.top_contributors', area=area) %}
@@ -142,6 +147,8 @@
         </ol>
       <section>
     {% endif %}
+
+    </section>
 
   </article>
 {% endblock %}
