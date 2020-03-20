@@ -6,7 +6,7 @@ FROM node:12 AS frontend-base
 WORKDIR /app
 COPY ["./package.json", "./package-lock.json", "prepare_django_assets.js", "/app/"]
 COPY ./kitsune/sumo/static/sumo /app/kitsune/sumo/static/sumo
-RUN npm run development && npm run production
+RUN npm run production
 
 ################################
 # Python dependencies builder
