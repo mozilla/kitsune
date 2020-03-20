@@ -3,39 +3,49 @@
 {% set crumbs = [(None, _('Badges'))] %}
 {% set styles=('badges',) %}
 
-{% block content %}
-  <div class="grid_12">
-    <h2>{{ _('All available SUMO badges') }}</h2>
-  </div>
+{% block contentwrap %}
+<div id="main-content">
+  <section class="mzp-l-content sumo-page-section--inner">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
+    <h1 class="sumo-page-heading">{{ _('All available SUMO badges') }}</h1>
+  </section>
+  <section class="mzp-l-content sumo-page-section--inner">
 
-  <ul class="cf" id="badges-list">
-    {% for badge in badge_list %}
-      {% if badge.image %}
-        {% set badge_image = badge.image.url %}
-      {% else %}
-        {% set badge_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
-      {% endif %}
-      <li class="grid_4">
-        <a class="cf" href="{{ badge.get_absolute_url() }}">
-          <span class="badge">
-            <img src="{{ badge_image }}" alt="" title="{{ pgettext('DB: badger.Badge.title', badge.title) }}">
-          </span>
-          <h3>{{ pgettext('DB: badger.Badge.title', badge.title) }}</h3>
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
+    <div class="sumo-card-grid">
+      <div class="scroll-wrap">
+        {% for badge in badge_list %}
+          {% if badge.image %}
+            {% set badge_image = badge.image.url %}
+          {% else %}
+            {% set badge_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
+          {% endif %}
+          <div class="card elevation-01 zoom-on-hover">
+            <div class="card--horizontal">
+              <img class="card--img" src="{{ badge_image }}" alt="" title="{{ pgettext('DB: badger.Badge.title', badge.title) }}">
+              <h3 class="card--title">
+                <a class="expand-this-link" href="{{ badge.get_absolute_url() }}">
+                  {{ pgettext('DB: badger.Badge.title', badge.title) }}
+                </a>
+              </h3>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
 
   {% if is_paginated %}
+  <div class="pagination--wrap">
     <ol class="pagination cf">
       {% if page_obj.has_previous() %}
         <li class="prev">
           <a href="{{ pagination_base_url }}?page={{ page_obj.previous_page_number() }}&sort={{current_sort}}" class="btn-page btn-page-prev">
             <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
-                <polyline stroke="currentColor" stroke-width="2" points="15 5 8 12 15 19"></polyline>
-            </g>
-        </svg>
+                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline stroke="currentColor" stroke-width="2" points="15 5 8 12 15 19"></polyline>
+                </g>
+            </svg>
         <span class="sr-only">{{ _('Previous') }}</span>
           </a>
         </li>
@@ -53,5 +63,8 @@
         </li>
       {% endif %}
     </ol>
+  </div>
   {% endif %}
+  </section>
+</div>
 {% endblock %}

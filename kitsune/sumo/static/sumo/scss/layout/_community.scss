@@ -20,13 +20,6 @@
     line-height: 1;
   }
 
-  .user-img-results {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin-bottom: p.$spacing-md;
-  }
-
   .results-user-details {
     margin-bottom: 0;
     @include c.text-body-sm;
