@@ -9,51 +9,59 @@
 
     <section class="community-results-header">
       {% if q %}
-        <h1>{{ _('Results for: {query}')|f(query=q) }}</h1>
+        <h1 class="sumo-page-heading">{{ _('Results for: {query}')|f(query=q) }}</h1>
       {% else %}
-        <h1>{{ _('Find your fellow contributors') }}</h1>
+        <h1 class="sumo-page-heading">{{ _('Find your fellow contributors') }}</h1>
       {% endif %}
-      <form name="find-contributor" id="find-contributor" action="" method="get">
+      <form name="find-contributor" id="find-contributor" class="simple-search-form" action="" method="get">
         <fieldset>
-          <input type="text" name="q" id="search" class="query" value="{{ q }}" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
-          <input type="submit" value="{{ _('Search') }}" class="search" />
+          <input type="text" name="q" id="search" class="searchbox" value="{{ q }}" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
+          <input type="submit" value="{{ _('Search') }}" class="search-button" />
         </fieldset>
       </form>
     </section>
 
-    {% if search_errored %}
-      <p>{{ _('Sorry! Search is currently unavailable. Please try again soon.') }}</p>
-    {% endif %}
+    <section class="sumo-page-section">
+      {% if search_errored %}
+      <p class="sumo-page-intro">{{ _('Sorry! Search is currently unavailable. Please try again soon.') }}</p>
+      
+      {% elif q and not results %}
+      <p class="sumo-page-intro">{{ _('No users were found for your search query.') }}</p>
 
-    {% if q and not results %}
-      <p>{{ _('No users were found for your search query.') }}</p>
-    {% endif %}
-
-    {% for result in results %}
-      <section class="results-user">
-        <img src="{{ result['avatar'] }}" alt="" class="user-img-results" />
-        <div class="user-details">
-          <h2>{{ result['display_name'] }}</h2>
-          <ul class="results-user-details">
-            <li>{{ result['username'] }}</li>
-            <li>
-              {{ _('Twitter Handles:') }}
-              {% for handle in result['twitter_usernames'] %}
-                {{ handle }}
-              {% endfor %}
-            </li>
-            <li><a href="{{ url('users.profile', result['id']) }}">{{ _('View Profile') }}</a></li>
-            <li><a href="{{ url('messages.new')|urlparams(to=result['username']) }}">{{ _('Private Message') }}</a></li>
-            {% if result['days_since_last_activity'] != None %}
-              <li>
-                {{ _('Days since last activity:') }}
-                {{ result['days_since_last_activity'] }}
-              </li>
-            {% endif %}
-          </ul>
+      {% else %}
+        <div class="sumo-card-grid">
+          <div class="scroll-wrap">
+            {% for result in results %}
+              <section class="card elevation-01 results-user">
+                <img src="{{ result['avatar'] }}" alt="" class="user-img-results" />
+                <div class="card--details user-details">
+                  <h2 class="card--title">{{ result['display_name'] }}</h2>
+                  <ul class="results-user-details">
+                    <li>{{ result['username'] }}</li>
+                    {% if result['twitter_usernames'] %}
+                      <li>
+                        {{ _('Twitter Handles:') }}
+                        {% for handle in result['twitter_usernames'] %}
+                          {{ handle }}
+                        {% endfor %}
+                      </li>
+                    {% endif %}
+                    <li><a href="{{ url('users.profile', result['id']) }}">{{ _('View Profile') }}</a></li>
+                    <li><a href="{{ url('messages.new')|urlparams(to=result['username']) }}">{{ _('Private Message') }}</a></li>
+                    {% if result['days_since_last_activity'] != None %}
+                      <li>
+                        {{ _('Days since last activity:') }}
+                        {{ result['days_since_last_activity'] }}
+                      </li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </section>
+            {% endfor %}
+          </div>
         </div>
-      </section>
-    {% endfor %}
+      {% endif %}
+    </section>
 
   </article>
 {% endblock %}
