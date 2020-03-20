@@ -2,137 +2,20 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.models import User
-from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.middleware import MessageMiddleware
-from django.contrib.sites.models import Site
-from django.core import mail
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-
-
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.questions.tests import QuestionFactory, AnswerFactory
-from kitsune.questions.models import Question, Answer
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.questions.models import Answer, Question
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import (
-    CONTRIBUTOR_GROUP, Profile, EmailChange, Setting, Deactivation)
-from kitsune.users.tests import UserFactory, GroupFactory, add_permission
+from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Profile, Setting
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.users.views import edit_profile
-
-
-class LoginTests(TestCase):
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_fxa_migrated_user_cannot_login_with_sumo(self, get_current):
-        """
-        If a user's profile is_fxa_migrated, then they cannot log in using
-        the SUMO form. They should not be authenticated and they should
-        see a notification error
-        """
-        user = UserFactory(password='1234')
-        user.profile.is_fxa_migrated = True
-        user.profile.save()
-        response = self.client.post(
-            reverse('users.login', locale='en-US'), {
-                'username': user.username,
-                'password': '1234',
-            },
-            follow=True
-        )
-
-        assert not response.wsgi_request.user.is_authenticated()
-        assert pq(response.content).find('#fxa-notification-already-migrated')
-
-
-class ChangeEmailTestCase(TestCase):
-    client_class = LocalizingClient
-
-    def setUp(self):
-        self.user = UserFactory()
-        self.client.login(username=self.user.username, password='testpass')
-        super(ChangeEmailTestCase, self).setUp()
-
-    def test_redirect(self):
-        """Test our redirect from old url to new one."""
-        response = self.client.get(reverse('users.old_change_email',
-                                           locale='en-US'), follow=False)
-        eq_(301, response.status_code)
-        eq_('/en-US/users/change_email', response['location'])
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_user_change_email(self, get_current):
-        """Send email to change user's email and then change it."""
-        get_current.return_value.domain = 'su.mo.com'
-
-        # Attempt to change email.
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': 'paulc@trololololololo.com'},
-                                    follow=True)
-        eq_(200, response.status_code)
-
-        # Be notified to click a confirmation link.
-        eq_(1, len(mail.outbox))
-        assert mail.outbox[0].subject.find('Please confirm your') == 0
-        ec = EmailChange.objects.all()[0]
-        assert ec.activation_key in mail.outbox[0].body
-        eq_('paulc@trololololololo.com', ec.email)
-
-        # Visit confirmation link to change email.
-        response = self.client.get(reverse('users.confirm_email',
-                                           args=[ec.activation_key]))
-        eq_(200, response.status_code)
-        u = User.objects.get(username=self.user.username)
-        eq_('paulc@trololololololo.com', u.email)
-
-    def test_user_change_email_same(self):
-        """Changing to same email shows validation error."""
-        self.user.email = 'valid@email.com'
-        self.user.save()
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': self.user.email})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('This is your current email.', doc('ul.errorlist').text())
-
-    def test_user_change_email_duplicate(self):
-        """Changing to same email shows validation error."""
-        u = UserFactory(email='newvalid@email.com')
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': u.email})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('A user with that email address already exists.',
-            doc('ul.errorlist').text())
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_user_confirm_email_duplicate(self, get_current):
-        """If we detect a duplicate email when confirming an email change,
-        don't change it and notify the user."""
-        get_current.return_value.domain = 'su.mo.com'
-        old_email = self.user.email
-        new_email = 'newvalid@email.com'
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': new_email})
-        eq_(200, response.status_code)
-        assert mail.outbox[0].subject.find('Please confirm your') == 0
-        ec = EmailChange.objects.all()[0]
-
-        # Before new email is confirmed, give the same email to a user
-        u = UserFactory(email=new_email)
-
-        # Visit confirmation link and verify email wasn't changed.
-        response = self.client.get(reverse('users.confirm_email',
-                                           args=[ec.activation_key]))
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(u'Unable to change email for user %s' % self.user.username,
-            doc('article h1').text())
-        u = User.objects.get(username=self.user.username)
-        eq_(old_email, u.email)
 
 
 class MakeContributorTests(TestCase):

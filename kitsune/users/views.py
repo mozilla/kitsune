@@ -1,295 +1,50 @@
-import os
-from uuid import uuid4
 from ast import literal_eval
-from datetime import datetime
+from uuid import uuid4
 
-from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.models import Site
-from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404, HttpResponseForbidden)
-from django.views.decorators.http import (require_http_methods, require_GET,
-                                          require_POST)
-from django.shortcuts import get_object_or_404, render, redirect
-from django.utils.http import base36_to_int
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import ugettext as _
-
+from django.views.decorators.http import (require_GET, require_http_methods,
+                                          require_POST)
 # from axes.decorators import watch_login
-from django_statsd.clients import statsd
-from mozilla_django_oidc.views import OIDCAuthenticationRequestView, OIDCLogoutView
+from mozilla_django_oidc.views import (OIDCAuthenticationRequestView,
+                                       OIDCLogoutView)
 from tidings.models import Watch
-from tidings.tasks import claim_watches
 
 from kitsune import users as constants
-from kitsune.access.decorators import (
-    logout_required,
-    login_required,
-    permission_required
-)
+from kitsune.access.decorators import (login_required, logout_required,
+                                       permission_required)
 from kitsune.kbadge.models import Award
-from kitsune.questions.models import Question
-from kitsune.questions.utils import (
-    num_questions, num_answers, num_solutions, mark_content_as_spam)
-from kitsune.sumo import email_utils
+from kitsune.questions.utils import (mark_content_as_spam, num_answers,
+                                     num_questions, num_solutions)
 from kitsune.sumo.decorators import ssl_required
-from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
-from kitsune.upload.tasks import _create_image_thumbnail
-from kitsune.users.forms import (
-    ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
-    EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
-    ForgotUsernameForm, PasswordResetForm)
+from kitsune.users.forms import ProfileForm, SettingsForm
+from kitsune.users.models import Deactivation, Profile
 from kitsune.users.templatetags.jinja_helpers import profile_url
-from kitsune.users.models import Profile, RegistrationProfile, EmailChange, Deactivation
-from kitsune.users.utils import (
-    deactivate_user,
-    handle_login,
-    try_send_email_with_form,
-    get_oidc_fxa_setting,
-    add_to_contributors
-)
-from kitsune.wiki.models import (
-    user_num_documents, user_documents, user_redirects)
-
-
-# NOTE: this will be removed after the Firefox Accounts migration
-def _disable_sumo_auth_for_fxa(request):
-    """Helper to block access to Firefox Account users to the SUMO auth system."""
-    user = request.user
-    if user and user.is_authenticated():
-        if user.profile and user.profile.is_fxa_migrated:
-            raise Http404
-    return
+from kitsune.users.utils import (add_to_contributors, deactivate_user,
+                                 get_oidc_fxa_setting)
+from kitsune.wiki.models import (user_documents, user_num_documents,
+                                 user_redirects)
 
 
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
-def user_auth(request, login_form=None, notification=None):
+def user_auth(request, notification=None):
     """
     Show user authorization page which includes a link for
     FXA sign-up/login and the legacy login form
     """
     next_url = get_next_url(request) or reverse('home')
 
-    if login_form is None:
-        login_form = AuthenticationForm()
-
-    # on load, decide whether legacy or FXA form is visible
-    legacy_form_visible = bool(login_form.errors)
-
     return render(request, 'users/auth.html', {
-        'login_form': login_form,
         'next_url': next_url,
-        'notification': notification,
-        'legacy_form_visible': legacy_form_visible,
+        'notification': notification
     })
-
-
-@ssl_required
-def login(request):
-    """
-    Legacy view for logging in SUMO users. This is being deprecated
-    in favor of FXA login.
-    """
-    if request.method == 'GET':
-        url = reverse('users.auth') + '?' + request.GET.urlencode()
-        return HttpResponsePermanentRedirect(url)
-
-    only_active = request.POST.get('inactive', '0') != '1'
-    form = handle_login(request, only_active=only_active)
-
-    if request.user.is_authenticated():
-        if request.user.profile.is_fxa_migrated:
-            return logout(request, already_migrated=True)
-
-        # We re-direct to the profile screen which will show a deprecation
-        # warning for SUMO login
-        profile_url = urlparams(
-            reverse('users.profile', args=[request.user.username]),
-            fpa=1,
-        )
-        res = HttpResponseRedirect(profile_url)
-        max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
-                   else settings.SESSION_COOKIE_AGE)
-        res.set_cookie(settings.SESSION_EXISTS_COOKIE,
-                       '1',
-                       secure=False,
-                       max_age=max_age)
-        return res
-
-    return user_auth(request, login_form=form)
-
-
-@ssl_required
-@require_POST
-def logout(request, already_migrated=False):
-    """Log the user out."""
-    auth.logout(request)
-    statsd.incr('user.logout')
-
-    if already_migrated:
-        res = user_auth(request, notification='already_migrated')
-    else:
-        res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
-
-    res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
-    return res
-
-
-def activate(request, activation_key, user_id=None):
-    """Activate a User account."""
-    activation_key = activation_key.lower()
-    template = 'users/activate.html'
-
-    _disable_sumo_auth_for_fxa(request)
-    if user_id:
-        user = get_object_or_404(User, id=user_id)
-    else:
-        user = RegistrationProfile.objects.get_user(activation_key)
-
-    if user and user.is_active:
-        messages.add_message(
-            request, messages.INFO,
-            _(u'Your account is already activated, log in below.'))
-        return HttpResponseRedirect(reverse('users.login'))
-
-    account = RegistrationProfile.objects.activate_user(activation_key,
-                                                        request)
-    my_questions = None
-    form = AuthenticationForm()
-    if account:
-        # Claim anonymous watches belonging to this email
-        statsd.incr('user.activate')
-        claim_watches.delay(account)
-
-        my_questions = Question.objects.filter(creator=account)
-
-        # Update created time to current time
-        for q in my_questions:
-            q.created = datetime.now()
-            q.save(update=True)
-
-    return render(request, template, {
-        'account': account, 'questions': my_questions,
-        'form': form})
-
-
-def resend_confirmation(request):
-    """Resend confirmation email."""
-
-    _disable_sumo_auth_for_fxa(request)
-    if request.method == 'POST':
-        form = EmailConfirmationForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            try:
-                reg_prof = RegistrationProfile.objects.get(
-                    user__email=email)
-                if not reg_prof.user.is_active:
-                    form = try_send_email_with_form(
-                        RegistrationProfile.objects.send_confirmation_email,
-                        form, 'email',
-                        reg_prof)
-                else:
-                    form = try_send_email_with_form(
-                        RegistrationProfile.objects.send_confirmation_email,
-                        form, 'email',
-                        reg_prof,
-                        text_template='users/email/already_activated.ltxt',
-                        html_template='users/email/already_activated.html',
-                        subject=_('Account already activated'))
-            except RegistrationProfile.DoesNotExist:
-                # Send already active email if user exists
-                try:
-                    user = User.objects.get(email=email, is_active=True)
-
-                    current_site = Site.objects.get_current()
-                    email_kwargs = {'domain': current_site.domain,
-                                    'login_url': reverse('users.login')}
-
-                    subject = _('Account already activated')
-
-                    @email_utils.safe_translation
-                    def _make_mail(locale):
-                        mail = email_utils.make_mail(
-                            subject=subject,
-                            text_template='users/email/already_activated.ltxt',
-                            html_template='users/email/already_activated.html',
-                            context_vars=email_kwargs,
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            to_email=user.email)
-
-                        return mail
-
-                    email_utils.send_messages(
-                        [_make_mail(request.LANGUAGE_CODE)])
-                except User.DoesNotExist:
-                    # Don't leak existence of email addresses.
-                    pass
-            # Form may now be invalid if email failed to send.
-            if form.is_valid():
-                return render(
-                    request, 'users/resend_confirmation_done.html',
-                    {'email': email})
-    else:
-        form = EmailConfirmationForm()
-    return render(request, 'users/resend_confirmation.html', {
-        'form': form})
-
-
-@login_required
-@require_http_methods(['GET', 'POST'])
-def change_email(request):
-    """Change user's email. Send confirmation first."""
-    _disable_sumo_auth_for_fxa(request)
-    if request.method == 'POST':
-        form = EmailChangeForm(request.user, request.POST)
-        u = request.user
-        if form.is_valid() and u.email != form.cleaned_data['email']:
-            # Delete old registration profiles.
-            EmailChange.objects.filter(user=request.user).delete()
-            # Create a new registration profile and send a confirmation email.
-            email_change = EmailChange.objects.create_profile(
-                user=request.user, email=form.cleaned_data['email'])
-            EmailChange.objects.send_confirmation_email(
-                email_change, form.cleaned_data['email'])
-            return render(
-                request, 'users/change_email_done.html',
-                {'email': form.cleaned_data['email']})
-    else:
-        form = EmailChangeForm(request.user,
-                               initial={'email': request.user.email})
-    return render(request, 'users/change_email.html', {'form': form})
-
-
-@require_GET
-def confirm_change_email(request, activation_key):
-    """Confirm the new email for the user."""
-    _disable_sumo_auth_for_fxa(request)
-    activation_key = activation_key.lower()
-    email_change = get_object_or_404(EmailChange,
-                                     activation_key=activation_key)
-    u = email_change.user
-    old_email = u.email
-
-    # Check that this new email isn't a duplicate in the system.
-    new_email = email_change.email
-    duplicate = User.objects.filter(email=new_email).exists()
-    if not duplicate:
-        # Update user's email.
-        u.email = new_email
-        u.save()
-
-    # Delete the activation profile now, we don't need it anymore.
-    email_change.delete()
-
-    return render(request, 'users/change_email_complete.html', {
-        'old_email': old_email, 'new_email': new_email,
-        'username': u.username, 'duplicate': duplicate})
 
 
 @require_GET
@@ -500,221 +255,6 @@ def make_contributor(request):
         return HttpResponseRedirect(request.POST['return_to'])
     else:
         return HttpResponseRedirect(reverse('landings.get_involved'))
-
-
-@login_required
-@require_http_methods(['GET', 'POST'])
-def edit_avatar(request):
-    """Edit user avatar."""
-    try:
-        user_profile = Profile.objects.get(user=request.user)
-    except Profile.DoesNotExist:
-        # TODO: Once we do user profile migrations, all users should have a
-        # a profile. We can remove this fallback.
-        user_profile = Profile.objects.create(user=request.user)
-
-    if user_profile.is_fxa_migrated:
-        raise Http404
-
-    if request.method == 'POST':
-        # Upload new avatar and replace old one.
-        old_avatar_path = None
-        if user_profile.avatar and os.path.isfile(user_profile.avatar.path):
-            # Need to store the path, not the file here, or else django's
-            # form.is_valid() messes with it.
-            old_avatar_path = user_profile.avatar.path
-        form = AvatarForm(request.POST, request.FILES, instance=user_profile)
-        if form.is_valid():
-            if old_avatar_path:
-                os.unlink(old_avatar_path)
-            user_profile = form.save()
-
-            content = _create_image_thumbnail(user_profile.avatar.path,
-                                              settings.AVATAR_SIZE, pad=True)
-            # We want everything as .png
-            name = user_profile.avatar.name + ".png"
-            # Delete uploaded avatar and replace with thumbnail.
-            user_profile.avatar.delete()
-            user_profile.avatar.save(name, content, save=True)
-            return HttpResponseRedirect(reverse('users.edit_my_profile'))
-
-    else:  # request.method == 'GET'
-        form = AvatarForm(instance=user_profile)
-
-    return render(request, 'users/edit_avatar.html', {
-        'form': form, 'profile': user_profile})
-
-
-@login_required
-@require_http_methods(['GET', 'POST'])
-def delete_avatar(request):
-    """Delete user avatar."""
-    try:
-        user_profile = Profile.objects.get(user=request.user)
-    except Profile.DoesNotExist:
-        # TODO: Once we do user profile migrations, all users should have a
-        # a profile. We can remove this fallback.
-        user_profile = Profile.objects.create(user=request.user)
-
-    if user_profile.is_fxa_migrated:
-        raise Http404
-
-    if request.method == 'POST':
-        # Delete avatar here
-        if user_profile.avatar:
-            user_profile.avatar.delete()
-        return HttpResponseRedirect(reverse('users.edit_my_profile'))
-    # else:  # request.method == 'GET'
-
-    return render(request, 'users/confirm_avatar_delete.html', {
-        'profile': user_profile})
-
-
-def password_reset(request):
-    """Password reset form.
-
-    Based on django.contrib.auth.views. This view sends the email.
-
-    """
-    if request.method == "POST":
-        form = PasswordResetForm(request.POST)
-        was_valid = form.is_valid()
-        if was_valid:
-            # TODO: We aren't using Jingo anymore, but I'm not sure what
-            # to do with the below.
-            #
-            # TODO: Since we're using Jingo in a way that doesn't
-            # override the Django template loader, the pw_reset.ltxt
-            # email template must be a Django template and not a Jinja
-            # template.
-            #
-            # After we switch all the rendering everywhere, we can
-            # probably change this back. Until then, I'm pretty sure
-            # this won't get translated.
-            try_send_email_with_form(
-                form.save, form, 'email',
-                use_https=request.is_secure(),
-                token_generator=default_token_generator,
-                text_template='users/email/pw_reset.ltxt',
-                html_template='users/email/pw_reset.html',
-                subject_template_name='users/email/pw_reset_subject.ltxt')
-        # Form may now be invalid if email failed to send.
-        # PasswordResetForm is invalid iff there is no user with the entered
-        # email address.
-        # The condition below ensures we don't leak existence of email address
-        # _unless_ sending an email fails.
-        if form.is_valid() or not was_valid:
-            # Don't leak existence of email addresses.
-            return HttpResponseRedirect(reverse('users.pw_reset_sent'))
-    else:
-        form = PasswordResetForm()
-
-    return render(request, 'users/pw_reset_form.html', {'form': form})
-
-
-def password_reset_sent(request):
-    """Password reset email sent.
-
-    Based on django.contrib.auth.views. This view shows a success message after
-    email is sent.
-
-    """
-    return render(request, 'users/pw_reset_sent.html')
-
-
-@ssl_required
-def password_reset_confirm(request, uidb36=None, token=None):
-    """View that checks the hash in a password reset link and presents a
-    form for entering a new password.
-
-    Based on django.contrib.auth.views.
-
-    """
-    try:
-        uid_int = base36_to_int(uidb36)
-    except ValueError:
-        raise Http404
-
-    user = get_object_or_404(User, id=uid_int)
-    context = {}
-
-    if default_token_generator.check_token(user, token):
-        context['validlink'] = True
-        if request.method == 'POST':
-            form = SetPasswordForm(user, request.POST)
-            if form.is_valid():
-                form.save()
-                return HttpResponseRedirect(reverse('users.pw_reset_complete'))
-        else:
-            form = SetPasswordForm(None)
-    else:
-        context['validlink'] = False
-        form = None
-    context['form'] = form
-    return render(request, 'users/pw_reset_confirm.html', context)
-
-
-def password_reset_complete(request):
-    """Password reset complete.
-
-    Based on django.contrib.auth.views. Show a success message.
-
-    """
-    form = AuthenticationForm()
-    return render(request, 'users/pw_reset_complete.html', {'form': form})
-
-
-@login_required
-def password_change(request):
-    """Change password form page."""
-    if request.user.profile.is_fxa_migrated:
-        raise Http404
-    if request.method == 'POST':
-        form = PasswordChangeForm(user=request.user, data=request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('users.pw_change_complete'))
-    else:
-        form = PasswordChangeForm(user=request.user)
-    return render(request, 'users/pw_change.html', {'form': form})
-
-
-@login_required
-def password_change_complete(request):
-    """Change password complete page."""
-    return render(request, 'users/pw_change_complete.html')
-
-
-def forgot_username(request):
-    """Forgot username form page.
-
-    On POST, this view sends an email with the username.
-    """
-    if request.method == "POST":
-        form = ForgotUsernameForm(request.POST)
-        was_valid = form.is_valid()
-        if was_valid:
-            try_send_email_with_form(
-                form.save, form, 'email',
-                use_https=request.is_secure())
-
-        # Form may now be invalid if email failed to send.
-        # ForgotUsernameForm is invalid iff there is no user with the entered
-        # email address.
-        # The condition below ensures we don't leak existence of email address
-        # _unless_ sending an email fails.
-        if form.is_valid() or not was_valid:
-            # Don't leak existence of email addresses.
-            messages.add_message(
-                request, messages.INFO,
-                _(u"We've sent an email with the username to any account"
-                  u" using {email}.").format(email=form.data['email']))
-
-            return HttpResponseRedirect(reverse('users.login'))
-    else:
-        form = ForgotUsernameForm()
-
-    return render(request, 'users/forgot_username.html', {'form': form})
 
 
 class FXAAuthenticateView(OIDCAuthenticationRequestView):

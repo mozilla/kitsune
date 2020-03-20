@@ -3,37 +3,14 @@ import logging
 from smtplib import SMTPException
 
 from django.conf import settings
-from django.contrib import auth
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.utils.translation import ugettext as _
-
-from django_statsd.clients import statsd
 
 from kitsune.sumo import email_utils
 from kitsune.users import ERROR_SEND_EMAIL
-from kitsune.users.forms import AuthenticationForm
-from kitsune.users.models import Group, CONTRIBUTOR_GROUP, Deactivation
-
+from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation
 
 log = logging.getLogger('k.users')
-
-
-def handle_login(request, only_active=True):
-    auth.logout(request)
-
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST, only_active=only_active)
-        if form.is_valid():
-            auth.login(request, form.get_user())
-            statsd.incr('user.login')
-
-            if request.session.test_cookie_worked():
-                request.session.delete_test_cookie()
-
-        return form
-
-    request.session.set_test_cookie()
-    return AuthenticationForm()
 
 
 def try_send_email_with_form(func, form, field_name, *args, **kwargs):

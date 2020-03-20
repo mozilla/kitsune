@@ -3,34 +3,34 @@ import re
 from datetime import datetime, timedelta
 from string import letters
 
+import pytz
+import waffle
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
-from django.db.models import Q, Count
+from django.db.models import Count, Q
 from django.utils.encoding import force_text
 from django.utils.http import int_to_base36
 from django.views.decorators.http import require_GET
-
-import waffle
-from django_statsd.clients import statsd
-
-import pytz
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, serializers, mixins, filters, permissions, status
+from django_statsd.clients import statsd
+from rest_framework import (filters, mixins, permissions, serializers, status,
+                            viewsets)
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
 from kitsune.questions.models import Answer
-from kitsune.questions.utils import num_answers, num_solutions, num_questions
+from kitsune.questions.utils import num_answers, num_questions, num_solutions
 from kitsune.sumo import email_utils
-from kitsune.sumo.api_utils import DateTimeUTCField, GenericAPIException, PermissionMod
+from kitsune.sumo.api_utils import (DateTimeUTCField, GenericAPIException,
+                                    PermissionMod)
 from kitsune.sumo.decorators import json_view
+from kitsune.users.models import Profile, Setting
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
-from kitsune.users.models import Profile, RegistrationProfile, Setting
 
 
 def display_name_or_none(user):
@@ -233,17 +233,6 @@ class ProfileSerializer(serializers.ModelSerializer):
             data["name"] = username
 
         return data
-
-    def create(self, validated_data):
-        user_data = validated_data.pop("user")
-        u = RegistrationProfile.objects.create_inactive_user(
-            user_data["username"], user_data["password"], user_data["email"]
-        )
-        p = u.profile
-        for key, val in validated_data.items():
-            setattr(p, key, val)
-        p.save()
-        return p
 
     def update(self, instance, validated_data):
         if "user" in validated_data:

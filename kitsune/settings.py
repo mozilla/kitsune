@@ -5,15 +5,12 @@ import logging
 import os
 import platform
 import re
+from datetime import date
 
 import dj_database_url
 import django_cache_url
-
-
-from datetime import date
-from decouple import Csv, config
-
 import djcelery
+from decouple import Csv, config
 
 from bundles import PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
@@ -513,17 +510,11 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 
-    # This should come before TokenLoginMiddleware, because
-    # TokenLoginMiddleware uses this to tell users they have been
-    # automatically logged. It also has to come after
-    # NoVarySessionMiddleware.
+    # This should come after NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
 
     # This should come after MessageMiddleware
     'kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware',
-
-    # This middleware should come after AuthenticationMiddleware.
-    'kitsune.users.middleware.TokenLoginMiddleware',
 
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
@@ -576,7 +567,6 @@ AUTHENTICATION_BACKENDS = (
     'kitsune.users.auth.FXAAuthBackend',
     # This backend is used for the /admin interface
     'kitsune.users.auth.ModelBackendAllowInactive',
-    'kitsune.users.auth.TokenLoginBackend',
 )
 if READ_ONLY:
     AUTHENTICATION_BACKENDS = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
@@ -632,7 +622,6 @@ AVATAR_SIZE = 200  # in pixels
 MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
 GROUP_AVATAR_PATH = 'uploads/groupavatars/'
 
-ACCOUNT_ACTIVATION_DAYS = 30
 
 PASSWORD_HASHERS = (
     'kitsune.users.hashers.SHA256PasswordHasher',

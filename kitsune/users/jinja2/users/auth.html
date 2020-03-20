@@ -1,6 +1,5 @@
 {% extends "users/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "users/includes/notification_macros.html" import notification_already_migrated %}
 
 {% set title = _('Log In / Sign up') %}
 {% set styles = ('users',) %}
@@ -14,11 +13,6 @@
 <section class="sumo-auth--wrap">
   <div class="mzp-l-content">
 
-    {% if notification == 'already_migrated' %}
-      {{ notification_already_migrated(STATIC_URL) }}
-    {% endif %}
-
-
     <div class="card feature-padding elevation-03">
       <div class="sumo-auth">
         <figure class="sumo-auth--logo">
@@ -27,9 +21,6 @@
         <div class="sumo-auth--form">
           <div id="login-fxa" class="{% if legacy_form_visible %}hidden{% endif %}">
             {% include "users/includes/login-fxa.html" %}
-          </div>
-          <div id="login-legacy" class="{% if not legacy_form_visible %}hidden{% endif %}">
-            {% include "users/includes/login-form.html" %}
           </div>
         </div>
       </div>

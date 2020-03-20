@@ -3,12 +3,8 @@
 {% set styles = ('users',) %}
 {% set scripts = ('users',) %}
 {% set is_owner = profile and profile.user == request.user %}
-{% from "users/includes/notification_macros.html" import notification_sumo_deprecation %}
 
 {% block above_main %}
-  {% if is_owner and not profile.is_fxa_migrated %}
-    {{ notification_sumo_deprecation(STATIC_URL) }}
-  {% endif %}
 {% endblock %}
 
 {% block side_top %}
