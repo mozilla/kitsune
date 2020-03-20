@@ -105,7 +105,7 @@
         <div class="scroll-wrap">
           {% for result in results %}
             <div class="card elevation-01 results-user">
-              <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results" />
+              <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results card--img" />
               <span class="numbered">{{ loop.index + ((page - 1) * page_size) }}</span>
               <div class="card--details user-details">
                 <h2 class="card--title">{{ result['user']['display_name'] }}</h2>
