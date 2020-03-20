@@ -149,7 +149,7 @@
         <a href="{{ url('home') }}"><img src="{{ STATIC_URL }}sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
       </div>
 
-      <button data-sumo-toggle-nav="#search-navigation" class="sumo-nav--search-button" type="button" aria-controls="search-navigation">Search</button>
+      <button data-mobile-nav-search-button class="sumo-nav--search-button" type="button">Search</button>
       <button data-sumo-toggle-nav="#main-navigation" class="sumo-nav--toggle-button" type="button" aria-controls="main-navigation">Menu</button>
       <a class="sumo-nav--avatar-button" data-sumo-toggle-nav="#profile-navigation" aria-controls="profile-navigation" aria-role="button">
         {% if user.is_authenticated() %}

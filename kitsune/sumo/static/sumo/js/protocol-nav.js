@@ -48,11 +48,20 @@ if (toggleNavButtons.length > 0) {
 
 // close navs on resize
 var timeout = false;
-window.addEventListener('resize', function() {
-  clearTimeout(timeout);
-  timeout = setTimeout(resetNavs, 250);
-});
+var width = window.innerWidth;
 
+window.addEventListener('resize', function() {
+    clearTimeout(timeout);
+    timeout = setTimeout(function(){
+      if (window.innerWidth != width) {
+        width = window.innerWidth;
+        resetNavs
+      }
+    }, 250);
+
+
+
+});
 
 // lang switcher from protocol. #TODO: test this in app.
 // (function() {
