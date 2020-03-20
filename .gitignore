@@ -34,8 +34,8 @@ k8s/regions/*/kubectl
 k8s/regions/*/*-secrets.yaml
 *.db
 *.sqlite3
-.vscode*
 .bash_history
+.vscode-server
 .yarnrc
 .docker-build*
 postatus.txt
@@ -46,6 +46,6 @@ styleguide/build/
 .gitconfig
 npm-debug.log
 .babel.json
-.devcontainer/
 .log
 .python-version
+.pylint*

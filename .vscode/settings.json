@@ -1,0 +1,11 @@
+{
+    "python.pythonPath": "/venv/bin/python",
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--load-plugins=pylint_django",
+        "--enable=W0614",
+        "--disable=C0114"
+    ]
+}
