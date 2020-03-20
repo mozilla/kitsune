@@ -297,20 +297,6 @@
   <nav class="sidebar-nav is-action-list" id="question-tools">
     <span class="details-heading"></span>
     <ul class="sidebar-nav--list" id="related-content">
-      {% if related_documents or related_questions %}
-      <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Related') }}</li>
-      {% for q in related_questions %}
-      <li class="related-question">
-        <a href="{{ q.url[0] }}">{{ q.question_title[0] }}</a>
-      </li>
-      {% endfor %}
-      {% for d in related_documents %}
-      <li class="related-document">
-        <a href="{{ d.url[0] }}">{{ d.document_title[0] }}</a>
-      </li>
-      {% endfor %}
-      {% endif %}
-
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Question Tools') }}</li>
       {% if question.allows_edit(user) %}
       <li class="edit">
@@ -542,6 +528,20 @@
           </form>
           </div>
         </li>
+
+        {% if related_documents or related_questions %}
+        <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Related Articles') }}</li>
+        {% for q in related_questions %}
+        <li class="related-question">
+          <a href="{{ q.url[0] }}">{{ q.question_title[0] }}</a>
+        </li>
+        {% endfor %}
+        {% for d in related_documents %}
+        <li class="related-document">
+          <a href="{{ d.url[0] }}">{{ d.document_title[0] }}</a>
+        </li>
+        {% endfor %}
+        {% endif %}
     </ul>
   </nav>
 </div>
