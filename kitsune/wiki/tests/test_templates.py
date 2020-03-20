@@ -1076,7 +1076,7 @@ class NewRevisionTests(TestCaseBase):
         trans_resp = self.client.get(trans_url)
         eq_(200, trans_resp.status_code)
         trans_content = pq(trans_resp.content)
-        eq_(0, len(trans_content(".user-messages li")))
+        eq_(0, len(trans_content(".user-messages .mzp-c-notification-bar")))
         eq_(2, len(trans_content(".submit .btn-draft")))
 
     def test_restore_draft_revision(self):
@@ -1087,7 +1087,7 @@ class NewRevisionTests(TestCaseBase):
         trans_resp = self.client.get(trans_url)
         trans_content = pq(trans_resp.content)
         # Check user message is shown there
-        eq_(1, len(trans_content(".user-messages li")))
+        eq_(1, len(trans_content(".user-messages .mzp-c-notification-bar")))
         # Check there are two buttons for restore and discard
         eq_(2, len(trans_content(".user-messages .info form .btn")))
         # Restore with the draft data
@@ -1095,7 +1095,7 @@ class NewRevisionTests(TestCaseBase):
         trans_resp = self.client.get(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # No user message is shown there
-        eq_(0, len(trans_content(".user-messages li")))
+        eq_(0, len(trans_content(".user-messages .mzp-c-notification-bar")))
         # Check title, slug, keywords, content etc are restored
         eq_(draft.title, trans_content("#id_title").val())
         eq_(draft.slug, trans_content("#id_slug").val())
@@ -1174,7 +1174,7 @@ class NewRevisionTests(TestCaseBase):
         trans_resp = self.client.get(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # Check there is a warning message
-        eq_(1, len(trans_content(".user-messages li.draft-warning")))
+        eq_(1, len(trans_content(".user-messages .draft-warning")))
 
 
 class HistoryTests(TestCaseBase):
