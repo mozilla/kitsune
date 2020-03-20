@@ -67,7 +67,8 @@ COPY . .
 RUN cp .env-build .env && \
     ./manage.py nunjucks_precompile && \
     ./manage.py compilejsi18n && \
-    ./manage.py collectstatic --noinput
+    ./manage.py collectstatic --noinput && \
+    npx svgo -r -f static
 
 
 ################################
