@@ -35,7 +35,26 @@ we can compute the edit-title URL.
     {% endblock %}
 
     <div class="sumo-l-two-col" id="ask-question">
-      <aside class="sumo-l-two-col--sidebar"></aside>
+      <aside class="sumo-l-two-col--sidebar">
+        {% if form %}
+        <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
+            <img class="card--img" src="{{ STATIC_URL }}sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png" alt="Illustration of community" />
+            <div class="card--details">
+              <h3 class="card--title">{{ _('Our Community is here to help') }}</h3>
+              <p class="card--desc">{{ _('Kindness is at the heart of our community. Our volunteers are happy to share their time and Firefox knowledge with you.') }}</p>
+              <p><strong><a href="{{ url('landings.get_involved') }}">{{ _('Learn More') }}</a></strong></p>
+            </div>
+        </div>
+
+        <div class="sidebar--push large-only">
+          <h3 class="sumo-card-heading">
+            <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
+            {{ _('Helpful Tip!')}}
+          </h3>
+          <p>{{ _('Follow through. Sometimes, our volunteers would ask you for more information or to test out certain scenarios. The sooner you can do this, the sooner they would know how to fix it.')}}
+        </div>
+        {% endif %}
+      </aside>
       <article class="sumo-l-two-col--main">
 
         {% if not no_headline %}
@@ -93,6 +112,7 @@ we can compute the edit-title URL.
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
                     {{ field.label_tag()|safe }}
+
                     {% if field.name == 'content' %}
                       {{ content_editor(field) }}
                     {% elif field.name == 'troubleshooting' %}
@@ -120,16 +140,20 @@ we can compute the edit-title URL.
                 {% endfor %}
               </ul>
 
-              <div class="info card highlight is-shaded">
+              <div class="hide-on-large">
+                <h3 class="sumo-card-heading">
+                  <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
+                  {{ _('Helpful Tip!')}}
+                </h3>
                 <p>
                 {% trans %}
-                  Follow through. Sometimes, our volunteers would ask you
-                  for more information or to test out certain scenarios.
-                  The sooner you can do this, the sooner they would know
-                  how to fix it.
+                  Follow through. Sometimes, our volunteers would ask you for
+                  more information or to test out certain scenarios. The sooner
+                  you can do this, the sooner they would know how to fix it.
                 {% endtrans %}
                 </p>
               </div>
+
               <div class="sumo-button-wrap">
                 <button type="submit" class="sumo-button primary-button" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
                 {% block more_submit_buttons %}{% endblock %}
@@ -138,6 +162,7 @@ we can compute the edit-title URL.
           </div>
         {% endif %}
       </article>
+
     </div>
   </article>
 </div>

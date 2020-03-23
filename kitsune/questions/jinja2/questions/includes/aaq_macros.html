@@ -292,17 +292,26 @@
 
 
 {% macro troubleshooting_instructions(field) %}
-  <div id="api-section">
-    <a href="#" class="sumo-button primary-button" id="share-data">
-      {{ _('Share Data') }}
-    </a>
-    <p class="help-text">{{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}</p>
-  </div>
-  <p id="troubleshooting-explanation" class="cf">
-    {{ _('This field was populated automatically.') }}
-    <a href="#troubleshooting-field" class="expander">{{ _('See the data') }}</a>.
-  </p>
-  <div id="troubleshooting-field" class="hide-until-expanded field">
-    {{ field }}
+  <div>
+    <div id="api-section">
+      <div class="sumo-button-wrap">
+        <a href="#" class="sumo-button" id="share-data">
+          {{ _('Share Data') }}
+        </a>
+
+        <a href="#troubleshooting-field" class="sumo-button link-button expander">{{ _('Show info') }} »</a>
+      </div>
+      <p>{% trans %}
+          This information gives details about the internal workings of your
+          browser that will help in answering your question. A window will
+          open in the top corner. Click Allow, and then click Install. If the
+          automated way doesn't work, <a href="#">try these manual steps</a>.
+         {% endtrans %}
+       </p>
+    </div>
+
+    <div id="troubleshooting-field" class="hide-until-expanded field full-width">
+      {{ field }}
+    </div>
   </div>
 {% endmacro %}
