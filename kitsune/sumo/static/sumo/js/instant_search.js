@@ -112,9 +112,6 @@
               $('#support-search-masthead').find('input[name=q]').val(value).focus();
             }
 
-
-
-
           } else if (formId === 'support-search-sidebar') {
             $('.hidden-search-masthead').show();
             $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
@@ -187,6 +184,24 @@
     var thisLink = $(this).text();
     $('#support-search-masthead input[name=q]').focus().val(thisLink);
     $mainInput.trigger( "keyup" );
+    ev.preventDefault();
+  });
+
+  $(document).on('click', '[data-mobile-nav-search-button]', function(ev) {
+    // If we hijack the layout of the page and the user clicks the button again.
+    // assume they want to get rid of the search.
+    if ($('.hidden-search-masthead').is(':visible')) {
+      window.k.InstantSearchSettings.showContent();
+    } else if ($('.hidden-search-masthead').length > 0) {
+      $('body').addClass('search-results-visible');
+      $('.hidden-search-masthead').show();
+      $('.hidden-search-masthead').find('input[name=q]').focus();
+      window.scrollTo(0, 0);
+    } else {
+      // catchall for pages with a searchbox in the masthead
+      $('.simple-search-form .searchbox').trigger('keyup').focus();
+    }
+
     ev.preventDefault();
   });
 })(jQuery);

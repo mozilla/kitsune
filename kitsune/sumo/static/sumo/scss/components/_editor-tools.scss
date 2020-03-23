@@ -114,10 +114,32 @@ button {
   }
 
   h4,
-  .category-list {
+  .category-list,
+  .sidebar-nav {
     @include c.text-body-md;
     font-weight: normal;
     color: var(--color-text);
+
+    .response-heading,
+    .response {
+      &.selected {
+        background-color: var(--color-link-active-bg);
+        font-weight: bold;
+        color: var(--color-heading);
+        border-radius: var(--global-radius);
+        padding: 4px;
+        margin-right: 20px;
+      }
+
+      &:hover {
+        cursor: pointer;
+        color: var(--color-heading);
+      }
+    }
+
+
+
+
   }
 }
 
