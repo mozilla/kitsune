@@ -256,6 +256,15 @@ blockquote {
 
 .sumo-card-heading {
   @include c.sumo-card-heading; // 18/18/16
+
+  &.is-summary {
+    button {
+      @include p.bidi((
+        (padding-left, 0, 48px),
+        (padding-right, 48px, 0),
+      ));
+    }
+  }
 }
 
 .sumo-callout-heading {
