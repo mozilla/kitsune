@@ -14,7 +14,7 @@
 
     new k.AjaxPreview($('#preview')); // eslint-disable-line
 
-    $('span.post-action a.reply').click(function() {
+    $('.post-action a.reply').click(function() {
       var post = $(this).data('post'),
         $post = $('#post-' + post),
         text = $post.find('div.content-raw').text(),
