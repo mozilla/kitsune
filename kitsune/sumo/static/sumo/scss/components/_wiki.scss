@@ -19,8 +19,6 @@ article {
 }
 
 .sidebar-nav {
-  font-size: 14px;
-
   &.topics {
     background-color: #fff;
     // margin-top: p.$spacing-md;
@@ -697,13 +695,6 @@ ul.description {
     }
   }
 
-  h3 {
-    color: #333;
-    font-size: 13px;
-    font-weight: bold;
-    margin: 0 0 5px;
-  }
-
   input[type="text"] {
     width: 98%;
   }
@@ -801,11 +792,6 @@ body.translate {
     width: 250px;
     float: left;
     margin-right: 40px;
-  }
-
-  #localize-document {
-    float: left;
-    width: calc(100% - 351px);
   }
 }
 
