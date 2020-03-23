@@ -21,11 +21,6 @@
       </div>
       <span class="asked-on">
         {{ datetimeformat(post.created, format='longdatetime') }}
-
-        {% if post.updated_by %}
-        <br>
-          {{ _('Modified by {name} on {datetime}')|fe(name=display_name(post.updated_by), datetime=datetimeformat(post.updated, format='longdatetime')) }}
-        {% endif %}
       </span>
     </div>
   </div>
@@ -66,4 +61,9 @@
     {{ post.content_parsed }}
   </div>
   <div class="content-raw">{{ post.content }}</div>
+  {% if post.updated_by %}
+  <p class="text-body-sm"><em>
+    {{ _('Modified by <strong>{name}</strong> on {datetime}')|fe(name=display_name(post.updated_by), datetime=datetimeformat(post.updated, format='longdatetime')) }}
+  </em></p>
+  {% endif %}
 </div>

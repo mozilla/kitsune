@@ -169,9 +169,9 @@
         {% endif %}
 
         {% if question.updated_by %}
-          <p class="edited">
+          <p class="edited text-body-sm"><em>
             {{ _('Modified {datetime} by {name}')|fe(name=display_name(question.updated_by), datetime=datetimeformat(question.updated, format='longdatetime')) }}
-          </p>
+          </em></p>
         {% endif %}
 
         {% if question.solution %}
