@@ -14,17 +14,19 @@
 .pagination {
   display: flex;
   align-items: center;
+  margin: p.$spacing-lg 0;
 
   a {
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    width: p.$spacing-lg;
+    min-width: p.$spacing-lg;
     height: p.$spacing-lg;
     border-radius: var(--global-radius);
     color: var(--color-text);
     text-decoration: none;
+    padding: 0 4px;
 
     &:hover {
       text-decoration: none;

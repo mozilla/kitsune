@@ -20,8 +20,8 @@
 
     {% for w in watch_list %}
     <div class="field checkbox {% if w.errors %}has-error{% endif %}">
-      <input type="checkbox" name="watch_{{ w.id }}" {% if w.is_active %}checked="checked"{% endif %}>
-      <label for="{{ w.id_for_label }}">{{ w.content_type }}: {{ w.content_object }}</label>
+      <input type="checkbox" id="id_{{ w.id }}"  name="watch_{{ w.id }}" {% if w.is_active %}checked="checked"{% endif %}>
+      <label for="id_{{ w.id }}">{{ w.content_type }}: {{ w.content_object }}</label>
     </div>
     {% endfor %}
 

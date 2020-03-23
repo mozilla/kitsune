@@ -46,13 +46,19 @@ if (toggleNavButtons.length > 0) {
   });
 }
 
-// close navs on resize
+// close navs on resize, but only check width. Height changes on mobile when the
+// address bar slides away on scroll, which causes problems.
 var timeout = false;
+var width = window.innerWidth;
 window.addEventListener('resize', function() {
-  clearTimeout(timeout);
-  timeout = setTimeout(resetNavs, 250);
+    clearTimeout(timeout);
+    timeout = setTimeout(function(){
+      if (window.innerWidth != width) {
+        width = window.innerWidth;
+        resetNavs();
+      }
+    }, 250);
 });
-
 
 // lang switcher from protocol. #TODO: test this in app.
 // (function() {

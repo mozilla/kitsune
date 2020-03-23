@@ -22,7 +22,7 @@
           <ul class="revision-comment">
             {% for revision in unreviewed_revisions %}
               <li>
-                {{ _('Revision {id} by {user}')|f(id=revision.id, user=revision.creator) }}.
+                {{ _('Revision {id} by {user}.')|f(id=revision.id, user=revision.creator) }}
                 <br>
                 {{ _('<label>Revision Comment:</label> {comment}')|fe(comment=revision.comment) }}
                 <br>

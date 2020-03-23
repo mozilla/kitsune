@@ -50,7 +50,6 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def setUp(self):
         super(AnswersTemplateTestCase, self).setUp()
-
         self.user = UserFactory()
         self.client.login(username=self.user.username, password="testpass")
         self.question = AnswerFactory().question
@@ -1566,10 +1565,10 @@ class ProductForumTemplateTestCase(TestCaseBase):
         fxos = ProductFactory(title="Firefox OS", slug="firefox-os")
         openbadges = ProductFactory(title="Open Badges", slug="open-badges")
 
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        firefox.questions_locales.add(l)
-        android.questions_locales.add(l)
-        fxos.questions_locales.add(l)
+        lcl = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        firefox.questions_locales.add(lcl)
+        android.questions_locales.add(lcl)
+        fxos.questions_locales.add(lcl)
 
         response = self.client.get(reverse("questions.home"))
         eq_(200, response.status_code)

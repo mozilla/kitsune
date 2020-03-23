@@ -10,9 +10,18 @@ from pyquery import PyQuery as pq
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.models import (
-    Question, QuestionVote, AnswerVote, Answer, QuestionLocale)
+    Question,
+    QuestionVote,
+    AnswerVote,
+    Answer,
+    QuestionLocale,
+)
 from kitsune.questions.tests import (
-    AnswerFactory, QuestionFactory, TestCaseBase, QuestionLocaleFactory)
+    AnswerFactory,
+    QuestionFactory,
+    TestCaseBase,
+    QuestionLocaleFactory,
+)
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -37,40 +46,42 @@ class AAQSearchTests(ElasticTestCase):
 
     def test_bleaching(self):
         """Tests whether summaries are bleached"""
-        p = ProductFactory(slug=u'firefox')
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        TopicFactory(title='Fix problems', slug='fix-problems', product=p)
+        p = ProductFactory(slug=u"firefox")
+        locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(locale)
+        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
         QuestionFactory(
             product=p,
-            title=u'CupcakesQuestion cupcakes',
-            content=u'cupcakes are best with <unbleached>flour</unbleached>')
+            title=u"CupcakesQuestion cupcakes",
+            content=u"cupcakes are best with <unbleached>flour</unbleached>",
+        )
 
         self.refresh()
 
         url = urlparams(
-            reverse('questions.aaq_step4', args=['desktop', 'fix-problems']),
-            search='cupcakes')
+            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
+            search="cupcakes",
+        )
 
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert 'CupcakesQuestion' in response.content
-        assert '<unbleached>' not in response.content
-        assert 'cupcakes are best with' in response.content
+        assert "CupcakesQuestion" in response.content
+        assert "<unbleached>" not in response.content
+        assert "cupcakes are best with" in response.content
 
     # TODO: test whether when _search_suggetions fails with a handled
     # error that the user can still ask a question.
 
     def test_search_suggestions_questions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
-        p = ProductFactory(slug=u'firefox')
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        TopicFactory(title='Fix problems', slug='fix-problems', product=p)
-        q = QuestionFactory(product=p, title=u'CupcakesQuestion cupcakes')
+        p = ProductFactory(slug=u"firefox")
+        locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(locale)
+        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
+        q = QuestionFactory(product=p, title=u"CupcakesQuestion cupcakes")
 
-        d = DocumentFactory(title=u'CupcakesKB cupcakes', category=10)
+        d = DocumentFactory(title=u"CupcakesKB cupcakes", category=10)
         d.products.add(p)
 
         RevisionFactory(document=d, is_approved=True)
@@ -78,14 +89,15 @@ class AAQSearchTests(ElasticTestCase):
         self.refresh()
 
         url = urlparams(
-            reverse('questions.aaq_step4', args=['desktop', 'fix-problems']),
-            search='cupcakes')
+            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
+            search="cupcakes",
+        )
 
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert 'CupcakesQuestion' in response.content
-        assert 'CupcakesKB' in response.content
+        assert "CupcakesQuestion" in response.content
+        assert "CupcakesKB" in response.content
 
         # Verify that archived articles and questions aren't shown...
         # Archive both and they shouldn't appear anymore.
@@ -99,64 +111,74 @@ class AAQSearchTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert 'CupcakesQuestion' not in response.content
-        assert 'CupcakesKB' not in response.content
+        assert "CupcakesQuestion" not in response.content
+        assert "CupcakesKB" not in response.content
 
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
-        QuestionLocaleFactory(locale='de')
+        QuestionLocaleFactory(locale="de")
 
-        p = ProductFactory(slug=u'firefox')
+        p = ProductFactory(slug=u"firefox")
 
         for l in QuestionLocale.objects.all():
             p.questions_locales.add(l)
 
-        TopicFactory(title='Fix problems', slug='fix-problems', product=p)
+        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
 
-        QuestionFactory(title='question cupcakes?', product=p, locale='en-US')
-        QuestionFactory(title='question donuts?', product=p, locale='en-US')
-        QuestionFactory(title='question pies?', product=p, locale='pt-BR')
-        QuestionFactory(title='question pastries?', product=p, locale='de')
+        QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
+        QuestionFactory(title="question donuts?", product=p, locale="en-US")
+        QuestionFactory(title="question pies?", product=p, locale="pt-BR")
+        QuestionFactory(title="question pastries?", product=p, locale="de")
 
         self.refresh()
 
         def sub_test(locale, *titles):
-            url = urlparams(reverse('questions.aaq_step4',
-                                    args=['desktop', 'fix-problems'],
-                                    locale=locale),
-                            search='question')
+            url = urlparams(
+                reverse(
+                    "questions.aaq_step4",
+                    args=["desktop", "fix-problems"],
+                    locale=locale,
+                ),
+                search="question",
+            )
             response = self.client.get(url, follow=True)
             doc = pq(response.content)
-            eq_msg(len(doc('.result.question')), len(titles),
-                   'Wrong number of results for {0}'.format(locale))
+            eq_msg(
+                len(doc(".result.question")),
+                len(titles),
+                "Wrong number of results for {0}".format(locale),
+            )
             for substr in titles:
-                assert substr in doc('.result.question h3 a').text()
+                assert substr in doc(".result.question h3 a").text()
 
-        sub_test('en-US', 'cupcakes?', 'donuts?')
-        sub_test('pt-BR', 'cupcakes?', 'donuts?', 'pies?')
-        sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
+        sub_test("en-US", "cupcakes?", "donuts?")
+        sub_test("pt-BR", "cupcakes?", "donuts?", "pies?")
+        sub_test("de", "cupcakes?", "donuts?", "pastries?")
 
     def test_ratelimit(self):
         """Make sure posting new questions is ratelimited"""
-        data = {'title': 'A test question',
-                'content': 'I have this question that I hope...',
-                'sites_affected': 'http://example.com',
-                'ff_version': '3.6.6',
-                'os': 'Intel Mac OS X 10.6',
-                'plugins': '* Shockwave Flash 10.1 r53',
-                'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
-                             '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
-                             'Firefox/3.6.6'}
-        p = ProductFactory(slug='firefox')
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        TopicFactory(slug='fix-problems', product=p)
+        data = {
+            "title": "A test question",
+            "content": "I have this question that I hope...",
+            "sites_affected": "http://example.com",
+            "ff_version": "3.6.6",
+            "os": "Intel Mac OS X 10.6",
+            "plugins": "* Shockwave Flash 10.1 r53",
+            "useragent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X "
+            "10.6; en-US; rv:1.9.2.6) Gecko/20100625 "
+            "Firefox/3.6.6",
+        }
+        p = ProductFactory(slug="firefox")
+        locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(locale)
+        TopicFactory(slug="fix-problems", product=p)
         url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
-            search='A test question')
+            reverse("questions.aaq_step5", args=["desktop", "fix-problems"]),
+            search="A test question",
+        )
 
         u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
 
         for i in range(0, 5):
             self.client.post(url, data, follow=True)
@@ -169,45 +191,44 @@ class AAQSearchTests(ElasticTestCase):
 
         Oddly, none of the other tests cover this simple case.
         """
-        url = reverse('questions.aaq_step1')
+        url = reverse("questions.aaq_step1")
         res = self.client.get(url)
         eq_(200, res.status_code)
 
     def test_redirect_bad_locales(self):
         """Non-AAQ locales should redirect."""
-        url_fr = reverse('questions.aaq_step1', locale='fr')
-        url_en = reverse('questions.aaq_step1', locale='en-US')
+        url_fr = reverse("questions.aaq_step1", locale="fr")
+        url_en = reverse("questions.aaq_step1", locale="en-US")
         res = self.client.get(url_fr)
         eq_(302, res.status_code)
         # This has some http://... stuff at the beginning. Ignore that.
-        assert res['location'].endswith(url_en)
+        assert res["location"].endswith(url_en)
 
-    @override_settings(WIKI_DEFAULT_LANGUAGE='fr')
+    @override_settings(WIKI_DEFAULT_LANGUAGE="fr")
     def test_no_redirect_english(self):
         """The default language should never redirect, even if it isn't an AAQ language."""
         """Non-AAQ locales should redirect."""
-        url_fr = reverse('questions.aaq_step1', locale='fr')
+        url_fr = reverse("questions.aaq_step1", locale="fr")
         res = self.client.get(url_fr)
         eq_(200, res.status_code)
 
     def test_redirect_locale_not_enabled(self):
         """AAQ should redirect for products with questions disabled for the
         current locale"""
-        url_fi = reverse('questions.aaq_step1', locale='fi')
+        url_fi = reverse("questions.aaq_step1", locale="fi")
         res = self.client.get(url_fi)
         eq_(200, res.status_code)
 
-        p = ProductFactory(slug='firefox')
+        p = ProductFactory(slug="firefox")
 
-        url_fi = reverse('questions.aaq_step2', locale='fi', args=['desktop'])
-        url_en = reverse('questions.aaq_step2', locale='en-US',
-                         args=['desktop'])
+        url_fi = reverse("questions.aaq_step2", locale="fi", args=["desktop"])
+        url_en = reverse("questions.aaq_step2", locale="en-US", args=["desktop"])
         res = self.client.get(url_fi)
         eq_(302, res.status_code)
-        assert res['location'].endswith(url_en)
+        assert res["location"].endswith(url_en)
 
-        l = QuestionLocale.objects.get(locale='fi')
-        p.questions_locales.add(l)
+        locale = QuestionLocale.objects.get(locale="fi")
+        p.questions_locales.add(locale)
         res = self.client.get(url_fi)
         eq_(200, res.status_code)
 
@@ -217,71 +238,72 @@ class AAQTests(TestCaseBase):
         """
         A non-authenticated user cannot access the AAQ flow and will be redirected to auth screen
         """
-        url = reverse('questions.aaq_step1')
+        url = reverse("questions.aaq_step1")
         response = self.client.get(url, follow=True)
-        assert template_used(response, 'users/auth.html')
+        assert template_used(response, "users/auth.html")
 
     def test_inactive_user(self):
         """
         An inactive user cannot access the AAQ flow
         """
         user = UserFactory(is_superuser=False)
-        self.client.login(username=user.username, password='testpass')
+        self.client.login(username=user.username, password="testpass")
 
         # After log in, set user to inactive
         user.is_active = False
         user.save()
 
-        url = reverse('questions.aaq_step1')
+        url = reverse("questions.aaq_step1")
         response = self.client.get(url, follow=True)
-        assert not template_used(response, 'questions/new_question.html')
+        assert not template_used(response, "questions/new_question.html")
 
     def test_authenticated_user(self):
         """
         An active, authenticated user can access the AAQ flow
         """
         user = UserFactory(is_superuser=False)
-        self.client.login(username=user.username, password='testpass')
-        url = reverse('questions.aaq_step1')
+        self.client.login(username=user.username, password="testpass")
+        url = reverse("questions.aaq_step1")
         response = self.client.get(url, follow=True)
-        assert not template_used(response, 'users/auth.html')
-        assert template_used(response, 'questions/new_question.html')
+        assert not template_used(response, "users/auth.html")
+        assert template_used(response, "questions/new_question.html")
 
 
-@set_waffle_flag('new_aaq')
+@set_waffle_flag("new_aaq")
 class ReactAAQTests(TestCaseBase):
     def setUp(self):
         u = UserFactory(is_superuser=False)
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
 
     def test_waffle_flag(self):
-        url = reverse('questions.aaq_step1')
+        url = reverse("questions.aaq_step1")
         response = self.client.get(url, follow=True)
-        assert template_used(response, 'questions/new_question_react.html')
+        assert template_used(response, "questions/new_question_react.html")
 
     def test_only_marked_topics(self):
         t1 = TopicFactory(in_aaq=True)
         TopicFactory(in_aaq=False)
 
-        url = reverse('questions.aaq_step1')
+        url = reverse("questions.aaq_step1")
         response = self.client.get(url, follow=True)
         doc = pq(response.content)
-        topics = json.loads(doc('.data[name=topics]').text())
+        topics = json.loads(doc(".data[name=topics]").text())
 
         eq_(len(topics), 1)
-        eq_(topics[0]['id'], t1.id)
+        eq_(topics[0]["id"], t1.id)
 
 
 class TestQuestionUpdates(TestCaseBase):
     """Tests that questions are only updated in the right cases."""
+
     client_class = LocalizingClient
 
-    date_format = '%Y%M%d%H%m%S'
+    date_format = "%Y%M%d%H%m%S"
 
     def setUp(self):
         super(TestQuestionUpdates, self).setUp()
         self.u = UserFactory(is_superuser=True)
-        self.client.login(username=self.u.username, password='testpass')
+        self.client.login(username=self.u.username, password="testpass")
 
         self.q = QuestionFactory(updated=datetime(2012, 7, 9, 9, 0, 0))
         self.a = AnswerFactory(question=self.q)
@@ -295,61 +317,57 @@ class TestQuestionUpdates(TestCaseBase):
         self.u.delete()
         self.q.delete()
 
-    def _request_and_no_update(self, url, req_type='POST', data={}):
+    def _request_and_no_update(self, url, req_type="POST", data={}):
         updated = self.q.updated
 
-        if req_type == 'POST':
+        if req_type == "POST":
             self.client.post(url, data, follow=True)
-        elif req_type == 'GET':
+        elif req_type == "GET":
             self.client.get(url, data, follow=True)
         else:
             raise ValueError('req_type must be either "GET" or "POST"')
 
         self.q = Question.objects.get(pk=self.q.id)
-        eq_(updated.strftime(self.date_format),
-            self.q.updated.strftime(self.date_format))
+        eq_(
+            updated.strftime(self.date_format),
+            self.q.updated.strftime(self.date_format),
+        )
 
     def test_no_update_edit(self):
-        url = urlparams(reverse('questions.edit_question', args=[self.q.id]))
-        self._request_and_no_update(url, req_type='POST', data={
-            'title': 'A new title.',
-            'content': 'Some new content.'
-        })
+        url = urlparams(reverse("questions.edit_question", args=[self.q.id]))
+        self._request_and_no_update(
+            url,
+            req_type="POST",
+            data={"title": "A new title.", "content": "Some new content."},
+        )
 
     def test_no_update_solve(self):
-        url = urlparams(reverse('questions.solve',
-                        args=[self.q.id, self.a.id]))
+        url = urlparams(reverse("questions.solve", args=[self.q.id, self.a.id]))
         self._request_and_no_update(url)
 
     def test_no_update_unsolve(self):
-        url = urlparams(reverse('questions.unsolve',
-                                args=[self.q.id, self.a.id]))
+        url = urlparams(reverse("questions.unsolve", args=[self.q.id, self.a.id]))
         self._request_and_no_update(url)
 
     def test_no_update_vote(self):
-        url = urlparams(reverse('questions.vote', args=[self.q.id]))
-        self._request_and_no_update(url, req_type='POST')
+        url = urlparams(reverse("questions.vote", args=[self.q.id]))
+        self._request_and_no_update(url, req_type="POST")
 
     def test_no_update_lock(self):
-        url = urlparams(reverse('questions.lock', args=[self.q.id]))
-        self._request_and_no_update(url, req_type='POST')
+        url = urlparams(reverse("questions.lock", args=[self.q.id]))
+        self._request_and_no_update(url, req_type="POST")
         # Now unlock
-        self._request_and_no_update(url, req_type='POST')
+        self._request_and_no_update(url, req_type="POST")
 
     def test_no_update_tagging(self):
-        url = urlparams(reverse('questions.add_tag', args=[self.q.id]))
-        self._request_and_no_update(url, req_type='POST', data={
-            'tag-name': 'foo'
-        })
+        url = urlparams(reverse("questions.add_tag", args=[self.q.id]))
+        self._request_and_no_update(url, req_type="POST", data={"tag-name": "foo"})
 
-        url = urlparams(reverse('questions.remove_tag', args=[self.q.id]))
-        self._request_and_no_update(url, req_type='POST', data={
-            'remove-tag-foo': 1
-        })
+        url = urlparams(reverse("questions.remove_tag", args=[self.q.id]))
+        self._request_and_no_update(url, req_type="POST", data={"remove-tag-foo": 1})
 
 
 class TroubleshootingParsingTests(TestCaseBase):
-
     def test_empty_troubleshooting_info(self):
         """Test a troubleshooting value that is valid JSON, but junk.
         This should trigger the parser to return None, which should not
@@ -359,7 +377,7 @@ class TroubleshootingParsingTests(TestCaseBase):
         q.add_metadata(troubleshooting='{"foo": "bar"}')
 
         # This case should not raise an error.
-        response = get(self.client, 'questions.details', args=[q.id])
+        response = get(self.client, "questions.details", args=[q.id])
         eq_(200, response.status_code)
 
     def test_weird_list_troubleshooting_info(self):
@@ -369,14 +387,14 @@ class TroubleshootingParsingTests(TestCaseBase):
         q.add_metadata(troubleshooting='["modifiedPreferences"]')
 
         # This case should not raise an error.
-        response = get(self.client, 'questions.details', args=[q.id])
+        response = get(self.client, "questions.details", args=[q.id])
         eq_(200, response.status_code)
 
     def test_string_keys_troubleshooting(self):
         """Test something that looks like troubleshooting data, but
         isn't formatted quite right. The parser should return None to
         indicate that something isn't right."""
-        troubleshooting = '''{
+        troubleshooting = """{
             "accessibility": {
                 "isActive": true
             },
@@ -393,13 +411,13 @@ class TroubleshootingParsingTests(TestCaseBase):
             "userJS": {
                 "exists": False
             }
-        }'''
+        }"""
 
         assert parse_troubleshooting(troubleshooting) is None
 
     def test_troubleshooting_parser(self):
         """Test that the troubleshooting parser likes good data."""
-        troubleshooting = '''
+        troubleshooting = """
             {
                 "accessibility": {
                     "isActive": true
@@ -417,7 +435,7 @@ class TroubleshootingParsingTests(TestCaseBase):
                 "userJS": {
                     "exists": false
                 }
-            }'''
+            }"""
 
         assert parse_troubleshooting(troubleshooting) is not None
 
@@ -428,17 +446,16 @@ class TestQuestionList(TestCaseBase):
         questions front page for AAQ locales."""
 
         eq_(Question.objects.count(), 0)
-        p = ProductFactory(slug=u'firefox')
-        TopicFactory(title='Fix problems', slug='fix-problems', product=p)
+        p = ProductFactory(slug=u"firefox")
+        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
 
-        QuestionFactory(title='question cupcakes?', product=p, locale='en-US')
-        QuestionFactory(title='question donuts?', product=p, locale='en-US')
-        QuestionFactory(title='question pies?', product=p, locale='pt-BR')
-        QuestionFactory(title='question pastries?', product=p, locale='de')
+        QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
+        QuestionFactory(title="question donuts?", product=p, locale="en-US")
+        QuestionFactory(title="question pies?", product=p, locale="pt-BR")
+        QuestionFactory(title="question pastries?", product=p, locale="de")
 
         def sub_test(locale, *titles):
-            url = urlparams(reverse(
-                'questions.list', args=['all'], locale=locale))
+            url = urlparams(reverse("questions.list", args=["all"], locale=locale))
             response = self.client.get(url, follow=True)
             doc = pq(response.content)
             eq_msg(len(doc('article[id^=question]')), len(titles),
@@ -447,16 +464,16 @@ class TestQuestionList(TestCaseBase):
                 assert substr in doc('.forum--question-item-heading a').text()
 
         # en-US and pt-BR are both in AAQ_LANGUAGES, so should be filtered.
-        sub_test('en-US', 'cupcakes?', 'donuts?')
-        sub_test('pt-BR', 'pies?')
+        sub_test("en-US", "cupcakes?", "donuts?")
+        sub_test("pt-BR", "pies?")
         # de is not in AAQ_LANGUAGES, so should show en-US, but not pt-BR
-        sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
+        sub_test("de", "cupcakes?", "donuts?", "pastries?")
 
 
 class TestQuestionReply(TestCaseBase):
     def setUp(self):
         u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
         self.question = QuestionFactory()
 
     def test_reply_to_spam_question(self):
@@ -464,16 +481,18 @@ class TestQuestionReply(TestCaseBase):
         self.question.save()
 
         res = self.client.post(
-            reverse('questions.reply', args=[self.question.id]),
-            {'content': 'The best reply evar!'})
+            reverse("questions.reply", args=[self.question.id]),
+            {"content": "The best reply evar!"},
+        )
         eq_(res.status_code, 404)
 
     def test_needs_info(self):
         eq_(self.question.needs_info, False)
 
         res = self.client.post(
-            reverse('questions.reply', args=[self.question.id]),
-            {'content': 'More info please', 'needsinfo': ''})
+            reverse("questions.reply", args=[self.question.id]),
+            {"content": "More info please", "needsinfo": ""},
+        )
         eq_(res.status_code, 302)
 
         q = Question.objects.get(id=self.question.id)
@@ -484,8 +503,9 @@ class TestQuestionReply(TestCaseBase):
         eq_(self.question.needs_info, True)
 
         res = self.client.post(
-            reverse('questions.reply', args=[self.question.id]),
-            {'content': 'More info please', 'clear_needsinfo': ''})
+            reverse("questions.reply", args=[self.question.id]),
+            {"content": "More info please", "clear_needsinfo": ""},
+        )
         eq_(res.status_code, 302)
 
         q = Question.objects.get(id=self.question.id)
@@ -495,7 +515,7 @@ class TestQuestionReply(TestCaseBase):
 class TestMarkingSolved(TestCaseBase):
     def setUp(self):
         u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
         self.question = QuestionFactory(creator=u)
         self.answer = AnswerFactory(question=self.question)
 
@@ -504,8 +524,8 @@ class TestMarkingSolved(TestCaseBase):
         self.answer.save()
 
         res = self.client.get(
-            reverse('questions.solve',
-                    args=[self.question.id, self.answer.id]))
+            reverse("questions.solve", args=[self.question.id, self.answer.id])
+        )
         eq_(res.status_code, 404)
 
     def test_cannot_mark_answers_on_spam_question(self):
@@ -513,15 +533,15 @@ class TestMarkingSolved(TestCaseBase):
         self.question.save()
 
         res = self.client.get(
-            reverse('questions.solve',
-                    args=[self.question.id, self.answer.id]))
+            reverse("questions.solve", args=[self.question.id, self.answer.id])
+        )
         eq_(res.status_code, 404)
 
 
 class TestVoteAnswers(TestCaseBase):
     def setUp(self):
         u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
         self.question = QuestionFactory()
         self.answer = AnswerFactory(question=self.question)
 
@@ -530,8 +550,8 @@ class TestVoteAnswers(TestCaseBase):
         self.question.save()
 
         res = self.client.post(
-            reverse('questions.answer_vote',
-                    args=[self.question.id, self.answer.id]))
+            reverse("questions.answer_vote", args=[self.question.id, self.answer.id])
+        )
         eq_(res.status_code, 404)
 
     def test_cannot_vote_for_answers_marked_spam(self):
@@ -539,23 +559,22 @@ class TestVoteAnswers(TestCaseBase):
         self.answer.save()
 
         res = self.client.post(
-            reverse('questions.answer_vote',
-                    args=[self.question.id, self.answer.id]))
+            reverse("questions.answer_vote", args=[self.question.id, self.answer.id])
+        )
         eq_(res.status_code, 404)
 
 
 class TestVoteQuestions(TestCaseBase):
     def setUp(self):
         u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
         self.question = QuestionFactory()
 
     def test_cannot_vote_on_spam_question(self):
         self.question.is_spam = True
         self.question.save()
 
-        res = self.client.post(
-            reverse('questions.vote', args=[self.question.id]))
+        res = self.client.post(reverse("questions.vote", args=[self.question.id]))
         eq_(res.status_code, 404)
 
 
@@ -567,14 +586,14 @@ class TestQuestionDetails(TestCaseBase):
         self.question.is_spam = True
         self.question.save()
 
-        res = get(self.client, 'questions.details', args=[self.question.id])
+        res = get(self.client, "questions.details", args=[self.question.id])
         eq_(404, res.status_code)
 
         u = UserFactory()
-        add_permission(u, FlaggedObject, 'can_moderate')
-        self.client.login(username=u.username, password='testpass')
+        add_permission(u, FlaggedObject, "can_moderate")
+        self.client.login(username=u.username, password="testpass")
 
-        res = get(self.client, 'questions.details', args=[self.question.id])
+        res = get(self.client, "questions.details", args=[self.question.id])
         eq_(200, res.status_code)
 
 
@@ -585,14 +604,14 @@ class TestRateLimiting(TestCaseBase):
         """Try and vote on `q`. If `ignored` is false, assert the
         request worked. If `ignored` is True, assert the request didn't
         do anything."""
-        url = reverse('questions.vote', args=[q.id], locale='en-US')
+        url = reverse("questions.vote", args=[q.id], locale="en-US")
         votes = QuestionVote.objects.filter(question=q).count()
 
-        res = self.client.post(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        res = self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         eq_(res.status_code, 200)
 
         data = json.loads(res.content)
-        eq_(data.get('ignored', False), ignored)
+        eq_(data.get("ignored", False), ignored)
 
         if ignored:
             eq_(QuestionVote.objects.filter(question=q).count(), votes)
@@ -603,15 +622,14 @@ class TestRateLimiting(TestCaseBase):
         """Try and vote on `a`. If `ignored` is false, assert the
         request worked. If `ignored` is True, assert the request didn't
         do anything."""
-        url = reverse('questions.answer_vote', args=[q.id, a.id],
-                      locale='en-US')
+        url = reverse("questions.answer_vote", args=[q.id, a.id], locale="en-US")
         votes = AnswerVote.objects.filter(answer=a).count()
 
-        res = self.client.post(url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        res = self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
         eq_(res.status_code, 200)
 
         data = json.loads(res.content)
-        eq_(data.get('ignored', False), ignored)
+        eq_(data.get("ignored", False), ignored)
 
         if ignored:
             eq_(AnswerVote.objects.filter(answer=a).count(), votes)
@@ -647,7 +665,7 @@ class TestRateLimiting(TestCaseBase):
         """This exhausts the rate limit, then logs in, and exhausts it
         again."""
         questions = [QuestionFactory() for _ in range(11)]
-        u = UserFactory(password='testpass')
+        u = UserFactory(password="testpass")
 
         # The rate limit is 10 per day. So make 10 requests. (0 through 9)
         for i in range(10):
@@ -656,7 +674,7 @@ class TestRateLimiting(TestCaseBase):
         self._check_question_vote(questions[10], True)
 
         # Login.
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
         for i in range(10):
             self._check_question_vote(questions[i], False)
 
@@ -672,7 +690,7 @@ class TestRateLimiting(TestCaseBase):
         again."""
         q = QuestionFactory()
         answers = [AnswerFactory(question=q) for _ in range(12)]
-        u = UserFactory(password='testpass')
+        u = UserFactory(password="testpass")
 
         # The rate limit is 10 per day. So make 10 requests. (0 through 9)
         for i in range(10):
@@ -681,7 +699,7 @@ class TestRateLimiting(TestCaseBase):
         self._check_answer_vote(q, answers[11], True)
 
         # Login.
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
         for i in range(10):
             self._check_answer_vote(q, answers[i], False)
 
@@ -695,14 +713,14 @@ class TestRateLimiting(TestCaseBase):
     def test_answers_limit(self):
         """Only four answers per minute can be posted."""
         # Login
-        u = UserFactory(password='testpass')
-        self.client.login(username=u.username, password='testpass')
+        u = UserFactory(password="testpass")
+        self.client.login(username=u.username, password="testpass")
 
         q = QuestionFactory()
-        content = 'lorem ipsum dolor sit amet'
-        url = reverse('questions.reply', args=[q.id])
+        content = "lorem ipsum dolor sit amet"
+        url = reverse("questions.reply", args=[q.id])
         for i in range(7):
-            self.client.post(url, {'content': content})
+            self.client.post(url, {"content": content})
 
         eq_(4, Answer.objects.count())
 
@@ -710,27 +728,27 @@ class TestRateLimiting(TestCaseBase):
 class TestScreenShare(TestCaseBase):
     def setUp(self):
         self.user = UserFactory()
-        add_permission(self.user, Profile, 'screen_share')
+        add_permission(self.user, Profile, "screen_share")
         self.question = QuestionFactory()
 
     def test_screen_share_answer(self):
         """Test that the answer gets created when the screen sharing invite is sent."""
         eq_(self.question.answers.count(), 0)
-        self.client.login(username=self.user.username, password='testpass')
-        url = reverse('questions.screen_share', args=[self.question.id])
+        self.client.login(username=self.user.username, password="testpass")
+        url = reverse("questions.screen_share", args=[self.question.id])
         res = self.client.post(url, follow=True)
         eq_(res.status_code, 200)
         eq_(self.question.answers.count(), 1)
 
     def test_screen_share_metadata(self):
         """Test that the screen sharing meta data is added to the question."""
-        eq_(self.question.metadata.get('screen_sharing'), None)
-        self.client.login(username=self.user.username, password='testpass')
-        url = reverse('questions.screen_share', args=[self.question.id])
+        eq_(self.question.metadata.get("screen_sharing"), None)
+        self.client.login(username=self.user.username, password="testpass")
+        url = reverse("questions.screen_share", args=[self.question.id])
         res = self.client.post(url, follow=True)
         eq_(res.status_code, 200)
         q = Question.objects.get(pk=self.question.pk)
-        eq_(q.metadata.get('screen_sharing'), 'true')
+        eq_(q.metadata.get("screen_sharing"), "true")
 
 
 class TestStats(ElasticTestCase):
@@ -739,17 +757,18 @@ class TestStats(ElasticTestCase):
     def test_stats(self):
         """Tests questions/dashboard/metrics view"""
         p = ProductFactory()
-        t = TopicFactory(title='Websites', slug='websites', product=p)
+        t = TopicFactory(title="Websites", slug="websites", product=p)
 
         QuestionFactory(
-            title=u'cupcakes',
-            content=u'Cupcakes rock!',
+            title=u"cupcakes",
+            content=u"Cupcakes rock!",
             created=datetime.now() - timedelta(days=1),
-            topic=t)
+            topic=t,
+        )
 
         self.refresh()
 
-        response = self.client.get(reverse('questions.metrics'))
+        response = self.client.get(reverse("questions.metrics"))
         eq_(200, response.status_code)
 
         # If there's histogram data, this is probably good enough to
@@ -760,8 +779,8 @@ class TestStats(ElasticTestCase):
 class TestEditDetails(TestCaseBase):
     def setUp(self):
         u = UserFactory()
-        add_permission(u, Question, 'change_question')
-        assert u.has_perm('questions.change_question')
+        add_permission(u, Question, "change_question")
+        assert u.has_perm("questions.change_question")
         self.user = u
 
         p = ProductFactory()
@@ -777,17 +796,18 @@ class TestEditDetails(TestCaseBase):
         """Make a request to edit details"""
         if user is None:
             user = self.user
-        self.client.login(username=user.username, password='testpass')
-        url = reverse('questions.edit_details',
-                      kwargs={'question_id': self.question.id})
+        self.client.login(username=user.username, password="testpass")
+        url = reverse(
+            "questions.edit_details", kwargs={"question_id": self.question.id}
+        )
         return self.client.post(url, data=data)
 
     def test_permissions(self):
         """Test that the new permission works"""
         data = {
-            'product': self.product.id,
-            'topic': self.topic.id,
-            'locale': self.question.locale
+            "product": self.product.id,
+            "topic": self.topic.id,
+            "locale": self.question.locale,
         }
 
         u = UserFactory()
@@ -799,42 +819,29 @@ class TestEditDetails(TestCaseBase):
 
     def test_missing_data(self):
         """Test for missing data"""
-        data = {
-            'product': self.product.id,
-            'locale': self.question.locale
-        }
+        data = {"product": self.product.id, "locale": self.question.locale}
         response = self._request(data=data)
         eq_(400, response.status_code)
 
-        data = {
-            'topic': self.topic.id,
-            'locale': self.question.locale
-        }
+        data = {"topic": self.topic.id, "locale": self.question.locale}
         response = self._request(data=data)
         eq_(400, response.status_code)
 
-        data = {
-            'product': self.product.id,
-            'topic': self.topic.id
-        }
+        data = {"product": self.product.id, "topic": self.topic.id}
         response = self._request(data=data)
         eq_(400, response.status_code)
 
     def test_bad_data(self):
         """Test for bad data"""
         data = {
-            'product': ProductFactory().id,
-            'topic': TopicFactory().id,
-            'locale': self.question.locale
+            "product": ProductFactory().id,
+            "topic": TopicFactory().id,
+            "locale": self.question.locale,
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
 
-        data = {
-            'product': self.product.id,
-            'topic': self.topic.id,
-            'locale': 'zu'
-        }
+        data = {"product": self.product.id, "topic": self.topic.id, "locale": "zu"}
         response = self._request(data=data)
         eq_(400, response.status_code)
 
@@ -843,9 +850,9 @@ class TestEditDetails(TestCaseBase):
         t_new = TopicFactory(product=self.product)
 
         data = {
-            'product': self.product.id,
-            'topic': t_new.id,
-            'locale': self.question.locale
+            "product": self.product.id,
+            "topic": t_new.id,
+            "locale": self.question.locale,
         }
 
         assert t_new.id != self.topic.id
@@ -865,11 +872,7 @@ class TestEditDetails(TestCaseBase):
         assert self.topic.id != t_new.id
         assert self.product.id != p_new.id
 
-        data = {
-            'product': p_new.id,
-            'topic': t_new.id,
-            'locale': self.question.locale
-        }
+        data = {"product": p_new.id, "topic": t_new.id, "locale": self.question.locale}
 
         response = self._request(data=data)
         eq_(302, response.status_code)
@@ -879,16 +882,12 @@ class TestEditDetails(TestCaseBase):
         eq_(t_new.id, q.topic.id)
 
     def test_change_locale(self):
-        locale = 'hu'
+        locale = "hu"
 
         assert locale in QuestionLocale.objects.locales_list()
         assert locale != self.question.locale
 
-        data = {
-            'product': self.product.id,
-            'topic': self.topic.id,
-            'locale': locale
-        }
+        data = {"product": self.product.id, "topic": self.topic.id, "locale": locale}
 
         response = self._request(data=data)
         eq_(302, response.status_code)

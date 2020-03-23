@@ -116,3 +116,9 @@
     }
   }
 }
+
+.message-view {
+  .message {
+    @include c.ulol;
+  }
+}

@@ -52,7 +52,7 @@ button {
   &.markup-toolbar-button {
     border: 0;
     background: url(/static/sumo/img/markup.svg) no-repeat 11px 6px;
-    background-size: 369.04px 22px;
+    background-size: 410px 22px;
     cursor: pointer;
     height: 36px;
     margin: 0 2px;
@@ -98,8 +98,7 @@ button {
   }
 
   &.btn-quote {
-    background-image: url(/static/sumo/img/icon.quote.png);
-    background-position: 0 center;
+    background-position: -381px 6px;
   }
 }
 
@@ -115,10 +114,32 @@ button {
   }
 
   h4,
-  .category-list {
+  .category-list,
+  .sidebar-nav {
     @include c.text-body-md;
     font-weight: normal;
     color: var(--color-text);
+
+    .response-heading,
+    .response {
+      &.selected {
+        background-color: var(--color-link-active-bg);
+        font-weight: bold;
+        color: var(--color-heading);
+        border-radius: var(--global-radius);
+        padding: 4px;
+        margin-right: 20px;
+      }
+
+      &:hover {
+        cursor: pointer;
+        color: var(--color-heading);
+      }
+    }
+
+
+
+
   }
 }
 
@@ -154,9 +175,16 @@ section.marky {
 }
 
 #link-modal {
-  width: 600px;
+  .field {
+    max-width: none;
+  }
+
+  .kbox-cancel {
+    margin-right: 0;
+  }
 }
 
+#link-modal,
 #media-modal {
   height: auto;
   max-height: 84vh;
@@ -167,8 +195,10 @@ section.marky {
   width: 90vw;
   transform: translateX(-50%);
   overflow: auto;
+}
 
 
+#media-modal {
   div.placeholder {
     height: 65%;
     height:  calc(100% - 225px);
@@ -252,11 +282,6 @@ section.marky {
         float: left;
       }
     }
-  }
-
-  ol.pagination {
-    margin: 7px 0;
-    padding: 7px 0;
   }
 
   .submit-button {
