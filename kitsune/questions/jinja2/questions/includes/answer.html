@@ -102,9 +102,9 @@
       {% endfor %}
     </div>
     {% if answer.updated_by %}
-      <p class="edited">
+      <p class="edited text-body-sm"><em>
         {{ _('Modified {datetime} by {name}')|fe(name=display_name(answer.updated_by), datetime=datetimeformat(answer.updated, format='longdatetime')) }}
-      </p>
+      </em></p>
     {% endif %}
   </div>
   {% if answer.id and question.editable %}
