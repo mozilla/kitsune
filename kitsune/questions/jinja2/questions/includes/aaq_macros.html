@@ -72,10 +72,10 @@
   </div>
 {%- endmacro %}
 
-{% macro progress_bar(product) %}
+{% macro progress_bar(product, final=alse) %}
 {# `if not current_product` is how you isolate step 1. `if form` isolates step 3 #}
   <ul class="progress">
-    <li class="progress--item {% if not current_product %}is-current{% else %}is-complete{% endif %}">
+    <li class="progress--item {% if final %}is-complete{% elif not current_product %}is-current{% else %}is-complete{% endif %}">
       <a class="progress--link"
         {% if current_product %}
           href="{{ url('questions.aaq_step1') }}"
@@ -88,7 +88,7 @@
         </span>
       </a>
     </li>
-    <li class="progress--item {% if form %}is-complete{% elif current_product %}is-current{% endif %}">
+    <li class="progress--item {% if form or final %}is-complete{% elif current_product %}is-current{% endif %}">
       <a class="progress--link" href="#TODO" disabled>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
@@ -96,7 +96,7 @@
         </span>
       </a>
     </li>
-    <li class="progress--item {% if form %}is-current{% endif %}">
+    <li class="progress--item {% if final %}is-complete{% elif form %}is-current{% endif %}">
       <a class="progress--link" href="#" disabled>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
