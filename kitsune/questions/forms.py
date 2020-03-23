@@ -219,17 +219,6 @@ class EditQuestionForm(forms.Form):
             )
             self.fields["addon"] = field
 
-        if "troubleshooting" in extra_fields:
-            widget = forms.Textarea(attrs={"class": "troubleshooting"})
-            field = forms.CharField(
-                label=TROUBLESHOOTING_LABEL,
-                help_text=TROUBLESHOOTING_HELP,
-                required=False,
-                max_length=655360,
-                widget=widget,
-            )
-            self.fields["troubleshooting"] = field
-
         if "ff_version" in extra_fields:
             self.fields["ff_version"] = forms.CharField(
                 label=FF_VERSION_LABEL, required=False,
@@ -246,6 +235,17 @@ class EditQuestionForm(forms.Form):
             self.fields["plugins"] = forms.CharField(
                 label=PLUGINS_LABEL, required=False, widget=widget,
             )
+
+        if "troubleshooting" in extra_fields:
+            widget = forms.Textarea(attrs={"class": "troubleshooting"})
+            field = forms.CharField(
+                label=TROUBLESHOOTING_LABEL,
+                help_text=TROUBLESHOOTING_HELP,
+                required=False,
+                max_length=655360,
+                widget=widget,
+            )
+            self.fields["troubleshooting"] = field
 
     @property
     def metadata_field_keys(self):
