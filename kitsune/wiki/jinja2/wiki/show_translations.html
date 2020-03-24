@@ -6,7 +6,7 @@
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
-    <article id="select-locale" class="sumo-page-section">
+    <article id="select-locale">
       <h1 class="sumo-page-subheading">{{ _('This document has been translated to the following locales:') }}</h1>
       <ul class="locales">
         {% for locale in translated_locales %}

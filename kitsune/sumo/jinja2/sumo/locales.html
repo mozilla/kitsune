@@ -5,9 +5,9 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-  <section id="switch-locales" class="grid_12">
-    <h1>{{ title }}</h1>
-    <ul>
+  <section id="switch-locales">
+    <h1 class="sumo-page-heading">{{ title }}</h1>
+    <ul class="columns-list">
       {% for locale in settings.LANGUAGE_CHOICES %}
         {% set locale_link_elem %}
           <a lang="{{ locale[0] }}" hreflang="{{ locale[0] }}"

@@ -13,14 +13,13 @@
 
 {% block content %}
   {% set language = settings.LANGUAGES_DICT[locale.lower()] %}
-  <div>
-    {{ document_tools(document, parent, user, 'edit', settings) }}
-
     <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">
 
       <ul class="user-messages">
         {% if fxos_l10n_warning %}
-          <li class="info dismissible" id="fxos-l10n-warning">
+          <li class="info dismissible mzp-c-notification-bar mzp-t-info" id="fxos-l10n-warning">
+            <button class="mzp-c-notification-bar-button" type="button"></button>
+            <div>
             <p>
               {% trans %}
                 Thanks for your help! Just so you know, Firefox OS is
@@ -35,24 +34,28 @@
                 please contact {{ email_link }}.
               {% endtrans %}
             </p>
-
-            <button class="btn dismiss">{{ _("I understand, don't show this again.") }}</button>
+            <button class="sumo-button btn dismiss">{{ _("I understand, don't show this again.") }}</button>
+            </div>
           </li>
         {% endif %}
 
         {% if not based_on.is_ready_for_localization %}
-          <li class="warning">
+          <li class=" mzp-c-notification-bar mzp-t-warning warning">
+            <button class="mzp-c-notification-bar-button" type="button"></button>
             {{ _('You are translating an English document which is not yet ready for localization.') }}
           </li>
         {% endif %}
 
         {% if draft_revision %}
-          <li class="info">
+          <li class="mzp-c-notification-bar mzp-t-info info">
+            <button class="mzp-c-notification-bar-button" type="button"></button>
+            <div>
             <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.created) }}</strong></p>
             <form action="" method="get">
               <input class="btn" name="restore" value={{ _('Restore') }} type="submit">
               <input class="btn" name="discard" value={{ _('Discard') }} type="submit">
             </form>
+            </div>
           </li>
         {% endif %}
         {% if more_updated_rev %}
@@ -64,7 +67,7 @@
         {{ document_lock_warning() }}
       </ul>
 
-      <h1>{{ _('Translating {title}')|f(title=parent.title) }}</h1>
+      <h1 class="sumo-page-heading">{{ _('Translating {title}')|f(title=parent.title) }}</h1>
       <div class="change-locale">
         <p>
           {{ _('Translating article to {locale}.' )|f(locale=language) }}
@@ -79,8 +82,9 @@
           <input type="hidden" name="locale" value="{{ parent.locale }}">
       {% endif %}
       {% if document_form %}
-        <details class="h2"{% if disclose_description %} open="open"{% endif %}>
-          <summary>{{ _('Translate Description') }}</summary>
+        <details {% if disclose_description %} open="open"{% endif %}>
+          <summary class="sumo-card-heading">{{ _('Translate Description') }}</summary>
+          <div class="details-content-wrap">
           {{ errorlist(document_form) }}
           {% if document %}
             {# If there are existing translations in this locale, we use 2 separate forms. #}
@@ -93,26 +97,27 @@
           <ul class="description">
             <li>
               <div class="approved">
-                <h3>{{ _('Title:') }}</h3>
+                <label>{{ _('Title:') }}</label>
                 <div class="val">{{ parent.title }}</div>
               </div>
               <div class="localized">
-                <h3><label for="{{ document_form.title.auto_id }}" title="{{ document_form.title.help_text }}">{{ _('Title in {locale}:')|f(locale=language) }}</label></h3>
+                <label for="{{ document_form.title.auto_id }}" title="{{ document_form.title.help_text }}">{{ _('Title in {locale}:')|f(locale=language) }}</label>
                 {{ document_form.title|safe }}
               </div>
             </li>
             <li>
               <div class="approved">
-                <h3>{{ _('Slug:') }}</h3>
+                <label>{{ _('Slug:') }}</label>
                 <div class="val">{{ parent.slug }}</div>
               </div>
               <div class="localized">
-                <h3><label for="{{ document_form.slug.auto_id }}" title="{{ document_form.slug.help_text }}">{{ _('Slug in {locale}:')|f(locale=language) }}</label></h3>
+                <h3 class="sumo-page-subheading"><label for="{{ document_form.slug.auto_id }}" title="{{ document_form.slug.help_text }}">{{ _('Slug in {locale}:')|f(locale=language) }}</label></h3>
                 {{ document_form.slug|safe }}
               </div>
             </li>
-            <li>
-              {{ document_form.allow_discussion|label_with_help }}{{ document_form.allow_discussion }}
+            <li class="field checkbox">
+              {{ document_form.allow_discussion }}
+              <label for="{{ document_form.allow_discussion.id_for_label }}">{{ document_form.allow_discussion.label }}</label>
             </li>
           </ul>
           {% if document %}
@@ -121,12 +126,14 @@
               </div>
             </form>
           {% endif %}
+          </div>
         </details>
       {% endif %}
 
       {% if revision_form %}
-        <details class="h2" open="open">
-          <summary>{{ _('Translate Content') }}</summary>
+        <details open="open">
+          <summary class="sumo-card-heading">{{ _('Translate Content') }}</summary>
+          <div class="details-content-wrap">
           {{ errorlist(revision_form) }}
           {% if document %}
             {# If there are existing translations in this locale, we use 2 separate forms. #}
@@ -138,7 +145,7 @@
               {# Do not add a closing form tag here it is added below #}
           {% endif %}
           {% if recent_approved_revs %}
-            <h3>{{ _('Recently approved updates') }}:</h3>
+            <h3 class="sumo-page-subheading">{{ _('Recently approved updates') }}:</h3>
             <ul class="recent-revisions">
               {% for rev in recent_approved_revs %}
                 <li>
@@ -150,7 +157,7 @@
             </ul>
           {% endif %}
 
-          <h3>{{ _('Differences') }}:</h3>
+          <h3 class="sumo-page-subheading">{{ _('Differences') }}:</h3>
 
           {% if document.current_revision and document.current_revision.based_on and parent.latest_localizable_revision %}
             {# Diff between the English version the current translation is based on and the most recent ready-to-localize English version. #}
@@ -163,21 +170,21 @@
           <ul class="description">
             <li>
               <div class="approved">
-                <h3><label>{{ _('Keywords:') }}</label></h3>
+                <label>{{ _('Keywords:') }}</label>
                 <div class="val">{{ based_on.keywords }}</div>
               </div>
               <div class="localized">
-                <h3><label for="{{ revision_form.keywords.auto_id }}" title="{{ revision_form.keywords.help_text }}">{{ _('Keywords in {locale}:')|f(locale=language) }}</label></h3>
+                <label for="{{ revision_form.keywords.auto_id }}" title="{{ revision_form.keywords.help_text }}">{{ _('Keywords in {locale}:')|f(locale=language) }}</label>
                 {{ revision_form.keywords|safe }}
               </div>
             </li>
             <li>
               <div class="approved">
-                <h3><label>{{ _('Search result summary:') }}</label></h3>
+                <label>{{ _('Search result summary:') }}</label>
                 <div class="val">{{ based_on.summary }}</div>
               </div>
               <div class="localized">
-                <h3><label for="{{ revision_form.summary.auto_id }}" title="{{ revision_form.summary.help_text }}">{{ _('Search result summary in {locale}:')|f(locale=language) }}</label></h3>
+                <label for="{{ revision_form.summary.auto_id }}" title="{{ revision_form.summary.help_text }}">{{ _('Search result summary in {locale}:')|f(locale=language) }}</label>
                 {{ revision_form.summary|safe }}
                 <p><span id="remaining-characters">{{ revision_form.summary.field.max_length }}</span> {{_('characters remaining.') }}</p>
               </div>
@@ -185,13 +192,13 @@
           </ul>
           <div id="content-fields">
             <div class="approved">
-              <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
+              <label>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</label>
               <div id="content-or-diff" class="content">
                 <textarea readonly="readonly"{% if settings.WIKI_DEFAULT_LANGUAGE.lower() not in settings.LANGUAGES_BIDI %} dir="ltr"{% endif %}>{{ based_on.content }}</textarea>
               </div>
             </div>
             <div class="localized">
-              <h3>{{ _('{locale} translation:')|f(locale=language) }}</h3>
+              <h3 class="sumo-page-subheading">{{ _('{locale} translation:')|f(locale=language) }}</h3>
               {{ content_editor(revision_form.content) }}
             </div>
           </div>
@@ -216,17 +223,18 @@
           {% if document %}
             </form>
           {% endif %}
+          </div>
         </details>
       {% endif %}
       {% if not document %}
         </form>
       {% endif %}
     </article>
-  </div>
-
   <script type="application/json" class="showfor-data">
     {{ showfor_data(parent.get_products()) }}
   </script>
 {% endblock %}
 
-{% block side_promos %}{% endblock %}
+{% block side %}
+  {{ document_tools(document, parent, user, 'edit', settings) }}
+{% endblock %}

@@ -324,7 +324,7 @@ article {
 
   @media #{p.$mq-md} {
 
-    ul li       > div {
+    ul li > div {
       display: inline-block;
       margin-bottom: 0;
     }
@@ -817,11 +817,6 @@ body.translate {
     width: 250px;
     float: left;
     margin-right: 40px;
-  }
-
-  #localize-document {
-    float: left;
-    width: calc(100% - 351px);
   }
 }
 
