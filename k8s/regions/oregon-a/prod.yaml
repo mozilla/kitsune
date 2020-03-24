@@ -65,19 +65,16 @@ app:
     dms_auto_archive_old_questions: SECRET
     dms_cache_most_unhelpful_kb_articles: SECRET
     dms_calculate_csat_metrics: SECRET
-    dms_clear_expired_auth_tokens: SECRET
     dms_cohort_analysis: SECRET
     dms_enqueue_lag_monitor_task: SECRET
     dms_fix_current_revisions: SECRET
     dms_generate_missing_share_links: SECRET
     dms_process_exit_surveys: SECRET
-    dms_purge_hashes: SECRET
     dms_rebuild_kb: SECRET
     dms_reindex: SECRET
     dms_reindex_users_that_contributed_yesterday: SECRET
     dms_reload_question_traffic_stats: SECRET
     dms_reload_wiki_traffic_stats: SECRET
-    dms_remove_expired_registration_profiles: SECRET
     dms_report_employee_answers: SECRET
     dms_send_weekly_ready_for_review_digest: SECRET
     dms_send_welcome_emails: SECRET

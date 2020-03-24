@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% from "users/includes/macros.html" import login_form with context %}
 {% set title = _('Access denied') %}
 {% set styles = ('users',) %}
 
@@ -7,21 +6,12 @@
   <article id="error-page">
     <h1>{{ title }}</h1>
     <div class="center-on-mobile">
-      {% if no_cookies %}
-        <p>{{ _('You must have cookies enabled to login or register.') }}</p>
-        <p><a href="{{ url('wiki.document', 'websites-say-cookies-are-blocked-unblock-them') }}">How to unblock cookies</a></p>
-      {% else %}
-        <p>{{ _('You do not have permission to access this page.') }}</p>
-      {% endif %}
+      <p>{{ _('You do not have permission to access this page.') }}</p>
 
       {% if not user.is_authenticated() %}
-          <p>
-            Please try to log in / sign up first with <a href="{{ url('users.fxa_authentication_init') }}">{{ _('Firefox Accounts') }}</a>
-            or continue with an existing <a class="legacy-login-toggle" href="#">{{ _('SUMO account') }}</a>.
-          </p>
-          <div id="login-legacy" class="hidden">
-            {{ login_form(form) }}
-          </div>
+        <p>
+          {{ _('Please try to log in / sign up first with') }} <a href="{{ url('users.fxa_authentication_init') }}">{{ _('Firefox Accounts') }}</a>.
+        </p>
       {% endif %}
     </div>
   </article>

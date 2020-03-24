@@ -1,17 +1,9 @@
-from copy import copy
 import os
-from smtplib import SMTPRecipientsRefused
+from copy import copy
 
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.models import Site
-from django.core import mail
 from django.core.files import File
 from django.test import override_settings
-from django.utils.http import int_to_base36
-
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.models import Watch
@@ -20,194 +12,11 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.tests import QuestionFactory
+from kitsune.sumo.tests import get
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import post, get
-from kitsune.users import ERROR_SEND_EMAIL
-from kitsune.users.forms import PasswordResetForm
-from kitsune.users.models import (
-    Profile, RegistrationProfile, RegistrationManager)
-from kitsune.users.tests import (
-    TestCaseBase, UserFactory, add_permission)
+from kitsune.users.models import Profile
+from kitsune.users.tests import TestCaseBase, UserFactory, add_permission
 from kitsune.wiki.tests import RevisionFactory
-
-
-class LoginTests(TestCaseBase):
-    """Login tests."""
-
-    def setUp(self):
-        super(LoginTests, self).setUp()
-        self.u = UserFactory()
-        self.profile_url = reverse(
-            'users.profile',
-            args=[self.u.username],
-            locale=settings.LANGUAGE_CODE
-        ) + '?fpa=1'
-
-    def test_login_bad_password(self):
-        '''Test login with a good username and bad password.'''
-        response = post(self.client, 'users.login',
-                        {'username': self.u.username, 'password': 'foobar'})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('Please enter a correct username and password. Note that both '
-            'fields are case-sensitive.', doc('ul.errorlist li').text())
-
-    def test_login_bad_username(self):
-        '''Test login with a bad username.'''
-        response = post(self.client, 'users.login',
-                        {'username': 'foobarbizbin', 'password': 'testpass'})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('Please enter a correct username and password. Note that both '
-            'fields are case-sensitive.', doc('ul.errorlist li').text())
-
-    def test_login_password_disabled(self):
-        """Test logging in as a user with PASSWORD_DISABLED doesn't 500."""
-        self.u.set_unusable_password()
-        self.u.save()
-        response = self.client.post(reverse('users.login'),
-                                    {'username': self.u.username,
-                                     'password': 'testpass'})
-        eq_(200, response.status_code)
-
-    def test_login(self):
-        '''Test a valid login.'''
-        response = self.client.post(reverse('users.login'),
-                                    {'username': self.u.username,
-                                     'password': 'testpass'})
-        eq_(302, response.status_code)
-        eq_(self.profile_url, response['location'])
-
-    def test_login_next_parameter(self):
-        '''Test with a valid ?next=url parameter.'''
-        next = self.profile_url
-
-        # Verify that next parameter is set in form hidden field.
-        response = self.client.get(
-            urlparams(reverse('users.login'), next=next), follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(next, doc('#login input[name="next"]')[0].attrib['value'])
-
-        # Verify that it gets used on form POST.
-        response = self.client.post(reverse('users.login'),
-                                    {'username': self.u.username,
-                                     'password': 'testpass',
-                                     'next': next})
-        eq_(302, response.status_code)
-        eq_(next, response['location'])
-
-    def test_login_invalid_next_parameter(self):
-        '''Test with an invalid ?next=http://example.com parameter.'''
-        invalid_next = 'http://foobar.com/evil/'
-        valid_next = reverse('home', locale=settings.LANGUAGE_CODE)
-
-        # Verify that _valid_ next parameter is set in form hidden field.
-        url = urlparams(reverse('users.login'), next=invalid_next)
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(valid_next, doc('#login input[name="next"]')[0].attrib['value'])
-
-        # Verify that it gets used on form POST.
-        response = self.client.post(reverse('users.login'),
-                                    {'username': self.u.username,
-                                     'password': 'testpass',
-                                     'next': invalid_next})
-        eq_(302, response.status_code)
-        eq_(self.profile_url, response['location'])
-
-    def test_fxa_deprecation_warning(self):
-        """
-        Test that a SUMO login shows FXA deprecation warning
-        """
-        response = self.client.post(reverse('users.login'),
-                                    {'username': self.u.username,
-                                     'password': 'testpass'}, follow=True)
-        doc = pq(response.content)
-        eq_(1, len(doc('#fxa-notification-deprecated')))
-
-
-@override_settings(DEBUG=True)
-class PasswordResetTests(TestCaseBase):
-
-    def setUp(self):
-        super(PasswordResetTests, self).setUp()
-        self.u = UserFactory(email="valid@email.com")
-        self.uidb36 = int_to_base36(self.u.id)
-        self.token = default_token_generator.make_token(self.u)
-
-    def test_bad_email(self):
-        r = self.client.post(reverse('users.pw_reset'),
-                             {'email': 'foo@bar.com'})
-        eq_(302, r.status_code)
-        eq_('/en-US/users/pwresetsent', r['location'])
-        eq_(0, len(mail.outbox))
-
-    def test_success(self):
-        r = self.client.post(reverse('users.pw_reset'),
-                             {'email': self.u.email})
-        eq_(302, r.status_code)
-        eq_('/en-US/users/pwresetsent', r['location'])
-        eq_(1, len(mail.outbox))
-        assert mail.outbox[0].subject.find('Password reset') == 0
-        assert mail.outbox[0].body.find('pwreset/%s' % self.uidb36) > 0
-
-    @mock.patch.object(PasswordResetForm, 'save')
-    def test_smtp_error(self, pwform_save):
-        def raise_smtp(*a, **kw):
-            raise SMTPRecipientsRefused(recipients=[self.u.email])
-        pwform_save.side_effect = raise_smtp
-        r = self.client.post(reverse('users.pw_reset'),
-                             {'email': self.u.email})
-        self.assertContains(r, unicode(ERROR_SEND_EMAIL))
-
-    def _get_reset_url(self):
-        return reverse('users.pw_reset_confirm',
-                       args=[self.uidb36, self.token])
-
-    def test_bad_reset_url(self):
-        r = self.client.get('/users/pwreset/junk/', follow=True)
-        eq_(r.status_code, 404)
-
-        r = self.client.get(reverse('users.pw_reset_confirm',
-                                    args=[self.uidb36, '12-345']))
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_('Password reset unsuccessful', doc('article h1').text())
-
-    def test_reset_fail(self):
-        url = self._get_reset_url()
-        r = self.client.post(url, {'new_password1': '', 'new_password2': ''})
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(1, len(doc('ul.errorlist')))
-
-        r = self.client.post(url, {'new_password1': 'onetwo12',
-                                   'new_password2': 'twotwo22'})
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_("The two password fields didn't match.",
-            doc('ul.errorlist li').text())
-
-    def test_reset_success(self):
-        url = self._get_reset_url()
-        new_pw = 'fjdka387fvstrongpassword!'
-        assert self.u.check_password(new_pw) is False
-
-        r = self.client.post(url, {'new_password1': new_pw,
-                                   'new_password2': new_pw})
-        eq_(302, r.status_code)
-        eq_('/en-US/users/pwresetcomplete', r['location'])
-        self.u = User.objects.get(username=self.u.username)
-        assert self.u.check_password(new_pw)
-
-    def test_reset_user_with_unusable_password(self):
-        """Verify that user's with unusable passwords can reset them."""
-        self.u.set_unusable_password()
-        self.u.save()
-        self.test_success()
 
 
 class EditProfileTests(TestCaseBase):
@@ -438,101 +247,6 @@ class ViewProfileTests(TestCaseBase):
         assert badge_title in r.content
 
 
-class PasswordChangeTests(TestCaseBase):
-
-    def setUp(self):
-        super(PasswordChangeTests, self).setUp()
-        self.u = UserFactory()
-        self.url = reverse('users.pw_change')
-        self.new_pw = 'fjdka387fvstrongpassword!'
-        self.client.login(username=self.u.username, password='testpass')
-
-    def test_change_password(self):
-        assert self.u.check_password(self.new_pw) is False
-
-        r = self.client.post(self.url, {'old_password': 'testpass',
-                                        'new_password1': self.new_pw,
-                                        'new_password2': self.new_pw})
-        eq_(302, r.status_code)
-        eq_('/en-US/users/pwchangecomplete', r['location'])
-        self.u = User.objects.get(username=self.u.username)
-        assert self.u.check_password(self.new_pw)
-
-    def test_bad_old_password(self):
-        r = self.client.post(self.url, {'old_password': 'testpqss',
-                                        'new_password1': self.new_pw,
-                                        'new_password2': self.new_pw})
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_('Your old password was entered incorrectly. Please enter it '
-            'again.', doc('ul.errorlist').text())
-
-    def test_new_pw_doesnt_match(self):
-        r = self.client.post(self.url, {'old_password': 'testpqss',
-                                        'new_password1': self.new_pw,
-                                        'new_password2': self.new_pw + '1'})
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_("Your old password was entered incorrectly. Please enter it again. "
-            "The two password fields didn't match.",
-            doc('ul.errorlist').text())
-
-
-class ResendConfirmationTests(TestCaseBase):
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_resend_confirmation(self, get_current):
-        get_current.return_value.domain = 'testserver.com'
-
-        RegistrationProfile.objects.create_inactive_user(
-            'testuser', 'testpass', 'testuser@email.com')
-        eq_(1, len(mail.outbox))
-
-        r = self.client.post(reverse('users.resend_confirmation'),
-                             {'email': 'testuser@email.com'})
-        eq_(200, r.status_code)
-        eq_(2, len(mail.outbox))
-        assert mail.outbox[1].subject.find('Please confirm your email') == 0
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_resend_confirmation_already_activated(self, get_current):
-        get_current.return_value.domain = 'testserver.com'
-        user_ = RegistrationProfile.objects.create_inactive_user(
-            'testuser', 'testpass', 'testuser@email.com')
-
-        # Activate the user
-        key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user_.id, key])
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        user_ = User.objects.get(pk=user_.pk)
-        assert user_.is_active
-
-        # Delete RegistrationProfile objects.
-        RegistrationProfile.objects.all().delete()
-
-        # Resend the confirmation email
-        r = self.client.post(reverse('users.resend_confirmation'),
-                             {'email': 'testuser@email.com'})
-        eq_(200, r.status_code)
-        eq_(2, len(mail.outbox))
-        eq_(mail.outbox[1].subject.find('Account already activated'), 0)
-
-    @mock.patch.object(RegistrationManager, 'send_confirmation_email')
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_smtp_error(self, get_current, send_confirmation_email):
-        get_current.return_value.domain = 'testserver.com'
-
-        RegistrationProfile.objects.create_inactive_user(
-            'testuser', 'testpass', 'testuser@email.com')
-
-        def raise_smtp(reg_profile):
-            raise SMTPRecipientsRefused(recipients=[reg_profile.user.email])
-        send_confirmation_email.side_effect = raise_smtp
-        r = self.client.post(reverse('users.resend_confirmation'),
-                             {'email': 'testuser@email.com'})
-        self.assertContains(r, unicode(ERROR_SEND_EMAIL))
-
-
 class FlagProfileTests(TestCaseBase):
 
     def test_flagged_and_deleted_ProfileFactory(self):
@@ -553,29 +267,6 @@ class FlagProfileTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('#flagged-queue form.update')))
-
-
-class ForgotUsernameTests(TestCaseBase):
-    """Tests for the Forgot Username flow."""
-
-    def test_GET(self):
-        r = self.client.get(reverse('users.forgot_username'))
-        eq_(200, r.status_code)
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_POST(self, get_current):
-        get_current.return_value.domain = 'testserver.com'
-        u = UserFactory(email='a@b.com', is_active=True)
-
-        r = self.client.post(reverse('users.forgot_username'),
-                             {'email': u.email})
-        eq_(302, r.status_code)
-        eq_('/en-US/users/login', r['location'])
-
-        # Verify email
-        eq_(1, len(mail.outbox))
-        assert mail.outbox[0].subject.find('Your username on') == 0
-        assert mail.outbox[0].body.find(u.username) > 0
 
 
 class EditWatchListTests(TestCaseBase):
