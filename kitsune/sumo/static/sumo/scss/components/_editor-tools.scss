@@ -8,11 +8,22 @@ div.editor-tools {
     line-height: 30px;
     padding: 5px 5px 0;
     margin-bottom: p.$spacing-sm;
+    display: flex;
   }
 
 
   a.markup-toolbar-link {
     padding: 0 6px;
+    display: inline-flex;
+    @include c.text-body-xs;
+    line-height: 1;
+    align-self: center;
+    color: var(--color-heading);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   button {
