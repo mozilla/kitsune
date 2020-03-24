@@ -322,7 +322,7 @@ article {
 
   @media #{p.$mq-md} {
 
-    ul li       > div {
+    ul li > div {
       display: inline-block;
       margin-bottom: 0;
     }
