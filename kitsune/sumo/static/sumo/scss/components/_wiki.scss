@@ -270,10 +270,11 @@ article {
 
     li {
       list-style: none;
-      padding: p.$spacing-xs 0;
+      padding: p.$spacing-xs;
 
       > div {
-        display: inline-block;
+        display: block;
+        margin-bottom: p.$spacing-xs;
       }
 
       &:nth-child(odd) {
@@ -313,35 +314,53 @@ article {
     }
   }
 
-  .date {
-    padding: 0 0 0 10px;
-    width: 115px;
-  }
-
   .status {
-    width: 90px;
-
     a {
       font-weight: bold;
     }
   }
 
-  .significance {
-    width: 35px;
+  @media #{p.$mq-md} {
+
+    ul li       > div {
+      display: inline-block;
+      margin-bottom: 0;
+    }
+
+    .date {
+      width: 115px;
+    }
+
+    .status {
+      width: 90px;
+    }
+
+    .significance {
+      width: 35px;
+    }
+
+    .title {
+      width: 290px;
+    }
+
+    .creator {
+      width: 105px;
+    }
+
+    .comment {
+      width: 140px;
+
+      &.wider {
+        width: 330px;
+      }
+    }
   }
 
   .creator {
     color: #333;
-    width: 105px;
   }
 
-  .comment {
-    width: 140px;
 
-    &.wider {
-      width: 330px;
-    }
-  }
 
   .showdiff {
     margin: 2px;
@@ -357,9 +376,6 @@ article {
   }
 
   .title {
-    width: 290px;
-    padding-right: 9px;
-
     .locale {
       background: #ddd;
       padding: 0 2px;
