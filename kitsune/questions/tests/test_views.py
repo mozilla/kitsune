@@ -3,37 +3,20 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.test.utils import override_settings
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.tests import ProductFactory
-from kitsune.questions.models import (
-    Question,
-    QuestionVote,
-    AnswerVote,
-    Answer,
-    QuestionLocale,
-)
-from kitsune.questions.tests import (
-    AnswerFactory,
-    QuestionFactory,
-    TestCaseBase,
-    QuestionLocaleFactory,
-)
+from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.questions.models import (Answer, AnswerVote, Question,
+                                      QuestionLocale, QuestionVote)
+from kitsune.questions.tests import (AnswerFactory, QuestionFactory,
+                                     QuestionLocaleFactory, TestCaseBase)
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import (
-    get,
-    LocalizingClient,
-    eq_msg,
-    set_waffle_flag,
-    template_used
-)
+from kitsune.sumo.tests import LocalizingClient, eq_msg, get, template_used
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.products.tests import TopicFactory
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
@@ -267,30 +250,6 @@ class AAQTests(TestCaseBase):
         response = self.client.get(url, follow=True)
         assert not template_used(response, "users/auth.html")
         assert template_used(response, "questions/new_question.html")
-
-
-@set_waffle_flag("new_aaq")
-class ReactAAQTests(TestCaseBase):
-    def setUp(self):
-        u = UserFactory(is_superuser=False)
-        self.client.login(username=u.username, password="testpass")
-
-    def test_waffle_flag(self):
-        url = reverse("questions.aaq_step1")
-        response = self.client.get(url, follow=True)
-        assert template_used(response, "questions/new_question_react.html")
-
-    def test_only_marked_topics(self):
-        t1 = TopicFactory(in_aaq=True)
-        TopicFactory(in_aaq=False)
-
-        url = reverse("questions.aaq_step1")
-        response = self.client.get(url, follow=True)
-        doc = pq(response.content)
-        topics = json.loads(doc(".data[name=topics]").text())
-
-        eq_(len(topics), 1)
-        eq_(topics[0]["id"], t1.id)
 
 
 class TestQuestionUpdates(TestCaseBase):

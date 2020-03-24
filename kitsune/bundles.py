@@ -123,21 +123,6 @@ PIPELINE_JS = {
         "source_filenames": ("sumo/js/questions.metrics-dashboard.js",),
         "output_filename": "build/questions.metrics-min.js",
     },
-    "questions.aaq.react": {
-        "source_filenames": (
-            # This uses the minified version because it is optimized to leave
-            # out lots of debug stuff, so it is significantly smaller than
-            # just minifying react.js.
-            # TODO: Figure out how to include the full sized version in dev,
-            # because it produces much nicer error messages.
-            "react/react.min.js",
-            # 'react/react.js',
-            "flux/dist/Flux.js",
-            "underscore/underscore.js",
-            "questions/js/aaq.browserify.js",
-        ),
-        "output_filename": "build/questions.aaq.react-min.js",
-    },
     "products": {
         "source_filenames": ("sumo/js/compare_versions.js", "sumo/js/products.js",),
         "output_filename": "build/products-min.js",
