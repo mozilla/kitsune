@@ -1,15 +1,13 @@
+from babel.dates import format_datetime
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext as _
-
-from babel.dates import format_datetime
 from pytz import timezone
 from tidings.events import InstanceEvent
 
-from kitsune.users.auth import get_auth_str
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
-from kitsune.sumo.templatetags.jinja_helpers import urlparams, add_utm
+from kitsune.sumo.templatetags.jinja_helpers import add_utm, urlparams
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -84,10 +82,7 @@ class QuestionReplyEvent(QuestionEvent):
             from kitsune.users.templatetags.jinja_helpers import display_name
 
             is_asker = asker_id == user.id
-            extra_params = {}
             if is_asker:
-                auth_str = get_auth_str(user)
-                extra_params['auth'] = auth_str
                 subject = _(u'%s posted an answer to your question "%s"' %
                             (display_name(self.answer.creator),
                              self.instance.title))
@@ -99,7 +94,7 @@ class QuestionReplyEvent(QuestionEvent):
                 html_template = 'questions/email/new_answer.html'
 
             for k in ['answer_url', 'helpful_url', 'solution_url']:
-                context[k] = add_utm(urlparams(context[k], **extra_params), 'questions-reply')
+                context[k] = add_utm(urlparams(context[k]), 'questions-reply')
 
             mail = email_utils.make_mail(
                 subject=subject,
