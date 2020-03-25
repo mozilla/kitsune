@@ -1,138 +1,19 @@
-import os
 
-from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.models import User
-from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.middleware import MessageMiddleware
-from django.contrib.sites.models import Site
-from django.core import mail
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
-from django.test.utils import override_settings
-
-
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.questions.tests import QuestionFactory, AnswerFactory
-from kitsune.questions.models import Question, Answer
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.questions.models import Answer, Question
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import (
-    CONTRIBUTOR_GROUP, Profile, EmailChange, Setting, Deactivation)
-from kitsune.users.tests import UserFactory, GroupFactory, add_permission
+from kitsune.users.models import (CONTRIBUTOR_GROUP, Deactivation, Profile,
+                                  Setting)
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.users.views import edit_profile
-
-
-class LoginTests(TestCase):
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_fxa_migrated_user_cannot_login_with_sumo(self, get_current):
-        """
-        If a user's profile is_fxa_migrated, then they cannot log in using
-        the SUMO form. They should not be authenticated and they should
-        see a notification error
-        """
-        user = UserFactory(password='1234')
-        user.profile.is_fxa_migrated = True
-        user.profile.save()
-        response = self.client.post(
-            reverse('users.login', locale='en-US'), {
-                'username': user.username,
-                'password': '1234',
-            },
-            follow=True
-        )
-
-        assert not response.wsgi_request.user.is_authenticated()
-        assert pq(response.content).find('#fxa-notification-already-migrated')
-
-
-class ChangeEmailTestCase(TestCase):
-    client_class = LocalizingClient
-
-    def setUp(self):
-        self.user = UserFactory()
-        self.client.login(username=self.user.username, password='testpass')
-        super(ChangeEmailTestCase, self).setUp()
-
-    def test_redirect(self):
-        """Test our redirect from old url to new one."""
-        response = self.client.get(reverse('users.old_change_email',
-                                           locale='en-US'), follow=False)
-        eq_(301, response.status_code)
-        eq_('/en-US/users/change_email', response['location'])
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_user_change_email(self, get_current):
-        """Send email to change user's email and then change it."""
-        get_current.return_value.domain = 'su.mo.com'
-
-        # Attempt to change email.
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': 'paulc@trololololololo.com'},
-                                    follow=True)
-        eq_(200, response.status_code)
-
-        # Be notified to click a confirmation link.
-        eq_(1, len(mail.outbox))
-        assert mail.outbox[0].subject.find('Please confirm your') == 0
-        ec = EmailChange.objects.all()[0]
-        assert ec.activation_key in mail.outbox[0].body
-        eq_('paulc@trololololololo.com', ec.email)
-
-        # Visit confirmation link to change email.
-        response = self.client.get(reverse('users.confirm_email',
-                                           args=[ec.activation_key]))
-        eq_(200, response.status_code)
-        u = User.objects.get(username=self.user.username)
-        eq_('paulc@trololololololo.com', u.email)
-
-    def test_user_change_email_same(self):
-        """Changing to same email shows validation error."""
-        self.user.email = 'valid@email.com'
-        self.user.save()
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': self.user.email})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('This is your current email.', doc('ul.errorlist').text())
-
-    def test_user_change_email_duplicate(self):
-        """Changing to same email shows validation error."""
-        u = UserFactory(email='newvalid@email.com')
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': u.email})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('A user with that email address already exists.',
-            doc('ul.errorlist').text())
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_user_confirm_email_duplicate(self, get_current):
-        """If we detect a duplicate email when confirming an email change,
-        don't change it and notify the user."""
-        get_current.return_value.domain = 'su.mo.com'
-        old_email = self.user.email
-        new_email = 'newvalid@email.com'
-        response = self.client.post(reverse('users.change_email'),
-                                    {'email': new_email})
-        eq_(200, response.status_code)
-        assert mail.outbox[0].subject.find('Please confirm your') == 0
-        ec = EmailChange.objects.all()[0]
-
-        # Before new email is confirmed, give the same email to a user
-        u = UserFactory(email=new_email)
-
-        # Visit confirmation link and verify email wasn't changed.
-        response = self.client.get(reverse('users.confirm_email',
-                                           args=[ec.activation_key]))
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(u'Unable to change email for user %s' % self.user.username,
-            doc('article h1').text())
-        u = User.objects.get(username=self.user.username)
-        eq_(old_email, u.email)
 
 
 class MakeContributorTests(TestCase):
@@ -151,108 +32,6 @@ class MakeContributorTests(TestCase):
         eq_(302, response.status_code)
 
         eq_(1, self.user.groups.filter(name=CONTRIBUTOR_GROUP).count())
-
-
-class AvatarTests(TestCase):
-    def setUp(self):
-        self.user = UserFactory()
-        self.profile = self.user.profile
-        self.client.login(username=self.user.username, password='testpass')
-        super(AvatarTests, self).setUp()
-
-    def tearDown(self):
-        p = Profile.objects.get(user=self.user)
-        if os.path.exists(p.avatar.path):
-            os.unlink(p.avatar.path)
-        super(AvatarTests, self).tearDown()
-
-    def test_upload_avatar(self):
-        assert not self.profile.avatar, 'User has no avatar.'
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            url = reverse('users.edit_avatar', locale='en-US')
-            data = {'avatar': f}
-            r = self.client.post(url, data)
-        eq_(302, r.status_code)
-        p = Profile.objects.get(user=self.user)
-        assert p.avatar, 'User has an avatar.'
-        assert p.avatar.path.endswith('.png')
-
-    def test_replace_missing_avatar(self):
-        """If an avatar is missing, allow replacing it."""
-        assert not self.profile.avatar, 'User has no avatar.'
-        self.profile.avatar = 'path/does/not/exist.jpg'
-        self.profile.save()
-        assert self.profile.avatar, 'User has a bad avatar.'
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            url = reverse('users.edit_avatar', locale='en-US')
-            data = {'avatar': f}
-            r = self.client.post(url, data)
-        eq_(302, r.status_code)
-        p = Profile.objects.get(user=self.user)
-        assert p.avatar, 'User has an avatar.'
-        assert not p.avatar.path.endswith('exist.jpg')
-        assert p.avatar.path.endswith('.png')
-
-
-class SessionTests(TestCase):
-    client_class = LocalizingClient
-
-    def setUp(self):
-        self.user = UserFactory()
-        self.client.logout()
-        super(SessionTests, self).setUp()
-
-    def test_login_sets_extra_cookie(self):
-        """On login, set the SESSION_EXISTS_COOKIE."""
-        url = reverse('users.login')
-        res = self.client.post(url, {'username': self.user.username,
-                                     'password': 'testpass'})
-        assert settings.SESSION_EXISTS_COOKIE in res.cookies
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        assert 'secure' not in c.output().lower()
-
-    def test_logout_deletes_cookie(self):
-        """On logout, delete the SESSION_EXISTS_COOKIE."""
-        url = reverse('users.logout')
-        res = self.client.post(url)
-        assert settings.SESSION_EXISTS_COOKIE in res.cookies
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        assert '1970' in c['expires']
-
-    @override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=True)
-    def test_expire_at_browser_close(self):
-        """If SESSION_EXPIRE_AT_BROWSER_CLOSE, do expire then."""
-        url = reverse('users.login')
-        res = self.client.post(url, {'username': self.user.username,
-                                     'password': 'testpass'})
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        eq_('', c['max-age'])
-
-    @override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=False,
-                       SESSION_COOKIE_AGE=123)
-    def test_expire_in_a_long_time(self):
-        """If not SESSION_EXPIRE_AT_BROWSER_CLOSE, set an expiry date."""
-        url = reverse('users.login')
-        res = self.client.post(url, {'username': self.user.username,
-                                     'password': 'testpass'})
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        eq_(123, c['max-age'])
-
-    def test_fxa_login_deletes_cookie(self):
-        """
-        If an FXA successfully authenticates using their SUMO credentials,
-        we immediately log them out and clear their cookies, as they
-        should only be authenticating via FXA
-        """
-        url = reverse('users.login')
-        self.user.profile.is_fxa_migrated = True
-        self.user.profile.save()
-        res = self.client.post(url, {
-            'username': self.user.username,
-            'password': 'testpass'
-        })
-        session_cookie = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        assert '1970' in session_cookie['expires']
 
 
 class UserSettingsTests(TestCase):

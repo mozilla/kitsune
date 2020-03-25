@@ -5,15 +5,12 @@ import logging
 import os
 import platform
 import re
+from datetime import date
 
 import dj_database_url
 import django_cache_url
-
-
-from datetime import date
-from decouple import Csv, config
-
 import djcelery
+from decouple import Csv, config
 
 from bundles import PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
@@ -513,17 +510,11 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 
-    # This should come before TokenLoginMiddleware, because
-    # TokenLoginMiddleware uses this to tell users they have been
-    # automatically logged. It also has to come after
-    # NoVarySessionMiddleware.
+    # This has to come after NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
 
     # This should come after MessageMiddleware
     'kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware',
-
-    # This middleware should come after AuthenticationMiddleware.
-    'kitsune.users.middleware.TokenLoginMiddleware',
 
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
@@ -576,7 +567,6 @@ AUTHENTICATION_BACKENDS = (
     'kitsune.users.auth.FXAAuthBackend',
     # This backend is used for the /admin interface
     'kitsune.users.auth.ModelBackendAllowInactive',
-    'kitsune.users.auth.TokenLoginBackend',
 )
 if READ_ONLY:
     AUTHENTICATION_BACKENDS = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
@@ -809,10 +799,8 @@ NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=4 * 7 * 24 * 60 * 60, cast=int)  # 4 weeks
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 SESSION_COOKIE_HTTPONLY = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_NAME = 'session_id'
 SESSION_ENGINE = config('SESSION_ENGINE', default='django.contrib.sessions.backends.cache')
-SESSION_EXISTS_COOKIE = 'sumo_session'
 SESSION_SERIALIZER = config('SESSION_SERIALIZER', default='django.contrib.sessions.serializers.PickleSerializer')
 
 #
@@ -1154,19 +1142,16 @@ DMS_REPORT_EMPLOYEE_ANSWERS = config('DMS_REPORT_EMPLOYEE_ANSWERS', default=None
 DMS_REINDEX_USERS_THAT_CONTRIBUTED_YESTERDAY = config('DMS_REINDEX_USERS_THAT_CONTRIBUTED_YESTERDAY', default=None)
 DMS_UPDATE_WEEKLY_VOTES = config('DMS_UPDATE_WEEKLY_VOTES', default=None)
 DMS_UPDATE_SEARCH_CTR_METRIC = config('DMS_UPDATE_SEARCH_CTR_METRIC', default=None)
-DMS_REMOVE_EXPIRED_REGISTRATION_PROFILES = config('DMS_REMOVE_EXPIRED_REGISTRATION_PROFILES', default=None)
 DMS_UPDATE_CONTRIBUTOR_METRICS = config('DMS_UPDATE_CONTRIBUTOR_METRICS', default=None)
 DMS_AUTO_ARCHIVE_OLD_QUESTIONS = config('DMS_AUTO_ARCHIVE_OLD_QUESTIONS', default=None)
 DMS_REINDEX = config('DMS_REINDEX', default=None)
 DMS_PROCESS_EXIT_SURVEYS = config('DMS_PROCESS_EXIT_SURVEYS', default=None)
 DMS_SURVEY_RECENT_ASKERS = config('DMS_SURVEY_RECENT_ASKERS', default=None)
-DMS_CLEAR_EXPIRED_AUTH_TOKENS = config('DMS_CLEAR_EXPIRED_AUTH_TOKENS', default=None)
 # DMS_UPDATE_VISITORS_METRIC = config('DMS_UPDATE_VISITORS_METRIC', default=None)
 DMS_UPDATE_L10N_METRIC = config('DMS_UPDATE_L10N_METRIC', default=None)
 DMS_RELOAD_WIKI_TRAFFIC_STATS = config('DMS_RELOAD_WIKI_TRAFFIC_STATS', default=None)
 DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES = config('DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES', default=None)
 DMS_RELOAD_QUESTION_TRAFFIC_STATS = config('DMS_RELOAD_QUESTION_TRAFFIC_STATS', default=None)
-DMS_PURGE_HASHES = config('DMS_PURGE_HASHES', default=None)
 DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST = config('DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST', default=None)
 DMS_FIX_CURRENT_REVISIONS = config('DMS_FIX_CURRENT_REVISIONS', default=None)
 DMS_COHORT_ANALYSIS = config('DMS_COHORT_ANALYSIS', default=None)

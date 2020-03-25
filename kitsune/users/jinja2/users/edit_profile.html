@@ -1,5 +1,5 @@
 {% extends "users/base.html" %}
-{% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created, notification_sumo_deprecation %}
+{% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created %}
 
 {% set title = _('Edit Profile') %}
 {% set classes = 'profile' %}
@@ -13,8 +13,6 @@
         {{ notification_fxa_updated(STATIC_URL) }}
       {% elif message == 'fxa_notification_created' %}
         {{ notification_fxa_created(STATIC_URL) }}
-      {% elif message == 'fxa_notification_deprecation_warning' %}
-        {{ notification_sumo_deprecation(STATIC_URL) }}
       {% endif %}
     {% endfor %}
   {% endif %}
@@ -76,22 +74,6 @@
                     {% endif %}
                   {% endif %}
                 </figure>
-                <div class="avatar-group--details">
-                  {% if not profile.is_fxa_migrated %}
-                  <ul class="avatar-group--details-list">
-                    <li class="avatar-group--details-item">
-                      <label class="avatar-group--details-label">{{ _('Password:') }}</label>
-                      <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
-                    </li>
-                    <li class="avatar-group--details-item">
-                      <label class="avatar-group--details-label">{{ _('Email:') }}</label>
-                      <span>{{ user.email }}<br>
-                        <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
-                      </span>
-                    </li>
-                  </ul>
-                  {% endif %}
-                </div>
               </section>
             </div>
 

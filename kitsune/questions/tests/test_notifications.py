@@ -1,21 +1,19 @@
 import re
 
+import mock
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
-
-import mock
 from nose.tools import eq_
 
-from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent, email_utils
+from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question
-from kitsune.questions.tests import TestCaseBase, QuestionFactory, AnswerFactory
-from kitsune.sumo.tests import post, attrs_eq, starts_with
-from kitsune.users.auth import TokenLoginBackend
-from kitsune.users.templatetags.jinja_helpers import display_name
+from kitsune.questions.tests import (AnswerFactory, QuestionFactory,
+                                     TestCaseBase)
+from kitsune.sumo.tests import attrs_eq, post, starts_with
 from kitsune.users.models import Setting
+from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.tests import UserFactory
-
 
 # These mails are generated using reverse() calls, which return different
 # results depending on whether a request is being processed at the time. This
@@ -74,7 +72,7 @@ ANSWER_EMAIL_TO_ASKER = u"""Hi {asker},
 If this doesn't solve your problem, let {replier} know by replying on the \
 website:
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_medium=email&utm_source=notification&auth=AUTH\
+questions-reply&utm_medium=email&utm_source=notification\
 #answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
@@ -328,30 +326,6 @@ class TestAnswerNotifications(TestCaseBase):
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL.format(to_user=display_name(watcher), **self.format_args()))
 
-    @mock.patch.object(email_utils, 'make_mail')
-    def test_notify_unique_auth_tokens(self, email_mock):
-        """Test that arbitrary users get unique auth tokens."""
-        auth_backend = TokenLoginBackend()
-        auth_re = re.compile(r'auth=([a-zA-Z0-9%_-]+)')
-        watcher = UserFactory()
-        QuestionReplyEvent.notify(watcher, self.question)
-        asker_id = self.question.creator.id
-        self.makeAnswer()
-
-        def get_auth_token(ctx):
-            return auth_re.search(ctx['answer_url']).group(1).replace('%3D', '=')
-
-        eq_(email_mock.call_count, 2)
-        all_calls = email_mock.call_args_list
-        for call in all_calls:
-            ctx = call[1]['context_vars']
-            user = ctx['to_user']
-            if user.id == asker_id:
-                auth = get_auth_token(ctx)
-                eq_(user, auth_backend.authenticate(auth))
-            else:
-                assert auth_re.search(ctx['answer_url']) is None
-
     def test_notify_asker(self):
         """Test that the answer is notified of answers, without registering."""
         self.makeAnswer()
@@ -364,8 +338,7 @@ class TestAnswerNotifications(TestCaseBase):
             .format(display_name(self.answer.creator), self.question.title),
             notification.subject)
 
-        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
-        starts_with(body, ANSWER_EMAIL_TO_ASKER.format(**self.format_args()))
+        starts_with(notification.body, ANSWER_EMAIL_TO_ASKER.format(**self.format_args()))
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
     def test_notify_anonymous_reply_to(self):

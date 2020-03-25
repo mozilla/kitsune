@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import mock
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.management import call_command
 from nose.tools import eq_
@@ -10,7 +11,6 @@ from kitsune.products.tests import ProductFactory
 from kitsune.questions import config
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.models import Group
 from kitsune.users.tests import UserFactory
 
 
