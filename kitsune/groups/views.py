@@ -1,17 +1,16 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext as _
-from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
-from kitsune.groups.forms import (
-    GroupProfileForm, GroupAvatarForm, AddUserForm)
+from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url
@@ -219,12 +218,12 @@ def remove_leader(request, group_slug, user_id):
 @require_POST
 def join_contributors(request):
     """Join the Contributors group."""
-    next = get_next_url(request) or reverse('home')
+    next_url = get_next_url(request) or reverse('home')
     group = Group.objects.get(name='Contributors')
     request.user.groups.add(group)
     messages.add_message(request, messages.SUCCESS,
                          _('You are now part of the Contributors group!'))
-    return HttpResponseRedirect(next)
+    return HttpResponseRedirect(next_url)
 
 
 def _user_can_edit(user, group_profile):

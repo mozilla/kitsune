@@ -6,8 +6,7 @@ from django.core import mail
 from django.test.utils import override_settings
 from nose.tools import eq_
 
-from kitsune.questions.events import (QuestionReplyEvent, QuestionSolvedEvent,
-                                      email_utils)
+from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question
 from kitsune.questions.tests import (AnswerFactory, QuestionFactory,
                                      TestCaseBase)

@@ -1,11 +1,8 @@
-import os
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
-from django.test.utils import override_settings
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -35,92 +32,6 @@ class MakeContributorTests(TestCase):
         eq_(302, response.status_code)
 
         eq_(1, self.user.groups.filter(name=CONTRIBUTOR_GROUP).count())
-
-
-class AvatarTests(TestCase):
-    def setUp(self):
-        self.user = UserFactory()
-        self.profile = self.user.profile
-        self.client.login(username=self.user.username, password='testpass')
-        super(AvatarTests, self).setUp()
-
-    def tearDown(self):
-        p = Profile.objects.get(user=self.user)
-        if os.path.exists(p.avatar.path):
-            os.unlink(p.avatar.path)
-        super(AvatarTests, self).tearDown()
-
-    def test_upload_avatar(self):
-        assert not self.profile.avatar, 'User has no avatar.'
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            url = reverse('users.edit_avatar', locale='en-US')
-            data = {'avatar': f}
-            r = self.client.post(url, data)
-        eq_(302, r.status_code)
-        p = Profile.objects.get(user=self.user)
-        assert p.avatar, 'User has an avatar.'
-        assert p.avatar.path.endswith('.png')
-
-    def test_replace_missing_avatar(self):
-        """If an avatar is missing, allow replacing it."""
-        assert not self.profile.avatar, 'User has no avatar.'
-        self.profile.avatar = 'path/does/not/exist.jpg'
-        self.profile.save()
-        assert self.profile.avatar, 'User has a bad avatar.'
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            url = reverse('users.edit_avatar', locale='en-US')
-            data = {'avatar': f}
-            r = self.client.post(url, data)
-        eq_(302, r.status_code)
-        p = Profile.objects.get(user=self.user)
-        assert p.avatar, 'User has an avatar.'
-        assert not p.avatar.path.endswith('exist.jpg')
-        assert p.avatar.path.endswith('.png')
-
-
-class SessionTests(TestCase):
-    client_class = LocalizingClient
-
-    def setUp(self):
-        self.user = UserFactory()
-        self.client.logout()
-        super(SessionTests, self).setUp()
-
-    def test_login_sets_extra_cookie(self):
-        """On login, set the SESSION_EXISTS_COOKIE."""
-        url = reverse('users.login')
-        res = self.client.post(url, {'username': self.user.username,
-                                     'password': 'testpass'})
-        assert settings.SESSION_EXISTS_COOKIE in res.cookies
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        assert 'secure' not in c.output().lower()
-
-    def test_logout_deletes_cookie(self):
-        """On logout, delete the SESSION_EXISTS_COOKIE."""
-        url = reverse('users.logout')
-        res = self.client.post(url)
-        assert settings.SESSION_EXISTS_COOKIE in res.cookies
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        assert '1970' in c['expires']
-
-    @override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=True)
-    def test_expire_at_browser_close(self):
-        """If SESSION_EXPIRE_AT_BROWSER_CLOSE, do expire then."""
-        url = reverse('users.login')
-        res = self.client.post(url, {'username': self.user.username,
-                                     'password': 'testpass'})
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        eq_('', c['max-age'])
-
-    @override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=False,
-                       SESSION_COOKIE_AGE=123)
-    def test_expire_in_a_long_time(self):
-        """If not SESSION_EXPIRE_AT_BROWSER_CLOSE, set an expiry date."""
-        url = reverse('users.login')
-        res = self.client.post(url, {'username': self.user.username,
-                                     'password': 'testpass'})
-        c = res.cookies[settings.SESSION_EXISTS_COOKIE]
-        eq_(123, c['max-age'])
 
 
 class UserSettingsTests(TestCase):

@@ -7,9 +7,6 @@ from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.sumo.widgets import ImageWidget
-from kitsune.upload.forms import LimitedImageField
-from kitsune.upload.utils import FileTooLargeError, check_file_size
 from kitsune.users.models import Profile
 from kitsune.users.widgets import FacebookURLWidget, MonthYearWidget
 
@@ -39,8 +36,7 @@ PASSWD2_REQUIRED = _lazy(u"Please enter your password twice.")
 PASSWD_MIN_LENGTH = 8
 PASSWD_MIN_LENGTH_MSG = _lazy("Password must be 8 or more characters.")
 
-# Enforces at least one digit and at least one alpha character.
-password_re = re.compile(r"(?=.*\d)(?=.*[a-zA-Z])")
+USERNAME_CACHE_KEY = "username-blacklist"
 
 
 class SettingsForm(forms.Form):
@@ -130,39 +126,11 @@ class ProfileForm(forms.ModelForm):
         return facebook
 
 
-# This is used in groups/forms.py
-class AvatarForm(forms.ModelForm):
-    """The form for editing the user's avatar."""
-
-    avatar = LimitedImageField(required=True, widget=ImageWidget)
-
-    def __init__(self, *args, **kwargs):
-        super(AvatarForm, self).__init__(*args, **kwargs)
-        self.fields["avatar"].help_text = _(
-            "Your avatar will be resized to {size}x{size}"
-        ).format(size=settings.AVATAR_SIZE)
-
-    class Meta(object):
-        model = Profile
-        fields = ("avatar",)
-
-    def clean_avatar(self):
-        if not ("avatar" in self.cleaned_data and self.cleaned_data["avatar"]):
-            return self.cleaned_data["avatar"]
-        try:
-            check_file_size(self.cleaned_data["avatar"], settings.MAX_AVATAR_FILE_SIZE)
-        except FileTooLargeError as e:
-            raise forms.ValidationError(e.args[0])
-        return self.cleaned_data["avatar"]
-
-
-USERNAME_CACHE_KEY = "username-blacklist"
-
-
 def username_allowed(username):
+    """Returns True if the given username is not a blatent bad word."""
+
     if not username:
         return False
-    """Returns True if the given username is not a blatent bad word."""
     blacklist = cache.get(USERNAME_CACHE_KEY)
     if blacklist is None:
         f = open(settings.USERNAME_BLACKLIST, "r")
@@ -173,8 +141,8 @@ def username_allowed(username):
     # Add lowercased and non alphanumerics to start.
     usernames = set([username, re.sub(r"\W", "", username)])
     # Add words split on non alphanumerics.
-    for u in re.findall(r"\w+", username):
-        usernames.add(u)
+    for name in re.findall(r"\w+", username):
+        usernames.add(name)
     # Do any match the bad words?
     return not usernames.intersection(blacklist)
 

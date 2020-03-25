@@ -1,9 +1,5 @@
-import os
-from copy import copy
 
 from django.conf import settings
-from django.core.files import File
-from django.test import override_settings
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.models import Watch
@@ -96,73 +92,6 @@ class EditProfileTests(TestCaseBase):
                     "%r != %r (for key '%s')" % (data[key], getattr(profile, key), key))
 
         eq_(data['timezone'], profile.timezone.zone)
-
-
-class EditAvatarTests(TestCaseBase):
-
-    def setUp(self):
-        super(EditAvatarTests, self).setUp()
-        self.old_settings = copy(settings._wrapped.__dict__)
-        self.u = UserFactory()
-
-    def tearDown(self):
-        settings._wrapped.__dict__ = self.old_settings
-        user_profile = Profile.objects.get(user__username=self.u.username)
-        if user_profile.avatar:
-            user_profile.avatar.delete()
-        super(EditAvatarTests, self).tearDown()
-
-    @override_settings(MAX_AVATAR_FILE_SIZE=1024)
-    def test_large_avatar(self):
-        url = reverse('users.edit_avatar')
-        self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            r = self.client.post(url, {'avatar': f})
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_('"test.jpg" is too large (12KB), the limit is 1KB',
-            doc('.errorlist').text())
-
-    def test_avatar_extensions(self):
-        url = reverse('users.edit_avatar')
-        self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test_invalid.ext') as f:
-            r = self.client.post(url, {'avatar': f})
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        assert doc('.errorlist').text().startswith(
-            "File extension 'ext' is not allowed. Allowed extensions are:")
-
-    def test_upload_avatar(self):
-        """Upload a valid avatar."""
-        user_profile = Profile.objects.get(user__username=self.u.username)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            user_profile.avatar.save('test_old.jpg', File(f), save=True)
-        assert user_profile.avatar.name.endswith('92b516.jpg')
-        old_path = user_profile.avatar.path
-        assert os.path.exists(old_path), 'Old avatar is not in place.'
-
-        url = reverse('users.edit_avatar')
-        self.client.login(username=self.u.username, password='testpass')
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            r = self.client.post(url, {'avatar': f})
-
-        eq_(302, r.status_code)
-        eq_('/en-US' + reverse('users.edit_my_profile'), r['location'])
-        assert not os.path.exists(old_path), 'Old avatar was not removed.'
-
-    def test_delete_avatar(self):
-        """Delete an avatar."""
-        self.test_upload_avatar()
-
-        url = reverse('users.delete_avatar')
-        self.client.login(username=self.u.username, password='testpass')
-        r = self.client.post(url)
-
-        user_profile = Profile.objects.get(user__username=self.u.username)
-        eq_(302, r.status_code)
-        eq_('/en-US' + reverse('users.edit_my_profile'), r['location'])
-        eq_('', user_profile.avatar.name)
 
 
 class ViewProfileTests(TestCaseBase):
