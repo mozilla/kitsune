@@ -537,6 +537,8 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
     'django_user_agents.middleware.UserAgentMiddleware',
+
+    'kitsune.users.middleware.LogoutSumoAccountsMiddleware'
 )
 
 # SecurityMiddleware settings
