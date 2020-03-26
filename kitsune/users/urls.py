@@ -53,7 +53,7 @@ urlpatterns = [
 
 if settings.OIDC_ENABLE:
     urlpatterns += [
-        url(r'^fxa/callback/$', never_cache(OIDCAuthenticationCallbackView.as_view()),
+        url(r'^fxa/callback/$', never_cache(views.FXAAuthenticationCallbackView.as_view()),
             name='users.fxa_authentication_callback'),
         url(r'^fxa/authenticate/$', never_cache(views.FXAAuthenticateView.as_view()),
             name='users.fxa_authentication_init'),

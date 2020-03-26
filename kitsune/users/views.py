@@ -11,7 +11,8 @@ from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
 # from axes.decorators import watch_login
 from django_statsd.clients import statsd
-from mozilla_django_oidc.views import (OIDCAuthenticationRequestView,
+from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
+                                       OIDCAuthenticationRequestView,
                                        OIDCLogoutView)
 from tidings.models import Watch
 
@@ -74,11 +75,11 @@ def login(request):
 @ssl_required
 @require_POST
 def logout(request):
-    """Log the user out."""
-    auth.logout(request)
-    statsd.incr('user.logout')
+    """Log the user out.
 
-    return HttpResponseRedirect(get_next_url(request) or reverse('home'))
+    Simple compatibility wrapper that calls the OIDC logout for FxA.
+    """
+    return FXALogoutView.as_view()(request)
 
 
 @require_GET
@@ -309,6 +310,32 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
         is_contributor = request.GET.get('is_contributor') == 'True'
         request.session['is_contributor'] = is_contributor
         return super(FXAAuthenticateView, self).get(request)
+
+
+class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
+
+    @staticmethod
+    def get_settings(attr, *args):
+        """Override settings for Firefox Accounts.
+
+        The default values for the OIDC lib are used for the SSO login in the admin
+        interface. For Firefox Accounts we need to pass different values, pointing to the
+        correct endpoints and RP specific attributes.
+        """
+
+        val = get_oidc_fxa_setting(attr)
+        if val is not None:
+            return val
+        return super(FXAAuthenticationCallbackView, FXAAuthenticationCallbackView).get_settings(attr, *args)
+
+    def login_failure(self):
+        messages.add_message(
+            self.request,
+            messages.ERROR,
+            _('This account is not active. '
+              'Please contact an administrator if you believe this is an error')
+            )
+        return HttpResponseRedirect(reverse('home'))
 
 
 class FXALogoutView(OIDCLogoutView):
