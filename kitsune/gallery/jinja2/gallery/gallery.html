@@ -7,8 +7,7 @@
 {% set scripts = ('wiki', 'gallery') %}
 {% set crumbs = [(None, _('Media Gallery'))] %}
 
-{% block contentwrap %}
-
+{% block masthead %}
 <section class="sumo-page-section--lg shade-bg">
   <div class="mzp-l-content">
     {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
@@ -26,7 +25,10 @@
     </div>
   </div>
 </section>
+{% endblock %}
 
+
+{% block contentwrap %}
 <section class="sumo-page-section">
   <div class="mzp-l-content">
     <div class="sumo-l-two-col sidebar-on-right contributors">
