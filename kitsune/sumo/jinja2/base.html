@@ -191,6 +191,19 @@
   </div>
 </header><!--/.mzp-c-navigation -->
 
+{% if messages %}
+  <ul class="user-messages">
+    {% for message in messages %}
+      {% if not message.message.startswith('fxa_notification') %}
+      <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
+        <button class="mzp-c-notification-bar-button" type="button"></button>
+        <p>{{ message }}</p>
+      </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+{% endif %}
+
 {{ ff_alert(text=_('Get the account that protects you rather that profits off you.'), modifier_class="hide-on-mobile") }}
 
 {% block hidden_search_masthead %}
@@ -225,18 +238,6 @@
       </aside>
       {% endblock %}
       <main role="main" class="sumo-l-two-col--main">
-      {% if messages %}
-        <ul class="user-messages">
-          {% for message in messages %}
-            {% if not message.message.startswith('fxa_notification') %}
-            <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
-              <button class="mzp-c-notification-bar-button" type="button"></button>
-              <p>{{ message }}</p>
-            </li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% endif %}
 
       {% block above_main %}{% endblock %}
       {% block content %}{% endblock %}
