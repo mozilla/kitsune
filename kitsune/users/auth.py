@@ -4,7 +4,6 @@ import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse as django_reverse
 from django.db import transaction
@@ -17,23 +16,6 @@ from kitsune.users.models import Profile
 from kitsune.users.utils import add_to_contributors, get_oidc_fxa_setting
 
 log = logging.getLogger('k.users')
-
-
-class ModelBackendAllowInactive(ModelBackend):
-    """
-    Standard model authentication that also allows inactive users.
-
-    This is necessary as new registered users are marked inactive
-    but still logged in automatically. Some control around logging
-    in as an active user is still retained via the ``only_active``
-    argument of ``kitsune.users.forms.AuthenticationForm``.
-    """
-
-    def user_can_authenticate(self, user):
-        """
-        Allow users with is_active=False.
-        """
-        return True
 
 
 class SumoOIDCAuthBackend(OIDCAuthenticationBackend):

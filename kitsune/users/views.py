@@ -10,7 +10,6 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
 # from axes.decorators import watch_login
-from django_statsd.clients import statsd
 from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
                                        OIDCAuthenticationRequestView,
                                        OIDCLogoutView)
@@ -326,7 +325,8 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
         val = get_oidc_fxa_setting(attr)
         if val is not None:
             return val
-        return super(FXAAuthenticationCallbackView, FXAAuthenticationCallbackView).get_settings(attr, *args)
+        return super(FXAAuthenticationCallbackView,
+                     FXAAuthenticationCallbackView).get_settings(attr, *args)
 
     def login_failure(self):
         messages.add_message(
@@ -334,7 +334,7 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
             messages.ERROR,
             _('This account is not active. '
               'Please contact an administrator if you believe this is an error')
-            )
+        )
         return HttpResponseRedirect(reverse('home'))
 
 

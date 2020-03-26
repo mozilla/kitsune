@@ -18,9 +18,9 @@ from kitsune.wiki.tests import RevisionFactory
 class EditProfileTests(TestCaseBase):
 
     def test_edit_my_ProfileFactory(self):
-        u = UserFactory()
+        user = UserFactory()
         url = reverse('users.edit_my_profile')
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=user.username, password='testpass')
         data = {'name': 'John Doe',
                 'public_email': True,
                 'bio': 'my bio',
@@ -33,9 +33,9 @@ class EditProfileTests(TestCaseBase):
                 'country': 'US',
                 'city': 'Disney World',
                 'locale': 'en-US'}
-        r = self.client.post(url, data)
-        eq_(302, r.status_code)
-        profile = Profile.objects.get(user=u)
+        response = self.client.post(url, data)
+        eq_(302, response.status_code)
+        profile = Profile.objects.get(user=user)
         for key in data:
             if key != 'timezone':
                 assert data[key] == getattr(profile, key), (
@@ -59,16 +59,16 @@ class EditProfileTests(TestCaseBase):
         eq_(403, r.status_code)
 
     def test_user_can_edit_others_profile_with_permission(self):
-        u1 = UserFactory()
-        url = reverse('users.edit_profile', args=[u1.username])
+        user1 = UserFactory()
+        url = reverse('users.edit_profile', args=[user1.username])
 
-        u2 = UserFactory()
-        add_permission(u2, Profile, 'change_profile')
-        self.client.login(username=u2.username, password='testpass')
+        user2 = UserFactory()
+        add_permission(user2, Profile, 'change_profile')
+        self.client.login(username=user2.username, password='testpass')
 
         # Try GET
-        r = self.client.get(url)
-        eq_(200, r.status_code)
+        resp = self.client.get(url)
+        eq_(200, resp.status_code)
 
         # Try POST
         data = {'name': 'John Doe',
@@ -83,9 +83,9 @@ class EditProfileTests(TestCaseBase):
                 'country': 'US',
                 'city': 'Disney World',
                 'locale': 'en-US'}
-        r = self.client.post(url, data)
-        eq_(302, r.status_code)
-        profile = Profile.objects.get(user=u1)
+        resp = self.client.post(url, data)
+        eq_(302, resp.status_code)
+        profile = Profile.objects.get(user=user1)
         for key in data:
             if key != 'timezone':
                 assert data[key] == getattr(profile, key), (

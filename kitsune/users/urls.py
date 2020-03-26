@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.conf.urls import include, url
 from django.views.decorators.cache import never_cache
-from mozilla_django_oidc.views import OIDCAuthenticationCallbackView
 
 import kitsune.flagit.views
 from kitsune.users import api, views
