@@ -537,6 +537,9 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
     'django_user_agents.middleware.UserAgentMiddleware',
+
+    'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
+    'kitsune.users.middleware.LogoutSumoAccountsMiddleware'
 )
 
 # SecurityMiddleware settings
@@ -562,11 +565,10 @@ WATCHMAN_CHECKS = (
 
 # Auth
 AUTHENTICATION_BACKENDS = (
-    'kitsune.users.auth.SumoOIDCAuthBackend',
-    # ``ModelBackendAllowInactive`` replaces ``django.contrib.auth.backends.ModelBackend``.
-    'kitsune.users.auth.FXAAuthBackend',
     # This backend is used for the /admin interface
-    'kitsune.users.auth.ModelBackendAllowInactive',
+    'kitsune.users.auth.SumoOIDCAuthBackend',
+    'kitsune.users.auth.FXAAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
 )
 if READ_ONLY:
     AUTHENTICATION_BACKENDS = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
