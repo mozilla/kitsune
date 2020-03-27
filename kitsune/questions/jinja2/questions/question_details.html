@@ -274,7 +274,7 @@
           </div>
         {% endif %}
           <p>
-            {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.login'), ask_url=ask_url) }}
+            {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.auth'), ask_url=ask_url) }}
           </p>
         </div>
       {% endif %}
