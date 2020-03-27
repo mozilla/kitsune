@@ -1,51 +1,35 @@
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 
+import mock
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
-
-import mock
 from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import post, get, attrs_eq
 from kitsune.sumo.tests import SumoPyQuery as pq
+from kitsune.sumo.tests import attrs_eq, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.events import (
-    EditDocumentEvent,
-    ReadyRevisionEvent,
-    ReviewableRevisionInLocaleEvent,
-    ApproveRevisionInLocaleEvent,
-    get_diff_for,
-)
-from kitsune.wiki.models import Document, Revision, HelpfulVote, HelpfulVoteMetadata
-from kitsune.wiki.config import (
-    SIGNIFICANCES,
-    MEDIUM_SIGNIFICANCE,
-    ADMINISTRATION_CATEGORY,
-    TROUBLESHOOTING_CATEGORY,
-    CATEGORIES,
-    CANNED_RESPONSES_CATEGORY,
-    TEMPLATES_CATEGORY,
-    TEMPLATE_TITLE_PREFIX,
-)
+from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
+                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
+                                 MEDIUM_SIGNIFICANCE, SIGNIFICANCES,
+                                 TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY,
+                                 TROUBLESHOOTING_CATEGORY)
+from kitsune.wiki.events import (ApproveRevisionInLocaleEvent,
+                                 EditDocumentEvent, ReadyRevisionEvent,
+                                 ReviewableRevisionInLocaleEvent, get_diff_for)
+from kitsune.wiki.models import (Document, HelpfulVote, HelpfulVoteMetadata,
+                                 Revision)
 from kitsune.wiki.tasks import send_reviewed_notification
-from kitsune.wiki.tests import (
-    TestCaseBase,
-    DocumentFactory,
-    DraftRevisionFactory,
-    RevisionFactory,
-    ApprovedRevisionFactory,
-    RedirectRevisionFactory,
-    TranslatedRevisionFactory,
-    LocaleFactory,
-    new_document_data,
-)
-
+from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
+                                DraftRevisionFactory, LocaleFactory,
+                                RedirectRevisionFactory, RevisionFactory,
+                                TestCaseBase, TranslatedRevisionFactory,
+                                new_document_data)
 
 READY_FOR_REVIEW_EMAIL_CONTENT = u"""\
 %(user)s submitted a new revision to the document %(title)s.
@@ -481,7 +465,7 @@ class RevisionTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_("Revision id: %s" % r.id, doc("div.revision-info li").first().text())
-        eq_(d.title, doc("h1.title").text())
+        eq_(d.title, doc("h1.sumo-page-heading").text())
         eq_(pq(r.content_parsed)("div").text(), doc("#doc-content div").text())
         eq_(
             "Created:\n              Jan 1, 2011, 12:00:00 AM",
