@@ -145,7 +145,8 @@ h5, h6, .text-display-sm {
   @include c.text-body-xs();
 }
 
-.normalize-headings {
+.normalize-headings,
+#doc-content {
   h1, h2, h3, h4, h5, h6 {
     @include c.text-display-xs;
   }

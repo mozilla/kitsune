@@ -9,11 +9,10 @@
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
-  <div class="grid_9">
     <article class="wiki-doc">
-      <h1 class="title">{{ document.title }}</h1>
+      <h1 class="sumo-page-heading">{{ document.title }}</h1>
       <details class="h2" open="open">
-        <summary>{{ _('Revision Information') }}</summary>
+        <summary class="sumo-card-heading">{{ _('Revision Information') }}</summary>
         <div class="revision-info">
           <ul>
             <li>
@@ -77,19 +76,18 @@
         </div>
       </details>
       <details class="h2">
-        <summary>{{ _('Revision Source') }}</summary>
+        <summary class="sumo-card-heading">{{ _('Revision Source') }}</summary>
         <div id="doc-source">
           <textarea readonly="readonly">{{ revision.content }}</textarea>
         </div>
       </details>
       <details class="h2">
-        <summary>{{ _('Revision Content') }}</summary>
+        <summary class="sumo-card-heading">{{ _('Revision Content') }}</summary>
         <div id="doc-content">
           {{ revision.content_parsed|safe }}
         </div>
       </details>
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}
