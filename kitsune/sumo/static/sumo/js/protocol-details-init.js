@@ -2,7 +2,7 @@ function detailsInit() {
   'use strict';
   var _mqWide = matchMedia('(max-width: 1055px)');
 
-  var sidebarList = document.querySelector('.sidebar-nav');
+  var sidebarList = document.querySelector('.details-heading');
 
   function swapMobileSubnavText(){
     var button = document.querySelector('.details-heading button');
@@ -13,7 +13,7 @@ function detailsInit() {
     if (activeLink) {
       var mobileButtonText = activeLink.innerHTML;
     } else {
-      var mobileButtonText = 'debug this';
+      var mobileButtonText = 'Sidebar';
     }
 
     button.innerHTML = mobileButtonText;
