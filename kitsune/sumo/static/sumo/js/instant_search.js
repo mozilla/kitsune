@@ -64,10 +64,8 @@
   };
 
   $(document).on('submit', '[data-instant-search="form"]', function(ev) {
-    if ( $(this).find('.searchbox').val('') ) {
-      $(this).find('.searchbox').focus();
-    }
     ev.preventDefault();
+    $(this).find('.searchbox').focus();
   });
 
   $(document).on('keyup', '[data-instant-search="form"] input[type="search"]', function(ev) {
