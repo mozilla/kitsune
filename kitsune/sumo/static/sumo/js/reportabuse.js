@@ -10,7 +10,7 @@
     $('#report-abuse [type="submit"]').on('click', function(ev) {
       ev.preventDefault();
       var $this = $(this);
-      var $form = $this.parent();
+      var $form = $this.closest('form');
 
       $.ajax({
         url: $form.attr('action'),
