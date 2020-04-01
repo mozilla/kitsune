@@ -36,10 +36,10 @@
     <div class="mzp-c-menu-list">
       <span class="icon-button" data-has-dropdown>more options</span>
       <ul class="mzp-c-menu-list-list">
-        {% if answer.allows_flag(user, question) %}
-        <li class="mzp-c-menu-list-item">
-          {{ flag_form(url('questions.answer_flag', question.id, answer.id)) }}
-        </li>
+        {% if user.is_authenticated() and answer.allows_flag(user, question) %}
+          <li class="mzp-c-menu-list-item">
+            {{ flag_form(url('questions.answer_flag', question.id, answer.id)) }}
+          </li>
         {% endif %}
         <li class="mzp-c-menu-list-item">
           <a class="reply quoted-reply" href="#question-reply" data-content-id="answer-{{ answer.id }}">{{ _('Quote') }}</a>

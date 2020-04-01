@@ -22,7 +22,7 @@
         <hr class="section-break"/>
         {% endif %}
 
-        {% if request.user.is_authenticated and request.user != profile.user %}
+        {% if request.user.is_authenticated() and request.user != profile.user %}
           {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
         {% endif %}
         <h1 class="sumo-page-heading user">{{ display_name(profile.user) }}
