@@ -14,6 +14,7 @@ COLLAPSIBLE_DOCUMENTS = {
         u"how-answer-escalated-questions",
         u"navigate-support-forum-platform",
         u"how-stop-firefox-making-automatic-connections",
+        u"sample-article-1",
     ],
     u"cs": [u"jak-firefoxu-zabranit-v-automatickem-navazovani-sp",],
     u"de": [u"Firefox-baut-unaufgeforderte-Verbindungen-auf",],

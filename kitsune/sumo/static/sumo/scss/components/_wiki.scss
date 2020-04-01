@@ -1233,6 +1233,7 @@ article {
         top: 50%;
         width: 20px;
         right: 8px;
+        transform: rotate(45deg);
       }
     }
   }
@@ -1240,5 +1241,9 @@ article {
 .wiki-section.collapsed {
   section {
     display: none;
+  }
+
+  > h1:before {
+    transform: rotate(0);
   }
 }
