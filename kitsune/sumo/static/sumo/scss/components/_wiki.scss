@@ -1207,3 +1207,43 @@ article {
     padding: p.$spacing-sm 40px;
   }
 }
+
+
+.collapsible {
+  .wiki-section {
+    > h1 {
+      margin-top: p.$spacing-lg;
+      margin-bottom: p.$spacing-lg;
+      position: relative;
+      @include c.sumo-card-heading;
+
+      &:before {
+        background: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 3.515v16.97M3.515 12h16.97' stroke='%23000' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round'/%3E%3C/svg%3E") 0 0 no-repeat;
+        background-size: auto;
+        background-size: 20px,20px;
+        -webkit-transition: transform .1s ease-in-out;
+        -webkit-transition: -webkit-transform .1s ease-in-out;
+        transition: -webkit-transform .1s ease-in-out;
+        transition: transform .1s ease-in-out;
+        transition: transform .1s ease-in-out,-webkit-transform .1s ease-in-out;
+        content: "";
+        height: 20px;
+        margin-top: -8px;
+        position: absolute;
+        top: 50%;
+        width: 20px;
+        right: 8px;
+        transform: rotate(45deg);
+      }
+    }
+  }
+}
+.wiki-section.collapsed {
+  section {
+    display: none;
+  }
+
+  > h1:before {
+    transform: rotate(0);
+  }
+}
