@@ -1,14 +1,12 @@
 from django.template import engines as template_engines
 from django.template.loader import render_to_string
-from django.test.client import RequestFactory
 from django.test import override_settings
+from django.test.client import RequestFactory
 from django.utils import translation
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
-
 
 # def test_breadcrumb():
 #     """Make sure breadcrumb links start with /."""
@@ -16,7 +14,6 @@ from kitsune.sumo.tests import TestCase
 #     response = c.get(reverse('search'))
 #
 #     doc = pq(response.content)
-#     import ipdb; ipdb.set_trace()
 #     href = doc('.breadcrumbs a')[0]
 #     eq_('/', href.attrib['href'][0])
 
