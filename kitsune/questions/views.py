@@ -520,10 +520,11 @@ def aaq(
         # If there isn't a product key let's try to figure things out through UA
         if is_mobile_device and product_key is None and not change_product:
             ua = request.META.get("HTTP_USER_AGENT", "").lower()
+            ios_ua_kw = ['fxios', 'applewebkit']
 
             if "rocket" in ua:
                 product_key = "firefox-lite"
-            elif "fxios" in ua:
+            elif any([x in ua for x in ios_ua_kw]):
                 product_key = "ios"
 
             # android
@@ -533,7 +534,7 @@ def aaq(
                     r"firefox/(?P<version>\d+)\.\d+", ua
                 ).groupdict()
             except AttributeError:
-                product_key = "mobile"
+                product_key = product_key or "mobile"
             else:
                 if int(mobile_client["version"]) >= 69:
                     product_key = "firefox-preview"
