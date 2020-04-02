@@ -1215,6 +1215,7 @@ article {
       margin-top: p.$spacing-lg;
       margin-bottom: p.$spacing-lg;
       position: relative;
+      cursor: pointer;
       @include c.sumo-card-heading;
 
       &:before {
