@@ -74,6 +74,29 @@
     margin-bottom: p.$spacing-xl;
   }
 
+  &.is-in-sidebar {
+    .card--title {
+      @include c.sumo-callout-heading('no-fam');
+      margin-bottom: p.$spacing-lg;
+    }
+
+    .card--desc {
+      margin-bottom: p.$spacing-lg;
+    }
+
+    .card--img {
+      width: 160px;
+      height: auto;
+      margin: -64px auto p.$spacing-md;
+    }
+  }
+
+  &--title {
+    &.has-bottom-margin {
+      margin-bottom: p.$spacing-sm;
+    }
+  }
+
   &.is-inverse {
     background: var(--color-inverse-bg);
 
@@ -266,6 +289,12 @@
   &--icon-sm {
     margin-bottom: p.$spacing-lg;
     width: p.$spacing-lg;
+
+    @at-root .sumo-card-heading & {
+      @include p.bidi((
+        (margin,  0 8px -4px 0,  0 0 -4px 8px),
+      ));
+    }
   }
 
   &--title {
@@ -288,6 +317,12 @@
     @include c.text-body-sm();
     margin-bottom: 0;
     color: var(--color-text);
+  }
+
+  &--centered-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   @media #{p.$mq-md} {

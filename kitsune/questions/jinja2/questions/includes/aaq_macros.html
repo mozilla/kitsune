@@ -19,8 +19,8 @@
 {%- endmacro  %}
 
 {% macro select_product(products) -%}
-  <h1 class="sumo-page-heading">{{ _('Choose a product') }}</h1>
-  <p class="sumo-page-intro">{{ _('Which product would you like to post a question about?') }}</p>
+  <h1 class="sumo-page-heading">{{ _('Ask the Community') }}</h1>
+  <h2 class="sumo-page-subheading">{{ _('Which product do you need help with?') }}</h2>
   <div class="sumo-page-section--inner">
     <div id="product-picker" class="sumo-card-grid" style="--cg-count: {{ products|length }};">
       <div class="scroll-wrap">
@@ -50,6 +50,9 @@
           </div>
         </div>
         {% endfor %}
+        <div class="card card--centered-button">
+          <a class="sumo-button primary-button button-lg" href="{{ url('questions.home') }}">{{ _('See All Product Forums')}}</a>
+        </div>
       </div>
     </div>
   </div>
@@ -61,30 +64,121 @@
     <p>{{ _('Product') }}: <strong><span>{{ product.name }}</span></strong>
     {% if can_change %}
       <a class="text-body-sm"
-         {% if is_mobile_device %}
-            href="{{ url('questions.aaq_step1') }}?q=change_product">{{ _('change product') }}</a>
-          {% else %}
-            href="{{ url('questions.aaq_step1') }}">{{ _('change product') }}</a>
-          {% endif %}
+         href="{{ url('questions.aaq_step1') }}{% if is_mobile_device %}?q=change_product{% endif %}">
+         {{ _('change product') }}
+       </a>
     {% endif %}
     </p>
   </div>
 {%- endmacro %}
 
-{% macro select_category(product) -%}
-  <div class="highlight-box">
-    <h2 class="sumo-page-subheading">{{ _('Which category best describes your problem?') }}</h2>
-    <ul class="select-one sumo-page-intro">
-      {% for key, category in product.categories.iteritems() %}
-        <li>
-          <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}"
-          data-event-category="link click"
-          data-event-action="category"
-          data-event-label="{{ category.name }}">{{ category.name }}</a>
-        </li>
-      {% endfor %}
-    </ul>
+{% macro progress_bar(product, final=alse) %}
+{# `if not current_product` is how you isolate step 1. `if form` isolates step 3 #}
+  <ul class="progress">
+    <li class="progress--item {% if final %}is-complete{% elif not current_product %}is-current{% else %}is-complete{% endif %}">
+      <a class="progress--link"
+        {% if current_product %}
+          href="{{ url('questions.aaq_step1') }}"
+        {% else %}
+          href="#" disabled
+        {% endif %}>
+        <span class="progress--link-inner">
+          <span class="progress--dot"></span>
+          <span class="progress--label">Select Product</span>
+        </span>
+      </a>
+    </li>
+    <li class="progress--item {% if form or final %}is-complete{% elif current_product %}is-current{% endif %}">
+      <a class="progress--link" href="#TODO" disabled>
+        <span class="progress--link-inner">
+          <span class="progress--dot"></span>
+          <span class="progress--label">Explore Solutions</span>
+        </span>
+      </a>
+    </li>
+    <li class="progress--item {% if final %}is-complete{% elif form %}is-current{% endif %}">
+      <a class="progress--link" href="#" disabled>
+        <span class="progress--link-inner">
+          <span class="progress--dot"></span>
+          <span class="progress--label">Create Question</span>
+        </span>
+      </a>
+    </li>
+  </ul>
+{%- endmacro %}
+
+{% macro select_category(product, search_box) -%}
+<section class="sumo-page-section question-masthead shade-bg">
+  <div class="mzp-l-content">
+
+    {{ progress_bar(product) }}
+
+    <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
+      <div class="sumo-l-two-col--main">
+        <img class="page-heading--logo" src="{{ product.image }}" alt="{{ product.name }} logo #TODO">
+        <h1 class="sumo-page-heading ">
+          <span class="product-title-text">{{ product.name }} {{ _('Solutions') }}</span>
+        </h1>
+        {{ search_box(settings, id='question-search-masthead', params=search_params) }}
+
+        <p class="page-heading--intro-text">
+            {{ _('Search your question or keywords to find solutions in the knowledge base or forums') }}
+        </p>
+      </div>
+      <div class="sumo-l-two-col--sidebar">
+        <div class="card elevation-01 text-center radius-md">
+          <h2 class="card--title has-bottom-margin">{{ _('Ask the Community') }}</h2>
+          <p>{{ _('Sign in/up to post your question and get help.') }}</p>
+          <a class="sumo-button primary-button feature-box" href="#TODO">Ask a Question</a>
+        </div>
+      </div>
+    </div>
   </div>
+</section>
+<div class="wrap" id="main-content">
+<section class="mzp-l-content sumo-page-section--inner">
+  <div class="text-center-to-left-on-large">
+    <h2 class="sumo-page-subheading">{{ _('Popular Articles') }}</h2>
+  </div>
+  {% include "landings/includes/featured_articles.html" %}
+</section>
+<section class="sumo-page-section--inner hide-when-search-is-active highlight-box">
+    <div class="mzp-l-content">
+      <div class="sumo-page-subheader">
+        <div class="sumo-page-subheader--text">
+          <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
+        </div>
+      </div>
+      <div class="sumo-card-grid" style="--cg-count: {{ category|length }};">
+        <div class="scroll-wrap">
+          {% for key, category in product.categories.iteritems() %}
+          {% set category_url = url('questions.aaq_step3', product_key=product.key, category_key=key) %}
+          <div class="card card--topic">
+            <img
+              class="card--icon"
+              src="{{ category.image }}"
+              alt="{{ category.name }} icon"
+            />
+            <div class="card--details">
+              <h3 class="card--title">
+                <a class="expand-this-link"
+                  href="{{ category_url }}"
+                  data-on-hover="{{ _('See all') }}"
+                  data-event-category="link click"
+                  data-event-action="topic"
+                  data-event-label="{{ category.name }}"
+                  >
+                  {{ category.name }}
+                </a>
+              </h3>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+</section>
+</div>
 {%- endmacro %}
 
 {% macro selected_category(category, product, can_change) -%}
@@ -198,17 +292,26 @@
 
 
 {% macro troubleshooting_instructions(field) %}
-  <div id="api-section">
-    <a href="#" class="sumo-button primary-button" id="share-data">
-      {{ _('Share Data') }}
-    </a>
-    <p class="help-text">{{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}</p>
-  </div>
-  <p id="troubleshooting-explanation" class="cf">
-    {{ _('This field was populated automatically.') }}
-    <a href="#troubleshooting-field" class="expander">{{ _('See the data') }}</a>.
-  </p>
-  <div id="troubleshooting-field" class="hide-until-expanded field">
-    {{ field }}
+  <div>
+    <div id="api-section">
+      <div class="sumo-button-wrap">
+        <a href="#" class="sumo-button" id="share-data">
+          {{ _('Share Data') }}
+        </a>
+
+        <a href="#troubleshooting-field" class="sumo-button link-button expander">{{ _('Show info') }} »</a>
+      </div>
+      <p>{% trans %}
+          This information gives details about the internal workings of your
+          browser that will help in answering your question. A window will
+          open in the top corner. Click Allow, and then click Install. If the
+          automated way doesn't work, <a href="#">try these manual steps</a>.
+         {% endtrans %}
+       </p>
+    </div>
+
+    <div id="troubleshooting-field" class="hide-until-expanded field full-width">
+      {{ field }}
+    </div>
   </div>
 {% endmacro %}

@@ -385,5 +385,13 @@ textarea {
 }
 
 .products.mzp-c-details .is-summary button {
-  padding-left: 0;
+  @include p.bidi((
+    (padding-left, 0, 48px),
+    (padding-right, 48px, 0),
+  ));
+}
+
+.mzp-c-details.has-border-bottom {
+  margin-top: 52px;
+  border-bottom: 1px solid var(--color-heading);
 }
