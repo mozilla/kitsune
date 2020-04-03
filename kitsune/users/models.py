@@ -419,3 +419,46 @@ class Deactivation(models.Model):
     def __unicode__(self):
         return u'%s was deactivated by %s on %s' % (self.user, self.moderator,
                                                     self.date)
+
+
+class AccountEvent(models.Model):
+    """Stores the events received from Firefox Accounts.
+
+    These events are processed by celery and the correct status is assigned in each entry.
+    """
+
+    # Status of an event entry.
+    UNPROCESSED = 1
+    PROCESSED = 2
+    ERRORED = 3
+    EVENT_STATUS = (
+        (UNPROCESSED, 'unprocessed'),
+        (PROCESSED, 'processed'),
+        (ERRORED, 'errored'),
+    )
+
+    PASSWORD_CHANGE = 1
+    PROFILE_CHANGE = 2
+    SUBSCRIPTION_STATE_CHANGE = 3
+    DELETE_USER = 4
+    EVENT_TYPE = (
+        (PASSWORD_CHANGE, 'password-change'),
+        (PROFILE_CHANGE, 'profile-change'),
+        (SUBSCRIPTION_STATE_CHANGE, 'subscription-state-change'),
+        (DELETE_USER, 'delete-user')
+    )
+
+    status = models.PositiveSmallIntegerField(choices=EVENT_STATUS,
+                                              default=UNPROCESSED,
+                                              blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_modified = models.DateTimeField(auto_now=True)
+    events = models.TextField(max_length=4096, blank=False)
+    event_type = models.PositiveSmallIntegerField(choices=EVENT_TYPE,
+                                                  default=None,
+                                                  null=True,
+                                                  blank=False)
+    fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
+    jwt_id = models.CharField(max_length=256)
+    issued_at = models.CharField(max_length=32)
+    profile = models.ForeignKey(Profile, related_name='account_events', null=True)

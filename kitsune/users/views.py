@@ -1,20 +1,28 @@
+import json
+import logging
 from ast import literal_eval
 from uuid import uuid4
 
+import requests
+
+from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
-from django.http import (Http404, HttpResponseForbidden,
-                         HttpResponsePermanentRedirect, HttpResponseRedirect)
+from django.core.exceptions import SuspiciousOperation
+from django.http import (Http404, HttpResponse, HttpResponseForbidden,
+                         HttpResponsePermanentRedirect, HttpResponseRedirect,
+                         JsonResponse)
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
+from django.utils.encoding import force_bytes
 from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
+from django.views.generic import View
 # from axes.decorators import watch_login
-from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
-                                       OIDCAuthenticationRequestView,
-                                       OIDCLogoutView)
-from tidings.models import Watch
-
+from josepy.jwk import JWK
+from josepy.jws import JWS
 from kitsune import users as constants
 from kitsune.access.decorators import (login_required, logout_required,
                                        permission_required)
@@ -26,12 +34,20 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
 from kitsune.users.forms import ProfileForm, SettingsForm
-from kitsune.users.models import Deactivation, Profile
+from kitsune.users.models import AccountEvent, Deactivation, Profile
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (add_to_contributors, deactivate_user,
                                  get_oidc_fxa_setting)
 from kitsune.wiki.models import (user_documents, user_num_documents,
                                  user_redirects)
+from mozilla_django_oidc.utils import import_from_settings
+# from axes.decorators import watch_login
+from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
+                                       OIDCAuthenticationRequestView,
+                                       OIDCLogoutView)
+from tidings.models import Watch
+
+log = logging.getLogger('k.users.views')
 
 
 @ssl_required
@@ -348,3 +364,127 @@ class FXALogoutView(OIDCLogoutView):
         if val is not None:
             return val
         return super(FXALogoutView, FXALogoutView).get_settings(attr, *args)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class WebhookView(View):
+    """The flow here is based on the mozilla-django-oidc lib.
+
+    If/When the said lib supports SET tokens this will be replaced by the lib.
+    """
+
+    @staticmethod
+    def get_settings(attr, *args):
+        """Override the logout url for Firefox Accounts."""
+
+        val = get_oidc_fxa_setting(attr)
+        if val is not None:
+            return val
+        return import_from_settings(attr, *args)
+
+    def retrieve_matching_jwk(self, header):
+        """Get the signing key by exploring the JWKS endpoint of the OP."""
+        response_jwks = requests.get(
+            self.get_settings('OIDC_OP_JWKS_ENDPOINT'),
+            verify=self.get_settings('OIDC_VERIFY_SSL', True)
+        )
+        response_jwks.raise_for_status()
+        jwks = response_jwks.json()
+
+        key = None
+        for jwk in jwks['keys']:
+            # dummy tokens sent by the fxa-event-broker test script don't have a kid value,
+            # we'll have to see if this is true in dev
+            # if jwk['kid'] != header['kid']:
+            #     continue
+            if 'alg' in jwk and jwk['alg'] != header['alg']:
+                raise SuspiciousOperation('alg values do not match.')
+            key = jwk
+        if key is None:
+            raise SuspiciousOperation('Could not find a valid JWKS.')
+        return key
+
+    def verify_token(self, token, **kwargs):
+        """Validate the token signature."""
+
+        token = force_bytes(token)
+        jws = JWS.from_compact(token)
+        header = json.loads(jws.signature.protected)
+
+        try:
+            header.get('alg')
+        except KeyError:
+            msg = 'No alg value found in header'
+            raise SuspiciousOperation(msg)
+
+        jwk_json = self.retrieve_matching_jwk(header)
+        jwk = JWK.from_json(jwk_json)
+
+        if not jws.verify(jwk):
+            msg = 'JWS token verification failed.'
+            raise SuspiciousOperation(msg)
+
+        # The 'token' will always be a byte string since it's
+        # the result of base64.urlsafe_b64decode().
+        # The payload is always the result of base64.urlsafe_b64decode().
+        # In Python 3 and 2, that's always a byte string.
+        # In Python3.6, the json.loads() function can accept a byte string
+        # as it will automagically decode it to a unicode string before
+        # deserializing https://bugs.python.org/issue17909
+        return json.loads(jws.payload.decode('utf-8'))
+
+    def post(self, request, *args, **kwargs):
+        # TODO add docstrings
+        # TODO add error handling
+
+        authorization = request.META.get('HTTP_AUTHORIZATION')
+        if not authorization:
+            raise Http404
+
+        log.debug(authorization)
+        log.debug(request.META.get('CONTENT_TYPE'))
+
+        # dummy tokens sent by the fxa-event-broker test script don't use this header,
+        # we'll have to see if this is true in dev
+        # # SET event must be of type `application/secevent+jwt`
+        # if request.META.get('CONTENT_TYPE', '') != 'application/secevent+jwt':
+        #     raise Http404
+
+        auth = authorization.split()
+        if auth[0].lower() != 'bearer':
+            raise Http404
+        id_token = auth[1]
+
+        payload = self.verify_token(id_token)
+
+        if payload:
+            issuer = payload['iss']
+            events = payload.get('events', '')
+            fxa_uid = payload.get('sub', '')
+            exp = payload.get('exp')
+
+            # If the issuer is not Firefox Accounts raise a 404 error
+            if settings.FXA_SET_ISSUER != issuer:
+                raise Http404
+
+            # If exp is in the token then it's an id_token that should not be here
+            if any([not events,
+                    not fxa_uid,
+                    exp]):
+                return JsonResponse({
+                    'error': 'error',
+                    'description': 'description'
+                }, status=400)
+
+            profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
+            AccountEvent.objects.create(
+                issued_at=payload['iat'],
+                jwt_id=payload['jti'],
+                fxa_uid=fxa_uid,
+                status=AccountEvent.UNPROCESSED,
+                events=json.dumps(events, sort_keys=True),
+                profile=profile_q[0] if profile_q.exists() else None
+            )
+
+            return HttpResponse(status=202)
+        raise Http404

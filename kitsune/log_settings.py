@@ -41,6 +41,11 @@ config = {
             'propogate': True,
             'level': logging.DEBUG,
         },
+        'k.users.views': {
+            'handlers': ['console'],
+            'propogate': True,
+            'level': logging.DEBUG,
+        },
         'django.request': {
             'handlers': ['console'],
             'propogate': True,
