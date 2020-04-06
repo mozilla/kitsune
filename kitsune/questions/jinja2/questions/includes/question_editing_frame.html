@@ -64,10 +64,32 @@ we can compute the edit-title URL.
           <div class="highlight-box">
             <form id="question-form" method="post">
               {% csrf_token %}
+
+              {# TODO: This needs an image from the DB. #}
+              <img class="page-heading--logo" src="https://user-media-stage-cdn.itsre-sumo.mozilla.net/uploads/products/2020-03-31-03-20-21-8dda6f.png" alt="{{ product_title }} logo" />
+
+              {% if subproducts %}
+              {# TODO: hook this up to the backend when subproducts are in. #}
+              <div class="mzp-c-menu-list subheading-dropdown">
+                <h3 class="mzp-c-menu-list-title sumo-card-heading" data-has-dropdown>Firefox</h3>
+                <ul class="mzp-c-menu-list-list">
+                  <li class="mzp-c-menu-list-item"><a href="#">Subproducts</a></li>
+                  <li class="mzp-c-menu-list-item"><a href="#">Will go here</a></li>
+                </ul>
+              </div>
+              {% else %}
+              {# TODO: un-hardcode this: #}
+              <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
+                <a href="/questions/new">Firefox</a>
+              </h3>
+              {% endif %}
+
+
               {% block major_detail_instructions %}
                 <h2>Do some stuff.</h2>
               {% endblock %}
               <p class="sumo-page-intro">
+
                 {% trans %}
                   Be nice. Our volunteers are Mozilla users just like you,
                   who take the time out of their day to help.
