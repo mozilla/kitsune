@@ -11,9 +11,9 @@
       <li class="{{ object.content_type }}">
         <hr>
         <hgroup>
-          <h2>{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
+          <h2 class="sumo-card-heading">{{ _('Flagged {t} (Reason: {r})')|f(t=object.content_type, r=object.get_reason_display()) }}</h2>
           {% if object.notes %}
-            <h3 class="notes">{{ _('Other reason:') }} {{ object.notes }}</h3>
+            <p class="notes">{{ _('Other reason:') }} {{ object.notes }}</p>
           {% endif %}
         </hgroup>
         <div class="wrap">
