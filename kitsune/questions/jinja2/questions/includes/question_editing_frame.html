@@ -11,7 +11,7 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import search_box, content_editor with context %}
-{% from "questions/includes/aaq_macros.html" import selected_category, aaq_progress, progress_bar with context %}
+{% from "questions/includes/aaq_macros.html" import selected_category, progress_bar %}
 {% from "questions/includes/aaq_macros.html" import selected_product with context %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
@@ -21,12 +21,10 @@ we can compute the edit-title URL.
 {% block contentwrap %}
 <div>
   {% block category %}
-  {% endblock %}
-
   <article class="main mzp-l-content sumo-page-section--inner">
-    {% block progress_bar %}
-    {{ progress_bar() }}
-    {% endblock %}
+    {% if current_step %}
+      {{ progress_bar(current_step, product_key=current_product.product) }}
+    {% endif %}
 
     {% block product %}
     {% endblock %}
@@ -61,11 +59,6 @@ we can compute the edit-title URL.
           <h1 class="sumo-page-heading">{% block headline %}Do Something to a Question{% endblock %}</h1>
         {% endif %}
         <div class="inner-wrap">
-          <div class="cf">
-            {% if current_step %}
-              {# removing steps for now – may revisit during AAQ project, 3/20 {{ aaq_progress(step=current_step) }} #}
-            {% endif %}
-          </div>
 
         {% if form %}
           <div class="highlight-box">
@@ -165,6 +158,7 @@ we can compute the edit-title URL.
 
     </div>
   </article>
+  {% endblock %}
 </div>
 {% endblock %}
 
