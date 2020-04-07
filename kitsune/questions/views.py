@@ -1,7 +1,6 @@
 import json
 import logging
 import random
-import re
 import time
 from datetime import date, datetime, timedelta
 
@@ -23,11 +22,6 @@ from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
 from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
-from ordereddict import OrderedDict
-from taggit.models import Tag
-from tidings.events import ActivationRequestFailed
-from tidings.models import Watch
-
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -44,6 +38,7 @@ from kitsune.questions.models import (Answer, AnswerVote, Question,
                                       QuestionLocale, QuestionMappingType,
                                       QuestionVote)
 from kitsune.questions.signals import tag_added
+from kitsune.questions.utils import get_mobile_product_from_ua
 from kitsune.search.es_utils import (ES_EXCEPTIONS, F, Sphilastic,
                                      es_query_with_analyzer)
 from kitsune.search.utils import clean_excerpt, locale_or_default
@@ -59,6 +54,10 @@ from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
+from ordereddict import OrderedDict
+from taggit.models import Tag
+from tidings.events import ActivationRequestFailed
+from tidings.models import Watch
 
 log = logging.getLogger("k.questions")
 
@@ -482,13 +481,6 @@ def aaq(
 ):
     """Ask a new question."""
 
-    user_agent = get_user_agent(request)
-    is_mobile_device = user_agent.is_mobile if user_agent else False
-    change_product = False
-
-    if request.GET.get("q") == "change_product":
-        change_product = True
-
     if not template:
         template = "questions/new_question.html"
 
@@ -514,32 +506,19 @@ def aaq(
 
         return HttpResponseRedirect(path)
 
+    is_mobile_device = get_user_agent(request).is_mobile
+
+    product_key = product_key or request.GET.get("product")
+
     if product_key is None:
 
-        product_key = request.GET.get("product")
-        # If there isn't a product key let's try to figure things out through UA
-        if is_mobile_device and product_key is None and not change_product:
-            ua = request.META.get("HTTP_USER_AGENT", "").lower()
-            ios_ua_kw = ['fxios', 'applewebkit']
+        change_product = False
+        if request.GET.get("q") == "change_product":
+            change_product = True
 
-            if "rocket" in ua:
-                product_key = "firefox-lite"
-            elif any([x in ua for x in ios_ua_kw]):
-                product_key = "ios"
-
-            # android
-            try:
-                # We are using firefox instead of Firefox as lower() has been applied to the UA
-                mobile_client = re.search(
-                    r"firefox/(?P<version>\d+)\.\d+", ua
-                ).groupdict()
-            except AttributeError:
-                product_key = product_key or "mobile"
-            else:
-                if int(mobile_client["version"]) >= 69:
-                    product_key = "firefox-preview"
-                else:
-                    product_key = "mobile"
+        if is_mobile_device and not change_product:
+            user_agent = request.META.get("HTTP_USER_AGENT", "")
+            product_key = get_mobile_product_from_ua(user_agent)
 
     product_config = config.products.get(product_key)
     if product_key and not product_config:

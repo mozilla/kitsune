@@ -10,9 +10,8 @@ from datetime import date
 import dj_database_url
 import django_cache_url
 import djcelery
-from decouple import Csv, config
-
 from bundles import PIPELINE_JS
+from decouple import Csv, config
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -536,7 +535,6 @@ MIDDLEWARE_CLASSES = (
     'waffle.middleware.WaffleMiddleware',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
-    'django_user_agents.middleware.UserAgentMiddleware',
 
     'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
     'kitsune.users.middleware.LogoutSumoAccountsMiddleware'
