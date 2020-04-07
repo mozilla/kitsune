@@ -477,7 +477,7 @@ def edit_details(request, question_id):
 @ssl_required
 @login_required
 def aaq(
-    request, product_key=None, category_key=None, showform=False, template=None, step=0
+    request, product_key=None, category_key=None, showform=False, template=None, step=1
 ):
     """Ask a new question."""
 
@@ -727,19 +727,19 @@ def aaq(
 @ssl_required
 def aaq_step2(request, product_key):
     """Step 2: The product is selected."""
-    return aaq(request, product_key=product_key, step=1)
+    return aaq(request, product_key=product_key, step=2)
 
 
 @ssl_required
 def aaq_step3(request, product_key, category_key):
     """Step 3: The product and category is selected."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=1)
+    return aaq(request, product_key=product_key, category_key=category_key, step=2)
 
 
 @ssl_required
 def aaq_step4(request, product_key, category_key):
     """Step 4: Search query entered."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=1)
+    return aaq(request, product_key=product_key, category_key=category_key, step=2)
 
 
 @ssl_required
@@ -750,7 +750,7 @@ def aaq_step5(request, product_key, category_key):
         product_key=product_key,
         category_key=category_key,
         showform=True,
-        step=2,
+        step=3,
     )
 
 
