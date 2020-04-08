@@ -5,10 +5,10 @@
 
 {% if num_results > 0 %}
   <h2 class="sumo-card-heading search-results-heading mb-0">
-    {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
-    {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
-                'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
-                num_results)
+    {{ npgettext('{n} is the number of search results, {q} is the search query, {product} is the product.',
+                 'Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                 'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
+                 num_results)
        | f({n: num_results, q: q, product: product_titles}, true)
        | safe }}
   </h2>

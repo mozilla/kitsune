@@ -9,7 +9,7 @@
 {% set classes = 'answers' %}
 
 {% set product_title = pgettext('DB: products.Product.title', product.title) if product else _('All Products') %}
-{% set logo = pgettext('DB: products.Product.image_alternate_url', product.image_alternate_url) if product else _('no product specified') %}
+{% set logo = pgettext('DB: products.Product.image_alternate_url', product.image_alternate_url) if product else _('No product specified.') %}
 
 {# L10n: {q} is the title of the question. #}
 {% set title = _('{q} | {product} Support Forum')|f(q=question.title, product=product_title) %}
@@ -274,7 +274,7 @@
           </div>
         {% endif %}
           <p>
-            {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.auth'), ask_url=ask_url) }}
+            {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a> if you do not have an account yet.')|fe(login_url=url('users.auth'), ask_url=ask_url) }}
           </p>
         </div>
       {% endif %}
