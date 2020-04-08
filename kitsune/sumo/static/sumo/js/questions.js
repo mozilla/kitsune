@@ -152,10 +152,6 @@
       .closest('ul')
       .toggleClass('show-details');
     });
-
-    if (!aaq.isDesktopFF() && !aaq.isMobileFF() && !aaq.isFirefoxOS()) {
-      $form.find('li.system-details-info').hide();
-    }
   }
 
   /*
