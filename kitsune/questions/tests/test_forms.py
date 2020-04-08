@@ -1,10 +1,8 @@
 from django.contrib.auth.models import AnonymousUser
-
-from nose.tools import eq_
-
 from kitsune.questions.forms import NewQuestionForm, WatchQuestionForm
 from kitsune.questions.tests import TestCaseBase
 from kitsune.users.tests import UserFactory
+from nose.tools import eq_
 
 
 class WatchQuestionFormTests(TestCaseBase):
@@ -56,7 +54,7 @@ class TestNewQuestionForm(TestCaseBase):
         expected = ['troubleshooting', 'ff_version', 'os',
                     'plugins', 'useragent']
         actual = form.metadata_field_keys
-        eq_(expected, actual)
+        eq_(sorted(expected), sorted(actual))
 
         # Test the form with a product and category
         category = {'key': 'd6',
@@ -66,7 +64,7 @@ class TestNewQuestionForm(TestCaseBase):
         expected = ['frequency', 'started', 'troubleshooting',
                     'ff_version', 'os', 'plugins', 'useragent']
         actual = form.metadata_field_keys
-        eq_(expected, actual)
+        eq_(sorted(expected), sorted(actual))
 
     def test_cleaned_metadata(self):
         """Test the cleaned_metadata property."""
