@@ -224,3 +224,6 @@ pylint-django==0.11.1 \
 pylint-plugin-utils==0.6 \
     --hash=sha256:2f30510e1c46edf268d3a195b2849bd98a1b9433229bb2ba63b8d776e1fc4d0a \
     --hash=sha256:57625dcca20140f43731311cd8fd879318bf45a8b0fd17020717a8781714a25a
+parameterized==0.7.1 \
+    --hash=sha256:6a94dbea30c6abde99fd4c2f2042c1bf7f980e48908bf92ead62394f93cf57ed \
+    --hash=sha256:ea0326ba5bbbe7c427329a27b75003410df07d1173ca254976f8f5a64922c322

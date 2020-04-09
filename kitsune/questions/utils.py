@@ -1,7 +1,7 @@
 import logging
+import re
 
-from kitsune.questions.models import Question, Answer
-
+from kitsune.questions.models import Answer, Question
 
 log = logging.getLogger('k.questions')
 
@@ -33,3 +33,26 @@ def mark_content_as_spam(user, by_user):
 
     for answer in Answer.objects.filter(creator=user):
         answer.mark_as_spam(by_user)
+
+
+def get_mobile_product_from_ua(user_agent):
+
+    ua = user_agent.lower()
+
+    if "rocket" in ua:
+        return "firefox-lite"
+    elif "fxios" in ua:
+        return "ios"
+
+    # android
+    try:
+        # We are using firefox instead of Firefox as lower() has been applied to the UA
+        mobile_client = re.search(
+            r"firefox/(?P<version>\d+)\.\d+", ua
+        ).groupdict()
+    except AttributeError:
+        return None
+    else:
+        if int(mobile_client["version"]) >= 69:
+            return "firefox-preview"
+        return "mobile"
