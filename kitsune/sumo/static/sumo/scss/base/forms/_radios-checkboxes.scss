@@ -13,12 +13,13 @@
 
 .checkbox,
 .radio {
-  overflow: hidden;
-
   [type=checkbox],
   [type=radio] {
     position: absolute;
-    left: -9999px;
+    @include p.bidi((
+      (left, -9999px, auto),
+      (right, auto, -9999px),
+    ));
   }
 
   label {
