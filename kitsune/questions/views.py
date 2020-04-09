@@ -23,11 +23,6 @@ from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
 from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
-from ordereddict import OrderedDict
-from taggit.models import Tag
-from tidings.events import ActivationRequestFailed
-from tidings.models import Watch
-
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -59,6 +54,10 @@ from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
+from ordereddict import OrderedDict
+from taggit.models import Tag
+from tidings.events import ActivationRequestFailed
+from tidings.models import Watch
 
 log = logging.getLogger("k.questions")
 
@@ -478,7 +477,7 @@ def edit_details(request, question_id):
 @ssl_required
 @login_required
 def aaq(
-    request, product_key=None, category_key=None, showform=False, template=None, step=0
+    request, product_key=None, category_key=None, showform=False, template=None, step=1
 ):
     """Ask a new question."""
 
@@ -748,19 +747,19 @@ def aaq(
 @ssl_required
 def aaq_step2(request, product_key):
     """Step 2: The product is selected."""
-    return aaq(request, product_key=product_key, step=1)
+    return aaq(request, product_key=product_key, step=2)
 
 
 @ssl_required
 def aaq_step3(request, product_key, category_key):
     """Step 3: The product and category is selected."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=1)
+    return aaq(request, product_key=product_key, category_key=category_key, step=2)
 
 
 @ssl_required
 def aaq_step4(request, product_key, category_key):
     """Step 4: Search query entered."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=1)
+    return aaq(request, product_key=product_key, category_key=category_key, step=2)
 
 
 @ssl_required
@@ -771,7 +770,7 @@ def aaq_step5(request, product_key, category_key):
         product_key=product_key,
         category_key=category_key,
         showform=True,
-        step=2,
+        step=3,
     )
 
 
