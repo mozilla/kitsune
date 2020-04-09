@@ -68,7 +68,10 @@
 
   &--link {
     &.has-avatar {
-      padding-right: 0;
+      @include p.bidi((
+        (padding-right, 0, 24px),
+        (padding-left, 24px, 0),
+      ));
 
       .avatar {
         display: block;
@@ -245,7 +248,6 @@
     }
 
     .search-button {
-      top: 2px;
       @include p.bidi((
         (right, p.$spacing-xs, auto),
         (left, auto, p.$spacing-xs),

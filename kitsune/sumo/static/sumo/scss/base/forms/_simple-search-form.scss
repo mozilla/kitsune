@@ -6,7 +6,10 @@
   margin: 0;
 
   .searchbox {
-    padding-right: 40px;
+    @include p.bidi((
+      (padding-right, 40px, 8px),
+      (padding-left, 8px, 40px),
+    ));
 
     // remove x button from Edge and Safari
     &::-ms-clear { display:none; }
@@ -25,7 +28,9 @@
 
 .search-button {
   appearance: none;
-  margin-left: 10px;
+  @include p.bidi((
+    (margin, 0 0 0 8px, 0 8px 0 0),
+  ));
   width: p.$spacing-xl;
   height: p.$spacing-xl;
   border: none;
