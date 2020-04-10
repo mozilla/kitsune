@@ -63,6 +63,35 @@
     }
   }
 
+  @media screen and (max-width: 1055px) {
+    &.stack-on-mobile {
+      --cg-card-width: 48%;
+      overflow: visible;
+      margin: 0;
+
+      .scroll-wrap {
+        width: auto;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+
+      .card,
+      .card:first-child {
+        flex-direction: row;
+        align-items: center;
+        margin-left: 0;
+        margin-right: 0;
+        margin-bottom: 20px;
+      }
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    &.stack-on-mobile {
+      --cg-card-width: 100%;
+    }
+  }
+
   @media #{p.$mq-sm} {
     --cg-card-width: 40vw;
   }

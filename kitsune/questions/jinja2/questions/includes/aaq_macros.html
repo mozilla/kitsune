@@ -22,7 +22,7 @@
   <h1 class="sumo-page-heading">{{ _('Ask the Community') }}</h1>
   <h2 class="sumo-page-subheading">{{ _('Which product do you need help with?') }}</h2>
   <div class="sumo-page-section--inner">
-    <div id="product-picker" class="sumo-card-grid" style="--cg-count: {{ products|length }};">
+    <div id="product-picker" class="sumo-card-grid stack-on-mobile" style="--cg-count: {{ products|length }};">
       <div class="scroll-wrap">
         {% for key, product in products.iteritems() %}
         <div class="card card--product zoom-on-hover">
