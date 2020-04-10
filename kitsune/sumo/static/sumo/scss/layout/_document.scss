@@ -174,8 +174,10 @@
 // This set of styles overrides defaults so classes don't need to be used
 // on headlines, etc. on articles.
 .document--content,
-.forum--entry-content {
-  #toc {
+.forum--entry-content,
+#doc-content {
+  #toc,
+  .note {
     padding: p.$spacing-lg;
     border-radius: var(--global-radius);
     background: var(--color-shade-bg);
@@ -197,7 +199,43 @@
   }
 
   .wiki-image {
-    display: block;
-    margin: 2em 0;
+    padding: 5px 0;
+    vertical-align: middle;
+    display: inline-block;
+  }
+
+  .separator {
+    border: 0 none;
+    border-bottom: 1px solid var(--text-color);
+    margin: p.$spacing-md 0;
+  }
+
+  ul {
+    list-style: disc;
+    margin: p.$spacing-md;
+  }
+
+  ol {
+    list-style: decimal;
+    margin: p.$spacing-md;
+  }
+
+  li {
+    margin-bottom: p.$spacing-sm;
+  }
+
+  .button {
+    display:inline-flex;
+    justify-content:center;
+    align-items:baseline;
+    border: 2px solid var(--color-marketing-gray-03);
+    padding: 0 p.$spacing-md;
+    height: p.$spacing-lg;
+    border-radius: 2px;
+    font-family: var(--heading-alt-font-family);
+    @include p.font-size(14px);
+    font-weight:700;
+    text-decoration: none;
+    color: var(--color-marketing-gray-07);
   }
 }

@@ -25,11 +25,8 @@
           <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/FF_Master__icon.svg" alt="{{ _('Firefox logo') }}"/>
         </figure>
         <div class="sumo-auth--form">
-          <div id="login-fxa" class="{% if legacy_form_visible %}hidden{% endif %}">
+          <div id="login-fxa">
             {% include "users/includes/login-fxa.html" %}
-          </div>
-          <div id="login-legacy" class="{% if not legacy_form_visible %}hidden{% endif %}">
-            {% include "users/includes/login-form.html" %}
           </div>
         </div>
       </div>

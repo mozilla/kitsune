@@ -12,75 +12,53 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from django.http import (
-    HttpResponseRedirect,
-    HttpResponse,
-    Http404,
-    HttpResponseBadRequest,
-    HttpResponseForbidden,
-)
-from django.shortcuts import get_object_or_404, render, redirect
+from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
+                         HttpResponseForbidden, HttpResponseRedirect)
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST, require_GET, require_http_methods
-
-import waffle
-from ordereddict import OrderedDict
+from django.views.decorators.http import (require_GET, require_http_methods,
+                                          require_POST)
 from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
+from ordereddict import OrderedDict
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 
-from kitsune.access.decorators import permission_required, login_required
-from kitsune.products.api import ProductSerializer, TopicSerializer
+from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.feeds import QuestionsFeed, AnswersFeed, TaggedQuestionsFeed
-from kitsune.questions.forms import (
-    NewQuestionForm,
-    EditQuestionForm,
-    AnswerForm,
-    WatchQuestionForm,
-    FREQUENCY_CHOICES,
-    MarketplaceAaqForm,
-    MarketplaceRefundForm,
-    MarketplaceDeveloperRequestForm,
-    StatsForm,
-)
+from kitsune.questions.feeds import (AnswersFeed, QuestionsFeed,
+                                     TaggedQuestionsFeed)
+from kitsune.questions.forms import (FREQUENCY_CHOICES, AnswerForm,
+                                     EditQuestionForm, MarketplaceAaqForm,
+                                     MarketplaceDeveloperRequestForm,
+                                     MarketplaceRefundForm, NewQuestionForm,
+                                     StatsForm, WatchQuestionForm)
 from kitsune.questions.marketplace import MARKETPLACE_CATEGORIES, ZendeskError
-from kitsune.questions.models import (
-    Question,
-    Answer,
-    QuestionVote,
-    AnswerVote,
-    QuestionMappingType,
-    QuestionLocale,
-)
+from kitsune.questions.models import (Answer, AnswerVote, Question,
+                                      QuestionLocale, QuestionMappingType,
+                                      QuestionVote)
 from kitsune.questions.signals import tag_added
-from kitsune.search.es_utils import ES_EXCEPTIONS, Sphilastic, F, es_query_with_analyzer
-from kitsune.search.utils import locale_or_default, clean_excerpt
-from kitsune.sumo.api_utils import JSONRenderer
-from kitsune.sumo.decorators import ssl_required, ratelimit
+from kitsune.search.es_utils import (ES_EXCEPTIONS, F, Sphilastic,
+                                     es_query_with_analyzer)
+from kitsune.search.utils import clean_excerpt, locale_or_default
+from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.sumo.utils import (
-    paginate,
-    simple_paginate,
-    build_paged_url,
-    is_ratelimited,
-)
+from kitsune.sumo.utils import (build_paged_url, is_ratelimited, paginate,
+                                simple_paginate)
 from kitsune.tags.utils import add_existing_tag
-from kitsune.upload.api import ImageAttachmentSerializer
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
-from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.models import Setting
+from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
-
 
 log = logging.getLogger("k.questions")
 
@@ -498,36 +476,6 @@ def edit_details(request, question_id):
 
 
 @ssl_required
-def aaq_react(request):
-    request.session["in-aaq"] = True
-    to_json = JSONRenderer().render
-    products = ProductSerializer(
-        Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE),
-        many=True,
-    )
-    topics = TopicSerializer(Topic.objects.filter(in_aaq=True), many=True)
-
-    ctx = {
-        "products_json": to_json(products.data),
-        "topics_json": to_json(topics.data),
-    }
-
-    if request.user.is_authenticated():
-        user_ct = ContentType.objects.get_for_model(request.user)
-        images = ImageAttachmentSerializer(
-            ImageAttachment.objects.filter(
-                creator=request.user, content_type=user_ct,
-            ).order_by("-id")[:IMG_LIMIT],
-            many=True,
-        )
-        ctx["images_json"] = to_json(images.data)
-    else:
-        ctx["images_json"] = to_json([])
-
-    return render(request, "questions/new_question_react.html", ctx)
-
-
-@ssl_required
 @login_required
 def aaq(
     request, product_key=None, category_key=None, showform=False, template=None, step=0
@@ -540,9 +488,6 @@ def aaq(
 
     if request.GET.get("q") == "change_product":
         change_product = True
-    # Use react version if waffle flag is set
-    if waffle.flag_is_active(request, "new_aaq"):
-        return aaq_react(request)
 
     if not template:
         template = "questions/new_question.html"
@@ -575,10 +520,11 @@ def aaq(
         # If there isn't a product key let's try to figure things out through UA
         if is_mobile_device and product_key is None and not change_product:
             ua = request.META.get("HTTP_USER_AGENT", "").lower()
+            ios_ua_kw = ['fxios', 'applewebkit']
 
             if "rocket" in ua:
                 product_key = "firefox-lite"
-            elif "fxios" in ua:
+            elif any([x in ua for x in ios_ua_kw]):
                 product_key = "ios"
 
             # android
@@ -588,7 +534,7 @@ def aaq(
                     r"firefox/(?P<version>\d+)\.\d+", ua
                 ).groupdict()
             except AttributeError:
-                product_key = "mobile"
+                product_key = product_key or "mobile"
             else:
                 if int(mobile_client["version"]) >= 69:
                     product_key = "firefox-preview"

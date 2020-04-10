@@ -1,14 +1,13 @@
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import RequestFactory, override_settings
-
 from mock import Mock, patch
 from nose.tools import eq_, ok_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
-from kitsune.users.tests import UserFactory, GroupFactory
 from kitsune.users.models import CONTRIBUTOR_GROUP
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class FXAAuthBackendTests(TestCase):
@@ -134,6 +133,8 @@ class FXAAuthBackendTests(TestCase):
         """Test connecting a SUMO account with an existing FxA in SUMO."""
         UserFactory.create(profile__fxa_uid='my_unique_fxa_id')
         user = UserFactory.create()
+        user.profile.is_fxa_migrated = False
+        user.profile.save()
         claims = {
             'uid': 'my_unique_fxa_id',
         }
@@ -196,6 +197,8 @@ class FXAAuthBackendTests(TestCase):
         user = UserFactory.create(email='sumo@example.com',
                                   profile__avatar='sumo_avatar',
                                   profile__name='Kenny Bania')
+        user.profile.is_fxa_migrated = False
+        user.profile.save()
         auth_request = RequestFactory().get('/foo', {'code': 'foo',
                                                      'state': 'bar'})
         auth_request.session = {}

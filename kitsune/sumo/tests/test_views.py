@@ -1,17 +1,16 @@
 import json
 
 import django
+import mock
 from django.contrib.sites.models import Site
-from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
+from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
-
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.middleware import LocaleURLMiddleware
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.views import deprecated_redirect, redirect_to
@@ -29,12 +28,6 @@ class RedirectTests(TestCase):
         resp = redirect_to(self.rf.get('/'), url='home')
         assert isinstance(resp, HttpResponsePermanentRedirect)
         eq_(reverse('home'), resp['location'])
-
-    def test_redirect_kwargs(self):
-        resp = redirect_to(self.rf.get('/'), url='users.confirm_email',
-                           activation_key='1234')
-        eq_(reverse('users.confirm_email', args=['1234']),
-            resp['location'])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_deprecated_redirect(self, get_current):

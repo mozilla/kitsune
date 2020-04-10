@@ -5,26 +5,23 @@ import socket
 import StringIO
 
 import django
+from celery.messaging import establish_connection
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         HttpResponse, Http404)
+from django.http import (Http404, HttpResponse, HttpResponsePermanentRedirect,
+                         HttpResponseRedirect)
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
-
-from celery.messaging import establish_connection
 from PIL import Image
 
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.search import es_utils
 from kitsune.sumo.decorators import cors_enabled
-from kitsune.sumo.redis_utils import redis_client, RedisError
+from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, uselocale
-from kitsune.users.forms import AuthenticationForm
-
 
 log = logging.getLogger('k.services')
 
@@ -68,15 +65,7 @@ def geoip_suggestion(request):
 
 def handle403(request):
     """A 403 message that looks nicer than the normal Apache forbidden page"""
-    no_cookies = False
-    referer = request.META.get('HTTP_REFERER')
-    if referer:
-        no_cookies = (referer.endswith(reverse('users.login')))
-
-    return render(request, 'handlers/403.html', {
-        'form': AuthenticationForm(),
-        'no_cookies': no_cookies},
-        status=403)
+    return render(request, 'handlers/403.html', status=403)
 
 
 def handle404(request, *args, **kwargs):

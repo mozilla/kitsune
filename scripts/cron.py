@@ -1,14 +1,13 @@
 from __future__ import print_function
+
 import datetime
 import os
 import sys
 from subprocess import check_call
 
-from django.conf import settings
-
 import babis
 from apscheduler.schedulers.blocking import BlockingScheduler
-
+from django.conf import settings
 
 MANAGE = os.path.join(settings.ROOT, 'manage.py')
 schedule = BlockingScheduler()
@@ -155,13 +154,6 @@ def job_update_weekly_votes():
 #     call_command('update_search_ctr_metric')
 
 
-@scheduled_job('cron', month='*', day='*', hour='02', minute='47',
-               max_instances=1, coalesce=True, skip=settings.READ_ONLY)
-@babis.decorator(ping_after=settings.DMS_REMOVE_EXPIRED_REGISTRATION_PROFILES)
-def job_remove_expired_registration_profiles():
-    call_command('remove_expired_registration_profiles')
-
-
 @scheduled_job('cron', month='*', day='*', hour='03', minute='00',
                max_instances=1, coalesce=True, skip=(settings.READ_ONLY or settings.STAGE))
 @babis.decorator(ping_after=settings.DMS_UPDATE_CONTRIBUTOR_METRICS)
@@ -181,13 +173,6 @@ def job_auto_archive_old_questions():
 @babis.decorator(ping_after=settings.DMS_SURVEY_RECENT_ASKERS)
 def job_survey_recent_askers():
     call_command('survey_recent_askers')
-
-
-@scheduled_job('cron', month='*', day='*', hour='08', minute='00',
-               max_instances=1, coalesce=True, skip=settings.READ_ONLY)
-@babis.decorator(ping_after=settings.DMS_CLEAR_EXPIRED_AUTH_TOKENS)
-def job_clear_expired_auth_tokens():
-    call_command('clear_expired_auth_tokens')
 
 
 # @scheduled_job('cron', month='*', day='*', hour='09', minute='00', max_instances=1, coalesce=True)
@@ -222,14 +207,6 @@ def job_cache_most_unhelpful_kb_articles():
 @babis.decorator(ping_after=settings.DMS_RELOAD_QUESTION_TRAFFIC_STATS)
 def job_reload_question_traffic_stats():
     call_command('reload_question_traffic_stats')
-
-
-# Once per week
-@scheduled_job('cron', month='*', day='*', hour='03', minute='21', day_of_week=3,
-               max_instances=1, coalesce=True, skip=settings.READ_ONLY)
-@babis.decorator(ping_after=settings.DMS_PURGE_HASHES)
-def job_purge_hashes():
-    call_command('purge_hashes')
 
 
 @scheduled_job('cron', month='*', day='*', hour='04', minute='00', day_of_week=5,

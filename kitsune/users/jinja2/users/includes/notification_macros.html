@@ -14,14 +14,6 @@
 </div>
 {%- endmacro %}
 
-{% macro notification_sumo_deprecation(static_url) -%}
-<div id="fxa-notification-deprecated" class="mzp-c-notification-bar mzp-t-warning">
-  <button class="mzp-c-notification-bar-button" type="button"></button>
-  <p><strong>{{ _('Heads up!') }}</strong> {{ _('Soon, Firefox Accounts will replace Mozilla Support logins. You can upgrade your existing Mozilla account to Firefox Accounts today.') }} <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">{{ _('Read more') }}</a>.
-  <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a></p>
-</div>
-{%- endmacro %}
-
 {% macro notification_already_migrated(static_url) -%}
 <div id="fxa-notification-already-migrated" class="mzp-c-notification-bar mzp-t-warning">
   <button class="mzp-c-notification-bar-button" type="button"></button>

@@ -1,9 +1,7 @@
-from django.contrib.auth.models import User, Permission, Group
-from django.contrib.contenttypes.models import ContentType
-
-from tidings.models import Watch
-
 import factory
+from django.contrib.auth.models import Group, Permission, User
+from django.contrib.contenttypes.models import ContentType
+from tidings.models import Watch
 
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
 from kitsune.users.models import Profile, Setting
@@ -45,6 +43,7 @@ class ProfileFactory(factory.DjangoModelFactory):
     country = 'US'
     city = 'Portland'
     locale = 'en-US'
+    is_fxa_migrated = True
     user = factory.SubFactory(UserFactory, profile=None)
 
 

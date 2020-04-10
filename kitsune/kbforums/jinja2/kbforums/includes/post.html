@@ -48,7 +48,7 @@
     <li class="mzp-c-menu-list-item post-action">
     <a href="#post-{{ post.id }}">{{ _('Link to this post') }}</a>
     </li>
-    {% if document and document.slug and post.id %}
+    {% if user.is_authenticated() and document and document.slug and post.id %}
     <li class="mzp-c-menu-list-item post-action">
       {{ flag_form(url('wiki.discuss.flag_post', document.slug, post.id)) }}
     </li>

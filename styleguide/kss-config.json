@@ -32,7 +32,6 @@
     "static/sumo/js/analytics.js",
     "static/sumo/js/surveygizmo.js",
     "static/sumo/js/instant_search.js",
-    "static/sumo/js/legacy_login_toggle.js",
     "static/sumo/js/responsive-nav-toggle.js",
     "static/sumo/js/profile-avatars.js",
     "static/protocol/js/protocol-base.js",
