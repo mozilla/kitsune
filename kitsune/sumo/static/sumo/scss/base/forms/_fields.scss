@@ -379,8 +379,18 @@ textarea {
   column-width: 200px;
   column-gap: 60px;
 
+  label {
+    padding-top: 4px; // prevents focus state from bleeding
+  }
+
   &--sublist {
     margin-left: 32px;
+
+    @include p.bidi((
+      (margin-left, 32px, 0),
+      (margin-right, 0, 32px),
+    ));
+
   }
 }
 

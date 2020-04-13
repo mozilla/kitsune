@@ -24,22 +24,15 @@
 
   label {
     font-weight: 400;
-    position: relative;
-    @include p.bidi((
-      (padding, 0 0 0 36px, 0 36px 0 0),
-    ));
+    display: flex;
 
     &:before {
-      position: absolute;
-      top: 0;
-      left: 0;
       @include p.bidi((
         (margin-right, p.$spacing-md, 0),
         (margin-left, 0,  p.$spacing-md),
-        (left, 0,  auto),
-        (right, auto, 0),
       ));
-
+      display: block;
+      flex: 0 0 auto;
       width: 20px;
       height: 20px;
       border: 2px solid var(--field-border-color-default);
