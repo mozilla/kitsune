@@ -1,10 +1,9 @@
 import factory
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
-from tidings.models import Watch
-
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
-from kitsune.users.models import Profile, Setting
+from kitsune.users.models import AccountEvent, Profile, Setting
+from tidings.models import Watch
 
 
 class TestCaseBase(TestCase):
@@ -87,3 +86,14 @@ def tidings_watch(save=False, **kwargs):
     if save:
         w.save()
     return w
+
+
+class AccountEventFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = AccountEvent
+
+    status = AccountEvent.UNPROCESSED
+    fxa_uid = "54321"
+    jwt_id = "e19ed6c5-4816-4171-aa43-56ffe80dbda1"
+    issued_at = "1565720808"
+    profile = factory.SubFactory(ProfileFactory)

@@ -48,6 +48,7 @@ from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
                                        OIDCLogoutView)
 from sentry_sdk import capture_message
 from tidings.models import Watch
+from kitsune.users.tasks import process_account_event
 
 log = logging.getLogger('k.users.views')
 
@@ -395,10 +396,8 @@ class WebhookView(View):
 
         key = None
         for jwk in jwks['keys']:
-            # dummy tokens sent by the fxa-event-broker test script don't have a kid value,
-            # we'll have to see if this is true in dev
-            # if jwk['kid'] != header['kid']:
-            #     continue
+            if jwk['kid'] != header.get('kid'):
+                continue
             if 'alg' in jwk and jwk['alg'] != header['alg']:
                 raise SuspiciousOperation('alg values do not match.')
             key = jwk
@@ -435,6 +434,32 @@ class WebhookView(View):
         # deserializing https://bugs.python.org/issue17909
         return json.loads(jws.payload.decode('utf-8'))
 
+    def save_events(self, payload):
+        fxa_uid = payload.get('sub')
+        profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
+        events = payload.get('events')
+
+        for long_id, event in events.items():
+            short_id = long_id.replace('https://schemas.accounts.firefox.com/event/', '')
+            try:
+                event_type = next(x for x, y in AccountEvent.EVENT_TYPE if y == short_id)
+            except StopIteration:
+                event_type = None
+            profile = profile_q[0] if profile_q.exists() else None
+
+            account_event = AccountEvent.objects.create(
+                issued_at=payload['iat'],
+                jwt_id=payload['jti'],
+                fxa_uid=fxa_uid,
+                status=AccountEvent.UNPROCESSED if profile else AccountEvent.IGNORED,
+                events=json.dumps({long_id: event}),
+                event_type=event_type,
+                profile=profile
+            )
+
+            if event_type and profile:
+                process_account_event.delay(account_event)
+
     def post(self, request, *args, **kwargs):
         # TODO add docstrings
         # TODO add error handling
@@ -455,12 +480,6 @@ class WebhookView(View):
         authorization = request.META.get('HTTP_AUTHORIZATION')
         if not authorization:
             raise Http404
-
-        # dummy tokens sent by the fxa-event-broker test script don't use this header,
-        # we'll have to see if this is true in dev
-        # # SET event must be of type `application/secevent+jwt`
-        # if request.META.get('CONTENT_TYPE', '') != 'application/secevent+jwt':
-        #     raise Http404
 
         auth = authorization.split()
         if auth[0].lower() != 'bearer':
@@ -488,15 +507,7 @@ class WebhookView(View):
                     'description': 'description'
                 }, status=400)
 
-            profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
-            AccountEvent.objects.create(
-                issued_at=payload['iat'],
-                jwt_id=payload['jti'],
-                fxa_uid=fxa_uid,
-                status=AccountEvent.UNPROCESSED,
-                events=json.dumps(events, sort_keys=True),
-                profile=profile_q[0] if profile_q.exists() else None
-            )
+            self.save_events(payload)
 
             return HttpResponse(status=202)
         raise Http404

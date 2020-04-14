@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+import traceback
 from datetime import datetime
 
 from django.conf import settings
@@ -8,8 +9,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
-from timezone_field import TimeZoneField
-
 from kitsune.lib.countries import COUNTRIES
 from kitsune.products.models import Product
 from kitsune.search.es_utils import UnindexMeBro
@@ -20,6 +19,7 @@ from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 from kitsune.users.validators import TwitterValidator
+from timezone_field import TimeZoneField
 
 log = logging.getLogger('k.users')
 
@@ -431,10 +431,14 @@ class AccountEvent(models.Model):
     UNPROCESSED = 1
     PROCESSED = 2
     ERRORED = 3
+    IGNORED = 4
+    UNIMPLEMENTED = 5
     EVENT_STATUS = (
         (UNPROCESSED, 'unprocessed'),
         (PROCESSED, 'processed'),
         (ERRORED, 'errored'),
+        (IGNORED, 'ignored'),
+        (UNIMPLEMENTED, 'unimplemented'),
     )
 
     PASSWORD_CHANGE = 1
@@ -458,7 +462,26 @@ class AccountEvent(models.Model):
                                                   default=None,
                                                   null=True,
                                                   blank=False)
-    fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
+    fxa_uid = models.CharField(blank=True, null=True, max_length=128)
     jwt_id = models.CharField(max_length=256)
     issued_at = models.CharField(max_length=32)
     profile = models.ForeignKey(Profile, related_name='account_events', null=True)
+    error = models.TextField(max_length=4096, blank=True)
+
+    def process(self):
+        if self.status == self.PROCESSED:
+            return
+
+        try:
+            if self.event_type == self.DELETE_USER:
+                self.profile.delete()
+                self.profile = None
+                self.status = self.PROCESSED
+                self.save()
+            else:
+                self.status = self.UNIMPLEMENTED
+                self.save()
+        except Exception:
+            self.error = traceback.format_exc()
+            self.status = self.ERRORED
+            self.save()
