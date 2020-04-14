@@ -1,6 +1,7 @@
 import json
 import logging
 from ast import literal_eval
+from textwrap import dedent
 from uuid import uuid4
 
 import requests
@@ -45,6 +46,7 @@ from mozilla_django_oidc.utils import import_from_settings
 from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
                                        OIDCAuthenticationRequestView,
                                        OIDCLogoutView)
+from sentry_sdk import capture_message
 from tidings.models import Watch
 
 log = logging.getLogger('k.users.views')
@@ -437,12 +439,22 @@ class WebhookView(View):
         # TODO add docstrings
         # TODO add error handling
 
+        capture_message(
+            dedent(
+                """
+                    fxa event:
+                    auth header: {auth}
+                    content type: {type}
+                """.format(
+                    auth=request.META.get("HTTP_AUTHORIZATION"),
+                    type=request.META.get("CONTENT_TYPE"),
+                )
+            )
+        )
+
         authorization = request.META.get('HTTP_AUTHORIZATION')
         if not authorization:
             raise Http404
-
-        log.debug(authorization)
-        log.debug(request.META.get('CONTENT_TYPE'))
 
         # dummy tokens sent by the fxa-event-broker test script don't use this header,
         # we'll have to see if this is true in dev
