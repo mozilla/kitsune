@@ -431,10 +431,12 @@ class AccountEvent(models.Model):
     UNPROCESSED = 1
     PROCESSED = 2
     ERRORED = 3
+    IGNORED = 4
     EVENT_STATUS = (
         (UNPROCESSED, 'unprocessed'),
         (PROCESSED, 'processed'),
         (ERRORED, 'errored'),
+        (IGNORED, 'ignored'),
     )
 
     PASSWORD_CHANGE = 1

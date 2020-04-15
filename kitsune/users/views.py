@@ -489,14 +489,19 @@ class WebhookView(View):
                 }, status=400)
 
             profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
-            AccountEvent.objects.create(
+            event = AccountEvent.objects.create(
                 issued_at=payload['iat'],
                 jwt_id=payload['jti'],
                 fxa_uid=fxa_uid,
-                status=AccountEvent.UNPROCESSED,
+                status=AccountEvent.IGNORED,
                 events=json.dumps(events, sort_keys=True),
-                profile=profile_q[0] if profile_q.exists() else None
             )
+
+            if profile_q.exists():
+                event.profile = profile_q[0]
+                event.status = AccountEvent.UNPROCESSED
+                event.save(update_fields=['profile', 'status'])
+
 
             return HttpResponse(status=202)
         raise Http404
