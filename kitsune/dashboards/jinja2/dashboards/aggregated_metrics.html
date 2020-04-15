@@ -72,7 +72,7 @@
 {% endblock %}
 
 {% block side_top %}
-  {{ localization_sidebar_nav(request.LANGUAGE_CODE, 'aggregated', current_locale==settings.WIKI_DEFAULT_LANGUAGE) }}
+  {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'aggregated', True) }}
   <section id="locale-picker" class="mt-lg" data-locales="{{ locales_json }}">
     <ul>
       {% for locale in locales %}
