@@ -315,6 +315,24 @@
   }
 }
 
+.tag-notification {
+  @include c.text-body-sm;
+  margin-bottom: 40px;
+
+  .tag-list {
+    display: inline-block;
+    margin: 0 16px 0 8px;
+
+    li {
+      margin-bottom: 0;
+    }
+  }
+
+  .show-all {
+    color: var(--color-link);
+  }
+}
+
 // truncate text UI, ported from old system
 .ui-tabs-hide {
   display: none;
