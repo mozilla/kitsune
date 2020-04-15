@@ -1,11 +1,24 @@
 {% extends "wiki/base.html" %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+
 {% set scripts = ('jqueryui', 'wiki', 'wiki.diff') %}
 {% set title = _('Recent Revisions') %}
 {% set crumbs = [(None, title)] %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
-{% block below_main %}
 
+
+{% block side_top %}
+  {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'revisions', True) }}
+{% endblock %}
+
+{% block content %}
+<section class="sumo-page-section">
+  <h1 class="sumo-page-heading">{{ title }}</h1>
+</section>
+{% endblock %}
+
+{% block below_main %}
   <article id="revision-list">
     <form class="filter inline-label is-condensed" action="{{ url('wiki.revisions') }}">
       {% for field in form %}
@@ -20,5 +33,4 @@
       {% include "wiki/includes/recent_revisions_fragment.html" %}
     </div>
   </article>
-
 {% endblock %}
