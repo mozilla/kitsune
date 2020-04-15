@@ -169,18 +169,22 @@
           {% for question in questions.object_list %}
             <article id="question-{{ question.id }}" class="forum--question-item">
               <ul class="forum--question-item-side">
-                <li class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
+              {% if question.is_solved %}
+                <li class="thread-solved">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  <span class="hover-label">{{ _('Solved') }}</span>
+                  <span class="hover-label">{{ _('Solved') }}></span>
                 </li>
-                <li class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3.515v16.97M3.515 12h16.97" stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"/></svg>
-                  <span class="hover-label">{{ _('Contributed') }}</span>
-                </li>
+                {% endif %}
+                {% if question.is_contributor(user) %}
+                  <li class="thread-contributed">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3.515v16.97M3.515 12h16.97" stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"/></svg>
+                    <span class="hover-label">{{ _('Contributed') }}</span>
+                  </li>
+                {% endif %}
                 {% if question.is_locked %}
-                  <li class="thread-locked highlighted">
+                  <li class="thread-locked">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                       <g transform="translate(3 2)" fill="none" fill-rule="evenodd">
                         <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" y="7" width="18" height="13" rx="2"/>
@@ -193,7 +197,7 @@
                   </li>
                 {% endif %}
                 {% if question.is_archived %}
-                  <li class="thread-archived highlighted">
+                  <li class="thread-archived">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                       <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
                         <path d="M5 20V4M9 20V7M13 20V6M21 20L16.5 6"/>
