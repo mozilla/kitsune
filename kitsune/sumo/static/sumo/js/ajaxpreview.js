@@ -68,6 +68,7 @@
 
       $(self).bind('show-preview', function(e, success, html) {
         $preview.html(html);
+        $preview.find('img.lazy').lazyload();
         if (changeHash) {
           document.location.hash = $preview.attr('id');
         }
