@@ -2,6 +2,16 @@
   position: relative;
 }
 
+.graph {
+  font-size: 10px;
+}
+
+#kpi-dash {
+  > section {
+    margin-bottom: 60px;
+  }
+}
+
 .multi-y-axis {
   display: inline-block;
   margin-top: 40px;
@@ -108,13 +118,10 @@
 }
 
 .inline-controls {
-  margin-left: 40px;
 
   div {
-    background: #DDD;
     display: inline-block;
     margin: 0 10px 10px 0;
-    padding: 4px;
 
     input, label {
       margin-right: 5px;

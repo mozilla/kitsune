@@ -115,7 +115,7 @@
 
 {% block content %}
 {% if tags %}
-  <div id="tagged">
+  <div id="tagged" class="tag-notification">
     {{ _('Showing questions tagged:') }}
     <ul class="tag-list">
       {% for tag in tags -%}
