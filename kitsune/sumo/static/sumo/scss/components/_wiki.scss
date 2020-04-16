@@ -615,14 +615,10 @@ article {
     .showfor {
       border-radius: 0;
       box-shadow: none;
-      float: left;
-      margin: 0;
+      float: none;
+      margin: 20px 0 40px 0;
+      padding: 0;
       position: static;
-    }
-
-    #doc-content {
-      float: right;
-      width: 700px;
     }
   }
 }
