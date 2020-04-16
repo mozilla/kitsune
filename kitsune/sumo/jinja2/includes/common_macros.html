@@ -266,9 +266,6 @@
   <li><a href="/forums/social-media">Social Support Forum</a></li>
   <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
   <li><a href="/forums/buddies">New Contributors</a></li>
-  {% if user.has_perm('flagit.can_moderate') %}
-    <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
-  {% endif %}
 {% endmacro %}
 
 {% macro _tools_nav_links(user, default_language, active=None) -%}
@@ -279,6 +276,9 @@
   <li><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Dashboards">{{ _('Dashboards') }}</a></li>
   <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
   <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
+  {% if user.has_perm('flagit.can_moderate') %}
+    <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
+  {% endif %}
   <!-- <li><a href="#">Tag Admin</a></li> -->
 {% endmacro %}
 
