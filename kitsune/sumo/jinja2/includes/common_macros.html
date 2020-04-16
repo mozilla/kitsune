@@ -85,14 +85,15 @@
   </li>
   {% if user.is_authenticated() %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-    <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation"
+       data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
           <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
           <div class="sumo-nav--dropdown-col">
             <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-              <a class="mzp-c-menu-item-link" href="{{ url('community.home') }}">
+              <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}">
                 <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
                 <h4 class="mzp-c-menu-item-title">{{ _('Discussions') }}</h4>
                 <p class="mzp-c-menu-item-desc">
@@ -280,7 +281,7 @@
 <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
 <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
 <!-- <li><a href="#">Tag Admin</a></li> -->
-<li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">{{ _('Contributor Forums') }}</a></li>
+<li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Hub') }}</a></li>
 {% endmacro %}
 
 {# This is designed to be used like this:
