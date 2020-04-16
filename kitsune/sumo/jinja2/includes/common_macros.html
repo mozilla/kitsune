@@ -268,9 +268,6 @@
 <li><a href="/forums/social-media">Social Support Forum</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
 <li><a href="/forums/buddies">New Contributors</a></li>
-{% if user.has_perm('flagit.can_moderate') %}
-  <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
-{% endif %}
 {% endmacro %}
 
 {% macro _tools_nav_links(user, default_language, active=None) -%}
@@ -281,6 +278,9 @@
 <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
 <!-- <li><a href="#">Tag Admin</a></li> -->
 <li><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">{{ _('Contributor Forums') }}</a></li>
+{% if user.has_perm('flagit.can_moderate') %}
+  <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
+{% endif %}
 {% endmacro %}
 
 {# This is designed to be used like this:
