@@ -619,6 +619,10 @@ article {
       margin: 20px 0 40px 0;
       padding: 0;
       position: static;
+
+      .selectbox-wrapper {
+        margin-bottom: 8px;
+      }
     }
   }
 }
@@ -1044,6 +1048,9 @@ article {
   table {
     border: 1px solid #ddd;
     width: 100%;
+    color: #666;
+    font-size: 12px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
   }
 
   .from,
@@ -1110,6 +1117,10 @@ article {
     height: 100%;
   }
 }
+
+
+
+
 
 #editor_wrapper {
   height: 500px;
