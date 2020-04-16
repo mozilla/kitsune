@@ -560,14 +560,16 @@
     var switch_link = $('<a></a>')
         .text(gettext('Toggle syntax highlighting'))
         .css({textAlign: 'right', cursor: 'pointer', display: 'block'})
-        .toggle(function() {
-          editor_wrapper.css('display', 'none');
-          $('#id_content').css('display', 'block');
-        }, function() {
-          updateHighlightingEditor();
-          editor_wrapper.css('display', 'block');
-          $('#id_content').css('display', 'none');
-        });
+        .click(function() {
+          if (editor_wrapper.css('display') === 'block') {
+            editor_wrapper.css('display', 'none');
+            $('#id_content').css('display', 'block');
+          } else {
+            updateHighlightingEditor();
+            editor_wrapper.css('display', 'block');
+            $('#id_content').css('display', 'none');
+          }
+        })
 
     var highlightingEnabled = function() {
       return editor_wrapper.css('display') === 'block';

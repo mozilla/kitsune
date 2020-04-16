@@ -738,7 +738,9 @@
             '</div>' +
             '<div id="response-content-area">' +
             '<h2 class="heading-label preview-label">' + gettext('Response editor') + '</h2>' +
-            '<button class="toggle-view btn">' + gettext('Switch to preview mode') + '</button>' +
+            '<div class="sumo-button-wrap">' +
+            '<button class="toggle-view sumo-button">' + gettext('Switch to preview mode') + '</button>' +
+            '</div>' +
             '<div class="field has-md-textarea response-preview is-condensed">' +
             '<textarea id="response-content">' +
             '</textarea></div>' +
@@ -978,22 +980,22 @@
       var $contentArea = $html.find('.response-preview');
       var $renderedPreview = $html.find('.response-preview-rendered');
 
-      $html.find('.toggle-view').toggle(
-        function() {
+      $html.find('.toggle-view').click(function() {
+        if ($contentArea.is(':visible')) {
           updatePreview();
           $previewLabel.text(gettext('Response preview'));
           $(this).text(gettext('Switch to edit mode'));
 
           $contentArea.hide();
           $renderedPreview.show();
-        },
-        function() {
+        } else {
           $previewLabel.text(gettext('Response editor'));
           $(this).text(gettext('Switch to preview mode'));
 
           $contentArea.show();
           $renderedPreview.hide();
-        });
+        }
+      });
 
       e.preventDefault();
       return false;
