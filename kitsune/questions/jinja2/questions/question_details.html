@@ -134,7 +134,9 @@
           </div>
           <div class="user">
             <div class="asked-by">
-              <a class="author-name" href="{{ profile_url(question.creator, request.user == question.creator) }}">{{ display_name(question.creator) }}</a>
+              <a class="author-name" href="{{ profile_url(question.creator, request.user == question.creator) }}">
+                <span class="display-name">{{ display_name(question.creator) }}</span>
+              </a>
             </div>
             <span class="asked-on">
               <time itemprop="dateCreated" datetime="{{ question.created }}">{{ datetimeformat(question.created) }}</time>

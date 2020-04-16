@@ -122,7 +122,9 @@
   </div>
   <div class="user">
     <div class="asked-by">
-      <a class="author-name" href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
+      <a class="author-name" href="{{ profile_url(user) }}">
+        <span class="display-name">{{ display_name(user) }}</span>
+      </a>
     </div>
     <span class="asked-on">
       {{ private_message_link(user) }}
