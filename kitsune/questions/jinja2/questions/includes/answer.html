@@ -14,7 +14,7 @@
       <div class="user">
         <div class="asked-by">
           <a class="author-name" href="{{ profile_url(answer.creator) }}">
-            {{ display_name(answer.creator) }}
+            <span class="display-name">{{ display_name(answer.creator) }}</span>
             {{ titles(answer.creator) }}
             {% if answer.id and answer.creator == question.creator %}<span class="user-title">{{_('Question owner')}}</span>{% endif %}
           </a>
