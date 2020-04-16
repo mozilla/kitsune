@@ -18,7 +18,9 @@
       var post = $(this).data('post'),
         $post = $('#post-' + post),
         text = $post.find('div.content-raw').text(),
-        user = $post.find('a.author-name').text(),
+        user = $post.find('a.author-name').contents().filter(function() {
+          return this.nodeType == 3;
+        }).text().trim(),
         reply = template("''{user} [[#post-{post}|{said}]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
         reply_text,
         $textarea = $('#id_content'),
