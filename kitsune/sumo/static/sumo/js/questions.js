@@ -295,7 +295,9 @@
       var contentId = $(this).data('content-id'),
         $content = $('#' + contentId),
         text = $content.find('.content-raw').text(),
-        user = $content.find('.author-name').text(),
+        user = $content.find('.author-name').contents().filter(function() {
+          return this.nodeType == 3;
+        }).text().trim(),
         reply = template("''<p>{user} [[#{contentId}|{said}]]</p>''\n<blockquote>\n{text}\n</blockquote>\n\n"),
         reply_text,
         $textarea = $('#id_content'),
