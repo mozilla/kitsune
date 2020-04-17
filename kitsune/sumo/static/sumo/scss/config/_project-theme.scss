@@ -39,6 +39,7 @@
   --heading-font-family-moz: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
   --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
   --heading-alt-font-family: var(--heading-font-family);
+  --code-font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 
   --global-margin: 1rem;
   --global-radius: #{p.$spacing-xs};
