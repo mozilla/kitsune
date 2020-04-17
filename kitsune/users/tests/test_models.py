@@ -26,5 +26,5 @@ class UserSettingsTests(TestCase):
         eq_(0, Setting.objects.count())
         keys = SettingsForm.base_fields.keys()
         for setting in keys:
-            field = SettingsForm.base_fields[setting]
-            eq_(field.initial, Setting.get_for_user(self.u, setting))
+            SettingsForm.base_fields[setting]
+            eq_(False, Setting.get_for_user(self.u, setting))

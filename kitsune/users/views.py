@@ -26,7 +26,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
 from kitsune.users.forms import ProfileForm, SettingsForm
-from kitsune.users.models import Deactivation, Profile
+from kitsune.users.models import Deactivation, Profile, Setting
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (add_to_contributors, deactivate_user,
                                  get_oidc_fxa_setting)
@@ -131,6 +131,8 @@ def close_account(request):
 
     # Remove from all groups
     request.user.groups.clear()
+    # Remove all settings
+    Setting.objects.filter(user=request.user).delete()
 
     request.user.save()
 
@@ -145,6 +147,8 @@ def close_account(request):
 def deactivate(request, mark_spam=False):
     user = get_object_or_404(User, id=request.POST['user_id'], is_active=True)
     deactivate_user(user, request.user)
+    # Clear user settings to remove incoming notifications
+    Setting.objects.filter(user=user).delete()
 
     if mark_spam:
         mark_content_as_spam(user, request.user)
