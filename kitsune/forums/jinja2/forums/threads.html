@@ -12,7 +12,7 @@
 {% block content %}
     <article id="threads" class="content-box sumo-page-section">
       <h1 class="sumo-page-heading">{{ forum.name }}</h1>
-
+      {{ forum.description|safe }}
       <div class="forum-actions sumo-button-wrap">
         {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
           <a id="new-thread" class="sumo-button primary-button" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
