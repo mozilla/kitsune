@@ -219,6 +219,13 @@ textarea,
     box-shadow: var(--focus-shadow);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    &:focus {
+      border-color: var(--field-border-color-hover);
+      box-shadow: none;
+    }
+  }
+
   .has-warning & {
     box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('yellow', '04'), 0.3), 0 0 0 2px c.color('yellow', '04'); // compliant colors
     // box-shadow: 0 0 0 p.$spacing-xs rgba(215, 182, 0, 0.3), 0 0 0 2px rgb(215, 182, 0); // noncompliant colors
