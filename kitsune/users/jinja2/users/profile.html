@@ -23,6 +23,13 @@
         {% endif %}
 
         {% if request.user.is_authenticated() and request.user != profile.user %}
+          {% if user.has_perm('users.change_profile') %}
+            <div id="admin-actions">
+              <a class="edit" href="{{ url('users.edit_profile', profile.user.username) }}">
+                {{ _('Edit user profile') }}
+              </a>
+           </div>
+          {% endif %}
           {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
         {% endif %}
         <h1 class="sumo-page-heading user">{{ display_name(profile.user) }}
