@@ -1,5 +1,5 @@
 <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
-  <div class="mzp-u-modal-content kbox" id="ready-for-l10n-modal" title="{{ _('Mark as Ready for Localization') }}">
+  <div class="mzp-u-modal-content" id="ready-for-l10n-modal" title="{{ _('Mark as Ready for Localization') }}">
     {% csrf_token %}
     <div>
       <p>
@@ -7,7 +7,7 @@
       </p>
     </div>
     <br />
-    <button class="sumo-button button-primary" id="submit-l10n" type="submit">{{ _('Submit') }}</button>
-    <a class="kbox-cancel" href="#cancel">{{ _('Cancel') }}</a>
+    <button class="sumo-button primary-button" id="submit-l10n" type="submit">{{ _('Submit') }}</button>
+    <button class="sumo-button" data-sumo-modal-close>{{ _('Cancel') }}</button>
   </div>
 </div>

@@ -444,7 +444,7 @@
   }
 
   function initReadyForL10n() {
-    var $watchDiv = $('#revision-list div.l10n'),
+    var $watchDiv = $('#revision-list .l10n'),
       post_url, checkbox_id;
 
     $watchDiv.find('a.markasready').click(function() {
@@ -455,8 +455,7 @@
     });
 
     $('#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]').click(function() {
-      var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val(),
-        kbox = $('#ready-for-l10n-modal').data('kbox');
+      var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val();
       if (post_url !== undefined && checkbox_id !== undefined) {
         $.ajax({
           type: 'POST',
@@ -465,10 +464,10 @@
           success: function(response) {
             $('#' + checkbox_id).removeClass('markasready').addClass('yes');
             $('#' + checkbox_id).unbind('click');
-            kbox.close();
+            Mzp.Modal.closeModal()
           },
           error: function() {
-            kbox.close();
+            Mzp.Modal.closeModal()
           }
         });
       }
