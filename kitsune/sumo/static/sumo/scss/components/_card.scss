@@ -54,6 +54,10 @@
 
     &:hover {
       transform: translateZ(0) scale(1.02);
+
+      @media (prefers-reduced-motion: reduce) {
+        transform: none;
+      }
     }
   }
 

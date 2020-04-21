@@ -243,6 +243,10 @@
     transform: translateY(100px);
     transition: transform 0.3s;
 
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+
     .simple-search-form {
       display: block;
     }
