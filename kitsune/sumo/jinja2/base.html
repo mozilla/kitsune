@@ -1,4 +1,4 @@
-{% from 'includes/common_macros.html' import announcement_bar, ff_alert, search_box, aux_nav, profile_nav, download_firefox, field, checkbox, favicon with context %}
+{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, download_firefox, field, checkbox, favicon with context %}
 
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
@@ -190,8 +190,6 @@
     </div>
   </div>
 </header><!--/.mzp-c-navigation -->
-
-{# {{ ff_alert(text=_('Get the account that protects you rather that profits off you.'), modifier_class="hide-on-mobile") }} #}
 
 {% block hidden_search_masthead %}
 <!-- This is only displayed when the instant search is active.

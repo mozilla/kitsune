@@ -1,7 +1,7 @@
 import json
 import logging
-import time
 import re
+import time
 from datetime import datetime
 from functools import wraps
 
@@ -12,43 +12,43 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.forms.utils import ErrorList
-from django.http import (HttpResponse, HttpResponseRedirect,
-                         Http404, HttpResponseBadRequest)
+from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
+                         HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import (require_GET, require_POST,
-                                          require_http_methods)
-
+from django.views.decorators.http import (require_GET, require_http_methods,
+                                          require_POST)
 from django_statsd.clients import statsd
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.decorators import ratelimit
+from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
-from kitsune.wiki.config import (
-    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
-    COLLAPSIBLE_DOCUMENTS, FALLBACK_LOCALES)
-from kitsune.wiki.events import (
-    EditDocumentEvent, ReviewableRevisionInLocaleEvent,
-    ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
-    ReadyRevisionEvent)
-from kitsune.wiki.forms import (
-    AddContributorForm, DocumentForm, RevisionForm, RevisionFilterForm,
-    ReviewForm, DraftRevisionForm)
-from kitsune.wiki.models import (
-    Document, Revision, DraftRevision, HelpfulVote, ImportantDate, doc_html_cache_key,
-    TitleCollision, SlugCollision)
+from kitsune.sumo.utils import (get_next_url, paginate, smart_int,
+                                truncated_json_dumps)
+from kitsune.wiki.config import (CATEGORIES, COLLAPSIBLE_DOCUMENTS,
+                                 DOCUMENTS_PER_PAGE, FALLBACK_LOCALES,
+                                 MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY)
+from kitsune.wiki.events import (ApprovedOrReadyUnion,
+                                 ApproveRevisionInLocaleEvent,
+                                 EditDocumentEvent, ReadyRevisionEvent,
+                                 ReviewableRevisionInLocaleEvent)
+from kitsune.wiki.forms import (AddContributorForm, DocumentForm,
+                                DraftRevisionForm, ReviewForm,
+                                RevisionFilterForm, RevisionForm)
+from kitsune.wiki.models import (Document, DraftRevision, HelpfulVote,
+                                 ImportantDate, Revision, SlugCollision,
+                                 TitleCollision, doc_html_cache_key)
 from kitsune.wiki.parser import wiki_to_html
-from kitsune.wiki.tasks import (
-    send_reviewed_notification, schedule_rebuild_kb,
-    send_contributor_notification, render_document_cascade)
-
+from kitsune.wiki.tasks import (render_document_cascade, schedule_rebuild_kb,
+                                send_contributor_notification,
+                                send_reviewed_notification)
 
 log = logging.getLogger('k.wiki')
 
@@ -91,6 +91,9 @@ def doc_page_cache(view):
 @doc_page_cache
 def document(request, document_slug, document=None):
     """View a wiki document."""
+
+    # Whether or not the sumo banner CTA in KB should be visible
+    show_cta_banner = False
 
     fallback_reason = None
     full_locale_name = None
@@ -207,6 +210,23 @@ def document(request, document_slug, document=None):
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
 
+    # Decide whether the sumo banner should be displayed in the KB.
+    # Base the decision on the English version of the document. If this is True
+    # all translation should display the banner
+    if doc.locale != settings.WIKI_DEFAULT_LANGUAGE:
+        doc_for_banner = (doc.parent if doc.parent.locale == settings.WIKI_DEFAULT_LANGUAGE
+                          else None)
+    else:
+        doc_for_banner = doc
+
+    if (
+        settings.SUMO_BANNER_STRING and
+        doc_for_banner and not
+        request.user.is_authenticated() and
+        re.search(settings.SUMO_BANNER_STRING, doc_for_banner.slug)
+    ):
+        show_cta_banner = True
+
     data = {
         'document': doc,
         'redirected_from': redirected_from,
@@ -220,7 +240,8 @@ def document(request, document_slug, document=None):
         'breadcrumb_items': breadcrumbs,
         'document_css_class': document_css_class,
         'any_localizable_revision': any_localizable_revision,
-        'full_locale_name': full_locale_name
+        'full_locale_name': full_locale_name,
+        'show_cta_banner': show_cta_banner
     }
 
     return render(request, 'wiki/document.html', data)

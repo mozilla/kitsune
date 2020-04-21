@@ -12,15 +12,15 @@
   </form>
 {% endmacro %}
 
-{% macro ff_alert(text, modifier_class, id="id_ff_alert") %}
+{% macro sumo_cta_banner(text, modifier_class, id="id_ff_alert") %}
 <div class="sumo-ff-alert {{ modifier_class }}" {% if id %}id="{{ id }}"{% endif %}>
   <div class="mzp-l-content">
     <div class="sumo-ff-alert--content">
-      <img class="sumo-ff-alert--icon" src="{{ STATIC_URL }}sumo/img/FF_Master__icon.svg" />
+      <img class="sumo-ff-alert--icon" src="{{ static('sumo/img/FF_Master__icon.svg') }}" />
       <p class="sumo-ff-alert--heading">{{ text }}</p>
-      <a href="{{ url('users.auth') }}" class="sumo-button primary-button button-lg">Sign Up</a>
+      <a href="https://accounts.firefox.com" class="sumo-button primary-button button-lg">Start Now</a>
       <button class="sumo-close-button" data-close-button="#{{ id }}">
-        <img src="{{STATIC_URL}}protocol/img/icons/close-white.svg" />
+        <img src="{{ static('protocol/img/icons/close-white.svg') }}" />
       </button>
     </div>
   </div>

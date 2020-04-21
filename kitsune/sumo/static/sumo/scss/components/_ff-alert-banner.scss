@@ -23,6 +23,7 @@
       flex-direction: column;
       padding-top: p.$spacing-lg;
       padding-bottom: p.$spacing-lg;
+      margin-bottom: p.$spacing-xl;
     }
 
     &--icon {
@@ -93,10 +94,6 @@
 
     @media #{p.$mq-md} {
 
-      &--icon {
-        margin-right: 60px;
-      }
-
       &--content {
         padding-top: p.$spacing-lg;
         padding-bottom: p.$spacing-lg;
@@ -104,7 +101,6 @@
 
       .sumo-close-button {
         position: static;
-        @include p.bidi(((margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0),));
       }
     }
 }
