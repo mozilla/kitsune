@@ -532,7 +532,7 @@
         </li>
 
         {% if related_documents or related_questions %}
-        <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Related Articles') }}</li>
+        <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('See also') }}</li>
         {% for q in related_questions %}
         <li class="related-question">
           <a href="{{ q.url[0] }}">{{ q.question_title[0] }}</a>
