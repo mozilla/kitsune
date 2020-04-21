@@ -36,7 +36,7 @@
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem;
-  --heading-font-family-moz: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
+  --heading-font-family-moz: 'Zilla Slab', Inter, X-LocaleSpecific, serif;
   --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
   --heading-alt-font-family: var(--heading-font-family);
 
@@ -45,6 +45,15 @@
 
   // form fields
   --focus-shadow: 0 0 0 #{p.$spacing-xs} rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
+}
+
+// With locales where Zilla Slab and Metropolis have partial support, we just use Inter for everything
+// to avoid only some characters falling back to a different font within a word/sentence:
+[lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
+  --base-font-family: Inter, X-LocaleSpecific, sans-serif;
+  --heading-font-family-moz: var(--base-font-family);
+  --heading-font-family: var(--base-font-family);
+  --heading-alt-font-family: var(--base-font-family);
 }
 
 .shade-bg {
