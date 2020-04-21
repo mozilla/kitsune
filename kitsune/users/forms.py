@@ -41,28 +41,25 @@ USERNAME_CACHE_KEY = "username-blacklist"
 
 class SettingsForm(forms.Form):
     forums_watch_new_thread = forms.BooleanField(
-        required=False, initial=True, label=_lazy(u"Watch forum threads I start")
+        required=False, label=_lazy(u"Watch forum threads I start")
     )
     forums_watch_after_reply = forms.BooleanField(
-        required=False, initial=True, label=_lazy(u"Watch forum threads I comment in")
+        required=False, label=_lazy(u"Watch forum threads I comment in")
     )
     kbforums_watch_new_thread = forms.BooleanField(
         required=False,
-        initial=True,
         label=_lazy(u"Watch KB discussion threads I start"),
     )
     kbforums_watch_after_reply = forms.BooleanField(
         required=False,
-        initial=True,
         label=_lazy(u"Watch KB discussion threads I comment in"),
     )
     questions_watch_after_reply = forms.BooleanField(
         required=False,
-        initial=True,
         label=_lazy(u"Watch Question threads I comment in"),
     )
     email_private_messages = forms.BooleanField(
-        required=False, initial=True, label=_lazy(u"Send emails for private messages")
+        required=False, label=_lazy(u"Send emails for private messages")
     )
 
     def save_for_user(self, user):
