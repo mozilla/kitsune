@@ -391,51 +391,45 @@ article {
   .edit,
   .delete {
     text-align: center;
-    text-decoration: none;
     width: 25px;
 
     a {
-      display: block;
+      display: inline-block;
+      text-decoration: none;
+      height: 20px;
+      width: 20px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
     }
   }
 
   .edit {
     a {
-      background: url("../img/icons.actions.png") no-repeat scroll left -25px transparent;
-      height: 12px;
-      text-decoration: none;
-      width: 12px;
+      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.81 29.81"><path fill="#0060DF" d="M0 29.81l8.29-2.22-6.07-6.07L0 29.81zM18.214 5.532l6.067 6.067-15.04 15.04-6.067-6.067zM23.746-.003l6.067 6.067-4.59 4.59-6.066-6.068z"/></svg>');
     }
   }
 
   .delete {
     a {
-      background: url("../img/icons.actions.png") no-repeat scroll left 0px transparent;
-      height: 12px;
-      width: 12px;
+      background-image: url("#{p.$image-path}/icons/delete.svg");
     }
   }
 
   .l10n {
     a {
       &.yes {
-        background: url("../img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
-        height: 12px;
-        width: 12px;
+        background-image: url("#{p.$image-path}/icons/check.svg");
       }
 
       &.markasready,
       &.no {
-        background: url("../img/wiki/icon-no.gif") no-repeat scroll left top transparent;
-        height: 12px;
-        width: 12px;
+        background-image: url("#{p.$image-path}/icons/close.svg");
       }
 
       &.markasready:hover {
-        background: url("../img/wiki/icon-yes.gif") no-repeat scroll left top transparent;
+        background-image: url("#{p.$image-path}/icons/check.svg");
         cursor: pointer;
-        height: 12px;
-        width: 12px;
       }
     }
   }

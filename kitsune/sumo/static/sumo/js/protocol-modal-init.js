@@ -21,4 +21,11 @@
       e.addEventListener("click", openThisDialog);
     });
   }
+
+  var closeButtons = document.querySelectorAll('[data-sumo-modal-close]');
+  if (closeButtons) {
+    closeButtons.forEach((button) => {
+      button.addEventListener("click", () => Mzp.Modal.closeModal());
+    });
+  }
 })();
