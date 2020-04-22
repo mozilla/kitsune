@@ -407,11 +407,15 @@ Linting localized strings
 
 You can lint localized strings for warnings and errors::
 
-    $ ./manage.py lint locales/
+    $ dennis-cmd locale/
+
+Or just errors::
+
+    $ dennis-cmd lint --errorsonly locale/
 
 You can see help text::
 
-    $ ./manage.py lint
+    $ dennis-cmd
 
 
 .. _getting-localizations:
