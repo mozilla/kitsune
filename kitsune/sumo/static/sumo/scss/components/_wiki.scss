@@ -1044,7 +1044,7 @@ article {
     width: 100%;
     color: #666;
     font-size: 12px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    font-family: var(--code-font-family);
   }
 
   .from,
@@ -1107,7 +1107,7 @@ article {
   .CodeMirror {
     color: #666;
     font-size: 12px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+    font-family: var(--code-font-family);
     height: 100%;
   }
 }
