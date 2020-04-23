@@ -3,6 +3,7 @@
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
+{% from "includes/common_macros.html" import download_firefox %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% set scripts = ('wiki', 'questions') %}
@@ -64,30 +65,10 @@
         </div>
         {{ document_title(document) }}
       </div>
+      {% if product.slug == 'firefox' %}
+      {{ download_firefox() }}
+      {% endif %}
     </header>
-
-    {% if product.slug == 'firefox' %}
-      {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-      <div class="firefox-download-button hidden">
-        <div class="download-buttons">
-          <div class="download-firefox">
-            <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
-              data-event-category="Download Button"
-              data-event-action="Panel Opening"
-              data-event-label="{{ latest_version }}">
-              <span class="download-content">
-                <strong class="download-title">{{ _('Download Firefox') }}</strong>
-              </span>
-            </a>
-            <ul class="info">
-              <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-              <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-              <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    {% endif %}
 
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
