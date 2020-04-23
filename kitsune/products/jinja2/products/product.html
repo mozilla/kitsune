@@ -154,22 +154,17 @@
 
   {{ topic_metadata(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
 
-
+{% if not product.slug == 'thunderbird' %}
   <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
       <h2 class="sumo-page-subheading text-center-to-left-on-large">{{ _('Featured Articles') }}</h2>
     {% include "landings/includes/featured_articles.html" %}
   </section>
+{% endif %}
 
   <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
     {% include "landings/includes/join-our-community-callout.html" %}
   </section>
 </div>
-
-
-
-
-
-
 
 {% endblock %}
 
