@@ -33,6 +33,9 @@
           <div class="documents-product-title">
             {% set prod_url = url('products.product', slug=product.slug) %}
             <a href="{{ prod_url }}"><img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" /></a>
+            {% if product.slug == 'firefox' %}
+              {{ download_firefox() }}
+            {% endif %}
           </div>
 
           {% if subtopic %}
@@ -61,11 +64,6 @@
           </p>
         {% endif %}
         </div>
-        {% if product.slug == 'firefox' %}
-        <div class="sumo-article-header--meta">
-          {{ download_firefox() }}
-        </div>
-        {% endif %}
       </header>
 
       {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
