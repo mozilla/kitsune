@@ -35,80 +35,80 @@
       <p class="popular-searches">
         <span>Popular Searches:</span>
 
-        {% if product.title == "Firefox" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Update Firefox') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+        {% if product.slug == "firefox" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Update Firefox') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
 
-        {% elif product.title == "Firefox for Android" or product.title == "Firefox Preview" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Firefox Sync') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Send tab') }}</a>
+        {% elif product.slug == "mobile" or product.slug == "firefox-preview" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Firefox Sync') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Send tab') }}</a>
 
-        {% elif product.title == "Firefox for iOS" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Send tab') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Night mode') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Block images') }}</a>
+        {% elif product.slug == "ios" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Send tab') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Night mode') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Block images') }}</a>
 
-        {% elif product.title == "Firefox for Enterprise" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Policies') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Customization') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('extensions') }}</a>
+        {% elif product.slug == "firefox-enterprise" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Policies') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Customization') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('extensions') }}</a>
 
-        {% elif product.title == "Firefox for Amazon Devices" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Voice commands') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Receive tabs') }}</a>
+        {% elif product.slug == "firefox-amazon-devices" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Voice commands') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Receive tabs') }}</a>
 
-        {% elif product.title == "Firefox Private Network Browser level" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('About firefox private network') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Install extension') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Limits') }}</a>
+        {% elif product.slug == "firefox-private-network-vpn" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('About firefox private network') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Install extension') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Limits') }}</a>
 
-        {% elif product.title == "Firefox Private Network Device level" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Choose server') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Subscription') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Android VPN') }}</a>
-        <a href="#popular_search_4" data-featured-search>{{ _('Windows VPN') }}</a>
+        {% elif product.slug == "firefox-private-network" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Update payment') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Cancel subscription') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Manage devices') }}</a>
 
-        {% elif product.title == "Firefox Lockwise" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Lockwise iOS') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Lockwise Android') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Lockwise desktop') }}</a>
+        {% elif product.slug == "firefox-lockwise" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Lockwise iOS') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Lockwise Android') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Lockwise desktop') }}</a>
 
-        {% elif product.title == "Firefox Reality" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Voice search') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Full screen') }}</a>
+        {% elif product.slug == "firefox-reality" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Voice search') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Full screen') }}</a>
 
-        {% elif product.title == "Firefox Lite" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Rewards') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Games') }}</a>
+        {% elif product.slug == "firefox-lite" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Rewards') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Games') }}</a>
 
-        {% elif product.title == "Hubs" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Create rooms') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Moderate') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Customize avatar') }}</a>
+        {% elif product.slug == "hubs" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Create rooms') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Moderate') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Customize avatar') }}</a>
 
-        {% elif product.title == "Firefox Focus" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Autocomplete') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Default search') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Desktop view') }}</a>
+        {% elif product.slug == "focus-firefox" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Autocomplete') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Default search') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Desktop view') }}</a>
 
-        {% elif product.title == "Firefox Screenshot Go" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Organize') }}</a>
-          <a href="#popular_search_2" data-featured-search>{{ _('Screenshots') }}</a>
+        {% elif product.slug == "screenshot-go" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Capture a screenshot') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Organize a screenshot') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Create a collection') }}</a>
 
-        {% elif product.title == "Thunderbird" %}
-        <a href="#popular_search_1" data-featured-search>{{ _('Thunderbird profiles') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Migrate') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Themes') }}</a>
+        {% elif product.slug == "thunderbird" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Thunderbird profiles') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Migrate') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Themes') }}</a>
 
         {% else %}
-        <a href="#popular_search_1" data-debug="{{ product.title }}" data-featured-search>{{ _('Update Firefox') }}</a>
-        <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
-        <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+          <a href="#popular_search_1" data-debug="{{ product.title }}" data-featured-search>{{ _('Update Firefox') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
         {% endif %}
       </p>
 
