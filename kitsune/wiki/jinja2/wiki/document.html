@@ -62,12 +62,12 @@
           <a href="{{ prod_url }}" title="{{ pgettext('DB: products.Product.title', product.title) }}">
             <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
           </a>
+          {% if product.slug == 'firefox' %}
+            {{ download_firefox() }}
+          {% endif %}
         </div>
         {{ document_title(document) }}
       </div>
-      {% if product.slug == 'firefox' %}
-      {{ download_firefox() }}
-      {% endif %}
     </header>
 
     <article class="wiki-doc">
