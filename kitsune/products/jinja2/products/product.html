@@ -33,7 +33,7 @@
       {{ search_box(settings, id='support-search-masthead', params=search_params) }}
 
       <p class="popular-searches">
-        <span>Popular Searches:</span>
+        <span>{{ _('Popular Searches:') }}</span>
 
         {% if product.slug == "firefox" %}
           <a href="#popular_search_1" data-featured-search>{{ _('Update Firefox') }}</a>
