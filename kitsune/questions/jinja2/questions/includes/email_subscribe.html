@@ -27,7 +27,7 @@
     <div class="sumo-button-wrap reverse-on-desktop align-full">
       <input type="submit" class="sumo-button primary-button button-lg" value="{{ _('Send Updates') }}" />
     <span class="cancel">
-      <a class="kbox-cancel sumo-button button-lg" href="{{ question.get_absolute_url() }}">{{ _('Cancel') }}</a>
+      <button type="button" class="sumo-button button-lg" data-sumo-modal-close>{{ _('Cancel') }}</button>
     </span>
     </div>
   </form>
