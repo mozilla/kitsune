@@ -18,10 +18,10 @@
             {{ titles(answer.creator) }}
             {% if answer.id and answer.creator == question.creator %}<span class="user-title">{{_('Question owner')}}</span>{% endif %}
           </a>
-          {% if answer.id and question.creator != answer.creator %}
+          {# {% if answer.id and question.creator != answer.creator %}
             <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
             <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_answers) }}</span>
-          {% endif %}
+          {% endif %} #}
         </div>
         {% if answer.id %}
         <span class="asked-on">
