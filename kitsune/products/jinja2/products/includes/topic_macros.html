@@ -1,9 +1,9 @@
-{% macro help_topics(topics, show_community_support=False) -%}
+{% macro help_topics(topics, show_community_support=False, product_slug=None) -%}
 
   <div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
     <div class="scroll-wrap">
       {% for topic in topics %}
-      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+      {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
       <div class="card card--topic">
         <img
           class="card--icon"

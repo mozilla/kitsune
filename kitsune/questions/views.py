@@ -54,6 +54,7 @@ from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.utils import get_featured_articles
 from ordereddict import OrderedDict
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
@@ -449,6 +450,13 @@ def question_details(
     if not question.solution_id:
         extra_kwargs.update(robots_noindex=True)
 
+    if request.session.pop('aaq-final-step', False):
+        extra_kwargs.update(
+            {
+                "aaq_final_step": True
+            }
+        )
+
     return render(request, "questions/question_details.html", extra_kwargs)
 
 
@@ -477,12 +485,11 @@ def edit_details(request, question_id):
 @ssl_required
 @login_required
 def aaq(
-    request, product_key=None, category_key=None, showform=False, template=None, step=1
+    request, product_key=None, category_key=None, step=1
 ):
     """Ask a new question."""
 
-    if not template:
-        template = "questions/new_question.html"
+    template = "questions/new_question.html"
 
     # This tells our LogoutDeactivatedUsersMiddleware not to
     # boot this user.
@@ -524,11 +531,14 @@ def aaq(
     if product_key and not product_config:
         raise Http404
 
-    if product_config and "product" in product_config:
+    deadend = product_config.get("deadend", False) if product_config else False
+    html = product_config.get("html") if product_config else None
+
+    if step == 2 and not deadend:
         try:
             product = Product.objects.get(slug=product_config["product"])
         except Product.DoesNotExist:
-            pass
+            raise Http404
         else:
             if not product.questions_locales.filter(
                 locale=request.LANGUAGE_CODE
@@ -548,93 +558,44 @@ def aaq(
 
                 return HttpResponseRedirect(path)
 
-    if category_key is None:
-        category_key = request.GET.get("category")
-
-    if product_config and category_key:
-        product_obj = Product.objects.get(slug=product_config.get("product"))
-        category_config = product_config["categories"].get(category_key)
-        if not category_config:
-            # If we get an invalid category, redirect to previous step.
-            return HttpResponseRedirect(
-                reverse("questions.aaq_step2", args=[product_key])
-            )
-        deadend = category_config.get("deadend", False)
-        topic = category_config.get("topic")
-        if topic:
-            html = None
-            articles, fallback = documents_for(
-                locale=request.LANGUAGE_CODE,
-                products=[product_obj],
-                topics=[Topic.objects.get(slug=topic, product=product_obj)],
-            )
-        else:
-            html = category_config.get("html")
-            articles = category_config.get("articles")
-    else:
-        category_config = None
-        deadend = product_config.get("deadend", False) if product_config else False
-        html = product_config.get("html") if product_config else None
-        articles = None
-        if product_config:
-            # User is on the select category step
-            statsd.incr("questions.aaq.select-category")
-        else:
-            # User is on the select product step
-            statsd.incr("questions.aaq.select-product")
-
     if request.method == "GET":
-        search = request.GET.get("search", "")
-        if search:
-            results = _search_suggestions(
-                request,
-                search,
-                locale_or_default(request.LANGUAGE_CODE),
-                [product_config.get("product")],
-            )
-            tried_search = True
-        else:
-            results = []
-            tried_search = False
-            if category_config:
-                # User is on the "Ask This" step
-                statsd.incr("questions.aaq.search-form")
+        form = None
+        featured = []
+        topics = []
 
-        if showform or request.GET.get("showform"):
+        if step == 1:
+            statsd.incr("questions.aaq.select-product")
+        elif step == 2:
+            statsd.incr("questions.aaq.explore-solutions")
+            if not deadend:
+                featured = get_featured_articles(product)
+                topics = topics_for(product)
+        elif step == 3:
             form = NewQuestionForm(
                 product=product_config,
-                category=category_config,
-                initial={"title": search},
+                initial={"category": category_key},
             )
-            # User is on the question details step
             statsd.incr("questions.aaq.details-form")
-        else:
-            form = None
-            if search:
-                # User is on the article and questions suggestions step
-                statsd.incr("questions.aaq.suggestions")
 
         return render(
             request,
             template,
             {
                 "form": form,
-                "results": results,
-                "tried_search": tried_search,
                 "products": config.products,
                 "current_product": product_config,
-                "current_category": category_config,
                 "current_html": html,
-                "current_articles": articles,
                 "current_step": step,
                 "deadend": deadend,
                 "host": Site.objects.get_current().domain,
                 "is_mobile_device": is_mobile_device,
+                "featured": featured,
+                "topics": topics
             },
         )
 
     form = NewQuestionForm(
-        product=product_config, category=category_config, data=request.POST
+        product=product_config, data=request.POST
     )
 
     # NOJS: upload image
@@ -651,15 +612,15 @@ def aaq(
             locale=request.LANGUAGE_CODE,
         )
 
-        if product_obj:
-            question.product = product_obj
+        question.product = product
 
+        category_config = product_config['categories'][form.cleaned_data['category']]
         if category_config:
             t = category_config.get("topic")
             if t:
-                question.topic = Topic.objects.get(slug=t, product=product_obj)
+                question.topic = Topic.objects.get(slug=t, product=product)
 
-        question.save()
+        question.save(notifications=form.cleaned_data.get('notifications', False))
 
         qst_ct = ContentType.objects.get_for_model(question)
         # Move over to the question all of the images I added to the reply form
@@ -677,11 +638,6 @@ def aaq(
             # fully IA-driven (sync isn't special case anymore).
             question.add_metadata(product=product_config["key"])
 
-        if category_config:
-            # TODO: This add_metadata call should be removed once we are
-            # fully IA-driven (sync isn't special case anymore).
-            question.add_metadata(category=category_config["key"])
-
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()
 
@@ -698,6 +654,8 @@ def aaq(
 
         # Done with AAQ.
         request.session["in-aaq"] = False
+
+        request.session['aaq-final-step'] = True
 
         url = reverse("questions.details", kwargs={"question_id": question.id})
         return HttpResponseRedirect(url)
@@ -718,8 +676,6 @@ def aaq(
             "images": images,
             "products": config.products,
             "current_product": product_config,
-            "current_category": category_config,
-            "current_articles": articles,
         },
     )
 
@@ -731,25 +687,12 @@ def aaq_step2(request, product_key):
 
 
 @ssl_required
-def aaq_step3(request, product_key, category_key):
-    """Step 3: The product and category is selected."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=2)
-
-
-@ssl_required
-def aaq_step4(request, product_key, category_key):
-    """Step 4: Search query entered."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=2)
-
-
-@ssl_required
-def aaq_step5(request, product_key, category_key):
-    """Step 5: Show full question form."""
+def aaq_step3(request, product_key, category_key=None):
+    """Step 3: Show full question form."""
     return aaq(
         request,
         product_key=product_key,
         category_key=category_key,
-        showform=True,
         step=3,
     )
 
@@ -772,14 +715,12 @@ def edit_question(request, question_id):
         initial.update(title=question.title, content=question.content)
         form = EditQuestionForm(
             product=question.product_config,
-            category=question.category_config,
             initial=initial,
         )
     else:
         form = EditQuestionForm(
             data=request.POST,
             product=question.product_config,
-            category=question.category_config,
         )
 
         # NOJS: upload images, if any
@@ -1732,138 +1673,6 @@ def screen_share(request, question_id):
         "%s?to=%s&message=%s"
         % (reverse("messages.new"), question.creator.username, message)
     )
-
-
-def _search_suggestions(request, text, locale, product_slugs):
-    """Return an iterable of the most relevant wiki pages and questions.
-
-    :arg text: full text to search on
-    :arg locale: locale to limit to
-    :arg product_slugs: list of product slugs to filter articles on
-        (["desktop", "mobile", ...])
-
-    Items are dicts of::
-
-        {
-            'type':
-            'search_summary':
-            'title':
-            'url':
-            'object':
-        }
-
-    :returns: up to 3 wiki pages, then up to 3 questions.
-
-    """
-    # TODO: this can be reworked to pull data from ES rather than
-    # hit the db.
-    question_s = QuestionMappingType.search()
-    wiki_s = DocumentMappingType.search()
-
-    # Max number of search results per type.
-    WIKI_RESULTS = QUESTIONS_RESULTS = 3
-    default_categories = settings.SEARCH_DEFAULT_CATEGORIES
-
-    # Apply product filters
-    if product_slugs:
-        wiki_s = wiki_s.filter(product__in=product_slugs)
-        question_s = question_s.filter(product__in=product_slugs)
-
-    results = []
-    try:
-        # Search for relevant KB documents.
-        query = dict(
-            ("%s__match" % field, text)
-            for field in DocumentMappingType.get_query_fields()
-        )
-        query.update(
-            dict(
-                ("%s__match_phrase" % field, text)
-                for field in DocumentMappingType.get_query_fields()
-            )
-        )
-        query = es_query_with_analyzer(query, locale)
-        filter = F()
-        filter |= F(document_locale=locale)
-        filter |= F(document_locale=settings.WIKI_DEFAULT_LANGUAGE)
-        filter &= F(document_category__in=default_categories)
-        filter &= F(document_is_archived=False)
-
-        raw_results = (
-            wiki_s.filter(filter).query(or_=query).values_list("id")[:WIKI_RESULTS]
-        )
-
-        raw_results = [result[0][0] for result in raw_results]
-
-        for id_ in raw_results:
-            try:
-                doc = Document.objects.select_related("current_revision").get(pk=id_)
-                results.append(
-                    {
-                        "search_summary": clean_excerpt(doc.current_revision.summary),
-                        "url": doc.get_absolute_url(),
-                        "title": doc.title,
-                        "type": "document",
-                        "object": doc,
-                    }
-                )
-            except Document.DoesNotExist:
-                pass
-
-        # Search for relevant questions.
-        query = dict(
-            ("%s__match" % field, text)
-            for field in QuestionMappingType.get_query_fields()
-        )
-        query.update(
-            dict(
-                ("%s__match_phrase" % field, text)
-                for field in QuestionMappingType.get_query_fields()
-            )
-        )
-
-        # Filter questions by language. Questions should be either in English
-        # or in the locale's language. This is because we have some questions
-        # marked English that are really in other languages. The assumption
-        # being that if a native speakers submits a query in given language,
-        # the items that are written in that language will automatically match
-        # better, so questions incorrectly marked as english can be found too.
-        question_filter = F(question_locale=locale)
-        question_filter |= F(question_locale=settings.WIKI_DEFAULT_LANGUAGE)
-        question_filter &= F(question_is_archived=False)
-
-        raw_results = (
-            question_s.query(or_=query)
-            .filter(question_filter)
-            .values_list("id")[:QUESTIONS_RESULTS]
-        )
-        raw_results = [result[0][0] for result in raw_results]
-
-        for id_ in raw_results:
-            try:
-                q = Question.objects.get(pk=id_)
-                results.append(
-                    {
-                        "search_summary": clean_excerpt(q.content[0:500]),
-                        "url": q.get_absolute_url(),
-                        "title": q.title,
-                        "type": "question",
-                        "object": q,
-                        "last_updated": q.updated,
-                        "is_solved": q.is_solved,
-                        "num_answers": q.num_answers,
-                        "num_votes": q.num_votes,
-                        "num_votes_past_week": q.num_votes_past_week,
-                    }
-                )
-            except Question.DoesNotExist:
-                pass
-
-    except ES_EXCEPTIONS as exc:
-        statsd.incr("questions.suggestions.eserror")
-        log.debug(exc)
-
-    return results
 
 
 def _answers_data(
