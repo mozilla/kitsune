@@ -8,7 +8,7 @@ let packageJson = JSON.parse(rawdata);
 Object.keys(packageJson.dependencies).forEach(function (packageName) {
   cpx.copy(
     util.format("node_modules/%s/**", packageName),
-    util.format("js_assets/%s", packageName),
+    util.format("assets/%s", packageName),
     {
       "update": true
     },

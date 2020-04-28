@@ -58,9 +58,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs 
 #
 FROM base-dev AS staticfiles
 
-COPY --from=frontend-base --chown=kitsune:kitsune /app/js_assets /app/js_assets
+COPY --from=frontend-base --chown=kitsune:kitsune /app/assets /app/assets
 COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
-COPY --from=frontend-base --chown=kitsune:kitsune /app/static /app/static
 
 COPY . .
 

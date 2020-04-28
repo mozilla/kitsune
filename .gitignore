@@ -40,7 +40,6 @@ k8s/regions/*/*-secrets.yaml
 .docker-build*
 postatus.txt
 .ipython
-js_assets/
 .sass-cache/
 styleguide/build/
 .gitconfig
@@ -50,3 +49,4 @@ npm-debug.log
 .python-version
 .pylint*
 .devcontainer.code-workspace
+assets/
