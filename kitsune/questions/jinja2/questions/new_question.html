@@ -23,7 +23,7 @@
 
 {% block category %}
   {% if current_product and not current_category and current_product.categories %}
-    {{ select_category(current_product, search_box) }}
+    {{ select_category(current_product, search_box, featured) }}
   {% else %}
     {{ super() }}
   {% endif %}

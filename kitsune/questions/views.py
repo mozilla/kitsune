@@ -54,6 +54,7 @@ from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.utils import get_featured_articles
 from ordereddict import OrderedDict
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
@@ -604,6 +605,7 @@ def aaq(
             statsd.incr("questions.aaq.select-product")
 
     if request.method == "GET":
+        featured = []
         search = request.GET.get("search", "")
         if search:
             results = _search_suggestions(
@@ -630,7 +632,10 @@ def aaq(
             statsd.incr("questions.aaq.details-form")
         else:
             form = None
-            if search:
+            if product_config:
+                featured = get_featured_articles(
+                    Product.objects.get(slug=product_config.get('product'))
+                )
                 # User is on the article and questions suggestions step
                 statsd.incr("questions.aaq.suggestions")
 
@@ -650,6 +655,7 @@ def aaq(
                 "deadend": deadend,
                 "host": Site.objects.get_current().domain,
                 "is_mobile_device": is_mobile_device,
+                "featured": featured
             },
         )
 
