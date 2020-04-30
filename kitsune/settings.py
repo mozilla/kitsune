@@ -10,8 +10,9 @@ from datetime import date
 import dj_database_url
 import django_cache_url
 import djcelery
-from bundles import PIPELINE_JS
 from decouple import Csv, config
+
+from bundles import PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
@@ -401,7 +402,7 @@ MEDIA_URL = config('MEDIA_URL', default='/media/')
 STATIC_ROOT = path('static')
 STATIC_URL = config('STATIC_URL', default='/static/')
 STATICFILES_DIRS = (
-    path('js_assets'),
+    path('assets'), # emulate bower and css cache busting
     path('jsi18n'),  # Collect jsi18n so that it is cache-busted
 )
 STATICFILES_FINDERS = (
