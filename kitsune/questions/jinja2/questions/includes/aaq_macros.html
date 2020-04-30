@@ -80,6 +80,7 @@
 {%- endmacro %}
 
 {% macro explore_solutions(product, search_box, featured, topics) -%}
+{% set search_params = {'product': product.product} %}
 <section class="sumo-page-section question-masthead shade-bg">
   <div class="mzp-l-content">
 
