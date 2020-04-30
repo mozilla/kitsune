@@ -39,9 +39,7 @@ from kitsune.questions.models import (Answer, AnswerVote, Question,
                                       QuestionVote)
 from kitsune.questions.signals import tag_added
 from kitsune.questions.utils import get_mobile_product_from_ua
-from kitsune.search.es_utils import (ES_EXCEPTIONS, F, Sphilastic,
-                                     es_query_with_analyzer)
-from kitsune.search.utils import clean_excerpt, locale_or_default
+from kitsune.search.es_utils import (ES_EXCEPTIONS, F, Sphilastic)
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -52,8 +50,7 @@ from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
 from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
-from kitsune.wiki.facets import documents_for, topics_for
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.facets import topics_for
 from kitsune.wiki.utils import get_featured_articles
 from ordereddict import OrderedDict
 from taggit.models import Tag
