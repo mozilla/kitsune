@@ -531,7 +531,7 @@ def aaq(
     deadend = product_config.get("deadend", False) if product_config else False
     html = product_config.get("html") if product_config else None
 
-    if step == 2 and not deadend:
+    if step > 1 and not deadend:
         try:
             product = Product.objects.get(slug=product_config["product"])
         except Product.DoesNotExist:

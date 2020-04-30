@@ -175,7 +175,7 @@ class EditQuestionForm(forms.Form):
         )
         self.fields["content"] = field
 
-        if isinstance(self, NewQuestionForm) and product and product["categories"]:
+        if isinstance(self, NewQuestionForm) and product and product.get("categories"):
             category_choices = [
                 (key, value["name"]) for key, value in product["categories"].items()
             ]
@@ -266,7 +266,7 @@ class EditQuestionForm(forms.Form):
     def metadata_field_keys(self):
         """Returns the keys of the metadata fields for the current
         form instance"""
-        non_metadata_fields = ["title", "content", "email"]
+        non_metadata_fields = ["title", "content", "email", "notifications"]
 
         def metadata_filter(x):
             return x not in non_metadata_fields

@@ -56,16 +56,6 @@ class TestNewQuestionForm(TestCaseBase):
         actual = form.metadata_field_keys
         eq_(sorted(expected), sorted(actual))
 
-        # Test the form with a product and category
-        category = {'key': 'd6',
-                    'name': 'I have another kind of problem with Firefox',
-                    'extra_fields': ['frequency', 'started'], }
-        form = NewQuestionForm(product=product, category=category)
-        expected = ['frequency', 'started', 'troubleshooting',
-                    'ff_version', 'os', 'plugins', 'useragent']
-        actual = form.metadata_field_keys
-        eq_(sorted(expected), sorted(actual))
-
     def test_cleaned_metadata(self):
         """Test the cleaned_metadata property."""
         # Test with no metadata

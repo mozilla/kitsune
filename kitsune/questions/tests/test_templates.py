@@ -1442,6 +1442,7 @@ class AAQTemplateTestCase(TestCaseBase):
     data = {
         "title": "A test question",
         "content": "I have this question that I hope...",
+        "category": "fix-problems",
         "sites_affected": "http://example.com",
         "ff_version": "3.6.6",
         "os": "Intel Mac OS X 10.6",
@@ -1487,8 +1488,7 @@ class AAQTemplateTestCase(TestCaseBase):
         if locale is not None:
             extra["locale"] = locale
         url = urlparams(
-            reverse("questions.aaq_step5", args=["desktop", "fix-problems"], **extra),
-            search="A test question",
+            reverse("questions.aaq_step3", args=["desktop"], **extra)
         )
 
         # Set 'in-aaq' for the session. It isn't already set because this
