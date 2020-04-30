@@ -134,7 +134,7 @@ we can compute the edit-title URL.
                       <p>{{ field.help_text|safe }}</p>
                     {% endif %}
 
-                    {% if field.name == 'title' %}
+                    {% if field.name != 'content' %}
                       {{ field.errors }}
                     {% endif %}
                   </li>
