@@ -673,6 +673,7 @@ def aaq(
             "images": images,
             "products": config.products,
             "current_product": product_config,
+            "current_step": step,
         },
     )
 
