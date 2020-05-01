@@ -2,6 +2,7 @@ import logging
 import re
 import time
 import traceback
+import json
 from datetime import datetime
 
 from django.conf import settings
@@ -476,6 +477,35 @@ class AccountEvent(models.Model):
             if self.event_type == self.DELETE_USER:
                 self.profile.delete()
                 self.profile = None
+                self.status = self.PROCESSED
+                self.save()
+            elif self.event_type == self.SUBSCRIPTION_STATE_CHANGE:
+                event = json.loads(
+                    self.events
+                )["https://schemas.accounts.firefox.com/event/subscription-state-change"]
+
+                try:
+                    last_event_obj = AccountEvent.objects.filter(
+                        profile_id=self.profile.pk,
+                        status=self.PROCESSED,
+                        event_type=self.SUBSCRIPTION_STATE_CHANGE
+                    ).order_by("last_modified")[0]
+                except IndexError:
+                    pass
+                else:
+                    last_event = json.loads(
+                        last_event_obj.events
+                    )["https://schemas.accounts.firefox.com/event/subscription-state-change"]
+                    if last_event["changeTime"] > event["changeTime"]:
+                        self.status = self.IGNORED
+                        self.save()
+                        return
+
+                products = Product.objects.filter(codename__in=event["capabilities"])
+                if event["isActive"]:
+                    self.profile.products.add(*products)
+                else:
+                    self.profile.products.remove(*products)
                 self.status = self.PROCESSED
                 self.save()
             else:
