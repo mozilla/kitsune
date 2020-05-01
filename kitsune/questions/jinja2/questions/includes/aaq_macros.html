@@ -44,7 +44,7 @@
   <ul class="progress">
     <li class="progress--item {% if step > 1 %}is-complete{% elif step == 1 %}is-current{% endif %}">
       <a class="progress--link"
-        {% if step > 1 %}
+        {% if step > 1 and step < 4 %}
           href="{{ url('questions.aaq_step1') }}"
         {% else %}
           href="#" disabled

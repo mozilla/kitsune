@@ -641,12 +641,16 @@ def aaq(
         # Submitting the question counts as a vote
         question_vote(request, question.id)
 
+        my_questions_url = urlparams(reverse('search.advanced'), a=1, asked_by=request.user, w=2)
         messages.add_message(
             request,
             messages.SUCCESS,
             _(
-                "Done! Your question is now posted on the Mozilla community support forum."
-            ),
+                "Done! Your question is now posted on the Mozilla community support forum. " +
+                "You can see your post anytime by visiting the {a_open}My Questions" +
+                "{a_close} page in your profile."
+            ).format(a_open="<a href='" + my_questions_url + "'>", a_close="</a>"),
+            extra_tags="safe"
         )
 
         # Done with AAQ.
