@@ -74,7 +74,7 @@ MSG_CONTENT_LONG = _lazy(
     u"%(limit_value)s characters or less. It is "
     u"currently %(show_value)s characters."
 )
-MSG_CATEGORY_REQUIRED= _lazy("Please select a topic.")
+MSG_CATEGORY_REQUIRED = _lazy("Please select a topic.")
 
 REPLY_PLACEHOLDER = _lazy(u"Enter your reply here.")
 
