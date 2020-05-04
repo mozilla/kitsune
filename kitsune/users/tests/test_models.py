@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.forms import SettingsForm
@@ -126,6 +127,38 @@ class AccountEventTests(TestCase):
         )
 
         account_event_2.process()
+        eq_(account_event_2.status, AccountEvent.IGNORED)
+
+    def test_process_password_change(self):
+        profile = ProfileFactory()
+        account_event_1 = AccountEventFactory(
+            events=json.dumps({
+                "https://schemas.accounts.firefox.com/event/password-change": {
+                    "changeTime": 2000
+                }
+            }),
+            event_type=AccountEvent.PASSWORD_CHANGE,
+            status=AccountEvent.UNPROCESSED,
+            profile=profile
+        )
+
+        account_event_1.process()
+        eq_(profile.password_change_time, datetime.utcfromtimestamp(2))
+        eq_(account_event_1.status, AccountEvent.PROCESSED)
+
+        account_event_2 = AccountEventFactory(
+            events=json.dumps({
+                "https://schemas.accounts.firefox.com/event/password-change": {
+                    "changeTime": 1000
+                }
+            }),
+            event_type=AccountEvent.PASSWORD_CHANGE,
+            status=AccountEvent.UNPROCESSED,
+            profile=profile
+        )
+
+        account_event_2.process()
+        eq_(profile.password_change_time, datetime.utcfromtimestamp(2))
         eq_(account_event_2.status, AccountEvent.IGNORED)
 
     def test_process_unimplemented(self):

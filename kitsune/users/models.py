@@ -82,6 +82,7 @@ class Profile(ModelBase, SearchMixin):
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
     fxa_avatar = models.URLField(max_length=512, blank=True, default='')
     products = models.ManyToManyField(Product, related_name='subscribed_users')
+    password_change_time = models.DateTimeField(blank=True, null=True)
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
@@ -506,6 +507,23 @@ class AccountEvent(models.Model):
                     self.profile.products.add(*products)
                 else:
                     self.profile.products.remove(*products)
+                self.status = self.PROCESSED
+                self.save()
+            elif self.event_type == self.PASSWORD_CHANGE:
+                event = json.loads(
+                    self.events
+                )["https://schemas.accounts.firefox.com/event/password-change"]
+
+                change_time = datetime.utcfromtimestamp(event["changeTime"] / 1000.0)
+
+                if (isinstance(self.profile.password_change_time, datetime) and
+                        self.profile.password_change_time > change_time):
+                    self.status = self.IGNORED
+                    self.save()
+                    return
+
+                self.profile.password_change_time = change_time
+                self.profile.save()
                 self.status = self.PROCESSED
                 self.save()
             else:
