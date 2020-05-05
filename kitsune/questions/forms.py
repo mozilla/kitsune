@@ -2,10 +2,14 @@ import json
 from datetime import date, timedelta
 
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.questions.marketplace import submit_ticket
-from kitsune.questions.models import Answer
+from kitsune.questions.models import Answer, Question
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.upload.models import ImageAttachment
+from kitsune.products.models import Topic
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy(u"URL of affected site")
@@ -38,11 +42,6 @@ FREQUENCY_CHOICES = [
 STARTED_LABEL = _lazy(u"This started when...")
 TITLE_LABEL = _lazy(u"Subject")
 CONTENT_LABEL = _lazy(u"How can we help?")
-EMAIL_LABEL = _lazy(u"Email")
-EMAIL_HELP = _lazy(
-    u"A confirmation email will be sent to this address in "
-    u"order to post your question."
-)
 FF_VERSION_LABEL = _lazy(u"Firefox version")
 OS_LABEL = _lazy(u"Operating system")
 PLUGINS_LABEL = _lazy(u"Installed plugins")
@@ -162,18 +161,8 @@ class EditQuestionForm(forms.Form):
         )
         self.fields["title"] = title_field
 
-        if isinstance(self, NewQuestionForm) and product and product.get("categories"):
-            category_choices = [
-                (key, value["name"]) for key, value in product["categories"].items()
-            ]
-            category_field = forms.ChoiceField(
-                label=CATEGORY_LABEL,
-                choices=[("", "Please select")] + category_choices,
-                error_messages={
-                    "required": MSG_CATEGORY_REQUIRED
-                }
-            )
-            self.fields["category"] = category_field
+        if isinstance(self, NewQuestionForm):
+            self.fields["category"] = forms.ChoiceField()
 
         content_error_messages = {
             "required": MSG_CONTENT_REQUIRED,
@@ -321,6 +310,20 @@ class NewQuestionForm(EditQuestionForm):
             product=product, *args, **kwargs
         )
 
+        if product:
+            category_choices = [
+                (key, value["name"]) for key, value in product["categories"].items()
+            ]
+            category_choices.insert(0, ("", "Please select"))
+            category_field = forms.ChoiceField(
+                label=CATEGORY_LABEL,
+                choices=category_choices,
+                error_messages={
+                    "required": MSG_CATEGORY_REQUIRED
+                }
+            )
+            self.fields["category"] = category_field
+
         # Collect user agent only when making a question for the first time.
         # Otherwise, we could grab moderators' user agents.
         self.fields["useragent"] = forms.CharField(
@@ -332,6 +335,48 @@ class NewQuestionForm(EditQuestionForm):
             initial=True,
             required=False
         )
+
+    def save(self, user, locale, product, product_config):
+
+        question = Question(
+            creator=user,
+            title=self.cleaned_data["title"],
+            content=self.cleaned_data["content"],
+            locale=locale,
+            product=product
+        )
+
+        category_config = product_config['categories'][self.cleaned_data['category']]
+        if category_config:
+            t = category_config.get("topic")
+            if t:
+                question.topic = Topic.objects.get(slug=t, product=product)
+
+        question.save()
+
+        if self.cleaned_data.get('notifications', False):
+            QuestionReplyEvent.notify(question.creator, question)
+
+        user_ct = ContentType.objects.get_for_model(user)
+        qst_ct = ContentType.objects.get_for_model(question)
+        # Move over to the question all of the images I added to the reply form
+        up_images = ImageAttachment.objects.filter(
+            creator=user, content_type=user_ct
+        )
+        up_images.update(content_type=qst_ct, object_id=question.id)
+
+        # User successfully submitted a new question
+        question.add_metadata(**self.cleaned_metadata)
+
+        if product_config:
+            # TODO: This add_metadata call should be removed once we are
+            # fully IA-driven (sync isn't special case anymore).
+            question.add_metadata(product=product_config["key"])
+
+        # The first time a question is saved, automatically apply some tags:
+        question.auto_tag()
+
+        return question
 
 
 class AnswerForm(forms.Form):

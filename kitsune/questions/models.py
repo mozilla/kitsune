@@ -154,7 +154,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def clear_cached_contributors(self):
         cache.delete(self.contributors_cache_key % self.id)
 
-    def save(self, update=False, notifications=True, *args, **kwargs):
+    def save(self, update=False, *args, **kwargs):
         """Override save method to take care of updated if requested."""
         new = not self.id
 
@@ -166,13 +166,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         super(Question, self).save(*args, **kwargs)
 
         if new:
-            # Tidings
-            # Avoid circular import, events.py imports Question
-            from kitsune.questions.events import QuestionReplyEvent
-
-            if notifications:
-                QuestionReplyEvent.notify(self.creator, self)
-
             # actstream
             # Authors should automatically follow their own questions.
             actstream.actions.follow(

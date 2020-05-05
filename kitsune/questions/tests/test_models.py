@@ -11,7 +11,6 @@ from taggit.models import Tag
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
 from kitsune.questions import config, models
-from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import (
     AlreadyTakenException,
     Answer,
@@ -313,24 +312,6 @@ class QuestionTests(TestCaseBase):
             Question._default_manager.__class__,
             kitsune.questions.managers.QuestionManager,
         )
-
-    def test_notification_created(self):
-        """Creating a new question auto-watches it for answers."""
-
-        u = UserFactory()
-        q = QuestionFactory(creator=u, title="foo", content="bar")
-
-        assert QuestionReplyEvent.is_notifying(u, q)
-
-    def test_no_notification_on_update(self):
-        """Saving an existing question does not watch it."""
-
-        q = QuestionFactory()
-        QuestionReplyEvent.stop_notifying(q.creator, q)
-        assert not QuestionReplyEvent.is_notifying(q.creator, q)
-
-        q.save()
-        assert not QuestionReplyEvent.is_notifying(q.creator, q)
 
     def test_is_solved_property(self):
         a = AnswerFactory()

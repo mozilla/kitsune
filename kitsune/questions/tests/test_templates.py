@@ -725,12 +725,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[1],
+            mail.outbox[0],
             to=["some@bo.dy"],
             subject="Please confirm your email address",
         )
-        assert "questions/confirm/" in mail.outbox[1].body
-        assert "New answers" in mail.outbox[1].body
+        assert "questions/confirm/" in mail.outbox[0].body
+        assert "New answers" in mail.outbox[0].body
 
         # Now activate the watch.
         w = Watch.objects.get()
@@ -809,12 +809,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[1],
+            mail.outbox[0],
             to=["some@bo.dy"],
             subject="Please confirm your email address",
         )
-        assert "questions/confirm/" in mail.outbox[1].body
-        assert "Solution found" in mail.outbox[1].body
+        assert "questions/confirm/" in mail.outbox[0].body
+        assert "Solution found" in mail.outbox[0].body
 
         # Now activate the watch.
         w = Watch.objects.get()

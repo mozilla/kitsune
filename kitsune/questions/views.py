@@ -425,7 +425,7 @@ def question_details(
     extra_kwargs.update(ans_)
 
     products = Product.objects.filter(visible=True)
-    topics = topics_for(product=question.product)
+    topics = topics_for(product=question.product, parent=None)
 
     related_documents = question.related_documents
     related_questions = question.related_questions
@@ -510,8 +510,6 @@ def aaq(
 
         return HttpResponseRedirect(path)
 
-    is_mobile_device = get_user_agent(request).is_mobile
-
     product_key = product_key or request.GET.get("product")
 
     if product_key is None:
@@ -520,9 +518,12 @@ def aaq(
         if request.GET.get("q") == "change_product":
             change_product = True
 
+        is_mobile_device = get_user_agent(request).is_mobile
+
         if is_mobile_device and not change_product:
             user_agent = request.META.get("HTTP_USER_AGENT", "")
             product_key = get_mobile_product_from_ua(user_agent)
+            step = 2
 
     product_config = config.products.get(product_key)
     if product_key and not product_config:
@@ -560,19 +561,14 @@ def aaq(
         featured = []
         topics = []
 
-        if step == 1:
-            statsd.incr("questions.aaq.select-product")
-        elif step == 2:
-            statsd.incr("questions.aaq.explore-solutions")
-            if not deadend:
-                featured = get_featured_articles(product)
-                topics = topics_for(product)
+        if step == 2 and not deadend:
+            featured = get_featured_articles(product)
+            topics = topics_for(product)
         elif step == 3:
             form = NewQuestionForm(
                 product=product_config,
                 initial={"category": category_key},
             )
-            statsd.incr("questions.aaq.details-form")
 
         return render(
             request,
@@ -585,7 +581,6 @@ def aaq(
                 "current_step": step,
                 "deadend": deadend,
                 "host": Site.objects.get_current().domain,
-                "is_mobile_device": is_mobile_device,
                 "featured": featured,
                 "topics": topics
             },
@@ -599,44 +594,13 @@ def aaq(
     if "upload_image" in request.POST:
         upload_imageattachment(request, request.user)
 
-    user_ct = ContentType.objects.get_for_model(request.user)
-
     if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
-        question = Question(
-            creator=request.user,
-            title=form.cleaned_data["title"],
-            content=form.cleaned_data["content"],
+        question = form.save(
+            user=request.user,
             locale=request.LANGUAGE_CODE,
+            product=product,
+            product_config=product_config,
         )
-
-        question.product = product
-
-        category_config = product_config['categories'][form.cleaned_data['category']]
-        if category_config:
-            t = category_config.get("topic")
-            if t:
-                question.topic = Topic.objects.get(slug=t, product=product)
-
-        question.save(notifications=form.cleaned_data.get('notifications', False))
-
-        qst_ct = ContentType.objects.get_for_model(question)
-        # Move over to the question all of the images I added to the reply form
-        up_images = ImageAttachment.objects.filter(
-            creator=request.user, content_type=user_ct
-        )
-        up_images.update(content_type=qst_ct, object_id=question.id)
-
-        # User successfully submitted a new question
-        statsd.incr("questions.new")
-        question.add_metadata(**form.cleaned_metadata)
-
-        if product_config:
-            # TODO: This add_metadata call should be removed once we are
-            # fully IA-driven (sync isn't special case anymore).
-            question.add_metadata(product=product_config["key"])
-
-        # The first time a question is saved, automatically apply some tags:
-        question.auto_tag()
 
         # Submitting the question counts as a vote
         question_vote(request, question.id)
@@ -664,11 +628,11 @@ def aaq(
     if getattr(request, "limited", False):
         raise PermissionDenied
 
+    user_ct = ContentType.objects.get_for_model(request.user)
     images = ImageAttachment.objects.filter(
         creator=request.user, content_type=user_ct,
     ).order_by("-id")[:IMG_LIMIT]
 
-    statsd.incr("questions.aaq.details-form-error")
     return render(
         request,
         template,
