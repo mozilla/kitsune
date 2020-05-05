@@ -425,7 +425,7 @@ def question_details(
     extra_kwargs.update(ans_)
 
     products = Product.objects.filter(visible=True)
-    topics = topics_for(product=question.product, parent=None)
+    topics = topics_for(product=question.product)
 
     related_documents = question.related_documents
     related_questions = question.related_questions
@@ -563,7 +563,7 @@ def aaq(
 
         if step == 2 and not deadend:
             featured = get_featured_articles(product)
-            topics = topics_for(product)
+            topics = topics_for(product, parent=None)
         elif step == 3:
             form = NewQuestionForm(
                 product=product_config,
