@@ -137,3 +137,4 @@ app:
     wsgi_keep_alive: 60
     disable_feeds: False
     user_agent_filters: "360spider,semrushBot"
+    sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
