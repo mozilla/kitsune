@@ -1191,4 +1191,4 @@ EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
 ]
 
 # Substring to match in slug in order to display the SUMO CTA banner
-SUMO_BANNER_STRING = config('SUMO_BANNER_STRING', default='')
+SUMO_BANNER_STRING = config('SUMO_BANNER_STRING', default='', cast=Csv())

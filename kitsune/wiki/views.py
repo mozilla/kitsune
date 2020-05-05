@@ -223,7 +223,7 @@ def document(request, document_slug, document=None):
         settings.SUMO_BANNER_STRING and
         doc_for_banner and not
         request.user.is_authenticated() and
-        re.search(settings.SUMO_BANNER_STRING, doc_for_banner.slug)
+        any(x in doc_for_banner.slug for x in settings.SUMO_BANNER_STRING)
     ):
         show_cta_banner = True
 

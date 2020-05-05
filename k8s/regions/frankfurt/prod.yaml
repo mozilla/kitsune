@@ -136,3 +136,4 @@ app:
     disable_questions_list_all: False
     disable_feeds: False
     sentry_dsn: SECRET
+    sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
