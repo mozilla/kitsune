@@ -635,11 +635,7 @@ def aaq(
             creator=request.user, content_type=user_ct,
         ).order_by("-id")[:IMG_LIMIT]
 
-    return render(
-        request,
-        template,
-        context
-    )
+    return render(request, template, context)
 
 
 @ssl_required
