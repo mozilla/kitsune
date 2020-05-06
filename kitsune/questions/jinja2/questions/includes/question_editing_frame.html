@@ -99,7 +99,7 @@ we can compute the edit-title URL.
               {% endfor %}
               <ul class="form-as-ul full-width">
                 {% set li_class='' %}
-                {% for field in form.visible_fields() %}
+                {% for field in form.visible_fields() if not field.name == 'notifications' %}
 
                   {% if field.name == 'ff_version' or field.name == 'device' %}
                     <li class="system-details-info show">
@@ -116,18 +116,14 @@ we can compute the edit-title URL.
                     {% endif %}
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
-                    {% if field.name == 'notifications' %}
-                      {{ checkbox(field) }}
-                    {% else %}
-                      {{ field.label_tag()|safe }}
+                    {{ field.label_tag()|safe }}
 
-                      {% if field.name == 'content' %}
-                        {{ content_editor(field) }}
-                      {% elif field.name == 'troubleshooting' %}
-                        {{ troubleshooting_instructions(field) }}
-                      {% else %}
-                        {{ field|safe }}
-                      {% endif %}
+                    {% if field.name == 'content' %}
+                      {{ content_editor(field) }}
+                    {% elif field.name == 'troubleshooting' %}
+                      {{ troubleshooting_instructions(field) }}
+                    {% else %}
+                      {{ field|safe }}
                     {% endif %}
 
                     {% if field.help_text and field.name != 'troubleshooting' %}
@@ -147,6 +143,12 @@ we can compute the edit-title URL.
                     </li>
                   {% endif %}
                 {% endfor %}
+
+                {% if form.notifications %}
+                  <li class="cf">
+                    {{ checkbox(form.notifications) }}
+                  </li>
+                {% endif %}
               </ul>
 
               <div class="hide-on-large">
