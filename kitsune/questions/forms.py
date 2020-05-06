@@ -50,31 +50,6 @@ DEVICE_LABEL = _lazy(u"Mobile device")
 CATEGORY_LABEL = _lazy(u"Which topic best describes your question?")
 NOTIFICATIONS_LABEL = _lazy(u"Email me when someone answers the thread")
 
-# Validation error messages
-MSG_TITLE_REQUIRED = _lazy(u"Please provide a question.")
-MSG_TITLE_SHORT = _lazy(
-    u"Your question is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
-)
-MSG_TITLE_LONG = _lazy(
-    u"Please keep the length of your question to "
-    u"%(limit_value)s characters or less. It is currently "
-    u"%(show_value)s characters."
-)
-MSG_CONTENT_REQUIRED = _lazy(u"Please provide content.")
-MSG_CONTENT_SHORT = _lazy(
-    u"Your content is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
-)
-MSG_CONTENT_LONG = _lazy(
-    u"Please keep the length of your content to "
-    u"%(limit_value)s characters or less. It is "
-    u"currently %(show_value)s characters."
-)
-MSG_CATEGORY_REQUIRED = _lazy("Please select a topic.")
-
 REPLY_PLACEHOLDER = _lazy(u"Enter your reply here.")
 
 # Marketplace AAQ form
@@ -129,8 +104,26 @@ DEVELOPER_REQUEST_CATEGORY_CHOICES = [
 ]
 
 
-class EditQuestionForm(forms.Form):
+class EditQuestionForm(forms.ModelForm):
     """Form to edit an existing question"""
+
+    title = forms.CharField(
+        label=TITLE_LABEL,
+        min_length=5
+    )
+
+    content = forms.CharField(
+        label=CONTENT_LABEL,
+        min_length=5,
+        widget=forms.Textarea()
+    )
+
+    class Meta:
+        model = Question
+        fields = [
+            'title',
+            'content',
+        ]
 
     def __init__(self, product=None, *args, **kwargs):
         """Init the form.
@@ -145,38 +138,6 @@ class EditQuestionForm(forms.Form):
 
         if product:
             extra_fields += product.get("extra_fields", [])
-
-        #  Add the fields to the form
-        title_error_messages = {
-            "required": MSG_TITLE_REQUIRED,
-            "min_length": MSG_TITLE_SHORT,
-            "max_length": MSG_TITLE_LONG,
-        }
-        title_field = forms.CharField(
-            label=TITLE_LABEL,
-            min_length=5,
-            max_length=160,
-            widget=forms.TextInput(),
-            error_messages=title_error_messages,
-        )
-        self.fields["title"] = title_field
-
-        if isinstance(self, NewQuestionForm):
-            self.fields["category"] = forms.ChoiceField()
-
-        content_error_messages = {
-            "required": MSG_CONTENT_REQUIRED,
-            "min_length": MSG_CONTENT_SHORT,
-            "max_length": MSG_CONTENT_LONG,
-        }
-        field = forms.CharField(
-            label=CONTENT_LABEL,
-            min_length=5,
-            max_length=10000,
-            widget=forms.Textarea(),
-            error_messages=content_error_messages,
-        )
-        self.fields["content"] = field
 
         if "sites_affected" in extra_fields:
             field = forms.CharField(
@@ -304,6 +265,29 @@ class EditQuestionForm(forms.Form):
 class NewQuestionForm(EditQuestionForm):
     """Form to start a new question"""
 
+    category = forms.ChoiceField(
+        label=CATEGORY_LABEL,
+        choices=[],
+    )
+
+    # Collect user agent only when making a question for the first time.
+    # Otherwise, we could grab moderators' user agents.
+    useragent = forms.CharField(
+        widget=forms.HiddenInput(), required=False
+    )
+
+    notifications = forms.BooleanField(
+        label=NOTIFICATIONS_LABEL,
+        initial=True,
+        required=False
+    )
+
+    field_order = [
+        'title',
+        'category',
+        'content'
+    ]
+
     def __init__(self, product=None, *args, **kwargs):
         """Add fields particular to new questions."""
         super(NewQuestionForm, self).__init__(
@@ -315,44 +299,20 @@ class NewQuestionForm(EditQuestionForm):
                 (key, value["name"]) for key, value in product["categories"].items()
             ]
             category_choices.insert(0, ("", "Please select"))
-            category_field = forms.ChoiceField(
-                label=CATEGORY_LABEL,
-                choices=category_choices,
-                error_messages={
-                    "required": MSG_CATEGORY_REQUIRED
-                }
-            )
-            self.fields["category"] = category_field
+            self.fields["category"].choices = category_choices
 
-        # Collect user agent only when making a question for the first time.
-        # Otherwise, we could grab moderators' user agents.
-        self.fields["useragent"] = forms.CharField(
-            widget=forms.HiddenInput(), required=False
-        )
-
-        self.fields["notifications"] = forms.BooleanField(
-            label=NOTIFICATIONS_LABEL,
-            initial=True,
-            required=False
-        )
-
-    def save(self, user, locale, product, product_config):
-
-        question = Question(
-            creator=user,
-            title=self.cleaned_data["title"],
-            content=self.cleaned_data["content"],
-            locale=locale,
-            product=product
-        )
+    def save(self, user, locale, product, product_config, *args, **kwargs):
+        self.instance.creator = user
+        self.instance.locale = locale
+        self.instance.product = product
 
         category_config = product_config['categories'][self.cleaned_data['category']]
         if category_config:
             t = category_config.get("topic")
             if t:
-                question.topic = Topic.objects.get(slug=t, product=product)
+                self.instance.topic = Topic.objects.get(slug=t, product=product)
 
-        question.save()
+        question = super(NewQuestionForm, self).save(*args, **kwargs)
 
         if self.cleaned_data.get('notifications', False):
             QuestionReplyEvent.notify(question.creator, question)
@@ -386,12 +346,7 @@ class AnswerForm(forms.Form):
         label=_lazy("Content:"),
         min_length=5,
         max_length=10000,
-        widget=forms.Textarea(attrs={"placeholder": REPLY_PLACEHOLDER}),
-        error_messages={
-            "required": MSG_CONTENT_REQUIRED,
-            "min_length": MSG_CONTENT_SHORT,
-            "max_length": MSG_CONTENT_LONG,
-        },
+        widget=forms.Textarea(attrs={"placeholder": REPLY_PLACEHOLDER})
     )
 
     class Meta:
