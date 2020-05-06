@@ -6,14 +6,6 @@
 </div>
 {%- endmacro %}
 
-{% macro notification_fxa_created(static_url) -%}
-<div id="fxa-notification-created" class="mzp-c-notification-bar mzp-t-warning">
-  <button class="mzp-c-notification-bar-button" type="button"></button>
-  <p><strong>{{ _('Welcome!') }}</strong> {{ _('You are now logged in using Firefox Accounts. Already have a different Mozilla Support Account?') }}
-  <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq" class="button dark">{{ _('Read More') }}</a></p>
-</div>
-{%- endmacro %}
-
 {% macro notification_already_migrated(static_url) -%}
 <div id="fxa-notification-already-migrated" class="mzp-c-notification-bar mzp-t-warning">
   <button class="mzp-c-notification-bar-button" type="button"></button>

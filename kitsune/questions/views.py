@@ -480,7 +480,6 @@ def edit_details(request, question_id):
 
 
 @ssl_required
-@login_required
 def aaq(
     request, product_key=None, category_key=None, step=1
 ):
@@ -644,6 +643,7 @@ def aaq_step2(request, product_key):
     return aaq(request, product_key=product_key, step=2)
 
 
+@login_required
 @ssl_required
 def aaq_step3(request, product_key, category_key=None):
     """Step 3: Show full question form."""
