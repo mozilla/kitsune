@@ -492,6 +492,7 @@ def aaq(
     # boot this user.
     request.session["in-aaq"] = True
 
+    # Check if any product forum has a locale in the user's current locale
     if (
         request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list()
         and request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE
@@ -510,8 +511,9 @@ def aaq(
 
         return HttpResponseRedirect(path)
 
+    # Check if the user is using a mobile device,
+    # render step 2 if they are
     product_key = product_key or request.GET.get("product")
-
     if product_key is None:
 
         change_product = False
@@ -525,19 +527,34 @@ def aaq(
             product_key = get_mobile_product_from_ua(user_agent)
             step = 2
 
+    # Return 404 if the product doesn't exist in config
     product_config = config.products.get(product_key)
     if product_key and not product_config:
         raise Http404
 
+    # If the product is a deadend, render that
     deadend = product_config.get("deadend", False) if product_config else False
-    html = product_config.get("html") if product_config else None
+    if deadend:
+        html = product_config.get("html") if product_config else None
+        return render(
+            request,
+            template,
+            {
+                "current_product": product_config,
+                "current_html": html,
+                "current_step": 2,
+                "deadend": True,
+            },
+        )
 
-    if step > 1 and not deadend:
+    # If the selected product doesn't exist in DB, render a 404
+    if step > 1:
         try:
             product = Product.objects.get(slug=product_config["product"])
         except Product.DoesNotExist:
             raise Http404
         else:
+            # Check if the selected product has a forum in the user's locale
             if not product.questions_locales.filter(
                 locale=request.LANGUAGE_CODE
             ).count():
@@ -556,94 +573,69 @@ def aaq(
 
                 return HttpResponseRedirect(path)
 
-    if request.method == "GET":
-        form = None
-        featured = []
-        topics = []
+    context = {
+        "products": config.products,
+        "current_product": product_config,
+        "current_step": step,
+        "host": Site.objects.get_current().domain,
+    }
 
-        if step == 2 and not deadend:
-            featured = get_featured_articles(product)
-            topics = topics_for(product, parent=None)
-        elif step == 3:
-            form = NewQuestionForm(
-                product=product_config,
-                initial={"category": category_key},
+    if step == 2:
+        context["featured"] = get_featured_articles(product)
+        context["topics"] = topics_for(product, parent=None)
+    elif step == 3:
+        form = NewQuestionForm(
+            product=product_config, data=request.POST or None,
+            initial={"category": category_key},
+        )
+        context["form"] = form
+
+        # NOJS: upload image
+        if "upload_image" in request.POST:
+            upload_imageattachment(request, request.user)
+
+        if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
+            question = form.save(
+                user=request.user,
+                locale=request.LANGUAGE_CODE,
+                product=product,
+                product_config=product_config,
             )
 
-        return render(
-            request,
-            template,
-            {
-                "form": form,
-                "products": config.products,
-                "current_product": product_config,
-                "current_html": html,
-                "current_step": step,
-                "deadend": deadend,
-                "host": Site.objects.get_current().domain,
-                "featured": featured,
-                "topics": topics
-            },
-        )
+            # Submitting the question counts as a vote
+            question_vote(request, question.id)
 
-    form = NewQuestionForm(
-        product=product_config, data=request.POST
-    )
+            my_questions_url = urlparams(
+                reverse('search.advanced'), a=1, asked_by=request.user, w=2
+            )
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                _(
+                    "Done! Your question is now posted on the Mozilla community support forum. " +
+                    "You can see your post anytime by visiting the {a_open}My Questions" +
+                    "{a_close} page in your profile."
+                ).format(a_open="<a href='" + my_questions_url + "'>", a_close="</a>"),
+                extra_tags="safe"
+            )
 
-    # NOJS: upload image
-    if "upload_image" in request.POST:
-        upload_imageattachment(request, request.user)
+            # Done with AAQ.
+            request.session["in-aaq"] = False
 
-    if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
-        question = form.save(
-            user=request.user,
-            locale=request.LANGUAGE_CODE,
-            product=product,
-            product_config=product_config,
-        )
+            request.session['aaq-final-step'] = True
 
-        # Submitting the question counts as a vote
-        question_vote(request, question.id)
+            url = reverse("questions.details", kwargs={"question_id": question.id})
+            return HttpResponseRedirect(url)
 
-        my_questions_url = urlparams(reverse('search.advanced'), a=1, asked_by=request.user, w=2)
-        messages.add_message(
-            request,
-            messages.SUCCESS,
-            _(
-                "Done! Your question is now posted on the Mozilla community support forum. " +
-                "You can see your post anytime by visiting the {a_open}My Questions" +
-                "{a_close} page in your profile."
-            ).format(a_open="<a href='" + my_questions_url + "'>", a_close="</a>"),
-            extra_tags="safe"
-        )
+        if getattr(request, "limited", False):
+            raise PermissionDenied
 
-        # Done with AAQ.
-        request.session["in-aaq"] = False
+        user_ct = ContentType.objects.get_for_model(request.user)
+        context["images"] = ImageAttachment.objects.filter(
+            creator=request.user, content_type=user_ct,
+        ).order_by("-id")[:IMG_LIMIT]
 
-        request.session['aaq-final-step'] = True
-
-        url = reverse("questions.details", kwargs={"question_id": question.id})
-        return HttpResponseRedirect(url)
-
-    if getattr(request, "limited", False):
-        raise PermissionDenied
-
-    user_ct = ContentType.objects.get_for_model(request.user)
-    images = ImageAttachment.objects.filter(
-        creator=request.user, content_type=user_ct,
-    ).order_by("-id")[:IMG_LIMIT]
-
-    return render(
-        request,
-        template,
-        {
-            "form": form,
-            "images": images,
-            "products": config.products,
-            "current_product": product_config,
-            "current_step": step,
-        },
-    )
+    return render(request, template, context)
 
 
 @ssl_required
