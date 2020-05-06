@@ -30,7 +30,9 @@
 
 {% block breadcrumbs %}
 
-{# {{ progress_bar(4) }} #}
+{% if aaq_final_step %}
+  {{ progress_bar(4) }}
+{% endif %}
 {{ super() }}
 {% endblock %}
 

@@ -176,11 +176,9 @@ class NotificationsTests(TestCaseBase):
         post(self.client, 'questions.solve', args=[q.id, a.id])
 
         # Order of emails is not important.
-        # Note: we skip the first email because it is a reply notification
-        # to the asker.
-        attrs_eq(mail.outbox[1], to=[u.email],
+        attrs_eq(mail.outbox[0], to=[u.email],
                  subject='Solution found to Firefox Help question')
-        starts_with(mail.outbox[1].body, SOLUTION_EMAIL.format(
+        starts_with(mail.outbox[0].body, SOLUTION_EMAIL.format(
             to_user=display_name(u),
             replier=display_name(a.creator),
             title=q.title,
@@ -189,9 +187,9 @@ class NotificationsTests(TestCaseBase):
             answer_id=a.id,
             locale='en-US/'))
 
-        attrs_eq(mail.outbox[2], to=['anon@ymous.com'],
+        attrs_eq(mail.outbox[1], to=['anon@ymous.com'],
                  subject='Solution found to Firefox Help question')
-        starts_with(mail.outbox[2].body, SOLUTION_EMAIL_TO_ANONYMOUS.format(
+        starts_with(mail.outbox[1].body, SOLUTION_EMAIL_TO_ANONYMOUS.format(
             replier=display_name(a.creator),
             title=q.title,
             asker=display_name(q.creator),
@@ -258,9 +256,7 @@ class NotificationsTests(TestCaseBase):
 
         event.fire(exclude=q.creator)
 
-        # There should be a reply notification and a solved notification.
-        eq_(2, len(mail.outbox))
-        eq_('Solution found to Firefox Help question', mail.outbox[1].subject)
+        eq_('Solution found to Firefox Help question', mail.outbox[0].subject)
 
 
 class TestAnswerNotifications(TestCaseBase):
@@ -273,6 +269,7 @@ class TestAnswerNotifications(TestCaseBase):
         self._get_current_mock = mock.patch.object(Site.objects, 'get_current')
         self._get_current_mock.start().return_value.domain = 'testserver'
         self.question = QuestionFactory()
+        QuestionReplyEvent.notify(self.question.creator, self.question)
 
     def tearDown(self):
         super(TestAnswerNotifications, self).tearDown()

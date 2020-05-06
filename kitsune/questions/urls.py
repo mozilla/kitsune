@@ -31,12 +31,11 @@ urlpatterns = [
     url(r'^/new$', views.aaq, name='questions.aaq_step1'),
     url(r'^/new/(?P<product_key>[\w\-]+)$',
         views.aaq_step2, name='questions.aaq_step2'),
-    url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)$',
+    url(r'^/new/(?P<product_key>[\w\-]+)/form$',
         views.aaq_step3, name='questions.aaq_step3'),
-    url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)/search$',
-        views.aaq_step4, name='questions.aaq_step4'),
-    url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)/form$',
-        views.aaq_step5, name='questions.aaq_step5'),
+    # maintain backwards compatibility with old aaq urls:
+    url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)',
+        views.aaq_step3, name='questions.aaq_step3'),
 
     # AAQ flow for Marketplace
     url(r'^/marketplace$', views.marketplace, name='questions.marketplace_aaq'),
