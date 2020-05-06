@@ -573,19 +573,22 @@ def aaq(
 
                 return HttpResponseRedirect(path)
 
-    form = None
-    images = None
-    featured = []
-    topics = []
+    context = {
+        "products": config.products,
+        "current_product": product_config,
+        "current_step": step,
+        "host": Site.objects.get_current().domain,
+    }
 
     if step == 2:
-        featured = get_featured_articles(product)
-        topics = topics_for(product, parent=None)
+        context["featured"] = get_featured_articles(product)
+        context["topics"] = topics_for(product, parent=None)
     elif step == 3:
         form = NewQuestionForm(
             product=product_config, data=request.POST or None,
             initial={"category": category_key},
         )
+        context["form"] = form
 
         # NOJS: upload image
         if "upload_image" in request.POST:
@@ -628,23 +631,14 @@ def aaq(
             raise PermissionDenied
 
         user_ct = ContentType.objects.get_for_model(request.user)
-        images = ImageAttachment.objects.filter(
+        context["images"] = ImageAttachment.objects.filter(
             creator=request.user, content_type=user_ct,
         ).order_by("-id")[:IMG_LIMIT]
 
     return render(
         request,
         template,
-        {
-            "form": form,
-            "images": images,
-            "products": config.products,
-            "current_product": product_config,
-            "current_step": step,
-            "host": Site.objects.get_current().domain,
-            "featured": featured,
-            "topics": topics
-        },
+        context
     )
 
 
