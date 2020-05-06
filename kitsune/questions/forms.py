@@ -282,14 +282,11 @@ class NewQuestionForm(EditQuestionForm):
         required=False
     )
 
-    class Meta(EditQuestionForm.Meta):
-        fields = [
-            'title',
-            'category',
-            'content',
-            'useragent',
-            'notifications'
-        ]
+    field_order = [
+        'title',
+        'category',
+        'content'
+    ]
 
     def __init__(self, product=None, *args, **kwargs):
         """Add fields particular to new questions."""
