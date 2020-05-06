@@ -212,9 +212,13 @@
   <ul class="user-messages">
     {% for message in messages %}
       {% if not message.message.startswith('fxa_notification') %}
-      <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
+      <li class="mzp-c-notification-bar {% if message.level_tag %}mzp-t-{{ message.level_tag }}{% endif %}">
         <button class="mzp-c-notification-bar-button" type="button"></button>
-        <p>{{ message }}</p>
+        {% if "safe" in message.tags %}
+          <p>{{ message|safe }}</p>
+        {% else %}
+          <p>{{ message }}</p>
+        {% endif %}
       </li>
       {% endif %}
     {% endfor %}

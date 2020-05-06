@@ -166,13 +166,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         super(Question, self).save(*args, **kwargs)
 
         if new:
-            # Tidings
-            # Avoid circular import, events.py imports Question
-            from kitsune.questions.events import QuestionReplyEvent
-
-            # Authors should automatically watch their own questions.
-            QuestionReplyEvent.notify(self.creator, self)
-
             # actstream
             # Authors should automatically follow their own questions.
             actstream.actions.follow(

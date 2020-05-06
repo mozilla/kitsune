@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.contrib.auth.models import AnonymousUser
 from kitsune.questions.forms import NewQuestionForm, WatchQuestionForm
 from kitsune.questions.tests import TestCaseBase
@@ -41,28 +43,26 @@ class TestNewQuestionForm(TestCaseBase):
         """Test metadata_field_keys property."""
         # Test the default form
         form = NewQuestionForm()
-        expected = ['useragent']
+        expected = ['category', 'useragent']
         actual = form.metadata_field_keys
         eq_(expected, actual)
 
         # Test the form with a product
-        product = {'key': 'desktop',
-                   'name': 'Firefox on desktop',
-                   'extra_fields': ['troubleshooting', 'ff_version',
-                                    'os', 'plugins'], }
+        product = {
+            'key': 'desktop',
+            'name': 'Firefox on desktop',
+            'categories': OrderedDict([
+                ('cookies', {
+                    'name': 'Cookies',
+                    'topic': 'cookies',
+                    'tags': ['cookies'],
+                })
+            ]),
+            'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
+        }
         form = NewQuestionForm(product=product)
         expected = ['troubleshooting', 'ff_version', 'os',
-                    'plugins', 'useragent']
-        actual = form.metadata_field_keys
-        eq_(sorted(expected), sorted(actual))
-
-        # Test the form with a product and category
-        category = {'key': 'd6',
-                    'name': 'I have another kind of problem with Firefox',
-                    'extra_fields': ['frequency', 'started'], }
-        form = NewQuestionForm(product=product, category=category)
-        expected = ['frequency', 'started', 'troubleshooting',
-                    'ff_version', 'os', 'plugins', 'useragent']
+                    'plugins', 'useragent', 'category']
         actual = form.metadata_field_keys
         eq_(sorted(expected), sorted(actual))
 
@@ -70,10 +70,18 @@ class TestNewQuestionForm(TestCaseBase):
         """Test the cleaned_metadata property."""
         # Test with no metadata
         data = {'title': 'Lorem', 'content': 'ipsum', 'email': 't@t.com'}
-        product = {'key': 'desktop',
-                   'name': 'Firefox on desktop',
-                   'extra_fields': ['troubleshooting', 'ff_version',
-                                    'os', 'plugins'], }
+        product = {
+            'key': 'desktop',
+            'name': 'Firefox on desktop',
+            'categories': OrderedDict([
+                ('cookies', {
+                    'name': 'Cookies',
+                    'topic': 'cookies',
+                    'tags': ['cookies'],
+                })
+            ]),
+            'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
+        }
         form = NewQuestionForm(product=product, data=data)
         form.is_valid()
         expected = {}

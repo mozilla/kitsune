@@ -1,10 +1,8 @@
 {% extends "questions/includes/question_editing_frame.html" %}
-{% from "questions/includes/aaq_macros.html" import select_category %}
-{% from "questions/includes/aaq_macros.html" import select_product, aaq_search_form, current_articles_and_message with context %}
-{% from "search/includes/result.html" import search_result with context %}
+{% from "questions/includes/aaq_macros.html" import explore_solutions %}
+{% from "questions/includes/aaq_macros.html" import select_product %}
+{% from "questions/includes/aaq_macros.html" import render_deadend %}
 {% set title = _('Ask a Question') %}
-{% set can_edit_product = True %}
-{% set can_edit_category = True %}
 {% set no_headline = True %}
 {% set hide_locale_switcher = True %}
 {% set meta = [('robots', 'noindex')] %}
@@ -13,69 +11,24 @@
 
 {% block breadcrumbs %}{% endblock %}
 
-{% block product %}
-  {% if not current_product %}
+{% block formwrap %}
+  {% if current_step == 1 %}
     {{ select_product(products) }}
   {% else %}
     {{ super() }}
   {% endif %}
 {% endblock %}
 
-{% block category %}
-  {% if current_product and not current_category and current_product.categories %}
-    {{ select_category(current_product, search_box) }}
+{% block contentwrap %}
+  {% if current_step == 2 %}
+    {% if deadend %}
+      {{ render_deadend(current_product, current_html) }}
+    {% else %}
+      {{ explore_solutions(current_product, search_box, featured, topics) }}
+    {% endif %}
   {% else %}
     {{ super() }}
   {% endif %}
-{% endblock %}
-
-{% block articles_and_search_results %}
-  {% set form_header_set = False %}
-  {% if (current_articles or current_html) and not tried_search and not form %}
-    {{ current_articles_and_message(current_articles, current_category, current_html) }}
-    {% if not form and not deadend %}
-      {% set form_header_set = True %}
-    {% endif %}
-  {% endif %}
-
-  {% if current_category and ((current_articles or tried_search or current_html)
-    or not (current_articles and tried_search and current_html))
-    and not form and not deadend %}
-    {% if not form_header_set %}
-      <h2 id="summarize-question" class="sumo-page-subheading">{{ _('Summarize your question in a sentence') }}</h2>
-    {% endif %}
-    {{ aaq_search_form(current_product, current_category, settings, host, request, tried_search) }}
-  {% endif %}
-
-  {% if tried_search and not form %}
-  <div class="sumo-page-section">
-    {% if results %}
-      <h2 class="sumo-page-subheading">{{ _('Do any of these articles answer your question?') }}</h2>
-      <div class="highlight-box">
-        {% set button_text = _('None of these solve my problem') %}
-        <div class="search-results">
-          {% for result in results %}
-            {{ search_result(result) }}
-          {% endfor %}
-        </div>{# .search-results #}
-      </div>
-      {% else %}{# No search results at all. #}
-      <h2 class="sumo-page-subheading no-results">{{ _('This question has not been asked before.') }}</h2>
-      {% set button_text = _('Provide more details') %}
-    {% endif %}
-
-    <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
-      <input type="hidden" name="search" value="{{ request.GET.search }}" />
-      <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-      {% set ga_action = 'pre-registered question' if user.is_authenticated() else 'step 1 link' %}
-      <button type="submit" data-event-category="Ask A Question Flow" data-event-action="{{ ga_action }}" class="sumo-button primary-button">
-          {{ button_text }}
-      </button>
-    </form>
-  </div>
-  {% endif %}
-
-
 {% endblock %}
 
 {% block major_detail_instructions %}

@@ -11,8 +11,7 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import search_box, content_editor with context %}
-{% from "questions/includes/aaq_macros.html" import selected_category, progress_bar %}
-{% from "questions/includes/aaq_macros.html" import selected_product with context %}
+{% from "questions/includes/aaq_macros.html" import progress_bar %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
 
@@ -20,18 +19,12 @@ we can compute the edit-title URL.
 
 {% block contentwrap %}
 <div>
-  {% block category %}
   <article class="main mzp-l-content sumo-page-section--inner">
     {% if current_step %}
-      {{ progress_bar(current_step, product_key=current_product.product) }}
+      {{ progress_bar(current_step, product_key=current_product.key) }}
     {% endif %}
 
-    {% block product %}
-    {% endblock %}
-
-    {% block articles_and_search_results %}
-    {% endblock %}
-
+    {% block formwrap %}
     <div class="sumo-l-two-col" id="ask-question">
       <aside class="sumo-l-two-col--sidebar">
         {% if form %}
@@ -56,7 +49,7 @@ we can compute the edit-title URL.
       <article class="sumo-l-two-col--main">
 
         {% if not no_headline %}
-          <h1 class="sumo-page-heading">{% block headline %}Do Something to a Question{% endblock %}</h1>
+          <h1 class="sumo-page-heading">{% block headline %}{% endblock %}</h1>
         {% endif %}
         <div class="inner-wrap">
 
@@ -65,8 +58,7 @@ we can compute the edit-title URL.
             <form id="question-form" method="post">
               {% csrf_token %}
 
-              {# TODO: This needs an image from the DB. #}
-              <img class="page-heading--logo" src="https://user-media-stage-cdn.itsre-sumo.mozilla.net/uploads/products/2020-03-31-03-20-21-8dda6f.png" alt="{{ product_title }} logo" />
+              <img class="page-heading--logo" src="{{ image_for_product(current_product.product) }}" alt="{{ current_product.name }} logo" />
 
               {% if subproducts %}
               {# TODO: hook this up to the backend when subproducts are in. #}
@@ -78,15 +70,13 @@ we can compute the edit-title URL.
                 </ul>
               </div>
               {% else %}
-              {# TODO: un-hardcode this: #}
               <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
-                <a href="/questions/new">Firefox</a>
+                {{ current_product.name }}
               </h3>
               {% endif %}
 
 
               {% block major_detail_instructions %}
-                <h2>Do some stuff.</h2>
               {% endblock %}
               <p class="sumo-page-intro">
 
@@ -126,21 +116,25 @@ we can compute the edit-title URL.
                     {% endif %}
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
-                    {{ field.label_tag()|safe }}
-
-                    {% if field.name == 'content' %}
-                      {{ content_editor(field) }}
-                    {% elif field.name == 'troubleshooting' %}
-                      {{ troubleshooting_instructions(field) }}
+                    {% if field.name == 'notifications' %}
+                      {{ checkbox(field) }}
                     {% else %}
-                      {{ field|safe }}
+                      {{ field.label_tag()|safe }}
+
+                      {% if field.name == 'content' %}
+                        {{ content_editor(field) }}
+                      {% elif field.name == 'troubleshooting' %}
+                        {{ troubleshooting_instructions(field) }}
+                      {% else %}
+                        {{ field|safe }}
+                      {% endif %}
                     {% endif %}
 
                     {% if field.help_text and field.name != 'troubleshooting' %}
                       <p>{{ field.help_text|safe }}</p>
                     {% endif %}
 
-                    {% if field.name == 'title' %}
+                    {% if field.name != 'content' %}
                       {{ field.errors }}
                     {% endif %}
                   </li>
@@ -179,8 +173,8 @@ we can compute the edit-title URL.
       </article>
 
     </div>
+    {% endblock %}
   </article>
-  {% endblock %}
 </div>
 {% endblock %}
 
