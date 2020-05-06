@@ -302,18 +302,17 @@ class NewQuestionForm(EditQuestionForm):
             self.fields["category"].choices = category_choices
 
     def save(self, user, locale, product, product_config, *args, **kwargs):
-        question = super(NewQuestionForm, self).save(commit=False, *args, **kwargs)
-        question.creator = user
-        question.locale = locale
-        question.product = product
+        self.instance.creator = user
+        self.instance.locale = locale
+        self.instance.product = product
 
         category_config = product_config['categories'][self.cleaned_data['category']]
         if category_config:
             t = category_config.get("topic")
             if t:
-                question.topic = Topic.objects.get(slug=t, product=product)
+                self.instance.topic = Topic.objects.get(slug=t, product=product)
 
-        question.save()
+        question = super(NewQuestionForm, self).save(*args, **kwargs)
 
         if self.cleaned_data.get('notifications', False):
             QuestionReplyEvent.notify(question.creator, question)
