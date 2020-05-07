@@ -217,17 +217,23 @@ class AAQSearchTests(ElasticTestCase):
 
 
 class AAQTests(TestCaseBase):
+    def setUp(self):
+        product = ProductFactory(title="Firefox", slug="firefox")
+        for locale in QuestionLocale.objects.all():
+            product.questions_locales.add(locale)
+
     def test_non_authenticated_user(self):
         """
-        A non-authenticated user cannot access the AAQ flow and will be redirected to auth screen
+        A non-authenticated user cannot access the create question stage of the
+        AAQ flow and will be redirected to auth screen
         """
-        url = reverse("questions.aaq_step1")
+        url = reverse("questions.aaq_step3", args=["desktop"])
         response = self.client.get(url, follow=True)
         assert template_used(response, "users/auth.html")
 
     def test_inactive_user(self):
         """
-        An inactive user cannot access the AAQ flow
+        An inactive user cannot access the create question stage of the AAQ flow
         """
         user = UserFactory(is_superuser=False)
         self.client.login(username=user.username, password="testpass")
@@ -236,17 +242,17 @@ class AAQTests(TestCaseBase):
         user.is_active = False
         user.save()
 
-        url = reverse("questions.aaq_step1")
+        url = reverse("questions.aaq_step3", args=["desktop"])
         response = self.client.get(url, follow=True)
         assert not template_used(response, "questions/new_question.html")
 
     def test_authenticated_user(self):
         """
-        An active, authenticated user can access the AAQ flow
+        An active, authenticated user can access the create question stage of the AAQ flow
         """
         user = UserFactory(is_superuser=False)
         self.client.login(username=user.username, password="testpass")
-        url = reverse("questions.aaq_step1")
+        url = reverse("questions.aaq_step3", args=["desktop"])
         response = self.client.get(url, follow=True)
         assert not template_used(response, "users/auth.html")
         assert template_used(response, "questions/new_question.html")

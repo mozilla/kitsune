@@ -47,7 +47,7 @@ class FXAAuthBackendTests(TestCase):
         eq_(users[0].profile.locale, 'en-US')
         eq_(users[0].profile.name, 'Crazy Joe Davola')
         eq_(0, users[0].groups.count())
-        message_mock.info.assert_called_with(request_mock, 'fxa_notification_created')
+        message_mock.success.assert_called()
 
     @patch('kitsune.users.auth.messages')
     def test_create_new_contributor(self, message_mock):
@@ -76,10 +76,7 @@ class FXAAuthBackendTests(TestCase):
         users = User.objects.all()
         eq_(CONTRIBUTOR_GROUP, users[0].groups.all()[0].name)
         ok_('is_contributor' not in request_mock.session)
-        message_mock.info.assert_called_with(
-            request_mock,
-            'fxa_notification_created'
-        )
+        message_mock.success.assert_called()
 
     @patch('kitsune.users.auth.messages')
     def test_username_already_exists(self, message_mock):
@@ -97,10 +94,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.create_user(claims)
         user = User.objects.get(profile__fxa_uid='my_unique_fxa_id')
         eq_(user.username, 'bar1')
-        message_mock.info.assert_called_with(
-            request_mock,
-            'fxa_notification_created'
-        )
+        message_mock.success.assert_called()
 
     def test_login_fxa_uid_missing(self):
         """Test user filtering without FxA uid."""
