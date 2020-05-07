@@ -26,7 +26,13 @@
   }
 
   + .page-heading--intro-text {
-    margin-top: p.$spacing-lg;
+    &, & + .search-results-heading {
+      margin: p.$spacing-xl 0;
+
+      @media #{p.$mq-md} {
+        margin-bottom: 0;
+      }
+    }
   }
 }
 
