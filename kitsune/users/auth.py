@@ -48,7 +48,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         user = super(FXAAuthBackend, self).create_user(claims)
         # Create a user profile for the user and populate it with data from
         # Firefox Accounts
-        profile = Profile.objects.get_or_create(user=user)[0]
+        profile, created = Profile.objects.get_or_create(user=user)
         profile.is_fxa_migrated = True
         profile.fxa_uid = claims.get('uid')
         profile.fxa_avatar = claims.get('avatar', '')
@@ -77,9 +77,10 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                 'Already have a different Mozilla Support Account? ' +
                 '{a_more}Read more.{a_close}'
             ).format(
-                a_profile='<a href="' + reverse('users.edit_my_profile') + '">',
-                a_more='<a href="https://support.mozilla.org/en-US/kb/' +
-                'firefox-accounts-mozilla-support-faq">',
+                a_profile='<a href="' + reverse('users.edit_my_profile') + '" target="_blank">',
+                a_more='<a href="' +
+                reverse('wiki.document', args=['firefox-accounts-mozilla-support-faq']) +
+                '" target="_blank">',
                 a_close='</a>'
             ),
             extra_tags="safe"
