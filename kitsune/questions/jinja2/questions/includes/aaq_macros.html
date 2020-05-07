@@ -33,7 +33,7 @@
         </div>
         {% endfor %}
         <div class="card card--centered-button">
-          <a class="sumo-button primary-button button-lg" href="{{ url('questions.home') }}">{{ _('See All Product Forums')}}</a>
+          <a class="sumo-button primary-button button-lg" href="{{ url('questions.home') }}">{{ _('Browse All Product Forums')}}</a>
         </div>
       </div>
     </div>
@@ -128,29 +128,6 @@
       </div>
       {{ help_topics(topics, product_slug=product.product) }}
     </div>
-</section>
-</div>
-{%- endmacro %}
-
-{% macro render_deadend(product, html) -%}
-<section class="sumo-page-section question-masthead shade-bg">
-  <div class="mzp-l-content">
-
-    {{ progress_bar(2) }}
-
-    <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
-      <div class="sumo-l-two-col--main">
-        <img class="page-heading--logo" src="{{ image_for_product(product.product) }}" alt="{{ product.name }} logo">
-        <h1 class="sumo-page-heading ">
-          <span class="product-title-text">{{ product.name }}</span>
-        </h1>
-      </div>
-    </div>
-  </div>
-</section>
-<div class="wrap" id="main-content">
-<section class="mzp-l-content sumo-page-section--inner">
-  {{ html|safe }}
 </section>
 </div>
 {%- endmacro %}

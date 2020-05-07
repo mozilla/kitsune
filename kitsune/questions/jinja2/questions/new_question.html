@@ -21,11 +21,7 @@
 
 {% block contentwrap %}
   {% if current_step == 2 %}
-    {% if deadend %}
-      {{ render_deadend(current_product, current_html) }}
-    {% else %}
-      {{ explore_solutions(current_product, search_box, featured, topics) }}
-    {% endif %}
+    {{ explore_solutions(current_product, search_box, featured, topics) }}
   {% else %}
     {{ super() }}
   {% endif %}
