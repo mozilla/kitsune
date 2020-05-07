@@ -1,3 +1,4 @@
+import re
 from ast import literal_eval
 from uuid import uuid4
 
@@ -44,9 +45,13 @@ def user_auth(request, notification=None):
     """
     next_url = get_next_url(request) or reverse('home')
 
+    aaq = re.match(r"^/[\w\-]+/questions/new/([\w\-]+)/[\w\-]+$", next_url)
+    aaq_product = aaq.group(1) if aaq else None
+
     return render(request, 'users/auth.html', {
         'next_url': next_url,
-        'notification': notification
+        'notification': notification,
+        'aaq_product': aaq_product
     })
 
 

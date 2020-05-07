@@ -48,7 +48,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         user = super(FXAAuthBackend, self).create_user(claims)
         # Create a user profile for the user and populate it with data from
         # Firefox Accounts
-        profile, _ = Profile.objects.get_or_create(user=user)
+        profile, created = Profile.objects.get_or_create(user=user)
         profile.is_fxa_migrated = True
         profile.fxa_uid = claims.get('uid')
         profile.fxa_avatar = claims.get('avatar', '')
@@ -68,9 +68,23 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.products.clear()
         profile.products.add(*products)
 
-        # This is a new sumo profile, redirect to the edit profile page
-        self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
-        messages.info(self.request, 'fxa_notification_created')
+        # This is a new sumo profile, show edit profile message
+        messages.success(
+            self.request,
+            _(
+                '<strong>Welcome!</strong> You are now logged in using Firefox Accounts. ' +
+                '{a_profile}Edit your profile.{a_close}<br>' +
+                'Already have a different Mozilla Support Account? ' +
+                '{a_more}Read more.{a_close}'
+            ).format(
+                a_profile='<a href="' + reverse('users.edit_my_profile') + '" target="_blank">',
+                a_more='<a href="' +
+                reverse('wiki.document', args=['firefox-accounts-mozilla-support-faq']) +
+                '" target="_blank">',
+                a_close='</a>'
+            ),
+            extra_tags="safe"
+        )
 
         if self.request.session.get('is_contributor', False):
             add_to_contributors(user, self.request.LANGUAGE_CODE)

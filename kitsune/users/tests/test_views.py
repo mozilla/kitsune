@@ -147,14 +147,6 @@ class ProfileNotificationTests(TestCase):
         eq_(1, len(doc('#fxa-notification-updated')))
         eq_(0, len(doc('#fxa-notification-created')))
 
-    def test_fxa_notification_created(self):
-        request = self._get_request()
-        messages.info(request, 'fxa_notification_created')
-        response = edit_profile(request)
-        doc = pq(response.content)
-        eq_(0, len(doc('#fxa-notification-updated')))
-        eq_(1, len(doc('#fxa-notification-created')))
-
     def test_non_fxa_notification_created(self):
         request = self._get_request()
         text = 'This is a helpful piece of information'
