@@ -524,7 +524,8 @@ def aaq(
         if is_mobile_device and not change_product:
             user_agent = request.META.get("HTTP_USER_AGENT", "")
             product_key = get_mobile_product_from_ua(user_agent)
-            step = 2
+            if product_key:
+                step = 2
 
     # Return 404 if the product doesn't exist in config
     product_config = config.products.get(product_key)
