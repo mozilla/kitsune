@@ -95,14 +95,14 @@
         {{ search_box(settings, id='question-search-masthead', params=search_params) }}
 
         <p class="page-heading--intro-text">
-            {{ _('Search your question or keywords to find solutions in the knowledge base or forums') }}
+            {{ _('Enter your question or keywords to find solutions in the knowledge base or forums') }}
         </p>
       </div>
       <div class="sumo-l-two-col--sidebar">
         <div class="card elevation-01 text-center radius-md">
           <h2 class="card--title has-bottom-margin">{{ _('Ask the Community') }}</h2>
           <p>{{ _('Sign in/up to post your question and get help.') }}</p>
-          <a class="sumo-button primary-button feature-box" href="{{ url('questions.aaq_step3', product_key=product.key) }}">Ask a Question</a>
+          <a class="sumo-button primary-button feature-box" href="{{ url('questions.aaq_step3', product_key=product.key) }}">Ask Now</a>
         </div>
       </div>
     </div>
@@ -111,16 +111,14 @@
 <div class="wrap" id="main-content">
 <section class="mzp-l-content sumo-page-section--inner">
   <div class="text-center-to-left-on-large">
-    <h2 class="sumo-page-subheading">{{ _('Popular Articles') }}</h2>
+    <h2 class="sumo-page-subheading">{{ _('Featured Articles') }}</h2>
   </div>
   {% include "landings/includes/featured_articles.html" %}
 </section>
 <section class="sumo-page-section--inner hide-when-search-is-active highlight-box">
     <div class="mzp-l-content">
-      <div class="sumo-page-subheader">
-        <div class="sumo-page-subheader--text">
-          <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
-        </div>
+      <div class="text-center-to-left-on-large aaq-popular-topics">
+        <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
       </div>
       {{ help_topics(topics, product_slug=product.product) }}
     </div>
