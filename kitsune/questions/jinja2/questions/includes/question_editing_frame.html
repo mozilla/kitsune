@@ -18,7 +18,7 @@ we can compute the edit-title URL.
 {% set hide_aaq_link = True %}
 
 {% block contentwrap %}
-<div>
+<div id="main-content">
   <article class="main mzp-l-content sumo-page-section--inner">
     {% if current_step %}
       {{ progress_bar(current_step, product_key=current_product.key) }}
