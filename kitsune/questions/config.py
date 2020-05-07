@@ -470,22 +470,6 @@ products = OrderedDict([
             }),
         ])
     }),
-    ('other', {
-        'name': _lazy(u'Other Mozilla products'),
-        'subtitle': '',
-        'product': '',
-        'html': _lazy(u'This site only provides support for some of our products. '
-                      u'For other support, please find your product below.'
-                      u'<ul class="product-support">'
-                      u'<li><a href="http://www.seamonkey-project.org/doc/">'
-                      u'SeaMonkey support</a></li>'
-                      u'<li><a '
-                      u'href="/questions/new/thunderbird">'
-                      u'Lightning support</a></li>'
-                      u'</ul>'),
-        'categories': OrderedDict([]),
-        'deadend': True,
-    }),
 ])
 
 

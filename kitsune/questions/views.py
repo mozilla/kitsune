@@ -22,6 +22,11 @@ from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
 from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
+from ordereddict import OrderedDict
+from taggit.models import Tag
+from tidings.events import ActivationRequestFailed
+from tidings.models import Watch
+
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -39,7 +44,7 @@ from kitsune.questions.models import (Answer, AnswerVote, Question,
                                       QuestionVote)
 from kitsune.questions.signals import tag_added
 from kitsune.questions.utils import get_mobile_product_from_ua
-from kitsune.search.es_utils import (ES_EXCEPTIONS, F, Sphilastic)
+from kitsune.search.es_utils import ES_EXCEPTIONS, F, Sphilastic
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -52,10 +57,6 @@ from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import topics_for
 from kitsune.wiki.utils import get_featured_articles
-from ordereddict import OrderedDict
-from taggit.models import Tag
-from tidings.events import ActivationRequestFailed
-from tidings.models import Watch
 
 log = logging.getLogger("k.questions")
 
@@ -531,21 +532,6 @@ def aaq(
     product_config = config.products.get(product_key)
     if product_key and not product_config:
         raise Http404
-
-    # If the product is a deadend, render that
-    deadend = product_config.get("deadend", False) if product_config else False
-    if deadend:
-        html = product_config.get("html") if product_config else None
-        return render(
-            request,
-            template,
-            {
-                "current_product": product_config,
-                "current_html": html,
-                "current_step": 2,
-                "deadend": True,
-            },
-        )
 
     # If the selected product doesn't exist in DB, render a 404
     if step > 1:
