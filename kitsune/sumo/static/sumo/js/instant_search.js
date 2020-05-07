@@ -26,6 +26,7 @@
     $('#instant-search-content').remove();
     $('.search-form-large:visible').find('input[name=q]').focus().val('');
     $('#support-search').find('input[name=q]').val('');
+    $(".page-heading--intro-text").show();
     $(".home-search-section--content .search-results-heading").remove();
     $('.home-search-section .mzp-l-content').addClass('narrow');
     $('.hidden-search-masthead').hide();
@@ -52,8 +53,15 @@
     tabsInit();
 
     // remove and append search results heading
+    $(".page-heading--intro-text").hide();
     $(".home-search-section--content .search-results-heading").remove();
     $(".search-results-heading").appendTo(".home-search-section--content");
+
+    // change aaq link if we're in aaq flow
+    var in_aaq = $("#question-search-masthead").length > 0;
+    if (in_aaq) {
+      $("#search-results-aaq-link").attr("href", window.location + "/form");
+    }
   }
 
   window.k.InstantSearchSettings = {
