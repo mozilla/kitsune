@@ -51,7 +51,11 @@
         {% endif %}>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
-          <span class="progress--label">Select Product</span>
+          {% if step > 1 and step < 4 %}
+            <span class="progress--label">{{ _('Change Product') }}</span>
+          {% else %}
+            <span class="progress--label">{{ _('Select Product') }}</span>
+          {% endif %}
         </span>
       </a>
     </li>
@@ -64,7 +68,7 @@
         {% endif %}>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
-          <span class="progress--label">Explore Solutions</span>
+          <span class="progress--label">{{ _('Explore Solutions') }}</span>
         </span>
       </a>
     </li>
@@ -72,7 +76,7 @@
       <a class="progress--link" href="#" disabled>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
-          <span class="progress--label">Create Question</span>
+          <span class="progress--label">{{ _('Create Question') }}</span>
         </span>
       </a>
     </li>
