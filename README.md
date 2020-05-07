@@ -65,14 +65,6 @@ npm start
 
 The running instance in this case will be located at http://localhost:3000/.
 
-### Compiling LESS files
-
-By default, the `.less` files do not compile in local development because it impacts load times on OSX. If you are working on `.less` files, you can enable compilation with the following environment variable:
-
-  ```
-  echo "PIPELINE_COLLECTOR_ENABLED=True" >> .env
-  ```
-
 ### The Admin
 
 After the above you can do some optional steps if you want to use the admin:
