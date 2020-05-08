@@ -13,6 +13,7 @@
 
 {% block contentwrap %}
 
+{% set aaq_product = request.session.get('product_key') %}
 {% if aaq_product %}
   <section class="sumo-page-section question-masthead shade-bg">
     <div class="mzp-l-content">
@@ -36,7 +37,33 @@
         </figure>
         <div class="sumo-auth--form">
           <div id="login-fxa">
-            {% include "users/includes/login-fxa.html" %}
+            <article id="login" class="main login-form">
+              <div class="sumo-page-section">
+                <h1 class="sumo-page-heading">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
+                <p>
+                  {% if request.session.get('in-aaq') %}
+                    {{ _('Never miss an answer. A free Firefox Account lets you view your question history and track or post responses.')}}
+                  {% else %}
+                    {{ _('We upgraded our log-in system to replace Mozilla Support accounts with Firefox Accounts. Firefox Accounts
+                    offers one log-in for convenient and secure access to Mozilla services.') }}
+                    <a href="{{ url('wiki.document', 'firefox-accounts-mozilla-support-faq') }}"> {{ _('See our FAQ') }}</a>
+                    {{ _('for more information') }}.
+                  {% endif %}
+                </p>
+
+                <div class="center-on-mobile">
+                  <p class="login-button-wrap">
+                    <a href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}" class="sumo-button primary-button button-lg">{{ _('Continue with Firefox Accounts') }}</a>
+                  </p>
+
+                  <p class="help-text">
+                    {{ _('Continuing with Firefox Accounts means you have agreed with the
+                    <a href="https://www.mozilla.org/en-US/about/legal/terms/services/">Term and Conditions</a> and
+                    <a href="https://www.mozilla.org/en-US/privacy/firefox/">Privacy Policy</a>' | safe )}}.
+                  </p>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </div>
