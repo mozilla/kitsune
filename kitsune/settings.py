@@ -537,8 +537,9 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
 
+    'kitsune.sumo.middleware.InAAQMiddleware',
     'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
-    'kitsune.users.middleware.LogoutSumoAccountsMiddleware'
+    'kitsune.users.middleware.LogoutSumoAccountsMiddleware',
 )
 
 # SecurityMiddleware settings

@@ -7,23 +7,22 @@ from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
 from django.core.urlresolvers import is_valid_path
-from django.core.validators import validate_ipv4_address, ValidationError
+from django.core.validators import ValidationError, validate_ipv4_address
 from django.db.utils import DatabaseError
-from django.http import (HttpResponse, HttpResponseRedirect,
-                         HttpResponsePermanentRedirect, HttpResponseForbidden)
+from django.http import (HttpResponse, HttpResponseForbidden,
+                         HttpResponsePermanentRedirect, HttpResponseRedirect)
 from django.http.request import split_domain_port
 from django.shortcuts import render
 from django.utils import translation
-from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
+from django.utils.cache import (add_never_cache_headers,
+                                patch_response_headers, patch_vary_headers)
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
-
-from mozilla_django_oidc.middleware import SessionRefresh
 from enforce_host import EnforceHostMiddleware
+from mozilla_django_oidc.middleware import SessionRefresh
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
 from kitsune.sumo.views import handle403
-
 
 try:
     from django.utils.deprecation import MiddlewareMixin
@@ -278,3 +277,30 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
             response = HttpResponseRateLimited()
             patch_vary_headers(response, ['User-Agent'])
             return response
+
+
+class InAAQMiddleware(MiddlewareMixin):
+    """
+    Middleware that updates session's keys based on the view used.
+
+    aaq_* views -> in-aaq = True
+    """
+
+    def process_view(self, request, callback, callback_args, callback_kwargs):
+        # This key is used both in templates and the
+        # LogoutDeactivateUsersMiddleware
+
+        if not request.session or callback:
+            return None
+
+        view_name = callback.func_name
+        # If we are authenticating or there is no session, do nothing
+        if view_name in ['user_auth', 'login', 'serve_cors']:
+            return None
+        if 'aaq' in view_name:
+            request.session['in-aaq'] = True
+            request.session['product_key'] = callback_kwargs.get('product_key')
+        else:
+            request.session['in-aaq'] = False
+            request.session['product_key'] = ''
+        return None
