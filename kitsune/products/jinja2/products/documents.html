@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
 {% from 'includes/common_macros.html' import download_firefox %}
+{% from "questions/includes/aaq_macros.html" import aaq_widget %}
+
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
 {% if subtopic %}
   {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)), (None, pgettext('DB: products.Topic.title', subtopic.title))] %}
@@ -21,6 +23,11 @@
 <div class="search-form-sidebar large-only">
   {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
 </div>
+
+{% set aaq_product = request.session.get('product_key') %}
+{% if aaq_product %}
+  {{ aaq_widget(aaq_product, user, "topic") }}
+{% endif %}
 
 {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endblock %}
