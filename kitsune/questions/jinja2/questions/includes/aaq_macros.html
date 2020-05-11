@@ -76,7 +76,7 @@
       <a class="progress--link" href="#" disabled>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
-          <span class="progress--label">{{ _('Create Question') }}</span>
+          <span class="progress--label">{{ _('Ask Question') }}</span>
         </span>
       </a>
     </li>
@@ -176,6 +176,9 @@
 
         <a href="#troubleshooting-field" class="sumo-button link-button expander">{{ _('Show info') }} »</a>
       </div>
+      <div id="troubleshooting-field" class="hide-until-expanded field full-width">
+        {{ field }}
+      </div>
       <p>{% trans %}
           This information gives details about the internal workings of your
           browser that will help in answering your question. A window will
@@ -183,10 +186,6 @@
           automated way doesn't work, <a href="#">try these manual steps</a>.
          {% endtrans %}
        </p>
-    </div>
-
-    <div id="troubleshooting-field" class="hide-until-expanded field full-width">
-      {{ field }}
     </div>
   </div>
 {% endmacro %}
