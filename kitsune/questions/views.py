@@ -488,10 +488,6 @@ def aaq(
 
     template = "questions/new_question.html"
 
-    # This tells our LogoutDeactivatedUsersMiddleware not to
-    # boot this user.
-    request.session["in-aaq"] = True
-
     # Check if any product forum has a locale in the user's current locale
     if (
         request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list()
@@ -604,9 +600,6 @@ def aaq(
                 ).format(a_open="<a href='" + my_questions_url + "'>", a_close="</a>"),
                 extra_tags="safe"
             )
-
-            # Done with AAQ.
-            request.session["in-aaq"] = False
 
             request.session['aaq-final-step'] = True
 
