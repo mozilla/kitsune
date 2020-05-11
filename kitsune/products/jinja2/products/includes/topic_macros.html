@@ -1,4 +1,4 @@
-{% macro help_topics(topics, show_community_support=False, product_slug=None) -%}
+{% macro help_topics(topics, show_community_support=False, product_slug=None, new_tab=False) -%}
 
   <div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
     <div class="scroll-wrap">
@@ -12,7 +12,8 @@
         />
         <div class="card--details">
           <h3 class="card--title">
-            <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
+            <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
+               data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
               {{ pgettext('DB: products.Topic.title', topic.title) }}
             </a>
           </h3>

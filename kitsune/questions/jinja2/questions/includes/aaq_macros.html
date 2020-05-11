@@ -1,4 +1,5 @@
 {% from 'products/includes/topic_macros.html' import help_topics %}
+{% from 'includes/common_macros.html' import featured_articles %}
 
 {% macro select_product(products) -%}
   <h1 class="sumo-page-heading">{{ _('Ask the Community') }}</h1>
@@ -129,14 +130,14 @@
   <div class="text-center-to-left-on-large">
     <h2 class="sumo-page-subheading">{{ _('Featured Articles') }}</h2>
   </div>
-  {% include "landings/includes/featured_articles.html" %}
+  {{ featured_articles(articles=featured, new_tab=True) }}
 </section>
 <section class="sumo-page-section--inner hide-when-search-is-active highlight-box">
     <div class="mzp-l-content">
       <div class="text-center-to-left-on-large aaq-popular-topics">
         <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
       </div>
-      {{ help_topics(topics, product_slug=product.product) }}
+      {{ help_topics(topics, product_slug=product.product, new_tab=True) }}
     </div>
 </section>
 </div>

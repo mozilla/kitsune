@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from 'products/includes/product_macros.html' import product_cards with context %}
+{% from 'includes/common_macros.html' import featured_articles %}
 {% set styles = ('home',) %}
 {% set canonical_url = canonicalize(viewname='home') %}
 
@@ -38,7 +39,7 @@
     <div class="text-center-to-left-on-large">
       <h2 class="sumo-page-subheading">{{ _('Featured Articles') }}</h2>
     </div>
-    {% include "landings/includes/featured_articles.html" %}
+    {{ featured_articles(featured) }}
   </section>
   <section class="mzp-l-content sumo-page-section--inner">
     {% include "landings/includes/join-our-community-callout.html" %}
