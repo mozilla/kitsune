@@ -18,14 +18,31 @@ we can compute the edit-title URL.
 {% set hide_aaq_link = True %}
 
 {% block contentwrap %}
-<div id="main-content">
+<div id="main-content" class="aaq">
   <article class="main mzp-l-content sumo-page-section--inner">
     {% if current_step %}
       {{ progress_bar(current_step, product_key=current_product.key) }}
     {% endif %}
 
     {% block formwrap %}
-    <div class="sumo-l-two-col" id="ask-question">
+    <img class="page-heading--logo" src="{{ image_for_product(current_product.product) }}" alt="{{ current_product.name }} logo" />
+
+    {# TODO: hook this up to the backend when subproducts are in.
+    <div class="mzp-c-menu-list subheading-dropdown">
+      <h3 class="mzp-c-menu-list-title sumo-card-heading" data-has-dropdown>Firefox</h3>
+      <ul class="mzp-c-menu-list-list">
+        <li class="mzp-c-menu-list-item"><a href="#">Subproducts</a></li>
+        <li class="mzp-c-menu-list-item"><a href="#">Will go here</a></li>
+      </ul>
+    </div> #}
+    <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
+      {{ current_product.name }}
+    </h3>
+
+
+    {% block major_detail_instructions %}
+    {% endblock %}
+    <div class="sumo-l-two-col">
       <aside class="sumo-l-two-col--sidebar">
         {% if form %}
         <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
@@ -37,7 +54,7 @@ we can compute the edit-title URL.
             </div>
         </div>
 
-        <div class="sidebar--push large-only">
+        <div class="large-only">
           <h3 class="sumo-card-heading">
             <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
             {{ _('Helpful Tip!')}}
@@ -58,26 +75,6 @@ we can compute the edit-title URL.
             <form id="question-form" method="post">
               {% csrf_token %}
 
-              <img class="page-heading--logo" src="{{ image_for_product(current_product.product) }}" alt="{{ current_product.name }} logo" />
-
-              {% if subproducts %}
-              {# TODO: hook this up to the backend when subproducts are in. #}
-              <div class="mzp-c-menu-list subheading-dropdown">
-                <h3 class="mzp-c-menu-list-title sumo-card-heading" data-has-dropdown>Firefox</h3>
-                <ul class="mzp-c-menu-list-list">
-                  <li class="mzp-c-menu-list-item"><a href="#">Subproducts</a></li>
-                  <li class="mzp-c-menu-list-item"><a href="#">Will go here</a></li>
-                </ul>
-              </div>
-              {% else %}
-              <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
-                {{ current_product.name }}
-              </h3>
-              {% endif %}
-
-
-              {% block major_detail_instructions %}
-              {% endblock %}
               <p class="sumo-page-intro">
 
                 {% trans %}
@@ -151,7 +148,7 @@ we can compute the edit-title URL.
                 {% endif %}
               </ul>
 
-              <div class="hide-on-large">
+              <div class="hide-on-large field">
                 <h3 class="sumo-card-heading">
                   <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
                   {{ _('Helpful Tip!')}}
@@ -165,9 +162,11 @@ we can compute the edit-title URL.
                 </p>
               </div>
 
-              <div class="sumo-button-wrap">
+              <div class="sumo-button-wrap aaq-form-buttons reverse-on-desktop align-right">
                 <button type="submit" class="sumo-button primary-button" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
-                {% block more_submit_buttons %}{% endblock %}
+                {% block more_submit_buttons %}
+                <a class="sumo-button secondary-button push-right" href="{{ url('questions.aaq_step2', current_product.key) }}" class="cancel">{{ _('Cancel') }}</a>
+                {% endblock %}
               </div>
             </form>
           </div>

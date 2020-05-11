@@ -185,6 +185,7 @@
 }
 
 .sumo-button:focus,
+.sumo-button:focus-within,
 button:focus,
 input[type=submit]:focus {
   box-shadow: var(--focus-shadow);
@@ -274,5 +275,12 @@ input[type=submit]:focus {
 
   &:hover {
     color: var(--color-red-10) !important;
+  }
+}
+
+.sumo-file-button {
+  input[type=file] {
+    position: absolute;
+    left: -999em;
   }
 }
