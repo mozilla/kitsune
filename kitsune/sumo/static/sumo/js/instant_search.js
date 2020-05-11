@@ -5,6 +5,7 @@
 
   var search = new k.Search('/' + locale + '/search');
   var cxhr = new k.CachedXHR();
+  var aaq_explore_step = $("#question-search-masthead").length > 0;
 
   function hideContent() {
     $('#main-content').hide();
@@ -26,6 +27,7 @@
     $('#instant-search-content').remove();
     $('.search-form-large:visible').find('input[name=q]').focus().val('');
     $('#support-search').find('input[name=q]').val('');
+    $(".page-heading--intro-text").show();
     $(".home-search-section--content .search-results-heading").remove();
     $('.home-search-section .mzp-l-content').addClass('narrow');
     $('.hidden-search-masthead').hide();
@@ -52,8 +54,14 @@
     tabsInit();
 
     // remove and append search results heading
+    $(".page-heading--intro-text").hide();
     $(".home-search-section--content .search-results-heading").remove();
     $(".search-results-heading").appendTo(".home-search-section--content");
+
+    // change aaq link if we're in aaq flow
+    if (aaq_explore_step) {
+      $("#search-results-aaq-link").attr("href", window.location + "/form");
+    }
   }
 
   window.k.InstantSearchSettings = {
@@ -104,7 +112,15 @@
             // If applicable, close the mobile search field and move the focus to the main field.
             $('.sumo-nav--mobile-search-form').removeClass('mzp-is-open').attr('aria-expanded', 'false');
 
-            if ($('.hidden-search-masthead').length > 0) {
+            if (aaq_explore_step) {
+              // in aaq explore step we don't want any search to show the default masthead
+              $('.hidden-search-masthead').hide();
+              $('.question-masthead').show();
+              $('.page-heading--logo').css('display', 'block');
+
+              $('.question-masthead').find('input[name=q]').val(value).focus();
+              window.scrollTo(0, 0);
+            } else if ($('.hidden-search-masthead').length > 0) {
               $('.hidden-search-masthead').show();
               $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
               window.scrollTo(0, 0);
@@ -122,12 +138,11 @@
             $('.hidden-search-masthead').hide();
             $('.question-masthead').show();
             $('.page-heading--logo').css('display', 'block');
-
+            // set nav bar search box to same value
+            $("#support-search").find("input[name=q]").val(value);
           } else {
             $('#support-search').find('input[name=q]').val(value);
             $('#support-search-masthead').find('input[name=q]').val(value).focus();
-
-            console.log('or maybe here?')
           }
 
           return true;
@@ -197,6 +212,10 @@
     // assume they want to get rid of the search.
     if ($('.hidden-search-masthead').is(':visible')) {
       window.k.InstantSearchSettings.showContent();
+    } else if (aaq_explore_step) {
+      // in aaq explore step, we don't want to show the default masthead
+      $('#question-search-masthead').find('input[name=q]').focus();
+      window.scrollTo(0, 0);
     } else if ($('.hidden-search-masthead').length > 0) {
       $('body').addClass('search-results-visible');
       $('.hidden-search-masthead').show();
