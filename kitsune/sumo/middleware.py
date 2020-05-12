@@ -290,10 +290,13 @@ class InAAQMiddleware(MiddlewareMixin):
         # This key is used both in templates and the
         # LogoutDeactivateUsersMiddleware
 
-        if not request.session or callback:
+        if not request.session or not callback:
+            return None
+        try:
+            view_name = callback.func_name
+        except AttributeError:
             return None
 
-        view_name = callback.func_name
         # If we are authenticating or there is no session, do nothing
         if view_name in ['user_auth', 'login', 'serve_cors']:
             return None
@@ -302,5 +305,6 @@ class InAAQMiddleware(MiddlewareMixin):
             request.session['product_key'] = callback_kwargs.get('product_key')
         else:
             request.session['in-aaq'] = False
-            request.session['product_key'] = ''
+            if '/questions/new' not in request.META.get('HTTP_REFERER', ''):
+                request.session['product_key'] = ''
         return None

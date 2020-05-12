@@ -27,3 +27,11 @@
         padding-top: p.$spacing-2xl;
     }
 }
+
+.aaq-widget {
+    background-color: var(--card-bg);
+}
+
+aside .aaq-widget {
+    margin-bottom: p.$spacing-lg;
+}

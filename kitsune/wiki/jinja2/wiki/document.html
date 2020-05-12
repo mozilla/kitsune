@@ -4,6 +4,7 @@
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
 {% from "includes/common_macros.html" import download_firefox, sumo_cta_banner %}
+{% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% set scripts = ('wiki', 'questions') %}
@@ -41,6 +42,11 @@
   <div class="search-form-sidebar large-only">
     {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
   </div>
+
+  {% set aaq_product = request.session.get('product_key') %}
+  {% if aaq_product %}
+    {{ aaq_widget(aaq_product, user, "document") }}
+  {% endif %}
 
   {% if fallback_reason == 'no_translation' %}
     {# If there is no translation, there is no document and the (future) parent is document. #}

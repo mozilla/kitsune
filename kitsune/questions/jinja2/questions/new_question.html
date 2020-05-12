@@ -21,7 +21,7 @@
 
 {% block contentwrap %}
   {% if current_step == 2 %}
-    {{ explore_solutions(current_product, search_box, featured, topics) }}
+    {{ explore_solutions(current_product, search_box, featured, topics, user) }}
   {% else %}
     {{ super() }}
   {% endif %}

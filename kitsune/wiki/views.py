@@ -58,9 +58,10 @@ def doc_page_cache(view):
     @wraps(view)
     def _doc_page_cache_view(request, document_slug, *args, **kwargs):
         # We skip caching for authed users or if redirect=no
-        # is in the query string.
+        # is in the query string or if we show the aaq widget
         if (request.user.is_authenticated() or
-                request.GET.get('redirect') == 'no'):
+                request.GET.get('redirect') == 'no' or
+                request.session.get('product_key')):
             statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
 
