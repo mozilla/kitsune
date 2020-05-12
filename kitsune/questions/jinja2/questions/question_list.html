@@ -14,7 +14,7 @@
 
 {% set title = _('{product} Support Forum')|f(product=product_title) %}
 
-{% set crumbs = [(url('questions.home'), _('Support Forum')), (None, product_title)] %}
+{% set crumbs = [(url('questions.home'), _('Support Forums')), (None, product_title)] %}
 
 {% set canonical_url = canonicalize(viewname='questions.list', product_slug=product_slug)|urlparams(None, request.GET) %}
 {% if questions.number > 1 %}
