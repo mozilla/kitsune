@@ -46,7 +46,11 @@
       $('#main-content').after($searchContent);
     }
 
-    $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
+    var $searchResults = $(k.nunjucksEnv.render("search-results.html", context));
+    if (aaq_explore_step) {
+      $searchResults.find('section a').attr('target', '_blank');
+    }
+    $searchContent.html($searchResults);
 
     // These two functions are coming from the global scope, but should be proper
     // modules when we replace django-compressor with a FE build process.
