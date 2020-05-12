@@ -1,9 +1,9 @@
-{% macro help_topics(topics, show_community_support=False) -%}
+{% macro help_topics(topics, show_community_support=False, product_slug=None) -%}
 
   <div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
     <div class="scroll-wrap">
       {% for topic in topics %}
-      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+      {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
       <div class="card card--topic">
         <img
           class="card--icon"
@@ -43,7 +43,7 @@
       <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
       <a
         class="sumo-button primary-button button-lg"
-        href="/questions/new"
+        href="{{ url('questions.aaq_step1') }}"
         data-event-category="link click"
         data-event-action="topic"
         data-event-label="Get community support">

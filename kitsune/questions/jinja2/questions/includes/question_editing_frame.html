@@ -10,47 +10,73 @@ we can compute the edit-title URL.
 #}
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "includes/common_macros.html" import content_editor with context %}
-{% from "questions/includes/aaq_macros.html" import selected_category, aaq_progress %}
-{% from "questions/includes/aaq_macros.html" import selected_product with context%}
+{% from "includes/common_macros.html" import search_box, content_editor with context %}
+{% from "questions/includes/aaq_macros.html" import progress_bar %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
 
 {% set hide_aaq_link = True %}
 
 {% block contentwrap %}
-<div id="main-content">
+<div id="main-content" class="aaq">
   <article class="main mzp-l-content sumo-page-section--inner">
-    {% block product %}
-    {% endblock %}
+    {% if current_step %}
+      {{ progress_bar(current_step, product_key=current_product.key) }}
+    {% endif %}
 
-    <div class="sumo-l-two-col" id="ask-question">
-      <aside class="sumo-l-two-col--sidebar"></aside>
+    {% block formwrap %}
+    <img class="page-heading--logo" src="{{ image_for_product(current_product.product) }}" alt="{{ current_product.name }} logo" />
+
+    {# TODO: hook this up to the backend when subproducts are in.
+    <div class="mzp-c-menu-list subheading-dropdown">
+      <h3 class="mzp-c-menu-list-title sumo-card-heading" data-has-dropdown>Firefox</h3>
+      <ul class="mzp-c-menu-list-list">
+        <li class="mzp-c-menu-list-item"><a href="#">Subproducts</a></li>
+        <li class="mzp-c-menu-list-item"><a href="#">Will go here</a></li>
+      </ul>
+    </div> #}
+    <h3 class="mzp-c-menu-list-title sumo-card-heading back-to-product-list">
+      {{ current_product.name }}
+    </h3>
+
+
+    {% block major_detail_instructions %}
+    {% endblock %}
+    <div class="sumo-l-two-col">
+      <aside class="sumo-l-two-col--sidebar">
+        {% if form %}
+        <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
+            <img class="card--img" src="{{ STATIC_URL }}sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png" alt="Illustration of community" />
+            <div class="card--details">
+              <h3 class="card--title">{{ _('Our Community is here to help') }}</h3>
+              <p class="card--desc">{{ _('Kindness is at the heart of our community. Our volunteers are happy to share their time and Firefox knowledge with you.') }}</p>
+              <p><strong><a href="{{ url('landings.get_involved') }}">{{ _('Learn More') }}</a></strong></p>
+            </div>
+        </div>
+
+        <div class="large-only">
+          <h3 class="sumo-card-heading">
+            <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
+            {{ _('Helpful Tip!')}}
+          </h3>
+          <p>{{ _('Follow through. Sometimes, our volunteers would ask you for more information or to test out certain scenarios. The sooner you can do this, the sooner they would know how to fix it.')}}
+        </div>
+        {% endif %}
+      </aside>
       <article class="sumo-l-two-col--main">
 
         {% if not no_headline %}
-          <h1 class="sumo-page-heading">{% block headline %}Do Something to a Question{% endblock %}</h1>
+          <h1 class="sumo-page-heading">{% block headline %}{% endblock %}</h1>
         {% endif %}
         <div class="inner-wrap">
-          <div class="cf">
-            {% if current_step %}
-              {# removing steps for now – may revisit during AAQ project, 3/20 {{ aaq_progress(step=current_step) }} #}
-            {% endif %}
-            {% block category %}
-            {% endblock %}
-          </div>
-
-        {% block articles_and_search_results %}
-        {% endblock %}
 
         {% if form %}
           <div class="highlight-box">
             <form id="question-form" method="post">
               {% csrf_token %}
-              {% block major_detail_instructions %}
-                <h2>Do some stuff.</h2>
-              {% endblock %}
+
               <p class="sumo-page-intro">
+
                 {% trans %}
                   Be nice. Our volunteers are Mozilla users just like you,
                   who take the time out of their day to help.
@@ -70,7 +96,7 @@ we can compute the edit-title URL.
               {% endfor %}
               <ul class="form-as-ul full-width">
                 {% set li_class='' %}
-                {% for field in form.visible_fields() %}
+                {% for field in form.visible_fields() if not field.name == 'notifications' %}
 
                   {% if field.name == 'ff_version' or field.name == 'device' %}
                     <li class="system-details-info show">
@@ -88,6 +114,7 @@ we can compute the edit-title URL.
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
                     {{ field.label_tag()|safe }}
+
                     {% if field.name == 'content' %}
                       {{ content_editor(field) }}
                     {% elif field.name == 'troubleshooting' %}
@@ -100,7 +127,7 @@ we can compute the edit-title URL.
                       <p>{{ field.help_text|safe }}</p>
                     {% endif %}
 
-                    {% if field.name == 'title' %}
+                    {% if field.name != 'content' %}
                       {{ field.errors }}
                     {% endif %}
                   </li>
@@ -113,37 +140,41 @@ we can compute the edit-title URL.
                     </li>
                   {% endif %}
                 {% endfor %}
+
+                {% if form.notifications %}
+                  <li class="cf">
+                    {{ checkbox(form.notifications) }}
+                  </li>
+                {% endif %}
               </ul>
 
-              <div class="info card highlight is-shaded">
+              <div class="hide-on-large field">
+                <h3 class="sumo-card-heading">
+                  <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
+                  {{ _('Helpful Tip!')}}
+                </h3>
                 <p>
                 {% trans %}
-                  Follow through. Sometimes, our volunteers would ask you
-                  for more information or to test out certain scenarios.
-                  The sooner you can do this, the sooner they would know
-                  how to fix it.
+                  Follow through. Sometimes, our volunteers would ask you for
+                  more information or to test out certain scenarios. The sooner
+                  you can do this, the sooner they would know how to fix it.
                 {% endtrans %}
                 </p>
               </div>
-              <div class="sumo-button-wrap">
+
+              <div class="sumo-button-wrap aaq-form-buttons reverse-on-desktop align-right">
                 <button type="submit" class="sumo-button primary-button" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
-                {% block more_submit_buttons %}{% endblock %}
+                {% block more_submit_buttons %}
+                <a class="sumo-button secondary-button push-right" href="{{ url('questions.aaq_step2', current_product.key) }}" class="cancel">{{ _('Cancel') }}</a>
+                {% endblock %}
               </div>
             </form>
           </div>
         {% endif %}
-
-        <div id="product-topic-changer" class="cf">
-          {% if current_product %}
-            {{ selected_product(current_product, can_edit_product) }}
-
-            {% if current_category %}
-              {{ selected_category(current_category, current_product, can_edit_category) }}
-            {% endif %}
-          {% endif %}
-        </div>
       </article>
+
     </div>
+    {% endblock %}
   </article>
 </div>
 {% endblock %}

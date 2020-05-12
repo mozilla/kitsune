@@ -47,10 +47,13 @@
       </noscript>
     </div>
     <div class="field add-attachment">
-      <label for="id_image">{{ _('Add images:') }}</label>
-      <input type="file" id="id_image" name="image" size="30"
-             accept="{{ settings.IMAGE_ALLOWED_MIMETYPES }}"
-             title="{{ _('Browse for an image to upload.') }}"/>
+      <label for="id_image">{{ _('Add images (optional):') }}</label>
+      <label for="id_image" class="sumo-button sumo-file-button">
+        <span aria-hidden="true">Browse...</span>
+        <input type="file" id="id_image" name="image" size="30"
+              accept="{{ settings.IMAGE_ALLOWED_MIMETYPES }}"
+              title="{{ _('Browse for an image to upload.') }}"/>
+      </label>
       <noscript>
         <input type="submit" name="upload_image" class="sumo-button"
                value="{{ _('Upload') }}"/>

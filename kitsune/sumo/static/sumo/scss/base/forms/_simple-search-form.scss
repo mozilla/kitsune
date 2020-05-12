@@ -24,6 +24,16 @@
       (left, auto, 6px),
     ));
   }
+
+  + .page-heading--intro-text {
+    &, & + .search-results-heading {
+      margin: p.$spacing-xl 0;
+
+      @media #{p.$mq-md} {
+        margin-bottom: 0;
+      }
+    }
+  }
 }
 
 .search-button {

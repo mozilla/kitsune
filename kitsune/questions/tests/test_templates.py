@@ -109,54 +109,6 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Clean up
         ImageAttachment.objects.all().delete()
 
-    def test_empty_answer(self):
-        """Posting an empty answer shows error."""
-        response = post(
-            self.client, "questions.reply", {"content": ""}, args=[self.question.id]
-        )
-
-        doc = pq(response.content)
-        error_msg = doc("ul.errorlist li a")[0]
-        eq_(error_msg.text, "Please provide content.")
-
-    def test_short_answer(self):
-        """Posting a short answer shows error."""
-        response = post(
-            self.client, "questions.reply", {"content": "lor"}, args=[self.question.id]
-        )
-
-        doc = pq(response.content)
-        error_msg = doc("ul.errorlist li a")[0]
-        eq_(
-            error_msg.text,
-            "Your content is too short (3 characters). "
-            + "It must be at least 5 characters.",
-        )
-
-    def test_long_answer(self):
-        """Post a long answer shows error."""
-        # Set up content length to 10,001 characters
-        content = ""
-        for i in range(1000):
-            content += "1234567890"
-        content += "1"
-
-        response = post(
-            self.client,
-            "questions.reply",
-            {"content": content},
-            args=[self.question.id],
-        )
-
-        doc = pq(response.content)
-        error_msg = doc("ul.errorlist li a")[0]
-        eq_(
-            error_msg.text,
-            "Please keep the length of your content to "
-            + "10000 characters or less. It is currently "
-            + "10001 characters.",
-        )
-
     def test_solve_unsolve(self):
         """Test accepting a solution and undoing."""
         response = get(self.client, "questions.details", args=[self.question.id])
@@ -725,12 +677,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[1],
+            mail.outbox[0],
             to=["some@bo.dy"],
             subject="Please confirm your email address",
         )
-        assert "questions/confirm/" in mail.outbox[1].body
-        assert "New answers" in mail.outbox[1].body
+        assert "questions/confirm/" in mail.outbox[0].body
+        assert "New answers" in mail.outbox[0].body
 
         # Now activate the watch.
         w = Watch.objects.get()
@@ -809,12 +761,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[1],
+            mail.outbox[0],
             to=["some@bo.dy"],
             subject="Please confirm your email address",
         )
-        assert "questions/confirm/" in mail.outbox[1].body
-        assert "Solution found" in mail.outbox[1].body
+        assert "questions/confirm/" in mail.outbox[0].body
+        assert "Solution found" in mail.outbox[0].body
 
         # Now activate the watch.
         w = Watch.objects.get()
@@ -1442,6 +1394,7 @@ class AAQTemplateTestCase(TestCaseBase):
     data = {
         "title": "A test question",
         "content": "I have this question that I hope...",
+        "category": "fix-problems",
         "sites_affected": "http://example.com",
         "ff_version": "3.6.6",
         "os": "Intel Mac OS X 10.6",
@@ -1487,8 +1440,7 @@ class AAQTemplateTestCase(TestCaseBase):
         if locale is not None:
             extra["locale"] = locale
         url = urlparams(
-            reverse("questions.aaq_step5", args=["desktop", "fix-problems"], **extra),
-            search="A test question",
+            reverse("questions.aaq_step3", args=["desktop"], **extra)
         )
 
         # Set 'in-aaq' for the session. It isn't already set because this

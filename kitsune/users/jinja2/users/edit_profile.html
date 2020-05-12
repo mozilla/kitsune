@@ -1,5 +1,5 @@
 {% extends "users/base.html" %}
-{% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created %}
+{% from "users/includes/notification_macros.html" import notification_fxa_updated %}
 
 {% set title = _('Edit Profile') %}
 {% set classes = 'profile' %}
@@ -11,8 +11,6 @@
     {% for message in fxa_messages %}
       {% if message == 'fxa_notification_updated' %}
         {{ notification_fxa_updated(STATIC_URL) }}
-      {% elif message == 'fxa_notification_created' %}
-        {{ notification_fxa_created(STATIC_URL) }}
       {% endif %}
     {% endfor %}
   {% endif %}

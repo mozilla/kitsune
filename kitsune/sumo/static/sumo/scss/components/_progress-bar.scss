@@ -1,0 +1,222 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Progress Bar
+//
+// This is the progress bar used in the 'ask a question' flow.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/progress.njk
+//
+// Weight: 5
+//
+// Style guide: progress
+
+.progress {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  list-style: none;
+  margin: -24px 0 40px;
+  padding: 0;
+  overflow: hidden;
+  @include c.text-body-sm;
+
+  &--item {
+    position: relative;
+    flex: 1 1 0;
+
+    &:first-child,
+    &:last-child {
+      .progress--link {
+        align-items: flex-start;
+        @include p.bidi((
+          (padding-left, 0, 8px),
+          (padding-right, 8px, 0),
+        ));
+      }
+
+      .progress--link-inner {
+        &:after {
+          position: absolute;
+          top: 12px;
+          left: 0;
+          z-index: 2;
+          width: 50%;
+          height: 3px;
+          background: var(--page-bg);
+          content: "";
+        }
+      }
+    }
+
+    &:last-child {
+      .progress--link {
+        align-items: flex-end;
+        @include p.bidi((
+          (padding-right, 0, 8px),
+          (padding-left, 8px, 0),
+        ));
+      }
+
+      .progress--link-inner {
+        &:after {
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+
+    &.is-complete {
+      .progress--dot {
+        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="#000" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+        background-color: var(--color-green-06);
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: 18px 18px;
+        border-color: var(--color-green-06);
+        content: "";
+      }
+    }
+
+    &.is-current {
+      display: block;
+
+      .progress--dot {
+        border-color: var(--color-green-06);
+
+        &:before {
+          width: 8px;
+          height: 8px;
+          position: absolute;
+          top: 4px;
+          left: 4px;
+          border-radius: 50%;
+          background-color: var(--color-green-06);
+          content: "";
+        }
+      }
+    }
+
+    &:after,
+    &:before {
+      position: absolute;
+      top: 20px;
+      left: 0;
+      z-index: 1;
+      width: 120%;
+      height: 3px;
+      background: var(--color-marketing-gray-03);
+      content: "";
+    }
+
+    &:before {
+      background: transparent;
+    }
+
+    &.is-current,
+    &.is-complete {
+      &:after {
+        background: var(--color-green-06);
+      }
+    }
+
+    &.is-current {
+      &:before {
+        width: 50%;
+        right: 0;
+        left: auto;
+        background: var(--color-marketing-gray-03);
+        z-index: 2;
+      }
+
+      &:last-child:before {
+        background: transparent;
+      }
+
+      &:first-child {
+        &:after {
+          background: var(--color-marketing-gray-03);
+        }
+      }
+    }
+  }
+
+  &--link-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  &--link {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--color-text);
+
+    &:visited {
+      color: var(--color-text);
+    }
+
+    &:hover {
+      color: var(--color-heading);
+    }
+
+    &:active {
+      background: transparent;
+    }
+
+    &[disabled],
+    &[aria-current="page"] {
+      cursor: default;
+
+      &:hover {
+        color: var(--color-text);
+      }
+    }
+  }
+
+  &--dot {
+    width: 24px;
+    height: 24px;
+    position: relative;
+    z-index: 3;
+    margin-bottom: 8px;
+    border: 4px solid var(--color-marketing-gray-03);
+    border-radius: 50%;
+    background-color: var(--page-bg);
+    font-size: 0;
+    color: transparent;
+  }
+
+  @at-root .shade-bg & {
+    .progress--item:first-child .progress--link-inner::after,
+    .progress--item:last-child .progress--link-inner::after,
+    .progress--item:not(.is-complete) .progress--dot {
+      background-color: var(--color-shade-bg);
+    }
+  }
+
+  @at-root .sumo-page-section & {
+    margin: -24px 0 0;
+  }
+
+  @media #{p.$mq-md} {
+    margin: -32px 0 60px;
+
+    @at-root .sumo-page-section & {
+      margin: 0;
+    }
+
+    &--item {
+      &:after {
+        width: 100%;
+      }
+    }
+  }
+}

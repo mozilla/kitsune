@@ -5,7 +5,7 @@
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
 {% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
-
+{% from "questions/includes/aaq_macros.html" import progress_bar %}
 {% set classes = 'answers' %}
 
 {% set product_title = pgettext('DB: products.Product.title', product.title) if product else _('All Products') %}
@@ -27,6 +27,14 @@
 {% if robots_noindex %}
   {% set meta = (('robots', 'noindex'),) %}
 {% endif %}
+
+{% block breadcrumbs %}
+
+{% if aaq_final_step %}
+  {{ progress_bar(4) }}
+{% endif %}
+{{ super() }}
+{% endblock %}
 
 {% block above_main %}
   {% if question.is_taken and question.taken_by != request.user %}

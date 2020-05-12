@@ -2,10 +2,14 @@ import json
 from datetime import date, timedelta
 
 from django import forms
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.questions.marketplace import submit_ticket
-from kitsune.questions.models import Answer
+from kitsune.questions.models import Answer, Question
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.upload.models import ImageAttachment
+from kitsune.products.models import Topic
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy(u"URL of affected site")
@@ -36,42 +40,15 @@ FREQUENCY_CHOICES = [
     (u"EVERY_TIME", _lazy(u"Every time Firefox opened")),
 ]
 STARTED_LABEL = _lazy(u"This started when...")
-TITLE_LABEL = _lazy(u"Question")
-CONTENT_LABEL = _lazy(u"Details")
-EMAIL_LABEL = _lazy(u"Email")
-EMAIL_HELP = _lazy(
-    u"A confirmation email will be sent to this address in "
-    u"order to post your question."
-)
+TITLE_LABEL = _lazy(u"Subject")
+CONTENT_LABEL = _lazy(u"How can we help?")
 FF_VERSION_LABEL = _lazy(u"Firefox version")
 OS_LABEL = _lazy(u"Operating system")
 PLUGINS_LABEL = _lazy(u"Installed plugins")
 ADDON_LABEL = _lazy(u"Extension/plugin you are having trouble with")
 DEVICE_LABEL = _lazy(u"Mobile device")
-
-# Validation error messages
-MSG_TITLE_REQUIRED = _lazy(u"Please provide a question.")
-MSG_TITLE_SHORT = _lazy(
-    u"Your question is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
-)
-MSG_TITLE_LONG = _lazy(
-    u"Please keep the length of your question to "
-    u"%(limit_value)s characters or less. It is currently "
-    u"%(show_value)s characters."
-)
-MSG_CONTENT_REQUIRED = _lazy(u"Please provide content.")
-MSG_CONTENT_SHORT = _lazy(
-    u"Your content is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
-)
-MSG_CONTENT_LONG = _lazy(
-    u"Please keep the length of your content to "
-    u"%(limit_value)s characters or less. It is "
-    u"currently %(show_value)s characters."
-)
+CATEGORY_LABEL = _lazy(u"Which topic best describes your question?")
+NOTIFICATIONS_LABEL = _lazy(u"Email me when someone answers the thread")
 
 REPLY_PLACEHOLDER = _lazy(u"Enter your reply here.")
 
@@ -127,10 +104,28 @@ DEVELOPER_REQUEST_CATEGORY_CHOICES = [
 ]
 
 
-class EditQuestionForm(forms.Form):
+class EditQuestionForm(forms.ModelForm):
     """Form to edit an existing question"""
 
-    def __init__(self, product=None, category=None, *args, **kwargs):
+    title = forms.CharField(
+        label=TITLE_LABEL,
+        min_length=5
+    )
+
+    content = forms.CharField(
+        label=CONTENT_LABEL,
+        min_length=5,
+        widget=forms.Textarea()
+    )
+
+    class Meta:
+        model = Question
+        fields = [
+            'title',
+            'content',
+        ]
+
+    def __init__(self, product=None, *args, **kwargs):
         """Init the form.
 
         We are adding fields here and not declaratively because the
@@ -143,37 +138,6 @@ class EditQuestionForm(forms.Form):
 
         if product:
             extra_fields += product.get("extra_fields", [])
-        if category:
-            extra_fields += category.get("extra_fields", [])
-
-        #  Add the fields to the form
-        title_error_messages = {
-            "required": MSG_TITLE_REQUIRED,
-            "min_length": MSG_TITLE_SHORT,
-            "max_length": MSG_TITLE_LONG,
-        }
-        title_field = forms.CharField(
-            label=TITLE_LABEL,
-            min_length=5,
-            max_length=160,
-            widget=forms.TextInput(),
-            error_messages=title_error_messages,
-        )
-        self.fields["title"] = title_field
-
-        content_error_messages = {
-            "required": MSG_CONTENT_REQUIRED,
-            "min_length": MSG_CONTENT_SHORT,
-            "max_length": MSG_CONTENT_LONG,
-        }
-        field = forms.CharField(
-            label=CONTENT_LABEL,
-            min_length=5,
-            max_length=10000,
-            widget=forms.Textarea(),
-            error_messages=content_error_messages,
-        )
-        self.fields["content"] = field
 
         if "sites_affected" in extra_fields:
             field = forms.CharField(
@@ -219,17 +183,6 @@ class EditQuestionForm(forms.Form):
             )
             self.fields["addon"] = field
 
-        if "troubleshooting" in extra_fields:
-            widget = forms.Textarea(attrs={"class": "troubleshooting"})
-            field = forms.CharField(
-                label=TROUBLESHOOTING_LABEL,
-                help_text=TROUBLESHOOTING_HELP,
-                required=False,
-                max_length=655360,
-                widget=widget,
-            )
-            self.fields["troubleshooting"] = field
-
         if "ff_version" in extra_fields:
             self.fields["ff_version"] = forms.CharField(
                 label=FF_VERSION_LABEL, required=False,
@@ -247,11 +200,26 @@ class EditQuestionForm(forms.Form):
                 label=PLUGINS_LABEL, required=False, widget=widget,
             )
 
+        if "troubleshooting" in extra_fields:
+            widget = forms.Textarea(attrs={"class": "troubleshooting"})
+            field = forms.CharField(
+                label=TROUBLESHOOTING_LABEL,
+                help_text=TROUBLESHOOTING_HELP,
+                required=False,
+                max_length=655360,
+                widget=widget,
+            )
+            self.fields["troubleshooting"] = field
+
+        for field in self.fields.values():
+            if not field.required:
+                field.label_suffix = _lazy(" (optional):")
+
     @property
     def metadata_field_keys(self):
         """Returns the keys of the metadata fields for the current
         form instance"""
-        non_metadata_fields = ["title", "content", "email"]
+        non_metadata_fields = ["title", "content", "email", "notifications"]
 
         def metadata_filter(x):
             return x not in non_metadata_fields
@@ -297,17 +265,78 @@ class EditQuestionForm(forms.Form):
 class NewQuestionForm(EditQuestionForm):
     """Form to start a new question"""
 
-    def __init__(self, product=None, category=None, *args, **kwargs):
+    category = forms.ChoiceField(
+        label=CATEGORY_LABEL,
+        choices=[],
+    )
+
+    # Collect user agent only when making a question for the first time.
+    # Otherwise, we could grab moderators' user agents.
+    useragent = forms.CharField(
+        widget=forms.HiddenInput(), required=False
+    )
+
+    notifications = forms.BooleanField(
+        label=NOTIFICATIONS_LABEL,
+        initial=True,
+        required=False
+    )
+
+    field_order = [
+        'title',
+        'category',
+        'content'
+    ]
+
+    def __init__(self, product=None, *args, **kwargs):
         """Add fields particular to new questions."""
         super(NewQuestionForm, self).__init__(
-            product=product, category=category, *args, **kwargs
+            product=product, *args, **kwargs
         )
 
-        # Collect user agent only when making a question for the first time.
-        # Otherwise, we could grab moderators' user agents.
-        self.fields["useragent"] = forms.CharField(
-            widget=forms.HiddenInput(), required=False
+        if product:
+            category_choices = [
+                (key, value["name"]) for key, value in product["categories"].items()
+            ]
+            category_choices.insert(0, ("", "Please select"))
+            self.fields["category"].choices = category_choices
+
+    def save(self, user, locale, product, product_config, *args, **kwargs):
+        self.instance.creator = user
+        self.instance.locale = locale
+        self.instance.product = product
+
+        category_config = product_config['categories'][self.cleaned_data['category']]
+        if category_config:
+            t = category_config.get("topic")
+            if t:
+                self.instance.topic = Topic.objects.get(slug=t, product=product)
+
+        question = super(NewQuestionForm, self).save(*args, **kwargs)
+
+        if self.cleaned_data.get('notifications', False):
+            QuestionReplyEvent.notify(question.creator, question)
+
+        user_ct = ContentType.objects.get_for_model(user)
+        qst_ct = ContentType.objects.get_for_model(question)
+        # Move over to the question all of the images I added to the reply form
+        up_images = ImageAttachment.objects.filter(
+            creator=user, content_type=user_ct
         )
+        up_images.update(content_type=qst_ct, object_id=question.id)
+
+        # User successfully submitted a new question
+        question.add_metadata(**self.cleaned_metadata)
+
+        if product_config:
+            # TODO: This add_metadata call should be removed once we are
+            # fully IA-driven (sync isn't special case anymore).
+            question.add_metadata(product=product_config["key"])
+
+        # The first time a question is saved, automatically apply some tags:
+        question.auto_tag()
+
+        return question
 
 
 class AnswerForm(forms.Form):
@@ -317,12 +346,7 @@ class AnswerForm(forms.Form):
         label=_lazy("Content:"),
         min_length=5,
         max_length=10000,
-        widget=forms.Textarea(attrs={"placeholder": REPLY_PLACEHOLDER}),
-        error_messages={
-            "required": MSG_CONTENT_REQUIRED,
-            "min_length": MSG_CONTENT_SHORT,
-            "max_length": MSG_CONTENT_LONG,
-        },
+        widget=forms.Textarea(attrs={"placeholder": REPLY_PLACEHOLDER})
     )
 
     class Meta:

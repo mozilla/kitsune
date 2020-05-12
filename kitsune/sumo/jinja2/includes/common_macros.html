@@ -148,72 +148,68 @@
 
 <li class="mzp-c-menu-category {% if user.is_authenticated() %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
   {% if user.is_authenticated() %}
-  <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="{{ url('users.auth') }}">
-    <span class="sumo-nav--username">{{ display_name(user) }}</span>
-    {% if user.is_authenticated() %}
-    <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
-    {% else %}
-    <img class="avatar" src="{{ STATIC_URL }}sumo/img/default-FFA-avatar.png" alt="Avatar for Username">
-    {% endif %}
-  </a>
-  <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
-    <div class="sumo-nav--dropdown-container">
-      <div class="sumo-nav--dropdown-grid">
-        <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">{{ _('Close Firefox menu') }}</button>
-        <div class="sumo-nav--dropdown-thirds">
-          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ profile_url(user) }}">
-              <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(5 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"><path d="M0 18c1-4 3.333-6 7-6s6 2 7 6" stroke-linecap="round"/><circle cx="7" cy="4" r="4"/></g></svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('View Profile') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Manage your information and see your contributions.') }}
-              </p>
-            </a>
-            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
-              <li><a href="{{ url('search.advanced')|urlparams(a=1, asked_by=user, w=2) }}"">{{ _('My Questions') }}</a></li>
-            </ul>
-          </section>
-         </div>
-         <div class="sumo-nav--dropdown-thirds">
-           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-             <a class="mzp-c-menu-item-link" href="{{ url('users.edit_settings') }}">
-               <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(1 1)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="3"/><path d="M18.4 14a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V20a2 2 0 11-4 0v-.09A1.65 1.65 0 008 18.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 110-4h.09A1.65 1.65 0 003.6 8a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8c.26.604.852.997 1.51 1H20a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></g></svg>
-               <h4 class="mzp-c-menu-item-title">{{ _('Settings') }}</h4>
-               <p class="mzp-c-menu-item-desc">
-                 {{ _('Manage your privacy and notification preferences.') }}
-               </p>
-             </a>
-           </section>
+    <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="{{ url('users.auth') }}">
+      <span class="sumo-nav--username">{{ display_name(user) }}</span>
+      <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+    </a>
+    <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
+      <div class="sumo-nav--dropdown-container">
+        <div class="sumo-nav--dropdown-grid">
+          <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">{{ _('Close Firefox menu') }}</button>
+          <div class="sumo-nav--dropdown-thirds">
+            <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+              <a class="mzp-c-menu-item-link" href="{{ profile_url(user) }}">
+                <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(5 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"><path d="M0 18c1-4 3.333-6 7-6s6 2 7 6" stroke-linecap="round"/><circle cx="7" cy="4" r="4"/></g></svg>
+                <h4 class="mzp-c-menu-item-title">{{ _('View Profile') }}</h4>
+                <p class="mzp-c-menu-item-desc">
+                  {{ _('Manage your information and see your contributions.') }}
+                </p>
+              </a>
+              <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                <li><a href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
+                <li><a href="{{ url('search.advanced')|urlparams(a=1, asked_by=user, w=2) }}">{{ _('My Questions') }}</a></li>
+              </ul>
+            </section>
           </div>
           <div class="sumo-nav--dropdown-thirds">
             <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-              <a class="mzp-c-menu-item-link" href="{{ url('messages.inbox') }}">
-                <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></g></svg>
-                <h4 class="mzp-c-menu-item-title">{{ _('Inbox') }}</h4>
+              <a class="mzp-c-menu-item-link" href="{{ url('users.edit_settings') }}">
+                <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(1 1)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="3"/><path d="M18.4 14a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V20a2 2 0 11-4 0v-.09A1.65 1.65 0 008 18.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H2a2 2 0 110-4h.09A1.65 1.65 0 003.6 8a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H8a1.65 1.65 0 001-1.51V2a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V8c.26.604.852.997 1.51 1H20a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></g></svg>
+                <h4 class="mzp-c-menu-item-title">{{ _('Settings') }}</h4>
                 <p class="mzp-c-menu-item-desc">
-                  {{ _('Exchange private messages with other contributors.') }}
+                  {{ _('Manage your privacy and notification preferences.') }}
                 </p>
               </a>
             </section>
-            <div class="sumo-button-wrap align-end">
-              <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-                {% csrf_token %}
-              </form>
-              <a
-                class="sumo-button secondary-button button-lg"
-                data-type="submit"
-                data-form="sign-out"
-                href="#sign-out"
-                data-event-label="Sign Out">
-                {{ _('Sign Out') }}
-              </a>
-           </div>
+            </div>
+            <div class="sumo-nav--dropdown-thirds">
+              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                <a class="mzp-c-menu-item-link" href="{{ url('messages.inbox') }}">
+                  <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></g></svg>
+                  <h4 class="mzp-c-menu-item-title">{{ _('Inbox') }}</h4>
+                  <p class="mzp-c-menu-item-desc">
+                    {{ _('Exchange private messages with other contributors.') }}
+                  </p>
+                </a>
+              </section>
+              <div class="sumo-button-wrap align-end">
+                <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+                  {% csrf_token %}
+                </form>
+                <a
+                  class="sumo-button secondary-button button-lg"
+                  data-type="submit"
+                  data-form="sign-out"
+                  href="#sign-out"
+                  data-event-label="Sign Out">
+                  {{ _('Sign Out') }}
+                </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  {% else %}
+  {% elif not request.path == url('users.auth') %}
     <a href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">{{ _('Sign In/Up') }}</a>
   {% endif %}
 </li>
