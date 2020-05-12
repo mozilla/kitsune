@@ -46,7 +46,7 @@
       $('#main-content').after($searchContent);
     }
 
-    $searchResults = $(k.nunjucksEnv.render("search-results.html", context));
+    var $searchResults = $(k.nunjucksEnv.render("search-results.html", context));
     if (aaq_explore_step) {
       $searchResults.find('section a').attr('target', '_blank');
     }
