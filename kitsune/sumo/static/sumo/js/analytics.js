@@ -24,8 +24,8 @@
 
   // Track clicks to links with data-event-category attr.
   $('body').on('click', 'a[data-event-category]', function(ev) {
-    var newTab = ev.metaKey || ev.ctrlKey; // is a new tab/window being opened?
     var $this = $(this);
+    var newTab = ev.metaKey || ev.ctrlKey || $this.attr('target') == '_blank'; // is a new tab/window being opened?
 
     // unless user is ctrl-click'ing, prevent default action (navigation) while
     // we wait for the event to be tracked
