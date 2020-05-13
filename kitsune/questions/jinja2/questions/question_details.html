@@ -14,7 +14,7 @@
 {# L10n: {q} is the title of the question. #}
 {% set title = _('{q} | {product} Support Forum')|f(q=question.title, product=product_title) %}
 
-{% set crumbs = [(url('questions.home'), _('Support Forum')),
+{% set crumbs = [(url('questions.home'), _('Support Forums')),
                  (url('questions.list', question.product_slug), product_title),
                  (None, question.title)] %}
 
