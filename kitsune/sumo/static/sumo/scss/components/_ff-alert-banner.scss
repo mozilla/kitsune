@@ -16,19 +16,23 @@
 
 .sumo-ff-alert {
   background: var(--color-moz-inverse-bg);
+  border-radius: var(--global-radius);
+  margin: p.$spacing-2xl 0;
 
     &--content {
+      & > * {
+        margin: 0 p.$spacing-xl;
+      }
       display: flex;
       align-items: center;
       flex-direction: column;
       padding-top: p.$spacing-lg;
       padding-bottom: p.$spacing-lg;
-      margin-bottom: p.$spacing-xl;
     }
 
     &--icon {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
     }
 
     &--heading {
@@ -36,13 +40,14 @@
       font-family: var(--heading-font-family);
       font-weight: bold;
       text-align: center;
-      margin: p.$spacing-md 0 p.$spacing-lg;
       color: var(--color-inverse);
+      a {
+        color: inherit;
+      }
     }
 
     .sumo-button {
       flex: 0 0 auto;
-      margin: 0;
     }
 
     .sumo-close-button {
@@ -53,7 +58,6 @@
     &.has-abs-close-button {
       position: relative;
       padding: 20px;
-      border-radius: var(--global-radius);
 
       .sumo-close-button {
         position: absolute;
@@ -68,7 +72,6 @@
       }
 
       &--heading {
-        @include p.bidi(((margin, 0 auto 0 0, 0 0 0 auto),));
         text-align: left;
       }
 
@@ -76,18 +79,8 @@
         @include p.bidi(((margin, 0 20px 0 0, 0 0 0 20px),));
       }
 
-      .sumo-button {
-        @include p.bidi(((margin, 0 0 0 p.$spacing-md, 0 p.$spacing-md 0 0),));
-      }
-
       .sumo-close-button {
         @include p.bidi(((margin, 0 0 0 p.$spacing-md, 0 p.$spacing-md 0 0),));
-      }
-
-      &.has-abs-close-button {
-        .sumo-ff-alert--icon {
-          margin-right: p.$spacing-xl;
-        }
       }
     }
 
