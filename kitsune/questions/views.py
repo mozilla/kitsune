@@ -522,7 +522,9 @@ def aaq(
             user_agent = request.META.get("HTTP_USER_AGENT", "")
             product_key = get_mobile_product_from_ua(user_agent)
             if product_key:
-                step = 2
+                # redirect needed for InAAQMiddleware
+                step_2 = reverse('questions.aaq_step2', kwargs={"product_key": product_key})
+                return HttpResponseRedirect(step_2)
 
     # Return 404 if the product doesn't exist in config
     product_config = config.products.get(product_key)
