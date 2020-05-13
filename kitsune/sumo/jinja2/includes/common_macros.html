@@ -14,15 +14,13 @@
 
 {% macro sumo_cta_banner(text, modifier_class, id="id_ff_alert") %}
 <div class="sumo-ff-alert {{ modifier_class }}" {% if id %}id="{{ id }}"{% endif %}>
-  <div class="mzp-l-content">
-    <div class="sumo-ff-alert--content">
-      <img class="sumo-ff-alert--icon" src="{{ static('sumo/img/FF_Master__icon.svg') }}" />
-      <p class="sumo-ff-alert--heading">{{ text }}</p>
-      <a href="https://accounts.firefox.com" class="sumo-button primary-button button-lg">Start Now</a>
-      <button class="sumo-close-button" data-close-button="#{{ id }}">
-        <img src="{{ static('protocol/img/icons/close-white.svg') }}" />
-      </button>
-    </div>
+  <div class="sumo-ff-alert--content">
+    <img class="sumo-ff-alert--icon" src="{{ static('sumo/img/FF_Master__icon.svg') }}" />
+    <p class="sumo-ff-alert--heading">{{ text }}</p>
+    <a href="https://accounts.firefox.com" class="sumo-button primary-button button-lg">Start Now</a>
+    <button class="sumo-close-button" data-close-button="#{{ id }}">
+      <img src="{{ static('protocol/img/icons/close-white.svg') }}" />
+    </button>
   </div>
 </div>
 {% endmacro %}
