@@ -51,7 +51,6 @@
     }
 
     .sumo-close-button {
-      margin: 0;
       flex: 0 0 auto;
     }
 
@@ -74,16 +73,7 @@
       &--heading {
         text-align: left;
       }
-
-      &--icon {
-        @include p.bidi(((margin, 0 20px 0 0, 0 0 0 20px),));
-      }
-
-      .sumo-close-button {
-        @include p.bidi(((margin, 0 0 0 p.$spacing-md, 0 p.$spacing-md 0 0),));
-      }
     }
-
 
     @media #{p.$mq-md} {
 
