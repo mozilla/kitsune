@@ -16,6 +16,20 @@
                 "runserver",
                 "0.0.0.0:8000"
             ]
+        },
+
+        {
+            "name": "Kitsune (Gunicorn)",
+            "type": "python",
+            "request": "launch",
+            "django": true,
+            "program": "/venv/bin/gunicorn",
+            "args": [
+                "wsgi.app",
+                "--config",
+                "wsgi/config.py"
+            ]
         }
+
     ]
 }

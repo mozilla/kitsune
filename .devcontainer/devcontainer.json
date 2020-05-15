@@ -43,7 +43,7 @@
     "shutdownAction": "none",
 
     // Uncomment the next line to run commands after the container is created - for example installing git.
-    // "postCreateCommand": "apt-get update && apt-get install -y git",
+    "postCreateCommand": "./bin/run-bootstrap.sh",
 
     // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
     "remoteUser": "kitsune"
