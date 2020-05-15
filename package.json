@@ -33,6 +33,7 @@
     "browser-sync": "browser-sync start --no-open --files \"kitsune/**/*.html\" \"assets/sumo/css/screen.css\" \"kitsune/**/.py\" \"kitsune/**/.js\" \"kitsune/**/.json\" --proxy 127.0.0.1:8000 --reload-delay=300",
     "browser-sync:docs": "browser-sync start --no-open --serveStatic \"styleguide/build\" --files \"styleguide/build/**/*\" --port 4000 --reload-delay=300",
     "start": "concurrently --raw --kill-others \"make run\" \"npm run watch\" \"npm run browser-sync\"",
+    "start-vscode": "concurrently --raw --kill-others \"npm run watch\" \"npm run browser-sync\"",
     "production": "npm run install-prod && npm run copy:protocol && npm run postinstall && npm run build:scss && npm run build:postcss"
   },
   "license": "MPL-2.0",

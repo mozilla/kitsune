@@ -11,7 +11,7 @@ services:
     # to cause all processes to run as this user. Once present, you can also simply
     # use the "remoteUser" property in devcontainer.json if you just want VS Code and
     # its sub-processes (terminals, tasks, debugging) to execute as the user. On Linux,
-    # you may need to ensure the UID and GID of the container user you create matches your 
+    # you may need to ensure the UID and GID of the container user you create matches your
     # local user. See https://aka.ms/vscode-remote/containers/non-root for details.
     # user: kitsune
 
@@ -23,11 +23,12 @@ services:
     # Uncomment if you want to expose any additional ports. The snippet below exposes port 3000.
     ports:
        - 3050:3050
-    
+       - 3000:3000 # browser-sync
+       - 3001:3001 # browser-sync ui
+
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project
       - .:/workspace:cached
 
     # Overrides default command so things don't shut down after the process ends.
-    # command: /bin/sh -c "while sleep 1000; do :; done"
- 
+    command: /bin/sh -c "while sleep 1000; do :; done"

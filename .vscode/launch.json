@@ -5,16 +5,16 @@
 
     "version": "0.2.0",
     "configurations": [
+
         {
-            "name": "Django: Docker debug Kitsune",
+            "name": "Kitsune",
             "type": "python",
-            "request": "attach",
-            "port": 3050,
-            "host": "localhost",
+            "request": "launch",
             "django": true,
-            "subProcess": true,
-            "pathMappings": [
-                { "localRoot": "${workspaceFolder}", "remoteRoot": "." }
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8000"
             ]
         }
     ]
