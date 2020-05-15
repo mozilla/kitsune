@@ -96,3 +96,33 @@ First, make sure you have run the "Create some data" step above.
 1. Enter the web container: `docker-compose exec web bash`
 2. Build the indicies: `./manage.py esreindex` (You may need to pass the `--delete` flag)
 3. Precompile the nunjucks templates: `./manage.py nunjucks_precompile`
+
+## Development in vscode (beta)
+
+Install [vscode](https://code.visualstudio.com/) and the [Remote Development](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) extension.
+
+Launch vscode wherever you cloned this repo:
+```
+vscode .
+```
+
+In the vscode command palette (Ctrl+Shift+P) build and launch the container:
+```
+>Remote-Containers: Rebuild and Reopen in Container
+```
+
+Once vscode has reopened in the container, open a terminal (View > Terminal) and run the initial configuration:
+```
+./bin/run-bootstrap.sh
+```
+This will install the node dependencies and run any pending migrations.
+
+To launch kitsune, start browser-sync and the on-demand asset rebuilding:
+```
+npm run start-vscode
+```
+
+And run kitsune through the debugger:
+```
+>Debug: Start Debugging
+```
