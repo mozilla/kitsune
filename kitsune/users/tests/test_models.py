@@ -3,7 +3,7 @@ from datetime import datetime
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.forms import SettingsForm
-from kitsune.users.models import AccountEvent, Setting, User
+from kitsune.users.models import AccountEvent, Setting
 from kitsune.users.tests import AccountEventFactory, UserFactory, ProfileFactory
 from kitsune.products.tests import ProductFactory
 from nose.tools import eq_
@@ -45,12 +45,11 @@ class AccountEventTests(TestCase):
             profile=profile
         )
 
-        assert User.objects.filter(id=profile.user_id).exists()
+        assert profile.user.is_active
 
         account_event.process()
-        account_event.refresh_from_db()
 
-        assert not User.objects.filter(id=profile.user_id).exists()
+        assert not profile.user.is_active
         eq_(account_event.status, AccountEvent.PROCESSED)
 
     def test_process_subscription_state_change(self):
@@ -143,7 +142,7 @@ class AccountEventTests(TestCase):
         )
 
         account_event_1.process()
-        eq_(profile.password_change_time, datetime.utcfromtimestamp(2))
+        eq_(profile.fxa_password_change, datetime.utcfromtimestamp(2))
         eq_(account_event_1.status, AccountEvent.PROCESSED)
 
         account_event_2 = AccountEventFactory(
@@ -158,7 +157,7 @@ class AccountEventTests(TestCase):
         )
 
         account_event_2.process()
-        eq_(profile.password_change_time, datetime.utcfromtimestamp(2))
+        eq_(profile.fxa_password_change, datetime.utcfromtimestamp(2))
         eq_(account_event_2.status, AccountEvent.IGNORED)
 
     def test_process_unimplemented(self):

@@ -42,7 +42,7 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
 
         self.assertEqual(first_seen, self.request.session["first_seen"])
 
-    def test_does_nothing_if_no_password_change_time(self):
+    def test_does_nothing_if_no_fxa_password_change(self):
         user = UserFactory()
         self.request.user = user
         self.request.session["first_seen"] = datetime.utcfromtimestamp(1)
@@ -53,7 +53,7 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
 
     def test_logs_out_user_first_seen_before_password_change(self):
         self.request.user = ProfileFactory(
-            password_change_time=datetime.utcnow() + timedelta(minutes=5)
+            fxa_password_change=datetime.utcnow() + timedelta(minutes=5)
         ).user
 
         self._process_request(self.request)
@@ -64,7 +64,7 @@ class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
 
     def test_does_nothing_if_user_first_seen_after_password_change(self):
         self.request.user = ProfileFactory(
-            password_change_time=datetime.utcnow() - timedelta(minutes=5)
+            fxa_password_change=datetime.utcnow() - timedelta(minutes=5)
         ).user
         user = self.request.user
 

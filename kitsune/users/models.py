@@ -82,7 +82,7 @@ class Profile(ModelBase, SearchMixin):
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
     fxa_avatar = models.URLField(max_length=512, blank=True, default='')
     products = models.ManyToManyField(Product, related_name='subscribed_users')
-    password_change_time = models.DateTimeField(blank=True, null=True)
+    fxa_password_change = models.DateTimeField(blank=True, null=True)
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
@@ -453,6 +453,7 @@ class AccountEvent(models.Model):
         (SUBSCRIPTION_STATE_CHANGE, 'subscription-state-change'),
         (DELETE_USER, 'delete-user')
     )
+    ID_PREFIX = 'https://schemas.accounts.firefox.com/event/'
 
     status = models.PositiveSmallIntegerField(choices=EVENT_STATUS,
                                               default=UNPROCESSED,
@@ -476,56 +477,11 @@ class AccountEvent(models.Model):
 
         try:
             if self.event_type == self.DELETE_USER:
-                self.profile.delete()
-                self.profile = None
-                self.status = self.PROCESSED
-                self.save()
+                self._process_delete_user()
             elif self.event_type == self.SUBSCRIPTION_STATE_CHANGE:
-                event = json.loads(
-                    self.events
-                )["https://schemas.accounts.firefox.com/event/subscription-state-change"]
-
-                try:
-                    last_event_obj = AccountEvent.objects.filter(
-                        profile_id=self.profile.pk,
-                        status=self.PROCESSED,
-                        event_type=self.SUBSCRIPTION_STATE_CHANGE
-                    ).order_by("last_modified")[0]
-                except IndexError:
-                    pass
-                else:
-                    last_event = json.loads(
-                        last_event_obj.events
-                    )["https://schemas.accounts.firefox.com/event/subscription-state-change"]
-                    if last_event["changeTime"] > event["changeTime"]:
-                        self.status = self.IGNORED
-                        self.save()
-                        return
-
-                products = Product.objects.filter(codename__in=event["capabilities"])
-                if event["isActive"]:
-                    self.profile.products.add(*products)
-                else:
-                    self.profile.products.remove(*products)
-                self.status = self.PROCESSED
-                self.save()
+                self._process_subscription_state_change()
             elif self.event_type == self.PASSWORD_CHANGE:
-                event = json.loads(
-                    self.events
-                )["https://schemas.accounts.firefox.com/event/password-change"]
-
-                change_time = datetime.utcfromtimestamp(event["changeTime"] / 1000.0)
-
-                if (isinstance(self.profile.password_change_time, datetime) and
-                        self.profile.password_change_time > change_time):
-                    self.status = self.IGNORED
-                    self.save()
-                    return
-
-                self.profile.password_change_time = change_time
-                self.profile.save()
-                self.status = self.PROCESSED
-                self.save()
+                self._process_password_change()
             else:
                 self.status = self.UNIMPLEMENTED
                 self.save()
@@ -533,3 +489,49 @@ class AccountEvent(models.Model):
             self.error = traceback.format_exc()
             self.status = self.ERRORED
             self.save()
+
+    def _process_delete_user(self):
+        from kitsune.users.utils import deactivate_user
+        deactivate_user(self.profile.user, self.profile.user)
+        self.status = self.PROCESSED
+        self.save()
+
+    def _process_subscription_state_change(self):
+        EVENT_KEY = self.ID_PREFIX + 'subscription-state-change'
+        event = json.loads(self.events)[EVENT_KEY]
+
+        last_event_q = AccountEvent.objects.filter(
+            profile_id=self.profile.pk,
+            status=self.PROCESSED,
+            event_type=self.SUBSCRIPTION_STATE_CHANGE
+        ).order_by("last_modified")
+        if last_event_q:
+            last_event = json.loads(last_event_q[0].events)[EVENT_KEY]
+            if last_event["changeTime"] > event["changeTime"]:
+                self.status = self.IGNORED
+                self.save()
+                return
+
+        products = Product.objects.filter(codename__in=event["capabilities"])
+        if event["isActive"]:
+            self.profile.products.add(*products)
+        else:
+            self.profile.products.remove(*products)
+        self.status = self.PROCESSED
+        self.save()
+
+    def _process_password_change(self):
+        event = json.loads(self.events)[self.ID_PREFIX + 'password-change']
+
+        change_time = datetime.utcfromtimestamp(event["changeTime"] / 1000.0)
+
+        if (isinstance(self.profile.fxa_password_change, datetime) and
+                self.profile.fxa_password_change > change_time):
+            self.status = self.IGNORED
+            self.save()
+            return
+
+        self.profile.fxa_password_change = change_time
+        self.profile.save()
+        self.status = self.PROCESSED
+        self.save()

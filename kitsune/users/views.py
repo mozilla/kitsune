@@ -440,7 +440,7 @@ class WebhookView(View):
         events = payload.get('events')
 
         for long_id, event in events.items():
-            short_id = long_id.replace('https://schemas.accounts.firefox.com/event/', '')
+            short_id = long_id.replace(AccountEvent.ID_PREFIX, '')
             try:
                 event_type = next(x for x, y in AccountEvent.EVENT_TYPE if y == short_id)
             except StopIteration:
