@@ -21,3 +21,24 @@ And run kitsune through the debugger:
 ```
 >Debug: Start Debugging
 ```
+
+## Running without debugging
+
+To run kitsune without debugging, ensure you start browser-sync and asset rebuilding as before with:
+```
+npm run start-in-container
+```
+
+And run kitsune with this vscode command instead:
+```
+>Run: Start Without Debugging
+```
+
+## Stopping a stubborn kitsune instance
+
+If you launch the "Kitsune" config in vscode, sometimes the server won't stop when you stop debugging.
+
+In order to stop the server so you can start debugging again run the vscode command:
+```
+>Remote-Containers: Rebuild Container
+```
