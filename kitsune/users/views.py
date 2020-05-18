@@ -147,8 +147,6 @@ def close_account(request):
 def deactivate(request, mark_spam=False):
     user = get_object_or_404(User, id=request.POST['user_id'], is_active=True)
     deactivate_user(user, request.user)
-    # Clear user settings to remove incoming notifications
-    Setting.objects.filter(user=user).delete()
 
     if mark_spam:
         mark_content_as_spam(user, request.user)
