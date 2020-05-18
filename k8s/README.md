@@ -201,3 +201,54 @@ KUBECTL_BIN=/home/metadave/kubectl1.6.4 invoke -f ./regions/oregon-b/dev.yaml de
 ```
 
 > the default KUBECTL_BIN value is `kubectl`.
+
+## Checking the Celery queue
+
+<!-- TODO: update this section once we've upgraded Python/Django to reflect new commands -->
+
+In order to check the size of an instance's celery queue, open a shell on a pod in that namespace:
+
+```
+kubectl exec -ti sumo-dev-celery-abc -- /bin/bash
+```
+
+Get the name of the queue you want to query:
+
+```
+./manage.py celery inspect active_queues
+```
+
+Open a python shell:
+
+```
+./manage.py shell_plus
+```
+
+Get the url of the redis instance:
+```
+In [1]: settings.BROKER_URL
+Out[1]: 'redis://hostname:port/db'
+```
+
+Set up the redis client:
+```
+import redis
+r = redis.Redis(host='hostname', port='port', db=db)
+```
+
+Then query the length of the queue, in this case called 'celery':
+```
+In [4]: r.llen('celery')
+Out[4]: 44
+```
+
+The last item in the queue can be fetched with:
+```
+l = r.lrange('celery', -1, -1)
+```
+
+This must then be parsed and de-pickled:
+```
+import pickle, base64, json
+pickle.loads(base64.decodestring(json.loads(l[0])['body']))
+```
