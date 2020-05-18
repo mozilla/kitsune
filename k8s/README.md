@@ -204,6 +204,8 @@ KUBECTL_BIN=/home/metadave/kubectl1.6.4 invoke -f ./regions/oregon-b/dev.yaml de
 
 ## Checking the Celery queue
 
+<!-- TODO: update this section once we've upgraded Python/Django to reflect new commands -->
+
 In order to check the size of an instance's celery queue, open a shell on a pod in that namespace:
 
 ```
