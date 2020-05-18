@@ -214,7 +214,7 @@ def document(request, document_slug, document=None):
     # Decide whether the sumo banner should be displayed in the KB.
     # Base the decision on the English version of the document. If this is True
     # all translation should display the banner
-    if doc.locale != settings.WIKI_DEFAULT_LANGUAGE:
+    if doc.parent and doc.locale != settings.WIKI_DEFAULT_LANGUAGE:
         doc_for_banner = (doc.parent if doc.parent.locale == settings.WIKI_DEFAULT_LANGUAGE
                           else None)
     else:
