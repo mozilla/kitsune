@@ -17,18 +17,3 @@ class LogoutDeactivatedUsersMiddleware(object):
 
             logout(request)
             return HttpResponseRedirect(reverse('home'))
-
-
-# NOTE: This middleware should be removed in May 2020
-# where all active sessions for sumo accounts will have expired.
-class LogoutSumoAccountsMiddleware(object):
-    """Logs out any users that are active in the site with SUMO accounts."""
-
-    def process_request(self, request):
-
-        user = request.user
-        if (user.is_authenticated() and user.profile and not user.profile.is_fxa_migrated):
-
-            # The user is auth'd, not active and not in AAQ. /KICK
-            logout(request)
-            return HttpResponseRedirect(reverse('home'))
