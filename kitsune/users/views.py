@@ -2,7 +2,6 @@ import json
 import logging
 from ast import literal_eval
 from textwrap import dedent
-from uuid import uuid4
 
 import requests
 
@@ -38,7 +37,7 @@ from kitsune.users.forms import ProfileForm, SettingsForm
 from kitsune.users.models import AccountEvent, Deactivation, Profile
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (add_to_contributors, deactivate_user,
-                                 get_oidc_fxa_setting)
+                                 get_oidc_fxa_setting, anonymize_user)
 from kitsune.wiki.models import (user_documents, user_num_documents,
                                  user_redirects)
 from mozilla_django_oidc.utils import import_from_settings
@@ -136,22 +135,7 @@ def profile(request, username):
 @login_required
 @require_POST
 def close_account(request):
-    # Clear the profile
-    user_id = request.user.id
-    profile = get_object_or_404(Profile, user__id=user_id)
-    profile.clear()
-    profile.fxa_uid = '{user_id}-{uid}'.format(user_id=user_id, uid=str(uuid4()))
-    profile.save()
-
-    # Deactivate the user and change key information
-    request.user.username = 'user%s' % user_id
-    request.user.email = '%s@example.com' % user_id
-    request.user.is_active = False
-
-    # Remove from all groups
-    request.user.groups.clear()
-
-    request.user.save()
+    anonymize_user(request.user)
 
     # Log the user out
     auth.logout(request)

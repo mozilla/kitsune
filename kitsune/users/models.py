@@ -491,8 +491,8 @@ class AccountEvent(models.Model):
             self.save()
 
     def _process_delete_user(self):
-        from kitsune.users.utils import deactivate_user
-        deactivate_user(self.profile.user, self.profile.user)
+        from kitsune.users.utils import anonymize_user
+        anonymize_user(self.profile.user)
         self.status = self.PROCESSED
         self.save()
 
