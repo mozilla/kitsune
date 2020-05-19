@@ -2,12 +2,11 @@ import json
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
 from kitsune.wiki.decorators import check_simple_wiki_locale
-from kitsune.wiki.facets import topics_for, documents_for
+from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.utils import get_featured_articles
 
 
@@ -58,8 +57,8 @@ def product_landing(request, slug):
                 if user.is_authenticated()
                 else []
             ),
-            "featured": get_featured_articles(product),
-        },
+            "featured": get_featured_articles(product)
+        }
     )
 
 

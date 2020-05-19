@@ -126,20 +126,22 @@
   </div>
 </section>
 <div class="wrap" id="main-content">
-<section class="mzp-l-content sumo-page-section--inner">
-  <div class="text-center-to-left-on-large">
-    <h2 class="sumo-page-subheading">{{ _('Featured Articles') }}</h2>
-  </div>
-  {{ featured_articles(articles=featured, new_tab=True) }}
-</section>
-<section class="sumo-page-section--inner hide-when-search-is-active highlight-box">
-    <div class="mzp-l-content">
-      <div class="text-center-to-left-on-large aaq-popular-topics">
-        <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
+  {% if featured %}
+    <section class="mzp-l-content sumo-page-section--inner">
+      <div class="text-center-to-left-on-large">
+        <h2 class="sumo-page-subheading">{{ _('Featured Articles') }}</h2>
       </div>
-      {{ help_topics(topics, product_slug=product.product, new_tab=True) }}
-    </div>
-</section>
+      {{ featured_articles(articles=featured, new_tab=True) }}
+    </section>
+  {% endif %}
+  <section class="sumo-page-section--inner hide-when-search-is-active highlight-box">
+      <div class="mzp-l-content">
+        <div class="text-center-to-left-on-large aaq-popular-topics">
+          <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
+        </div>
+        {{ help_topics(topics, product_slug=product.product, new_tab=True) }}
+      </div>
+  </section>
 </div>
 {%- endmacro %}
 
