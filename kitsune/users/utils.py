@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group, User
 from django.utils.translation import ugettext as _
 
 from kitsune.sumo import email_utils
-from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation
+from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
 
 log = logging.getLogger('k.users')
 
@@ -67,6 +67,9 @@ def suggest_username(email):
 def deactivate_user(user, moderator):
     user.is_active = False
     user.save()
+    # Clear user settings to remove incoming notifications
+    Setting.objects.filter(user=user).delete()
+
     deactivation = Deactivation(user=user, moderator=moderator)
     deactivation.save()
 
