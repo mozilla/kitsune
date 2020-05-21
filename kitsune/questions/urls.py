@@ -1,13 +1,12 @@
 from django.conf import settings
 from django.conf.urls import url
 
-from kitsune.questions import views
-from kitsune.questions.feeds import (
-    QuestionsFeed, AnswersFeed, TaggedQuestionsFeed)
-from kitsune.questions.models import Question, Answer
 from kitsune.flagit import views as flagit_views
+from kitsune.questions import views
+from kitsune.questions.feeds import (AnswersFeed, QuestionsFeed,
+                                     TaggedQuestionsFeed)
+from kitsune.questions.models import Answer, Question
 from kitsune.sumo.views import handle404
-
 
 if settings.DISABLE_FEEDS:
     questions_feed_view = handle404
@@ -36,17 +35,6 @@ urlpatterns = [
     # maintain backwards compatibility with old aaq urls:
     url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)',
         views.aaq_step3, name='questions.aaq_step3'),
-
-    # AAQ flow for Marketplace
-    url(r'^/marketplace$', views.marketplace, name='questions.marketplace_aaq'),
-    url(r'^/marketplace/success$',
-        views.marketplace_success, name='questions.marketplace_aaq_success'),
-    url(r'^/marketplace/refund$', views.marketplace_refund,
-        name='questions.marketplace_refund'),
-    url(r'^/marketplace/developer-request$', views.marketplace_developer_request,
-        name='questions.marketplace_developer_request'),
-    url(r'^/marketplace/(?P<category_slug>[\w\-]+)$',
-        views.marketplace_category, name='questions.marketplace_aaq_category'),
 
     # TODO: Factor out `/(?P<question_id>\d+)` below
     url(r'^/(?P<question_id>\d+)$', views.question_details,

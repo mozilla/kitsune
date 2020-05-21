@@ -11,15 +11,19 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
-                         HttpResponseForbidden, HttpResponseRedirect)
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseRedirect,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import (require_GET, require_http_methods,
-                                          require_POST)
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
 from ordereddict import OrderedDict
@@ -31,25 +35,34 @@ from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.feeds import (AnswersFeed, QuestionsFeed,
-                                     TaggedQuestionsFeed)
-from kitsune.questions.forms import (FREQUENCY_CHOICES, AnswerForm,
-                                     EditQuestionForm, MarketplaceAaqForm,
-                                     MarketplaceDeveloperRequestForm,
-                                     MarketplaceRefundForm, NewQuestionForm,
-                                     StatsForm, WatchQuestionForm)
-from kitsune.questions.marketplace import MARKETPLACE_CATEGORIES, ZendeskError
-from kitsune.questions.models import (Answer, AnswerVote, Question,
-                                      QuestionLocale, QuestionMappingType,
-                                      QuestionVote)
-from kitsune.questions.signals import tag_added
+from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
+from kitsune.questions.forms import (
+    FREQUENCY_CHOICES,
+    AnswerForm,
+    EditQuestionForm,
+    NewQuestionForm,
+    StatsForm,
+    WatchQuestionForm,
+)
+from kitsune.questions.models import (
+    Answer,
+    AnswerVote,
+    Question,
+    QuestionLocale,
+    QuestionMappingType,
+    QuestionVote,
+)
 from kitsune.questions.utils import get_mobile_product_from_ua
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, Sphilastic
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.sumo.utils import (build_paged_url, is_ratelimited, paginate,
-                                simple_paginate)
+from kitsune.sumo.utils import (
+    build_paged_url,
+    is_ratelimited,
+    paginate,
+    simple_paginate,
+)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
@@ -117,7 +130,6 @@ def question_list(request, product_slug):
     if show not in FILTER_GROUPS:
         show = "needs-attention"
 
-    escalated = request.GET.get("escalated")
     tagged = request.GET.get("tagged")
     tags = None
     topic_slug = request.GET.get("topic")
@@ -160,9 +172,6 @@ def question_list(request, product_slug):
     if filter_ not in FILTER_GROUPS[show]:
         filter_ = None
 
-    if escalated:
-        filter_ = None
-
     if filter_ == "new":
         question_qs = question_qs.new()
     elif filter_ == "unhelpful-answers":
@@ -184,9 +193,6 @@ def question_list(request, product_slug):
             question_qs = question_qs.responded()
         if show == "done":
             question_qs = question_qs.done()
-
-    if escalated:
-        question_qs = question_qs.filter(tags__name__in=[config.ESCALATE_TAG_NAME])
 
     question_qs = question_qs.select_related(
         "creator", "last_answer", "last_answer__creator"
@@ -310,7 +316,6 @@ def question_list(request, product_slug):
         "order": order,
         "orders": ORDER_BY,
         "sort": sort,
-        "escalated": escalated,
         "tags": tags,
         "tagged": tagged,
         "recent_asked_count": recent_asked_count,
@@ -448,12 +453,8 @@ def question_details(
     if not question.solution_id:
         extra_kwargs.update(robots_noindex=True)
 
-    if request.session.pop('aaq-final-step', False):
-        extra_kwargs.update(
-            {
-                "aaq_final_step": True
-            }
-        )
+    if request.session.pop("aaq-final-step", False):
+        extra_kwargs.update({"aaq_final_step": True})
 
     return render(request, "questions/question_details.html", extra_kwargs)
 
@@ -481,9 +482,7 @@ def edit_details(request, question_id):
 
 
 @ssl_required
-def aaq(
-    request, product_key=None, category_key=None, step=1
-):
+def aaq(request, product_key=None, category_key=None, step=1):
     """Ask a new question."""
 
     template = "questions/new_question.html"
@@ -523,7 +522,9 @@ def aaq(
             product_key = get_mobile_product_from_ua(user_agent)
             if product_key:
                 # redirect needed for InAAQMiddleware
-                step_2 = reverse('questions.aaq_step2', kwargs={"product_key": product_key})
+                step_2 = reverse(
+                    "questions.aaq_step2", kwargs={"product_key": product_key}
+                )
                 return HttpResponseRedirect(step_2)
 
     # Return 404 if the product doesn't exist in config
@@ -569,7 +570,8 @@ def aaq(
         context["topics"] = topics_for(product, parent=None)
     elif step == 3:
         form = NewQuestionForm(
-            product=product_config, data=request.POST or None,
+            product=product_config,
+            data=request.POST or None,
             initial={"category": category_key},
         )
         context["form"] = form
@@ -590,20 +592,20 @@ def aaq(
             question_vote(request, question.id)
 
             my_questions_url = urlparams(
-                reverse('search.advanced'), a=1, asked_by=request.user, w=2
+                reverse("search.advanced"), a=1, asked_by=request.user, w=2
             )
             messages.add_message(
                 request,
                 messages.SUCCESS,
                 _(
-                    "Done! Your question is now posted on the Mozilla community support forum. " +
-                    "You can see your post anytime by visiting the {a_open}My Questions" +
-                    "{a_close} page in your profile."
+                    "Done! Your question is now posted on the Mozilla community support forum. "
+                    + "You can see your post anytime by visiting the {a_open}My Questions"
+                    + "{a_close} page in your profile."
                 ).format(a_open="<a href='" + my_questions_url + "'>", a_close="</a>"),
-                extra_tags="safe"
+                extra_tags="safe",
             )
 
-            request.session['aaq-final-step'] = True
+            request.session["aaq-final-step"] = True
 
             url = reverse("questions.details", kwargs={"question_id": question.id})
             return HttpResponseRedirect(url)
@@ -629,12 +631,7 @@ def aaq_step2(request, product_key):
 @ssl_required
 def aaq_step3(request, product_key, category_key=None):
     """Step 3: Show full question form."""
-    return aaq(
-        request,
-        product_key=product_key,
-        category_key=category_key,
-        step=3,
-    )
+    return aaq(request, product_key=product_key, category_key=category_key, step=3,)
 
 
 @require_http_methods(["GET", "POST"])
@@ -653,15 +650,9 @@ def edit_question(request, question_id):
     if request.method == "GET":
         initial = question.metadata.copy()
         initial.update(title=question.title, content=question.content)
-        form = EditQuestionForm(
-            product=question.product_config,
-            initial=initial,
-        )
+        form = EditQuestionForm(product=question.product_config, initial=initial,)
     else:
-        form = EditQuestionForm(
-            data=request.POST,
-            product=question.product_config,
-        )
+        form = EditQuestionForm(data=request.POST, product=question.product_config,)
 
         # NOJS: upload images, if any
         upload_imageattachment(request, question)
@@ -1333,116 +1324,6 @@ def answer_preview_async(request):
     return render(request, template, {"answer_preview": answer})
 
 
-def marketplace(request):
-    """AAQ landing page for Marketplace."""
-    return render(
-        request, "questions/marketplace.html", {"categories": MARKETPLACE_CATEGORIES}
-    )
-
-
-ZENDESK_ERROR_MESSAGE = _lazy(
-    u"There was an error submitting the ticket. " u"Please try again later."
-)
-
-
-def marketplace_category(request, category_slug):
-    """AAQ category page. Handles form post that submits ticket."""
-
-    try:
-        category_name = MARKETPLACE_CATEGORIES[category_slug]
-    except KeyError:
-        raise Http404
-
-    error_message = None
-
-    if request.method == "GET":
-        form = MarketplaceAaqForm(request.user)
-    else:
-        form = MarketplaceAaqForm(request.user, request.POST)
-        if form.is_valid():
-            # Submit ticket
-            try:
-                form.submit_ticket()
-
-                return HttpResponseRedirect(
-                    reverse("questions.marketplace_aaq_success")
-                )
-
-            except ZendeskError:
-                error_message = ZENDESK_ERROR_MESSAGE
-
-    return render(
-        request,
-        "questions/marketplace_category.html",
-        {
-            "category": category_name,
-            "category_slug": category_slug,
-            "categories": MARKETPLACE_CATEGORIES,
-            "form": form,
-            "error_message": error_message,
-        },
-    )
-
-
-def marketplace_refund(request):
-    """Form page that handles refund requests for Marketplace."""
-    error_message = None
-
-    if request.method == "GET":
-        form = MarketplaceRefundForm(request.user)
-    else:
-        form = MarketplaceRefundForm(request.user, request.POST)
-        if form.is_valid():
-            # Submit ticket
-            try:
-                form.submit_ticket()
-
-                return HttpResponseRedirect(
-                    reverse("questions.marketplace_aaq_success")
-                )
-
-            except ZendeskError:
-                error_message = ZENDESK_ERROR_MESSAGE
-
-    return render(
-        request,
-        "questions/marketplace_refund.html",
-        {"form": form, "error_message": error_message},
-    )
-
-
-def marketplace_developer_request(request):
-    """Form page that handles developer requests for Marketplace."""
-    error_message = None
-
-    if request.method == "GET":
-        form = MarketplaceDeveloperRequestForm(request.user)
-    else:
-        form = MarketplaceDeveloperRequestForm(request.user, request.POST)
-        if form.is_valid():
-            # Submit ticket
-            try:
-                form.submit_ticket()
-
-                return HttpResponseRedirect(
-                    reverse("questions.marketplace_aaq_success")
-                )
-
-            except ZendeskError:
-                error_message = ZENDESK_ERROR_MESSAGE
-
-    return render(
-        request,
-        "questions/marketplace_developer_request.html",
-        {"form": form, "error_message": error_message},
-    )
-
-
-def marketplace_success(request):
-    """Confirmation of ticket submitted successfully."""
-    return render(request, "questions/marketplace_success.html")
-
-
 def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     """Gets a zero filled histogram for each question topic.
 
@@ -1673,11 +1554,6 @@ def _add_tag(request, question_id):
                 canonical_name = tag_name
             else:
                 raise
-
-        # Fire off the tag_added signal.
-        tag_added.send(
-            sender=Question, question_id=question.id, tag_name=canonical_name
-        )
 
         return question, canonical_name
 

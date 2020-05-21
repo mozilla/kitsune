@@ -1,59 +1,46 @@
 import logging
 import re
 import time
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 from urlparse import urlparse
-
-from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-from django.core.cache import cache
-from django.core.urlresolvers import resolve
-from django.conf import settings
-from django.dispatch import receiver
-from django.db import models, connection, close_old_connections
-from django.db.models import Q
-from django.db.models.signals import post_save, pre_save
-from django.db.utils import IntegrityError
-from django.http import Http404
 
 import actstream
 import actstream.actions
-from product_details import product_details
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import (GenericForeignKey,
+                                                GenericRelation)
+from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
+from django.core.urlresolvers import resolve
+from django.db import close_old_connections, connection, models
+from django.db.models import Q
+from django.db.models.signals import post_save, pre_save
+from django.db.utils import IntegrityError
+from django.dispatch import receiver
+from django.http import Http404
 from django_statsd.clients import statsd
+from product_details import product_details
 from taggit.models import Tag, TaggedItem
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
-from kitsune.questions.managers import (
-    AnswerManager,
-    QuestionManager,
-    QuestionLocaleManager,
-)
-from kitsune.questions.signals import tag_added
-from kitsune.questions.tasks import (
-    update_question_votes,
-    update_answer_pages,
-    escalate_question,
-)
-from kitsune.search.es_utils import UnindexMeBro, ES_EXCEPTIONS
-from kitsune.search.models import (
-    SearchMappingType,
-    SearchMixin,
-    register_for_indexing,
-    register_mapping_type,
-)
+from kitsune.questions.managers import (AnswerManager, QuestionLocaleManager,
+                                        QuestionManager)
+from kitsune.questions.tasks import update_answer_pages, update_question_votes
+from kitsune.search.es_utils import ES_EXCEPTIONS, UnindexMeBro
+from kitsune.search.models import (SearchMappingType, SearchMixin,
+                                   register_for_indexing,
+                                   register_mapping_type)
 from kitsune.search.tasks import index_task
-from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.models import ModelBase, LocaleField
-from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
+from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.wiki.models import Document
-
 
 log = logging.getLogger("k.questions")
 
@@ -367,10 +354,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     @property
     def is_solved(self):
         return self.solution_id is not None
-
-    @property
-    def is_escalated(self):
-        return config.ESCALATE_TAG_NAME in [t.name for t in self.my_tags]
 
     @property
     def is_offtopic(self):
@@ -880,15 +863,6 @@ register_for_indexing(
         lambda i: (i.content_object if isinstance(i.content_object, Question) else None)
     ),
 )
-
-
-def _tag_added(sender, question_id, tag_name, **kwargs):
-    """Signal handler for new tag on question."""
-    if tag_name == config.ESCALATE_TAG_NAME:
-        escalate_question.delay(question_id)
-
-
-tag_added.connect(_tag_added, sender=Question, dispatch_uid="tagged_1337")
 
 
 class QuestionMetaData(ModelBase):
