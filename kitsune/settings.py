@@ -539,7 +539,6 @@ MIDDLEWARE_CLASSES = (
 
     'kitsune.sumo.middleware.InAAQMiddleware',
     'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
-    'kitsune.users.middleware.LogoutSumoAccountsMiddleware',
 )
 
 # SecurityMiddleware settings
