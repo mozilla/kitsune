@@ -287,9 +287,16 @@
     This is the contents of the bar.
   {% endcall %}
 #}
-{% macro announcement_bar(id, level) -%}
+{% macro announcement_bar(id, level, close_memory="", close_type="") -%}
   <div id="announce-{{ id }}" class="mzp-c-notification-bar mzp-t-{{ level }}">
-    <button class="mzp-c-notification-bar-button close-button" data-close-id="announce-{{ id }}" type="button"></button>
+    <button
+      class="mzp-c-notification-bar-button close-button"
+      data-close-id="announce-{{ id }}"
+      type="button"
+      {% if close_memory %}data-close-memory="{{ close_memory }}"{% endif %}
+      {% if close_type %}data-close-type="{{ close_type }}"{% endif %}
+    >
+    </button>
     <p>{{ caller() }}</p>
   </div>
 {% endmacro %}
