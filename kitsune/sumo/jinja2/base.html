@@ -125,7 +125,7 @@
 {# end TrafficCop #}
 
 <div id="announcements">
-  {% call announcement_bar('geoip-suggestion', 'warning') %}{% endcall %}
+  {% call announcement_bar('geoip-suggestion', 'warning', close_memory="remember", close_type="remove") %}{% endcall %}
 
   {% for announ in get_announcements() %}
       {% call announcement_bar(announ.id, 'warn') %}

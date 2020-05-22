@@ -61,3 +61,12 @@
     max-width: none;
   }
 }
+
+#announce-geoip-suggestion {
+  display: none;
+
+  p button {
+    margin-left: p.$spacing-xs;
+    margin-top: p.$spacing-xs;
+  }
+}
