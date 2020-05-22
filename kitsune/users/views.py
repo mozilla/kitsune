@@ -34,7 +34,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
 from kitsune.users.forms import ProfileForm, SettingsForm
-from kitsune.users.models import AccountEvent, Deactivation, Profile
+from kitsune.users.models import AccountEvent, Deactivation, Profile, SET_ID_PREFIX
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (add_to_contributors, deactivate_user,
                                  get_oidc_fxa_setting, anonymize_user)
@@ -47,7 +47,11 @@ from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
                                        OIDCLogoutView)
 from sentry_sdk import capture_message
 from tidings.models import Watch
-from kitsune.users.tasks import process_account_event
+from kitsune.users.tasks import (
+    process_event_delete_user,
+    process_event_password_change,
+    process_event_subscription_state_change
+)
 
 log = logging.getLogger('k.users.views')
 
@@ -418,17 +422,13 @@ class WebhookView(View):
         # deserializing https://bugs.python.org/issue17909
         return json.loads(jws.payload.decode('utf-8'))
 
-    def save_events(self, payload):
+    def process_events(self, payload):
         fxa_uid = payload.get('sub')
         profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
         events = payload.get('events')
 
         for long_id, event in events.items():
-            short_id = long_id.replace(AccountEvent.ID_PREFIX, '')
-            try:
-                event_type = next(x for x, y in AccountEvent.EVENT_TYPE if y == short_id)
-            except StopIteration:
-                event_type = None
+            short_id = long_id.replace(SET_ID_PREFIX, '')
             profile = profile_q[0] if profile_q.exists() else None
 
             account_event = AccountEvent.objects.create(
@@ -436,13 +436,21 @@ class WebhookView(View):
                 jwt_id=payload['jti'],
                 fxa_uid=fxa_uid,
                 status=AccountEvent.UNPROCESSED if profile else AccountEvent.IGNORED,
-                events=json.dumps({long_id: event}),
-                event_type=event_type,
+                body=json.dumps(event),
+                event_type=short_id,
                 profile=profile
             )
 
-            if event_type and profile:
-                process_account_event.delay(account_event)
+            if profile:
+                if short_id == AccountEvent.DELETE_USER:
+                    process_event_delete_user.delay(account_event.id)
+                elif short_id == AccountEvent.SUBSCRIPTION_STATE_CHANGE:
+                    process_event_subscription_state_change.delay(account_event.id)
+                elif short_id == AccountEvent.PASSWORD_CHANGE:
+                    process_event_password_change.delay(account_event.id)
+                else:
+                    account_event.status = AccountEvent.NOT_IMPLEMENTED
+                    account_event.save()
 
     def post(self, request, *args, **kwargs):
         # TODO add docstrings
@@ -491,7 +499,7 @@ class WebhookView(View):
                     'description': 'description'
                 }, status=400)
 
-            self.save_events(payload)
+            self.process_events(payload)
 
             return HttpResponse(status=202)
         raise Http404

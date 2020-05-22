@@ -1,8 +1,6 @@
 import logging
 import re
 import time
-import traceback
-import json
 from datetime import datetime
 
 from django.conf import settings
@@ -27,6 +25,7 @@ log = logging.getLogger('k.users')
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 CONTRIBUTOR_GROUP = 'Registered as contributor'
+SET_ID_PREFIX = 'https://schemas.accounts.firefox.com/event/'
 
 
 @auto_delete_files
@@ -432,106 +431,31 @@ class AccountEvent(models.Model):
     # Status of an event entry.
     UNPROCESSED = 1
     PROCESSED = 2
-    ERRORED = 3
-    IGNORED = 4
-    UNIMPLEMENTED = 5
+    IGNORED = 3
+    NOT_IMPLEMENTED = 4
     EVENT_STATUS = (
         (UNPROCESSED, 'unprocessed'),
         (PROCESSED, 'processed'),
-        (ERRORED, 'errored'),
         (IGNORED, 'ignored'),
-        (UNIMPLEMENTED, 'unimplemented'),
+        (NOT_IMPLEMENTED, 'not-implemented'),
     )
 
-    PASSWORD_CHANGE = 1
-    PROFILE_CHANGE = 2
-    SUBSCRIPTION_STATE_CHANGE = 3
-    DELETE_USER = 4
-    EVENT_TYPE = (
-        (PASSWORD_CHANGE, 'password-change'),
-        (PROFILE_CHANGE, 'profile-change'),
-        (SUBSCRIPTION_STATE_CHANGE, 'subscription-state-change'),
-        (DELETE_USER, 'delete-user')
-    )
-    ID_PREFIX = 'https://schemas.accounts.firefox.com/event/'
+    PASSWORD_CHANGE = 'password-change'
+    PROFILE_CHANGE = 'profile-change'
+    SUBSCRIPTION_STATE_CHANGE = 'subscription-state-change'
+    DELETE_USER = 'delete-user'
 
     status = models.PositiveSmallIntegerField(choices=EVENT_STATUS,
                                               default=UNPROCESSED,
                                               blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    events = models.TextField(max_length=4096, blank=False)
-    event_type = models.PositiveSmallIntegerField(choices=EVENT_TYPE,
-                                                  default=None,
-                                                  null=True,
-                                                  blank=False)
+    body = models.TextField(max_length=4096, blank=False)
+    event_type = models.CharField(max_length=256,
+                                  default=None,
+                                  null=True,
+                                  blank=False)
     fxa_uid = models.CharField(blank=True, null=True, max_length=128)
     jwt_id = models.CharField(max_length=256)
     issued_at = models.CharField(max_length=32)
     profile = models.ForeignKey(Profile, related_name='account_events', null=True)
-    error = models.TextField(max_length=4096, blank=True)
-
-    def process(self):
-        if self.status == self.PROCESSED:
-            return
-
-        try:
-            if self.event_type == self.DELETE_USER:
-                self._process_delete_user()
-            elif self.event_type == self.SUBSCRIPTION_STATE_CHANGE:
-                self._process_subscription_state_change()
-            elif self.event_type == self.PASSWORD_CHANGE:
-                self._process_password_change()
-            else:
-                self.status = self.UNIMPLEMENTED
-                self.save()
-        except Exception:
-            self.error = traceback.format_exc()
-            self.status = self.ERRORED
-            self.save()
-
-    def _process_delete_user(self):
-        from kitsune.users.utils import anonymize_user
-        anonymize_user(self.profile.user)
-        self.status = self.PROCESSED
-        self.save()
-
-    def _process_subscription_state_change(self):
-        EVENT_KEY = self.ID_PREFIX + 'subscription-state-change'
-        event = json.loads(self.events)[EVENT_KEY]
-
-        last_event_q = AccountEvent.objects.filter(
-            profile_id=self.profile.pk,
-            status=self.PROCESSED,
-            event_type=self.SUBSCRIPTION_STATE_CHANGE
-        ).order_by("last_modified")
-        if last_event_q:
-            last_event = json.loads(last_event_q[0].events)[EVENT_KEY]
-            if last_event["changeTime"] > event["changeTime"]:
-                self.status = self.IGNORED
-                self.save()
-                return
-
-        products = Product.objects.filter(codename__in=event["capabilities"])
-        if event["isActive"]:
-            self.profile.products.add(*products)
-        else:
-            self.profile.products.remove(*products)
-        self.status = self.PROCESSED
-        self.save()
-
-    def _process_password_change(self):
-        event = json.loads(self.events)[self.ID_PREFIX + 'password-change']
-
-        change_time = datetime.utcfromtimestamp(event["changeTime"] / 1000.0)
-
-        if (isinstance(self.profile.fxa_password_change, datetime) and
-                self.profile.fxa_password_change > change_time):
-            self.status = self.IGNORED
-            self.save()
-            return
-
-        self.profile.fxa_password_change = change_time
-        self.profile.save()
-        self.status = self.PROCESSED
-        self.save()

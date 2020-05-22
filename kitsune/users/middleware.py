@@ -1,6 +1,7 @@
 from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
 from datetime import datetime
+from django.utils.deprecation import MiddlewareMixin
 
 from kitsune.sumo.urlresolvers import reverse
 
@@ -20,7 +21,7 @@ class LogoutDeactivatedUsersMiddleware(object):
             return HttpResponseRedirect(reverse('home'))
 
 
-class LogoutInvalidatedSessionsMiddleware(object):
+class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
     """Logs out any sessions started before a user changed their
     Firefox Accounts password.
     """

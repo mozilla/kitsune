@@ -223,7 +223,6 @@ def setup_key(test):
 
 @override_settings(FXA_RP_CLIENT_ID="12345")
 @override_settings(FXA_SET_ISSUER="http://example.com")
-@mock.patch('kitsune.users.views.process_account_event')
 class WebhookViewTests(TestCase):
 
     def _call_webhook(self, events, key=None):
@@ -248,6 +247,7 @@ class WebhookViewTests(TestCase):
             HTTP_AUTHORIZATION="Bearer " + jwt
         )
 
+    @mock.patch('kitsune.users.views.process_event_password_change')
     @setup_key
     def test_adds_event_to_db(self, key, process_mock):
         profile = ProfileFactory(fxa_uid="54321")
@@ -267,29 +267,25 @@ class WebhookViewTests(TestCase):
 
         account_event = AccountEvent.objects.last()
         eq_(account_event.status, AccountEvent.UNPROCESSED)
-        self.assertEqual(json.loads(account_event.events), events)
+        self.assertEqual(json.loads(account_event.body), events.values()[0])
         eq_(account_event.event_type, AccountEvent.PASSWORD_CHANGE)
         eq_(account_event.fxa_uid, "54321")
         eq_(account_event.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
         eq_(account_event.issued_at, "1565720808")
         eq_(account_event.profile, profile)
 
+    @mock.patch('kitsune.users.views.process_event_subscription_state_change')
     @setup_key
     def test_adds_multiple_events_to_db(self, key, process_mock):
         profile = ProfileFactory(fxa_uid="54321")
-        event_one = {
-            "https://schemas.accounts.firefox.com/event/profile-change": {}
-        }
-        event_two = {
+        events = {
+            "https://schemas.accounts.firefox.com/event/profile-change": {},
             "https://schemas.accounts.firefox.com/event/subscription-state-change": {
                 "capabilities": ["capability_1", "capability_2"],
                 "isActive": True,
                 "changeTime": 1565721242227
             }
         }
-        events = {}
-        events.update(event_one)
-        events.update(event_two)
 
         eq_(0, AccountEvent.objects.count())
 
@@ -297,7 +293,7 @@ class WebhookViewTests(TestCase):
 
         eq_(202, response.status_code)
         eq_(2, AccountEvent.objects.count())
-        eq_(2, process_mock.delay.call_count)
+        eq_(1, process_mock.delay.call_count)
 
         account_event_1 = AccountEvent.objects.get(
             event_type=AccountEvent.PROFILE_CHANGE
@@ -306,10 +302,10 @@ class WebhookViewTests(TestCase):
             event_type=AccountEvent.SUBSCRIPTION_STATE_CHANGE
         )
 
-        self.assertEqual(json.loads(account_event_1.events), event_one)
-        self.assertEqual(json.loads(account_event_2.events), event_two)
+        self.assertEqual(json.loads(account_event_1.body), {})
+        self.assertEqual(json.loads(account_event_2.body), events.values()[1])
 
-        eq_(account_event_1.status, AccountEvent.UNPROCESSED)
+        eq_(account_event_1.status, AccountEvent.NOT_IMPLEMENTED)
         eq_(account_event_2.status, AccountEvent.UNPROCESSED)
         eq_(account_event_1.fxa_uid, "54321")
         eq_(account_event_2.fxa_uid, "54321")
@@ -320,22 +316,15 @@ class WebhookViewTests(TestCase):
         eq_(account_event_1.profile, profile)
         eq_(account_event_2.profile, profile)
 
+    @mock.patch('kitsune.users.views.process_event_delete_user')
     @setup_key
     def test_handles_unknown_events(self, key, process_mock):
         profile = ProfileFactory(fxa_uid="54321")
-        event_one = {
-            "https://schemas.accounts.firefox.com/event/delete-user": {}
-        }
-        event_two = {
-            "https://schemas.accounts.firefox.com/event/foobar": {}
-        }
-        event_three = {
+        events = {
+            "https://schemas.accounts.firefox.com/event/delete-user": {},
+            "https://schemas.accounts.firefox.com/event/foobar": {},
             "barfoo": {}
         }
-        events = {}
-        events.update(event_one)
-        events.update(event_two)
-        events.update(event_three)
 
         eq_(0, AccountEvent.objects.count())
 
@@ -348,14 +337,19 @@ class WebhookViewTests(TestCase):
         account_event_1 = AccountEvent.objects.get(
             event_type=AccountEvent.DELETE_USER
         )
-        account_event_2, account_event_3 = AccountEvent.objects.filter(event_type=None)
+        account_event_2 = AccountEvent.objects.get(
+            event_type="foobar"
+        )
+        account_event_3 = AccountEvent.objects.get(
+            event_type="barfoo"
+        )
 
-        self.assertEqual(json.loads(account_event_1.events), event_one)
-        self.assertEqual(json.loads(account_event_2.events), event_two)
-        self.assertEqual(json.loads(account_event_3.events), event_three)
+        self.assertEqual(json.loads(account_event_1.body), {})
+        self.assertEqual(json.loads(account_event_2.body), {})
+        self.assertEqual(json.loads(account_event_3.body), {})
         eq_(account_event_1.status, AccountEvent.UNPROCESSED)
-        eq_(account_event_2.status, AccountEvent.UNPROCESSED)
-        eq_(account_event_3.status, AccountEvent.UNPROCESSED)
+        eq_(account_event_2.status, AccountEvent.NOT_IMPLEMENTED)
+        eq_(account_event_3.status, AccountEvent.NOT_IMPLEMENTED)
         eq_(account_event_1.fxa_uid, "54321")
         eq_(account_event_2.fxa_uid, "54321")
         eq_(account_event_3.fxa_uid, "54321")
@@ -369,6 +363,7 @@ class WebhookViewTests(TestCase):
         eq_(account_event_2.profile, profile)
         eq_(account_event_3.profile, profile)
 
+    @mock.patch('kitsune.users.views.process_event_delete_user')
     @setup_key
     def test_handles_no_user(self, key, process_mock):
         events = {"https://schemas.accounts.firefox.com/event/delete-user": {}}
@@ -383,7 +378,7 @@ class WebhookViewTests(TestCase):
 
         account_event = AccountEvent.objects.last()
         eq_(account_event.status, AccountEvent.IGNORED)
-        self.assertEqual(json.loads(account_event.events), events)
+        self.assertEqual(json.loads(account_event.body), {})
         eq_(account_event.event_type, AccountEvent.DELETE_USER)
         eq_(account_event.fxa_uid, "54321")
         eq_(account_event.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
