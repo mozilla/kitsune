@@ -451,11 +451,8 @@ class AccountEvent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
     body = models.TextField(max_length=4096, blank=False)
-    event_type = models.CharField(max_length=256,
-                                  default=None,
-                                  null=True,
-                                  blank=False)
-    fxa_uid = models.CharField(blank=True, null=True, max_length=128)
+    event_type = models.CharField(max_length=256, default="", blank=True)
+    fxa_uid = models.CharField(max_length=128, default="", blank=True)
     jwt_id = models.CharField(max_length=256)
     issued_at = models.CharField(max_length=32)
     profile = models.ForeignKey(Profile, related_name='account_events', null=True)
