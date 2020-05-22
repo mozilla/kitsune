@@ -459,3 +459,6 @@ class AccountEvent(models.Model):
     jwt_id = models.CharField(max_length=256)
     issued_at = models.CharField(max_length=32)
     profile = models.ForeignKey(Profile, related_name='account_events', null=True)
+
+    class Meta(object):
+        ordering = ["-last_modified"]

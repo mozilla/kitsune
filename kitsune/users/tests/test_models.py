@@ -1,10 +1,11 @@
 import logging
 
+from nose.tools import eq_
+
 from kitsune.sumo.tests import TestCase
 from kitsune.users.forms import SettingsForm
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
-from nose.tools import eq_
 
 log = logging.getLogger('k.users')
 

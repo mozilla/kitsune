@@ -79,7 +79,7 @@ class AccountEventsTasksTestCase(TestCase):
             body=json.dumps({
                 "capabilities": ["capability_1"],
                 "isActive": True,
-                "changeTime": 2
+                "changeTime": 1
             }),
             event_type=AccountEvent.SUBSCRIPTION_STATE_CHANGE,
             status=AccountEvent.UNPROCESSED,
@@ -93,8 +93,8 @@ class AccountEventsTasksTestCase(TestCase):
         account_event_2 = AccountEventFactory(
             body=json.dumps({
                 "capabilities": ["capability_1"],
-                "isActive": False,
-                "changeTime": 1
+                "isActive": True,
+                "changeTime": 3
             }),
             event_type=AccountEvent.SUBSCRIPTION_STATE_CHANGE,
             status=AccountEvent.UNPROCESSED,
@@ -103,7 +103,22 @@ class AccountEventsTasksTestCase(TestCase):
 
         process_event_subscription_state_change(account_event_2.id)
         account_event_2.refresh_from_db()
-        eq_(account_event_2.status, AccountEvent.IGNORED)
+        eq_(account_event_2.status, AccountEvent.PROCESSED)
+
+        account_event_3 = AccountEventFactory(
+            body=json.dumps({
+                "capabilities": ["capability_1"],
+                "isActive": False,
+                "changeTime": 2
+            }),
+            event_type=AccountEvent.SUBSCRIPTION_STATE_CHANGE,
+            status=AccountEvent.UNPROCESSED,
+            profile=profile
+        )
+
+        process_event_subscription_state_change(account_event_3.id)
+        account_event_3.refresh_from_db()
+        eq_(account_event_3.status, AccountEvent.IGNORED)
 
     def test_process_password_change(self):
         profile = ProfileFactory()

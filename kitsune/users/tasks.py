@@ -24,14 +24,14 @@ def process_event_subscription_state_change(event_id):
     event = AccountEvent.objects.get(id=event_id)
     body = json.loads(event.body)
 
-    last_event_q = AccountEvent.objects.filter(
+    last_event = AccountEvent.objects.filter(
         profile_id=event.profile.pk,
         status=AccountEvent.PROCESSED,
         event_type=AccountEvent.SUBSCRIPTION_STATE_CHANGE
-    ).order_by("last_modified")
-    if last_event_q:
-        last_event = json.loads(last_event_q[0].body)
-        if last_event["changeTime"] > body["changeTime"]:
+    ).first()
+    if last_event:
+        last_event_body = json.loads(last_event.body)
+        if last_event_body["changeTime"] > body["changeTime"]:
             event.status = AccountEvent.IGNORED
             event.save()
             return
@@ -53,8 +53,7 @@ def process_event_password_change(event_id):
 
     change_time = datetime.utcfromtimestamp(body["changeTime"] / 1000.0)
 
-    if (isinstance(event.profile.fxa_password_change, datetime) and
-            event.profile.fxa_password_change > change_time):
+    if (event.profile.fxa_password_change and event.profile.fxa_password_change > change_time):
         event.status = AccountEvent.IGNORED
         event.save()
         return

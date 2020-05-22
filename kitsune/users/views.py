@@ -424,24 +424,26 @@ class WebhookView(View):
 
     def process_events(self, payload):
         fxa_uid = payload.get('sub')
-        profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
         events = payload.get('events')
+        try:
+            profile_obj = Profile.objects.get(fxa_uid=fxa_uid)
+        except Profile.DoesNotExist:
+            profile_obj = None
 
         for long_id, event in events.items():
             short_id = long_id.replace(SET_ID_PREFIX, '')
-            profile = profile_q[0] if profile_q.exists() else None
 
             account_event = AccountEvent.objects.create(
                 issued_at=payload['iat'],
                 jwt_id=payload['jti'],
                 fxa_uid=fxa_uid,
-                status=AccountEvent.UNPROCESSED if profile else AccountEvent.IGNORED,
+                status=AccountEvent.UNPROCESSED if profile_obj else AccountEvent.IGNORED,
                 body=json.dumps(event),
                 event_type=short_id,
-                profile=profile
+                profile=profile_obj
             )
 
-            if profile:
+            if profile_obj:
                 if short_id == AccountEvent.DELETE_USER:
                     process_event_delete_user.delay(account_event.id)
                 elif short_id == AccountEvent.SUBSCRIPTION_STATE_CHANGE:
