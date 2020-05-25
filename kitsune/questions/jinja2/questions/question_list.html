@@ -297,11 +297,10 @@
   <nav class="sidebar-nav">
     <span class="details-heading"></span>
     <ul class="sidebar-nav--list">
-      <li class="{% if filter == None and escalated == None %}selected{% endif %}"><a href="{{ questions_url(filter=None, escalated=None, page=None) }}">{{ _('All') }}</a></li>
+      <li class="{% if filter == None %}selected{% endif %}"><a href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
       {% for f, desc in filters.iteritems() %}
-      <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, page=None) }}">{{ desc }}</a></li>
+      <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
-      <li class="{% if filter == None and escalated %}selected{% endif %}"><a href="{{ questions_url(escalated=1, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
       <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
       <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>

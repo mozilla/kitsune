@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Q, F, Manager
+from django.db.models import F, Manager, Q
 
 from kitsune.questions import config
 
@@ -54,9 +54,6 @@ class QuestionManager(Manager):
 
     def solved(self):
         return self.filter(solution__isnull=False)
-
-    def escalated(self):
-        return self.filter(tags__slug__in=[config.ESCALATE_TAG_NAME])
 
 
 class QuestionLocaleManager(Manager):

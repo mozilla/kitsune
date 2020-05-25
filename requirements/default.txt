@@ -1,6 +1,6 @@
-setuptools==38.4.0 \
-    --hash=sha256:155c2ec9fdcc00c3973d966b416e1cf3a1e7ce75f4c09fb760b23f94b935926e \
-    --hash=sha256:6501fc32f505ec5b3ed36ec65ba48f1b975f52cf2ea101c7b73a08583fd12f75
+setuptools==44.1.0 \
+    --hash=sha256:794a96b0c1dc6f182c36b72ab70d7e90f1d59f7a132e6919bb37b4fd4d424aca \
+    --hash=sha256:992728077ca19db6598072414fb83e0a284aca1253aaf2e24bb1e55ee6db1a30
 amqp==1.4.8 \
     --hash=sha256:94d2a68227e7984bd40f5f71c6839730622aff8a4633f29ede1ffdd0d240795e \
     --hash=sha256:3a5b358ef81fa12927d1ec84f5107c59b6fc3be681c325e7cc690cffd5956879
@@ -335,8 +335,6 @@ urllib3==1.25.3 \
     --hash=sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232
 Werkzeug==0.5.1 \
     --hash=sha256:ff638b44eaca81c9a1c8c492b957c1b8d1b44b2147e50216355ff9c99daa8637
-https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2e82347.tar.gz#egg=zendesk \
-    --hash=sha256:a996b2d63d318e7c5ea9ff4a480a40db794321ea52b733ff6c6da57efb33ba3b
 django-mozilla-product-details==0.14 \
     --hash=sha256:4706994d63c228b150fafdb05e8f25a5447dbc9492b465501badcb4614fbe0d9 \
     --hash=sha256:a115f030127d559b698bf8e641fc7ae18beb054d2461b84367821b197be90690

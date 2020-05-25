@@ -3,13 +3,13 @@ from datetime import date, timedelta
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.questions.marketplace import submit_ticket
-from kitsune.questions.models import Answer, Question
-from kitsune.questions.events import QuestionReplyEvent
-from kitsune.upload.models import ImageAttachment
 from kitsune.products.models import Topic
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.questions.models import Answer, Question
+from kitsune.upload.models import ImageAttachment
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy(u"URL of affected site")
@@ -51,57 +51,7 @@ CATEGORY_LABEL = _lazy(u"Which topic best describes your question?")
 NOTIFICATIONS_LABEL = _lazy(u"Email me when someone answers the thread")
 
 REPLY_PLACEHOLDER = _lazy(u"Enter your reply here.")
-
-# Marketplace AAQ form
 EMAIL_PLACEHOLDER = _lazy(u"Enter your email address here.")
-SUBJECT_PLACEHOLDER = _lazy(u"Enter a subject here.")
-SUBJECT_CONTENT_REQUIRED = _lazy(u"Please provide a subject.")
-SUBJECT_CONTENT_SHORT = _lazy(
-    u"The subject is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
-)
-SUBJECT_CONTENT_LONG = _lazy(
-    u"Please keep the length of the subject to "
-    u"%(limit_value)s characters or less. It is "
-    u"currently %(show_value)s characters."
-)
-BODY_PLACEHOLDER = _lazy(u"Describe your issue here.")
-BODY_CONTENT_REQUIRED = _lazy(u"Please describe your issue in the body.")
-BODY_CONTENT_SHORT = _lazy(
-    u"The body content is too short (%(show_value)s "
-    u"characters). It must be at least %(limit_value)s "
-    u"characters."
-)
-BODY_CONTENT_LONG = _lazy(
-    u"Please keep the length of the body content to "
-    u"%(limit_value)s characters or less. It is "
-    u"currently %(show_value)s characters."
-)
-CATEGORY_CHOICES = [
-    (u"account", _lazy(u"Account Issues")),
-    (u"installation", _lazy(u"Installation Issues")),
-    (u"payment", _lazy(u"Payment Issues")),
-    (u"application", _lazy(u"Application Issues")),
-]
-
-# Marketplace Request Refund form
-TRANSACTION_ID_PLACEHOLDER = _lazy(u"Enter the Transaction ID here.")
-TRANSACTION_ID_REQUIRED = _lazy(u"Please provide the Transaction ID.")
-REFUND_CATEGORY_CHOICES = [
-    (u"Defective", _lazy(u"Defective")),
-    (u"Malware", _lazy(u"Malware")),
-    (u"Did not work as expected", _lazy(u"Did not work as expected")),
-    (u"Seller will not provide support", _lazy(u"Seller will not provide support")),
-]
-
-
-# Marketplace Developer Request form
-DEVELOPER_REQUEST_CATEGORY_CHOICES = [
-    (u"Account Administration", _lazy(u"Account Administration")),
-    (u"Review Process", _lazy(u"Review Process")),
-    (u"Payments/Settlement", _lazy(u"Payments/Settlement")),
-]
 
 
 class EditQuestionForm(forms.ModelForm):
@@ -379,107 +329,6 @@ class WatchQuestionForm(forms.Form):
             return self.cleaned_data["email"]
         # Clear out the email for logged in users, we don't want to use it.
         return None
-
-
-class BaseZendeskForm(forms.Form):
-    """Base Form class for all Zendesk forms."""
-
-    def __init__(self, user, *args, **kwargs):
-        super(BaseZendeskForm, self).__init__(*args, **kwargs)
-
-        self.user = user
-
-        # Add email field for users not logged in.
-        if not user.is_authenticated():
-            email = forms.EmailField(
-                label=_lazy(u"Email:"),
-                widget=forms.TextInput(attrs={"placeholder": EMAIL_PLACEHOLDER}),
-            )
-            self.fields["email"] = email
-
-    subject = forms.CharField(
-        label=_lazy(u"Subject:"),
-        min_length=4,
-        max_length=255,
-        widget=forms.TextInput(attrs={"placeholder": SUBJECT_PLACEHOLDER}),
-        error_messages={
-            "required": SUBJECT_CONTENT_REQUIRED,
-            "min_length": SUBJECT_CONTENT_SHORT,
-            "max_length": SUBJECT_CONTENT_LONG,
-        },
-    )
-
-    body = forms.CharField(
-        label=_lazy(u"Body:"),
-        min_length=5,
-        max_length=10000,
-        widget=forms.Textarea(attrs={"placeholder": BODY_PLACEHOLDER}),
-        error_messages={
-            "required": BODY_CONTENT_REQUIRED,
-            "min_length": BODY_CONTENT_SHORT,
-            "max_length": BODY_CONTENT_LONG,
-        },
-    )
-
-    def ticket_body(self, email):
-        """Body of the ticket to submit to Zendesk."""
-        return "Email: {email}\n{body}".format(
-            email=email, body=self.cleaned_data["body"]
-        )
-
-    def submit_ticket(self):
-        """Submit the ticket to Zendesk."""
-        if self.user.is_authenticated():
-            email = self.user.email
-        else:
-            email = self.cleaned_data["email"]
-
-        submit_ticket(
-            email,
-            self.cleaned_data["category"],
-            self.cleaned_data["subject"],
-            self.ticket_body(email),
-            [],
-        )
-
-
-class MarketplaceAaqForm(BaseZendeskForm):
-    category = forms.ChoiceField(label=_lazy(u"Category:"), choices=CATEGORY_CHOICES)
-
-
-class MarketplaceRefundForm(BaseZendeskForm):
-    transaction_id = forms.CharField(
-        label=_lazy(u"Transaction ID:"),
-        widget=forms.TextInput(attrs={"placeholder": TRANSACTION_ID_PLACEHOLDER}),
-        error_messages={"required": TRANSACTION_ID_REQUIRED},
-    )
-
-    category = forms.ChoiceField(
-        label=_lazy(u"Category:"), choices=REFUND_CATEGORY_CHOICES
-    )
-
-    def ticket_body(self, email):
-        """Body of the ticket to submit to Zendesk."""
-        return "Email: {email}\nTransaction ID: {id}\nCategory: {category}\n{body}".format(
-            email=email,
-            id=self.cleaned_data["transaction_id"],
-            category=self.cleaned_data["category"],
-            body=self.cleaned_data["body"],
-        )
-
-
-class MarketplaceDeveloperRequestForm(BaseZendeskForm):
-    category = forms.ChoiceField(
-        label=_lazy(u"Category:"), choices=DEVELOPER_REQUEST_CATEGORY_CHOICES
-    )
-
-    def ticket_body(self, email):
-        """Body of the ticket to submit to Zendesk."""
-        return "Email: {email}\nCategory: {category}\n{body}".format(
-            email=email,
-            category=self.cleaned_data["category"],
-            body=self.cleaned_data["body"],
-        )
 
 
 bucket_choices = [(1, "1 day"), (7, "1 week"), (30, "1 month")]

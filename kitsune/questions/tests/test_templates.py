@@ -4,45 +4,32 @@ import random
 from datetime import datetime, timedelta
 from string import letters
 
+import mock
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
-
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
 from tidings.models import Watch
 
-import kitsune.questions.tasks
-from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.models import Question, Answer, VoteMetadata, QuestionLocale
-from kitsune.questions.tests import (
-    TestCaseBase,
-    tags_eq,
-    QuestionFactory,
-    AnswerFactory,
-    AnswerVoteFactory,
-)
-from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
+from kitsune.questions.models import (Answer, Question, QuestionLocale,
+                                      VoteMetadata)
+from kitsune.questions.tests import (AnswerFactory, AnswerVoteFactory,
+                                     QuestionFactory, TestCaseBase, tags_eq)
+from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import (
-    get,
-    post,
-    attrs_eq,
-    emailmessage_raise_smtp,
-    TestCase,
-    LocalizingClient,
-)
+from kitsune.sumo.tests import (LocalizingClient, TestCase, attrs_eq,
+                                emailmessage_raise_smtp, get, post)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
-from kitsune.products.tests import TopicFactory
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -1012,27 +999,6 @@ class TaggingViewTestsAsTagger(TestCaseBase):
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertContains(response, NO_TAG, status_code=400)
-
-    @mock.patch.object(kitsune.questions.tasks, "submit_ticket")
-    def test_escalate_tag(self, submit_ticket):
-        """Verify that tagging a question "escalate" submits to zendesk."""
-        TagFactory(name="escalate", slug="escalate")
-        self.client.post(
-            _add_tag_url(self.question.id), data={"tag-name": "escalate"}, follow=True
-        )
-
-        question_url = u"https://example.com/en-US{url}".format(
-            url=self.question.get_absolute_url()
-        )
-        submit_ticket.assert_called_with(
-            email="support@mozilla.com",
-            category="Escalated",
-            subject=u"[Escalated] {title}".format(title=self.question.title),
-            body=u"{url}\n\n{content}".format(
-                url=question_url, content=self.question.content
-            ),
-            tags=["escalate"],
-        )
 
 
 class TaggingViewTestsAsAdmin(TestCaseBase):

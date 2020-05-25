@@ -1012,12 +1012,6 @@ LAST_SEARCH_COOKIE = 'last_search'
 
 OPTIPNG_PATH = config('OPTIPNG_PATH', default='/usr/bin/optipng')
 
-# Zendesk info. Fill in the prefix, email and password in settings_local.py.
-ZENDESK_URL = config('ZENDESK_URL', default='https://appsmarket.zendesk.com')
-ZENDESK_SUBJECT_PREFIX = config('ZENDESK_SUBJECT_PREFIX', default='')
-ZENDESK_USER_EMAIL = config('ZENDESK_USER_EMAIL', default='')
-ZENDESK_USER_PASSWORD = config('ZENDESK_USER_PASSWORD', default='')
-
 # Tasty Pie
 API_LIMIT_PER_PAGE = 0
 
