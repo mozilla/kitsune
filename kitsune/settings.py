@@ -539,7 +539,8 @@ MIDDLEWARE_CLASSES = (
     'django_user_agents.middleware.UserAgentMiddleware',
 
     'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
-    'kitsune.users.middleware.LogoutSumoAccountsMiddleware'
+    'kitsune.users.middleware.LogoutSumoAccountsMiddleware',
+    'kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware',
 )
 
 # SecurityMiddleware settings

@@ -8,8 +8,6 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
-from timezone_field import TimeZoneField
-
 from kitsune.lib.countries import COUNTRIES
 from kitsune.products.models import Product
 from kitsune.search.es_utils import UnindexMeBro
@@ -20,12 +18,14 @@ from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 from kitsune.users.validators import TwitterValidator
+from timezone_field import TimeZoneField
 
 log = logging.getLogger('k.users')
 
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 CONTRIBUTOR_GROUP = 'Registered as contributor'
+SET_ID_PREFIX = 'https://schemas.accounts.firefox.com/event/'
 
 
 @auto_delete_files
@@ -81,6 +81,7 @@ class Profile(ModelBase, SearchMixin):
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
     fxa_avatar = models.URLField(max_length=512, blank=True, default='')
     products = models.ManyToManyField(Product, related_name='subscribed_users')
+    fxa_password_change = models.DateTimeField(blank=True, null=True)
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
@@ -430,35 +431,31 @@ class AccountEvent(models.Model):
     # Status of an event entry.
     UNPROCESSED = 1
     PROCESSED = 2
-    ERRORED = 3
+    IGNORED = 3
+    NOT_IMPLEMENTED = 4
     EVENT_STATUS = (
         (UNPROCESSED, 'unprocessed'),
         (PROCESSED, 'processed'),
-        (ERRORED, 'errored'),
+        (IGNORED, 'ignored'),
+        (NOT_IMPLEMENTED, 'not-implemented'),
     )
 
-    PASSWORD_CHANGE = 1
-    PROFILE_CHANGE = 2
-    SUBSCRIPTION_STATE_CHANGE = 3
-    DELETE_USER = 4
-    EVENT_TYPE = (
-        (PASSWORD_CHANGE, 'password-change'),
-        (PROFILE_CHANGE, 'profile-change'),
-        (SUBSCRIPTION_STATE_CHANGE, 'subscription-state-change'),
-        (DELETE_USER, 'delete-user')
-    )
+    PASSWORD_CHANGE = 'password-change'
+    PROFILE_CHANGE = 'profile-change'
+    SUBSCRIPTION_STATE_CHANGE = 'subscription-state-change'
+    DELETE_USER = 'delete-user'
 
     status = models.PositiveSmallIntegerField(choices=EVENT_STATUS,
                                               default=UNPROCESSED,
                                               blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
-    events = models.TextField(max_length=4096, blank=False)
-    event_type = models.PositiveSmallIntegerField(choices=EVENT_TYPE,
-                                                  default=None,
-                                                  null=True,
-                                                  blank=False)
-    fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
+    body = models.TextField(max_length=4096, blank=False)
+    event_type = models.CharField(max_length=256, default="", blank=True)
+    fxa_uid = models.CharField(max_length=128, default="", blank=True)
     jwt_id = models.CharField(max_length=256)
     issued_at = models.CharField(max_length=32)
     profile = models.ForeignKey(Profile, related_name='account_events', null=True)
+
+    class Meta(object):
+        ordering = ["-last_modified"]

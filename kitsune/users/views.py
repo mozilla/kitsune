@@ -2,7 +2,6 @@ import json
 import logging
 from ast import literal_eval
 from textwrap import dedent
-from uuid import uuid4
 
 import requests
 
@@ -35,10 +34,10 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
 from kitsune.users.forms import ProfileForm, SettingsForm
-from kitsune.users.models import AccountEvent, Deactivation, Profile
+from kitsune.users.models import AccountEvent, Deactivation, Profile, SET_ID_PREFIX
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (add_to_contributors, deactivate_user,
-                                 get_oidc_fxa_setting)
+                                 get_oidc_fxa_setting, anonymize_user)
 from kitsune.wiki.models import (user_documents, user_num_documents,
                                  user_redirects)
 from mozilla_django_oidc.utils import import_from_settings
@@ -48,6 +47,11 @@ from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
                                        OIDCLogoutView)
 from sentry_sdk import capture_message
 from tidings.models import Watch
+from kitsune.users.tasks import (
+    process_event_delete_user,
+    process_event_password_change,
+    process_event_subscription_state_change
+)
 
 log = logging.getLogger('k.users.views')
 
@@ -135,22 +139,7 @@ def profile(request, username):
 @login_required
 @require_POST
 def close_account(request):
-    # Clear the profile
-    user_id = request.user.id
-    profile = get_object_or_404(Profile, user__id=user_id)
-    profile.clear()
-    profile.fxa_uid = '{user_id}-{uid}'.format(user_id=user_id, uid=str(uuid4()))
-    profile.save()
-
-    # Deactivate the user and change key information
-    request.user.username = 'user%s' % user_id
-    request.user.email = '%s@example.com' % user_id
-    request.user.is_active = False
-
-    # Remove from all groups
-    request.user.groups.clear()
-
-    request.user.save()
+    anonymize_user(request.user)
 
     # Log the user out
     auth.logout(request)
@@ -395,10 +384,8 @@ class WebhookView(View):
 
         key = None
         for jwk in jwks['keys']:
-            # dummy tokens sent by the fxa-event-broker test script don't have a kid value,
-            # we'll have to see if this is true in dev
-            # if jwk['kid'] != header['kid']:
-            #     continue
+            if jwk['kid'] != header.get('kid'):
+                continue
             if 'alg' in jwk and jwk['alg'] != header['alg']:
                 raise SuspiciousOperation('alg values do not match.')
             key = jwk
@@ -435,6 +422,38 @@ class WebhookView(View):
         # deserializing https://bugs.python.org/issue17909
         return json.loads(jws.payload.decode('utf-8'))
 
+    def process_events(self, payload):
+        fxa_uid = payload.get('sub')
+        events = payload.get('events')
+        try:
+            profile_obj = Profile.objects.get(fxa_uid=fxa_uid)
+        except Profile.DoesNotExist:
+            profile_obj = None
+
+        for long_id, event in events.items():
+            short_id = long_id.replace(SET_ID_PREFIX, '')
+
+            account_event = AccountEvent.objects.create(
+                issued_at=payload['iat'],
+                jwt_id=payload['jti'],
+                fxa_uid=fxa_uid,
+                status=AccountEvent.UNPROCESSED if profile_obj else AccountEvent.IGNORED,
+                body=json.dumps(event),
+                event_type=short_id,
+                profile=profile_obj
+            )
+
+            if profile_obj:
+                if short_id == AccountEvent.DELETE_USER:
+                    process_event_delete_user.delay(account_event.id)
+                elif short_id == AccountEvent.SUBSCRIPTION_STATE_CHANGE:
+                    process_event_subscription_state_change.delay(account_event.id)
+                elif short_id == AccountEvent.PASSWORD_CHANGE:
+                    process_event_password_change.delay(account_event.id)
+                else:
+                    account_event.status = AccountEvent.NOT_IMPLEMENTED
+                    account_event.save()
+
     def post(self, request, *args, **kwargs):
         # TODO add docstrings
         # TODO add error handling
@@ -455,12 +474,6 @@ class WebhookView(View):
         authorization = request.META.get('HTTP_AUTHORIZATION')
         if not authorization:
             raise Http404
-
-        # dummy tokens sent by the fxa-event-broker test script don't use this header,
-        # we'll have to see if this is true in dev
-        # # SET event must be of type `application/secevent+jwt`
-        # if request.META.get('CONTENT_TYPE', '') != 'application/secevent+jwt':
-        #     raise Http404
 
         auth = authorization.split()
         if auth[0].lower() != 'bearer':
@@ -488,15 +501,7 @@ class WebhookView(View):
                     'description': 'description'
                 }, status=400)
 
-            profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
-            AccountEvent.objects.create(
-                issued_at=payload['iat'],
-                jwt_id=payload['jti'],
-                fxa_uid=fxa_uid,
-                status=AccountEvent.UNPROCESSED,
-                events=json.dumps(events, sort_keys=True),
-                profile=profile_q[0] if profile_q.exists() else None
-            )
+            self.process_events(payload)
 
             return HttpResponse(status=202)
         raise Http404
