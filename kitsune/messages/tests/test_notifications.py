@@ -8,7 +8,7 @@ from kitsune.sumo.tests import post, attrs_eq, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 
-PRIVATE_MESSAGE_EMAIL = u'{sender} sent you the following'
+PRIVATE_MESSAGE_EMAIL = '{sender} sent you the following'
 
 
 class NotificationsTests(KBForumTestCase):
@@ -38,7 +38,7 @@ class NotificationsTests(KBForumTestCase):
         self.client.login(username=self.sender.username, password='testpass')
         post(self.client, 'messages.new',
              {'to': self.to, 'message': 'a message'})
-        subject = u'[SUMO] You have a new private message from [{sender}]'
+        subject = '[SUMO] You have a new private message from [{sender}]'
 
         attrs_eq(mail.outbox[0], to=[self.to.email],
                  subject=subject.format(sender=self.sender.profile.name))

@@ -24,4 +24,4 @@ class Command(NoArgsCommand):
         transaction.commit()
         transaction.leave_transaction_management()
         d = time.time() - start
-        print u'Updated %d rows in %0.3f seconds.' % (rows, d)
+        print('Updated %d rows in %0.3f seconds.' % (rows, d))

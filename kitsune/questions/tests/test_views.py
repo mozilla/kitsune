@@ -29,14 +29,14 @@ class AAQSearchTests(ElasticTestCase):
 
     def test_bleaching(self):
         """Tests whether summaries are bleached"""
-        p = ProductFactory(slug=u"firefox")
+        p = ProductFactory(slug="firefox")
         locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
         QuestionFactory(
             product=p,
-            title=u"CupcakesQuestion cupcakes",
-            content=u"cupcakes are best with <unbleached>flour</unbleached>",
+            title="CupcakesQuestion cupcakes",
+            content="cupcakes are best with <unbleached>flour</unbleached>",
         )
 
         self.refresh()
@@ -58,13 +58,13 @@ class AAQSearchTests(ElasticTestCase):
 
     def test_search_suggestions_questions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
-        p = ProductFactory(slug=u"firefox")
+        p = ProductFactory(slug="firefox")
         locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
-        q = QuestionFactory(product=p, title=u"CupcakesQuestion cupcakes")
+        q = QuestionFactory(product=p, title="CupcakesQuestion cupcakes")
 
-        d = DocumentFactory(title=u"CupcakesKB cupcakes", category=10)
+        d = DocumentFactory(title="CupcakesKB cupcakes", category=10)
         d.products.add(p)
 
         RevisionFactory(document=d, is_approved=True)
@@ -101,7 +101,7 @@ class AAQSearchTests(ElasticTestCase):
         """Verifies the right languages show up in search suggestions."""
         QuestionLocaleFactory(locale="de")
 
-        p = ProductFactory(slug=u"firefox")
+        p = ProductFactory(slug="firefox")
 
         for l in QuestionLocale.objects.all():
             p.questions_locales.add(l)
@@ -411,7 +411,7 @@ class TestQuestionList(TestCaseBase):
         questions front page for AAQ locales."""
 
         eq_(Question.objects.count(), 0)
-        p = ProductFactory(slug=u"firefox")
+        p = ProductFactory(slug="firefox")
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
 
         QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
@@ -725,8 +725,8 @@ class TestStats(ElasticTestCase):
         t = TopicFactory(title="Websites", slug="websites", product=p)
 
         QuestionFactory(
-            title=u"cupcakes",
-            content=u"Cupcakes rock!",
+            title="cupcakes",
+            content="Cupcakes rock!",
             created=datetime.now() - timedelta(days=1),
             topic=t,
         )

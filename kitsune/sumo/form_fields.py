@@ -57,7 +57,7 @@ class MultiUsernameField(forms.Field):
     def to_python(self, value):
         if not value:
             if self.required:
-                raise forms.ValidationError(_(u'To field is required.'))
+                raise forms.ValidationError(_('To field is required.'))
             else:
                 return []
 
@@ -69,7 +69,7 @@ class MultiUsernameField(forms.Field):
                     user = User.objects.get(username=username)
                     users.append(user)
                 except User.DoesNotExist:
-                    msg = _(u'{username} is not a valid username.')
+                    msg = _('{username} is not a valid username.')
                     raise forms.ValidationError(msg.format(username=username))
 
         return users

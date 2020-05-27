@@ -58,7 +58,7 @@ def build_paged_url(request):
 
     qsa = urlencode(items)
 
-    return u'%s?%s' % (base, qsa)
+    return '%s?%s' % (base, qsa)
 
 
 # By Ned Batchelder.
@@ -76,7 +76,7 @@ def chunked(seq, n, length=None):
     """
     if not length:
         length = len(seq)
-    for i in xrange(0, length, n):
+    for i in range(0, length, n):
         yield seq[i:i + n]
 
 

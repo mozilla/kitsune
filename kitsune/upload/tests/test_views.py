@@ -82,7 +82,7 @@ class UploadImageTestCase(TestCase):
 
     def test_upload_unicode_image(self):
         """Uploading an unicode image works."""
-        with open(u'kitsune/upload/tests/media/123ascii\u6709\u52b9.jpg', 'rb') as f:
+        with open('kitsune/upload/tests/media/123ascii\u6709\u52b9.jpg', 'rb') as f:
             r = self._make_post_request(image=f)
 
         eq_(200, r.status_code)

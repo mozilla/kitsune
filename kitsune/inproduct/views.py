@@ -31,7 +31,7 @@ def redirect(request, product, version, platform, locale, topic=None):
         )
         return all(matches)
 
-    redirects = filter(f, redirects)
+    redirects = list(filter(f, redirects))
 
     # Assign a ordinal (score) to each redirect based on how specific it is,
     # then order by score descending.
@@ -56,7 +56,7 @@ def redirect(request, product, version, platform, locale, topic=None):
                 score += 1 << i
         return score, redirect
 
-    ordered = map(ordinal, redirects)
+    ordered = list(map(ordinal, redirects))
     ordered.sort(key=lambda x: x[0], reverse=True)
 
     # A redirect matches if all its fields match. A field matches if it is
@@ -92,7 +92,7 @@ def redirect(request, product, version, platform, locale, topic=None):
             'utm_source': 'inproduct'}
         if hasattr(request, 'eu_build'):
             params['eu'] = 1
-        target = u'/%s/%s' % (locale, destination.target.lstrip('/'))
+        target = '/%s/%s' % (locale, destination.target.lstrip('/'))
         target = urlparams(target, **params)
 
         # Switch over to HTTPS if we DEBUG=False and sample is active.

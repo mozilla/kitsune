@@ -13,7 +13,7 @@ from kitsune.upload.tasks import _scale_dimensions
 
 def create_image(files, user):
     """Given an uploaded file, a user, and other data, it creates an Image"""
-    up_file = files.values()[0]
+    up_file = list(files.values())[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     try:
@@ -26,7 +26,7 @@ def create_image(files, user):
 
     # Async uploads fallback to these defaults.
     image.title = get_draft_title(user)
-    image.description = u'Autosaved draft.'
+    image.description = 'Autosaved draft.'
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
     (up_file, is_animated) = _image_to_png(up_file)
@@ -64,5 +64,5 @@ def check_media_permissions(media, user, perm_type):
 
 
 def get_draft_title(user):
-    return u'Draft for user %s. Created at: %s' % (user.username,
+    return 'Draft for user %s. Created at: %s' % (user.username,
                                                    datetime.now())

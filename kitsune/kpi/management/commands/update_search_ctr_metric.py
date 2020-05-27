@@ -38,7 +38,7 @@ class Command(BaseCommand):
         # Create the metrics.
         clicks_kind = MetricKind.objects.get_or_create(code=SEARCH_CLICKS_METRIC_CODE)[0]
         searches_kind = MetricKind.objects.get_or_create(code=SEARCH_SEARCHES_METRIC_CODE)[0]
-        for date_str, ctr in ctr_data.items():
+        for date_str, ctr in list(ctr_data.items()):
             day = datetime.strptime(date_str, "%Y-%m-%d").date()
 
             # Note: we've been storing our search data as total number of

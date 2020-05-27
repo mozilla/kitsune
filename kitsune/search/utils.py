@@ -63,7 +63,7 @@ def chunked(iterable, n):
 
     """
     iterable = iter(iterable)
-    while 1:
+    while True:
         t = tuple(islice(iterable, n))
         if t:
             yield t

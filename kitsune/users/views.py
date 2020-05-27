@@ -185,13 +185,13 @@ def edit_settings(request):
         if form.is_valid():
             form.save_for_user(request.user)
             messages.add_message(request, messages.INFO,
-                                 _(u'Your settings have been saved.'))
+                                 _('Your settings have been saved.'))
             return HttpResponseRedirect(reverse('users.edit_settings'))
         # Invalid form
         return render(request, template, {'form': form})
 
     # Pass the current user's settings as the initial values.
-    values = request.user.settings.values()
+    values = list(request.user.settings.values())
     initial = dict()
     for val in values:
         try:

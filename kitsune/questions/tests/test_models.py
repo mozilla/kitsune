@@ -11,25 +11,14 @@ from taggit.models import Tag
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
 from kitsune.questions import config, models
-from kitsune.questions.models import (
-    AlreadyTakenException,
-    Answer,
-    InvalidUserException,
-    Question,
-    QuestionMetaData,
-    QuestionVisits,
-    VoteMetadata,
-    _has_beta,
-    _tenths_version,
-)
+from kitsune.questions.models import (AlreadyTakenException, Answer,
+                                      InvalidUserException, Question,
+                                      QuestionMetaData, QuestionVisits,
+                                      VoteMetadata, _has_beta, _tenths_version)
 from kitsune.questions.tasks import update_answer_pages
-from kitsune.questions.tests import (
-    AnswerFactory,
-    QuestionFactory,
-    QuestionVoteFactory,
-    TestCaseBase,
-    tags_eq,
-)
+from kitsune.questions.tests import (AnswerFactory, QuestionFactory,
+                                     QuestionVoteFactory, TestCaseBase,
+                                     tags_eq)
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
@@ -160,10 +149,11 @@ class TestAnswer(TestCaseBase):
     def test_content_parsed_with_locale(self):
         """Make sure links to localized articles work."""
         rev = TranslatedRevisionFactory(
-            is_approved=True, document__title=u"Un mejor títuolo", document__locale="es"
-        )
+            is_approved=True,
+            document__title='Un mejor títuolo',
+            document__locale='es')
 
-        a = AnswerFactory(question__locale="es", content=u"[[%s]]" % rev.document.title)
+        a = AnswerFactory(question__locale='es', content='[[%s]]' % rev.document.title)
 
         assert "es/kb/%s" % rev.document.slug in a.content_parsed
 
@@ -194,7 +184,7 @@ class TestQuestionMetadata(TestCaseBase):
 
     def test_add_metadata(self):
         """Test the saving of metadata."""
-        metadata = {"version": u"3.6.3", "os": u"Windows 7"}
+        metadata = {'version': '3.6.3', 'os': 'Windows 7'}
         self.question.add_metadata(**metadata)
         saved = QuestionMetaData.objects.filter(question=self.question)
         eq_(dict((x.name, x.value) for x in saved), metadata)
@@ -504,9 +494,9 @@ class AddExistingTagTests(TestCaseBase):
 
     def test_add_existing_case_insensitive(self):
         """Assert add_existing_tag works case-insensitively."""
-        TagFactory(name="lemon", slug="lemon")
-        add_existing_tag("LEMON", self.untagged_question.tags)
-        tags_eq(self.untagged_question, [u"lemon"])
+        TagFactory(name='lemon', slug='lemon')
+        add_existing_tag('LEMON', self.untagged_question.tags)
+        tags_eq(self.untagged_question, ['lemon'])
 
     @raises(Tag.DoesNotExist)
     def test_add_existing_no_such_tag(self):

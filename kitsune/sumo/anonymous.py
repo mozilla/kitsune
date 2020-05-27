@@ -35,7 +35,7 @@ if hasattr(random, 'SystemRandom'):
 else:
     randrange = random.randrange
 
-MAX_ANONYMOUS_ID = 18446744073709551616L     # 2 << 63
+MAX_ANONYMOUS_ID = 18446744073709551616     # 2 << 63
 
 
 class AnonymousIdentity(object):

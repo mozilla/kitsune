@@ -97,15 +97,15 @@ def update_question_vote_chunk(data):
             for doc in es_docs:
                 # Note: Need to keep this in sync with
                 # Question.extract_document.
-                num = id_to_num[int(doc[u"id"])]
-                doc[u"question_num_votes_past_week"] = num
+                num = id_to_num[int(doc["id"])]
+                doc["question_num_votes_past_week"] = num
 
                 QuestionMappingType.index(doc, id_=doc["id"])
         except ES_EXCEPTIONS:
             # Something happened with ES, so let's push index updating
             # into an index_task which retries when it fails because
             # of ES issues.
-            index_task.delay(QuestionMappingType, id_to_num.keys())
+            index_task.delay(QuestionMappingType, list(id_to_num.keys()))
 
 
 @task(rate_limit="4/m")

@@ -15,4 +15,4 @@ class TestArticle:
         assert 'Was this article helpful?' == article_page.helpful_header_text
 
         article_page.click_helpful_button()
-        article_page.wait_for_vote_message_text(u'Glad to hear it \u2014 thanks for the feedback!')
+        article_page.wait_for_vote_message_text('Glad to hear it \u2014 thanks for the feedback!')

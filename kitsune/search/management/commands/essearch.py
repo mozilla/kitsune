@@ -17,6 +17,6 @@ class Command(BaseCommand):
         if not args:
             raise CommandError('You must specify the search query.')
 
-        query = u' '.join(args)
+        query = ' '.join(args)
 
         es_search_cmd(query, pages, FakeLogger(self.stdout))

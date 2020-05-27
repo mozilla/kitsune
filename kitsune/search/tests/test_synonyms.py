@@ -1,21 +1,20 @@
-from nose.tools import eq_
 from textwrap import dedent
 
+from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.search import es_utils, synonym_utils
+from kitsune.search.tasks import update_synonyms_task
 from kitsune.search.tests import ElasticTestCase, SynonymFactory
-from kitsune.sumo.tests import LocalizingClient
-from kitsune.sumo.tests import TestCase
+from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
-from kitsune.search.tasks import update_synonyms_task
 
 
 class TestSynonymModel(TestCase):
     def test_serialize(self):
         syn = SynonymFactory(from_words="foo", to_words="bar")
-        eq_("foo => bar", unicode(syn))
+        eq_("foo => bar", str(syn))
 
 
 class TestFilterGenerator(TestCase):
@@ -51,13 +50,13 @@ class TestSynonymParser(TestCase):
             four, five => jellybean
             """
         )
-        synonyms = set(
+        synonyms = {
             [
                 ("one, two", "apple, banana"),
                 ("three", "orange, grape"),
                 ("four, five", "jellybean"),
             ]
-        )
+        }
         eq_(synonyms, synonym_utils.parse_synonyms(synonym_text))
 
     def testTooManyArrows(self):

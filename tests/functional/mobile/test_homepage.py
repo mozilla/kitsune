@@ -12,13 +12,13 @@ class TestHome:
     @pytest.mark.smoke
     @pytest.mark.nondestructive
     def test_the_expandable_header_menu(self, base_url, selenium):
-        expected_menu_items = [u'Home',
-                               u'Ask a question',
-                               u'Support Forum',
-                               u'Help other users',
-                               u'Switch to desktop site',
-                               u'Sign in',
-                               u'Switch language']
+        expected_menu_items = ['Home',
+                               'Ask a question',
+                               'Support Forum',
+                               'Help other users',
+                               'Switch to desktop site',
+                               'Sign in',
+                               'Switch language']
         home = Home(base_url, selenium).open()
         home.open_menu()
         assert home.is_menu_exposed, 'Menu is not open'

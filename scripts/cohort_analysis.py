@@ -30,7 +30,7 @@ def run_():
         first_day_of_previous_month = (boundaries[-1] - timedelta(days=1)).replace(day=1)
         boundaries.append(first_day_of_previous_month)
     boundaries.reverse()
-    ranges = zip(boundaries[:-1], boundaries[1:])
+    ranges = list(zip(boundaries[:-1], boundaries[1:]))
 
     reports = [
         ('L10n', Revision.objects.exclude(document__locale='en-US')),
@@ -42,7 +42,7 @@ def run_():
         data = report_for(queryset, ranges)
         headers = [title] + [s.strftime('%b') for s, _ in ranges]
         print(tabulate(data, headers=headers))
-        print
+        print()
 
 
 def count_contributors_in_range(queryset, users, date_range):
@@ -62,7 +62,7 @@ def get_cohort(queryset, date_range):
         first_contrib = queryset.filter(creator=u).order_by('id')[0]
         return start <= first_contrib.created < end
 
-    return filter(is_in_cohort, potential_users)
+    return list(filter(is_in_cohort, potential_users))
 
 
 def report_for(queryset, ranges):

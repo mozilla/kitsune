@@ -31,7 +31,7 @@ class GenericAPIException(APIException):
     def __init__(self, status_code, detail, **kwargs):
         self.status_code = status_code
         self.detail = detail
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             setattr(self, key, val)
 
 
@@ -189,7 +189,7 @@ class InequalityFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         filter_fields = getattr(view, 'filter_fields', [])
 
-        for key, value in request.query_params.items():
+        for key, value in list(request.query_params.items()):
             splits = key.split('__')
             if len(splits) != 2:
                 continue

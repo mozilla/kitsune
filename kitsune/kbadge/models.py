@@ -189,21 +189,21 @@ class Badge(models.Model):
     objects = BadgeManager()
 
     title = models.CharField(
-        max_length=255, blank=False, unique=True, help_text=u"Short, descriptive title"
+        max_length=255, blank=False, unique=True, help_text="Short, descriptive title"
     )
     slug = models.SlugField(
         blank=False,
         unique=True,
-        help_text=u"Very short name, for use in URLs and links",
+        help_text="Very short name, for use in URLs and links",
     )
     description = models.TextField(
-        blank=True, help_text=u"Longer description of the badge and its criteria"
+        blank=True, help_text="Longer description of the badge and its criteria"
     )
     image = models.ImageField(
         blank=True,
         null=True,
         upload_to=settings.BADGE_IMAGE_PATH,
-        help_text=u"Must be square. Recommended 256x256.",
+        help_text="Must be square. Recommended 256x256.",
     )
     # TODO: Rename? Eventually we'll want a globally-unique badge. That is, one
     # unique award for one person for the whole site.
@@ -353,8 +353,8 @@ class Award(models.Model):
         ordering = ["-modified", "-created"]
 
     def __unicode__(self):
-        by = self.creator and (u" by %s" % self.creator) or u""
-        return u"Award of %s to %s%s" % (self.badge, self.user, by)
+        by = self.creator and (" by %s" % self.creator) or ""
+        return "Award of %s to %s%s" % (self.badge, self.user, by)
 
     @models.permalink
     def get_absolute_url(self):

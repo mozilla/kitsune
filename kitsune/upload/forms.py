@@ -3,10 +3,10 @@ from django.conf import settings
 from django.core.validators import FileExtensionValidator
 from django.utils.translation import ugettext_lazy as _lazy
 
-MSG_IMAGE_REQUIRED = _lazy(u'You have not selected an image to upload.')
+MSG_IMAGE_REQUIRED = _lazy('You have not selected an image to upload.')
 MSG_IMAGE_LONG = _lazy(
-    u'Please keep the length of your image filename to %(max)s '
-    u'characters or less. It is currently %(length)s characters.')
+    'Please keep the length of your image filename to %(max)s '
+    'characters or less. It is currently %(length)s characters.')
 
 
 class LimitedImageField(forms.ImageField):

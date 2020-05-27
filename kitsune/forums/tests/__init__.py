@@ -76,7 +76,7 @@ class ThreadFactoryTests(TestCase):
     def test_can_set_posts(self):
         t = ThreadFactory(posts=[{'content': 'one'}, {'content': 'two'}])
         contents = list(t.post_set.values_list('content', flat=True))
-        eq_(contents, [u'one', u'two'])
+        eq_(contents, ['one', 'two'])
 
     def test_posts_belong_to_the_thread(self):
         t = ThreadFactory()

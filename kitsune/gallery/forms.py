@@ -7,38 +7,38 @@ from kitsune.lib.sumo_locales import LOCALES
 from kitsune.upload.forms import LimitedImageField
 
 # Error messages
-MSG_TITLE_REQUIRED = _lazy(u'Please provide a title.')
+MSG_TITLE_REQUIRED = _lazy('Please provide a title.')
 MSG_TITLE_SHORT = _lazy(
-    u'The title is too short (%(show_value)s characters). It must be at '
+    'The title is too short (%(show_value)s characters). It must be at '
     'least %(limit_value)s characters.')
 MSG_TITLE_LONG = _lazy(
-    u'Please keep the length of your title to %(limit_value)s characters '
+    'Please keep the length of your title to %(limit_value)s characters '
     'or less. It is currently %(show_value)s characters.')
-MSG_DESCRIPTION_REQUIRED = _lazy(u'Please provide a description.')
+MSG_DESCRIPTION_REQUIRED = _lazy('Please provide a description.')
 MSG_DESCRIPTION_LONG = _lazy(
-    u'Please keep the length of your description to %(limit_value)s '
+    'Please keep the length of your description to %(limit_value)s '
     'characters or less. It is currently %(show_value)s characters.')
-MSG_IMAGE_REQUIRED = _lazy(u'You have not selected an image to upload.')
+MSG_IMAGE_REQUIRED = _lazy('You have not selected an image to upload.')
 MSG_IMAGE_LONG = _lazy(
-    u'Please keep the length of your image filename to %(max)s '
+    'Please keep the length of your image filename to %(max)s '
     'characters or less. It is currently %(length)s characters.')
-MSG_TITLE_DRAFT = _lazy(u'Please select a different title.')
+MSG_TITLE_DRAFT = _lazy('Please select a different title.')
 
-TITLE_HELP_TEXT = _lazy(u'Include this in wiki syntax with [[Image:title]]')
-DESCRIPTION_HELP_TEXT = _lazy(u'Provide a brief description of this media.')
+TITLE_HELP_TEXT = _lazy('Include this in wiki syntax with [[Image:title]]')
+DESCRIPTION_HELP_TEXT = _lazy('Provide a brief description of this media.')
 
 
 class MediaForm(forms.ModelForm):
     """Common abstractions for Image form."""
     locale = forms.ChoiceField(
         required=False,
-        label=_lazy(u'Locale'),
+        label=_lazy('Locale'),
         choices=[(k, LOCALES[k].native) for
                  k in settings.SUMO_LANGUAGES],
         initial=settings.WIKI_DEFAULT_LANGUAGE)
     title = forms.CharField(
         required=False,
-        label=_lazy(u'Title'),
+        label=_lazy('Title'),
         help_text=TITLE_HELP_TEXT,
         min_length=5, max_length=255,
         error_messages={'required': MSG_TITLE_REQUIRED,
@@ -46,7 +46,7 @@ class MediaForm(forms.ModelForm):
                         'max_length': MSG_TITLE_LONG})
     description = forms.CharField(
         required=False,
-        label=_lazy(u'Description'),
+        label=_lazy('Description'),
         help_text=DESCRIPTION_HELP_TEXT,
         max_length=10000, widget=forms.Textarea(),
         error_messages={'required': MSG_DESCRIPTION_REQUIRED,
@@ -75,7 +75,7 @@ class ImageForm(MediaForm):
 
     def __init__(self, *args, **kwargs):
         super(ImageForm, self).__init__(*args, **kwargs)
-        msg = _(u'Accepted formats include: PNG, JPEG, GIF. '
+        msg = _('Accepted formats include: PNG, JPEG, GIF. '
                 '<a target="_blank" href="{learn_more}">Learn more...</a>')
         url = 'http://infohost.nmt.edu/tcc/help/pubs/pil/formats.html'
         self.fields['file'].help_text = msg.format(learn_more=url)

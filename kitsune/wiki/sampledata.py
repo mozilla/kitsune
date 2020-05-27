@@ -89,7 +89,7 @@ def generate_sampledata(options):
 
     # Generate 9 sample documents with 2 topics each
     topics = list(Topic.objects.all())
-    for i in xrange(9):
+    for i in range(9):
         d = DocumentFactory(title='Sample Article %s' % str(i + 1),
                             slug='sample-article-%s' % str(i + 1))
         RevisionFactory(document=d, is_approved=True, reviewed=datetime.now())

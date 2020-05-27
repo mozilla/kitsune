@@ -74,8 +74,8 @@ from kitsune.wiki.utils import get_featured_articles
 log = logging.getLogger("k.questions")
 
 
-UNAPPROVED_TAG = _lazy(u"That tag does not exist.")
-NO_TAG = _lazy(u"Please provide a tag.")
+UNAPPROVED_TAG = _lazy('That tag does not exist.')
+NO_TAG = _lazy('Please provide a tag.')
 IMG_LIMIT = settings.IMAGE_ATTACHMENT_USER_LIMIT
 
 FILTER_GROUPS = {
@@ -360,19 +360,19 @@ def parse_troubleshooting(troubleshooting_json):
     # An empty path means the parsed json.
     spec = (
         ((), dict),
-        (("accessibility",), dict),
-        (("accessibility", "isActive"), bool),
-        (("application",), dict),
-        (("application", "name"), basestring),
-        (("application", "supportURL"), basestring),
-        (("application", "userAgent"), basestring),
-        (("application", "version"), basestring),
-        (("extensions",), list),
-        (("graphics",), dict),
-        (("javaScript",), dict),
-        (("modifiedPreferences",), dict),
-        (("userJS",), dict),
-        (("userJS", "exists"), bool),
+        (('accessibility', ), dict),
+        (('accessibility', 'isActive'), bool),
+        (('application', ), dict),
+        (('application', 'name'), str),
+        (('application', 'supportURL'), str),
+        (('application', 'userAgent'), str),
+        (('application', 'version'), str),
+        (('extensions', ), list),
+        (('graphics', ), dict),
+        (('javaScript', ), dict),
+        (('modifiedPreferences', ), dict),
+        (('userJS', ), dict),
+        (('userJS', 'exists'), bool),
     )
 
     for path, type_ in spec:
@@ -390,11 +390,9 @@ def parse_troubleshooting(troubleshooting_json):
     # TODO: If the UI for this gets better, we can include these prefs
     # and just make them collapsible.
 
-    parsed["modifiedPreferences"] = dict(
-        (key, val)
-        for (key, val) in parsed["modifiedPreferences"].items()
-        if not key.startswith("print")
-    )
+    parsed['modifiedPreferences'] = dict(
+        (key, val) for (key, val) in list(parsed['modifiedPreferences'].items())
+        if not key.startswith('print'))
 
     return parsed
 
@@ -497,11 +495,11 @@ def aaq(request, product_key=None, category_key=None, step=1):
         path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
 
         old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-        msg = _(
-            u"The questions forum isn't available in {old_lang}, we "
-            u"have redirected you to the {new_lang} questions forum."
-        ).format(old_lang=old_lang, new_lang=new_lang)
+        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE
+                                           .lower()]
+        msg = (_("The questions forum isn't available in {old_lang}, we "
+                 "have redirected you to the {new_lang} questions forum.")
+               .format(old_lang=old_lang, new_lang=new_lang))
         messages.add_message(request, messages.WARNING, msg)
 
         return HttpResponseRedirect(path)
@@ -547,13 +545,10 @@ def aaq(request, product_key=None, category_key=None, step=1):
                 path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
 
                 old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-                new_lang = settings.LANGUAGES_DICT[
-                    settings.WIKI_DEFAULT_LANGUAGE.lower()
-                ]
-                msg = _(
-                    u"The questions forum isn't available for {product} in {old_lang}, we "
-                    u"have redirected you to the {new_lang} questions forum."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+                new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+                msg = (_("The questions forum isn't available for {product} in {old_lang}, we "
+                         "have redirected you to the {new_lang} questions forum.")
+                       .format(product=product.title, old_lang=old_lang, new_lang=new_lang))
                 messages.add_message(request, messages.WARNING, msg)
 
                 return HttpResponseRedirect(path)
@@ -768,10 +763,10 @@ def solve(request, question_id, answer_id):
                 secret=watch_secret, event_type="question reply", user=question.creator
             )
             # Create a new secret.
-            distinguishable_letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ"
-            new_secret = "".join(
-                random.choice(distinguishable_letters) for x in xrange(10)
-            )
+            distinguishable_letters = \
+                'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ'
+            new_secret = ''.join(random.choice(distinguishable_letters)
+                                 for x in range(10))
             watch.update(secret=new_secret)
             request.user = question.creator
         except Watch.DoesNotExist:
@@ -974,26 +969,23 @@ def add_tag_async(request, question_id):
     try:
         question, canonical_name = _add_tag(request, question_id)
     except Tag.DoesNotExist:
-        return HttpResponse(
-            json.dumps({"error": unicode(UNAPPROVED_TAG)}),
-            content_type="application/json",
-            status=400,
-        )
+        return HttpResponse(json.dumps({'error': str(UNAPPROVED_TAG)}),
+                            content_type='application/json',
+                            status=400)
 
     if canonical_name:
         question.clear_cached_tags()
         tag = Tag.objects.get(name=canonical_name)
-        tag_url = urlparams(
-            reverse("questions.list", args=[question.product_slug]), tagged=tag.slug
-        )
-        data = {"canonicalName": canonical_name, "tagUrl": tag_url}
-        return HttpResponse(json.dumps(data), content_type="application/json")
+        tag_url = urlparams(reverse(
+            'questions.list', args=[question.product_slug]), tagged=tag.slug)
+        data = {'canonicalName': canonical_name,
+                'tagUrl': tag_url}
+        return HttpResponse(json.dumps(data),
+                            content_type='application/json')
 
-    return HttpResponse(
-        json.dumps({"error": unicode(NO_TAG)}),
-        content_type="application/json",
-        status=400,
-    )
+    return HttpResponse(json.dumps({'error': str(NO_TAG)}),
+                        content_type='application/json',
+                        status=400)
 
 
 @permission_required("questions.tag_question")
@@ -1031,9 +1023,8 @@ def remove_tag_async(request, question_id):
         question.clear_cached_tags()
         return HttpResponse("{}", content_type="application/json")
 
-    return HttpResponseBadRequest(
-        json.dumps({"error": unicode(NO_TAG)}), content_type="application/json"
-    )
+    return HttpResponseBadRequest(json.dumps({'error': str(NO_TAG)}),
+                                  content_type='application/json')
 
 
 @permission_required("flagit.can_moderate")
@@ -1379,9 +1370,9 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     # - It is in a format usable by k.Graph.
     #   - ie: [{"created": 1362774285, 'topic-1': 10, 'topic-2': 20}, ...]
 
-    for series in histograms_data.itervalues():
-        if series["entries"]:
-            earliest_point = series["entries"][0]["key"]
+    for series in histograms_data.values():
+        if series['entries']:
+            earliest_point = series['entries'][0]['key']
             break
     else:
         return []
@@ -1389,7 +1380,7 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     latest_point = earliest_point
     interim_data = {}
 
-    for key, data in histograms_data.iteritems():
+    for key, data in histograms_data.items():
         if not data:
             continue
         for point in data:
@@ -1411,14 +1402,14 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     # Zero fill the interim data.
     timestamp = earliest_point
     while timestamp <= latest_point:
-        datum = interim_data.get(timestamp, {"date": timestamp})
-        for key in histograms_data.iterkeys():
+        datum = interim_data.get(timestamp, {'date': timestamp})
+        for key in histograms_data.keys():
             if key not in datum:
                 datum[key] = 0
         timestamp += bucket
 
     # The keys are irrelevant, and the values are exactly what we want.
-    return interim_data.values()
+    return list(interim_data.values())
 
 
 def metrics(request, locale_code=None):
@@ -1442,7 +1433,7 @@ def metrics(request, locale_code=None):
     graph_data = stats_topic_data(bucket_days, start, end, locale_code, product)
 
     for group in graph_data:
-        for name, count in group.items():
+        for name, count in list(group.items()):
             if count == 0:
                 del group[name]
 
@@ -1465,15 +1456,10 @@ def screen_share(request, question_id):
     if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
-    content = _(
-        u"I invited {user} to a screen sharing session, "
-        u"and I'll give an update here once we are done."
-    )
-    answer = Answer(
-        question=question,
-        creator=request.user,
-        content=content.format(user=display_name(question.creator)),
-    )
+    content = _("I invited {user} to a screen sharing session, "
+                "and I'll give an update here once we are done.")
+    answer = Answer(question=question, creator=request.user,
+                    content=content.format(user=display_name(question.creator)))
     answer.save()
     statsd.incr("questions.answer")
 
