@@ -1,6 +1,8 @@
 import contextlib
 import re
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 from django.contrib import messages
@@ -14,9 +16,9 @@ from django.http import (HttpResponse, HttpResponseForbidden,
 from django.http.request import split_domain_port
 from django.shortcuts import render
 from django.utils import translation
-from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
-from django.utils.encoding import iri_to_uri, smart_str, smart_text
-
+from django.utils.cache import (add_never_cache_headers,
+                                patch_response_headers, patch_vary_headers)
+from django.utils.encoding import iri_to_uri, smart_bytes, smart_text
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
@@ -88,7 +90,7 @@ class LocaleURLMiddleware(object):
 
             prefixer.locale = ''
             new_path = prefixer.fix(prefixer.shortened_path)
-            query = dict((smart_str(k), v) for
+            query = dict((smart_bytes(k), v) for
                          k, v in request.GET.items() if k != 'lang')
 
             # 'lang' is only used on the language selection page. If this is

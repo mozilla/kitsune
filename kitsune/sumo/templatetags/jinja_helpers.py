@@ -15,7 +15,7 @@ from django.contrib.staticfiles.templatetags.staticfiles import \
     static as django_static
 from django.http import QueryDict
 from django.template.loader import render_to_string
-from django.utils.encoding import smart_str, smart_text
+from django.utils.encoding import smart_bytes, smart_text
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone
 from django.utils.translation import ugettext as _
@@ -99,7 +99,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 
     q = url_.query
     new_query_dict = (
-        QueryDict(smart_str(q), mutable=True) if q else QueryDict("", mutable=True)
+        QueryDict(smart_bytes(q), mutable=True) if q else QueryDict("", mutable=True)
     )
     if query_dict:
         for k, l in query_dict.lists():

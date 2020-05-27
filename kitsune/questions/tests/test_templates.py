@@ -2,7 +2,7 @@
 import json
 import random
 from datetime import datetime, timedelta
-from string import letters
+from string import ascii_letters
 
 import mock
 from django.conf import settings
@@ -1224,7 +1224,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
     def test_truncated_text_is_stripped(self):
         """Verify we strip html from truncated text."""
-        long_str = "".join(random.choice(letters) for x in range(170))
+        long_str = "".join(random.choice(ascii_letters) for x in range(170))
         QuestionFactory(content="<p>%s</p>" % long_str)
         response = self.client.get(reverse("questions.list", args=["all"]))
 
