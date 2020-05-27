@@ -145,11 +145,12 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
         )
         .order_by("-visits")
         .select_related('document')
-    )[:10]
+    )
 
     if product:
         visits = visits.filter(document__products__in=[product.id])
 
+    visits = visits[:10]
     documents = []
 
     if locale == settings.WIKI_DEFAULT_LANGUAGE:
