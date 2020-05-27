@@ -566,7 +566,7 @@ def aaq(request, product_key=None, category_key=None, step=1):
     }
 
     if step == 2:
-        context["featured"] = get_featured_articles(product)
+        context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
         context["topics"] = topics_for(product, parent=None)
     elif step == 3:
         form = NewQuestionForm(

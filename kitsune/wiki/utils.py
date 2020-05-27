@@ -1,14 +1,14 @@
 import random
-import requests
 
+import requests
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.utils.http import urlencode
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.wiki.models import Revision
+from kitsune.wiki.models import Document, Revision
 
 
 class BitlyException(Exception):
@@ -133,28 +133,44 @@ def _active_contributors_id(from_date, to_date, locale, product):
     return set(list(editors) + list(reviewers))
 
 
-def get_featured_articles(product=None):
+def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     """Returns 4 random articles from the most visited.
 
     If a product is passed, it returns 4 random highly visited articles.
     """
-    featured = (
+    visits = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
         .exclude(
             document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES
         )
         .order_by("-visits")
-        .select_related("document")
+        .select_related('document')
     )
 
     if product:
-        featured = featured.filter(document__products__in=[product.id])
+        visits = visits.filter(document__products__in=[product.id])
 
-    # Limit this to 10 entries
-    if featured.count() < 10:
-        return featured
+    documents = []
 
-    # This returns a WikiDocumentVisits object and not the actual Wiki doc.
-    # The wiki doc it's under .document which is prefetched b/c of select_related
-    featured = featured[:10]
-    return random.sample(featured, 4)
+    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        for visit in visits:
+            documents.append(visit.document)
+            if len(documents) == 10:
+                break
+    else:
+        # prefretch localised documents to avoid n+1 problem
+        visits = visits.prefetch_related(
+            Prefetch('document__translations', queryset=Document.objects.filter(locale=locale))
+        )
+
+        for visit in visits:
+            translation = visit.document.translations.first()
+            if not translation:
+                continue
+            documents.append(translation)
+            if len(documents) == 10:
+                break
+
+    if len(documents) <= 4:
+        return documents
+    return random.sample(documents, 4)
