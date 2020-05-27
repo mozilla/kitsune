@@ -3,9 +3,9 @@
 set -e
 
 echo "Fix path issues"
-ln -sf /usr/lib/`uname -i`-linux-gnu/libfreetype.so ~/virtualenv/python2.6/lib/
-ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
-ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libfreetype.so ~/virtualenv/python3.7/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python3.7/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python3.7/lib/
 
 echo "Install Python dependencies"
 pip install -r requirements/dev.txt
