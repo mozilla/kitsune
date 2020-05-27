@@ -145,7 +145,7 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
         )
         .order_by("-visits")
         .select_related('document')
-    )
+    )[:10]
 
     if product:
         visits = visits.filter(document__products__in=[product.id])
@@ -155,8 +155,6 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     if locale == settings.WIKI_DEFAULT_LANGUAGE:
         for visit in visits:
             documents.append(visit.document)
-            if len(documents) == 10:
-                break
     else:
         # prefretch localised documents to avoid n+1 problem
         visits = visits.prefetch_related(
@@ -168,8 +166,6 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
             if not translation:
                 continue
             documents.append(translation)
-            if len(documents) == 10:
-                break
 
     if len(documents) <= 4:
         return documents
