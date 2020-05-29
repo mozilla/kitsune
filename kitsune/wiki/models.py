@@ -4,38 +4,39 @@ import time
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
+import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.urlresolvers import resolve
-from django.db import models, IntegrityError
+from django.db import IntegrityError, models
 from django.db.models import Q
 from django.http import Http404
-from django.utils.encoding import smart_str
-
-import waffle
+from django.utils.encoding import smart_bytes
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
 from kitsune.search.es_utils import UnindexMeBro, es_analyzer_for_locale
-from kitsune.search.models import (
-    SearchMappingType, SearchMixin, register_for_indexing,
-    register_mapping_type)
+from kitsune.search.models import (SearchMappingType, SearchMixin,
+                                   register_for_indexing,
+                                   register_mapping_type)
 from kitsune.sumo.apps import ProgrammingError
-from kitsune.sumo.models import ModelBase, LocaleField
+from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
-from kitsune.wiki.config import (
-    CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
-    MAJOR_SIGNIFICANCE, REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
-    REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY,
-    TEMPLATES_CATEGORY, DOC_HTML_CACHE_KEY, TEMPLATE_TITLE_PREFIX)
+from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
+                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
+                                 DOC_HTML_CACHE_KEY, MAJOR_SIGNIFICANCE,
+                                 MEDIUM_SIGNIFICANCE, REDIRECT_CONTENT,
+                                 REDIRECT_HTML, REDIRECT_SLUG, REDIRECT_TITLE,
+                                 SIGNIFICANCES, TEMPLATE_TITLE_PREFIX,
+                                 TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE)
 from kitsune.wiki.permissions import DocumentPermissionMixin
-
 
 log = logging.getLogger('k.wiki')
 
@@ -1304,4 +1305,4 @@ def doc_html_cache_key(locale, slug):
     """Returns the cache key for the document html."""
     cache_key = DOC_HTML_CACHE_KEY.format(
         locale=locale, slug=slug)
-    return hashlib.sha1(smart_str(cache_key)).hexdigest()
+    return hashlib.sha1(smart_bytes(cache_key)).hexdigest()

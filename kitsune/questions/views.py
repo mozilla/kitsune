@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import time
+from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
@@ -11,22 +12,17 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from django.http import (
-    Http404,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseForbidden,
-    HttpResponseRedirect,
-)
+from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
+                         HttpResponseForbidden, HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.views.decorators.http import (require_GET, require_http_methods,
+                                          require_POST)
 from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
-from ordereddict import OrderedDict
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
@@ -35,34 +31,21 @@ from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
-from kitsune.questions.forms import (
-    FREQUENCY_CHOICES,
-    AnswerForm,
-    EditQuestionForm,
-    NewQuestionForm,
-    StatsForm,
-    WatchQuestionForm,
-)
-from kitsune.questions.models import (
-    Answer,
-    AnswerVote,
-    Question,
-    QuestionLocale,
-    QuestionMappingType,
-    QuestionVote,
-)
+from kitsune.questions.feeds import (AnswersFeed, QuestionsFeed,
+                                     TaggedQuestionsFeed)
+from kitsune.questions.forms import (FREQUENCY_CHOICES, AnswerForm,
+                                     EditQuestionForm, NewQuestionForm,
+                                     StatsForm, WatchQuestionForm)
+from kitsune.questions.models import (Answer, AnswerVote, Question,
+                                      QuestionLocale, QuestionMappingType,
+                                      QuestionVote)
 from kitsune.questions.utils import get_mobile_product_from_ua
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, Sphilastic
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.sumo.utils import (
-    build_paged_url,
-    is_ratelimited,
-    paginate,
-    simple_paginate,
-)
+from kitsune.sumo.utils import (build_paged_url, is_ratelimited, paginate,
+                                simple_paginate)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment

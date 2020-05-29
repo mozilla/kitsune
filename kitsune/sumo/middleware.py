@@ -1,6 +1,8 @@
 import contextlib
 import re
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 from django.contrib import messages
@@ -16,7 +18,7 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import (add_never_cache_headers,
                                 patch_response_headers, patch_vary_headers)
-from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
+from django.utils.encoding import iri_to_uri, smart_bytes, smart_text
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
@@ -88,7 +90,7 @@ class LocaleURLMiddleware(object):
 
             prefixer.locale = ''
             new_path = prefixer.fix(prefixer.shortened_path)
-            query = dict((smart_str(k), v) for
+            query = dict((smart_bytes(k), v) for
                          k, v in request.GET.items() if k != 'lang')
 
             # 'lang' is only used on the language selection page. If this is
@@ -191,7 +193,7 @@ class PlusToSpaceMiddleware(object):
             new = p.sub(' ', request.path_info)
             if request.META.get('QUERY_STRING'):
                 new = '%s?%s' % (new,
-                                  smart_unicode(request.META['QUERY_STRING']))
+                                  smart_text(request.META['QUERY_STRING']))
             if hasattr(request, 'LANGUAGE_CODE'):
                 new = '/%s%s' % (request.LANGUAGE_CODE, new)
             return HttpResponsePermanentRedirect(new)
