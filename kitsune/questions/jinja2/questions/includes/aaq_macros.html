@@ -7,7 +7,7 @@
   <div class="sumo-page-section--inner">
     <div id="product-picker" class="sumo-card-grid stack-on-mobile" style="--cg-count: {{ products|length }};">
       <div class="scroll-wrap">
-        {% for key, product in products.iteritems() %}
+        {% for key, product in products.items() %}
         <div class="card card--product zoom-on-hover">
           {% if key == 'other' %}
           <img src="{{ static('sumo/img/mozilla-icon.png') }}"
