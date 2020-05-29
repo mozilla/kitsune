@@ -24,7 +24,7 @@ class TypedMultipleChoiceFieldTestCase(TestCase):
         eq_([1], f.clean(['1']))
         self.assertRaisesErrorWithMessage(
             ValidationError,
-            "[u'Select a valid choice. 2 is not one of the available choices."
+            "['Select a valid choice. 2 is not one of the available choices."
             "']", f.clean, ['2'])
 
     def test_typedmultiplechoicefield_72(self):
@@ -47,11 +47,11 @@ class TypedMultipleChoiceFieldTestCase(TestCase):
                                      coerce=int)
         self.assertRaisesErrorWithMessage(
             ValidationError,
-            "[u'Select a valid choice. B is not one of the available choices."
+            "['Select a valid choice. B is not one of the available choices."
             "']", f.clean, ['B'])
         # Required fields require values
         self.assertRaisesErrorWithMessage(
-            ValidationError, "[u'This field is required.']", f.clean, [])
+            ValidationError, "['This field is required.']", f.clean, [])
 
     def test_typedmultiplechoicefield_75(self):
         # Non-required fields aren't required

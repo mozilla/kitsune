@@ -49,7 +49,7 @@ class Tweet(ModelBase):
         """
         return cls.objects.order_by('-tweet_id')[0:1].get()
 
-    def __unicode__(self):
+    def __str__(self):
         tweet = json.loads(self.raw_json)
         return tweet['text']
 
@@ -69,7 +69,7 @@ class Reply(ModelBase, SearchMixin):
     created = models.DateTimeField(default=datetime.now, db_index=True)
     reply_to_tweet_id = models.BigIntegerField()
 
-    def __unicode__(self):
+    def __str__(self):
         tweet = json.loads(self.raw_json)
         return '@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])
 

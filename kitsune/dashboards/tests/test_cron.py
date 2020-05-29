@@ -161,7 +161,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         eq_('%d::%.1f::%.1f::%.1f::%.1f::%s::%s' %
             (r.document.id, 5.0, 0.4, 0.0, 0.0, r.document.slug,
              r.document.title),
-            result[0].decode('utf-8'))
+            result[0])
 
     def test_caching_helpful(self):
         """Command should ignore the helpful articles."""
@@ -200,7 +200,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         eq_('%d::%.1f::%.1f::%.1f::%.1f::%s::%s' %
             (r.document.id, 5.0, 0.4, 0.2, 0.0, r.document.slug,
              r.document.title),
-            result[0].decode('utf-8'))
+            result[0])
 
     def test_caching_sorting(self):
         """Tests if Bayesian Average sorting works correctly."""

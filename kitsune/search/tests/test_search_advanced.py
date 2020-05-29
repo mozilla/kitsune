@@ -71,9 +71,9 @@ class AdvancedSearchTests(ElasticTestCase):
             reverse('search.advanced'),
             {'a': '1', 'product': 'product', 'q': 'cookies', 'w': '1'})
 
-        assert "We couldn't find any results for" not in response.content
+        assert b"We couldn't find any results for" not in response.content
         eq_(200, response.status_code)
-        assert 'Product One' in response.content
+        assert b'Product One' in response.content
 
     def test_search_multiple_products(self):
         p1 = ProductFactory(title='Product One', slug='product-one', display_order=1)
@@ -91,8 +91,8 @@ class AdvancedSearchTests(ElasticTestCase):
         })
 
         eq_(200, response.status_code)
-        assert "We couldn't find any results for" not in response.content
-        assert 'Product One, Product Two' in response.content
+        assert b"We couldn't find any results for" not in response.content
+        assert b'Product One, Product Two' in response.content
 
     def test_wiki_no_query(self):
         """Tests advanced search with no query"""
@@ -850,10 +850,10 @@ class AdvancedSearchTests(ElasticTestCase):
         eq_(200, response.status_code)
 
         # Regular forum should show up
-        assert 'ou812forum' in response.content
+        assert b'ou812forum' in response.content
 
         # Restricted forum should not show up
-        assert 'restrictedkeepout' not in response.content
+        assert b'restrictedkeepout' not in response.content
 
         u = UserFactory()
         g = GroupFactory()
@@ -871,5 +871,5 @@ class AdvancedSearchTests(ElasticTestCase):
         eq_(200, response.status_code)
 
         # Both forums should show up for authorized user
-        assert 'ou812forum' in response.content
-        assert 'restrictedkeepout' in response.content
+        assert b'ou812forum' in response.content
+        assert b'restrictedkeepout' in response.content

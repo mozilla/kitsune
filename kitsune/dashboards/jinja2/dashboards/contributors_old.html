@@ -41,7 +41,7 @@
                                    product=product) }}
       {% endif %}
 
-      {% for readout in readouts.itervalues() %}
+      {% for readout in readouts.values() %}
         {{ print_readout(readout, locale=default_locale, product=product) }}
       {% endfor %}
     </article>

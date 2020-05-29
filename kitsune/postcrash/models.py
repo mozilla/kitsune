@@ -8,7 +8,7 @@ class Signature(ModelBase):
     signature = models.CharField(max_length=255, db_index=True, unique=True)
     document = models.ForeignKey(Document)
 
-    def __unicode__(self):
+    def __str__(self):
         return '<%s> %s' % (self.signature, self.document.title)
 
     def get_absolute_url(self):

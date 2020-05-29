@@ -5,7 +5,7 @@ from kitsune.customercare.models import Tweet, Reply
 
 class TweetAdmin(admin.ModelAdmin):
     date_hierarchy = "created"
-    list_display = ("tweet_id", "__unicode__", "created", "locale")
+    list_display = ("tweet_id", "__str__", "created", "locale")
     list_filter = ("locale", "hidden")
     search_fields = ("raw_json",)
     raw_id_fields = ("reply_to",)
@@ -20,7 +20,7 @@ class ReplyAdmin(admin.ModelAdmin):
         "tweet_id",
         "user",
         "twitter_username",
-        "__unicode__",
+        "__str__",
         "created",
         "locale",
     )

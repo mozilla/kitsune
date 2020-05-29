@@ -67,7 +67,7 @@ class EditAvatarTests(TestCase):
 
     def test_upload_avatar(self):
         """Upload a group avatar."""
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             self.group_profile.avatar.save('test_old.jpg', File(f), save=True)
         assert self.group_profile.avatar.name.endswith('92b516.jpg')
         old_path = self.group_profile.avatar.path
@@ -75,7 +75,7 @@ class EditAvatarTests(TestCase):
 
         url = reverse('groups.edit_avatar', locale='en-US',
                       args=[self.group_profile.slug])
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             r = self.client.post(url, {'avatar': f})
 
         eq_(302, r.status_code)

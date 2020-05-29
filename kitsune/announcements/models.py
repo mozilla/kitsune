@@ -39,7 +39,7 @@ class Announcement(ModelBase):
     group = models.ForeignKey(Group, null=True, blank=True)
     locale = models.ForeignKey(Locale, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         excerpt = self.content[:50]
         if self.group:
             return "[{group}] {excerpt}".format(group=self.group, excerpt=excerpt)

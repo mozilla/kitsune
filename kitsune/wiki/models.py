@@ -474,7 +474,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if url:
             return self.from_url(url)
 
-    def __unicode__(self):
+    def __str__(self):
         return '[%s] %s' % (self.locale, self.title)
 
     def allows_vote(self, request):
@@ -1021,7 +1021,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
         return qs.exists()
 
-    def __unicode__(self):
+    def __str__(self):
         return '[%s] %s #%s: %s' % (self.document.locale,
                                      self.document.title,
                                      self.id, self.content[:50])
@@ -1203,7 +1203,7 @@ class Locale(ModelBase):
     def get_absolute_url(self):
         return reverse('wiki.locale_details', args=[self.locale])
 
-    def __unicode__(self):
+    def __str__(self):
         return self.locale
 
 
@@ -1222,7 +1222,7 @@ class DocumentLink(ModelBase):
     class Meta:
         unique_together = ('linked_from', 'linked_to', 'kind')
 
-    def __unicode__(self):
+    def __str__(self):
         return ('<DocumentLink: %s from %s to %s>' %
                 (self.kind, self.linked_from, self.linked_to))
 
@@ -1235,7 +1235,7 @@ class DocumentImage(ModelBase):
     class Meta:
         unique_together = ('document', 'image')
 
-    def __unicode__(self):
+    def __str__(self):
         return '<DocumentImage: {doc} includes {img}>'.format(
             doc=self.document, img=self.image)
 

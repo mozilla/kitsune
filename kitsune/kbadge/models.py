@@ -223,7 +223,7 @@ class Badge(models.Model):
 
     get_permissions_for = get_permissions_for
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def get_absolute_url(self):
@@ -352,7 +352,7 @@ class Award(models.Model):
         db_table = "badger_award"
         ordering = ["-modified", "-created"]
 
-    def __unicode__(self):
+    def __str__(self):
         by = self.creator and (" by %s" % self.creator) or ""
         return "Award of %s to %s%s" % (self.badge, self.user, by)
 

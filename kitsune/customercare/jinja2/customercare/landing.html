@@ -43,7 +43,7 @@
     <div id="tweet-tools">
       <img id="refresh-busy" src="{{ STATIC_URL }}sumo/img/customercare/spinner.gif" alt="{{ _('Loading') }}"/>
       <select id="show">
-        {% for value, content in filters.iteritems() %}
+        {% for value, content in filters.items() %}
           <option value="{{ value }}" {% if value == filter %}selected="selected"{% endif %}>{{ content }}</option>
         {% endfor %}
       </select>

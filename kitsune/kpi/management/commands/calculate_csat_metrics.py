@@ -101,7 +101,7 @@ class Command(BaseCommand):
         for code in csat:
             metric_kind = MetricKind.objects.get_or_create(code=code)[0]
             value = (
-                csat[code] / counts[code] if counts[code] else 50
+                csat[code] // counts[code] if counts[code] else 50
             )  # If no responses assume neutral
             Metric.objects.update_or_create(
                 kind=metric_kind,

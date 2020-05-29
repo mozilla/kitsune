@@ -111,7 +111,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             ("change_solution", "Can change/remove the solution to a question"),
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def set_needs_info(self):
@@ -875,7 +875,7 @@ class QuestionMetaData(ModelBase):
     class Meta:
         unique_together = ("question", "name")
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (self.name, self.value[:50])
 
 
@@ -968,7 +968,7 @@ class Answer(ModelBase, SearchMixin):
         ordering = ["created"]
         permissions = (("bypass_answer_ratelimit", "Can bypass answering ratelimit"),)
 
-    def __unicode__(self):
+    def __str__(self):
         return "%s: %s" % (self.question.title, self.content[:50])
 
     @property
@@ -990,7 +990,7 @@ class Answer(ModelBase, SearchMixin):
         new = self.id is None
 
         if new:
-            page = self.question.num_answers / config.ANSWERS_PER_PAGE + 1
+            page = self.question.num_answers // config.ANSWERS_PER_PAGE + 1
             self.page = page
         else:
             self.updated = datetime.now()

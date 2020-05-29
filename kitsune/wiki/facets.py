@@ -154,5 +154,5 @@ def _documents_for_cache_key(locale, topics, products):
         topics=','.join(sorted([t.slug for t in topics or []])),
         products=','.join(sorted([p.slug for p in products or []])))
 
-    m.update(key)
+    m.update(key.encode())
     return 'documents_for:%s' % m.hexdigest()
