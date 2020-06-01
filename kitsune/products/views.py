@@ -57,8 +57,8 @@ def product_landing(request, slug):
                 if user.is_authenticated()
                 else []
             ),
-            "featured": get_featured_articles(product)
-        }
+            "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
+        },
     )
 
 

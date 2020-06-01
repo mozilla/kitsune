@@ -1,6 +1,5 @@
 from django.shortcuts import render
 
-
 from kitsune.products.models import Product
 from kitsune.sumo.decorators import ssl_required
 from kitsune.wiki.decorators import check_simple_wiki_locale
@@ -15,7 +14,7 @@ def home(request):
         "landings/home.html",
         {
             "products": Product.objects.filter(visible=True),
-            "featured": get_featured_articles(),
+            "featured": get_featured_articles(locale=request.LANGUAGE_CODE),
         },
     )
 

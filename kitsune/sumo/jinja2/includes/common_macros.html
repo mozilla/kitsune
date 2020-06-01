@@ -396,7 +396,7 @@
 {% macro featured_articles(articles, new_tab=False) %}
   <div class="sumo-card-grid is-four-wide" style="--cg-count: 4;">
     <div class="scroll-wrap">
-      {% for entry in articles %} {% set doc = entry.document %}
+      {% for doc in articles %}
         <div class="card card--article zoom-on-hover">
           <img class="card--icon-sm" src="{{ static('protocol/img/icons/reader-mode.svg') }}" alt="{{ doc.title }}" />
           <div class="card--details">
