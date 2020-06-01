@@ -5,12 +5,12 @@ argparse~=1.4
 django-cache-panel~=0.1
 django-debug-toolbar~=2.2
 django-sslserver~=0.22
-hashin~=0.14
-ipdb~=0.12
+hashin
+ipdb
 isort
 jsonschema~=2.5
 pep8
-pip-compile-multi~=1.5
+pip-compile-multi
 pip-tools~=4.4
 pre-commit~=1.21
 python-language-server
@@ -18,3 +18,6 @@ q~=2.6
 rope
 tabulate~=0.7
 urlwait~=0.4
+debugpy
+black
+pyflakes
