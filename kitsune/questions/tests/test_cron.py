@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.management import call_command
 from nose.tools import eq_

@@ -1,7 +1,6 @@
 import logging
 from collections import OrderedDict
 
-from apiclient.errors import Error as GoogleAPIError
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
