@@ -98,6 +98,8 @@ if DEV and DEBUG:
     CACHES['default'] = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
+    CACHES['session'] = config('CACHE_URL', default='locmem://', cast=django_cache_url.parse)
+    SESSION_CACHE_ALIAS = 'session'
 
 CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
                                   default=(2 * 60 * 60) if READ_ONLY else 0,
