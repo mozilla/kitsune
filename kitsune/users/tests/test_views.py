@@ -376,3 +376,49 @@ class WebhookViewTests(TestCase):
         eq_(account_event.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
         eq_(account_event.issued_at, "1565720808")
         eq_(account_event.profile, None)
+
+    @setup_key
+    def test_invalid_private_key(self, key):
+        payload = json.dumps({
+            "iss": "http://example.com",
+            "sub": "54321",
+            "aud": "12345",
+            "iat": 1565720808,
+            "jti": "e19ed6c5-4816-4171-aa43-56ffe80dbda1",
+            "events": {
+                "https://schemas.accounts.firefox.com/event/password-change": {
+                    "changeTime": 1565721242227
+                }
+            }
+        })
+
+        pem = dedent("""
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIBOwIBAAJBAK+qEuIq8XPibyHVbTqk/mPinYKq1CwkPGIs+KjYSUCJdgBIATna
+        uETAv/tmlSuyWi+S2RZGqHfrPSnclZ/zFlECAwEAAQJAKmlmm8KAf1kpOcL8107k
+        uJsLKnQyO+IXziBLfQCTVwgyoggtyhFgrm+r81/j8bHYAGuPLkOxSoTLgw36ziZH
+        wQIhAOHRxpQmT/CQPKt7kvoFa9IOo+mu0CmRsfpQThz3kq2pAiEAxyRIk3cOapT6
+        NnVQFPvj2EqNgwYl+uhj6I6wPTbMfGkCIQCrQdJd7KhXgqvgSTlwD8hzZ9L7mC4a
+        OHpHobt70G4W8QIhAI1/BGpzP7UPYbHsLRib2crHPkGIzte247ZMHIGCPE1xAiBc
+        dDwTPfi5ZdAouUH+T4RCqgS5lrNSB4yah8LxFwFpVg==
+        -----END RSA PRIVATE KEY-----
+        """)
+        key = jwk.JWKRSA.load(pem)
+
+        jwt = jws.JWS.sign(
+            payload=payload,
+            key=key,
+            alg=jwa.RS256,
+            kid='123',
+            protect=frozenset(['alg', 'kid'])
+        ).to_compact()
+
+        eq_(0, AccountEvent.objects.count())
+
+        response = self.client.post(
+            reverse('users.fxa_webhook'),
+            content_type="",
+            HTTP_AUTHORIZATION="Bearer " + jwt
+        )
+        eq_(400, response.status_code)
+        eq_(0, AccountEvent.objects.count())
