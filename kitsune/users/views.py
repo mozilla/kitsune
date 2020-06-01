@@ -372,6 +372,7 @@ class WebhookView(View):
 
     def retrieve_matching_jwk(self, header):
         """Get the signing key by exploring the JWKS endpoint of the OP."""
+
         response_jwks = requests.get(
             self.get_settings('OIDC_OP_JWKS_ENDPOINT'),
             verify=self.get_settings('OIDC_VERIFY_SSL', True)
@@ -420,6 +421,8 @@ class WebhookView(View):
         return json.loads(jws.payload.decode('utf-8'))
 
     def process_events(self, payload):
+        """Save the events in the db, and enqueue jobs to act upon them"""
+
         fxa_uid = payload.get('sub')
         events = payload.get('events')
         try:
@@ -452,9 +455,6 @@ class WebhookView(View):
                     account_event.save()
 
     def post(self, request, *args, **kwargs):
-        # TODO add docstrings
-        # TODO add error handling
-
         authorization = request.META.get('HTTP_AUTHORIZATION')
         if not authorization:
             raise Http404
