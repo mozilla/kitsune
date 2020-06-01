@@ -81,11 +81,13 @@ class LocaleURLMiddleware(object):
 
     def process_request(self, request):
         try:
-            if resolve(request.path_info).url_name in settings.OIDC_EXEMPT_URLS:
-                translation.activate(settings.LANGUAGE_CODE)
-                return
+            urlname = resolve(request.path_info).url_name
         except Resolver404:
-            pass
+            urlname = None
+
+        if urlname in settings.OIDC_EXEMPT_URLS:
+            translation.activate(settings.LANGUAGE_CODE)
+            return
 
         prefixer = Prefixer(request)
         set_url_prefixer(prefixer)
