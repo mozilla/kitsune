@@ -1,7 +1,6 @@
 import json
 import logging
 from ast import literal_eval
-from textwrap import dedent
 
 import requests
 
@@ -44,7 +43,6 @@ from mozilla_django_oidc.utils import import_from_settings
 from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
                                        OIDCAuthenticationRequestView,
                                        OIDCLogoutView)
-from sentry_sdk import capture_message
 from tidings.models import Watch
 from kitsune.users.tasks import (
     process_event_delete_user,
@@ -456,19 +454,6 @@ class WebhookView(View):
     def post(self, request, *args, **kwargs):
         # TODO add docstrings
         # TODO add error handling
-
-        capture_message(
-            dedent(
-                """
-                    fxa event:
-                    auth header: {auth}
-                    content type: {type}
-                """.format(
-                    auth=request.META.get("HTTP_AUTHORIZATION"),
-                    type=request.META.get("CONTENT_TYPE"),
-                )
-            )
-        )
 
         authorization = request.META.get('HTTP_AUTHORIZATION')
         if not authorization:
