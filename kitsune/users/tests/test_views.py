@@ -422,3 +422,30 @@ class WebhookViewTests(TestCase):
         )
         eq_(400, response.status_code)
         eq_(0, AccountEvent.objects.count())
+
+    @setup_key
+    def test_id_token(self, key):
+        payload = json.dumps({
+            "iss": "http://example.com",
+            "sub": "54321",
+            "aud": "12345",
+            "iat": 1565720808,
+        })
+
+        jwt = jws.JWS.sign(
+            payload=payload,
+            key=key,
+            alg=jwa.RS256,
+            kid='123',
+            protect=frozenset(['alg', 'kid'])
+        ).to_compact()
+
+        eq_(0, AccountEvent.objects.count())
+
+        response = self.client.post(
+            reverse('users.fxa_webhook'),
+            content_type="",
+            HTTP_AUTHORIZATION="Bearer " + jwt
+        )
+        eq_(400, response.status_code)
+        eq_(0, AccountEvent.objects.count())

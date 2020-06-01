@@ -10,8 +10,7 @@ from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
 from django.http import (Http404, HttpResponse, HttpResponseForbidden,
-                         HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         JsonResponse)
+                         HttpResponsePermanentRedirect, HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -496,10 +495,7 @@ class WebhookView(View):
             if any([not events,
                     not fxa_uid,
                     exp]):
-                return JsonResponse({
-                    'error': 'error',
-                    'description': 'description'
-                }, status=400)
+                return HttpResponse(status=400)
 
             self.process_events(payload)
 
