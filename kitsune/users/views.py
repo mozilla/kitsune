@@ -1,5 +1,4 @@
 import json
-import logging
 from ast import literal_eval
 
 import requests
@@ -49,8 +48,6 @@ from kitsune.users.tasks import (
     process_event_password_change,
     process_event_subscription_state_change
 )
-
-log = logging.getLogger('k.users.views')
 
 
 @ssl_required
