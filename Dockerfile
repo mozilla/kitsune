@@ -11,7 +11,7 @@ RUN npm run production
 ################################
 # Python dependencies builder
 #
-FROM python:3.7-buster AS base
+FROM python:3.8-buster AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -21,7 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip"==20.0.1"
 RUN python -m venv /venv
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
@@ -73,7 +73,7 @@ RUN cp .env-build .env && \
 ################################
 # Fetch locales
 #
-FROM python:3.7-buster AS locales
+FROM python:3.8-buster AS locales
 
 WORKDIR /app
 
@@ -99,7 +99,7 @@ ENV GIT_SHA ${GIT_SHA}
 ################################
 # Full prod image sans locales
 #
-FROM python:3.7-slim-buster AS full-no-locales
+FROM python:3.8-slim-buster AS full-no-locales
 
 WORKDIR /app
 

@@ -59,7 +59,7 @@ Requirements
 These are required for the minimum installation:
 
 * git
-* Python 3.7
+* Python 3.8
 * pip: `<https://pip.pypa.io/en/latest/>`_
 * virtualenv
 * MariaDB 5.5 server and client headers
