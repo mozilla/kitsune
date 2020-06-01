@@ -2614,7 +2614,7 @@ class HelpfulVoteTests(TestCaseBase):
         )
         eq_(200, response.status_code)
         eq_(
-            b'{"message": "Great to hear &mdash; thanks for the feedback!'
+            '{"message": "Great to hear &mdash; thanks for the feedback!'
             ' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
             response.content,
         )

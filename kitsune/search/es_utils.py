@@ -25,13 +25,13 @@ from kitsune.search.utils import chunked
 def read_index(group):
     """Gets the name of the read index for a group."""
     return ('%s_%s' % (settings.ES_INDEX_PREFIX,
-                        settings.ES_INDEXES[group]))
+                       settings.ES_INDEXES[group]))
 
 
 def write_index(group):
     """Gets the name of the write index for a group."""
     return ('%s_%s' % (settings.ES_INDEX_PREFIX,
-                        settings.ES_WRITE_INDEXES[group]))
+                       settings.ES_WRITE_INDEXES[group]))
 
 
 def all_read_indexes():
@@ -594,7 +594,7 @@ def es_delete_cmd(index, noinput=False, log=log):
 
     if index in all_read_indexes() and not noinput:
         ret = input('"%s" is a read index. Are you sure you want '
-                        'to delete it? (yes/no) ' % index)
+                    'to delete it? (yes/no) ' % index)
         if ret != 'yes':
             log.info('Not deleting the index.')
             return

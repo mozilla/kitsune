@@ -1399,10 +1399,10 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
-        p = ProductFactory(title="Firefox", slug="firefox")
-        for l in QuestionLocale.objects.all():
-            p.questions_locales.add(l)
-        TopicFactory(slug="fix-problems", product=p)
+        product = ProductFactory(title="Firefox", slug="firefox")
+        for loc in QuestionLocale.objects.all():
+            product.questions_locales.add(loc)
+        TopicFactory(slug="fix-problems", product=product)
         extra = {}
         if locale is not None:
             extra["locale"] = locale

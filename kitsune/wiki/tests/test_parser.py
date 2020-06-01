@@ -537,22 +537,21 @@ class ForWikiTests(TestCase):
 
     def test_nested(self):
         """{for} tags should be nestable."""
-        self.assertWikiHtmlEqual(
-                  '{for mac}\n'
-                  'Joe\n'
-                  '\n'
-                  'Red {for}{for}riding\n'
-                  '{/for} hood{/for}\n'
-                  '\n'
-                  'Blow\n'
-                  '{/for}',
+        self.assertWikiHtmlEqual('{for mac}\n'
+                                 'Joe\n'
+                                 '\n'
+                                 'Red {for}{for}riding\n'
+                                 '{/for} hood{/for}\n'
+                                 '\n'
+                                 'Blow\n'
+                                 '{/for}',
 
-                  '<div data-for="mac" class="for">'
-                  '<p>Joe</p>'
-                  '<p>Red <span class="for"><span class="for">riding'
-                  '</span> hood</span></p>'
-                  '<p>Blow</p>'
-                  '</div>')
+                                 '<div data-for="mac" class="for">'
+                                 '<p>Joe</p>'
+                                 '<p>Red <span class="for"><span class="for">riding'
+                                 '</span> hood</span></p>'
+                                 '<p>Blow</p>'
+                                 '</div>')
 
     def test_data_attrs(self):
         """Make sure the correct attributes are set on the for element."""

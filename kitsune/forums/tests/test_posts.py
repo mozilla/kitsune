@@ -81,8 +81,7 @@ class PostTestCase(ForumTestCase):
         Thread(is_sticky=True)
 
         threads = Thread.objects.filter(is_sticky=False)
-        self.assertTrue(threads[0].last_post.created >
-                     threads[1].last_post.created)
+        self.assertTrue(threads[0].last_post.created > threads[1].last_post.created)
 
     def test_post_sorting(self):
         """Posts should be sorted chronologically."""

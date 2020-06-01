@@ -47,28 +47,28 @@ class Command(BaseCommand):
         locales = revs.values_list('document__locale', flat=True).distinct()
         products = Product.objects.all()
 
-        for l in locales:
-            docs = revs.filter(document__locale=l).values_list(
+        for loc in locales:
+            docs = revs.filter(document__locale=loc).values_list(
                 'document', flat=True).distinct()
             docs = Document.objects.filter(id__in=docs)
 
             try:
-                leaders = Locale.objects.get(locale=l).leaders.all()
-                reviewers = Locale.objects.get(locale=l).reviewers.all()
+                leaders = Locale.objects.get(locale=loc).leaders.all()
+                reviewers = Locale.objects.get(locale=loc).reviewers.all()
                 users = list(set(chain(leaders, reviewers)))
             except ObjectDoesNotExist:
                 # Locale does not exist, so skip to the next locale
                 continue
 
-            for u in users:
+            for user in users:
                 docs_list = []
-                for p in products:
+                for product in products:
                     product_docs = docs.filter(
-                        Q(parent=None, products__in=[p]) |
-                        Q(parent__products__in=[p]))
+                        Q(parent=None, products__in=[product]) |
+                        Q(parent__products__in=[product]))
                     if product_docs:
                         docs_list.append(dict(
-                            product=pgettext('DB: products.Product.title', p.title),
+                            product=pgettext('DB: products.Product.title', product.title),
                             docs=product_docs))
 
                 product_docs = docs.filter(
@@ -78,10 +78,10 @@ class Command(BaseCommand):
                 if product_docs:
                     docs_list.append(dict(product=_('Other products'), docs=product_docs))
 
-                _send_mail(l, u, {
+                _send_mail(loc, user, {
                     'host': Site.objects.get_current().domain,
-                    'locale': l,
-                    'recipient': u,
+                    'locale': loc,
+                    'recipient': user,
                     'docs_list': docs_list,
                     'products': products
                 })
