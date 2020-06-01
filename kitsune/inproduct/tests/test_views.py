@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 
 from django.contrib.sites.models import Site
 
-import mock
+from unittest import mock
 import waffle
 from nose.tools import eq_
 

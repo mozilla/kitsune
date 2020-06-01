@@ -1,11 +1,12 @@
 import json
 from datetime import datetime, timedelta
 
-import mock
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
+
+from unittest import mock
 from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory
@@ -54,7 +55,7 @@ To review this revision, click the following link, or paste it into your \
 browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/review/%(new_id)s?utm_campaign=\
-wiki-ready-review&utm_medium=email&utm_source=notification
+wiki-ready-review&utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -78,7 +79,7 @@ To view this document's history, click the following link, or paste it \
 into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/history?utm_campaign=wiki-edit&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -100,7 +101,7 @@ To view the updated document, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s?utm_campaign=wiki-approved&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -255,11 +256,8 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(redirect_url, follow=True)
         self.assertRedirects(
             response,
-            urlparams(
-                target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug
-            ),
-        )
-        self.assertContains(response, redirect_url + "?redirect=no")
+            urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
+        self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
         eq_(

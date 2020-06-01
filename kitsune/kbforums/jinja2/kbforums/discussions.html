@@ -6,7 +6,7 @@
 {% block content %}
     <article id="threads" class="content-box sumo-page-section">
       <h1 class="sumo-page-heading">{{ _('{l} Knowledge Base Discussions')|f(l=locale_name) }}</h1>
-      {% if user.is_authenticated() %}
+      {% if user.is_authenticated %}
         <form id="watch_locale" action="{{ url('wiki.discuss.watch_locale') }}" method="post">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.get_full_path() }}">
@@ -28,7 +28,7 @@
         <table class="threads-columns cf {% if not desc_toggle %}desc{% endif %}">
           <thead>
             <tr>
-              {% if user.is_authenticated() %}
+              {% if user.is_authenticated %}
                 <th class="watch">{{ _('Watch') }}</th>
               {% endif %}
               <th class="title">{{ _('Title') }}</th>
@@ -40,7 +40,7 @@
           <tbody class="threads">
             {% for thread in threads.object_list %}
               <tr>
-                {% if user.is_authenticated() %}
+                {% if user.is_authenticated %}
                   <td class="watch">
                     <form class="watch-form" action="{{ url('wiki.discuss.watch_thread', thread.document.slug, thread.id) }}" method="post">
                         {% csrf_token %}

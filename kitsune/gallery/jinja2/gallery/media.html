@@ -15,7 +15,7 @@
 
 {% block content %}
   <div id="media-object" class="sumo-page-content main">
-    {% if user.is_authenticated() %}
+    {% if user.is_authenticated %}
     <p>
       <a id="btn-upload" class="sumo-button primary-button btn btn-submit" href="{{ url('gallery.gallery', media_type)|urlparams(hash='upload') }}">{{ _('Upload a New Media File') }}</a>
       <br>

@@ -1,4 +1,4 @@
-{% if user.is_authenticated() %}
+{% if user.is_authenticated %}
   <form action="{{ url('wiki.discuss.watch_locale') }}" method="post">
     {% csrf_token %}
     {% if is_watching_discussion_locale(user, request.LANGUAGE_CODE) %}

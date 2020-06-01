@@ -3,6 +3,7 @@ import re
 
 from django import http
 from django.conf import settings
+from django.utils.deprecation import MiddlewareMixin
 
 from kitsune.twitter import url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME
 from twython import TwythonError, TwythonAuthError
@@ -17,7 +18,7 @@ def validate_token(token):
     return bool(token and (len(token) < 100) and re.search(r"\w+", token))
 
 
-class SessionMiddleware(object):
+class SessionMiddleware(MiddlewareMixin):
     def process_request(self, request):
 
         request.twitter = Session.from_request(request)

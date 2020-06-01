@@ -4,11 +4,12 @@ import random
 from datetime import datetime, timedelta
 from string import ascii_letters
 
-import mock
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
+
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag

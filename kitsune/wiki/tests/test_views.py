@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.test import Client
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -309,8 +309,8 @@ class DocumentEditingTests(TestCase):
         content = pq(response.content)
         # While first translation, the slug and title field is always blank.
         # So the value field should be None
-        eq_(content('#id_title').val(), None)
-        eq_(content('#id_slug').val(), None)
+        eq_(content('#id_title').val(), '')
+        eq_(content('#id_slug').val(), '')
 
     def test_while_there_is_no_parent_slug(self):
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)

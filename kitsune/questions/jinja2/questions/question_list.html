@@ -56,7 +56,7 @@
           <div class="no-reply forum--masthead-text">
             <p class="page-heading--intro-text">
               {% if recent_unanswered_count > 0 %}
-                {% if request.user.is_authenticated() %}
+                {% if request.user.is_authenticated %}
                   {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
                     {{recent_unanswered_count}} question in the last 24 hours has no reply.
                     <a href="{{url}}">Help solve it!</a>
@@ -74,7 +74,7 @@
                 {% endtrans %}
                 {% endif %}
               {% else %}
-                {% if request.user.is_authenticated() %}
+                {% if request.user.is_authenticated %}
                   {% trans %}
                     0 questions in the last 24 hours have no reply. Good job!
                   {% endtrans %}
@@ -89,7 +89,7 @@
         </div>
       </div>
       <div class="sumo-l-two-col--sidebar forum--masthead-cta">
-        {% if request.user.is_authenticated() %}
+        {% if request.user.is_authenticated %}
         <div id="top-contributors">
           {% set query_product = '?product={}'.format(products[0].slug) if products and products|length == 1 else '' %}
           <a class="sumo-button primary-button button-lg feature-box" href="{{ url('community.top_contributors', area='questions') }}{{ query_product }}">
@@ -291,7 +291,7 @@
   </select>
 </div>
 
-{% if request.user.is_authenticated() %}
+{% if request.user.is_authenticated %}
 <div class="questions-sidebar">
   <h3 class="sidebar-subheading">{{ _('Filter by') }}</h3>
   <nav class="sidebar-nav">

@@ -22,17 +22,11 @@ A pip requirement stanza with hashes looks something like this:
 hash lines can be repeated, and other comments can be added. The stanza is
 delimited by non-comment lines (such as blank lines or other requirements).
 
-To add a new dependency, you need to get a hash of the dependency you are
-installing. There are several ways you could go about this. If you already have
-a tarball (or other appropriate installable artifact) you could use ``pip hash
-foo.tar.gz``, which will give the base64 encoded sha256 sum of the artifact,
-which you can then put into the requirements file.
+Fortunately we do not need to add or edit those manaully. Using `pip-compile-multi`_
+we list only our top-level dependencies in `requirements/*.in`. To add a dependency,
+put it in the appropriate `requirements/*.in` file, then compile::
 
-If you don't already have an artifact, you can simply use the ``hashin`` tool to
-add the package to the requirements file along its hashes, for example ``hashin
-Django -r default.txt``. Without a version, hashin will grab the latest version
-of the dependency. If that's not what you want, put a version there too, like
-``hashin Django==1.6.7 -r default.txt``.
+    pip-compile-multi -g default -g test -g docs -g dev
 
 
 Changes that involve database migrations

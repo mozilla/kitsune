@@ -170,7 +170,7 @@ def landing(request):
         'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
                               filter='unanswered',
                               https=request.is_secure()),
-        'authed': request.user.is_authenticated() and request.twitter.authed,
+        'authed': request.user.is_authenticated and request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
         'filter': 'unanswered',
@@ -261,7 +261,7 @@ def twitter_post(request):
 
     # Record in our Reply table.
     Reply.objects.create(
-        user=request.user if request.user.is_authenticated() else None,
+        user=request.user if request.user.is_authenticated else None,
         twitter_username=author['screen_name'],
         tweet_id=status['id'],
         raw_json=json.dumps(raw_tweet_data),

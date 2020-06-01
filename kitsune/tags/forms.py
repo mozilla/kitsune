@@ -77,7 +77,7 @@ class TagWidget(Widget):
         representations = [render_one(t) for t in tags]
         return '\n'.join(representations)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         """Render a hidden input for each choice plus a blank text input."""
         output = '<div class="tag-adder tags%s"' % (
             '' if self.read_only or self.async_urls else ' deferred')

@@ -9,10 +9,10 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.urlresolvers import resolve
 from django.db import IntegrityError, models
 from django.db.models import Q
 from django.http import Http404
+from django.urls import resolve
 from django.utils.encoding import smart_bytes
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
@@ -71,18 +71,18 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # Latest approved revision. L10n dashboard depends on this being so (rather
     # than being able to set it to earlier approved revisions). (Remove "+" to
     # enable reverse link.)
-    current_revision = models.ForeignKey('Revision', null=True,
+    current_revision = models.ForeignKey('Revision', on_delete=models.CASCADE, null=True,
                                          related_name='current_for+')
 
     # Latest revision which both is_approved and is_ready_for_localization,
     # This may remain non-NULL even if is_localizable is changed to false.
     latest_localizable_revision = models.ForeignKey(
-        'Revision', null=True, related_name='localizable_for+')
+        'Revision', on_delete=models.CASCADE, null=True, related_name='localizable_for+')
 
     # The Document I was translated from. NULL iff this doc is in the default
     # locale or it is nonlocalizable. TODO: validate against
     # settings.WIKI_DEFAULT_LANGUAGE.
-    parent = models.ForeignKey('self', related_name='translations',
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='translations',
                                null=True, blank=True)
 
     # Cached HTML rendering of approved revision's wiki markup:
@@ -486,7 +486,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # voted will see a "You already voted on this Article." message
         # if they try voting again.
         authed_and_voted = (
-            request.user.is_authenticated() and
+            request.user.is_authenticated and
             self.current_revision and
             self.current_revision.has_voted(request))
 
@@ -839,10 +839,10 @@ MAX_REVISION_COMMENT_LENGTH = 255
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
     # like created_revisions and created_draftrevisions
-    creator = models.ForeignKey(User, related_name='created_%(class)ss')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_%(class)ss')
     created = models.DateTimeField(default=datetime.now)
     # The reverse name should be revisions and draftrevisions
-    document = models.ForeignKey(Document, related_name='%(class)ss')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='%(class)ss')
     # Keywords are used mostly to affect search rankings. Moderators may not
     # have the language expertise to translate keywords, so we put them in the
     # Revision so the translators can handle them:
@@ -864,7 +864,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
 
     comment = models.CharField(max_length=MAX_REVISION_COMMENT_LENGTH)
-    reviewer = models.ForeignKey(User, related_name='reviewed_revisions',
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviewed_revisions',
                                  null=True)
     is_approved = models.BooleanField(default=False, db_index=True)
 
@@ -872,7 +872,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     # Edit button was hit to begin creating this revision. If there was none,
     # this is simply the latest of the default locale's revs as of that time.
     # Used to determine whether localizations are out of date.
-    based_on = models.ForeignKey('self', null=True, blank=True)
+    based_on = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
@@ -883,7 +883,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     is_ready_for_localization = models.BooleanField(default=False)
     readied_for_localization = models.DateTimeField(null=True)
     readied_for_localization_by = models.ForeignKey(
-        User, related_name='readied_for_l10n_revisions', null=True)
+        User, on_delete=models.CASCADE, related_name='readied_for_l10n_revisions', null=True)
 
     class Meta(object):
         permissions = [('review_revision', 'Can review a revision'),
@@ -1009,7 +1009,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
     def has_voted(self, request):
         """Did the user already vote for this revision?"""
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             qs = HelpfulVote.objects.filter(revision=self,
                                             creator=request.user)
         elif request.anonymous.has_id:
@@ -1071,7 +1071,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
 
 class DraftRevision(ModelBase, SearchMixin, AbstractRevision):
-    based_on = models.ForeignKey(Revision)
+    based_on = models.ForeignKey(Revision, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
     locale = LocaleField(blank=False, db_index=True)
     slug = models.CharField(max_length=255, blank=True)
@@ -1160,10 +1160,11 @@ register_for_indexing('revisions', Revision)
 
 class HelpfulVote(ModelBase):
     """Helpful or Not Helpful vote on Revision."""
-    revision = models.ForeignKey(Revision, related_name='poll_votes')
+    revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name='poll_votes')
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name='poll_votes', null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                related_name='poll_votes', null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
     user_agent = models.CharField(max_length=1000)
 
@@ -1173,7 +1174,7 @@ class HelpfulVote(ModelBase):
 
 class HelpfulVoteMetadata(ModelBase):
     """Metadata for article votes."""
-    vote = models.ForeignKey(HelpfulVote, related_name='metadata')
+    vote = models.ForeignKey(HelpfulVote, on_delete=models.CASCADE, related_name='metadata')
     key = models.CharField(max_length=40, db_index=True)
     value = models.CharField(max_length=1000)
 
@@ -1213,9 +1214,9 @@ class DocumentLink(ModelBase):
     If article A contains [[Link:B]], then `linked_to` is B,
     `linked_from` is A, and kind is 'link'.
     """
-    linked_to = models.ForeignKey(Document,
+    linked_to = models.ForeignKey(Document, on_delete=models.CASCADE,
                                   related_name='documentlink_from_set')
-    linked_from = models.ForeignKey(Document,
+    linked_from = models.ForeignKey(Document, on_delete=models.CASCADE,
                                     related_name='documentlink_to_set')
     kind = models.CharField(max_length=16)
 
@@ -1229,8 +1230,8 @@ class DocumentLink(ModelBase):
 
 class DocumentImage(ModelBase):
     """Model to keep track of what documents include what images."""
-    document = models.ForeignKey(Document)
-    image = models.ForeignKey(Image)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('document', 'image')

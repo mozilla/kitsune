@@ -6,7 +6,6 @@ import traceback
 # Now we can import from third-party libraries.
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kitsune.settings')
-os.environ.setdefault('CELERY_CONFIG_MODULE', 'kitsune.settings')
 
 # MONKEYPATCH! WOO HOO!
 # Need this so we patch before running Django-specific commands which

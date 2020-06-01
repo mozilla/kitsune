@@ -1,4 +1,4 @@
-from mock import patch
+from unittest.mock import patch
 from nose.tools import eq_
 
 from django.conf import settings

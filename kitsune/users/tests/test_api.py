@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from rest_framework.test import APIClient
 

@@ -23,9 +23,6 @@ from django.core.wsgi import get_wsgi_application
 from decouple import config
 
 
-# For django-celery
-os.environ['CELERY_LOADER'] = 'django'
-
 application = get_wsgi_application()
 
 if config('ENABLE_WHITENOISE', default=False, cast=bool):
@@ -36,4 +33,4 @@ if config('ENABLE_WHITENOISE', default=False, cast=bool):
 if newrelic:
     newrelic_license_key = config('NEW_RELIC_LICENSE_KEY', default=None)
     if newrelic_license_key:
-        application = newrelic.agent.wsgi_application()(application)
+        application = newrelic.agent.WSGIApplicationWrapper(application)

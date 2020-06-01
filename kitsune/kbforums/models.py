@@ -33,10 +33,11 @@ class ThreadLockedError(Exception):
 
 class Thread(NotificationsMixin, ModelBase):
     title = models.CharField(max_length=255)
-    document = models.ForeignKey(Document)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name="wiki_thread_set")
-    last_post = models.ForeignKey("Post", related_name="last_post_in", null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_thread_set")
+    last_post = models.ForeignKey("Post", on_delete=models.CASCADE,
+                                  related_name="last_post_in", null=True)
     replies = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
     is_sticky = models.BooleanField(default=False, db_index=True)
@@ -79,13 +80,13 @@ class Thread(NotificationsMixin, ModelBase):
 
 
 class Post(ModelBase):
-    thread = models.ForeignKey(Thread)
+    thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
     content = models.TextField()
-    creator = models.ForeignKey(User, related_name="wiki_post_set")
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_post_set")
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated_by = models.ForeignKey(
-        User, related_name="wiki_post_last_updated_by", null=True
+        User, on_delete=models.CASCADE, related_name="wiki_post_last_updated_by", null=True
     )
 
     class Meta:

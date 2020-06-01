@@ -123,7 +123,8 @@ def get_next_url(request):
     else:
         url = request.META.get('HTTP_REFERER')
 
-    if not settings.DEBUG and not is_safe_url(url, Site.objects.get_current().domain):
+    if not settings.DEBUG and not is_safe_url(url,
+                                              allowed_hosts={Site.objects.get_current().domain}):
         return None
 
     return url
@@ -294,7 +295,7 @@ def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False
         rl_is_ratelimited(request, increment=True, group='sumo.utils.is_ratelimited',
                           rate=rate, key='user_or_ip')
         if request.limited:
-            if hasattr(request, 'user') and request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated:
                 key = 'user "{}"'.format(request.user.username)
             else:
                 ip = request.META.get('HTTP_X_CLUSTER_CLIENT_IP', request.META['REMOTE_ADDR'])

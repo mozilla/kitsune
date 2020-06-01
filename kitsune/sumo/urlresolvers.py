@@ -2,7 +2,7 @@ import threading
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
-from django.core.urlresolvers import reverse as django_reverse
+from django.urls import reverse as django_reverse
 from django.utils.translation.trans_real import parse_accept_lang_header
 
 
@@ -134,7 +134,7 @@ class Prefixer(object):
         # We also need to check to see if locale is already given in the url,
         # as that serves as an override.
         if not self.locale and request:
-            if request.user.is_anonymous():
+            if request.user.is_anonymous:
                 language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
                 if language:
                     self.locale = language

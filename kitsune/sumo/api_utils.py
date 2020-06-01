@@ -187,14 +187,14 @@ class InequalityFilterBackend(BaseFilterBackend):
     """A filter backend that allows for field__gt style filtering."""
 
     def filter_queryset(self, request, queryset, view):
-        filter_fields = getattr(view, 'filter_fields', [])
+        filterset_fields = getattr(view, 'filterset_fields', [])
 
         for key, value in list(request.query_params.items()):
             splits = key.split('__')
             if len(splits) != 2:
                 continue
             field, opname = splits
-            if field not in filter_fields:
+            if field not in filterset_fields:
                 continue
             op = getattr(self, 'op_' + opname, None)
             if op:
@@ -227,7 +227,7 @@ class GenericDjangoPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         u = request.user
-        not_inactive = u.is_anonymous() or u.is_active
+        not_inactive = u.is_anonymous or u.is_active
         return not_inactive and all(u.has_perm(p) for p in self.permissions)
 
 
@@ -301,7 +301,7 @@ class InactiveSessionAuthentication(SessionAuthentication):
         user = getattr(request, 'user', None)
 
         # Unauthenticated, CSRF validation not required
-        if not user or user.is_anonymous():
+        if not user or user.is_anonymous:
             return None
 
         self.enforce_csrf(request)

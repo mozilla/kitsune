@@ -1,5 +1,5 @@
 from django.db.models import (CharField, DateField, ForeignKey,
-                              PositiveIntegerField)
+                              PositiveIntegerField, CASCADE)
 
 from kitsune.sumo.models import ModelBase
 
@@ -55,7 +55,7 @@ class Metric(ModelBase):
     # clickthrough rate ratio will always exist, but the app can make sure it's
     # true upon inserting them.
 
-    kind = ForeignKey(MetricKind)
+    kind = ForeignKey(MetricKind, on_delete=CASCADE)
     start = DateField()
 
     # Not useful yet. Present metrics have spans of known length.
@@ -84,7 +84,7 @@ class CohortKind(ModelBase):
 
 class Cohort(ModelBase):
     """A group of users who have shared a particular activity in a given time frame"""
-    kind = ForeignKey(CohortKind)
+    kind = ForeignKey(CohortKind, on_delete=CASCADE)
     start = DateField()
     end = DateField()
     size = PositiveIntegerField(default=0)
@@ -98,7 +98,7 @@ class Cohort(ModelBase):
 
 class RetentionMetric(ModelBase):
     """A measurement of the number of active users from a cohort during a given time period."""
-    cohort = ForeignKey(Cohort, related_name='retention_metrics')
+    cohort = ForeignKey(Cohort, on_delete=CASCADE, related_name='retention_metrics')
     start = DateField()
     end = DateField()
     size = PositiveIntegerField(default=0)

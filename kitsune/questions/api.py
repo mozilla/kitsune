@@ -121,7 +121,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = getattr(self.context.get('request'), 'user')
-        if user and not user.is_anonymous() and data.get('creator') is None:
+        if user and not user.is_anonymous and data.get('creator') is None:
             data['creator'] = user
         return data
 
@@ -138,8 +138,8 @@ class QuestionFKSerializer(QuestionSerializer):
 
 
 class QuestionFilter(django_filters.FilterSet):
-    product = django_filters.CharFilter(name='product__slug')
-    creator = django_filters.CharFilter(name='creator__username')
+    product = django_filters.CharFilter(field_name='product__slug')
+    creator = django_filters.CharFilter(field_name='creator__username')
     involved = django_filters.CharFilter(method='filter_involved')
     is_solved = django_filters.BooleanFilter(
         method='filter_is_solved', widget=forms.TextInput)
@@ -147,7 +147,7 @@ class QuestionFilter(django_filters.FilterSet):
         method='filter_is_taken', widget=forms.TextInput)
     metadata = django_filters.CharFilter(method='filter_metadata')
     solved_by = django_filters.CharFilter(method='filter_solved_by')
-    taken_by = django_filters.CharFilter(name='taken_by__username')
+    taken_by = django_filters.CharFilter(field_name='taken_by__username')
     updated = django_filters.IsoDateTimeFilter()
     created = django_filters.IsoDateTimeFilter()
 
@@ -232,7 +232,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
     ]
-    filter_class = QuestionFilter
+    filterset_class = QuestionFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
@@ -423,7 +423,7 @@ class AnswerSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         user = getattr(self.context.get('request'), 'user')
-        if user and not user.is_anonymous() and data.get('creator') is None:
+        if user and not user.is_anonymous and data.get('creator') is None:
             data['creator'] = user
         return data
 
@@ -440,8 +440,8 @@ class AnswerFKSerializer(AnswerSerializer):
 
 
 class AnswerFilter(django_filters.FilterSet):
-    creator = django_filters.CharFilter(name='creator__username')
-    question = django_filters.Filter(name='question__id')
+    creator = django_filters.CharFilter(field_name='creator__username')
+    question = django_filters.Filter(field_name='question__id')
     updated = django_filters.IsoDateTimeFilter()
     created = django_filters.IsoDateTimeFilter()
 
@@ -464,12 +464,12 @@ class AnswerViewSet(viewsets.ModelViewSet):
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
     ]
-    filter_class = AnswerFilter
+    filterset_class = AnswerFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    filter_fields = [
+    filterset_fields = [
         'question',
         'created',
         'creator',

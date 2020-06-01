@@ -3,7 +3,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse as django_reverse
+from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from bleach import clean

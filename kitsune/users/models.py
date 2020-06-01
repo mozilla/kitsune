@@ -32,7 +32,7 @@ CONTRIBUTOR_GROUP = 'Registered as contributor'
 class Profile(ModelBase, SearchMixin):
     """Profile model for django users."""
 
-    user = models.OneToOneField(User, primary_key=True,
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True,
                                 verbose_name=_lazy('User'))
     name = models.CharField(max_length=255, null=True, blank=True,
                             verbose_name=_lazy('Display name'))
@@ -327,7 +327,7 @@ register_for_indexing(
 
 class Setting(ModelBase):
     """User specific value per setting"""
-    user = models.ForeignKey(User, verbose_name=_lazy('User'),
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_lazy('User'),
                              related_name='settings')
 
     name = models.CharField(max_length=100)
@@ -365,7 +365,8 @@ class RegistrationProfile(models.Model):
     of this model; the provided manager includes methods
     for creating and activating new accounts.
     """
-    user = models.ForeignKey(User, unique=True, verbose_name=_lazy('user'))
+    user = models.ForeignKey(User, on_delete=models.CASCADE, unique=True,
+                             verbose_name=_lazy('user'))
     activation_key = models.CharField(verbose_name=_lazy('activation key'),
                                       max_length=40)
 
@@ -399,7 +400,8 @@ class EmailChange(models.Model):
     """Stores email with activation key when user requests a change."""
     ACTIVATED = "ALREADY_ACTIVATED"
 
-    user = models.ForeignKey(User, unique=True, verbose_name=_lazy('user'))
+    user = models.ForeignKey(User, on_delete=models.CASCADE, unique=True,
+                             verbose_name=_lazy('user'))
     activation_key = models.CharField(verbose_name=_lazy('activation key'),
                                       max_length=40)
     email = models.EmailField(db_index=True, null=True)
@@ -410,9 +412,9 @@ class EmailChange(models.Model):
 
 class Deactivation(models.Model):
     """Stores user deactivation logs."""
-    user = models.ForeignKey(User, verbose_name=_lazy('user'),
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_lazy('user'),
                              related_name='+')
-    moderator = models.ForeignKey(User, verbose_name=_lazy('moderator'),
+    moderator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=_lazy('moderator'),
                                   related_name='deactivations')
     date = models.DateTimeField(default=datetime.now)
 

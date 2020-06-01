@@ -52,7 +52,7 @@ def usernames(request):
 
     if not pre:
         return []
-    if not request.user.is_authenticated():
+    if not request.user.is_authenticated:
         return []
     with statsd.timer("users.api.usernames.search"):
         profiles = Profile.objects.filter(Q(name__istartswith=pre)).values_list(
@@ -224,7 +224,7 @@ class ProfileViewSet(
         DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    filter_fields = []
+    filterset_fields = []
     ordering_fields = []
     # Default, if not overwritten
     ordering = ("-user__date_joined",)

@@ -4,7 +4,7 @@ import unittest
 
 from django.contrib.sites.models import Site
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.questions.models import QuestionMappingType
