@@ -5,7 +5,7 @@ from xml.sax.saxutils import quoteattr
 from django.conf import settings
 
 from html5lib import HTMLParser
-from html5lib.serializer.htmlserializer import HTMLSerializer
+from html5lib.serializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element

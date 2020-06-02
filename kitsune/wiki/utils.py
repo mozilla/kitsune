@@ -152,9 +152,9 @@ def get_featured_articles(product=None):
 
     # Limit this to 10 entries
     if featured.count() < 10:
-        return featured
+        return list(featured)
 
     # This returns a WikiDocumentVisits object and not the actual Wiki doc.
     # The wiki doc it's under .document which is prefetched b/c of select_related
-    featured = featured[:10]
+    featured = list(featured[:10])
     return random.sample(featured, 4)

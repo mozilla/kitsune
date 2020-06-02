@@ -3,7 +3,7 @@ import json as jsonlib
 import logging
 import os
 import re
-import urllib.parse
+import urllib
 
 import bleach
 import jinja2
@@ -113,7 +113,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     query_string = urlencode(
         [(k, v) for k, l in new_query_dict.lists() for v in l if v is not None]
     )
-    new = urlparse.parse.ParseResult(
+    new = urllib.parse.ParseResult(
         url_.scheme, url_.netloc, url_.path, url_.params, query_string, fragment
     )
     return new.geturl()

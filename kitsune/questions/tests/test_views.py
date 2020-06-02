@@ -102,17 +102,17 @@ class AAQSearchTests(ElasticTestCase):
         """Verifies the right languages show up in search suggestions."""
         QuestionLocaleFactory(locale="de")
 
-        p = ProductFactory(slug="firefox")
+        product = ProductFactory(slug="firefox")
 
-        for l in QuestionLocale.objects.all():
-            p.questions_locales.add(l)
+        for loc in QuestionLocale.objects.all():
+            product.questions_locales.add(loc)
 
-        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
+        TopicFactory(title="Fix problems", slug="fix-problems", product=product)
 
-        QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
-        QuestionFactory(title="question donuts?", product=p, locale="en-US")
-        QuestionFactory(title="question pies?", product=p, locale="pt-BR")
-        QuestionFactory(title="question pastries?", product=p, locale="de")
+        QuestionFactory(title="question cupcakes?", product=product, locale="en-US")
+        QuestionFactory(title="question donuts?", product=product, locale="en-US")
+        QuestionFactory(title="question pies?", product=product, locale="pt-BR")
+        QuestionFactory(title="question pastries?", product=product, locale="de")
 
         self.refresh()
 

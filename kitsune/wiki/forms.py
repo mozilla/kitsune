@@ -331,8 +331,8 @@ class AddContributorForm(forms.Form):
                                       'class': 'user-autocomplete'}))
 
 
-languages = [('', 'Any')] + [(l[0], '{1} ({0})'.format(*l))
-                             for l in settings.LANGUAGE_CHOICES]
+languages = [('', 'Any')] + [(lang[0], '{1} ({0})'.format(*lang))
+                             for lang in settings.LANGUAGE_CHOICES]
 
 
 class RevisionFilterForm(forms.Form):

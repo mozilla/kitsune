@@ -419,5 +419,4 @@ class Deactivation(models.Model):
     date = models.DateTimeField(default=datetime.now)
 
     def __str__(self):
-        return '%s was deactivated by %s on %s' % (self.user, self.moderator,
-                                                    self.date)
+        return '%s was deactivated by %s on %s' % (self.user, self.moderator, self.date)

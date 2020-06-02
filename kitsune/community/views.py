@@ -196,7 +196,7 @@ def top_contributors_new(request, area):
     else:
         raise Http404
 
-    if request.LANGUAGE_CODE != 'en-US' and request.LANGUAGE_CODE in [l[1] for l in locales]:
+    if request.LANGUAGE_CODE != 'en-US' and request.LANGUAGE_CODE in [loc[1] for loc in locales]:
         new_get = {'locale': request.LANGUAGE_CODE}
         new_get.update(request.GET)
         request.GET = new_get

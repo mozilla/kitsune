@@ -1557,18 +1557,18 @@ def what_links_here(request, document_slug):
     doc = get_object_or_404(Document, locale=locale, slug=document_slug)
 
     links = {}
-    for l in doc.links_to():
-        if doc.locale == l.linked_from.locale:
-            if l.kind not in links:
-                links[l.kind] = []
-            links[l.kind].append(l.linked_from)
+    for link_to in doc.links_to():
+        if doc.locale == link_to.linked_from.locale:
+            if link_to.kind not in links:
+                links[link_to.kind] = []
+            links[link_to.kind].append(link_to.linked_from)
 
-    c = {
+    ctx = {
         'document': doc,
         'relations': links
     }
 
-    return render(request, 'wiki/what_links_here.html', c)
+    return render(request, 'wiki/what_links_here.html', ctx)
 
 
 def get_fallback_locale(doc, request):

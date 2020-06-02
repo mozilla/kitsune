@@ -64,5 +64,4 @@ def check_media_permissions(media, user, perm_type):
 
 
 def get_draft_title(user):
-    return 'Draft for user %s. Created at: %s' % (user.username,
-                                                   datetime.now())
+    return 'Draft for user %s. Created at: %s' % (user.username, datetime.now())

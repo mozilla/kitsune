@@ -189,8 +189,7 @@ class PlusToSpaceMiddleware(MiddlewareMixin):
         if p.search(request.path_info):
             new = p.sub(' ', request.path_info)
             if request.META.get('QUERY_STRING'):
-                new = '%s?%s' % (new,
-                                  smart_text(request.META['QUERY_STRING']))
+                new = '%s?%s' % (new, smart_text(request.META['QUERY_STRING']))
             if hasattr(request, 'LANGUAGE_CODE'):
                 new = '/%s%s' % (request.LANGUAGE_CODE, new)
             return HttpResponsePermanentRedirect(new)

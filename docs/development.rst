@@ -26,7 +26,7 @@ Fortunately we do not need to add or edit those manaully. Using `pip-compile-mul
 we list only our top-level dependencies in `requirements/*.in`. To add a dependency,
 put it in the appropriate `requirements/*.in` file, then compile::
 
-    pip-compile-multi -g default -g test -g docs -g dev
+    pip-compile-multi -g default
 
 
 Changes that involve database migrations

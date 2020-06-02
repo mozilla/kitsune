@@ -76,7 +76,7 @@ class Command(BaseCommand):
                         year,
                         user):
                     print('{year} Support Forum Badge awarded to {user}'
-                           .format(year=year, user=user.username))
+                          .format(year=year, user=user.username))
 
             # Army of Awesome Badge
             # Figure out who the Army of Awesome contributors are for the year
@@ -92,4 +92,4 @@ class Command(BaseCommand):
                 if maybe_award_aoa_badge(
                         aoa_badges.AOA_BADGE, year, user):
                     print('{year} AoA Badge awarded to {user}'
-                           .format(year=year, user=user.username))
+                          .format(year=year, user=user.username))

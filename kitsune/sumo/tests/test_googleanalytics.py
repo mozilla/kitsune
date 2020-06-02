@@ -18,7 +18,7 @@ class GoogleAnalyticsTests(TestCase):
         execute.return_value = VISITORS_RESPONSE
 
         visits = googleanalytics.visitors(
-            date(2013, 01, 16), date(2013, 01, 16))
+            date(2013, 1, 16), date(2013, 1, 16))
 
         eq_(1, len(visits))
         eq_(382719, visits['2013-01-16'])
@@ -30,7 +30,7 @@ class GoogleAnalyticsTests(TestCase):
         execute.return_value = VISITORS_BY_LOCALE_RESPONSE
 
         visits = googleanalytics.visitors_by_locale(
-            date(2013, 01, 16), date(2013, 01, 16))
+            date(2013, 1, 16), date(2013, 1, 16))
 
         eq_(58, len(visits))
         eq_(221447, visits['en-US'])
@@ -48,7 +48,7 @@ class GoogleAnalyticsTests(TestCase):
             documents.append(ApprovedRevisionFactory(document__slug='doc-%s' % i).document)
 
         pageviews = googleanalytics.pageviews_by_document(
-            date(2013, 01, 16), date(2013, 01, 16))
+            date(2013, 1, 16), date(2013, 1, 16))
 
         eq_(5, len(pageviews))
         eq_(1, pageviews[documents[0].pk])
@@ -64,7 +64,7 @@ class GoogleAnalyticsTests(TestCase):
         execute.return_value = PAGEVIEWS_BY_QUESTION_RESPONSE
 
         pageviews = googleanalytics.pageviews_by_question(
-            date(2013, 01, 16), date(2013, 01, 16))
+            date(2013, 1, 16), date(2013, 1, 16))
 
         eq_(3, len(pageviews))
         eq_(3, pageviews[1])
@@ -113,11 +113,11 @@ VISITORS_RESPONSE = {
     },
     'totalResults': 1,
     'id': ('https://www.googleapis.com/analytics/v3/data/ga'
-            '?ids=ga:1234567890&metrics=ga:visitors&start-date=2013-01-16'
-            '&end-date=2013-01-16'),
+           '?ids=ga:1234567890&metrics=ga:visitors&start-date=2013-01-16'
+           '&end-date=2013-01-16'),
     'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
-                  '?ids=ga:1234567890&metrics=ga:visitors'
-                  '&start-date=2013-01-16&end-date=2013-01-16')
+                 '?ids=ga:1234567890&metrics=ga:visitors'
+                 '&start-date=2013-01-16&end-date=2013-01-16')
 }
 
 
@@ -238,12 +238,12 @@ VISITORS_BY_LOCALE_RESPONSE = {
     },
     'totalResults': 83,
     'id': ('https://www.googleapis.com/analytics/v3/data/ga'
-            '?ids=ga:1234567890&dimensions=ga:pagePathLevel1'
-            '&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16'),
+           '?ids=ga:1234567890&dimensions=ga:pagePathLevel1'
+           '&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16'),
     'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
-                  '?ids=ga:1234567890&dimensions=ga:pagePathLevel1'
-                  '&metrics=ga:visitors&start-date=2013-01-16'
-                  '&end-date=2013-01-16'),
+                 '?ids=ga:1234567890&dimensions=ga:pagePathLevel1'
+                 '&metrics=ga:visitors&start-date=2013-01-16'
+                 '&end-date=2013-01-16'),
 }
 
 
@@ -280,10 +280,10 @@ PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
     'totalsForAllResults': {
         'ga:pageviews': '164293'},
     'nextLink': ('https://www.googleapis.com/analytics/v3/data/ga'
-                  '?ids=ga:1234567890&dimensions=ga:pagePath'
-                  '&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/'
-                  ';ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
-                  '&end-date=2013-01-17&start-index=11&max-results=10'),
+                 '?ids=ga:1234567890&dimensions=ga:pagePath'
+                 '&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/'
+                 ';ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
+                 '&end-date=2013-01-17&start-index=11&max-results=10'),
     'query': {
         'max-results': 10,
         'dimensions': 'ga:pagePath',
@@ -295,15 +295,15 @@ PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
         'end-date': '2013-01-17'},
     'totalResults': 10,
     'id': ('https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890'
-            '&dimensions=ga:pagePath&metrics=ga:pageviews'
-            '&filters=ga:pagePathLevel2%3D%3D/kb/;'
-            'ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
-            '&end-date=2013-01-17&start-index=1&max-results=10'),
+           '&dimensions=ga:pagePath&metrics=ga:pageviews'
+           '&filters=ga:pagePathLevel2%3D%3D/kb/;'
+           'ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
+           '&end-date=2013-01-17&start-index=1&max-results=10'),
     'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
-                  '?ids=ga:1234567890&dimensions=ga:pagePath&'
-                  'metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;'
-                  'ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
-                  '&end-date=2013-01-17&start-index=1&max-results=10')
+                 '?ids=ga:1234567890&dimensions=ga:pagePath&'
+                 'metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;'
+                 'ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
+                 '&end-date=2013-01-17&start-index=1&max-results=10')
 }
 
 
@@ -317,17 +317,17 @@ PAGEVIEWS_BY_QUESTION_RESPONSE = {
          'name': 'ga:pageviews'}],
     'containsSampledData': False,
     'id': ('https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487'
-            '&dimensions=ga:pagePath&metrics=ga:pageviews'
-            '&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01'
-            '&end-date=2013-01-02&start-index=1&max-results=10'),
+           '&dimensions=ga:pagePath&metrics=ga:pageviews'
+           '&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01'
+           '&end-date=2013-01-02&start-index=1&max-results=10'),
     'itemsPerPage': 10,
     'kind': 'analytics#gaData',
     'nextLink': ('https://www.googleapis.com/analytics/v3/data/ga'
-                  '?ids=ga:65912487&dimensions=ga:pagePath'
-                  '&metrics=ga:pageviews'
-                  '&filters=ga:pagePathLevel2%3D%3D/questions/'
-                  '&start-date=2013-01-01&end-date=2013-01-02'
-                  '&start-index=11&max-results=10'),
+                 '?ids=ga:65912487&dimensions=ga:pagePath'
+                 '&metrics=ga:pageviews'
+                 '&filters=ga:pagePathLevel2%3D%3D/questions/'
+                 '&start-date=2013-01-01&end-date=2013-01-02'
+                 '&start-index=11&max-results=10'),
     'profileInfo': {
         'accountId': '36116321',
         'internalWebPropertyId': '64136921',
@@ -356,11 +356,11 @@ PAGEVIEWS_BY_QUESTION_RESPONSE = {
         ['/es/questions/3?mobile=0', '10'],  # Counts as a pageview.
         ['/es/questions/3?lang=en-US', '1']],  # Counts as a pageview.
     'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
-                  '?ids=ga:65912487&dimensions=ga:pagePath'
-                  '&metrics=ga:pageviews'
-                  '&filters=ga:pagePathLevel2%3D%3D/questions/'
-                  '&start-date=2013-01-01&end-date=2013-01-02'
-                  '&start-index=1&max-results=10'),
+                 '?ids=ga:65912487&dimensions=ga:pagePath'
+                 '&metrics=ga:pageviews'
+                 '&filters=ga:pagePathLevel2%3D%3D/questions/'
+                 '&start-date=2013-01-01&end-date=2013-01-02'
+                 '&start-index=1&max-results=10'),
     'totalResults': 10,
     'totalsForAllResults': {'ga:pageviews': '242403'}}
 
@@ -392,9 +392,9 @@ SEARCH_CTR_RESPONSE = {
         'end-date': '2013-06-06'},
     'totalResults': 1,
     'id': ('https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487'
-            '&metrics=ga:goal11ConversionRate&start-date=2013-06-06'
-            '&end-date=2013-06-06'),
+           '&metrics=ga:goal11ConversionRate&start-date=2013-06-06'
+           '&end-date=2013-06-06'),
     'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
-                  '?ids=ga:65912487&metrics=ga:goal11ConversionRate&'
-                  'start-date=2013-06-06&end-date=2013-06-06'),
+                 '?ids=ga:65912487&metrics=ga:goal11ConversionRate&'
+                 'start-date=2013-06-06&end-date=2013-06-06'),
 }

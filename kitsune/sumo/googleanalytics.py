@@ -2,6 +2,8 @@ import logging
 from datetime import timedelta
 from functools import wraps
 
+from django.conf import settings
+
 import httplib2
 from apiclient.discovery import build
 from apiclient.errors import HttpError

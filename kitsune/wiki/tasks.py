@@ -310,7 +310,7 @@ def render_document_cascade(base):
             d.html = d.parse_and_calculate_links()
             d.save()
             done.add(d)
-            todo.update(l.linked_from for l in d.links_to()
+            todo.update(link_to.linked_from for link_to in d.links_to()
                         .filter(kind__in=['template', 'include']))
 
     finally:

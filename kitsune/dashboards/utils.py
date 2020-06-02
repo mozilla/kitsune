@@ -1,7 +1,6 @@
 import logging
 from collections import OrderedDict
 
-from apiclient.errors import Error as GoogleAPIError
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
@@ -100,6 +99,6 @@ def get_locales_by_visit(start_date, end_date):
             # Just return all locales with 0s for visits.
             log.exception('Something went wrong getting visitors by locale '
                           'from Google Analytics. Nobody got a 500 though.')
-            sorted_locales = [(l, 0) for l in settings.SUMO_LANGUAGES]
+            sorted_locales = [(lang, 0) for lang in settings.SUMO_LANGUAGES]
 
     return sorted_locales
