@@ -85,7 +85,7 @@ class LocaleURLMiddleware(object):
         except Resolver404:
             urlname = None
 
-        if urlname in settings.OIDC_EXEMPT_URLS:
+        if settings.OIDC_ENABLE and urlname in settings.OIDC_EXEMPT_URLS:
             translation.activate(settings.LANGUAGE_CODE)
             return
 
