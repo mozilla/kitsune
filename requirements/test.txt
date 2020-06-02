@@ -101,9 +101,9 @@ testfixtures==4.5.1 \
     --hash=sha256:6670e0e6e2dd17a01d16973f6156b2c7bc42886cf9b0a4c8f02d7b68462e308a \
     --hash=sha256:a244fca20784c132e47dda3cbaf97a170cb5b8c7d6694f48bc3a81b514e30185 \
     # via -r test.in
-wcwidth==0.1.9 \
-    --hash=sha256:cafe2186b3c009a04067022ce1dcd79cb38d8d65ee4f4791b8888d6599d1bbe1 \
-    --hash=sha256:ee73862862a156bf77ff92b09034fc4825dd3af9cf81bc5b360668d425f3c5f1 \
+wcwidth==0.2.2 \
+    --hash=sha256:3de2e41158cb650b91f9654cbf9a3e053cee0719c9df4ddc11e4b568669e9829 \
+    --hash=sha256:b651b6b081476420e4e9ae61239ac4c1b49d0c5ace42b2e81dc2ff49ed50c566 \
     # via pytest
 
 # WARNING: The following packages were not pinned, but pip requires them to be
