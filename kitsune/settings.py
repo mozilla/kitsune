@@ -546,6 +546,7 @@ MIDDLEWARE_CLASSES = (
 
     'kitsune.sumo.middleware.InAAQMiddleware',
     'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
+    'kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware',
 )
 
 # SecurityMiddleware settings
@@ -602,6 +603,7 @@ else:
             'users.fxa_authentication_init',
             'users.fxa_authentication_callback',
             'users.fxa_logout_url',
+            'users.fxa_webhook'
         ]
         # Firefox Accounts configuration
         FXA_OP_TOKEN_ENDPOINT = config('FXA_OP_TOKEN_ENDPOINT', default='')
@@ -620,6 +622,7 @@ else:
         FXA_STORE_ACCESS_TOKEN = config('FXA_STORE_ACCESS_TOKEN', default=False, cast=bool)
         FXA_STORE_ID_TOKEN = config('FXA_STORE_ID_TOKEN', default=False, cast=bool)
         FXA_SUPPORT_FORM = config('FXA_SUPPORT_FORM', default='https://accounts.firefox.com/support')
+        FXA_SET_ISSUER = config('FXA_SET_ISSUER', default='')
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 

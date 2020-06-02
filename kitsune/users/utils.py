@@ -1,5 +1,6 @@
 import bisect
 import logging
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -72,6 +73,24 @@ def deactivate_user(user, moderator):
 
     deactivation = Deactivation(user=user, moderator=moderator)
     deactivation.save()
+
+
+def anonymize_user(user):
+    # Clear the profile
+    profile = user.profile
+    profile.clear()
+    profile.fxa_uid = '{user_id}-{uid}'.format(user_id=user.id, uid=str(uuid4()))
+    profile.save()
+
+    # Deactivate the user and change key information
+    user.username = 'user%s' % user.id
+    user.email = '%s@example.com' % user.id
+    deactivate_user(user, user)
+
+    # Remove from all groups
+    user.groups.clear()
+
+    user.save()
 
 
 def get_oidc_fxa_setting(attr):
