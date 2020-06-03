@@ -5,7 +5,7 @@ Werkzeug~=1.0.1
 babis~=0.2.4
 bleach~=2.1.4
 boto3>=1.2.3  # pip-compile does not handle extras properly (django-storages)
-celery~=4.4.3
+celery==4.4.3
 commonware~=0.6.0
 cryptography~=2.9.2  # pip-compile does not handle extras properly (requests)
 denniS~=0.9
@@ -39,27 +39,28 @@ djangorestframework~=3.11.0
 docutils~=0.15.2
 elasticsearch~=1.2.0  # Listed explicitly because elasticutils does not constrain appropriately.
 elasticutils~=0.10.3
-factory-boy~=2.12.0
-fake-factory~=9999.9.9
+factory-boy~=2.6.0
+fake-factory<9999.9.9  # Listed explicitly because factory-boy does not constrain appropriately.
 google-api-python-client~=1.8.4
 gunicorn~=20.0.4
 html5lib~=1.0.1
 httplib2~=0.18.1
 https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline
-https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b51b5257afa3.tar.gz#egg=django-mobility
 https://github.com/lincolnloop/django-statsd/archive/3cf2eac133e59971923fa04d6c61113acede6876.tar.gz#egg=django-statsd-mozilla
 idna~=2.9
+kombu==4.6.9
 lxml~=4.5.1
 meinheld~=1.0.2
 mozilla-django-oidc~=1.2.3
 mysqlclient~=1.4.6
 newrelic~=5.12.1.141
 oauth2client~=1.5.2
+parameterized~=0.7.4
 premailer~=3.7.0
 puente~=0.5.0
 py-wikimarkup~=2.0.1
 pyOpenSSL~=19.1.0
-pyquery~=1.4.1
+pyquery~=1.2.9
 python-decouple~=3.3
 python-memcached~=1.59
 pytz~=2020.1
@@ -71,17 +72,3 @@ translate-toolkit~=2.5.1
 twython~=3.8.0
 typing~=3.7.4.1
 whitenoise~=3.3.1
-# TODO:PY3: These are dependencies that were listed prior to the Python 3 upgrade
-# but that appear to no longer be needed. Delete after the Python 3 upgrade is complete.
-# GitPython~=0.1.7
-# carrot~=0.10.7
-# https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6
-# https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield
-# https://github.com/mozilla/django-csp/archive/5c5f5a6b55fb78e99db939c79f0f0d8003a62c98.tar.gz#egg=django-csp
-# https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=django-recaptcha
-# ipaddress~=1.0.18
-# mimeparse~=0.1.3
-# ndg-httpsclient~=0.3.3
-# olefile~=0.44
-# pyes~=0.99.6
-# python-gflags~=2.0

@@ -73,7 +73,7 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 If this doesn't solve your problem, let {replier} know by replying on the \
 website:
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_medium=email&utm_source=notification\
+questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
