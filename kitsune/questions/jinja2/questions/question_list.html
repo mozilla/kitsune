@@ -152,7 +152,7 @@
   </nav>
 
   <select data-sort-questions class="forum--mobile-sort hide-on-large">
-    {% for o, details in orders.iteritems() %}
+    {% for o, details in orders.items() %}
       <option
         value="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}"
         {% if order == o %}selected{% endif %}>
@@ -281,7 +281,7 @@
 {% block side %}
 <div class="forum--sidebar-sort large-only">
   <select data-sort-questions>
-    {% for o, details in orders.iteritems() %}
+    {% for o, details in orders.items() %}
       <option
         value="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}"
         {% if order == o %}selected{% endif %}>
@@ -298,7 +298,7 @@
     <span class="details-heading"></span>
     <ul class="sidebar-nav--list">
       <li class="{% if filter == None %}selected{% endif %}"><a href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
-      {% for f, desc in filters.iteritems() %}
+      {% for f, desc in filters.items() %}
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>

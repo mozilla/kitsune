@@ -526,13 +526,17 @@ def image_for_product(product_slug):
     """
     Return square/alternate image for product slug
     """
+    default_image = os.path.join(
+        settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
+    )
+
+    if not product_slug:
+        return default_image
 
     try:
         obj = Product.objects.get(slug=product_slug)
     except Product.DoesNotExist:
-        return os.path.join(
-            settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
-        )
+        return default_image
     return obj.image_alternate_url
 
 

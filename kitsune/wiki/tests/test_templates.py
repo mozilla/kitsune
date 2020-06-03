@@ -2614,8 +2614,8 @@ class HelpfulVoteTests(TestCaseBase):
         )
         eq_(200, response.status_code)
         eq_(
-            '{"message": "Great to hear &mdash; thanks for the feedback!'
-            ' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
+            b'{"message": "Great to hear &mdash; thanks for the feedback!'
+            b' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
             response.content,
         )
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
