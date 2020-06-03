@@ -1,29 +1,29 @@
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    sha: e306ff3b7d0d9a6fc7d128ef9ca2e0b6e6e76e8f
-    hooks:
-    -   id: check-added-large-files
-    -   id: check-case-conflict
-    -   id: check-json
-    -   id: check-merge-conflict
-    -   id: check-yaml
-    -   id: debug-statements
-    -   id: trailing-whitespace
-    -   id: flake8
-        exclude: "\
-            (.*migrations.*)|\
-            (configs/vagrant/settings_local.py)|\
-            (docs/.*)|\
-            (kitsune/settings.*)|\
-            (kitsune/sumo/db_strings.py)|\
-            (scripts/contributor_counts.py)|\
-            (scripts/crontab/gen-crons.py)|\
-            (scripts/sprint_report.py)|\
-            (scripts/year_in_review.py)"
-        args: [--max-line-length=99]
--   repo: git://github.com/pre-commit/mirrors-eslint
-    sha: 6a5749410dee3a4686e51a0db72767a5b9b9f68d
-    hooks:
-    -   id: eslint
-        exclude: "\
-            (kitsune/sumo/static/sumo/js/libs/.*)|\
-            (scripts/lockdown.js)"
+default_language_version:
+    python: python3.8
+exclude: "^.*/migrations/.*$"
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v3.1.0
+      hooks:
+          - id: check-added-large-files
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: debug-statements
+          - id: trailing-whitespace
+          - id: end-of-file-fixer
+    - repo: https://github.com/asottile/reorder_python_imports
+      rev: v2.3.0
+      hooks:
+          - id: reorder-python-imports
+    - repo: https://github.com/psf/black
+      rev: 19.10b0
+      hooks:
+          - id: black
+    - repo: https://gitlab.com/pycqa/flake8.git
+      rev: 3.8.2
+      hooks:
+          - id: flake8
+    - repo: https://github.com/prettier/prettier
+      rev: 2.0.5
+      hooks:
+          - id: prettier

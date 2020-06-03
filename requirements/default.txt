@@ -29,13 +29,13 @@ bleach==2.1.4 \
     --hash=sha256:0ee95f6167129859c5dce9b1ca291ebdb5d8cd7e382ca0e237dfd0dad63f63d8 \
     --hash=sha256:24754b9a7d530bf30ce7cbc805bc6cce785660b4a10ff3a43633728438c105ab \
     # via -r default.in, py-wikimarkup
-boto3==1.14.12 \
-    --hash=sha256:2616351c98eec18d20a1d64b33355c86cd855ac96219d1b8428c9bfc590bde53 \
-    --hash=sha256:7daad26a008c91dd7b82fde17d246d1fe6e4b3813426689ef8bac9017a277cfb \
+boto3==1.14.13 \
+    --hash=sha256:77d926c16ab2ab2bfe68811f3bc987e7d79c97f3e2adebf9265c587cdb1fc47b \
+    --hash=sha256:7f558165eaa608a5d0e05227ee820f4b3cc74533a52c9dde7eb488eba091d50d \
     # via -r default.in, django-storages
-botocore==1.17.12 \
-    --hash=sha256:45934d880378777cefeca727f369d1f5aebf6b254e9be58e7c77dd0b059338bb \
-    --hash=sha256:a94e0e2307f1b9fe3a84660842909cd2680b57a9fc9fb0c3a03b0afb2eadbe21 \
+botocore==1.17.13 \
+    --hash=sha256:37b65cc48c99b7dd4d5606e56f76ecd88eb7be392ea8a166df734a6b3035301c \
+    --hash=sha256:5ac9b53a75852fe4282be8741c8136e6948714fef6eff1bd9babb861f8647ba3 \
     # via boto3, s3transfer
 cachetools==4.1.1 \
     --hash=sha256:513d4ff98dd27f85743a8dc0e92f55ddb1b49e060c2d5961512855cda2c01a98 \
