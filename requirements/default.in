@@ -39,8 +39,8 @@ djangorestframework~=3.11.0
 docutils~=0.15.2
 elasticsearch~=1.2.0  # Listed explicitly because elasticutils does not constrain appropriately.
 elasticutils~=0.10.3
-factory-boy~=2.6.0
-fake-factory<9999.9.9  # Listed explicitly because factory-boy does not constrain appropriately.
+factory-boy~=2.12.0
+Faker~=4.1.0
 google-api-python-client~=1.8.4
 gunicorn~=20.0.4
 html5lib~=1.0.1
