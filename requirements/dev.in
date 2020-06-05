@@ -21,3 +21,4 @@ urlwait~=0.4
 debugpy
 black
 pyflakes
+flower
