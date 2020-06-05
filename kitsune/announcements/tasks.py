@@ -7,12 +7,10 @@ import bleach
 from celery import task
 
 from kitsune.announcements.models import Announcement
-from kitsune.sumo.decorators import timeit
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
 
 
 @task()
-@timeit
 def send_group_email(announcement_id):
     """Build and send the announcement emails to a group."""
     try:

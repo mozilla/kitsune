@@ -93,7 +93,6 @@ https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f
 django-sslserver==0.22 \
     --hash=sha256:c598a363d2ccdc2421c08ddb3d8b0973f80e8e47a3a5b74e4a2896f21c2947c5 \
     # via -r dev.in
-https://github.com/lincolnloop/django-statsd/archive/3cf2eac133e59971923fa04d6c61113acede6876.tar.gz#egg=django-statsd-mozilla --hash=sha256:1c0c60e17b7b59bff322c6c13a80296beabe55e7df1570bca35b36108a124471 # via -r default.in
 filelock==3.0.12 \
     --hash=sha256:18d82244ee114f543149c66a6e0c14e9c4f8a1044b5cdaadd0f82159d6a6ff59 \
     --hash=sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836 \
@@ -113,10 +112,6 @@ identify==1.4.19 \
     --hash=sha256:249ebc7e2066d6393d27c1b1be3b70433f824a120b1d8274d362f1eb419e3b52 \
     --hash=sha256:781fd3401f5d2b17b22a8b18b493a48d5d948e3330634e82742e23f9c20234ef \
     # via pre-commit
-importlib-resources==1.5.0 \
-    --hash=sha256:6f87df66833e1942667108628ec48900e02a4ab4ad850e25fbf07cb17cf734ca \
-    --hash=sha256:85dc0b9b325ff78c8bef2e4ff42616094e16b98ebd5e3b50fe7e2f0bbcdcde49 \
-    # via pre-commit, virtualenv
 ipdb==0.13.2 \
     --hash=sha256:77fb1c2a6fccdfee0136078c9ed6fe547ab00db00bebff181f1e8c9e13418d49 \
     # via -r dev.in

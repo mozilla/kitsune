@@ -46,7 +46,6 @@ gunicorn~=20.0.4
 html5lib~=1.0.1
 httplib2~=0.18.1
 https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline
-https://github.com/lincolnloop/django-statsd/archive/3cf2eac133e59971923fa04d6c61113acede6876.tar.gz#egg=django-statsd-mozilla
 idna~=2.9
 kombu==4.6.9
 lxml~=4.5.1

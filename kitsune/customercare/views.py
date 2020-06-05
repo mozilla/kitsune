@@ -12,7 +12,6 @@ from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from django.views.decorators.http import require_POST, require_GET
 
 import bleach
-from django_statsd.clients import statsd
 from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
@@ -140,15 +139,11 @@ def landing(request):
     try:
         redis = redis_client(name='default')
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
 
     contributor_stats = redis and redis.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
     if contributor_stats:
         contributor_stats = json.loads(contributor_stats)
-        statsd.incr('customercare.stats.contributors.hit')
-    else:
-        statsd.incr('customercare.stats.contributors.miss')
 
     twitter_user = None
     if request.twitter.authed:

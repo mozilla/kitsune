@@ -21,7 +21,6 @@ from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
-from django_statsd.clients import statsd
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -62,7 +61,6 @@ def doc_page_cache(view):
         if (request.user.is_authenticated or
                 request.GET.get('redirect') == 'no' or
                 request.session.get('product_key')):
-            statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
 
         cache_key = doc_html_cache_key(
@@ -71,13 +69,11 @@ def doc_page_cache(view):
 
         html, headers = cache.get(cache_key, (None, None))
         if html is not None:
-            statsd.incr('wiki.document_view.cache.hit')
             res = HttpResponse(html)
             for key, val in list(headers.items()):
                 res[key] = val
             return res
 
-        statsd.incr('wiki.document_view.cache.miss')
         response = view(request, document_slug, *args, **kwargs)
 
         # We only cache if the response returns HTTP 200.
@@ -320,7 +316,6 @@ def _document_lock_check(document_id):
         key = _document_lock_key.format(id=document_id)
         return redis.get(key)
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
         return None
 
@@ -338,7 +333,6 @@ def _document_lock_steal(document_id, user_name, expire_time=60 * 15):
         redis.expire(key, expire_time)
         return it_worked
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
         return False
 
@@ -363,7 +357,6 @@ def _document_lock_clear(document_id, user_name):
         else:
             return False
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
         return False
 
@@ -550,7 +543,6 @@ def preview_revision(request):
     wiki_content = request.POST.get('content', '')
     slug = request.POST.get('slug')
     locale = request.POST.get('locale')
-    statsd.incr('wiki.preview')
 
     if slug and locale:
         doc = get_object_or_404(Document, slug=slug, locale=locale)
@@ -709,7 +701,6 @@ def review_revision(request, document_slug, revision_id):
             send_reviewed_notification.delay(rev, doc, msg)
             send_contributor_notification(based_on_revs, rev, doc, msg)
 
-            statsd.incr('wiki.review')
             render_document_cascade.delay(doc)
 
             return HttpResponseRedirect(reverse('wiki.document_revisions',
@@ -995,7 +986,6 @@ def watch_document(request, document_slug):
     document = get_object_or_404(
         Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     EditDocumentEvent.notify(request.user, document)
-    statsd.incr('wiki.watches.document')
     return HttpResponseRedirect(document.get_absolute_url())
 
 
@@ -1017,7 +1007,6 @@ def watch_locale(request, product=None):
     if product is not None:
         kwargs['product'] = product
     ReviewableRevisionInLocaleEvent.notify(request.user, **kwargs)
-    statsd.incr('wiki.watches.locale')
 
     return HttpResponse()
 
@@ -1045,7 +1034,6 @@ def watch_approved(request, product=None):
     if product is not None:
         kwargs['product'] = product
     ApproveRevisionInLocaleEvent.notify(request.user, **kwargs)
-    statsd.incr('wiki.watches.approved')
 
     return HttpResponse()
 
@@ -1076,7 +1064,6 @@ def watch_ready(request, product=None):
     if product is not None:
         kwargs['product'] = product
     ReadyRevisionEvent.notify(request.user, **kwargs)
-    statsd.incr('wiki.watches.ready')
 
     return HttpResponse()
 
@@ -1156,7 +1143,6 @@ def helpful_vote(request, document_slug):
                 vote.anonymous_id = request.anonymous.anonymous_id
 
             vote.save()
-            statsd.incr('wiki.vote')
 
             # Send a survey if flag is enabled and vote wasn't helpful.
             if 'helpful' not in request.POST:
@@ -1489,7 +1475,6 @@ def _save_rev_and_notify(rev_form, creator, document, based_on_id=None,
                          base_rev=None):
     """Save the given RevisionForm and send notifications."""
     new_rev = rev_form.save(creator, document, based_on_id, base_rev)
-    statsd.incr('wiki.revision')
 
     # Enqueue notifications
     ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)

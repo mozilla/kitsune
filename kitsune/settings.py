@@ -495,7 +495,6 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
-    'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
     'kitsune.sumo.middleware.EnforceHostIPMiddleware',
 
@@ -530,7 +529,6 @@ MIDDLEWARE = (
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.ScrubRequestOnException',
-    'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
@@ -1094,12 +1092,6 @@ ENFORCE_HOST = config('ENFORCE_HOST', default='', cast=Csv()) or None
 
 # Allows you to specify waffle settings in the querystring.
 WAFFLE_OVERRIDE = config('WAFFLE_OVERRIDE', default=DEBUG, cast=bool)
-
-STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
-STATSD_HOST = config('STATSD_HOST', default='localhost')
-STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
-STATSD_PREFIX = config('STATSD_PREFIX', default='')
-
 
 if config('SENTRY_DSN', None):
     import sentry_sdk

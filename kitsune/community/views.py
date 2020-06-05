@@ -5,8 +5,6 @@ from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 
-from django_statsd.clients import statsd
-
 from kitsune.community import api
 from kitsune.community.utils import (
     top_contributors_aoa, top_contributors_questions,
@@ -104,10 +102,8 @@ def search(request):
                              'twitter_usernames', 'last_contribution_date'))
             results = UserMappingType.reshape(results)
 
-            statsd.incr('community.usersearch.success')
         except ES_EXCEPTIONS:
             search_errored = True
-            statsd.incr('community.usersearch.error')
             log.exception('User search failed.')
 
     # For now, we're just truncating results at 30 and not doing any

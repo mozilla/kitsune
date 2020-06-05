@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
-from django_statsd.clients import statsd
 
 from kitsune.kpi.management import utils
 from kitsune.kpi.surveygizmo_utils import (
@@ -47,5 +46,3 @@ class Command(BaseCommand):
             emails = get_email_addresses(survey, startdatetime, enddatetime)
             for email in emails:
                 add_email_to_campaign(survey, email)
-
-            statsd.gauge("survey.{0}".format(survey), len(emails))

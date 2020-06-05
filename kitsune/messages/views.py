@@ -9,7 +9,6 @@ from django.views.decorators.http import require_POST
 
 from multidb.pinning import mark_as_write
 from kitsune.sumo.utils import is_ratelimited
-from django_statsd.clients import statsd
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE
@@ -173,7 +172,6 @@ def delete(request, msgid=None, msgtype='inbox'):
 @login_required
 def preview_async(request):
     """Ajax preview of posts."""
-    statsd.incr('forums.preview')
     m = OutboxMessage(sender=request.user,
                       message=request.POST.get('content', ''))
     return render(request, 'messages/includes/message_preview.html', {

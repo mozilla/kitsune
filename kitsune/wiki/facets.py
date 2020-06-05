@@ -5,7 +5,6 @@ from django.core.cache import cache
 from django.db.models import Count
 
 from elasticsearch.exceptions import TransportError
-from django_statsd.clients import statsd
 
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document, DocumentMappingType
@@ -17,7 +16,6 @@ def topics_for(product, parent=False):
     :arg product: a Product instance
     :arg parent: (optional) limit to topics with the given parent
     """
-    statsd.incr('wiki.facets.topics_for.db')
 
     docs = Document.objects.filter(
         locale=settings.WIKI_DEFAULT_LANGUAGE,
@@ -82,7 +80,6 @@ def _documents_for(locale, topics=None, products=None):
     documents = cache.get(_documents_for_cache_key(
         locale, topics, products))
     if documents:
-        statsd.incr('wiki.facets.documents_for.cache')
         return documents
 
     try:
@@ -91,7 +88,6 @@ def _documents_for(locale, topics=None, products=None):
         cache.add(
             _documents_for_cache_key(locale, topics, products),
             documents)
-        statsd.incr('wiki.facets.documents_for.es')
     except TransportError:
         # Finally, hit the database (through cache machine)
         # NOTE: The documents will be the same ones returned by ES
@@ -99,7 +95,6 @@ def _documents_for(locale, topics=None, products=None):
         # 30 days). It is better to return them in the wrong order
         # than not to return them at all.
         documents = _db_documents_for(locale, topics, products)
-        statsd.incr('wiki.facets.documents_for.db')
 
     return documents
 
