@@ -106,6 +106,10 @@ identify==1.4.18 \
     --hash=sha256:9f53e80371f2ac7c969eefda8efaabd4f77c6300f5f8fc4b634744a0db8fe5cc \
     --hash=sha256:de4e1de6c23f52b71c8a54ff558219f3783ff011b432f29360d84a8a31ba561c \
     # via pre-commit
+importlib-resources==1.5.0 \
+    --hash=sha256:6f87df66833e1942667108628ec48900e02a4ab4ad850e25fbf07cb17cf734ca \
+    --hash=sha256:85dc0b9b325ff78c8bef2e4ff42616094e16b98ebd5e3b50fe7e2f0bbcdcde49 \
+    # via pre-commit, virtualenv
 ipdb==0.13.2 \
     --hash=sha256:77fb1c2a6fccdfee0136078c9ed6fe547ab00db00bebff181f1e8c9e13418d49 \
     # via -r dev.in
@@ -180,9 +184,9 @@ python-jsonrpc-server==0.3.4 \
     --hash=sha256:1f85f75f37f923149cc0aa078474b6df55b708e82ed819ca8846a65d7d0ada7f \
     --hash=sha256:c73bf5495c9dd4d2f902755bedeb6da5afe778e0beee82f0e195c4655352fe37 \
     # via python-language-server
-python-language-server==0.33.0 \
-    --hash=sha256:3609ade1041066b55a351c371b1b1c9e7e61ba6446ec3716c6efdf928675bd13 \
-    --hash=sha256:636e6f09ea23658729fa135af737bd2d84fbbc850c9d99299eab60e9180ec0a9 \
+python-language-server==0.33.1 \
+    --hash=sha256:92a846fa8cb39a60a8a701c6951dc643bfde441578d4b87973e06ba539643739 \
+    --hash=sha256:ffde271fdacb73d47a657a69e5e59072e3e1afa5d7b4f7f6399049ce39be0772 \
     # via -r dev.in
 pyyaml==5.3.1 \
     --hash=sha256:06a0d7ba600ce0b2d2fe2e78453a470b5a6e000a985dd4a4e54e436cc36b0e97 \
