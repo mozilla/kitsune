@@ -12,13 +12,13 @@ from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.urls import resolve
 from django.db import close_old_connections, connection, models
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
+from django.urls import resolve
 from product_details import product_details
 from taggit.models import Tag, TaggedItem
 
@@ -33,6 +33,7 @@ from kitsune.search.models import (SearchMappingType, SearchMixin,
                                    register_for_indexing,
                                    register_mapping_type)
 from kitsune.search.tasks import index_task
+from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -1046,7 +1047,7 @@ class Answer(ModelBase, SearchMixin):
 
         super(Answer, self).delete(*args, **kwargs)
 
-        update_answer_pages.delay(question)
+        update_answer_pages.delay(question.id)
 
     def get_helpful_answer_url(self):
         url = reverse(
@@ -1280,7 +1281,7 @@ def reindex_questions_answers(sender, instance, **kw):
     This is needed because the solution may have changed."""
     if instance.id:
         answer_ids = instance.answers.all().values_list("id", flat=True)
-        index_task.delay(AnswerMetricsMappingType, list(answer_ids))
+        index_task.delay(to_class_path(AnswerMetricsMappingType), list(answer_ids))
 
 
 post_save.connect(

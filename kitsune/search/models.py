@@ -5,14 +5,14 @@ from threading import local
 from django.conf import settings
 from django.core import signals
 from django.db import models
-from django.db.models.signals import pre_delete, post_save, m2m_changed
+from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
-
-from elasticutils.contrib.django import MappingType, Indexable, MLT
 from elasticsearch.exceptions import NotFoundError
+from elasticutils.contrib.django import MLT, Indexable, MappingType
 
 from kitsune.search import es_utils
 from kitsune.search.tasks import index_task, unindex_task
+from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import ModelBase
 
 log = logging.getLogger('k.search.es')
@@ -68,12 +68,12 @@ class SearchMixin(object):
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
         _local_tasks().add((index_task.delay,
-                           (self.get_mapping_type(), (self.pk,))))
+                           (to_class_path(self.get_mapping_type()), (self.pk,))))
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
         _local_tasks().add((unindex_task.delay,
-                           (self.get_mapping_type(), (self.pk,))))
+                           (to_class_path(self.get_mapping_type()), (self.pk,))))
 
 
 class SearchMappingType(MappingType, Indexable):

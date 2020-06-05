@@ -6,13 +6,12 @@ from django.core.management.base import BaseCommand
 
 from kitsune.customercare import badges as aoa_badges
 from kitsune.customercare.models import Reply
-from kitsune.customercare.tasks import (
-    maybe_award_badge as maybe_award_aoa_badge)
-from kitsune.kbadge import badges  # This import hooks up email notifications # noqa
+from kitsune.customercare.tasks import \
+    maybe_award_badge as maybe_award_aoa_badge
 from kitsune.questions import badges as questions_badges
 from kitsune.questions.models import Answer
-from kitsune.questions.tasks import (
-    maybe_award_badge as maybe_award_questions_badge)
+from kitsune.questions.tasks import \
+    maybe_award_badge as maybe_award_questions_badge
 from kitsune.wiki import badges as wiki_badges
 from kitsune.wiki.models import Revision
 from kitsune.wiki.tasks import maybe_award_badge as maybe_award_wiki_badge
@@ -38,7 +37,7 @@ class Command(BaseCommand):
 
             for user in User.objects.filter(id__in=user_ids):
                 if maybe_award_wiki_badge(
-                        wiki_badges.WIKI_BADGES['kb-badge'], year, user):
+                        wiki_badges.WIKI_BADGES['kb-badge'], year, user.id):
                     print('{year} KB Badge awarded to {user}'.format(
                         year=year, user=user.username))
 
@@ -56,7 +55,7 @@ class Command(BaseCommand):
 
             for user in User.objects.filter(id__in=user_ids):
                 if maybe_award_wiki_badge(
-                        wiki_badges.WIKI_BADGES['l10n-badge'], year, user):
+                        wiki_badges.WIKI_BADGES['l10n-badge'], year, user.id):
                     print('{year} L10n Badge awarded to {user}'.format(
                         year=year, user=user.username))
 
@@ -74,7 +73,7 @@ class Command(BaseCommand):
                 if maybe_award_questions_badge(
                         questions_badges.QUESTIONS_BADGES['answer-badge'],
                         year,
-                        user):
+                        user.id):
                     print('{year} Support Forum Badge awarded to {user}'
                           .format(year=year, user=user.username))
 
@@ -90,6 +89,6 @@ class Command(BaseCommand):
 
             for user in User.objects.filter(id__in=user_ids):
                 if maybe_award_aoa_badge(
-                        aoa_badges.AOA_BADGE, year, user):
+                        aoa_badges.AOA_BADGE, year, user.id):
                     print('{year} AoA Badge awarded to {user}'
                           .format(year=year, user=user.username))

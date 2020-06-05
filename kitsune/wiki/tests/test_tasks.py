@@ -1,28 +1,26 @@
 import re
 from datetime import datetime
+from unittest import mock
 
+import bleach
+import waffle
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
 from django.test import override_settings
 from django.test.client import RequestFactory
-
-import bleach
-from unittest import mock
-import waffle
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import add_permission, UserFactory
-from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
-from kitsune.wiki.models import Revision, Document
-from kitsune.wiki.tasks import (
-    send_reviewed_notification, rebuild_kb, schedule_rebuild_kb,
-    _rebuild_kb_chunk, render_document_cascade)
-from kitsune.wiki.tests import TestCaseBase, RevisionFactory
+from kitsune.users.tests import UserFactory, add_permission
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
+from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.tasks import (_rebuild_kb_chunk, rebuild_kb,
+                                render_document_cascade, schedule_rebuild_kb,
+                                send_reviewed_notification)
+from kitsune.wiki.tests import RevisionFactory, TestCaseBase
 from kitsune.wiki.tests.test_parser import doc_rev_parser
-
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
 
@@ -113,7 +111,7 @@ class ReviewMailTestCase(TestCaseBase):
         revision.reviewed = datetime.now()
         revision.is_approved = True
         revision.save()
-        send_reviewed_notification(revision, revision.document, message)
+        send_reviewed_notification(revision.id, revision.document.id, message)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_reviewed_notification(self, get_current):
@@ -194,7 +192,7 @@ class TestDocumentRenderCascades(TestCaseBase):
         eq_(self._clean(d3), 'one one two three')
 
         RevisionFactory(document=d1, content='ONE', is_approved=True)
-        render_document_cascade(d1)
+        render_document_cascade(d1.id)
 
         eq_(self._clean(d1), 'ONE')
         eq_(self._clean(d2), 'ONE two')

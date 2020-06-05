@@ -13,4 +13,4 @@ def notify_award_recipient(sender, award, **kwargs):
     # bejesus out of everyone.
     if not settings.STAGE:
         # Kick off the task to send the email
-        send_award_notification.delay(award)
+        send_award_notification.delay(award.id)
