@@ -50,3 +50,5 @@ npm-debug.log
 .pylint*
 .devcontainer.code-workspace
 assets/
+celerybeat-schedule
+celerybeat.pid

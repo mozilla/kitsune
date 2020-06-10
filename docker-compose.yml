@@ -14,6 +14,7 @@ services:
       - elasticsearch
       - redis
       - celery
+      - celery-flower
       - celery-beat
     ports:
       - "8000:8000"
@@ -142,7 +143,18 @@ services:
 
   celery:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery flower -A kitsune worker -l info --address=0.0.0.0 --port=5555
+    command: celery -A kitsune worker -l info
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - mariadb
+      - redis
+
+  celery-flower:
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: celery -A kitsune flower -l info --address=0.0.0.0 --port=5555
     env_file: .env
     volumes:
       - ./:/app:delegated
@@ -155,7 +167,7 @@ services:
 
   celery-beat:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery flower -A kitsune beat worker -l info --address=0.0.0.0 --port=5550
+    command: celery -A kitsune beat -l info
     env_file: .env
     volumes:
       - ./:/app:delegated
@@ -163,8 +175,6 @@ services:
     depends_on:
       - mariadb
       - redis
-    ports:
-      - "5550:5550"
 
 volumes:
     mysqlvolume:
