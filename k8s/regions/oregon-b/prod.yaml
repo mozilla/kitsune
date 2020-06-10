@@ -124,9 +124,6 @@ app:
     session_cookie_secure: True
     stage: False
     static_url: "https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/"
-    statsd_client: SECRET
-    statsd_host: SECRET
-    statsd_prefix: "sumo-prod.oregon-b"
     secure_hsts_seconds: 31536000
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True

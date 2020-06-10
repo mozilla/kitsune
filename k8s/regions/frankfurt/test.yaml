@@ -118,9 +118,6 @@ app:
     sentry_dsn: SECRET
     session_cookie_secure: True
     stage: True
-    statsd_client: SECRET
-    statsd_host: SECRET
-    statsd_prefix: "sumo-test.frankfurt"
     secure_hsts_seconds: 0
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True

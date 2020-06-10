@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 from django.db.models import F, ObjectDoesNotExist, Q
 from django.utils.translation import pgettext
 from django.utils.translation import ugettext as _
-from django_statsd.clients import statsd
 
 from kitsune.products.models import Product
 from kitsune.sumo import email_utils
@@ -85,5 +84,3 @@ class Command(BaseCommand):
                     'docs_list': docs_list,
                     'products': products
                 })
-
-                statsd.incr('wiki.cron.weekly-digest-mail')

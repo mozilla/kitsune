@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
 from authority.decorators import permission_required_or_403
-from django_statsd.clients import statsd
 
 from kitsune import forums as constants
 from kitsune.access.decorators import has_perm_or_owns_or_403, login_required
@@ -167,7 +166,6 @@ def reply(request, forum_slug, thread_id):
                     reply_.author.post_set.count()
             elif not is_ratelimited(request, 'forum-post', '15/d'):
                 reply_.save()
-                statsd.incr('forums.reply')
 
                 # Subscribe the user to the thread.
                 if Setting.get_for_user(request.user,
@@ -213,7 +211,6 @@ def new_thread(request, forum_slug):
             thread = forum.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()
-            statsd.incr('forums.thread')
             post = thread.new_post(author=request.user,
                                    content=form.cleaned_data['content'])
             post.save()
@@ -323,8 +320,6 @@ def delete_thread(request, forum_slug, thread_id):
                 (request.user, thread.id))
     thread.delete()
 
-    statsd.incr('forums.delete_thread')
-
     return HttpResponseRedirect(reverse('forums.threads', args=[forum_slug]))
 
 
@@ -420,8 +415,6 @@ def delete_post(request, forum_slug, thread_id, post_id):
                 (request.user, post.id))
     post.delete()
 
-    statsd.incr('forums.delete_post')
-
     try:
         Thread.objects.get(pk=thread_id)
         goto = reverse('forums.posts', args=[forum_slug, thread_id])
@@ -444,7 +437,6 @@ def watch_thread(request, forum_slug, thread_id):
 
     if request.POST.get('watch') == 'yes':
         NewPostEvent.notify(request.user, thread)
-        statsd.incr('forums.watches.thread')
     else:
         NewPostEvent.stop_notifying(request.user, thread)
 
@@ -462,7 +454,6 @@ def watch_forum(request, forum_slug):
 
     if request.POST.get('watch') == 'yes':
         NewThreadEvent.notify(request.user, forum)
-        statsd.incr('forums.watches.forum')
     else:
         NewThreadEvent.stop_notifying(request.user, forum)
 
@@ -473,7 +464,6 @@ def watch_forum(request, forum_slug):
 @login_required
 def post_preview_async(request):
     """Ajax preview of posts."""
-    statsd.incr('forums.preview')
     post = Post(author=request.user, content=request.POST.get('content', ''))
     post.author_post_count = 1
 

@@ -15,7 +15,6 @@ commonmark==0.9.1 \
     --hash=sha256:da2f38c92590f83de410ba1a3cbceafbc74fee9def35f9251ba9a971d6d66fd9 \
     # via recommonmark
 https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline --hash=sha256:8137ed0a643560ae2300e11278e04907f0a1208031a0069474771cab6800f325 # via -r default.in
-https://github.com/lincolnloop/django-statsd/archive/3cf2eac133e59971923fa04d6c61113acede6876.tar.gz#egg=django-statsd-mozilla --hash=sha256:1c0c60e17b7b59bff322c6c13a80296beabe55e7df1570bca35b36108a124471 # via -r default.in
 imagesize==1.2.0 \
     --hash=sha256:6965f19a6a2039c7d48bca7dba2473069ff854c36ae6f19d2cde309d998228a1 \
     --hash=sha256:b1f6b5a4eab1f73479a50fb79fcf729514a900c341d8503d62a62dbc4127a2b1 \

@@ -1,39 +1,34 @@
 import logging
-import time
 from datetime import date
 
+import waffle
+from celery import task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
-from django.urls import reverse as django_reverse
 from django.db import transaction
-
-import waffle
-from celery import task
-from multidb.pinning import pin_this_thread, unpin_this_thread
-from django_statsd.clients import statsd
+from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _
+from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
-from kitsune.sumo.decorators import timeit
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
-from kitsune.wiki.models import (
-    Document, points_to_document_view, SlugCollision, TitleCollision, Revision)
-from kitsune.wiki.utils import generate_short_url, BitlyRateLimitException
-
+from kitsune.wiki.models import (Document, Revision, SlugCollision,
+                                 TitleCollision, points_to_document_view)
+from kitsune.wiki.utils import BitlyRateLimitException, generate_short_url
 
 log = logging.getLogger('k.task')
 
 
 @task()
-@timeit
 def send_reviewed_notification(revision, document, message):
     """Send notification of review to the revision creator."""
+
     if revision.reviewer == revision.creator:
         log.debug('Revision (id=%s) reviewed by creator, skipping email' %
                   revision.id)
@@ -83,7 +78,6 @@ def send_reviewed_notification(revision, document, message):
 
 
 @task()
-@timeit
 def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
 
@@ -154,7 +148,6 @@ def schedule_rebuild_kb():
 
 
 @task
-@timeit
 def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
     base_url = 'https://{0}%s'.format(Site.objects.get_current().domain)
@@ -165,18 +158,15 @@ def add_short_links(doc_ids):
             # Use django's reverse so the locale isn't included.
             endpoint = django_reverse('wiki.document', args=[doc.slug])
             doc.update(share_link=generate_short_url(base_url % endpoint))
-            statsd.incr('wiki.add_short_links.success')
     except BitlyRateLimitException:
         # The next run of the `generate_missing_share_links` cron job will
         # catch all documents that were unable to be processed.
-        statsd.incr('wiki.add_short_links.rate_limited')
         pass
     finally:
         unpin_this_thread()
 
 
 @task(rate_limit='3/h')
-@timeit
 def rebuild_kb():
     """Re-render all documents in the KB in chunks."""
     cache.delete(settings.WIKI_REBUILD_TOKEN)
@@ -189,7 +179,6 @@ def rebuild_kb():
 
 
 @task(rate_limit='5/m')
-@timeit
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
 
@@ -202,7 +191,6 @@ def _rebuild_kb_chunk(data):
     pin_this_thread()  # Stick to master.
 
     messages = []
-    start = time.time()
     for pk in data:
         message = None
         try:
@@ -222,9 +210,6 @@ def _rebuild_kb_chunk(data):
                 # signal handlers like the one that triggers reindexing.
                 # See bug 797038 and bug 797352.
                 Document.objects.filter(pk=pk).update(html=html)
-                statsd.incr('wiki.rebuild_chunk.change')
-            else:
-                statsd.incr('wiki.rebuild_chunk.nochange')
         except Document.DoesNotExist:
             message = 'Missing document: %d' % pk
         except Revision.DoesNotExist:
@@ -239,8 +224,6 @@ def _rebuild_kb_chunk(data):
         if message:
             log.debug(message)
             messages.append(message)
-    d = time.time() - start
-    statsd.timing('wiki.rebuild_chunk', int(round(d * 1000)))
 
     if messages:
         subject = ('[%s] Exceptions raised in _rebuild_kb_chunk()' %
@@ -253,7 +236,6 @@ def _rebuild_kb_chunk(data):
 
 
 @task()
-@timeit
 def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
@@ -283,7 +265,6 @@ def maybe_award_badge(badge_template, year, user):
 
 
 @task()
-@timeit
 def render_document_cascade(base):
     """Given a document, render it and all documents that may be affected."""
 

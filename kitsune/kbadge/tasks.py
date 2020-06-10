@@ -4,12 +4,10 @@ from django.utils.translation import ugettext as _, pgettext
 
 from celery import task
 
-from kitsune.sumo.decorators import timeit
 from kitsune.sumo import email_utils
 
 
 @task()
-@timeit
 def send_award_notification(award):
     """Sends the award notification email
 

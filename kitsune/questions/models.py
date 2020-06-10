@@ -19,7 +19,6 @@ from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
-from django_statsd.clients import statsd
 from product_details import product_details
 from taggit.models import Tag, TaggedItem
 
@@ -484,7 +483,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.solution = answer
         self.save()
         self.add_metadata(solver_id=str(solver.id))
-        statsd.incr("questions.solution")
         QuestionSolvedEvent(answer).fire(exclude=self.creator)
         actstream.action.send(
             solver, verb="marked as a solution", action_object=answer, target=self
@@ -500,7 +498,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         key = "questions_question:related_docs:%s" % self.id
         documents = cache.get(key)
         if documents is not None:
-            statsd.incr("questions.related_documents.cache.hit")
             log.debug(
                 "Getting MLT documents for {question} from cache.".format(
                     question=repr(self)
@@ -509,7 +506,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             return documents
 
         try:
-            statsd.incr("questions.related_documents.cache.miss")
             s = Document.get_mapping_type().search()
             documents = (
                 s.values_dict("id", "document_title", "url")
@@ -535,7 +531,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             documents = list(documents)
             cache.add(key, documents)
         except ES_EXCEPTIONS:
-            statsd.incr("questions.related_documents.esexception")
             log.exception("ES MLT related_documents")
             documents = []
 
@@ -551,7 +546,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         key = "questions_question:related_questions:%s" % self.id
         questions = cache.get(key)
         if questions is not None:
-            statsd.incr("questions.related_questions.cache.hit")
             log.debug(
                 "Getting MLT questions for {question} from cache.".format(
                     question=repr(self)
@@ -560,7 +554,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             return questions
 
         try:
-            statsd.incr("questions.related_questions.cache.miss")
             max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
             start_date = int(time.time()) - max_age
 
@@ -585,7 +578,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             questions = list(questions)
             cache.add(key, questions)
         except ES_EXCEPTIONS:
-            statsd.incr("questions.related_questions.esexception")
             log.exception("ES MLT related_questions")
             questions = []
 

@@ -21,7 +21,6 @@ from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
-from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
@@ -248,10 +247,7 @@ def question_list(request, product_slug):
     question_qs = question_qs.order_by(order_by if sort == "asc" else "-%s" % order_by)
 
     try:
-        with statsd.timer("questions.view.paginate.%s" % filter_):
-            questions_page = simple_paginate(
-                request, question_qs, per_page=config.QUESTIONS_PER_PAGE
-            )
+        questions_page = simple_paginate(request, question_qs, per_page=config.QUESTIONS_PER_PAGE)
     except (PageNotAnInteger, EmptyPage):
         # If we aren't on page 1, redirect there.
         # TODO: Is 404 more appropriate?
@@ -313,8 +309,7 @@ def question_list(request, product_slug):
         "topic": topic,
     }
 
-    with statsd.timer("questions.view.render"):
-        return render(request, "questions/question_list.html", data)
+    return render(request, "questions/question_list.html", data)
 
 
 def parse_troubleshooting(troubleshooting_json):
@@ -715,7 +710,6 @@ def reply(request, question_id):
                 creator=request.user, content_type=user_ct
             )
             up_images.update(content_type=ans_ct, object_id=answer.id)
-            statsd.incr("questions.answer")
 
             # Handle needsinfo tag
             if "needsinfo" in request.POST:
@@ -800,8 +794,6 @@ def unsolve(request, question_id, answer_id):
     question.save()
     question.remove_metadata("solver_id")
 
-    statsd.incr("questions.unsolve")
-
     messages.add_message(
         request, messages.SUCCESS, _("The solution was undone successfully.")
     )
@@ -840,7 +832,6 @@ def question_vote(request, question_id):
             ua = request.META.get("HTTP_USER_AGENT")
             if ua:
                 vote.add_metadata("ua", ua)
-            statsd.incr("questions.votes.question")
 
         if request.is_ajax():
             tmpl = "questions/includes/question_vote_thanks.html"
@@ -901,7 +892,6 @@ def answer_vote(request, question_id, answer_id):
         ua = request.META.get("HTTP_USER_AGENT")
         if ua:
             vote.add_metadata("ua", ua)
-        statsd.incr("questions.votes.answer")
     else:
         message = _("You already voted on this reply.")
 
@@ -1072,8 +1062,6 @@ def delete_question(request, question_id):
     log.warning("User %s is deleting question with id=%s" % (request.user, question.id))
     question.delete()
 
-    statsd.incr("questions.delete")
-
     return HttpResponseRedirect(reverse("questions.list", args=[product]))
 
 
@@ -1095,8 +1083,6 @@ def delete_answer(request, question_id, answer_id):
     log.warning("User %s is deleting answer with id=%s" % (request.user, answer.id))
     answer.delete()
 
-    statsd.incr("questions.delete_answer")
-
     return HttpResponseRedirect(reverse("questions.details", args=[question_id]))
 
 
@@ -1115,11 +1101,6 @@ def lock_question(request, question_id):
         % (request.user, question.is_locked, question.id)
     )
     question.save()
-
-    if question.is_locked:
-        statsd.incr("questions.lock")
-    else:
-        statsd.incr("questions.unlock")
 
     return HttpResponseRedirect(question.get_absolute_url())
 
@@ -1203,7 +1184,6 @@ def watch_question(request, question_id):
                 QuestionReplyEvent.notify(user_or_email, question)
             else:
                 QuestionSolvedEvent.notify(user_or_email, question)
-            statsd.incr("questions.watches.new")
         except ActivationRequestFailed:
             msg = _("Could not send a message to that email address.")
 
@@ -1272,7 +1252,6 @@ def activate_watch(request, watch_id, secret):
     question = watch.content_object
     if watch.secret == secret and isinstance(question, Question):
         watch.activate().save()
-        statsd.incr("questions.watches.activate")
 
     return render(
         request,
@@ -1291,7 +1270,6 @@ def activate_watch(request, watch_id, secret):
 @require_POST
 def answer_preview_async(request):
     """Create an HTML fragment preview of the posted wiki syntax."""
-    statsd.incr("questions.preview")
     answer = Answer(creator=request.user, content=request.POST.get("content", ""))
     template = "questions/includes/answer_preview.html"
 
@@ -1444,7 +1422,6 @@ def screen_share(request, question_id):
     answer = Answer(question=question, creator=request.user,
                     content=content.format(user=display_name(question.creator)))
     answer.save()
-    statsd.incr("questions.answer")
 
     question.add_metadata(screen_sharing="true")
 

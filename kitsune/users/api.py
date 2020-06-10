@@ -8,7 +8,6 @@ from django.db.models import Count, Q
 from django.utils.encoding import force_text
 from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
-from django_statsd.clients import statsd
 from rest_framework import filters, mixins, permissions, serializers, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -54,29 +53,29 @@ def usernames(request):
         return []
     if not request.user.is_authenticated:
         return []
-    with statsd.timer("users.api.usernames.search"):
-        profiles = Profile.objects.filter(Q(name__istartswith=pre)).values_list(
-            "user_id", flat=True
-        )
-        users = (
-            User.objects.filter(Q(username__istartswith=pre) | Q(id__in=profiles))
-            .extra(select={"length": "Length(username)"})
-            .order_by("length")
-            .select_related("profile")
-        )
 
-        if not waffle.switch_is_active("users-dont-limit-by-login"):
-            last_login = datetime.now() - timedelta(weeks=12)
-            users = users.filter(last_login__gte=last_login)
+    profiles = Profile.objects.filter(Q(name__istartswith=pre)).values_list(
+        "user_id", flat=True
+    )
+    users = (
+        User.objects.filter(Q(username__istartswith=pre) | Q(id__in=profiles))
+        .extra(select={"length": "Length(username)"})
+        .order_by("length")
+        .select_related("profile")
+    )
 
-        return [
-            {
-                "username": u.username,
-                "display_name": display_name_or_none(u),
-                "avatar": profile_avatar(u, 24),
-            }
-            for u in users[:10]
-        ]
+    if not waffle.switch_is_active("users-dont-limit-by-login"):
+        last_login = datetime.now() - timedelta(weeks=12)
+        users = users.filter(last_login__gte=last_login)
+
+    return [
+        {
+            "username": u.username,
+            "display_name": display_name_or_none(u),
+            "avatar": profile_avatar(u, 24),
+        }
+        for u in users[:10]
+    ]
 
 
 @api_view(["GET"])

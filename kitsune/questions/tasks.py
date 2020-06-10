@@ -6,25 +6,21 @@ import tidings.events  # noqa
 from celery import task
 from django.conf import settings
 from django.db import connection, transaction
-from django_statsd.clients import statsd
 from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.search.tasks import index_task
-from kitsune.sumo.decorators import timeit
 
 log = logging.getLogger("k.task")
 
 
 @task(rate_limit="1/s")
-@timeit
 def update_question_votes(question_id):
     from kitsune.questions.models import Question
 
     log.debug("Got a new QuestionVote for question_id=%s." % question_id)
-    statsd.incr("questions.tasks.update")
 
     # Pin to master db to avoid lag delay issues.
     pin_this_thread()
@@ -40,7 +36,6 @@ def update_question_votes(question_id):
 
 
 @task(rate_limit="4/s")
-@timeit
 def update_question_vote_chunk(data):
     """Update num_votes_past_week for a number of questions."""
 
@@ -109,7 +104,6 @@ def update_question_vote_chunk(data):
 
 
 @task(rate_limit="4/m")
-@timeit
 def update_answer_pages(question):
     log.debug(
         "Recalculating answer page numbers for question %s: %s"
@@ -125,7 +119,6 @@ def update_answer_pages(question):
 
 
 @task()
-@timeit
 def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
