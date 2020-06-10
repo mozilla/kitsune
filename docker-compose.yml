@@ -14,6 +14,7 @@ services:
       - elasticsearch
       - redis
       - celery
+      - celery-fxa
       - celery-flower
       - celery-beat
     ports:
@@ -144,6 +145,17 @@ services:
   celery:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
     command: celery -A kitsune worker -l info
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - mariadb
+      - redis
+
+  celery-fxa:
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: celery -A kitsune worker -Q fxa -l info
     env_file: .env
     volumes:
       - ./:/app:delegated
