@@ -500,7 +500,7 @@ class Readout(object):
             rows = self.rows(max_rows)
 
         # Compute percents for bar widths:
-        max_visits = max(r['visits'] for r in rows) if rows else 0
+        max_visits = max(r['visits'] or 0 for r in rows) if rows else 0
         for r in rows:
             visits = r['visits']
             r['percent'] = (0 if visits is None or not max_visits
