@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
@@ -52,7 +53,7 @@ from kitsune.questions.models import (
     QuestionMappingType,
     QuestionVote,
 )
-from kitsune.questions.utils import get_mobile_product_from_ua
+from kitsune.questions.utils import get_mobile_product_from_ua, in_blocklist
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, Sphilastic
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -581,6 +582,10 @@ def aaq(request, product_key=None, category_key=None, step=1):
             upload_imageattachment(request, request.user)
 
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
+            if in_blocklist(form.cleaned_data["content"]):
+                logout(request)
+                return HttpResponseRedirect("/")
+
             question = form.save(
                 user=request.user,
                 locale=request.LANGUAGE_CODE,
@@ -661,6 +666,11 @@ def edit_question(request, question_id):
             question.title = form.cleaned_data["title"]
             question.content = form.cleaned_data["content"]
             question.updated_by = user
+
+            if in_blocklist(question.content):
+                logout(request)
+                return HttpResponseRedirect("/")
+
             question.save()
 
             # TODO: Factor all this stuff up from here and new_question into
@@ -728,6 +738,9 @@ def reply(request, question_id):
         if "preview" in request.POST:
             answer_preview = answer
         else:
+            if in_blocklist(answer.content):
+                logout(request)
+                return HttpResponseRedirect("/")
             answer.save()
             ans_ct = ContentType.objects.get_for_model(answer)
             # Move over to the answer all of the images I added to the
@@ -1196,6 +1209,9 @@ def edit_answer(request, question_id, answer_id):
             answer.updated = datetime.now()
             answer_preview = answer
         else:
+            if in_blocklist(answer.content):
+                logout(request)
+                return HttpResponseRedirect("/")
             log.warning(
                 "User %s is editing answer with id=%s" % (request.user, answer.id)
             )

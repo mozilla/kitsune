@@ -1,9 +1,12 @@
 import logging
 import re
 
+from django.conf import settings
+
 from kitsune.questions.models import Answer, Question
 
 log = logging.getLogger('k.questions')
+block_regex = re.compile(settings.QUESTION_BLOCK_REGEX) if settings.QUESTION_BLOCK_REGEX else None
 
 
 def num_questions(user):
@@ -56,3 +59,9 @@ def get_mobile_product_from_ua(user_agent):
         if int(mobile_client["version"]) >= 69:
             return "firefox-preview"
         return "mobile"
+
+
+def in_blocklist(content):
+    if block_regex and block_regex.search(content):
+        return True
+    return False
