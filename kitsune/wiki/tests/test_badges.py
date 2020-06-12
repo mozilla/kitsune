@@ -39,22 +39,22 @@ class TestWikiBadges(TestCase):
         """Verify the L10n Badge is awarded properly."""
         # Create the user and badge.
         year = date.today().year
-        u = UserFactory()
+        user = UserFactory()
         b = BadgeFactory(
             slug=WIKI_BADGES['l10n-badge']['slug'].format(year=year),
             title=WIKI_BADGES['l10n-badge']['title'].format(year=year),
             description=WIKI_BADGES['l10n-badge']['description'].format(year=year))
 
         # Create 9 approved es revisions.
-        d = DocumentFactory(locale='es')
+        doc = DocumentFactory(locale='es')
         ApprovedRevisionFactory.create_batch(settings.BADGE_LIMIT_L10N_KB - 1,
-                                             creator=u, document=d)
+                                             creator=user, document=doc)
 
         # User should NOT have the badge yet
-        assert not b.is_awarded_to(u)
+        assert not b.is_awarded_to(user)
 
         # Create 1 more approved es revision.
-        RevisionFactory(creator=u, document=d, is_approved=True)
+        RevisionFactory(creator=user, document=doc, is_approved=True)
 
         # User should have the badge now
-        assert b.is_awarded_to(u)
+        assert b.is_awarded_to(user)

@@ -1,12 +1,11 @@
 import json
 from datetime import datetime, timedelta
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
-
-from unittest import mock
 from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory
@@ -15,36 +14,22 @@ from kitsune.sumo.tests import SumoPyQuery as pq
 from kitsune.sumo.tests import attrs_eq, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import (
-    ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY,
-    CATEGORIES,
-    MEDIUM_SIGNIFICANCE,
-    SIGNIFICANCES,
-    TEMPLATE_TITLE_PREFIX,
-    TEMPLATES_CATEGORY,
-    TROUBLESHOOTING_CATEGORY,
-)
-from kitsune.wiki.events import (
-    ApproveRevisionInLocaleEvent,
-    EditDocumentEvent,
-    ReadyRevisionEvent,
-    ReviewableRevisionInLocaleEvent,
-    get_diff_for,
-)
-from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Revision
+from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
+                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
+                                 MEDIUM_SIGNIFICANCE, SIGNIFICANCES,
+                                 TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY,
+                                 TROUBLESHOOTING_CATEGORY)
+from kitsune.wiki.events import (ApproveRevisionInLocaleEvent,
+                                 EditDocumentEvent, ReadyRevisionEvent,
+                                 ReviewableRevisionInLocaleEvent, get_diff_for)
+from kitsune.wiki.models import (Document, HelpfulVote, HelpfulVoteMetadata,
+                                 Revision)
 from kitsune.wiki.tasks import send_reviewed_notification
-from kitsune.wiki.tests import (
-    ApprovedRevisionFactory,
-    DocumentFactory,
-    DraftRevisionFactory,
-    LocaleFactory,
-    RedirectRevisionFactory,
-    RevisionFactory,
-    TestCaseBase,
-    TranslatedRevisionFactory,
-    new_document_data,
-)
+from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
+                                DraftRevisionFactory, LocaleFactory,
+                                RedirectRevisionFactory, RevisionFactory,
+                                TestCaseBase, TranslatedRevisionFactory,
+                                new_document_data)
 
 READY_FOR_REVIEW_EMAIL_CONTENT = """\
 %(user)s submitted a new revision to the document %(title)s.
@@ -1532,7 +1517,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # The "reviewed" mail should be sent to the creator, and the "approved"
         # mail should be sent to any subscribers:
-        reviewed_delay.assert_called_with(r, r.document, "something")
+        reviewed_delay.assert_called_with(r.id, r.document.id, "something")
 
         if r.based_on is not None:
             old_rev = r.document.current_Revision
@@ -1608,7 +1593,7 @@ class ReviewRevisionTests(TestCaseBase):
         r = Revision.objects.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
-        delay.assert_called_with(r, r.document, comment)
+        delay.assert_called_with(r.id, r.document.id, comment)
 
         # Verify that revision creator is not in contributors
         assert r.creator not in r.document.contributors.all()

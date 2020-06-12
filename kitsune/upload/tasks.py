@@ -1,23 +1,21 @@
+import io
 import logging
 import os
-import io
 import subprocess
 from tempfile import NamedTemporaryFile
 
+from celery import task
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-
-from celery import task
 from PIL import Image
-
 
 log = logging.getLogger('k.task')
 
 
 @task(rate_limit='15/m')
 def generate_thumbnail(for_obj, from_field, to_field,
-                       max_size=settings.THUMBNAIL_SIZE):
+                       max_size=settings.THUMBNAIL_SIZE, serializer="pickle"):
     """Generate a thumbnail, given a model instance with from and to fields.
 
     Optionally specify a max_size.
@@ -100,7 +98,7 @@ def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
 
 
 @task(rate_limit='15/m')
-def compress_image(for_obj, for_field):
+def compress_image(for_obj, for_field, serializer="pickle"):
     """Compress an image of given field for given object."""
 
     for_ = getattr(for_obj, for_field)

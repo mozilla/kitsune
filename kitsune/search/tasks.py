@@ -103,8 +103,9 @@ MAX_RETRIES = len(RETRY_TIMES)
 
 
 @task()
-def index_task(cls, id_list, **kw):
+def index_task(cls_path, id_list, **kw):
     """Index documents specified by cls and ids"""
+    cls = from_class_path(cls_path)
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.
@@ -134,8 +135,9 @@ def index_task(cls, id_list, **kw):
 
 
 @task()
-def unindex_task(cls, id_list, **kw):
+def unindex_task(cls_path, id_list, **kw):
     """Unindex documents specified by cls and ids"""
+    cls = from_class_path(cls_path)
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.

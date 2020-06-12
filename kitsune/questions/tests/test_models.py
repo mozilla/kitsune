@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
-
 from unittest import mock
+
 from actstream.models import Action, Follow
 from django.core.management import call_command
 from django.db.models import Q
@@ -115,7 +115,7 @@ class TestAnswer(TestCaseBase):
         a.save()
         a = Answer.objects.get(pk=a.id)
         assert a.page == 4
-        update_answer_pages(a.question)
+        update_answer_pages(a.question.id)
         a = Answer.objects.get(pk=a.id)
         assert a.page == 1
 

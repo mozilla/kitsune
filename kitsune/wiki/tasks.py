@@ -1,9 +1,11 @@
 import logging
 from datetime import date
+from typing import Dict, List
 
 import waffle
 from celery import task
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -12,6 +14,7 @@ from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _
 from multidb.pinning import pin_this_thread, unpin_this_thread
+from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
@@ -26,8 +29,15 @@ log = logging.getLogger('k.task')
 
 
 @task()
-def send_reviewed_notification(revision, document, message):
+def send_reviewed_notification(revision_id: int, document_id: int, message: str):
     """Send notification of review to the revision creator."""
+
+    try:
+        revision = Revision.objects.get(id=revision_id)
+        document = Document.objects.get(id=document_id)
+    except (Revision.DoesNotExist, Document.DoesNotExist) as err:
+        capture_exception(err)
+        return
 
     if revision.reviewer == revision.creator:
         log.debug('Revision (id=%s) reviewed by creator, skipping email' %
@@ -78,8 +88,18 @@ def send_reviewed_notification(revision, document, message):
 
 
 @task()
-def send_contributor_notification(based_on, revision, document, message):
+def send_contributor_notification(based_on_ids: List[int], revision_id: int, document_id: int,
+                                  message: str):
     """Send notification of review to the contributors of revisions."""
+
+    try:
+        revision = Revision.objects.get(id=revision_id)
+        document = Document.objects.get(id=document_id)
+    except (Revision.DoesNotExist, Document.DoesNotExist) as err:
+        capture_exception(err)
+        return
+
+    based_on = Revision.objects.filter(id__in=based_on_ids)
 
     text_template = 'wiki/email/reviewed_contributors.ltxt'
     html_template = 'wiki/email/reviewed_contributors.html'
@@ -236,8 +256,13 @@ def _rebuild_kb_chunk(data):
 
 
 @task()
-def maybe_award_badge(badge_template, year, user):
+def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     """Award the specific badge to the user if they've earned it."""
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return
+
     badge = get_or_create_badge(badge_template, year)
 
     # If the user already has the badge, there is nothing else to do.
@@ -265,7 +290,7 @@ def maybe_award_badge(badge_template, year, user):
 
 
 @task()
-def render_document_cascade(base):
+def render_document_cascade(base_doc_id):
     """Given a document, render it and all documents that may be affected."""
 
     # This walks along the graph of links between documents. If there is
@@ -275,12 +300,17 @@ def render_document_cascade(base):
     # diamonds in the graph, since it keeps track of what nodes have
     # been visited already.
 
+    try:
+        base_doc = Document.objects.get(id=base_doc_id)
+    except Document.DoesNotExist as err:
+        capture_exception(err)
+        return
     # In case any thing goes wrong, this guarantees we unpin the DB
     try:
         # Sends all writes to the master DB. Slaves are readonly.
         pin_this_thread()
 
-        todo = {base}
+        todo = {base_doc}
         done = set()
 
         while todo:

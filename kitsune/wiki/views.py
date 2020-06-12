@@ -698,10 +698,11 @@ def review_revision(request, document_slug, revision_id):
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
             msg = form.cleaned_data['comment']
-            send_reviewed_notification.delay(rev, doc, msg)
-            send_contributor_notification(based_on_revs, rev, doc, msg)
+            send_reviewed_notification.delay(rev.id, doc.id, msg)
+            based_on_revs_ids = based_on_revs.values_list('id', flat=True)
+            send_contributor_notification(based_on_revs_ids, rev.id, doc.id, msg)
 
-            render_document_cascade.delay(doc)
+            render_document_cascade.delay(doc.id)
 
             return HttpResponseRedirect(reverse('wiki.document_revisions',
                                                 args=[document_slug]))

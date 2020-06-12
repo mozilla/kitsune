@@ -1,20 +1,20 @@
 import logging
 
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
-
 import actstream.registry
-import simplejson
 import requests
+import simplejson
 from actstream.models import Action, Follow
 from celery import task
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from multidb.pinning import use_master
 from requests.exceptions import RequestException
 
-from kitsune.notifications.models import (
-    Notification, RealtimeRegistration, PushNotificationRegistration)
-from kitsune.notifications.decorators import notification_handler, notification_handlers
-
+from kitsune.notifications.decorators import (notification_handler,
+                                              notification_handlers)
+from kitsune.notifications.models import (Notification,
+                                          PushNotificationRegistration,
+                                          RealtimeRegistration)
 
 logger = logging.getLogger('k.notifications.tasks')
 
@@ -83,7 +83,7 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
 
 @task(ignore_result=True)
 @use_master
-def add_notification_for_action(action_id):
+def add_notification_for_action(action_id: int):
     action = Action.objects.get(id=action_id)
 
     query = _full_ct_query(action, actor_only=False)
@@ -101,7 +101,7 @@ def add_notification_for_action(action_id):
 
 @task(ignore_result=True)
 @use_master
-def send_realtimes_for_action(action_id):
+def send_realtimes_for_action(action_id: int):
     action = Action.objects.get(id=action_id)
     query = _full_ct_query(action)
     # Don't send notifications to a user about actions they take.
@@ -113,7 +113,7 @@ def send_realtimes_for_action(action_id):
 
 
 @task(ignore_result=True)
-def send_notification(notification_id):
+def send_notification(notification_id: int):
     """Call every notification handler for a notification."""
     notification = Notification.objects.get(id=notification_id)
     for handler in notification_handlers:

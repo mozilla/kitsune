@@ -54,10 +54,10 @@ app:
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
     aws_storage_bucket_name: SECRET
-    broker_url: SECRET
+    celery_broker_url: SECRET
     cache_middleware_seconds: 0
     cache_url: SECRET
-    celery_already_eager: False
+    celery_task_always_eager: False
     csrf_cookie_secure: True
     database_url: SECRET
     db_conn_max_age: 60
