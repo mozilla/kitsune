@@ -62,4 +62,6 @@ def get_mobile_product_from_ua(user_agent):
 
 
 def in_blocklist(content):
-    return block_regex and block_regex.search(content)
+    if block_regex and block_regex.search(content):
+        return True
+    return False
