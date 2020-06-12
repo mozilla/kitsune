@@ -640,6 +640,11 @@ PASSWORD_HASHERS = (
 )
 
 USERNAME_BLACKLIST = path('kitsune', 'configs', 'username-blacklist.txt')
+QUESTION_BLOCKLIST = config(
+    'QUESTION_BLOCKLIST',
+    default=None,
+    cast=lambda x: re.compile(x) if x else None
+)
 
 ROOT_URLCONF = '%s.urls' % PROJECT_MODULE
 

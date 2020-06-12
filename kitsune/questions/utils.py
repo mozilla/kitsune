@@ -1,6 +1,8 @@
 import logging
 import re
 
+from django.conf import settings
+
 from kitsune.questions.models import Answer, Question
 
 log = logging.getLogger('k.questions')
@@ -56,3 +58,7 @@ def get_mobile_product_from_ua(user_agent):
         if int(mobile_client["version"]) >= 69:
             return "firefox-preview"
         return "mobile"
+
+
+def in_blocklist(content):
+    return settings.QUESTION_BLOCKLIST and settings.QUESTION_BLOCKLIST.search(content)

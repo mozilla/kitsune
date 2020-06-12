@@ -144,3 +144,4 @@ app:
     oidc_rp_client_id: SECRET
     oidc_rp_client_secret: SECRET
     sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
+    question_blocklist: "1[^0-9]*8[^0-9]*3[^0-9]*3[^0-9]*6[^0-9]*0[^0-9]*5[^0-9]*1[^0-9]*0[^0-9]*1[^0-9]*0"
