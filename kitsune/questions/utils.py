@@ -6,6 +6,7 @@ from django.conf import settings
 from kitsune.questions.models import Answer, Question
 
 log = logging.getLogger('k.questions')
+block_regex = re.compile(settings.QUESTION_BLOCK_REGEX) if settings.QUESTION_BLOCK_REGEX else None
 
 
 def num_questions(user):
@@ -61,4 +62,4 @@ def get_mobile_product_from_ua(user_agent):
 
 
 def in_blocklist(content):
-    return settings.QUESTION_BLOCKLIST and settings.QUESTION_BLOCKLIST.search(content)
+    return block_regex and block_regex.search(content)
