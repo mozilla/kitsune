@@ -3,7 +3,7 @@ import random
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Q, Prefetch
+from django.db.models import Prefetch, Q
 from django.utils.http import urlencode
 
 from kitsune.dashboards import LAST_7_DAYS
@@ -159,8 +159,9 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     else:
         # prefretch localised documents to avoid n+1 problem
         visits = visits.prefetch_related(
-            Prefetch('document__translations', queryset=Document.objects.filter(locale=locale))
-        )
+            Prefetch('document__translations',
+                     queryset=Document.objects.filter(locale=locale,
+                                                      current_revision__is_approved=True)))
 
         for visit in visits:
             translation = visit.document.translations.first()
