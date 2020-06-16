@@ -155,14 +155,13 @@
     @media #{p.$mq-md} {
       &--content {
         flex-direction: row;
+        padding: 0;
       }
 
       &--heading {
         text-align: left;
       }
-    }
 
-    @media #{p.$mq-lg} {
       .sumo-close-button {
         position: static;
       }
