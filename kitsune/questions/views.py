@@ -31,6 +31,7 @@ from ordereddict import OrderedDict
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
+from waffle import switch_is_active
 
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
@@ -583,6 +584,9 @@ def aaq(request, product_key=None, category_key=None, step=1):
 
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
             if in_blocklist(form.cleaned_data["content"]):
+                if switch_is_active('blocklist_deactivates_users'):
+                    request.user.is_active = False
+                    request.user.save()
                 logout(request)
                 return HttpResponseRedirect("/")
 
@@ -668,6 +672,9 @@ def edit_question(request, question_id):
             question.updated_by = user
 
             if in_blocklist(question.content):
+                if switch_is_active('blocklist_deactivates_users'):
+                    request.user.is_active = False
+                    request.user.save()
                 logout(request)
                 return HttpResponseRedirect("/")
 
@@ -739,6 +746,9 @@ def reply(request, question_id):
             answer_preview = answer
         else:
             if in_blocklist(answer.content):
+                if switch_is_active('blocklist_deactivates_users'):
+                    request.user.is_active = False
+                    request.user.save()
                 logout(request)
                 return HttpResponseRedirect("/")
             answer.save()
@@ -1210,6 +1220,9 @@ def edit_answer(request, question_id, answer_id):
             answer_preview = answer
         else:
             if in_blocklist(answer.content):
+                if switch_is_active('blocklist_deactivates_users'):
+                    request.user.is_active = False
+                    request.user.save()
                 logout(request)
                 return HttpResponseRedirect("/")
             log.warning(

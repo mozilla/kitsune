@@ -138,4 +138,3 @@ app:
     disable_feeds: False
     user_agent_filters: "360spider,semrushBot"
     sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
-    question_block_regex: SECRET
