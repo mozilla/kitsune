@@ -107,16 +107,14 @@
     }
 
     svg {
-      width: 48px;
-      height: 48px;
+      width: 36px;
+      height: 36px;
       color: var(--color-heading);
       flex-shrink: 0;
     }
 
     &--heading {
-      @include c.text-display-xxxs;
-      font-family: var(--heading-font-family);
-      font-weight: bold;
+      @include c.text-body-cta;
       text-align: center;
       color: var(--color-heading);
       flex-grow: 1;
