@@ -129,20 +129,6 @@
 
     .sumo-button {
       flex: 0 0 auto;
-
-      border-width: 0;
-      background: var(--color-heading);
-      color: var(--color-warning);
-
-      &:hover:not(:disabled) {
-        background: var(--color-black);
-        color: var(--color-warning);
-      }
-
-      &:active:not(:disabled) {
-        background: var(--color-black);
-        color: var(--color-warning);
-      }
     }
 
     .sumo-close-button {
