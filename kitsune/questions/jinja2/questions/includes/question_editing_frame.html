@@ -10,7 +10,7 @@ we can compute the edit-title URL.
 #}
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "includes/common_macros.html" import search_box, content_editor with context %}
+{% from "includes/common_macros.html" import search_box, scam_banner, content_editor with context %}
 {% from "questions/includes/aaq_macros.html" import progress_bar %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
@@ -23,6 +23,8 @@ we can compute the edit-title URL.
     {% if current_step %}
       {{ progress_bar(current_step, product_key=current_product.key) }}
     {% endif %}
+
+    {{ scam_banner() }}
 
     {% block formwrap %}
     <img class="page-heading--logo" src="{{ image_for_product(current_product.product) }}" alt="{{ current_product.name }} logo" />

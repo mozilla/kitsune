@@ -25,6 +25,19 @@
 </div>
 {% endmacro %}
 
+{% macro scam_banner() %}
+<div class="sumo-scam-alert" id="id_scam_alert">
+  <div class="sumo-scam-alert--content">
+    {% include 'includes/icons/alert-icon.svg'%}
+    <p class="sumo-scam-alert--heading">{{ _('Beware of phishing attacks: Mozilla will never ask you to call a number or visit a non-Mozilla website. Please ignore such requests.') }}</p>
+    <a href="https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams" class="sumo-button button-lg">Learn More</a>
+    <button class="sumo-close-button close-button" data-close-id="id_scam_alert" data-close-memory="session" data-close-initial="hidden">
+      <img src="{{ static('protocol/img/icons/close.svg') }}" />
+    </button>
+  </div>
+</div>
+{% endmacro %}
+
 {% macro aux_nav(user, hide_aaq_link=False) %}
   {% if not settings.READ_ONLY %}
     {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}

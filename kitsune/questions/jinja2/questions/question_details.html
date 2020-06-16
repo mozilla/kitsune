@@ -1,7 +1,7 @@
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "upload/attachments.html" import attachments_form, attachment %}
-{% from "includes/common_macros.html" import content_editor with context %}
+{% from "includes/common_macros.html" import scam_banner, content_editor with context %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
 {% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
@@ -47,6 +47,7 @@
 {% endblock %}
 
 {% block content %}
+  {{ scam_banner() }}
   <article>
     <div id="question-{{ question.id }}" class="question" itemscope itemtype="http://schema.org/Question">
       {% if question.is_locked or question.is_archived %}

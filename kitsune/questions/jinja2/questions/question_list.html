@@ -1,5 +1,6 @@
 {% extends "questions/base.html" %}
 {% from "dashboards/includes/macros.html" import topic_selector, sort_questions %}
+{% from 'includes/common_macros.html' import scam_banner %}
 
 {% set classes = 'questions' %}
 
@@ -44,6 +45,7 @@
     </div>
   </div>
   <div class="mzp-l-content">
+    {{ scam_banner() }}
     {% if logo %}
     <img class="page-heading--logo" src="{{ logo }}" alt="{{ title }} logo" />
     {% endif %}
