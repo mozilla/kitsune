@@ -41,6 +41,10 @@ questions-reply&utm_medium=email&utm_source=notification\
 {replier} wrote:
 "{content}"
 
+Beware of phishing attacks: Mozilla will never ask you to call a number or \
+visit a non-Mozilla website. Please ignore such requests. Learn more:
+https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
+
 See the comment:
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
 questions-reply&utm_medium=email&utm_source=notification\
@@ -68,6 +72,10 @@ ANSWER_EMAIL_TO_ASKER = u"""Hi {asker},
 
 {replier} wrote:
 "{content}"
+
+Beware of phishing attacks: Mozilla will never ask you to call a number or \
+visit a non-Mozilla website. Please ignore such requests. Learn more:
+https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
 
 If this doesn't solve your problem, let {replier} know by replying on the \
 website:

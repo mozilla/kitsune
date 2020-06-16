@@ -9,6 +9,10 @@
 {{ _('{answerer} wrote:')|f(answerer=display_name(answerer)) }}
 "{{ answer }}"
 
+{# L10n: This is in an email. -#}
+{{ _('Beware of phishing attacks: Mozilla will never ask you to call a number or visit a non-Mozilla website. Please ignore such requests. Learn more:') }}
+https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
+
 {{ _('If this doesn\'t solve your problem, let {answerer} know by replying on the website:')|f(answerer=display_name(answerer)) }}
 https://{{ host }}{{ answer_url }}
 
