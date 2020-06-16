@@ -141,4 +141,3 @@ app:
     oidc_op_user_endpoint: SECRET
     oidc_rp_client_id: SECRET
     oidc_rp_client_secret: SECRET
-    question_block_regex: SECRET
