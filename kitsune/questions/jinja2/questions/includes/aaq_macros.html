@@ -1,5 +1,5 @@
 {% from 'products/includes/topic_macros.html' import help_topics %}
-{% from 'includes/common_macros.html' import featured_articles %}
+{% from 'includes/common_macros.html' import featured_articles, scam_banner %}
 
 {% macro select_product(products) -%}
   <h1 class="sumo-page-heading">{{ _('Ask the Community') }}</h1>
@@ -106,6 +106,8 @@
   <div class="mzp-l-content">
 
     {{ progress_bar(2) }}
+
+    {{ scam_banner() }}
 
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main home-search-section--content">
