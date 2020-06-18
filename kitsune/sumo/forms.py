@@ -42,7 +42,7 @@ class KitsuneBaseForumForm(forms.Form):
         if not self.user.has_perm('flagit.can_moderate'):
             if switch_is_active('disallow_all_links'):
                 try:
-                    has_links = match_regex_with_timeout(settings.GRUBER_V2_URL_REGEX, cdata)
+                    has_links = match_regex_with_timeout(settings.SIMPLE_DOMAIN_IP_REGEX, cdata)
                 except TimeoutError:
                     has_links = True
 
