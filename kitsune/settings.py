@@ -1196,3 +1196,17 @@ EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
 
 # Substring to match in slug in order to display the SUMO CTA banner
 SUMO_BANNER_STRING = config('SUMO_BANNER_STRING', default='', cast=Csv())
+
+# List of domains that links are allowed
+ALLOW_LINKS_FROM = [
+    'mozilla.org',
+    'mozilla.com',
+    'mozillafoundation.org',
+    'getpocket.com'
+]
+
+# Regexes
+TOLL_FREE_REGEX = re.compile(r'^.*8(00|33|44|55|66|77|88)[0-9]\d{6,}$')
+GRUBER_V2_URL_REGEX = re.compile(r'(?i)\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))') # noqa
+
+REGEX_TIMEOUT = config('REGEX_TIMEOUT', default=5, cast=int)

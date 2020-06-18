@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _lazy
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
+from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
 
 # labels and help text
@@ -289,7 +290,7 @@ class NewQuestionForm(EditQuestionForm):
         return question
 
 
-class AnswerForm(forms.Form):
+class AnswerForm(KitsuneBaseForumForm):
     """Form for replying to a question."""
 
     content = forms.CharField(

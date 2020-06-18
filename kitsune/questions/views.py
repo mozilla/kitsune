@@ -12,19 +12,15 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from django.http import (
-    Http404,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseForbidden,
-    HttpResponseRedirect,
-)
+from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
+                         HttpResponseForbidden, HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.views.decorators.http import (require_GET, require_http_methods,
+                                          require_POST)
 from django_statsd.clients import statsd
 from django_user_agents.utils import get_user_agent
 from ordereddict import OrderedDict
@@ -37,34 +33,21 @@ from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
-from kitsune.questions.forms import (
-    FREQUENCY_CHOICES,
-    AnswerForm,
-    EditQuestionForm,
-    NewQuestionForm,
-    StatsForm,
-    WatchQuestionForm,
-)
-from kitsune.questions.models import (
-    Answer,
-    AnswerVote,
-    Question,
-    QuestionLocale,
-    QuestionMappingType,
-    QuestionVote,
-)
-from kitsune.questions.utils import get_mobile_product_from_ua, in_blocklist
+from kitsune.questions.feeds import (AnswersFeed, QuestionsFeed,
+                                     TaggedQuestionsFeed)
+from kitsune.questions.forms import (FREQUENCY_CHOICES, AnswerForm,
+                                     EditQuestionForm, NewQuestionForm,
+                                     StatsForm, WatchQuestionForm)
+from kitsune.questions.models import (Answer, AnswerVote, Question,
+                                      QuestionLocale, QuestionMappingType,
+                                      QuestionVote)
+from kitsune.questions.utils import get_mobile_product_from_ua
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, Sphilastic
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.sumo.utils import (
-    build_paged_url,
-    is_ratelimited,
-    paginate,
-    simple_paginate,
-)
+from kitsune.sumo.utils import (build_paged_url, is_ratelimited,
+                                is_toll_free_number, paginate, simple_paginate)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
@@ -583,7 +566,7 @@ def aaq(request, product_key=None, category_key=None, step=1):
             upload_imageattachment(request, request.user)
 
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
-            if in_blocklist(form.cleaned_data["content"]):
+            if is_toll_free_number(form.cleaned_data["content"]):
                 if switch_is_active('blocklist_deactivates_users'):
                     request.user.is_active = False
                     request.user.save()
@@ -671,7 +654,7 @@ def edit_question(request, question_id):
             question.content = form.cleaned_data["content"]
             question.updated_by = user
 
-            if in_blocklist(question.content):
+            if is_toll_free_number(question.content):
                 if switch_is_active('blocklist_deactivates_users'):
                     request.user.is_active = False
                     request.user.save()
@@ -722,7 +705,9 @@ def reply(request, question_id):
     if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
-    form = AnswerForm(request.POST)
+    form = AnswerForm(request.POST, **{
+        'user': request.user
+    })
 
     # NOJS: delete images
     if "delete_images" in request.POST:
@@ -741,11 +726,12 @@ def reply(request, question_id):
             question=question,
             creator=request.user,
             content=form.cleaned_data["content"],
+            is_spam=form.cleaned_data.get('is_spam') or False
         )
         if "preview" in request.POST:
             answer_preview = answer
         else:
-            if in_blocklist(answer.content):
+            if is_toll_free_number(answer.content):
                 if switch_is_active('blocklist_deactivates_users'):
                     request.user.is_active = False
                     request.user.save()
@@ -1205,21 +1191,22 @@ def edit_answer(request, question_id, answer_id):
     upload_imageattachment(request, answer)
 
     if request.method == "GET":
-        form = AnswerForm({"content": answer.content})
+        form = AnswerForm({"content": answer.content}, user=request.user)
         return render(
             request, "questions/edit_answer.html", {"form": form, "answer": answer}
         )
 
-    form = AnswerForm(request.POST)
+    form = AnswerForm(request.POST, **{'user': request.user})
 
     if form.is_valid():
         answer.content = form.cleaned_data["content"]
+        answer.is_spam = form.cleaned_data.get('is_spam') or False
         answer.updated_by = request.user
         if "preview" in request.POST:
             answer.updated = datetime.now()
             answer_preview = answer
         else:
-            if in_blocklist(answer.content):
+            if is_toll_free_number(answer.content):
                 if switch_is_active('blocklist_deactivates_users'):
                     request.user.is_active = False
                     request.user.save()

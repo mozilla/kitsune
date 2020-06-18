@@ -4,7 +4,6 @@ import re
 from kitsune.questions.models import Answer, Question
 
 log = logging.getLogger('k.questions')
-TOLL_FREE_REGEX = re.compile(r'^.*8(00|33|44|55|66|77|88)[0-9]\d{6,}$')
 
 
 def num_questions(user):
@@ -57,14 +56,3 @@ def get_mobile_product_from_ua(user_agent):
         if int(mobile_client["version"]) >= 69:
             return "firefox-preview"
         return "mobile"
-
-
-def in_blocklist(content):
-    """Block all toll free numbers."""
-    digits = filter(type(content).isdigit, content)
-    if not digits:
-        return False
-
-    if TOLL_FREE_REGEX.match(digits):
-        return True
-    return False
