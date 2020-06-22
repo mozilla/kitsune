@@ -85,19 +85,21 @@
 {%- endmacro %}
 
 {% macro aaq_widget(key, user, location="aaq") %}
-  <div class="aaq-widget card elevation-01 text-center radius-md">
-    <h2 class="card--title has-bottom-margin">{{ _('Ask the Community') }}</h2>
-    {% if user.is_authenticated() %}
-      <p>{{ _('Continue to post your question and get help.') }}</p>
-    {% else %}
-      <p>{{ _('Sign in/up to post your question and get help.') }}</p>
-    {% endif %}
-    <a class="sumo-button primary-button feature-box"
-       href="{{ url('questions.aaq_step3', product_key=key) }}"
-       data-event-category="link click"
-       data-event-action="{{ location }}"
-       data-event-label="aaq widget">{{ _('Ask Now') }}</a>
-  </div>
+  {% if not settings.READ_ONLY %}
+    <div class="aaq-widget card elevation-01 text-center radius-md">
+      <h2 class="card--title has-bottom-margin">{{ _('Ask the Community') }}</h2>
+      {% if user.is_authenticated() %}
+        <p>{{ _('Continue to post your question and get help.') }}</p>
+      {% else %}
+        <p>{{ _('Sign in/up to post your question and get help.') }}</p>
+      {% endif %}
+      <a class="sumo-button primary-button feature-box"
+        href="{{ url('questions.aaq_step3', product_key=key) }}"
+        data-event-category="link click"
+        data-event-action="{{ location }}"
+        data-event-label="aaq widget">{{ _('Ask Now') }}</a>
+    </div>
+  {% endif %}
 {%- endmacro %}
 
 {% macro explore_solutions(product, search_box, featured, topics, user) -%}

@@ -286,14 +286,16 @@
           </ul>
         </section>
 
-        <section class="mzp-c-footer-col">
-          <h5 class="mzp-c-footer-heading">{{ _('Firefox Accounts') }}</h5>
-          <ul class="mzp-c-footer-list">
-            <li><a href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
-            <li><a href="https://www.mozilla.org/en-US/firefox/accounts/">{{ _('Benefits') }}</a></li>
-            <li class="mzp-c-footer-heading"><br><a href="https://fpn.firefox.com/">{{ _('Firefox Private Network') }}</a></li>
-          </ul>
-        </section>
+        {% if not settings.READ_ONLY %}
+          <section class="mzp-c-footer-col">
+            <h5 class="mzp-c-footer-heading">{{ _('Firefox Accounts') }}</h5>
+            <ul class="mzp-c-footer-list">
+              <li><a href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
+              <li><a href="https://www.mozilla.org/en-US/firefox/accounts/">{{ _('Benefits') }}</a></li>
+              <li class="mzp-c-footer-heading"><br><a href="https://fpn.firefox.com/">{{ _('Firefox Private Network') }}</a></li>
+            </ul>
+          </section>
+        {% endif %}
 
         <section class="mzp-c-footer-col lang-col">
           <form class="mzp-c-language-switcher" method="get" action="#">

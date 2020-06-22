@@ -203,6 +203,7 @@
                   </p>
                 </a>
               </section>
+            {% if not settings.READ_ONLY %}
               <div class="sumo-button-wrap align-end">
                 <form id="sign-out" action="{{ url('users.logout') }}" method="post">
                   {% csrf_token %}
@@ -215,12 +216,13 @@
                   data-event-label="Sign Out">
                   {{ _('Sign Out') }}
                 </a>
-            </div>
+              </div>
+            {% endif %}
           </div>
         </div>
       </div>
     </div>
-  {% elif not request.path == url('users.auth') %}
+  {% elif not request.path == url('users.auth') and not settings.READ_ONLY %}
     <a href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">{{ _('Sign In/Up') }}</a>
   {% endif %}
 </li>
