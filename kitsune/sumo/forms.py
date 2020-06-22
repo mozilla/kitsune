@@ -1,9 +1,6 @@
 from django import forms
-from django.conf import settings
-from timeout_decorator import TimeoutError
-from waffle import switch_is_active
 
-from kitsune.sumo.utils import match_regex_with_timeout
+from kitsune.sumo.utils import check_for_spam_content
 
 
 class KitsuneBaseForumForm(forms.Form):
@@ -20,32 +17,25 @@ class KitsuneBaseForumForm(forms.Form):
     def clean(self, *args, **kwargs):
         """Generic clean method used by all forms in the question app.
 
-        Parse content for any toll free numbers.
+        Parse content for suspicious content.
+        - Toll free numbers
+        - NANP numbers
+        - Links - not necessarily spam content
         """
+
         cdata = self.cleaned_data.get('content')
         if not cdata:
             return super(KitsuneBaseForumForm, self).clean(*args, **kwargs)
 
-        # At the moment validation doesn't reach this point b/c the logout and deactivation
-        # is_spam = is_toll_free_number(cdata)
-
-        # if is_spam:
-        #     self.cleaned_data.update({
-        #         'is_spam': True
-        #     })
-
         if not self.user:
             raise forms.ValidationError('Something went terribly wrong. Please try again')
 
-        # Allow moderators to post anything
-        has_links = False
-        if not self.user.has_perm('flagit.can_moderate'):
-            if switch_is_active('disallow_all_links'):
-                try:
-                    has_links = match_regex_with_timeout(settings.SIMPLE_DOMAIN_IP_REGEX, cdata)
-                except TimeoutError:
-                    has_links = True
+        # Exclude moderators and trusted contributors
+        if (not (self.user.has_perm('flagit.can_moderate') or
+                 self.user.has_perm('flagit.bypass_answer_ratelimit')) and
+                check_for_spam_content(cdata)):
+            self.cleaned_data.update({
+                'is_spam': True
+            })
 
-        if has_links:
-            raise forms.ValidationError('Links are not allowed in the forums.')
         return self.cleaned_data

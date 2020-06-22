@@ -6,7 +6,6 @@ from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import logout
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
@@ -27,7 +26,6 @@ from ordereddict import OrderedDict
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
-from waffle import switch_is_active
 
 from kitsune.access.decorators import login_required, permission_required
 from kitsune.products.models import Product, Topic
@@ -46,8 +44,8 @@ from kitsune.search.es_utils import ES_EXCEPTIONS, F, Sphilastic
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.sumo.utils import (build_paged_url, is_ratelimited,
-                                is_toll_free_number, paginate, simple_paginate)
+from kitsune.sumo.utils import (build_paged_url, is_ratelimited, paginate,
+                                simple_paginate)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
@@ -566,12 +564,6 @@ def aaq(request, product_key=None, category_key=None, step=1):
             upload_imageattachment(request, request.user)
 
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
-            if is_toll_free_number(form.cleaned_data["content"]):
-                if switch_is_active('blocklist_deactivates_users'):
-                    request.user.is_active = False
-                    request.user.save()
-                logout(request)
-                return HttpResponseRedirect("/")
 
             question = form.save(
                 user=request.user,
@@ -654,13 +646,6 @@ def edit_question(request, question_id):
             question.content = form.cleaned_data["content"]
             question.updated_by = user
 
-            if is_toll_free_number(question.content):
-                if switch_is_active('blocklist_deactivates_users'):
-                    request.user.is_active = False
-                    request.user.save()
-                logout(request)
-                return HttpResponseRedirect("/")
-
             question.save()
 
             # TODO: Factor all this stuff up from here and new_question into
@@ -731,12 +716,6 @@ def reply(request, question_id):
         if "preview" in request.POST:
             answer_preview = answer
         else:
-            if is_toll_free_number(answer.content):
-                if switch_is_active('blocklist_deactivates_users'):
-                    request.user.is_active = False
-                    request.user.save()
-                logout(request)
-                return HttpResponseRedirect("/")
             answer.save()
             ans_ct = ContentType.objects.get_for_model(answer)
             # Move over to the answer all of the images I added to the
@@ -1206,12 +1185,6 @@ def edit_answer(request, question_id, answer_id):
             answer.updated = datetime.now()
             answer_preview = answer
         else:
-            if is_toll_free_number(answer.content):
-                if switch_is_active('blocklist_deactivates_users'):
-                    request.user.is_active = False
-                    request.user.save()
-                logout(request)
-                return HttpResponseRedirect("/")
             log.warning(
                 "User %s is editing answer with id=%s" % (request.user, answer.id)
             )
