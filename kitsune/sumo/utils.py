@@ -11,10 +11,14 @@ from django.db.models.signals import pre_delete
 from django.utils import translation
 from django.utils.http import is_safe_url, urlencode
 from ratelimit.utils import is_ratelimited as rl_is_ratelimited
-from timeout_decorator import TimeoutError, timeout
+from timeout_decorator import timeout
 
+from kitsune.lib.tlds import VALID_TLDS
 from kitsune.journal.models import Record
 from kitsune.sumo import paginator
+
+POTENTIAL_LINK_REGEX = re.compile(r'[^\s/]+\.([^\s/.]{2,})')
+POTENTIAL_IP_REGEX = re.compile(r'(?:[0-9]{1,3}\.){3}[0-9]{1,3}')
 
 
 def paginate(request, queryset, per_page=20, count=None):
@@ -315,6 +319,42 @@ def get_browser(user_agent):
     return browser
 
 
+def has_blocked_link(data):
+    # TODO: deal with punycode when presented in non-ascii form
+    for match in POTENTIAL_LINK_REGEX.finditer(data):
+        tld = match.group(1).upper()
+        if tld in VALID_TLDS:
+            full_domain = match.group(0).lower()
+            in_allowlist = False
+            for allowed_domain in settings.ALLOW_LINKS_FROM:
+                split = full_domain.rsplit(allowed_domain, 1)
+                if len(split) != 2:
+                    # allowed_domain isn't in full_domain, or something went wrong
+                    continue
+                if split[-1] != '':
+                    # allowed_domain isn't at the end of full_domain
+                    continue
+                if split[0] == '':
+                    # allowed_domain equals full_domain
+                    in_allowlist = True
+                    break
+                if split[0][-1] == '.':
+                    # allowed_domain is a subdomain of full_domain
+                    in_allowlist = True
+                    break
+            if not in_allowlist:
+                return True
+    for match in POTENTIAL_IP_REGEX.findall(data):
+        valid_ip = True
+        for part in match.split("."):
+            if int(part) > 255:
+                valid_ip = False
+                break
+        if valid_ip:
+            return True
+    return False
+
+
 @timeout(seconds=settings.REGEX_TIMEOUT)
 def match_regex_with_timeout(compiled_regex, data):
     """Matches the specified regex.
@@ -336,13 +376,9 @@ def check_for_spam_content(data):
     # keep only the digits in text
     digits = filter(type(data).isdigit, data)
     is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
-    has_links = False
 
     is_nanp_number = match_regex_with_timeout(settings.NANP_REGEX, data)
 
-    try:
-        has_links = match_regex_with_timeout(settings.SIMPLE_DOMAIN_IP_REGEX, data)
-    except TimeoutError:
-        has_links = True
+    has_links = has_blocked_link(data)
 
     return is_toll_free or is_nanp_number or has_links
