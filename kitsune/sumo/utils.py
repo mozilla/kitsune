@@ -328,11 +328,11 @@ def has_blocked_link(data):
             in_allowlist = False
             for allowed_domain in settings.ALLOW_LINKS_FROM:
                 split = full_domain.rsplit(allowed_domain, 1)
-                if len(split) != 2 or split[-1] != "":
+                if len(split) != 2 or split[-1]:
                     # allowed_domain isn't in full_domain, or something went wrong
                     # or allowed_domain isn't at the end of full_domain
                     continue
-                if split[0] == "" or split[0][-1] == ".":
+                if not split[0] or split[0][-1] == ".":
                     # allowed_domain equals full_domain
                     # or allowed_domain is a subdomain of full_domain
                     in_allowlist = True
