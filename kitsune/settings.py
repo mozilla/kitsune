@@ -1207,6 +1207,5 @@ ALLOW_LINKS_FROM = [
 
 # Regexes
 TOLL_FREE_REGEX = re.compile(r'^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$')
-SIMPLE_DOMAIN_IP_REGEX = re.compile(r'(?:[^\s/]+\.[^\s0-9/.]{2,})|(?:\d{1,3}\.){3}\d{1,3}')
 REGEX_TIMEOUT = config('REGEX_TIMEOUT', default=5, cast=int)
 NANP_REGEX = re.compile(r'[0-9]{3}-?[a-zA-Z2-9][a-zA-Z0-9]{2}-?[a-zA-Z0-9]{4}')

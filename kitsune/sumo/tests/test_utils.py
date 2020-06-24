@@ -6,10 +6,12 @@ from django.test.client import RequestFactory
 
 from mock import patch, Mock
 from nose.tools import eq_
+from parameterized import parameterized
 
 from kitsune.journal.models import Record
 from kitsune.sumo.utils import (
-    chunked, get_next_url, is_ratelimited, smart_int, truncated_json_dumps, get_browser)
+    chunked, get_next_url, is_ratelimited, smart_int, truncated_json_dumps, get_browser,
+    has_blocked_link)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -213,3 +215,26 @@ class GetBrowserNameTest(TestCase):
                       '(KHTML, like Gecko) Version/7.0.3 Safari/7046A194A')
         # Check Safari is returning
         eq_(get_browser(user_agent), 'Safari')
+
+
+class HasLinkTests(TestCase):
+    @parameterized.expand([
+        ('test.example', False),
+        ('mozilla.com', False),
+        ('subdomain.mozilla.com', False),
+        ('mozilla.com.mozilla.com', False),
+        ('MOZILLA.COM', False),
+        ('example.mozilla.com.mozilla.com', False),
+        ('255.256.255.255', False),
+        ('255.255.255', False),
+        ('mozilla.com example.com', True),
+        ('mozilla.com fakemozilla.com', True),
+        ('mozilla.com mozilla.com.example.com', True),
+        ('mozilla.com example.mozilla.com.example.com', True),
+        ('mozilla.com punycode.XN--11B4C3D', True),
+        ('mozilla.com 255.255.255.255', True),
+        ('mozilla.com 0.0.0.0', True),
+    ])
+    def test_urls(self, data, expected_result):
+        result = has_blocked_link(data)
+        self.assertEqual(result, expected_result)
