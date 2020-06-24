@@ -11,7 +11,7 @@ from django.db.models.signals import pre_delete
 from django.utils import translation
 from django.utils.http import is_safe_url, urlencode
 from ratelimit.utils import is_ratelimited as rl_is_ratelimited
-from timeout_decorator import timeout
+from timeout_decorator import TimeoutError, timeout
 
 from kitsune.journal.models import Record
 from kitsune.sumo import paginator
@@ -315,17 +315,6 @@ def get_browser(user_agent):
     return browser
 
 
-def is_toll_free_number(data):
-    """Figure out if we have a toll free number."""
-    digits = filter(type(data).isdigit, data)
-    if not digits:
-        return False
-
-    if settings.TOLL_FREE_REGEX.match(digits):
-        return True
-    return False
-
-
 @timeout(seconds=settings.REGEX_TIMEOUT)
 def match_regex_with_timeout(compiled_regex, data):
     """Matches the specified regex.
@@ -333,3 +322,27 @@ def match_regex_with_timeout(compiled_regex, data):
     Adds a timeout to avoid catastrophic backtracking.
     """
     return any(compiled_regex.findall(data))
+
+
+def check_for_spam_content(data):
+    """Check for spam content in a given text.
+
+    Currently checks for:
+    - Toll free numbers
+    - Vanity toll free numbers
+    - Links in the text.
+    """
+
+    # keep only the digits in text
+    digits = filter(type(data).isdigit, data)
+    is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
+    has_links = False
+
+    is_nanp_number = match_regex_with_timeout(settings.NANP_REGEX, data)
+
+    try:
+        has_links = match_regex_with_timeout(settings.SIMPLE_DOMAIN_IP_REGEX, data)
+    except TimeoutError:
+        has_links = True
+
+    return is_toll_free or is_nanp_number or has_links
