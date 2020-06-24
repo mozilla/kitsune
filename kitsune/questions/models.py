@@ -1018,8 +1018,8 @@ class Answer(ModelBase, SearchMixin):
                 # tidings
                 # Avoid circular import: events.py imports Question.
                 from kitsune.questions.events import QuestionReplyEvent
-
-                QuestionReplyEvent(self).fire(exclude=self.creator)
+                if not self.is_spam:
+                    QuestionReplyEvent(self).fire(exclude=self.creator)
 
                 # actstream
                 actstream.actions.follow(

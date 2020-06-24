@@ -28,6 +28,7 @@ from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 
 from kitsune.access.decorators import login_required, permission_required
+from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -572,6 +573,9 @@ def aaq(request, product_key=None, category_key=None, step=1):
                 product_config=product_config,
             )
 
+            if form.cleaned_data.get('is_spam'):
+                _add_to_moderation_queue(request, question)
+
             # Submitting the question counts as a vote
             question_vote(request, question.id)
 
@@ -648,6 +652,9 @@ def edit_question(request, question_id):
 
             question.save()
 
+            if form.cleaned_data.get('is_spam'):
+                _add_to_moderation_queue(request, question)
+
             # TODO: Factor all this stuff up from here and new_question into
             # the form, which should probably become a ModelForm.
             question.clear_mutable_metadata()
@@ -711,12 +718,15 @@ def reply(request, question_id):
             question=question,
             creator=request.user,
             content=form.cleaned_data["content"],
-            is_spam=form.cleaned_data.get('is_spam') or False
         )
         if "preview" in request.POST:
             answer_preview = answer
         else:
-            answer.save()
+            if form.cleaned_data.get('is_spam'):
+                _add_to_moderation_queue(request, answer)
+            else:
+                answer.save()
+
             ans_ct = ContentType.objects.get_for_model(answer)
             # Move over to the answer all of the images I added to the
             # reply form
@@ -1179,7 +1189,6 @@ def edit_answer(request, question_id, answer_id):
 
     if form.is_valid():
         answer.content = form.cleaned_data["content"]
-        answer.is_spam = form.cleaned_data.get('is_spam') or False
         answer.updated_by = request.user
         if "preview" in request.POST:
             answer.updated = datetime.now()
@@ -1188,7 +1197,12 @@ def edit_answer(request, question_id, answer_id):
             log.warning(
                 "User %s is editing answer with id=%s" % (request.user, answer.id)
             )
-            answer.save()
+
+            if form.cleaned_data.get('is_spam'):
+                _add_to_moderation_queue(request, answer)
+            else:
+                answer.save()
+
             return HttpResponseRedirect(answer.get_absolute_url())
 
     return render(
@@ -1553,3 +1567,24 @@ def _add_tag(request, question_id):
 def _init_watch_form(request, event_type="solution"):
     initial = {"event_type": event_type}
     return WatchQuestionForm(request.user, initial=initial)
+
+
+def _add_to_moderation_queue(request, object):
+    object.is_spam = True
+    object.save()
+
+    flag = FlaggedObject(
+        content_type=ContentType.objects.get_for_model(object),
+        object_id=object.id,
+        reason='spam',
+        notes="Automatically flagged at creation and marked as spam. \
+            If it's not spam, please click 'Unmark as spam' on the post to make it publicly \
+            visible.",
+        creator=request.user,
+    )
+    flag.save()
+
+    messages.add_message(
+        request, messages.INFO,
+        _("A moderator must manually approve your post before it will be visible.")
+    )
