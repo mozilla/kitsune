@@ -1506,6 +1506,9 @@ def _answers_data(
     question = get_object_or_404(Question, pk=question_id)
     answers_ = question.answers.all()
 
+    # Remove spam flag if an answer passed the moderation queue
+    answers_.filter(flags__status=2).update(is_spam=False)
+
     if not request.user.has_perm("flagit.can_moderate"):
         answers_ = answers_.filter(is_spam=False)
 
@@ -1569,18 +1572,16 @@ def _init_watch_form(request, event_type="solution"):
     return WatchQuestionForm(request.user, initial=initial)
 
 
-def _add_to_moderation_queue(request, object):
-    object.is_spam = True
-    object.save()
+def _add_to_moderation_queue(request, instance):
+    instance.is_spam = True
+    instance.save()
 
     flag = FlaggedObject(
-        content_type=ContentType.objects.get_for_model(object),
-        object_id=object.id,
+        content_type=ContentType.objects.get_for_model(instance),
+        object_id=instance.id,
         reason='spam',
-        notes="Automatically flagged at creation and marked as spam. \
-            If it's not spam, please click 'Unmark as spam' on the post to make it publicly \
-            visible.",
-        creator=request.user,
+        notes="Automatically flagged at creation and marked as spam.",
+        creator=request.user
     )
     flag.save()
 
