@@ -1585,6 +1585,6 @@ def _add_to_moderation_queue(request, object):
     flag.save()
 
     messages.add_message(
-        request, messages.INFO,
+        request, messages.WARNING,
         _("A moderator must manually approve your post before it will be visible.")
     )
