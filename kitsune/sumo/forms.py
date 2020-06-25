@@ -32,7 +32,7 @@ class KitsuneBaseForumForm(forms.Form):
 
         # Exclude moderators and trusted contributors
         if (not (self.user.has_perm('flagit.can_moderate') or
-                 self.user.has_perm('flagit.bypass_answer_ratelimit')) and
+                 self.user.has_perm('sumo.bypass_ratelimit')) and
                 check_for_spam_content(cdata)):
             self.cleaned_data.update({
                 'is_spam': True
