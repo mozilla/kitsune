@@ -566,15 +566,17 @@ def aaq(request, product_key=None, category_key=None, step=1):
 
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
 
+            is_spam = form.cleaned_data.get('is_spam', False)
+            if is_spam:
+                _add_to_moderation_queue(request, question)
+
             question = form.save(
                 user=request.user,
                 locale=request.LANGUAGE_CODE,
                 product=product,
                 product_config=product_config,
+                is_spam=is_spam
             )
-
-            if form.cleaned_data.get('is_spam'):
-                _add_to_moderation_queue(request, question)
 
             # Submitting the question counts as a vote
             question_vote(request, question.id)
@@ -646,14 +648,16 @@ def edit_question(request, question_id):
         upload_imageattachment(request, question)
 
         if form.is_valid():
+
+            is_spam = form.cleaned_data.get('is_spam', False)
+            if is_spam:
+                _add_to_moderation_queue(request, question)
             question.title = form.cleaned_data["title"]
             question.content = form.cleaned_data["content"]
             question.updated_by = user
+            question.is_spam = is_spam
 
             question.save()
-
-            if form.cleaned_data.get('is_spam'):
-                _add_to_moderation_queue(request, question)
 
             # TODO: Factor all this stuff up from here and new_question into
             # the form, which should probably become a ModelForm.
@@ -724,8 +728,9 @@ def reply(request, question_id):
         else:
             if form.cleaned_data.get('is_spam'):
                 _add_to_moderation_queue(request, answer)
-            else:
-                answer.save()
+                answer.is_spam = True
+
+            answer.save()
 
             ans_ct = ContentType.objects.get_for_model(answer)
             # Move over to the answer all of the images I added to the
@@ -743,7 +748,7 @@ def reply(request, question_id):
             elif "clear_needsinfo" in request.POST:
                 question.unset_needs_info()
 
-            if Setting.get_for_user(request.user, "questions_watch_after_reply"):
+            if Setting.get_for_user(request.user, "questions_watch_after_reply") and not is_spam:
                 QuestionReplyEvent.notify(request.user, question)
 
             return HttpResponseRedirect(answer.get_absolute_url())
@@ -1200,9 +1205,9 @@ def edit_answer(request, question_id, answer_id):
 
             if form.cleaned_data.get('is_spam'):
                 _add_to_moderation_queue(request, answer)
-            else:
-                answer.save()
+                answer.is_spam = True
 
+            answer.save()
             return HttpResponseRedirect(answer.get_absolute_url())
 
     return render(
@@ -1573,8 +1578,6 @@ def _init_watch_form(request, event_type="solution"):
 
 
 def _add_to_moderation_queue(request, instance):
-    instance.is_spam = True
-    instance.save()
 
     flag = FlaggedObject(
         content_type=ContentType.objects.get_for_model(instance),
