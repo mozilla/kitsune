@@ -410,7 +410,7 @@ STATICFILES_FINDERS = (
     'pipeline.finders.PipelineFinder',
 )
 
-STATICFILES_STORAGE = 'kitsune.sumo.storage.SumoFilesStorage'
+STATICFILES_STORAGE = 'pipeline.storage.PipelineManifestStorage'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
