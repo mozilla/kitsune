@@ -30,8 +30,7 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
 
         user = request.user
 
-        # TODO: py3 upgrade: change to is_authenticated attribute
-        if user.is_authenticated():
+        if user.is_authenticated:
             first_seen = request.session.get("first_seen")
             if first_seen:
                 change_time = user.profile.fxa_password_change
