@@ -21,7 +21,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
-RUN pip install --upgrade pip"==20.0.1"
+RUN pip install --upgrade pip"==20.1.1"
 RUN python -m venv /venv
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 

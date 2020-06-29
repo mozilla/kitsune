@@ -67,6 +67,7 @@ redis~=3.5.2
 requests[security]~=2.23.0
 sentry-sdk~=0.14.4
 simplejson~=3.17.0
+timeout-decorator
 translate-toolkit~=2.5.1
 twython~=3.8.0
 typing~=3.7.4.1

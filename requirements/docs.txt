@@ -51,9 +51,9 @@ sphinxcontrib-httpdomain==1.7.0 \
     --hash=sha256:1fb5375007d70bf180cdd1c79e741082be7aa2d37ba99efe561e1c2e3f38191e \
     --hash=sha256:ac40b4fba58c76b073b03931c7b8ead611066a6aebccafb34dc19694f4eb6335 \
     # via -r docs.in
-sphinxcontrib-websupport==1.2.2 \
-    --hash=sha256:33c0db6c0635b9dc3e72629b7278ca3b9fa24c156eeeaf1674be8f268831d951 \
-    --hash=sha256:c155cfa18e8b7c832b3cac0a2d41810ebacd26b26ba9624cd2f42c3496dad04b \
+sphinxcontrib-websupport==1.2.3 \
+    --hash=sha256:a2100b79096bbaea5a41e03261cee279d19c803218b9401a1d84ef6aeae17338 \
+    --hash=sha256:ee1d43e6e0332558a66fcb4005b9ba7313ad9764d0df0e6703ae869a028e451f \
     # via sphinx
 
 # WARNING: The following packages were not pinned, but pip requires them to be
