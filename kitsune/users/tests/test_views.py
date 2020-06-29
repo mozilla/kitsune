@@ -1,7 +1,7 @@
 import json
 from textwrap import dedent
 
-import mock
+from unittest import mock
 from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
@@ -196,7 +196,7 @@ def setup_key(test):
             6oGU29Vxlvt3k0vmiRKU4AVfLyNXIGtcWcNG46h/
             -----END RSA PRIVATE KEY-----
             """)
-            key = jwk.JWKRSA.load(pem)
+            key = jwk.JWKRSA.load(pem.encode())
             pubkey = {
                 "kty": "RSA",
                 "alg": "RS256",
@@ -229,7 +229,7 @@ class WebhookViewTests(TestCase):
             "events": events
         })
         jwt = jws.JWS.sign(
-            payload=payload,
+            payload=payload.encode(),
             key=key,
             alg=jwa.RS256,
             kid='123',
@@ -238,7 +238,7 @@ class WebhookViewTests(TestCase):
         return self.client.post(
             reverse('users.fxa_webhook'),
             content_type="",
-            HTTP_AUTHORIZATION="Bearer " + jwt
+            HTTP_AUTHORIZATION="Bearer " + jwt.decode()
         )
 
     @mock.patch('kitsune.users.views.process_event_password_change')
@@ -261,7 +261,7 @@ class WebhookViewTests(TestCase):
 
         account_event = AccountEvent.objects.last()
         eq_(account_event.status, AccountEvent.UNPROCESSED)
-        self.assertEqual(json.loads(account_event.body), events.values()[0])
+        self.assertEqual(json.loads(account_event.body), list(events.values())[0])
         eq_(account_event.event_type, AccountEvent.PASSWORD_CHANGE)
         eq_(account_event.fxa_uid, "54321")
         eq_(account_event.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
@@ -297,7 +297,7 @@ class WebhookViewTests(TestCase):
         )
 
         self.assertEqual(json.loads(account_event_1.body), {})
-        self.assertEqual(json.loads(account_event_2.body), events.values()[1])
+        self.assertEqual(json.loads(account_event_2.body), list(events.values())[1])
 
         eq_(account_event_1.status, AccountEvent.NOT_IMPLEMENTED)
         eq_(account_event_2.status, AccountEvent.UNPROCESSED)
@@ -405,10 +405,10 @@ class WebhookViewTests(TestCase):
         dDwTPfi5ZdAouUH+T4RCqgS5lrNSB4yah8LxFwFpVg==
         -----END RSA PRIVATE KEY-----
         """)
-        key = jwk.JWKRSA.load(pem)
+        key = jwk.JWKRSA.load(pem.encode())
 
         jwt = jws.JWS.sign(
-            payload=payload,
+            payload=payload.encode(),
             key=key,
             alg=jwa.RS256,
             kid='123',
@@ -420,7 +420,7 @@ class WebhookViewTests(TestCase):
         response = self.client.post(
             reverse('users.fxa_webhook'),
             content_type="",
-            HTTP_AUTHORIZATION="Bearer " + jwt
+            HTTP_AUTHORIZATION="Bearer " + jwt.decode()
         )
         eq_(400, response.status_code)
         eq_(0, AccountEvent.objects.count())
@@ -435,7 +435,7 @@ class WebhookViewTests(TestCase):
         })
 
         jwt = jws.JWS.sign(
-            payload=payload,
+            payload=payload.encode(),
             key=key,
             alg=jwa.RS256,
             kid='123',
@@ -447,7 +447,7 @@ class WebhookViewTests(TestCase):
         response = self.client.post(
             reverse('users.fxa_webhook'),
             content_type="",
-            HTTP_AUTHORIZATION="Bearer " + jwt
+            HTTP_AUTHORIZATION="Bearer " + jwt.decode()
         )
         eq_(400, response.status_code)
         eq_(0, AccountEvent.objects.count())
