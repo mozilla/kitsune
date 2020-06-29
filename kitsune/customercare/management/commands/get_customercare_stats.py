@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django_statsd.clients import statsd
 
 from kitsune.customercare.models import Reply
 from kitsune.sumo.redis_utils import RedisError, redis_client
@@ -76,7 +75,7 @@ class Command(BaseCommand):
         limit = settings.CC_TOP_CONTRIB_LIMIT
         # Sort by whatever is in settings, break ties with 'all'
         contributor_stats = sorted(
-            contributor_stats.values(),
+            list(contributor_stats.values()),
             key=lambda c: (c[sort_key], c['all']),
             reverse=True,
         )[:limit]
@@ -86,7 +85,6 @@ class Command(BaseCommand):
             key = settings.CC_TOP_CONTRIB_CACHE_KEY
             redis.set(key, json.dumps(contributor_stats))
         except RedisError as e:
-            statsd.incr('redis.error')
             log.error('Redis error: %s' % e)
 
         return contributor_stats

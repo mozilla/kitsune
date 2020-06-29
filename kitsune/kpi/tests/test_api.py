@@ -311,15 +311,15 @@ class KpiApiTests(TestCase):
         data = json.loads(response.content)
         eq_(data['objects'], [
             {'clicks': 2, 'searches': 20,
-             'start': u'2000-01-09'},
+             'start': '2000-01-09'},
             {'clicks': 1, 'searches': 10,
-             'start': u'2000-01-01'}])
+             'start': '2000-01-01'}])
 
         # Test filtering by start date:
         response = self.client.get(url + '?format=json&min_start=2000-01-09')
         data = json.loads(response.content)
-        eq_(data['objects'], [{u'searches': 20, u'start': u'2000-01-09',
-                               u'clicks': 2}])
+        eq_(data['objects'], [{'searches': 20, 'start': '2000-01-09',
+                               'clicks': 2}])
 
     def test_visitors(self):
         """Test unique visitors API call."""

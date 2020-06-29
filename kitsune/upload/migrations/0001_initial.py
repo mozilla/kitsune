@@ -20,8 +20,8 @@ class Migration(migrations.Migration):
                 ('file', models.ImageField(max_length=250, upload_to=b'uploads/images/')),
                 ('thumbnail', models.ImageField(null=True, upload_to=b'uploads/images/thumbnails/')),
                 ('object_id', models.PositiveIntegerField()),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('creator', models.ForeignKey(related_name='image_attachments', to=settings.AUTH_USER_MODEL)),
+                ('content_type', models.ForeignKey(on_delete=models.CASCADE, to='contenttypes.ContentType')),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='image_attachments', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,

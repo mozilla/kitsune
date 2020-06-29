@@ -3,7 +3,6 @@ from django.db.models.signals import post_save
 
 from kitsune.wiki.models import Revision
 
-
 # Yo ******! These are year-agnostic badge templates which code uses
 # to get-or-create the actual Badge instances. These strings should
 # not be l10n-ized here--the badge title and description strings get
@@ -45,7 +44,7 @@ def on_revision_save(sender, instance, **kwargs):
         badge_template = WIKI_BADGES['l10n-badge']
 
     from kitsune.wiki.tasks import maybe_award_badge
-    maybe_award_badge.delay(badge_template, year, creator)
+    maybe_award_badge.delay(badge_template, year, creator.id)
 
 
 def register_signals():

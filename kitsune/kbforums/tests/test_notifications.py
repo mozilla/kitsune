@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.kbforums.events import NewPostEvent, NewThreadEvent
@@ -17,7 +17,7 @@ from kitsune.wiki.tests import DocumentFactory
 # Some of these contain a locale prefix on included links, while others don't.
 # This depends on whether the tests use them inside or outside the scope of a
 # request. See the long explanation in questions.tests.test_notifications.
-REPLY_EMAIL = u"""Reply to thread: Sticky Thread
+REPLY_EMAIL = """Reply to thread: Sticky Thread
 
 %(user)s has replied to a thread you're watching. Here is their reply:
 
@@ -31,13 +31,13 @@ To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s/discuss/%(thread_id)s?utm_campaign=kbforums-post&\
-utm_medium=email&utm_source=notification#post-%(post_id)s
+utm_source=notification&utm_medium=email#post-%(post_id)s
 
 --
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
-NEW_THREAD_EMAIL = u"""New thread: a title
+NEW_THREAD_EMAIL = """New thread: a title
 
 %(user)s has posted a new thread in a forum you're watching. Here is the \
 thread:
@@ -52,7 +52,7 @@ To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s/discuss/%(thread_id)s?utm_campaign=kbforums-thread&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Unsubscribe from these emails:
@@ -171,7 +171,7 @@ class NotificationsTests(KBForumTestCase):
 
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[u.email],
-                 subject=u'an article title - a title')
+                 subject='an article title - a title')
         starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % {
             'user': u2.profile.name,
             'document_slug': d.slug,
@@ -361,7 +361,7 @@ class NotificationsTests(KBForumTestCase):
         # Email was sent as expected.
         t = Thread.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[u.email],
-                 subject=u'an article title - a title')
+                 subject='an article title - a title')
         starts_with(mail.outbox[0].body, NEW_THREAD_EMAIL % {
             'user': u2.profile.name,
             'document_slug': d.slug,

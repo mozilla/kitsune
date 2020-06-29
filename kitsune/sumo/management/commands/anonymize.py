@@ -1,7 +1,7 @@
 from django.db import connection
 from django.core.management.base import BaseCommand
 
-from kitsune.manage import path
+from kitsune.settings import path
 
 
 class Command(BaseCommand):

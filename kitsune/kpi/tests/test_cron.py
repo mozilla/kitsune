@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 
 from django.core.management import call_command
-from mock import patch
+from unittest.mock import patch
 from nose.tools import eq_
 
 import kitsune.kpi.management.utils

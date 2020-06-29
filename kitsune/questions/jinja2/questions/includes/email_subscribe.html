@@ -6,7 +6,7 @@
   <form action="{{ url('questions.watch', question.id) }}" method="post">
     {% csrf_token %}
     {{ errorlist(watch_form) }}
-    {% if not user.is_authenticated() %}
+    {% if not user.is_authenticated %}
     <div class="field">
       {{ watch_form.email|safe }}
     </div>

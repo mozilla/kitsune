@@ -2,18 +2,18 @@ import hashlib
 import logging
 import time
 from datetime import datetime, timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.core.urlresolvers import resolve
 from django.db import IntegrityError, models
 from django.db.models import Q
 from django.http import Http404
-from django.utils.encoding import smart_str
+from django.urls import resolve
+from django.utils.encoding import smart_bytes
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 from pyquery import PyQuery
@@ -71,18 +71,18 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # Latest approved revision. L10n dashboard depends on this being so (rather
     # than being able to set it to earlier approved revisions). (Remove "+" to
     # enable reverse link.)
-    current_revision = models.ForeignKey('Revision', null=True,
+    current_revision = models.ForeignKey('Revision', on_delete=models.CASCADE, null=True,
                                          related_name='current_for+')
 
     # Latest revision which both is_approved and is_ready_for_localization,
     # This may remain non-NULL even if is_localizable is changed to false.
     latest_localizable_revision = models.ForeignKey(
-        'Revision', null=True, related_name='localizable_for+')
+        'Revision', on_delete=models.CASCADE, null=True, related_name='localizable_for+')
 
     # The Document I was translated from. NULL iff this doc is in the default
     # locale or it is nonlocalizable. TODO: validate against
     # settings.WIKI_DEFAULT_LANGUAGE.
-    parent = models.ForeignKey('self', related_name='translations',
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='translations',
                                null=True, blank=True)
 
     # Cached HTML rendering of approved revision's wiki markup:
@@ -97,15 +97,15 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     is_archived = models.BooleanField(
         default=False, db_index=True, verbose_name='is obsolete',
         help_text=_lazy(
-            u'If checked, this wiki page will be hidden from basic searches '
-            u'and dashboards. When viewed, the page will warn that it is no '
-            u'longer maintained.'))
+            'If checked, this wiki page will be hidden from basic searches '
+            'and dashboards. When viewed, the page will warn that it is no '
+            'longer maintained.'))
 
     # Enable discussion (kbforum) on this document.
     allow_discussion = models.BooleanField(
         default=True, help_text=_lazy(
-            u'If checked, this document allows discussion in an associated '
-            u'forum. Uncheck to hide/disable the forum.'))
+            'If checked, this document allows discussion in an associated '
+            'forum. Uncheck to hide/disable the forum.'))
 
     # List of users that have contributed to this document.
     contributors = models.ManyToManyField(User)
@@ -118,7 +118,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     # Needs change fields.
     needs_change = models.BooleanField(default=False, help_text=_lazy(
-        u'If checked, this document needs updates.'), db_index=True)
+        'If checked, this document needs updates.'), db_index=True)
     needs_change_comment = models.CharField(max_length=500, blank=True)
 
     # A 24 character length gives years before having to alter max_length.
@@ -183,14 +183,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # Can't save this translation if parent not localizable
         if self.parent and not self.parent.is_localizable:
             raise ValidationError('"%s": parent "%s" is not localizable.' % (
-                                  unicode(self), unicode(self.parent)))
+                                  str(self), str(self.parent)))
 
         # Can't make not localizable if it has translations
         # This only applies to documents that already exist, hence self.pk
         if self.pk and not self.is_localizable and self.translations.exists():
             raise ValidationError(
-                u'"{0}": document has {1} translations but is not localizable.'
-                .format(unicode(self), self.translations.count()))
+                '"{0}": document has {1} translations but is not localizable.'
+                .format(str(self), self.translations.count()))
 
     def _ensure_inherited_attr(self, attr):
         """Make sure my `attr` attr is the same as my parent's if I have one.
@@ -223,14 +223,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def _clean_template_status(self):
         if (self.category == TEMPLATES_CATEGORY and
                 not self.title.startswith(TEMPLATE_TITLE_PREFIX)):
-            raise ValidationError(_(u'Documents in the Template category must have titles that '
-                                    u'start with "{prefix}". (Current title is "{title}")')
+            raise ValidationError(_('Documents in the Template category must have titles that '
+                                    'start with "{prefix}". (Current title is "{title}")')
                                   .format(prefix=TEMPLATE_TITLE_PREFIX, title=self.title))
 
         if self.title.startswith(TEMPLATE_TITLE_PREFIX) and self.category != TEMPLATES_CATEGORY:
-            raise ValidationError(_(u'Documents with titles that start with "{prefix}" must be in '
-                                    u'the templates category. (Current category is "{category}". '
-                                    u'Current title is "{title}".)')
+            raise ValidationError(_('Documents with titles that start with "{prefix}" must be in '
+                                    'the templates category. (Current category is "{category}". '
+                                    'Current title is "{title}".)')
                                   .format(prefix=TEMPLATE_TITLE_PREFIX,
                                           category=self.get_category_display(),
                                           title=self.title))
@@ -474,7 +474,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if url:
             return self.from_url(url)
 
-    def __unicode__(self):
+    def __str__(self):
         return '[%s] %s' % (self.locale, self.title)
 
     def allows_vote(self, request):
@@ -486,7 +486,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # voted will see a "You already voted on this Article." message
         # if they try voting again.
         authed_and_voted = (
-            request.user.is_authenticated() and
+            request.user.is_authenticated and
             self.current_revision and
             self.current_revision.has_voted(request))
 
@@ -839,10 +839,10 @@ MAX_REVISION_COMMENT_LENGTH = 255
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
     # like created_revisions and created_draftrevisions
-    creator = models.ForeignKey(User, related_name='created_%(class)ss')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_%(class)ss')
     created = models.DateTimeField(default=datetime.now)
     # The reverse name should be revisions and draftrevisions
-    document = models.ForeignKey(Document, related_name='%(class)ss')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='%(class)ss')
     # Keywords are used mostly to affect search rankings. Moderators may not
     # have the language expertise to translate keywords, so we put them in the
     # Revision so the translators can handle them:
@@ -864,7 +864,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
 
     comment = models.CharField(max_length=MAX_REVISION_COMMENT_LENGTH)
-    reviewer = models.ForeignKey(User, related_name='reviewed_revisions',
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviewed_revisions',
                                  null=True)
     is_approved = models.BooleanField(default=False, db_index=True)
 
@@ -872,7 +872,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     # Edit button was hit to begin creating this revision. If there was none,
     # this is simply the latest of the default locale's revs as of that time.
     # Used to determine whether localizations are out of date.
-    based_on = models.ForeignKey('self', null=True, blank=True)
+    based_on = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
@@ -883,7 +883,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     is_ready_for_localization = models.BooleanField(default=False)
     readied_for_localization = models.DateTimeField(null=True)
     readied_for_localization_by = models.ForeignKey(
-        User, related_name='readied_for_l10n_revisions', null=True)
+        User, on_delete=models.CASCADE, related_name='readied_for_l10n_revisions', null=True)
 
     class Meta(object):
         permissions = [('review_revision', 'Can review a revision'),
@@ -955,8 +955,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
             if self.document.current_revision:
                 new_revs = new_revs.filter(
                     id__gt=self.document.current_revision.id)
-            new_contributors = set(
-                [r.creator for r in new_revs.select_related('creator')])
+            new_contributors = {r.creator for r in new_revs.select_related('creator')}
             for user in new_contributors:
                 if user not in contributors:
                     self.document.contributors.add(user)
@@ -1010,7 +1009,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
     def has_voted(self, request):
         """Did the user already vote for this revision?"""
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             qs = HelpfulVote.objects.filter(revision=self,
                                             creator=request.user)
         elif request.anonymous.has_id:
@@ -1022,10 +1021,10 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
         return qs.exists()
 
-    def __unicode__(self):
-        return u'[%s] %s #%s: %s' % (self.document.locale,
-                                     self.document.title,
-                                     self.id, self.content[:50])
+    def __str__(self):
+        return '[%s] %s #%s: %s' % (self.document.locale,
+                                    self.document.title,
+                                    self.id, self.content[:50])
 
     def __repr__(self):
         return '<Revision [{!r}] {!r} #{!r}: {!r:.50}>'.format(
@@ -1072,7 +1071,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
 
 class DraftRevision(ModelBase, SearchMixin, AbstractRevision):
-    based_on = models.ForeignKey(Revision)
+    based_on = models.ForeignKey(Revision, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
     locale = LocaleField(blank=False, db_index=True)
     slug = models.CharField(max_length=255, blank=True)
@@ -1161,10 +1160,11 @@ register_for_indexing('revisions', Revision)
 
 class HelpfulVote(ModelBase):
     """Helpful or Not Helpful vote on Revision."""
-    revision = models.ForeignKey(Revision, related_name='poll_votes')
+    revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name='poll_votes')
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name='poll_votes', null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                related_name='poll_votes', null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
     user_agent = models.CharField(max_length=1000)
 
@@ -1174,7 +1174,7 @@ class HelpfulVote(ModelBase):
 
 class HelpfulVoteMetadata(ModelBase):
     """Metadata for article votes."""
-    vote = models.ForeignKey(HelpfulVote, related_name='metadata')
+    vote = models.ForeignKey(HelpfulVote, on_delete=models.CASCADE, related_name='metadata')
     key = models.CharField(max_length=40, db_index=True)
     value = models.CharField(max_length=1000)
 
@@ -1204,7 +1204,7 @@ class Locale(ModelBase):
     def get_absolute_url(self):
         return reverse('wiki.locale_details', args=[self.locale])
 
-    def __unicode__(self):
+    def __str__(self):
         return self.locale
 
 
@@ -1214,30 +1214,30 @@ class DocumentLink(ModelBase):
     If article A contains [[Link:B]], then `linked_to` is B,
     `linked_from` is A, and kind is 'link'.
     """
-    linked_to = models.ForeignKey(Document,
+    linked_to = models.ForeignKey(Document, on_delete=models.CASCADE,
                                   related_name='documentlink_from_set')
-    linked_from = models.ForeignKey(Document,
+    linked_from = models.ForeignKey(Document, on_delete=models.CASCADE,
                                     related_name='documentlink_to_set')
     kind = models.CharField(max_length=16)
 
     class Meta:
         unique_together = ('linked_from', 'linked_to', 'kind')
 
-    def __unicode__(self):
-        return (u'<DocumentLink: %s from %s to %s>' %
+    def __str__(self):
+        return ('<DocumentLink: %s from %s to %s>' %
                 (self.kind, self.linked_from, self.linked_to))
 
 
 class DocumentImage(ModelBase):
     """Model to keep track of what documents include what images."""
-    document = models.ForeignKey(Document)
-    image = models.ForeignKey(Image)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('document', 'image')
 
-    def __unicode__(self):
-        return u'<DocumentImage: {doc} includes {img}>'.format(
+    def __str__(self):
+        return '<DocumentImage: {doc} includes {img}>'.format(
             doc=self.document, img=self.image)
 
 
@@ -1306,4 +1306,4 @@ def doc_html_cache_key(locale, slug):
     """Returns the cache key for the document html."""
     cache_key = DOC_HTML_CACHE_KEY.format(
         locale=locale, slug=slug)
-    return hashlib.sha1(smart_str(cache_key)).hexdigest()
+    return hashlib.sha1(smart_bytes(cache_key)).hexdigest()

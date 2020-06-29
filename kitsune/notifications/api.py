@@ -74,7 +74,7 @@ class NotificationViewSet(mixins.ListModelMixin,
         permissions.IsAuthenticated,
         OnlyOwner,
     ]
-    filter_class = NotificationFilter
+    filterset_class = NotificationFilter
     pagination_class = None
 
     def get_queryset(self, *args, **kwargs):

@@ -1,9 +1,10 @@
 import re
 
-import mock
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
+
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -24,18 +25,18 @@ from kitsune.users.tests import UserFactory
 # expect a locale in reverse()d URLs. When firing off a celery task outside the
 # scope of a request, expect none.
 #
-# In production, with CELERY_ALWAYS_EAGER=False, celery tasks run in a
+# In production, with CELERY_TASK_ALWAYS_EAGER=False, celery tasks run in a
 # different interpreter (with no access to the thread-local), so reverse() will
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
-ANSWER_EMAIL_TO_ANONYMOUS = u"""{replier} commented on a Firefox question on \
+ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on \
 testserver:
 
 {title}
 
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_medium=email&utm_source=notification\
+questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
 {replier} wrote:
@@ -47,12 +48,12 @@ https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
 
 See the comment:
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_medium=email&utm_source=notification\
+questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
 If this comment is helpful, vote on it:
 https://testserver/{locale}questions/{question_id}/vote/{answer_id}\
-?utm_campaign=questions-reply&utm_medium=email&helpful=&utm_source=notification
+?helpful=&utm_campaign=questions-reply&utm_source=notification&utm_medium=email
 
 Help other Firefox users by browsing for unsolved questions on testserver:
 https://testserver/questions?filter=unsolved
@@ -61,11 +62,11 @@ You might just make someone's day!
 
 --
 Unsubscribe from these emails:
-https://testserver/{locale}unsubscribe"""
+https://testserver/{locale}unsubscribe/"""
 
-ANSWER_EMAIL = u'Hi {to_user},\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
+ANSWER_EMAIL = 'Hi {to_user},\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
 
-ANSWER_EMAIL_TO_ASKER = u"""Hi {asker},
+ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 
 {replier} has posted an answer to your question on testserver:
 {title}
@@ -80,12 +81,12 @@ https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
 If this doesn't solve your problem, let {replier} know by replying on the \
 website:
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-reply&utm_medium=email&utm_source=notification\
+questions-reply&utm_source=notification&utm_medium=email\
 #answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
 
-SOLUTION_EMAIL_TO_ANONYMOUS = u"""We just wanted to let you know that \
+SOLUTION_EMAIL_TO_ANONYMOUS = """We just wanted to let you know that \
 {replier} has found a solution to a Firefox question that you're following.
 
 The question:
@@ -99,7 +100,7 @@ Did this answer also help you? Did you find another post more helpful? Let \
 other Firefox users know by voting next to the answer.
 
 https://testserver/{locale}questions/{question_id}?utm_campaign=\
-questions-solved&utm_medium=email&utm_source=notification#answer-{answer_id}
+questions-solved&utm_source=notification&utm_medium=email#answer-{answer_id}
 
 Did you know that {replier} is a Firefox user just like you? Get started \
 helping other Firefox users by browsing questions at \
@@ -110,7 +111,7 @@ day!
 Unsubscribe from these emails:
 https://testserver/{locale}unsubscribe/"""
 
-SOLUTION_EMAIL = u'Hi {to_user},\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
+SOLUTION_EMAIL = 'Hi {to_user},\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
 
 
 class NotificationsTests(TestCaseBase):
@@ -309,7 +310,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
 
         eq_([ANON_EMAIL], notification.to)
-        eq_(u'Re: {0}'.format(self.question.title), notification.subject)
+        eq_('Re: {0}'.format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS
@@ -326,7 +327,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
 
         eq_([watcher.email], notification.to)
-        eq_(u'Re: {0}'.format(self.question.title), notification.subject)
+        eq_('Re: {0}'.format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL.format(to_user=display_name(watcher), **self.format_args()))
@@ -339,7 +340,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = mail.outbox[0]
 
         eq_([self.question.creator.email], notification.to)
-        eq_(u'{0} posted an answer to your question "{1}"'
+        eq_('{0} posted an answer to your question "{1}"'
             .format(display_name(self.answer.creator), self.question.title),
             notification.subject)
 
@@ -357,7 +358,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v)
-                       for k, v in notification.extra_headers.items())
+                       for k, v in list(notification.extra_headers.items()))
         eq_('replyto@example.com', headers['reply-to'])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
@@ -372,7 +373,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v)
-                       for k, v in notification.extra_headers.items())
+                       for k, v in list(notification.extra_headers.items()))
         eq_('replyto@example.com', headers['reply-to'])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
@@ -383,5 +384,5 @@ class TestAnswerNotifications(TestCaseBase):
         self.makeAnswer()
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v)
-                       for k, v in mail.outbox[0].extra_headers.items())
+                       for k, v in list(mail.outbox[0].extra_headers.items()))
         eq_('replyto@example.com', headers['reply-to'])

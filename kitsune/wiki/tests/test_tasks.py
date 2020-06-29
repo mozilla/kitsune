@@ -1,28 +1,26 @@
 import re
 from datetime import datetime
+from unittest import mock
 
+import bleach
+import waffle
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
 from django.test import override_settings
 from django.test.client import RequestFactory
-
-import bleach
-import mock
-import waffle
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import add_permission, UserFactory
-from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
-from kitsune.wiki.models import Revision, Document
-from kitsune.wiki.tasks import (
-    send_reviewed_notification, rebuild_kb, schedule_rebuild_kb,
-    _rebuild_kb_chunk, render_document_cascade)
-from kitsune.wiki.tests import TestCaseBase, RevisionFactory
+from kitsune.users.tests import UserFactory, add_permission
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
+from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.tasks import (_rebuild_kb_chunk, rebuild_kb,
+                                render_document_cascade, schedule_rebuild_kb,
+                                send_reviewed_notification)
+from kitsune.wiki.tests import RevisionFactory, TestCaseBase
 from kitsune.wiki.tests.test_parser import doc_rev_parser
-
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
 
@@ -39,10 +37,10 @@ https://testserver/en-US/kb/%s/history
 """
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
 class RebuildTestCase(TestCase):
     rf = RequestFactory()
-    ALWAYS_EAGER = settings.CELERY_ALWAYS_EAGER
+    ALWAYS_EAGER = settings.CELERY_TASK_ALWAYS_EAGER
 
     def setUp(self):
         # create some random revisions.
@@ -66,7 +64,7 @@ class RebuildTestCase(TestCase):
 
     @mock.patch.object(rebuild_kb, 'delay')
     @mock.patch.object(waffle, 'switch_is_active')
-    @override_settings(CELERY_ALWAYS_EAGER=False)
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=False)
     def test_task_queue(self, switch_is_active, delay):
         switch_is_active.return_value = True
         schedule_rebuild_kb()
@@ -113,7 +111,7 @@ class ReviewMailTestCase(TestCaseBase):
         revision.reviewed = datetime.now()
         revision.is_approved = True
         revision.save()
-        send_reviewed_notification(revision, revision.document, message)
+        send_reviewed_notification(revision.id, revision.document.id, message)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_reviewed_notification(self, get_current):
@@ -149,7 +147,7 @@ class ReviewMailTestCase(TestCaseBase):
 
         rev = RevisionFactory()
         doc = rev.document
-        doc.title = u'Foo \xe8 incode'
+        doc.title = 'Foo \xe8 incode'
         msg = 'foo'
         self._approve_and_send(rev, self.user, msg)
 
@@ -191,11 +189,11 @@ class TestDocumentRenderCascades(TestCaseBase):
             '[[T:D1]] two', title=TEMPLATE_TITLE_PREFIX + 'D2', category=TEMPLATES_CATEGORY)
         d3, _, _ = doc_rev_parser('[[T:D1]] [[T:D2]] three', title='D3')
 
-        eq_(self._clean(d3), u'one one two three')
+        eq_(self._clean(d3), 'one one two three')
 
         RevisionFactory(document=d1, content='ONE', is_approved=True)
-        render_document_cascade(d1)
+        render_document_cascade(d1.id)
 
-        eq_(self._clean(d1), u'ONE')
-        eq_(self._clean(d2), u'ONE two')
-        eq_(self._clean(d3), u'ONE ONE two three')
+        eq_(self._clean(d1), 'ONE')
+        eq_(self._clean(d2), 'ONE two')
+        eq_(self._clean(d3), 'ONE ONE two three')

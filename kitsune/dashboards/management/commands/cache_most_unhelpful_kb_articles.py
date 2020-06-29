@@ -126,8 +126,8 @@ class Command(BaseCommand):
             # R = mean rating, m = minimum votes to list in topranked
             return (C * m + R * v) / (m + v)
 
-        mean_perc = _mean([float(final[key]['currperc']) for key in final.keys()])
-        mean_total = _mean([float(final[key]['total']) for key in final.keys()])
+        mean_perc = _mean([float(final[key]['currperc']) for key in list(final.keys())])
+        mean_total = _mean([float(final[key]['total']) for key in list(final.keys())])
 
         #  TODO: Make this into namedtuples
         sorted_final = [(key,
@@ -136,7 +136,7 @@ class Command(BaseCommand):
                         final[key]['diffperc'],
                         _bayes_avg(
                             mean_perc, mean_total, final[key]['currperc'], final[key]['total']))
-                        for key in final.keys()]
+                        for key in list(final.keys())]
         sorted_final.sort(key=lambda entry: entry[4])  # Sort by Bayesian Avg
 
         redis = redis_client('helpfulvotes')
@@ -147,7 +147,7 @@ class Command(BaseCommand):
 
         for entry in sorted_final:
             doc = Document.objects.get(pk=entry[0])
-            redis.rpush(REDIS_KEY, (u'%s::%s::%s::%s::%s::%s::%s' % (
+            redis.rpush(REDIS_KEY, ('%s::%s::%s::%s::%s::%s::%s' % (
                 entry[0],  # Document ID
                 entry[1],  # Total Votes
                 entry[2],  # Current Percentage

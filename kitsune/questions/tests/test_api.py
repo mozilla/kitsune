@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
-import mock
+from unittest import mock
 import actstream.actions
 from actstream.models import Follow
 from nose.tools import eq_, ok_, raises
@@ -60,8 +60,8 @@ class TestQuestionSerializerDeserialization(TestCase):
             context=self.context, data=self.data)
         ok_(not serializer.is_valid())
         eq_(serializer.errors, {
-            'product': [u'This field is required.'],
-            'topic': [u'A product must be specified to select a topic.'],
+            'product': ['This field is required.'],
+            'topic': ['A product must be specified to select a topic.'],
         })
 
     def test_topic_required(self):
@@ -70,7 +70,7 @@ class TestQuestionSerializerDeserialization(TestCase):
             context=self.context, data=self.data)
         ok_(not serializer.is_valid())
         eq_(serializer.errors, {
-            'topic': [u'This field is required.'],
+            'topic': ['This field is required.'],
         })
 
     def test_topic_disambiguation(self):
@@ -103,13 +103,13 @@ class TestQuestionSerializerSerialization(TestCase):
         self.question = QuestionFactory(creator=self.asker)
 
     def _names(self, *users):
-        return sorted(
+        return sorted((
             {
                 'username': u.username,
                 'display_name': Profile.objects.get(user=u).name,
                 'avatar': profile_avatar(u),
             }
-            for u in users)
+            for u in users), key=lambda d: d['username'])
 
     def _answer(self, user):
         return AnswerFactory(question=self.question, creator=user)
@@ -133,14 +133,16 @@ class TestQuestionSerializerSerialization(TestCase):
         self._answer(self.helper1)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']), self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
+            self._names(self.asker, self.helper1))
 
     def test_asker_and_response(self):
         self._answer(self.helper1)
         self._answer(self.asker)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']), self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
+            self._names(self.asker, self.helper1))
 
     def test_asker_and_two_answers(self):
         self._answer(self.helper1)
@@ -148,7 +150,7 @@ class TestQuestionSerializerSerialization(TestCase):
         self._answer(self.helper2)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']),
+        eq_(sorted(serializer.data['involved'], key=lambda d: d['username']),
             self._names(self.asker, self.helper1, self.helper2))
 
     def test_solution_is_id(self):
@@ -454,7 +456,7 @@ class TestQuestionViewSet(TestCase):
 
     def test_bleaching(self):
         """Tests whether question content is bleached."""
-        q = QuestionFactory(content=u'<unbleached>Cupcakes are the best</unbleached>')
+        q = QuestionFactory(content='<unbleached>Cupcakes are the best</unbleached>')
         url = reverse('question-detail', args=[q.id])
         res = self.client.get(url)
         eq_(res.status_code, 200)
@@ -611,7 +613,7 @@ class TestAnswerViewSet(TestCase):
 
     def test_bleaching(self):
         """Tests whether answer content is bleached."""
-        a = AnswerFactory(content=u'<unbleached>Cupcakes are the best</unbleached>')
+        a = AnswerFactory(content='<unbleached>Cupcakes are the best</unbleached>')
         url = reverse('answer-detail', args=[a.id])
         res = self.client.get(url)
         eq_(res.status_code, 200)

@@ -4,15 +4,12 @@ import sys
 import traceback
 
 from celery import task
-from multidb.pinning import pin_this_thread, unpin_this_thread
-from django_statsd.clients import statsd
-
-from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis
-from kitsune.search.utils import from_class_path
-from kitsune.sumo.decorators import timeit
-
 from elasticutils.contrib.django import get_es
+from multidb.pinning import pin_this_thread, unpin_this_thread
 
+from kitsune.search.es_utils import (UnindexMeBro, get_analysis, index_chunk,
+                                     write_index)
+from kitsune.search.utils import from_class_path
 
 # This is present in memcached when reindexing is in progress and
 # holds the number of outstanding index chunks. Once it hits 0,
@@ -51,7 +48,6 @@ class IndexingTaskError(Exception):
 
 
 @task()
-@timeit
 def index_chunk_task(write_index, batch_id, rec_id, chunk):
     """Index a chunk of things.
 
@@ -74,7 +70,7 @@ def index_chunk_task(write_index, batch_id, rec_id, chunk):
         # Update record data.
         rec = Record.objects.get(pk=rec_id)
         rec.start_time = datetime.datetime.now()
-        rec.message = u"Reindexing into %s" % write_index
+        rec.message = 'Reindexing into %s' % write_index
         rec.status = Record.STATUS_IN_PROGRESS
         rec.save()
 
@@ -83,7 +79,7 @@ def index_chunk_task(write_index, batch_id, rec_id, chunk):
 
     except Exception:
         if rec is not None:
-            rec.mark_fail(u"Errored out %s %s" % (sys.exc_type, sys.exc_value))
+            rec.mark_fail('Errored out %s %s' % (sys.exc_info()[0], sys.exc_info()[1]))
 
         log.exception("Error while indexing a chunk")
         # Some exceptions aren't pickleable and we need this to throw
@@ -107,10 +103,9 @@ MAX_RETRIES = len(RETRY_TIMES)
 
 
 @task()
-@timeit
-def index_task(cls, id_list, **kw):
+def index_task(cls_path, id_list, **kw):
     """Index documents specified by cls and ids"""
-    statsd.incr("search.tasks.index_task.%s" % cls.get_mapping_type_name())
+    cls = from_class_path(cls_path)
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.
@@ -132,9 +127,6 @@ def index_task(cls, id_list, **kw):
             # throw things that are pickleable.
             raise IndexingTaskError()
 
-        statsd.incr("search.tasks.index_task.retry", 1)
-        statsd.incr("search.tasks.index_task.retry%d" % RETRY_TIMES[retries], 1)
-
         index_task.retry(
             exc=exc, max_retries=MAX_RETRIES, countdown=RETRY_TIMES[retries]
         )
@@ -143,10 +135,9 @@ def index_task(cls, id_list, **kw):
 
 
 @task()
-@timeit
-def unindex_task(cls, id_list, **kw):
+def unindex_task(cls_path, id_list, **kw):
     """Unindex documents specified by cls and ids"""
-    statsd.incr("search.tasks.unindex_task.%s" % cls.get_mapping_type_name())
+    cls = from_class_path(cls_path)
     try:
         # Pin to master db to avoid replication lag issues and stale
         # data.
@@ -160,9 +151,6 @@ def unindex_task(cls, id_list, **kw):
             # throw things that are pickleable.
             raise IndexingTaskError()
 
-        statsd.incr("search.tasks.unindex_task.retry", 1)
-        statsd.incr("search.tasks.unindex_task.retry%d" % RETRY_TIMES[retries], 1)
-
         unindex_task.retry(
             exc=exc, max_retries=MAX_RETRIES, countdown=RETRY_TIMES[retries]
         )
@@ -171,7 +159,6 @@ def unindex_task(cls, id_list, **kw):
 
 
 @task()
-@timeit
 def update_synonyms_task():
     es = get_es()
 

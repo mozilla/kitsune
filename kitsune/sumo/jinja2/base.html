@@ -75,7 +75,7 @@
   {# end TrafficCop #}
 
 </head>
-<body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
+<body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
@@ -139,7 +139,6 @@
   {% endif %}
 </div>
 
-
 <header class="mzp-c-navigation sumo-nav">
   <div class="mzp-c-navigation-l-content">
     <div class="sumo-nav--container">
@@ -150,7 +149,7 @@
       <button data-mobile-nav-search-button class="sumo-nav--search-button" type="button">Search</button>
       <button data-sumo-toggle-nav="#main-navigation" class="sumo-nav--toggle-button" type="button" aria-controls="main-navigation">Menu</button>
       <a class="sumo-nav--avatar-button" data-sumo-toggle-nav="#profile-navigation" aria-controls="profile-navigation" aria-role="button">
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
         <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
         {% else %}
         <img class="avatar" src="{{ STATIC_URL }}sumo/img/default-FFA-avatar.png" alt="Avatar for Username">
@@ -169,7 +168,7 @@
         </div>
       </div>
 
-      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right {% if not user.is_authenticated() %}logged-out{% endif %}" id="profile-navigation">
+      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right {% if not user.is_authenticated %}logged-out{% endif %}" id="profile-navigation">
         <div class="mzp-c-navigation-menu">
           <nav class="mzp-c-menu mzp-is-basic">
               {% if not hide_aux_nav %}

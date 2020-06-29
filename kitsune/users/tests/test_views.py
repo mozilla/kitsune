@@ -7,7 +7,9 @@ from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
+
 from josepy import jwa, jwk, jws
+
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase

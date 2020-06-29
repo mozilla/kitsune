@@ -48,8 +48,8 @@ class Migration(migrations.Migration):
             name='DocumentImage',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('document', models.ForeignKey(to='wiki.Document')),
-                ('image', models.ForeignKey(to='gallery.Image')),
+                ('document', models.ForeignKey(on_delete=models.CASCADE, to='wiki.Document')),
+                ('image', models.ForeignKey(on_delete=models.CASCADE, to='gallery.Image')),
             ],
             options={
             },
@@ -60,8 +60,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('kind', models.CharField(max_length=16)),
-                ('linked_from', models.ForeignKey(related_name='documentlink_to_set', to='wiki.Document')),
-                ('linked_to', models.ForeignKey(related_name='documentlink_from_set', to='wiki.Document')),
+                ('linked_from', models.ForeignKey(on_delete=models.CASCADE, related_name='documentlink_to_set', to='wiki.Document')),
+                ('linked_to', models.ForeignKey(on_delete=models.CASCADE, related_name='documentlink_from_set', to='wiki.Document')),
             ],
             options={
             },
@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
                 ('anonymous_id', models.CharField(max_length=40, db_index=True)),
                 ('user_agent', models.CharField(max_length=1000)),
-                ('creator', models.ForeignKey(related_name='poll_votes', to=settings.AUTH_USER_MODEL, null=True)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='poll_votes', to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'abstract': False,
@@ -88,7 +88,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('key', models.CharField(max_length=40, db_index=True)),
                 ('value', models.CharField(max_length=1000)),
-                ('vote', models.ForeignKey(related_name='metadata', to='wiki.HelpfulVote')),
+                ('vote', models.ForeignKey(on_delete=models.CASCADE, related_name='metadata', to='wiki.HelpfulVote')),
             ],
             options={
                 'abstract': False,
@@ -136,11 +136,11 @@ class Migration(migrations.Migration):
                 ('is_approved', models.BooleanField(default=False, db_index=True)),
                 ('is_ready_for_localization', models.BooleanField(default=False)),
                 ('readied_for_localization', models.DateTimeField(null=True)),
-                ('based_on', models.ForeignKey(blank=True, to='wiki.Revision', null=True)),
-                ('creator', models.ForeignKey(related_name='created_revisions', to=settings.AUTH_USER_MODEL)),
-                ('document', models.ForeignKey(related_name='revisions', to='wiki.Document')),
-                ('readied_for_localization_by', models.ForeignKey(related_name='readied_for_l10n_revisions', to=settings.AUTH_USER_MODEL, null=True)),
-                ('reviewer', models.ForeignKey(related_name='reviewed_revisions', to=settings.AUTH_USER_MODEL, null=True)),
+                ('based_on', models.ForeignKey(on_delete=models.CASCADE, blank=True, to='wiki.Revision', null=True)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='created_revisions', to=settings.AUTH_USER_MODEL)),
+                ('document', models.ForeignKey(on_delete=models.CASCADE, related_name='revisions', to='wiki.Document')),
+                ('readied_for_localization_by', models.ForeignKey(on_delete=models.CASCADE, related_name='readied_for_l10n_revisions', to=settings.AUTH_USER_MODEL, null=True)),
+                ('reviewer', models.ForeignKey(on_delete=models.CASCADE, related_name='reviewed_revisions', to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'permissions': [('review_revision', 'Can review a revision'), ('mark_ready_for_l10n', 'Can mark revision as ready for localization'), ('edit_keywords', 'Can edit keywords')],
@@ -150,33 +150,33 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='helpfulvote',
             name='revision',
-            field=models.ForeignKey(related_name='poll_votes', to='wiki.Revision'),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='poll_votes', to='wiki.Revision'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
             name='documentlink',
-            unique_together=set([('linked_from', 'linked_to', 'kind')]),
+            unique_together={('linked_from', 'linked_to', 'kind')},
         ),
         migrations.AlterUniqueTogether(
             name='documentimage',
-            unique_together=set([('document', 'image')]),
+            unique_together={('document', 'image')},
         ),
         migrations.AddField(
             model_name='document',
             name='current_revision',
-            field=models.ForeignKey(related_name='current_for+', to='wiki.Revision', null=True),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='current_for+', to='wiki.Revision', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='document',
             name='latest_localizable_revision',
-            field=models.ForeignKey(related_name='localizable_for+', to='wiki.Revision', null=True),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='localizable_for+', to='wiki.Revision', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='document',
             name='parent',
-            field=models.ForeignKey(related_name='translations', blank=True, to='wiki.Document', null=True),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='translations', blank=True, to='wiki.Document', null=True),
             preserve_default=True,
         ),
         migrations.AddField(
@@ -199,6 +199,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='document',
-            unique_together=set([('title', 'locale'), ('parent', 'locale'), ('slug', 'locale')]),
+            unique_together={('title', 'locale'), ('parent', 'locale'), ('slug', 'locale')},
         ),
     ]

@@ -5,11 +5,10 @@ from xml.sax.saxutils import quoteattr
 from django.conf import settings
 
 from html5lib import HTMLParser
-from html5lib.serializer.htmlserializer import HTMLSerializer
+from html5lib.serializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
-from django_statsd.clients import statsd
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.gallery.models import Image
@@ -56,14 +55,13 @@ def wiki_to_html(
     if parser_cls is None:
         parser_cls = WikiParser
 
-    with statsd.timer("wiki.render"):
-        with uselocale(locale):
-            content = parser_cls(doc_id=doc_id).parse(
-                wiki_markup,
-                show_toc=False,
-                locale=locale,
-                toc_string=_("Table of Contents"),
-            )
+    with uselocale(locale):
+        content = parser_cls(doc_id=doc_id).parse(
+            wiki_markup,
+            show_toc=False,
+            locale=locale,
+            toc_string=_("Table of Contents"),
+        )
     return content
 
 
@@ -172,7 +170,7 @@ class ForParser(object):
             # Why lxml couldn't just have text nodes, I'll never understand.
             # Text nodes that come other than first are automatically stuffed
             # into the tail attrs of the preceding elements by html5lib.
-            if top_level_elements and isinstance(top_level_elements[0], basestring):
+            if top_level_elements and isinstance(top_level_elements[0], str):
                 container.text = top_level_elements.pop(0)
 
             container.extend(top_level_elements)
@@ -200,12 +198,12 @@ class ForParser(object):
             )
             for_el.attrib["class"] = "for"
 
-    def to_unicode(self):
+    def __str__(self):
         """Return the unicode serialization of myself."""
         container_len = len(self.CONTAINER_TAG) + 2  # 2 for the <>
         walker = getTreeWalker(self.TREEBUILDER)
         stream = walker(self._root)
-        serializer = HTMLSerializer(quote_attr_values=True, omit_optional_tags=False)
+        serializer = HTMLSerializer(quote_attr_values='always', omit_optional_tags=False)
         return serializer.render(stream)[container_len : -container_len - 1]
 
     @staticmethod
@@ -268,7 +266,7 @@ class ForParser(object):
             def preceding_whitespace(str, pos):
                 """Return all contiguous whitespace preceding str[pos]."""
                 whitespace = []
-                for i in xrange(pos - 1, 0, -1):
+                for i in range(pos - 1, 0, -1):
                     if str[i] in "\t \n\r":
                         whitespace.append(str[i])
                     else:
@@ -279,11 +277,11 @@ class ForParser(object):
             prespace, tag, attrs, postspace = match.groups()
 
             if tag != "{/for}":
-                i = indexes.next()
+                i = next(indexes)
                 dehydrations[i] = cls._wiki_to_tag(attrs)
-                token = u"\x07%i\x07" % i
+                token = "\x91%i\x91" % i
             else:
-                token = u"\x07/sf\x07"
+                token = "\x91/sf\x91"
 
             # If the {for} or {/for} is on a line by itself (righthand
             # whitespace is allowed; left would indicate a <pre>), make sure it
@@ -329,21 +327,21 @@ class ForParser(object):
         # Whitespace, a {for} token, then more whitespace (including <br>s):
         r"<p>"
         r"(?:\s|<br\s*/?>)*"
-        r"\x07(\d+)\x07"  # The {for} token
+        r"\x91(\d+)\x91"  # The {for} token
         r"(?:\s|<br\s*/?>)*"
         r"</p>"
         # Alternately, a lone {for} token that didn't get wrapped in a <p>:
-        r"|\x07(\d+)\x07"
+        r"|\x91(\d+)\x91"
     )
     _PARSED_STRIPPED_FOR_CLOSER = re.compile(
         # Similar to above, a {/for} token wrapped in <p> and whitespace:
         r"<p>"
         r"(?:\s|<br\s*/?>)*"
-        r"\x07/sf\x07"  # {/for} token
+        r"\x91/sf\x91"  # {/for} token
         r"(?:\s|<br\s*/?>)*"
         r"</p>"
         # Or a lone {/for} token:
-        r"|\x07/sf\x07"
+        r"|\x91/sf\x91"
     )
 
     @classmethod
@@ -357,11 +355,11 @@ class ForParser(object):
         html = cls._PARSED_STRIPPED_FOR.sub(hydrate, html)
 
         # Replace {/for} tags:
-        return cls._PARSED_STRIPPED_FOR_CLOSER.sub(u"</for>", html)
+        return cls._PARSED_STRIPPED_FOR_CLOSER.sub("</for>", html)
 
 
 # L10n: This error is displayed if a template is included into itself.
-RECURSION_MESSAGE = _lazy(u'[Recursive inclusion of "%s"]')
+RECURSION_MESSAGE = _lazy('[Recursive inclusion of "%s"]')
 
 
 class WikiParser(sumo_parser.WikiParser):
@@ -412,7 +410,7 @@ class WikiParser(sumo_parser.WikiParser):
         # Convert them to spans and divs:
         for_parser.expand_fors()
 
-        html = for_parser.to_unicode()
+        html = str(for_parser)
 
         html = self.add_youtube_embeds(html)
 

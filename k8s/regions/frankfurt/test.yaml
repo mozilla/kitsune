@@ -52,9 +52,9 @@ app:
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
     aws_storage_bucket_name: SECRET
-    broker_url: SECRET
+    celery_broker_url: SECRET
     cache_url: SECRET
-    celery_already_eager: False
+    celery_task_always_eager: False
     csrf_cookie_secure: True
     database_url: SECRET
     default_from_email: "notifications-test@support.mozilla.org"
@@ -118,9 +118,6 @@ app:
     sentry_dsn: SECRET
     session_cookie_secure: True
     stage: True
-    statsd_client: SECRET
-    statsd_host: SECRET
-    statsd_prefix: "sumo-test.frankfurt"
     secure_hsts_seconds: 0
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True

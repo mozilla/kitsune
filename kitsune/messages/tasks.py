@@ -2,13 +2,12 @@ import logging
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 
 from celery import task
 
 from kitsune.messages.models import InboxMessage
-from kitsune.sumo.decorators import timeit
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
 
 
@@ -16,7 +15,6 @@ log = logging.getLogger('k.task')
 
 
 @task()
-@timeit
 def email_private_message(inbox_message_id):
     """Send notification of a new private message."""
     inbox_message = InboxMessage.objects.get(id=inbox_message_id)
@@ -29,7 +27,7 @@ def email_private_message(inbox_message_id):
         # Avoid circular import issues
         from kitsune.users.templatetags.jinja_helpers import display_name
 
-        subject = _(u'[SUMO] You have a new private message from [{sender}]')
+        subject = _('[SUMO] You have a new private message from [{sender}]')
         subject = subject.format(
             sender=display_name(inbox_message.sender))
 

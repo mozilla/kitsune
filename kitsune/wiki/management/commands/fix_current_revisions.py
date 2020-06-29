@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from django_statsd.clients import statsd
 from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from kitsune.wiki.models import Document, Revision
@@ -25,7 +24,6 @@ class Command(BaseCommand):
                     if d.current_revision != rev:
                         d.current_revision = rev
                         d.save()
-                        print d.get_absolute_url()
-                        statsd.incr('wiki.cron.fix-current-revision')
+                        print(d.get_absolute_url())
         finally:
             unpin_this_thread()

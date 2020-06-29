@@ -6,8 +6,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from django_statsd.clients import statsd
-
 from kitsune import kbforums
 from kitsune.access.decorators import permission_required, login_required
 from kitsune.kbforums.events import (
@@ -72,7 +70,7 @@ def threads(request, document_slug):
     feed_urls = ((reverse('wiki.discuss.threads.feed', args=[document_slug]),
                   ThreadsFeed().title(doc)),)
 
-    is_watching_forum = (request.user.is_authenticated() and
+    is_watching_forum = (request.user.is_authenticated and
                          NewThreadEvent.is_notifying(request.user, doc))
     return render(request, 'kbforums/threads.html', {
         'document': doc, 'threads': threads_,
@@ -103,7 +101,7 @@ def posts(request, document_slug, thread_id, form=None, post_preview=None):
                                   'thread_id': thread_id}),
                   PostsFeed().title(thread)),)
 
-    is_watching_thread = (request.user.is_authenticated() and
+    is_watching_thread = (request.user.is_authenticated and
                           NewPostEvent.is_notifying(request.user, thread))
     return render(request, 'kbforums/posts.html', {
         'document': doc, 'thread': thread,
@@ -144,7 +142,6 @@ def reply(request, document_slug, thread_id):
                 post_preview = reply_
             elif not _is_ratelimited(request):
                 reply_.save()
-                statsd.incr('kbforums.reply')
 
                 # Subscribe the user to the thread.
                 if Setting.get_for_user(request.user,
@@ -181,7 +178,6 @@ def new_thread(request, document_slug):
             thread = doc.thread_set.create(creator=request.user,
                                            title=form.cleaned_data['title'])
             thread.save()
-            statsd.incr('kbforums.thread')
             post = thread.new_post(creator=request.user,
                                    content=form.cleaned_data['content'])
             post.save()
@@ -278,8 +274,6 @@ def delete_thread(request, document_slug, thread_id):
                 (request.user, thread.id))
     thread.delete()
 
-    statsd.incr('kbforums.delete_thread')
-
     return HttpResponseRedirect(reverse('wiki.discuss.threads',
                                         args=[document_slug]))
 
@@ -338,8 +332,6 @@ def delete_post(request, document_slug, thread_id, post_id):
                 (request.user, post.id))
     post.delete()
 
-    statsd.incr('kbforums.delete_post')
-
     try:
         Thread.objects.get(pk=thread_id)
         goto = reverse('wiki.discuss.posts',
@@ -360,7 +352,6 @@ def watch_thread(request, document_slug, thread_id):
 
     if request.POST.get('watch') == 'yes':
         NewPostEvent.notify(request.user, thread)
-        statsd.incr('kbforums.watches.thread')
     else:
         NewPostEvent.stop_notifying(request.user, thread)
 
@@ -376,7 +367,6 @@ def watch_locale(request):
     if request.POST.get('watch') == 'yes':
         NewPostInLocaleEvent.notify(request.user, locale=locale)
         NewThreadInLocaleEvent.notify(request.user, locale=locale)
-        statsd.incr('kbforums.watches.locale')
     else:
         NewPostInLocaleEvent.stop_notifying(request.user, locale=locale)
         NewThreadInLocaleEvent.stop_notifying(request.user, locale=locale)
@@ -392,7 +382,6 @@ def watch_forum(request, document_slug):
     doc = get_document(document_slug, request)
     if request.POST.get('watch') == 'yes':
         NewThreadEvent.notify(request.user, doc)
-        statsd.incr('kbforums.watches.document')
     else:
         NewThreadEvent.stop_notifying(request.user, doc)
 
@@ -404,7 +393,6 @@ def watch_forum(request, document_slug):
 @login_required
 def post_preview_async(request, document_slug):
     """Ajax preview of posts."""
-    statsd.incr('forums.preview')
     post = Post(creator=request.user, content=request.POST.get('content', ''))
     return render(request, 'kbforums/includes/post_preview.html', {
         'post_preview': post})
@@ -431,7 +419,7 @@ def locale_discussions(request):
     threads_ = threads_.order_by('-last_post__created')
     threads_ = paginate(request, threads_,
                         per_page=kbforums.THREADS_PER_PAGE)
-    is_watching_locale = (request.user.is_authenticated() and
+    is_watching_locale = (request.user.is_authenticated and
                           NewThreadInLocaleEvent.is_notifying(
                               request.user, locale=request.LANGUAGE_CODE))
     return render(request, 'kbforums/discussions.html', {

@@ -1,5 +1,5 @@
 import os
-import StringIO
+import io
 
 from django.conf import settings
 from django.core.files import File
@@ -22,7 +22,7 @@ def check_file_size(f, max_allowed_size):
 
     """
     if f.size > max_allowed_size:
-        message = _lazy(u'"%s" is too large (%sKB), the limit is %sKB') % (
+        message = _lazy('"%s" is too large (%sKB), the limit is %sKB') % (
             f.name, f.size >> 10, max_allowed_size >> 10)
         raise FileTooLargeError(message)
 
@@ -32,7 +32,7 @@ def create_imageattachment(files, user, obj):
     Given an uploaded file, a user and an object, it creates an ImageAttachment
     owned by `user` and attached to `obj`.
     """
-    up_file = files.values()[0]
+    up_file = list(files.values())[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     (up_file, is_animated) = _image_to_png(up_file)
@@ -46,6 +46,9 @@ def create_imageattachment(files, user, obj):
     if not is_animated:
         compress_image.delay(image, 'file')
 
+    # Refresh because the image may have been changed by tasks.
+    image.refresh_from_db()
+
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
 
     # The filename may contain html in it. Escape it.
@@ -58,9 +61,7 @@ def create_imageattachment(files, user, obj):
 
 
 def _image_to_png(up_file):
-    # PIL cannot directly open an InMemoryUploadedFile, so read into StringIO.
-    fileio = StringIO.StringIO(up_file.read())
-    pil_image = Image.open(fileio)
+    pil_image = Image.open(up_file)
 
     # Detect animated GIFS since we don't convert them.
     try:
@@ -70,13 +71,13 @@ def _image_to_png(up_file):
     except EOFError:
         is_animated = False
         # Reopen the file since Image.seek() messes with unanimated GIFs.
-        fileio.seek(0)
-        pil_image = Image.open(fileio)
+        up_file.seek(0)
+        pil_image = Image.open(up_file)
     else:
         is_animated = True
 
     if not is_animated:
-        converted_image = StringIO.StringIO()
+        converted_image = io.BytesIO()
         options = {}
         if 'transparency' in pil_image.info:
             options['transparency'] = pil_image.info['transparency']
@@ -84,7 +85,7 @@ def _image_to_png(up_file):
 
         up_file = InMemoryUploadedFile(
             converted_image, None, os.path.splitext(up_file.name)[0] + '.png',
-            'image/png', converted_image.len, None)
+            'image/png', len(converted_image.getbuffer()), None)
 
     return (up_file, is_animated)
 

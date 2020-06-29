@@ -31,7 +31,7 @@ class GenericAPIException(APIException):
     def __init__(self, status_code, detail, **kwargs):
         self.status_code = status_code
         self.detail = detail
-        for key, val in kwargs.items():
+        for key, val in list(kwargs.items()):
             setattr(self, key, val)
 
 
@@ -187,14 +187,14 @@ class InequalityFilterBackend(BaseFilterBackend):
     """A filter backend that allows for field__gt style filtering."""
 
     def filter_queryset(self, request, queryset, view):
-        filter_fields = getattr(view, 'filter_fields', [])
+        filterset_fields = getattr(view, 'filterset_fields', [])
 
-        for key, value in request.query_params.items():
+        for key, value in list(request.query_params.items()):
             splits = key.split('__')
             if len(splits) != 2:
                 continue
             field, opname = splits
-            if field not in filter_fields:
+            if field not in filterset_fields:
                 continue
             op = getattr(self, 'op_' + opname, None)
             if op:
@@ -227,7 +227,7 @@ class GenericDjangoPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         u = request.user
-        not_inactive = u.is_anonymous() or u.is_active
+        not_inactive = u.is_anonymous or u.is_active
         return not_inactive and all(u.has_perm(p) for p in self.permissions)
 
 
@@ -301,7 +301,7 @@ class InactiveSessionAuthentication(SessionAuthentication):
         user = getattr(request, 'user', None)
 
         # Unauthenticated, CSRF validation not required
-        if not user or user.is_anonymous():
+        if not user or user.is_anonymous:
             return None
 
         self.enforce_csrf(request)
@@ -346,4 +346,4 @@ class JSONRenderer(DRFJSONRenderer):
         # HTML spec: http://www.w3.org/TR/REC-html32-19970114#script
         # JSON spec: http://json.org/
 
-        return json.replace('</', '<\\/')
+        return json.replace(b'</', b'<\\/')

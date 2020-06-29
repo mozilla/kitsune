@@ -40,7 +40,7 @@
           href="{{ url('forums.delete_post', forum.slug, thread.id, post.id) }}">{{ _('Delete this post') }}</a></li>
       {% endif %}
 
-      {% if user.is_authenticated() %}
+      {% if user.is_authenticated %}
         {% if post.id %}
           {% if not thread.is_locked and forum.allows_posting_by(user) %}
             <li class="mzp-c-menu-list-item post-action">

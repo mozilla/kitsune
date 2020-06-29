@@ -28,7 +28,7 @@ class UserSearchTests(ElasticTestCase):
 
     def test_data_in_index(self):
         """Verify the data we are indexing."""
-        u = UserFactory(username='r1cky', email='r@r.com', profile__name=u'Rick Róss')
+        u = UserFactory(username='r1cky', email='r@r.com', profile__name='Rick Róss')
         r1 = ReplyFactory(user=u, twitter_username='r1cardo')
         r2 = ReplyFactory(user=u, twitter_username='r1cky')
 
@@ -46,8 +46,8 @@ class UserSearchTests(ElasticTestCase):
         eq_(UserMappingType.search().count(), 2)
 
     def test_suggest_completions(self):
-        u1 = UserFactory(username='r1cky', profile__name=u'Rick Róss')
-        u2 = UserFactory(username='Willkg', profile__name=u'Will Cage')
+        u1 = UserFactory(username='r1cky', profile__name='Rick Róss')
+        u2 = UserFactory(username='Willkg', profile__name='Will Cage')
 
         self.refresh()
         eq_(UserMappingType.search().count(), 2)
@@ -59,11 +59,11 @@ class UserSearchTests(ElasticTestCase):
 
         results = UserMappingType.suggest_completions('R1')
         eq_(1, len(results))
-        eq_(u'Rick Róss (r1cky)', results[0]['text'])
+        eq_('Rick Róss (r1cky)', results[0]['text'])
         eq_(u1.id, results[0]['payload']['user_id'])
 
         # Add another Ri....
-        UserFactory(username='richard', profile__name=u'Richard Smith')
+        UserFactory(username='richard', profile__name='Richard Smith')
 
         self.refresh()
         eq_(UserMappingType.search().count(), 3)
@@ -71,17 +71,17 @@ class UserSearchTests(ElasticTestCase):
         results = UserMappingType.suggest_completions('ri')
         eq_(2, len(results))
         texts = [r['text'] for r in results]
-        assert u'Rick Róss (r1cky)' in texts
-        assert u'Richard Smith (richard)' in texts
+        assert 'Rick Róss (r1cky)' in texts
+        assert 'Richard Smith (richard)' in texts
 
-        results = UserMappingType.suggest_completions(u'Rick Ró')
+        results = UserMappingType.suggest_completions('Rick Ró')
         eq_(1, len(results))
         texts = [r['text'] for r in results]
-        eq_(u'Rick Róss (r1cky)', results[0]['text'])
+        eq_('Rick Róss (r1cky)', results[0]['text'])
 
     def test_suggest_completions_numbers(self):
-        u1 = UserFactory(username='1337mike', profile__name=u'Elite Mike')
-        UserFactory(username='crazypants', profile__name=u'Crazy Pants')
+        u1 = UserFactory(username='1337mike', profile__name='Elite Mike')
+        UserFactory(username='crazypants', profile__name='Crazy Pants')
 
         self.refresh()
         eq_(UserMappingType.search().count(), 2)
@@ -92,8 +92,8 @@ class UserSearchTests(ElasticTestCase):
         eq_(u1.id, results[0]['payload']['user_id'])
 
     def test_query_username_with_numbers(self):
-        u = UserFactory(username='1337miKE', profile__name=u'Elite Mike')
-        UserFactory(username='mike', profile__name=u'NotElite Mike')
+        u = UserFactory(username='1337miKE', profile__name='Elite Mike')
+        UserFactory(username='mike', profile__name='NotElite Mike')
 
         self.refresh()
 
@@ -103,8 +103,8 @@ class UserSearchTests(ElasticTestCase):
         eq_(data['display_name'], u.profile.name)
 
     def test_query_display_name_with_whitespace(self):
-        UserFactory(username='1337miKE', profile__name=u'Elite Mike')
-        UserFactory(username='mike', profile__name=u'NotElite Mike')
+        UserFactory(username='1337miKE', profile__name='Elite Mike')
+        UserFactory(username='mike', profile__name='NotElite Mike')
 
         self.refresh()
 
@@ -113,8 +113,8 @@ class UserSearchTests(ElasticTestCase):
             idisplay_name__match_whitespace='elite').count(), 1)
 
     def test_query_twitter_usernames(self):
-        u1 = UserFactory(username='1337miKE', profile__name=u'Elite Mike')
-        u2 = UserFactory(username='mike', profile__name=u'NotElite Mike')
+        u1 = UserFactory(username='1337miKE', profile__name='Elite Mike')
+        u2 = UserFactory(username='mike', profile__name='NotElite Mike')
         r1 = ReplyFactory(user=u1, twitter_username='l33tmIkE')
         ReplyFactory(user=u2, twitter_username='mikey')
 

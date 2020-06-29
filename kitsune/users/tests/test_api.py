@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from rest_framework.test import APIClient
 
@@ -28,7 +28,7 @@ class UsernamesTests(TestCase):
     def test_no_query(self):
         res = self.client.get(self.url)
         eq_(200, res.status_code)
-        eq_('[]', res.content)
+        eq_(b'[]', res.content)
 
     def test_query_old(self):
         res = self.client.get(urlparams(self.url, term='a'))

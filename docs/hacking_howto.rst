@@ -59,7 +59,7 @@ Requirements
 These are required for the minimum installation:
 
 * git
-* Python 2.7
+* Python 3.8
 * pip: `<https://pip.pypa.io/en/latest/>`_
 * virtualenv
 * MariaDB 5.5 server and client headers
@@ -133,7 +133,7 @@ local development much easier, especially when working on multiple projects.
 
 To create a virtual environment::
 
-    $ virtualenv venv
+    $ python -m venv venv
 
 which creates a virtualenv named "venv" in your current directory (which should
 be the root of the git repo. Now activate the virtualenv::

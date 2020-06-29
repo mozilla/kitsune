@@ -21,7 +21,6 @@ from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_http_methods,
                                           require_POST)
-from django_statsd.clients import statsd
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -59,10 +58,9 @@ def doc_page_cache(view):
     def _doc_page_cache_view(request, document_slug, *args, **kwargs):
         # We skip caching for authed users or if redirect=no
         # is in the query string or if we show the aaq widget
-        if (request.user.is_authenticated() or
+        if (request.user.is_authenticated or
                 request.GET.get('redirect') == 'no' or
                 request.session.get('product_key')):
-            statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
 
         cache_key = doc_html_cache_key(
@@ -71,18 +69,16 @@ def doc_page_cache(view):
 
         html, headers = cache.get(cache_key, (None, None))
         if html is not None:
-            statsd.incr('wiki.document_view.cache.hit')
             res = HttpResponse(html)
-            for key, val in headers.items():
+            for key, val in list(headers.items()):
                 res[key] = val
             return res
 
-        statsd.incr('wiki.document_view.cache.miss')
         response = view(request, document_slug, *args, **kwargs)
 
         # We only cache if the response returns HTTP 200.
         if response.status_code == 200:
-            cache.set(cache_key, (response.content, dict(response._headers.values())))
+            cache.set(cache_key, (response.content, dict(list(response._headers.values()))))
 
         return response
     return _doc_page_cache_view
@@ -223,7 +219,7 @@ def document(request, document_slug, document=None):
     if (
         settings.SUMO_BANNER_STRING and
         doc_for_banner and not
-        request.user.is_authenticated() and
+        request.user.is_authenticated and
         any(x in doc_for_banner.slug for x in settings.SUMO_BANNER_STRING)
     ):
         show_cta_banner = True
@@ -268,7 +264,7 @@ def list_documents(request, category=None):
         except ValueError:
             raise Http404
         try:
-            category = unicode(dict(CATEGORIES)[category_id])
+            category = str(dict(CATEGORIES)[category_id])
         except KeyError:
             raise Http404
 
@@ -320,7 +316,6 @@ def _document_lock_check(document_id):
         key = _document_lock_key.format(id=document_id)
         return redis.get(key)
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
         return None
 
@@ -338,7 +333,6 @@ def _document_lock_steal(document_id, user_name, expire_time=60 * 15):
         redis.expire(key, expire_time)
         return it_worked
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
         return False
 
@@ -363,7 +357,6 @@ def _document_lock_clear(document_id, user_name):
         else:
             return False
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
         return False
 
@@ -467,7 +460,7 @@ def edit_document(request, document_slug, revision_id=None):
 
                 topics = []
                 for t in post_data.getlist('topics'):
-                    topics.append(long(t))
+                    topics.append(int(t))
                 post_data.setlist('topics', topics)
 
                 doc_form = DocumentForm(
@@ -550,7 +543,6 @@ def preview_revision(request):
     wiki_content = request.POST.get('content', '')
     slug = request.POST.get('slug')
     locale = request.POST.get('locale')
-    statsd.incr('wiki.preview')
 
     if slug and locale:
         doc = get_object_or_404(Document, slug=slug, locale=locale)
@@ -706,11 +698,11 @@ def review_revision(request, document_slug, revision_id):
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
             msg = form.cleaned_data['comment']
-            send_reviewed_notification.delay(rev, doc, msg)
-            send_contributor_notification(based_on_revs, rev, doc, msg)
+            send_reviewed_notification.delay(rev.id, doc.id, msg)
+            based_on_revs_ids = based_on_revs.values_list('id', flat=True)
+            send_contributor_notification(based_on_revs_ids, rev.id, doc.id, msg)
 
-            statsd.incr('wiki.review')
-            render_document_cascade.delay(doc)
+            render_document_cascade.delay(doc.id)
 
             return HttpResponseRedirect(reverse('wiki.document_revisions',
                                                 args=[document_slug]))
@@ -810,7 +802,7 @@ def translate(request, document_slug, revision_id=None):
             args=[parent_doc.slug]))
 
     if not parent_doc.is_localizable:
-        message = _lazy(u'You cannot translate this document.')
+        message = _lazy('You cannot translate this document.')
         return render(request, 'handlers/400.html', {
             'message': message},
             status=400)
@@ -995,7 +987,6 @@ def watch_document(request, document_slug):
     document = get_object_or_404(
         Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     EditDocumentEvent.notify(request.user, document)
-    statsd.incr('wiki.watches.document')
     return HttpResponseRedirect(document.get_absolute_url())
 
 
@@ -1017,7 +1008,6 @@ def watch_locale(request, product=None):
     if product is not None:
         kwargs['product'] = product
     ReviewableRevisionInLocaleEvent.notify(request.user, **kwargs)
-    statsd.incr('wiki.watches.locale')
 
     return HttpResponse()
 
@@ -1045,7 +1035,6 @@ def watch_approved(request, product=None):
     if product is not None:
         kwargs['product'] = product
     ApproveRevisionInLocaleEvent.notify(request.user, **kwargs)
-    statsd.incr('wiki.watches.approved')
 
     return HttpResponse()
 
@@ -1076,7 +1065,6 @@ def watch_ready(request, product=None):
     if product is not None:
         kwargs['product'] = product
     ReadyRevisionEvent.notify(request.user, **kwargs)
-    statsd.incr('wiki.watches.ready')
 
     return HttpResponse()
 
@@ -1150,13 +1138,12 @@ def helpful_vote(request, document_slug):
 
         # If user is over the limit, don't save but pretend everything is ok.
         if not request.limited:
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 vote.creator = request.user
             else:
                 vote.anonymous_id = request.anonymous.anonymous_id
 
             vote.save()
-            statsd.incr('wiki.vote')
 
             # Send a survey if flag is enabled and vote wasn't helpful.
             if 'helpful' not in request.POST:
@@ -1233,7 +1220,7 @@ def get_helpful_votes_async(request, document_slug):
     for res in results:
         revisions.add(int(res[0]))
         created_list.append(res[3])
-        date = int(time.mktime(res[3].timetuple()) / 86400) * 86400
+        date = int(time.mktime(res[3].timetuple()) // 86400) * 86400
 
         datums.append({
             'yes': int(res[1]),
@@ -1250,7 +1237,7 @@ def get_helpful_votes_async(request, document_slug):
     max_created = max(created_list)
 
     # Zero fill data
-    timestamp = int(time.mktime(res[3].timetuple()) / 86400) * 86400
+    timestamp = int(time.mktime(res[3].timetuple()) // 86400) * 86400
     end = time.mktime(datetime.now().timetuple())
     while timestamp <= end:
         if timestamp not in dates_with_data:
@@ -1275,7 +1262,7 @@ def get_helpful_votes_async(request, document_slug):
         rdate = rev.reviewed or rev.created
         rev_data.append({
             'x': int(time.mktime(rdate.timetuple())),
-            'text': unicode(_('Revision %s')) % rev.created
+            'text': str(_('Revision %s')) % rev.created
         })
 
     # Rickshaw wants data like
@@ -1489,7 +1476,6 @@ def _save_rev_and_notify(rev_form, creator, document, based_on_id=None,
                          base_rev=None):
     """Save the given RevisionForm and send notifications."""
     new_rev = rev_form.save(creator, document, based_on_id, base_rev)
-    statsd.incr('wiki.revision')
 
     # Enqueue notifications
     ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)
@@ -1557,18 +1543,18 @@ def what_links_here(request, document_slug):
     doc = get_object_or_404(Document, locale=locale, slug=document_slug)
 
     links = {}
-    for l in doc.links_to():
-        if doc.locale == l.linked_from.locale:
-            if l.kind not in links:
-                links[l.kind] = []
-            links[l.kind].append(l.linked_from)
+    for link_to in doc.links_to():
+        if doc.locale == link_to.linked_from.locale:
+            if link_to.kind not in links:
+                links[link_to.kind] = []
+            links[link_to.kind].append(link_to.linked_from)
 
-    c = {
+    ctx = {
         'document': doc,
         'relations': links
     }
 
-    return render(request, 'wiki/what_links_here.html', c)
+    return render(request, 'wiki/what_links_here.html', ctx)
 
 
 def get_fallback_locale(doc, request):

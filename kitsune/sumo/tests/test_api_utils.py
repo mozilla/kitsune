@@ -1,6 +1,6 @@
 import pytz
 from datetime import datetime
-from mock import Mock
+from unittest.mock import Mock
 from nose.tools import eq_
 
 from django.test.client import RequestFactory
@@ -38,20 +38,20 @@ class TestInequalityFilterBackend(TestCase):
 
     def test_gt_whitelist(self):
         """gt works, and that non-whitelisted variables don't get filtered."""
-        self.view.filter_fields = ['x']
+        self.view.filterset_fields = ['x']
         # `x` should be filtered, but `y` should not, since it is not in
-        # `filter_fields`
+        # `filterset_fields`
         self.request.query_params = {'x__gt': 10, 'y': 5}
         self.backend.filter_queryset(self.request, self.queryset, self.view)
         self.queryset.filter.assert_called_with(x__gt=10)
 
     def test_lt_gte_multiple(self):
         """multiple fields, gte, and lt."""
-        self.view.filter_fields = ['x', 'y']
+        self.view.filterset_fields = ['x', 'y']
         self.request.query_params = {'x__gte': 10, 'y__lt': 5}
         self.backend.filter_queryset(self.request, self.queryset, self.view)
-        calls = sorted(self.queryset.method_calls)
-        # Since both variables are in `filter_fields`, they both get processed.
+        calls = self.queryset.method_calls
+        # Since both variables are in `filterset_fields`, they both get processed.
         expected = [('filter', (), {'x__gte': 10}),
                     ('filter', (), {'y__lt': 5})]
         eq_(calls, expected)
@@ -108,11 +108,11 @@ class TestPermissionMod(TestCase):
 class TestJsonRenderer(TestCase):
 
     def test_it_works(self):
-        expected = '{"foo":"bar"}'
+        expected = b'{"foo":"bar"}'
         actual = api_utils.JSONRenderer().render({'foo': 'bar'})
         eq_(expected, actual)
 
     def test_it_escapes_bracket_slash(self):
-        expected = r'{"xss":"<\/script>"}'
+        expected = rb'{"xss":"<\/script>"}'
         actual = api_utils.JSONRenderer().render({'xss': '</script>'})
         eq_(expected, actual)

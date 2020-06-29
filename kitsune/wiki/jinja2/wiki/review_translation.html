@@ -37,9 +37,9 @@
         <p>
           {{ _('This translation was already reviewed by {user} on {date}.')|fe(user=revision.reviewer, date=datetimeformat(revision.reviewed, format='longdatetime')) }}
         </p>
-      {% elif current_revision_id > revision.id %}
+      {% elif current_revision_id and current_revision_id > revision.id %}
         <p>
-          {% if latest_unapproved_revision_id > current_revision_id %}
+          {% if latest_unapproved_revision_id and latest_unapproved_revision_id > current_revision_id %}
             {{ _('This version is outdated, but there is a new version available.') }}
             <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest version.') }}</a>
           {% else %}

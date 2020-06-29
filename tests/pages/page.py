@@ -4,7 +4,7 @@
 
 import re
 import time
-from urlparse import urljoin
+from urllib.parse import urljoin
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException

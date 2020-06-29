@@ -1,14 +1,11 @@
-from django.http import HttpResponsePermanentRedirect, HttpResponse
+from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
-
 from nose.tools import eq_
 
-from kitsune.sumo.middleware import (
-    PlusToSpaceMiddleware,
-    CacheHeadersMiddleware,
-    EnforceHostIPMiddleware,
-)
+from kitsune.sumo.middleware import (CacheHeadersMiddleware,
+                                     EnforceHostIPMiddleware,
+                                     PlusToSpaceMiddleware)
 from kitsune.sumo.tests import TestCase
 
 
@@ -67,27 +64,27 @@ class CacheHeadersMiddlewareTestCase(TestCase):
         req = self.rf.get('/')
         resp = HttpResponse('OK')
         resp = self.mw.process_response(req, resp)
-        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
+        assert resp['cache-control'] == 'max-age=0, no-cache, no-store, must-revalidate'
 
     @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
     def test_post_request(self):
         req = self.rf.post('/')
         resp = HttpResponse('OK')
         resp = self.mw.process_response(req, resp)
-        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
+        assert resp['cache-control'] == 'max-age=0, no-cache, no-store, must-revalidate'
 
 
 class TrailingSlashMiddlewareTestCase(TestCase):
     def test_no_trailing_slash(self):
-        response = self.client.get(u'/en-US/ohnoez')
+        response = self.client.get('/en-US/ohnoez')
         eq_(response.status_code, 404)
 
     def test_404_trailing_slash(self):
-        response = self.client.get(u'/en-US/ohnoez/')
+        response = self.client.get('/en-US/ohnoez/')
         eq_(response.status_code, 404)
 
     def test_remove_trailing_slash(self):
-        response = self.client.get(u'/en-US/home/?xxx=\xc3')
+        response = self.client.get('/en-US/home/?xxx=%C3%83')
         eq_(response.status_code, 301)
         assert response['Location'].endswith('/en-US/home?xxx=%C3%83')
 
@@ -132,8 +129,8 @@ class PlusToSpaceTestCase(TestCase):
 
     def test_smart_query_string(self):
         """The request QUERY_STRING might not be unicode."""
-        request = self.rf.get(u'/pa+th')
+        request = self.rf.get('/pa+th')
         request.LANGUAGE_CODE = 'ja'
-        request.META['QUERY_STRING'] = 's=\xe3\x82\xa2'
+        request.META['QUERY_STRING'] = 's=%E3%82%A2'
         response = self.ptsm.process_request(request)
         eq_('/ja/pa%20th?s=%E3%82%A2', response['location'])

@@ -59,7 +59,7 @@ class UploadImageTestCase(TestCase):
 
     def test_upload_image(self):
         """Uploading an image works."""
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             r = self._make_post_request(image=f)
 
         eq_(200, r.status_code)
@@ -82,7 +82,7 @@ class UploadImageTestCase(TestCase):
 
     def test_upload_unicode_image(self):
         """Uploading an unicode image works."""
-        with open(u'kitsune/upload/tests/media/123ascii\u6709\u52b9.jpg', 'rb') as f:
+        with open('kitsune/upload/tests/media/123ascii\u6709\u52b9.jpg', 'rb') as f:
             r = self._make_post_request(image=f)
 
         eq_(200, r.status_code)
@@ -195,7 +195,7 @@ class UploadImageTestCase(TestCase):
 
         thisdir = os.path.dirname(__file__)
         path = os.path.join(thisdir, 'media', 'test.jpg')
-        with open(path) as f:
+        with open(path, 'rb') as f:
             long_file_name = ('long_file_name' * 17) + '.jpg'
             image = SimpleUploadedFile(name=long_file_name, content=f.read(),
                                        content_type='image/jpg')

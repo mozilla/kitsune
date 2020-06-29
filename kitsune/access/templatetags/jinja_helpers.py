@@ -25,6 +25,6 @@ def has_perm_or_owns(context, perm, obj, perm_obj, field_name='creator'):
     context.
     """
     user = context['request'].user
-    if user.is_anonymous():
+    if user.is_anonymous:
         return False
     return access.has_perm_or_owns(user, perm, obj, perm_obj, field_name)

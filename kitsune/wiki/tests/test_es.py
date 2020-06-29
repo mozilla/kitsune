@@ -27,12 +27,12 @@ class DocumentUpdateTests(ElasticTestCase):
         t2 = TopicFactory(display_order=2)
         p = ProductFactory()
         doc1 = DocumentFactory(
-            title=u'Audio too loud',
+            title='Audio too loud',
             products=[p],
             topics=[t1, t2])
         RevisionFactory(document=doc1, is_approved=True)
 
-        doc2 = DocumentFactory(title=u'Audio too loud bork bork', parent=doc1, tags=[u'badtag'])
+        doc2 = DocumentFactory(title='Audio too loud bork bork', parent=doc1, tags=['badtag'])
         RevisionFactory(document=doc2, is_approved=True)
 
         # Verify the parent has the right tags.
@@ -50,7 +50,7 @@ class DocumentUpdateTests(ElasticTestCase):
         refresh the index.
 
         """
-        t = TopicFactory(slug=u'hiphop')
+        t = TopicFactory(slug='hiphop')
         eq_(DocumentMappingType.search().filter(topic=t.slug).count(), 0)
         doc = DocumentFactory()
         RevisionFactory(document=doc, is_approved=True)
@@ -73,7 +73,7 @@ class DocumentUpdateTests(ElasticTestCase):
         refresh the index.
 
         """
-        p = ProductFactory(slug=u'desktop')
+        p = ProductFactory(slug='desktop')
         eq_(DocumentMappingType.search().filter(product=p.slug).count(), 0)
         doc = DocumentFactory()
         RevisionFactory(document=doc, is_approved=True)
@@ -108,7 +108,7 @@ class DocumentUpdateTests(ElasticTestCase):
         """Make sure we don't index redirects"""
         # First create a revision that doesn't have a redirect and
         # make sure it's in the index.
-        doc = DocumentFactory(title=u'wool hats')
+        doc = DocumentFactory(title='wool hats')
         RevisionFactory(document=doc, is_approved=True)
         self.refresh()
         eq_(DocumentMappingType.search().query(document_title__match='wool').count(), 1)
@@ -124,7 +124,7 @@ class DocumentUpdateTests(ElasticTestCase):
         # Create a document with a revision with no keywords. It
         # shouldn't show up with a document_keywords term query for
         # 'wool' since it has no keywords.
-        doc = DocumentFactory(title=u'wool hats')
+        doc = DocumentFactory(title='wool hats')
         RevisionFactory(document=doc, is_approved=True)
         self.refresh()
         eq_(DocumentMappingType.search().query(

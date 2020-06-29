@@ -2,7 +2,7 @@
 import logging
 import sys
 import textwrap
-import xmlrpclib
+import xmlrpc.client
 
 
 USAGE = 'Usage: sprint_report.py <SPRINT>'
@@ -44,7 +44,7 @@ UNWANTED_COMPONENT_FIELDS = [
 ]
 
 
-class SessionTransport(xmlrpclib.SafeTransport):
+class SessionTransport(xmlrpc.client.SafeTransport):
     """
     XML-RPC HTTPS transport that stores auth cookies in the cache.
     """
@@ -65,7 +65,7 @@ class SessionTransport(xmlrpclib.SafeTransport):
             cache.set(SESSION_COOKIES_CACHE_KEY,
                       self._session_cookies, 0)
             log.debug('Got cookie: %s', self._session_cookies)
-        return xmlrpclib.Transport.parse_response(self, response)
+        return xmlrpc.client.Transport.parse_response(self, response)
 
     def send_host(self, connection, host):
         cookies = self.session_cookies
@@ -73,7 +73,7 @@ class SessionTransport(xmlrpclib.SafeTransport):
             for cookie in cookies:
                 connection.putheader('Cookie', cookie)
                 log.debug('Sent cookie: %s', cookie)
-        return xmlrpclib.Transport.send_host(self, connection, host)
+        return xmlrpc.client.Transport.send_host(self, connection, host)
 
     def get_cookies(self, response):
         cookie_headers = None
@@ -85,7 +85,7 @@ class SessionTransport(xmlrpclib.SafeTransport):
         return cookie_headers
 
 
-class BugzillaAPI(xmlrpclib.ServerProxy):
+class BugzillaAPI(xmlrpc.client.ServerProxy):
     def get_bug_ids(self, **kwargs):
         """Return list of ids of bugs from a search."""
         kwargs.update({
@@ -133,7 +133,7 @@ class BugzillaAPI(xmlrpclib.ServerProxy):
         log.debug('Getting history for bugs: %s', bug_ids)
         try:
             history = self.Bug.history({'ids': bug_ids}).get('bugs')
-        except xmlrpclib.Fault:
+        except xmlrpc.client.Fault:
             log.exception('Problem getting history for bug ids: %s', bug_ids)
             return {}
         return dict((h['id'], h['history']) for h in history)
@@ -145,10 +145,10 @@ class BugzillaAPI(xmlrpclib.ServerProxy):
                 'ids': bug_ids,
                 'include_fields': ['id', 'creator', 'time', 'text'],
                 }).get('bugs')
-        except xmlrpclib.Fault:
+        except xmlrpc.client.Fault:
             log.exception('Problem getting comments for bug ids: %s', bug_ids)
             return {}
-        return dict((int(bid), cids) for bid, cids in comments.iteritems())
+        return dict((int(bid), cids) for bid, cids in comments.items())
 
 
 def wrap(text, indent='    '):
@@ -239,33 +239,33 @@ def sprint_timeline(bugs, sprint):
 
     timeline.sort(key=lambda item: item[0])
     for mem in timeline:
-        print '%s: %s: %s' % (mem[0], mem[1], mem[2])
-        print '    %s -> %s' % (mem[3] if mem[3] else 'unassigned', mem[4])
-        print wrap(mem[5])
-        print ''
+        print('%s: %s: %s' % (mem[0], mem[1], mem[2]))
+        print('    %s -> %s' % (mem[3] if mem[3] else 'unassigned', mem[4]))
+        print(wrap(mem[5]))
+        print('')
 
 
 def print_header(text):
-    print text
-    print '=' * len(text)
-    print ''
+    print(text)
+    print('=' * len(text))
+    print('')
 
 
 def main(argv):
     # logging.basicConfig(level=logging.DEBUG)
 
     if not argv:
-        print USAGE
-        print 'Error: Must specify the sprint to report on. e.g. 2012.19'
+        print(USAGE)
+        print('Error: Must specify the sprint to report on. e.g. 2012.19')
         return 1
 
     sprint = argv[0]
 
-    print HEADER
+    print(HEADER)
 
-    print ''
-    print 'Working on %s' % sprint
-    print ''
+    print('')
+    print('Working on %s' % sprint)
+    print('')
 
     bugzilla = BugzillaAPI(
         BZ_URL,

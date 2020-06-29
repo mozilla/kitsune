@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 
 from kitsune.questions.models import Answer
 from kitsune.search.tasks import index_task
+from kitsune.search.utils import to_class_path
 from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import Revision
 
@@ -36,4 +37,4 @@ class Command(BaseCommand):
         # Note:
         # Army of Awesome replies are live indexed. No need to do anything here.
 
-        index_task.delay(UserMappingType, list(set(user_ids)))
+        index_task.delay(to_class_path(UserMappingType), list(set(user_ids)))

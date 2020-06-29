@@ -22,7 +22,7 @@
         <hr class="section-break"/>
         {% endif %}
 
-        {% if request.user.is_authenticated() and request.user != profile.user %}
+        {% if request.user.is_authenticated and request.user != profile.user %}
           {% if user.has_perm('users.change_profile') %}
             <div id="admin-actions">
               <a class="edit" href="{{ url('users.edit_profile', profile.user.username) }}">
@@ -57,7 +57,7 @@
           {% if profile.public_email or profile.website or profile.twitter or
                 profile.facebook or profile.mozillians or profile.irc_handle %}
               <ul class="avatar-group--details-list">
-                {% if profile.public_email and request.user.is_authenticated() %}
+                {% if profile.public_email and request.user.is_authenticated %}
                   <li class="avatar-group--details-item">
                     <label class="avatar-group--details-label">{{ _('Email') }}:</label>
                     {{ profile.user.email|public_email }}

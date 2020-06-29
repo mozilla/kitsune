@@ -2,13 +2,14 @@
 import json
 import random
 from datetime import datetime, timedelta
-from string import letters
+from string import ascii_letters
 
-import mock
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
+
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
@@ -67,7 +68,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_answer_upload(self):
         """Posting answer attaches an existing uploaded image to the answer."""
-        f = open("kitsune/upload/tests/media/test.jpg")
+        f = open("kitsune/upload/tests/media/test.jpg", "rb")
         post(
             self.client,
             "upload.up_image_async",
@@ -534,7 +535,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = post(self.client, "questions.lock", args=[q.id])
         eq_(200, response.status_code)
         eq_(True, Question.objects.get(pk=q.pk).is_locked)
-        assert "This thread was closed." in response.content
+        assert b"This thread was closed." in response.content
 
         # now unlock it
         response = post(self.client, "questions.lock", args=[q.id])
@@ -1217,20 +1218,20 @@ class QuestionsTemplateTestCase(TestCaseBase):
             content="test question content lorem ipsum <select></select>",
         )
         response = self.client.get(reverse("questions.list", args=["all"]))
-        assert "test question lorem ipsum" in response.content
-        assert "test question content lorem ipsum" in response.content
+        assert b"test question lorem ipsum" in response.content
+        assert b"test question content lorem ipsum" in response.content
         doc = pq(response.content)
         eq_(0, len(doc("article.questions select")))
 
     def test_truncated_text_is_stripped(self):
         """Verify we strip html from truncated text."""
-        long_str = "".join(random.choice(letters) for x in xrange(170))
+        long_str = "".join(random.choice(ascii_letters) for x in range(170))
         QuestionFactory(content="<p>%s</p>" % long_str)
         response = self.client.get(reverse("questions.list", args=["all"]))
 
         # Verify that the <p> was stripped
-        assert '<p class="short-text"><p>' not in response.content
-        assert '<p class="short-text">%s' % long_str[:5] in response.content
+        assert b'<p class="short-text"><p>' not in response.content
+        assert b'<p class="short-text">%s' % long_str[:5].encode() in response.content
 
     def test_views(self):
         """Verify the view count is displayed correctly."""
@@ -1245,7 +1246,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
             created=(datetime.now() - timedelta(days=200)), is_archived=True
         )
         response = get(self.client, "questions.details", args=[ques.id])
-        assert "Archive this post" not in response.content
+        assert b"Archive this post" not in response.content
 
     def test_show_is_empty_string_doesnt_500(self):
         QuestionFactory()
@@ -1398,10 +1399,10 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
-        p = ProductFactory(title="Firefox", slug="firefox")
-        for l in QuestionLocale.objects.all():
-            p.questions_locales.add(l)
-        TopicFactory(slug="fix-problems", product=p)
+        product = ProductFactory(title="Firefox", slug="firefox")
+        for loc in QuestionLocale.objects.all():
+            product.questions_locales.add(loc)
+        TopicFactory(slug="fix-problems", product=product)
         extra = {}
         if locale is not None:
             extra["locale"] = locale

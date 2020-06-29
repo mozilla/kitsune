@@ -39,7 +39,7 @@ from kitsune.wiki.models import DocumentMappingType
 log = logging.getLogger('k.search')
 
 
-EXCERPT_JOINER = pgettext_lazy('between search excerpts', u'...')
+EXCERPT_JOINER = pgettext_lazy('between search excerpts', '...')
 
 
 def cache_control(resp, cache_period):
@@ -603,7 +603,7 @@ def opensearch_suggestions(request):
     results = searcher[:10]
 
     def urlize(r):
-        return u'%s://%s%s' % (
+        return '%s://%s%s' % (
             'https' if request.is_secure() else 'http',
             request.get_host(),
             r['url'][0]
@@ -631,7 +631,7 @@ def opensearch_suggestions(request):
 @cache_page(60 * 60 * 168)  # 1 week.
 def opensearch_plugin(request):
     """Render an OpenSearch Plugin."""
-    host = u'%s://%s' % ('https' if request.is_secure() else 'http', request.get_host())
+    host = '%s://%s' % ('https' if request.is_secure() else 'http', request.get_host())
 
     # Use `render_to_response` here instead of `render` because `render`
     # includes the request in the context of the response. Requests
@@ -663,7 +663,7 @@ def _build_es_excerpt(result, first_only=False):
         if we should show all bits
 
     """
-    bits = [m.strip() for m in chain(*result.es_meta.highlight.values())]
+    bits = [m.strip() for m in chain(*list(result.es_meta.highlight.values()))]
 
     if first_only and bits:
         excerpt = bits[0]

@@ -20,7 +20,7 @@ class QuestionUpdateTests(ElasticTestCase):
         search = QuestionMappingType.search()
 
         # Create a question--that adds one document to the index.
-        q = QuestionFactory(title=u'Does this test work?')
+        q = QuestionFactory(title='Does this test work?')
         self.refresh()
         eq_(search.count(), 1)
         eq_(search.query(question_title__match='test').count(), 1)
@@ -29,7 +29,7 @@ class QuestionUpdateTests(ElasticTestCase):
         eq_(search.query(question_answer_content__match='only').count(), 0)
 
         # Create an answer for the question. It should be searchable now.
-        AnswerFactory(content=u"There's only one way to find out!", question=q)
+        AnswerFactory(content="There's only one way to find out!", question=q)
         self.refresh()
         eq_(search.query(question_answer_content__match='only').count(), 1)
 
@@ -40,7 +40,7 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_no_answers_deleted(self):
         search = QuestionMappingType.search()
 
-        q = QuestionFactory(title=u'Does this work?')
+        q = QuestionFactory(title='Does this work?')
         self.refresh()
         eq_(search.query(question_title__match='work').count(), 1)
 
@@ -51,8 +51,8 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_one_answer_deleted(self):
         search = QuestionMappingType.search()
 
-        q = QuestionFactory(title=u'are model makers the new pink?')
-        a = AnswerFactory(content=u'yes.', question=q)
+        q = QuestionFactory(title='are model makers the new pink?')
+        a = AnswerFactory(content='yes.', question=q)
         self.refresh()
 
         # Question and its answers are a single document--so the index count should be only 1.
@@ -73,7 +73,7 @@ class QuestionUpdateTests(ElasticTestCase):
 
         # Create a question and verify it doesn't show up in a
         # query for num_votes__gt=0.
-        q = QuestionFactory(title=u'model makers will inherit the earth')
+        q = QuestionFactory(title='model makers will inherit the earth')
         self.refresh()
         eq_(search.filter(question_num_votes__gt=0).count(), 0)
 
@@ -87,7 +87,7 @@ class QuestionUpdateTests(ElasticTestCase):
         refresh the index.
 
         """
-        tag = u'hiphop'
+        tag = 'hiphop'
         eq_(QuestionMappingType.search().filter(question_tag=tag).count(), 0)
         q = QuestionFactory()
         self.refresh()
@@ -102,7 +102,7 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_is_unindexed_on_creator_delete(self):
         search = QuestionMappingType.search()
 
-        q = QuestionFactory(title=u'Does this work?')
+        q = QuestionFactory(title='Does this work?')
         self.refresh()
         eq_(search.query(question_title__match='work').count(), 1)
 
@@ -115,28 +115,28 @@ class QuestionUpdateTests(ElasticTestCase):
 
         u = UserFactory(username='dexter')
 
-        QuestionFactory(creator=u, title=u'Hello')
-        AnswerFactory(creator=u, content=u'I love you')
+        QuestionFactory(creator=u, title='Hello')
+        AnswerFactory(creator=u, content='I love you')
         self.refresh()
         eq_(search.query(question_title__match='hello')[0]['question_creator'],
-            u'dexter')
+            'dexter')
         query = search.query(question_answer_content__match='love')
         eq_(query[0]['question_answer_creator'],
-            [u'dexter'])
+            ['dexter'])
 
         # Change the username and verify the index.
         u.username = 'walter'
         u.save()
         self.refresh()
         eq_(search.query(question_title__match='hello')[0]['question_creator'],
-            u'walter')
+            'walter')
         query = search.query(question_answer_content__match='love')
-        eq_(query[0]['question_answer_creator'], [u'walter'])
+        eq_(query[0]['question_answer_creator'], ['walter'])
 
     def test_question_spam_is_unindexed(self):
         search = QuestionMappingType.search()
 
-        q = QuestionFactory(title=u'I am spam')
+        q = QuestionFactory(title='I am spam')
         self.refresh()
         eq_(search.query(question_title__match='spam').count(), 1)
 
@@ -148,7 +148,7 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_answer_spam_is_unindexed(self):
         search = QuestionMappingType.search()
 
-        a = AnswerFactory(content=u'I am spam')
+        a = AnswerFactory(content='I am spam')
         self.refresh()
         eq_(search.query(question_answer_content__match='spam').count(), 1)
 

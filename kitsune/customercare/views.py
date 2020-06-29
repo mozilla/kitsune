@@ -1,5 +1,6 @@
 import json
 import logging
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from email.utils import parsedate
 
@@ -7,12 +8,10 @@ from django.conf import settings
 from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseServerError)
 from django.shortcuts import render
-from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from django.views.decorators.http import require_POST, require_GET
 
 import bleach
-from django_statsd.clients import statsd
 from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
@@ -26,7 +25,7 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 log = logging.getLogger('k.customercare')
 
 MAX_TWEETS = 20
-FILTERS = SortedDict([('recent', _lazy('Most Recent')),
+FILTERS = OrderedDict([('recent', _lazy('Most Recent')),
                       ('unanswered', _lazy('Unanswered')),
                       ('answered', _lazy('Answered')),
                       ('all', _lazy('All'))])
@@ -140,15 +139,11 @@ def landing(request):
     try:
         redis = redis_client(name='default')
     except RedisError as e:
-        statsd.incr('redis.errror')
         log.error('Redis error: %s' % e)
 
     contributor_stats = redis and redis.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
     if contributor_stats:
         contributor_stats = json.loads(contributor_stats)
-        statsd.incr('customercare.stats.contributors.hit')
-    else:
-        statsd.incr('customercare.stats.contributors.miss')
 
     twitter_user = None
     if request.twitter.authed:
@@ -170,7 +165,7 @@ def landing(request):
         'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
                               filter='unanswered',
                               https=request.is_secure()),
-        'authed': request.user.is_authenticated() and request.twitter.authed,
+        'authed': request.user.is_authenticated and request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
         'filter': 'unanswered',
@@ -221,7 +216,7 @@ def twitter_post(request):
         result = request.twitter.api.update_status(
             status=content,
             in_reply_to_status_id=reply_to_id)
-    except (TwythonError, TwythonAuthError), e:
+    except (TwythonError, TwythonAuthError) as e:
         # L10n: {message} is an error coming from our twitter api library
         return HttpResponseBadRequest(
             _('An error occured: {message}').format(message=e))
@@ -261,7 +256,7 @@ def twitter_post(request):
 
     # Record in our Reply table.
     Reply.objects.create(
-        user=request.user if request.user.is_authenticated() else None,
+        user=request.user if request.user.is_authenticated else None,
         twitter_username=author['screen_name'],
         tweet_id=status['id'],
         raw_json=json.dumps(raw_tweet_data),
@@ -306,7 +301,7 @@ def hide_tweet(request):
     try:
         tweet.hidden = True
         tweet.save(force_update=True)
-    except Exception, e:
+    except Exception as e:
         return HttpResponseServerError(
             _('An error occured: {message}').format(message=e))
 

@@ -12,7 +12,7 @@ from kitsune.wiki.models import Locale
 
 class Announcement(ModelBase):
     created = models.DateTimeField(default=datetime.now)
-    creator = models.ForeignKey(User)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     show_after = models.DateTimeField(
         default=datetime.now,
         db_index=True,
@@ -36,14 +36,14 @@ class Announcement(ModelBase):
             "document's content."
         ),
     )
-    group = models.ForeignKey(Group, null=True, blank=True)
-    locale = models.ForeignKey(Locale, null=True, blank=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
+    locale = models.ForeignKey(Locale, on_delete=models.CASCADE, null=True, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         excerpt = self.content[:50]
         if self.group:
-            return u"[{group}] {excerpt}".format(group=self.group, excerpt=excerpt)
-        return u"{excerpt}".format(excerpt=excerpt)
+            return "[{group}] {excerpt}".format(group=self.group, excerpt=excerpt)
+        return "{excerpt}".format(excerpt=excerpt)
 
     def is_visible(self):
         now = datetime.now()

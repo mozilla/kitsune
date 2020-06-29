@@ -72,10 +72,10 @@ class SimpleSearchTests(ElasticTestCase):
     def test_page_invalid(self):
         """Ensure non-integer param doesn't throw exception."""
         doc = DocumentFactory(
-            title=u'How to fix your audio',
-            locale=u'en-US',
+            title='How to fix your audio',
+            locale='en-US',
             category=10,
-            tags=u'desktop')
+            tags='desktop')
         ApprovedRevisionFactory(document=doc)
 
         self.refresh()
@@ -104,10 +104,10 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_fallback_for_zero_results(self):
         """If there are no results, fallback to a list of top articles."""
-        firefox = ProductFactory(title=u'firefox', slug=u'desktop')
-        doc = DocumentFactory(title=u'audio1', locale=u'en-US', category=10, products=[firefox])
+        firefox = ProductFactory(title='firefox', slug='desktop')
+        doc = DocumentFactory(title='audio1', locale='en-US', category=10, products=[firefox])
         RevisionFactory(document=doc, is_approved=True)
-        doc = DocumentFactory(title=u'audio2', locale=u'en-US', category=10, products=[firefox])
+        doc = DocumentFactory(title='audio2', locale='en-US', category=10, products=[firefox])
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
@@ -116,7 +116,7 @@ class SimpleSearchTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {'q': 'piranha'})
         eq_(200, response.status_code)
 
-        assert "We couldn't find any results for" in response.content
+        assert b"We couldn't find any results for" in response.content
         doc = pq(response.content)
         eq_(2, len(doc('#search-results .result')))
 
@@ -132,7 +132,7 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_search_cookie(self):
         """Set a cookie with the latest search term."""
-        data = {'q': u'pagap\xf3 banco'}
+        data = {'q': 'pagap\xf3 banco'}
         cookie = settings.LAST_SEARCH_COOKIE
         response = self.client.get(reverse('search', locale='fr'), data)
         assert cookie in response.cookies
@@ -140,9 +140,9 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_empty_pages(self):
         """Tests requesting a page that has no results"""
-        ques = QuestionFactory(title=u'audio')
-        ques.tags.add(u'desktop')
-        ans = AnswerFactory(question=ques, content=u'volume')
+        ques = QuestionFactory(title='audio')
+        ques.tags.add('desktop')
+        ans = AnswerFactory(question=ques, content='volume')
         AnswerVoteFactory(answer=ans, helpful=True)
 
         self.refresh()
@@ -161,9 +161,9 @@ class SimpleSearchTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
-        p = ProductFactory(title=u'firefox', slug=u'desktop')
-        ques = QuestionFactory(title=u'audio', product=p)
-        ans = AnswerFactory(question=ques, content=u'volume')
+        p = ProductFactory(title='firefox', slug='desktop')
+        ques = QuestionFactory(title='audio', product=p)
+        ans = AnswerFactory(question=ques, content='volume')
         AnswerVoteFactory(answer=ans, helpful=True)
 
         self.refresh()
@@ -199,8 +199,8 @@ class SimpleSearchTests(ElasticTestCase):
         Bug #709202.
 
         """
-        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
-        doc.products.add(ProductFactory(title=u'firefox', slug=u'desktop'))
+        doc = DocumentFactory(title='audio', locale='en-US', category=10)
+        doc.products.add(ProductFactory(title='firefox', slug='desktop'))
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
@@ -228,16 +228,16 @@ class SimpleSearchTests(ElasticTestCase):
         Bug #767394
 
         """
-        p = ProductFactory(slug=u'desktop')
-        ques = QuestionFactory(title=u'audio', product=p)
-        ans = AnswerFactory(question=ques, content=u'volume')
+        p = ProductFactory(slug='desktop')
+        ques = QuestionFactory(title='audio', product=p)
+        ans = AnswerFactory(question=ques, content='volume')
         AnswerVoteFactory(answer=ans, helpful=True)
 
-        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
+        doc = DocumentFactory(title='audio', locale='en-US', category=10)
         doc.products.add(p)
         RevisionFactory(document=doc, is_approved=True)
 
-        thread1 = ThreadFactory(title=u'audio')
+        thread1 = ThreadFactory(title='audio')
         PostFactory(thread=thread1)
 
         self.refresh()
@@ -268,13 +268,13 @@ class SimpleSearchTests(ElasticTestCase):
         eq_(content['total'], 0)
 
     def test_filter_by_product(self):
-        desktop = ProductFactory(slug=u'desktop')
-        mobile = ProductFactory(slug=u'mobile')
-        ques = QuestionFactory(title=u'audio', product=desktop)
-        ans = AnswerFactory(question=ques, content=u'volume')
+        desktop = ProductFactory(slug='desktop')
+        mobile = ProductFactory(slug='mobile')
+        ques = QuestionFactory(title='audio', product=desktop)
+        ans = AnswerFactory(question=ques, content='volume')
         AnswerVoteFactory(answer=ans, helpful=True)
 
-        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
+        doc = DocumentFactory(title='audio', locale='en-US', category=10)
         doc.products.add(desktop)
         doc.products.add(mobile)
         RevisionFactory(document=doc, is_approved=True)
@@ -295,15 +295,15 @@ class SimpleSearchTests(ElasticTestCase):
         eq_(content['total'], 1)
 
     def test_filter_by_doctype(self):
-        desktop = ProductFactory(slug=u'desktop')
-        ques = QuestionFactory(title=u'audio', product=desktop)
-        ans = AnswerFactory(question=ques, content=u'volume')
+        desktop = ProductFactory(slug='desktop')
+        ques = QuestionFactory(title='audio', product=desktop)
+        ans = AnswerFactory(question=ques, content='volume')
         AnswerVoteFactory(answer=ans, helpful=True)
 
-        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10, products=[desktop])
+        doc = DocumentFactory(title='audio', locale='en-US', category=10, products=[desktop])
         RevisionFactory(document=doc, is_approved=True)
 
-        doc = DocumentFactory(title=u'audio too', locale=u'en-US', category=10, products=[desktop])
+        doc = DocumentFactory(title='audio too', locale='en-US', category=10, products=[desktop])
         RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()

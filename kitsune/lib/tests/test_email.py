@@ -79,7 +79,7 @@ class FlakyMockEmailBackend(MockEmailBackend):
 
     def send_messages(self, messages):
         super(FlakyMockEmailBackend, self).send_messages(messages)
-        return len(messages) / 2
+        return len(messages) // 2
 
 
 @override_settings(EMAIL_BACKEND='kitsune.lib.email.LoggingEmailBackend')

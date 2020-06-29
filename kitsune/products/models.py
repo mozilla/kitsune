@@ -20,11 +20,11 @@ class Product(ModelBase):
                               blank=True,
                               max_length=settings.MAX_FILEPATH_LENGTH,
                               # no l10n in admin
-                              help_text=u'Used on the the home page. Must be 484x244.')
+                              help_text='Used on the the home page. Must be 484x244.')
     image_alternate = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
                                         blank=True,
                                         max_length=settings.MAX_FILEPATH_LENGTH,
-                                        help_text=(u'Used everywhere except the home '
+                                        help_text=('Used everywhere except the home '
                                                    'page. Must be 96x96.'))
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
@@ -45,8 +45,8 @@ class Product(ModelBase):
     class Meta(object):
         ordering = ['display_order']
 
-    def __unicode__(self):
-        return u'%s' % self.title
+    def __str__(self):
+        return '%s' % self.title
 
     @property
     def image_url(self):
@@ -79,10 +79,10 @@ class Topic(ModelBase):
                               max_length=settings.MAX_FILEPATH_LENGTH)
 
     # Topics are product-specific
-    product = models.ForeignKey(Product, related_name='topics')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='topics')
 
     # Topics can optionally have a parent.
-    parent = models.ForeignKey('self', related_name='subtopics',
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='subtopics',
                                null=True, blank=True)
 
     # Dictates the order in which topics are displayed in topic lists.
@@ -92,14 +92,14 @@ class Topic(ModelBase):
     visible = models.BooleanField(default=False)
     # Whether or not this topic is used in the AAQ.
     in_aaq = models.BooleanField(
-        default=False, help_text=_lazy(u'Whether this topic is shown to users in the AAQ or not.'))
+        default=False, help_text=_lazy('Whether this topic is shown to users in the AAQ or not.'))
 
     class Meta(object):
         ordering = ['product', 'display_order']
         unique_together = ('slug', 'product')
 
-    def __unicode__(self):
-        return u'[%s] %s' % (self.product.title, self.title)
+    def __str__(self):
+        return '[%s] %s' % (self.product.title, self.title)
 
     @property
     def image_url(self):
@@ -150,7 +150,7 @@ class Version(ModelBase):
     slug = models.CharField(max_length=255, db_index=True)
     min_version = models.FloatField()
     max_version = models.FloatField()
-    product = models.ForeignKey('Product', related_name='versions')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='versions')
     visible = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
 
@@ -166,5 +166,5 @@ class Platform(ModelBase):
     # lists.
     display_order = models.IntegerField()
 
-    def __unicode__(self):
-        return u'%s' % self.name
+    def __str__(self):
+        return '%s' % self.name
