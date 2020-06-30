@@ -7,7 +7,7 @@ from celery import task
 log = logging.getLogger('k.task')
 
 
-@task()
+@task(serializer="pickle")
 def measure_queue_lag(queued_time):
     """A task that measures the time it was sitting in the queue."""
     lag = datetime.now() - queued_time
