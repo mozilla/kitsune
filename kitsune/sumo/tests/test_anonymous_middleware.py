@@ -10,6 +10,7 @@ from kitsune.sumo.tests import TestCase
 
 class TestAnonymousMiddleware(TestCase):
     """Tests for the anonymous middleware."""
+
     def setUp(self):
         super(TestAnonymousMiddleware, self).setUp()
 
@@ -55,7 +56,7 @@ class TestAnonymousMiddleware(TestCase):
         Make sure the value is read correctly and a new one isn't set."""
         # Create, add the anonymous cookie and process a request
         request = RequestFactory().request()
-        anon_id = '63de20c227be94560e3c679330c678ee'
+        anon_id = "63de20c227be94560e3c679330c678ee"
         request.COOKIES[settings.ANONYMOUS_COOKIE_NAME] = anon_id
         self.middleware.process_request(request)
 

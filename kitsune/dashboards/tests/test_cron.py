@@ -6,22 +6,26 @@ from django.core.management import call_command
 from nose.tools import eq_
 
 from kitsune.dashboards.management.commands.cache_most_unhelpful_kb_articles import (
-    _get_current_unhelpful, _get_old_unhelpful)
-from kitsune.dashboards.models import (L10N_ALL_CODE, L10N_TOP20_CODE,
-                                       L10N_TOP100_CODE, WikiMetric)
+    _get_current_unhelpful,
+    _get_old_unhelpful,
+)
+from kitsune.dashboards.models import L10N_ALL_CODE, L10N_TOP20_CODE, L10N_TOP100_CODE, WikiMetric
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.tests import SkipTest, TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
-                                HelpfulVoteFactory, RevisionFactory)
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    HelpfulVoteFactory,
+    RevisionFactory,
+)
 
 
 def _add_vote_in_past(rev, vote, days_back):
     HelpfulVoteFactory(
-        revision=rev,
-        helpful=vote,
-        created=date.today() - timedelta(days=days_back))
+        revision=rev, helpful=vote, created=date.today() - timedelta(days=days_back)
+    )
 
 
 def _make_backdated_revision(backdate):
@@ -53,8 +57,8 @@ class TopUnhelpfulArticlesTests(TestCase):
 
         result = _get_old_unhelpful()
         eq_(1, len(result))
-        self.assertAlmostEqual(0.2, result[r.document.id]['percentage'])
-        eq_(5, result[r.document.id]['total'])
+        self.assertAlmostEqual(0.2, result[r.document.id]["percentage"])
+        eq_(5, result[r.document.id]["total"])
 
     def test_old_articles_helpful(self):
         """Doesn't return helpful votes within range"""
@@ -78,14 +82,15 @@ class TopUnhelpfulArticlesTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        old_data = {r.document.id: {'percentage': 0.2, 'total': 5.0}}
+        old_data = {r.document.id: {"percentage": 0.2, "total": 5.0}}
 
         result = _get_current_unhelpful(old_data)
         eq_(1, len(result))
-        self.assertAlmostEqual(0.4, result[r.document.id]['currperc'])
-        self.assertAlmostEqual(0.4 - old_data[r.document.id]['percentage'],
-                               result[r.document.id]['diffperc'])
-        eq_(5, result[r.document.id]['total'])
+        self.assertAlmostEqual(0.4, result[r.document.id]["currperc"])
+        self.assertAlmostEqual(
+            0.4 - old_data[r.document.id]["percentage"], result[r.document.id]["diffperc"]
+        )
+        eq_(5, result[r.document.id]["total"])
 
     def test_current_articles_helpful(self):
         """Doesn't return helpful votes within time range"""
@@ -97,7 +102,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 0, 3)
 
-        old_data = {r.document.id: {'percentage': 0.2, 'total': 5.0}}
+        old_data = {r.document.id: {"percentage": 0.2, "total": 5.0}}
 
         result = _get_current_unhelpful(old_data)
         eq_(0, len(result))
@@ -117,9 +122,9 @@ class TopUnhelpfulArticlesTests(TestCase):
         result = _get_current_unhelpful(old_data)
 
         eq_(1, len(result))
-        self.assertAlmostEqual(0.4, result[r.document.id]['currperc'])
-        self.assertAlmostEqual(0, result[r.document.id]['diffperc'])
-        eq_(5, result[r.document.id]['total'])
+        self.assertAlmostEqual(0.4, result[r.document.id]["currperc"])
+        self.assertAlmostEqual(0, result[r.document.id]["diffperc"])
+        eq_(5, result[r.document.id]["total"])
 
 
 class TopUnhelpfulArticlesCommandTests(TestCase):
@@ -127,7 +132,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         super(TopUnhelpfulArticlesCommandTests, self).setUp()
         self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
         try:
-            self.redis = redis_client('helpfulvotes')
+            self.redis = redis_client("helpfulvotes")
             self.redis.flushdb()
         except RedisError:
             raise SkipTest
@@ -141,7 +146,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
 
     def test_no_articles(self):
         """No articles returns no unhelpful articles."""
-        call_command('cache_most_unhelpful_kb_articles')
+        call_command("cache_most_unhelpful_kb_articles")
         eq_(0, self.redis.llen(self.REDIS_KEY))
 
     def test_caching_unhelpful(self):
@@ -154,14 +159,15 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        call_command('cache_most_unhelpful_kb_articles')
+        call_command("cache_most_unhelpful_kb_articles")
 
         eq_(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
-        eq_('%d::%.1f::%.1f::%.1f::%.1f::%s::%s' %
-            (r.document.id, 5.0, 0.4, 0.0, 0.0, r.document.slug,
-             r.document.title),
-            result[0])
+        eq_(
+            "%d::%.1f::%.1f::%.1f::%.1f::%s::%s"
+            % (r.document.id, 5.0, 0.4, 0.0, 0.0, r.document.slug, r.document.title),
+            result[0],
+        )
 
     def test_caching_helpful(self):
         """Command should ignore the helpful articles."""
@@ -173,7 +179,7 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 0, 3)
 
-        call_command('cache_most_unhelpful_kb_articles')
+        call_command("cache_most_unhelpful_kb_articles")
 
         eq_(0, self.redis.llen(self.REDIS_KEY))
 
@@ -193,14 +199,15 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        call_command('cache_most_unhelpful_kb_articles')
+        call_command("cache_most_unhelpful_kb_articles")
 
         eq_(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
-        eq_('%d::%.1f::%.1f::%.1f::%.1f::%s::%s' %
-            (r.document.id, 5.0, 0.4, 0.2, 0.0, r.document.slug,
-             r.document.title),
-            result[0])
+        eq_(
+            "%d::%.1f::%.1f::%.1f::%.1f::%s::%s"
+            % (r.document.id, 5.0, 0.4, 0.2, 0.0, r.document.slug, r.document.title),
+            result[0],
+        )
 
     def test_caching_sorting(self):
         """Tests if Bayesian Average sorting works correctly."""
@@ -231,17 +238,16 @@ class TopUnhelpfulArticlesCommandTests(TestCase):
         for x in range(0, 91):
             _add_vote_in_past(r3, 0, 3)
 
-        call_command('cache_most_unhelpful_kb_articles')
+        call_command("cache_most_unhelpful_kb_articles")
 
         eq_(3, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 3)
-        assert '%d::%.1f:' % (r2.document.id, 242.0) in result[0]
-        assert '%d::%.1f:' % (r3.document.id, 122.0) in result[1]
-        assert '%d::%.1f:' % (r.document.id, 102.0) in result[2]
+        assert "%d::%.1f:" % (r2.document.id, 242.0) in result[0]
+        assert "%d::%.1f:" % (r3.document.id, 122.0) in result[1]
+        assert "%d::%.1f:" % (r.document.id, 102.0) in result[2]
 
 
 class L10nMetricsTests(TestCase):
-
     def test_update_l10n_coverage_metrics(self):
         """Test the command that updates l10n coverage metrics."""
         p = ProductFactory(visible=True)
@@ -252,64 +258,65 @@ class L10nMetricsTests(TestCase):
             is_approved=True,
             is_ready_for_localization=True,
             document__products=[p],
-            document__locale='en-US')
+            document__locale="en-US",
+        )
 
         r1 = revisions[0]
         r2 = revisions[1]
 
         # Translate one to es.
-        d = DocumentFactory(parent=r1.document, locale='es')
+        d = DocumentFactory(parent=r1.document, locale="es")
         ApprovedRevisionFactory(document=d, based_on=r1)
 
         # Translate two to de.
-        d = DocumentFactory(parent=r1.document, locale='de')
+        d = DocumentFactory(parent=r1.document, locale="de")
         ApprovedRevisionFactory(document=d, based_on=r1)
-        d = DocumentFactory(parent=r2.document, locale='de')
+        d = DocumentFactory(parent=r2.document, locale="de")
         ApprovedRevisionFactory(document=d, based_on=r2)
 
         # Translate all to ru.
         for r in revisions:
-            d = DocumentFactory(parent=r.document, locale='ru')
+            d = DocumentFactory(parent=r.document, locale="ru")
             RevisionFactory(document=d, based_on=r, is_approved=True)
 
         # Call the management command
-        call_command('update_l10n_coverage_metrics')
+        call_command("update_l10n_coverage_metrics")
 
         # Verify es metrics.
-        eq_(6, WikiMetric.objects.filter(locale='es').count())
-        eq_(5.0, WikiMetric.objects.get(locale='es', product=p, code=L10N_TOP20_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(locale='es', product=p, code=L10N_TOP100_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(locale='es', product=p, code=L10N_ALL_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(locale='es', product=None, code=L10N_TOP20_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(locale='es', product=None, code=L10N_TOP100_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(locale='es', product=None, code=L10N_ALL_CODE).value)
+        eq_(6, WikiMetric.objects.filter(locale="es").count())
+        eq_(5.0, WikiMetric.objects.get(locale="es", product=p, code=L10N_TOP20_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale="es", product=p, code=L10N_TOP100_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale="es", product=p, code=L10N_ALL_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale="es", product=None, code=L10N_TOP20_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale="es", product=None, code=L10N_TOP100_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale="es", product=None, code=L10N_ALL_CODE).value)
 
         # Verify de metrics.
-        eq_(6, WikiMetric.objects.filter(locale='de').count())
-        eq_(10.0, WikiMetric.objects.get(locale='de', product=p, code=L10N_TOP20_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_TOP100_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(locale='de', product=p, code=L10N_ALL_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_TOP20_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_TOP100_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_ALL_CODE).value)
+        eq_(6, WikiMetric.objects.filter(locale="de").count())
+        eq_(10.0, WikiMetric.objects.get(locale="de", product=p, code=L10N_TOP20_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale="de", product=None, code=L10N_TOP100_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale="de", product=p, code=L10N_ALL_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale="de", product=None, code=L10N_TOP20_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale="de", product=None, code=L10N_TOP100_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale="de", product=None, code=L10N_ALL_CODE).value)
 
         # Verify ru metrics.
-        eq_(6, WikiMetric.objects.filter(locale='ru').count())
-        eq_(100.0, WikiMetric.objects.get(locale='ru', product=p, code=L10N_TOP20_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_TOP100_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(locale='ru', product=p, code=L10N_ALL_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_TOP20_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_TOP100_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_ALL_CODE).value)
+        eq_(6, WikiMetric.objects.filter(locale="ru").count())
+        eq_(100.0, WikiMetric.objects.get(locale="ru", product=p, code=L10N_TOP20_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale="ru", product=None, code=L10N_TOP100_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale="ru", product=p, code=L10N_ALL_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale="ru", product=None, code=L10N_TOP20_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale="ru", product=None, code=L10N_TOP100_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale="ru", product=None, code=L10N_ALL_CODE).value)
 
         # Verify it metrics.
-        eq_(6, WikiMetric.objects.filter(locale='it').count())
-        eq_(0.0, WikiMetric.objects.get(locale='it', product=p, code=L10N_TOP20_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_TOP100_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(locale='it', product=p, code=L10N_ALL_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_TOP20_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_TOP100_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_ALL_CODE).value)
+        eq_(6, WikiMetric.objects.filter(locale="it").count())
+        eq_(0.0, WikiMetric.objects.get(locale="it", product=p, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale="it", product=None, code=L10N_TOP100_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale="it", product=p, code=L10N_ALL_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale="it", product=None, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale="it", product=None, code=L10N_TOP100_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale="it", product=None, code=L10N_ALL_CODE).value)
 
     def test_update_active_contributor_metrics(self):
         """Test the command that updates active contributor metrics."""
@@ -321,7 +328,7 @@ class L10nMetricsTests(TestCase):
         # Create some revisions to test with:
 
         # 3 'en-US' contributors:
-        d = DocumentFactory(locale='en-US')
+        d = DocumentFactory(locale="en-US")
         u = UserFactory()
         RevisionFactory(document=d, created=last_month, is_approved=True, reviewer=u)
         RevisionFactory(document=d, creator=u, created=last_month)
@@ -334,7 +341,7 @@ class L10nMetricsTests(TestCase):
         RevisionFactory(document=d, created=day)
 
         # 4 'es' contributors:
-        d = DocumentFactory(locale='es')
+        d = DocumentFactory(locale="es")
         RevisionFactory(document=d, created=last_month, is_approved=True, reviewer=u)
         RevisionFactory(document=d, creator=u, created=last_month, reviewer=UserFactory())
         RevisionFactory(document=d, created=start_date)
@@ -344,9 +351,9 @@ class L10nMetricsTests(TestCase):
         RevisionFactory(document=d, created=day)
 
         # Call the command.
-        call_command('update_l10n_contributor_metrics', str(day))
+        call_command("update_l10n_contributor_metrics", str(day))
 
-        eq_(3.0, WikiMetric.objects.get(locale='en-US', product=None, date=start_date).value)
-        eq_(1.0, WikiMetric.objects.get(locale='en-US', product=p, date=start_date).value)
-        eq_(4.0, WikiMetric.objects.get(locale='es', product=None, date=start_date).value)
-        eq_(0.0, WikiMetric.objects.get(locale='es', product=p, date=start_date).value)
+        eq_(3.0, WikiMetric.objects.get(locale="en-US", product=None, date=start_date).value)
+        eq_(1.0, WikiMetric.objects.get(locale="en-US", product=p, date=start_date).value)
+        eq_(4.0, WikiMetric.objects.get(locale="es", product=None, date=start_date).value)
+        eq_(0.0, WikiMetric.objects.get(locale="es", product=p, date=start_date).value)

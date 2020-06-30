@@ -121,6 +121,5 @@ def private_message_link(user):
 def is_contributor(user):
     """Return whether the user is in the 'Registered as contributor' group."""
     return (
-        user.is_authenticated
-        and user.groups.filter(name="Registered as contributor").count() > 0
+        user.is_authenticated and user.groups.filter(name="Registered as contributor").count() > 0
     )

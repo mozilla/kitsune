@@ -1,1 +1,1 @@
-default_app_config = 'kitsune.customercare.apps.CustomerCareConfig'
+default_app_config = "kitsune.customercare.apps.CustomerCareConfig"

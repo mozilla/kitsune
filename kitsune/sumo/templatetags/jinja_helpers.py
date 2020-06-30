@@ -11,8 +11,7 @@ from babel import localedata
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import \
-    static as django_static
+from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.utils.encoding import smart_bytes, smart_text
@@ -52,23 +51,17 @@ def paginator(pager):
 
 @library.filter
 def simple_paginator(pager):
-    return jinja2.Markup(
-        render_to_string("includes/simple_paginator.html", {"pager": pager})
-    )
+    return jinja2.Markup(render_to_string("includes/simple_paginator.html", {"pager": pager}))
 
 
 @library.filter
 def quick_paginator(pager):
-    return jinja2.Markup(
-        render_to_string("includes/quick_paginator.html", {"pager": pager})
-    )
+    return jinja2.Markup(render_to_string("includes/quick_paginator.html", {"pager": pager}))
 
 
 @library.filter
 def mobile_paginator(pager):
-    return jinja2.Markup(
-        render_to_string("includes/mobile/paginator.html", {"pager": pager})
-    )
+    return jinja2.Markup(render_to_string("includes/mobile/paginator.html", {"pager": pager}))
 
 
 @library.global_function
@@ -98,9 +91,7 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     fragment = hash if hash is not None else url_.fragment
 
     q = url_.query
-    new_query_dict = (
-        QueryDict(smart_bytes(q), mutable=True) if q else QueryDict("", mutable=True)
-    )
+    new_query_dict = QueryDict(smart_bytes(q), mutable=True) if q else QueryDict("", mutable=True)
     if query_dict:
         for k, l in query_dict.lists():
             new_query_dict[k] = None  # Replace, don't append.
@@ -122,21 +113,15 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 @library.filter
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
     """Wiki Markup -> HTML jinja2.Markup object"""
-    return jinja2.Markup(
-        parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
-    )
+    return jinja2.Markup(parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow))
 
 
 @library.filter
-def wiki_to_safe_html(
-    wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True
-):
+def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
     """Wiki Markup -> HTML jinja2.Markup object with limited tags"""
     html = parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
     return jinja2.Markup(
-        bleach.clean(
-            html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True
-        )
+        bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)
     )
 
 
@@ -200,7 +185,7 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
     Accepts: [(url, label)]
     """
     if add_default:
-        first_crumb = 'Home'
+        first_crumb = "Home"
 
         crumbs = [(reverse("home"), _lazy(first_crumb))]
     else:
@@ -242,9 +227,7 @@ def datetimeformat(context, value, format="shortdatetime"):
     """
     if not isinstance(value, datetime.datetime):
         # Expecting date value
-        raise ValueError(
-            "Unexpected value {value} passed to datetimeformat".format(value=value)
-        )
+        raise ValueError("Unexpected value {value} passed to datetimeformat".format(value=value))
 
     request = context.get("request")
 
@@ -260,8 +243,7 @@ def datetimeformat(context, value, format="shortdatetime"):
             if hasattr(request, "user") and request.user.is_authenticated:
                 try:
                     convert_tzinfo = (
-                        Profile.objects.get(user=request.user).timezone
-                        or default_tzinfo
+                        Profile.objects.get(user=request.user).timezone or default_tzinfo
                     )
                 except (Profile.DoesNotExist, AttributeError):
                     pass
@@ -277,9 +259,9 @@ def datetimeformat(context, value, format="shortdatetime"):
         # Check if the date is today
         today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
         if convert_value.toordinal() == today:
-            formatted = _lazy('Today at %s') % format_time(
-                convert_value, format='short', tzinfo=convert_tzinfo,
-                locale=locale)
+            formatted = _lazy("Today at %s") % format_time(
+                convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
+            )
         else:
             formatted = format_datetime(
                 convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
@@ -302,9 +284,7 @@ def datetimeformat(context, value, format="shortdatetime"):
         # Unknown format
         raise DateTimeFormatError
 
-    return jinja2.Markup(
-        '<time datetime="%s">%s</time>' % (convert_value.isoformat(), formatted)
-    )
+    return jinja2.Markup('<time datetime="%s">%s</time>' % (convert_value.isoformat(), formatted))
 
 
 _whitespace_then_break = re.compile(r"[\r\n\t ]+[\r\n]+")
@@ -363,7 +343,7 @@ def timesince(d, now=None):
 
     """
     if d is None:
-        return ''
+        return ""
     chunks = [
         (
             60 * 60 * 24 * 365,
@@ -373,18 +353,9 @@ def timesince(d, now=None):
             60 * 60 * 24 * 30,
             lambda n: ungettext("%(number)d month ago", "%(number)d months ago", n),
         ),
-        (
-            60 * 60 * 24 * 7,
-            lambda n: ungettext("%(number)d week ago", "%(number)d weeks ago", n),
-        ),
-        (
-            60 * 60 * 24,
-            lambda n: ungettext("%(number)d day ago", "%(number)d days ago", n),
-        ),
-        (
-            60 * 60,
-            lambda n: ungettext("%(number)d hour ago", "%(number)d hours ago", n),
-        ),
+        (60 * 60 * 24 * 7, lambda n: ungettext("%(number)d week ago", "%(number)d weeks ago", n),),
+        (60 * 60 * 24, lambda n: ungettext("%(number)d day ago", "%(number)d days ago", n),),
+        (60 * 60, lambda n: ungettext("%(number)d hour ago", "%(number)d hours ago", n),),
         (60, lambda n: ungettext("%(number)d minute ago", "%(number)d minutes ago", n)),
         (1, lambda n: ungettext("%(number)d second ago", "%(number)d seconds ago", n)),
     ]
@@ -402,7 +373,7 @@ def timesince(d, now=None):
     since = delta.days * 24 * 60 * 60 + delta.seconds
     if since <= 0:
         # d is in the future compared to now, stop processing.
-        return ''
+        return ""
     for i, (seconds, name) in enumerate(chunks):
         count = since // seconds
         if count != 0:
@@ -420,7 +391,7 @@ def label_with_help(f):
 
 @library.filter
 def yesno(boolean_value):
-    return jinja2.Markup(_lazy('Yes') if boolean_value else _lazy('No'))
+    return jinja2.Markup(_lazy("Yes") if boolean_value else _lazy("No"))
 
 
 @library.filter

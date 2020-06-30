@@ -14,11 +14,11 @@ from kitsune.users.tests import UserFactory
 
 
 class ReadOnlyModeTest(TestCase):
-    extra = ('kitsune.sumo.middleware.ReadOnlyMiddleware',)
+    extra = ("kitsune.sumo.middleware.ReadOnlyMiddleware",)
 
     def setUp(self):
         # This has to be done before the db goes into read only mode.
-        self.user = UserFactory(password='testpass')
+        self.user = UserFactory(password="testpass")
 
         models.signals.pre_save.connect(self.db_error)
         models.signals.pre_delete.connect(self.db_error)
@@ -38,18 +38,17 @@ class ReadOnlyModeTest(TestCase):
     @override_settings(READ_ONLY=True)
     def test_login_error(self):
         # This tries to do a db write.
-        url = reverse('users.login', locale='en-US')
-        r = self.client.post(url, {
-            'username': self.user.username,
-            'password': 'testpass',
-        }, follow=True)
+        url = reverse("users.login", locale="en-US")
+        r = self.client.post(
+            url, {"username": self.user.username, "password": "testpass",}, follow=True
+        )
         eq_(r.status_code, 503)
-        title = pq(r.content)('title').text()
-        assert title.startswith('Maintenance in progress'), title
+        title = pq(r.content)("title").text()
+        assert title.startswith("Maintenance in progress"), title
 
     @override_settings(READ_ONLY=True)
     def test_bail_on_post(self):
-        r = self.client.post('/en-US/questions')
+        r = self.client.post("/en-US/questions")
         eq_(r.status_code, 503)
-        title = pq(r.content)('title').text()
-        assert title.startswith('Maintenance in progress'), title
+        title = pq(r.content)("title").text()
+        assert title.startswith("Maintenance in progress"), title

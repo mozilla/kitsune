@@ -12,7 +12,6 @@ class ImageWidget(forms.FileInput):
 
     def render(self, name, value, attrs=None, renderer=None):
         output = super(ImageWidget, self).render(name, value, attrs, renderer=renderer)
-        if value and hasattr(value, 'url'):
-            output = ('<div class="val-wrap"><img src="%s" alt="" />%s</div>' %
-                      (value.url, output))
+        if value and hasattr(value, "url"):
+            output = '<div class="val-wrap"><img src="%s" alt="" />%s</div>' % (value.url, output)
         return output

@@ -22,12 +22,11 @@ def topics_for(product, parent=False):
         is_archived=False,
         current_revision__isnull=False,
         products=product,
-        category__in=settings.IA_DEFAULT_CATEGORIES)
+        category__in=settings.IA_DEFAULT_CATEGORIES,
+    )
 
     qs = Topic.objects.filter(product=product)
-    qs = (qs.filter(visible=True, document__in=docs)
-            .annotate(num_docs=Count('document'))
-            .distinct())
+    qs = qs.filter(visible=True, document__in=docs).annotate(num_docs=Count("document")).distinct()
 
     if parent or parent is None:
         qs = qs.filter(parent=parent)
@@ -58,14 +57,13 @@ def documents_for(locale, topics=None, products=None):
     # For locales that aren't en-US, get the en-US documents
     # to fill in for untranslated articles.
     if locale != settings.WIKI_DEFAULT_LANGUAGE:
-        l10n_document_ids = [d['document_parent_id'] for d in documents if
-                             'document_parent_id' in d]
+        l10n_document_ids = [
+            d["document_parent_id"] for d in documents if "document_parent_id" in d
+        ]
         en_documents = _documents_for(
-            locale=settings.WIKI_DEFAULT_LANGUAGE,
-            products=products,
-            topics=topics)
-        fallback_documents = [d for d in en_documents if
-                              d['id'] not in l10n_document_ids]
+            locale=settings.WIKI_DEFAULT_LANGUAGE, products=products, topics=topics
+        )
+        fallback_documents = [d for d in en_documents if d["id"] not in l10n_document_ids]
     else:
         fallback_documents = None
 
@@ -77,17 +75,14 @@ def _documents_for(locale, topics=None, products=None):
 
     """
     # First try to get the results from the cache
-    documents = cache.get(_documents_for_cache_key(
-        locale, topics, products))
+    documents = cache.get(_documents_for_cache_key(locale, topics, products))
     if documents:
         return documents
 
     try:
         # Then try ES
         documents = _es_documents_for(locale, topics, products)
-        cache.add(
-            _documents_for_cache_key(locale, topics, products),
-            documents)
+        cache.add(_documents_for_cache_key(locale, topics, products), documents)
     except TransportError:
         # Finally, hit the database (through cache machine)
         # NOTE: The documents will be the same ones returned by ES
@@ -101,18 +96,22 @@ def _documents_for(locale, topics=None, products=None):
 
 def _es_documents_for(locale, topics=None, products=None):
     """ES implementation of documents_for."""
-    s = (DocumentMappingType.search()
-         .values_dict('id', 'document_title', 'url', 'document_parent_id',
-                      'document_summary')
-         .filter(document_locale=locale, document_is_archived=False,
-                 document_category__in=settings.IA_DEFAULT_CATEGORIES))
+    s = (
+        DocumentMappingType.search()
+        .values_dict("id", "document_title", "url", "document_parent_id", "document_summary")
+        .filter(
+            document_locale=locale,
+            document_is_archived=False,
+            document_category__in=settings.IA_DEFAULT_CATEGORIES,
+        )
+    )
 
     for topic in topics or []:
         s = s.filter(topic=topic.slug)
     for product in products or []:
         s = s.filter(product=product.slug)
 
-    results = s.order_by('document_display_order', '-document_recent_helpful_votes')[:100]
+    results = s.order_by("document_display_order", "-document_recent_helpful_votes")[:100]
     results = DocumentMappingType.reshape(results)
     return results
 
@@ -123,7 +122,8 @@ def _db_documents_for(locale, topics=None, products=None):
         locale=locale,
         is_archived=False,
         current_revision__isnull=False,
-        category__in=settings.IA_DEFAULT_CATEGORIES)
+        category__in=settings.IA_DEFAULT_CATEGORIES,
+    )
     for topic in topics or []:
         qs = qs.filter(topics=topic)
     for product in products or []:
@@ -132,22 +132,26 @@ def _db_documents_for(locale, topics=None, products=None):
     # Convert the results to a dicts to look like the ES results.
     doc_dicts = []
     for d in qs.distinct():
-        doc_dicts.append(dict(
-            id=d.id,
-            document_title=d.title,
-            url=d.get_absolute_url(),
-            document_parent_id=d.parent_id,
-            document_summary=d.current_revision.summary))
+        doc_dicts.append(
+            dict(
+                id=d.id,
+                document_title=d.title,
+                url=d.get_absolute_url(),
+                document_parent_id=d.parent_id,
+                document_summary=d.current_revision.summary,
+            )
+        )
 
     return doc_dicts
 
 
 def _documents_for_cache_key(locale, topics, products):
     m = hashlib.md5()
-    key = '{locale}:{topics}:{products}:new'.format(
+    key = "{locale}:{topics}:{products}:new".format(
         locale=locale,
-        topics=','.join(sorted([t.slug for t in topics or []])),
-        products=','.join(sorted([p.slug for p in products or []])))
+        topics=",".join(sorted([t.slug for t in topics or []])),
+        products=",".join(sorted([p.slug for p in products or []])),
+    )
 
     m.update(key.encode())
-    return 'documents_for:%s' % m.hexdigest()
+    return "documents_for:%s" % m.hexdigest()

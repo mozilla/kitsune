@@ -110,6 +110,7 @@ def update_question_vote_chunk(data):
 @task(rate_limit="4/m")
 def update_answer_pages(question_id: int):
     from kitsune.questions.models import Question
+
     try:
         question = Question.objects.get(id=question_id)
     except Question.DoesNotExist as err:
@@ -117,8 +118,7 @@ def update_answer_pages(question_id: int):
         return
 
     log.debug(
-        "Recalculating answer page numbers for question %s: %s"
-        % (question.pk, question.title)
+        "Recalculating answer page numbers for question %s: %s" % (question.pk, question.title)
     )
 
     i = 0

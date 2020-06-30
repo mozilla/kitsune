@@ -14,22 +14,36 @@ from kitsune.sumo.tests import SumoPyQuery as pq
 from kitsune.sumo.tests import attrs_eq, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
-                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
-                                 MEDIUM_SIGNIFICANCE, SIGNIFICANCES,
-                                 TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY,
-                                 TROUBLESHOOTING_CATEGORY)
-from kitsune.wiki.events import (ApproveRevisionInLocaleEvent,
-                                 EditDocumentEvent, ReadyRevisionEvent,
-                                 ReviewableRevisionInLocaleEvent, get_diff_for)
-from kitsune.wiki.models import (Document, HelpfulVote, HelpfulVoteMetadata,
-                                 Revision)
+from kitsune.wiki.config import (
+    ADMINISTRATION_CATEGORY,
+    CANNED_RESPONSES_CATEGORY,
+    CATEGORIES,
+    MEDIUM_SIGNIFICANCE,
+    SIGNIFICANCES,
+    TEMPLATE_TITLE_PREFIX,
+    TEMPLATES_CATEGORY,
+    TROUBLESHOOTING_CATEGORY,
+)
+from kitsune.wiki.events import (
+    ApproveRevisionInLocaleEvent,
+    EditDocumentEvent,
+    ReadyRevisionEvent,
+    ReviewableRevisionInLocaleEvent,
+    get_diff_for,
+)
+from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Revision
 from kitsune.wiki.tasks import send_reviewed_notification
-from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
-                                DraftRevisionFactory, LocaleFactory,
-                                RedirectRevisionFactory, RevisionFactory,
-                                TestCaseBase, TranslatedRevisionFactory,
-                                new_document_data)
+from kitsune.wiki.tests import (
+    ApprovedRevisionFactory,
+    DocumentFactory,
+    DraftRevisionFactory,
+    LocaleFactory,
+    RedirectRevisionFactory,
+    RevisionFactory,
+    TestCaseBase,
+    TranslatedRevisionFactory,
+    new_document_data,
+)
 
 READY_FOR_REVIEW_EMAIL_CONTENT = """\
 %(user)s submitted a new revision to the document %(title)s.
@@ -132,8 +146,7 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         eq_(r.document.title, doc("h1.sumo-page-heading").text())
         eq_(
-            "This article doesn't have approved content yet.",
-            doc("#doc-content").text(),
+            "This article doesn't have approved content yet.", doc("#doc-content").text(),
         )
 
     def test_translation_document_no_approved_content(self):
@@ -204,9 +217,7 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_no_translation_not_ready_for_l10n(self):
         """Prompt to localize an article isn't shown when there is a pending localization."""
         # Creating a revision not ready for localization
-        r = ApprovedRevisionFactory(
-            content="Some text.", is_ready_for_localization=False
-        )
+        r = ApprovedRevisionFactory(content="Some text.", is_ready_for_localization=False)
         url = reverse("wiki.document", args=[r.document.slug], locale="de")
         response = self.client.get(url)
         doc = pq(response.content)
@@ -216,9 +227,7 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_no_translation_ready_for_l10n(self):
         """Prompt to localize an article is shown when there are no pending localizations."""
         # Creating a revision ready for localization
-        r = ApprovedRevisionFactory(
-            content="Some text.", is_ready_for_localization=True
-        )
+        r = ApprovedRevisionFactory(content="Some text.", is_ready_for_localization=True)
         url = reverse("wiki.document", args=[r.document.slug], locale="de")
         response = self.client.get(url)
         doc = pq(response.content)
@@ -241,13 +250,12 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(redirect_url, follow=True)
         self.assertRedirects(
             response,
-            urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
-        self.assertContains(response, redirect_url + '?redirect=no')
+            urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug),
+        )
+        self.assertContains(response, redirect_url + "?redirect=no")
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
-        eq_(
-            settings.CANONICAL_URL + target_url, doc("link[rel=canonical]").attr("href")
-        )
+        eq_(settings.CANONICAL_URL + target_url, doc("link[rel=canonical]").attr("href"))
 
     def test_redirect_no_vote(self):
         """Make sure documents with REDIRECT directives have no vote form.
@@ -264,9 +272,7 @@ class DocumentTests(TestCaseBase):
         doesn't exist."""
         d = DocumentFactory()
         response = self.client.get(
-            urlparams(
-                d.get_absolute_url(), redirectlocale="en-US", redirectslug="nonexistent"
-            )
+            urlparams(d.get_absolute_url(), redirectlocale="en-US", redirectslug="nonexistent")
         )
         self.assertNotContains(response, "Redirected from ")
 
@@ -489,9 +495,7 @@ class RevisionTests(TestCaseBase):
         )
 
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
-        response = self.client.post(
-            url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest"
-        )
+        response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
         eq_(200, response.status_code)
 
@@ -532,9 +536,7 @@ class RevisionTests(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
 
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
-        response = self.client.post(
-            url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest"
-        )
+        response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
         eq_(403, response.status_code)
 
@@ -550,9 +552,7 @@ class RevisionTests(TestCaseBase):
         r = ApprovedRevisionFactory(is_ready_for_localization=False)
 
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
-        response = self.client.post(
-            url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest"
-        )
+        response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
         eq_(403, response.status_code)
 
@@ -572,9 +572,7 @@ class RevisionTests(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
 
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
-        response = self.client.post(
-            url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest"
-        )
+        response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
         eq_(400, response.status_code)
 
@@ -639,9 +637,7 @@ class NewDocumentTests(TestCaseBase):
         self.client.login(username="admin", password="testpass")
         data = new_document_data()
         doc_locale = "es"
-        self.client.post(
-            reverse("wiki.new_document", locale=doc_locale), data, follow=True
-        )
+        self.client.post(reverse("wiki.new_document", locale=doc_locale), data, follow=True)
         d = Document.objects.get(title=data["title"])
         eq_(doc_locale, d.locale)
         assert ready_fire.called
@@ -678,8 +674,7 @@ class NewDocumentTests(TestCaseBase):
         ul = doc("#document-form > ul.errorlist")
         eq_(1, len(ul))
         assert (
-            "Select a valid choice. 963 is not one of the available "
-            "choices." in ul("li").text()
+            "Select a valid choice. 963 is not one of the available " "choices." in ul("li").text()
         )
 
     def test_new_document_missing_category(self):
@@ -796,9 +791,7 @@ class NewRevisionTests(TestCaseBase):
         r.save()
 
         add_permission(self.user, Revision, "edit_keywords")
-        response = self.client.get(
-            reverse("wiki.new_revision_based_on", args=[self.d.slug, r.id])
-        )
+        response = self.client.get(reverse("wiki.new_revision_based_on", args=[self.d.slug, r.id]))
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(doc("#id_keywords")[0].value, r.keywords)
@@ -824,9 +817,7 @@ class NewRevisionTests(TestCaseBase):
 
         review_user = UserFactory(email="joe@example.com")
         add_permission(review_user, Revision, "review_revision")
-        reviewable_watch = ReviewableRevisionInLocaleEvent.notify(
-            review_user, locale="en-US"
-        )
+        reviewable_watch = ReviewableRevisionInLocaleEvent.notify(review_user, locale="en-US")
         reviewable_watch.activate().save()
 
         reviewable_watch_no_permission = ReviewableRevisionInLocaleEvent.notify(
@@ -908,9 +899,7 @@ class NewRevisionTests(TestCaseBase):
         self.d.save()
         data = new_document_data()
         data["form"] = "rev"
-        response = self.client.post(
-            reverse("wiki.edit_document", args=[self.d.slug]), data
-        )
+        response = self.client.post(reverse("wiki.edit_document", args=[self.d.slug]), data)
         eq_(302, response.status_code)
         eq_(2, self.d.revisions.count())
 
@@ -966,9 +955,7 @@ class NewRevisionTests(TestCaseBase):
 
         # Verify there is no warning box if editing the latest unreviewed
         response = self.client.get(
-            reverse(
-                "wiki.new_revision_based_on", locale=doc.locale, args=[doc.slug, r.id]
-            )
+            reverse("wiki.new_revision_based_on", locale=doc.locale, args=[doc.slug, r.id])
         )
         assert not len(pq(response.content)("div.warning-box"))
 
@@ -976,9 +963,7 @@ class NewRevisionTests(TestCaseBase):
         created = created + timedelta(seconds=1)
         RevisionFactory(document=doc, created=created)
         response = self.client.get(
-            reverse(
-                "wiki.new_revision_based_on", locale=doc.locale, args=[doc.slug, r.id]
-            )
+            reverse("wiki.new_revision_based_on", locale=doc.locale, args=[doc.slug, r.id])
         )
         assert len(pq(response.content)(".mzp-t-warning"))
 
@@ -1062,9 +1047,7 @@ class NewRevisionTests(TestCaseBase):
 
     def test_restore_draft_revision(self):
         draft = DraftRevisionFactory(creator=self.user)
-        trans_url = reverse(
-            "wiki.translate", locale=draft.locale, args=[draft.document.slug]
-        )
+        trans_url = reverse("wiki.translate", locale=draft.locale, args=[draft.document.slug])
         trans_resp = self.client.get(trans_url)
         trans_content = pq(trans_resp.content)
         # Check user message is shown there
@@ -1177,9 +1160,7 @@ class HistoryTests(TestCaseBase):
     def test_history_category_appears(self):
         """Document history should have a category on page"""
         category = CATEGORIES[1]
-        r = ApprovedRevisionFactory(
-            content="Some text.", document__category=category[0]
-        )
+        r = ApprovedRevisionFactory(content="Some text.", document__category=category[0])
         response = get(self.client, "wiki.document_revisions", args=[r.document.slug])
         eq_(200, response.status_code)
         self.assertContains(response, category[1])
@@ -1413,16 +1394,12 @@ class DocumentRevisionsTests(TestCaseBase):
             creator=user,
         )
 
-        response = self.client.get(
-            reverse("wiki.document_revisions", args=[r1.document.slug])
-        )
+        response = self.client.get(reverse("wiki.document_revisions", args=[r1.document.slug]))
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc("#revision-list table th.l10n")))
 
-        response = self.client.get(
-            reverse("wiki.document_revisions", args=[d2.slug], locale="es")
-        )
+        response = self.client.get(reverse("wiki.document_revisions", args=[d2.slug], locale="es"))
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(0, len(doc("#revision-list th.l10n-head")))
@@ -1457,9 +1434,7 @@ class ReviewRevisionTests(TestCaseBase):
         self.document.save()
 
         response = get(
-            self.client,
-            "wiki.review_revision",
-            args=[self.document.slug, self.revision.id],
+            self.client, "wiki.review_revision", args=[self.document.slug, self.revision.id],
         )
 
         # Does the {for} syntax seem to have rendered?
@@ -1522,9 +1497,7 @@ class ReviewRevisionTests(TestCaseBase):
         if r.based_on is not None:
             old_rev = r.document.current_Revision
         else:
-            old_rev = r.document.revisions.filter(is_approved=True).order_by(
-                "-created"
-            )[1]
+            old_rev = r.document.revisions.filter(is_approved=True).order_by("-created")[1]
 
         diff = get_diff_for(r.document, old_rev, r)
 
@@ -1720,9 +1693,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # Whew, now render the review page
         self.client.login(username="admin", password="testpass")
-        url = reverse(
-            "wiki.review_revision", locale="es", args=[doc_es.slug, rev_es2.id]
-        )
+        url = reverse("wiki.review_revision", locale="es", args=[doc_es.slug, rev_es2.id])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -1779,9 +1750,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         """
         user = UserFactory()
-        en_revision = RevisionFactory(
-            is_approved=False, reviewer=user, reviewed=datetime.now()
-        )
+        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
 
         # Create the translated document based on the current revision
         es_document = DocumentFactory(locale="es", parent=en_revision.document)
@@ -1807,15 +1776,12 @@ class ReviewRevisionTests(TestCaseBase):
     def test_default_significance(self):
         """Verify the default significance is MEDIUM_SIGNIFICANCE."""
         response = get(
-            self.client,
-            "wiki.review_revision",
-            args=[self.document.slug, self.revision.id],
+            self.client, "wiki.review_revision", args=[self.document.slug, self.revision.id],
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(
-            MEDIUM_SIGNIFICANCE,
-            int(doc("input[name=significance][checked]")[0].attrib["value"]),
+            MEDIUM_SIGNIFICANCE, int(doc("input[name=significance][checked]")[0].attrib["value"]),
         )
 
     def test_self_approve_without_revision_contributors(self):
@@ -1828,9 +1794,7 @@ class ReviewRevisionTests(TestCaseBase):
         add_permission(u, Revision, "review_revision")
         self.client.login(username=u.username, password="testpass")
 
-        response = get(
-            self.client, "wiki.review_revision", args=[rev.document.slug, rev.id]
-        )
+        response = get(self.client, "wiki.review_revision", args=[rev.document.slug, rev.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(0, len(doc('textarea[name="comment"]')))
@@ -1846,9 +1810,7 @@ class ReviewRevisionTests(TestCaseBase):
         add_permission(u, Revision, "review_revision")
         self.client.login(username=u.username, password="testpass")
 
-        response = get(
-            self.client, "wiki.review_revision", args=[rev2.document.slug, rev2.id]
-        )
+        response = get(self.client, "wiki.review_revision", args=[rev2.document.slug, rev2.id])
         eq_(200, response.status_code)
 
         doc = pq(response.content)
@@ -1868,9 +1830,7 @@ class ReviewRevisionTests(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
 
         # Get the data of the document
-        response = get(
-            self.client, "wiki.review_revision", args=[r1.document.slug, r1.id]
-        )
+        response = get(self.client, "wiki.review_revision", args=[r1.document.slug, r1.id])
         eq_(200, response.status_code)
         message1 = "A newer revision has already been reviewed."
         message2 = (
@@ -1885,9 +1845,7 @@ class ReviewRevisionTests(TestCaseBase):
         assert message2 not in doc_content
         # While there is Unapproved revision after the Current Revision
         RevisionFactory(document=r1.document, is_approved=False)
-        response = get(
-            self.client, "wiki.review_revision", args=[r1.document.slug, r1.id]
-        )
+        response = get(self.client, "wiki.review_revision", args=[r1.document.slug, r1.id])
         doc = pq(response.content)
         doc_content = doc("#review-revision").text()
         assert message1 not in doc_content
@@ -2212,9 +2170,7 @@ class TranslateTests(TestCaseBase):
         d = Document.objects.get(pk=base_rev.document.id)
         eq_(r, base_rev.document.current_revision)
 
-        url = reverse(
-            "wiki.new_revision_based_on", locale="es", args=[d.slug, base_rev.id]
-        )
+        url = reverse("wiki.new_revision_based_on", locale="es", args=[d.slug, base_rev.id])
         response = self.client.get(url)
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -2223,9 +2179,7 @@ class TranslateTests(TestCaseBase):
     def test_translate_rejected_parent(self):
         """Translate view of rejected English document shows warning."""
         user = UserFactory()
-        en_revision = RevisionFactory(
-            is_approved=False, reviewer=user, reviewed=datetime.now()
-        )
+        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
 
         url = reverse("wiki.translate", locale="es", args=[en_revision.document.slug])
         response = self.client.get(url)
@@ -2274,9 +2228,7 @@ class TranslateTests(TestCaseBase):
         base_es_rev.save()
 
         # Create a new current revision on the parent document.
-        r = ApprovedRevisionFactory(
-            document=es_doc.parent, is_ready_for_localization=True
-        )
+        r = ApprovedRevisionFactory(document=es_doc.parent, is_ready_for_localization=True)
 
         url = reverse("wiki.edit_document", locale="es", args=[es_doc.slug])
         data = _translation_data()
@@ -2303,9 +2255,7 @@ class TranslateTests(TestCaseBase):
         DocumentFactory(locale="de", parent=en_doc)
 
         url = reverse(
-            "wiki.show_translations",
-            locale=settings.WIKI_DEFAULT_LANGUAGE,
-            args=[en_doc.slug],
+            "wiki.show_translations", locale=settings.WIKI_DEFAULT_LANGUAGE, args=[en_doc.slug],
         )
         r = self.client.get(url)
         doc = pq(r.content)
@@ -2355,9 +2305,7 @@ def _test_form_maintains_based_on_rev(client, doc, view, post_data, locale=None)
     # Then Fred saves his edit:
     post_data_copy = {"based_on": orig_rev.id}
     post_data_copy.update(post_data)  # Don't mutate arg.
-    response = client.post(
-        reverse(view, locale=locale, args=[doc.slug]), data=post_data_copy
-    )
+    response = client.post(reverse(view, locale=locale, args=[doc.slug]), data=post_data_copy)
     eq_(302, response.status_code)
     fred_rev = Revision.objects.all().order_by("-id")[0]
     eq_(orig_rev, fred_rev.based_on)
@@ -2389,9 +2337,7 @@ class DocumentWatchTests(TestCaseBase):
         # Subscribe
         response = post(self.client, "wiki.document_watch", args=[self.document.slug])
         eq_(200, response.status_code)
-        assert EditDocumentEvent.is_notifying(
-            self.user, self.document
-        ), "Watch was not created"
+        assert EditDocumentEvent.is_notifying(self.user, self.document), "Watch was not created"
         # Unsubscribe
         response = post(self.client, "wiki.document_unwatch", args=[self.document.slug])
         eq_(200, response.status_code)
@@ -2429,9 +2375,7 @@ class LocaleWatchTests(TestCaseBase):
         # Unsubscribe
         response = post(self.client, "wiki.locale_unwatch")
         eq_(200, response.status_code)
-        assert not ReviewableRevisionInLocaleEvent.is_notifying(
-            self.user, locale="en-US"
-        )
+        assert not ReviewableRevisionInLocaleEvent.is_notifying(self.user, locale="en-US")
 
     def test_watch_and_unwatch_by_locale_and_product(self):
         # Subscribe
@@ -2509,12 +2453,7 @@ class HelpfulVoteTests(TestCaseBase):
         response = post(
             self.client,
             "wiki.document_vote",
-            {
-                "helpful": "Yes",
-                "revision_id": r.id,
-                "referrer": referrer,
-                "query": query,
-            },
+            {"helpful": "Yes", "revision_id": r.id, "referrer": referrer, "query": query,},
             args=[self.document.slug],
         )
         eq_(200, response.status_code)
@@ -2537,12 +2476,7 @@ class HelpfulVoteTests(TestCaseBase):
         response = post(
             self.client,
             "wiki.document_vote",
-            {
-                "not-helpful": "No",
-                "revision_id": r.id,
-                "referrer": referrer,
-                "query": query,
-            },
+            {"not-helpful": "No", "revision_id": r.id, "referrer": referrer, "query": query,},
             args=[self.document.slug],
         )
         eq_(200, response.status_code)
@@ -2562,12 +2496,7 @@ class HelpfulVoteTests(TestCaseBase):
         response = post(
             self.client,
             "wiki.document_vote",
-            {
-                "helpful": "Yes",
-                "revision_id": r.id,
-                "referrer": referrer,
-                "query": query,
-            },
+            {"helpful": "Yes", "revision_id": r.id, "referrer": referrer, "query": query,},
             args=[self.document.slug],
         )
         eq_(200, response.status_code)
@@ -2589,12 +2518,7 @@ class HelpfulVoteTests(TestCaseBase):
         url = reverse("wiki.document_vote", args=[self.document.slug])
         response = self.client.post(
             url,
-            data={
-                "helpful": "Yes",
-                "revision_id": r.id,
-                "referrer": referrer,
-                "query": query,
-            },
+            data={"helpful": "Yes", "revision_id": r.id, "referrer": referrer, "query": query,},
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         eq_(200, response.status_code)
@@ -2893,10 +2817,7 @@ class RecentRevisionsTest(TestCaseBase):
         _create_document(title="1", rev_kwargs={"creator": self.u1})
         _create_document(
             title="2",
-            rev_kwargs={
-                "creator": self.u1,
-                "created": datetime(2013, 3, 1, 0, 0, 0, 0),
-            },
+            rev_kwargs={"creator": self.u1, "created": datetime(2013, 3, 1, 0, 0, 0, 0),},
         )
         _create_document(title="3", locale="de", rev_kwargs={"creator": self.u2})
         _create_document(title="4", locale="fr", rev_kwargs={"creator": self.u2})

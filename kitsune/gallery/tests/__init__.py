@@ -20,6 +20,6 @@ class VideoFactory(factory.DjangoModelFactory):
         model = Video
 
     creator = factory.SubFactory(UserFactory)
-    webm = factory.django.FileField(from_path='kitsune/gallery/tests/media/test.webm')
-    ogv = factory.django.FileField(from_path='kitsune/gallery/tests/media/test.ogv')
-    flv = factory.django.FileField(from_path='kitsune/gallery/tests/media/test.flv')
+    webm = factory.django.FileField(from_path="kitsune/gallery/tests/media/test.webm")
+    ogv = factory.django.FileField(from_path="kitsune/gallery/tests/media/test.ogv")
+    flv = factory.django.FileField(from_path="kitsune/gallery/tests/media/test.flv")

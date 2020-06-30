@@ -37,21 +37,23 @@ def _signal_with_docs(args, doc):
 
 
 badge_was_awarded = _signal_with_docs(
-    ['award'],
+    ["award"],
     """Fires off after badge is awarded
 
     Signal receiver parameters:
 
     :arg award: the Award instance
 
-    """)
+    """,
+)
 
 badge_will_be_awarded = _signal_with_docs(
-    ['award'],
+    ["award"],
     """Fires off before badge is awarded
 
     Signal receiver parameters:
 
     :arg award: the Award instance
 
-    """)
+    """,
+)

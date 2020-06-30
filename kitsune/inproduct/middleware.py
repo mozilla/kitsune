@@ -16,12 +16,12 @@ class EuBuildMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        path = request.path_info.lstrip('/')
-        if path.startswith('1/'):
-            parts = path.split('/')
-            if len(parts) >= 6 and parts[5] == 'eu':
+        path = request.path_info.lstrip("/")
+        if path.startswith("1/"):
+            parts = path.split("/")
+            if len(parts) >= 6 and parts[5] == "eu":
                 request.eu_build = True
                 del parts[5]
-                path = '/'.join(parts)
+                path = "/".join(parts)
 
-            request.path_info = '/' + path
+            request.path_info = "/" + path

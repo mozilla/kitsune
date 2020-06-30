@@ -7,4 +7,4 @@ class RedirectFactory(factory.DjangoModelFactory):
     class Meta:
         model = Redirect
 
-    target = 'home'
+    target = "home"

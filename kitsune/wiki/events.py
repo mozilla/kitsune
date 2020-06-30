@@ -84,14 +84,10 @@ class EditDocumentEvent(InstanceEvent):
     def _mails(self, users_and_watches):
         revision = self.revision
         document = revision.document
-        log.debug(
-            "Sending edited notification email for document (id=%s)" % document.id
-        )
+        log.debug("Sending edited notification email for document (id=%s)" % document.id)
 
         subject = _lazy("{title} was edited by {creator}")
-        url = reverse(
-            "wiki.document_revisions", locale=document.locale, args=[document.slug]
-        )
+        url = reverse("wiki.document_revisions", locale=document.locale, args=[document.slug])
 
         context = context_dict(revision)
         context["revisions_url"] = add_utm(url, "wiki-edit")
@@ -137,9 +133,7 @@ class _BaseProductFilter(object):
         for user, watches in all_watchers:
             for watch in watches:
                 # Get the product filters for the watch, if any.
-                prods = watch.filters.filter(name="product").values_list(
-                    "value", flat=True
-                )
+                prods = watch.filters.filter(name="product").values_list("value", flat=True)
 
                 # If there are no product filters, they are watching them all.
                 if len(prods) == 0:
@@ -194,9 +188,7 @@ class _LocaleAndProductFilter(_BaseProductFilter):
         return self._filter_by_product(users)
 
 
-class ReviewableRevisionInLocaleEvent(
-    _RevisionConstructor, _LocaleAndProductFilter, Event
-):
+class ReviewableRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter, Event):
     """Event fired when any revision in a certain locale is ready for review"""
 
     # Our event_type suffices to limit our scope, so we don't bother
@@ -209,9 +201,7 @@ class ReviewableRevisionInLocaleEvent(
         log.debug("Sending ready for review email for revision (id=%s)" % revision.id)
         subject = _lazy("{title} is ready for review ({creator})")
         url = reverse(
-            "wiki.review_revision",
-            locale=document.locale,
-            args=[document.slug, revision.id],
+            "wiki.review_revision", locale=document.locale, args=[document.slug, revision.id],
         )
 
         context = context_dict(revision)
@@ -265,9 +255,7 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
         )
 
 
-class ApproveRevisionInLocaleEvent(
-    _RevisionConstructor, _LocaleAndProductFilter, Event
-):
+class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter, Event):
     """Event fed to a union when any revision in a certain locale is approved
 
     Not intended to be fired individually
@@ -301,17 +289,13 @@ class ApprovedOrReadyUnion(EventUnion):
         revision = self._revision
         document = revision.document
         is_ready = revision.is_ready_for_localization
-        log.debug(
-            "Sending approved/ready notifications for revision (id=%s)" % revision.id
-        )
+        log.debug("Sending approved/ready notifications for revision (id=%s)" % revision.id)
 
         # Localize the subject and message with the appropriate
         # context. If there is an error, fall back to English.
         @email_utils.safe_translation
         def _make_mail(locale, user, watches):
-            if is_ready and ReadyRevisionEvent.event_type in (
-                w.event_type for w in watches
-            ):
+            if is_ready and ReadyRevisionEvent.event_type in (w.event_type for w in watches):
                 c = context_dict(revision, ready_for_l10n=True)
                 # TODO: Expose all watches
                 c["watch"] = watches[0]
@@ -334,16 +318,12 @@ class ApprovedOrReadyUnion(EventUnion):
                 c["watch"] = watches[0]
                 c["reviewer"] = revision.reviewer
 
-                subject = _(
-                    "{title} ({locale}) has a new approved " "revision ({reviewer})"
-                )
+                subject = _("{title} ({locale}) has a new approved " "revision ({reviewer})")
                 text_template = "wiki/email/approved.ltxt"
                 html_template = "wiki/email/approved.html"
 
             subject = subject.format(
-                title=document.title,
-                reviewer=revision.reviewer.username,
-                locale=document.locale,
+                title=document.title, reviewer=revision.reviewer.username, locale=document.locale,
             )
 
             mail = email_utils.make_mail(

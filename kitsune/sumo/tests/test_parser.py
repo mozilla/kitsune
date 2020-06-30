@@ -28,9 +28,7 @@ def pq_img(p, text, selector="img", locale=settings.WIKI_DEFAULT_LANGUAGE):
     return doc(selector)
 
 
-def doc_rev_parser(
-    content, title="Installing Firefox", parser_cls=WikiParser, **kwargs
-):
+def doc_rev_parser(content, title="Installing Firefox", parser_cls=WikiParser, **kwargs):
     p = parser_cls()
     d = DocumentFactory(title=title, **kwargs)
     r = ApprovedRevisionFactory(document=d, content=content)
@@ -105,13 +103,10 @@ class GetObjectFallbackTests(TestCase):
         translated_target_rev = ApprovedRevisionFactory(
             document__parent=target_rev.document, document__locale="de"
         )
-        ApprovedRevisionFactory(
-            document__title="redirect", content="REDIRECT [[target]]"
-        )
+        ApprovedRevisionFactory(document__title="redirect", content="REDIRECT [[target]]")
 
         eq_(
-            translated_target_rev.document,
-            get_object_fallback(Document, "redirect", "de"),
+            translated_target_rev.document, get_object_fallback(Document, "redirect", "de"),
         )
 
     def test_redirect_translations_only(self):
@@ -205,11 +200,7 @@ class TestWikiParser(TestCase):
     def test_get_wiki_link(self):
         """Wiki links are properly built for existing pages."""
         eq_(
-            {
-                "found": True,
-                "url": "/en-US/kb/installing-firefox",
-                "text": "Installing Firefox",
-            },
+            {"found": True, "url": "/en-US/kb/installing-firefox", "text": "Installing Firefox",},
             _get_wiki_link("Installing Firefox", locale=settings.WIKI_DEFAULT_LANGUAGE),
         )
 
@@ -231,11 +222,7 @@ class TestWikiParser(TestCase):
 
         for url in urls:
             doc = pq(self.p.parse("[[V:%s]]" % url))
-            assert (
-                doc("iframe")[0]
-                .attrib["src"]
-                .startswith("//www.youtube.com/embed/oHg5SJYRHA0")
-            )
+            assert doc("iframe")[0].attrib["src"].startswith("//www.youtube.com/embed/oHg5SJYRHA0")
 
     def test_iframe_in_markup(self):
         """Verify iframe in wiki markup is escaped."""
@@ -253,8 +240,8 @@ class TestWikiParser(TestCase):
         eq_(
             '<p>&lt;iframe &lt;="" \\="" onload="prompt(1)" p="" '
             'src=""&gt;&lt;p&gt;&lt;iframe/onreadystatechange='
-            'alert(/@blinkms/)\n&lt;/p&gt;&lt;p&gt;&lt;'
-            'svg/onload=alert(1)\n&lt;/p&gt;&lt;/iframe&gt;</p>',
+            "alert(/@blinkms/)\n&lt;/p&gt;&lt;p&gt;&lt;"
+            "svg/onload=alert(1)\n&lt;/p&gt;&lt;/iframe&gt;</p>",
             self.p.parse(content),
         )
 
@@ -352,8 +339,7 @@ class TestWikiInternalLinks(TestCase):
         """Internal link with hash and name."""
         text = "[[Installing Firefox#section 3|this name]]"
         eq_(
-            '<p><a href="/en-US/kb/installing-firefox#section_3"'
-            + ">this name</a>\n</p>",
+            '<p><a href="/en-US/kb/installing-firefox#section_3"' + ">this name</a>\n</p>",
             self.p.parse(text),
         )
 
@@ -474,9 +460,7 @@ class TestWikiImageTags(TestCase):
 
     def test_page_link_caption(self):
         """Link to a wiki page with caption and frame."""
-        img_div = pq_img(
-            self.p, "[[Image:test.jpg|frame|page=A page|my caption]]", "div.img"
-        )
+        img_div = pq_img(self.p, "[[Image:test.jpg|frame|page=A page|my caption]]", "div.img")
         img_a = img_div("a")
         img = img_a("img")
         caption = img_div.text()
@@ -498,9 +482,7 @@ class TestWikiImageTags(TestCase):
 
     def test_link_caption(self):
         """Link to an external page with caption."""
-        img_div = pq_img(
-            self.p, "[[Image:test.jpg|link=http://ab.us|frame|caption]]", "div.img"
-        )
+        img_div = pq_img(self.p, "[[Image:test.jpg|link=http://ab.us|frame|caption]]", "div.img")
         img = img_div("img")
         img_a = img_div("a")
 
@@ -509,9 +491,7 @@ class TestWikiImageTags(TestCase):
 
     def test_link_align(self):
         """Link with align."""
-        img_div = pq_img(
-            self.p, "[[Image:test.jpg|link=http://site.com|align=left]]", "div.img"
-        )
+        img_div = pq_img(self.p, "[[Image:test.jpg|link=http://site.com|align=left]]", "div.img")
         eq_("img align-left", img_div.attr("class"))
 
     def test_link_align_invalid(self):
@@ -531,9 +511,7 @@ class TestWikiImageTags(TestCase):
 
     def test_alt(self):
         """Image alt attribute is overriden but caption is not."""
-        img_div = pq_img(
-            self.p, "[[Image:test.jpg|alt=my alt|frame|my caption]]", "div.img"
-        )
+        img_div = pq_img(self.p, "[[Image:test.jpg|alt=my alt|frame|my caption]]", "div.img")
         img = img_div("img")
         caption = img_div.text()
 

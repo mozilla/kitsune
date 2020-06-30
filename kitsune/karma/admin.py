@@ -4,8 +4,8 @@ from kitsune.karma.models import Title
 
 
 class TitleAdmin(admin.ModelAdmin):
-    raw_id_fields = ('users', 'groups')
-    exclude = ('is_auto',)
+    raw_id_fields = ("users", "groups")
+    exclude = ("is_auto",)
 
     def queryset(self, request):
         qs = super(TitleAdmin, self).queryset(request)

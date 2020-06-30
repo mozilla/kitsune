@@ -41,12 +41,20 @@ urlpatterns = [
     url(r"^community", include("kitsune.community.urls")),
     url(r"^badges/", include("kitsune.kbadge.urls")),
     # Javascript translations.
-    url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(JavaScriptCatalog.as_view()),
-        {'domain': 'djangojs', 'packages': ['kitsune']}, name='jsi18n'),
+    url(
+        r"^jsi18n/.*$",
+        cache_page(60 * 60 * 24 * 365)(JavaScriptCatalog.as_view()),
+        {"domain": "djangojs", "packages": ["kitsune"]},
+        name="jsi18n",
+    ),
     # App translations. These don't need cached because they are downloaded
     # in a build step, not on the client.
-    url(r'^jsi18n-yaocho/.*$', JavaScriptCatalog.as_view(),
-        {'domain': 'yaocho', 'packages': ['kitsune']}, name='jsi18n-yaocho'),
+    url(
+        r"^jsi18n-yaocho/.*$",
+        JavaScriptCatalog.as_view(),
+        {"domain": "yaocho", "packages": ["kitsune"]},
+        name="jsi18n-yaocho",
+    ),
     # JavaScript Waffle.
     url(r"^wafflejs$", wafflejs, name="wafflejs"),
     url(r"^", include("kitsune.dashboards.urls")),
@@ -72,11 +80,7 @@ urlpatterns = [
     # These API urls include both v1 and v2 urls.
     url(r"^api/", include("kitsune.users.urls_api")),
     # contribute.json url
-    url(
-        r"^(?P<path>contribute\.json)$",
-        servestatic,
-        kwargs={"document_root": settings.ROOT},
-    ),
+    url(r"^(?P<path>contribute\.json)$", servestatic, kwargs={"document_root": settings.ROOT},),
 ]
 
 # Handle 404 and 500 errors
@@ -96,9 +100,7 @@ if settings.DEBUG:
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [
-        url(r'^admin/', admin.site.urls),
+        url(r"^admin/", admin.site.urls),
     ]
 elif settings.ADMIN_REDIRECT_URL:
-    urlpatterns.append(
-        url(r"^admin/", RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
-    )
+    urlpatterns.append(url(r"^admin/", RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL)))

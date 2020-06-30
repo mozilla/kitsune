@@ -10,6 +10,7 @@ class Feed(DjFeed):
 
     See https://github.com/mozilla/kitsune/issues/3017
     """
+
     def __call__(self, request, *args, **kwargs):
         response = super(Feed, self).__call__(request, *args, **kwargs)
         # this squashes the response._container list to a single item

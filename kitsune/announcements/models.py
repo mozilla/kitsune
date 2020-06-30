@@ -31,10 +31,7 @@ class Announcement(ModelBase):
     )
     content = models.TextField(
         max_length=10000,
-        help_text=(
-            "Use wiki syntax or HTML. It will display similar to a "
-            "document's content."
-        ),
+        help_text=("Use wiki syntax or HTML. It will display similar to a " "document's content."),
     )
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
     locale = models.ForeignKey(Locale, on_delete=models.CASCADE, null=True, blank=True)

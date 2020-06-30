@@ -21,15 +21,14 @@ def unsubscribe(request, watch_id):
     # Grab the watch and secret; complain if either is wrong:
     try:
         watch = Watch.objects.get(pk=watch_id)
-        secret = request.GET.get('s')  # 's' is for 'secret' but saves wrapping in mails
+        secret = request.GET.get("s")  # 's' is for 'secret' but saves wrapping in mails
         if secret != watch.secret:
             raise Watch.DoesNotExist
     except Watch.DoesNotExist:
-        return render(request, 'motidings/unsubscribe_error.html')
+        return render(request, "motidings/unsubscribe_error.html")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         watch.delete()
-        return render(request, 'motidings/unsubscribe_success.html')
+        return render(request, "motidings/unsubscribe_success.html")
 
-    return render(request, 'motidings/unsub.html', {
-        'watch': watch})
+    return render(request, "motidings/unsub.html", {"watch": watch})

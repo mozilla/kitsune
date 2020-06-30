@@ -15,18 +15,18 @@ def redirect(request, product, version, platform, locale, topic=None):
     redirects = Redirect.objects.all()
 
     # In order from least to most important.
-    parts = ('locale', 'product', 'version', 'platform', 'topic')
+    parts = ("locale", "product", "version", "platform", "topic")
 
     # First we remove any redirects that explicitly don't match. Do this in
     # Python to avoid an explosion of cache use.
-    t = topic if topic else ''
+    t = topic if topic else ""
 
     def f(redirect):
         matches = (
-            redirect.product.lower() in (product.lower(), ''),
-            redirect.version.lower() in (version.lower(), ''),
-            redirect.platform.lower() in (platform.lower(), ''),
-            redirect.locale.lower() in (locale.lower(), ''),
+            redirect.product.lower() in (product.lower(), ""),
+            redirect.version.lower() in (version.lower(), ""),
+            redirect.platform.lower() in (platform.lower(), ""),
+            redirect.locale.lower() in (locale.lower(), ""),
             redirect.topic.lower() == t.lower(),
         )
         return all(matches)
@@ -52,7 +52,7 @@ def redirect(request, product, version, platform, locale, topic=None):
     def ordinal(redirect):
         score = 0
         for i, part in enumerate(parts):
-            if getattr(redirect, part) != '':
+            if getattr(redirect, part) != "":
                 score += 1 << i
         return score, redirect
 
@@ -64,8 +64,8 @@ def redirect(request, product, version, platform, locale, topic=None):
     def matches(redirect, **kw):
         for part in parts:
             attr = getattr(redirect, part)
-            if attr != '':
-                v = kw[part] if kw[part] else ''
+            if attr != "":
+                v = kw[part] if kw[part] else ""
                 if attr.lower() != v.lower():
                     return False
         return True
@@ -73,8 +73,14 @@ def redirect(request, product, version, platform, locale, topic=None):
     # As soon as we've found a match, that's the best one.
     destination = None
     for score, redirect in ordered:
-        if matches(redirect, product=product, version=version,
-                   platform=platform, locale=locale, topic=topic):
+        if matches(
+            redirect,
+            product=product,
+            version=version,
+            platform=platform,
+            locale=locale,
+            topic=topic,
+        ):
             destination = redirect
             break
 
@@ -84,21 +90,19 @@ def redirect(request, product, version, platform, locale, topic=None):
 
     # If the target starts with HTTP, we don't add a locale or query string
     # params.
-    if destination.target.startswith('http'):
+    if destination.target.startswith("http"):
         target = destination.target
     else:
-        params = {
-            'as': 'u',
-            'utm_source': 'inproduct'}
-        if hasattr(request, 'eu_build'):
-            params['eu'] = 1
-        target = '/%s/%s' % (locale, destination.target.lstrip('/'))
+        params = {"as": "u", "utm_source": "inproduct"}
+        if hasattr(request, "eu_build"):
+            params["eu"] = 1
+        target = "/%s/%s" % (locale, destination.target.lstrip("/"))
         target = urlparams(target, **params)
 
         # Switch over to HTTPS if we DEBUG=False and sample is active.
-        if not settings.DEBUG and waffle.sample_is_active('inproduct-https'):
+        if not settings.DEBUG and waffle.sample_is_active("inproduct-https"):
             domain = Site.objects.get_current().domain
-            target = 'https://%s%s' % (domain, target)
+            target = "https://%s%s" % (domain, target)
 
     # 302 because these can change over time.
     return HttpResponseRedirect(target)
