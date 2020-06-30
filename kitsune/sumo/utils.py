@@ -370,7 +370,7 @@ def check_for_spam_content(data):
     """
 
     # keep only the digits in text
-    digits = filter(type(data).isdigit, data)
+    digits = "".join(filter(type(data).isdigit, data))
     is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
 
     is_nanp_number = match_regex_with_timeout(settings.NANP_REGEX, data)
