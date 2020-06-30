@@ -1,11 +1,12 @@
 import json
 
 import django
-import mock
 from django.contrib.sites.models import Site
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
+
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -51,7 +52,7 @@ class RobotsTestCase(TestCase):
     @override_settings(ENGAGE_ROBOTS=False)
     def test_disengaged(self):
         response = self.client.get('/robots.txt')
-        eq_('User-Agent: *\nDisallow: /', response.content)
+        eq_(b'User-Agent: *\nDisallow: /', response.content)
         eq_('text/plain', response['content-type'])
 
     @override_settings(ENGAGE_ROBOTS=True)

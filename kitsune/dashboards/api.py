@@ -45,4 +45,4 @@ class WikiMetricList(generics.ListAPIView):
     """The API list view for WikiMetrics."""
     queryset = WikiMetric.objects.all()
     serializer_class = WikiMetricSerializer
-    filter_class = WikiMetricFilterSet
+    filterset_class = WikiMetricFilterSet

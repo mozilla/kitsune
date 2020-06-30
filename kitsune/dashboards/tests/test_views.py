@@ -72,7 +72,7 @@ class ContributorDashTests(TestCase):
     def test_detail_view(self):
         """Assert the detail page of the contributor dash resolves, renders.
         """
-        readoutKey = CONTRIBUTOR_READOUTS.keys()[0]
+        readoutKey = list(CONTRIBUTOR_READOUTS.keys())[0]
         response = self.client.get(
             reverse('dashboards.contributors_detail',
                     args=[CONTRIBUTOR_READOUTS[readoutKey].slug],
@@ -84,7 +84,7 @@ class ContributorDashTests(TestCase):
         # fail anyways, so be quick and obvious about it.
         assert Document.objects.count() < 10
 
-        change_comment = 'lorem OMG FIX ipsum dolor'
+        change_comment = b'lorem OMG FIX ipsum dolor'
         ApprovedRevisionFactory(
             document__needs_change=True,
             document__needs_change_comment=change_comment,

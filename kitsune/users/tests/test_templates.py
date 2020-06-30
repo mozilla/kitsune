@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from nose.tools import eq_
 from pyquery import PyQuery as pq
@@ -135,7 +134,7 @@ class ViewProfileTests(TestCaseBase):
         self.profile.save()
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
-        assert '<p>my dude image </p>' in r.content
+        assert b'<p>my dude image </p>' in r.content
 
     def test_num_documents(self):
         """Verify the number of documents contributed by user."""
@@ -145,26 +144,26 @@ class ViewProfileTests(TestCaseBase):
 
         r = self.client.get(reverse('users.profile', args=[u.username]))
         eq_(200, r.status_code)
-        assert '2 documents' in r.content
+        assert b'2 documents' in r.content
 
     def test_deactivate_button(self):
         """Check that the deactivate button is shown appropriately"""
         u = UserFactory()
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert 'Deactivate this user' not in r.content
+        assert b'Deactivate this user' not in r.content
 
         add_permission(self.u, Profile, 'deactivate_users')
         self.client.login(username=self.u.username, password='testpass')
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert 'Deactivate this user' in r.content
+        assert b'Deactivate this user' in r.content
 
         u.is_active = False
         u.save()
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert 'This user has been deactivated.' in r.content
+        assert b'This user has been deactivated.' in r.content
 
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
-        assert 'Deactivate this user' not in r.content
+        assert b'Deactivate this user' not in r.content
 
     def test_badges_listed(self):
         """Verify that awarded badges appear on the profile page."""
@@ -173,7 +172,7 @@ class ViewProfileTests(TestCaseBase):
         u = UserFactory()
         AwardFactory(user=u, badge=b)
         r = self.client.get(reverse('users.profile', args=[u.username]))
-        assert badge_title in r.content
+        assert badge_title.encode() in r.content
 
 
 class FlagProfileTests(TestCaseBase):
@@ -211,7 +210,7 @@ class EditWatchListTests(TestCaseBase):
     def test_GET(self):
         r = self.client.get(reverse('users.edit_watch_list'))
         eq_(200, r.status_code)
-        assert u'question: ' + self.question.title in r.content.decode('utf8')
+        assert 'question: ' + self.question.title in r.content.decode('utf8')
 
     def test_POST(self):
         w = Watch.objects.get(object_id=self.question.id, user=self.user)

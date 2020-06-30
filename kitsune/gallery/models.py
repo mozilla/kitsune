@@ -14,7 +14,7 @@ class Media(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, null=True)
+    updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     description = models.TextField(max_length=10000)
     locale = LocaleField(default=settings.GALLERY_DEFAULT_LANGUAGE,
                          db_index=True)
@@ -25,13 +25,13 @@ class Media(ModelBase):
         ordering = ['-created']
         unique_together = (('locale', 'title'), ('is_draft', 'creator'))
 
-    def __unicode__(self):
+    def __str__(self):
         return '[%s] %s' % (self.locale, self.title)
 
 
 @auto_delete_files
 class Image(Media):
-    creator = models.ForeignKey(User, related_name='gallery_images')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gallery_images')
     file = models.ImageField(upload_to=settings.GALLERY_IMAGE_PATH,
                              max_length=settings.MAX_FILEPATH_LENGTH,
                              width_field='width',
@@ -58,7 +58,7 @@ class Image(Media):
 
 @auto_delete_files
 class Video(Media):
-    creator = models.ForeignKey(User, related_name='gallery_videos')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gallery_videos')
     webm = models.FileField(upload_to=settings.GALLERY_VIDEO_PATH, null=True,
                             max_length=settings.MAX_FILEPATH_LENGTH)
     ogv = models.FileField(upload_to=settings.GALLERY_VIDEO_PATH, null=True,

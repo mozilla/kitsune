@@ -1,4 +1,7 @@
-class EuBuildMiddleware(object):
+from django.utils.deprecation import MiddlewareMixin
+
+
+class EuBuildMiddleware(MiddlewareMixin):
     """EU Ballot Firefox builds mangle inproduct URLs.
 
     EU Ballot builds of Firefox add a /eu/ component to the incoming URL

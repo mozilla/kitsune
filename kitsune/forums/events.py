@@ -38,7 +38,7 @@ class NewPostEvent(InstanceEvent):
              'post_url': post_url}
 
         return emails_with_users_and_watches(
-            subject=_lazy(u'Re: {forum} - {thread}'),
+            subject=_lazy('Re: {forum} - {thread}'),
             text_template='forums/email/new_post.ltxt',
             html_template='forums/email/new_post.html',
             context_vars=c,
@@ -69,7 +69,7 @@ class NewThreadEvent(InstanceEvent):
              'post_url': post_url}
 
         return emails_with_users_and_watches(
-            subject=_lazy(u'{forum} - {thread}'),
+            subject=_lazy('{forum} - {thread}'),
             text_template='forums/email/new_thread.ltxt',
             html_template='forums/email/new_thread.html',
             context_vars=c,

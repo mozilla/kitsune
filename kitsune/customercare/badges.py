@@ -2,7 +2,6 @@ from django.db.models.signals import post_save
 
 from kitsune.customercare.models import Reply
 
-
 # Yo ******! These are year-agnostic badge templates which code uses
 # to get-or-create the actual Badge instances. These strings should
 # not be l10n-ized here--the badge title and description strings get
@@ -29,7 +28,7 @@ def on_reply_save(sender, instance, **kwargs):
         return
 
     from kitsune.customercare.tasks import maybe_award_badge
-    maybe_award_badge.delay(AOA_BADGE, year, user)
+    maybe_award_badge.delay(AOA_BADGE, year, user.id)
 
 
 def register_signals():

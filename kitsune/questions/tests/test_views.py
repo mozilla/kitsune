@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.test.utils import override_settings
+
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -29,14 +30,14 @@ class AAQSearchTests(ElasticTestCase):
 
     def test_bleaching(self):
         """Tests whether summaries are bleached"""
-        p = ProductFactory(slug=u"firefox")
+        p = ProductFactory(slug="firefox")
         locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
         QuestionFactory(
             product=p,
-            title=u"CupcakesQuestion cupcakes",
-            content=u"cupcakes are best with <unbleached>flour</unbleached>",
+            title="CupcakesQuestion cupcakes",
+            content="cupcakes are best with <unbleached>flour</unbleached>",
         )
 
         self.refresh()
@@ -49,22 +50,22 @@ class AAQSearchTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert "CupcakesQuestion" in response.content
-        assert "<unbleached>" not in response.content
-        assert "cupcakes are best with" in response.content
+        assert b"CupcakesQuestion" in response.content
+        assert b"<unbleached>" not in response.content
+        assert b"cupcakes are best with" in response.content
 
     # TODO: test whether when _search_suggetions fails with a handled
     # error that the user can still ask a question.
 
     def test_search_suggestions_questions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
-        p = ProductFactory(slug=u"firefox")
+        p = ProductFactory(slug="firefox")
         locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
-        q = QuestionFactory(product=p, title=u"CupcakesQuestion cupcakes")
+        q = QuestionFactory(product=p, title="CupcakesQuestion cupcakes")
 
-        d = DocumentFactory(title=u"CupcakesKB cupcakes", category=10)
+        d = DocumentFactory(title="CupcakesKB cupcakes", category=10)
         d.products.add(p)
 
         RevisionFactory(document=d, is_approved=True)
@@ -79,8 +80,8 @@ class AAQSearchTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert "CupcakesQuestion" in response.content
-        assert "CupcakesKB" in response.content
+        assert b"CupcakesQuestion" in response.content
+        assert b"CupcakesKB" in response.content
 
         # Verify that archived articles and questions aren't shown...
         # Archive both and they shouldn't appear anymore.
@@ -94,24 +95,24 @@ class AAQSearchTests(ElasticTestCase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
-        assert "CupcakesQuestion" not in response.content
-        assert "CupcakesKB" not in response.content
+        assert b"CupcakesQuestion" not in response.content
+        assert b"CupcakesKB" not in response.content
 
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
         QuestionLocaleFactory(locale="de")
 
-        p = ProductFactory(slug=u"firefox")
+        product = ProductFactory(slug="firefox")
 
-        for l in QuestionLocale.objects.all():
-            p.questions_locales.add(l)
+        for loc in QuestionLocale.objects.all():
+            product.questions_locales.add(loc)
 
-        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
+        TopicFactory(title="Fix problems", slug="fix-problems", product=product)
 
-        QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
-        QuestionFactory(title="question donuts?", product=p, locale="en-US")
-        QuestionFactory(title="question pies?", product=p, locale="pt-BR")
-        QuestionFactory(title="question pastries?", product=p, locale="de")
+        QuestionFactory(title="question cupcakes?", product=product, locale="en-US")
+        QuestionFactory(title="question donuts?", product=product, locale="en-US")
+        QuestionFactory(title="question pies?", product=product, locale="pt-BR")
+        QuestionFactory(title="question pastries?", product=product, locale="de")
 
         self.refresh()
 
@@ -411,7 +412,7 @@ class TestQuestionList(TestCaseBase):
         questions front page for AAQ locales."""
 
         eq_(Question.objects.count(), 0)
-        p = ProductFactory(slug=u"firefox")
+        p = ProductFactory(slug="firefox")
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
 
         QuestionFactory(title="question cupcakes?", product=p, locale="en-US")
@@ -725,8 +726,8 @@ class TestStats(ElasticTestCase):
         t = TopicFactory(title="Websites", slug="websites", product=p)
 
         QuestionFactory(
-            title=u"cupcakes",
-            content=u"Cupcakes rock!",
+            title="cupcakes",
+            content="Cupcakes rock!",
             created=datetime.now() - timedelta(days=1),
             topic=t,
         )
@@ -738,7 +739,7 @@ class TestStats(ElasticTestCase):
 
         # If there's histogram data, this is probably good enough to
         # denote its existence.
-        assert ' data-graph="[' in response.content
+        assert b' data-graph="[' in response.content
 
 
 class TestEditDetails(TestCaseBase):

@@ -61,7 +61,7 @@ def up_image_async(request, model_name, object_pk):
 def del_image_async(request, image_id):
     """Delete an image given its object id."""
     user = request.user
-    if not user.is_authenticated():
+    if not user.is_authenticated:
         message = _('You are not logged in.')
         return HttpResponseForbidden(
             json.dumps({'status': 'error', 'message': message}))

@@ -64,7 +64,7 @@ class Forum(NotificationsMixin, ModelBase):
             ("post_in_forum", "Can post in restricted forums"),
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_absolute_url(self):
@@ -114,9 +114,9 @@ class Forum(NotificationsMixin, ModelBase):
 
 class Thread(NotificationsMixin, ModelBase, SearchMixin):
     title = models.CharField(max_length=255)
-    forum = models.ForeignKey("Forum")
+    forum = models.ForeignKey("Forum", on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
-    creator = models.ForeignKey(User)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     last_post = models.ForeignKey(
         "Post", related_name="last_post_in", null=True, on_delete=models.SET_NULL
     )
@@ -144,9 +144,9 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
     @property
     def last_page(self):
         """Returns the page number for the last post."""
-        return self.replies / forums.POSTS_PER_PAGE + 1
+        return self.replies // forums.POSTS_PER_PAGE + 1
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def delete(self, *args, **kwargs):
@@ -294,18 +294,19 @@ register_for_indexing("forums", Thread)
 
 
 class Post(ModelBase):
-    thread = models.ForeignKey("Thread")
+    thread = models.ForeignKey("Thread", on_delete=models.CASCADE)
     content = models.TextField()
-    author = models.ForeignKey(User)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, related_name="post_last_updated_by", null=True)
+    updated_by = models.ForeignKey(User, on_delete=models.CASCADE,
+                                   related_name="post_last_updated_by", null=True)
     flags = GenericRelation(FlaggedObject)
 
     class Meta:
         ordering = ["created"]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.content[:50]
 
     def save(self, *args, **kwargs):
@@ -353,7 +354,7 @@ class Post(ModelBase):
         earlier = t.post_set.filter(created__lte=self.created).count() - 1
         if earlier < 1:
             return 1
-        return earlier / forums.POSTS_PER_PAGE + 1
+        return earlier // forums.POSTS_PER_PAGE + 1
 
     def get_absolute_url(self):
         query = {}

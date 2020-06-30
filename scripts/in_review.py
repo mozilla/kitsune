@@ -3,7 +3,7 @@ import datetime
 import subprocess
 import sys
 import textwrap
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import requests
 
@@ -46,7 +46,7 @@ def fetch(url):
 
 
 def fetch_bugs(params):
-    url = BUGZILLA_API_URL + '/bug' + '?' + urllib.urlencode(params)
+    url = BUGZILLA_API_URL + '/bug' + '?' + urllib.parse.urlencode(params)
     return fetch(url)
 
 
@@ -86,13 +86,13 @@ def print_bugzilla_stats(from_date, to_date):
         creators[creator] = creators.get(creator, 0) + 1
         all_people.add(creator)
 
-    print 'Bugs created: %s' % creation_count
-    print 'Creators: %s' % len(creators)
-    print ''
-    creators = sorted(creators.items(), reverse=True, key=lambda item: item[1])
+    print('Bugs created: %s' % creation_count)
+    print('Creators: %s' % len(creators))
+    print('')
+    creators = sorted(list(creators.items()), reverse=True, key=lambda item: item[1])
     for person, count in creators:
-        print ' %34s : %s' % (person[:30].encode('utf-8'), count)
-    print ''
+        print(' %34s : %s' % (person[:30].encode('utf-8'), count))
+    print('')
 
     # ------------------------------------------------
     # Bug resolution stats
@@ -171,46 +171,46 @@ def print_bugzilla_stats(from_date, to_date):
             commenters[commenter] = commenters.get(commenter, 0) + 1
             all_people.add(commenter)
 
-    print 'Bugs resolved: %s' % resolved_count
-    print ''
-    for resolution, count in resolved_map.items():
-        print ' %34s : %s' % (resolution, count)
+    print('Bugs resolved: %s' % resolved_count)
+    print('')
+    for resolution, count in list(resolved_map.items()):
+        print(' %34s : %s' % (resolution, count))
 
-    print ''
+    print('')
     for title, count in [('Tracebacks', len(traceback_bugs)),
                          ('Research', len(research_bugs)),
                          ('Tracker', len(tracker_bugs))]:
-        print ' %34s : %s' % (title, count)
+        print(' %34s : %s' % (title, count))
 
-    print ''
-    print 'Research bugs: %s' % len(research_bugs)
-    print ''
+    print('')
+    print('Research bugs: %s' % len(research_bugs))
+    print('')
     for bug in research_bugs:
-        print wrap('%s: %s' % (bug['id'], bug['summary']),
-                   subsequent='        ')
+        print(wrap('%s: %s' % (bug['id'], bug['summary']),
+                   subsequent='        '))
 
-    print ''
-    print 'Tracker bugs: %s' % len(tracker_bugs)
-    print ''
+    print('')
+    print('Tracker bugs: %s' % len(tracker_bugs))
+    print('')
     for bug in tracker_bugs:
-        print wrap('%s: %s' % (bug['id'], bug['summary']),
-                   subsequent='        ')
+        print(wrap('%s: %s' % (bug['id'], bug['summary']),
+                   subsequent='        '))
 
-    print ''
-    print 'Resolvers: %s' % len(resolvers)
-    print ''
-    resolvers = sorted(resolvers.items(), reverse=True,
+    print('')
+    print('Resolvers: %s' % len(resolvers))
+    print('')
+    resolvers = sorted(list(resolvers.items()), reverse=True,
                        key=lambda item: item[1])
     for person, count in resolvers:
-        print ' %34s : %s' % (person[:30].encode('utf-8'), count)
+        print(' %34s : %s' % (person[:30].encode('utf-8'), count))
 
-    print ''
-    print 'Commenters: %s' % len(commenters)
-    print ''
-    commenters = sorted(commenters.items(), reverse=True,
+    print('')
+    print('Commenters: %s' % len(commenters))
+    print('')
+    commenters = sorted(list(commenters.items()), reverse=True,
                         key=lambda item: item[1])
     for person, count in commenters:
-        print ' %34s : %s' % (person[:30].encode('utf-8'), count)
+        print(' %34s : %s' % (person[:30].encode('utf-8'), count))
 
 
 def git(*args):
@@ -268,22 +268,22 @@ def print_git_stats(from_date, to_date):
             old_changes[2] + total_files
         )
 
-    print 'Total commits:', len(all_commits)
-    print ''
+    print('Total commits:', len(all_commits))
+    print('')
 
     committers = sorted(
-        committers.items(), key=lambda item: item[1], reverse=True)
+        list(committers.items()), key=lambda item: item[1], reverse=True)
     for person, count in committers:
-        print '  %20s : %5s  (+%s, -%s, files %s)' % (
+        print('  %20s : %5s  (+%s, -%s, files %s)' % (
             person.encode('utf-8'), count,
-            changes[person][0], changes[person][1], changes[person][2])
+            changes[person][0], changes[person][1], changes[person][2]))
         all_people.add(person)
 
     # This is goofy summing, but whatevs.
-    print ''
-    print 'Total lines added:', sum([item[0] for item in changes.values()])
-    print 'Total lines deleted:', sum([item[1] for item in changes.values()])
-    print 'Total files changed:', sum([item[2] for item in changes.values()])
+    print('')
+    print('Total lines added:', sum([item[0] for item in list(changes.values())]))
+    print('Total lines deleted:', sum([item[1] for item in list(changes.values())]))
+    print('Total files changed:', sum([item[2] for item in list(changes.values())]))
 
 
 def print_all_people():
@@ -294,14 +294,14 @@ def print_all_people():
     people = sorted(all_people, key=lambda a: a.lower())
 
     for person in people:
-        print '    %s' % person.encode('utf-8')
+        print('    %s' % person.encode('utf-8'))
 
 
 def print_header(text):
-    print ''
-    print text
-    print '=' * len(text)
-    print ''
+    print('')
+    print(text)
+    print('=' * len(text))
+    print('')
 
 
 def main(argv):
@@ -309,13 +309,13 @@ def main(argv):
     # logging.basicConfig(level=logging.DEBUG)
 
     if len(argv) < 1:
-        print USAGE
-        print 'Error: Must specify year or year and quarter. Examples:'
-        print 'in_review.py 2014'
-        print 'in_review.py 2014 1'
+        print(USAGE)
+        print('Error: Must specify year or year and quarter. Examples:')
+        print('in_review.py 2014')
+        print('in_review.py 2014 1')
         return 1
 
-    print HEADER
+    print(HEADER)
 
     year = int(argv[0])
     if len(argv) == 1:

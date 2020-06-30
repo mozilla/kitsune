@@ -5,14 +5,14 @@ from threading import local
 from django.conf import settings
 from django.core import signals
 from django.db import models
-from django.db.models.signals import pre_delete, post_save, m2m_changed
+from django.db.models.signals import m2m_changed, post_save, pre_delete
 from django.dispatch import receiver
-
-from elasticutils.contrib.django import MappingType, Indexable, MLT
 from elasticsearch.exceptions import NotFoundError
+from elasticutils.contrib.django import MLT, Indexable, MappingType
 
 from kitsune.search import es_utils
 from kitsune.search.tasks import index_task, unindex_task
+from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import ModelBase
 
 log = logging.getLogger('k.search.es')
@@ -25,7 +25,7 @@ _search_mapping_types = {}
 def get_mapping_types(mapping_types=None):
     """Returns a list of MappingTypes"""
     if mapping_types is None:
-        values = _search_mapping_types.values()
+        values = list(_search_mapping_types.values())
     else:
         values = [_search_mapping_types[name] for name in mapping_types]
 
@@ -68,12 +68,12 @@ class SearchMixin(object):
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
         _local_tasks().add((index_task.delay,
-                           (self.get_mapping_type(), (self.pk,))))
+                           (to_class_path(self.get_mapping_type()), (self.pk,))))
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
         _local_tasks().add((unindex_task.delay,
-                           (self.get_mapping_type(), (self.pk,))))
+                           (to_class_path(self.get_mapping_type()), (self.pk,))))
 
 
 class SearchMappingType(MappingType, Indexable):
@@ -148,7 +148,7 @@ class SearchMappingType(MappingType, Indexable):
         # cheaper to do it in-place.
         return [
             dict((key, (val if key in list_keys else val[0]))
-                 for key, val in result.items())
+                 for key, val in list(result.items()))
             for result in results
         ]
 
@@ -365,7 +365,7 @@ class Record(ModelBase):
         self._complete(self.STATUS_SUCCESS, msg[:255])
         self.save()
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s:%s%s' % (self.batch_id, self.name, self.status)
 
 
@@ -374,5 +374,5 @@ class Synonym(ModelBase):
     from_words = models.CharField(max_length=1024)
     to_words = models.CharField(max_length=1024)
 
-    def __unicode__(self):
-        return u'{0} => {1}'.format(self.from_words, self.to_words)
+    def __str__(self):
+        return '{0} => {1}'.format(self.from_words, self.to_words)

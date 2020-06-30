@@ -5,7 +5,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.client import RequestFactory
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
@@ -22,7 +22,7 @@ from kitsune.users.tests import UserFactory
 # others don't.  This depends on whether the tests use them inside or
 # outside the scope of a request. See the long explanation in
 # questions.tests.test_notifications.
-REPLY_EMAIL = u"""Reply to thread: {thread}
+REPLY_EMAIL = """Reply to thread: {thread}
 
 {username} has replied to a thread you're watching. Here is their reply:
 
@@ -36,13 +36,13 @@ To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/forums/{forum_slug}/{thread_id}?utm_campaign=\
-forums-post&utm_medium=email&utm_source=notification#post-{post_id}
+forums-post&utm_source=notification&utm_medium=email#post-{post_id}
 
 --
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
-NEW_THREAD_EMAIL = u"""New thread: {thread}
+NEW_THREAD_EMAIL = """New thread: {thread}
 
 {username} has posted a new thread in a forum you're watching. Here is \
 the thread:
@@ -57,7 +57,7 @@ To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/forums/{forum_slug}/{thread_id}?utm_campaign=\
-forums-thread&utm_medium=email&utm_source=notification
+forums-thread&utm_source=notification&utm_medium=email
 
 --
 Unsubscribe from these emails:
@@ -135,7 +135,7 @@ class NotificationsTests(ForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject=u'Re: {f} - {t}'.format(f=f, t=t))
+                 subject='Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,
@@ -174,7 +174,7 @@ class NotificationsTests(ForumTestCase):
              {'title': 'a title', 'content': 'a post'}, args=[f.slug])
 
         t = Thread.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=[watcher.email], subject=u'{f} - {t}'.format(f=f, t=t))
+        attrs_eq(mail.outbox[0], to=[watcher.email], subject='{f} - {t}'.format(f=f, t=t))
         body = NEW_THREAD_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,
@@ -216,7 +216,7 @@ class NotificationsTests(ForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject=u'Re: {f} - {t}'.format(f=f, t=t))
+                 subject='Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,
@@ -264,7 +264,7 @@ class NotificationsTests(ForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject=u'Re: {f} - {t}'.format(f=f, t=t))
+                 subject='Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,

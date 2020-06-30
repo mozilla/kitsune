@@ -15,7 +15,7 @@ class Redirect(ModelBase):
         unique_together = ('product', 'version', 'platform',
                            'locale', 'topic')
 
-    def __unicode__(self):
+    def __str__(self):
         parts = (
             self.product or '*',
             self.version or '*',
@@ -23,4 +23,4 @@ class Redirect(ModelBase):
             self.locale or '*',
             self.topic or '',
             self.target)
-        return u'%s/%s/%s/%s/%s -> %s' % parts
+        return '%s/%s/%s/%s/%s -> %s' % parts

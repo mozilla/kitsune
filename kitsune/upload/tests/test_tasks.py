@@ -5,7 +5,7 @@ from django.core.files import File
 from django.core.files.images import ImageFile
 from django.test import override_settings
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 import kitsune.upload.tasks
@@ -29,7 +29,7 @@ class ScaleDimensionsTestCase(TestCase):
 
     def test_small(self):
         """A small image is not scaled."""
-        ts = settings.THUMBNAIL_SIZE / 2
+        ts = settings.THUMBNAIL_SIZE // 2
         (width, height) = _scale_dimensions(ts, ts)
         eq_(ts, width)
         eq_(ts, height)
@@ -70,7 +70,7 @@ class CreateThumbnailTestCase(TestCase):
         thumb_content = _create_image_thumbnail(
             'kitsune/upload/tests/media/test.jpg')
         actual_thumb = ImageFile(thumb_content)
-        with open('kitsune/upload/tests/media/test_thumb.jpg') as f:
+        with open('kitsune/upload/tests/media/test_thumb.jpg', 'rb') as f:
             expected_thumb = ImageFile(f)
 
         eq_(expected_thumb.width, actual_thumb.width)
@@ -99,7 +99,7 @@ class GenerateThumbnail(TestCase):
 
     def _image_with_thumbnail(self):
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
         generate_thumbnail(image, 'file', 'thumbnail')
@@ -120,7 +120,7 @@ class GenerateThumbnail(TestCase):
     def test_generate_deleted_file(self):
         """generate_thumbnail does not fail if file doesn't actually exist."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
         # The field will be set but the file isn't there.
@@ -158,7 +158,7 @@ class CompressImageTestCase(TestCase):
 
     def _uploaded_image(self, testfile="test.png"):
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('kitsune/upload/tests/media/' + testfile) as f:
+        with open('kitsune/upload/tests/media/' + testfile, 'rb') as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
         return image

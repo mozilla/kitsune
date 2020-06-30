@@ -59,7 +59,7 @@ class CreateImageTestCase(TestCase):
 
         Verifies all appropriate fields are correctly set.
         """
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             up_file = File(f)
             file_info = create_image({'image': up_file}, self.user)
 

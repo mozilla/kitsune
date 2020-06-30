@@ -40,7 +40,7 @@
         <li class="mzp-c-menu-list-item"><a href="{{ url('wiki.discuss.delete_post', document.slug, thread.id, post.id) }}">{{ _('Delete this post') }}</a></li>
       {% endif %}
 
-      {% if post.id and user.is_authenticated() and not thread.is_locked %}
+      {% if post.id and user.is_authenticated and not thread.is_locked %}
         <li class="mzp-c-menu-list-item post-action">
           <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Quote') }}</a>
         </li>
@@ -49,7 +49,7 @@
     <li class="mzp-c-menu-list-item post-action">
     <a href="#post-{{ post.id }}">{{ _('Link to this post') }}</a>
     </li>
-    {% if user.is_authenticated() and document and document.slug and post.id %}
+    {% if user.is_authenticated and document and document.slug and post.id %}
     <li class="mzp-c-menu-list-item post-action">
       {{ flag_form(url('wiki.discuss.flag_post', document.slug, post.id)) }}
     </li>

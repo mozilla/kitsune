@@ -3,8 +3,8 @@ from datetime import datetime
 from django.db import models
 
 
-RECORD_INFO = u'info'
-RECORD_ERROR = u'error'
+RECORD_INFO = 'info'
+RECORD_ERROR = 'error'
 
 
 class RecordManager(models.Manager):
@@ -41,5 +41,5 @@ class Record(models.Model):
 
     objects = RecordManager()
 
-    def __unicode__(self):
-        return u'<Record {self.src} {self.msg}>'.format(self=self)
+    def __str__(self):
+        return '<Record {self.src} {self.msg}>'.format(self=self)

@@ -31,7 +31,8 @@ class Tweet(ModelBase):
     # This is different from our usual locale, so not using LocaleField.
     locale = models.CharField(max_length=20, db_index=True)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    reply_to = models.ForeignKey('self', null=True, related_name='replies')
+    reply_to = models.ForeignKey('self', on_delete=models.CASCADE,
+                                 null=True, related_name='replies')
     hidden = models.BooleanField(default=False, db_index=True)
 
     class Meta:
@@ -49,7 +50,7 @@ class Tweet(ModelBase):
         """
         return cls.objects.order_by('-tweet_id')[0:1].get()
 
-    def __unicode__(self):
+    def __str__(self):
         tweet = json.loads(self.raw_json)
         return tweet['text']
 
@@ -60,7 +61,7 @@ class Reply(ModelBase, SearchMixin):
     The Tweet table gets truncated regularly so we can't use it for metrics.
     This model is to keep track of contributor counts and such.
     """
-    user = models.ForeignKey(User, null=True, blank=True,
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True,
                              related_name='tweet_replies')
     twitter_username = models.CharField(max_length=20)
     tweet_id = models.BigIntegerField()
@@ -69,9 +70,9 @@ class Reply(ModelBase, SearchMixin):
     created = models.DateTimeField(default=datetime.now, db_index=True)
     reply_to_tweet_id = models.BigIntegerField()
 
-    def __unicode__(self):
+    def __str__(self):
         tweet = json.loads(self.raw_json)
-        return u'@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])
+        return '@{u}: {t}'.format(u=self.twitter_username, t=tweet['text'])
 
     @classmethod
     def get_mapping_type(cls):

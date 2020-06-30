@@ -1,10 +1,10 @@
 import time
 
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = 'Recalculate question weekly votes.'
 
     def handle_noargs(self, *a, **kw):
@@ -24,4 +24,4 @@ class Command(NoArgsCommand):
         transaction.commit()
         transaction.leave_transaction_management()
         d = time.time() - start
-        print u'Updated %d rows in %0.3f seconds.' % (rows, d)
+        print('Updated %d rows in %0.3f seconds.' % (rows, d))

@@ -70,16 +70,16 @@ def count_out_of_date():
         r'index\.analysis\.filter\.synonyms-.*\.synonyms\.\d+')
 
     synonyms_in_es = set()
-    for key, val in settings.items():
+    for key, val in list(settings.items()):
         if synonym_key_re.match(key):
             synonyms_in_es.add(val)
 
-    synonyms_in_db = set(unicode(s) for s in Synonym.objects.all())
+    synonyms_in_db = set(str(s) for s in Synonym.objects.all())
 
     synonyms_to_add = synonyms_in_db - synonyms_in_es
     synonyms_to_remove = synonyms_in_es - synonyms_in_db
 
-    if synonyms_to_remove == set(['firefox => firefox']):
+    if synonyms_to_remove == {'firefox => firefox'}:
         synonyms_to_remove = set()
 
     return (len(synonyms_to_add), len(synonyms_to_remove))

@@ -88,7 +88,7 @@ class KnowledgeBaseNewArticle(Base):
     def _check_element_by_label_text(self, text_to_match, input_locator, label_locator):
         inputs = self.selenium.find_elements(*input_locator)
         labels = [e.text for e in self.selenium.find_elements(*label_locator)]
-        for i in xrange(len(labels)):
+        for i in range(len(labels)):
             if labels[i].lower() == text_to_match.lower():
                 inputs[i].click()
                 break

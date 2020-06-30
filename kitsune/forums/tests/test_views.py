@@ -1,4 +1,4 @@
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 from nose.tools import eq_
 
 from django.contrib.contenttypes.models import ContentType

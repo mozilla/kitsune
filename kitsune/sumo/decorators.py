@@ -5,7 +5,6 @@ from django import http
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
-from django_statsd.clients import statsd
 
 from kitsune.sumo.utils import is_ratelimited
 
@@ -49,21 +48,21 @@ def json_view(f):
             ret = f(req, *a, **kw)
             blob = json.dumps(ret)
             return http.HttpResponse(blob, content_type=JSON)
-        except http.Http404, e:
+        except http.Http404 as e:
             blob = json.dumps({
                 'success': False,
                 'error': 404,
                 'message': str(e),
             })
             return http.HttpResponseNotFound(blob, content_type=JSON)
-        except PermissionDenied, e:
+        except PermissionDenied as e:
             blob = json.dumps({
                 'success': False,
                 'error': 403,
                 'message': str(e),
             })
             return http.HttpResponseForbidden(blob, content_type=JSON)
-        except Exception, e:
+        except Exception as e:
             blob = json.dumps({
                 'success': False,
                 'error': 500,
@@ -101,18 +100,6 @@ def cors_enabled(origin, methods=['GET']):
             return response
         return decorated_func
     return decorator
-
-
-def timeit(f):
-    """A decorator that records the function execution time to statsd."""
-    @wraps(f)
-    def _timeit(*args, **kwargs):
-        with statsd.timer('{m}.{n}'.format(m=f.__module__, n=f.__name__)):
-            result = f(*args, **kwargs)
-
-        return result
-
-    return _timeit
 
 
 def ratelimit(name, rate, method=['POST'], skip_if=lambda r: False):

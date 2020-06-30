@@ -102,7 +102,7 @@ def reindex(mapping_type_names):
 def handle_recreate_index(request):
     """Deletes an index, recreates it, and reindexes it."""
     groups = [name.replace('check_', '')
-              for name in request.POST.keys()
+              for name in list(request.POST.keys())
               if name.startswith('check_')]
 
     indexes = [write_index(group) for group in groups]
@@ -119,7 +119,7 @@ def handle_recreate_index(request):
 def handle_reindex(request):
     """Caculates and kicks off indexing tasks"""
     mapping_type_names = [name.replace('check_', '')
-                          for name in request.POST.keys()
+                          for name in list(request.POST.keys())
                           if name.startswith('check_')]
 
     reindex(mapping_type_names)
@@ -139,25 +139,25 @@ def search(request):
         try:
             return handle_reset(request)
         except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
 
     if 'reindex' in request.POST:
         try:
             return handle_reindex(request)
         except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
 
     if 'recreate_index' in request.POST:
         try:
             return handle_recreate_index(request)
         except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
 
     if 'delete_index' in request.POST:
         try:
             return handle_delete(request)
         except DeleteError as e:
-            error_messages.append(u'Error: %s' % e.message)
+            error_messages.append('Error: %s' % e.message)
         except ES_EXCEPTIONS as e:
             error_messages.append('Error: {0}'.format(repr(e)))
 
@@ -283,13 +283,13 @@ def index_view(request):
         last_20_by_bucket = [
             (cls_name,
              _fix_results(cls.search().order_by('-indexed_on')[:20]))
-            for cls_name, cls in bucket_to_model.items()]
+            for cls_name, cls in list(bucket_to_model.items())]
 
     return render(
         request,
         'admin/search_index.html',
         {'title': 'Index Browsing',
-         'buckets': [cls_name for cls_name, cls in bucket_to_model.items()],
+         'buckets': [cls_name for cls_name, cls in list(bucket_to_model.items())],
          'last_20_by_bucket': last_20_by_bucket,
          'requested_bucket': requested_bucket,
          'requested_id': requested_id,
@@ -350,7 +350,7 @@ def synonym_editor(request):
     # If synonyms_text is not None, it came from POST, and there were
     # errors. It shouldn't be modified, so the error messages make sense.
     if synonyms_text is None:
-        synonyms_text = '\n'.join(unicode(s) for s in all_synonyms)
+        synonyms_text = '\n'.join(str(s) for s in all_synonyms)
 
     synonym_add_count, synonym_remove_count = synonym_utils.count_out_of_date()
 

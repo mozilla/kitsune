@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from mock import patch
+from unittest.mock import patch
 from nose.tools import eq_, ok_
 
 from kitsune.kpi.surveygizmo_utils import (

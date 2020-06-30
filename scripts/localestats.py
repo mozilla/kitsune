@@ -33,19 +33,19 @@ USAGE = 'usage: localestats.py <locales-dir>'
 
 def main(argv):
     if not argv:
-        print USAGE
+        print(USAGE)
         return 1
 
     fn = os.path.join(argv[0], 'templates', 'LC_MESSAGES', 'messages.pot')
     if not os.path.exists(fn):
-        print USAGE
+        print(USAGE)
         return 1
 
     try:
         pofile = polib.pofile(fn)
     except IOError as ioe:
-        print 'Error opening file: {fn}'.format(fn=fn)
-        print ioe.message
+        print('Error opening file: {fn}'.format(fn=fn))
+        print(ioe.message)
         return 1
 
     app_string_count = defaultdict(int)
@@ -58,8 +58,8 @@ def main(argv):
             else:
                 app_string_count['vendor/' + path[2]] += 1
 
-    for key, val in sorted(app_string_count.items(), key=lambda item: item[1]):
-        print '{0:22}: {1}'.format(key, val)
+    for key, val in sorted(list(app_string_count.items()), key=lambda item: item[1]):
+        print('{0:22}: {1}'.format(key, val))
 
 
 if __name__ == '__main__':

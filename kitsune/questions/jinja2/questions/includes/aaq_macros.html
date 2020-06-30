@@ -7,7 +7,7 @@
   <div class="sumo-page-section--inner">
     <div id="product-picker" class="sumo-card-grid stack-on-mobile" style="--cg-count: {{ products|length }};">
       <div class="scroll-wrap">
-        {% for key, product in products.iteritems() %}
+        {% for key, product in products.items() %}
         <div class="card card--product zoom-on-hover">
           {% if key == 'other' %}
           <img src="{{ static('sumo/img/mozilla-icon.png') }}"
@@ -87,7 +87,7 @@
 {% macro aaq_widget(key, user, location="aaq") %}
   <div class="aaq-widget card elevation-01 text-center radius-md">
     <h2 class="card--title has-bottom-margin">{{ _('Ask the Community') }}</h2>
-    {% if user.is_authenticated() %}
+    {% if user.is_authenticated %}
       <p>{{ _('Continue to post your question and get help.') }}</p>
     {% else %}
       <p>{{ _('Sign in/up to post your question and get help.') }}</p>

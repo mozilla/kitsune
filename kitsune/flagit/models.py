@@ -19,20 +19,20 @@ class FlaggedObject(ModelBase):
     """A flag raised on an object."""
 
     REASONS = (
-        ('spam', _lazy(u'Spam or other unrelated content')),
-        ('language', _lazy(u'Inappropriate language/dialog')),
-        ('bug_support', _lazy(u'Misplaced bug report or support request')),
-        ('abuse', _lazy(u'Abusive content')),
-        ('other', _lazy(u'Other (please specify)')),
+        ('spam', _lazy('Spam or other unrelated content')),
+        ('language', _lazy('Inappropriate language/dialog')),
+        ('bug_support', _lazy('Misplaced bug report or support request')),
+        ('abuse', _lazy('Abusive content')),
+        ('other', _lazy('Other (please specify)')),
     )
 
     STATUSES = (
-        (0, _lazy(u'Pending')),
-        (1, _lazy(u'Accepted and Fixed')),
-        (2, _lazy(u'Rejected')),
+        (0, _lazy('Pending')),
+        (1, _lazy('Accepted and Fixed')),
+        (2, _lazy('Rejected')),
     )
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
@@ -40,11 +40,11 @@ class FlaggedObject(ModelBase):
     reason = models.CharField(max_length=64, choices=REASONS)
     notes = models.TextField(default='', blank=True)
 
-    creator = models.ForeignKey(User, related_name='flags')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='flags')
     created = models.DateTimeField(default=datetime.now, db_index=True)
 
     handled = models.DateTimeField(default=datetime.now, db_index=True)
-    handled_by = models.ForeignKey(User, null=True)
+    handled_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     objects = FlaggedObjectManager()
 

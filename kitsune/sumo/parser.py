@@ -1,5 +1,5 @@
 from os.path import basename
-from urlparse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 
 from django.conf import settings
 from django.template.loader import render_to_string
@@ -165,7 +165,7 @@ def build_hook_params(string, locale, allowed_params=[],
             params['caption'] = last_item
 
     # Validate params allowed
-    for p in params.keys():
+    for p in list(params.keys()):
         if p not in allowed_params:
             del params[p]
 
@@ -280,16 +280,16 @@ class WikiParser(Parser):
         if title == '' and hash != '':
             if not text:
                 text = hash.replace('_', ' ')
-            return u'<a href="%s">%s</a>' % (hash, text)
+            return '<a href="%s">%s</a>' % (hash, text)
 
         link = _get_wiki_link(title, self.locale)
         extra_a_attr = ''
         if not link['found']:
-            extra_a_attr += (u' class="new" title="{tooltip}"'
+            extra_a_attr += (' class="new" title="{tooltip}"'
                              .format(tooltip=_('Page does not exist.')))
         if not text:
             text = link['text']
-        return u'<a href="{url}{hash}"{extra}>{text}</a>'.format(
+        return '<a href="{url}{hash}"{extra}>{text}</a>'.format(
             url=link['url'], hash=hash, extra=extra_a_attr, text=text)
 
     def _hook_image_tag(self, parser, space, name):
@@ -297,9 +297,9 @@ class WikiParser(Parser):
         title, params = build_hook_params(name, self.locale, IMAGE_PARAMS,
                                           IMAGE_PARAM_VALUES)
 
-        message = _lazy(u'The image "%s" does not exist.') % title
+        message = _lazy('The image "%s" does not exist.') % title
         image = get_object_fallback(Image, title, self.locale, message)
-        if isinstance(image, basestring):
+        if isinstance(image, str):
             return image
 
         return render_to_string(self.image_template, {
@@ -314,7 +314,7 @@ class WikiParser(Parser):
     # parser.
     def _hook_video(self, parser, space, title):
         """Handles [[Video:video title]] with locale from parser."""
-        message = _lazy(u'The video "%s" does not exist.') % title
+        message = _lazy('The video "%s" does not exist.') % title
 
         # params, only modal supported for now
         title, params = build_hook_params(title, self.locale, VIDEO_PARAMS)
@@ -335,7 +335,7 @@ class WikiParser(Parser):
             return YOUTUBE_PLACEHOLDER % video_id
 
         v = get_object_fallback(Video, title, self.locale, message)
-        if isinstance(v, basestring):
+        if isinstance(v, str):
             return v
 
         return generate_video(v, params)
@@ -346,7 +346,7 @@ class WikiParser(Parser):
         if btn_type == 'refresh':
             template = 'wikiparser/hook_refresh_button.html'
         else:
-            return _lazy(u'Button of type "%s" does not exist.') % btn_type
+            return _lazy('Button of type "%s" does not exist.') % btn_type
 
         return render_to_string(template, {'params': params})
 

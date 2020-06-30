@@ -48,7 +48,7 @@ class ProfileAdmin(admin.ModelAdmin):
 
     def full_user(self, obj):
         if obj.name:
-            return u'%s <%s>' % (obj.user.username, obj.name)
+            return '%s <%s>' % (obj.user.username, obj.name)
         else:
             return obj.user.username
     full_user.short_description = 'User'

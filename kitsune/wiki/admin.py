@@ -53,12 +53,12 @@ class DocumentAdmin(admin.ModelAdmin):
     def allow_discussion(self, request, queryset):
         """Allow discussion on several documents."""
         queryset.update(allow_discussion=True)
-        self.message_user(request, u'Document(s) now allow discussion.')
+        self.message_user(request, 'Document(s) now allow discussion.')
 
     def disallow_discussion(self, request, queryset):
         """Disallow discussion on several documents."""
         queryset.update(allow_discussion=False)
-        self.message_user(request, u'Document(s) no longer allow discussion.')
+        self.message_user(request, 'Document(s) no longer allow discussion.')
 
     actions = [archive, unarchive, allow_discussion, disallow_discussion]
 

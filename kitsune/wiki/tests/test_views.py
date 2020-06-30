@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.test import Client
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -114,7 +114,7 @@ class WhatLinksWhereTests(TestCase):
         url = reverse('wiki.what_links_here', args=[d1.slug])
         resp = self.client.get(url, follow=True)
         eq_(200, resp.status_code)
-        assert 'D2' in resp.content
+        assert b'D2' in resp.content
 
     def test_what_links_here_locale_filtering(self):
         d1 = DocumentFactory(title='D1', locale='de')
@@ -125,7 +125,7 @@ class WhatLinksWhereTests(TestCase):
         url = reverse('wiki.what_links_here', args=[d1.slug], locale='de')
         resp = self.client.get(url, follow=True)
         eq_(200, resp.status_code)
-        assert 'No other documents link to D1.' in resp.content
+        assert b'No other documents link to D1.' in resp.content
 
 
 class DocumentEditingTests(TestCase):
@@ -157,7 +157,7 @@ class DocumentEditingTests(TestCase):
     def test_retitling_accent(self):
         d = DocumentFactory(title='Umlaut test')
         RevisionFactory(document=d, is_approved=True)
-        new_title = u'Ümlaut test'
+        new_title = 'Ümlaut test'
         data = new_document_data()
         data.update({'title': new_title,
                      'slug': d.slug,
@@ -184,8 +184,8 @@ class DocumentEditingTests(TestCase):
         res = self.client.post(url, data, follow=True)
         eq_(Document.objects.get(id=d.id).title, old_title)
         # This message gets HTML encoded.
-        assert ('Documents in the Template category must have titles that start with '
-                '&#34;Template:&#34;.'
+        assert (b'Documents in the Template category must have titles that start with '
+                b'&#34;Template:&#34;.'
                 in res.content)
 
         # Now try and change the title while also changing the category.
@@ -212,8 +212,8 @@ class DocumentEditingTests(TestCase):
         res = self.client.post(url, data, follow=True)
         eq_(Document.objects.get(id=d.id).category, TEMPLATES_CATEGORY)
         # This message gets HTML encoded.
-        assert ('Documents with titles that start with &#34;Template:&#34; must be in the '
-                'templates category.' in res.content)
+        assert (b'Documents with titles that start with &#34;Template:&#34; must be in the '
+                b'templates category.' in res.content)
 
         # Now try and change the title while also changing the category.
         data['title'] = 'not a template'
@@ -225,8 +225,8 @@ class DocumentEditingTests(TestCase):
         """Changing products works as expected."""
         r = ApprovedRevisionFactory()
         d = r.document
-        prod_desktop = ProductFactory(title=u'desktop')
-        prod_mobile = ProductFactory(title=u'mobile')
+        prod_desktop = ProductFactory(title='desktop')
+        prod_mobile = ProductFactory(title='mobile')
 
         data = new_document_data()
         data.update({'products': [prod_desktop.id, prod_mobile.id],
@@ -309,8 +309,8 @@ class DocumentEditingTests(TestCase):
         content = pq(response.content)
         # While first translation, the slug and title field is always blank.
         # So the value field should be None
-        eq_(content('#id_title').val(), None)
-        eq_(content('#id_slug').val(), None)
+        eq_(content('#id_title').val(), '')
+        eq_(content('#id_slug').val(), '')
 
     def test_while_there_is_no_parent_slug(self):
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
@@ -522,7 +522,7 @@ class VoteTests(TestCase):
                 'comment': 'lorem ipsum dolor'}
         response = self.client.post(url, data)
         eq_(200, response.status_code)
-        eq_('{"message": "Thanks for making us better!"}',
+        eq_(b'{"message": "Thanks for making us better!"}',
             response.content)
 
         vote_meta = vote.metadata.all()
@@ -530,7 +530,7 @@ class VoteTests(TestCase):
         eq_('survey', vote_meta[0].key)
 
         survey = json.loads(vote_meta[0].value)
-        eq_(3, len(survey.keys()))
+        eq_(3, len(list(survey.keys())))
         assert 'confusing' in survey
         assert 'too-long' in survey
         eq_('lorem ipsum dolor', survey['comment'])

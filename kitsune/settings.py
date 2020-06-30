@@ -9,11 +9,11 @@ from datetime import date
 
 import dj_database_url
 import django_cache_url
-import djcelery
 from decouple import Csv, config
 
-from bundles import PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
+
+from .bundles import PIPELINE_JS
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 DEV = config('DEV', default=False, cast=bool)
@@ -93,13 +93,6 @@ CACHES = {
 
     },
 }
-
-if DEV and DEBUG:
-    CACHES['default'] = {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-    CACHES['session'] = config('CACHE_URL', default='locmem://', cast=django_cache_url.parse)
-    SESSION_CACHE_ALIAS = 'session'
 
 CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
                                   default=(2 * 60 * 60) if READ_ONLY else 0,
@@ -271,7 +264,7 @@ LANGUAGE_CHOICES_ENGLISH = tuple(
     [(lang, LOCALES[lang].english) for lang in SUMO_LANGUAGES
      if lang != 'xx'])
 LANGUAGES_DICT = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
-LANGUAGES = LANGUAGES_DICT.items()
+LANGUAGES = list(LANGUAGES_DICT.items())
 
 LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 
@@ -365,7 +358,6 @@ TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
 
-USE_ETAGS = config('USE_ETAGS', default=False, cast=bool)
 USE_I18N = True
 USE_L10N = True
 
@@ -496,14 +488,13 @@ TEMPLATES = [
 ]
 
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'kitsune.sumo.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'kitsune.sumo.middleware.FilterByUserAgentMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
-    'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
     'kitsune.sumo.middleware.EnforceHostIPMiddleware',
 
@@ -515,7 +506,6 @@ MIDDLEWARE_CLASSES = (
     # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
 
     # This has to come after NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -539,7 +529,6 @@ MIDDLEWARE_CLASSES = (
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.ScrubRequestOnException',
-    'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
@@ -665,7 +654,6 @@ INSTALLED_APPS = (
     'kitsune.sumo',
     'kitsune.search',
     'kitsune.forums',
-    'djcelery',
     'tidings',
     'rest_framework.authtoken',
     'kitsune.questions',
@@ -912,22 +900,26 @@ if EMAIL_LOGGING_REAL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
 
 
 # Celery
-djcelery.setup_loader()
-
-CELERY_IGNORE_RESULT = config('CELERY_IGNORE_RESULT', default=True, cast=bool)
-if not CELERY_IGNORE_RESULT:
+# TODO: Upgrade to task_protocol 2.
+CELERY_TASK_PROTOCOL = 1
+CELERY_TASK_SERIALIZER = config('CELERY_TASK_SERIALIZER', default='pickle')
+CELERY_RESULT_SERIALIZER = config('CELERY_RESULT_SERIALIZER', default='pickle')
+CELERY_ACCEPT_CONTENT = config('CELERY_ACCEPT_CONTENT', default='pickle',
+                               cast=lambda v: [s.strip() for s in v.split(',')])
+CELERY_TASK_IGNORE_RESULT = config('CELERY_TASK_IGNORE_RESULT', default=True, cast=bool)
+if not CELERY_TASK_IGNORE_RESULT:
     # E.g. redis://localhost:6479/1
     CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
 
-CELERY_ALWAYS_EAGER = config('CELERY_ALWAYS_EAGER', default=DEBUG, cast=bool)  # For tests. Set to False for use.
-if not CELERY_ALWAYS_EAGER:
-    BROKER_URL = config('BROKER_URL')
+CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', default=DEBUG, cast=bool)  # For tests. Set to False for use.
+if not CELERY_TASK_ALWAYS_EAGER:
+    CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='')
 
-CELERY_SEND_TASK_ERROR_EMAILS = config('CELERY_SEND_TASK_ERROR_EMAILS', default=True, cast=bool)
-CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
-CELERYD_CONCURRENCY = config('CELERYD_CONCURRENCY', default=4, cast=int)
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = config('CELERY_EAGER_PROPAGATES_EXCEPTIONS', default=True, cast=bool)  # Explode loudly during tests.
-CELERYD_HIJACK_ROOT_LOGGER = config('CELERYD_HIJACK_ROOT_LOGGER', default=False, cast=bool)
+# TODO:PY3: Setting gone, use celery worker --loglevel flag.
+# CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
+CELERY_WORKER_CONCURRENCY = config('CELERY_WORKER_CONCURRENCY', default=4, cast=int)
+CELERY_TASK_EAGER_PROPAGATES = config('CELERY_TASK_EAGER_PROPAGATES', default=True, cast=bool)  # Explode loudly during tests.
+CELERY_WORKER_HIJACK_ROOT_LOGGER = config('CELERY_WORKER_HIJACK_ROOT_LOGGER', default=False, cast=bool)
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
@@ -1103,12 +1095,6 @@ ENFORCE_HOST = config('ENFORCE_HOST', default='', cast=Csv()) or None
 
 # Allows you to specify waffle settings in the querystring.
 WAFFLE_OVERRIDE = config('WAFFLE_OVERRIDE', default=DEBUG, cast=bool)
-
-STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
-STATSD_HOST = config('STATSD_HOST', default='localhost')
-STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
-STATSD_PREFIX = config('STATSD_PREFIX', default='')
-
 
 if config('SENTRY_DSN', None):
     import sentry_sdk

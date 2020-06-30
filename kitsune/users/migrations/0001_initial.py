@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Profile',
             fields=[
-                ('user', models.OneToOneField(primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL, verbose_name='User')),
+                ('user', models.OneToOneField(on_delete=models.CASCADE, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL, verbose_name='User')),
                 ('name', models.CharField(max_length=255, null=True, verbose_name='Display name', blank=True)),
                 ('public_email', models.BooleanField(default=False, verbose_name='Make my email public')),
                 ('avatar', models.ImageField(max_length=250, upload_to=b'uploads/avatars/', null=True, verbose_name='Avatar', blank=True)),
@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('activation_key', models.CharField(max_length=40, verbose_name='activation key')),
-                ('user', models.ForeignKey(verbose_name='user', to=settings.AUTH_USER_MODEL, unique=True)),
+                ('user', models.ForeignKey(on_delete=models.CASCADE, verbose_name='user', to=settings.AUTH_USER_MODEL, unique=True)),
             ],
             options={
                 'verbose_name': 'registration profile',
@@ -81,7 +81,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
                 ('value', models.CharField(max_length=60, verbose_name='Value', blank=True)),
-                ('user', models.ForeignKey(related_name='settings', verbose_name='User', to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(on_delete=models.CASCADE, related_name='settings', verbose_name='User', to=settings.AUTH_USER_MODEL)),
             ],
             options={
             },
@@ -89,24 +89,24 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='setting',
-            unique_together=set([('user', 'name')]),
+            unique_together={('user', 'name')},
         ),
         migrations.AddField(
             model_name='emailchange',
             name='user',
-            field=models.ForeignKey(verbose_name='user', to=settings.AUTH_USER_MODEL, unique=True),
+            field=models.ForeignKey(on_delete=models.CASCADE, verbose_name='user', to=settings.AUTH_USER_MODEL, unique=True),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='deactivation',
             name='moderator',
-            field=models.ForeignKey(related_name='deactivations', verbose_name='moderator', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='deactivations', verbose_name='moderator', to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='deactivation',
             name='user',
-            field=models.ForeignKey(related_name='+', verbose_name='user', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='+', verbose_name='user', to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
     ]

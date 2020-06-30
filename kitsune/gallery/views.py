@@ -71,7 +71,7 @@ def upload(request, media_type='image'):
         else:
             return gallery(request, media_type='image')
 
-    return HttpResponseBadRequest(u'Unrecognized POST request.')
+    return HttpResponseBadRequest('Unrecognized POST request.')
 
 
 @login_required
@@ -83,7 +83,7 @@ def cancel_draft(request, media_type='image'):
         drafts['image'].delete()
         drafts['image'] = None
     else:
-        msg = _(u'Unrecognized request or nothing to cancel.')
+        msg = _('Unrecognized request or nothing to cancel.')
         content_type = None
         if request.is_ajax():
             msg = json.dumps({'status': 'error', 'message': msg})
@@ -219,7 +219,7 @@ def upload_async(request, media_type='image'):
         if media_type == 'image':
             file_info = upload_image(request)
         else:
-            msg = _(u'Unrecognized media type.')
+            msg = _('Unrecognized media type.')
             return HttpResponseBadRequest(
                 json.dumps({'status': 'error', 'message': msg}))
     except FileTooLargeError as e:
@@ -231,10 +231,10 @@ def upload_async(request, media_type='image'):
         return HttpResponse(
             json.dumps({'status': 'success', 'file': file_info}))
 
-    message = _(u'Could not upload your image.')
+    message = _('Could not upload your image.')
     return HttpResponseBadRequest(
         json.dumps({'status': 'error',
-                    'message': unicode(message),
+                    'message': str(message),
                     'errors': file_info}))
 
 
@@ -257,7 +257,7 @@ def _get_media_info(media_id, media_type):
 def _get_drafts(user):
     """Get video and image drafts for a given user."""
     drafts = {'image': None, 'video': None}
-    if user.is_authenticated():
+    if user.is_authenticated:
         drafts['image'] = Image.objects.filter(creator=user, is_draft=True)
         drafts['video'] = Video.objects.filter(creator=user, is_draft=True)
     return drafts

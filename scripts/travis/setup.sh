@@ -16,7 +16,7 @@ DATABASES['default']['NAME'] = 'kitsune'
 DATABASES['default']['HOST'] = 'localhost'
 DATABASES['default']['USER'] = 'travis'
 DATABASES['default']['CONN_MAX_AGE'] = 600
-CELERY_ALWAYS_EAGER = True
+CELERY_TASK_ALWAYS_EAGER = True
 ES_INDEX_PREFIX = 'sumo'
 ES_URLS = ['http://localhost:9200']
 SETTINGS

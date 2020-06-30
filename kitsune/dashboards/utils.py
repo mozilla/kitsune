@@ -1,5 +1,4 @@
 import logging
-
 from collections import OrderedDict
 
 from django.conf import settings
@@ -10,15 +9,14 @@ from apiclient.errors import Error as GoogleAPIError
 from oauth2client.client import Error as Oauth2Error
 from OpenSSL.crypto import Error as OpenSSLError
 
-from kitsune.announcements.models import Announcement
 from kitsune.announcements.forms import AnnouncementForm
+from kitsune.announcements.models import Announcement
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
 from kitsune.sumo.googleanalytics import visitors_by_locale
-from kitsune.wiki.events import (
-    ApproveRevisionInLocaleEvent, ReadyRevisionEvent,
-    ReviewableRevisionInLocaleEvent)
-
+from kitsune.wiki.events import (ApproveRevisionInLocaleEvent,
+                                 ReadyRevisionEvent,
+                                 ReviewableRevisionInLocaleEvent)
 
 log = logging.getLogger('k.dashboards')
 
@@ -50,7 +48,7 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None, p
     data = {
         'readouts': OrderedDict((slug, class_(request, locale=locale,
                                               product=product))
-                                for slug, class_ in readouts.iteritems()
+                                for slug, class_ in readouts.items()
                                 if class_.should_show_to(request)),
         'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
         'default_locale_name': LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
@@ -93,7 +91,7 @@ def get_locales_by_visit(start_date, end_date):
     if sorted_locales is None:
         try:
             results = visitors_by_locale(start_date, end_date)
-            locales_and_visits = results.items()
+            locales_and_visits = list(results.items())
             sorted_locales = list(reversed(sorted(
                 locales_and_visits, key=lambda x: x[1])))
             cache.add(cache_key, sorted_locales, CACHE_TIMEOUT)
@@ -101,6 +99,6 @@ def get_locales_by_visit(start_date, end_date):
             # Just return all locales with 0s for visits.
             log.exception('Something went wrong getting visitors by locale '
                           'from Google Analytics. Nobody got a 500 though.')
-            sorted_locales = [(l, 0) for l in settings.SUMO_LANGUAGES]
+            sorted_locales = [(lang, 0) for lang in settings.SUMO_LANGUAGES]
 
     return sorted_locales

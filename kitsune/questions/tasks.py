@@ -1,30 +1,30 @@
 import logging
 from datetime import date
+from typing import Dict
 
 # NOTE: This import is just so _fire_task gets registered with celery.
 import tidings.events  # noqa
 from celery import task
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import connection, transaction
-from django_statsd.clients import statsd
 from multidb.pinning import pin_this_thread, unpin_this_thread
+from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.search.tasks import index_task
-from kitsune.sumo.decorators import timeit
+from kitsune.search.utils import to_class_path
 
 log = logging.getLogger("k.task")
 
 
 @task(rate_limit="1/s")
-@timeit
 def update_question_votes(question_id):
     from kitsune.questions.models import Question
 
     log.debug("Got a new QuestionVote for question_id=%s." % question_id)
-    statsd.incr("questions.tasks.update")
 
     # Pin to master db to avoid lag delay issues.
     pin_this_thread()
@@ -40,7 +40,6 @@ def update_question_votes(question_id):
 
 
 @task(rate_limit="4/s")
-@timeit
 def update_question_vote_chunk(data):
     """Update num_votes_past_week for a number of questions."""
 
@@ -97,20 +96,26 @@ def update_question_vote_chunk(data):
             for doc in es_docs:
                 # Note: Need to keep this in sync with
                 # Question.extract_document.
-                num = id_to_num[int(doc[u"id"])]
-                doc[u"question_num_votes_past_week"] = num
+                num = id_to_num[int(doc["id"])]
+                doc["question_num_votes_past_week"] = num
 
                 QuestionMappingType.index(doc, id_=doc["id"])
         except ES_EXCEPTIONS:
             # Something happened with ES, so let's push index updating
             # into an index_task which retries when it fails because
             # of ES issues.
-            index_task.delay(QuestionMappingType, id_to_num.keys())
+            index_task.delay(to_class_path(QuestionMappingType), list(id_to_num.keys()))
 
 
 @task(rate_limit="4/m")
-@timeit
-def update_answer_pages(question):
+def update_answer_pages(question_id: int):
+    from kitsune.questions.models import Question
+    try:
+        question = Question.objects.get(id=question_id)
+    except Question.DoesNotExist as err:
+        capture_exception(err)
+        return
+
     log.debug(
         "Recalculating answer page numbers for question %s: %s"
         % (question.pk, question.title)
@@ -119,16 +124,21 @@ def update_answer_pages(question):
     i = 0
     answers = question.answers.using("default").order_by("created")
     for answer in answers.filter(is_spam=False):
-        answer.page = i / ANSWERS_PER_PAGE + 1
+        answer.page = i // ANSWERS_PER_PAGE + 1
         answer.save(no_notify=True)
         i += 1
 
 
 @task()
-@timeit
-def maybe_award_badge(badge_template, year, user):
+def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist as err:
+        capture_exception(err)
+        return
 
     # If the user already has the badge, there is nothing else to do.
     if badge.is_awarded_to(user):

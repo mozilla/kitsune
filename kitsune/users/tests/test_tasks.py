@@ -53,7 +53,7 @@ class AccountEventsTasksTestCase(TestCase):
         process_event_subscription_state_change(account_event_1.id)
         account_event_1.refresh_from_db()
 
-        self.assertItemsEqual(profile.products.all(), [product_1, product_2, product_3])
+        self.assertCountEqual(profile.products.all(), [product_1, product_2, product_3])
         eq_(account_event_1.status, AccountEvent.PROCESSED)
 
         account_event_2 = AccountEventFactory(
@@ -70,7 +70,7 @@ class AccountEventsTasksTestCase(TestCase):
         process_event_subscription_state_change(account_event_2.id)
         account_event_2.refresh_from_db()
 
-        self.assertItemsEqual(profile.products.all(), [product_3])
+        self.assertCountEqual(profile.products.all(), [product_3])
         eq_(account_event_2.status, AccountEvent.PROCESSED)
 
     def test_process_subscription_state_change_out_of_order(self):

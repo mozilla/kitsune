@@ -92,7 +92,7 @@ def _process_exit_survey_results():
     if latest_metric is not None:
         latest_metric_date = latest_metric.start
     else:
-        latest_metric_date = date(2013, 07, 01)
+        latest_metric_date = date(2013, 7, 1)
 
     day = latest_metric_date + timedelta(days=1)
     today = date.today()

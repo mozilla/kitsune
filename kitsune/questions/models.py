@@ -2,7 +2,7 @@ import logging
 import re
 import time
 from datetime import date, datetime, timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import actstream
 import actstream.actions
@@ -12,14 +12,13 @@ from django.contrib.contenttypes.fields import (GenericForeignKey,
                                                 GenericRelation)
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.core.urlresolvers import resolve
 from django.db import close_old_connections, connection, models
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
-from django_statsd.clients import statsd
+from django.urls import resolve
 from product_details import product_details
 from taggit.models import Tag, TaggedItem
 
@@ -34,6 +33,7 @@ from kitsune.search.models import (SearchMappingType, SearchMixin,
                                    register_for_indexing,
                                    register_mapping_type)
 from kitsune.search.tasks import index_task
+from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -61,19 +61,20 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     """A support question."""
 
     title = models.CharField(max_length=255)
-    creator = models.ForeignKey(User, related_name="questions")
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions")
     content = models.TextField()
 
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(
-        User, null=True, blank=True, related_name="questions_updated"
+        User, on_delete=models.CASCADE, null=True, blank=True, related_name="questions_updated"
     )
     last_answer = models.ForeignKey(
-        "Answer", related_name="last_reply_in", null=True, blank=True
+        "Answer", on_delete=models.CASCADE, related_name="last_reply_in", null=True, blank=True
     )
     num_answers = models.IntegerField(default=0, db_index=True)
-    solution = models.ForeignKey("Answer", related_name="solution_for", null=True)
+    solution = models.ForeignKey("Answer", on_delete=models.CASCADE,
+                                 related_name="solution_for", null=True)
     is_locked = models.BooleanField(default=False)
     is_archived = models.NullBooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
@@ -81,26 +82,26 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     is_spam = models.BooleanField(default=False)
     marked_as_spam = models.DateTimeField(default=None, null=True)
     marked_as_spam_by = models.ForeignKey(
-        User, null=True, related_name="questions_marked_as_spam"
+        User, on_delete=models.CASCADE, null=True, related_name="questions_marked_as_spam"
     )
 
     images = GenericRelation(ImageAttachment)
     flags = GenericRelation(FlaggedObject)
 
     product = models.ForeignKey(
-        Product, null=True, default=None, related_name="questions"
+        Product, on_delete=models.CASCADE, null=True, default=None, related_name="questions"
     )
-    topic = models.ForeignKey(Topic, null=True, related_name="questions")
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True, related_name="questions")
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 
-    taken_by = models.ForeignKey(User, blank=True, null=True)
+    taken_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     taken_until = models.DateTimeField(blank=True, null=True)
 
-    html_cache_key = u"question:html:%s"
-    tags_cache_key = u"question:tags:%s"
-    images_cache_key = u"question:images:%s"
-    contributors_cache_key = u"question:contributors:%s"
+    html_cache_key = "question:html:%s"
+    tags_cache_key = "question:tags:%s"
+    images_cache_key = "question:images:%s"
+    contributors_cache_key = "question:contributors:%s"
 
     objects = QuestionManager()
 
@@ -111,7 +112,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             ("change_solution", "Can change/remove the solution to a question"),
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def set_needs_info(self):
@@ -167,7 +168,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         question.add_metadata(ff_version='3.6.3', os='Linux')
 
         """
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             QuestionMetaData.objects.create(question=self, name=key, value=value)
         self._metadata = None
 
@@ -294,7 +295,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def has_voted(self, request):
         """Did the user already vote?"""
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             qs = QuestionVote.objects.filter(question=self, creator=request.user)
         elif request.anonymous.has_id:
             anon_id = request.anonymous.anonymous_id
@@ -334,7 +335,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def is_contributor(self, user):
         """Did the passed in user contribute to this question?"""
-        if user.is_authenticated():
+        if user.is_authenticated:
             return user.id in self.contributors
 
         return False
@@ -483,7 +484,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.solution = answer
         self.save()
         self.add_metadata(solver_id=str(solver.id))
-        statsd.incr("questions.solution")
         QuestionSolvedEvent(answer).fire(exclude=self.creator)
         actstream.action.send(
             solver, verb="marked as a solution", action_object=answer, target=self
@@ -499,7 +499,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         key = "questions_question:related_docs:%s" % self.id
         documents = cache.get(key)
         if documents is not None:
-            statsd.incr("questions.related_documents.cache.hit")
             log.debug(
                 "Getting MLT documents for {question} from cache.".format(
                     question=repr(self)
@@ -508,7 +507,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             return documents
 
         try:
-            statsd.incr("questions.related_documents.cache.miss")
             s = Document.get_mapping_type().search()
             documents = (
                 s.values_dict("id", "document_title", "url")
@@ -534,7 +532,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             documents = list(documents)
             cache.add(key, documents)
         except ES_EXCEPTIONS:
-            statsd.incr("questions.related_documents.esexception")
             log.exception("ES MLT related_documents")
             documents = []
 
@@ -550,7 +547,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         key = "questions_question:related_questions:%s" % self.id
         questions = cache.get(key)
         if questions is not None:
-            statsd.incr("questions.related_questions.cache.hit")
             log.debug(
                 "Getting MLT questions for {question} from cache.".format(
                     question=repr(self)
@@ -559,7 +555,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             return questions
 
         try:
-            statsd.incr("questions.related_questions.cache.miss")
             max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
             start_date = int(time.time()) - max_age
 
@@ -584,7 +579,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             questions = list(questions)
             cache.add(key, questions)
         except ES_EXCEPTIONS:
-            statsd.incr("questions.related_questions.esexception")
             log.exception("ES MLT related_questions")
             questions = []
 
@@ -613,7 +607,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def allows_new_answer(self, user):
         """Return whether `user` can answer (reply to) this question."""
         return user.has_perm("questions.add_answer") or (
-            self.editable and user.is_authenticated()
+            self.editable and user.is_authenticated
         )
 
     def allows_solve(self, user):
@@ -630,7 +624,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def allows_flag(self, user):
         """Return whether `user` can flag this question."""
-        return user.is_authenticated() and user != self.creator and self.editable
+        return user.is_authenticated and user != self.creator and self.editable
 
     def mark_as_spam(self, by_user):
         """Mark the question as spam by the specified user."""
@@ -868,21 +862,21 @@ register_for_indexing(
 class QuestionMetaData(ModelBase):
     """Metadata associated with a support question."""
 
-    question = models.ForeignKey("Question", related_name="metadata_set")
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="metadata_set")
     name = models.SlugField(db_index=True)
     value = models.TextField()
 
     class Meta:
         unique_together = ("question", "name")
 
-    def __unicode__(self):
-        return u"%s: %s" % (self.name, self.value[:50])
+    def __str__(self):
+        return "%s: %s" % (self.name, self.value[:50])
 
 
 class QuestionVisits(ModelBase):
     """Web stats for questions."""
 
-    question = models.ForeignKey(Question, unique=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, unique=True)
     visits = models.IntegerField(db_index=True)
 
     @classmethod
@@ -898,7 +892,7 @@ class QuestionVisits(ModelBase):
             # them out at 5 minutes and the GA calls take forever.
             close_old_connections()
 
-            for question_id, visits in counts.iteritems():
+            for question_id, visits in counts.items():
                 # We are trying to minimize db calls here. Let's try to update
                 # first, that will be the common case.
                 num = cls.objects.filter(question_id=question_id).update(visits=visits)
@@ -941,26 +935,26 @@ class QuestionLocale(ModelBase):
 class Answer(ModelBase, SearchMixin):
     """An answer to a support question."""
 
-    question = models.ForeignKey("Question", related_name="answers")
-    creator = models.ForeignKey(User, related_name="answers")
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="answers")
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="answers")
     created = models.DateTimeField(default=datetime.now, db_index=True)
     content = models.TextField()
     updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(
-        User, null=True, blank=True, related_name="answers_updated"
+        User, on_delete=models.CASCADE, null=True, blank=True, related_name="answers_updated"
     )
     page = models.IntegerField(default=1)
     is_spam = models.BooleanField(default=False)
     marked_as_spam = models.DateTimeField(default=None, null=True)
     marked_as_spam_by = models.ForeignKey(
-        User, null=True, related_name="answers_marked_as_spam"
+        User, on_delete=models.CASCADE, null=True, related_name="answers_marked_as_spam"
     )
 
     images = GenericRelation(ImageAttachment)
     flags = GenericRelation(FlaggedObject)
 
-    html_cache_key = u"answer:html:%s"
-    images_cache_key = u"answer:images:%s"
+    html_cache_key = "answer:html:%s"
+    images_cache_key = "answer:images:%s"
 
     objects = AnswerManager()
 
@@ -968,8 +962,8 @@ class Answer(ModelBase, SearchMixin):
         ordering = ["created"]
         permissions = (("bypass_answer_ratelimit", "Can bypass answering ratelimit"),)
 
-    def __unicode__(self):
-        return u"%s: %s" % (self.question.title, self.content[:50])
+    def __str__(self):
+        return "%s: %s" % (self.question.title, self.content[:50])
 
     @property
     def content_parsed(self):
@@ -990,7 +984,7 @@ class Answer(ModelBase, SearchMixin):
         new = self.id is None
 
         if new:
-            page = self.question.num_answers / config.ANSWERS_PER_PAGE + 1
+            page = self.question.num_answers // config.ANSWERS_PER_PAGE + 1
             self.page = page
         else:
             self.updated = datetime.now()
@@ -1053,7 +1047,7 @@ class Answer(ModelBase, SearchMixin):
 
         super(Answer, self).delete(*args, **kwargs)
 
-        update_answer_pages.delay(question)
+        update_answer_pages.delay(question.id)
 
     def get_helpful_answer_url(self):
         url = reverse(
@@ -1108,7 +1102,7 @@ class Answer(ModelBase, SearchMixin):
 
     def has_voted(self, request):
         """Did the user already vote for this answer?"""
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             qs = AnswerVote.objects.filter(answer=self, creator=request.user)
         elif request.anonymous.has_id:
             anon_id = request.anonymous.anonymous_id
@@ -1148,7 +1142,7 @@ class Answer(ModelBase, SearchMixin):
         if question is None:
             question = self.question
 
-        return user.is_authenticated() and user != self.creator and question.editable
+        return user.is_authenticated and user != self.creator and question.editable
 
     def get_images(self):
         """A cached version of self.images.all().
@@ -1287,7 +1281,7 @@ def reindex_questions_answers(sender, instance, **kw):
     This is needed because the solution may have changed."""
     if instance.id:
         answer_ids = instance.answers.all().values_list("id", flat=True)
-        index_task.delay(AnswerMetricsMappingType, list(answer_ids))
+        index_task.delay(to_class_path(AnswerMetricsMappingType), list(answer_ids))
 
 
 post_save.connect(
@@ -1321,9 +1315,10 @@ class QuestionVote(ModelBase):
     """I have this problem too.
     Keeps track of users that have problem over time."""
 
-    question = models.ForeignKey("Question", related_name="votes")
+    question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="votes")
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name="question_votes", null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                related_name="question_votes", null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
@@ -1340,10 +1335,11 @@ register_for_indexing(
 class AnswerVote(ModelBase):
     """Helpful or Not Helpful vote on Answer."""
 
-    answer = models.ForeignKey("Answer", related_name="votes")
+    answer = models.ForeignKey("Answer", on_delete=models.CASCADE, related_name="votes")
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name="answer_votes", null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE,
+                                related_name="answer_votes", null=True)
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
@@ -1364,7 +1360,7 @@ register_for_indexing(
 class VoteMetadata(ModelBase):
     """Metadata for question and answer votes."""
 
-    content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
     vote = GenericForeignKey()
     key = models.CharField(max_length=40, db_index=True)
@@ -1408,7 +1404,7 @@ def _has_beta(version, dev_releases):
     dev_releases dict. If you pass '6.0', it returns False.
     """
     return version in [
-        re.search(r"(\d+\.)+\d+", s).group(0) for s in dev_releases.keys()
+        re.search(r"(\d+\.)+\d+", s).group(0) for s in list(dev_releases.keys())
     ]
 
 

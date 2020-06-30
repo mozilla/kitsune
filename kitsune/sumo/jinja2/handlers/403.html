@@ -8,7 +8,7 @@
     <div class="center-on-mobile">
       <p>{{ _('You do not have permission to access this page.') }}</p>
 
-      {% if not user.is_authenticated() %}
+      {% if not user.is_authenticated %}
         <p>
           {{ _('Please try to log in / sign up first with') }} <a href="{{ url('users.fxa_authentication_init') }}">{{ _('Firefox Accounts') }}</a>.
         </p>

@@ -9,6 +9,7 @@ from django.db import connection, transaction
 from kitsune.questions.models import Question, QuestionMappingType
 from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
 from kitsune.search.tasks import index_task
+from kitsune.search.utils import to_class_path
 
 log = logging.getLogger('k.cron')
 
@@ -65,8 +66,8 @@ class Command(BaseCommand):
                         # For each document, update the data and stick it
                         # back in the index.
                         for doc in es_docs:
-                            doc[u'question_is_archived'] = True
-                            doc[u'indexed_on'] = int(time.time())
+                            doc['question_is_archived'] = True
+                            doc['indexed_on'] = int(time.time())
                             documents.append(doc)
 
                         QuestionMappingType.bulk_index(documents)
@@ -75,4 +76,4 @@ class Command(BaseCommand):
                     # Something happened with ES, so let's push index
                     # updating into an index_task which retries when it
                     # fails because of ES issues.
-                    index_task.delay(QuestionMappingType, q_ids)
+                    index_task.delay(to_class_path(QuestionMappingType), q_ids)

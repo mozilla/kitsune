@@ -12,7 +12,7 @@
       <div class="sumo-button-wrap forum-actions">
         <a id="new-thread" class="sumo-button button-primary" href="{{ url('wiki.discuss.new_thread', document_slug=document.slug) }}">{{ _('Post a new thread') }}</a>
 
-        {% if user.is_authenticated() %}
+        {% if user.is_authenticated %}
           <form action="{{ url('wiki.discuss.watch_forum', document.slug) }}" method="post">
             {% csrf_token %}
             {% if is_watching_forum %}

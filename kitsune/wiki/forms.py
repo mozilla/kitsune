@@ -16,36 +16,36 @@ from kitsune.wiki.widgets import (
     RelatedDocumentsWidget)
 
 
-TITLE_REQUIRED = _lazy(u'Please provide a title.')
-TITLE_SHORT = _lazy(u'The title is too short (%(show_value)s characters). '
-                    u'It must be at least %(limit_value)s characters.')
-TITLE_LONG = _lazy(u'Please keep the length of the title to %(limit_value)s '
-                   u'characters or less. It is currently %(show_value)s '
-                   u'characters.')
-SLUG_REQUIRED = _lazy(u'Please provide a slug.')
-SLUG_INVALID = _lazy(u'The slug provided is not valid.')
-SLUG_SHORT = _lazy(u'The slug is too short (%(show_value)s characters). '
-                   u'It must be at least %(limit_value)s characters.')
-SLUG_LONG = _lazy(u'Please keep the length of the slug to %(limit_value)s '
-                  u'characters or less. It is currently %(show_value)s '
-                  u'characters.')
-SUMMARY_REQUIRED = _lazy(u'Please provide a summary.')
-SUMMARY_SHORT = _lazy(u'The summary is too short (%(show_value)s characters). '
-                      u'It must be at least %(limit_value)s characters.')
-SUMMARY_LONG = _lazy(u'Please keep the length of the summary to '
-                     u'%(limit_value)s characters or less. It is currently '
-                     u'%(show_value)s characters.')
-CONTENT_REQUIRED = _lazy(u'Please provide content.')
-CONTENT_SHORT = _lazy(u'The content is too short (%(show_value)s characters). '
-                      u'It must be at least %(limit_value)s characters.')
-CONTENT_LONG = _lazy(u'Please keep the length of the content to '
-                     u'%(limit_value)s characters or less. It is currently '
-                     u'%(show_value)s characters.')
-COMMENT_LONG = _lazy(u'Please keep the length of the comment to '
-                     u'%(limit_value)s characters or less. It is currently '
-                     u'%(show_value)s characters.')
-PRODUCT_REQUIRED = _lazy(u'Please select at least one product.')
-TOPIC_REQUIRED = _lazy(u'Please select at least one topic.')
+TITLE_REQUIRED = _lazy('Please provide a title.')
+TITLE_SHORT = _lazy('The title is too short (%(show_value)s characters). '
+                    'It must be at least %(limit_value)s characters.')
+TITLE_LONG = _lazy('Please keep the length of the title to %(limit_value)s '
+                   'characters or less. It is currently %(show_value)s '
+                   'characters.')
+SLUG_REQUIRED = _lazy('Please provide a slug.')
+SLUG_INVALID = _lazy('The slug provided is not valid.')
+SLUG_SHORT = _lazy('The slug is too short (%(show_value)s characters). '
+                   'It must be at least %(limit_value)s characters.')
+SLUG_LONG = _lazy('Please keep the length of the slug to %(limit_value)s '
+                  'characters or less. It is currently %(show_value)s '
+                  'characters.')
+SUMMARY_REQUIRED = _lazy('Please provide a summary.')
+SUMMARY_SHORT = _lazy('The summary is too short (%(show_value)s characters). '
+                      'It must be at least %(limit_value)s characters.')
+SUMMARY_LONG = _lazy('Please keep the length of the summary to '
+                     '%(limit_value)s characters or less. It is currently '
+                     '%(show_value)s characters.')
+CONTENT_REQUIRED = _lazy('Please provide content.')
+CONTENT_SHORT = _lazy('The content is too short (%(show_value)s characters). '
+                      'It must be at least %(limit_value)s characters.')
+CONTENT_LONG = _lazy('Please keep the length of the content to '
+                     '%(limit_value)s characters or less. It is currently '
+                     '%(show_value)s characters.')
+COMMENT_LONG = _lazy('Please keep the length of the comment to '
+                     '%(limit_value)s characters or less. It is currently '
+                     '%(show_value)s characters.')
+PRODUCT_REQUIRED = _lazy('Please select at least one product.')
+TOPIC_REQUIRED = _lazy('Please select at least one topic.')
 
 
 class DocumentForm(forms.ModelForm):
@@ -87,8 +87,8 @@ class DocumentForm(forms.ModelForm):
     title = forms.CharField(
         min_length=5, max_length=255,
         widget=forms.TextInput(),
-        label=_lazy(u'Title:'),
-        help_text=_lazy(u'Title of article'),
+        label=_lazy('Title:'),
+        help_text=_lazy('Title of article'),
         error_messages={'required': TITLE_REQUIRED,
                         'min_length': TITLE_SHORT,
                         'max_length': TITLE_LONG})
@@ -99,28 +99,28 @@ class DocumentForm(forms.ModelForm):
     slug = forms.CharField(
         min_length=3, max_length=255,
         widget=forms.TextInput(),
-        label=_lazy(u'Slug:'),
-        help_text=_lazy(u'Article URL'),
+        label=_lazy('Slug:'),
+        help_text=_lazy('Article URL'),
         error_messages={'required': SLUG_REQUIRED,
                         'min_length': SLUG_SHORT,
                         'max_length': SLUG_LONG})
 
     products = forms.MultipleChoiceField(
-        label=_lazy(u'Relevant to:'),
+        label=_lazy('Relevant to:'),
         required=False,
         widget=forms.CheckboxSelectMultiple())
 
     is_localizable = forms.BooleanField(
         initial=True,
-        label=_lazy(u'Allow translations:'),
+        label=_lazy('Allow translations:'),
         required=False)
 
     is_archived = forms.BooleanField(
-        label=_lazy(u'Obsolete:'),
+        label=_lazy('Obsolete:'),
         required=False)
 
     allow_discussion = forms.BooleanField(
-        label=_lazy(u'Allow discussion on this article?'),
+        label=_lazy('Allow discussion on this article?'),
         initial=True,
         required=False)
 
@@ -129,28 +129,28 @@ class DocumentForm(forms.ModelForm):
         # Required for non-translations, which is
         # enforced in Document.clean().
         required=False,
-        label=_lazy(u'Category:'),
-        help_text=_lazy(u'Type of article'))
+        label=_lazy('Category:'),
+        help_text=_lazy('Type of article'))
 
     topics = forms.MultipleChoiceField(
-        label=_lazy(u'Topics:'),
+        label=_lazy('Topics:'),
         required=False,
         widget=ProductTopicsAndSubtopicsWidget())
 
     related_documents = forms.MultipleChoiceField(
-        label=_lazy(u'Related documents:'),
+        label=_lazy('Related documents:'),
         required=False,
         widget=RelatedDocumentsWidget())
 
     locale = forms.CharField(widget=forms.HiddenInput())
 
     needs_change = forms.BooleanField(
-        label=_lazy(u'Needs change:'),
+        label=_lazy('Needs change:'),
         initial=False,
         required=False)
 
     needs_change_comment = forms.CharField(
-        label=_lazy(u'Comment:'),
+        label=_lazy('Comment:'),
         widget=forms.Textarea(),
         required=False)
 
@@ -215,31 +215,31 @@ class RevisionForm(forms.ModelForm):
     """Form to create new revisions."""
     keywords = forms.CharField(
         required=False,
-        label=_lazy(u'Keywords:'),
-        help_text=_lazy(u'Affects search results'),
+        label=_lazy('Keywords:'),
+        help_text=_lazy('Affects search results'),
     )
 
     summary = forms.CharField(
         min_length=5, max_length=1000, widget=forms.Textarea(),
-        label=_lazy(u'Search result summary:'),
-        help_text=_lazy(u'Only displayed on search results page'),
+        label=_lazy('Search result summary:'),
+        help_text=_lazy('Only displayed on search results page'),
         error_messages={'required': SUMMARY_REQUIRED,
                         'min_length': SUMMARY_SHORT,
                         'max_length': SUMMARY_LONG})
 
     content = forms.CharField(
         min_length=5, max_length=100000,
-        label=_lazy(u'Content:'),
+        label=_lazy('Content:'),
         widget=forms.Textarea(),
         error_messages={'required': CONTENT_REQUIRED,
                         'min_length': CONTENT_SHORT,
                         'max_length': CONTENT_LONG})
 
     expires = forms.DateField(
-        label=_lazy(u'Expiry date:'),
+        label=_lazy('Expiry date:'),
         required=False)
 
-    comment = forms.CharField(required=False, label=_lazy(u'Comment:'))
+    comment = forms.CharField(required=False, label=_lazy('Comment:'))
 
     class Meta(object):
         model = Revision
@@ -296,12 +296,12 @@ class DraftRevisionForm(forms.ModelForm):
 
 class ReviewForm(forms.Form):
     comment = forms.CharField(
-        max_length=2000, widget=forms.Textarea(), required=False, label=_lazy(u'Comment:'),
+        max_length=2000, widget=forms.Textarea(), required=False, label=_lazy('Comment:'),
         error_messages={'max_length': COMMENT_LONG})
 
     _widget = forms.RadioSelect()
     significance = forms.TypedChoiceField(
-        label=_lazy(u'Significance:'),
+        label=_lazy('Significance:'),
         choices=SIGNIFICANCES,
         initial=SIGNIFICANCES[1][0],
         required=False,
@@ -310,16 +310,16 @@ class ReviewForm(forms.Form):
 
     is_ready_for_localization = forms.BooleanField(
         initial=False,
-        label=_lazy(u'Ready for localization'),
+        label=_lazy('Ready for localization'),
         required=False)
 
     needs_change = forms.BooleanField(
-        label=_lazy(u'Needs change'),
+        label=_lazy('Needs change'),
         initial=False,
         required=False)
 
     needs_change_comment = forms.CharField(
-        label=_lazy(u'Comment:'),
+        label=_lazy('Comment:'),
         widget=forms.Textarea(),
         required=False)
 
@@ -327,18 +327,18 @@ class ReviewForm(forms.Form):
 class AddContributorForm(forms.Form):
     """Form to add contributors to a document."""
     users = MultiUsernameField(
-        widget=forms.TextInput(attrs={'placeholder': _lazy(u'username'),
+        widget=forms.TextInput(attrs={'placeholder': _lazy('username'),
                                       'class': 'user-autocomplete'}))
 
 
-languages = [('', 'Any')] + [(l[0], u'{1} ({0})'.format(*l))
-                             for l in settings.LANGUAGE_CHOICES]
+languages = [('', 'Any')] + [(lang[0], '{1} ({0})'.format(*lang))
+                             for lang in settings.LANGUAGE_CHOICES]
 
 
 class RevisionFilterForm(forms.Form):
     """Form to filter a list of revisions."""
-    locale = forms.ChoiceField(label=_lazy(u'Locale:'), choices=languages,
+    locale = forms.ChoiceField(label=_lazy('Locale:'), choices=languages,
                                required=False)
-    users = MultiUsernameField(label=_lazy(u'Users:'), required=False)
-    start = forms.DateField(label=_lazy(u'Start:'), required=False)
-    end = forms.DateField(label=_lazy(u'End:'), required=False)
+    users = MultiUsernameField(label=_lazy('Users:'), required=False)
+    start = forms.DateField(label=_lazy('Start:'), required=False)
+    end = forms.DateField(label=_lazy('End:'), required=False)

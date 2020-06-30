@@ -26,7 +26,7 @@ class ImageAttachmentTestCase(TestCase):
         """thumbnail_if_set() returns self.thumbnail if set, or else returns
         self.file"""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open('kitsune/upload/tests/media/test.jpg', 'rb') as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
 

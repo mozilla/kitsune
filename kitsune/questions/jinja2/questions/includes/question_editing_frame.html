@@ -27,7 +27,7 @@ we can compute the edit-title URL.
     {{ scam_banner() }}
 
     {% block formwrap %}
-    <img class="page-heading--logo" src="{{ image_for_product(current_product.product) }}" alt="{{ current_product.name }} logo" />
+    <img class="page-heading--logo" src="{{ image_for_product(current_product.get('product', '')) }}" alt="{{ current_product.get('name', '') }} logo" />
 
     {# TODO: hook this up to the backend when subproducts are in.
     <div class="mzp-c-menu-list subheading-dropdown">

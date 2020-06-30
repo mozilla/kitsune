@@ -8,8 +8,6 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    replaces = [(b'users', '0020_accountevent'), (b'users', '0021_auto_20200402_0424'), (b'users', '0022_auto_20200402_0429')]
-
     dependencies = [
         ('users', '0019_auto_20190917_0422'),
     ]
@@ -27,7 +25,7 @@ class Migration(migrations.Migration):
                 ('fxa_uid', models.CharField(blank=True, max_length=128, null=True, unique=True)),
                 ('jwt_id', models.CharField(max_length=256)),
                 ('issued_at', models.CharField(max_length=32)),
-                ('profile', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='account_events', to='users.Profile')),
+                ('profile', models.ForeignKey(on_delete=models.CASCADE, null=True, related_name='account_events', to='users.Profile')),
             ],
         ),
     ]

@@ -4,7 +4,7 @@ import unittest
 
 from django.contrib.sites.models import Site
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.questions.models import QuestionMappingType
@@ -32,10 +32,10 @@ class ElasticSearchSuggestionsTests(ElasticTestCase):
         """Suggestions API is well-formatted."""
         get_current.return_value.domain = 'testserver'
 
-        doc = DocumentFactory(title=u'doc1 audio', locale=u'en-US', is_archived=False)
-        ApprovedRevisionFactory(document=doc, summary=u'audio', content=u'audio')
+        doc = DocumentFactory(title='doc1 audio', locale='en-US', is_archived=False)
+        ApprovedRevisionFactory(document=doc, summary='audio', content='audio')
 
-        ques = QuestionFactory(title=u'q1 audio', tags=[u'desktop'])
+        ques = QuestionFactory(title='q1 audio', tags=['desktop'])
         # ques.tags.add(u'desktop')
         ans = AnswerFactory(question=ques)
         AnswerVoteFactory(answer=ans, helpful=True)
@@ -114,10 +114,10 @@ class TestMappings(unittest.TestCase):
         for index in es_utils.all_read_indexes():
             merged_mapping = {}
 
-            for cls_name, mapping in es_utils.get_mappings(index).items():
+            for cls_name, mapping in list(es_utils.get_mappings(index).items()):
                 mapping = mapping['properties']
 
-                for key, val in mapping.items():
+                for key, val in list(mapping.items()):
                     if key not in merged_mapping:
                         merged_mapping[key] = (val, [cls_name])
                         continue
@@ -150,16 +150,16 @@ class TestAnalyzers(ElasticTestCase):
             },
             'ar': {
                 'analyzer': 'arabic',
-                'content': u'لدي اثنين من القطط',
+                'content': 'لدي اثنين من القطط',
             },
             'he': {
                 'analyzer': 'standard',
-                'content': u'גאולוגיה היא אחד',
+                'content': 'גאולוגיה היא אחד',
             }
         }
 
         self.docs = {}
-        for locale, data in self.locale_data.items():
+        for locale, data in list(self.locale_data.items()):
             d = DocumentFactory(locale=locale)
             ApprovedRevisionFactory(document=d, content=data['content'])
             self.locale_data[locale]['doc'] = d
@@ -169,7 +169,7 @@ class TestAnalyzers(ElasticTestCase):
     def test_analyzer_choices(self):
         """Check that the indexer picked the right analyzer."""
 
-        ids = [d.id for d in self.docs.values()]
+        ids = [d.id for d in list(self.docs.values())]
         docs = es_utils.get_documents(DocumentMappingType, ids)
         for doc in docs:
             locale = doc['locale']
@@ -237,7 +237,7 @@ class TestAnalyzers(ElasticTestCase):
         if p_tag:
             # Since `expected` is a set, there is no problem adding this
             # twice, since duplicates will be ignored.
-            expected.add(u'p')
+            expected.add('p')
         actual = set(t['term'] for t in facets['tokens'])
         eq_(actual, expected)
 
@@ -263,11 +263,11 @@ class TestAnalyzers(ElasticTestCase):
         it to analyze an Arabic text as Arabic. If someone who reads
         Arabic can improve this test, go for it!
         """
-        self._check_locale_tokenization('ar', [u'لد', u'اثن', u'قطط'])
+        self._check_locale_tokenization('ar', ['لد', 'اثن', 'قطط'])
 
     def test_herbrew_tokenization(self):
         """Test that Hebrew uses the standard analyzer."""
-        tokens = [u'גאולוגיה', u'היא', u'אחד']
+        tokens = ['גאולוגיה', 'היא', 'אחד']
         self._check_locale_tokenization('he', tokens)
 
 

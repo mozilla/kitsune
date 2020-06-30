@@ -28,9 +28,13 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 
 # We do this gooftastic thing because nose uses unittest.SkipTest in
 # Python 2.7 which doesn't work with the whole --no-skip thing.
-if '--no-skip' in sys.argv or 'NOSE_WITHOUT_SKIP' in os.environ:
+# TODO: CHeck this after the upgrade
+if "--no-skip" in sys.argv or "NOSE_WITHOUT_SKIP" in os.environ:
+
     class SkipTest(Exception):
         pass
+
+
 else:
     from nose import SkipTest  # noqa
 
@@ -45,14 +49,15 @@ def post(client, url, data={}, **kwargs):
 
 class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
     """This is a test runner that pulls in settings_test.py."""
+
     def setup_test_environment(self, **kwargs):
-        if not getenv('REUSE_STATIC', 'false').lower() in ('true', '1', ''):
+        if not getenv("REUSE_STATIC", "false").lower() in ("true", "1", ""):
             # Collect static files for pipeline to work correctly--do this with
             # subprocess instead of directly calling the admin command,
             # because collectstatic somehow retains emotional baggage
             # which causes all the tests to take FOREVER to run.
-            cmdline = [sys.executable, 'manage.py', 'collectstatic', '--noinput']
-            print 'Running %r' % cmdline
+            cmdline = [sys.executable, "manage.py", "collectstatic", "--noinput"]
+            print("Running %r" % cmdline)
             subprocess.call(cmdline)
 
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
@@ -61,6 +66,7 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
 @override_settings(ES_LIVE_INDEXING=False)
 class TestCase(OriginalTestCase):
     """TestCase that skips live indexing."""
+
     skipme = False
 
     def _pre_setup(self):
@@ -73,14 +79,16 @@ class TestCase(OriginalTestCase):
     def reindex_and_refresh(self):
         """Reindexes anything in the db"""
         from kitsune.search.es_utils import es_reindex_cmd
+
         es_reindex_cmd()
         self.refresh(run_tasks=False)
 
     def setup_indexes(self, empty=False, wait=True):
         """(Re-)create write index"""
         from kitsune.search.es_utils import recreate_indexes
+
         recreate_indexes()
-        get_es().cluster.health(wait_for_status='yellow')
+        get_es().cluster.health(wait_for_status="yellow")
 
     def teardown_indexes(self):
         """Tear down write index"""
@@ -91,7 +99,7 @@ class TestCase(OriginalTestCase):
     def setUpClass(cls):
         super(TestCase, cls).setUpClass()
 
-        if not getattr(settings, 'ES_URLS'):
+        if not getattr(settings, "ES_URLS"):
             cls.skipme = True
             return
 
@@ -124,19 +132,18 @@ class TestCase(OriginalTestCase):
         for index in es_utils.all_write_indexes():
             es.indices.refresh(index=index)
 
-        es.cluster.health(wait_for_status='yellow')
+        es.cluster.health(wait_for_status="yellow")
 
 
 def attrs_eq(received, **expected):
     """Compares received's attributes with expected's kwargs."""
-    for k, v in expected.iteritems():
+    for k, v in expected.items():
         eq_(v, getattr(received, k))
 
 
 def starts_with(text, substring):
     """Assert `text` starts with `substring`."""
-    assert text.startswith(substring), "%r doesn't start with %r" % (text,
-                                                                     substring)
+    assert text.startswith(substring), "%r doesn't start with %r" % (text, substring)
 
 
 def send_mail_raise_smtp(messages):
@@ -157,14 +164,14 @@ class LocalizingClient(Client):
     {mock out reverse() and make LocaleURLMiddleware not fire}.
 
     """
+
     def request(self, **request):
         """Make a request, but prepend a locale if there isn't one already."""
         # Fall back to defaults as in the superclass's implementation:
-        path = request.get('PATH_INFO', self.defaults.get('PATH_INFO', '/'))
+        path = request.get("PATH_INFO", self.defaults.get("PATH_INFO", "/"))
         locale, shortened = split_path(path)
         if not locale:
-            request['PATH_INFO'] = '/%s/%s' % (settings.LANGUAGE_CODE,
-                                               shortened)
+            request["PATH_INFO"] = "/%s/%s" % (settings.LANGUAGE_CODE, shortened)
         return super(LocalizingClient, self).request(**request)
 
     # If you use this, you might also find the force_locale=True argument to
@@ -175,14 +182,14 @@ class LocalizingClient(Client):
 def eq_msg(a, b, msg=None):
     """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
     """
-    assert a == b, (str(msg) or '') + ' (%r != %r)' % (a, b)
+    assert a == b, (str(msg) or "") + " (%r != %r)" % (a, b)
 
 
 class FuzzyUnicode(factory.fuzzy.FuzzyText):
     """A FuzzyText factory that contains at least one non-ASCII character."""
 
-    def __init__(self, prefix=u'', **kwargs):
-        prefix = u'%sđ' % prefix
+    def __init__(self, prefix="", **kwargs):
+        prefix = "%sđ" % prefix
         super(FuzzyUnicode, self).__init__(prefix=prefix, **kwargs)
 
 
@@ -217,7 +224,7 @@ class set_waffle_flag(object):
 
     def __init__(self, flagname, **kwargs):
         self.flagname = flagname
-        self.kwargs = kwargs or {'everyone': True}
+        self.kwargs = kwargs or {"everyone": True}
 
         try:
             self.origflag = Flag.objects.get(name=self.flagname)
@@ -231,9 +238,9 @@ class set_waffle_flag(object):
         if inspect.isclass(func_or_class):
             # If func_or_class is a class, decorate all of its methods
             # that start with 'test'.
-            for attr in func_or_class.__dict__.keys():
+            for attr in list(func_or_class.__dict__.keys()):
                 prop = getattr(func_or_class, attr)
-                if attr.startswith('test') and callable(prop):
+                if attr.startswith("test") and callable(prop):
                     setattr(func_or_class, attr, self.decorate(prop))
             return func_or_class
         else:
@@ -250,6 +257,7 @@ class set_waffle_flag(object):
 
     def decorate(self, func):
         """Decorates a function to enable the waffle flag."""
+
         @wraps(func)
         def _give_me_waffles(*args, **kwargs):
             self.make_flag()
@@ -257,6 +265,7 @@ class set_waffle_flag(object):
                 func(*args, **kwargs)
             finally:
                 self.restore_flag()
+
         return _give_me_waffles
 
     def make_flag(self):
@@ -273,9 +282,10 @@ class set_waffle_flag(object):
 
 class SumoPyQuery(PyQuery):
     """Extends PyQuery with some niceties to alleviate its bugs"""
+
     def first(self):
         """:first doesn't work, so this is a meh substitute"""
-        return self.items().next()
+        return next(self.items())
 
 
 def template_used(response, template_name):
@@ -306,7 +316,7 @@ def template_used(response, template_name):
     """
     templates = []
     # templates is an array of TemplateObjects
-    templates += [t.name for t in getattr(response, 'templates', [])]
+    templates += [t.name for t in getattr(response, "templates", [])]
     # jinja_templates is a list of strings
-    templates += getattr(response, 'jinja_templates', [])
+    templates += getattr(response, "jinja_templates", [])
     return template_name in templates

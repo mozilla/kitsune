@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timedelta
+from unittest import mock
 
-import mock
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
@@ -31,7 +31,7 @@ from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
                                 TestCaseBase, TranslatedRevisionFactory,
                                 new_document_data)
 
-READY_FOR_REVIEW_EMAIL_CONTENT = u"""\
+READY_FOR_REVIEW_EMAIL_CONTENT = """\
 %(user)s submitted a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -40,7 +40,7 @@ To review this revision, click the following link, or paste it into your \
 browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/review/%(new_id)s?utm_campaign=\
-wiki-ready-review&utm_medium=email&utm_source=notification
+wiki-ready-review&utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -55,7 +55,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
-DOCUMENT_EDITED_EMAIL_CONTENT = u"""\
+DOCUMENT_EDITED_EMAIL_CONTENT = """\
 %(user)s created a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -64,7 +64,7 @@ To view this document's history, click the following link, or paste it \
 into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/history?utm_campaign=wiki-edit&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -79,14 +79,14 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
-APPROVED_EMAIL_CONTENT = u"""\
+APPROVED_EMAIL_CONTENT = """\
 %(reviewer)s has approved the revision to the document %(document_title)s.
 
 To view the updated document, click the following link, or paste it into \
 your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s?utm_campaign=wiki-approved&\
-utm_medium=email&utm_source=notification
+utm_source=notification&utm_medium=email
 
 --
 Summary:
@@ -241,11 +241,8 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(redirect_url, follow=True)
         self.assertRedirects(
             response,
-            urlparams(
-                target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug
-            ),
-        )
-        self.assertContains(response, redirect_url + "?redirect=no")
+            urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
+        self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
         eq_(
@@ -863,7 +860,7 @@ class NewRevisionTests(TestCaseBase):
         eq_(2, len(mail.outbox))
         attrs_eq(
             mail.outbox[0],
-            subject=u"%s is ready for review (%s)" % (self.d.title, new_rev.creator),
+            subject="%s is ready for review (%s)" % (self.d.title, new_rev.creator),
             body=READY_FOR_REVIEW_EMAIL_CONTENT
             % {
                 "user": self.user.profile.name,
@@ -879,7 +876,7 @@ class NewRevisionTests(TestCaseBase):
         )
         attrs_eq(
             mail.outbox[1],
-            subject=u"%s was edited by %s" % (self.d.title, new_rev.creator),
+            subject="%s was edited by %s" % (self.d.title, new_rev.creator),
             body=DOCUMENT_EDITED_EMAIL_CONTENT
             % {
                 "user": self.user.profile.name,
@@ -1520,7 +1517,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # The "reviewed" mail should be sent to the creator, and the "approved"
         # mail should be sent to any subscribers:
-        reviewed_delay.assert_called_with(r, r.document, "something")
+        reviewed_delay.assert_called_with(r.id, r.document.id, "something")
 
         if r.based_on is not None:
             old_rev = r.document.current_Revision
@@ -1546,7 +1543,7 @@ class ReviewRevisionTests(TestCaseBase):
         attrs_eq(
             mail.outbox[0],
             subject=(
-                u"{0} ({1}) has a new approved revision ({2})".format(
+                "{0} ({1}) has a new approved revision ({2})".format(
                     self.document.title, self.document.locale, self.user.username
                 )
             ),
@@ -1596,7 +1593,7 @@ class ReviewRevisionTests(TestCaseBase):
         r = Revision.objects.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
-        delay.assert_called_with(r, r.document, comment)
+        delay.assert_called_with(r.id, r.document.id, comment)
 
         # Verify that revision creator is not in contributors
         assert r.creator not in r.document.contributors.all()
@@ -2601,10 +2598,11 @@ class HelpfulVoteTests(TestCaseBase):
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         eq_(200, response.status_code)
-        eq_('{"message": "Great to hear &mdash; thanks for the feedback!'
-            ' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
+        eq_(
+            b'{"message": "Great to hear &mdash; thanks for the feedback!'
+            b' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
             response.content,
-            )
+        )
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
         eq_(1, votes.count())

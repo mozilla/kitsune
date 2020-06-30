@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse as django_reverse
+from django.urls import reverse as django_reverse
 from django.db import transaction
 from django.utils.translation import ugettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
@@ -100,12 +100,12 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # something went terribly wrong. Return None
         if not fxa_uid:
-            log.warning(u'Failed to get Firefox Account UID.')
+            log.warning('Failed to get Firefox Account UID.')
             return users
 
         # A existing user is attempting to connect a Firefox Account to the SUMO profile
         # NOTE: this section will be dropped when the migration is complete
-        if self.request and self.request.user and self.request.user.is_authenticated():
+        if self.request and self.request.user and self.request.user.is_authenticated:
             return [self.request.user]
 
         users = user_model.objects.filter(profile__fxa_uid=fxa_uid)
@@ -170,7 +170,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # unless we have a superuser
         if user.email != email and not user.is_staff:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
-                msg = _(u'The email used with this Firefox Account is already '
+                msg = _('The email used with this Firefox Account is already '
                         'linked in another profile.')
                 messages.error(self.request, msg)
                 return None

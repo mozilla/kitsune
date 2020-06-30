@@ -75,8 +75,8 @@ class SimpleSyntaxTestCase(TestCase):
         p = WikiParser()
         doc = pq(p.parse('{key Cmd+Shift+Q}'))
         eq_(1, len(doc('p')))
-        eq_(u'<span class="key">Cmd</span> + <span class="key">Shift</span>'
-            u' + <span class="key">Q</span>', doc.html().replace('\n', ''))
+        eq_('<span class="key">Cmd</span> + <span class="key">Shift</span>'
+            ' + <span class="key">Q</span>', doc.html().replace('\n', ''))
 
     def test_template_inline(self):
         """Inline templates are not wrapped in <p>s"""
@@ -319,10 +319,10 @@ class TestWikiTemplate(TestCase):
         text = '{button start {for mac}mac{/for}{for win}win{/for} rest}'
         p = WikiParser()
         content = p.parse(text)
-        eq_(u'<p><span class="button">start '
-            u'<span class="for" data-for="mac">mac</span>'
-            u'<span class="for" data-for="win">win</span> '
-            u'rest</span>\n</p>', content)
+        eq_('<p><span class="button">start '
+            '<span data-for="mac" class="for">mac</span>'
+            '<span data-for="win" class="for">win</span> '
+            'rest</span>\n</p>', content)
 
     def test_button_image_for_nesting(self):
         """You can nest [[Image:]] inside {for} inside {button}."""
@@ -434,14 +434,14 @@ class TestWikiVideo(TestCase):
         # ridiculous and should be fixed. See bug #892610.
         assert doc('video').html() in [
             # This was the original expected test output.
-            (u'<source src="{0}" '
-             u'type="video/webm"><source src="{1}" type="video/ogg"/>'
-             u'</source>'.format(v.webm.url, v.ogv.url)),
+            ('<source src="{0}" '
+             'type="video/webm"><source src="{1}" type="video/ogg"/>'
+             '</source>'.format(v.webm.url, v.ogv.url)),
 
             # This is the version that Mike and I get.
-            (u'\n          <source src="{0}" type="video/webm">'
-             u'\n          <source src="{1}" type="video/ogg">'
-             u'\n      </source></source>'.format(v.webm.url, v.ogv.url))]
+            ('\n          <source src="{0}" type="video/webm">'
+             '\n          <source src="{1}" type="video/ogg">'
+             '\n      </source></source>'.format(v.webm.url, v.ogv.url))]
 
         eq_(1, len(doc('video')))
         eq_(2, len(doc('source')))
@@ -510,96 +510,94 @@ class TestWikiVideo(TestCase):
                 '//www.youtube.com/embed/oHg5SJYRHA0')
 
 
-def parsed_eq(want, to_parse):
-    p = WikiParser()
-    eq_(want, p.parse(to_parse).strip().replace('\n', ''))
-
-
 class ForWikiTests(TestCase):
     """Tests for the wiki implementation of the {for} directive, which
     arranges for certain parts of the page to show only when viewed on certain
     OSes or browser versions"""
 
+    def assertWikiHtmlEqual(self, wiki, html, msg=None):
+        self.assertHTMLEqual(WikiParser().parse(wiki), html, msg=msg)
+
     def test_block(self):
         """A {for} set off by itself or wrapping a block-level element should
         be a paragraph or other kind of block-level thing."""
-        parsed_eq('<p>Joe</p><p><span class="for">Red</span></p>'
-                  '<p>Blow</p>',
-                  'Joe\n\n{for}Red{/for}\n\nBlow')
-        parsed_eq('<p>Joe</p><div class="for"><ul><li> Red</li></ul></div>'
-                  '<p>Blow</p>',
-                  'Joe\n\n{for}\n* Red\n{/for}\n\nBlow')
+        self.assertWikiHtmlEqual(
+            'Joe\n\n{for}Red{/for}\n\nBlow',
+            '<p>Joe</p><p><span class="for">Red</span></p><p>Blow</p>')
+        self.assertWikiHtmlEqual(
+            'Joe\n\n{for}\n* Red\n{/for}\n\nBlow',
+            '<p>Joe</p><div class="for"><ul><li> Red</li></ul></div><p>Blow</p>')
 
     def test_inline(self):
         """A for not meeting the conditions in test_block should be inline.
         """
-        parsed_eq('<p>Joe</p>'
-                  '<p>Red <span class="for">riding</span> hood</p>'
-                  '<p>Blow</p>',
-
-                  'Joe\n\nRed {for}riding{/for} hood\n\nBlow')
+        self.assertWikiHtmlEqual(
+            'Joe\n\nRed {for}riding{/for} hood\n\nBlow',
+            '<p>Joe</p><p>Red <span class="for">riding</span> hood</p><p>Blow</p>')
 
     def test_nested(self):
         """{for} tags should be nestable."""
-        parsed_eq('<div class="for" data-for="mac">'
-                  '<p>Joe</p>'
-                  '<p>Red <span class="for"><span class="for">riding'
-                  '</span> hood</span></p>'
-                  '<p>Blow</p>'
-                  '</div>',
+        self.assertWikiHtmlEqual('{for mac}\n'
+                                 'Joe\n'
+                                 '\n'
+                                 'Red {for}{for}riding\n'
+                                 '{/for} hood{/for}\n'
+                                 '\n'
+                                 'Blow\n'
+                                 '{/for}',
 
-                  '{for mac}\n'
-                  'Joe\n'
-                  '\n'
-                  'Red {for}{for}riding\n'
-                  '{/for} hood{/for}\n'
-                  '\n'
-                  'Blow\n'
-                  '{/for}')
+                                 '<div data-for="mac" class="for">'
+                                 '<p>Joe</p>'
+                                 '<p>Red <span class="for"><span class="for">riding'
+                                 '</span> hood</span></p>'
+                                 '<p>Blow</p>'
+                                 '</div>')
 
     def test_data_attrs(self):
         """Make sure the correct attributes are set on the for element."""
-        parsed_eq('<p><span class="for" data-for="mac,linux,3.6">'
-                  'One</span></p>',
-                  '{for mac,linux,3.6}One{/for}')
+        self.assertWikiHtmlEqual(
+            '{for mac,linux,3.6}One{/for}',
+            '<p><span class="for" data-for="mac,linux,3.6">One</span></p>')
 
     def test_early_close(self):
         """Make sure the parser closes the for tag at the right place when
         its closer is early."""
-        parsed_eq('<div class="for"><p>One</p>'
-                  '<ul><li>Fish</li></ul></div>',
-                  '{for}\nOne\n\n*Fish{/for}')
+        self.assertWikiHtmlEqual(
+            '{for}\nOne\n\n*Fish{/for}',
+            '<div class="for"><p>One</p><ul><li>Fish</li></ul></div>')
 
     def test_late_close(self):
         """If the closing for tag is not closed by the time the enclosing
         element of the opening for tag is closed, close the for tag
         just before the enclosing element."""
-        parsed_eq(
+        self.assertWikiHtmlEqual(
+            '*{for}One\n*Fish\n\nTwo\n{/for}',
             '<ul><li><span class="for">One</span></li>'
-            '<li>Fish</li></ul><p>Two</p>',
-            '*{for}One\n*Fish\n\nTwo\n{/for}')
+            '<li>Fish</li></ul><p>Two</p>')
 
     def test_missing_close(self):
         """If the closing for tag is missing, close the for tag just
         before the enclosing element."""
-        parsed_eq(
-            '<p><span class="for">One fish</span></p><p>Two fish</p>',
-            '{for}One fish\n\nTwo fish')
+        self.assertWikiHtmlEqual(
+            '{for}One fish\n\nTwo fish',
+            '<p><span class="for">One fish</span></p><p>Two fish</p>')
 
     def test_unicode(self):
         """Make sure non-ASCII chars survive being wrapped in a for."""
-        french = u'Vous parl\u00e9 Fran\u00e7ais'
-        parsed_eq('<p><span class="for">' + french + '</span></p>',
-                  '{for}' + french + '{/for}')
+        french = 'Vous parl\u00e9 Fran\u00e7ais'
+        self.assertWikiHtmlEqual(
+            '{for}' + french + '{/for}',
+            '<p><span class="for">' + french + '</span></p>')
 
     def test_boolean_attr(self):
         """Make sure empty attributes don't raise exceptions."""
-        parsed_eq('<p><video controls height="120">'
-                  '  <source src="/some/path/file.ogv" type="video/ogv">'
-                  '</video></p>',
-                  '<p><video controls="" height="120">'
-                  '  <source src="/some/path/file.ogv" type="video/ogv">'
-                  '</video></p>')
+        self.assertWikiHtmlEqual(
+            '<p><video controls="" height="120">'
+            '  <source src="/some/path/file.ogv" type="video/ogv">'
+            '</video></p>',
+            '<p><video controls height="120">'
+            '  <source src="/some/path/file.ogv" type="video/ogv">'
+            '</video></p>')
 
     def test_adjacent_blocks(self):
         """Make sure one block-level {for} doesn't absorb an adjacent one."""
@@ -622,22 +620,22 @@ class ForWikiTests(TestCase):
 
     def test_big_swath(self):
         """Enclose a big section containing many tags."""
-        parsed_eq('<div class="for"><h1 id="w_h1">H1</h1>'
-                  '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
-                  '<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>'
-                  '<p>They have high melting points.</p></div>',
-
-                  '{for}\n'
-                  '=H1=\n'
-                  '==H2==\n'
-                  'Llamas are fun:\n'
-                  '\n'
-                  '*Jumping\n'
-                  '*Rolling\n'
-                  '*Grazing\n'
-                  '\n'
-                  'They have high melting points.\n'
-                  '{/for}')
+        self.assertWikiHtmlEqual(
+            '{for}\n'
+            '=H1=\n'
+            '==H2==\n'
+            'Llamas are fun:\n'
+            '\n'
+            '*Jumping\n'
+            '*Rolling\n'
+            '*Grazing\n'
+            '\n'
+            'They have high melting points.\n'
+            '{/for}',
+            '<div class="for"><h1 id="w_h1">H1</h1>'
+            '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
+            '<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>'
+            '<p>They have high melting points.</p></div>')
 
     def test_block_level_section(self):
         """Make sure we recognize <section> as a block element."""
@@ -650,7 +648,7 @@ def balanced_eq(want, to_balance):
     """Run `to_balance` through the expander to get its tags balanced, and
     assert the result is `want`."""
     expander = ForParser(to_balance)
-    eq_(want, expander.to_unicode())
+    eq_(want, str(expander))
 
 
 def expanded_eq(want, to_expand):
@@ -658,7 +656,7 @@ def expanded_eq(want, to_expand):
     `want`."""
     expander = ForParser(to_expand)
     expander.expand_fors()
-    eq_(want, expander.to_unicode())
+    eq_(want, str(expander))
 
 
 def strip_eq(want, text):
@@ -708,7 +706,7 @@ class ForParserTests(TestCase):
 
     def test_unicode(self):
         """Make sure this all works with non-ASCII chars."""
-        html = u'<for>Vous parl\u00e9 Fran\u00e7ais</for>'
+        html = '<for>Vous parl\u00e9 Fran\u00e7ais</for>'
         balanced_eq(html, html)
 
     def test_div(self):
@@ -723,7 +721,7 @@ class ForParserTests(TestCase):
 
     def test_data_attrs(self):
         """Make sure the data- attributes look good."""
-        expanded_eq('<span class="for" data-for="mac,linux">One</span>',
+        expanded_eq('<span data-for="mac,linux" class="for">One</span>',
                     '<for data-for="mac,linux">One</for>')
 
     def test_on_own_line(self):
@@ -740,12 +738,12 @@ class ForParserTests(TestCase):
         on_own_line_eq((True, False, False), '\n{for} \nq')
 
     def test_strip(self):
-        strip_eq('\x070\x07inline\x07/sf\x07', '{for}inline{/for}')
-        strip_eq('\x070\x07\n\nblock\n\n\x07/sf\x07',
+        strip_eq('\x910\x91inline\x91/sf\x91', '{for}inline{/for}')
+        strip_eq('\x910\x91\n\nblock\n\n\x91/sf\x91',
                  '{for}\nblock\n{/for}')
-        strip_eq('\x070\x07inline\n\n\x07/sf\x07',
+        strip_eq('\x910\x91inline\n\n\x91/sf\x91',
                  '{for}inline\n{/for}')
-        strip_eq('\x070\x07\n\nblock\x07/sf\x07', '{for}\nblock{/for}')
+        strip_eq('\x910\x91\n\nblock\x91/sf\x91', '{for}\nblock{/for}')
 
     def test_whitespace_lookbehind(self):
         """Assert strip_fors is aware of newlines preceding the current match.
@@ -756,7 +754,7 @@ class ForParserTests(TestCase):
         and take preceding newlines into account.
 
         """
-        strip_eq('\x070\x07\n\n\x071\x07inline\x07/sf\x07\n\n\x07/sf\x07',
+        strip_eq('\x910\x91\n\n\x911\x91inline\x91/sf\x91\n\n\x91/sf\x91',
                  '{for}\n{for}inline{/for}\n{/for}')
 
     def test_matches_see_replacements(self):
@@ -769,8 +767,8 @@ class ForParserTests(TestCase):
         original string, without the replacements applied.
 
         """
-        strip_eq('\x070\x07\n\n\x071\x07Fx4\x07/sf\x07\n\n\x07/sf\x07\n\n'
-                 '\x072\x07\n\n\x073\x07Fx3\x07/sf\x07\n\n\x07/sf\x07',
+        strip_eq('\x910\x91\n\n\x911\x91Fx4\x91/sf\x91\n\n\x91/sf\x91\n\n'
+                 '\x912\x91\n\n\x913\x91Fx3\x91/sf\x91\n\n\x91/sf\x91',
                  '{for fx4}\n'
                  '{for mac}Fx4{/for}\n'
                  '{/for}\n'
@@ -793,7 +791,7 @@ class ForParserTests(TestCase):
         """
         html = 'A<i>hi</i>B<i>there</i>C'
         p = ForParser(html)
-        eq_(html, p.to_unicode())
+        eq_(html, str(p))
 
 
 class WhatLinksHereTests(TestCase):
@@ -891,10 +889,10 @@ class WhatLinksHereTests(TestCase):
     def test_unicode(self):
         """Unicode is hard. Test that."""
         # \u03C0 is pi and \u2764 is a heart symbol.
-        d1 = DocumentFactory(title=u'\u03C0', slug='pi')
-        ApprovedRevisionFactory(document=d1, content=u'I \u2764 \u03C0')
-        d2 = DocumentFactory(title=u'\u2764', slug='heart')
-        ApprovedRevisionFactory(document=d2, content=u'What do you think about [[\u03C0]]?')
+        d1 = DocumentFactory(title='\u03C0', slug='pi')
+        ApprovedRevisionFactory(document=d1, content='I \u2764 \u03C0')
+        d2 = DocumentFactory(title='\u2764', slug='heart')
+        ApprovedRevisionFactory(document=d2, content='What do you think about [[\u03C0]]?')
 
         eq_(len(d1.links_to()), 1)
         eq_(len(d1.links_from()), 0)

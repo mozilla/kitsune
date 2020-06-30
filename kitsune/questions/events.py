@@ -83,13 +83,13 @@ class QuestionReplyEvent(QuestionEvent):
 
             is_asker = asker_id == user.id
             if is_asker:
-                subject = _(u'%s posted an answer to your question "%s"' %
+                subject = _('%s posted an answer to your question "%s"' %
                             (display_name(self.answer.creator),
                              self.instance.title))
                 text_template = 'questions/email/new_answer_to_asker.ltxt'
                 html_template = 'questions/email/new_answer_to_asker.html'
             else:
-                subject = _(u'Re: %s' % self.instance.title)
+                subject = _('Re: %s' % self.instance.title)
                 text_template = 'questions/email/new_answer.ltxt'
                 html_template = 'questions/email/new_answer.html'
 
@@ -148,7 +148,7 @@ class QuestionSolvedEvent(QuestionEvent):
 
         @email_utils.safe_translation
         def _make_mail(locale, user, context):
-            subject = _(u'Solution found to Firefox Help question')
+            subject = _('Solution found to Firefox Help question')
 
             mail = email_utils.make_mail(
                 subject=subject,

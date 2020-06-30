@@ -13,8 +13,8 @@ class OpenSearchTestCase(TestCase):
         # FIXME: This is silly. The better test would be to parse out
         # the content and then go through and make sure all the urls
         # were correct.
-        assert 'http://testserver/fr/search/suggestions' in response.content
-        assert 'en-US' not in response.content
+        assert b'http://testserver/fr/search/suggestions' in response.content
+        assert b'en-US' not in response.content
 
     def test_plugin_expires_and_mimetype(self):
         response = self.client.get(reverse('search.plugin', locale='en-US'))
@@ -26,9 +26,9 @@ class OpenSearchTestCase(TestCase):
 
     def test_plugin_uses_correct_locale(self):
         response = self.client.get(reverse('search.plugin', locale='en-US'))
-        assert '/en-US/search' in response.content
+        assert b'/en-US/search' in response.content
 
         response = self.client.get(reverse('search.plugin', locale='fr'))
-        assert '/fr/search' in response.content
+        assert b'/fr/search' in response.content
 
     # FIXME: test plugin results

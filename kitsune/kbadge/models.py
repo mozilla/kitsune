@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
 
@@ -166,7 +166,7 @@ class BadgeManager(models.Manager, SearchManagerMixin):
     )
 
     def allows_add_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if getattr(settings, "BADGER_ALLOW_ADD_BY_ANYONE", False):
             return True
@@ -175,7 +175,7 @@ class BadgeManager(models.Manager, SearchManagerMixin):
         return False
 
     def allows_grant_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.has_perm("badger.grant_deferredaward"):
             return True
@@ -189,21 +189,21 @@ class Badge(models.Model):
     objects = BadgeManager()
 
     title = models.CharField(
-        max_length=255, blank=False, unique=True, help_text=u"Short, descriptive title"
+        max_length=255, blank=False, unique=True, help_text="Short, descriptive title"
     )
     slug = models.SlugField(
         blank=False,
         unique=True,
-        help_text=u"Very short name, for use in URLs and links",
+        help_text="Very short name, for use in URLs and links",
     )
     description = models.TextField(
-        blank=True, help_text=u"Longer description of the badge and its criteria"
+        blank=True, help_text="Longer description of the badge and its criteria"
     )
     image = models.ImageField(
         blank=True,
         null=True,
         upload_to=settings.BADGE_IMAGE_PATH,
-        help_text=u"Must be square. Recommended 256x256.",
+        help_text="Must be square. Recommended 256x256.",
     )
     # TODO: Rename? Eventually we'll want a globally-unique badge. That is, one
     # unique award for one person for the whole site.
@@ -212,7 +212,7 @@ class Badge(models.Model):
         help_text=("Should awards of this badge be limited to " "one-per-person?"),
     )
 
-    creator = models.ForeignKey(User, blank=True, null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False)
     modified = models.DateTimeField(auto_now=True, blank=False)
 
@@ -223,7 +223,7 @@ class Badge(models.Model):
 
     get_permissions_for = get_permissions_for
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def get_absolute_url(self):
@@ -249,7 +249,7 @@ class Badge(models.Model):
         return True
 
     def allows_edit_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.has_perm("badger.change_badge"):
             return True
@@ -258,7 +258,7 @@ class Badge(models.Model):
         return False
 
     def allows_delete_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.has_perm("badger.change_badge"):
             return True
@@ -270,7 +270,7 @@ class Badge(models.Model):
         """Is award_to() allowed for this user?"""
         if user is None:
             return True
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.is_staff or user.is_superuser:
             return True
@@ -334,13 +334,13 @@ class Award(models.Model):
     description = models.TextField(
         blank=True, help_text="Explanation and evidence for the badge award"
     )
-    badge = models.ForeignKey(Badge)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
     image = models.ImageField(
         blank=True, null=True, upload_to=settings.BADGE_IMAGE_PATH
     )
-    user = models.ForeignKey(User, related_name="award_user")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="award_user")
     creator = models.ForeignKey(
-        User, related_name="award_creator", blank=True, null=True
+        User, on_delete=models.CASCADE, related_name="award_creator", blank=True, null=True
     )
     hidden = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False)
@@ -352,13 +352,12 @@ class Award(models.Model):
         db_table = "badger_award"
         ordering = ["-modified", "-created"]
 
-    def __unicode__(self):
-        by = self.creator and (u" by %s" % self.creator) or u""
-        return u"Award of %s to %s%s" % (self.badge, self.user, by)
+    def __str__(self):
+        by = self.creator and (" by %s" % self.creator) or ""
+        return "Award of %s to %s%s" % (self.badge, self.user, by)
 
-    @models.permalink
     def get_absolute_url(self):
-        return ("kbadge.award_detail", (self.badge.slug, self.pk))
+        return reverse("kbadge.award_detail", args=(self.badge.slug, self.pk))
 
     def get_upload_meta(self):
         u = self.user.username
@@ -369,7 +368,7 @@ class Award(models.Model):
         return True
 
     def allows_delete_by(self, user):
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user == self.user:
             return True

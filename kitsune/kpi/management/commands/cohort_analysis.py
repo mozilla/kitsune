@@ -26,7 +26,7 @@ class Command(BaseCommand):
             previous_week = boundaries[-1] - timedelta(weeks=1)
             boundaries.append(previous_week)
         boundaries.reverse()
-        ranges = zip(boundaries[:-1], boundaries[1:])
+        ranges = list(zip(boundaries[:-1], boundaries[1:]))
 
         reports = [
             (

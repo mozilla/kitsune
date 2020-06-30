@@ -51,3 +51,5 @@ npm-debug.log
 .devcontainer.code-workspace
 assets/
 .gnupg
+celerybeat-schedule
+celerybeat.pid

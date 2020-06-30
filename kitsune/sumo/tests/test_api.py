@@ -22,7 +22,7 @@ class TestLocalesAPIView(TestCase):
         })
 
         eq_(content['fr'], {
-            u'name': u'French',
-            u'localized_name': u'Fran\xe7ais',
-            u'aaq_enabled': False
+            'name': 'French',
+            'localized_name': 'Fran\xe7ais',
+            'aaq_enabled': False
         })

@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 
-import mock
+from unittest import mock
 from actstream.actions import follow
 from actstream.signals import action
 from actstream.models import Action, Follow
@@ -83,6 +83,10 @@ class TestSimplePushNotifier(TestCase):
 
     def test_simple_push_send(self, requests):
         """Verify that SimplePush registrations are called."""
+        response = mock.Mock()
+        response.status_code = 200
+        requests.put.return_value = response
+
         u = UserFactory()
         url = 'http://example.com/simple_push/asdf'
         PushNotificationRegistration.objects.create(creator=u, push_url=url)
@@ -101,7 +105,7 @@ class TestSimplePushNotifier(TestCase):
         requests.put.return_value = response
 
         u = UserFactory()
-        url = u'http://example.com/simple_push/asdf'
+        url = 'http://example.com/simple_push/asdf'
         PushNotificationRegistration.objects.create(creator=u, push_url=url)
         n = NotificationFactory(owner=u)
 
@@ -115,6 +119,10 @@ class TestSimplePushNotifier(TestCase):
 
     def test_from_action_to_simple_push(self, requests):
         """Test that when an action is created, it results in a push notification being sent."""
+        response = mock.Mock()
+        response.status_code = 200
+        requests.put.return_value = response
+
         # Create a user.
         u = UserFactory()
         # Register them to receive push notifications.
@@ -133,6 +141,10 @@ class TestSimplePushNotifier(TestCase):
         """
         Test that when an action is created, it results in a realtime notification being sent.
         """
+        response = mock.Mock()
+        response.status_code = 200
+        requests.put.return_value = response
+
         # Create a user
         u = UserFactory()
         # Register realtime notifications for that user on a question

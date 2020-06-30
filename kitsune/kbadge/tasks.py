@@ -1,24 +1,31 @@
+from celery import task
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.utils.translation import ugettext as _, pgettext
+from django.utils.translation import pgettext
+from django.utils.translation import ugettext as _
+from sentry_sdk import capture_exception
 
-from celery import task
-
-from kitsune.sumo.decorators import timeit
+from kitsune.kbadge.models import Award
 from kitsune.sumo import email_utils
 
 
 @task()
-@timeit
-def send_award_notification(award):
+def send_award_notification(award_id: int):
     """Sends the award notification email
 
     :arg award: the Award instance
 
     """
+    try:
+        award = Award.objects.get(id=award_id)
+    except Award.DoesNotExist as err:
+        capture_exception(err)
+        return
+
     @email_utils.safe_translation
     def _make_mail(locale, context, email):
-        subject = _(u"You were awarded the '{title}' badge!").format(
+
+        subject = _("You were awarded the '{title}' badge!").format(
             title=pgettext('DB: badger.Badge.title', award.badge.title))
 
         mail = email_utils.make_mail(

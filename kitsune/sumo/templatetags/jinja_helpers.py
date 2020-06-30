@@ -3,32 +3,33 @@ import json as jsonlib
 import logging
 import os
 import re
-import urlparse
-
-from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
-from django.http import QueryDict
-from django.template.loader import render_to_string
-from django.utils.encoding import smart_str, smart_text
-from django.utils.http import urlencode
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _, ungettext
-from django.utils.timezone import get_default_timezone
+import urllib
 
 import bleach
 import jinja2
 from babel import localedata
-from babel.dates import format_date, format_time, format_datetime
+from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
+from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import \
+    static as django_static
+from django.http import QueryDict
+from django.template.loader import render_to_string
+from django.utils.encoding import smart_bytes, smart_text
+from django.utils.http import urlencode
+from django.utils.timezone import get_default_timezone
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import ungettext
 from django_jinja import library
 from jinja2.utils import Markup
 from pytz import timezone
 
+from kitsune.products.models import Product
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.products.models import Product
 from kitsune.wiki.showfor import showfor_data as _showfor_data
-
 
 ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS + ["p"]
 ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
@@ -93,12 +94,12 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     New query params will be appended to exising parameters, except duplicate
     names, which will be replaced.
     """
-    url_ = urlparse.urlparse(url_)
+    url_ = urllib.parse.urlparse(url_)
     fragment = hash if hash is not None else url_.fragment
 
     q = url_.query
     new_query_dict = (
-        QueryDict(smart_str(q), mutable=True) if q else QueryDict("", mutable=True)
+        QueryDict(smart_bytes(q), mutable=True) if q else QueryDict("", mutable=True)
     )
     if query_dict:
         for k, l in query_dict.lists():
@@ -106,13 +107,13 @@ def urlparams(url_, hash=None, query_dict=None, **query):
             for v in l:
                 new_query_dict.appendlist(k, v)
 
-    for k, v in query.items():
+    for k, v in list(query.items()):
         new_query_dict[k] = v  # Replace, don't append.
 
     query_string = urlencode(
         [(k, v) for k, l in new_query_dict.lists() for v in l if v is not None]
     )
-    new = urlparse.ParseResult(
+    new = urllib.parse.ParseResult(
         url_.scheme, url_.netloc, url_.path, url_.params, query_string, fragment
     )
     return new.geturl()
@@ -163,7 +164,7 @@ class Paginator(object):
         self.pager = pager
 
         self.max = 10
-        self.span = (self.max - 1) / 2
+        self.span = (self.max - 1) // 2
 
         self.page = pager.number
         self.num_pages = pager.paginator.num_pages
@@ -184,7 +185,7 @@ class Paginator(object):
             lower, upper = total - span * 2, total
         else:
             lower, upper = page - span, page + span - 1
-        return range(max(lower + 1, 1), min(total, upper) + 1)
+        return list(range(max(lower + 1, 1), min(total, upper) + 1))
 
     def render(self):
         c = {"pager": self.pager, "num_pages": self.num_pages, "count": self.count}
@@ -199,7 +200,7 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
     Accepts: [(url, label)]
     """
     if add_default:
-        first_crumb = u"Home"
+        first_crumb = 'Home'
 
         crumbs = [(reverse("home"), _lazy(first_crumb))]
     else:
@@ -256,7 +257,7 @@ def datetimeformat(context, value, format="shortdatetime"):
 
     if hasattr(request, "session"):
         if "timezone" not in request.session:
-            if hasattr(request, "user") and request.user.is_authenticated():
+            if hasattr(request, "user") and request.user.is_authenticated:
                 try:
                     convert_tzinfo = (
                         Profile.objects.get(user=request.user).timezone
@@ -276,9 +277,9 @@ def datetimeformat(context, value, format="shortdatetime"):
         # Check if the date is today
         today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
         if convert_value.toordinal() == today:
-            formatted = _lazy(u"Today at %s") % format_time(
-                convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
-            )
+            formatted = _lazy('Today at %s') % format_time(
+                convert_value, format='short', tzinfo=convert_tzinfo,
+                locale=locale)
         else:
             formatted = format_datetime(
                 convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
@@ -362,7 +363,7 @@ def timesince(d, now=None):
 
     """
     if d is None:
-        return u""
+        return ''
     chunks = [
         (
             60 * 60 * 24 * 365,
@@ -401,7 +402,7 @@ def timesince(d, now=None):
     since = delta.days * 24 * 60 * 60 + delta.seconds
     if since <= 0:
         # d is in the future compared to now, stop processing.
-        return u""
+        return ''
     for i, (seconds, name) in enumerate(chunks):
         count = since // seconds
         if count != 0:
@@ -413,13 +414,13 @@ def timesince(d, now=None):
 def label_with_help(f):
     """Print the label tag for a form field, including the help_text
     value as a title attribute."""
-    label = u'<label for="%s" title="%s">%s</label>'
+    label = '<label for="%s" title="%s">%s</label>'
     return jinja2.Markup(label % (f.auto_id, f.help_text, f.label))
 
 
 @library.filter
 def yesno(boolean_value):
-    return jinja2.Markup(_lazy(u"Yes") if boolean_value else _lazy(u"No"))
+    return jinja2.Markup(_lazy('Yes') if boolean_value else _lazy('No'))
 
 
 @library.filter
@@ -456,8 +457,8 @@ def add_utm(url_, campaign, source="notification", medium="email"):
 
 
 @library.global_function
-def to_unicode(str):
-    return unicode(str)
+def to_unicode(value):
+    return str(value)
 
 
 @library.global_function
@@ -498,7 +499,7 @@ def f(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return format_string.format(*args, **kwargs)
 
@@ -515,7 +516,7 @@ def fe(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return jinja2.Markup(format_string.format(*args, **kwargs))
 
@@ -525,13 +526,17 @@ def image_for_product(product_slug):
     """
     Return square/alternate image for product slug
     """
+    default_image = os.path.join(
+        settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
+    )
+
+    if not product_slug:
+        return default_image
 
     try:
         obj = Product.objects.get(slug=product_slug)
     except Product.DoesNotExist:
-        return os.path.join(
-            settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
-        )
+        return default_image
     return obj.image_alternate_url
 
 

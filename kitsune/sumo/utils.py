@@ -62,7 +62,7 @@ def build_paged_url(request):
 
     qsa = urlencode(items)
 
-    return u'%s?%s' % (base, qsa)
+    return '%s?%s' % (base, qsa)
 
 
 # By Ned Batchelder.
@@ -80,7 +80,7 @@ def chunked(seq, n, length=None):
     """
     if not length:
         length = len(seq)
-    for i in xrange(0, length, n):
+    for i in range(0, length, n):
         yield seq[i:i + n]
 
 
@@ -127,7 +127,8 @@ def get_next_url(request):
     else:
         url = request.META.get('HTTP_REFERER')
 
-    if not settings.DEBUG and not is_safe_url(url, Site.objects.get_current().domain):
+    if not settings.DEBUG and not is_safe_url(url,
+                                              allowed_hosts={Site.objects.get_current().domain}):
         return None
 
     return url
@@ -263,10 +264,10 @@ class Progress(object):
         if self.current and self.current % self.milestone_stride == 0:
             now = datetime.now()
             duration = now - self.milestone_time
-            duration = duration.seconds + duration.microseconds / 1e6
-            rate = self.milestone_stride / duration
+            duration = duration.seconds + duration.microseconds // 1e6
+            rate = self.milestone_stride // duration
             remaining = self.total - self.current
-            self.estimated = int(remaining / rate / 60)
+            self.estimated = int(remaining // rate // 60)
             self.milestone_time = now
 
         self.draw()
@@ -298,7 +299,7 @@ def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False
         rl_is_ratelimited(request, increment=True, group='sumo.utils.is_ratelimited',
                           rate=rate, key='user_or_ip')
         if request.limited:
-            if hasattr(request, 'user') and request.user.is_authenticated():
+            if hasattr(request, 'user') and request.user.is_authenticated:
                 key = 'user "{}"'.format(request.user.username)
             else:
                 ip = request.META.get('HTTP_X_CLUSTER_CLIENT_IP', request.META['REMOTE_ADDR'])
@@ -369,7 +370,7 @@ def check_for_spam_content(data):
     """
 
     # keep only the digits in text
-    digits = filter(type(data).isdigit, data)
+    digits = "".join(filter(type(data).isdigit, data))
     is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
 
     is_nanp_number = match_regex_with_timeout(settings.NANP_REGEX, data)

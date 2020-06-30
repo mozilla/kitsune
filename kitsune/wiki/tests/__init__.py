@@ -82,7 +82,6 @@ class RevisionFactory(factory.DjangoModelFactory):
     significance = SIGNIFICANCES[0][0]
     comment = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)
-    document = factory.SubFactory(DocumentFactory)
     is_approved = False
 
     @factory.post_generation

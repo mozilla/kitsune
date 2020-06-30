@@ -19,6 +19,7 @@ from kitsune.kpi.models import (
     EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.questions.models import Question, Answer, AnswerVote
 from kitsune.wiki.models import HelpfulVote
+from functools import reduce
 
 
 class CachedAPIView(APIView):
@@ -29,11 +30,11 @@ class CachedAPIView(APIView):
 
     def _cache_key(self, request):
         params = []
-        for key, value in request.GET.items():
+        for key, value in list(request.GET.items()):
             params.append("%s=%s" % (key, value))
-        return u'{viewname}:{params}'.format(
+        return '{viewname}:{params}'.format(
             viewname=self.__class__.__name__,
-            params=u':'.join(sorted(params)))
+            params=':'.join(sorted(params)))
 
     def get(self, request):
         cache_key = self._cache_key(request)
@@ -244,7 +245,7 @@ class ContributorsMetricList(CachedAPIView):
         merge_results(aoa, 'aoa')
 
         # Convert that to a list of dicts.
-        results_list = [dict(date=k, **v) for k, v in results_dict.items()]
+        results_list = [dict(date=k, **v) for k, v in list(results_dict.items())]
 
         return [dict(**x) for x in sorted(
             results_list, key=itemgetter('date'), reverse=True)]
@@ -298,7 +299,7 @@ class ExitSurveyMetricList(CachedAPIView):
         merge_results(dont_know, 'dont_know')
 
         # Convert that to a list of dicts.
-        results_list = [dict(date=k, **v) for k, v in results_dict.items()]
+        results_list = [dict(date=k, **v) for k, v in list(results_dict.items())]
 
         return [dict(**x) for x in sorted(
             results_list, key=itemgetter('date'), reverse=True)]
@@ -368,7 +369,7 @@ def _remap_date_counts(**kwargs):
         },
         ...]
     """
-    for label, qs in kwargs.iteritems():
+    for label, qs in kwargs.items():
         res = defaultdict(lambda: {label: 0})
         # For each date mentioned in qs, sum up the counts for that day
         # Note: days may be duplicated
@@ -380,7 +381,7 @@ def _remap_date_counts(**kwargs):
 
 def merge_results(**kwargs):
     res_dict = reduce(_merge_results, _remap_date_counts(**kwargs))
-    res_list = [dict(date=k, **v) for k, v in res_dict.items()]
+    res_list = [dict(date=k, **v) for k, v in list(res_dict.items())]
     return [dict(**x)
             for x in sorted(res_list, key=itemgetter('date'), reverse=True)]
 
@@ -395,8 +396,8 @@ def _merge_results(x, y):
     To:
         [{"date": "2011-10-01", "votes": 3, "helpful": 7},...]
     """
-    return dict((s, dict(x.get(s, {}).items() + y.get(s, {}).items()))
-                for s in set(x.keys() + y.keys()))
+    return dict((s, dict(list(x.get(s, {}).items()) + list(y.get(s, {}).items())))
+                for s in set(list(x.keys()) + list(y.keys())))
 
 
 def _cursor():
@@ -447,7 +448,7 @@ class CohortSerializer(serializers.ModelSerializer):
 
 
 class CohortFilter(django_filters.FilterSet):
-    kind = django_filters.CharFilter(name='kind__code')
+    kind = django_filters.CharFilter(field_name='kind__code')
     start = django_filters.DateFilter(lookup_expr='gte')
     end = django_filters.DateFilter(lookup_expr='lte')
 
@@ -463,7 +464,7 @@ class CohortFilter(django_filters.FilterSet):
 class CohortViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Cohort.objects.all()
     serializer_class = CohortSerializer
-    filter_class = CohortFilter
+    filterset_class = CohortFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,

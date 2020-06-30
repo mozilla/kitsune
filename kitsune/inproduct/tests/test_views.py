@@ -1,8 +1,8 @@
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from django.contrib.sites.models import Site
 
-import mock
+from unittest import mock
 import waffle
 from nose.tools import eq_
 
@@ -72,11 +72,11 @@ class RedirectTestCase(TestCase):
 
     def test_eu_target(self):
         """Test that all URLs work with the extra 'eu'."""
-        self._targets(self.test_eu_urls, 'eu=1&as=u&utm_source=inproduct')
+        self._targets(self.test_eu_urls, 'as=u&utm_source=inproduct&eu=1')
 
     def _targets(self, urls, querystring):
         for input, output in urls:
-            response = self.client.get(u'/1/%s' % input, follow=True)
+            response = self.client.get('/1/%s' % input, follow=True)
             if output == 404:
                 eq_(404, response.status_code)
             elif output.startswith('http'):
@@ -97,6 +97,6 @@ class RedirectTestCase(TestCase):
         sample_is_active.return_value = True
 
         response = self.client.get(
-            u'/1/firefox/4.0/Linux/en-US/prefs-applications')
+            '/1/firefox/4.0/Linux/en-US/prefs-applications')
         eq_(302, response.status_code)
         assert response['location'].startswith('https://example.com/')

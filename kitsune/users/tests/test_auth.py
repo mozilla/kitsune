@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import RequestFactory, override_settings
-from mock import Mock, patch
+
+from unittest.mock import Mock, patch
 from nose.tools import eq_, ok_
 
 from kitsune.sumo.tests import TestCase
@@ -139,7 +140,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.update_user(user, claims)
         message_mock.error.assert_called_with(
             request_mock,
-            u'This Firefox Account is already used in another profile.'
+            'This Firefox Account is already used in another profile.'
         )
         ok_(not User.objects.get(id=user.id).profile.is_fxa_migrated)
         ok_(not User.objects.get(id=user.id).profile.fxa_uid)
@@ -243,6 +244,6 @@ class FXAAuthBackendTests(TestCase):
         self.backend.update_user(user, claims)
         message_mock.error.assert_called_with(
             request_mock,
-            u'The email used with this Firefox Account is already linked in another profile.'
+            'The email used with this Firefox Account is already linked in another profile.'
         )
         eq_(User.objects.get(id=user.id).email, 'bar@example.com')
