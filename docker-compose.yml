@@ -144,7 +144,7 @@ services:
 
   celery:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery -A kitsune worker -l info
+    command: celery -A kitsune worker -l info -n default@%h
     env_file: .env
     volumes:
       - ./:/app:delegated
@@ -155,7 +155,7 @@ services:
 
   celery-fxa:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery -A kitsune worker -Q fxa -l info
+    command: celery -A kitsune worker -Q fxa -l info -n fxa@%h
     env_file: .env
     volumes:
       - ./:/app:delegated
