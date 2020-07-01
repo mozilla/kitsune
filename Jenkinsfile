@@ -112,4 +112,3 @@ conduit {
         sh "bin/slack-notify.sh --status success --stage 'Docker image ready to deploy: ${docker_image}'"
     }
 }
-
