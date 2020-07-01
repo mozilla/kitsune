@@ -82,7 +82,7 @@ pgettext("DB: kbadge.Badge.description", """The SUMO Forum 2014 mini-badge is pa
 
 Congrats to all SUMO Forum 2014 badge earners for advancing the Mozilla Mission!""")
 pgettext("DB: kbadge.Badge.title", """Firefox 29 Launch Team""")
-pgettext("DB: kbadge.Badge.description", """Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks! 
+pgettext("DB: kbadge.Badge.description", """Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks!
 
 Firefox 29 features:
 

@@ -179,7 +179,7 @@ kubectl -n sumo-prod apply -f ./some-secret.yaml
 
 ## Monitoring
 
-### New Relic		
+### New Relic
 
 - [Primary region, A + B "rollup view"](https://rpm.newrelic.com/accounts/1299394/applications/55558271)
     - `sumo-prod-oregon`
@@ -188,7 +188,7 @@ kubectl -n sumo-prod apply -f ./some-secret.yaml
     - `sumo-prod-oregon-a`
 - [Primary cluster B](https://rpm.newrelic.com/accounts/1299394/applications/45097089)
     - `sumo-prod-oregon-b`
-			
+
 - [Failover region](https://rpm.newrelic.com/accounts/1299394/applications/45103938)
     - `sumo-prod-frankfurt`
 
@@ -199,7 +199,7 @@ All pod output is logged to Papertrail.
 - [Oregon-b](https://papertrailapp.com/groups/6778452/events)
     - combined Oregon-A | Oregon-B output can be viewed in the `All Systems` log destination with custom filters.
 - [Frankfurt](https://papertrailapp.com/groups/5458941/events)
-			
+
 ### elastic.co
 
 Our hosted Elasticsearch cluster is in the `us-west-2` region of AWS. Elastic.co hosting status can be found on [this](https://cloud-status.elastic.co/) page.
@@ -209,7 +209,7 @@ Our hosted Elasticsearch cluster is in the `us-west-2` region of AWS. Elastic.co
 
 ### Cronjobs
 
-The `sumo-prod-cron` deployment is a self-contained Python cron system that ***runs in only one of the primary clusters***. 
+The `sumo-prod-cron` deployment is a self-contained Python cron system that ***runs in only one of the primary clusters***.
 
 ```
  # Oregon-A
@@ -263,7 +263,7 @@ watch 'kubectl get nodes | tail -n +2 | grep -v master | wc -l'
 9. for `Rule#`, select a value < 100 and > 0
 10. for `Type`, select `All Traffic`
 11. for `Source`, enter the IP address in CIDR format. To block a single IP, append `/32` to the IP address.
-    1. example: `196.52.2.54/32`    
+    1. example: `196.52.2.54/32`
 12. for `Allow / Deny`, select `DENY`
 13. click `Save`
 
@@ -277,8 +277,8 @@ There are limits that apply to using VPC ACLs documented [here](http://docs.aws.
 - **verify the Frankfurt read replica**
     - `eu-central-1` (Frankfurt) has a read-replica of the SUMO production database
     - the replica is currently a `db.m4.xlarge`, while the prod DB is `db.m4.4xlarge`
-        - this may be ok in maintenance mode, but if you are going to enable write traffic, the instance type must be scaled up. 
-            - SRE's performed a manual instance type change on the Frankfurt read-replica, and it took ~10 minutes to change from a `db.t2.medium` to a `db.m4.xlarge`. 
+        - this may be ok in maintenance mode, but if you are going to enable write traffic, the instance type must be scaled up.
+            - SRE's performed a manual instance type change on the Frankfurt read-replica, and it took ~10 minutes to change from a `db.t2.medium` to a `db.m4.xlarge`.
     - although we have alerting in place to notify the SRE team in the event of a replication error, it's a good idea to check the replication status on the RDS details page for the `sumo` MySQL instance.
         - specifically, check the `DB Instance Status`, `Read Replica Source`, `Replication State`, and `Replication Error` values.
     - decide if [promoting the read-replica](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html#USER_ReadRepl.Promote) to a master is appropriate.

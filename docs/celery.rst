@@ -32,7 +32,7 @@ Celery
 Installing
 ----------
 
-Celery (and Django-Celery) is part of our dependencies. 
+Celery (and Django-Celery) is part of our dependencies.
 You shouldn't need to do any manual installation.
 
 

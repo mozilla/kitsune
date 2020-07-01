@@ -21,7 +21,7 @@ Overview
 ========
 
 Setting up Kitsune to run as a WSGI application is fairly
-straightforward. You will need to install the requirements as described 
+straightforward. You will need to install the requirements as described
 in :ref:`the installation chapter <hacking-howto-chapter>`.
 
 There are 3 steps once Kitsune is installed:
