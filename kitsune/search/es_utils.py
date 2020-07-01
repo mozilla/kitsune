@@ -12,7 +12,6 @@ from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from elasticutils import S as UntypedS
 from elasticutils.contrib.django import ES_EXCEPTIONS
-from elasticutils.contrib.django import F
 from elasticutils.contrib.django import get_es
 from elasticutils.contrib.django import S
 
