@@ -1,15 +1,15 @@
 # Pruned and mnodified version of django-badger/badger/models.py
 # https://github.com/mozilla/django-badger/blob/master/badger/models.py
-
 import re
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
-from django.contrib.auth.models import User
 from django.urls import reverse
 
-from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
+from kitsune.kbadge.signals import badge_was_awarded
+from kitsune.kbadge.signals import badge_will_be_awarded
 
 
 IMG_MAX_SIZE = getattr(settings, "BADGER_IMG_MAX_SIZE", (256, 256))

@@ -1,6 +1,5 @@
 # Pruned version of django-badger/badger/signals.py
 # https://github.com/mozilla/django-badger/blob/master/badger/signals.py
-
 """
 Signals relating to badges.
 

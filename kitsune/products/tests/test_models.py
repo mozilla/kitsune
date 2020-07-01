@@ -1,6 +1,7 @@
 from nose.tools import eq_
 
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.sumo.tests import TestCase
 
 

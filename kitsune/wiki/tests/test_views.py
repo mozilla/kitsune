@@ -1,28 +1,41 @@
 # -*- coding: utf-8 -*-
-
 import json
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.test import Client
-
-from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
-from kitsune.sumo.redis_utils import redis_client, RedisError
-from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, template_used
+from kitsune.sumo.redis_utils import redis_client
+from kitsune.sumo.redis_utils import RedisError
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import SkipTest
+from kitsune.sumo.tests import template_used
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import (CATEGORIES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
-from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote, DraftRevision
-from kitsune.wiki.tests import (
-    HelpfulVoteFactory, new_document_data, RevisionFactory, TemplateDocumentFactory,
-    DocumentFactory, DraftRevisionFactory, ApprovedRevisionFactory,
-    RedirectRevisionFactory)
-from kitsune.wiki.views import (
-    _document_lock_check, _document_lock_clear, _document_lock_steal)
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import DraftRevision
+from kitsune.wiki.models import HelpfulVote
+from kitsune.wiki.models import HelpfulVoteMetadata
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import DraftRevisionFactory
+from kitsune.wiki.tests import HelpfulVoteFactory
+from kitsune.wiki.tests import new_document_data
+from kitsune.wiki.tests import RedirectRevisionFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TemplateDocumentFactory
+from kitsune.wiki.views import _document_lock_check
+from kitsune.wiki.views import _document_lock_clear
+from kitsune.wiki.views import _document_lock_steal
 
 
 class RedirectTests(TestCase):

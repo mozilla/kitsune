@@ -3,18 +3,19 @@ import logging
 import actstream.registry
 import requests
 import simplejson
-from actstream.models import Action, Follow
+from actstream.models import Action
+from actstream.models import Follow
 from celery import task
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from multidb.pinning import use_master
 from requests.exceptions import RequestException
 
-from kitsune.notifications.decorators import (notification_handler,
-                                              notification_handlers)
-from kitsune.notifications.models import (Notification,
-                                          PushNotificationRegistration,
-                                          RealtimeRegistration)
+from kitsune.notifications.decorators import notification_handler
+from kitsune.notifications.decorators import notification_handlers
+from kitsune.notifications.models import Notification
+from kitsune.notifications.models import PushNotificationRegistration
+from kitsune.notifications.models import RealtimeRegistration
 
 logger = logging.getLogger('k.notifications.tasks')
 

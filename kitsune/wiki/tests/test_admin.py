@@ -4,7 +4,8 @@ from nose.tools import eq_
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.admin import DocumentAdmin
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import DocumentFactory, TranslatedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import TranslatedRevisionFactory
 
 
 class ArchiveTests(TestCase):

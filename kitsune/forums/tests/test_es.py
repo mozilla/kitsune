@@ -1,7 +1,8 @@
 from nose.tools import eq_
 
 from kitsune.forums.models import ThreadMappingType
-from kitsune.forums.tests import ThreadFactory, PostFactory
+from kitsune.forums.tests import PostFactory
+from kitsune.forums.tests import ThreadFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.users.tests import UserFactory
 

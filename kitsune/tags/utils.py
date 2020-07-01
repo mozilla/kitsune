@@ -1,5 +1,4 @@
 """Fairly generic tagging utilities headed toward a dedicated app"""
-
 from taggit.models import Tag
 
 

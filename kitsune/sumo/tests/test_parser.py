@@ -1,22 +1,20 @@
 from functools import partial
 
 from django.conf import settings
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.gallery.tests import ImageFactory
-from kitsune.sumo.parser import (
-    WikiParser,
-    build_hook_params,
-    _get_wiki_link,
-    get_object_fallback,
-    IMAGE_PARAMS,
-    IMAGE_PARAM_VALUES,
-)
+from kitsune.sumo.parser import _get_wiki_link
+from kitsune.sumo.parser import build_hook_params
+from kitsune.sumo.parser import get_object_fallback
+from kitsune.sumo.parser import IMAGE_PARAM_VALUES
+from kitsune.sumo.parser import IMAGE_PARAMS
+from kitsune.sumo.parser import WikiParser
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
 
 
 def pq_link(p, text):

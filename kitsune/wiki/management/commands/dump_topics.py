@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-
 from taggit.models import TaggedItem
 
 from kitsune.wiki.models import Document

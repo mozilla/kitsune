@@ -1,11 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.conf import settings
+from nose.tools import eq_
+from nose.tools import raises
 
-from nose.tools import eq_, raises
-
-from kitsune.forums.models import Thread, Forum, ThreadLockedError
-from kitsune.forums.tests import ForumTestCase, ThreadFactory, PostFactory
+from kitsune.forums.models import Forum
+from kitsune.forums.models import Thread
+from kitsune.forums.models import ThreadLockedError
+from kitsune.forums.tests import ForumTestCase
+from kitsune.forums.tests import PostFactory
+from kitsune.forums.tests import ThreadFactory
 from kitsune.forums.views import sort_threads
 from kitsune.sumo.tests import get
 from kitsune.users.tests import UserFactory

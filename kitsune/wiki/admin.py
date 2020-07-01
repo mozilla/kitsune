@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from kitsune.wiki.models import Document, ImportantDate, Locale
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import ImportantDate
+from kitsune.wiki.models import Locale
 
 
 class DocumentAdmin(admin.ModelAdmin):

@@ -6,28 +6,34 @@ is_ready_for_localization=False do not exist.
 
 """
 import logging
-
 from collections import OrderedDict
 from datetime import datetime
 
 from django.conf import settings
-from django.db import connections, router
+from django.db import connections
+from django.db import router
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy, pgettext_lazy
-
+from django.utils.translation import pgettext_lazy
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
 from jinja2 import Markup
 
-from kitsune.dashboards import LAST_30_DAYS, PERIODS
+from kitsune.dashboards import LAST_30_DAYS
+from kitsune.dashboards import PERIODS
 from kitsune.questions.models import QuestionLocale
+from kitsune.sumo.redis_utils import redis_client
+from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.config import ADMINISTRATION_CATEGORY
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY
+from kitsune.wiki.config import HOW_TO_CONTRIBUTE_CATEGORY
+from kitsune.wiki.config import MAJOR_SIGNIFICANCE
+from kitsune.wiki.config import MEDIUM_SIGNIFICANCE
+from kitsune.wiki.config import NAVIGATION_CATEGORY
+from kitsune.wiki.config import REDIRECT_HTML
+from kitsune.wiki.config import TYPO_SIGNIFICANCE
 from kitsune.wiki.models import Document
-from kitsune.wiki.config import (
-    MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
-    TYPO_SIGNIFICANCE, REDIRECT_HTML,
-    HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY)
 
 
 log = logging.getLogger('k.dashboards.readouts')

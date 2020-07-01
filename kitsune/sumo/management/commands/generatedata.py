@@ -1,11 +1,9 @@
 # ported from https://github.com/willkg/django-eadred
-
 import imp
+from importlib import import_module
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from importlib import import_module
 
 
 class Command(BaseCommand):

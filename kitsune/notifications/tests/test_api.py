@@ -1,22 +1,26 @@
 from datetime import datetime
-
-from django.contrib.contenttypes.models import ContentType
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from actstream.actions import follow
+from actstream.models import Action
+from actstream.models import Follow
 from actstream.signals import action
-from actstream.models import Action, Follow
-from unittest.mock import Mock, patch
-from nose.tools import eq_, ok_
+from django.contrib.contenttypes.models import ContentType
+from nose.tools import eq_
+from nose.tools import ok_
 from rest_framework.test import APIClient
 
 from kitsune.notifications import api
 from kitsune.notifications import tasks as notification_tasks
-from kitsune.notifications.models import Notification, RealtimeRegistration
+from kitsune.notifications.models import Notification
+from kitsune.notifications.models import RealtimeRegistration
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import QuestionFactory, AnswerFactory
-from kitsune.users.tests import UserFactory
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
+from kitsune.users.tests import UserFactory
 
 
 class TestPushNotificationRegistrationSerializer(TestCase):

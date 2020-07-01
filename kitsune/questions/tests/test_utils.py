@@ -1,12 +1,17 @@
-from kitsune.questions.models import Answer, Question
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.questions.utils import (get_mobile_product_from_ua,
-                                     mark_content_as_spam, num_answers,
-                                     num_questions, num_solutions)
-from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory
 from nose.tools import eq_
 from parameterized import parameterized
+
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.utils import get_mobile_product_from_ua
+from kitsune.questions.utils import mark_content_as_spam
+from kitsune.questions.utils import num_answers
+from kitsune.questions.utils import num_questions
+from kitsune.questions.utils import num_solutions
+from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory
 
 
 class ContributionCountTestCase(TestCase):

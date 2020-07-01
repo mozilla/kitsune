@@ -1,14 +1,16 @@
 # Pruned and modified version of django-badger/badger/views.py
 # https://github.com/mozilla/django-badger/blob/master/badger/views.py
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
-from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_GET, require_http_methods
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
+from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_http_methods
 from django.views.generic.list import ListView
 
-from kitsune.kbadge.models import Award, Badge
+from kitsune.kbadge.models import Award
+from kitsune.kbadge.models import Badge
 
 
 class BadgesListView(ListView):

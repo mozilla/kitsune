@@ -1,16 +1,23 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.core.files.storage import default_storage
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
+from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
-from django.views.decorators.http import require_http_methods, require_POST
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required
-from kitsune.groups.forms import AddUserForm, GroupAvatarForm, GroupProfileForm
+from kitsune.groups.forms import AddUserForm
+from kitsune.groups.forms import GroupAvatarForm
+from kitsune.groups.forms import GroupProfileForm
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url

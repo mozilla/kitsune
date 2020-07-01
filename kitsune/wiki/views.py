@@ -12,42 +12,63 @@ from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.forms.utils import ErrorList
-from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
-                         HttpResponseRedirect)
-from django.shortcuts import get_object_or_404, render
+from django.http import Http404
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import (require_GET, require_http_methods,
-                                          require_POST)
+from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
 from kitsune.sumo.decorators import ratelimit
-from kitsune.sumo.redis_utils import RedisError, redis_client
+from kitsune.sumo.redis_utils import redis_client
+from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import (get_next_url, paginate, smart_int,
-                                truncated_json_dumps)
-from kitsune.wiki.config import (CATEGORIES, COLLAPSIBLE_DOCUMENTS,
-                                 DOCUMENTS_PER_PAGE, FALLBACK_LOCALES,
-                                 MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY)
-from kitsune.wiki.events import (ApprovedOrReadyUnion,
-                                 ApproveRevisionInLocaleEvent,
-                                 EditDocumentEvent, ReadyRevisionEvent,
-                                 ReviewableRevisionInLocaleEvent)
-from kitsune.wiki.forms import (AddContributorForm, DocumentForm,
-                                DraftRevisionForm, ReviewForm,
-                                RevisionFilterForm, RevisionForm)
-from kitsune.wiki.models import (Document, DraftRevision, HelpfulVote,
-                                 ImportantDate, Revision, SlugCollision,
-                                 TitleCollision, doc_html_cache_key)
+from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import smart_int
+from kitsune.sumo.utils import truncated_json_dumps
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import COLLAPSIBLE_DOCUMENTS
+from kitsune.wiki.config import DOCUMENTS_PER_PAGE
+from kitsune.wiki.config import FALLBACK_LOCALES
+from kitsune.wiki.config import MAJOR_SIGNIFICANCE
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.events import ApprovedOrReadyUnion
+from kitsune.wiki.events import ApproveRevisionInLocaleEvent
+from kitsune.wiki.events import EditDocumentEvent
+from kitsune.wiki.events import ReadyRevisionEvent
+from kitsune.wiki.events import ReviewableRevisionInLocaleEvent
+from kitsune.wiki.forms import AddContributorForm
+from kitsune.wiki.forms import DocumentForm
+from kitsune.wiki.forms import DraftRevisionForm
+from kitsune.wiki.forms import ReviewForm
+from kitsune.wiki.forms import RevisionFilterForm
+from kitsune.wiki.forms import RevisionForm
+from kitsune.wiki.models import doc_html_cache_key
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import DraftRevision
+from kitsune.wiki.models import HelpfulVote
+from kitsune.wiki.models import ImportantDate
+from kitsune.wiki.models import Revision
+from kitsune.wiki.models import SlugCollision
+from kitsune.wiki.models import TitleCollision
 from kitsune.wiki.parser import wiki_to_html
-from kitsune.wiki.tasks import (render_document_cascade, schedule_rebuild_kb,
-                                send_contributor_notification,
-                                send_reviewed_notification)
+from kitsune.wiki.tasks import render_document_cascade
+from kitsune.wiki.tasks import schedule_rebuild_kb
+from kitsune.wiki.tasks import send_contributor_notification
+from kitsune.wiki.tasks import send_reviewed_notification
 
 log = logging.getLogger('k.wiki')
 

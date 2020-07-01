@@ -3,15 +3,20 @@ from itertools import chain
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
-from django.db.models import F, ObjectDoesNotExist, Q
+from django.db.models import F
+from django.db.models import ObjectDoesNotExist
+from django.db.models import Q
 from django.utils.translation import pgettext
 from django.utils.translation import ugettext as _
 
 from kitsune.products.models import Product
 from kitsune.sumo import email_utils
-from kitsune.wiki.config import (HOW_TO_CATEGORY, TEMPLATES_CATEGORY,
-                                 TROUBLESHOOTING_CATEGORY)
-from kitsune.wiki.models import Document, Locale, Revision
+from kitsune.wiki.config import HOW_TO_CATEGORY
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.config import TROUBLESHOOTING_CATEGORY
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import Locale
+from kitsune.wiki.models import Revision
 
 
 class Command(BaseCommand):

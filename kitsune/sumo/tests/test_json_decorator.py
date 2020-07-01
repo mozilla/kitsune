@@ -2,8 +2,8 @@ import json
 
 from django import http
 from django.core.exceptions import PermissionDenied
-from django.test import RequestFactory, TestCase
-
+from django.test import RequestFactory
+from django.test import TestCase
 from nose.tools import eq_
 
 from kitsune.sumo.decorators import json_view

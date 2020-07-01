@@ -1,13 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
-from kitsune.questions.models import (
-    QuestionMappingType, AnswerMetricsMappingType)
-from kitsune.questions.tests import (
-    QuestionFactory, AnswerFactory, AnswerVoteFactory, QuestionVoteFactory)
+from kitsune.questions.models import AnswerMetricsMappingType
+from kitsune.questions.models import QuestionMappingType
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionVoteFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse

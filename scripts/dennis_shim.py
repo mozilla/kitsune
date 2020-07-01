@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+
 from dennis.cmdline import click_run
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

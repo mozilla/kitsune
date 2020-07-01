@@ -1,13 +1,16 @@
 from os.path import basename
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
+from wikimarkup.parser import ALLOWED_TAGS
+from wikimarkup.parser import Parser
 
-from wikimarkup.parser import Parser, ALLOWED_TAGS
-
-from kitsune.gallery.models import Image, Video
+from kitsune.gallery.models import Image
+from kitsune.gallery.models import Video
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 

@@ -1,6 +1,6 @@
 from datetime import date
-
 from unittest.mock import patch
+
 from nose.tools import eq_
 
 from kitsune.sumo import googleanalytics

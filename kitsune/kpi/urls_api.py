@@ -1,11 +1,13 @@
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.conf.urls import url
 from rest_framework import routers
 
 from kitsune.kpi import api
-from kitsune.kpi.models import (CONTRIBUTORS_CSAT_METRIC_CODE, AOA_CONTRIBUTORS_CSAT_METRIC_CODE,
-                                SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE,
-                                KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE,
-                                KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE)
+from kitsune.kpi.models import AOA_CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE
 
 router = routers.SimpleRouter()
 router.register(r'cohort', api.CohortViewSet)

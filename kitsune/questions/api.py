@@ -1,24 +1,36 @@
+import json
 from datetime import datetime
 
 import actstream.actions
 import django_filters
-import json
-from django_filters.rest_framework import DjangoFilterBackend
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from rest_framework import serializers, viewsets, permissions, filters, status, pagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from rest_framework import pagination
+from rest_framework import permissions
+from rest_framework import serializers
+from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from taggit.models import Tag
 
 from kitsune.products.api_utils import TopicField
-from kitsune.products.models import Product, Topic
-from kitsune.questions.models import (
-    Question, Answer, QuestionMetaData, AlreadyTakenException,
-    InvalidUserException, QuestionVote, AnswerVote)
-from kitsune.sumo.api_utils import (
-    DateTimeUTCField, OnlyCreatorEdits, GenericAPIException, SplitSourceField)
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
+from kitsune.questions.models import AlreadyTakenException
+from kitsune.questions.models import Answer
+from kitsune.questions.models import AnswerVote
+from kitsune.questions.models import InvalidUserException
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionMetaData
+from kitsune.questions.models import QuestionVote
+from kitsune.sumo.api_utils import DateTimeUTCField
+from kitsune.sumo.api_utils import GenericAPIException
+from kitsune.sumo.api_utils import OnlyCreatorEdits
+from kitsune.sumo.api_utils import SplitSourceField
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.api import ProfileFKSerializer

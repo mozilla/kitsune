@@ -2,7 +2,8 @@ from datetime import date
 
 import factory
 
-from kitsune.kpi.models import MetricKind, Metric
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
 from kitsune.sumo.tests import FuzzyUnicode
 
 

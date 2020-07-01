@@ -1,20 +1,20 @@
 import operator
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 from functools import reduce
 
 from django.db.models import Q
 
 from kitsune.dashboards import LAST_90_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.kpi.models import (
-    EXIT_SURVEY_DONT_KNOW_CODE,
-    EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_YES_CODE,
-    Metric,
-    MetricKind,
-)
+from kitsune.kpi.models import EXIT_SURVEY_DONT_KNOW_CODE
+from kitsune.kpi.models import EXIT_SURVEY_NO_CODE
+from kitsune.kpi.models import EXIT_SURVEY_YES_CODE
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
 from kitsune.kpi.surveygizmo_utils import get_exit_survey_results
-from kitsune.wiki.config import MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE
+from kitsune.wiki.config import MEDIUM_SIGNIFICANCE
+from kitsune.wiki.config import TYPO_SIGNIFICANCE
 
 MAX_DOCS_UP_TO_DATE = 50
 

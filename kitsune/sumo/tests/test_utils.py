@@ -1,18 +1,22 @@
 # -*- coding: utf8 -*-
 import json
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from django.contrib.auth.models import Permission
 from django.test.client import RequestFactory
-
-from unittest.mock import patch, Mock
 from nose.tools import eq_
 from parameterized import parameterized
 
 from kitsune.journal.models import Record
-from kitsune.sumo.utils import (
-    chunked, get_next_url, is_ratelimited, smart_int, truncated_json_dumps, get_browser,
-    has_blocked_link)
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.utils import chunked
+from kitsune.sumo.utils import get_browser
+from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import has_blocked_link
+from kitsune.sumo.utils import is_ratelimited
+from kitsune.sumo.utils import smart_int
+from kitsune.sumo.utils import truncated_json_dumps
 from kitsune.users.tests import UserFactory
 
 

@@ -1,9 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
-
 from nose.tools import eq_
 
-from kitsune.flagit.tests import TestCaseBase
 from kitsune.flagit.models import FlaggedObject
+from kitsune.flagit.tests import TestCaseBase
 from kitsune.questions.models import Question
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import post

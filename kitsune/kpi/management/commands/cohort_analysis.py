@@ -1,19 +1,18 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 
 from kitsune.customercare.models import Reply
 from kitsune.kpi.management import utils
-from kitsune.kpi.models import (
-    AOA_CONTRIBUTOR_COHORT_CODE,
-    CONTRIBUTOR_COHORT_CODE,
-    KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-    KB_L10N_CONTRIBUTOR_COHORT_CODE,
-    SUPPORT_FORUM_HELPER_COHORT_CODE,
-    Cohort,
-    CohortKind,
-    RetentionMetric,
-)
+from kitsune.kpi.models import AOA_CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import Cohort
+from kitsune.kpi.models import CohortKind
+from kitsune.kpi.models import CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import KB_ENUS_CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import KB_L10N_CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import RetentionMetric
+from kitsune.kpi.models import SUPPORT_FORUM_HELPER_COHORT_CODE
 from kitsune.questions.models import Answer
 from kitsune.wiki.models import Revision
 

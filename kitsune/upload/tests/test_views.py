@@ -5,11 +5,12 @@ from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
-
 from nose.tools import eq_
 
 from kitsune.questions.tests import QuestionFactory
-from kitsune.sumo.tests import post, LocalizingClient, TestCase
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import post
+from kitsune.sumo.tests import TestCase
 from kitsune.upload.forms import MSG_IMAGE_LONG
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.tests import UserFactory

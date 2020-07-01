@@ -4,8 +4,12 @@ import logging
 
 from django.conf import settings
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, Http404
-from django.shortcuts import get_object_or_404, render
+from django.http import Http404
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
@@ -13,11 +17,14 @@ from django.views.decorators.http import require_POST
 from kitsune.access.decorators import login_required
 from kitsune.gallery import ITEMS_PER_PAGE
 from kitsune.gallery.forms import ImageForm
-from kitsune.gallery.models import Image, Video
-from kitsune.gallery.utils import upload_image, check_media_permissions
+from kitsune.gallery.models import Image
+from kitsune.gallery.models import Video
+from kitsune.gallery.utils import check_media_permissions
+from kitsune.gallery.utils import upload_image
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
-from kitsune.upload.tasks import compress_image, generate_thumbnail
+from kitsune.upload.tasks import compress_image
+from kitsune.upload.tasks import generate_thumbnail
 from kitsune.upload.utils import FileTooLargeError
 from kitsune.wiki.tasks import schedule_rebuild_kb
 

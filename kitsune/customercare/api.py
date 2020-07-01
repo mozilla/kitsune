@@ -1,10 +1,14 @@
 import json
 
-from rest_framework import generics, serializers, status, decorators
+from rest_framework import decorators
+from rest_framework import generics
+from rest_framework import serializers
+from rest_framework import status
 from rest_framework.response import Response
 
 from kitsune.customercare.models import TwitterAccount
-from kitsune.sumo.api_utils import GenericAPIException, GenericDjangoPermission
+from kitsune.sumo.api_utils import GenericAPIException
+from kitsune.sumo.api_utils import GenericDjangoPermission
 
 
 class TwitterAccountBanPermission(GenericDjangoPermission):

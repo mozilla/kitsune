@@ -3,12 +3,14 @@ import random
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch
+from django.db.models import Q
 from django.utils.http import urlencode
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import Revision
 
 
 class BitlyException(Exception):

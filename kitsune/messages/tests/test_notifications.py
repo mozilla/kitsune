@@ -1,10 +1,12 @@
+from unittest import mock
+
 from django.contrib.sites.models import Site
 from django.core import mail
 
-from unittest import mock
-
 from kitsune.kbforums.tests import KBForumTestCase
-from kitsune.sumo.tests import post, attrs_eq, starts_with
+from kitsune.sumo.tests import attrs_eq
+from kitsune.sumo.tests import post
+from kitsune.sumo.tests import starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 

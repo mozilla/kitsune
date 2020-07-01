@@ -1,9 +1,8 @@
+from unittest import mock
 from urllib.parse import urlparse
 
-from django.contrib.sites.models import Site
-
-from unittest import mock
 import waffle
+from django.contrib.sites.models import Site
 from nose.tools import eq_
 
 from kitsune.inproduct.tests import RedirectFactory

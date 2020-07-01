@@ -1,25 +1,34 @@
 import json
-from datetime import datetime, timedelta
-
+from datetime import datetime
+from datetime import timedelta
 from unittest import mock
+
 import actstream.actions
 from actstream.models import Follow
-from nose.tools import eq_, ok_, raises
-from rest_framework.test import APIClient
+from nose.tools import eq_
+from nose.tools import ok_
+from nose.tools import raises
 from rest_framework.exceptions import APIException
+from rest_framework.test import APIClient
 from taggit.models import Tag
 
-from kitsune.sumo.tests import TestCase
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.questions import api
-from kitsune.questions.models import Question, Answer
-from kitsune.questions.tests import (
-    tags_eq, QuestionFactory, AnswerFactory, QuestionVoteFactory, AnswerVoteFactory)
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionVoteFactory
+from kitsune.questions.tests import tags_eq
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
-from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.users.models import Profile
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
 
 
 class TestQuestionSerializerDeserialization(TestCase):

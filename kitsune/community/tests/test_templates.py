@@ -1,5 +1,4 @@
 from nose.tools import eq_
-
 from pyquery import PyQuery as pq
 
 from kitsune.customercare.tests import ReplyFactory
@@ -10,7 +9,9 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class UserSearchTests(ElasticTestCase):

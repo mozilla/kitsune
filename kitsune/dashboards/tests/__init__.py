@@ -2,7 +2,8 @@ from datetime import date
 
 import factory
 
-from kitsune.dashboards.models import WikiMetric, METRIC_CODE_CHOICES
+from kitsune.dashboards.models import METRIC_CODE_CHOICES
+from kitsune.dashboards.models import WikiMetric
 
 
 class WikiMetricFactory(factory.DjangoModelFactory):

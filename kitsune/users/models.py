@@ -8,17 +8,20 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
+from timezone_field import TimeZoneField
+
 from kitsune.lib.countries import COUNTRIES
 from kitsune.products.models import Product
 from kitsune.search.es_utils import UnindexMeBro
-from kitsune.search.models import (SearchMappingType, SearchMixin,
-                                   register_for_indexing,
-                                   register_mapping_type)
-from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.search.models import register_for_indexing
+from kitsune.search.models import register_mapping_type
+from kitsune.search.models import SearchMappingType
+from kitsune.search.models import SearchMixin
+from kitsune.sumo.models import LocaleField
+from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 from kitsune.users.validators import TwitterValidator
-from timezone_field import TimeZoneField
 
 log = logging.getLogger('k.users')
 

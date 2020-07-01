@@ -4,11 +4,14 @@ import re
 from django import http
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
-
-from kitsune.twitter import url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME
-from twython import TwythonError, TwythonAuthError
+from twython import TwythonAuthError
+from twython import TwythonError
 
 from kitsune.twitter import get_twitter_api
+from kitsune.twitter import REQUEST_KEY_NAME
+from kitsune.twitter import REQUEST_SECRET_NAME
+from kitsune.twitter import Session
+from kitsune.twitter import url
 
 
 log = logging.getLogger("k")

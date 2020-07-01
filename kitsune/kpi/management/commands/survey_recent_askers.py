@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 

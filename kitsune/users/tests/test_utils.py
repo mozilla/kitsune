@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase

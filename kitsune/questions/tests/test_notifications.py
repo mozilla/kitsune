@@ -1,17 +1,20 @@
 import re
+from unittest import mock
 
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
-
-from unittest import mock
 from nose.tools import eq_
 
-from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.questions.events import QuestionSolvedEvent
 from kitsune.questions.models import Question
-from kitsune.questions.tests import (AnswerFactory, QuestionFactory,
-                                     TestCaseBase)
-from kitsune.sumo.tests import attrs_eq, post, starts_with
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import TestCaseBase
+from kitsune.sumo.tests import attrs_eq
+from kitsune.sumo.tests import post
+from kitsune.sumo.tests import starts_with
 from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.tests import UserFactory

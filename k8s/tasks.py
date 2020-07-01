@@ -1,8 +1,9 @@
 """
 This module exists to setup the pyinvoke namespace.
 """
-from invoke import Collection, task
 import deployments
 import rollouts
+from invoke import Collection
+from invoke import task
 
 namespace = Collection(deployments, rollouts)

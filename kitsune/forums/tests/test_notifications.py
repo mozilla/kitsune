@@ -1,19 +1,25 @@
+from unittest import mock
+
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.client import RequestFactory
-
-from unittest import mock
 from nose.tools import eq_
 
-from kitsune.forums.events import NewPostEvent, NewThreadEvent
-from kitsune.forums.models import Thread, Post
-from kitsune.forums.tests import (
-    ForumTestCase, ThreadFactory, ForumFactory, PostFactory)
+from kitsune.forums.events import NewPostEvent
+from kitsune.forums.events import NewThreadEvent
+from kitsune.forums.models import Post
+from kitsune.forums.models import Thread
+from kitsune.forums.tests import ForumFactory
+from kitsune.forums.tests import ForumTestCase
+from kitsune.forums.tests import PostFactory
+from kitsune.forums.tests import ThreadFactory
+from kitsune.sumo.tests import attrs_eq
+from kitsune.sumo.tests import post
+from kitsune.sumo.tests import starts_with
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.tests import post, attrs_eq, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 

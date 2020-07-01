@@ -1,13 +1,14 @@
+from unittest import mock
+
 from django.contrib.sites.models import Site
 from django.core import mail
-
-from unittest import mock
 from nose.tools import eq_
 
 from kitsune.announcements.tasks import send_group_email
 from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.tests import GroupFactory
+from kitsune.users.tests import UserFactory
 
 
 class AnnouncementSaveTests(TestCase):

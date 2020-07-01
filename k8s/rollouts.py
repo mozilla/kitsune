@@ -1,7 +1,6 @@
-from invoke import task
 from deploy_utils import get_kubectl
-
 from deployments import check_environment
+from invoke import task
 
 
 def rollout_status(ctx, deployment_name):

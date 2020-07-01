@@ -1,11 +1,11 @@
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
 from django.test.client import RequestFactory
-
 from nose.tools import eq_
 
-from kitsune.access.decorators import (
-    logout_required, login_required, permission_required)
+from kitsune.access.decorators import login_required
+from kitsune.access.decorators import logout_required
+from kitsune.access.decorators import permission_required
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 

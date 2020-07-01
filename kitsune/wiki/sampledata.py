@@ -1,10 +1,12 @@
 import os
-
 from datetime import datetime
 
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
 from kitsune.products.tests import TopicFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 def read_file(filename):

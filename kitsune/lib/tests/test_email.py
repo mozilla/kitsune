@@ -1,10 +1,8 @@
-from nose.tools import eq_
-
-from testfixtures import LogCapture
-
-from django.test.utils import override_settings
-from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail import EmailMessage
+from django.core.mail.backends.base import BaseEmailBackend
+from django.test.utils import override_settings
+from nose.tools import eq_
+from testfixtures import LogCapture
 
 from kitsune.lib.email import LoggingEmailBackend
 from kitsune.sumo.tests import TestCase

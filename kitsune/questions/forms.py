@@ -1,5 +1,6 @@
 import json
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
@@ -8,7 +9,8 @@ from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.models import Answer, Question
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
 from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
 

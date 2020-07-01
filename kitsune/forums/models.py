@@ -1,27 +1,26 @@
 import datetime
 import time
 
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.auth.models import User
-
 from tidings.models import NotificationsMixin
 
 from kitsune import forums
-from kitsune.access.utils import has_perm, perm_is_defined_on
+from kitsune.access.utils import has_perm
+from kitsune.access.utils import perm_is_defined_on
 from kitsune.flagit.models import FlaggedObject
-from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
-from kitsune.sumo.urlresolvers import reverse
+from kitsune.search.models import register_for_indexing
+from kitsune.search.models import register_mapping_type
+from kitsune.search.models import SearchMappingType
+from kitsune.search.models import SearchMixin
 from kitsune.sumo.models import ModelBase
-from kitsune.search.models import (
-    SearchMappingType,
-    SearchMixin,
-    register_for_indexing,
-    register_mapping_type,
-)
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
+from kitsune.sumo.urlresolvers import reverse
 
 
 def _last_post_from(posts, exclude_post=None):

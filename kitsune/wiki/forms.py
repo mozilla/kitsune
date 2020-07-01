@@ -5,15 +5,18 @@ from django.conf import settings
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
 from kitsune.sumo.form_fields import MultiUsernameField
-from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
-from kitsune.wiki.models import (
-    Document, Revision, DraftRevision, MAX_REVISION_COMMENT_LENGTH)
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import SIGNIFICANCES
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import DraftRevision
+from kitsune.wiki.models import MAX_REVISION_COMMENT_LENGTH
+from kitsune.wiki.models import Revision
 from kitsune.wiki.tasks import add_short_links
-from kitsune.wiki.widgets import (
-    ProductTopicsAndSubtopicsWidget,
-    RelatedDocumentsWidget)
+from kitsune.wiki.widgets import ProductTopicsAndSubtopicsWidget
+from kitsune.wiki.widgets import RelatedDocumentsWidget
 
 
 TITLE_REQUIRED = _lazy('Please provide a title.')

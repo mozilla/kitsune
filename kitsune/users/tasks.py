@@ -1,9 +1,11 @@
 import json
 from datetime import datetime
+
 from celery import task
+
+from kitsune.products.models import Product
 from kitsune.users.models import AccountEvent
 from kitsune.users.utils import anonymize_user
-from kitsune.products.models import Product
 
 
 @task

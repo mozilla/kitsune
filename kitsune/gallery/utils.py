@@ -7,8 +7,10 @@ from django.core.files import File
 from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.upload.utils import _image_to_png, upload_media, check_file_size
 from kitsune.upload.tasks import _scale_dimensions
+from kitsune.upload.utils import _image_to_png
+from kitsune.upload.utils import check_file_size
+from kitsune.upload.utils import upload_media
 
 
 def create_image(files, user):

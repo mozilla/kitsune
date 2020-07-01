@@ -3,7 +3,8 @@ from nose.tools import eq_
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.tests import TestCaseBase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
 
 
 class FlagitTestPermissions(TestCaseBase):

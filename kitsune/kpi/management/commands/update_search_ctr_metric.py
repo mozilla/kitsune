@@ -1,15 +1,15 @@
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from kitsune.kpi.management import utils
-from kitsune.kpi.models import (
-    SEARCH_CLICKS_METRIC_CODE,
-    SEARCH_SEARCHES_METRIC_CODE,
-    Metric,
-    MetricKind,
-)
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
+from kitsune.kpi.models import SEARCH_CLICKS_METRIC_CODE
+from kitsune.kpi.models import SEARCH_SEARCHES_METRIC_CODE
 from kitsune.sumo import googleanalytics
 
 

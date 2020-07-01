@@ -1,12 +1,13 @@
-from datetime import datetime, timedelta
-
-from nose.tools import eq_
+from datetime import datetime
+from datetime import timedelta
 
 from django.test.client import RequestFactory
+from nose.tools import eq_
 
 from kitsune.community import api
 from kitsune.products.tests import ProductFactory
-from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
 from kitsune.search.tests import ElasticTestCase
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import RevisionFactory

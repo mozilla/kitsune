@@ -2,11 +2,10 @@ import logging
 from datetime import timedelta
 from functools import wraps
 
-from django.conf import settings
-
 import httplib2
 from apiclient.discovery import build
 from apiclient.errors import HttpError
+from django.conf import settings
 from oauth2client.client import SignedJwtAssertionCredentials
 
 from kitsune.questions.models import Question

@@ -1,11 +1,10 @@
 import logging
 from collections import OrderedDict
 
+from apiclient.errors import Error as GoogleAPIError
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
-
-from apiclient.errors import Error as GoogleAPIError
 from oauth2client.client import Error as Oauth2Error
 from OpenSSL.crypto import Error as OpenSSLError
 
@@ -14,9 +13,9 @@ from kitsune.announcements.models import Announcement
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
 from kitsune.sumo.googleanalytics import visitors_by_locale
-from kitsune.wiki.events import (ApproveRevisionInLocaleEvent,
-                                 ReadyRevisionEvent,
-                                 ReviewableRevisionInLocaleEvent)
+from kitsune.wiki.events import ApproveRevisionInLocaleEvent
+from kitsune.wiki.events import ReadyRevisionEvent
+from kitsune.wiki.events import ReviewableRevisionInLocaleEvent
 
 log = logging.getLogger('k.dashboards')
 

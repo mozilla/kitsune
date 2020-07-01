@@ -1,12 +1,12 @@
 import json
+from unittest import mock
 
 import django
 from django.contrib.sites.models import Site
-from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponseRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
-
-from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -14,7 +14,8 @@ from kitsune.sumo.middleware import LocaleURLMiddleware
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.views import deprecated_redirect, redirect_to
+from kitsune.sumo.views import deprecated_redirect
+from kitsune.sumo.views import redirect_to
 
 
 class RedirectTests(TestCase):

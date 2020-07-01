@@ -1,9 +1,10 @@
-from nose.tools import eq_
-
 from django.http import HttpResponse
 from django.test.client import RequestFactory
+from nose.tools import eq_
 
-from kitsune.sumo.json_utils import jsonp_is_valid, markup_json, template_json
+from kitsune.sumo.json_utils import jsonp_is_valid
+from kitsune.sumo.json_utils import markup_json
+from kitsune.sumo.json_utils import template_json
 from kitsune.sumo.tests import TestCase
 
 

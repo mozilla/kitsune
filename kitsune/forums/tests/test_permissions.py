@@ -1,11 +1,15 @@
 from django.contrib.contenttypes.models import ContentType
 from django.test.client import RequestFactory
 
-from kitsune.access.templatetags.jinja_helpers import has_perm, has_perm_or_owns
+from kitsune.access.templatetags.jinja_helpers import has_perm
+from kitsune.access.templatetags.jinja_helpers import has_perm_or_owns
 from kitsune.access.tests import PermissionFactory
-from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory
+from kitsune.forums.tests import ForumFactory
+from kitsune.forums.tests import ForumTestCase
+from kitsune.forums.tests import ThreadFactory
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.tests import GroupFactory
+from kitsune.users.tests import UserFactory
 
 
 class ForumTestPermissions(ForumTestCase):

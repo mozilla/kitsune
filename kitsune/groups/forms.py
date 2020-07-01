@@ -7,7 +7,8 @@ from kitsune.groups.models import GroupProfile
 from kitsune.sumo.form_fields import MultiUsernameField
 from kitsune.sumo.widgets import ImageWidget
 from kitsune.upload.forms import LimitedImageField
-from kitsune.upload.utils import FileTooLargeError, check_file_size
+from kitsune.upload.utils import check_file_size
+from kitsune.upload.utils import FileTooLargeError
 
 
 class GroupProfileForm(forms.ModelForm):

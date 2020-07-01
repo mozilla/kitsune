@@ -1,7 +1,5 @@
 """Tests for the TestCase base class and any other utils that come along."""
-
 from django.core.cache import cache
-
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase

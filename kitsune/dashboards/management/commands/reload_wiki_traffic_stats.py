@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from kitsune.dashboards.models import PERIODS, WikiDocumentVisits
+from kitsune.dashboards.models import PERIODS
+from kitsune.dashboards.models import WikiDocumentVisits
 
 
 class Command(BaseCommand):

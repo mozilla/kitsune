@@ -1,17 +1,23 @@
-from django import forms
-from django.db.models import Q
-from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
-
 import django_filters
 from actstream.models import Action
-from rest_framework import serializers, viewsets, permissions, mixins, status
+from django import forms
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+from rest_framework import mixins
+from rest_framework import permissions
+from rest_framework import serializers
+from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from kitsune.notifications.models import (
-    PushNotificationRegistration, Notification, RealtimeRegistration)
-from kitsune.sumo.api_utils import OnlyCreatorEdits, DateTimeUTCField, GenericRelatedField
+from kitsune.notifications.models import Notification
+from kitsune.notifications.models import PushNotificationRegistration
+from kitsune.notifications.models import RealtimeRegistration
+from kitsune.sumo.api_utils import DateTimeUTCField
+from kitsune.sumo.api_utils import GenericRelatedField
+from kitsune.sumo.api_utils import OnlyCreatorEdits
 
 
 class OnlyOwner(permissions.BasePermission):

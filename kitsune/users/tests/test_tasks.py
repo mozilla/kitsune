@@ -1,15 +1,16 @@
 import json
 from datetime import datetime
+
+from nose.tools import eq_
+
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tasks import (
-    process_event_delete_user,
-    process_event_subscription_state_change,
-    process_event_password_change
-)
-from kitsune.users.tests import AccountEventFactory, ProfileFactory
 from kitsune.users.models import AccountEvent
-from nose.tools import eq_
+from kitsune.users.tasks import process_event_delete_user
+from kitsune.users.tasks import process_event_password_change
+from kitsune.users.tasks import process_event_subscription_state_change
+from kitsune.users.tests import AccountEventFactory
+from kitsune.users.tests import ProfileFactory
 
 
 class AccountEventsTasksTestCase(TestCase):

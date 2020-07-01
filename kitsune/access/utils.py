@@ -1,7 +1,6 @@
-from django.contrib.contenttypes.models import ContentType
-
-from authority.sites import get_check
 from authority.models import Permission
+from authority.sites import get_check
+from django.contrib.contenttypes.models import ContentType
 
 
 def has_perm_or_owns(user, perm, obj, perm_obj,

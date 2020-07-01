@@ -3,11 +3,11 @@ import hashlib
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count
-
 from elasticsearch.exceptions import TransportError
 
 from kitsune.products.models import Topic
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import DocumentMappingType
 
 
 def topics_for(product, parent=False):

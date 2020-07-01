@@ -1,18 +1,18 @@
-import os
 import io
+import os
 
+import bleach
 from django.conf import settings
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.translation import ugettext_lazy as _lazy
-
-import bleach
 from PIL import Image
 
 from kitsune.upload.forms import ImageAttachmentUploadForm
 from kitsune.upload.models import ImageAttachment
-from kitsune.upload.tasks import (compress_image, generate_thumbnail,
-                                  _scale_dimensions)
+from kitsune.upload.tasks import _scale_dimensions
+from kitsune.upload.tasks import compress_image
+from kitsune.upload.tasks import generate_thumbnail
 
 
 def check_file_size(f, max_allowed_size):

@@ -1,13 +1,13 @@
 # Pruned copy of django-badger/badger/admin.py
 # https://github.com/mozilla/django-badger/blob/master/badger/admin.py
-
 from django import forms
 from django.contrib import admin
-from django.urls import reverse
 from django.db import models
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from kitsune.kbadge.models import Badge, Award
+from kitsune.kbadge.models import Award
+from kitsune.kbadge.models import Badge
 
 
 def show_image(obj):

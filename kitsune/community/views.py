@@ -3,15 +3,17 @@ from datetime import datetime
 
 from django.conf import settings
 from django.http import Http404
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 
 from kitsune.community import api
-from kitsune.community.utils import (
-    top_contributors_aoa, top_contributors_questions,
-    top_contributors_kb, top_contributors_l10n)
+from kitsune.community.utils import top_contributors_aoa
+from kitsune.community.utils import top_contributors_kb
+from kitsune.community.utils import top_contributors_l10n
+from kitsune.community.utils import top_contributors_questions
 from kitsune.forums.models import Thread
-from kitsune.products.models import Product
 from kitsune.products.api import ProductSerializer
+from kitsune.products.models import Product
 from kitsune.questions.models import QuestionLocale
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.sumo.api_utils import JSONRenderer

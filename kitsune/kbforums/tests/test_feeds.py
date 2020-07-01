@@ -3,8 +3,11 @@ import time
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.kbforums.feeds import ThreadsFeed, PostsFeed
-from kitsune.kbforums.tests import KBForumTestCase, get, ThreadFactory
+from kitsune.kbforums.feeds import PostsFeed
+from kitsune.kbforums.feeds import ThreadsFeed
+from kitsune.kbforums.tests import get
+from kitsune.kbforums.tests import KBForumTestCase
+from kitsune.kbforums.tests import ThreadFactory
 from kitsune.wiki.tests import DocumentFactory
 
 

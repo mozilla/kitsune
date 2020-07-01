@@ -1,13 +1,15 @@
-from django.test.client import RequestFactory
-
 import pyquery
-from nose.tools import eq_, raises
+from django.test.client import RequestFactory
+from nose.tools import eq_
+from nose.tools import raises
 
+from kitsune.sumo.paginator import EmptyPage
+from kitsune.sumo.paginator import PageNotAnInteger
 from kitsune.sumo.templatetags.jinja_helpers import paginator
-from kitsune.sumo.paginator import EmptyPage, PageNotAnInteger
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, simple_paginate
+from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import simple_paginate
 
 
 def test_paginated_url():

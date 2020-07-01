@@ -1,18 +1,18 @@
 import json
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from kitsune.kpi.models import (
-    AOA_CONTRIBUTORS_CSAT_METRIC_CODE,
-    CONTRIBUTORS_CSAT_METRIC_CODE,
-    KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE,
-    KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE,
-    SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE,
-    Metric,
-    MetricKind,
-)
+
+from kitsune.kpi.models import AOA_CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
+from kitsune.kpi.models import SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE
 from kitsune.kpi.surveygizmo_utils import SURVEYS
 
 

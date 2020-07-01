@@ -1,7 +1,6 @@
 from itertools import chain
 
 from django.conf import settings
-
 from elasticsearch import RequestsHttpConnection
 
 from kitsune import search as constants

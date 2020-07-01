@@ -1,6 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
-from django.db.models import F, Manager, Q
+from django.db.models import F
+from django.db.models import Manager
+from django.db.models import Q
 
 from kitsune.questions import config
 

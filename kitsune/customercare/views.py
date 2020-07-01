@@ -1,25 +1,34 @@
 import json
 import logging
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from email.utils import parsedate
 
-from django.conf import settings
-from django.http import (HttpResponse, HttpResponseBadRequest,
-                         HttpResponseNotFound, HttpResponseServerError)
-from django.shortcuts import render
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
-from django.views.decorators.http import require_POST, require_GET
-
 import bleach
-from twython import TwythonAuthError, TwythonError
+from django.conf import settings
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseNotFound
+from django.http import HttpResponseServerError
+from django.shortcuts import render
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
+from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_POST
+from twython import TwythonAuthError
+from twython import TwythonError
 
 from kitsune import twitter
-from kitsune.access.decorators import permission_required, login_required
-from kitsune.customercare.models import Tweet, TwitterAccount, Reply
+from kitsune.access.decorators import login_required
+from kitsune.access.decorators import permission_required
+from kitsune.customercare.models import Reply
+from kitsune.customercare.models import Tweet
+from kitsune.customercare.models import TwitterAccount
 from kitsune.customercare.replies import get_common_replies
 from kitsune.sumo.decorators import ssl_required
-from kitsune.sumo.redis_utils import redis_client, RedisError
+from kitsune.sumo.redis_utils import redis_client
+from kitsune.sumo.redis_utils import RedisError
 
 
 log = logging.getLogger('k.customercare')

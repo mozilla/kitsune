@@ -9,12 +9,13 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.utils import translation
-from django.utils.http import is_safe_url, urlencode
+from django.utils.http import is_safe_url
+from django.utils.http import urlencode
 from ratelimit.utils import is_ratelimited as rl_is_ratelimited
 from timeout_decorator import timeout
 
-from kitsune.lib.tlds import VALID_TLDS
 from kitsune.journal.models import Record
+from kitsune.lib.tlds import VALID_TLDS
 from kitsune.sumo import paginator
 
 POTENTIAL_LINK_REGEX = re.compile(r'[^\s/]+\.([^\s/.]{2,})')

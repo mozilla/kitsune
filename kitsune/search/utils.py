@@ -1,9 +1,8 @@
 import time
 from itertools import islice
 
-from django.conf import settings
-
 import bleach
+from django.conf import settings
 
 from kitsune.lib.sumo_locales import LOCALES
 

@@ -4,7 +4,8 @@ from django.conf import settings
 from django.template.defaultfilters import slugify
 from django.test import override_settings
 
-from kitsune.sumo.tests import LocalizingClient, TestCase
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
 
 
 # Override the cache prefix with a test-specific one.

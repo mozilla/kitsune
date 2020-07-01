@@ -3,9 +3,11 @@ from django.conf.urls import url
 
 from kitsune.flagit import views as flagit_views
 from kitsune.questions import views
-from kitsune.questions.feeds import (AnswersFeed, QuestionsFeed,
-                                     TaggedQuestionsFeed)
-from kitsune.questions.models import Answer, Question
+from kitsune.questions.feeds import AnswersFeed
+from kitsune.questions.feeds import QuestionsFeed
+from kitsune.questions.feeds import TaggedQuestionsFeed
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
 from kitsune.sumo.views import handle404
 
 if settings.DISABLE_FEEDS:

@@ -4,7 +4,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
-from kitsune.sumo.models import ModelBase, LocaleField
+from kitsune.sumo.models import LocaleField
+from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 

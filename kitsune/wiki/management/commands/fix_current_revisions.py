@@ -1,7 +1,9 @@
 from django.core.management.base import BaseCommand
-from multidb.pinning import pin_this_thread, unpin_this_thread
+from multidb.pinning import pin_this_thread
+from multidb.pinning import unpin_this_thread
 
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import Revision
 
 
 class Command(BaseCommand):

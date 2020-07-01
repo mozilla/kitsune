@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from kitsune.kpi.models import Metric, MetricKind
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
 
 
 class MetricAdmin(admin.ModelAdmin):

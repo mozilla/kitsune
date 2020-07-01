@@ -1,15 +1,21 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
-
 from nose.tools import eq_
 
 from kitsune.access.tests import PermissionFactory
 from kitsune.flagit.models import FlaggedObject
 from kitsune.forums import POSTS_PER_PAGE
-from kitsune.forums.events import NewPostEvent, NewThreadEvent
-from kitsune.forums.models import Forum, Thread, Post
-from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
+from kitsune.forums.events import NewPostEvent
+from kitsune.forums.events import NewThreadEvent
+from kitsune.forums.models import Forum
+from kitsune.forums.models import Post
+from kitsune.forums.models import Thread
+from kitsune.forums.tests import ForumFactory
+from kitsune.forums.tests import ForumTestCase
+from kitsune.forums.tests import PostFactory
+from kitsune.forums.tests import ThreadFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory

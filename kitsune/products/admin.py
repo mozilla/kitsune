@@ -1,6 +1,9 @@
 from django.contrib import admin
 
-from kitsune.products.models import Platform, Product, Topic, Version
+from kitsune.products.models import Platform
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
+from kitsune.products.models import Version
 
 
 class ProductAdmin(admin.ModelAdmin):

@@ -1,10 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 import factory
 
 from kitsune.announcements.models import Announcement
-from kitsune.users.tests import UserFactory
 from kitsune.sumo.tests import FuzzyUnicode
+from kitsune.users.tests import UserFactory
 
 
 class AnnouncementFactory(factory.DjangoModelFactory):

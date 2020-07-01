@@ -1,9 +1,11 @@
 from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.conf.urls import url
 from django.views.decorators.cache import never_cache
 
 import kitsune.flagit.views
-from kitsune.users import api, views
+from kitsune.users import api
+from kitsune.users import views
 from kitsune.users.models import Profile
 
 # API patterns. All start with /users/api.

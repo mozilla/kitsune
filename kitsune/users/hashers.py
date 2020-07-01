@@ -1,7 +1,8 @@
 import hashlib
 from collections import OrderedDict
 
-from django.contrib.auth.hashers import BasePasswordHasher, mask_hash
+from django.contrib.auth.hashers import BasePasswordHasher
+from django.contrib.auth.hashers import mask_hash
 from django.utils.crypto import constant_time_compare
 from django.utils.translation import ugettext as _
 

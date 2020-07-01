@@ -1,12 +1,14 @@
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from kitsune.customercare.models import Reply
-from kitsune.sumo.redis_utils import RedisError, redis_client
+from kitsune.sumo.redis_utils import redis_client
+from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.utils import chunked
 
 log = logging.getLogger('k.twitter')

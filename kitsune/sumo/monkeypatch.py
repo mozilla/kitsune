@@ -2,7 +2,6 @@ import sys
 from functools import wraps
 
 from django.forms import fields
-
 from elasticutils import get_es as base_get_es
 from elasticutils.contrib import django as elasticutils_django
 

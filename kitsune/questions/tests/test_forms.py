@@ -1,10 +1,12 @@
 from collections import OrderedDict
 
 from django.contrib.auth.models import AnonymousUser
-from kitsune.questions.forms import NewQuestionForm, WatchQuestionForm
+from nose.tools import eq_
+
+from kitsune.questions.forms import NewQuestionForm
+from kitsune.questions.forms import WatchQuestionForm
 from kitsune.questions.tests import TestCaseBase
 from kitsune.users.tests import UserFactory
-from nose.tools import eq_
 
 
 class WatchQuestionFormTests(TestCaseBase):

@@ -1,8 +1,11 @@
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from elasticutils import F
-from rest_framework import views, fields, exceptions
+from rest_framework import exceptions
+from rest_framework import fields
+from rest_framework import views
 from rest_framework.response import Response
 
 from kitsune.questions.models import AnswerMetricsMappingType

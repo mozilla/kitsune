@@ -1,6 +1,7 @@
 import re
 import sys
 
+from celery import current_app
 from django import VERSION
 from django.conf import settings as django_settings
 from django.contrib import admin
@@ -8,8 +9,6 @@ from django.db import connection
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views import debug
-
-from celery import current_app
 from redis import ConnectionError
 
 from kitsune.sumo.redis_utils import redis_client

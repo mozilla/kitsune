@@ -1,10 +1,11 @@
 from nose.tools import eq_
-
 from pyquery import PyQuery as pq
 
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.models import Locale
 from kitsune.wiki.tests import LocaleFactory
 

@@ -1,15 +1,16 @@
+import factory
 from django.conf import settings
 from django.core.files import File
-
-import factory
-from nose.tools import eq_, raises
+from nose.tools import eq_
+from nose.tools import raises
 
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.storage import RenameFileStorage
-from kitsune.upload.utils import (
-    create_imageattachment, check_file_size, FileTooLargeError)
+from kitsune.upload.utils import check_file_size
+from kitsune.upload.utils import create_imageattachment
+from kitsune.upload.utils import FileTooLargeError
 from kitsune.users.tests import UserFactory
 
 

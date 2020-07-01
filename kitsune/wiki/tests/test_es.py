@@ -1,12 +1,17 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from nose.tools import eq_
 
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.wiki.tests import (
-    DocumentFactory, RevisionFactory, HelpfulVoteFactory, RedirectRevisionFactory)
-from kitsune.wiki.models import DocumentMappingType, RevisionMetricsMappingType
+from kitsune.wiki.models import DocumentMappingType
+from kitsune.wiki.models import RevisionMetricsMappingType
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import HelpfulVoteFactory
+from kitsune.wiki.tests import RedirectRevisionFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class DocumentUpdateTests(ElasticTestCase):

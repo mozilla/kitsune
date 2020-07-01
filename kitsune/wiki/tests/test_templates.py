@@ -1,35 +1,52 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from unittest import mock
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
-from nose.tools import eq_, nottest
+from nose.tools import eq_
+from nose.tools import nottest
 
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.tests import attrs_eq
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import post
 from kitsune.sumo.tests import SumoPyQuery as pq
-from kitsune.sumo.tests import attrs_eq, get, post
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
-                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
-                                 MEDIUM_SIGNIFICANCE, SIGNIFICANCES,
-                                 TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY,
-                                 TROUBLESHOOTING_CATEGORY)
-from kitsune.wiki.events import (ApproveRevisionInLocaleEvent,
-                                 EditDocumentEvent, ReadyRevisionEvent,
-                                 ReviewableRevisionInLocaleEvent, get_diff_for)
-from kitsune.wiki.models import (Document, HelpfulVote, HelpfulVoteMetadata,
-                                 Revision)
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.config import ADMINISTRATION_CATEGORY
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import MEDIUM_SIGNIFICANCE
+from kitsune.wiki.config import SIGNIFICANCES
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.config import TROUBLESHOOTING_CATEGORY
+from kitsune.wiki.events import ApproveRevisionInLocaleEvent
+from kitsune.wiki.events import EditDocumentEvent
+from kitsune.wiki.events import get_diff_for
+from kitsune.wiki.events import ReadyRevisionEvent
+from kitsune.wiki.events import ReviewableRevisionInLocaleEvent
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import HelpfulVote
+from kitsune.wiki.models import HelpfulVoteMetadata
+from kitsune.wiki.models import Revision
 from kitsune.wiki.tasks import send_reviewed_notification
-from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
-                                DraftRevisionFactory, LocaleFactory,
-                                RedirectRevisionFactory, RevisionFactory,
-                                TestCaseBase, TranslatedRevisionFactory,
-                                new_document_data)
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import DraftRevisionFactory
+from kitsune.wiki.tests import LocaleFactory
+from kitsune.wiki.tests import new_document_data
+from kitsune.wiki.tests import RedirectRevisionFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TestCaseBase
+from kitsune.wiki.tests import TranslatedRevisionFactory
 
 READY_FOR_REVIEW_EMAIL_CONTENT = """\
 %(user)s submitted a new revision to the document %(title)s.

@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-
 from nose.tools import eq_
 
 from kitsune.sumo.form_fields import TypedMultipleChoiceField

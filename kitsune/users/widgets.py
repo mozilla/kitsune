@@ -1,7 +1,9 @@
 import re
 from datetime import datetime
 
-from django.forms.widgets import Widget, Select, URLInput
+from django.forms.widgets import Select
+from django.forms.widgets import URLInput
+from django.forms.widgets import Widget
 from django.utils.dates import MONTHS
 from django.utils.safestring import mark_safe
 

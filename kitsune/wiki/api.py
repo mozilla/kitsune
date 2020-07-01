@@ -1,13 +1,16 @@
 from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from rest_framework import generics
+from rest_framework import serializers
+from rest_framework import status
 
-from rest_framework import generics, serializers, status
-
-from kitsune.products.models import Product, Topic
-from kitsune.sumo.api_utils import GenericAPIException, LocaleNegotiationMixin
-from kitsune.wiki.models import Document
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
+from kitsune.sumo.api_utils import GenericAPIException
+from kitsune.sumo.api_utils import LocaleNegotiationMixin
 from kitsune.wiki.config import REDIRECT_HTML
+from kitsune.wiki.models import Document
 
 
 class DocumentShortSerializer(serializers.ModelSerializer):

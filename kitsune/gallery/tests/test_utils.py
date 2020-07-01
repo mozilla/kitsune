@@ -1,15 +1,18 @@
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
-
 from nose.tools import raises
 
-from kitsune.gallery.models import Image, Video
-from kitsune.gallery.tests import ImageFactory, VideoFactory
-from kitsune.gallery.utils import check_media_permissions, create_image
+from kitsune.gallery.models import Image
+from kitsune.gallery.models import Video
+from kitsune.gallery.tests import ImageFactory
+from kitsune.gallery.tests import VideoFactory
+from kitsune.gallery.utils import check_media_permissions
+from kitsune.gallery.utils import create_image
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.upload.tests import check_file_info
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
 
 
 class CheckPermissionsTestCase(TestCase):

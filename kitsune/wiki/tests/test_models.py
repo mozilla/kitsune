@@ -1,25 +1,33 @@
 # coding: utf-8
-
 import urllib.parse
 from datetime import datetime
 
+from django.core.exceptions import ValidationError
 from nose.tools import eq_
 from taggit.models import TaggedItem
 
-from django.core.exceptions import ValidationError
-
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.config import (
-    REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE, CATEGORIES,
-    TYPO_SIGNIFICANCE, REDIRECT_CONTENT, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import MAJOR_SIGNIFICANCE
+from kitsune.wiki.config import REDIRECT_CONTENT
+from kitsune.wiki.config import REDIRECT_HTML
+from kitsune.wiki.config import REDIRECT_SLUG
+from kitsune.wiki.config import REDIRECT_TITLE
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.config import TYPO_SIGNIFICANCE
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import wiki_to_html
-from kitsune.wiki.tests import (
-    RevisionFactory, ApprovedRevisionFactory, TranslatedRevisionFactory, DocumentFactory,
-    TemplateDocumentFactory, RedirectRevisionFactory)
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RedirectRevisionFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TemplateDocumentFactory
+from kitsune.wiki.tests import TranslatedRevisionFactory
 
 
 def _objects_eq(manager, list_):

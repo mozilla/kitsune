@@ -5,15 +5,16 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.urls import reverse as django_reverse
 from django.db import transaction
+from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.users.utils import add_to_contributors, get_oidc_fxa_setting
+from kitsune.users.utils import add_to_contributors
+from kitsune.users.utils import get_oidc_fxa_setting
 
 log = logging.getLogger('k.users')
 

@@ -1,22 +1,31 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
-
 from nose.tools import eq_
 
 from kitsune import search as constants
 from kitsune.access.tests import PermissionFactory
-from kitsune.forums.tests import ForumFactory, PostFactory, RestrictedForumFactory, ThreadFactory
-from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.questions.tests import (
-    QuestionFactory, AnswerFactory, AnswerVoteFactory, QuestionVoteFactory)
+from kitsune.forums.tests import ForumFactory
+from kitsune.forums.tests import PostFactory
+from kitsune.forums.tests import RestrictedForumFactory
+from kitsune.forums.tests import ThreadFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionVoteFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import GroupFactory, UserFactory
-from kitsune.wiki.tests import (
-    DocumentFactory, ApprovedRevisionFactory, RevisionFactory, HelpfulVoteFactory)
+from kitsune.users.tests import GroupFactory
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import HelpfulVoteFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class AdvancedSearchTests(ElasticTestCase):

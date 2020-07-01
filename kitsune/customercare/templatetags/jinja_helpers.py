@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from django.conf import settings
-
 import pytz
+from django.conf import settings
 from django_jinja import library
 
 from kitsune.sumo.templatetags.jinja_helpers import timesince

@@ -1,6 +1,8 @@
 from nose.tools import eq_
 
-from kitsune.search.utils import chunked, from_class_path, to_class_path
+from kitsune.search.utils import chunked
+from kitsune.search.utils import from_class_path
+from kitsune.search.utils import to_class_path
 from kitsune.sumo.tests import TestCase
 
 

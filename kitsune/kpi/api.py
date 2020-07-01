@@ -1,25 +1,39 @@
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
+from functools import reduce
 from operator import itemgetter
 
-from django.core.cache import cache
-from django.db import connections, router
-from django.db.models import Count, F
-
 import django_filters
+from django.core.cache import cache
+from django.db import connections
+from django.db import router
+from django.db.models import Count
+from django.db.models import F
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, serializers, viewsets
-from rest_framework.views import APIView
+from rest_framework import filters
+from rest_framework import serializers
+from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from kitsune.kpi.models import (
-    Cohort, Metric, MetricKind, RetentionMetric, AOA_CONTRIBUTORS_METRIC_CODE,
-    KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE, L10N_METRIC_CODE,
-    SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE, EXIT_SURVEY_YES_CODE,
-    EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
-from kitsune.questions.models import Question, Answer, AnswerVote
+from kitsune.kpi.models import AOA_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import Cohort
+from kitsune.kpi.models import EXIT_SURVEY_DONT_KNOW_CODE
+from kitsune.kpi.models import EXIT_SURVEY_NO_CODE
+from kitsune.kpi.models import EXIT_SURVEY_YES_CODE
+from kitsune.kpi.models import KB_ENUS_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import KB_L10N_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import L10N_METRIC_CODE
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
+from kitsune.kpi.models import RetentionMetric
+from kitsune.kpi.models import SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import VISITORS_METRIC_CODE
+from kitsune.questions.models import Answer
+from kitsune.questions.models import AnswerVote
+from kitsune.questions.models import Question
 from kitsune.wiki.models import HelpfulVote
-from functools import reduce
 
 
 class CachedAPIView(APIView):

@@ -6,7 +6,8 @@ from kitsune.announcements.models import Announcement
 from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import LocaleFactory
 
 

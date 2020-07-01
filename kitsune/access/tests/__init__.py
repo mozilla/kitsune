@@ -1,8 +1,7 @@
-from django.contrib.contenttypes.models import ContentType
-from django.test.client import RequestFactory
-
 import factory
 from authority.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.test.client import RequestFactory
 from nose.tools import eq_
 
 from kitsune.access import utils as access

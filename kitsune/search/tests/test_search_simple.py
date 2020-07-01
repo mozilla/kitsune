@@ -2,17 +2,21 @@ import json
 
 from django.conf import settings
 from django.utils.http import urlquote
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.forums.tests import PostFactory, ThreadFactory
+from kitsune.forums.tests import PostFactory
+from kitsune.forums.tests import ThreadFactory
 from kitsune.products.tests import ProductFactory
-from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory, RevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class SimpleSearchTests(ElasticTestCase):

@@ -2,16 +2,18 @@ import json
 
 from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import (HttpResponse, HttpResponseNotFound,
-                         HttpResponseBadRequest, HttpResponseForbidden)
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseForbidden
+from django.http import HttpResponseNotFound
 from django.utils.translation import ugettext as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-
 from kitsune.access.decorators import login_required
 from kitsune.upload.models import ImageAttachment
-from kitsune.upload.utils import upload_imageattachment, FileTooLargeError
+from kitsune.upload.utils import FileTooLargeError
+from kitsune.upload.utils import upload_imageattachment
 
 
 ALLOWED_MODELS = ['questions.Question', 'questions.Answer', 'auth.User']

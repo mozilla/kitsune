@@ -1,10 +1,14 @@
 from nose.tools import eq_
 
+from kitsune.kbforums.events import NewPostEvent
+from kitsune.kbforums.events import NewThreadEvent
 from kitsune.kbforums.models import Thread
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
-from kitsune.kbforums.events import NewThreadEvent, NewPostEvent
-from kitsune.sumo.tests import get, post
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.kbforums.tests import KBForumTestCase
+from kitsune.kbforums.tests import ThreadFactory
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import post
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 
 

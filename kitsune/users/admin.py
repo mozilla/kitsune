@@ -2,7 +2,8 @@ from django import forms
 from django.contrib import admin
 
 from kitsune.users import monkeypatch
-from kitsune.users.models import AccountEvent, Profile
+from kitsune.users.models import AccountEvent
+from kitsune.users.models import Profile
 
 
 class ProfileAdminForm(forms.ModelForm):

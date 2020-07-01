@@ -2,52 +2,68 @@ import json
 from ast import literal_eval
 
 import requests
-
 from django.conf import settings
-from django.contrib import auth, messages
+from django.contrib import auth
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import SuspiciousOperation
-from django.http import (Http404, HttpResponse, HttpResponseForbidden,
-                         HttpResponsePermanentRedirect, HttpResponseRedirect)
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import Http404
+from django.http import HttpResponse
+from django.http import HttpResponseForbidden
+from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import (require_GET, require_http_methods,
-                                          require_POST)
+from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_POST
 from django.views.generic import View
-# from axes.decorators import watch_login
 from josepy.jwk import JWK
 from josepy.jws import JWS
+from mozilla_django_oidc.utils import import_from_settings
+from mozilla_django_oidc.views import OIDCAuthenticationCallbackView
+from mozilla_django_oidc.views import OIDCAuthenticationRequestView
+from mozilla_django_oidc.views import OIDCLogoutView
+from tidings.models import Watch
+
 from kitsune import users as constants
-from kitsune.access.decorators import (login_required, logout_required,
-                                       permission_required)
+from kitsune.access.decorators import login_required
+from kitsune.access.decorators import logout_required
+from kitsune.access.decorators import permission_required
 from kitsune.kbadge.models import Award
-from kitsune.questions.utils import (mark_content_as_spam, num_answers,
-                                     num_questions, num_solutions)
+from kitsune.questions.utils import mark_content_as_spam
+from kitsune.questions.utils import num_answers
+from kitsune.questions.utils import num_questions
+from kitsune.questions.utils import num_solutions
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, simple_paginate
-from kitsune.users.forms import ProfileForm, SettingsForm
-from kitsune.users.models import AccountEvent, Deactivation, Profile, SET_ID_PREFIX
+from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import simple_paginate
+from kitsune.users.forms import ProfileForm
+from kitsune.users.forms import SettingsForm
+from kitsune.users.models import AccountEvent
+from kitsune.users.models import Deactivation
+from kitsune.users.models import Profile
+from kitsune.users.models import SET_ID_PREFIX
+from kitsune.users.tasks import process_event_delete_user
+from kitsune.users.tasks import process_event_password_change
+from kitsune.users.tasks import process_event_subscription_state_change
 from kitsune.users.templatetags.jinja_helpers import profile_url
-from kitsune.users.utils import (add_to_contributors, deactivate_user,
-                                 get_oidc_fxa_setting, anonymize_user)
-from kitsune.wiki.models import (user_documents, user_num_documents,
-                                 user_redirects)
-from mozilla_django_oidc.utils import import_from_settings
+from kitsune.users.utils import add_to_contributors
+from kitsune.users.utils import anonymize_user
+from kitsune.users.utils import deactivate_user
+from kitsune.users.utils import get_oidc_fxa_setting
+from kitsune.wiki.models import user_documents
+from kitsune.wiki.models import user_num_documents
+from kitsune.wiki.models import user_redirects
 # from axes.decorators import watch_login
-from mozilla_django_oidc.views import (OIDCAuthenticationCallbackView,
-                                       OIDCAuthenticationRequestView,
-                                       OIDCLogoutView)
-from tidings.models import Watch
-from kitsune.users.tasks import (
-    process_event_delete_user,
-    process_event_password_change,
-    process_event_subscription_state_change
-)
+# from axes.decorators import watch_login
 
 
 @ssl_required

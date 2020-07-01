@@ -1,25 +1,29 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+import factory
 from django.conf import settings
 from django.template.defaultfilters import slugify
-
-import factory
 from nose.tools import eq_
 
 from kitsune.products.models import Product
-from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.sumo.tests import LocalizingClient, TestCase, FuzzyUnicode
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
+from kitsune.sumo.tests import FuzzyUnicode
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.models import Document, DraftRevision, Revision, Locale, HelpfulVote
-from kitsune.wiki.config import (
-    CATEGORIES,
-    SIGNIFICANCES,
-    TEMPLATES_CATEGORY,
-    TEMPLATE_TITLE_PREFIX,
-    REDIRECT_CONTENT,
-    REDIRECT_TITLE,
-)
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import REDIRECT_CONTENT
+from kitsune.wiki.config import REDIRECT_TITLE
+from kitsune.wiki.config import SIGNIFICANCES
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import DraftRevision
+from kitsune.wiki.models import HelpfulVote
+from kitsune.wiki.models import Locale
+from kitsune.wiki.models import Revision
 
 
 class TestCaseBase(TestCase):

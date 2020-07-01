@@ -9,7 +9,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 
-from kitsune.customercare.models import Tweet, TwitterAccount
+from kitsune.customercare.models import Tweet
+from kitsune.customercare.models import TwitterAccount
 from kitsune.twitter import get_twitter_api
 
 LINK_REGEX = re.compile(r"https?\:", re.IGNORECASE)

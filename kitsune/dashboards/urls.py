@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
-from kitsune.dashboards import api, views
+from kitsune.dashboards import api
+from kitsune.dashboards import views
 
 
 urlpatterns = [

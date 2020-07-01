@@ -1,6 +1,7 @@
 import factory
 
-from kitsune.gallery.models import Image, Video
+from kitsune.gallery.models import Image
+from kitsune.gallery.models import Video
 from kitsune.sumo.tests import FuzzyUnicode
 from kitsune.users.tests import UserFactory
 

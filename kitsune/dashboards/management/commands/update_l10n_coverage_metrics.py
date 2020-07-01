@@ -3,8 +3,10 @@ from datetime import date
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from kitsune.dashboards.models import (L10N_ALL_CODE, L10N_TOP20_CODE,
-                                       L10N_TOP100_CODE, WikiMetric)
+from kitsune.dashboards.models import L10N_ALL_CODE
+from kitsune.dashboards.models import L10N_TOP100_CODE
+from kitsune.dashboards.models import L10N_TOP20_CODE
+from kitsune.dashboards.models import WikiMetric
 from kitsune.dashboards.readouts import l10n_overview_rows
 from kitsune.products.models import Product
 

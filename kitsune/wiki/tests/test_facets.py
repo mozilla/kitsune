@@ -1,12 +1,17 @@
 from nose.tools import eq_
 
-from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.facets import (
-    topics_for, documents_for, _documents_for, _db_documents_for)
-from kitsune.wiki.tests import (
-    DocumentFactory, TemplateDocumentFactory, RevisionFactory, ApprovedRevisionFactory)
+from kitsune.wiki.facets import _db_documents_for
+from kitsune.wiki.facets import _documents_for
+from kitsune.wiki.facets import documents_for
+from kitsune.wiki.facets import topics_for
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TemplateDocumentFactory
 
 
 class TestFacetHelpersMixin(object):

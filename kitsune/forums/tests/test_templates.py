@@ -1,14 +1,18 @@
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-
 from nose.tools import eq_
 
 from kitsune.access.tests import PermissionFactory
 from kitsune.forums.models import Post
-from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
-from kitsune.sumo.tests import get, post
+from kitsune.forums.tests import ForumFactory
+from kitsune.forums.tests import ForumTestCase
+from kitsune.forums.tests import PostFactory
+from kitsune.forums.tests import ThreadFactory
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import post
 from kitsune.sumo.tests import SumoPyQuery as pq
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.tests import GroupFactory
+from kitsune.users.tests import UserFactory
 
 
 class PostsTemplateTests(ForumTestCase):

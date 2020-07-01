@@ -1,14 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
-from django.test.client import RequestFactory
-from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.auth.middleware import AuthenticationMiddleware
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpResponseRedirect
+from django.test.client import RequestFactory
 
-from kitsune.users.middleware import LogoutInvalidatedSessionsMiddleware
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory, ProfileFactory
+from kitsune.users.middleware import LogoutInvalidatedSessionsMiddleware
+from kitsune.users.tests import ProfileFactory
+from kitsune.users.tests import UserFactory
 
 
 class LogoutInvalidatedSessionsMiddlewareTests(TestCase):

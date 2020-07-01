@@ -1,11 +1,14 @@
-from django.conf import settings
-
 import factory
+from django.conf import settings
 from nose.tools import eq_
 
-from kitsune.kbforums.models import Thread, Post, ThreadLockedError
+from kitsune.kbforums.models import Post
+from kitsune.kbforums.models import Thread
+from kitsune.kbforums.models import ThreadLockedError
 from kitsune.kbforums.views import sort_threads
-from kitsune.sumo.tests import get, LocalizingClient, TestCase
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 

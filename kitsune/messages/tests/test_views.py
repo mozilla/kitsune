@@ -1,8 +1,10 @@
 from multidb.middleware import PINNING_COOKIE
 from nose.tools import eq_
 
-from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.messages.models import InboxMessage
+from kitsune.messages.models import OutboxMessage
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 

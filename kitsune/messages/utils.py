@@ -1,4 +1,5 @@
-from kitsune.messages.models import InboxMessage, OutboxMessage
+from kitsune.messages.models import InboxMessage
+from kitsune.messages.models import OutboxMessage
 from kitsune.messages.signals import message_sent
 from kitsune.messages.tasks import email_private_message
 from kitsune.users.models import Setting

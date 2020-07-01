@@ -1,10 +1,14 @@
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from kitsune.kpi.management.utils import _get_latest_metric
-from kitsune.kpi.models import VISITORS_METRIC_CODE, Metric, MetricKind
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
+from kitsune.kpi.models import VISITORS_METRIC_CODE
 from kitsune.sumo import googleanalytics
 
 

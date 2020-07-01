@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.sumo.models import ModelBase

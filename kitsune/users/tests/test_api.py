@@ -1,17 +1,21 @@
 import json
-from datetime import datetime, timedelta
-
+from datetime import datetime
+from datetime import timedelta
 from unittest import mock
+
 from nose.tools import eq_
 from rest_framework.test import APIClient
 
-from kitsune.questions.tests import (AnswerFactory, AnswerVoteFactory,
-                                     QuestionFactory, SolutionAnswerFactory)
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import SolutionAnswerFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users import api
-from kitsune.users.tests import ProfileFactory, UserFactory
+from kitsune.users.tests import ProfileFactory
+from kitsune.users.tests import UserFactory
 
 
 class UsernamesTests(TestCase):

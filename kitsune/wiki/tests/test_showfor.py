@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from nose.tools import eq_
 
-from kitsune.products.tests import ProductFactory, VersionFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import VersionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.showfor import showfor_data
 

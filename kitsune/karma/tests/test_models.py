@@ -1,7 +1,8 @@
 from nose.tools import eq_
 
 from kitsune.karma.models import Title
-from kitsune.users.tests import TestCase, UserFactory
+from kitsune.users.tests import TestCase
+from kitsune.users.tests import UserFactory
 
 
 class KarmaTitleTests(TestCase):

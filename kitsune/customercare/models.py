@@ -5,9 +5,10 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
-from kitsune.search.models import (
-    SearchMappingType, SearchMixin, register_for_indexing,
-    register_mapping_type)
+from kitsune.search.models import register_for_indexing
+from kitsune.search.models import register_mapping_type
+from kitsune.search.models import SearchMappingType
+from kitsune.search.models import SearchMixin
 from kitsune.sumo.models import ModelBase
 from kitsune.users.models import get_profile
 

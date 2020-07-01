@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import patch
+
 from nose.tools import eq_
 
 from kitsune.dashboards import models
-from kitsune.dashboards.models import (
-    WikiDocumentVisits, LAST_7_DAYS, googleanalytics)
+from kitsune.dashboards.models import googleanalytics
+from kitsune.dashboards.models import LAST_7_DAYS
+from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.tests import ApprovedRevisionFactory
 

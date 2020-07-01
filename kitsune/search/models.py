@@ -5,13 +5,18 @@ from threading import local
 from django.conf import settings
 from django.core import signals
 from django.db import models
-from django.db.models.signals import m2m_changed, post_save, pre_delete
+from django.db.models.signals import m2m_changed
+from django.db.models.signals import post_save
+from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from elasticsearch.exceptions import NotFoundError
-from elasticutils.contrib.django import MLT, Indexable, MappingType
+from elasticutils.contrib.django import Indexable
+from elasticutils.contrib.django import MappingType
+from elasticutils.contrib.django import MLT
 
 from kitsune.search import es_utils
-from kitsune.search.tasks import index_task, unindex_task
+from kitsune.search.tasks import index_task
+from kitsune.search.tasks import unindex_task
 from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import ModelBase
 

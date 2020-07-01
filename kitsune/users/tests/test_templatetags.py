@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 import hashlib
 
-from django.contrib.auth.models import AnonymousUser, User
-
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import User
 from jinja2 import Markup
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.templatetags.jinja_helpers import (
-    profile_url, profile_avatar, public_email, display_name, user_list)
+from kitsune.users.templatetags.jinja_helpers import display_name
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
+from kitsune.users.templatetags.jinja_helpers import profile_url
+from kitsune.users.templatetags.jinja_helpers import public_email
+from kitsune.users.templatetags.jinja_helpers import user_list
 from kitsune.users.tests import UserFactory
 
 

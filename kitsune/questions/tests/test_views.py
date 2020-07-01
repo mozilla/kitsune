@@ -1,26 +1,37 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.conf import settings
 from django.test.utils import override_settings
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.questions.models import (Answer, AnswerVote, Question,
-                                      QuestionLocale, QuestionVote)
-from kitsune.questions.tests import (AnswerFactory, QuestionFactory,
-                                     QuestionLocaleFactory, TestCaseBase)
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
+from kitsune.questions.models import Answer
+from kitsune.questions.models import AnswerVote
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionLocale
+from kitsune.questions.models import QuestionVote
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionLocaleFactory
+from kitsune.questions.tests import TestCaseBase
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import LocalizingClient, eq_msg, get, template_used
+from kitsune.sumo.tests import eq_msg
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 # Note:

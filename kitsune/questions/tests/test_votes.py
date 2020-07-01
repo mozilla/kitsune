@@ -1,8 +1,11 @@
 from django.core.management import call_command
 from nose.tools import eq_
 
-from kitsune.questions.models import Question, QuestionMappingType
-from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory, TestCaseBase
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionMappingType
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionVoteFactory
+from kitsune.questions.tests import TestCaseBase
 from kitsune.search.tests.test_es import ElasticTestCase
 
 

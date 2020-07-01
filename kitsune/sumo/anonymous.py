@@ -20,7 +20,6 @@ Name of the cookie to use
 ANONYMOUS_COOKIE_MAX_AGE
 Maximum age of the cookie, in seconds.
 """
-
 import hashlib
 import os
 import random

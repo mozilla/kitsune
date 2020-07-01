@@ -1,12 +1,13 @@
-from django.core.management import call_command
-
 from unittest import mock
+
+from django.core.management import call_command
 
 from kitsune.products.tests import ProductFactory
 from kitsune.search import es_utils
 from kitsune.search.tests import ElasticTestCase
 from kitsune.search.utils import FakeLogger
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class ESCommandTests(ElasticTestCase):

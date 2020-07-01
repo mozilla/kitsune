@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 
-from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.sumo.models import ModelBase
+from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.wiki.models import Locale
 
 

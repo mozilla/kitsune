@@ -1,15 +1,18 @@
 import hashlib
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from urllib.parse import urlparse
 
 import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db import IntegrityError, models
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.db import models
 from django.db.models import Q
 from django.http import Http404
 from django.urls import resolve
@@ -20,22 +23,34 @@ from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 
 from kitsune.gallery.models import Image
-from kitsune.products.models import Product, Topic
-from kitsune.search.es_utils import UnindexMeBro, es_analyzer_for_locale
-from kitsune.search.models import (SearchMappingType, SearchMixin,
-                                   register_for_indexing,
-                                   register_mapping_type)
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
+from kitsune.search.es_utils import es_analyzer_for_locale
+from kitsune.search.es_utils import UnindexMeBro
+from kitsune.search.models import register_for_indexing
+from kitsune.search.models import register_mapping_type
+from kitsune.search.models import SearchMappingType
+from kitsune.search.models import SearchMixin
 from kitsune.sumo.apps import ProgrammingError
-from kitsune.sumo.models import LocaleField, ModelBase
-from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.models import LocaleField
+from kitsune.sumo.models import ModelBase
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.urlresolvers import split_path
 from kitsune.tags.models import BigVocabTaggableMixin
-from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
-                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
-                                 DOC_HTML_CACHE_KEY, MAJOR_SIGNIFICANCE,
-                                 MEDIUM_SIGNIFICANCE, REDIRECT_CONTENT,
-                                 REDIRECT_HTML, REDIRECT_SLUG, REDIRECT_TITLE,
-                                 SIGNIFICANCES, TEMPLATE_TITLE_PREFIX,
-                                 TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE)
+from kitsune.wiki.config import ADMINISTRATION_CATEGORY
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import DOC_HTML_CACHE_KEY
+from kitsune.wiki.config import MAJOR_SIGNIFICANCE
+from kitsune.wiki.config import MEDIUM_SIGNIFICANCE
+from kitsune.wiki.config import REDIRECT_CONTENT
+from kitsune.wiki.config import REDIRECT_HTML
+from kitsune.wiki.config import REDIRECT_SLUG
+from kitsune.wiki.config import REDIRECT_TITLE
+from kitsune.wiki.config import SIGNIFICANCES
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.config import TYPO_SIGNIFICANCE
 from kitsune.wiki.permissions import DocumentPermissionMixin
 
 log = logging.getLogger('k.wiki')

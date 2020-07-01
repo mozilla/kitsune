@@ -1,24 +1,36 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from unittest import mock
 
-from actstream.models import Action, Follow
+from actstream.models import Action
+from actstream.models import Follow
 from django.core.management import call_command
 from django.db.models import Q
-from nose.tools import eq_, ok_, raises
+from nose.tools import eq_
+from nose.tools import ok_
+from nose.tools import raises
 from taggit.models import Tag
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
-from kitsune.questions import config, models
-from kitsune.questions.models import (AlreadyTakenException, Answer,
-                                      InvalidUserException, Question,
-                                      QuestionMetaData, QuestionVisits,
-                                      VoteMetadata, _has_beta, _tenths_version)
+from kitsune.questions import config
+from kitsune.questions import models
+from kitsune.questions.models import _has_beta
+from kitsune.questions.models import _tenths_version
+from kitsune.questions.models import AlreadyTakenException
+from kitsune.questions.models import Answer
+from kitsune.questions.models import InvalidUserException
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionMetaData
+from kitsune.questions.models import QuestionVisits
+from kitsune.questions.models import VoteMetadata
 from kitsune.questions.tasks import update_answer_pages
-from kitsune.questions.tests import (AnswerFactory, QuestionFactory,
-                                     QuestionVoteFactory, TestCaseBase,
-                                     tags_eq)
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionVoteFactory
+from kitsune.questions.tests import tags_eq
+from kitsune.questions.tests import TestCaseBase
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase

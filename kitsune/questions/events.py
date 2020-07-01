@@ -7,7 +7,8 @@ from tidings.events import InstanceEvent
 
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
-from kitsune.sumo.templatetags.jinja_helpers import add_utm, urlparams
+from kitsune.sumo.templatetags.jinja_helpers import add_utm
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 
 

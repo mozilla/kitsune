@@ -1,42 +1,55 @@
 import logging
 import re
 import time
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 from urllib.parse import urlparse
 
-import actstream
 import actstream.actions
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import (GenericForeignKey,
-                                                GenericRelation)
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db import close_old_connections, connection, models
+from django.db import close_old_connections
+from django.db import connection
+from django.db import models
 from django.db.models import Q
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
+from django.db.models.signals import pre_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
 from django.urls import resolve
 from product_details import product_details
-from taggit.models import Tag, TaggedItem
+from taggit.models import Tag
+from taggit.models import TaggedItem
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
 from kitsune.questions import config
-from kitsune.questions.managers import (AnswerManager, QuestionLocaleManager,
-                                        QuestionManager)
-from kitsune.questions.tasks import update_answer_pages, update_question_votes
-from kitsune.search.es_utils import ES_EXCEPTIONS, UnindexMeBro
-from kitsune.search.models import (SearchMappingType, SearchMixin,
-                                   register_for_indexing,
-                                   register_mapping_type)
+from kitsune.questions.managers import AnswerManager
+from kitsune.questions.managers import QuestionLocaleManager
+from kitsune.questions.managers import QuestionManager
+from kitsune.questions.tasks import update_answer_pages
+from kitsune.questions.tasks import update_question_votes
+from kitsune.search.es_utils import ES_EXCEPTIONS
+from kitsune.search.es_utils import UnindexMeBro
+from kitsune.search.models import register_for_indexing
+from kitsune.search.models import register_mapping_type
+from kitsune.search.models import SearchMappingType
+from kitsune.search.models import SearchMixin
 from kitsune.search.tasks import index_task
 from kitsune.search.utils import to_class_path
-from kitsune.sumo.models import LocaleField, ModelBase
-from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
-from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.models import LocaleField
+from kitsune.sumo.models import ModelBase
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.urlresolvers import split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment

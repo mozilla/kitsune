@@ -1,24 +1,36 @@
 import json
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 
 from django.core.cache import cache
 from django.core.management import call_command
 from nose.tools import eq_
 
 from kitsune.customercare.tests import ReplyFactory
-from kitsune.kpi.models import (AOA_CONTRIBUTORS_METRIC_CODE, EXIT_SURVEY_DONT_KNOW_CODE,
-                                EXIT_SURVEY_NO_CODE, EXIT_SURVEY_YES_CODE,
-                                KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE,
-                                L10N_METRIC_CODE, SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
-                                VISITORS_METRIC_CODE, Metric)
-from kitsune.kpi.tests import MetricFactory, MetricKindFactory
+from kitsune.kpi.models import AOA_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import EXIT_SURVEY_DONT_KNOW_CODE
+from kitsune.kpi.models import EXIT_SURVEY_NO_CODE
+from kitsune.kpi.models import EXIT_SURVEY_YES_CODE
+from kitsune.kpi.models import KB_ENUS_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import KB_L10N_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import L10N_METRIC_CODE
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import VISITORS_METRIC_CODE
+from kitsune.kpi.tests import MetricFactory
+from kitsune.kpi.tests import MetricKindFactory
 from kitsune.products.tests import ProductFactory
-from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory, QuestionFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory, HelpfulVoteFactory, RevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import HelpfulVoteFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class KpiApiTests(TestCase):

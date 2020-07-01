@@ -5,7 +5,8 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.forms import ProfileForm, username_allowed
+from kitsune.users.forms import ProfileForm
+from kitsune.users.forms import username_allowed
 from kitsune.users.tests import TestCaseBase
 from kitsune.users.validators import TwitterValidator
 

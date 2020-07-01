@@ -1,7 +1,8 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.kbforums.models import Thread, Post
+from kitsune.kbforums.models import Post
+from kitsune.kbforums.models import Thread
 
 
 MSG_TITLE_REQUIRED = _lazy('Please provide a title.')

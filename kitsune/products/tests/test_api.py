@@ -1,9 +1,10 @@
 from nose.tools import eq_
 
+from kitsune.products import api
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.products import api
-from kitsune.products.tests import ProductFactory, TopicFactory
 
 
 class TestProductSerializerSerialization(TestCase):

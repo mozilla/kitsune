@@ -1,13 +1,17 @@
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db import connection, transaction
+from django.db import connection
+from django.db import transaction
 
-from kitsune.questions.models import Question, QuestionMappingType
-from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionMappingType
+from kitsune.search.es_utils import ES_EXCEPTIONS
+from kitsune.search.es_utils import get_documents
 from kitsune.search.tasks import index_task
 from kitsune.search.utils import to_class_path
 

@@ -1,14 +1,18 @@
+from unittest.mock import Mock
+from unittest.mock import patch
+
 from django.contrib.auth.models import User
 from django.http import HttpRequest
-from django.test import RequestFactory, override_settings
-
-from unittest.mock import Mock, patch
-from nose.tools import eq_, ok_
+from django.test import override_settings
+from django.test import RequestFactory
+from nose.tools import eq_
+from nose.tools import ok_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import CONTRIBUTOR_GROUP
-from kitsune.users.tests import GroupFactory, UserFactory
+from kitsune.users.tests import GroupFactory
+from kitsune.users.tests import UserFactory
 
 
 class FXAAuthBackendTests(TestCase):

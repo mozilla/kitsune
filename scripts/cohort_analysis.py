@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Groups users into monthly cohorts, and analyzes drop off rate for each group.
 
 Run this script like `./manage.py runscript cohort_analysis`.
 """
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from traceback import print_exc
 
 from tabulate import tabulate

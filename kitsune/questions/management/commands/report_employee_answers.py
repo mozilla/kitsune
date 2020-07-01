@@ -1,12 +1,14 @@
 import textwrap
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 
-from kitsune.questions.models import (Answer, Question)
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
 
 
 class Command(BaseCommand):

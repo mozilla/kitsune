@@ -1,11 +1,10 @@
 from nose.tools import eq_
-
 from pyquery import PyQuery as pq
 
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.search.tests import ElasticTestCase
 
 
 class TopContributorsNewTests(ElasticTestCase):

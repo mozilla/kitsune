@@ -1,36 +1,50 @@
 # -*- coding: utf-8 -*-
 import json
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from string import ascii_letters
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
-
-from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
 from tidings.models import Watch
 
-from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.models import (Answer, Question, QuestionLocale,
-                                      VoteMetadata)
-from kitsune.questions.tests import (AnswerFactory, AnswerVoteFactory,
-                                     QuestionFactory, TestCaseBase, tags_eq)
-from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
+from kitsune.products.tests import ProductFactory
+from kitsune.products.tests import TopicFactory
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.questions.events import QuestionSolvedEvent
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionLocale
+from kitsune.questions.models import VoteMetadata
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import tags_eq
+from kitsune.questions.tests import TestCaseBase
+from kitsune.questions.views import NO_TAG
+from kitsune.questions.views import UNAPPROVED_TAG
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import (LocalizingClient, TestCase, attrs_eq,
-                                emailmessage_raise_smtp, get, post)
+from kitsune.sumo.tests import attrs_eq
+from kitsune.sumo.tests import emailmessage_raise_smtp
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import post
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
 from kitsune.upload.models import ImageAttachment
-from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
 
 
 class AnswersTemplateTestCase(TestCaseBase):

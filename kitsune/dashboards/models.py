@@ -1,16 +1,22 @@
 import logging
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 from django.conf import settings
-from django.db import connection, close_old_connections
+from django.db import close_old_connections
+from django.db import connection
 from django.db import models
 from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS,
-                                ALL_TIME, PERIODS)
+from kitsune.dashboards import ALL_TIME
+from kitsune.dashboards import LAST_30_DAYS
+from kitsune.dashboards import LAST_7_DAYS
+from kitsune.dashboards import LAST_90_DAYS
+from kitsune.dashboards import PERIODS
 from kitsune.products.models import Product
-from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo import googleanalytics
+from kitsune.sumo.models import LocaleField
+from kitsune.sumo.models import ModelBase
 from kitsune.wiki.models import Document
 
 

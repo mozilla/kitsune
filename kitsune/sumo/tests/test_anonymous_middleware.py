@@ -1,8 +1,7 @@
-from nose.tools import eq_
-
 from django.conf import settings
 from django.http import HttpResponse
 from django.test.client import RequestFactory
+from nose.tools import eq_
 
 from kitsune.sumo.anonymous import AnonymousIdentityMiddleware
 from kitsune.sumo.tests import TestCase

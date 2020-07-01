@@ -1,16 +1,19 @@
-from django.contrib.contenttypes.models import ContentType
-
 from unittest import mock
+
 from actstream.actions import follow
+from actstream.models import Action
+from actstream.models import Follow
 from actstream.signals import action
-from actstream.models import Action, Follow
+from django.contrib.contenttypes.models import ContentType
 from nose.tools import eq_
 
 from kitsune.notifications import tasks as notification_tasks
-from kitsune.notifications.models import (
-    Notification, PushNotificationRegistration, RealtimeRegistration)
+from kitsune.notifications.models import Notification
+from kitsune.notifications.models import PushNotificationRegistration
+from kitsune.notifications.models import RealtimeRegistration
 from kitsune.notifications.tests import NotificationFactory
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 

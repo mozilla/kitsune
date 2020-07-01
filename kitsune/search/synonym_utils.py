@@ -1,7 +1,6 @@
 """
 Utitilities for working with synonyms, both in the database and in ES.
 """
-
 import re
 
 from kitsune.search import es_utils

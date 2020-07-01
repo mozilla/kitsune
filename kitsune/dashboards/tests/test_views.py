@@ -1,4 +1,5 @@
-from datetime import timedelta, datetime
+from datetime import datetime
+from datetime import timedelta
 
 from nose.tools import eq_
 
@@ -7,8 +8,10 @@ from kitsune.dashboards.readouts import CONTRIBUTOR_READOUTS
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.models import HelpfulVote, Document
-from kitsune.wiki.tests import LocaleFactory, ApprovedRevisionFactory
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import HelpfulVote
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import LocaleFactory
 
 
 class LocalizationDashTests(TestCase):

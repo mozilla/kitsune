@@ -1,6 +1,6 @@
-from collections import namedtuple
 import json
 import os
+from collections import namedtuple
 
 Language = namedtuple('Language', 'english native iso639_1')
 

@@ -1,7 +1,7 @@
+from unittest import mock
+
 from django.contrib.auth.models import AnonymousUser
 from django.test.client import RequestFactory
-
-from unittest import mock
 from nose.tools import eq_
 
 from kitsune.messages import context_processors

@@ -1,10 +1,16 @@
 from datetime import datetime
 
-from nose.tools import eq_
 import factory
+from nose.tools import eq_
 
-from kitsune.questions.models import Question, QuestionVote, Answer, AnswerVote, QuestionLocale
-from kitsune.sumo.tests import LocalizingClient, TestCase, FuzzyUnicode
+from kitsune.questions.models import Answer
+from kitsune.questions.models import AnswerVote
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionLocale
+from kitsune.questions.models import QuestionVote
+from kitsune.sumo.tests import FuzzyUnicode
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
 

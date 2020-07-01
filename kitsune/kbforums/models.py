@@ -2,12 +2,12 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
-
 from tidings.models import NotificationsMixin
 
 from kitsune import kbforums
-from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.models import ModelBase
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document
 

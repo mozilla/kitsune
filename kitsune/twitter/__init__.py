@@ -2,7 +2,6 @@ import logging
 
 from django import http
 from django.conf import settings
-
 from twython import Twython
 
 

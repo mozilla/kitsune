@@ -1,18 +1,17 @@
-from django.conf.urls import include, url
+import authority
 from django.conf import settings
-from django.views.i18n import JavaScriptCatalog
+from django.conf.urls import include
+from django.conf.urls import url
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import RedirectView
+from django.views.i18n import JavaScriptCatalog
 from django.views.static import serve as servestatic
-
-import authority
 from waffle.views import wafflejs
 
 from kitsune.sumo import views as sumo_views
-
+from kitsune.sumo.monkeypatch import patch
 # Note: This must come before importing admin because it patches the
 # admin.
-from kitsune.sumo.monkeypatch import patch
 
 patch()
 

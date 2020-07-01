@@ -1,14 +1,15 @@
 import logging
 
+from celery import task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.urls import reverse
 from django.utils.translation import ugettext as _
 
-from celery import task
-
 from kitsune.messages.models import InboxMessage
-from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
+from kitsune.sumo.email_utils import make_mail
+from kitsune.sumo.email_utils import safe_translation
+from kitsune.sumo.email_utils import send_messages
 
 
 log = logging.getLogger('k.task')

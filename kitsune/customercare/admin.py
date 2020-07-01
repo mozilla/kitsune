@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from kitsune.customercare.models import Tweet, Reply
+from kitsune.customercare.models import Reply
+from kitsune.customercare.models import Tweet
 
 
 class TweetAdmin(admin.ModelAdmin):

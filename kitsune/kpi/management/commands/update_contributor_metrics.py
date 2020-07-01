@@ -1,19 +1,20 @@
 import argparse
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
-from django.db.models import Count, F
+from django.db.models import Count
+from django.db.models import F
 
 from kitsune.customercare.models import Reply
 from kitsune.kpi.management import utils
-from kitsune.kpi.models import (
-    AOA_CONTRIBUTORS_METRIC_CODE,
-    KB_ENUS_CONTRIBUTORS_METRIC_CODE,
-    KB_L10N_CONTRIBUTORS_METRIC_CODE,
-    SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
-    Metric,
-    MetricKind,
-)
+from kitsune.kpi.models import AOA_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import KB_ENUS_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import KB_L10N_CONTRIBUTORS_METRIC_CODE
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
+from kitsune.kpi.models import SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE
 from kitsune.questions.models import Answer
 from kitsune.wiki.models import Revision
 

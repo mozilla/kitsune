@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 import json
 import unittest
+from unittest import mock
 
 from django.contrib.sites.models import Site
-
-from unittest import mock
 from nose.tools import eq_
 
 from kitsune.questions.models import QuestionMappingType
-from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import AnswerVoteFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.search import es_utils
 from kitsune.search.models import generate_tasks
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import DocumentMappingType
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
 
 
 class ElasticSearchSuggestionsTests(ElasticTestCase):

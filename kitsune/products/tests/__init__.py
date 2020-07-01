@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import factory.django
+import factory.fuzzy
 from django.template.defaultfilters import slugify
 
-import factory
-import factory.fuzzy
-import factory.django
-
-from kitsune.products.models import Product, Topic, Version
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
+from kitsune.products.models import Version
 from kitsune.sumo.tests import FuzzyUnicode
 
 

@@ -1,14 +1,18 @@
 import hashlib
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 from operator import itemgetter
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Count, F
+from django.db.models import Count
+from django.db.models import F
 
 from kitsune.products.models import Product
 from kitsune.questions.models import Answer
-from kitsune.users.models import User, UserMappingType
+from kitsune.users.models import User
+from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import Revision
 
 

@@ -1,10 +1,12 @@
 import argparse
-from datetime import date, datetime
+from datetime import date
+from datetime import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from kitsune.dashboards.models import L10N_ACTIVE_CONTRIBUTORS_CODE, WikiMetric
+from kitsune.dashboards.models import L10N_ACTIVE_CONTRIBUTORS_CODE
+from kitsune.dashboards.models import WikiMetric
 from kitsune.products.models import Product
 from kitsune.wiki.utils import num_active_contributors
 

@@ -1,12 +1,15 @@
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
-from django.views.decorators.http import require_POST, require_http_methods
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required
 from kitsune.groups.forms import AddUserForm

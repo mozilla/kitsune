@@ -1,24 +1,35 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 import pytz
 import waffle
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db.models import Count, Q
+from django.db.models import Count
+from django.db.models import Q
 from django.utils.encoding import force_text
 from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, serializers, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import filters
+from rest_framework import mixins
+from rest_framework import permissions
+from rest_framework import serializers
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from kitsune.access.decorators import login_required
 from kitsune.questions.models import Answer
-from kitsune.questions.utils import num_answers, num_questions, num_solutions
-from kitsune.sumo.api_utils import DateTimeUTCField, PermissionMod
+from kitsune.questions.utils import num_answers
+from kitsune.questions.utils import num_questions
+from kitsune.questions.utils import num_solutions
+from kitsune.sumo.api_utils import DateTimeUTCField
+from kitsune.sumo.api_utils import PermissionMod
 from kitsune.sumo.decorators import json_view
-from kitsune.users.models import Profile, Setting
+from kitsune.users.models import Profile
+from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
 
 

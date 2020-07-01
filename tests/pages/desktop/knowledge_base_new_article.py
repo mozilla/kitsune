@@ -1,12 +1,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
+from pages.desktop.base import Base
+from pages.desktop.knowledge_base_article import KnowledgeBaseShowHistory
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
-from pages.desktop.knowledge_base_article import KnowledgeBaseShowHistory
-from pages.desktop.base import Base
 
 
 class KnowledgeBaseNewArticle(Base):

@@ -1,13 +1,16 @@
 import json
 
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 
-from kitsune.access.decorators import permission_required, login_required
+from kitsune.access.decorators import login_required
+from kitsune.access.decorators import permission_required
 from kitsune.flagit.models import FlaggedObject
 from kitsune.sumo.urlresolvers import reverse
 

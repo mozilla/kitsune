@@ -1,4 +1,5 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 from django.test.utils import override_settings
 
 from kitsune.search.es_utils import es_reindex_cmd

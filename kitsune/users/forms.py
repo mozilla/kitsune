@@ -8,7 +8,8 @@ from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.users.models import Profile
-from kitsune.users.widgets import FacebookURLWidget, MonthYearWidget
+from kitsune.users.widgets import FacebookURLWidget
+from kitsune.users.widgets import MonthYearWidget
 
 USERNAME_INVALID = _lazy(
     "Username may contain only English letters, " "numbers and ./-/_ characters."

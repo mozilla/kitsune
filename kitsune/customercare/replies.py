@@ -1,5 +1,4 @@
 from django.conf import settings
-
 from pyquery import PyQuery
 
 from kitsune.wiki.models import Document

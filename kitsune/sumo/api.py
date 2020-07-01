@@ -1,10 +1,9 @@
 from django.conf import settings
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from kitsune.questions.models import QuestionLocale
 from kitsune.lib.sumo_locales import LOCALES
+from kitsune.questions.models import QuestionLocale
 
 
 @api_view(['GET'])

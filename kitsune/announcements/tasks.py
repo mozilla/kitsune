@@ -1,13 +1,14 @@
+import bleach
+from celery import task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext as _
 
-import bleach
-from celery import task
-
 from kitsune.announcements.models import Announcement
-from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
+from kitsune.sumo.email_utils import make_mail
+from kitsune.sumo.email_utils import safe_translation
+from kitsune.sumo.email_utils import send_messages
 
 
 @task()

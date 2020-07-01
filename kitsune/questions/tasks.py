@@ -2,13 +2,14 @@ import logging
 from datetime import date
 from typing import Dict
 
-# NOTE: This import is just so _fire_task gets registered with celery.
 import tidings.events  # noqa
 from celery import task
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import connection, transaction
-from multidb.pinning import pin_this_thread, unpin_this_thread
+from django.db import connection
+from django.db import transaction
+from multidb.pinning import pin_this_thread
+from multidb.pinning import unpin_this_thread
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -16,6 +17,7 @@ from kitsune.questions.config import ANSWERS_PER_PAGE
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.search.tasks import index_task
 from kitsune.search.utils import to_class_path
+# NOTE: This import is just so _fire_task gets registered with celery.
 
 log = logging.getLogger("k.task")
 

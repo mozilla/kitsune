@@ -2,21 +2,28 @@ import re
 
 from django.conf import settings
 from django.test.utils import override_settings
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 import kitsune.sumo.tests.test_parser
 from kitsune.gallery.models import Video
-from kitsune.gallery.tests import ImageFactory, VideoFactory
+from kitsune.gallery.tests import ImageFactory
+from kitsune.gallery.tests import VideoFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATES_CATEGORY
 from kitsune.wiki.models import Document
-from kitsune.wiki.parser import (
-    WikiParser, ForParser, PATTERNS, RECURSION_MESSAGE, _key_split,
-    _build_template_params as _btp, _format_template_content as _ftc)
-from kitsune.wiki.tests import (
-    DocumentFactory, TemplateDocumentFactory, RevisionFactory, ApprovedRevisionFactory)
+from kitsune.wiki.parser import _build_template_params as _btp
+from kitsune.wiki.parser import _format_template_content as _ftc
+from kitsune.wiki.parser import _key_split
+from kitsune.wiki.parser import ForParser
+from kitsune.wiki.parser import PATTERNS
+from kitsune.wiki.parser import RECURSION_MESSAGE
+from kitsune.wiki.parser import WikiParser
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TemplateDocumentFactory
 
 
 def doc_rev_parser(*args, **kwargs):

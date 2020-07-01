@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.management import call_command
 from nose.tools import eq_
 
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 

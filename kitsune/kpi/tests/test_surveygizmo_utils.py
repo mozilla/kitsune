@@ -1,13 +1,12 @@
 from datetime import datetime
-
 from unittest.mock import patch
-from nose.tools import eq_, ok_
 
-from kitsune.kpi.surveygizmo_utils import (
-    add_email_to_campaign,
-    get_email_addresses,
-    get_exit_survey_results
-)
+from nose.tools import eq_
+from nose.tools import ok_
+
+from kitsune.kpi.surveygizmo_utils import add_email_to_campaign
+from kitsune.kpi.surveygizmo_utils import get_email_addresses
+from kitsune.kpi.surveygizmo_utils import get_exit_survey_results
 from kitsune.sumo.tests import TestCase
 
 

@@ -1,6 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
-
 from nose.tools import eq_
 
 from kitsune.questions.tests import QuestionFactory

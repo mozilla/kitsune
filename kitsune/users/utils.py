@@ -3,11 +3,14 @@ import logging
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
 from kitsune.sumo import email_utils
-from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
+from kitsune.users.models import CONTRIBUTOR_GROUP
+from kitsune.users.models import Deactivation
+from kitsune.users.models import Setting
 
 log = logging.getLogger('k.users')
 

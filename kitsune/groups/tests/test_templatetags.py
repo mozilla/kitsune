@@ -1,11 +1,12 @@
-from django.conf import settings
-
 from unittest.mock import Mock
+
+from django.conf import settings
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.groups.templatetags.jinja_helpers import group_avatar, group_link
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.templatetags.jinja_helpers import group_avatar
+from kitsune.groups.templatetags.jinja_helpers import group_link
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse

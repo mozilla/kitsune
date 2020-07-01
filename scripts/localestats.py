@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """
 Goes through the messages.pot file and gives a breakdown of
 number of strings per app.
@@ -13,7 +12,6 @@ Usage::
    $ python localestats.py <locales-dir>
 
 """
-
 import os
 import site
 

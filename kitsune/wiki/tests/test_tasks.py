@@ -13,13 +13,19 @@ from django.test.client import RequestFactory
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
-from kitsune.wiki.models import Document, Revision
-from kitsune.wiki.tasks import (_rebuild_kb_chunk, rebuild_kb,
-                                render_document_cascade, schedule_rebuild_kb,
-                                send_reviewed_notification)
-from kitsune.wiki.tests import RevisionFactory, TestCaseBase
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.config import TEMPLATE_TITLE_PREFIX
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import Revision
+from kitsune.wiki.tasks import _rebuild_kb_chunk
+from kitsune.wiki.tasks import rebuild_kb
+from kitsune.wiki.tasks import render_document_cascade
+from kitsune.wiki.tasks import schedule_rebuild_kb
+from kitsune.wiki.tasks import send_reviewed_notification
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TestCaseBase
 from kitsune.wiki.tests.test_parser import doc_rev_parser
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.

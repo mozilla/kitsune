@@ -1,15 +1,18 @@
 from datetime import datetime
 
+import factory
 from django.contrib.contenttypes.models import ContentType
 from django.template.defaultfilters import slugify
-
-import factory
 from nose.tools import eq_
 
 from kitsune.access.tests import PermissionFactory
-from kitsune.forums.models import Forum, Thread, Post
+from kitsune.forums.models import Forum
+from kitsune.forums.models import Post
+from kitsune.forums.models import Thread
+from kitsune.sumo.tests import FuzzyUnicode
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
 
 
 class ForumTestCase(TestCase):

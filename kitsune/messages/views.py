@@ -2,20 +2,26 @@ import json
 
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import ugettext as _, ungettext
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.shortcuts import render
+from django.utils.translation import ugettext as _
+from django.utils.translation import ungettext
 from django.views.decorators.http import require_POST
-
 from multidb.pinning import mark_as_write
-from kitsune.sumo.utils import is_ratelimited
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE
-from kitsune.messages.forms import MessageForm, ReplyForm
-from kitsune.messages.models import InboxMessage, OutboxMessage
+from kitsune.messages.forms import MessageForm
+from kitsune.messages.forms import ReplyForm
+from kitsune.messages.models import InboxMessage
+from kitsune.messages.models import OutboxMessage
 from kitsune.messages.utils import send_message
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import is_ratelimited
 from kitsune.sumo.utils import paginate
 
 

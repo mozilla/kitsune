@@ -6,24 +6,36 @@ import urllib.request
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import BACKEND_SESSION_KEY, logout
+from django.contrib.auth import BACKEND_SESSION_KEY
+from django.contrib.auth import logout
 from django.core.exceptions import MiddlewareNotUsed
-from django.urls import is_valid_path, resolve, Resolver404
-from django.core.validators import ValidationError, validate_ipv4_address
+from django.core.validators import validate_ipv4_address
+from django.core.validators import ValidationError
 from django.db.utils import DatabaseError
-from django.http import (HttpResponse, HttpResponseForbidden,
-                         HttpResponsePermanentRedirect, HttpResponseRedirect)
+from django.http import HttpResponse
+from django.http import HttpResponseForbidden
+from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponseRedirect
 from django.http.request import split_domain_port
 from django.shortcuts import render
+from django.urls import is_valid_path
+from django.urls import resolve
+from django.urls import Resolver404
 from django.utils import translation
-from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
+from django.utils.cache import add_never_cache_headers
+from django.utils.cache import patch_response_headers
+from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.encoding import iri_to_uri, smart_bytes, smart_text
-from mozilla_django_oidc.middleware import SessionRefresh
+from django.utils.encoding import iri_to_uri
+from django.utils.encoding import smart_bytes
+from django.utils.encoding import smart_text
 from enforce_host import EnforceHostMiddleware
+from mozilla_django_oidc.middleware import SessionRefresh
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
+from kitsune.sumo.urlresolvers import Prefixer
+from kitsune.sumo.urlresolvers import set_url_prefixer
+from kitsune.sumo.urlresolvers import split_path
 from kitsune.sumo.views import handle403
 
 

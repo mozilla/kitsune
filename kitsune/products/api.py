@@ -1,11 +1,15 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _lazy
+from rest_framework import generics
+from rest_framework import serializers
 
-from rest_framework import generics, serializers
-
-from kitsune.products.models import Product, Topic, Platform
-from kitsune.sumo.api_utils import LocaleNegotiationMixin, LocalizedCharField, ImageUrlField
+from kitsune.products.models import Platform
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
+from kitsune.sumo.api_utils import ImageUrlField
+from kitsune.sumo.api_utils import LocaleNegotiationMixin
+from kitsune.sumo.api_utils import LocalizedCharField
 from kitsune.wiki.api import DocumentShortSerializer
 
 

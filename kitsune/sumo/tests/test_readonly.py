@@ -3,9 +3,10 @@ import copy
 from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
-from django.test import TestCase, override_settings
-
-from nose.tools import assert_raises, eq_
+from django.test import override_settings
+from django.test import TestCase
+from nose.tools import assert_raises
+from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.questions.models import Question

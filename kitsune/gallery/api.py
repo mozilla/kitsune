@@ -1,11 +1,13 @@
-from django.db.models import Q
 from django.contrib.auth.models import User
-
-from rest_framework import generics, serializers
+from django.db.models import Q
+from rest_framework import generics
+from rest_framework import serializers
 
 from kitsune.gallery.models import Image
-from kitsune.sumo.api_utils import (
-    LocaleNegotiationMixin, InequalityFilterBackend, DateTimeUTCField, ImageUrlField)
+from kitsune.sumo.api_utils import DateTimeUTCField
+from kitsune.sumo.api_utils import ImageUrlField
+from kitsune.sumo.api_utils import InequalityFilterBackend
+from kitsune.sumo.api_utils import LocaleNegotiationMixin
 
 
 class ImageShortSerializer(serializers.ModelSerializer):

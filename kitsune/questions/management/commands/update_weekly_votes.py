@@ -1,8 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 
-from kitsune.questions.models import Question, QuestionVote
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionVote
 from kitsune.questions.tasks import update_question_vote_chunk
 from kitsune.sumo.utils import chunked
 

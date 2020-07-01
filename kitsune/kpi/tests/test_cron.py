@@ -1,30 +1,39 @@
-from datetime import date, datetime, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
+from unittest.mock import patch
 
 from django.core.management import call_command
-from unittest.mock import patch
 from nose.tools import eq_
 
 import kitsune.kpi.management.utils
 from kitsune.customercare.tests import ReplyFactory
 from kitsune.kpi import surveygizmo_utils
-from kitsune.kpi.models import (AOA_CONTRIBUTOR_COHORT_CODE,
-                                CONTRIBUTOR_COHORT_CODE,
-                                EXIT_SURVEY_DONT_KNOW_CODE,
-                                EXIT_SURVEY_NO_CODE, EXIT_SURVEY_YES_CODE,
-                                KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-                                KB_L10N_CONTRIBUTOR_COHORT_CODE,
-                                L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
-                                SEARCH_SEARCHES_METRIC_CODE,
-                                SUPPORT_FORUM_HELPER_COHORT_CODE,
-                                VISITORS_METRIC_CODE, Cohort, Metric)
-from kitsune.kpi.tests import MetricFactory, MetricKindFactory
+from kitsune.kpi.models import AOA_CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import Cohort
+from kitsune.kpi.models import CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import EXIT_SURVEY_DONT_KNOW_CODE
+from kitsune.kpi.models import EXIT_SURVEY_NO_CODE
+from kitsune.kpi.models import EXIT_SURVEY_YES_CODE
+from kitsune.kpi.models import KB_ENUS_CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import KB_L10N_CONTRIBUTOR_COHORT_CODE
+from kitsune.kpi.models import L10N_METRIC_CODE
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import SEARCH_CLICKS_METRIC_CODE
+from kitsune.kpi.models import SEARCH_SEARCHES_METRIC_CODE
+from kitsune.kpi.models import SUPPORT_FORUM_HELPER_COHORT_CODE
+from kitsune.kpi.models import VISITORS_METRIC_CODE
+from kitsune.kpi.tests import MetricFactory
+from kitsune.kpi.tests import MetricKindFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
-                                 TYPO_SIGNIFICANCE)
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
+from kitsune.wiki.config import MAJOR_SIGNIFICANCE
+from kitsune.wiki.config import MEDIUM_SIGNIFICANCE
+from kitsune.wiki.config import TYPO_SIGNIFICANCE
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
 
 
 class CohortAnalysisTests(TestCase):

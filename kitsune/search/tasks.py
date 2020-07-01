@@ -5,10 +5,13 @@ import traceback
 
 from celery import task
 from elasticutils.contrib.django import get_es
-from multidb.pinning import pin_this_thread, unpin_this_thread
+from multidb.pinning import pin_this_thread
+from multidb.pinning import unpin_this_thread
 
-from kitsune.search.es_utils import (UnindexMeBro, get_analysis, index_chunk,
-                                     write_index)
+from kitsune.search.es_utils import get_analysis
+from kitsune.search.es_utils import index_chunk
+from kitsune.search.es_utils import UnindexMeBro
+from kitsune.search.es_utils import write_index
 from kitsune.search.utils import from_class_path
 
 # This is present in memcached when reindexing is in progress and

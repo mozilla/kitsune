@@ -4,12 +4,18 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.kbforums.models import Post, Thread
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory, PostFactory
+from kitsune.kbforums.models import Post
+from kitsune.kbforums.models import Thread
+from kitsune.kbforums.tests import KBForumTestCase
+from kitsune.kbforums.tests import PostFactory
+from kitsune.kbforums.tests import ThreadFactory
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import post
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.tests import get, post
-from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
 
 
 class PostsTemplateTests(KBForumTestCase):

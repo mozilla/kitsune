@@ -1,5 +1,6 @@
 from django.contrib.sites.models import Site
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
 from django.views.decorators.cache import cache_page
 
 from kitsune.postcrash.models import Signature

@@ -4,13 +4,16 @@ from pyquery import PyQuery as pq
 from tidings.models import Watch
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.kbadge.tests import AwardFactory, BadgeFactory
+from kitsune.kbadge.tests import AwardFactory
+from kitsune.kbadge.tests import BadgeFactory
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import get
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.users.tests import TestCaseBase, UserFactory, add_permission
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import TestCaseBase
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import RevisionFactory
 
 

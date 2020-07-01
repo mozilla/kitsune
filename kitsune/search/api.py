@@ -1,17 +1,18 @@
 from django.conf import settings
-
 from elasticsearch import RequestsHttpConnection
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from kitsune.products.models import Product
-from kitsune.questions.models import Question, QuestionMappingType
 from kitsune.questions.api import QuestionSerializer
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionMappingType
 from kitsune.search import es_utils
 from kitsune.sumo.api_utils import GenericAPIException
 from kitsune.wiki.api import DocumentDetailSerializer
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import DocumentMappingType
 
 
 def positive_integer(value):

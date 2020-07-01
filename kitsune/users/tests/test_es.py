@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.core.management import call_command
 from nose.tools import eq_
@@ -8,7 +9,8 @@ from kitsune.customercare.tests import ReplyFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.users.models import UserMappingType
-from kitsune.users.tests import ProfileFactory, UserFactory
+from kitsune.users.tests import ProfileFactory
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import RevisionFactory
 
 

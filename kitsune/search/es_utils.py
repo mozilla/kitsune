@@ -4,15 +4,17 @@ import pprint
 import time
 from functools import wraps
 
+import requests
 from django.conf import settings
 from django.db import reset_queries
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
-
-import requests
 from elasticutils import S as UntypedS
-from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
+from elasticutils.contrib.django import ES_EXCEPTIONS
+from elasticutils.contrib.django import F
+from elasticutils.contrib.django import get_es
+from elasticutils.contrib.django import S
 
 from kitsune.search import config
 from kitsune.search.utils import chunked

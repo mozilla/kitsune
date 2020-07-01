@@ -4,7 +4,9 @@ from datetime import datetime
 import factory
 from faker import Faker
 
-from kitsune.customercare.models import Tweet, TwitterAccount, Reply
+from kitsune.customercare.models import Reply
+from kitsune.customercare.models import Tweet
+from kitsune.customercare.models import TwitterAccount
 from kitsune.users.tests import UserFactory
 
 

@@ -1,20 +1,20 @@
 import os
+from unittest import mock
 
 from django.conf import settings
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.test import override_settings
-
-from unittest import mock
 from nose.tools import eq_
 
 import kitsune.upload.tasks
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
-from kitsune.upload.tasks import (
-    _scale_dimensions, _create_image_thumbnail, compress_image,
-    generate_thumbnail)
+from kitsune.upload.tasks import _create_image_thumbnail
+from kitsune.upload.tasks import _scale_dimensions
+from kitsune.upload.tasks import compress_image
+from kitsune.upload.tasks import generate_thumbnail
 from kitsune.users.tests import UserFactory
 
 

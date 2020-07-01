@@ -1,15 +1,17 @@
+import io
 import json
 import logging
 import os
 import socket
-import io
 
 import django
 from celery.messaging import establish_connection
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.http import (Http404, HttpResponse, HttpResponsePermanentRedirect,
-                         HttpResponseRedirect)
+from django.http import Http404
+from django.http import HttpResponse
+from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
@@ -19,9 +21,11 @@ from PIL import Image
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.search import es_utils
 from kitsune.sumo.decorators import cors_enabled
-from kitsune.sumo.redis_utils import RedisError, redis_client
+from kitsune.sumo.redis_utils import redis_client
+from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, uselocale
+from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import uselocale
 
 log = logging.getLogger('k.services')
 

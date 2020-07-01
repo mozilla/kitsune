@@ -1,16 +1,17 @@
 import json
 import time
 
+from django.conf import settings
 from nose.tools import eq_
 from rest_framework.test import APIClient
 
-from django.conf import settings
-
+from kitsune.products.tests import ProductFactory
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import QuestionFactory, AnswerFactory
-from kitsune.products.tests import ProductFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class SuggestViewTests(ElasticTestCase):

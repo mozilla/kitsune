@@ -1,12 +1,12 @@
-import pytz
 from datetime import datetime
 from unittest.mock import Mock
-from nose.tools import eq_
 
+import pytz
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-
-from rest_framework import fields, serializers
+from nose.tools import eq_
+from rest_framework import fields
+from rest_framework import serializers
 
 from kitsune.sumo import api_utils
 from kitsune.sumo.tests import TestCase

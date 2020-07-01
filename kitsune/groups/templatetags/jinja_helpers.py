@@ -1,6 +1,5 @@
-from django.conf import settings
-
 import jinja2
+from django.conf import settings
 from django_jinja import library
 
 from kitsune.groups.models import GroupProfile

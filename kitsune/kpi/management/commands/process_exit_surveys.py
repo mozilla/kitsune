@@ -1,13 +1,12 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 
 from kitsune.kpi.management import utils
-from kitsune.kpi.surveygizmo_utils import (
-    SURVEYS,
-    add_email_to_campaign,
-    get_email_addresses,
-)
+from kitsune.kpi.surveygizmo_utils import add_email_to_campaign
+from kitsune.kpi.surveygizmo_utils import get_email_addresses
+from kitsune.kpi.surveygizmo_utils import SURVEYS
 
 
 class Command(BaseCommand):

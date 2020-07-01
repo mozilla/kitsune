@@ -2,19 +2,32 @@
 from collections import namedtuple
 from datetime import datetime
 
+import jinja2
+from babel.dates import format_date
+from babel.dates import format_datetime
+from babel.dates import format_time
 from django.forms.fields import CharField
 from django.test.client import RequestFactory
-
-import jinja2
-from babel.dates import format_date, format_time, format_datetime
-from nose.tools import eq_, assert_raises
+from nose.tools import assert_raises
+from nose.tools import eq_
 from pyquery import PyQuery as pq
 from pytz import timezone
 
-from kitsune.sumo.templatetags.jinja_helpers import (
-    datetimeformat, DateTimeFormatError, collapse_linebreaks, url, json,
-    timesince, label_with_help, static, urlparams, yesno, number,
-    remove, f, fe, class_selected)
+from kitsune.sumo.templatetags.jinja_helpers import class_selected
+from kitsune.sumo.templatetags.jinja_helpers import collapse_linebreaks
+from kitsune.sumo.templatetags.jinja_helpers import datetimeformat
+from kitsune.sumo.templatetags.jinja_helpers import DateTimeFormatError
+from kitsune.sumo.templatetags.jinja_helpers import f
+from kitsune.sumo.templatetags.jinja_helpers import fe
+from kitsune.sumo.templatetags.jinja_helpers import json
+from kitsune.sumo.templatetags.jinja_helpers import label_with_help
+from kitsune.sumo.templatetags.jinja_helpers import number
+from kitsune.sumo.templatetags.jinja_helpers import remove
+from kitsune.sumo.templatetags.jinja_helpers import static
+from kitsune.sumo.templatetags.jinja_helpers import timesince
+from kitsune.sumo.templatetags.jinja_helpers import url
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import yesno
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 

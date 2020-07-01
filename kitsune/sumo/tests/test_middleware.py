@@ -1,11 +1,12 @@
-from django.http import HttpResponse, HttpResponsePermanentRedirect
+from django.http import HttpResponse
+from django.http import HttpResponsePermanentRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
 from nose.tools import eq_
 
-from kitsune.sumo.middleware import (CacheHeadersMiddleware,
-                                     EnforceHostIPMiddleware,
-                                     PlusToSpaceMiddleware)
+from kitsune.sumo.middleware import CacheHeadersMiddleware
+from kitsune.sumo.middleware import EnforceHostIPMiddleware
+from kitsune.sumo.middleware import PlusToSpaceMiddleware
 from kitsune.sumo.tests import TestCase
 
 

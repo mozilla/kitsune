@@ -1,6 +1,7 @@
 import json
 
-from django.forms import MultipleChoiceField, Widget
+from django.forms import MultipleChoiceField
+from django.forms import Widget
 from django.forms.utils import flatatt
 from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_text

@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 from django.core import mail
-
 from nose.tools import eq_
 
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import post
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import add_permission, UserFactory
-from kitsune.products.tests import ProductFactory
-from kitsune.wiki.config import (
-    SIGNIFICANCES, MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
-from kitsune.wiki.events import (
-    ReadyRevisionEvent, ApproveRevisionInLocaleEvent)
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.config import MAJOR_SIGNIFICANCE
+from kitsune.wiki.config import MEDIUM_SIGNIFICANCE
+from kitsune.wiki.config import SIGNIFICANCES
+from kitsune.wiki.config import TYPO_SIGNIFICANCE
+from kitsune.wiki.events import ApproveRevisionInLocaleEvent
+from kitsune.wiki.events import ReadyRevisionEvent
 from kitsune.wiki.models import Revision
-from kitsune.wiki.tests import (
-    DocumentFactory, RevisionFactory, ApprovedRevisionFactory, TestCaseBase)
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TestCaseBase
 
 
 def _assert_ready_mail(mail):

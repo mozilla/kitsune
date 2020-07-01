@@ -1,5 +1,8 @@
-from django.db.models import (CharField, DateField, ForeignKey,
-                              PositiveIntegerField, CASCADE)
+from django.db.models import CASCADE
+from django.db.models import CharField
+from django.db.models import DateField
+from django.db.models import ForeignKey
+from django.db.models import PositiveIntegerField
 
 from kitsune.sumo.models import ModelBase
 

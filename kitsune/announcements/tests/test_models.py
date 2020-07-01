@@ -1,11 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from nose.tools import eq_
 
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.tests import GroupFactory
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import LocaleFactory
 
 

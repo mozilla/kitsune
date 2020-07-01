@@ -1,35 +1,46 @@
 import json
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from itertools import chain
-
-from django.conf import settings
-from django.http import (
-    HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
-from django.shortcuts import render, render_to_response
-from django.utils.html import escape
-from django.utils.http import urlquote
-from django.utils.translation import ugettext as _, pgettext, pgettext_lazy
-from django.views.decorators.cache import cache_page
 
 import bleach
 import jinja2
-from elasticutils.utils import format_explanation
-from elasticutils.contrib.django import ES_EXCEPTIONS
+from django.conf import settings
+from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.shortcuts import render_to_response
+from django.utils.html import escape
+from django.utils.http import urlquote
+from django.utils.translation import pgettext
+from django.utils.translation import pgettext_lazy
+from django.utils.translation import ugettext as _
+from django.views.decorators.cache import cache_page
 from elasticsearch import RequestsHttpConnection
+from elasticutils.contrib.django import ES_EXCEPTIONS
+from elasticutils.utils import format_explanation
+
 from kitsune import search as constants
-from kitsune.forums.models import Forum, ThreadMappingType
+from kitsune.forums.models import Forum
+from kitsune.forums.models import ThreadMappingType
 from kitsune.products.models import Product
 from kitsune.questions.models import QuestionMappingType
-from kitsune.search.utils import locale_or_default, clean_excerpt
 from kitsune.search import es_utils
-from kitsune.search.forms import SimpleSearchForm, AdvancedSearchForm
-from kitsune.search.es_utils import F, AnalyzerS, handle_es_errors
-from kitsune.search.search_utils import apply_boosts, generate_simple_search
+from kitsune.search.es_utils import AnalyzerS
+from kitsune.search.es_utils import F
+from kitsune.search.es_utils import handle_es_errors
+from kitsune.search.forms import AdvancedSearchForm
+from kitsune.search.forms import SimpleSearchForm
+from kitsune.search.search_utils import apply_boosts
+from kitsune.search.search_utils import generate_simple_search
+from kitsune.search.utils import clean_excerpt
+from kitsune.search.utils import locale_or_default
 from kitsune.sumo.api_utils import JSONRenderer
-from kitsune.sumo.templatetags.jinja_helpers import Paginator
 from kitsune.sumo.json_utils import markup_json
+from kitsune.sumo.templatetags.jinja_helpers import Paginator
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
 from kitsune.wiki.facets import documents_for

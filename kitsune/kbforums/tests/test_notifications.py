@@ -1,14 +1,19 @@
+from unittest import mock
+
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
-
-from unittest import mock
 from nose.tools import eq_
 
-from kitsune.kbforums.events import NewPostEvent, NewThreadEvent
-from kitsune.kbforums.models import Thread, Post
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
-from kitsune.sumo.tests import post, attrs_eq, starts_with
+from kitsune.kbforums.events import NewPostEvent
+from kitsune.kbforums.events import NewThreadEvent
+from kitsune.kbforums.models import Post
+from kitsune.kbforums.models import Thread
+from kitsune.kbforums.tests import KBForumTestCase
+from kitsune.kbforums.tests import ThreadFactory
+from kitsune.sumo.tests import attrs_eq
+from kitsune.sumo.tests import post
+from kitsune.sumo.tests import starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory

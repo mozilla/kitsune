@@ -1,10 +1,12 @@
 from django.conf import settings
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.conf.urls import url
 
-from kitsune.forums import views
-from kitsune.forums.feeds import ThreadsFeed, PostsFeed
-from kitsune.forums.models import Post
 from kitsune.flagit import views as flagit_views
+from kitsune.forums import views
+from kitsune.forums.feeds import PostsFeed
+from kitsune.forums.feeds import ThreadsFeed
+from kitsune.forums.models import Post
 from kitsune.sumo.views import handle404
 
 

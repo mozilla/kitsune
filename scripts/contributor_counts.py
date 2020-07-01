@@ -2,10 +2,9 @@
 # last 14 days. You need recent data to run this.
 #
 # Run this with ./manage.py runscript run_contributor_counts.py
-
-
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from kitsune.forums.models import Post
 

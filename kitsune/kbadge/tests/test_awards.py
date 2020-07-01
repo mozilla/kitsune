@@ -1,8 +1,8 @@
 from django.core import mail
-
 from nose.tools import eq_
 
-from kitsune.kbadge.tests import AwardFactory, BadgeFactory
+from kitsune.kbadge.tests import AwardFactory
+from kitsune.kbadge.tests import BadgeFactory
 from kitsune.sumo.tests import TestCase
 
 

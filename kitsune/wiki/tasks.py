@@ -1,6 +1,7 @@
 import logging
 from datetime import date
-from typing import Dict, List
+from typing import Dict
+from typing import List
 
 import waffle
 from celery import task
@@ -13,7 +14,8 @@ from django.core.mail import mail_admins
 from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _
-from multidb.pinning import pin_this_thread, unpin_this_thread
+from multidb.pinning import pin_this_thread
+from multidb.pinning import unpin_this_thread
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -21,9 +23,13 @@ from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
-from kitsune.wiki.models import (Document, Revision, SlugCollision,
-                                 TitleCollision, points_to_document_view)
-from kitsune.wiki.utils import BitlyRateLimitException, generate_short_url
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import points_to_document_view
+from kitsune.wiki.models import Revision
+from kitsune.wiki.models import SlugCollision
+from kitsune.wiki.models import TitleCollision
+from kitsune.wiki.utils import BitlyRateLimitException
+from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger('k.task')
 

@@ -1,7 +1,6 @@
+import factory
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-
-import factory
 
 from kitsune.search.models import Synonym
 from kitsune.sumo.tests import TestCase

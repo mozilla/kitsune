@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Django settings for kitsune project."""
-
 import logging
 import os
 import platform
@@ -9,11 +8,11 @@ from datetime import date
 
 import dj_database_url
 import django_cache_url
-from decouple import Csv, config
-
-from kitsune.lib.sumo_locales import LOCALES
+from decouple import config
+from decouple import Csv
 
 from .bundles import PIPELINE_JS
+from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 DEV = config('DEV', default=False, cast=bool)

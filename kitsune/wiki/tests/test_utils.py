@@ -1,17 +1,21 @@
-from datetime import date, timedelta
-
+from datetime import date
+from datetime import timedelta
 from unittest import mock
+
+from django.test.utils import override_settings
 from nose.tools import eq_
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import RevisionFactory, DocumentFactory
-from kitsune.wiki.utils import (
-    BitlyUnauthorizedException, BitlyRateLimitException, BitlyException, active_contributors,
-    num_active_contributors, generate_short_url)
-
-from django.test.utils import override_settings
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.utils import active_contributors
+from kitsune.wiki.utils import BitlyException
+from kitsune.wiki.utils import BitlyRateLimitException
+from kitsune.wiki.utils import BitlyUnauthorizedException
+from kitsune.wiki.utils import generate_short_url
+from kitsune.wiki.utils import num_active_contributors
 
 
 class ActiveContributorsTestCase(TestCase):

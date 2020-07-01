@@ -1,24 +1,33 @@
 import logging
 from datetime import datetime
 
+from authority.decorators import permission_required_or_403
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import get_object_or_404, render
+from django.http import Http404
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
-from authority.decorators import permission_required_or_403
-
 from kitsune import forums as constants
-from kitsune.access.decorators import has_perm_or_owns_or_403, login_required
+from kitsune.access.decorators import has_perm_or_owns_or_403
+from kitsune.access.decorators import login_required
 from kitsune.access.utils import has_perm
-from kitsune.forums.events import NewPostEvent, NewThreadEvent
-from kitsune.forums.feeds import ThreadsFeed, PostsFeed
-from kitsune.forums.forms import (ReplyForm, NewThreadForm, EditThreadForm,
-                                  EditPostForm)
-from kitsune.forums.models import Forum, Thread, Post
+from kitsune.forums.events import NewPostEvent
+from kitsune.forums.events import NewThreadEvent
+from kitsune.forums.feeds import PostsFeed
+from kitsune.forums.feeds import ThreadsFeed
+from kitsune.forums.forms import EditPostForm
+from kitsune.forums.forms import EditThreadForm
+from kitsune.forums.forms import NewThreadForm
+from kitsune.forums.forms import ReplyForm
+from kitsune.forums.models import Forum
+from kitsune.forums.models import Post
+from kitsune.forums.models import Thread
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, is_ratelimited
+from kitsune.sumo.utils import is_ratelimited
+from kitsune.sumo.utils import paginate
 from kitsune.users.models import Setting
 
 log = logging.getLogger('k.forums')

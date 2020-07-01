@@ -1,16 +1,20 @@
-from datetime import datetime, date, timedelta
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 
 from nose.tools import eq_
 
-from kitsune.community.utils import (
-    top_contributors_kb, top_contributors_l10n, top_contributors_aoa,
-    top_contributors_questions)
+from kitsune.community.utils import top_contributors_aoa
+from kitsune.community.utils import top_contributors_kb
+from kitsune.community.utils import top_contributors_l10n
+from kitsune.community.utils import top_contributors_questions
 from kitsune.customercare.tests import ReplyFactory
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class TopContributorTests(ElasticTestCase):

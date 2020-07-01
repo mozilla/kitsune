@@ -7,7 +7,8 @@ from django.utils.translation import ugettext_lazy as _lazy
 from kitsune import search as constants
 from kitsune.forums.models import Forum as DiscussionForum
 from kitsune.lib.sumo_locales import LOCALES
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product
+from kitsune.products.models import Topic
 from kitsune.sumo.form_fields import TypedMultipleChoiceField
 from kitsune.wiki.config import CATEGORIES
 

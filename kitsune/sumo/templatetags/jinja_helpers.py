@@ -8,14 +8,17 @@ import urllib
 import bleach
 import jinja2
 from babel import localedata
-from babel.dates import format_date, format_datetime, format_time
+from babel.dates import format_date
+from babel.dates import format_datetime
+from babel.dates import format_time
 from babel.numbers import format_decimal
 from django.conf import settings
 from django.contrib.staticfiles.templatetags.staticfiles import \
     static as django_static
 from django.http import QueryDict
 from django.template.loader import render_to_string
-from django.utils.encoding import smart_bytes, smart_text
+from django.utils.encoding import smart_bytes
+from django.utils.encoding import smart_text
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone
 from django.utils.translation import ugettext as _

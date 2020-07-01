@@ -1,16 +1,14 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
 import pytest
-
+from mocks.mock_article import MockArticle
 from pages.desktop.knowledge_base_new_article import KnowledgeBaseNewArticle
 from pages.desktop.questions_page import AskNewQuestionsPage
 from pages.desktop.questions_page import QuestionsPage
 from pages.desktop.refine_search_page import RefineSearchPage
 from pages.desktop.search_page import SearchPage
 from pages.desktop.support_home_page import SupportHomePage
-from mocks.mock_article import MockArticle
 
 
 class TestLoginLogout:

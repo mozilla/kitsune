@@ -1,7 +1,9 @@
 from nose.tools import eq_
 
-from kitsune.questions.models import Answer, Question
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 
 

@@ -1,10 +1,15 @@
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.gallery.models import Image, Video
-from kitsune.gallery.tests import ImageFactory, VideoFactory
+from kitsune.gallery.models import Image
+from kitsune.gallery.models import Video
+from kitsune.gallery.tests import ImageFactory
+from kitsune.gallery.tests import VideoFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import TestCase, get, LocalizingClient, post
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import post
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 

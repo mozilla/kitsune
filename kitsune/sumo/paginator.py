@@ -1,5 +1,8 @@
-from django.core.paginator import (Paginator as DjPaginator, EmptyPage,
-                                   InvalidPage, Page, PageNotAnInteger)
+from django.core.paginator import EmptyPage
+from django.core.paginator import InvalidPage
+from django.core.paginator import Page
+from django.core.paginator import PageNotAnInteger
+from django.core.paginator import Paginator as DjPaginator
 
 
 __all__ = ['Paginator', 'EmptyPage', 'InvalidPage']

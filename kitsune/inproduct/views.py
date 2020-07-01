@@ -1,9 +1,9 @@
+import waffle
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.http import HttpResponseRedirect, Http404
+from django.http import Http404
+from django.http import HttpResponseRedirect
 from django.views.decorators.cache import cache_page
-
-import waffle
 
 from kitsune.inproduct.models import Redirect
 from kitsune.sumo.templatetags.jinja_helpers import urlparams

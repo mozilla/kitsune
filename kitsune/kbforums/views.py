@@ -3,20 +3,30 @@ from datetime import datetime
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from kitsune import kbforums
-from kitsune.access.decorators import permission_required, login_required
-from kitsune.kbforums.events import (
-    NewPostEvent, NewThreadEvent, NewPostInLocaleEvent, NewThreadInLocaleEvent)
-from kitsune.kbforums.feeds import ThreadsFeed, PostsFeed
-from kitsune.kbforums.forms import (
-    ReplyForm, NewThreadForm, EditThreadForm, EditPostForm)
-from kitsune.kbforums.models import Thread, Post
+from kitsune.access.decorators import login_required
+from kitsune.access.decorators import permission_required
+from kitsune.kbforums.events import NewPostEvent
+from kitsune.kbforums.events import NewPostInLocaleEvent
+from kitsune.kbforums.events import NewThreadEvent
+from kitsune.kbforums.events import NewThreadInLocaleEvent
+from kitsune.kbforums.feeds import PostsFeed
+from kitsune.kbforums.feeds import ThreadsFeed
+from kitsune.kbforums.forms import EditPostForm
+from kitsune.kbforums.forms import EditThreadForm
+from kitsune.kbforums.forms import NewThreadForm
+from kitsune.kbforums.forms import ReplyForm
+from kitsune.kbforums.models import Post
+from kitsune.kbforums.models import Thread
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, get_next_url, is_ratelimited
+from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import is_ratelimited
+from kitsune.sumo.utils import paginate
 from kitsune.users.models import Setting
 from kitsune.wiki.models import Document
 

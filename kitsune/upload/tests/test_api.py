@@ -1,8 +1,8 @@
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
-from kitsune.upload.tests import ImageAttachmentFactory
 from kitsune.upload import api
+from kitsune.upload.tests import ImageAttachmentFactory
 
 
 class ImageAttachmentSerializerTests(TestCase):

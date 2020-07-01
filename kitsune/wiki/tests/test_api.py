@@ -1,7 +1,7 @@
 from nose.tools import eq_
 
-from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse
 
 
 class TestDocumentListView(TestCase):

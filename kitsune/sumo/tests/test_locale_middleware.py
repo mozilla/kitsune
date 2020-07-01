@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.test import override_settings
-
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
-from kitsune.sumo.urlresolvers import get_best_language, get_non_supported
+from kitsune.sumo.urlresolvers import get_best_language
+from kitsune.sumo.urlresolvers import get_non_supported
 from kitsune.users.tests import UserFactory
 
 

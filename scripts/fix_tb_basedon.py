@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Finds revisions from the Thunderbird migration that don't have based_on
 set correctly, and are still relavent, and fixes that.
 
 Run this script like `./manage.py runscript fix_tb_basedon`.
 """
-
 import sys
 from traceback import print_exc
 
 from django.db.models import Q
 
-from kitsune.wiki.models import Document, Revision
+from kitsune.wiki.models import Document
+from kitsune.wiki.models import Revision
 
 
 def run():

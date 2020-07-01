@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
-
+from datetime import datetime
+from datetime import timedelta
 from unittest import mock
+
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
@@ -8,10 +9,13 @@ from django.core.management import call_command
 from django.test.utils import override_settings
 from nose.tools import eq_
 
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.sumo.tests import TestCase, attrs_eq
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.sumo.tests import attrs_eq
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class WelcomeEmailsTests(TestCase):

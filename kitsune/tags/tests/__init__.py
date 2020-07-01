@@ -1,6 +1,5 @@
-from django.template.defaultfilters import slugify
-
 import factory
+from django.template.defaultfilters import slugify
 from taggit.models import Tag
 
 from kitsune.sumo.tests import FuzzyUnicode

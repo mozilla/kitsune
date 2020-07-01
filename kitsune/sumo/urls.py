@@ -1,6 +1,6 @@
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.conf.urls import url
 from django.views.generic.base import RedirectView
-
 from watchman import views as watchman_views
 
 from kitsune.sumo import views

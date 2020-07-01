@@ -2,7 +2,6 @@ import re
 
 from django.conf import settings
 from django.utils.encoding import smart_bytes
-
 from pipeline.compilers import CompilerBase
 from pipeline.exceptions import CompilerError
 

@@ -1,13 +1,12 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
 import datetime
 from random import randrange
 
 import pytest
-
-from pages.desktop.questions_page import AskNewQuestionsPage, QuestionsPage
+from pages.desktop.questions_page import AskNewQuestionsPage
+from pages.desktop.questions_page import QuestionsPage
 
 
 class TestQuestions:

@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 import inspect
 import os
+import subprocess
 import sys
 from functools import wraps
 from os import getenv
 from smtplib import SMTPRecipientsRefused
-import subprocess
 
+import django_nose
+import factory.fuzzy
 from django.conf import settings
 from django.core.cache import cache
 from django.test import TestCase as OriginalTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.translation import trans_real
-
-import django_nose
-import factory.fuzzy
 from elasticutils.contrib.django import get_es
 from nose.tools import eq_
 from pyquery import PyQuery
@@ -23,7 +22,8 @@ from waffle.models import Flag
 
 from kitsune.search import es_utils
 from kitsune.search.models import generate_tasks
-from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.urlresolvers import split_path
 
 
 # We do this gooftastic thing because nose uses unittest.SkipTest in

@@ -1,9 +1,13 @@
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.conf.urls import url
 
 from kitsune.kbforums import views as kbforums_views
 from kitsune.sumo.views import redirect_to
-from kitsune.wiki import locale_views, views
-from kitsune.wiki.locale_views import LEADER, REVIEWER, EDITOR
+from kitsune.wiki import locale_views
+from kitsune.wiki import views
+from kitsune.wiki.locale_views import EDITOR
+from kitsune.wiki.locale_views import LEADER
+from kitsune.wiki.locale_views import REVIEWER
 
 
 # These patterns inherit (?P<document_slug>[^\/]).

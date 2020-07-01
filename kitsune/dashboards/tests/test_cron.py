@@ -1,20 +1,27 @@
 # -*- coding: utf-8 -*-
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.management import call_command
 from nose.tools import eq_
 
-from kitsune.dashboards.management.commands.cache_most_unhelpful_kb_articles import (
-    _get_current_unhelpful, _get_old_unhelpful)
-from kitsune.dashboards.models import (L10N_ALL_CODE, L10N_TOP20_CODE,
-                                       L10N_TOP100_CODE, WikiMetric)
+from kitsune.dashboards.management.commands.cache_most_unhelpful_kb_articles import _get_current_unhelpful
+from kitsune.dashboards.management.commands.cache_most_unhelpful_kb_articles import _get_old_unhelpful
+from kitsune.dashboards.models import L10N_ALL_CODE
+from kitsune.dashboards.models import L10N_TOP100_CODE
+from kitsune.dashboards.models import L10N_TOP20_CODE
+from kitsune.dashboards.models import WikiMetric
 from kitsune.products.tests import ProductFactory
-from kitsune.sumo.redis_utils import RedisError, redis_client
-from kitsune.sumo.tests import SkipTest, TestCase
+from kitsune.sumo.redis_utils import redis_client
+from kitsune.sumo.redis_utils import RedisError
+from kitsune.sumo.tests import SkipTest
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
-                                HelpfulVoteFactory, RevisionFactory)
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import HelpfulVoteFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 def _add_vote_in_past(rev, vote, days_back):

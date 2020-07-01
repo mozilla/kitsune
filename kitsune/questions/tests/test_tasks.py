@@ -1,11 +1,12 @@
 from django.db.models.signals import post_save
-
 from nose.tools import eq_
 
-from kitsune.questions.models import (
-    Question, QuestionVote, send_vote_update_task)
+from kitsune.questions.models import Question
+from kitsune.questions.models import QuestionVote
+from kitsune.questions.models import send_vote_update_task
 from kitsune.questions.tasks import update_question_vote_chunk
-from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionVoteFactory
 from kitsune.sumo.tests import TestCase
 
 

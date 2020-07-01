@@ -1,7 +1,8 @@
 import logging
 import re
 
-from kitsune.questions.models import Answer, Question
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
 
 log = logging.getLogger('k.questions')
 

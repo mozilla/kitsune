@@ -1,10 +1,13 @@
-from datetime import date, timedelta
+from datetime import date
+from datetime import timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from kitsune.kpi.management import utils
-from kitsune.kpi.models import L10N_METRIC_CODE, Metric, MetricKind
+from kitsune.kpi.models import L10N_METRIC_CODE
+from kitsune.kpi.models import Metric
+from kitsune.kpi.models import MetricKind
 from kitsune.sumo import googleanalytics
 
 

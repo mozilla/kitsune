@@ -1,28 +1,36 @@
 import json
+from functools import wraps
 from textwrap import dedent
-
 from unittest import mock
+
 from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-
-from josepy import jwa, jwk, jws
-
-from kitsune.questions.models import Answer, Question
-from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.sumo.tests import LocalizingClient, TestCase
-from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import (CONTRIBUTOR_GROUP, AccountEvent,
-                                  Deactivation, Profile, Setting)
-from kitsune.users.tests import (GroupFactory,
-                                 UserFactory, add_permission)
-from kitsune.users.views import edit_profile
+from josepy import jwa
+from josepy import jwk
+from josepy import jws
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+
+from kitsune.questions.models import Answer
+from kitsune.questions.models import Question
+from kitsune.questions.tests import AnswerFactory
+from kitsune.questions.tests import QuestionFactory
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.models import AccountEvent
+from kitsune.users.models import CONTRIBUTOR_GROUP
+from kitsune.users.models import Deactivation
+from kitsune.users.models import Profile
+from kitsune.users.models import Setting
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import GroupFactory
 from kitsune.users.tests import ProfileFactory
-from functools import wraps
+from kitsune.users.tests import UserFactory
+from kitsune.users.views import edit_profile
 
 
 class MakeContributorTests(TestCase):

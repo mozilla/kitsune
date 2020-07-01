@@ -1,7 +1,7 @@
 from django.apps.config import AppConfig
 
-# MONKEYPATCH! WOO HOO! LULZ
 from kitsune.sumo.monkeypatch import patch  # noqa
+# MONKEYPATCH! WOO HOO! LULZ
 patch()
 
 

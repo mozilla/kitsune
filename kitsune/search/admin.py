@@ -3,21 +3,32 @@ import time
 from datetime import datetime
 
 import requests
-
 from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect, Http404
+from django.http import Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from kitsune.search import synonym_utils
-from kitsune.search.es_utils import (
-    get_doctype_stats, get_indexes, delete_index, ES_EXCEPTIONS,
-    get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
-    all_read_indexes, all_write_indexes)
-from kitsune.search.models import Record, get_mapping_types, Synonym
-from kitsune.search.tasks import index_chunk_task, update_synonyms_task
-from kitsune.search.utils import chunked, to_class_path
+from kitsune.search.es_utils import all_read_indexes
+from kitsune.search.es_utils import all_write_indexes
+from kitsune.search.es_utils import CHUNK_SIZE
+from kitsune.search.es_utils import delete_index
+from kitsune.search.es_utils import ES_EXCEPTIONS
+from kitsune.search.es_utils import get_doctype_stats
+from kitsune.search.es_utils import get_indexable
+from kitsune.search.es_utils import get_indexes
+from kitsune.search.es_utils import read_index
+from kitsune.search.es_utils import recreate_indexes
+from kitsune.search.es_utils import write_index
+from kitsune.search.models import get_mapping_types
+from kitsune.search.models import Record
+from kitsune.search.models import Synonym
+from kitsune.search.tasks import index_chunk_task
+from kitsune.search.tasks import update_synonyms_task
+from kitsune.search.utils import chunked
+from kitsune.search.utils import to_class_path
 
 
 log = logging.getLogger('k.es')

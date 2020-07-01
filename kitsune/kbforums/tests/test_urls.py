@@ -1,8 +1,11 @@
 from nose.tools import eq_
 
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
-from kitsune.sumo.tests import get, post
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.kbforums.tests import KBForumTestCase
+from kitsune.kbforums.tests import ThreadFactory
+from kitsune.sumo.tests import get
+from kitsune.sumo.tests import post
+from kitsune.users.tests import add_permission
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 
 

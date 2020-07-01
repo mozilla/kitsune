@@ -1,24 +1,37 @@
 from datetime import datetime
 
-from kitsune.sumo.models import ModelBase
 from django.conf import settings
-
 from nose.tools import eq_
 
-from kitsune.dashboards.readouts import (
-    UnreviewedReadout, kb_overview_rows, TemplateTranslationsReadout, l10n_overview_rows,
-    MostVisitedDefaultLanguageReadout, MostVisitedTranslationsReadout,
-    UnreadyForLocalizationReadout, NeedsChangesReadout, TemplateReadout, HowToContributeReadout,
-    AdministrationReadout, CannedResponsesReadout)
+from kitsune.dashboards.readouts import AdministrationReadout
+from kitsune.dashboards.readouts import CannedResponsesReadout
+from kitsune.dashboards.readouts import HowToContributeReadout
+from kitsune.dashboards.readouts import kb_overview_rows
+from kitsune.dashboards.readouts import l10n_overview_rows
+from kitsune.dashboards.readouts import MostVisitedDefaultLanguageReadout
+from kitsune.dashboards.readouts import MostVisitedTranslationsReadout
+from kitsune.dashboards.readouts import NeedsChangesReadout
+from kitsune.dashboards.readouts import TemplateReadout
+from kitsune.dashboards.readouts import TemplateTranslationsReadout
+from kitsune.dashboards.readouts import UnreadyForLocalizationReadout
+from kitsune.dashboards.readouts import UnreviewedReadout
 from kitsune.products.tests import ProductFactory
+from kitsune.sumo.models import ModelBase
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.config import (
-    MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE, HOW_TO_CONTRIBUTE_CATEGORY,
-    ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY)
+from kitsune.wiki.config import ADMINISTRATION_CATEGORY
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY
 from kitsune.wiki.config import CATEGORIES
-from kitsune.wiki.tests import (
-    TranslatedRevisionFactory, DocumentFactory, RevisionFactory, TemplateDocumentFactory,
-    ApprovedRevisionFactory, RedirectRevisionFactory)
+from kitsune.wiki.config import HOW_TO_CONTRIBUTE_CATEGORY
+from kitsune.wiki.config import MAJOR_SIGNIFICANCE
+from kitsune.wiki.config import MEDIUM_SIGNIFICANCE
+from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.config import TYPO_SIGNIFICANCE
+from kitsune.wiki.tests import ApprovedRevisionFactory
+from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import RedirectRevisionFactory
+from kitsune.wiki.tests import RevisionFactory
+from kitsune.wiki.tests import TemplateDocumentFactory
+from kitsune.wiki.tests import TranslatedRevisionFactory
 
 
 class MockRequest(object):
