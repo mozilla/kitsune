@@ -9,222 +9,224 @@
  * To Public License, Version 2, as published by Sam Hocevar. See
  * http://sam.zoy.org/wtfpl/COPYING for more details. */
 
-(function($){
+(function ($) {
+  var defaults = (autoResize.defaults = {
+    onResize: function () {},
+    animate: {
+      duration: 200,
+      complete: function () {},
+    },
+    extraSpace: 50,
+    minHeight: "original",
+    maxHeight: 500,
+    minWidth: "original",
+    maxWidth: 500,
+  });
 
-	var defaults = autoResize.defaults = {
-		onResize: function(){},
-		animate: {
-			duration: 200,
-			complete: function(){}
-		},
-		extraSpace: 50,
-		minHeight: 'original',
-		maxHeight: 500,
-		minWidth: 'original',
-		maxWidth: 500
-	};
+  autoResize.cloneCSSProperties = [
+    "lineHeight",
+    "textDecoration",
+    "letterSpacing",
+    "fontSize",
+    "fontFamily",
+    "fontStyle",
+    "fontWeight",
+    "textTransform",
+    "textAlign",
+    "direction",
+    "wordSpacing",
+    "fontSizeAdjust",
+    "padding",
+  ];
 
-	autoResize.cloneCSSProperties = [
-		'lineHeight', 'textDecoration', 'letterSpacing',
-		'fontSize', 'fontFamily', 'fontStyle', 'fontWeight',
-		'textTransform', 'textAlign', 'direction', 'wordSpacing', 'fontSizeAdjust',
-		'padding'
-	];
+  autoResize.cloneCSSValues = {
+    position: "absolute",
+    top: -9999,
+    left: -9999,
+    opacity: 0,
+    overflow: "hidden",
+  };
 
-	autoResize.cloneCSSValues = {
-		position: 'absolute',
-		top: -9999,
-		left: -9999,
-		opacity: 0,
-		overflow: 'hidden'
-	};
+  autoResize.resizableFilterSelector =
+    "textarea,input:not(input[type]),input[type=text],input[type=password]";
 
-	autoResize.resizableFilterSelector = 'textarea,input:not(input[type]),input[type=text],input[type=password]';
+  autoResize.AutoResizer = AutoResizer;
 
-	autoResize.AutoResizer = AutoResizer;
+  $.fn.autoResize = autoResize;
 
-	$.fn.autoResize = autoResize;
+  function autoResize(config) {
+    this.filter(autoResize.resizableFilterSelector).each(function () {
+      new AutoResizer($(this), config);
+    });
+    return this;
+  }
 
-	function autoResize(config) {
-		this.filter(autoResize.resizableFilterSelector).each(function(){
-			new AutoResizer( $(this), config );
-		});
-		return this;
-	}
+  function AutoResizer(el, config) {
+    config = this.config = $.extend(autoResize.defaults, config);
+    this.el = el;
 
-	function AutoResizer(el, config) {
+    this.nodeName = el[0].nodeName.toLowerCase();
 
-		config = this.config = $.extend(autoResize.defaults, config);
-		this.el = el;
+    this.originalHeight = el.height();
+    this.previousScrollTop = null;
 
-		this.nodeName = el[0].nodeName.toLowerCase();
+    this.value = el.val();
 
-		this.originalHeight = el.height();
-		this.previousScrollTop = null;
+    if (config.maxWidth === "original") config.maxWidth = el.width();
+    if (config.minWidth === "original") config.minWidth = el.width();
+    if (config.maxHeight === "original") config.maxHeight = el.height();
+    if (config.minHeight === "original") config.minHeight = el.height();
 
-		this.value = el.val();
+    if (this.nodeName === "textarea") {
+      el.css({
+        resize: "none",
+        overflowY: "hidden",
+      });
+    }
 
-		if (config.maxWidth === 'original') config.maxWidth = el.width();
-		if (config.minWidth === 'original') config.minWidth = el.width();
-		if (config.maxHeight === 'original') config.maxHeight = el.height();
-		if (config.minHeight === 'original') config.minHeight = el.height();
+    el.data("AutoResizer", this);
 
-		if (this.nodeName === 'textarea') {
-			el.css({
-				resize: 'none',
-				overflowY: 'hidden'
-			});
-		}
+    this.createClone();
+    this.injectClone();
+    this.bind();
+  }
 
-		el.data('AutoResizer', this);
+  AutoResizer.prototype = {
+    bind: function () {
+      var check = $.proxy(function () {
+        this.check();
+        return true;
+      }, this);
 
-		this.createClone();
-		this.injectClone();
-		this.bind();
+      this.unbind();
 
-	}
+      this.el
+        .bind("keyup.autoResize", check)
+        //.bind('keydown.autoResize', check)
+        .bind("change.autoResize", check);
 
-	AutoResizer.prototype = {
+      this.check(null, true);
+    },
 
-		bind: function() {
+    unbind: function () {
+      this.el.unbind(".autoResize");
+    },
 
-			var check = $.proxy(function(){
-				this.check();
-				return true;
-			}, this);
+    createClone: function () {
+      var el = this.el,
+        clone;
 
-			this.unbind();
+      if (this.nodeName === "textarea") {
+        clone = el.clone().height("auto");
+      } else {
+        clone = $("<span/>").width("auto").css({
+          whiteSpace: "nowrap",
+        });
+      }
 
-			this.el
-				.bind('keyup.autoResize', check)
-				//.bind('keydown.autoResize', check)
-				.bind('change.autoResize', check);
+      this.clone = clone;
 
-			this.check(null, true);
+      $.each(autoResize.cloneCSSProperties, function (i, p) {
+        clone[0].style[p] = el.css(p);
+      });
 
-		},
+      clone
+        .removeAttr("name")
+        .removeAttr("id")
+        .attr("tabIndex", -1)
+        .css(autoResize.cloneCSSValues);
+    },
 
-		unbind: function() {
-			this.el.unbind('.autoResize');
-		},
+    check: function (e, immediate) {
+      var config = this.config,
+        clone = this.clone,
+        el = this.el,
+        value = el.val();
 
-		createClone: function() {
+      if (this.nodeName === "input") {
+        clone.text(value);
 
-			var el = this.el,
-				clone;
+        // Calculate new width + whether to change
+        var cloneWidth = clone.width(),
+          newWidth =
+            cloneWidth + config.extraSpace >= config.minWidth
+              ? cloneWidth + config.extraSpace
+              : config.minWidth,
+          currentWidth = el.width();
 
-			if (this.nodeName === 'textarea') {
-				clone = el.clone().height('auto');
-			} else {
-				clone = $('<span/>').width('auto').css({
-					whiteSpace: 'nowrap'
-				});
-			}
+        newWidth = Math.min(newWidth, config.maxWidth);
 
-			this.clone = clone;
+        if (
+          (newWidth < currentWidth && newWidth >= config.minWidth) ||
+          (newWidth >= config.minWidth && newWidth <= config.maxWidth)
+        ) {
+          config.onResize.call(el);
 
-			$.each(autoResize.cloneCSSProperties, function(i, p){
-				clone[0].style[p] = el.css(p);
-			});
+          el.scrollLeft(0);
 
-			clone
-				.removeAttr('name')
-				.removeAttr('id')
-				.attr('tabIndex', -1)
-				.css(autoResize.cloneCSSValues);
+          config.animate && !immediate
+            ? el.stop(1, 1).animate(
+                {
+                  width: newWidth,
+                },
+                config.animate
+              )
+            : el.width(newWidth);
+        }
 
-		},
+        return;
+      }
 
-		check: function(e, immediate) {
+      // TEXTAREA
 
-			var config = this.config,
-				clone = this.clone,
-				el = this.el,
-				value = el.val();
+      clone.height(0).val(value).scrollTop(10000);
 
-			if (this.nodeName === 'input') {
+      var scrollTop = clone[0].scrollTop + config.extraSpace;
 
-				clone.text(value);
+      // Don't do anything if scrollTop hasen't changed:
+      if (this.previousScrollTop === scrollTop) {
+        return;
+      }
 
-				// Calculate new width + whether to change
-				var cloneWidth = clone.width(),
-					newWidth = (cloneWidth + config.extraSpace) >= config.minWidth ?
-						cloneWidth + config.extraSpace : config.minWidth,
-					currentWidth = el.width();
+      this.previousScrollTop = scrollTop;
 
-				newWidth = Math.min(newWidth, config.maxWidth);
+      if (scrollTop >= config.maxHeight) {
+        el.css("overflowY", "");
+        return;
+      }
 
-				if (
-					(newWidth < currentWidth && newWidth >= config.minWidth) ||
-					(newWidth >= config.minWidth && newWidth <= config.maxWidth)
-				) {
+      el.css("overflowY", "hidden");
 
-					config.onResize.call(el);
+      if (scrollTop < config.minHeight) {
+        scrollTop = config.minHeight;
+      }
 
-					el.scrollLeft(0);
+      config.onResize.call(el);
 
-					config.animate && !immediate ?
-						el.stop(1,1).animate({
-							width: newWidth
-						}, config.animate)
-					: el.width(newWidth);
+      // Either animate or directly apply height:
+      config.animate && !immediate
+        ? el.stop(1, 1).animate(
+            {
+              height: scrollTop,
+            },
+            config.animate
+          )
+        : el.height(scrollTop);
+    },
 
-				}
+    destroy: function () {
+      this.unbind();
+      this.el.removeData("AutoResizer");
+      this.clone.remove();
+      delete this.el;
+      delete this.clone;
+    },
 
-				return;
-
-			}
-
-			// TEXTAREA
-
-			clone.height(0).val(value).scrollTop(10000);
-
-			var scrollTop = clone[0].scrollTop + config.extraSpace;
-
-			// Don't do anything if scrollTop hasen't changed:
-			if (this.previousScrollTop === scrollTop) {
-				return;
-			}
-
-			this.previousScrollTop = scrollTop;
-
-			if (scrollTop >= config.maxHeight) {
-				el.css('overflowY', '');
-				return;
-			}
-
-			el.css('overflowY', 'hidden');
-
-			if (scrollTop < config.minHeight) {
-				scrollTop = config.minHeight;
-			}
-
-			config.onResize.call(el);
-
-			// Either animate or directly apply height:
-			config.animate && !immediate ?
-				el.stop(1,1).animate({
-					height: scrollTop
-				}, config.animate)
-				: el.height(scrollTop);
-
-		},
-
-		destroy: function() {
-			this.unbind();
-			this.el.removeData('AutoResizer');
-			this.clone.remove();
-			delete this.el;
-			delete this.clone;
-		},
-
-		injectClone: function() {
-			(
-				autoResize.cloneContainer ||
-				(autoResize.cloneContainer = $('<arclones/>').appendTo('body'))
-			).append(this.clone);
-		}
-
-	};
-
+    injectClone: function () {
+      (
+        autoResize.cloneContainer ||
+        (autoResize.cloneContainer = $("<arclones/>").appendTo("body"))
+      ).append(this.clone);
+    },
+  };
 })(jQuery);

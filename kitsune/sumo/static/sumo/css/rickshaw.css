@@ -131,17 +131,17 @@
 }
 
 .rickshaw_graph .annotation_range {
-        background: rgba(0, 0, 0, 0.1);
-        display: none;
-        position: absolute;
-        top: 0;
-        bottom: -6px;
+  background: rgba(0, 0, 0, 0.1);
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: -6px;
 }
 .rickshaw_graph .annotation_range.active {
-        display: block;
+  display: block;
 }
 .rickshaw_graph .annotation_range.active.offscreen {
-        display: none;
+  display: none;
 }
 
 .rickshaw_annotation_timeline .annotation .content {
@@ -184,7 +184,7 @@
   z-index: 50;
 }
 .rickshaw_graph .y_axis,
-.rickshaw_graph  .x_axis_d3 {
+.rickshaw_graph .x_axis_d3 {
   fill: none;
 }
 .rickshaw_graph .y_ticks .tick,
@@ -197,12 +197,12 @@
 .rickshaw_graph .y_grid .tick,
 .rickshaw_graph .x_grid_d3 .tick {
   z-index: -1;
-  stroke: rgba(0, 0, 0, 0.20);
+  stroke: rgba(0, 0, 0, 0.2);
   stroke-width: 1px;
   stroke-dasharray: 1 1;
 }
 .rickshaw_graph .y_grid path,
-.rickshaw_graph .x_grid_d3 path  {
+.rickshaw_graph .x_grid_d3 path {
   fill: none;
   stroke: none;
 }
@@ -221,29 +221,20 @@
 .rickshaw_graph .y_ticks.glow text {
   fill: black;
   color: black;
-  text-shadow:
-    -1px 1px 0 rgba(255, 255, 255, 0.1),
-    1px -1px 0 rgba(255, 255, 255, 0.1),
-    1px 1px 0 rgba(255, 255, 255, 0.1),
-    0px 1px 0 rgba(255, 255, 255, 0.1),
-    0px -1px 0 rgba(255, 255, 255, 0.1),
-    1px 0px 0 rgba(255, 255, 255, 0.1),
-    -1px 0px 0 rgba(255, 255, 255, 0.1),
+  text-shadow: -1px 1px 0 rgba(255, 255, 255, 0.1),
+    1px -1px 0 rgba(255, 255, 255, 0.1), 1px 1px 0 rgba(255, 255, 255, 0.1),
+    0px 1px 0 rgba(255, 255, 255, 0.1), 0px -1px 0 rgba(255, 255, 255, 0.1),
+    1px 0px 0 rgba(255, 255, 255, 0.1), -1px 0px 0 rgba(255, 255, 255, 0.1),
     -1px -1px 0 rgba(255, 255, 255, 0.1);
 }
 .rickshaw_graph .x_tick.inverse .title,
 .rickshaw_graph .y_ticks.inverse text {
   fill: white;
   color: white;
-  text-shadow:
-    -1px 1px 0 rgba(0, 0, 0, 0.8),
-    1px -1px 0 rgba(0, 0, 0, 0.8),
-    1px 1px 0 rgba(0, 0, 0, 0.8),
-    0px 1px 0 rgba(0, 0, 0, 0.8),
-    0px -1px 0 rgba(0, 0, 0, 0.8),
-    1px 0px 0 rgba(0, 0, 0, 0.8),
-    -1px 0px 0 rgba(0, 0, 0, 0.8),
-    -1px -1px 0 rgba(0, 0, 0, 0.8);
+  text-shadow: -1px 1px 0 rgba(0, 0, 0, 0.8), 1px -1px 0 rgba(0, 0, 0, 0.8),
+    1px 1px 0 rgba(0, 0, 0, 0.8), 0px 1px 0 rgba(0, 0, 0, 0.8),
+    0px -1px 0 rgba(0, 0, 0, 0.8), 1px 0px 0 rgba(0, 0, 0, 0.8),
+    -1px 0px 0 rgba(0, 0, 0, 0.8), -1px -1px 0 rgba(0, 0, 0, 0.8);
 }
 .rickshaw_legend {
   font-family: Arial;

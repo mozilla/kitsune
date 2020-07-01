@@ -1,186 +1,215 @@
 /* global CodeMirror */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
-  CodeMirror.defineSimpleMode('sumo', {
+  CodeMirror.defineSimpleMode("sumo", {
     start: [
       {
-        token: 'variable.language',
-        regex: '__TOC__'
+        token: "variable.language",
+        regex: "__TOC__",
       },
       {
-        token: ['variable.language', 'meta.tag.name'],
+        token: ["variable.language", "meta.tag.name"],
         regex: /(\{)(for)/,
-        next: 'fx_version_os_version'
+        next: "fx_version_os_version",
       },
       {
-        token: ['variable.language', 'meta.tag.name'],
+        token: ["variable.language", "meta.tag.name"],
         regex: /(\{)(note|warning)/,
-        next: 'close_tag'
+        next: "close_tag",
       },
       {
-        token: 'variable.language',
-        regex: /\{\/(for|note|warning)\}/
+        token: "variable.language",
+        regex: /\{\/(for|note|warning)\}/,
       },
       {
-        token: 'meta.tag',
-        regex: /<\/?br>/
+        token: "meta.tag",
+        regex: /<\/?br>/,
       },
       {
-        token: ['variable.language', 'meta.tag', 'markup.italic', 'variable.language'],
-        regex: /(\{)(filepath|key|menu|button|pref)(.*?)(\})/
+        token: [
+          "variable.language",
+          "meta.tag",
+          "markup.italic",
+          "variable.language",
+        ],
+        regex: /(\{)(filepath|key|menu|button|pref)(.*?)(\})/,
       },
       {
-        token: ['markup.other.link', 'markup.other.link', 'markup.other.link', 'markup.other.link'],
-        regex: /(\[{2})([^\]]*?)(\|.*?)(\]{2})/
+        token: [
+          "markup.other.link",
+          "markup.other.link",
+          "markup.other.link",
+          "markup.other.link",
+        ],
+        regex: /(\[{2})([^\]]*?)(\|.*?)(\]{2})/,
       },
       {
-        token: ['markup.other.link', 'markup.other.link', 'markup.other.link', 'markup.other.link'],
-        regex: /(\[{2})(\S*:)(.*?)(\]{2})/
+        token: [
+          "markup.other.link",
+          "markup.other.link",
+          "markup.other.link",
+          "markup.other.link",
+        ],
+        regex: /(\[{2})(\S*:)(.*?)(\]{2})/,
       },
       {
-        token: ['markup.other.link', 'markup.other.link', 'markup.other.link'],
-        regex: /(\[{2})(.*?)(\]{2})/
+        token: ["markup.other.link", "markup.other.link", "markup.other.link"],
+        regex: /(\[{2})(.*?)(\]{2})/,
       },
       {
-        token: ['markup.other.link', 'markup.other.link', 'markup.other.link', 'markup.other.link'],
-        regex: /(\[)(\S*)(.*?)(\])/
+        token: [
+          "markup.other.link",
+          "markup.other.link",
+          "markup.other.link",
+          "markup.other.link",
+        ],
+        regex: /(\[)(\S*)(.*?)(\])/,
       },
       {
-        token: ['variable.language', 'markup.bold', 'variable.language'],
-        regex: /(''')(.*?)(''')/
+        token: ["variable.language", "markup.bold", "variable.language"],
+        regex: /(''')(.*?)(''')/,
       },
       {
-        token: ['variable.language', 'markup.italic', 'variable.language'],
-        regex: /('')(.*?)('')/
+        token: ["variable.language", "markup.italic", "variable.language"],
+        regex: /('')(.*?)('')/,
       },
       {
-        token: ['variable.language', 'markup.underline', 'variable.language'],
-        regex: /(<u>)(.*?)(<\/u>)/
+        token: ["variable.language", "markup.underline", "variable.language"],
+        regex: /(<u>)(.*?)(<\/u>)/,
       },
       {
-        token: ['variable.language', 'markup.strikethrough', 'variable.language'],
-        regex: /(<s>)(.*?)(<\/s>)/
+        token: [
+          "variable.language",
+          "markup.strikethrough",
+          "variable.language",
+        ],
+        regex: /(<s>)(.*?)(<\/s>)/,
       },
       {
-        token: ['variable.language', 'markup.strikethrough', 'variable.language'],
-        regex: /(<del>)(.*?)(<\/del>)/
+        token: [
+          "variable.language",
+          "markup.strikethrough",
+          "variable.language",
+        ],
+        regex: /(<del>)(.*?)(<\/del>)/,
       },
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /<nowiki>/,
-        next: 'nowiki'
+        next: "nowiki",
       },
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /<code>/,
-        next: 'code'
+        next: "code",
       },
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /<pre>/,
-        next: 'pre'
+        next: "pre",
       },
       {
-        token: 'markup.quote',
+        token: "markup.quote",
         regex: /^\s+.*/,
-        sol: true
+        sol: true,
       },
       {
-        token: ['markup.bold', 'markup.bold', 'markup.bold'],
+        token: ["markup.bold", "markup.bold", "markup.bold"],
         regex: /^(={1,6})(.*?)(\1)$/,
-        sol: true
+        sol: true,
       },
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /^[\-]{4}/,
-        sol: true
+        sol: true,
       },
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /^[;:#\*]+/,
-        sol: true
+        sol: true,
       },
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /^\{?[\|!][+\-]?\}?/,
-        sol: true
+        sol: true,
       },
       {
-        token: 'comment',
+        token: "comment",
         merge: true,
-        regex: '<\\!--',
-        next: 'comment'
-      }
+        regex: "<\\!--",
+        next: "comment",
+      },
     ],
     comment: [
       {
-        token: 'comment',
-        regex: '.*?-->',
-        next: 'start'
-      }, {
-        token: 'comment',
+        token: "comment",
+        regex: ".*?-->",
+        next: "start",
+      },
+      {
+        token: "comment",
         merge: true,
-        regex: '.+'
-      }
+        regex: ".+",
+      },
     ],
     nowiki: [
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /<\/nowiki>/,
-        next: 'start'
+        next: "start",
       },
       {
-        token: 'comment',
-        regex: /./
-      }
+        token: "comment",
+        regex: /./,
+      },
     ],
     code: [
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /<\/code>/,
-        next: 'start'
+        next: "start",
       },
       {
-        token: 'comment',
-        regex: /./
-      }
+        token: "comment",
+        regex: /./,
+      },
     ],
     pre: [
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /<\/pre>/,
-        next: 'start'
+        next: "start",
       },
       {
-        token: 'comment',
-        regex: /./
-      }
+        token: "comment",
+        regex: /./,
+      },
     ],
     space: [
       {
-        token: 'text',
-        regex: '\\s+'
-      }
+        token: "text",
+        regex: "\\s+",
+      },
     ],
     fx_version_os_version: [
       {
-        token: ['markup.italic'],
+        token: ["markup.italic"],
         regex: /((?:,\s?)?(?:not\s)?(?:(?:win(?:xp|7|8)?|mac|linux|android|maemo)|=?(?:fx|tb|m)\d*))+/,
-        next: 'close_tag'
+        next: "close_tag",
       },
       {
-        token: 'variable.language',
-        regex: /\{\/for\}/
-      }
+        token: "variable.language",
+        regex: /\{\/for\}/,
+      },
     ],
     close_tag: [
       {
-        token: 'variable.language',
+        token: "variable.language",
         regex: /\}/,
-        next: 'start'
-      }
-    ]
+        next: "start",
+      },
+    ],
   });
 })();

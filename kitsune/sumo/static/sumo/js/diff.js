@@ -1,12 +1,11 @@
 /* globals diff_match_patch:false, _:false, DIFF_EQUAL:false,
-* DIFF_INSERT:false, DIFF_DELETE:false, gettext:false, jQuery:false */
+ * DIFF_INSERT:false, DIFF_DELETE:false, gettext:false, jQuery:false */
 /*
  * Wrapper around diff_match_patch. or something like that.
  */
 
-(function($) {
-
-  'use strict';
+(function ($) {
+  "use strict";
 
   function Diff(from, to, outputContainer) {
     /* Args:
@@ -17,21 +16,21 @@
   }
 
   Diff.prototype = {
-    init: function(from, to, outputContainer) {
+    init: function (from, to, outputContainer) {
       var self = this;
 
       self.from = from;
       self.to = to;
       self.$container = $(outputContainer);
       self.$container.html('<div class="diff-html" />');
-      self.$diff = self.$container.find('.diff-html');
+      self.$diff = self.$container.find(".diff-html");
 
       self.rawDiffs = self._diff();
       self.lineDiffs = self._lineDiff();
 
       self.render();
     },
-    _diff: function() {
+    _diff: function () {
       // Do the initial diff with diff_match_patch.
       var self = this;
       var dmp = new diff_match_patch();
@@ -41,7 +40,7 @@
       dmp.diff_cleanupSemantic(d);
       return d;
     },
-    _lineDiff: function() {
+    _lineDiff: function () {
       // Convert the diff_match_patch diff to a line-by-line diff.
       var self = this;
       var ampRegex = /&/g;
@@ -55,14 +54,14 @@
       var toContinued = false;
       var line, fromLine, toLine, sectionLines, i, l, op, data, text;
 
-      _.each(self.rawDiffs, function(diff) {
-        op = diff[0];    // Operation (insert, delete, equal)
-        data = diff[1];  // Text of change.
+      _.each(self.rawDiffs, function (diff) {
+        op = diff[0]; // Operation (insert, delete, equal)
+        data = diff[1]; // Text of change.
         text = data
-        .replace(ampRegex, '&amp;')
-        .replace(ltRegex, '&lt;')
-        .replace(gtRegex, '&gt;')
-        .replace(' ', '&nbsp;');
+          .replace(ampRegex, "&amp;")
+          .replace(ltRegex, "&lt;")
+          .replace(gtRegex, "&gt;")
+          .replace(" ", "&nbsp;");
 
         sectionLines = text.split(paraRegex);
 
@@ -72,7 +71,7 @@
               changes: false,
               hasFrom: false,
               hasTo: false,
-              parts: []
+              parts: [],
             };
             lines.push(fromLine);
           } else if (!fromContinued) {
@@ -80,7 +79,7 @@
               changes: false,
               hasFrom: false,
               hasTo: false,
-              parts: []
+              parts: [],
             };
             lines.push(fromLine);
             if (!toLine.hasTo) {
@@ -91,7 +90,7 @@
               changes: false,
               hasFrom: false,
               hasTo: false,
-              parts: []
+              parts: [],
             };
             lines.push(toLine);
             if (!fromLine.hasFrom) {
@@ -174,23 +173,31 @@
 
       return lines;
     },
-    render: function() {
+    render: function () {
       // Render the diff.
       var self = this;
       self.$diff.html(self.prettyHtml());
     },
-    prettyHtml: function() {
+    prettyHtml: function () {
       var self = this;
       var html = [];
-      var prepend = '';
+      var prepend = "";
 
-      html.push('<table><tbody>');
+      html.push("<table><tbody>");
 
-      _.each(self.lineDiffs, function(line) {
+      _.each(self.lineDiffs, function (line) {
         // Check if the line has non-whitespace changes.
-        line.changes = _.reduce(line.parts, function(memo, part) {
-          return memo || (((part[0] === DIFF_DELETE) || (part[0] === DIFF_INSERT)) && part[1].length > 0);
-        }, false);
+        line.changes = _.reduce(
+          line.parts,
+          function (memo, part) {
+            return (
+              memo ||
+              ((part[0] === DIFF_DELETE || part[0] === DIFF_INSERT) &&
+                part[1].length > 0)
+            );
+          },
+          false
+        );
 
         // Render the line if it has a line number.
         if (line.fromLineNum || line.toLineNum) {
@@ -198,15 +205,16 @@
         }
       });
 
-      html.push('</td></tr>');
-      html.push('</tbody></table>');
+      html.push("</td></tr>");
+      html.push("</tbody></table>");
 
       if (self.from === self.to) {
-        prepend = '<p><strong>[' + gettext('No differences found') + ']</strong></p>';
+        prepend =
+          "<p><strong>[" + gettext("No differences found") + "]</strong></p>";
       }
-      return prepend + html.join('');
+      return prepend + html.join("");
     },
-    _singleColumnHtml: function(line, html) {
+    _singleColumnHtml: function (line, html) {
       // Single column, github style diff.
       var self = this;
       if (!line.changes && line.hasFrom && line.hasTo) {
@@ -220,74 +228,78 @@
         }
       }
     },
-    _scEqualRow: function(line, html) {
+    _scEqualRow: function (line, html) {
       // Render an equal line.
       var op;
 
       html.push('<tr class="equal">');
-      html.push('<td class="num">', line.fromLineNum, '</td>');
-      html.push('<td class="num">', line.toLineNum, '</td>');
+      html.push('<td class="num">', line.fromLineNum, "</td>");
+      html.push('<td class="num">', line.toLineNum, "</td>");
       html.push('<td class="mark"></td>');
-      html.push('<td>');
-      _.each(line.parts, function(part) {
+      html.push("<td>");
+      _.each(line.parts, function (part) {
         op = part[0];
         if (op === DIFF_INSERT) {
-          html.push('<ins>' + part[1] + '</ins>');
+          html.push("<ins>" + part[1] + "</ins>");
         } else if (op === DIFF_DELETE) {
-          html.push('<del>' + part[1] + '</del>');
+          html.push("<del>" + part[1] + "</del>");
         } else if (op === DIFF_EQUAL) {
           html.push(part[1]);
         }
       });
-      html.push('</td></tr>');
+      html.push("</td></tr>");
     },
-    _scFromRow: function(line, html) {
+    _scFromRow: function (line, html) {
       // Render a changed from line.
       var op;
 
       html.push('<tr class="fromLine">');
-      html.push('<td class="num">', line.fromLineNum, '</td>');
+      html.push('<td class="num">', line.fromLineNum, "</td>");
       html.push('<td class="num"></td>');
       html.push('<td class="mark">-</td>');
-      html.push('<td>');
-      _.each(line.parts, function(part) {
+      html.push("<td>");
+      _.each(line.parts, function (part) {
         op = part[0];
         if (op === DIFF_DELETE) {
-          html.push('<del>' + part[1] + '</del>');
+          html.push("<del>" + part[1] + "</del>");
         } else if (op === DIFF_EQUAL) {
           html.push(part[1]);
         }
       });
-      html.push('</td></tr>');
+      html.push("</td></tr>");
     },
-    _scToRow: function(line, html) {
+    _scToRow: function (line, html) {
       // Render a changed to line.
       var op;
 
       html.push('<tr class="toLine">');
       html.push('<td class="num"></td>');
-      html.push('<td class="num">', line.toLineNum, '</td>');
+      html.push('<td class="num">', line.toLineNum, "</td>");
       html.push('<td class="mark">+</td>');
-      html.push('<td>');
-      _.each(line.parts, function(part) {
+      html.push("<td>");
+      _.each(line.parts, function (part) {
         op = part[0];
         if (op === DIFF_INSERT) {
-          html.push('<ins>' + part[1] + '</ins>');
+          html.push("<ins>" + part[1] + "</ins>");
         } else if (op === DIFF_EQUAL) {
           html.push(part[1]);
         }
       });
-      html.push('</td></tr>');
-    }
+      html.push("</td></tr>");
+    },
   };
 
   // Apply diffs automatically to '.diff-this' elements using children
   // '.from', '.to' and '.output' as the parameters.
   function initDiff($container) {
-    $container = $container || $('body');
-    $container.find('.diff-this').each(function() {
+    $container = $container || $("body");
+    $container.find(".diff-this").each(function () {
       var $this = $(this);
-      var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
+      var diff = new Diff(
+        $this.find(".from").text(),
+        $this.find(".to").text(),
+        $this.find(".output")
+      );
     });
   }
 
@@ -296,5 +308,4 @@
   window.k.initDiff = initDiff;
 
   initDiff();
-
 })(jQuery);

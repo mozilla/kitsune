@@ -1,4 +1,3 @@
-
 // ------------------------------------------------------------------------------
 // Content-area components
 // ------------------------------------------------------------------------------
@@ -39,7 +38,7 @@
   color: var(--kss-subtle-text);
 
   &:before {
-    content: 'Section ';
+    content: "Section ";
   }
 }
 .kss-title__permalink {
@@ -138,7 +137,7 @@
     height: 0;
     border-color: var(--kss-subtle-text) transparent;
     border-width: 7px 5px 0;
-    content: '';
+    content: "";
     border-style: solid;
   }
 
@@ -267,7 +266,7 @@ a:hover {
     width: 5px;
     height: 5px;
     border: 2px solid var(--kss-heading-color);
-    content: '';
+    content: "";
   }
 }
 &.kss-guides-mode .kss-modifier__example {
@@ -346,7 +345,7 @@ a:hover {
   justify-content: flex-start;
   align-items: stretch;
   margin: 0;
-  margin: 0 -.5em;
+  margin: 0 -0.5em;
   padding: 0;
   list-style: none;
   flex-wrap: wrap;
@@ -354,12 +353,12 @@ a:hover {
   > * {
     flex: 0 0 auto;
     margin-bottom: 1em;
-    padding: 0 .5em;
+    padding: 0 0.5em;
     width: 220px;
   }
 
   .kss-color {
-    height: 100%
+    height: 100%;
   }
 }
 
@@ -374,7 +373,7 @@ a:hover {
   }
 
   &-caption {
-    padding: .5em;
+    padding: 0.5em;
   }
 
   &-name,
@@ -401,7 +400,7 @@ a:hover {
 }
 
 .kss-github {
-  display:none;
+  display: none;
 
   @media screen and (min-width: 501px) {
     position: absolute;

@@ -1,5 +1,5 @@
-import Dispatcher from '../Dispatcher.es6.js';
-import {actionTypes} from '../constants/UrlConstants.es6.js';
+import Dispatcher from "../Dispatcher.es6.js";
+import { actionTypes } from "../constants/UrlConstants.es6.js";
 
 /**
  * Update the url path, notify any listeners, and call history.pushState.

@@ -19,73 +19,72 @@
   border-radius: var(--global-radius);
   margin: p.$spacing-2xl 0;
 
+  &--content {
+    & > * {
+      margin: 0 p.$spacing-xl;
+    }
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding-top: p.$spacing-lg;
+    padding-bottom: p.$spacing-lg;
+  }
+
+  &--icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  &--heading {
+    @include c.text-display-xxxs;
+    font-family: var(--heading-font-family);
+    font-weight: bold;
+    text-align: center;
+    color: var(--color-inverse);
+    a {
+      color: inherit;
+    }
+  }
+
+  .sumo-button {
+    flex: 0 0 auto;
+  }
+
+  .sumo-close-button {
+    flex: 0 0 auto;
+  }
+
+  &.has-abs-close-button {
+    position: relative;
+    padding: 20px;
+
+    .sumo-close-button {
+      position: absolute;
+      top: -16px;
+      right: -20px;
+    }
+  }
+
+  @media #{p.$mq-sm} {
     &--content {
-      & > * {
-        margin: 0 p.$spacing-xl;
-      }
-      display: flex;
-      align-items: center;
-      flex-direction: column;
+      flex-direction: row;
+    }
+
+    &--heading {
+      text-align: left;
+    }
+  }
+
+  @media #{p.$mq-md} {
+    &--content {
       padding-top: p.$spacing-lg;
       padding-bottom: p.$spacing-lg;
     }
 
-    &--icon {
-      width: 36px;
-      height: 36px;
-    }
-
-    &--heading {
-      @include c.text-display-xxxs;
-      font-family: var(--heading-font-family);
-      font-weight: bold;
-      text-align: center;
-      color: var(--color-inverse);
-      a {
-        color: inherit;
-      }
-    }
-
-    .sumo-button {
-      flex: 0 0 auto;
-    }
-
     .sumo-close-button {
-      flex: 0 0 auto;
+      position: static;
     }
-
-    &.has-abs-close-button {
-      position: relative;
-      padding: 20px;
-
-      .sumo-close-button {
-        position: absolute;
-        top: -16px;
-        right: -20px;
-      }
-    }
-
-    @media #{p.$mq-sm} {
-      &--content {
-        flex-direction: row;
-      }
-
-      &--heading {
-        text-align: left;
-      }
-    }
-
-    @media #{p.$mq-md} {
-
-      &--content {
-        padding-top: p.$spacing-lg;
-        padding-bottom: p.$spacing-lg;
-      }
-
-      .sumo-close-button {
-        position: static;
-      }
-    }
+  }
 }
 
 .sumo-scam-alert {
@@ -95,59 +94,59 @@
   position: relative;
   display: none;
 
-    &--content {
-      & > * {
-        margin: 0 p.$spacing-xl;
-      }
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-      padding-top: p.$spacing-lg;
-      padding-bottom: p.$spacing-lg;
+  &--content {
+    & > * {
+      margin: 0 p.$spacing-xl;
     }
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding-top: p.$spacing-lg;
+    padding-bottom: p.$spacing-lg;
+  }
 
-    svg {
-      width: 36px;
-      height: 36px;
-      color: var(--color-heading);
-      flex-shrink: 0;
+  svg {
+    width: 36px;
+    height: 36px;
+    color: var(--color-heading);
+    flex-shrink: 0;
+  }
+
+  &--heading {
+    @include c.text-body-cta;
+    text-align: center;
+    color: var(--color-heading);
+    flex-grow: 1;
+    padding-top: p.$spacing-lg;
+    padding-bottom: p.$spacing-lg;
+    a {
+      color: inherit;
+    }
+  }
+
+  .sumo-button {
+    flex: 0 0 auto;
+  }
+
+  .sumo-close-button {
+    flex: 0 0 auto;
+    position: absolute;
+    top: 6px;
+    right: -30px;
+  }
+
+  @media #{p.$mq-md} {
+    &--content {
+      flex-direction: row;
+      padding: 0;
     }
 
     &--heading {
-      @include c.text-body-cta;
-      text-align: center;
-      color: var(--color-heading);
-      flex-grow: 1;
-      padding-top: p.$spacing-lg;
-      padding-bottom: p.$spacing-lg;
-      a {
-        color: inherit;
-      }
-    }
-
-    .sumo-button {
-      flex: 0 0 auto;
+      text-align: left;
     }
 
     .sumo-close-button {
-      flex: 0 0 auto;
-      position: absolute;
-      top: 6px;
-      right: -30px;
+      position: static;
     }
-
-    @media #{p.$mq-md} {
-      &--content {
-        flex-direction: row;
-        padding: 0;
-      }
-
-      &--heading {
-        text-align: left;
-      }
-
-      .sumo-close-button {
-        position: static;
-      }
-    }
+  }
 }

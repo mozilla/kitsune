@@ -3,10 +3,12 @@
     "default": {
       "username": "",
       "password": "",
-      "email": ""},
+      "email": ""
+    },
     "admin": {
       "username": "",
       "password": "",
-      "email": ""}
+      "email": ""
+    }
   }
 }

@@ -1,9 +1,9 @@
+--- #-------------------------------------------------------------------------------------------------------------
+
 #-------------------------------------------------------------------------------------------------------------
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
-#-------------------------------------------------------------------------------------------------------------
-
-version: '3.4'
+version: "3.4"
 services:
   # Update this to the name of the service you want to work with in your docker-compose.yml file
   web:
@@ -22,9 +22,9 @@ services:
 
     # Uncomment if you want to expose any additional ports. The snippet below exposes port 3000.
     ports:
-       - 3050:3050
-       - 3000:3000 # browser-sync
-       - 3001:3001 # browser-sync ui
+      - 3050:3050
+      - 3000:3000 # browser-sync
+      - 3001:3001 # browser-sync ui
 
     volumes:
       # Update this to wherever you want VS Code to mount the folder of your project

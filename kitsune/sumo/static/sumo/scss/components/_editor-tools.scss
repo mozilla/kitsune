@@ -2,7 +2,6 @@
 @use '../protocol' as p;
 
 div.editor-tools {
-
   &:not(:empty) {
     height: 40px;
     line-height: 30px;
@@ -10,7 +9,6 @@ div.editor-tools {
     margin-bottom: p.$spacing-sm;
     display: flex;
   }
-
 
   a.markup-toolbar-link {
     padding: 0 6px;
@@ -40,7 +38,6 @@ div.editor-tools {
     top: p.$spacing-xs;
   }
 }
-
 
 .html-rtl {
   button {
@@ -147,10 +144,6 @@ button {
         color: var(--color-heading);
       }
     }
-
-
-
-
   }
 }
 
@@ -208,16 +201,16 @@ section.marky {
   overflow: auto;
 }
 
-
 #media-modal {
   div.placeholder {
     height: 65%;
-    height:  calc(100% - 225px);
+    height: calc(100% - 225px);
   }
 
   &.processing {
     div.placeholder {
-      background: transparent url(/static/sumo/img/customercare/spinner.gif) no-repeat center center;
+      background: transparent url(/static/sumo/img/customercare/spinner.gif)
+        no-repeat center center;
     }
 
     #media-list {
@@ -244,12 +237,12 @@ section.marky {
 
       &:hover {
         background: #f0f0f0;
-        border: solid 1px #9ACCF7;
+        border: solid 1px #9accf7;
       }
 
       &.selected {
-        background: #DAEDF6;
-        border: solid 1px #9ACCF7;
+        background: #daedf6;
+        border: solid 1px #9accf7;
       }
 
       img {

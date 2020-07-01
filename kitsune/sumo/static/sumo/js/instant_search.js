@@ -1,36 +1,36 @@
 /* globals k:false, jQuery:false, trackEvent:false */
-(function($) {
+(function ($) {
   var searchTimeout;
-  var locale = $('html').attr('lang');
+  var locale = $("html").attr("lang");
 
-  var search = new k.Search('/' + locale + '/search');
+  var search = new k.Search("/" + locale + "/search");
   var cxhr = new k.CachedXHR();
   var aaq_explore_step = $("#question-search-masthead").length > 0;
 
   function hideContent() {
-    $('#main-content').hide();
-    $('#main-content').siblings('aside').hide();
-    $('body').addClass('search-results-visible');
-    $('.home-search-section .mzp-l-content').removeClass('narrow');
-    $('.home-search-section').removeClass('extra-pad-bottom');
+    $("#main-content").hide();
+    $("#main-content").siblings("aside").hide();
+    $("body").addClass("search-results-visible");
+    $(".home-search-section .mzp-l-content").removeClass("narrow");
+    $(".home-search-section").removeClass("extra-pad-bottom");
 
     // clear sidebar form and focus if is's there.
-    $('#support-search-sidebar').find('input[name=q]').val('');
+    $("#support-search-sidebar").find("input[name=q]").val("");
   }
 
   function showContent() {
-    $('body').removeClass('search-results-visible');
-    $('.home-search-section').addClass('extra-pad-bottom');
-    $('.support-search-main').hide();
-    $('#main-content').show();
-    $('#main-content').siblings('aside').show();
-    $('#instant-search-content').remove();
-    $('.search-form-large:visible').find('input[name=q]').focus().val('');
-    $('#support-search').find('input[name=q]').val('');
+    $("body").removeClass("search-results-visible");
+    $(".home-search-section").addClass("extra-pad-bottom");
+    $(".support-search-main").hide();
+    $("#main-content").show();
+    $("#main-content").siblings("aside").show();
+    $("#instant-search-content").remove();
+    $(".search-form-large:visible").find("input[name=q]").focus().val("");
+    $("#support-search").find("input[name=q]").val("");
     $(".page-heading--intro-text").show();
     $(".home-search-section--content .search-results-heading").remove();
-    $('.home-search-section .mzp-l-content').addClass('narrow');
-    $('.hidden-search-masthead').hide();
+    $(".home-search-section .mzp-l-content").addClass("narrow");
+    $(".hidden-search-masthead").hide();
   }
 
   function render(data) {
@@ -39,16 +39,18 @@
     var $searchContent;
     context.base_url = base_url;
 
-    if ($('#instant-search-content').length) {
-      $searchContent = $('#instant-search-content');
+    if ($("#instant-search-content").length) {
+      $searchContent = $("#instant-search-content");
     } else {
-      $searchContent = $('<div />').attr('id', 'instant-search-content');
-      $('#main-content').after($searchContent);
+      $searchContent = $("<div />").attr("id", "instant-search-content");
+      $("#main-content").after($searchContent);
     }
 
-    var $searchResults = $(k.nunjucksEnv.render("search-results.html", context));
+    var $searchResults = $(
+      k.nunjucksEnv.render("search-results.html", context)
+    );
     if (aaq_explore_step) {
-      $searchResults.find('section a').attr('target', '_blank');
+      $searchResults.find("section a").attr("target", "_blank");
     }
     $searchContent.html($searchResults);
 
@@ -72,162 +74,187 @@
     hideContent: hideContent,
     showContent: showContent,
     render: render,
-    searchClient: search
+    searchClient: search,
   };
 
-  $(document).on('submit', '[data-instant-search="form"]', function(ev) {
+  $(document).on("submit", '[data-instant-search="form"]', function (ev) {
     ev.preventDefault();
-    $(this).find('.searchbox').focus();
+    $(this).find(".searchbox").focus();
   });
 
-  $(document).on('keyup', '[data-instant-search="form"] input[type="search"]', function(ev) {
-    var $this = $(this);
-    var $form = $this.closest('form');
-    var formId = $form.attr('id');
-    var params = {
-      format: 'json'
-    };
+  $(document).on(
+    "keyup",
+    '[data-instant-search="form"] input[type="search"]',
+    function (ev) {
+      var $this = $(this);
+      var $form = $this.closest("form");
+      var formId = $form.attr("id");
+      var params = {
+        format: "json",
+      };
 
-    if ($this.val().length === 0) {
-      if (searchTimeout) {
-        window.clearTimeout(searchTimeout);
-      }
-
-      window.k.InstantSearchSettings.showContent();
-    } else if ($this.val() !== search.lastQuery) {
-      if (searchTimeout) {
-        window.clearTimeout(searchTimeout);
-      }
-
-      $form.find('input').each(function () {
-        if ($(this).attr('type') === 'submit') {
-          return true;
+      if ($this.val().length === 0) {
+        if (searchTimeout) {
+          window.clearTimeout(searchTimeout);
         }
-        if ($(this).attr('type') === 'button') {
-          return true;
+
+        window.k.InstantSearchSettings.showContent();
+      } else if ($this.val() !== search.lastQuery) {
+        if (searchTimeout) {
+          window.clearTimeout(searchTimeout);
         }
-        if ($(this).attr('name') === 'q') {
-          var value = $(this).val();
 
-          if (formId === 'support-search-masthead') {
-            $('#support-search').find('input[name=q]').val(value);
-          } else if (formId === 'support-search' || formId === 'mobile-search-results') {
+        $form.find("input").each(function () {
+          if ($(this).attr("type") === "submit") {
+            return true;
+          }
+          if ($(this).attr("type") === "button") {
+            return true;
+          }
+          if ($(this).attr("name") === "q") {
+            var value = $(this).val();
 
-            // If applicable, close the mobile search field and move the focus to the main field.
-            $('.sumo-nav--mobile-search-form').removeClass('mzp-is-open').attr('aria-expanded', 'false');
+            if (formId === "support-search-masthead") {
+              $("#support-search").find("input[name=q]").val(value);
+            } else if (
+              formId === "support-search" ||
+              formId === "mobile-search-results"
+            ) {
+              // If applicable, close the mobile search field and move the focus to the main field.
+              $(".sumo-nav--mobile-search-form")
+                .removeClass("mzp-is-open")
+                .attr("aria-expanded", "false");
 
-            if (aaq_explore_step) {
-              // in aaq explore step we don't want any search to show the default masthead
-              $('.hidden-search-masthead').hide();
-              $('.question-masthead').show();
-              $('.page-heading--logo').css('display', 'block');
+              if (aaq_explore_step) {
+                // in aaq explore step we don't want any search to show the default masthead
+                $(".hidden-search-masthead").hide();
+                $(".question-masthead").show();
+                $(".page-heading--logo").css("display", "block");
 
-              $('.question-masthead').find('input[name=q]').val(value).focus();
-              window.scrollTo(0, 0);
-            } else if ($('.hidden-search-masthead').length > 0) {
-              $('.hidden-search-masthead').show();
-              $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
-              window.scrollTo(0, 0);
+                $(".question-masthead")
+                  .find("input[name=q]")
+                  .val(value)
+                  .focus();
+                window.scrollTo(0, 0);
+              } else if ($(".hidden-search-masthead").length > 0) {
+                $(".hidden-search-masthead").show();
+                $(".hidden-search-masthead")
+                  .find("input[name=q]")
+                  .val(value)
+                  .focus();
+                window.scrollTo(0, 0);
+              } else {
+                window.scrollTo(0, 0);
+                $("#support-search-masthead")
+                  .find("input[name=q]")
+                  .val(value)
+                  .focus();
+              }
+            } else if (formId === "support-search-sidebar") {
+              $(".hidden-search-masthead").show();
+              $(".hidden-search-masthead")
+                .find("input[name=q]")
+                .val(value)
+                .focus();
+            } else if (formId === "question-search-masthead") {
+              // undo some default behaviors in order to keep the default masthead
+              $(".hidden-search-masthead").hide();
+              $(".question-masthead").show();
+              $(".page-heading--logo").css("display", "block");
+              // set nav bar search box to same value
+              $("#support-search").find("input[name=q]").val(value);
             } else {
-              window.scrollTo(0, 0);
-              $('#support-search-masthead').find('input[name=q]').val(value).focus();
+              $("#support-search").find("input[name=q]").val(value);
+              $("#support-search-masthead")
+                .find("input[name=q]")
+                .val(value)
+                .focus();
             }
 
-          } else if (formId === 'support-search-sidebar') {
-            $('.hidden-search-masthead').show();
-            $('.hidden-search-masthead').find('input[name=q]').val(value).focus();
-
-          } else if (formId === 'question-search-masthead') {
-            // undo some default behaviors in order to keep the default masthead
-            $('.hidden-search-masthead').hide();
-            $('.question-masthead').show();
-            $('.page-heading--logo').css('display', 'block');
-            // set nav bar search box to same value
-            $("#support-search").find("input[name=q]").val(value);
-          } else {
-            $('#support-search').find('input[name=q]').val(value);
-            $('#support-search-masthead').find('input[name=q]').val(value).focus();
+            return true;
           }
+          params[$(this).attr("name")] = $(this).val();
+        });
 
-          return true;
-        }
-        params[$(this).attr('name')] = $(this).val();
-      });
+        searchTimeout = setTimeout(function () {
+          if (search.hasLastQuery) {
+            trackEvent("Instant Search", "Exit Search", search.lastQueryUrl());
+          }
+          search.setParams(params);
+          search.query($this.val(), k.InstantSearchSettings.render);
+          trackEvent("Instant Search", "Search", search.lastQueryUrl());
+        }, 200);
 
-      searchTimeout = setTimeout(function () {
-        if (search.hasLastQuery) {
-          trackEvent('Instant Search', 'Exit Search', search.lastQueryUrl());
-        }
-        search.setParams(params);
-        search.query($this.val(), k.InstantSearchSettings.render);
-        trackEvent('Instant Search', 'Search', search.lastQueryUrl());
-      }, 200);
-
-      k.InstantSearchSettings.hideContent();
+        k.InstantSearchSettings.hideContent();
+      }
     }
-  });
+  );
 
-  $(document).on('click', '[data-instant-search="link"]', function(ev) {
+  $(document).on("click", '[data-instant-search="link"]', function (ev) {
     ev.preventDefault();
 
     var $this = $(this);
 
     if (search.hasLastQuery) {
-      trackEvent('Instant Search', 'Exit Search', search.queryUrl(search.lastQuery));
+      trackEvent(
+        "Instant Search",
+        "Exit Search",
+        search.queryUrl(search.lastQuery)
+      );
     }
 
-    var setParams = $this.data('instant-search-set-params');
+    var setParams = $this.data("instant-search-set-params");
     if (setParams) {
-      setParams = setParams.split('&');
-      $(setParams).each(function() {
-        var p = this.split('=');
-        search.setParam(p.shift(), p.join('='));
+      setParams = setParams.split("&");
+      $(setParams).each(function () {
+        var p = this.split("=");
+        search.setParam(p.shift(), p.join("="));
       });
     }
 
-    var unsetParams = $this.data('instant-search-unset-params');
+    var unsetParams = $this.data("instant-search-unset-params");
     if (unsetParams) {
-      unsetParams = unsetParams.split('&');
-      $(unsetParams).each(function() {
+      unsetParams = unsetParams.split("&");
+      $(unsetParams).each(function () {
         search.unsetParam(this);
       });
     }
 
-    trackEvent('Instant Search', 'Search', $this.data('href'));
+    trackEvent("Instant Search", "Search", $this.data("href"));
 
-    cxhr.request($this.data('href'), {
-      data: {format: 'json'},
-      dataType: 'json',
-      success: k.InstantSearchSettings.render
+    cxhr.request($this.data("href"), {
+      data: { format: "json" },
+      dataType: "json",
+      success: k.InstantSearchSettings.render,
     });
   });
 
   // 'Popular searches' feature
-  $(document).on('click', '[data-featured-search]', function(ev) {
-    var $mainInput = $('#support-search-masthead input[name=q]');
+  $(document).on("click", "[data-featured-search]", function (ev) {
+    var $mainInput = $("#support-search-masthead input[name=q]");
     var thisLink = $(this).text();
-    $('#support-search-masthead input[name=q]').focus().val(thisLink);
-    $mainInput.trigger( "keyup" );
+    $("#support-search-masthead input[name=q]").focus().val(thisLink);
+    $mainInput.trigger("keyup");
     ev.preventDefault();
   });
 
-  $(document).on('click', '[data-mobile-nav-search-button]', function(ev) {
+  $(document).on("click", "[data-mobile-nav-search-button]", function (ev) {
     // If we hijack the layout of the page and the user clicks the button again.
     // assume they want to get rid of the search.
-    if ($('.hidden-search-masthead').is(':visible')) {
+    if ($(".hidden-search-masthead").is(":visible")) {
       window.k.InstantSearchSettings.showContent();
     } else if (aaq_explore_step) {
       // in aaq explore step, we don't want to show the default masthead
-      $('#question-search-masthead').find('input[name=q]').focus();
+      $("#question-search-masthead").find("input[name=q]").focus();
       window.scrollTo(0, 0);
-    } else if ($('.hidden-search-masthead').length > 0) {
-      $('body').addClass('search-results-visible');
-      $('.hidden-search-masthead').show();
-      $('.hidden-search-masthead').find('input[name=q]').focus();
+    } else if ($(".hidden-search-masthead").length > 0) {
+      $("body").addClass("search-results-visible");
+      $(".hidden-search-masthead").show();
+      $(".hidden-search-masthead").find("input[name=q]").focus();
       window.scrollTo(0, 0);
     } else {
       // catchall for pages with a searchbox in the masthead
-      $('.simple-search-form .searchbox').trigger('keyup').focus();
+      $(".simple-search-form .searchbox").trigger("keyup").focus();
     }
 
     ev.preventDefault();

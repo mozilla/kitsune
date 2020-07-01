@@ -3,133 +3,133 @@
  */
 
 article.main ul {
-    list-style-position: inside;
-    margin: 0 0 15px;
+  list-style-position: inside;
+  margin: 0 0 15px;
 }
 
 article.main h2 {
-    font-size: 18px;
-    margin: 20px 0 0;
+  font-size: 18px;
+  margin: 20px 0 0;
 }
 
 /* list page */
 #group-list a.add {
-    float: right;
-    padding: 0 0 0 13px;
-    position: relative;
+  float: right;
+  padding: 0 0 0 13px;
+  position: relative;
 }
 
 .html-rtl #group-list a.add {
-    float: left;
-    padding: 0 13px 0 0;
+  float: left;
+  padding: 0 13px 0 0;
 }
 
 #group-list a.add:before {
-    content: '+';
-    font-family: Arial;
-    font-weight: bold;
-    font-size: 16px;
-    left: 0;
-    position: absolute;
-    top: -2px;
+  content: "+";
+  font-family: Arial;
+  font-weight: bold;
+  font-size: 16px;
+  left: 0;
+  position: absolute;
+  top: -2px;
 }
 
 .html-rtl #group-list a.add:before {
-    left: auto;
-    right: 0;
+  left: auto;
+  right: 0;
 }
 
 /* profile page */
 #main-area {
-    margin: 0 0 0 65px;
+  margin: 0 0 0 65px;
 }
 
 .html-rtl #main-area {
-    margin: 0 65px 0 0;
+  margin: 0 65px 0 0;
 }
 
 #avatar-area {
-    float: left;
-    text-align: center;
-    width: 48px;
+  float: left;
+  text-align: center;
+  width: 48px;
 }
 
 .html-rtl #avatar-area {
-    float: right;
+  float: right;
 }
 
 #avatar-area p {
-    font-size: 12px;
-    margin: 2px 0;
+  font-size: 12px;
+  margin: 2px 0;
 }
 
 #group-profile a.edit {
-    background: transparent url(../img/icons.actions.png) no-repeat left -25px;
-    float: right;
-    padding: 0 0 0 18px;
+  background: transparent url(../img/icons.actions.png) no-repeat left -25px;
+  float: right;
+  padding: 0 0 0 18px;
 }
 
 .html-rtl #group-profile a.edit {
-    background: right -25px;
-    padding: 0 18px 0 0;
+  background: right -25px;
+  padding: 0 18px 0 0;
 }
 
 /* edit page */
 div.editor {
-    margin: 0 0 10px;
-    padding: 0;
+  margin: 0 0 10px;
+  padding: 0;
 }
 
 #id_information {
-    height: 350px;
+  height: 350px;
 }
 
 /* avatar delete */
 #avatar-delete p {
-    margin: 10px 0;
+  margin: 10px 0;
 }
 
 /* change avatar */
 #change-avatar form {
-    margin: 25px 0;
+  margin: 25px 0;
 }
 
 #change-avatar ul {
-    list-style: none;
+  list-style: none;
 }
 
 #change-avatar div.val-wrap {
-    display: inline-block;
-    line-height: 35px;
-    margin: 0 10px 0 0;
-    width: auto;
+  display: inline-block;
+  line-height: 35px;
+  margin: 0 10px 0 0;
+  width: auto;
 }
 
 .html-rtl #change-avatar div.val-wrap {
-    margin: 0 0 0 10px;
+  margin: 0 0 0 10px;
 }
 
 #change-avatar label {
-    display: inline-block;
-    padding: 0 5px 0 0;
-    text-align: right;
-    vertical-align: top;
-    width: 180px;
+  display: inline-block;
+  padding: 0 5px 0 0;
+  text-align: right;
+  vertical-align: top;
+  width: 180px;
 }
 
 .html-rtl #change-avatar label {
-    padding: 0 0 0 5px;
-    text-align: left;
+  padding: 0 0 0 5px;
+  text-align: left;
 }
 
 #change-avatar div.val-wrap input {
-    display: block;
+  display: block;
 }
 
 #change-avatar div.submit {
-    padding: 10px 0 0 188px;
+  padding: 10px 0 0 188px;
 }
 
 .html-rtl #change-avatar div.submit {
-    padding: 10px 188px 0 0;
+  padding: 10px 188px 0 0;
 }

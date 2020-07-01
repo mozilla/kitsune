@@ -30,102 +30,100 @@
   margin-bottom: p.$spacing-lg;
 }
 
-
-
 // taken from the old site for this URL:
 // https://support.mozilla.org/en-US/community/top-contributors/questions
 .selector {
-    display: inline-block;
-    position: relative;
-    text-align: left;
+  display: inline-block;
+  position: relative;
+  text-align: left;
 }
 .selector.block {
-    display: block;
-    position: relative;
-    width: 200px;
+  display: block;
+  position: relative;
+  width: 200px;
 }
 
 .selector-arrow {
-    padding-right: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .ts-options .selected:before {
-    position: absolute;
-    margin: 3px 0 0 -21px;
-    width: p.$spacing-md;
-    height: p.$spacing-md;
-    border: none;
-    border-radius: p.$spacing-xs;
-    background-image: url('#{p.$image-path}/icons/check.svg');
-    background-color: transparent;
-    background-position: center center;
-    background-repeat: no-repeat;
-    font: 0/0 a;
-    color: transparent;
-    content: "";
-    speak: none;
+  position: absolute;
+  margin: 3px 0 0 -21px;
+  width: p.$spacing-md;
+  height: p.$spacing-md;
+  border: none;
+  border-radius: p.$spacing-xs;
+  background-image: url("#{p.$image-path}/icons/check.svg");
+  background-color: transparent;
+  background-position: center center;
+  background-repeat: no-repeat;
+  font: 0/0 a;
+  color: transparent;
+  content: "";
+  speak: none;
 }
 .select-options {
-    display: none;
-    position: absolute;
-    left: 0;
+  display: none;
+  position: absolute;
+  left: 0;
 }
 .ts-modal {
-    border: 1px solid #d4d4d4;
-    border-radius: 6px;
-    min-width: 120%;
-    max-height: 800%;
-    overflow: auto;
-    z-index: 10;
+  border: 1px solid #d4d4d4;
+  border-radius: 6px;
+  min-width: 120%;
+  max-height: 800%;
+  overflow: auto;
+  z-index: 10;
 }
 /* visibility of the filter field is configurable
    and handled by JavaScript using the data-visible
    attribute */
 .options-filter {
-    display: none;
-    padding: .8rem;
+  display: none;
+  padding: 0.8rem;
 }
 .options-filter input[type="text"] {
-    padding: 5px 2%;
-    border: 1px solid #b2b2b2;
-    width: 100%;
-    font-size: .8rem;
-    border-radius: .2rem;
-    box-shadow: 0 1px rgba(255, 255, 255, 0.5);
+  padding: 5px 2%;
+  border: 1px solid #b2b2b2;
+  width: 100%;
+  font-size: 0.8rem;
+  border-radius: 0.2rem;
+  box-shadow: 0 1px rgba(255, 255, 255, 0.5);
 }
 .options-filter input[type="text"]:focus {
-    border: 1px solid #42a4e0;
-    box-shadow: 0 0 0 2px rgba(73, 173, 227, 0.4);
+  border: 1px solid #42a4e0;
+  box-shadow: 0 0 0 2px rgba(73, 173, 227, 0.4);
 }
 ul.ts-options {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .ts-options a {
-    display: block;
-    background-color: white;
-    color: black;
-    padding: .6rem .6rem .6rem 2rem;
-    text-decoration: none;
+  display: block;
+  background-color: white;
+  color: black;
+  padding: 0.6rem 0.6rem 0.6rem 2rem;
+  text-decoration: none;
 }
 .ts-options a:hover {
-    background-color: #005CB8;
-    color: #fff;
+  background-color: #005cb8;
+  color: #fff;
 }
 .ts-options li {
-    border-top: 1px solid #e0e0e0;
-    margin-bottom: 0;
+  border-top: 1px solid #e0e0e0;
+  margin-bottom: 0;
 }
 .ts-options li:first-child {
-    border-top: none;
-    margin-bottom: 0;
+  border-top: none;
+  margin-bottom: 0;
 }
 .ts-options li:last-child a {
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 .ts-options li:first-child a {
-    border-top-right-radius: 6px;
-    border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-top-left-radius: 6px;
 }

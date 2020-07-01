@@ -33,13 +33,16 @@
   }
 
   &--logo {
-    @include p.bidi(((margin, 0 #{c.$gutter-width} 0 0, 0 0 0 #{c.$gutter-width}),));
+    @include p.bidi(
+      ((margin, 0 #{c.$gutter-width} 0 0, 0 0 0 #{c.$gutter-width}))
+    );
     padding-top: 12px;
     padding-bottom: 12px;
     width: 96px;
     height: auto;
 
-    a, img {
+    a,
+    img {
       display: block;
     }
   }
@@ -53,10 +56,7 @@
   }
 
   &--list-wrap-right {
-    @include p.bidi((
-      (margin-left, auto, 0),
-      (margin-right, 0, auto)
-    ));
+    @include p.bidi(((margin-left, auto, 0), (margin-right, 0, auto)));
 
     &.logged-out {
       .sumo-nav--list {
@@ -68,14 +68,11 @@
 
   &--link {
     &.has-avatar {
-      @include p.bidi((
-        (padding-right, 0, 24px),
-        (padding-left, 24px, 0),
-      ));
+      @include p.bidi(((padding-right, 0, 24px), (padding-left, 24px, 0)));
 
       .avatar {
         display: block;
-        @include p.bidi(((margin, -6px 0 -6px 20px, -6px 20px -6px 0),));
+        @include p.bidi(((margin, -6px 0 -6px 20px, -6px 20px -6px 0)));
         width: 36px;
         height: 36px;
         border-radius: 50%;
@@ -85,7 +82,7 @@
 
   &--avatar-button {
     display: flex;
-    @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));
+    @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0)));
 
     .avatar {
       width: p.$spacing-xl;
@@ -150,7 +147,8 @@
       }
     }
 
-    &-thirds { // This is non-standard.
+    &-thirds {
+      // This is non-standard.
       @media #{p.$mq-md} {
         @include c.col(2, 6);
 
@@ -161,7 +159,7 @@
     }
 
     &-item {
-      @include p.bidi(((margin, 0 0 0 -8px, 0 -8px 0 0),));
+      @include p.bidi(((margin, 0 0 0 -8px, 0 -8px 0 0)));
     }
   }
 
@@ -186,12 +184,12 @@
   &--search-button,
   &--toggle-button {
     appearance: none;
-    @include p.bidi(((margin, 0 0 0 10px, 0 10px 0 0),));
+    @include p.bidi(((margin, 0 0 0 10px, 0 10px 0 0)));
     width: p.$spacing-xl;
     height: p.$spacing-xl;
     border: none;
     border-radius: p.$spacing-xs;
-    background-image: url('#{p.$image-path}/icons/menu.svg');
+    background-image: url("#{p.$image-path}/icons/menu.svg");
     background-color: transparent;
     background-position: center center;
     background-repeat: no-repeat;
@@ -201,7 +199,7 @@
     &:hover,
     &:active,
     &:focus,
-    &.mzp-is-active  {
+    &.mzp-is-active {
       background-color: var(--color-link-active-bg);
     }
 
@@ -211,11 +209,8 @@
   }
 
   &--search-button {
-    @include p.bidi((
-      (margin-left, auto, 0),
-      (margin-right, 0, auto),
-    ));
-    background-image: url('#{p.$image-path}/icons/search.svg');
+    @include p.bidi(((margin-left, auto, 0), (margin-right, 0, auto)));
+    background-image: url("#{p.$image-path}/icons/search.svg");
   }
 
   .simple-search-form {
@@ -252,10 +247,9 @@
     }
 
     .search-button {
-      @include p.bidi((
-        (right, p.$spacing-xs, auto),
-        (left, auto, p.$spacing-xs),
-      ));
+      @include p.bidi(
+        ((right, p.$spacing-xs, auto), (left, auto, p.$spacing-xs))
+      );
     }
 
     .sumo-nav--list-wrap-right {
@@ -270,7 +264,15 @@
   }
 
   .firefox-download-button {
-    @include p.bidi(((margin, 0 p.$spacing-lg 0 p.$spacing-sm, 0 p.$spacing-sm 0 p.$spacing-lg),));
+    @include p.bidi(
+      (
+        (
+          margin,
+          0 p.$spacing-lg 0 p.$spacing-sm,
+          0 p.$spacing-sm 0 p.$spacing-lg
+        )
+      )
+    );
   }
 
   .searchbox {
@@ -281,21 +283,15 @@
     }
   }
 
-
   // protocol overrides
   .mzp-c-menu-panel .mzp-c-menu-button-close {
-
-    @include p.bidi((
-      (right, p.$spacing-md, auto),
-      (left, auto, p.$spacing-md),
-    ));
+    @include p.bidi(
+      ((right, p.$spacing-md, auto), (left, auto, p.$spacing-md))
+    );
   }
 
   .mzp-c-navigation-menu {
-    @include p.bidi((
-      (margin-left, 0, 0),
-      (margin-right, 0, 0),
-    ));
+    @include p.bidi(((margin-left, 0, 0), (margin-right, 0, 0)));
   }
 
   .mzp-c-menu-category .mzp-c-menu-title {

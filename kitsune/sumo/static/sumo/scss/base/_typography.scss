@@ -33,19 +33,23 @@
 //  .subtitle { @include c.text-display-lg; }
 //  .intro { @include c.text-body-lg; }
 
-
-
 body {
   color: var(--color-text);
 }
 
-h1, h2, h3, h4, h5, h6,
-[class*=text-display] {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+[class*="text-display"] {
   font-family: var(--heading-font-family);
   font-weight: bold;
   color: var(--color-heading);
 
-  a, :link {
+  a,
+  :link {
     text-decoration: none;
     color: var(--color-heading);
 
@@ -58,7 +62,13 @@ h1, h2, h3, h4, h5, h6,
 .has-moz-headings {
   color: var(--color-moz-text);
 
-  h1, h2, h3, h4, h5, h6, [class*=text-display] {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  [class*="text-display"] {
     font-family: var(--heading-font-family-moz);
     color: var(--color-moz-heading);
   }
@@ -97,7 +107,9 @@ h4,
   @include c.text-display-md;
 }
 
-h5, h6, .text-display-sm {
+h5,
+h6,
+.text-display-sm {
   font-family: var(--base-font-family);
   @include c.text-display-sm;
 }
@@ -106,7 +118,6 @@ h5, h6, .text-display-sm {
   @include c.text-display-xs;
 }
 
-
 .text-display-xxs {
   @include c.text-display-xxs;
 }
@@ -114,7 +125,6 @@ h5, h6, .text-display-sm {
 .text-display-xxxs {
   @include c.text-display-xxxs;
 }
-
 
 .alt-heading-font {
   --heading-font-family: var(--heading-alt-font-family);
@@ -147,7 +157,12 @@ h5, h6, .text-display-sm {
 
 .normalize-headings,
 #doc-content {
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @include c.text-display-xs;
   }
 }
@@ -180,7 +195,8 @@ h5, h6, .text-display-sm {
   }
 }
 
-a, :link {
+a,
+:link {
   text-decoration: underline;
   color: var(--color-link);
 
@@ -259,10 +275,7 @@ blockquote {
 
   &.is-summary {
     button {
-      @include p.bidi((
-        (padding-left, 0, 48px),
-        (padding-right, 48px, 0),
-      ));
+      @include p.bidi(((padding-left, 0, 48px), (padding-right, 48px, 0)));
     }
   }
 }

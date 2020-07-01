@@ -7,9 +7,9 @@
 
 ## Release convention
 
-* Releases to the development environment can happen either from the master or from a feature branch.
-* Releases to the stage environment happen from the master branch.
-* Releases to the production environment happen from the master branch after successful QA testing in the stage environment.
+- Releases to the development environment can happen either from the master or from a feature branch.
+- Releases to the stage environment happen from the master branch.
+- Releases to the production environment happen from the master branch after successful QA testing in the stage environment.
 
 ```
 Because there might be need to deploy while testing merged changes in master,
@@ -39,56 +39,55 @@ The production branch maintains an image that can be released in production with
   e.g. `ln -s ~/bin/kubectl ./regions/frankfurt/kubectl`
 
   Files to be created:
-    - ./regions/frankfurt/kubectl
-    - ./regions/frankfurt/kubeconfig
-    - ./regions/oregon-a/kubectl
-    - ./regions/oregon-a/kubeconfig
-    - ./regions/oregon-b/kubectl
-    - ./regions/oregon-b/kubeconfig
+
+  - ./regions/frankfurt/kubectl
+  - ./regions/frankfurt/kubeconfig
+  - ./regions/oregon-a/kubectl
+  - ./regions/oregon-a/kubeconfig
+  - ./regions/oregon-b/kubectl
+  - ./regions/oregon-b/kubeconfig
 
 - Create symbolic links to secrets for each namespace and region.
 
   e.g. `ln -s ~/sumo-encrypted/k8s/secrets/frankfurt/sumo-dev-secrets.yaml ./regions/frankfurt/dev-secrets.yaml`
 
   Files to be created:
-    - ./regions/frankfurt/dev-secrets.yaml
-    - ./regions/frankfurt/stage-secrets.yaml
-    - ./regions/frankfurt/prod-secrets.yaml
-    - ./regions/oregon-a/stage-secrets.yaml
-    - ./regions/oregon-a/prod-secrets.yaml
-    - ./regions/oregon-b/stage-secrets.yaml
-    - ./regions/oregon-b/prod-secrets.yaml
 
+  - ./regions/frankfurt/dev-secrets.yaml
+  - ./regions/frankfurt/stage-secrets.yaml
+  - ./regions/frankfurt/prod-secrets.yaml
+  - ./regions/oregon-a/stage-secrets.yaml
+  - ./regions/oregon-a/prod-secrets.yaml
+  - ./regions/oregon-b/stage-secrets.yaml
+  - ./regions/oregon-b/prod-secrets.yaml
 
 #### Deploy SUMO with commander (recommended)
 
 Choose a region and env:
 
-| Region  | Env  |
-|---|---|
-| frankfurt  | dev  |
-| frankfurt  | stage |
-| frankfurt  | prod |
+| Region    | Env   |
+| --------- | ----- |
+| frankfurt | dev   |
+| frankfurt | stage |
+| frankfurt | prod  |
 | oregon-a  | stage |
-| oregon-a  | prod |
+| oregon-a  | prod  |
 | oregon-b  | stage |
-| oregon-b  | prod |
-
+| oregon-b  | prod  |
 
 - Update the settings file with new image tags and settings.
 
-- Deploy with commander *without secrets*
+- Deploy with commander _without secrets_
 
   `./commander.sh deploy <region> <environment> <git sha>`
 
   E.g. `./commander.sh deploy frankfurt dev d7be392`
 
-- Deploy with commander *with secrets*
+- Deploy with commander _with secrets_
 
   `./commander.sh deploy <region> <environment> <git sha> secrets`
 
   E.g. `./commander.sh deploy frankfurt dev d7be392 secrets`
-
 
 #### Deploying SUMO (low level)
 
@@ -132,10 +131,9 @@ invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-web
 
 Run basic acceptance tests with
 
-  `./acceptance-tests.sh <URL>`
+`./acceptance-tests.sh <URL>`
 
-  E.g. `./acceptance-tests.sh https://dev.sumo.mozit.cloud`
-
+E.g. `./acceptance-tests.sh https://dev.sumo.mozit.cloud`
 
 #### List of invoke available tasks
 
@@ -161,18 +159,17 @@ Available tasks:
   rollouts.status-web             Check rollout status of a SUMO web deployment
 ```
 
-----
+---
 
 ##### kubectl client version note
 
->All Kubernetes clusters that serve SUMO are currently v1.10.xx
+> All Kubernetes clusters that serve SUMO are currently v1.10.xx
 
 When connecting to an older K8s cluster, you may need to download an older version of Kubectl that matches the version of the server.
 
 Newer clients connecting to older K8s servers may display error messages such as:
 
     Error from server (NotFound): the server could not find the requested resource
-
 
 To determine the K8s server version:
 
@@ -225,29 +222,34 @@ Open a python shell:
 ```
 
 Get the url of the redis instance:
+
 ```
 In [1]: settings.BROKER_URL
 Out[1]: 'redis://hostname:port/db'
 ```
 
 Set up the redis client:
+
 ```
 import redis
 r = redis.Redis(host='hostname', port='port', db=db)
 ```
 
 Then query the length of the queue, in this case called 'celery':
+
 ```
 In [4]: r.llen('celery')
 Out[4]: 44
 ```
 
 The last item in the queue can be fetched with:
+
 ```
 l = r.lrange('celery', -1, -1)
 ```
 
 This must then be parsed and de-pickled:
+
 ```
 import pickle, base64, json
 pickle.loads(base64.decodestring(json.loads(l[0])['body']))

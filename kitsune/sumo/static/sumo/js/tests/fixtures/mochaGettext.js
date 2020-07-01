@@ -1,4 +1,4 @@
-import mochaFixtureHelper from './mochaFixtureHelper.js';
+import mochaFixtureHelper from "./mochaFixtureHelper.js";
 
 function fakeGettext(msgid) {
   return msgid;

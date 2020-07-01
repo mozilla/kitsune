@@ -1,6 +1,6 @@
-import {EventEmitter} from 'events';
+import { EventEmitter } from "events";
 
-const CHANGE_EVENT = 'change';
+const CHANGE_EVENT = "change";
 
 /**
  * Base class for Flux-style data stores.

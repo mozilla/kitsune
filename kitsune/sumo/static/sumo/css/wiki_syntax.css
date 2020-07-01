@@ -1,12 +1,12 @@
 /* Wiki Document content */
 #doc-content {
-    color: rgb(40, 40, 40);
-    font-size: 14px;
-    line-height: 1.5em;
+  color: rgb(40, 40, 40);
+  font-size: 14px;
+  line-height: 1.5em;
 }
 
 #doc-pending-fallback {
-    margin: 1em 0 2em;
+  margin: 1em 0 2em;
 }
 
 /* Blocks in the content that need margins. */
@@ -16,12 +16,12 @@
 #doc-content .warning,
 #home-content .note,
 #doc-content .note {
-    margin: 1em 0;
-    overflow: hidden;
+  margin: 1em 0;
+  overflow: hidden;
 }
 
 #doc-content p:first-child {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 /* NOTE:
@@ -29,148 +29,155 @@
 */
 
 #doc-content h1 {
-    border-top: dotted 1px #bbb;
-    font-size: 22px;
-    margin: 30px 0 10px;
-    padding: 20px 0 0;
+  border-top: dotted 1px #bbb;
+  font-size: 22px;
+  margin: 30px 0 10px;
+  padding: 20px 0 0;
 }
 
-#doc-content #toc + h1 { /* h1 right after TOC: no border and less padding */
-    border: none;
-    padding-top: 5px;
+#doc-content #toc + h1 {
+  /* h1 right after TOC: no border and less padding */
+  border: none;
+  padding-top: 5px;
 }
 
 #doc-content h2 {
-    font-size: 19px;
-    margin: 21px 0 8px;
+  font-size: 19px;
+  margin: 21px 0 8px;
 }
 
 #doc-content h3 {
-    font-size: 16px;
-    margin: 21px 0 8px;
+  font-size: 16px;
+  margin: 21px 0 8px;
 }
 
 #doc-content h4,
 #doc-content h5,
 #doc-content h6 {
-    font-size: 14px;
-    margin: 21px 0 8px;
+  font-size: 14px;
+  margin: 21px 0 8px;
 }
 
 #doc-content video,
 #doc-content img {
-    margin: 0;
-    max-width: 100%;
+  margin: 0;
+  max-width: 100%;
 }
 
 #doc-content ol,
 #doc-content ul,
 #doc-content dl {
-    margin: 0 0 1em 40px;
+  margin: 0 0 1em 40px;
 }
 
 .html-rtl #doc-content ol,
 .html-rtl #doc-content ul,
 .html-rtl #doc-content dd {
-    margin: -0.7em 40px 1em 0;
+  margin: -0.7em 40px 1em 0;
 }
 
 #doc-content li {
-    margin: 0.2em 0;
+  margin: 0.2em 0;
 }
 
 #doc-content li p {
-    margin: 0;
+  margin: 0;
 }
 
 #doc-content li ol,
 #doc-content li ul,
 #doc-content li dl {
-    margin: 0 0 0 21px;
+  margin: 0 0 0 21px;
 }
 
 .html-rtl #doc-content li ol,
 .html-rtl #doc-content li ul {
-    margin: 0 21px 0 0;
+  margin: 0 21px 0 0;
 }
 
 #doc-content .code {
 }
 
 #doc-content .filepath {
-    font-style: italic;
-    white-space: nowrap;
+  font-style: italic;
+  white-space: nowrap;
 }
 
 #doc-content .key,
 #doc-content .button {
-    background: #f0f0f0;
-    background: -moz-linear-gradient(top, #f0f0f0, #fcfcfc);
-    background: -webkit-gradient(linear, center top, center bottom, from(#f0f0f0), to(#fcfcfc));
-    border-radius: 3px;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    color: #303030;
-    border: 1px solid #e0e0e0;
-    border-bottom-width: 2px;
-    white-space: nowrap;
+  background: #f0f0f0;
+  background: -moz-linear-gradient(top, #f0f0f0, #fcfcfc);
+  background: -webkit-gradient(
+    linear,
+    center top,
+    center bottom,
+    from(#f0f0f0),
+    to(#fcfcfc)
+  );
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  color: #303030;
+  border: 1px solid #e0e0e0;
+  border-bottom-width: 2px;
+  white-space: nowrap;
 }
 
 #doc-content .key {
-    font-family: monospace;
-    padding: 1px 6px;
+  font-family: monospace;
+  padding: 1px 6px;
 }
 
 #doc-content .button {
-    padding: 1px 10px;
+  padding: 1px 10px;
 }
 
 #doc-content .menu {
-    background: #e8e8e8;
-    color: #303030;
-    padding: 2px 4px;
+  background: #e8e8e8;
+  color: #303030;
+  padding: 2px 4px;
 }
 
 #home-content .note,
 #doc-content .note {
-   background: #F5F5FF;
-   color: #282828;
-   padding: .5em 1em;
+  background: #f5f5ff;
+  color: #282828;
+  padding: 0.5em 1em;
 }
 
 #home-content .warning,
 #doc-content .warning {
-   background: #fef0a7 url(../img/wiki/bkg.warning.png) repeat-y left top;
-   color: #282828;
-   padding: .5em 1em .5em 2em;
+  background: #fef0a7 url(../img/wiki/bkg.warning.png) repeat-y left top;
+  color: #282828;
+  padding: 0.5em 1em 0.5em 2em;
 }
 
 .html-rtl #home-content .warning,
 .html-rtl #doc-content .warning {
-   padding: .5em 2em .5em 1em;
+  padding: 0.5em 2em 0.5em 1em;
 }
 
 #doc-content .pref {
-    border: solid 1px #ddd;
-    color: #303030;
-    padding: 0 3px;
+  border: solid 1px #ddd;
+  color: #303030;
+  padding: 0 3px;
 }
 
 #doc-content table {
-    border-spacing: 0;
-    width: 100%;
+  border-spacing: 0;
+  width: 100%;
 }
 
 #doc-content tr:nth-child(odd) {
-    background: #eee;
+  background: #eee;
 }
 
 #doc-content th {
-    font-weight: bold;
-    border-bottom: solid 2px #bbb;
+  font-weight: bold;
+  border-bottom: solid 2px #bbb;
 }
 
 #doc-content th,
 #doc-content td {
-    padding: 5px 10px;
+  padding: 5px 10px;
 }

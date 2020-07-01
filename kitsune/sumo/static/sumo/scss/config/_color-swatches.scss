@@ -33,353 +33,365 @@
 
 $colors: (
   // Green
-  //
-  // Colors:
-  // --color-green-01: #E3FFF3 - color('green', '01')
-  // --color-green-02: #D1FFEE - color('green', '02')
-  // --color-green-03: #B3FFE3 - color('green', '03')
-  // --color-green-04: #87FFD1 - color('green', '04')
-  // --color-green-05: #53FFBC - color('green', '05')
-  // --color-green-06: #3FE1B0 - color('green', '06')
-  // --color-green-07: #2AC3A2 - color('green', '07')
-  // --color-green-08: #008787 - color('green', '08')
-  // --color-green-09: #005E5E - color('green', '09')
-  // --color-green-10: #084036 - color('green', '10')
-  //
-  // Weight: 1
-  //
-  // Style guide: colors.green
-  'green': (
-    '01': #E3FFF3,
-    '02': #D1FFEE,
-    '03': #B3FFE3,
-    '04': #87FFD1,
-    '05': #53FFBC,
-    '06': #3FE1B0,
-    '07': #2AC3A2,
-    '08': #008787,
-    '09': #005E5E,
-    '10': #084036,
-  ),
+    //
+    // Colors:
+    // --color-green-01: #E3FFF3 - color('green', '01')
+    // --color-green-02: #D1FFEE - color('green', '02')
+    // --color-green-03: #B3FFE3 - color('green', '03')
+    // --color-green-04: #87FFD1 - color('green', '04')
+    // --color-green-05: #53FFBC - color('green', '05')
+    // --color-green-06: #3FE1B0 - color('green', '06')
+    // --color-green-07: #2AC3A2 - color('green', '07')
+    // --color-green-08: #008787 - color('green', '08')
+    // --color-green-09: #005E5E - color('green', '09')
+    // --color-green-10: #084036 - color('green', '10')
+    //
+    // Weight: 1
+    //
+    // Style guide: colors.green
+    "green":
+    (
+      "01": #e3fff3,
+      "02": #d1ffee,
+      "03": #b3ffe3,
+      "04": #87ffd1,
+      "05": #53ffbc,
+      "06": #3fe1b0,
+      "07": #2ac3a2,
+      "08": #008787,
+      "09": #005e5e,
+      "10": #084036,
+    ),
   // Blue
-  //
-  // Colors:
-  // --color-blue-01: #ABF2FF - color('blue', '01')
-  // --color-blue-02: #80EBFF - color('blue', '02')
-  // --color-blue-03: #00DDFF - color('blue', '03')
-  // --color-blue-04: #00B3F4 - color('blue', '04')
-  // --color-blue-05: #0090ED - color('blue', '05')
-  // --color-blue-06: #0060DF - color('blue', '06')
-  // --color-blue-07: #0250BB - color('blue', '07')
-  // --color-blue-08: #054096 - color('blue', '08')
-  // --color-blue-09: #073072 - color('blue', '09')
-  // --color-blue-10: #0A204D - color('blue', '10')
-  //
-  // Weight: 2
-  //
-  // Style guide: colors.blue
-  'blue': (
-    '01': #ABF2FF,
-    '02': #80EBFF,
-    '03': #00DDFF,
-    '04': #00B3F4,
-    '05': #0090ED,
-    '06': #0060DF,
-    '07': #0250BB,
-    '08': #054096,
-    '09': #073072,
-    '10': #0A204D,
-  ),
+    //
+    // Colors:
+    // --color-blue-01: #ABF2FF - color('blue', '01')
+    // --color-blue-02: #80EBFF - color('blue', '02')
+    // --color-blue-03: #00DDFF - color('blue', '03')
+    // --color-blue-04: #00B3F4 - color('blue', '04')
+    // --color-blue-05: #0090ED - color('blue', '05')
+    // --color-blue-06: #0060DF - color('blue', '06')
+    // --color-blue-07: #0250BB - color('blue', '07')
+    // --color-blue-08: #054096 - color('blue', '08')
+    // --color-blue-09: #073072 - color('blue', '09')
+    // --color-blue-10: #0A204D - color('blue', '10')
+    //
+    // Weight: 2
+    //
+    // Style guide: colors.blue
+    "blue":
+    (
+      "01": #abf2ff,
+      "02": #80ebff,
+      "03": #00ddff,
+      "04": #00b3f4,
+      "05": #0090ed,
+      "06": #0060df,
+      "07": #0250bb,
+      "08": #054096,
+      "09": #073072,
+      "10": #0a204d,
+    ),
   // Violet
-  //
-  // Colors:
-  // --color-violet-01: #E7DFFF - color('violet', '01')
-  // --color-violet-02: #D9BFFF - color('violet', '02')
-  // --color-violet-03: #CB9EFF - color('violet', '03')
-  // --color-violet-04: #C688FF - color('violet', '04')
-  // --color-violet-05: #AB71FF - color('violet', '05')
-  // --color-violet-06: #9059FF - color('violet', '06')
-  // --color-violet-07: #7542E4 - color('violet', '07')
-  // --color-violet-08: #592ACB - color('violet', '08')
-  // --color-violet-09: #45278D - color('violet', '09')
-  // --color-violet-10: #321C64 - color('violet', '10')
-  //
-  // Weight: 3
-  //
-  // Style guide: colors.violet
-  'violet': (
-    '01': #E7DFFF,
-    '02': #D9BFFF,
-    '03': #CB9EFF,
-    '04': #C688FF,
-    '05': #AB71FF,
-    '06': #9059FF,
-    '07': #7542E4,
-    '08': #592ACB,
-    '09': #45278D,
-    '10': #321C64,
-  ),
+    //
+    // Colors:
+    // --color-violet-01: #E7DFFF - color('violet', '01')
+    // --color-violet-02: #D9BFFF - color('violet', '02')
+    // --color-violet-03: #CB9EFF - color('violet', '03')
+    // --color-violet-04: #C688FF - color('violet', '04')
+    // --color-violet-05: #AB71FF - color('violet', '05')
+    // --color-violet-06: #9059FF - color('violet', '06')
+    // --color-violet-07: #7542E4 - color('violet', '07')
+    // --color-violet-08: #592ACB - color('violet', '08')
+    // --color-violet-09: #45278D - color('violet', '09')
+    // --color-violet-10: #321C64 - color('violet', '10')
+    //
+    // Weight: 3
+    //
+    // Style guide: colors.violet
+    "violet":
+    (
+      "01": #e7dfff,
+      "02": #d9bfff,
+      "03": #cb9eff,
+      "04": #c688ff,
+      "05": #ab71ff,
+      "06": #9059ff,
+      "07": #7542e4,
+      "08": #592acb,
+      "09": #45278d,
+      "10": #321c64,
+    ),
   // Purple
-  //
-  // Colors:
-  // --color-purple-01: #F7E2FF - color('purple', '01')
-  // --color-purple-02: #F6B8FF - color('purple', '02')
-  // --color-purple-03: #F68FFF - color('purple', '03')
-  // --color-purple-04: #F564FF - color('purple', '04')
-  // --color-purple-05: #D74CF0 - color('purple', '05')
-  // --color-purple-06: #B933E1 - color('purple', '06')
-  // --color-purple-07: #952BB9 - color('purple', '07')
-  // --color-purple-08: #722291 - color('purple', '08')
-  // --color-purple-09: #4E1A6A - color('purple', '09')
-  // --color-purple-10: #2B1141 - color('purple', '10')
-  //
-  // Weight: 4
-  //
-  // Style guide: colors.purple
-  'purple': (
-    '01': #F7E2FF,
-    '02': #F6B8FF,
-    '03': #F68FFF,
-    '04': #F564FF,
-    '05': #D74CF0,
-    '06': #B933E1,
-    '07': #952BB9,
-    '08': #722291,
-    '09': #4E1A6A,
-    '10': #2B1141,
-  ),
+    //
+    // Colors:
+    // --color-purple-01: #F7E2FF - color('purple', '01')
+    // --color-purple-02: #F6B8FF - color('purple', '02')
+    // --color-purple-03: #F68FFF - color('purple', '03')
+    // --color-purple-04: #F564FF - color('purple', '04')
+    // --color-purple-05: #D74CF0 - color('purple', '05')
+    // --color-purple-06: #B933E1 - color('purple', '06')
+    // --color-purple-07: #952BB9 - color('purple', '07')
+    // --color-purple-08: #722291 - color('purple', '08')
+    // --color-purple-09: #4E1A6A - color('purple', '09')
+    // --color-purple-10: #2B1141 - color('purple', '10')
+    //
+    // Weight: 4
+    //
+    // Style guide: colors.purple
+    "purple":
+    (
+      "01": #f7e2ff,
+      "02": #f6b8ff,
+      "03": #f68fff,
+      "04": #f564ff,
+      "05": #d74cf0,
+      "06": #b933e1,
+      "07": #952bb9,
+      "08": #722291,
+      "09": #4e1a6a,
+      "10": #2b1141,
+    ),
   // Pink
-  //
-  // Colors:
-  // --color-pink-01: #FFDFF0 - color('pink', '01')
-  // --color-pink-02: #FFB4DC - color('pink', '02')
-  // --color-pink-03: #FF8AC6 - color('pink', '03')
-  // --color-pink-04: #FF6BBA - color('pink', '04')
-  // --color-pink-05: #FF4AA2 - color('pink', '05')
-  // --color-pink-06: #FF2A8A - color('pink', '06')
-  // --color-pink-07: #E21587 - color('pink', '07')
-  // --color-pink-08: #C60184 - color('pink', '08')
-  // --color-pink-09: #7F155B - color('pink', '09')
-  // --color-pink-10: #50134B - color('pink', '10')
-  //
-  // Weight: 5
-  //
-  // Style guide: colors.pink
-  'pink': (
-    '01': #FFDFF0,
-    '02': #FFB4DC,
-    '03': #FF8AC6,
-    '04': #FF6BBA,
-    '05': #FF4AA2,
-    '06': #FF2A8A,
-    '07': #E21587,
-    '08': #C60184,
-    '09': #7F155B,
-    '10': #50134B,
-  ),
+    //
+    // Colors:
+    // --color-pink-01: #FFDFF0 - color('pink', '01')
+    // --color-pink-02: #FFB4DC - color('pink', '02')
+    // --color-pink-03: #FF8AC6 - color('pink', '03')
+    // --color-pink-04: #FF6BBA - color('pink', '04')
+    // --color-pink-05: #FF4AA2 - color('pink', '05')
+    // --color-pink-06: #FF2A8A - color('pink', '06')
+    // --color-pink-07: #E21587 - color('pink', '07')
+    // --color-pink-08: #C60184 - color('pink', '08')
+    // --color-pink-09: #7F155B - color('pink', '09')
+    // --color-pink-10: #50134B - color('pink', '10')
+    //
+    // Weight: 5
+    //
+    // Style guide: colors.pink
+    "pink":
+    (
+      "01": #ffdff0,
+      "02": #ffb4dc,
+      "03": #ff8ac6,
+      "04": #ff6bba,
+      "05": #ff4aa2,
+      "06": #ff2a8a,
+      "07": #e21587,
+      "08": #c60184,
+      "09": #7f155b,
+      "10": #50134b,
+    ),
   // Red
-  //
-  // Colors:
-  // --color-red-01: #FFDFE7 - color('red', '01')
-  // --color-red-02: #FFBDC5 - color('red', '02')
-  // --color-red-03: #FF9AA2 - color('red', '03')
-  // --color-red-04: #FF848B - color('red', '04')
-  // --color-red-05: #FF6A75 - color('red', '05')
-  // --color-red-06: #FF4F5F - color('red', '06')
-  // --color-red-07: #E12850 - color('red', '07')
-  // --color-red-08: #C50043 - color('red', '08')
-  // --color-red-09: #810220 - color('red', '09')
-  // --color-red-10: #440306 - color('red', '10')
-  //
-  // Weight: 6
-  //
-  // Style guide: colors.red
-  'red': (
-    '01': #FFDFE7,
-    '02': #FFBDC5,
-    '03': #FF9AA2,
-    '04': #FF848B,
-    '05': #FF6A75,
-    '06': #FF4F5F,
-    '07': #E12850,
-    '08': #C50043,
-    '09': #810220,
-    '10': #440306,
-  ),
+    //
+    // Colors:
+    // --color-red-01: #FFDFE7 - color('red', '01')
+    // --color-red-02: #FFBDC5 - color('red', '02')
+    // --color-red-03: #FF9AA2 - color('red', '03')
+    // --color-red-04: #FF848B - color('red', '04')
+    // --color-red-05: #FF6A75 - color('red', '05')
+    // --color-red-06: #FF4F5F - color('red', '06')
+    // --color-red-07: #E12850 - color('red', '07')
+    // --color-red-08: #C50043 - color('red', '08')
+    // --color-red-09: #810220 - color('red', '09')
+    // --color-red-10: #440306 - color('red', '10')
+    //
+    // Weight: 6
+    //
+    // Style guide: colors.red
+    "red":
+    (
+      "01": #ffdfe7,
+      "02": #ffbdc5,
+      "03": #ff9aa2,
+      "04": #ff848b,
+      "05": #ff6a75,
+      "06": #ff4f5f,
+      "07": #e12850,
+      "08": #c50043,
+      "09": #810220,
+      "10": #440306,
+    ),
   // Orange
-  //
-  // Colors:
-  // --color-orange-01: #FFF4DE - color('orange', '01')
-  // --color-orange-02: #FFD5B2 - color('orange', '02')
-  // --color-orange-03: #FFB587 - color('orange', '03')
-  // --color-orange-04: #FFA266 - color('orange', '04')
-  // --color-orange-05: #FF8A50 - color('orange', '05')
-  // --color-orange-06: #FF7139 - color('orange', '06')
-  // --color-orange-07: #E25820 - color('orange', '07')
-  // --color-orange-08: #CC3D00 - color('orange', '08')
-  // --color-orange-09: #9E280B - color('orange', '09')
-  // --color-orange-10: #7B1504 - color('orange', '10')
-  //
-  // Weight: 7
-  //
-  // Style guide: colors.orange
-  'orange': (
-    '01': #FFF4DE,
-    '02': #FFD5B2,
-    '03': #FFB587,
-    '04': #FFA266,
-    '05': #FF8A50,
-    '06': #FF7139,
-    '07': #E25820,
-    '08': #CC3D00,
-    '09': #9E280B,
-    '10': #7B1504,
-  ),
+    //
+    // Colors:
+    // --color-orange-01: #FFF4DE - color('orange', '01')
+    // --color-orange-02: #FFD5B2 - color('orange', '02')
+    // --color-orange-03: #FFB587 - color('orange', '03')
+    // --color-orange-04: #FFA266 - color('orange', '04')
+    // --color-orange-05: #FF8A50 - color('orange', '05')
+    // --color-orange-06: #FF7139 - color('orange', '06')
+    // --color-orange-07: #E25820 - color('orange', '07')
+    // --color-orange-08: #CC3D00 - color('orange', '08')
+    // --color-orange-09: #9E280B - color('orange', '09')
+    // --color-orange-10: #7B1504 - color('orange', '10')
+    //
+    // Weight: 7
+    //
+    // Style guide: colors.orange
+    "orange":
+    (
+      "01": #fff4de,
+      "02": #ffd5b2,
+      "03": #ffb587,
+      "04": #ffa266,
+      "05": #ff8a50,
+      "06": #ff7139,
+      "07": #e25820,
+      "08": #cc3d00,
+      "09": #9e280b,
+      "10": #7b1504,
+    ),
   // Yellow
-  //
-  // Colors:
-  // --color-yellow-01: #FFFFCC - color('yellow', '01')
-  // --color-yellow-02: #FFFF98 - color('yellow', '02')
-  // --color-yellow-03: #FFEA80 - color('yellow', '03')
-  // --color-yellow-04: #FFD567 - color('yellow', '04')
-  // --color-yellow-05: #FFBD4F - color('yellow', '05')
-  // --color-yellow-06: #FFA437 - color('yellow', '06')
-  // --color-yellow-07: #E27F2E - color('yellow', '07')
-  // --color-yellow-08: #C45A27 - color('yellow', '08')
-  // --color-yellow-09: #A7341F - color('yellow', '09')
-  // --color-yellow-10: #960E18 - color('yellow', '10')
-  //
-  // Weight: 8
-  //
-  // Style guide: colors.yellow
-  'yellow': (
-    '01': #FFFFCC,
-    '02': #FFFF98,
-    '03': #FFEA80,
-    '04': #FFD567,
-    '05': #FFBD4F,
-    '06': #FFA437,
-    '07': #E27F2E,
-    '08': #C45A27,
-    '09': #A7341F,
-    '10': #960E18,
-  ),
+    //
+    // Colors:
+    // --color-yellow-01: #FFFFCC - color('yellow', '01')
+    // --color-yellow-02: #FFFF98 - color('yellow', '02')
+    // --color-yellow-03: #FFEA80 - color('yellow', '03')
+    // --color-yellow-04: #FFD567 - color('yellow', '04')
+    // --color-yellow-05: #FFBD4F - color('yellow', '05')
+    // --color-yellow-06: #FFA437 - color('yellow', '06')
+    // --color-yellow-07: #E27F2E - color('yellow', '07')
+    // --color-yellow-08: #C45A27 - color('yellow', '08')
+    // --color-yellow-09: #A7341F - color('yellow', '09')
+    // --color-yellow-10: #960E18 - color('yellow', '10')
+    //
+    // Weight: 8
+    //
+    // Style guide: colors.yellow
+    "yellow":
+    (
+      "01": #ffffcc,
+      "02": #ffff98,
+      "03": #ffea80,
+      "04": #ffd567,
+      "05": #ffbd4f,
+      "06": #ffa437,
+      "07": #e27f2e,
+      "08": #c45a27,
+      "09": #a7341f,
+      "10": #960e18,
+    ),
   // Light Gray
-  //
-  // Colors:
-  // --color-light-gray-01: #FFFFFF - color('light-gray', '01')
-  // --color-light-gray-02: #F9F9FB - color('light-gray', '02')
-  // --color-light-gray-03: #F0F0F4 - color('light-gray', '03')
-  // --color-light-gray-04: #E0E0E6 - color('light-gray', '04')
-  // --color-light-gray-05: #CFCFD8 - color('light-gray', '05')
-  // --color-light-gray-06: #BFBFC9 - color('light-gray', '06')
-  // --color-light-gray-07: #AFAFBA - color('light-gray', '07')
-  // --color-light-gray-08: #9F9FAD - color('light-gray', '08')
-  // --color-light-gray-09: #8F8F9E - color('light-gray', '09')
-  // --color-light-gray-10: #80808F - color('light-gray', '10')
-  //
-  // Weight: 9
-  //
-  // Style guide: colors.light-gray
-  'light-gray': (
-    '01': #FFFFFF,
-    '02': #F9F9FB,
-    '03': #F0F0F4,
-    '04': #E0E0E6,
-    '05': #CFCFD8,
-    '06': #BFBFC9,
-    '07': #AFAFBA,
-    '08': #9F9FAD,
-    '09': #8F8F9E,
-    '10': #80808F,
-  ),
+    //
+    // Colors:
+    // --color-light-gray-01: #FFFFFF - color('light-gray', '01')
+    // --color-light-gray-02: #F9F9FB - color('light-gray', '02')
+    // --color-light-gray-03: #F0F0F4 - color('light-gray', '03')
+    // --color-light-gray-04: #E0E0E6 - color('light-gray', '04')
+    // --color-light-gray-05: #CFCFD8 - color('light-gray', '05')
+    // --color-light-gray-06: #BFBFC9 - color('light-gray', '06')
+    // --color-light-gray-07: #AFAFBA - color('light-gray', '07')
+    // --color-light-gray-08: #9F9FAD - color('light-gray', '08')
+    // --color-light-gray-09: #8F8F9E - color('light-gray', '09')
+    // --color-light-gray-10: #80808F - color('light-gray', '10')
+    //
+    // Weight: 9
+    //
+    // Style guide: colors.light-gray
+    "light-gray":
+    (
+      "01": #ffffff,
+      "02": #f9f9fb,
+      "03": #f0f0f4,
+      "04": #e0e0e6,
+      "05": #cfcfd8,
+      "06": #bfbfc9,
+      "07": #afafba,
+      "08": #9f9fad,
+      "09": #8f8f9e,
+      "10": #80808f,
+    ),
   // Dark Gray
-  //
-  // Colors:
-  // --color-dark-gray-01: #5B5B66 - color('dark-gray', '01')
-  // --color-dark-gray-02: #52525E - color('dark-gray', '02')
-  // --color-dark-gray-03: #4A4A55 - color('dark-gray', '03')
-  // --color-dark-gray-04: #42414D - color('dark-gray', '04')
-  // --color-dark-gray-05: #3A3944 - color('dark-gray', '05')
-  // --color-dark-gray-06: #32313C - color('dark-gray', '06')
-  // --color-dark-gray-07: #2B2A33 - color('dark-gray', '07')
-  // --color-dark-gray-08: #23222B - color('dark-gray', '08')
-  // --color-dark-gray-09: #1C1B22 - color('dark-gray', '09')
-  // --color-dark-gray-10: #15141A - color('dark-gray', '10')
-  //
-  // Weight: 10
-  //
-  // Style guide:colors.dark-gray
-  'dark-gray': (
-    '01': #5B5B66,
-    '02': #52525E,
-    '03': #4A4A55,
-    '04': #42414D,
-    '05': #3A3944,
-    '06': #32313C,
-    '07': #2B2A33,
-    '08': #23222B,
-    '09': #1C1B22,
-    '10': #15141A,
-  ),
+    //
+    // Colors:
+    // --color-dark-gray-01: #5B5B66 - color('dark-gray', '01')
+    // --color-dark-gray-02: #52525E - color('dark-gray', '02')
+    // --color-dark-gray-03: #4A4A55 - color('dark-gray', '03')
+    // --color-dark-gray-04: #42414D - color('dark-gray', '04')
+    // --color-dark-gray-05: #3A3944 - color('dark-gray', '05')
+    // --color-dark-gray-06: #32313C - color('dark-gray', '06')
+    // --color-dark-gray-07: #2B2A33 - color('dark-gray', '07')
+    // --color-dark-gray-08: #23222B - color('dark-gray', '08')
+    // --color-dark-gray-09: #1C1B22 - color('dark-gray', '09')
+    // --color-dark-gray-10: #15141A - color('dark-gray', '10')
+    //
+    // Weight: 10
+    //
+    // Style guide:colors.dark-gray
+    "dark-gray":
+    (
+      "01": #5b5b66,
+      "02": #52525e,
+      "03": #4a4a55,
+      "04": #42414d,
+      "05": #3a3944,
+      "06": #32313c,
+      "07": #2b2a33,
+      "08": #23222b,
+      "09": #1c1b22,
+      "10": #15141a,
+    ),
   // Marketing Gray
-  //
-  // Colors:
-  // --color-marketing-gray-01: #F9F9FA - color('marketing-gray', '01')
-  // --color-marketing-gray-02: #EDEDF0 - color('marketing-gray', '02')
-  // --color-marketing-gray-03: #CDCDD4 - color('marketing-gray', '03')
-  // --color-marketing-gray-04: #B1B1BC - color('marketing-gray', '04')
-  // --color-marketing-gray-05: #9595A2 - color('marketing-gray', '05')
-  // --color-marketing-gray-06: #7A7A8B - color('marketing-gray', '06')
-  // --color-marketing-gray-07: #5E5E72 - color('marketing-gray', '07')
-  // --color-marketing-gray-08: #42435A - color('marketing-gray', '08')
-  // --color-marketing-gray-09: #1F2033 - color('marketing-gray', '09')
-  // --color-marketing-gray-10: #141422 - color('marketing-gray', '10')
-  //
-  // Weight: 11
-  //
-  // Style guide: colors.marketing-gray
-  'marketing-gray': (
-    '01': #F9F9FA,
-    '02': #EDEDF0,
-    '03': #CDCDD4,
-    '04': #B1B1BC,
-    '05': #9595A2,
-    '06': #7A7A8B,
-    '07': #5E5E72,
-    '08': #42435A,
-    '09': #1F2033,
-    '10': #141422,
-  ),
+    //
+    // Colors:
+    // --color-marketing-gray-01: #F9F9FA - color('marketing-gray', '01')
+    // --color-marketing-gray-02: #EDEDF0 - color('marketing-gray', '02')
+    // --color-marketing-gray-03: #CDCDD4 - color('marketing-gray', '03')
+    // --color-marketing-gray-04: #B1B1BC - color('marketing-gray', '04')
+    // --color-marketing-gray-05: #9595A2 - color('marketing-gray', '05')
+    // --color-marketing-gray-06: #7A7A8B - color('marketing-gray', '06')
+    // --color-marketing-gray-07: #5E5E72 - color('marketing-gray', '07')
+    // --color-marketing-gray-08: #42435A - color('marketing-gray', '08')
+    // --color-marketing-gray-09: #1F2033 - color('marketing-gray', '09')
+    // --color-marketing-gray-10: #141422 - color('marketing-gray', '10')
+    //
+    // Weight: 11
+    //
+    // Style guide: colors.marketing-gray
+    "marketing-gray":
+    (
+      "01": #f9f9fa,
+      "02": #ededf0,
+      "03": #cdcdd4,
+      "04": #b1b1bc,
+      "05": #9595a2,
+      "06": #7a7a8b,
+      "07": #5e5e72,
+      "08": #42435a,
+      "09": #1f2033,
+      "10": #141422,
+    ),
   // Ink
-  //
-  // Colors:
-  // --color-ink-01: #393473 - color('ink', '01')
-  // --color-ink-02: #342F6D - color('ink', '02')
-  // --color-ink-03: #312A64 - color('ink', '03')
-  // --color-ink-04: #2E255D - color('ink', '04')
-  // --color-ink-05: #2B2156 - color('ink', '05')
-  // --color-ink-06: #291D4F - color('ink', '06')
-  // --color-ink-07: #271948 - color('ink', '07')
-  // --color-ink-08: #20123A - color('ink', '08')
-  // --color-ink-09: #20133A - color('ink', '09')
-  // --color-ink-10: #1D1133 - color('ink', '10')
-  //
-  // Weight: 12
-  //
-  // Style guide: colors.ink
-  'ink': (
-    '01': #393473,
-    '02': #342F6D,
-    '03': #312A64,
-    '04': #2E255D,
-    '05': #2B2156,
-    '06': #291D4F,
-    '07': #271948,
-    '08': #20123A,
-    '09': #20133A,
-    '10': #1D1133,
-  ),
-  'black': #000000,
-  'white': #FFFFFF,
+    //
+    // Colors:
+    // --color-ink-01: #393473 - color('ink', '01')
+    // --color-ink-02: #342F6D - color('ink', '02')
+    // --color-ink-03: #312A64 - color('ink', '03')
+    // --color-ink-04: #2E255D - color('ink', '04')
+    // --color-ink-05: #2B2156 - color('ink', '05')
+    // --color-ink-06: #291D4F - color('ink', '06')
+    // --color-ink-07: #271948 - color('ink', '07')
+    // --color-ink-08: #20123A - color('ink', '08')
+    // --color-ink-09: #20133A - color('ink', '09')
+    // --color-ink-10: #1D1133 - color('ink', '10')
+    //
+    // Weight: 12
+    //
+    // Style guide: colors.ink
+    "ink":
+    (
+      "01": #393473,
+      "02": #342f6d,
+      "03": #312a64,
+      "04": #2e255d,
+      "05": #2b2156,
+      "06": #291d4f,
+      "07": #271948,
+      "08": #20123a,
+      "09": #20133a,
+      "10": #1d1133,
+    ),
+  "black": #000000,
+  "white": #ffffff
 );

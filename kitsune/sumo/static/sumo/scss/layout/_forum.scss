@@ -55,7 +55,7 @@
         top: 100%;
         left: 50%;
         transform: translate(-50%, 0);
-        transition: opacity .2s linear, transform .2s linear;
+        transition: opacity 0.2s linear, transform 0.2s linear;
         z-index: 2;
       }
 
@@ -126,14 +126,10 @@
     display: flex;
     flex-wrap: wrap;
     @include c.text-body-sm;
-    @include p.bidi((
-      (margin, 0 auto p.$spacing-md 0, 0 0 p.$spacing-md auto),
-    ));
+    @include p.bidi(((margin, 0 auto p.$spacing-md 0, 0 0 p.$spacing-md auto)));
 
     li {
-      @include p.bidi((
-        (padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
-      ));
+      @include p.bidi(((padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm)));
       white-space: nowrap;
 
       &:last-child {
@@ -154,9 +150,7 @@
 
     .forum--meta-val,
     .forum--meta-key {
-      @include p.bidi((
-        (padding, 0 p.$spacing-xs 0 0, 0 0 0 p.$spacing-xs),
-      ));
+      @include p.bidi(((padding, 0 p.$spacing-xs 0 0, 0 0 0 p.$spacing-xs)));
     }
 
     .forum--meta-val {
@@ -169,10 +163,9 @@
       flex-wrap: nowrap;
 
       li:last-child {
-        @include p.bidi((
-          (padding-right, 0, p.$spacing-sm),
-          (padding-left, p.$spacing-sm, 0),
-        ));
+        @include p.bidi(
+          ((padding-right, 0, p.$spacing-sm), (padding-left, p.$spacing-sm, 0))
+        );
       }
     }
   }
@@ -236,9 +229,7 @@
   padding: p.$spacing-xl 0;
 
   &-content {
-    @include p.bidi((
-      (padding, 0 0 0 54px, 0 54px 0 0),
-    ));
+    @include p.bidi(((padding, 0 0 0 54px, 0 54px 0 0)));
   }
 
   .content-raw {
@@ -308,10 +299,9 @@
   }
 
   &.push-right li:last-child {
-    @include p.bidi((
-      (margin-right, p.$spacing-md, 0),
-      (margin-left, 0, p.$spacing-md),
-    ));
+    @include p.bidi(
+      ((margin-right, p.$spacing-md, 0), (margin-left, 0, p.$spacing-md))
+    );
   }
 }
 
@@ -354,14 +344,10 @@
   }
 }
 
-
 // flexbox utility
 .push-right {
-  @include p.bidi((
-    (margin, 0 auto 0 0, 0 0 0 auto),
-  ));
+  @include p.bidi(((margin, 0 auto 0 0, 0 0 0 auto)));
 }
-
 
 // forum post page
 .question {
@@ -370,7 +356,9 @@
   }
 }
 
-.question, .answer, .forum--entry-content {
+.question,
+.answer,
+.forum--entry-content {
   .content {
     @include c.ulol;
   }
@@ -389,9 +377,7 @@
   }
 
   .sumo-button-stack {
-    @include p.bidi((
-      (margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0),
-    ));
+    @include p.bidi(((margin, 0 0 0 p.$spacing-xl, 0 p.$spacing-xl 0 0)));
   }
 }
 
@@ -402,16 +388,13 @@
   margin-bottom: p.$spacing-md;
 
   &--details {
-    @include p.bidi((
-      (margin, 0 0 0 12px, 0 12px 0 0),
-    ));
+    @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0)));
     @include c.text-body-sm;
   }
 
   &.has-border-bottom {
     padding-bottom: 0;
     border-bottom: 1px solid var(--color-border);
-
   }
 }
 
@@ -439,7 +422,6 @@
     display: none;
   }
 
-
   &.editing {
     select {
       display: block;
@@ -466,8 +448,6 @@
   }
 }
 
-
-
 // TODO: test this on prod, as my database doesn't support it.
 .attachments-upload,
 .ans-attachments {
@@ -485,17 +465,17 @@
     position: relative;
 
     .overlay {
-      background: #ccc url('../img/wait-trans.gif') no-repeat center;
+      background: #ccc url("../img/wait-trans.gif") no-repeat center;
       bottom: 5px;
       left: 5px;
-      opacity: .5;
+      opacity: 0.5;
       position: absolute;
       right: 5px;
       top: 5px;
     }
 
     img {
-      background: url('../img/wait-trans.gif') no-repeat center;
+      background: url("../img/wait-trans.gif") no-repeat center;
       margin: 5px;
       text-align: center;
       vertical-align: top;
@@ -510,8 +490,8 @@
       display: none;
       font-family: Verdana;
       font-weight: bold;
-      opacity: .5;
-      padding: 0 .2em;
+      opacity: 0.5;
+      padding: 0 0.2em;
       position: absolute;
       right: 10px;
       top: 10px;
@@ -527,7 +507,7 @@
   }
 
   .upload-progress {
-    background: url('../img/wait-trans.gif') no-repeat center;
+    background: url("../img/wait-trans.gif") no-repeat center;
     border: 1px solid #ccc;
     margin: 5px;
     text-align: center;
@@ -555,11 +535,13 @@
   .user-title {
     line-height: 1;
     border: 1px solid var(--color-text);
-    @include p.bidi((
-      (padding, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
-      (margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
-      (border-width, 0 0 0 1px, 0 1px 0 0),
-    ));
+    @include p.bidi(
+      (
+        (padding, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
+        (margin, 0 0 0 p.$spacing-sm, 0 p.$spacing-sm 0 0),
+        (border-width, 0 0 0 1px, 0 1px 0 0)
+      )
+    );
   }
 }
 
@@ -596,11 +578,9 @@
 
   &--icon {
     width: 20px;
-    @include p.bidi((
-      (margin-left, p.$spacing-sm, 0),
-      (margin-right, 0, p.$spacing-sm),
-    ));
-
+    @include p.bidi(
+      ((margin-left, p.$spacing-sm, 0), (margin-right, 0, p.$spacing-sm))
+    );
   }
 }
 
@@ -661,9 +641,10 @@
     .main-content {
       padding-left: 55px;
 
-      ul, ol {
+      ul,
+      ol {
         padding-left: 0;
-      };
+      }
     }
   }
 }
@@ -704,7 +685,6 @@
     position: absolute;
   }
 }
-
 
 .system-details-info {
   &.hide {

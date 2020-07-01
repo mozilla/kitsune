@@ -1,15 +1,15 @@
 // map the following custom properties to the values in your project's styles.
 
 :root {
-
   // Layout
   --kss-sidebar-width: 220px;
   --kss-navbar-height: 50px;
 
   // Cosmetics
-  --kss-font-body: 'Open Sans', Arial, Helvetica, sans-serif;
-  --kss-font-code: Menlo, 'Ubuntu Mono', 'Lucida Console', 'Courier New', Courier, monospace;
-  --kss-font-headings: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, sans-serif;
+  --kss-font-body: "Open Sans", Arial, Helvetica, sans-serif;
+  --kss-font-code: Menlo, "Ubuntu Mono", "Lucida Console", "Courier New",
+    Courier, monospace;
+  --kss-font-headings: "Zilla Slab", "Open Sans", X-LocaleSpecific, sans-serif;
 
   --kss-font-size: 16px;
   --kss-vertical-rhythm: 1.5em;
@@ -24,12 +24,12 @@
   --kss-link-color-active: hsla(218, 93%, 25%, 1);
   --kss-highlight-color: hsla(56, 90%, 95%, 1);
 
-  --kss-page-bg: #FFF;
+  --kss-page-bg: #fff;
   --kss-page-shade: hsla(0, 0%, 95%, 1);
   --kss-card-bg: hsla(93, 100%, 100%, 1);
-  --kss-card-border-color: rgba(0,0,0,0.1);
+  --kss-card-border-color: rgba(0, 0, 0, 0.1);
 
-  --kss-sidebar-bg: rgba(0,0,0,0.02);
+  --kss-sidebar-bg: rgba(0, 0, 0, 0.02);
   --kss-navbar-bg: #000;
 }
 
@@ -49,5 +49,5 @@
   // line-height: var(--kss-vertical-rhythm);
 
   @import "layout/kss-content";
-  @import 'module/prettifyjs';
+  @import "module/prettifyjs";
 }

@@ -1,7 +1,6 @@
 @use '../protocol' as p;
 @use './variables' as c;
 
-
 // Grid
 //
 // This set of mixins should be used when building layouts. No grid classes are
@@ -44,7 +43,6 @@
 
 // Grid columns
 
-
 $gutter-width: p.$spacing-xl !default;
 $max-container-width: 1312px !default;
 
@@ -78,7 +76,11 @@ $max-container-width: 1312px !default;
   } @else if $column == 1 {
     $result: calc(#{100% / $of-columns} - #{$gutter-width});
   } @else {
-    $result: calc(((#{100% / $of-columns} - #{$gutter-width}) * #{$column}) + #{$gutter-width * ($column - 1)});
+    $result: calc(
+      ((#{100% / $of-columns} - #{$gutter-width}) * #{$column}) +
+        #{$gutter-width *
+        ($column - 1)}
+    );
   }
 
   @return $result;
@@ -127,7 +129,7 @@ $max-container-width: 1312px !default;
     bottom: 0;
     left: 0;
     border: 1px solid #ddd;
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     content: "";
   }
 }
@@ -149,7 +151,7 @@ $max-container-width: 1312px !default;
 
 .grid-row-layout-example {
   @include grid-row;
-  @include p.bidi(((flex-direction, row, row-reverse),));
+  @include p.bidi(((flex-direction, row, row-reverse)));
 }
 
 .grid-sidebar-example,
@@ -158,17 +160,30 @@ $max-container-width: 1312px !default;
   @include col;
 }
 
-@media #{p.$mq-sm} { // small grid must add up to 6
-  .grid-sidebar-example { width: col-width(2, 6);}
-  .grid-main-example { width: col-width(4, 6);}
+@media #{p.$mq-sm} {
+  // small grid must add up to 6
+  .grid-sidebar-example {
+    width: col-width(2, 6);
+  }
+  .grid-main-example {
+    width: col-width(4, 6);
+  }
 }
 
 @media #{p.$mq-lg} {
-  .grid-sidebar-example { width: col-width(2, 8);}
-  .grid-main-example {width: col-width(6, 8);}
+  .grid-sidebar-example {
+    width: col-width(2, 8);
+  }
+  .grid-main-example {
+    width: col-width(6, 8);
+  }
 }
 
 @media #{p.$mq-xl} {
-  .grid-sidebar-example { width: col-width(3, 10);}
-  .grid-main-example { width: col-width(7, 10);}
+  .grid-sidebar-example {
+    width: col-width(3, 10);
+  }
+  .grid-main-example {
+    width: col-width(7, 10);
+  }
 }

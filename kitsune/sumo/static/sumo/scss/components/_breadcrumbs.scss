@@ -22,7 +22,9 @@
     margin-right: p.$spacing-xs;
 
     &:before {
-      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 18"><path d="M9,1,1,9l8,8" fill="none" stroke="#80808F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>');
+      background-image: c.svg-url(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 18"><path d="M9,1,1,9l8,8" fill="none" stroke="#80808F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>'
+      );
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -39,7 +41,8 @@
     }
   }
 
-  a, :visited, {
+  a,
+  :visited {
     margin-right: p.$spacing-xs;
     color: var(--color-light-gray-10);
     text-decoration: none;

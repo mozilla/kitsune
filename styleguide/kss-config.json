@@ -4,9 +4,7 @@
   "source": "../kitsune/sumo/static/sumo/scss",
   "destination": "build",
   "//": "The css and js paths are URLs relative to the style guide destination.",
-  "css": [
-    "static/css/screen.css"
-  ],
+  "css": ["static/css/screen.css"],
   "//": [
     "TODO: Fix this mess and remove this note when JS is compiled with the frontend."
   ],
@@ -48,7 +46,6 @@
     "static/sumo/js/protocol-details-init.js",
     "static/sumo/js/show-fx-download.js",
     "static/sumo/js/sumo-tabs.js"
-
   ],
   "homepage": "../../../../../styleguide/styleguide-examples/styleguide-index.md",
   "builder": "kss-template"

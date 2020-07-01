@@ -16,7 +16,7 @@
 
 :root {
   --range-slider-pip-color: var(--color-blue-06);
-  --range-slider-bg: #{rgba(c.color('blue', '06'), 0.3)};
+  --range-slider-bg: #{rgba(c.color("blue", "06"), 0.3)};
   --range-slider-pip-color-hover: var(--color-blue-07);
   --range-slider-pip-color-disabled: var(--color-marketing-gray-04);
   --range-slider-bg-disabled: var(--color-marketing-gray-02);
@@ -24,7 +24,7 @@
   --range-pip-size: 22px;
 }
 
-[type=range] {
+[type="range"] {
   appearance: none;
   margin: p.$spacing-md 0;
   width: 100%;

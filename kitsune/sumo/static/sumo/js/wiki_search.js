@@ -1,36 +1,40 @@
 /* globals k:false, jQuery:false */
-(function($) {
+(function ($) {
   var searchTimeout;
-  var locale = $('html').attr('lang');
+  var locale = $("html").attr("lang");
 
-  var $searchField = $('#search-related');
-  var $relatedDocsList = $('#related-docs-list');
+  var $searchField = $("#search-related");
+  var $relatedDocsList = $("#related-docs-list");
   var $resultsList;
 
   // To search for only wiki articles we pass w=1
-  var search = new k.Search('/' + locale + '/search', {w: 1, format: 'json'});
+  var search = new k.Search("/" + locale + "/search", { w: 1, format: "json" });
 
   function createResultsList() {
-    $resultsList = $('<div />').addClass('input-dropdown');
+    $resultsList = $("<div />").addClass("input-dropdown");
     $searchField.after($resultsList);
-    $resultsList.css('width', $searchField.outerWidth());
+    $resultsList.css("width", $searchField.outerWidth());
     $resultsList.show();
 
-    $resultsList.on('click', '[data-pk]', function() {
+    $resultsList.on("click", "[data-pk]", function () {
       var $this = $(this);
 
-      $relatedDocsList.children('.empty-message').remove();
+      $relatedDocsList.children(".empty-message").remove();
 
-      if (!$relatedDocsList.children('[data-pk=' + $this.data('pk') + ']').length) {
+      if (
+        !$relatedDocsList.children("[data-pk=" + $this.data("pk") + "]").length
+      ) {
         var context = {
-          name: 'related_documents',
+          name: "related_documents",
           doc: {
-            id: $this.data('pk'),
-            title: $this.text()
-          }
+            id: $this.data("pk"),
+            title: $this.text(),
+          },
         };
 
-        $relatedDocsList.append(k.nunjucksEnv.render('wiki-related-doc.html', context));
+        $relatedDocsList.append(
+          k.nunjucksEnv.render("wiki-related-doc.html", context)
+        );
       }
     });
   }
@@ -39,7 +43,7 @@
     if (!$resultsList) {
       createResultsList();
     }
-    $resultsList.html(k.nunjucksEnv.render('wiki-search-results.html', data));
+    $resultsList.html(k.nunjucksEnv.render("wiki-search-results.html", data));
   }
 
   function handleSearch() {
@@ -47,7 +51,7 @@
     if ($this.val().length === 0) {
       window.clearTimeout(searchTimeout);
       if ($resultsList) {
-        $resultsList.html('');
+        $resultsList.html("");
         $resultsList.hide();
       }
     } else if ($this.val() !== search.lastQuery) {
@@ -58,18 +62,18 @@
     }
   }
 
-  $searchField.on('keyup', handleSearch);
+  $searchField.on("keyup", handleSearch);
 
-  $searchField.on('focus', function() {
+  $searchField.on("focus", function () {
     if ($resultsList) {
       $resultsList.show();
     }
   });
 
-  $searchField.on('blur', function() {
+  $searchField.on("blur", function () {
     if ($resultsList) {
       // We use a timeout to ensure that you can still click on the dropdown
-      window.setTimeout(function() {
+      window.setTimeout(function () {
         $resultsList.hide();
       }, 100);
     }

@@ -10,6 +10,7 @@ You can access the staging site at <https://support.allizom.org/>
 See [what's deployed](https://whatsdeployed.io/s-J18)
 
 ## Code of Conduct
+
 By participating in this project, you're agreeing to uphold the [Mozilla Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/). If you need to report a problem, please see our [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) guide.
 
 ## Development
@@ -18,11 +19,13 @@ To get Kitsune running locally all you really need is to have [Docker](https://w
 and follow the following steps.
 
 1. Fork this repository & clone it to your local machine.
+
    ```
    git clone https://github.com/mozilla/kitsune.git
    ```
 
 2. Pull base Kitsune Docker images, run `collectstatic`, create your database, and install node packages.
+
    ```
    make init
    make build
@@ -69,22 +72,25 @@ The running instance in this case will be located at http://localhost:3000/.
 
 After the above you can do some optional steps if you want to use the admin:
 
-* Enable the admin control panel
+- Enable the admin control panel
+
   ```
   echo "ENABLE_ADMIN=True" >> .env
   ```
 
-* Create a superuser
+- Create a superuser
+
   ```
   docker-compose exec web ./manage.py createsuperuser
   ```
 
-* Create some data
+- Create some data
+
   ```
   docker-compose exec web ./manage.py generatedata
   ```
 
-* Update product details
+- Update product details
   ```
   docker-compose exec web ./manage.py update_product_details
   ```

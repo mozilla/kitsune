@@ -1,7 +1,6 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-
 // this class is added to the body when the instant search is active. It should
 // be added by default once that is removed.
 
@@ -52,7 +51,6 @@
     // }
   }
 }
-
 
 .two-col-checkboxes ul {
   column-count: 2;

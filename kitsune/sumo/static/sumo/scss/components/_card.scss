@@ -48,7 +48,7 @@
 
   &.zoom-on-hover {
     will-change: transform;
-    transition: transform .1s ease-in-out;
+    transition: transform 0.1s ease-in-out;
     transform: translateZ(0);
     -webkit-font-smoothing: subpixel-antialiased;
 
@@ -80,7 +80,7 @@
 
   &.is-in-sidebar {
     .card--title {
-      @include c.sumo-callout-heading('no-fam');
+      @include c.sumo-callout-heading("no-fam");
       margin-bottom: p.$spacing-lg;
     }
 
@@ -104,7 +104,17 @@
   &.is-inverse {
     background: var(--color-inverse-bg);
 
-    &, p, li, h1, h2, h3, h4, h5, h6, a, a:hover {
+    &,
+    p,
+    li,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    a,
+    a:hover {
       color: var(--color-inverse);
     }
   }
@@ -121,10 +131,7 @@
     align-items: center;
 
     .card--img {
-      @include p.bidi((
-        (margin-right, 20px, 0),
-        (margin-left, 0, 20px),
-      ));
+      @include p.bidi(((margin-right, 20px, 0), (margin-left, 0, 20px)));
       margin-bottom: 0;
     }
   }
@@ -139,8 +146,8 @@
       padding-bottom: p.$spacing-xl;
 
       a {
-      	white-space: pre-line;
-      	word-wrap: break-word;
+        white-space: pre-line;
+        word-wrap: break-word;
       }
     }
 
@@ -253,7 +260,7 @@
     }
 
     .card--title {
-      @include c.sumo-callout-heading-feature('no-fam');
+      @include c.sumo-callout-heading-feature("no-fam");
     }
 
     .card--desc {
@@ -281,10 +288,7 @@
   }
 
   &--icon {
-    @include p.bidi((
-      (margin-right, 20px, 0),
-      (margin-left, 0, 20px),
-    ));
+    @include p.bidi(((margin-right, 20px, 0), (margin-left, 0, 20px)));
     margin-bottom: 10px;
     width: p.$spacing-2xl;
     flex: 0 0 auto;
@@ -295,9 +299,7 @@
     width: p.$spacing-lg;
 
     @at-root .sumo-card-heading & {
-      @include p.bidi((
-        (margin,  0 8px -4px 0,  0 0 -4px 8px),
-      ));
+      @include p.bidi(((margin, 0 8px -4px 0, 0 0 -4px 8px)));
     }
   }
 
@@ -373,10 +375,7 @@
       .card--icon-sm {
         margin-right: 10px;
         margin-bottom: 0;
-        @include p.bidi((
-          (margin-right, 10px, 0),
-          (margin-left, 0, 10px),
-        ));
+        @include p.bidi(((margin-right, 10px, 0), (margin-left, 0, 10px)));
       }
 
       .card--desc {
@@ -386,7 +385,7 @@
     }
 
     &--feature-img {
-      @include p.bidi(((margin, -90px 0 -90px, -90px 0 -90px),));
+      @include p.bidi(((margin, -90px 0 -90px, -90px 0 -90px)));
       width: 50%;
       max-width: 320px;
     }
@@ -425,15 +424,21 @@
 
       .card--desc {
         flex: 1 1 auto;
-        @include p.bidi((
-          (margin, 0 40px 0 0, 0 0 0 40px),
-        ));
+        @include p.bidi(((margin, 0 40px 0 0, 0 0 0 40px)));
       }
     }
   }
 }
 
-.elevation-00 { @include c.elevation-00;}
-.elevation-01 { @include c.elevation-01;}
-.elevation-02 { @include c.elevation-02;}
-.elevation-03 { @include c.elevation-03;}
+.elevation-00 {
+  @include c.elevation-00;
+}
+.elevation-01 {
+  @include c.elevation-01;
+}
+.elevation-02 {
+  @include c.elevation-02;
+}
+.elevation-03 {
+  @include c.elevation-03;
+}

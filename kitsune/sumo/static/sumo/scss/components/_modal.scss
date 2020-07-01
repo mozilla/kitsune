@@ -1,7 +1,6 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-
 .mzp-c-modal-inner {
   background: var(--page-bg);
 }
@@ -11,9 +10,9 @@
 }
 
 .mzp-c-modal-close .mzp-c-modal-button-close {
-  background: transparent url("#{p.$image-path}/icons/close.svg") center center no-repeat;
+  background: transparent url("#{p.$image-path}/icons/close.svg") center center
+    no-repeat;
 }
-
 
 @media #{p.$mq-lg} {
   .mzp-c-modal-inner {

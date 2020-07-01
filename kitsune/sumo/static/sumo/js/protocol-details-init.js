@@ -1,48 +1,48 @@
 function detailsInit() {
-  'use strict';
-  var _mqWide = matchMedia('(max-width: 1055px)');
+  "use strict";
+  var _mqWide = matchMedia("(max-width: 1055px)");
 
-  var sidebarList = document.querySelector('.details-heading');
+  var sidebarList = document.querySelector(".details-heading");
 
-  function swapMobileSubnavText(){
-    var button = document.querySelector('.details-heading button');
-    var activeLink = document.querySelector('.sidebar-nav .selected a') ||
-      document.querySelector('.sidebar-nav a.selected') ||
-      document.querySelector('.sidebar-nav .sidebar-subheading');
+  function swapMobileSubnavText() {
+    var button = document.querySelector(".details-heading button");
+    var activeLink =
+      document.querySelector(".sidebar-nav .selected a") ||
+      document.querySelector(".sidebar-nav a.selected") ||
+      document.querySelector(".sidebar-nav .sidebar-subheading");
 
     if (activeLink) {
       var mobileButtonText = activeLink.innerHTML;
     } else {
-      var mobileButtonText = 'Sidebar';
+      var mobileButtonText = "Sidebar";
     }
 
     button.innerHTML = mobileButtonText;
   }
 
   if (sidebarList && _mqWide.matches) {
-    window.Mzp.Details.init('.details-heading');
+    window.Mzp.Details.init(".details-heading");
     swapMobileSubnavText();
   }
-  _mqWide.addListener(function(mq) {
+  _mqWide.addListener(function (mq) {
     if (sidebarList && mq.matches) {
-      window.Mzp.Details.init('.details-heading');
+      window.Mzp.Details.init(".details-heading");
       swapMobileSubnavText();
-
     } else {
-      window.Mzp.Details.destroy('.details-heading');
+      window.Mzp.Details.destroy(".details-heading");
     }
   });
 
   // built for quote dropdowns in forum pages –
   // this is a global selector to always show dropdowns
-  var forumDropdown = document.querySelector('[data-has-dropdown]');
-  if ( forumDropdown ) {
-    window.Mzp.Details.init('[data-has-dropdown]');
+  var forumDropdown = document.querySelector("[data-has-dropdown]");
+  if (forumDropdown) {
+    window.Mzp.Details.init("[data-has-dropdown]");
   }
 }
 
 // This is patched here to help the tests locate the referenced function
-if (typeof module != 'undefined' && module.exports) {
+if (typeof module != "undefined" && module.exports) {
   module.exports.detailsInit = detailsInit;
 }
 

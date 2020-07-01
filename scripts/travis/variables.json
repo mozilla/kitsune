@@ -3,10 +3,12 @@
     "default": {
       "username": "testuser",
       "password": "testuserpass",
-      "email": "testuser@testeserver.org"},
+      "email": "testuser@testeserver.org"
+    },
     "admin": {
       "username": "testsuperuser",
       "password": "superuserpass",
-      "email": "superuser@testserver.org"}
+      "email": "superuser@testserver.org"
+    }
   }
 }

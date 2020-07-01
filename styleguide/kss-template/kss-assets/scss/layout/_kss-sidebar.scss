@@ -10,8 +10,8 @@
 
   &-header {
     margin-top: 2em;
-    margin-bottom: .5em;
-    border-bottom: 1px solid rgba(0,0,0,0.2);
+    margin-bottom: 0.5em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
     font-size: 0.8em;
     text-transform: uppercase;
     opacity: 0.6;
@@ -28,7 +28,7 @@
     color: var(--kss-text-color);
 
     &:hover {
-      background: rgba(0,0,0,0.05);
+      background: rgba(0, 0, 0, 0.05);
       text-decoration: none;
     }
   }

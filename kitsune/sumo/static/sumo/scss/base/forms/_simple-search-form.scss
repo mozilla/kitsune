@@ -6,27 +6,26 @@
   margin: 0;
 
   .searchbox {
-    @include p.bidi((
-      (padding-right, 40px, 8px),
-      (padding-left, 8px, 40px),
-    ));
+    @include p.bidi(((padding-right, 40px, 8px), (padding-left, 8px, 40px)));
 
     // remove x button from Edge and Safari
-    &::-ms-clear { display:none; }
-    &::-webkit-search-cancel-button { display:none; }
+    &::-ms-clear {
+      display: none;
+    }
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
   }
 
   .search-button {
     position: absolute;
     top: p.$spacing-xs;
-    @include p.bidi((
-      (right, 6px, auto),
-      (left, auto, 6px),
-    ));
+    @include p.bidi(((right, 6px, auto), (left, auto, 6px)));
   }
 
   + .page-heading--intro-text {
-    &, & + .search-results-heading {
+    &,
+    & + .search-results-heading {
       margin: p.$spacing-xl 0;
 
       @media #{p.$mq-md} {
@@ -38,14 +37,12 @@
 
 .search-button {
   appearance: none;
-  @include p.bidi((
-    (margin, 0 0 0 8px, 0 8px 0 0),
-  ));
+  @include p.bidi(((margin, 0 0 0 8px, 0 8px 0 0)));
   width: p.$spacing-xl;
   height: p.$spacing-xl;
   border: none;
   border-radius: p.$spacing-xs;
-  background-image: url('#{p.$image-path}/icons/search.svg');
+  background-image: url("#{p.$image-path}/icons/search.svg");
   background-color: transparent;
   background-position: center center;
   background-repeat: no-repeat;
@@ -55,7 +52,7 @@
   &:hover,
   &:active,
   &:focus,
-  &.mzp-is-active  {
+  &.mzp-is-active {
     background-color: var(--color-link-active-bg);
   }
 }
@@ -69,7 +66,8 @@
     margin-bottom: 0;
     text-align: center;
 
-    a, span {
+    a,
+    span {
       display: inline-block;
       padding-right: p.$spacing-sm;
 

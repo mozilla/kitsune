@@ -67,11 +67,11 @@
         display: inline-block;
         min-width: 80px;
         padding-left: 2px;
-        color: #FFF;
+        color: #fff;
       }
 
-      input[type=text],
-      input[type=date] {
+      input[type="text"],
+      input[type="date"] {
         // These next two styles emulate jQuery's UI, since they style
         // the [type=text] elements.
         box-shadow: 0px 0px 0px 1px rgb(239, 239, 239);
@@ -101,7 +101,7 @@
           opacity: 0.8;
 
           &:hover {
-            opacity: 1.0;
+            opacity: 1;
           }
         }
       }
@@ -118,12 +118,12 @@
 }
 
 .inline-controls {
-
   div {
     display: inline-block;
     margin: 0 10px 10px 0;
 
-    input, label {
+    input,
+    label {
       margin-right: 5px;
     }
   }
@@ -208,7 +208,7 @@
 
   ul {
     background: rgba(255, 255, 255, 0.8);
-    border-radius:  5px;
+    border-radius: 5px;
     border: 1px solid black;
     margin: 0 10px;
     padding: 5px;

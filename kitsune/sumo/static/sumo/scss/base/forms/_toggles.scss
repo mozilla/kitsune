@@ -59,7 +59,7 @@
     top: p.$spacing-xs;
     left: p.$spacing-xs;
     width: calc(var(--switch-size) / 2 - 6px);
-    height:  calc(var(--switch-size) / 2 - 6px);
+    height: calc(var(--switch-size) / 2 - 6px);
     border-radius: calc(var(--switch-size) / 2 - #{p.$spacing-xs});
     background: #fff;
     content: "";
@@ -67,16 +67,17 @@
   }
 
   label:active:after {
-    width:  calc(var(--switch-size) / 2);
+    width: calc(var(--switch-size) / 2);
     transform: translateX(0);
   }
 
-  [type=checkbox],
-  [type=radio] {
+  [type="checkbox"],
+  [type="radio"] {
     position: absolute;
     left: -9999px;
 
-    &:checked + label:before { // background, checked state
+    &:checked + label:before {
+      // background, checked state
       border-color: var(--checkbox-checked-color);
       background: var(--checkbox-checked-color);
 

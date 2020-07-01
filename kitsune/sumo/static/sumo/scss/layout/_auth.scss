@@ -1,7 +1,6 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-
 .sumo-auth {
   @include c.grid-row();
   align-items: center;

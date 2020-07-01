@@ -1,29 +1,29 @@
 default_language_version:
-    python: python3.8
+  python: python3.8
 exclude: "^.*/migrations/.*$"
 repos:
-    - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v3.1.0
-      hooks:
-          - id: check-added-large-files
-          - id: check-case-conflict
-          - id: check-merge-conflict
-          - id: debug-statements
-          - id: trailing-whitespace
-          - id: end-of-file-fixer
-    - repo: https://github.com/asottile/reorder_python_imports
-      rev: v2.3.0
-      hooks:
-          - id: reorder-python-imports
-    - repo: https://github.com/psf/black
-      rev: 19.10b0
-      hooks:
-          - id: black
-    - repo: https://gitlab.com/pycqa/flake8.git
-      rev: 3.8.2
-      hooks:
-          - id: flake8
-    - repo: https://github.com/prettier/prettier
-      rev: 2.0.5
-      hooks:
-          - id: prettier
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.1.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.3.0
+    hooks:
+      - id: reorder-python-imports
+  - repo: https://github.com/psf/black
+    rev: 19.10b0
+    hooks:
+      - id: black
+  - repo: https://gitlab.com/pycqa/flake8.git
+    rev: 3.8.2
+    hooks:
+      - id: flake8
+  - repo: https://github.com/prettier/prettier
+    rev: 2.0.5
+    hooks:
+      - id: prettier

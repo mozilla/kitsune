@@ -4,8 +4,8 @@
  *   things to install into the namespace. Should return an object of keys
  *   to values to install.
  */
-export default function(mapFunc) {
-  return function(options) {
+export default function (mapFunc) {
+  return function (options) {
     let map;
 
     global.beforeEach(() => {

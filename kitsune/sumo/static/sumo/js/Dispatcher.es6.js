@@ -6,7 +6,10 @@ export default Dispatcher;
 
 Dispatcher.register((event) => {
   if (event.type === undefined) {
-    throw new Error(['Event with undefined type dispatched!', JSON.stringify(event)]);
+    throw new Error([
+      "Event with undefined type dispatched!",
+      JSON.stringify(event),
+    ]);
   }
-  console.log('Dispatched event', event.type.name, event);
+  console.log("Dispatched event", event.type.name, event);
 });

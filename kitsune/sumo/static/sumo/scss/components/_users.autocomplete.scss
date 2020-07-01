@@ -17,10 +17,10 @@ ul.token-input-list-facebook {
   border: 2px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
   background-color: var(--color-white);
-  color:#0c0c0d;
-  outline:0;
-  transition-duration:150ms;
-  transition-property:border-color;
+  color: #0c0c0d;
+  outline: 0;
+  transition-duration: 150ms;
+  transition-property: border-color;
   @include p.font-size(16px);
 
   &:hover {
@@ -45,40 +45,40 @@ ul.token-input-list-facebook {
 }
 
 ul.token-input-list-facebook li input {
-    border: 0;
-    width: 100px;
-    padding: 3px p.$spacing-sm;
-    background: white;
-    margin: 2px 0;
-    -webkit-appearance: caret;
+  border: 0;
+  width: 100px;
+  padding: 3px p.$spacing-sm;
+  background: white;
+  margin: 2px 0;
+  -webkit-appearance: caret;
 }
 
 li.token-input-token-facebook {
-    overflow: hidden;
-    height: auto !important;
-    height: 15px;
-    margin: 3px !important;
-    padding: 1px 3px;
-    background-color: #eff2f7;
-    color: var(--color-text);
-    cursor: default;
-    border: 1px solid var(--color-border);
-    font-size: 14px;
-    border-radius: var(--global-radius);
-    float: left;
-    white-space: nowrap;
+  overflow: hidden;
+  height: auto !important;
+  height: 15px;
+  margin: 3px !important;
+  padding: 1px 3px;
+  background-color: #eff2f7;
+  color: var(--color-text);
+  cursor: default;
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  border-radius: var(--global-radius);
+  float: left;
+  white-space: nowrap;
 }
 
 li.token-input-token-facebook p {
-    display: inline;
-    padding: 0;
-    margin: 0;
+  display: inline;
+  padding: 0;
+  margin: 0;
 }
 
 li.token-input-token-facebook span {
-    margin-left: 5px;
-    font-weight: bold;
-    cursor: pointer;
+  margin-left: 5px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 li.token-input-selected-token-facebook {
@@ -87,64 +87,66 @@ li.token-input-selected-token-facebook {
 }
 
 li.token-input-input-token-facebook {
-    float: left;
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
+  float: left;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
 }
 
 div.token-input-dropdown-facebook {
-    @include c.elevation-01;
-    position: absolute;
-    width: 400px;
-    background-color: var(--color-white);
-    overflow: hidden;
-    border-radius: 0 0 var(--global-radius) var(--global-radius);
-    cursor: default;
-    font-size: 14px;
-    z-index: 1;
-    text-align: left;
+  @include c.elevation-01;
+  position: absolute;
+  width: 400px;
+  background-color: var(--color-white);
+  overflow: hidden;
+  border-radius: 0 0 var(--global-radius) var(--global-radius);
+  cursor: default;
+  font-size: 14px;
+  z-index: 1;
+  text-align: left;
 }
 
 div.token-input-dropdown-facebook p {
-    margin: 0;
-    padding: p.$spacing-sm;
-    font-weight: bold;
-    color: var(--color-text);
+  margin: 0;
+  padding: p.$spacing-sm;
+  font-weight: bold;
+  color: var(--color-text);
 }
 
 div.token-input-dropdown-facebook ul {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 div.token-input-dropdown-facebook ul li {
-    padding: p.$spacing-sm;
-    margin: 0;
-    list-style-type: none;
-    display: flex;
-    align-items: center;
+  padding: p.$spacing-sm;
+  margin: 0;
+  list-style-type: none;
+  display: flex;
+  align-items: center;
 
-    img {
-      width: 40px;
-      height: 40px;
-      margin-right: p.$spacing-sm;
-    }
+  img {
+    width: 40px;
+    height: 40px;
+    margin-right: p.$spacing-sm;
+  }
 }
 
 div.token-input-dropdown-facebook ul li em {
-    font-weight: bold;
-    font-style: normal;
+  font-weight: bold;
+  font-style: normal;
 }
 
-div.token-input-dropdown-facebook ul li.token-input-selected-dropdown-item-facebook {
-    background-color: var(--color-link);
-    color: var(--color-white);
-    border-radius: var(--global-radius);
+div.token-input-dropdown-facebook
+  ul
+  li.token-input-selected-dropdown-item-facebook {
+  background-color: var(--color-link);
+  color: var(--color-white);
+  border-radius: var(--global-radius);
 }
 
 div.name_search {
-    display: inline-flex;
-    padding: 5px;
-    align-items: center;
+  display: inline-flex;
+  padding: 5px;
+  align-items: center;
 }

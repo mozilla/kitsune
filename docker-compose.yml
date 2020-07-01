@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 services:
   web:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
@@ -177,4 +177,4 @@ services:
       - redis
 
 volumes:
-    mysqlvolume:
+  mysqlvolume:

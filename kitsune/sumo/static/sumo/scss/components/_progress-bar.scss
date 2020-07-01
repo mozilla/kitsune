@@ -29,10 +29,7 @@
     &:last-child {
       .progress--link {
         align-items: flex-start;
-        @include p.bidi((
-          (padding-left, 0, 8px),
-          (padding-right, 8px, 0),
-        ));
+        @include p.bidi(((padding-left, 0, 8px), (padding-right, 8px, 0)));
       }
 
       .progress--link-inner {
@@ -52,10 +49,7 @@
     &:last-child {
       .progress--link {
         align-items: flex-end;
-        @include p.bidi((
-          (padding-right, 0, 8px),
-          (padding-left, 8px, 0),
-        ));
+        @include p.bidi(((padding-right, 0, 8px), (padding-left, 8px, 0)));
       }
 
       .progress--link-inner {
@@ -68,7 +62,9 @@
 
     &.is-complete {
       .progress--dot {
-        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="#000" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+        background-image: c.svg-url(
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="#000" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        );
         background-color: var(--color-green-06);
         background-position: center center;
         background-repeat: no-repeat;

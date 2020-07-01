@@ -1,19 +1,19 @@
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
-import {default as chai, expect} from 'chai';
-import React from 'react';
-import chaiLint from 'chai-lint';
-import sinon from 'sinon';
+import { default as mochaJsdom, rerequire } from "mocha-jsdom";
+import { default as chai, expect } from "chai";
+import React from "react";
+import chaiLint from "chai-lint";
+import sinon from "sinon";
 
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
-import mochaGoogleAnalytics from './fixtures/mochaGoogleAnalytics.js';
-import mochaNunjucks from './fixtures/mochaNunjucks.js';
-import mochaGettext from './fixtures/mochaGettext.js';
+import mochaK from "./fixtures/mochaK.js";
+import mochaJquery from "./fixtures/mochaJquery.js";
+import mochaGoogleAnalytics from "./fixtures/mochaGoogleAnalytics.js";
+import mochaNunjucks from "./fixtures/mochaNunjucks.js";
+import mochaGettext from "./fixtures/mochaGettext.js";
 
 chai.use(chaiLint);
 
-describe('instant search', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
+describe("instant search", () => {
+  mochaJsdom({ useEach: true, url: "http://localhost" });
   mochaJquery();
   mochaK();
   mochaGoogleAnalytics();
@@ -21,21 +21,21 @@ describe('instant search', () => {
   mochaNunjucks();
   /* globals window, document, $ */
 
-  describe('', () => {
+  describe("", () => {
     let $sandbox;
     let clock;
     let cxhrMock;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers();
-      cxhrMock = sinon.mock({request: () => {}});
+      cxhrMock = sinon.mock({ request: () => {} });
       window.k.CachedXHR = () => cxhrMock.object;
       window.matchMedia = () => {
         return {
           matches: false,
-          addListener: () => {}
-        }
-      }
+          addListener: () => {},
+        };
+      };
 
       global.matchMedia = window.matchMedia;
       window.Mzp = {};
@@ -44,21 +44,31 @@ describe('instant search', () => {
       // actually tested below, but are required to get the rest of the
       // tests to pass. This should be revisited when we have a frontend
       // build process in place.
-      global.tabsInit = require('../sumo-tabs.js').tabsInit;
-      global.detailsInit = require('../protocol-details-init.js').detailsInit;
+      global.tabsInit = require("../sumo-tabs.js").tabsInit;
+      global.detailsInit = require("../protocol-details-init.js").detailsInit;
 
-
-      rerequire('../i18n.js');
+      rerequire("../i18n.js");
       global.interpolate = global.window.interpolate;
-      rerequire('../search_utils.js');
-      rerequire('../instant_search.js');
+      rerequire("../search_utils.js");
+      rerequire("../instant_search.js");
 
       let content = (
         <div>
-          <div id="main-content"/>
-          <form data-instant-search="form" action="" method="get" className="simple-search-form">
-            <input type="search" name="q" className="searchbox" id="search-q"/>
-            <button type="submit" title="{{ _('Search') }}" className="submit-button">Search</button>
+          <div id="main-content" />
+          <form
+            data-instant-search="form"
+            action=""
+            method="get"
+            className="simple-search-form"
+          >
+            <input type="search" name="q" className="searchbox" id="search-q" />
+            <button
+              type="submit"
+              title="{{ _('Search') }}"
+              className="submit-button"
+            >
+              Search
+            </button>
           </form>
         </div>
       );
@@ -70,26 +80,30 @@ describe('instant search', () => {
       clock.restore();
     });
 
-    it('shows and hides the main content correctly', () => {
-      const $searchInput = $('#search-q');
-      expect($('#main-content').css('display')).to.not.equal('none');
+    it("shows and hides the main content correctly", () => {
+      const $searchInput = $("#search-q");
+      expect($("#main-content").css("display")).to.not.equal("none");
 
-      $searchInput.val('test');
+      $searchInput.val("test");
       $searchInput.keyup();
-      expect($('#main-content').css('display')).to.equal('none');
+      expect($("#main-content").css("display")).to.equal("none");
 
-      $searchInput.val('');
+      $searchInput.val("");
       $searchInput.keyup();
-      expect($('#main-content').css('display')).to.not.equal('none');
+      expect($("#main-content").css("display")).to.not.equal("none");
     });
 
-    it('shows the search query at the top of the page', () => {
-      const query = 'search query';
-      const requestExpectation = cxhrMock.expects('request')
+    it("shows the search query at the top of the page", () => {
+      const query = "search query";
+      const requestExpectation = cxhrMock
+        .expects("request")
         .once()
-        .withArgs(sinon.match.string, sinon.match(opts => opts.data.q === query));
+        .withArgs(
+          sinon.match.string,
+          sinon.match((opts) => opts.data.q === query)
+        );
 
-      const $searchInput = $('#search-q');
+      const $searchInput = $("#search-q");
       $searchInput.val(query);
       $searchInput.keyup();
 
@@ -100,15 +114,15 @@ describe('instant search', () => {
         q: query,
       });
 
-      const $searchResultHeader = $('.search-results-heading');
-      expect($searchResultHeader.find('span').first().text()).to.equal(query);
+      const $searchResultHeader = $(".search-results-heading");
+      expect($searchResultHeader.find("span").first().text()).to.equal(query);
     });
 
-    it('escapes the search query at the top of the page', () => {
-      const query = '<';
-      const requestExpectation = cxhrMock.expects('request');
+    it("escapes the search query at the top of the page", () => {
+      const query = "<";
+      const requestExpectation = cxhrMock.expects("request");
 
-      const $searchInput = $('#search-q');
+      const $searchInput = $("#search-q");
       $searchInput.val(query);
       $searchInput.keyup();
 
@@ -119,15 +133,17 @@ describe('instant search', () => {
         q: query,
       });
 
-      const queryElem = document.querySelectorAll('.search-results-heading span')[0];
-      expect(queryElem.innerHTML).to.equal('&lt;');
+      const queryElem = document.querySelectorAll(
+        ".search-results-heading span"
+      )[0];
+      expect(queryElem.innerHTML).to.equal("&lt;");
     });
 
-    it('escape the query in the sidebar filters', () => {
-      const query = '<';
-      const requestExpectation = cxhrMock.expects('request');
+    it("escape the query in the sidebar filters", () => {
+      const query = "<";
+      const requestExpectation = cxhrMock.expects("request");
 
-      const $searchInput = $('#search-q');
+      const $searchInput = $("#search-q");
       $searchInput.val(query);
       $searchInput.keyup();
 
@@ -138,10 +154,12 @@ describe('instant search', () => {
         q: query,
       });
 
-      const sideBarLinks = Array.from(document.querySelectorAll('.search-filter [data-href]'));
+      const sideBarLinks = Array.from(
+        document.querySelectorAll(".search-filter [data-href]")
+      );
       for (let link of sideBarLinks) {
-        expect(link.attributes['data-href'].value).to.contain('q=%3C');
-        expect(link.attributes['data-href'].value).to.not.contain('<');
+        expect(link.attributes["data-href"].value).to.contain("q=%3C");
+        expect(link.attributes["data-href"].value).to.not.contain("<");
       }
     });
   });

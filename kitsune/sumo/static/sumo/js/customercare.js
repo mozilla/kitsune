@@ -1,6 +1,6 @@
 /* globals Modernizr:false, gettext:false, interpolate:false, twttr:false, ngettext:false, jQuery:false */
-(function($) {
-  'use strict';
+(function ($) {
+  "use strict";
 
   // Tweet IDs are too high. Using .data('tweet-id') returns incorrect
   // results. Use .attr('data-tweet-id') instead.
@@ -10,7 +10,7 @@
     this._id = null;
     this._name = name;
 
-    this.__defineGetter__('id', function() {
+    this.__defineGetter__("id", function () {
       if (!this._id) {
         if (Modernizr.localstorage) {
           this._id = localStorage[this._name];
@@ -21,7 +21,7 @@
 
       return this._id;
     });
-    this.__defineSetter__('id', function(val) {
+    this.__defineSetter__("id", function (val) {
       this._id = val;
 
       if (Modernizr.localstorage) {
@@ -31,7 +31,7 @@
       }
     });
 
-    this.del = function() {
+    this.del = function () {
       if (Modernizr.localstorage) {
         localStorage.removeItem(this._name);
       } else {
@@ -39,60 +39,60 @@
       }
     };
   }
-  var memory = new Memory('custcare_persist_reply');
+  var memory = new Memory("custcare_persist_reply");
 
   function Tweet(target) {
     this.$el = $(target);
-    this.$username_el = this.$el.find('.twittername').first();
-    this.$content_el = this.$el.find('.text').first();
-    this.$avatar_el = this.$el.find('.avatar').first();
+    this.$username_el = this.$el.find(".twittername").first();
+    this.$content_el = this.$el.find(".text").first();
+    this.$avatar_el = this.$el.find(".avatar").first();
 
-    this.__defineGetter__('id', function() {
-      return this.$el.attr('data-tweet-id');
+    this.__defineGetter__("id", function () {
+      return this.$el.attr("data-tweet-id");
     });
-    this.__defineSetter__('id', function(val) {
-      this.$el.attr('data-tweet-id', val);
+    this.__defineSetter__("id", function (val) {
+      this.$el.attr("data-tweet-id", val);
     });
 
-    this.__defineGetter__('avatar', function() {
+    this.__defineGetter__("avatar", function () {
       return {
-        href: this.$avatar_el.attr('href'),
-        src: this.$avatar_el.find('img').attr('src')
+        href: this.$avatar_el.attr("href"),
+        src: this.$avatar_el.find("img").attr("src"),
       };
     });
-    this.__defineSetter__('avatar', function(val) {
-      this.$avatar_el.attr('href', val.href);
-      this.$avatar_el.find('img').attr('src', val.src);
+    this.__defineSetter__("avatar", function (val) {
+      this.$avatar_el.attr("href", val.href);
+      this.$avatar_el.find("img").attr("src", val.src);
     });
 
-    this.__defineGetter__('username', function() {
+    this.__defineGetter__("username", function () {
       return {
         text: this.$username_el.text(),
-        href: this.$avatar_el.attr('href')
+        href: this.$avatar_el.attr("href"),
       };
     });
-    this.__defineSetter__('username', function(val) {
+    this.__defineSetter__("username", function (val) {
       this.$username_el.text(val.text);
-      if (this.$username_el.is('a')) {
-        this.$username_el.attr('href', val.href);
+      if (this.$username_el.is("a")) {
+        this.$username_el.attr("href", val.href);
       }
     });
 
-    this.__defineGetter__('content', function() {
+    this.__defineGetter__("content", function () {
       return this.$content_el.text();
     });
-    this.__defineSetter__('content', function(val) {
+    this.__defineSetter__("content", function (val) {
       this.$content_el.text(val);
     });
 
-    this.__defineGetter__('$permalink_el', function() {
-      return this.$el.find('.permalink').first();
+    this.__defineGetter__("$permalink_el", function () {
+      return this.$el.find(".permalink").first();
     });
-    this.__defineSetter__('$permalink_el', function($val) {
-      this.$el.find('.permalink').first().replaceWith($val.clone());
+    this.__defineSetter__("$permalink_el", function ($val) {
+      this.$el.find(".permalink").first().replaceWith($val.clone());
     });
 
-    this.set_from_tweet = function(tweet) {
+    this.set_from_tweet = function (tweet) {
       this.id = tweet.id;
       this.avatar = tweet.avatar;
       this.username = tweet.username;
@@ -104,7 +104,7 @@
   function addUser(username, usernameList) {
     var li = $('<li value="' + username + '">');
     var checkbox = $('<input type="checkbox">');
-    var span = $('<span name="username"> ' + username + '</span>');
+    var span = $('<span name="username"> ' + username + "</span>");
     li.append(checkbox);
     li.append(span);
     usernameList.append(li);
@@ -118,10 +118,11 @@
   // Return the text of the selected region of the HTML document; '' if none.
   // Based on http://www.quirksmode.org/dom/range_intro.html
   function selectedText() {
-    var selection = '';
+    var selection = "";
     if (window.getSelection) {
       selection = window.getSelection();
-    } else if (document.selection) {  // Opera
+    } else if (document.selection) {
+      // Opera
       selection = document.selection.createRange();
     }
     if (selection.text) {
@@ -132,49 +133,50 @@
     return selection;
   }
 
-  $(document).ready(function() {
-
-    $('#accordion').accordion({
-      'heightStyle': 'content',
-      'clearStyle': true,
-      'icons': false,
-      'autoHeight': false,
-      'collapsible': true,
-      'active': false
+  $(document).ready(function () {
+    $("#accordion").accordion({
+      heightStyle: "content",
+      clearStyle: true,
+      icons: false,
+      autoHeight: false,
+      collapsible: true,
+      active: false,
     });
 
     // Update the 'Such and such replied' link text and formatting based on
     // the data-count attr of a parent tweet.
     function update_reply_indicator($parent) {
-      var reply_txt = $parent.find('.reply_count').first(),  // first() avoids nested tweets.
-        count = reply_txt.data('count') - 1;
-      reply_txt.addClass('you');
+      var reply_txt = $parent.find(".reply_count").first(), // first() avoids nested tweets.
+        count = reply_txt.data("count") - 1;
+      reply_txt.addClass("you");
       if (count === 0) {
-        reply_txt.text(gettext('You replied'));
+        reply_txt.text(gettext("You replied"));
       } else if (count === 1) {
-        reply_txt.text(gettext('You and 1 other replied'));
+        reply_txt.text(gettext("You and 1 other replied"));
       } else {
-        reply_txt.text(interpolate('You and %s others replied',
-        [count]));
+        reply_txt.text(interpolate("You and %s others replied", [count]));
       }
     }
 
     // Append a new tweet, given as the HTML of an <li>, to this thread.
     function appendReply(html, parentId) {
-      var $parent = $('#tweet-' + parentId),
+      var $parent = $("#tweet-" + parentId),
         $count,
-        $replyList = $('#replies_' + parentId).children('ul');
+        $replyList = $("#replies_" + parentId).children("ul");
       $replyList.append($(html).hide());
 
-      $count = $parent.find('.reply_count').first();
-      if ($count.is('span')) {
-        var $zeroCount = $('<a href="#" class="reply_count you" data-count="0"></a>');
+      $count = $parent.find(".reply_count").first();
+      if ($count.is("span")) {
+        var $zeroCount = $(
+          '<a href="#" class="reply_count you" data-count="0"></a>'
+        );
         $count.replaceWith($zeroCount);
         $count = $zeroCount;
       }
-      $count.addClass('opened')
-      .data('count', parseInt($count.data('count'), 10) + 1);
-      $parent.children('.replies:hidden').slideDown();
+      $count
+        .addClass("opened")
+        .data("count", parseInt($count.data("count"), 10) + 1);
+      $parent.children(".replies:hidden").slideDown();
 
       update_reply_indicator($parent);
 
@@ -184,97 +186,97 @@
     function Reply() {
       var modal = this;
 
-      this.__defineGetter__('content', function() {
+      this.__defineGetter__("content", function () {
         return this.$textarea.val();
       });
-      this.__defineSetter__('content', function(val) {
-        val = this._tweet.username.text + ' ' + val + ' #fxhelp';
+      this.__defineSetter__("content", function (val) {
+        val = this._tweet.username.text + " " + val + " #fxhelp";
         this.$textarea.val(val);
         // trigger keydown so the character counter updates
-        this.$textarea.trigger('keydown');
+        this.$textarea.trigger("keydown");
       });
 
-      this.__defineGetter__('tweet', function() {
+      this.__defineGetter__("tweet", function () {
         return this._tweet;
       });
-      this.__defineSetter__('tweet', function(val) {
+      this.__defineSetter__("tweet", function (val) {
         this._tweet.set_from_tweet(val);
       });
 
-      this.open = function(tweet) {
+      this.open = function (tweet) {
         this.tweet = tweet;
-        this.content = '';
+        this.content = "";
         this.kbox.open();
         var pos = this.$textarea.val().length - 8; // == ' #fxhelp'.length
         this.$textarea.get(0).setSelectionRange(pos, pos);
         this.$textarea.focus();
-        this.$error_msg.text('').hide();
+        this.$error_msg.text("").hide();
       };
-      this.close = function() {
+      this.close = function () {
         this.kbox.close();
         modal.reset();
       };
-      this.reset = function() {
-        this.content = '';
+      this.reset = function () {
+        this.content = "";
         this.$success_msg.hide();
       };
 
-      this.$el = $('#reply-modal');
+      this.$el = $("#reply-modal");
 
-      this.$tweet_el = this.$el.find('#initial-tweet');
+      this.$tweet_el = this.$el.find("#initial-tweet");
       this._tweet = new Tweet(this.$tweet_el);
 
-      this.$textarea = this.$el.find('#reply-message');
-      this.$textarea.on('keydown', function() {
+      this.$textarea = this.$el.find("#reply-message");
+      this.$textarea.on("keydown", function () {
         var delta = 140 - twttr.txt.getTweetLength($(this).val());
-        var $counter = $('.character-counter').text(delta);
+        var $counter = $(".character-counter").text(delta);
 
         if (delta < 0) {
-          $counter.addClass('too-many');
+          $counter.addClass("too-many");
         } else {
-          $counter.removeClass('too-many');
+          $counter.removeClass("too-many");
         }
       });
 
-      this.action = this.$el.find('form').attr('action');
-      this.$success_msg = this.$el.find('#submit-message');
-      this.$error_msg = this.$el.find('#error-message');
+      this.action = this.$el.find("form").attr("action");
+      this.$success_msg = this.$el.find("#submit-message");
+      this.$error_msg = this.$el.find("#error-message");
 
-      this.kbox = $(this.$el).data('kbox');
+      this.kbox = $(this.$el).data("kbox");
 
-      var csrf = $('#reply input[name=csrfmiddlewaretoken]').val();
-      this.$el.find('#submit').bind('click', {reply: this}, function(e) {
+      var csrf = $("#reply input[name=csrfmiddlewaretoken]").val();
+      this.$el.find("#submit").bind("click", { reply: this }, function (e) {
         var reply = e.data.reply,
           reqData = {
-            'csrfmiddlewaretoken': csrf,
-            'content': reply.content,
-            'reply_to': reply.tweet.id
+            csrfmiddlewaretoken: csrf,
+            content: reply.content,
+            reply_to: reply.tweet.id,
           },
           $btn = $(this);
-        if (!$btn.is('.busy')) {
-          $btn.addClass('busy');
+        if (!$btn.is(".busy")) {
+          $btn.addClass("busy");
           $.ajax({
             url: reply.action,
             data: reqData,
-            type: 'POST',
-            success: function(resData) {
+            type: "POST",
+            success: function (resData) {
               reply.$success_msg.show();
-              setTimeout(function() {
+              setTimeout(function () {
                 reply.close();
               }, 2000);
 
               appendReply(resData, reply.tweet.id);
             },
-            error: function(data) {
+            error: function (data) {
               reply.$error_msg.text(data.responseText);
               reply.$error_msg.show();
-              setTimeout(function() {
+              setTimeout(function () {
                 reply.$error_msg.fadeOut();
               }, 4000);
             },
-            complete: function() {
-              $btn.removeClass('busy');
-            }
+            complete: function () {
+              $btn.removeClass("busy");
+            },
           });
         }
         e.preventDefault();
@@ -284,27 +286,27 @@
     var reply = new Reply();
 
     function Signin() {
-      this.open = function(tweet) {
+      this.open = function (tweet) {
         if (tweet) {
           this.$el
-          .find('.signin-twitter')
-          .bind('click', {tweet: tweet}, function(e) {
-            memory.id = e.data.tweet.id;
-          });
+            .find(".signin-twitter")
+            .bind("click", { tweet: tweet }, function (e) {
+              memory.id = e.data.tweet.id;
+            });
         }
         this.kbox.open();
       };
 
-      this.close = function() {
+      this.close = function () {
         this.kbox.close();
       };
 
-      this.__defineGetter__('authed', function() {
-        return (this.$el.data('authed') === 'True');
+      this.__defineGetter__("authed", function () {
+        return this.$el.data("authed") === "True";
       });
 
-      this.$el = $('#twitter-modal');
-      this.kbox = this.$el.data('kbox');
+      this.$el = $("#twitter-modal");
+      this.kbox = this.$el.data("kbox");
     }
     var signin = new Signin();
 
@@ -314,19 +316,26 @@
         return;
       }
 
-      var me = $('#twitter-modal').data('twitter-user');
+      var me = $("#twitter-modal").data("twitter-user");
 
-      $('#tweets .replies .twittername')
-      .filter(function isMe() { return $(this).text() === me; })
-      .closest('div.replies')  // Walk up to parent.
-      .closest('.tweet')
-      .each(function() { update_reply_indicator($('#tweet-' + $(this).attr('data-tweet-id'))); });
+      $("#tweets .replies .twittername")
+        .filter(function isMe() {
+          return $(this).text() === me;
+        })
+        .closest("div.replies") // Walk up to parent.
+        .closest(".tweet")
+        .each(function () {
+          update_reply_indicator($("#tweet-" + $(this).attr("data-tweet-id")));
+        });
     }
     mark_my_replies();
 
-    $('.reply-button').live('click', function(e) {
+    $(".reply-button").live("click", function (e) {
       // Do not open tweet window if clicked on link.
-      if ($(e.target).is('a') || $(e.target).parentsUntil('div.tweet-contents').is('a')) {
+      if (
+        $(e.target).is("a") ||
+        $(e.target).parentsUntil("div.tweet-contents").is("a")
+      ) {
         return;
       }
 
@@ -340,7 +349,7 @@
         return;
       }
 
-      var t = new Tweet($(this).closest('.tweet'));
+      var t = new Tweet($(this).closest(".tweet"));
 
       if (!signin.authed) {
         signin.open(t);
@@ -350,64 +359,64 @@
     });
 
     if (signin.authed && memory.id) {
-      $('#tweet-' + memory.id).find('.reply-button').trigger('click');
+      $("#tweet-" + memory.id)
+        .find(".reply-button")
+        .trigger("click");
       memory.del();
     }
 
-    $('.reply-topic').click(function(e) {
-      reply.content = $(this).next('.snippet').text();
+    $(".reply-topic").click(function (e) {
+      reply.content = $(this).next(".snippet").text();
       e.preventDefault();
       return false;
     });
 
-
-    $('.ui-widget-overlay').live('click', function() {
+    $(".ui-widget-overlay").live("click", function () {
       reply.close();
       signin.close();
     });
 
     /** Signin button */
-    $('#signin-button, #steps-signin-button').click(function(e) {
+    $("#signin-button, #steps-signin-button").click(function (e) {
       signin.open(null);
       e.preventDefault();
     });
 
-
     /** Refresh button and Show menu */
     function refresh() {
-      $('#refresh-busy').show();
+      $("#refresh-busy").show();
       $.get(
-        $('#refresh-tweets').attr('href'),
-        {filter: $('#show').val()},
-        function(data) {
-          $('#tweets').fadeOut('fast', function() {
+        $("#refresh-tweets").attr("href"),
+        { filter: $("#show").val() },
+        function (data) {
+          $("#tweets").fadeOut("fast", function () {
             if (data.length) {
-              $('#tweets-wrap').find('.warning-box').hide();
+              $("#tweets-wrap").find(".warning-box").hide();
             } else {
-              $('#tweets-wrap').find('.warning-box').show();
+              $("#tweets-wrap").find(".warning-box").show();
             }
             $(this).html(data).fadeIn();
             mark_my_replies();
-            $('#refresh-busy').hide();
+            $("#refresh-busy").hide();
           });
         }
       );
     }
 
-    $('#refresh-tweets').click(function(e) {
+    $("#refresh-tweets").click(function (e) {
       refresh();
       e.preventDefault();
       return false;
     });
 
-    $('#show').change(function(e) {
+    $("#show").change(function (e) {
       refresh();
     });
 
     /* Show/hide replies */
-    $('#tweets .reply-count').live('click', function(e) {
-      var tweet_id = $(this).closest('.tweet').attr('data-tweet-id'),
-        replies = $('#replies_' + tweet_id);
+    $("#tweets .reply-count").live("click", function (e) {
+      var tweet_id = $(this).closest(".tweet").attr("data-tweet-id"),
+        replies = $("#replies_" + tweet_id);
 
       replies.toggle();
 
@@ -416,32 +425,34 @@
     });
 
     /* Remove tweet functionality */
-    $('#tweets a.remove-tweet').live('click', function(e) {
-      if ($(this).hasClass('clicked')) {
+    $("#tweets a.remove-tweet").live("click", function (e) {
+      if ($(this).hasClass("clicked")) {
         return false;
       }
-      $(this).addClass('clicked');
+      $(this).addClass("clicked");
 
-      var tweet = $(this).closest('.tweet'),
-        tweet_id = tweet.attr('data-tweet-id');
+      var tweet = $(this).closest(".tweet"),
+        tweet_id = tweet.attr("data-tweet-id");
       $.ajax({
-        url: $(this).attr('href'),
-        type: 'POST',
+        url: $(this).attr("href"),
+        type: "POST",
         data: {
-          csrfmiddlewaretoken: $('#tweets-wrap input[name=csrfmiddlewaretoken]').val(),
-          id: tweet_id
+          csrfmiddlewaretoken: $(
+            "#tweets-wrap input[name=csrfmiddlewaretoken]"
+          ).val(),
+          id: tweet_id,
         },
-        dataType: 'text',
-        success: function() {
-          $(this).removeClass('clicked');
-          tweet.slideUp('fast', function() {
+        dataType: "text",
+        success: function () {
+          $(this).removeClass("clicked");
+          tweet.slideUp("fast", function () {
             $(this).remove();
           });
         },
-        error: function(err) {
-          $(this).removeClass('clicked');
-          alert('Error removing tweet: ' + err.responseText); // eslint-disable-line
-        }
+        error: function (err) {
+          $(this).removeClass("clicked");
+          alert("Error removing tweet: " + err.responseText); // eslint-disable-line
+        },
       });
 
       $(this).blur();
@@ -449,175 +460,177 @@
     });
 
     /* Infinite scrolling */
-    $('#infinite-scroll').bind('enterviewport', function() {
-      if (!$('#tweets').children().length) {
-        return;
-      }
-      $('#scroll-busy').show();
-
-      var max_id = $('#tweets > .tweet:last').attr('data-tweet-id');
-      if (!max_id) {
-        return;
-      }
-
-      $.get(
-        $('#refresh-tweets').attr('href'),
-        {max_id: max_id, filter: $('#show').val()},
-        function(data) {
-          if (data) {
-            $('#tweets').append(data);
-            mark_my_replies();
-          } else {
-            // No data left, remove infinite scrolling.
-            $('#infinite-scroll').unbind('enterviewport');
-          }
-          $('#scroll-busy').hide();
+    $("#infinite-scroll")
+      .bind("enterviewport", function () {
+        if (!$("#tweets").children().length) {
+          return;
         }
-      );
-    }).bullseye();
+        $("#scroll-busy").show();
+
+        var max_id = $("#tweets > .tweet:last").attr("data-tweet-id");
+        if (!max_id) {
+          return;
+        }
+
+        $.get(
+          $("#refresh-tweets").attr("href"),
+          { max_id: max_id, filter: $("#show").val() },
+          function (data) {
+            if (data) {
+              $("#tweets").append(data);
+              mark_my_replies();
+            } else {
+              // No data left, remove infinite scrolling.
+              $("#infinite-scroll").unbind("enterviewport");
+            }
+            $("#scroll-busy").hide();
+          }
+        );
+      })
+      .bullseye();
 
     // If the element exists we are on the moderation page.
-    var bannedList = $('#banned-users');
-    var ignoredList = $('#ignored-users');
+    var bannedList = $("#banned-users");
+    var ignoredList = $("#ignored-users");
     if (bannedList || ignoredList) {
-      var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
+      var csrf = $("#csrf input[name=csrfmiddlewaretoken]").val();
 
       // Fill in the lists initially
       if (bannedList) {
-        $.get(
-          '/api/1/customercare/banned',
-          function(data) {
-            data.forEach(function(user) {
-              addUser(user.username, bannedList);
-            });
-          }
-        );
+        $.get("/api/1/customercare/banned", function (data) {
+          data.forEach(function (user) {
+            addUser(user.username, bannedList);
+          });
+        });
       }
 
       if (ignoredList) {
-        $.get(
-          '/api/1/customercare/ignored',
-          function(data) {
-            data.forEach(function(user) {
-              addUser(user.username, ignoredList);
-            });
-          }
-        );
+        $.get("/api/1/customercare/ignored", function (data) {
+          data.forEach(function (user) {
+            addUser(user.username, ignoredList);
+          });
+        });
       }
 
-      $('button[name="username-add"]').on('click', function() {
-        var ulId = $(this).attr('data-username-list');
-        var action = '';
+      $('button[name="username-add"]').on("click", function () {
+        var ulId = $(this).attr("data-username-list");
+        var action = "";
         var usernameList;
-        if (ulId.indexOf('ban') !== -1) {
-          action = 'ban';
+        if (ulId.indexOf("ban") !== -1) {
+          action = "ban";
           usernameList = bannedList;
-        } else if (ulId.indexOf('ignore') !== -1) {
-          action = 'ignore';
+        } else if (ulId.indexOf("ignore") !== -1) {
+          action = "ignore";
           usernameList = ignoredList;
         }
-        var username = $('#' + action + '-username').val();
-        var $msg = $('#' + action + '-message');
+        var username = $("#" + action + "-username").val();
+        var $msg = $("#" + action + "-message");
 
         // Numbers refer to status codes.
         var responses = {
           ban: {
-            200: gettext('Account banned successfully!'),
-            400: gettext('Username not provided.'),
-            409: gettext('This account is already banned!'),
+            200: gettext("Account banned successfully!"),
+            400: gettext("Username not provided."),
+            409: gettext("This account is already banned!"),
           },
           ignore: {
-            200: gettext('Account is now being ignored!'),
-            400: gettext('Username not provided.'),
-            409: gettext('This account is already being ignored!'),
+            200: gettext("Account is now being ignored!"),
+            400: gettext("Username not provided."),
+            409: gettext("This account is already being ignored!"),
           },
         };
 
         // Empty message before we give it more content.
         $msg.empty();
         $.ajax({
-          beforeSend: function(xhr) {
-            xhr.setRequestHeader('X-CSRFToken', csrf);
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-CSRFToken", csrf);
           },
-          url: '/api/1/customercare/' + action,
-          type: 'POST',
+          url: "/api/1/customercare/" + action,
+          type: "POST",
           data: JSON.stringify({
-            username: username
+            username: username,
           }),
-          contentType: 'application/json',
-          success: function(data) {
-            username = username.replace(/^@/, '');
+          contentType: "application/json",
+          success: function (data) {
+            username = username.replace(/^@/, "");
             addUser(username, usernameList);
             $msg.append(responses[action][200]);
           },
-          error: function(resp) {
+          error: function (resp) {
             $msg.append(responses[action][resp.status]);
-          }
+          },
         });
       });
 
-      $('button[name="username-remove"]').on('click', function() {
+      $('button[name="username-remove"]').on("click", function () {
         var usernames = [];
-        var ulId = $(this).attr('data-username-list');
-        $('#' + ulId).children().each(function() {
-          var $li = $(this);
-          var $checkbox = $li.find('input[type="checkbox"]').first();
-          if ($checkbox.attr('checked')) {
-            var $span = $li.find('span[name="username"]').first();
-            usernames.push($span.text().trim());
-          }
-        });
+        var ulId = $(this).attr("data-username-list");
+        $("#" + ulId)
+          .children()
+          .each(function () {
+            var $li = $(this);
+            var $checkbox = $li.find('input[type="checkbox"]').first();
+            if ($checkbox.attr("checked")) {
+              var $span = $li.find('span[name="username"]').first();
+              usernames.push($span.text().trim());
+            }
+          });
 
-        var action = '';
+        var action = "";
         var usernameList;
-        if (ulId.indexOf('ban') !== -1) {
-          action = 'unban';
+        if (ulId.indexOf("ban") !== -1) {
+          action = "unban";
           usernameList = bannedList;
-        } else if (ulId.indexOf('ignore') !== -1) {
-          action = 'unignore';
+        } else if (ulId.indexOf("ignore") !== -1) {
+          action = "unignore";
           usernameList = ignoredList;
         }
 
         var count = usernames.length;
-        var localizedUnban = ngettext('1 user unbanned successfully!',
-        '%s users unbanned sucessfully!',
-        count);
-        var localizedUnignore = ngettext('1 user removed from list!',
-        '%s users removed from list!',
-        count);
+        var localizedUnban = ngettext(
+          "1 user unbanned successfully!",
+          "%s users unbanned sucessfully!",
+          count
+        );
+        var localizedUnignore = ngettext(
+          "1 user removed from list!",
+          "%s users removed from list!",
+          count
+        );
         var responses = {
           unban: {
             200: interpolate(localizedUnban, [count]),
-            400: gettext('No users selected!'),
+            400: gettext("No users selected!"),
           },
           unignore: {
             200: interpolate(localizedUnignore, [count]),
-            400: gettext('No users selected!'),
+            400: gettext("No users selected!"),
           },
         };
 
         // Empty message before we give it more content.
-        var $msg = $('#' + action + '-message');
+        var $msg = $("#" + action + "-message");
         $msg.empty();
         $.ajax({
-          beforeSend: function(xhr) {
-            xhr.setRequestHeader('X-CSRFToken', csrf);
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-CSRFToken", csrf);
           },
-          url: '/api/1/customercare/' + action,
-          type: 'POST',
+          url: "/api/1/customercare/" + action,
+          type: "POST",
           data: JSON.stringify({
-            usernames: usernames
+            usernames: usernames,
           }),
-          contentType: 'application/json',
-          success: function(data) {
-            usernames.forEach(function(username) {
+          contentType: "application/json",
+          success: function (data) {
+            usernames.forEach(function (username) {
               removeUser(username, usernameList);
             });
             $msg.append(responses[action][200]);
           },
-          error: function(resp) {
+          error: function (resp) {
             $msg.append(responses[action][resp.status]);
-          }
+          },
         });
       });
     }

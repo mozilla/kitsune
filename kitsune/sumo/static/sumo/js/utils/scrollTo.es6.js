@@ -9,27 +9,26 @@ $(() => {
    * shouldn't cause a flicker, and it only happens once when the pages
    * loads.
    */
-  let $header = $('body > header');
-  let $body = $('body');
-  const scrollHeaderClass = 'scroll-header';
-  const hadScrollHeaderClass = $body.hasClass('scroll-header');
+  let $header = $("body > header");
+  let $body = $("body");
+  const scrollHeaderClass = "scroll-header";
+  const hadScrollHeaderClass = $body.hasClass("scroll-header");
 
-  $body.removeClass('scroll-header');
+  $body.removeClass("scroll-header");
   floatingHeaderThreshold = $header.outerHeight();
-  $body.addClass('scroll-header');
+  $body.addClass("scroll-header");
   floatingHeaderOffset = $header.height();
 
   if (!hadScrollHeaderClass) {
-    $body.removeClass('scroll-header');
+    $body.removeClass("scroll-header");
   }
 });
 
-
-export default function scrollTo(element, time=undefined) {
+export default function scrollTo(element, time = undefined) {
   let $element = $(element);
   let targetScrollPos = $element.offset().top;
   if (targetScrollPos > floatingHeaderThreshold) {
     targetScrollPos -= floatingHeaderOffset;
   }
-  $('html').animate({scrollTop: targetScrollPos}, time);
+  $("html").animate({ scrollTop: targetScrollPos }, time);
 }

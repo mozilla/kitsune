@@ -12,7 +12,6 @@
 //
 // Style guide: footer
 
-
 .mzp-c-footer {
   margin-top: auto;
 
@@ -34,10 +33,16 @@
     max-width: 100%;
 
     li {
-      @include p.bidi((
-        (padding, p.$spacing-md p.$spacing-lg 0 0, p.$spacing-md 0 0 p.$spacing-lg),
-        (margin, 0, 0),
-      ));
+      @include p.bidi(
+        (
+          (
+            padding,
+            p.$spacing-md p.$spacing-lg 0 0,
+            p.$spacing-md 0 0 p.$spacing-lg
+          ),
+          (margin, 0, 0)
+        )
+      );
 
       a {
         width: p.$spacing-lg;
@@ -79,7 +84,7 @@
       width: c.col-width(2, 6);
     }
 
-    &-link-col{
+    &-link-col {
       width: c.col-width(4, 6);
     }
 

@@ -24,11 +24,10 @@
 //
 // Style guide: buttons
 
-
 .sumo-button {
-  display:inline-flex;
-  justify-content:center;
-  align-items:center;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   padding: 0 p.$spacing-lg;
   height: p.$spacing-xl;
   border: 2px solid var(--color-marketing-gray-03);
@@ -37,7 +36,7 @@
 
   font-family: var(--heading-alt-font-family);
   @include p.font-size(14px);
-  font-weight:700;
+  font-weight: 700;
   text-decoration: none;
   color: var(--color-marketing-gray-07);
 
@@ -69,7 +68,7 @@
   &:disabled,
   &.is-disabled {
     cursor: auto;
-    opacity: .4;
+    opacity: 0.4;
   }
 
   &::-moz-focus-inner {
@@ -81,12 +80,10 @@
     padding: 0 p.$spacing-md;
     height: p.$spacing-lg;
     border-radius: 2px;
-
   }
 
   &.button-lg {
     height: 40px;
-
   }
 
   &.button-xl {
@@ -134,7 +131,8 @@
     }
   }
 
-  &.tall-button {}
+  &.tall-button {
+  }
 
   &.link-button {
     color: var(--color-link);
@@ -170,7 +168,9 @@
       margin-right: p.$spacing-sm;
       width: 58px;
       height: 20px;
-      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 1H4.14v9.78M37.63 10.78V1"/><path fill="#5e5e72" d="M4.14 14.4l4.14-7.17H0l4.14 7.17zM37.63 14.4l4.14-7.17h-8.28l4.14 7.17z"/></svg>');
+      background-image: c.svg-url(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 1H4.14v9.78M37.63 10.78V1"/><path fill="#5e5e72" d="M4.14 14.4l4.14-7.17H0l4.14 7.17zM37.63 14.4l4.14-7.17h-8.28l4.14 7.17z"/></svg>'
+      );
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center center;
@@ -179,7 +179,9 @@
   }
 
   &.compare-revisions-button-up:before {
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 13.4H4.14V3.62M37.63 3.62v9.78"/><path fill="#5e5e72" d="M4.14 0l4.14 7.17H0L4.14 0zM37.63 0l4.14 7.17h-8.28L37.63 0z"/></svg>');
+    background-image: c.svg-url(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 13.4H4.14V3.62M37.63 3.62v9.78"/><path fill="#5e5e72" d="M4.14 0l4.14 7.17H0L4.14 0zM37.63 0l4.14 7.17h-8.28L37.63 0z"/></svg>'
+    );
     align-self: flex-start;
   }
 }
@@ -187,12 +189,10 @@
 .sumo-button:focus,
 .sumo-button:focus-within,
 button:focus,
-input[type=submit]:focus {
+input[type="submit"]:focus {
   box-shadow: var(--focus-shadow);
   outline: none;
 }
-
-
 
 .avatar-row {
   .is-details {
@@ -226,7 +226,8 @@ input[type=submit]:focus {
   }
 }
 
-.is-details .icon-button button { // overriding protocol, remove dropdown arrow on icon buttons
+.is-details .icon-button button {
+  // overriding protocol, remove dropdown arrow on icon buttons
   appearance: none;
   width: p.$spacing-lg;
   height: p.$spacing-lg;
@@ -236,7 +237,7 @@ input[type=submit]:focus {
   background: transparent;
   font: 0/0 a;
   color: transparent;
-  background-image: url('#{p.$image-path}/icons/more-vertical.svg');
+  background-image: url("#{p.$image-path}/icons/more-vertical.svg");
   background-size: p.$spacing-lg p.$spacing-lg;
   background-position: center center;
   background-repeat: no-repeat;
@@ -252,7 +253,6 @@ input[type=submit]:focus {
   }
 }
 
-
 .sumo-close-button {
   appearance: none;
   background: transparent;
@@ -263,7 +263,6 @@ input[type=submit]:focus {
   &:hover {
     transform: scale(1.1);
   }
-
 }
 
 .sumo-delete-button {
@@ -279,7 +278,7 @@ input[type=submit]:focus {
 }
 
 .sumo-file-button {
-  input[type=file] {
+  input[type="file"] {
     position: absolute;
     left: -999em;
   }

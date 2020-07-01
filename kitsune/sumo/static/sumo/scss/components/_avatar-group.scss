@@ -12,7 +12,6 @@
   }
 
   &--details-list {
-
   }
 
   &--details-item {
@@ -56,7 +55,6 @@
   }
 }
 
-
 .avatar-wrap {
   list-style: none;
   margin: 0;
@@ -97,17 +95,15 @@
         text-decoration: underline;
       }
     }
-
   }
 }
-
 
 .change-avatar {
   position: relative;
 
   > .tip {
     background: var(--color-inverse-bg);
-    color:  var(--color-inverse);
+    color: var(--color-inverse);
     display: none;
     margin-top: 5px;
     padding: 10px;

@@ -1,53 +1,70 @@
 /* globals moment:false, k:false, jQuery:false */
-(function($) {
+(function ($) {
   window.k = window.k || {};
 
   var cache = {};
 
   function CachedXHR() {}
 
-  CachedXHR.prototype.dumpCache = function() {
+  CachedXHR.prototype.dumpCache = function () {
     return cache;
   };
 
-  CachedXHR.prototype.clearCache = function() {
+  CachedXHR.prototype.clearCache = function () {
     cache = {};
     return this;
   };
 
-  CachedXHR.prototype.fetch = function(url, cacheKey) {
+  CachedXHR.prototype.fetch = function (url, cacheKey) {
     var key = url;
     if (cacheKey) {
-      key += '::' + cacheKey;
+      key += "::" + cacheKey;
     }
     return cache[key];
   };
 
-  CachedXHR.prototype.store = function(url, cacheKey, lifetime, data, textStatus, jqXHR) {
+  CachedXHR.prototype.store = function (
+    url,
+    cacheKey,
+    lifetime,
+    data,
+    textStatus,
+    jqXHR
+  ) {
     var key = url;
     if (cacheKey) {
-      key += '::' + cacheKey;
+      key += "::" + cacheKey;
     }
     cache[key] = {
-      'expires': moment().add(lifetime[0], lifetime[1]),
-      'data': data,
-      'textStatus': textStatus,
-      'jqXHR': jqXHR
+      expires: moment().add(lifetime[0], lifetime[1]),
+      data: data,
+      textStatus: textStatus,
+      jqXHR: jqXHR,
     };
     return this;
   };
 
-  CachedXHR.prototype.request = function(url, options) {
+  CachedXHR.prototype.request = function (url, options) {
     var self = this;
 
-    options = $.extend({
-      'lifetime': [5, 'minutes']
-    }, options);
+    options = $.extend(
+      {
+        lifetime: [5, "minutes"],
+      },
+      options
+    );
 
     var success = options.success;
 
-    var callback = function(data, textStatus, jqXHR) {
-      self.store(url, options.cacheKey, options.lifetime, data, textStatus, jqXHR);
+    var callback = function (data, textStatus, jqXHR) {
+      self.store(
+        url,
+        options.cacheKey,
+        options.lifetime,
+        data,
+        textStatus,
+        jqXHR
+      );
       if (success) {
         success(data, textStatus, jqXHR);
       }

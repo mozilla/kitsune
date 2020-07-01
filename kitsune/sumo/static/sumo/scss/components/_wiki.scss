@@ -1,7 +1,6 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-
 // These styles were pulled directly from the less files.
 
 article {
@@ -15,7 +14,7 @@ article {
 }
 
 #edit-document label {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .sidebar-nav {
@@ -52,7 +51,7 @@ article {
       }
 
       > a,
-      > a:visited, {
+      > a:visited {
         color: #000;
         background: #fff;
         border: none;
@@ -122,7 +121,7 @@ article {
       }
 
       > a,
-      > a:visited, {
+      > a:visited {
         border-left: none;
         border-right: p.$spacing-xs solid #e7e7e7;
       }
@@ -209,7 +208,9 @@ article {
       padding-top: 10px;
     }
 
-    a.user, a.user:visited, a.user:hover {
+    a.user,
+    a.user:visited,
+    a.user:hover {
       color: #eee;
     }
   }
@@ -221,13 +222,13 @@ article {
   }
 }
 
-
 /* Document Translation page */
 #localize-document {
   .buttons-and-preview {
     /* Taken from Bootstrap V3 */
     .alert {
-      background: #FFE url("../img/warning-stripes.png") repeat-x scroll left top;
+      background: #ffe url("../img/warning-stripes.png") repeat-x scroll left
+        top;
       border: 1px solid transparent;
       border-radius: p.$spacing-xs;
       padding: 15px;
@@ -321,7 +322,6 @@ article {
   }
 
   @media #{p.$mq-md} {
-
     ul li > div {
       display: inline-block;
       margin-bottom: 0;
@@ -359,8 +359,6 @@ article {
   .creator {
     color: #333;
   }
-
-
 
   .showdiff {
     margin: 2px;
@@ -406,7 +404,9 @@ article {
 
   .edit {
     a {
-      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.81 29.81"><path fill="#0060DF" d="M0 29.81l8.29-2.22-6.07-6.07L0 29.81zM18.214 5.532l6.067 6.067-15.04 15.04-6.067-6.067zM23.746-.003l6.067 6.067-4.59 4.59-6.066-6.068z"/></svg>');
+      background-image: c.svg-url(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.81 29.81"><path fill="#0060DF" d="M0 29.81l8.29-2.22-6.07-6.07L0 29.81zM18.214 5.532l6.067 6.067-15.04 15.04-6.067-6.067zM23.746-.003l6.067 6.067-4.59 4.59-6.066-6.068z"/></svg>'
+      );
     }
   }
 
@@ -440,16 +440,17 @@ article {
     text-align: left;
 
     &.top {
-      background: transparent url(../img/wiki/compare.arrows.png) no-repeat p.$spacing-xs 5px;
+      background: transparent url(../img/wiki/compare.arrows.png) no-repeat
+        p.$spacing-xs 5px;
       padding-bottom: 5px;
     }
 
     &.bottom {
-      background: transparent url(../img/wiki/compare.arrows.png) no-repeat p.$spacing-xs -40px;
+      background: transparent url(../img/wiki/compare.arrows.png) no-repeat
+        p.$spacing-xs -40px;
       padding-top: 10px;
     }
   }
-
 
   .loading {
     display: none;
@@ -493,7 +494,7 @@ article {
 }
 
 #show-graph {
-  color: #447BC4;
+  color: #447bc4;
   cursor: pointer;
   float: right;
   font-size: 13px;
@@ -537,7 +538,6 @@ article {
     float: right;
     margin: 0 10px 0 0;
   }
-
 }
 
 .html-rtl {
@@ -554,7 +554,7 @@ article {
 }
 
 #diff-picker-kbox {
-    width: 770px;
+  width: 770px;
 }
 
 #doc-source {
@@ -808,13 +808,12 @@ body.translate {
 /* Review */
 #revision-content,
 #reision-html {
-    margin: 10px 0;
+  margin: 10px 0;
 
   pre {
     white-space: pre-wrap;
   }
 }
-
 
 body.review {
   #actions {
@@ -846,7 +845,9 @@ body.review {
     div.help-text {
       background: #fff;
       border-radius: 0 0 10px 10px;
-      box-shadow: 0 10px 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25);
+      box-shadow: 0 10px 10px rgba(0, 0, 0, 0.25),
+        inset -1px -1px 1px rgba(0, 0, 0, 0.125),
+        inset 1px 0 1px rgba(255, 255, 255, 0.25);
       color: #000;
       display: none;
       left: 23px;
@@ -858,7 +859,9 @@ body.review {
 
     &:hover {
       border-radius: 10px 10px 0 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.25),
+        inset -1px -1px 1px rgba(0, 0, 0, 0.125),
+        inset 1px 0 1px rgba(255, 255, 255, 0.25);
 
       label {
         position: relative;
@@ -917,13 +920,13 @@ body.review {
 
 /* Style video modal */
 div.video .kbox-container {
-    width: 680px;
-    height: 550px;
-    text-align: left;
+  width: 680px;
+  height: 550px;
+  text-align: left;
 }
 
 .html-rtl div.video .kbox-container {
-    text-align: right;
+  text-align: right;
 }
 
 .document-vote {
@@ -958,8 +961,8 @@ article {
 
     &:after {
       background: #fff;
-      box-shadow: -2px 2px 2px rgba(0,0,0,0.3);
-      content: '';
+      box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.3);
+      content: "";
       display: block;
       height: 10px;
       left: -5px;
@@ -996,7 +999,6 @@ article {
       margin: 0;
       @include c.text-body-sm;
 
-
       &:before {
         top: 2px;
         margin-right: 10px;
@@ -1012,7 +1014,7 @@ article {
     top: 6px;
 
     &:before {
-      content: '\00d7';
+      content: "\00d7";
     }
   }
 
@@ -1095,7 +1097,7 @@ article {
 
 /* Ace syntax custom CSS */
 #editor {
-  border: 2px solid #F7F7F7;
+  border: 2px solid #f7f7f7;
   border-radius: 5px;
   bottom: 0;
   left: 0;
@@ -1125,7 +1127,7 @@ article {
 
 .cm-variable,
 .cm-tag {
-  color:  #d98484 !important;
+  color: #d98484 !important;
 }
 
 .cm-other.cm-link {
@@ -1168,7 +1170,7 @@ article {
   }
 
   > a:link,
-    a:visited {
+  a:visited {
     color: #000;
     float: left;
     font-size: p.$spacing-md;
@@ -1187,11 +1189,11 @@ article {
     }
 
     > a:link,
-      a:visited {
-        float: right;
-        padding-left: 0;
-        padding-right: 20px;
-      }
+    a:visited {
+      float: right;
+      padding-left: 0;
+      padding-right: 20px;
+    }
   }
 }
 
@@ -1206,7 +1208,6 @@ article {
   }
 }
 
-
 .collapsible {
   .wiki-section {
     > h1 {
@@ -1217,14 +1218,16 @@ article {
       @include c.sumo-card-heading;
 
       &:before {
-        background: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 3.515v16.97M3.515 12h16.97' stroke='%23000' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round'/%3E%3C/svg%3E") 0 0 no-repeat;
+        background: url("data:image/svg+xml;charset=utf-8,%3Csvg width='24' height='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 3.515v16.97M3.515 12h16.97' stroke='%23000' stroke-width='2' fill='none' fill-rule='evenodd' stroke-linecap='round'/%3E%3C/svg%3E")
+          0 0 no-repeat;
         background-size: auto;
-        background-size: 20px,20px;
-        -webkit-transition: transform .1s ease-in-out;
-        -webkit-transition: -webkit-transform .1s ease-in-out;
-        transition: -webkit-transform .1s ease-in-out;
-        transition: transform .1s ease-in-out;
-        transition: transform .1s ease-in-out,-webkit-transform .1s ease-in-out;
+        background-size: 20px, 20px;
+        -webkit-transition: transform 0.1s ease-in-out;
+        -webkit-transition: -webkit-transform 0.1s ease-in-out;
+        transition: -webkit-transform 0.1s ease-in-out;
+        transition: transform 0.1s ease-in-out;
+        transition: transform 0.1s ease-in-out,
+          -webkit-transform 0.1s ease-in-out;
         content: "";
         height: 20px;
         margin-top: -8px;

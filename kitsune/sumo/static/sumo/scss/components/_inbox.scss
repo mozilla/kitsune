@@ -1,12 +1,10 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-
 .message-list {
   border-top: 1px solid var(--color-border);
 
   &--item {
-
     display: grid;
     grid-gap: p.$spacing-xs 10px;
     grid-template-columns: 36px 1fr 30px;
@@ -84,7 +82,7 @@
 
   .avatar {
     display: block;
-    @include p.bidi(((margin, 0 12px 0 0, 0 0 0 12px),));
+    @include p.bidi(((margin, 0 12px 0 0, 0 0 0 12px)));
     flex: 0 0 auto;
     width: 44px;
 

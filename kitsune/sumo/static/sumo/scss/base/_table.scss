@@ -1,7 +1,6 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-
 // Tables
 //
 // This is the base style for tables. They can be used to organize list views,
@@ -30,9 +29,10 @@ table {
   border-color: var(--color-border);
   border-radius: 0;
   border-collapse: collapse;
-  font-size: .95rem;
+  font-size: 0.95rem;
 
-  td, th {
+  td,
+  th {
     padding: p.$spacing-xs p.$spacing-sm;
     border-bottom: 1px solid var(--color-border);
     text-align: left;
@@ -59,13 +59,15 @@ table {
   }
 
   &.condensed {
-    td, th {
+    td,
+    th {
       padding: 0 p.$spacing-xs;
     }
   }
 
   &.expanded {
-    td, th {
+    td,
+    th {
       padding-top: p.remify(12px);
       padding-bottom: p.remify(12px);
     }
@@ -90,7 +92,8 @@ table {
   }
 
   &.no-h-pad {
-    td, th {
+    td,
+    th {
       &:first-child {
         padding-left: 0;
       }
@@ -161,7 +164,6 @@ table {
     margin-bottom: p.$spacing-xl;
   }
 }
-
 
 td.needs-update.yes,
 td.stale.yes {

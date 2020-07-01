@@ -1,87 +1,90 @@
 /* globals gettext:false, k:false, jQuery:false */
 /*
-* Scripts to support Graphs on wiki article history.
-*/
+ * Scripts to support Graphs on wiki article history.
+ */
 
 (function ($) {
   function init() {
-    $('#show-graph').unbind('click');
-    $('#show-graph').html(gettext('Loading...'));
-    $('#show-graph').css('color', '#333333').css('cursor', 'auto').css('text-decoration', 'none');
+    $("#show-graph").unbind("click");
+    $("#show-graph").html(gettext("Loading..."));
+    $("#show-graph")
+      .css("color", "#333333")
+      .css("cursor", "auto")
+      .css("text-decoration", "none");
     initGraph();
   }
 
   function initGraph() {
     $.ajax({
-      type: 'GET',
-      url: $('#helpful-graph').data('url'),
+      type: "GET",
+      url: $("#helpful-graph").data("url"),
       success: function (data) {
         if (data.datums.length > 0) {
           rickshawGraph(data);
-          $('#show-graph').hide();
+          $("#show-graph").hide();
         } else {
-          $('#show-graph').html(gettext('No votes data'));
-          $('#show-graph').unbind('click');
+          $("#show-graph").html(gettext("No votes data"));
+          $("#show-graph").unbind("click");
         }
       },
       error: function () {
-        $('#show-graph').html(gettext('Error loading graph'));
-        $('#show-graph').unbind('click');
-      }
+        $("#show-graph").html(gettext("Error loading graph"));
+        $("#show-graph").unbind("click");
+      },
     });
   }
 
   function rickshawGraph(data) {
-    var $container = $('#helpful-graph');
+    var $container = $("#helpful-graph");
     var sets = {};
 
-    sets[gettext('Votes')] = ['yes', 'no'];
-    sets[gettext('Percent')] = ['percent'];
+    sets[gettext("Votes")] = ["yes", "no"];
+    sets[gettext("Percent")] = ["percent"];
 
     data.seriesSpec = [
       {
-        name: gettext('Yes'),
-        slug: 'yes',
-        func: k.Graph.identity('yes'),
-        color: '#21de2b',
-        axisGroup: 'votes'
+        name: gettext("Yes"),
+        slug: "yes",
+        func: k.Graph.identity("yes"),
+        color: "#21de2b",
+        axisGroup: "votes",
       },
       {
-        name: gettext('No'),
-        slug: 'no',
-        func: k.Graph.identity('no'),
-        color: '#de2b21',
-        axisGroup: 'votes'
+        name: gettext("No"),
+        slug: "no",
+        func: k.Graph.identity("no"),
+        color: "#de2b21",
+        axisGroup: "votes",
       },
       {
-        name: gettext('Percent'),
-        slug: 'percent',
-        func: k.Graph.percentage('yes', 'no'),
-        color: '#2b21de',
-        axisGroup: 'percent',
-        type: 'percent'
-      }
+        name: gettext("Percent"),
+        slug: "percent",
+        func: k.Graph.percentage("yes", "no"),
+        color: "#2b21de",
+        axisGroup: "percent",
+        type: "percent",
+      },
     ];
 
     $container.show();
     var graph = new k.Graph($container, {
       data: data,
       graph: {
-        width: 600
+        width: 600,
       },
       options: {
         bucket: true,
         legend: false,
         sets: true,
-        timeline: true
+        timeline: true,
       },
       metadata: {
-        sets: sets
-      }
+        sets: sets,
+      },
     });
 
     graph.render();
   }
 
-  $('#show-graph').click(init);
+  $("#show-graph").click(init);
 })(jQuery);

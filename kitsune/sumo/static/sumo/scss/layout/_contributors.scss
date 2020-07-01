@@ -1,7 +1,6 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-
 .contributor-list {
   display: flex;
   flex-wrap: wrap;
@@ -56,7 +55,6 @@
   }
 }
 
-
 .filter {
   &.inline-label {
     display: flex;
@@ -82,7 +80,6 @@
       select,
       input {
         margin: 0 10px;
-
       }
     }
   }
@@ -199,7 +196,7 @@ ol.headings-list {
 }
 
 .legacy-blue-text {
-  color: #2BBAE7 !important;
+  color: #2bbae7 !important;
 }
 
 .content-raw {
@@ -207,7 +204,6 @@ ol.headings-list {
 }
 
 .editable {
-
   .edit {
     display: block;
     margin-bottom: p.$spacing-md;
@@ -231,9 +227,15 @@ ol.headings-list {
   li {
     flex: 1 1 100%;
     max-width: 340px;
-    @include p.bidi((
-      (margin, p.$spacing-sm p.$spacing-xl p.$spacing-sm 0, p.$spacing-sm 0 p.$spacing-sm p.$spacing-xl),
-    ));
+    @include p.bidi(
+      (
+        (
+          margin,
+          p.$spacing-sm p.$spacing-xl p.$spacing-sm 0,
+          p.$spacing-sm 0 p.$spacing-sm p.$spacing-xl
+        )
+      )
+    );
     position: relative;
     padding: p.$spacing-sm;
     border-radius: var(--global-radius);

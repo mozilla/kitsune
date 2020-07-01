@@ -33,31 +33,26 @@
     border-left: 1px solid var(--color-border);
     font-weight: bold;
 
-
     &.no-border,
     &:first-child {
       border-left: 0 none;
     }
 
     &:first-child {
-      @include p.bidi((
-        (padding-left, 0, p.$spacing-sm),
-        (padding-right, p.$spacing-sm, 0),
-      ));
+      @include p.bidi(
+        ((padding-left, 0, p.$spacing-sm), (padding-right, p.$spacing-sm, 0))
+      );
     }
   }
 
   dd {
-    @include p.bidi((
-      (padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
-    ));
+    @include p.bidi(((padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm)));
 
     &.has-border {
       border-left: 1px solid var(--color-border);
-      @include p.bidi((
-        (padding-right, 0, p.$spacing-sm),
-        (padding-left, p.$spacing-sm, 0),
-      ));
+      @include p.bidi(
+        ((padding-right, 0, p.$spacing-sm), (padding-left, p.$spacing-sm, 0))
+      );
     }
 
     &:last-child {
@@ -68,5 +63,4 @@
   @media #{p.$mq-md} {
     margin: 0;
   }
-
 }

@@ -1,83 +1,90 @@
 /* global gettext:false, k:false, jQuery:false */
 /*
-* Voting form ajaxified.
-*/
+ * Voting form ajaxified.
+ */
 
-(function($) {
-
-  'use strict';
+(function ($) {
+  "use strict";
 
   function AjaxVote(form, options) {
     /* Args:
-    * form - the voting form to ajaxify. Can be a selector, DOM element,
-    *        or jQuery node
-    * options - dict of options
-    *      positionMessage - absolutely position the response message?
-    *      removeForm - remove the form after vote?
-    */
+     * form - the voting form to ajaxify. Can be a selector, DOM element,
+     *        or jQuery node
+     * options - dict of options
+     *      positionMessage - absolutely position the response message?
+     *      removeForm - remove the form after vote?
+     */
     AjaxVote.prototype.init.call(this, form, options);
   }
 
   AjaxVote.prototype = {
-    init: function(form, options) {
+    init: function (form, options) {
       var self = this,
         $ajaxForm = $(form),
         $btns = $ajaxForm.find('[type="submit"], [data-type="submit"]');
 
-      options = $.extend({
-        positionMessage: false,
-        removeForm: false,
-        replaceFormWithMessage: false
-      }, options);
+      options = $.extend(
+        {
+          positionMessage: false,
+          removeForm: false,
+          replaceFormWithMessage: false,
+        },
+        options
+      );
       self.options = options;
       self.voted = false;
       self.$form = $ajaxForm;
 
-      $btns.click(function(e) {
+      $btns.click(function (e) {
         if (!self.voted) {
           var $btn = $(this),
-            $form = $btn.closest('form'),
-            url = $form.attr('action'),
+            $form = $btn.closest("form"),
+            url = $form.attr("action"),
             formDataArray = $form.serializeArray(),
             data = {},
-            i, l;
-          $btns.attr('disabled', 'disabled');
-          $form.addClass('busy');
+            i,
+            l;
+          $btns.attr("disabled", "disabled");
+          $form.addClass("busy");
           for (i = 0, l = formDataArray.length; i < l; i++) {
             data[formDataArray[i].name] = formDataArray[i].value;
           }
-          data[$btn.attr('name')] = $btn.val();
+          data[$btn.attr("name")] = $btn.val();
           $.ajax({
             url: url,
-            type: 'POST',
+            type: "POST",
             data: data,
-            dataType: 'json',
-            success: function(response) {
+            dataType: "json",
+            success: function (response) {
               if (response.survey) {
                 self.showSurvey(response.survey, $form.parent());
               }
               if (response.message) {
                 self.showMessage(response.message, $btn, $form);
               }
-              $btn.addClass('active');
-              $btns.removeAttr('disabled');
-              $form.removeClass('busy');
+              $btn.addClass("active");
+              $btns.removeAttr("disabled");
+              $form.removeClass("busy");
               self.voted = true;
 
               if (!data.ignored) {
                 // Trigger a document event for others to listen for.
-                $(document).trigger('vote', $.extend(data, {url: url}));
+                $(document).trigger("vote", $.extend(data, { url: url }));
               }
 
               // Hide other forms
-              self.$form.filter(function() { return !$form.is(this); }).remove();
+              self.$form
+                .filter(function () {
+                  return !$form.is(this);
+                })
+                .remove();
             },
-            error: function() {
-              var msg = gettext('There was an error submitting your vote.');
+            error: function () {
+              var msg = gettext("There was an error submitting your vote.");
               self.showMessage(msg, $btn);
-              $btns.removeAttr('disabled');
-              $form.removeClass('busy');
-            }
+              $btns.removeAttr("disabled");
+              $form.removeClass("busy");
+            },
           });
         }
 
@@ -86,76 +93,79 @@
         return false;
       });
     },
-    showMessage: function(message, $showAbove, $form) {
+    showMessage: function (message, $showAbove, $form) {
       // TODO: Tweak KBox to handle this case.
       var self = this,
-        $html = $('<div class="ajax-vote-box"><p class="msg document-vote--heading"></p></div>'),
+        $html = $(
+          '<div class="ajax-vote-box"><p class="msg document-vote--heading"></p></div>'
+        ),
         offset = $showAbove.offset();
-      $html.find('p').html(message);
-      console.log('options', self.options)
+      $html.find("p").html(message);
+      console.log("options", self.options);
 
       if (self.options.positionMessage) {
         // on desktop browsers we use absolute positioning
-        $('body').append($html);
+        $("body").append($html);
         $html.css({
           top: offset.top - $html.height() - 30,
-          left: offset.left + $showAbove.width() / 2 - $html.width() / 2
+          left: offset.left + $showAbove.width() / 2 - $html.width() / 2,
         });
         var timer = setTimeout(fadeOut, 10000);
-        $('body').one('click', fadeOut);
+        $("body").one("click", fadeOut);
       } else if (self.options.replaceFormWithMessage) {
-        $form.replaceWith($html.removeClass('ajax-vote-box'));
+        $form.replaceWith($html.removeClass("ajax-vote-box"));
       } else {
         // on mobile browsers we just append to the grandfather
         // TODO: make this more configurable with an extra option
-        $showAbove.parent().parent()
-        .addClass($showAbove.val()).append($html);
+        $showAbove.parent().parent().addClass($showAbove.val()).append($html);
       }
 
       function fadeOut() {
-        $html.fadeOut(function() {
+        $html.fadeOut(function () {
           $html.remove();
         });
         if (self.options.removeForm) {
-          self.$form.fadeOut(function() {
+          self.$form.fadeOut(function () {
             self.$form.remove();
           });
         }
-        $('body').unbind('click', fadeOut);
+        $("body").unbind("click", fadeOut);
         clearTimeout(timer);
       }
     },
-    showSurvey: function(survey, $container) {
+    showSurvey: function (survey, $container) {
       var $survey = $(survey);
-      var $commentCount = $survey.find('#remaining-characters');
-      var $commentBox = $survey.find('textarea');
+      var $commentCount = $survey.find("#remaining-characters");
+      var $commentBox = $survey.find("textarea");
       var maxCount = parseInt($commentCount.text(), 10);
-      var $radios = $survey.find('input[type=radio][name=unhelpful-reason]');
-      var $submit = $survey.find('[type=submit], [data-type=submit]');
-      var $reason = $survey.find('.disabled-reason');
-      var $textbox = $survey.find('textarea');
+      var $radios = $survey.find("input[type=radio][name=unhelpful-reason]");
+      var $submit = $survey.find("[type=submit], [data-type=submit]");
+      var $reason = $survey.find(".disabled-reason");
+      var $textbox = $survey.find("textarea");
 
       $container.after($survey);
 
       // remove the extra message when the survey opens.
       $container.remove();
 
-      $submit.prop('disabled', true);
+      $submit.prop("disabled", true);
 
       function validate() {
-        var checked = $radios.filter(':checked').val();
+        var checked = $radios.filter(":checked").val();
         var feedback = $textbox.val();
-        if (checked === undefined ||
-            ((checked === 'other' || checked === 'firefox-feedback') && !feedback)) {
-          $submit.prop('disabled', true);
+        if (
+          checked === undefined ||
+          ((checked === "other" || checked === "firefox-feedback") && !feedback)
+        ) {
+          $submit.prop("disabled", true);
           $reason.fadeIn(600);
         } else {
-          $submit.prop('disabled', false);
+          $submit.prop("disabled", false);
           $reason.fadeOut(600);
         }
       }
 
-      $commentBox.bind('input', function() {
+      $commentBox.bind("input", function () {
         var currentCount = $commentBox.val().length;
         var checked;
 
@@ -168,15 +178,15 @@
         validate();
       });
 
-      $radios.bind('change', validate);
+      $radios.bind("change", validate);
 
-      new k.AjaxVote($survey.find('form'), { // eslint-disable-line
-        replaceFormWithMessage: true
+      new k.AjaxVote($survey.find("form"), {
+        // eslint-disable-line
+        replaceFormWithMessage: true,
       });
-    }
+    },
   };
 
   window.k = window.k || {};
   window.k.AjaxVote = AjaxVote;
-
 })(jQuery);

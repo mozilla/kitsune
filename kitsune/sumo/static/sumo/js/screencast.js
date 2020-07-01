@@ -1,75 +1,93 @@
 /* globals $:false, Modernizr:false, swfobject:false, k:false */
 /*
-* screencast.js
-* Scripts for Media, such as <video>
-*/
+ * screencast.js
+ * Scripts for Media, such as <video>
+ */
 
 (function () {
-  var VIDEO_ID_PREFIX = 'video-flash-', id_counter = 0,
-    FLASH_VERSION = '9.0.0',
-    params = {allowfullscreen: 'true'},
+  var VIDEO_ID_PREFIX = "video-flash-",
+    id_counter = 0,
+    FLASH_VERSION = "9.0.0",
+    params = { allowfullscreen: "true" },
     flashvars = {
       autoload: 1,
       showtime: 1,
-      showvolume: 1
+      showvolume: 1,
     };
   /*
-  * Initializes flash fallback for a video object.
-  */
+   * Initializes flash fallback for a video object.
+   */
   function initVideoFallback($video) {
-    if ($video[0].tagName.toUpperCase() !== 'VIDEO') {
+    if ($video[0].tagName.toUpperCase() !== "VIDEO") {
       return;
     }
 
-    var formats = {ogg: false, webm: false}, i,
-      width = Number($video.data('width')),
-      height = Number($video.data('height')),
-    // Build a unique ID for the object container
+    var formats = { ogg: false, webm: false },
+      i,
+      width = Number($video.data("width")),
+      height = Number($video.data("height")),
+      // Build a unique ID for the object container
       unique_id = VIDEO_ID_PREFIX + id_counter,
       flash_file;
     id_counter++;
 
-    $video.attr('id', unique_id);
+    $video.attr("id", unique_id);
 
     // Check supported formats
-    $('source', $video).each(function checkSourceFormats() {
+    $("source", $video).each(function checkSourceFormats() {
       for (i in formats) {
-        if ($(this).attr('type').indexOf(i) > -1) {
+        if ($(this).attr("type").indexOf(i) > -1) {
           formats[i] = true;
         }
       }
     });
 
-    if (Modernizr.video &&  // can the browser play video?
-      // do we have a webm it can play?
-      (formats.webm && Modernizr.video.webm) ||
+    if (
+      (Modernizr.video && // can the browser play video?
+        // do we have a webm it can play?
+        formats.webm &&
+        Modernizr.video.webm) ||
       // or do we have an ogg it can play?
-      (formats.ogg && Modernizr.video.ogg)) {
-        // good news everyone! No need to fall back!
+      (formats.ogg && Modernizr.video.ogg)
+    ) {
+      // good news everyone! No need to fall back!
       return;
     }
 
     // Get the video fallback URL
-    flash_file = $video.data('fallback');
-    if (flash_file.substr(-4) === '.swf') {
+    flash_file = $video.data("fallback");
+    if (flash_file.substr(-4) === ".swf") {
       swfobject.embedSWF(
-        flash_file, unique_id, width, height, FLASH_VERSION,
-        k.STATIC_URL + '/media/swf/expressInstall.swf', flashvars, params);
+        flash_file,
+        unique_id,
+        width,
+        height,
+        FLASH_VERSION,
+        k.STATIC_URL + "/media/swf/expressInstall.swf",
+        flashvars,
+        params
+      );
     } else if (flash_file) {
       flashvars.flv = flash_file;
       swfobject.embedSWF(
-        k.STATIC_URL + 'swf/screencast.swf', unique_id, width, height,
-        FLASH_VERSION, k.STATIC_URL + '/media/swf/expressInstall.swf',
-        flashvars, params);
+        k.STATIC_URL + "swf/screencast.swf",
+        unique_id,
+        width,
+        height,
+        FLASH_VERSION,
+        k.STATIC_URL + "/media/swf/expressInstall.swf",
+        flashvars,
+        params
+      );
     } else {
       $video.hide();
     }
   }
 
   /*
-  * Checks if fallback is necessary and sets objects in place
-  * for the SWF player
-  */
+   * Checks if fallback is necessary and sets objects in place
+   * for the SWF player
+   */
   function initFallbackSupport() {
     // $('div.video video').each(function initializeVideo(i) {
     //     initVideoFallback($(this));

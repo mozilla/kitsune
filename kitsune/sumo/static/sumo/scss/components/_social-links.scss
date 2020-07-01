@@ -12,8 +12,6 @@
 //
 // Style guide: social-links
 
-
-
 .social-links {
   margin: 2em 0 0 0;
   padding: 0;
@@ -25,7 +23,7 @@
     a {
       @include c.image-replaced();
       display: block;
-      background-image: url('/static/sumo/img/social-icon-sprite.svg');
+      background-image: url("/static/sumo/img/social-icon-sprite.svg");
 
       &.twitter {
         width: 18px;

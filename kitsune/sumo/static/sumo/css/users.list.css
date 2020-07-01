@@ -3,82 +3,82 @@
  */
 
 ul.users {
-    list-style: none;
-    padding: 0;
+  list-style: none;
+  padding: 0;
 }
 
 ul.users li {
-    padding: 5px 0;
-    vertical-align: top;
+  padding: 5px 0;
+  vertical-align: top;
 }
 
 ul.users div.avatar {
-    display: inline-block;
-    margin: 0 10px 0 0;
-    height: 48px;
-    width: 48px;
+  display: inline-block;
+  margin: 0 10px 0 0;
+  height: 48px;
+  width: 48px;
 }
 
 .html-rtl {
-    margin: 0 0 0 10px;
+  margin: 0 0 0 10px;
 }
 
 ul.users div.avatar img {
-    height: 48px;
-    width: 48px;
+  height: 48px;
+  width: 48px;
 }
 
 ul.users div.info {
-    display: inline-block;
-    min-height: 45px;
-    padding: 3px 0 0;
-    vertical-align: top;
+  display: inline-block;
+  min-height: 45px;
+  padding: 3px 0 0;
+  vertical-align: top;
 }
 
 ul.users p.pm {
-    font-size: 11px;
-    margin: 5px 0 0;
+  font-size: 11px;
+  margin: 5px 0 0;
 }
 
 ul.users div.remove {
-    padding: 3px 0 0;
-    vertical-align: top;
+  padding: 3px 0 0;
+  vertical-align: top;
 }
 
 .edit-on ul.users div.remove {
-    display: inline-block;
+  display: inline-block;
 }
 
 ul.users div.remove a {
-    border-radius: 2px;
-    color: #ccc;
+  border-radius: 2px;
+  color: #ccc;
 }
 
 ul.users div.remove a:hover {
-    background: #447BC4;
-    color: #fff;
-    text-decoration: none;
+  background: #447bc4;
+  color: #fff;
+  text-decoration: none;
 }
 
 input.user-autocomplete {
-    width: 240px;
+  width: 240px;
 }
 
 .editable .edit-mode {
-    display: none;
+  display: none;
 }
 
 .edit-on .edit-mode {
-    display: block;
+  display: block;
 }
 
 .editable a.edit {
-    background: transparent url(../img/icons.actions.png) no-repeat left -25px;
-    float: right;
-    padding: 0 0 0 18px;
+  background: transparent url(../img/icons.actions.png) no-repeat left -25px;
+  float: right;
+  padding: 0 0 0 18px;
 }
 
 .html-rtl .editable a.edit {
-    float: left;
-    padding: 0 18px 0 0;
+  float: left;
+  padding: 0 18px 0 0;
 }

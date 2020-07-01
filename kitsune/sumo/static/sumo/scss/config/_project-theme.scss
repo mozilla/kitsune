@@ -15,7 +15,6 @@
 
   --color-error-hover: var(--color-red-07);
 
-
   --color-inverse-bg: var(--color-ink-09);
   --color-inverse: var(--color-white);
 
@@ -27,7 +26,7 @@
   --color-link-active-bg: var(--color-marketing-gray-02);
   --color-secondary: var(--color-marketing-gray-06);
   --color-link-inverse-visited: var(--color-purple-02);
-  --color-link-inverse-active-bg: #{rgba(c.color('marketing-gray', '02'), 0.2)};
+  --color-link-inverse-active-bg: #{rgba(c.color("marketing-gray", "02"), 0.2)};
   --color-border: var(--color-marketing-gray-02);
   --color-callout-bg: var(--color-marketing-gray-02);
   --color-moz-heading: #000000;
@@ -36,21 +35,26 @@
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem;
-  --heading-font-family-moz: 'Zilla Slab', Inter, X-LocaleSpecific, serif;
+  --heading-font-family-moz: "Zilla Slab", Inter, X-LocaleSpecific, serif;
   --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
   --heading-alt-font-family: var(--heading-font-family);
-  --code-font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  --code-font-family: "Monaco", "Menlo", "Ubuntu Mono", "Consolas",
+    "source-code-pro", monospace;
 
   --global-margin: 1rem;
   --global-radius: #{p.$spacing-xs};
 
   // form fields
-  --focus-shadow: 0 0 0 #{p.$spacing-xs} rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
+  --focus-shadow: 0 0 0 #{p.$spacing-xs} rgba(0, 96, 223, 0.3),
+    0 0 0 2px rgb(0, 138, 234);
 }
 
 // With locales where Zilla Slab and Metropolis have partial support, we just use Inter for everything
 // to avoid only some characters falling back to a different font within a word/sentence:
-[lang="ee"], [lang="ig"], [lang="vi"], [lang="yo"] {
+[lang="ee"],
+[lang="ig"],
+[lang="vi"],
+[lang="yo"] {
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --heading-font-family-moz: var(--base-font-family);
   --heading-font-family: var(--base-font-family);

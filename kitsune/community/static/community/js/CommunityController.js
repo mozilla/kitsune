@@ -1,8 +1,8 @@
 /* globals k:false, _:false, React:true, $:false */
-import ContributorsList from './ContributorsList.jsx';
+import ContributorsList from "./ContributorsList.jsx";
 
 export default class ContributorsController {
-  constructor({area, target, title, columns}) {
+  constructor({ area, target, title, columns }) {
     this.area = area;
     this.columns = columns;
     this.target = target;
@@ -27,7 +27,7 @@ export default class ContributorsController {
 
     _.extend(this.filters, newFilters);
     var qs = k.queryParamStringFromDict(this.filters);
-    history.pushState(null, '', qs);
+    history.pushState(null, "", qs);
     this.refresh();
   }
 
@@ -35,22 +35,25 @@ export default class ContributorsController {
     var qs = window.location.search;
     var url = `/api/2/topcontributors/${this.area}/${qs}`;
     $.getJSON(url)
-    .done((data) => {
-      this.data = data;
-      this.render();
-    })
-    .fail((err) => {
-      this.target.textContent = 'Something went wrong! ' + JSON.stringify(err);
-    });
+      .done((data) => {
+        this.data = data;
+        this.render();
+      })
+      .fail((err) => {
+        this.target.textContent =
+          "Something went wrong! " + JSON.stringify(err);
+      });
   }
 
   render() {
     React.render(
       <ContributorsList
-      data={this.data}
-      setFilters={this.setFilters.bind(this)}
-      title={this.title}
-      columns={this.columns} />,
-      this.target);
+        data={this.data}
+        setFilters={this.setFilters.bind(this)}
+        title={this.title}
+        columns={this.columns}
+      />,
+      this.target
+    );
   }
 }

@@ -2,10 +2,10 @@
  * Styles for our admin additions via kadmin app.
  */
 h2 {
-    border-bottom: solid 2px #f0f0f0;
-    border-top: solid 2px #f0f0f0;
-    margin: 15px 0 0;
-    padding: 2px 0;
+  border-bottom: solid 2px #f0f0f0;
+  border-top: solid 2px #f0f0f0;
+  margin: 15px 0 0;
+  padding: 2px 0;
 }
 
 .redis-info td,
@@ -24,6 +24,6 @@ h2 {
 }
 
 #content section {
-    border-bottom: solid 2px #f0f0f0;
-    padding: 10px 0;
+  border-bottom: solid 2px #f0f0f0;
+  padding: 10px 0;
 }

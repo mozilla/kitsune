@@ -1,16 +1,16 @@
 @use '../protocol' as p;
 @use './mixins' as c;
 
-
 $text-body-line-height: 1.5 !default;
 $text-display-line-height: 1.1 !default;
 
 // display copy: headings, blockquotes, other fancy stuff
-@mixin text-display-xxl($family: false) { // Use this one sparingly.
+@mixin text-display-xxl($family: false) {
+  // Use this one sparingly.
   @include p.font-size(64px);
   @include c.line-height(72px);
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
+  @if $family == "no-fam" {
+  } @else if $family == "moz" {
     font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
@@ -20,8 +20,8 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-xl($family: false) {
   @include p.font-size(56px);
   @include c.line-height(64px);
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
+  @if $family == "no-fam" {
+  } @else if $family == "moz" {
     font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
@@ -31,8 +31,8 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-lg($family: false) {
   @include p.font-size(48px);
   @include c.line-height(56px);
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
+  @if $family == "no-fam" {
+  } @else if $family == "moz" {
     font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
@@ -43,9 +43,9 @@ $text-display-line-height: 1.1 !default;
   @include p.font-size(40px);
   @include c.line-height(44px);
 
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
+  @if $family == "no-fam" {
+  } @else if $family == "moz" {
+    font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
   }
@@ -55,9 +55,9 @@ $text-display-line-height: 1.1 !default;
   @include p.font-size(32px);
   @include c.line-height(36px);
 
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
+  @if $family == "no-fam" {
+  } @else if $family == "moz" {
+    font-family: var(--heading-font-family-moz);
   } @else {
     font-family: var(--heading-font-family);
   }
@@ -67,10 +67,10 @@ $text-display-line-height: 1.1 !default;
   @include p.font-size(24px);
   @include c.line-height(28px);
   font-weight: bold;
-  @if $family == 'no-fam' {}
-  @else if $family == 'moz' {
-      font-family: var(--heading-font-family-moz);
-      color: var(--color-moz-heading);
+  @if $family == "no-fam" {
+  } @else if $family == "moz" {
+    font-family: var(--heading-font-family-moz);
+    color: var(--color-moz-heading);
   } @else {
     font-family: var(--heading-font-family);
     color: var(--color-heading);
@@ -123,7 +123,6 @@ $text-display-line-height: 1.1 !default;
   line-height: $text-body-line-height;
   font-family: var(--base-font-family);
 }
-
 
 // The following mixins contain breakpoints, so most of the time, these are what
 // should be used throughout the system to maintain the visual hierarchy as

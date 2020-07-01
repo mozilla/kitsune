@@ -43,9 +43,15 @@
     justify-content: flex-end;
 
     .sumo-button {
-      @include p.bidi((
-        (margin, 0 0 p.$spacing-sm p.$spacing-md, 0 p.$spacing-md p.$spacing-sm 0),
-      ));
+      @include p.bidi(
+        (
+          (
+            margin,
+            0 0 p.$spacing-sm p.$spacing-md,
+            0 p.$spacing-md p.$spacing-sm 0
+          )
+        )
+      );
     }
   }
 
@@ -62,9 +68,15 @@
   }
 
   .sumo-button {
-    @include p.bidi((
-      (margin, 0 p.$spacing-md p.$spacing-sm 0, 0 0 p.$spacing-sm p.$spacing-md),
-    ));
+    @include p.bidi(
+      (
+        (
+          margin,
+          0 p.$spacing-md p.$spacing-sm 0,
+          0 0 p.$spacing-sm p.$spacing-md
+        )
+      )
+    );
   }
 
   &.full-width-on-mobile {
@@ -75,34 +87,25 @@
 
     @media #{p.$mq-md} {
       .sumo-button {
-        @include p.bidi((
-          (margin-right, p.$spacing-md, 0),
-          (margin-left, 0, p.$spacing-md),
-        ));
+        @include p.bidi(
+          ((margin-right, p.$spacing-md, 0), (margin-left, 0, p.$spacing-md))
+        );
         width: auto;
       }
     }
   }
 
   .push-right {
-    @include p.bidi((
-      (margin-left, auto, 0),
-      (margin-right, 0, auto),
-    ));
+    @include p.bidi(((margin-left, auto, 0), (margin-right, 0, auto)));
   }
 
   .push-left {
-    @include p.bidi((
-      (margin-right, auto, 0),
-      (margin-left, 0, auto),
-    ));
+    @include p.bidi(((margin-right, auto, 0), (margin-left, 0, auto)));
   }
 
   .last-on-mobile {
     order: 100;
   }
-
-
 
   @media #{p.$mq-md} {
     &.reverse-on-desktop {
@@ -126,23 +129,16 @@
       }
 
       .sumo-button {
-        @include p.bidi((
-          (margin-left, p.$spacing-md, 0),
-          (margin-right, 0, p.$spacing-md),
-        ));
+        @include p.bidi(
+          ((margin-left, p.$spacing-md, 0), (margin-right, 0, p.$spacing-md))
+        );
 
         &.push-right {
-          @include p.bidi((
-            (margin-left, auto, 0),
-            (margin-right, 0, auto),
-          ));
+          @include p.bidi(((margin-left, auto, 0), (margin-right, 0, auto)));
         }
 
         &.push-left {
-          @include p.bidi((
-            (margin-right, auto, 0),
-            (margin-left, 0, auto),
-          ));
+          @include p.bidi(((margin-right, auto, 0), (margin-left, 0, auto)));
         }
       }
     }
@@ -152,7 +148,6 @@
     }
   }
 }
-
 
 // stack buttons and fit to the biggest one.
 .sumo-button-stack {

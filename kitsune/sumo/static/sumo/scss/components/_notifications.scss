@@ -20,7 +20,15 @@
 .mzp-c-notification-bar {
   min-height: 46px;
   line-height: 20px;
-  @include p.bidi(((padding, p.$spacing-sm p.$spacing-2xl p.$spacing-sm p.$spacing-sm, p.$spacing-sm p.$spacing-sm p.$spacing-sm p.$spacing-2xl),));
+  @include p.bidi(
+    (
+      (
+        padding,
+        p.$spacing-sm p.$spacing-2xl p.$spacing-sm p.$spacing-sm,
+        p.$spacing-sm p.$spacing-sm p.$spacing-sm p.$spacing-2xl
+      )
+    )
+  );
   position: relative;
   display: flex;
   justify-content: center;
@@ -39,14 +47,12 @@
     height: auto;
   }
 
-
-
   .mzp-c-notification-bar-button {
     position: absolute;
     top: 0;
     bottom: 0;
-    @include p.bidi(((right, 0, auto),));
-    @include p.bidi(((left, auto, 0),));
+    @include p.bidi(((right, 0, auto)));
+    @include p.bidi(((left, auto, 0)));
   }
 
   p {

@@ -128,7 +128,9 @@ label {
         right: 9px;
         width: 21px;
         height: 21px;
-        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10" fill="none" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-width="2" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11 7v5"/><circle cx="11" cy="15" r="1" fill="#C50043"/></svg>');
+        background-image: c.svg-url(
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10" fill="none" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-width="2" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11 7v5"/><circle cx="11" cy="15" r="1" fill="#C50043"/></svg>'
+        );
         background-repeat: no-repeat;
         content: "";
       }
@@ -137,7 +139,9 @@ label {
 
   &.has-success .field-wrap:after {
     top: 12px;
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#2ac3a2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1L6 12 1 7"/></svg>');
+    background-image: c.svg-url(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#2ac3a2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1L6 12 1 7"/></svg>'
+    );
   }
 
   &.has-error {
@@ -157,8 +161,6 @@ label {
         @include c.text-body-sm;
       }
     }
-
-
   }
 }
 
@@ -178,15 +180,15 @@ label {
   max-width: 100%;
 }
 
-input[type='email'],
-input[type='url'],
-input[type='tel'],
-input[type='password'],
-input[type='search'],
-input[type='text'],
-input[type='number'],
-input[type='date'],
-input[type='time'],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+input[type="password"],
+input[type="search"],
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
 select,
 textarea,
 .ts-select-trigger {
@@ -198,10 +200,10 @@ textarea,
   border: 2px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
   background-color: var(--color-white);
-  color:#0c0c0d;
-  outline:0;
-  transition-duration:150ms;
-  transition-property:border-color;
+  color: #0c0c0d;
+  outline: 0;
+  transition-duration: 150ms;
+  transition-property: border-color;
   @include c.text-body-sm;
 
   &:hover {
@@ -227,17 +229,20 @@ textarea,
   }
 
   .has-warning & {
-    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('yellow', '04'), 0.3), 0 0 0 2px c.color('yellow', '04'); // compliant colors
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color("yellow", "04"), 0.3),
+      0 0 0 2px c.color("yellow", "04"); // compliant colors
     // box-shadow: 0 0 0 p.$spacing-xs rgba(215, 182, 0, 0.3), 0 0 0 2px rgb(215, 182, 0); // noncompliant colors
   }
 
   .has-success & {
-    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('green', '07'), 0.3), 0 0 0 2px c.color('green', '07'); // compliant colors
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color("green", "07"), 0.3),
+      0 0 0 2px c.color("green", "07"); // compliant colors
     // box-shadow: 0 0 0 p.$spacing-xs rgba(63, 225, 176, 0.3), 0 0 0 2px var(--green-60); // noncompliant colors
   }
 
   .has-error & {
-    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('red', '08'), 0.4), 0 0 0 2px var(--color-red-08);
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color("red", "08"), 0.4),
+      0 0 0 2px var(--color-red-08);
     // box-shadow: 0 0 0 p.$spacing-xs rgba(255, 79, 94, 0.4), 0 0 0 2px var(--red-60);
   }
 
@@ -272,26 +277,34 @@ select,
 .mzp-c-language-switcher select,
 .ts-select-trigger {
   position: relative;
-  background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  background-image: c.svg-url(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>'
+  );
   background-color: var(--color-white);
-  @include p.bidi((
-    (background-position, top 14px right 14px, top 14px left 14px),
-    (padding-right, 40px, p.$spacing-sm),
-    (padding-left, p.$spacing-sm, 40px),
-    (text-align, left, right),
-  ));
+  @include p.bidi(
+    (
+      (background-position, top 14px right 14px, top 14px left 14px),
+      (padding-right, 40px, p.$spacing-sm),
+      (padding-left, p.$spacing-sm, 40px),
+      (text-align, left, right)
+    )
+  );
   background-repeat: no-repeat;
   background-size: 12px 12px;
   max-width: p.remify(360px);
 
   :not([class*="has-"]) > &:hover,
   :not([class*="has-"]) > &:focus {
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#0250BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+    background-image: c.svg-url(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#0250BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>'
+    );
   }
 
   &:disabled,
   .has-disabled & {
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#CDCDD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+    background-image: c.svg-url(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#CDCDD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>'
+    );
   }
 
   &[multiple] {
@@ -376,7 +389,6 @@ textarea {
   }
 }
 
-
 .checkbox-list,
 .columns-list {
   margin: 0 0 p.$spacing-xl 0;
@@ -393,19 +405,12 @@ textarea {
   &--sublist {
     margin-left: 32px;
 
-    @include p.bidi((
-      (margin-left, 32px, 0),
-      (margin-right, 0, 32px),
-    ));
-
+    @include p.bidi(((margin-left, 32px, 0), (margin-right, 0, 32px)));
   }
 }
 
 .products.mzp-c-details .is-summary button {
-  @include p.bidi((
-    (padding-left, 0, 48px),
-    (padding-right, 48px, 0),
-  ));
+  @include p.bidi(((padding-left, 0, 48px), (padding-right, 48px, 0)));
 }
 
 .mzp-c-details.has-border-bottom {

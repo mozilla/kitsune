@@ -3,7 +3,7 @@
  * Prepopulate system info in AAQ form
  */
 
-(function($) {
+(function ($) {
   "use strict";
 
   function AAQSystemInfo($form) {
@@ -11,7 +11,7 @@
   }
 
   AAQSystemInfo.prototype = {
-    init: function($form) {
+    init: function ($form) {
       var self = this,
         $input;
 
@@ -42,17 +42,17 @@
           $input.val(self.getPlugins());
         }
       } else {
-        $form.find('li.system-details-info').hide();
+        $form.find("li.system-details-info").hide();
       }
 
       // Expanders.
-      $("a.expander").on("click", function(ev) {
+      $("a.expander").on("click", function (ev) {
         ev.preventDefault();
         var selector = $(this).attr("href");
         $(selector).fadeToggle();
       });
 
-      $("#show-login a").on("click", function(ev) {
+      $("#show-login a").on("click", function (ev) {
         $("#login-form").show();
         $(this).remove();
         return false;
@@ -60,7 +60,7 @@
 
       self.getTroubleshootingInfo();
     },
-    getOS: function() {
+    getOS: function () {
       // Returns a string representing the user's operating system
       var os = [
           ["Android", /Android/i],
@@ -93,7 +93,7 @@
           ["Mac OS", /(Mac_PowerPC)|(Macintosh)/i],
           ["QNX", /QNX/i],
           ["BeOS", /BeOS/i],
-          ["OS/2", /OS\/2/i]
+          ["OS/2", /OS\/2/i],
         ],
         ua = navigator.userAgent,
         i,
@@ -105,7 +105,7 @@
       }
       return navigator.oscpu || "";
     },
-    getPlugins: function() {
+    getPlugins: function () {
       // Returns wiki markup for the list of plugins
       var plugins = [],
         i,
@@ -123,7 +123,7 @@
       }
       return plugins;
     },
-    getFirefoxVersion: function() {
+    getFirefoxVersion: function () {
       // Returns a string with the version of Firefox
       var version = /Firefox\/(\S+)/i.exec(navigator.userAgent);
       if (version) {
@@ -135,7 +135,7 @@
       }
       return "";
     },
-    getDevice: function() {
+    getDevice: function () {
       // Returns a string with the device being used
       var device = /\(Mobile; (.+); .+\)/i.exec(navigator.userAgent);
       if (device) {
@@ -147,21 +147,25 @@
       }
       return "";
     },
-    isDesktopFF: function() {
+    isDesktopFF: function () {
       // Is the question for FF on the desktop?
-      return document.location.pathname.indexOf("desktop") >= 0 ||
-        document.location.pathname.indexOf("firefox-enterprise") >= 0;
+      return (
+        document.location.pathname.indexOf("desktop") >= 0 ||
+        document.location.pathname.indexOf("firefox-enterprise") >= 0
+      );
     },
-    isMobileFF: function() {
+    isMobileFF: function () {
       // Is the question for FF on mobile?
-      return document.location.pathname.indexOf("mobile") >= 0 ||
-        document.location.pathname.indexOf("firefox-preview") >= 0;
+      return (
+        document.location.pathname.indexOf("mobile") >= 0 ||
+        document.location.pathname.indexOf("firefox-preview") >= 0
+      );
     },
-    isFirefoxForIOS: function() {
+    isFirefoxForIOS: function () {
       // Is the question for Firefox for iOS?
       return document.location.pathname.indexOf("ios") >= 0;
     },
-    getTroubleshootingInfo: function(addEvent) {
+    getTroubleshootingInfo: function (addEvent) {
       var self = this;
       var browserData;
 
@@ -176,13 +180,13 @@
       }
 
       // First we try to use the builtin API:
-      remoteTroubleshooting.available(function(yesno) {
+      remoteTroubleshooting.available(function (yesno) {
         if (yesno) {
-          remoteTroubleshooting.getData(function(data) {
+          remoteTroubleshooting.getData(function (data) {
             browserData = data;
           });
 
-          $("#share-data").click(function(e) {
+          $("#share-data").click(function (e) {
             // The user must click button to save the data.
             e.preventDefault();
             handleData(browserData);
@@ -207,7 +211,7 @@
         $("#id_troubleshooting").val(data);
         $("#troubleshooting-explanation").show();
       }
-    }
+    },
   };
 
   window.AAQSystemInfo = AAQSystemInfo;

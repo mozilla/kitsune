@@ -1,7 +1,7 @@
 window.remoteTroubleshooting = window.remoteTroubleshooting || {};
 
-(function(window, remoteTroubleshooting) {
-  'use strict';
+(function (window, remoteTroubleshooting) {
+  "use strict";
 
   var data;
 
@@ -20,12 +20,14 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
    *
    * @returns {object} with data in it or {}
    */
-  remoteTroubleshooting.getData = function(callback, timeout) {
+  remoteTroubleshooting.getData = function (callback, timeout) {
     var timeoutId;
 
     // If we've already gotten the data, return that.
     if (data) {
-      window.setTimeout(function() { callback(data); });
+      window.setTimeout(function () {
+        callback(data);
+      });
       return;
     }
 
@@ -35,23 +37,32 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
     if (!window.addEventListener) {
       // console.log('remoteTroubleshooting: browser does not support addEventListener');
       data = {};
-      window.setTimeout(function() { callback(data); });
+      window.setTimeout(function () {
+        callback(data);
+      });
       return;
     }
 
-    if (!(window.hasOwnProperty('CustomEvent') && typeof window.CustomEvent === 'function')) {
+    if (
+      !(
+        window.hasOwnProperty("CustomEvent") &&
+        typeof window.CustomEvent === "function"
+      )
+    ) {
       // console.log('remoteTroubleshooting: browser does not support CustomEvent');
       data = {};
-      window.setTimeout(function() { callback(data); });
+      window.setTimeout(function () {
+        callback(data);
+      });
       return;
     }
 
     timeout = timeout || 1000;
 
     /**
-    * If the interval passes and the event listener hasn't kicked off then
-    * there's nothing listening, so we abort.
-    */
+     * If the interval passes and the event listener hasn't kicked off then
+     * there's nothing listening, so we abort.
+     */
     function eject() {
       // console.log('remoteTroubleshooting: interval ' + timeout + ' has passed.');
       data = {};
@@ -60,9 +71,9 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
 
     // Listen to the WebChannelMessageToContent event and handle
     // incoming remote-troubleshooting messages.
-    window.addEventListener('WebChannelMessageToContent', function (e) {
+    window.addEventListener("WebChannelMessageToContent", function (e) {
       // FIXME: handle failure cases
-      if (e.detail.id === 'remote-troubleshooting') {
+      if (e.detail.id === "remote-troubleshooting") {
         window.clearTimeout(timeoutId);
 
         data = e.detail.message;
@@ -72,39 +83,41 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
           data = {};
         }
 
-        window.setTimeout(function() { callback(data); });
+        window.setTimeout(function () {
+          callback(data);
+        });
       }
     });
 
     // Create the remote-troubleshooting event requesting data and
     // kick it off.
-    var event = new window.CustomEvent('WebChannelMessageToChrome', {
+    var event = new window.CustomEvent("WebChannelMessageToChrome", {
       detail: {
-        id: 'remote-troubleshooting',
+        id: "remote-troubleshooting",
         message: {
-          command: 'request'
-        }
-      }
+          command: "request",
+        },
+      },
     });
     window.dispatchEvent(event);
     timeoutId = window.setTimeout(eject, timeout);
   };
 
   /**
-  * Returns whether or not the remote-troubleshooting data is
-  * available.
-  *
-  * @param {function} callback - Callback function to call when
-  * the data arrives. It should take a single argument which
-  * will be the data packet.
-  *
-  * @param {integer} timeout - Timeout in milliseconds for calling
-  * the callback with {} if the event hasn't yet gotten dispatched.
-  * Defaults to 1000 ms (aka 1 second).
-  *
-  * @returns {bool} true if it's available, false if it isn't
-  */
-  remoteTroubleshooting.available = function(callback, timeout) {
+   * Returns whether or not the remote-troubleshooting data is
+   * available.
+   *
+   * @param {function} callback - Callback function to call when
+   * the data arrives. It should take a single argument which
+   * will be the data packet.
+   *
+   * @param {integer} timeout - Timeout in milliseconds for calling
+   * the callback with {} if the event hasn't yet gotten dispatched.
+   * Defaults to 1000 ms (aka 1 second).
+   *
+   * @returns {bool} true if it's available, false if it isn't
+   */
+  remoteTroubleshooting.available = function (callback, timeout) {
     remoteTroubleshooting.getData(function (troubleShootingData) {
       // FIXME: This relies on the fact that 'application' is a
       // valid key with data in it. If it's not then, this will
@@ -112,5 +125,4 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
       callback(!!troubleShootingData.application);
     }, timeout);
   };
-
 })(window, window.remoteTroubleshooting);

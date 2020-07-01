@@ -7,9 +7,7 @@
 
   &--icon-wrap {
     flex: 0 0 auto;
-    @include p.bidi((
-      (margin, 0 p.$spacing-md 0 0, 0 0 0 p.$spacing-md),
-    ));
+    @include p.bidi(((margin, 0 p.$spacing-md 0 0, 0 0 0 p.$spacing-md)));
   }
 
   &--icon {

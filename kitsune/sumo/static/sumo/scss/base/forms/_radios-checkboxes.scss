@@ -13,13 +13,10 @@
 
 .checkbox,
 .radio {
-  [type=checkbox],
-  [type=radio] {
+  [type="checkbox"],
+  [type="radio"] {
     position: absolute;
-    @include p.bidi((
-      (left, -9999px, auto),
-      (right, auto, -9999px),
-    ));
+    @include p.bidi(((left, -9999px, auto), (right, auto, -9999px)));
   }
 
   label {
@@ -27,10 +24,9 @@
     display: flex;
 
     &:before {
-      @include p.bidi((
-        (margin-right, p.$spacing-md, 0),
-        (margin-left, 0,  p.$spacing-md),
-      ));
+      @include p.bidi(
+        ((margin-right, p.$spacing-md, 0), (margin-left, 0, p.$spacing-md))
+      );
       display: block;
       flex: 0 0 auto;
       width: 20px;
@@ -61,12 +57,15 @@
     }
   }
 
-  [type=radio]:checked + label,
-  [type=checkbox]:checked + label {
-    &:before { // background, checked state
+  [type="radio"]:checked + label,
+  [type="checkbox"]:checked + label {
+    &:before {
+      // background, checked state
       z-index: 1;
       border-color: var(--checkbox-checked-color);
-      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>');
+      background-image: c.svg-url(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>'
+      );
       background-color: var(--checkbox-checked-color);
       background-position: center center;
       background-repeat: no-repeat;
@@ -78,23 +77,25 @@
     }
   }
 
-  [type=radio]:disabled + label:before,
-  [type=checkbox]:disabled + label:before {
+  [type="radio"]:disabled + label:before,
+  [type="checkbox"]:disabled + label:before {
     border-color: var(--field-border-color-disabled);
     background-color: var(--field-background-color-disabled);
   }
 
-  [type=radio]:checked:disabled + label:before,
-  [type=radio]:checked:disabled:hover + label:before,
-  [type=checkbox]:checked:disabled + label:before,
-  [type=checkbox]:checked:disabled:hover + label:before {
+  [type="radio"]:checked:disabled + label:before,
+  [type="radio"]:checked:disabled:hover + label:before,
+  [type="checkbox"]:checked:disabled + label:before,
+  [type="checkbox"]:checked:disabled:hover + label:before {
     border-color: var(--field-border-color-disabled);
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#CDCDD4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>');
+    background-image: c.svg-url(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#CDCDD4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>'
+    );
     background-color: var(--field-background-color-disabled);
   }
 
-  [type=radio]:focus + label:before,
-  [type=checkbox]:focus + label:before {
+  [type="radio"]:focus + label:before,
+  [type="checkbox"]:focus + label:before {
     box-shadow: var(--focus-shadow);
   }
 }
@@ -115,17 +116,21 @@
     }
   }
 
-  [type=radio]:checked + label:before,
-  [type=checkbox]:checked + label:before {
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7.58 7.58"><circle cx="3.79" cy="3.79" r="3.79" fill="#0060DF"/></svg>');
+  [type="radio"]:checked + label:before,
+  [type="checkbox"]:checked + label:before {
+    background-image: c.svg-url(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7.58 7.58"><circle cx="3.79" cy="3.79" r="3.79" fill="#0060DF"/></svg>'
+    );
     background-color: var(--color-white);
     background-size: 10px 10px;
   }
 
-  [type=radio]:checked:disabled + label:before,
-  [type=radio]:checked:disabled:hover + label:before {
+  [type="radio"]:checked:disabled + label:before,
+  [type="radio"]:checked:disabled:hover + label:before {
     border-color: var(--field-border-color-disabled);
-    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7.58 7.58"><circle cx="3.79" cy="3.79" r="3.79" fill="#CDCDD4"/></svg>');
+    background-image: c.svg-url(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7.58 7.58"><circle cx="3.79" cy="3.79" r="3.79" fill="#CDCDD4"/></svg>'
+    );
     background-color: var(--field-background-color-disabled);
   }
 }
