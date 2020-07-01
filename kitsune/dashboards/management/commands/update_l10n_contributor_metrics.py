@@ -23,7 +23,7 @@ class Command(BaseCommand):
     help = "Update the number of active contributors for each locale/product."
 
     def add_arguments(self, parser):
-        parser.add_argument('day', nargs='?', type=valid_date)
+        parser.add_argument("day", nargs="?", type=valid_date)
 
     def handle(self, day=None, **options):
         """
@@ -48,11 +48,13 @@ class Command(BaseCommand):
                     from_date=previous_first_of_month,
                     to_date=first_of_month,
                     locale=locale,
-                    product=product)
+                    product=product,
+                )
 
                 WikiMetric.objects.create(
                     code=L10N_ACTIVE_CONTRIBUTORS_CODE,
                     locale=locale,
                     product=product,
                     date=previous_first_of_month,
-                    value=num)
+                    value=num,
+                )

@@ -16,7 +16,7 @@ from kitsune.upload.utils import FileTooLargeError
 from kitsune.upload.utils import upload_imageattachment
 
 
-ALLOWED_MODELS = ['questions.Question', 'questions.Answer', 'auth.User']
+ALLOWED_MODELS = ["questions.Question", "questions.Answer", "auth.User"]
 
 
 @login_required
@@ -27,35 +27,31 @@ def up_image_async(request, model_name, object_pk):
 
     # Verify the model agaist our white-list
     if model_name not in ALLOWED_MODELS:
-        message = _('Model not allowed.')
-        return HttpResponseBadRequest(
-            json.dumps({'status': 'error', 'message': message}))
+        message = _("Model not allowed.")
+        return HttpResponseBadRequest(json.dumps({"status": "error", "message": message}))
 
     # Get the model
-    m = apps.get_model(*model_name.split('.'))
+    m = apps.get_model(*model_name.split("."))
 
     # Then look up the object by pk
     try:
         obj = m.objects.get(pk=object_pk)
     except ObjectDoesNotExist:
-        message = _('Object does not exist.')
-        return HttpResponseNotFound(
-            json.dumps({'status': 'error', 'message': message}))
+        message = _("Object does not exist.")
+        return HttpResponseNotFound(json.dumps({"status": "error", "message": message}))
 
     try:
         file_info = upload_imageattachment(request, obj)
     except FileTooLargeError as e:
-        return HttpResponseBadRequest(
-            json.dumps({'status': 'error', 'message': e.args[0]}))
+        return HttpResponseBadRequest(json.dumps({"status": "error", "message": e.args[0]}))
 
-    if isinstance(file_info, dict) and 'thumbnail_url' in file_info:
-        return HttpResponse(
-            json.dumps({'status': 'success', 'file': file_info}))
+    if isinstance(file_info, dict) and "thumbnail_url" in file_info:
+        return HttpResponse(json.dumps({"status": "success", "file": file_info}))
 
-    message = _('Invalid or no image received.')
+    message = _("Invalid or no image received.")
     return HttpResponseBadRequest(
-        json.dumps({'status': 'error', 'message': message,
-                    'errors': file_info}))
+        json.dumps({"status": "error", "message": message, "errors": file_info})
+    )
 
 
 @require_POST
@@ -64,26 +60,22 @@ def del_image_async(request, image_id):
     """Delete an image given its object id."""
     user = request.user
     if not user.is_authenticated:
-        message = _('You are not logged in.')
-        return HttpResponseForbidden(
-            json.dumps({'status': 'error', 'message': message}))
+        message = _("You are not logged in.")
+        return HttpResponseForbidden(json.dumps({"status": "error", "message": message}))
 
     try:
         image = ImageAttachment.objects.get(pk=image_id)
     except ImageAttachment.DoesNotExist:
-        message = _('The requested image could not be found.')
-        return HttpResponseNotFound(
-            json.dumps({'status': 'error', 'message': message}))
+        message = _("The requested image could not be found.")
+        return HttpResponseNotFound(json.dumps({"status": "error", "message": message}))
 
-    if not ((user == image.creator) or
-            (user.has_perm('upload.delete_imageattachment'))):
-        message = _('You do not have permission to do that.')
-        return HttpResponseForbidden(
-            json.dumps({'status': 'error', 'message': message}))
+    if not ((user == image.creator) or (user.has_perm("upload.delete_imageattachment"))):
+        message = _("You do not have permission to do that.")
+        return HttpResponseForbidden(json.dumps({"status": "error", "message": message}))
 
     image.file.delete()
     if image.thumbnail:
         image.thumbnail.delete()
     image.delete()
 
-    return HttpResponse(json.dumps({'status': 'success'}))
+    return HttpResponse(json.dumps({"status": "success"}))

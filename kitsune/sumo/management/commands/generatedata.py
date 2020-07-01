@@ -7,20 +7,21 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = 'Generates sample data.'
+    help = "Generates sample data."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--with',
-            action='append',
-            dest='param',
-            help='Pass key=val style param to generate_sampledata')
+            "--with",
+            action="append",
+            dest="param",
+            help="Pass key=val style param to generate_sampledata",
+        )
 
     def handle(self, *args, **options):
-        if options.get('param'):
-            for item in options['param']:
-                if '=' in item:
-                    key, val = item.split('=')
+        if options.get("param"):
+            for item in options["param"]:
+                if "=" in item:
+                    key, val = item.split("=")
                 else:
                     key, val = item, True
                 options[key] = val
@@ -39,13 +40,13 @@ class Command(BaseCommand):
                 continue
 
             try:
-                imp.find_module('sampledata', app_path)
+                imp.find_module("sampledata", app_path)
             except ImportError:
                 continue
 
-            module = import_module('%s.sampledata' % app)
-            if hasattr(module, 'generate_sampledata'):
-                self.stdout.write('Generating sample data from %s...\n' % app)
+            module = import_module("%s.sampledata" % app)
+            if hasattr(module, "generate_sampledata"):
+                self.stdout.write("Generating sample data from %s...\n" % app)
                 module.generate_sampledata(options)
 
-        self.stdout.write('Done!\n')
+        self.stdout.write("Done!\n")

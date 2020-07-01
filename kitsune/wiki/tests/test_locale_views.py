@@ -73,9 +73,7 @@ class AddRemoveLeaderTests(TestCase):
 
     def test_remove_leader(self):
         self.locale.leaders.add(self.leader)
-        url = reverse(
-            "wiki.remove_locale_leader", args=[self.locale.locale, self.leader.id]
-        )
+        url = reverse("wiki.remove_locale_leader", args=[self.locale.locale, self.leader.id])
         r = self.client.get(url)
         eq_(200, r.status_code)
         r = self.client.post(url)
@@ -104,9 +102,7 @@ class AddRemoveReviewerTests(TestCase):
 
     def test_remove_reviewer(self):
         self.locale.reviewers.add(self.reviewer)
-        url = reverse(
-            "wiki.remove_locale_reviewer", args=[self.locale.locale, self.reviewer.id]
-        )
+        url = reverse("wiki.remove_locale_reviewer", args=[self.locale.locale, self.reviewer.id])
         r = self.client.get(url)
         eq_(200, r.status_code)
         r = self.client.post(url)
@@ -135,9 +131,7 @@ class AddRemoveEditorTests(TestCase):
 
     def test_remove_editor(self):
         self.locale.editors.add(self.editor)
-        url = reverse(
-            "wiki.remove_locale_editor", args=[self.locale.locale, self.editor.id]
-        )
+        url = reverse("wiki.remove_locale_editor", args=[self.locale.locale, self.editor.id])
         r = self.client.get(url)
         eq_(200, r.status_code)
         r = self.client.post(url)

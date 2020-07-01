@@ -21,19 +21,25 @@ class Command(BaseCommand):
         yesterday = today - timedelta(days=1)
 
         # Support Forum answers
-        user_ids = list(Answer.objects.filter(
-            created__gte=yesterday,
-            created__lt=today).values_list('creator_id', flat=True))
+        user_ids = list(
+            Answer.objects.filter(created__gte=yesterday, created__lt=today).values_list(
+                "creator_id", flat=True
+            )
+        )
 
         # KB Edits
-        user_ids += list(Revision.objects.filter(
-            created__gte=yesterday,
-            created__lt=today).values_list('creator_id', flat=True))
+        user_ids += list(
+            Revision.objects.filter(created__gte=yesterday, created__lt=today).values_list(
+                "creator_id", flat=True
+            )
+        )
 
         # KB Reviews
-        user_ids += list(Revision.objects.filter(
-            reviewed__gte=yesterday,
-            reviewed__lt=today).values_list('reviewer_id', flat=True))
+        user_ids += list(
+            Revision.objects.filter(reviewed__gte=yesterday, reviewed__lt=today).values_list(
+                "reviewer_id", flat=True
+            )
+        )
 
         # Note:
         # Army of Awesome replies are live indexed. No need to do anything here.

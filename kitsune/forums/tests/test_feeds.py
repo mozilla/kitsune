@@ -17,7 +17,6 @@ YESTERDAY = datetime.now() - timedelta(days=1)
 
 
 class ForumTestFeedSorting(ForumTestCase):
-
     def setUp(self):
         super(ForumTestFeedSorting, self).setUp()
 
@@ -46,7 +45,8 @@ class ForumTestFeedSorting(ForumTestCase):
         forum = t.forum
         PostFactory(thread=t)
 
-        response = get(self.client, 'forums.threads', args=[forum.slug])
+        response = get(self.client, "forums.threads", args=[forum.slug])
         doc = pq(response.content)
-        eq_(ThreadsFeed().title(forum),
-            doc('link[type="application/atom+xml"]')[0].attrib['title'])
+        eq_(
+            ThreadsFeed().title(forum), doc('link[type="application/atom+xml"]')[0].attrib["title"]
+        )

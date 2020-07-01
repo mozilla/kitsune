@@ -4,5 +4,5 @@ from kitsune.postcrash import views
 
 
 urlpatterns = [
-    url('^$', views.api, name='postcrash.api'),
+    url("^$", views.api, name="postcrash.api"),
 ]

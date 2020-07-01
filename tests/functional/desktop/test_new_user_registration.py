@@ -5,7 +5,6 @@ from pages.desktop.register_page import RegisterPage
 
 
 class TestNewUserRegistration:
-
     def test_that_thank_you_page_is_displayed_after_registration(self, base_url, selenium):
         """
            Register a new user using random username.
@@ -15,7 +14,7 @@ class TestNewUserRegistration:
         page.register_new_user()
 
         registration_text = page.successful_registration_message
-        assert 'Thank you for registering!' in registration_text
+        assert "Thank you for registering!" in registration_text
 
         actual_page_title = page.page_title
         expected_page_title = page._page_title_after_registration

@@ -15,11 +15,7 @@ from kitsune.users.tests import UserFactory
 
 mock_translations = {
     "Hello": {"en-us": "Hello", "fr": "Bonjour", "es": "Hola"},
-    "Hello {name}": {
-        "en-us": "Hello {name}",
-        "fr": "Bonjour {0}",
-        "es": "Hola {name}",
-    },
+    "Hello {name}": {"en-us": "Hello {name}", "fr": "Bonjour {0}", "es": "Hola {name}",},
 }
 
 
@@ -141,9 +137,7 @@ class PremailerTests(TestCase):
             )
 
             u = UserFactory()
-            msg = emails_with_users_and_watches(
-                "test", "a.ltxt", "a.html", {}, [(u, [None])]
-            )
+            msg = emails_with_users_and_watches("test", "a.ltxt", "a.html", {}, [(u, [None])])
 
             for m in msg:
                 tag = '<a href="https://%s/test" style="color:#000">Hyperlink</a>'

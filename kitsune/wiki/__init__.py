@@ -1,1 +1,1 @@
-default_app_config = 'kitsune.wiki.apps.WikiConfig'
+default_app_config = "kitsune.wiki.apps.WikiConfig"

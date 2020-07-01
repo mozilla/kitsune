@@ -41,10 +41,7 @@ MAJOR_SIGNIFICANCE = 30
 
 SIGNIFICANCES = [
     (TYPO_SIGNIFICANCE, _lazy("Minor details that don't affect the instructions")),
-    (
-        MEDIUM_SIGNIFICANCE,
-        _lazy("Content changes that don't require immediate translation"),
-    ),
+    (MEDIUM_SIGNIFICANCE, _lazy("Content changes that don't require immediate translation"),),
     (
         MAJOR_SIGNIFICANCE,
         _lazy("Major content changes that will make older translations " "inaccurate"),
@@ -53,8 +50,7 @@ SIGNIFICANCES = [
 
 SIGNIFICANCES_HELP = {
     TYPO_SIGNIFICANCE: _lazy(
-        "These minor changes are not important for localizers and "
-        "they will not be notified."
+        "These minor changes are not important for localizers and " "they will not be notified."
     ),
     MEDIUM_SIGNIFICANCE: _lazy(
         "This will notify localizers and translations will be marked as "

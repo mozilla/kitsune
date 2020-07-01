@@ -8,13 +8,15 @@ from selenium.webdriver.common.by import By
 
 class Search(Base):
 
-    _page_title = 'Search | Mozilla Support'
-    _results_locator = (By.CSS_SELECTOR, 'ol.search-results li')
+    _page_title = "Search | Mozilla Support"
+    _results_locator = (By.CSS_SELECTOR, "ol.search-results li")
 
     @property
     def results(self):
-        return [self.SearchResult(self.base_url, self.selenium, element)
-                for element in self.selenium.find_elements(*self._results_locator)]
+        return [
+            self.SearchResult(self.base_url, self.selenium, element)
+            for element in self.selenium.find_elements(*self._results_locator)
+        ]
 
     class SearchResult(Page):
         def __init__(self, base_url, selenium, element):
@@ -24,4 +26,5 @@ class Search(Base):
         def click(self):
             self._root_element.click()
             from pages.mobile.article import Article
+
             return Article(self.base_url, self.selenium)

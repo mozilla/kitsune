@@ -8,10 +8,10 @@ from selenium.webdriver.common.by import By
 
 class Base(Page):
 
-    URL_TEMPLATE = '{locale}'
+    URL_TEMPLATE = "{locale}"
 
-    def __init__(self, base_url, selenium, locale='en-US', **url_kwargs):
-        url_kwargs['locale'] = locale
+    def __init__(self, base_url, selenium, locale="en-US", **url_kwargs):
+        url_kwargs["locale"] = locale
         super(Base, self).__init__(base_url, selenium, **url_kwargs)
 
     def wait_for_page_to_load(self):
@@ -21,7 +21,8 @@ class Base(Page):
 
     def click_card_grid(self, locator):
         ActionChains(self.selenium).move_to_element(
-            self.selenium.find_element(*locator)).click().perform()
+            self.selenium.find_element(*locator)
+        ).click().perform()
         self.selenium.implicitly_wait(10)
         return self.selenium.title
 
@@ -40,13 +41,14 @@ class Base(Page):
     def sign_out(self):
         self.header.click_logout()
         from pages.desktop.login_page import LoginPage
+
         return LoginPage(self.base_url, self.selenium)
 
     def switch_to_mobile_view(self):
         self.footer.click_switch_to_mobile_view()
 
     def format_page_title(self, *title_segments):
-        '''
+        """
             Create a page title by adding separators between title segments
             and ending with the base segment
             Usage:
@@ -54,9 +56,9 @@ class Base(Page):
                 format_page_title('Create New', 'KB') returns 'Create New | KB | Mozilla Support'
                 format_page_title('', 'Forum')        returns ' | Forum | Mozilla Support'
                 format_page_title()                   returns 'Mozilla Support'
-        '''
-        separator = ' | '
-        page_title = 'Mozilla Support'
+        """
+        separator = " | "
+        page_title = "Mozilla Support"
         segment_list = list(title_segments)
         segment_list.reverse()
         for title in segment_list:
@@ -73,36 +75,38 @@ class Base(Page):
     class HeaderRegion(Page):
 
         # Not LoggedIn
-        _login_locator = (By.CSS_SELECTOR, 'a.sign-in')
-        _register_locator = (By.CSS_SELECTOR, 'a.register')
+        _login_locator = (By.CSS_SELECTOR, "a.sign-in")
+        _register_locator = (By.CSS_SELECTOR, "a.register")
 
         # LoggedIn
-        _account_controller_locator = (By.CSS_SELECTOR, '.user')
-        _account_dropdown_locator = (By.CSS_SELECTOR, 'li.dropdown a.user')
-        _logout_locator = (By.CSS_SELECTOR, 'li.dropdown > ul > li > a.sign-out')
+        _account_controller_locator = (By.CSS_SELECTOR, ".user")
+        _account_dropdown_locator = (By.CSS_SELECTOR, "li.dropdown a.user")
+        _logout_locator = (By.CSS_SELECTOR, "li.dropdown > ul > li > a.sign-out")
 
         # Staging site warning
         _staging_site_warning_close_button_locator = (
-            By.CSS_SELECTOR, '#stage-banner > div.close-button')
+            By.CSS_SELECTOR,
+            "#stage-banner > div.close-button",
+        )
 
         def click_login(self):
             self.selenium.find_element(*self._login_locator).click()
             from pages.desktop.login_page import LoginPage
+
             return LoginPage(self.base_url, self.selenium)
 
         def click_logout(self):
             self.dismiss_staging_site_warning_if_present()
             ActionChains(self.selenium).move_to_element(
                 self.selenium.find_element(*self._account_dropdown_locator)
-            ).move_to_element(
-                self.selenium.find_element(*self._logout_locator)
-            ).click().perform()
+            ).move_to_element(self.selenium.find_element(*self._logout_locator)).click().perform()
 
         def dismiss_staging_site_warning_if_present(self):
             if self.is_element_present(*self._staging_site_warning_close_button_locator):
                 if self.is_element_visible(*self._staging_site_warning_close_button_locator):
                     self.selenium.find_element(
-                        *self._staging_site_warning_close_button_locator).click()
+                        *self._staging_site_warning_close_button_locator
+                    ).click()
 
         @property
         def is_user_logged_in(self):

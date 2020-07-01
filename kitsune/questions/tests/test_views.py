@@ -54,8 +54,7 @@ class AAQSearchTests(ElasticTestCase):
         self.refresh()
 
         url = urlparams(
-            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
-            search="cupcakes",
+            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]), search="cupcakes",
         )
 
         response = self.client.get(url, follow=True)
@@ -84,8 +83,7 @@ class AAQSearchTests(ElasticTestCase):
         self.refresh()
 
         url = urlparams(
-            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
-            search="cupcakes",
+            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]), search="cupcakes",
         )
 
         response = self.client.get(url, follow=True)
@@ -129,11 +127,7 @@ class AAQSearchTests(ElasticTestCase):
 
         def sub_test(locale, *titles):
             url = urlparams(
-                reverse(
-                    "questions.aaq_step4",
-                    args=["desktop", "fix-problems"],
-                    locale=locale,
-                ),
+                reverse("questions.aaq_step4", args=["desktop", "fix-problems"], locale=locale,),
                 search="question",
             )
             response = self.client.get(url, follow=True)
@@ -306,16 +300,13 @@ class TestQuestionUpdates(TestCaseBase):
 
         self.q = Question.objects.get(pk=self.q.id)
         eq_(
-            updated.strftime(self.date_format),
-            self.q.updated.strftime(self.date_format),
+            updated.strftime(self.date_format), self.q.updated.strftime(self.date_format),
         )
 
     def test_no_update_edit(self):
         url = urlparams(reverse("questions.edit_question", args=[self.q.id]))
         self._request_and_no_update(
-            url,
-            req_type="POST",
-            data={"title": "A new title.", "content": "Some new content."},
+            url, req_type="POST", data={"title": "A new title.", "content": "Some new content."},
         )
 
     def test_no_update_solve(self):
@@ -435,10 +426,13 @@ class TestQuestionList(TestCaseBase):
             url = urlparams(reverse("questions.list", args=["all"], locale=locale))
             response = self.client.get(url, follow=True)
             doc = pq(response.content)
-            eq_msg(len(doc('article[id^=question]')), len(titles),
-                   'Wrong number of results for {0}'.format(locale))
+            eq_msg(
+                len(doc("article[id^=question]")),
+                len(titles),
+                "Wrong number of results for {0}".format(locale),
+            )
             for substr in titles:
-                assert substr in doc('.forum--question-item-heading a').text()
+                assert substr in doc(".forum--question-item-heading a").text()
 
         # en-US and pt-BR are both in AAQ_LANGUAGES, so should be filtered.
         sub_test("en-US", "cupcakes?", "donuts?")
@@ -500,18 +494,14 @@ class TestMarkingSolved(TestCaseBase):
         self.answer.is_spam = True
         self.answer.save()
 
-        res = self.client.get(
-            reverse("questions.solve", args=[self.question.id, self.answer.id])
-        )
+        res = self.client.get(reverse("questions.solve", args=[self.question.id, self.answer.id]))
         eq_(res.status_code, 404)
 
     def test_cannot_mark_answers_on_spam_question(self):
         self.question.is_spam = True
         self.question.save()
 
-        res = self.client.get(
-            reverse("questions.solve", args=[self.question.id, self.answer.id])
-        )
+        res = self.client.get(reverse("questions.solve", args=[self.question.id, self.answer.id]))
         eq_(res.status_code, 404)
 
 
@@ -774,9 +764,7 @@ class TestEditDetails(TestCaseBase):
         if user is None:
             user = self.user
         self.client.login(username=user.username, password="testpass")
-        url = reverse(
-            "questions.edit_details", kwargs={"question_id": self.question.id}
-        )
+        url = reverse("questions.edit_details", kwargs={"question_id": self.question.id})
         return self.client.post(url, data=data)
 
     def test_permissions(self):

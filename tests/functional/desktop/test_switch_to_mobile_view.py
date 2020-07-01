@@ -7,7 +7,6 @@ from pages.mobile.home import Home as MobileHome
 
 
 class TestMobileSite:
-
     @pytest.mark.nondestructive
     def test_switch_to_mobile_view(self, base_url, selenium):
         desktop = DesktopHome(base_url, selenium).open()

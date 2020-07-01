@@ -49,19 +49,14 @@ BLOCK_LEVEL_ELEMENTS = [
 TEMPLATE_ARG_REGEX = re.compile("{{{([^{]+?)}}}")
 
 
-def wiki_to_html(
-    wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, doc_id=None, parser_cls=None
-):
+def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, doc_id=None, parser_cls=None):
     """Wiki Markup -> HTML with the wiki app's enhanced parser"""
     if parser_cls is None:
         parser_cls = WikiParser
 
     with uselocale(locale):
         content = parser_cls(doc_id=doc_id).parse(
-            wiki_markup,
-            show_toc=False,
-            locale=locale,
-            toc_string=_("Table of Contents"),
+            wiki_markup, show_toc=False, locale=locale, toc_string=_("Table of Contents"),
         )
     return content
 
@@ -204,7 +199,7 @@ class ForParser(object):
         container_len = len(self.CONTAINER_TAG) + 2  # 2 for the <>
         walker = getTreeWalker(self.TREEBUILDER)
         stream = walker(self._root)
-        serializer = HTMLSerializer(quote_attr_values='always', omit_optional_tags=False)
+        serializer = HTMLSerializer(quote_attr_values="always", omit_optional_tags=False)
         return serializer.render(stream)[container_len : -container_len - 1]
 
     @staticmethod
@@ -237,9 +232,7 @@ class ForParser(object):
         stripped = ",".join([x.strip() for x in attrs.split(",")])
         return "<for data-for=" + quoteattr(stripped) + ">"
 
-    _FOR_OR_CLOSER = re.compile(
-        r"(\s*)" r"(\{for(?: +([^\}]*))?\}|{/for})" r"(\s*)", re.MULTILINE
-    )
+    _FOR_OR_CLOSER = re.compile(r"(\s*)" r"(\{for(?: +([^\}]*))?\}|{/for})" r"(\s*)", re.MULTILINE)
 
     @classmethod
     def strip_fors(cls, text):
@@ -428,9 +421,7 @@ class WikiParser(sumo_parser.WikiParser):
             return RECURSION_MESSAGE % title
         else:
             parser.inclusions.append(include.id)
-        ret = parser.parse(
-            include.current_revision.content, show_toc=False, locale=self.locale
-        )
+        ret = parser.parse(include.current_revision.content, show_toc=False, locale=self.locale)
         parser.inclusions.pop()
 
         return ret
@@ -449,8 +440,7 @@ class WikiParser(sumo_parser.WikiParser):
         template_title = "Template:" + short_title
 
         message = (
-            _('The template "%s" does not exist or has no approved ' "revision.")
-            % short_title
+            _('The template "%s" does not exist or has no approved ' "revision.") % short_title
         )
         template = get_object_fallback(
             Document, template_title, locale=self.locale, is_template=True
@@ -466,9 +456,7 @@ class WikiParser(sumo_parser.WikiParser):
         c = template.current_revision.content.rstrip()
         # Note: this completely ignores the allowed attributes passed to the
         # WikiParser.parse() method and defaults to ALLOWED_ATTRIBUTES.
-        parsed = parser.parse(
-            c, show_toc=False, attributes=ALLOWED_ATTRIBUTES, locale=self.locale
-        )
+        parsed = parser.parse(c, show_toc=False, attributes=ALLOWED_ATTRIBUTES, locale=self.locale)
         parser.inclusions.pop()
 
         # Special case for inline templates

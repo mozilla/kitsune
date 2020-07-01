@@ -4,7 +4,7 @@ import re
 from kitsune.questions.models import Answer
 from kitsune.questions.models import Question
 
-log = logging.getLogger('k.questions')
+log = logging.getLogger("k.questions")
 
 
 def num_questions(user):
@@ -48,9 +48,7 @@ def get_mobile_product_from_ua(user_agent):
     # android
     try:
         # We are using firefox instead of Firefox as lower() has been applied to the UA
-        mobile_client = re.search(
-            r"firefox/(?P<version>\d+)\.\d+", ua
-        ).groupdict()
+        mobile_client = re.search(r"firefox/(?P<version>\d+)\.\d+", ua).groupdict()
     except AttributeError:
         return None
     else:

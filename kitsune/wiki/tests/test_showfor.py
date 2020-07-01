@@ -18,4 +18,4 @@ class ShowforDataTests(TestCase):
 
         data = showfor_data([prod])
 
-        eq_(len(data['versions'][prod.slug]), 2)
+        eq_(len(data["versions"][prod.slug]), 2)

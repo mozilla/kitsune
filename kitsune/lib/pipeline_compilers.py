@@ -7,28 +7,34 @@ from pipeline.exceptions import CompilerError
 
 
 class BrowserifyCompiler(CompilerBase):
-    output_extension = 'browserified.js'
+    output_extension = "browserified.js"
 
     def match_file(self, path):
         # Allow for cache busting hashes between ".browserify" and ".js"
-        return re.search(r'\.browserify(\.[a-fA-F0-9]+)?\.js$', path) is not None
+        return re.search(r"\.browserify(\.[a-fA-F0-9]+)?\.js$", path) is not None
 
     def compile_file(self, infile, outfile, outdated=False, force=False):
-        pipeline_settings = getattr(settings, 'PIPELINE', {})
+        pipeline_settings = getattr(settings, "PIPELINE", {})
         command = "%s %s %s > %s" % (
-            pipeline_settings.get('BROWSERIFY_BINARY', '/usr/bin/env browserify'),
-            pipeline_settings.get('BROWSERIFY_ARGUMENTS', ''),
+            pipeline_settings.get("BROWSERIFY_BINARY", "/usr/bin/env browserify"),
+            pipeline_settings.get("BROWSERIFY_ARGUMENTS", ""),
             infile,
-            outfile
+            outfile,
         )
         return self.execute_command(command)
 
     def execute_command(self, command, content=None, cwd=None):
         """This is like the one in SubProcessCompiler, except it checks the exit code."""
         import subprocess
-        pipe = subprocess.Popen(command, shell=True, cwd=cwd,
-                                stdout=subprocess.PIPE, stdin=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+
+        pipe = subprocess.Popen(
+            command,
+            shell=True,
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         if content:
             content = smart_bytes(content)
         stdout, stderr = pipe.communicate(content)

@@ -5,7 +5,7 @@ from nose.tools import eq_
 from kitsune.sumo.tests import TestCase
 
 
-CACHE_KEY = 'sumo_cache_flushing_test'
+CACHE_KEY = "sumo_cache_flushing_test"
 
 
 class CacheFlushingTests(TestCase):
@@ -15,9 +15,10 @@ class CacheFlushingTests(TestCase):
     run in the listed order.
 
     """
+
     def test_1_store(self):
         """Store a value in the cache."""
-        cache.set(CACHE_KEY, 'smoo')
+        cache.set(CACHE_KEY, "smoo")
 
     def test_2_assert(self):
         """Assert the value stored above isn't there."""

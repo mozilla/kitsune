@@ -11,11 +11,11 @@ class KarmaTitleHelperTests(TestCase):
     def setUp(self):
         super(KarmaTitleHelperTests, self).setUp()
         self.user = UserFactory()
-        self.group = GroupFactory(name='group')
+        self.group = GroupFactory(name="group")
         self.user.groups.add(self.group)
 
     def test_user_title(self):
-        title = 'User Title'
+        title = "User Title"
         t = Title(name=title)
         t.save()
         t.users.add(self.user)
@@ -24,7 +24,7 @@ class KarmaTitleHelperTests(TestCase):
         eq_(title, titles[0].name)
 
     def test_group_title(self):
-        title = 'Group Title'
+        title = "Group Title"
         t = Title(name=title)
         t.save()
         t.groups.add(self.group)
@@ -33,8 +33,8 @@ class KarmaTitleHelperTests(TestCase):
         eq_(title, titles[0].name)
 
     def test_user_and_group_title(self):
-        u_title = 'User Title'
-        g_title = 'Group Title'
+        u_title = "User Title"
+        g_title = "Group Title"
         t = Title(name=u_title)
         t.save()
         t.users.add(self.user)

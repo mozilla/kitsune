@@ -11,27 +11,26 @@ from kitsune.users.tests import UserFactory
 
 class WatchQuestionFormTests(TestCaseBase):
     """Tests for WatchQuestionForm."""
+
     def test_anonymous_watch_with_email(self):
-        form = WatchQuestionForm(AnonymousUser(),
-                                 data={'email': 'wo@ot.com',
-                                       'event_type': 'reply'})
+        form = WatchQuestionForm(
+            AnonymousUser(), data={"email": "wo@ot.com", "event_type": "reply"}
+        )
         assert form.is_valid()
-        eq_('wo@ot.com', form.cleaned_data['email'])
+        eq_("wo@ot.com", form.cleaned_data["email"])
 
     def test_anonymous_watch_without_email(self):
-        form = WatchQuestionForm(AnonymousUser(), data={'event_type': 'reply'})
+        form = WatchQuestionForm(AnonymousUser(), data={"event_type": "reply"})
         assert not form.is_valid()
-        eq_('Please provide an email.', form.errors['email'][0])
+        eq_("Please provide an email.", form.errors["email"][0])
 
     def test_registered_watch_with_email(self):
-        form = WatchQuestionForm(
-            UserFactory(),
-            data={'email': 'wo@ot.com', 'event_type': 'reply'})
+        form = WatchQuestionForm(UserFactory(), data={"email": "wo@ot.com", "event_type": "reply"})
         assert form.is_valid()
-        assert not form.cleaned_data['email']
+        assert not form.cleaned_data["email"]
 
     def test_registered_watch_without_email(self):
-        form = WatchQuestionForm(UserFactory(), data={'event_type': 'reply'})
+        form = WatchQuestionForm(UserFactory(), data={"event_type": "reply"})
         assert form.is_valid()
 
 
@@ -45,44 +44,35 @@ class TestNewQuestionForm(TestCaseBase):
         """Test metadata_field_keys property."""
         # Test the default form
         form = NewQuestionForm()
-        expected = ['category', 'useragent']
+        expected = ["category", "useragent"]
         actual = form.metadata_field_keys
         eq_(expected, actual)
 
         # Test the form with a product
         product = {
-            'key': 'desktop',
-            'name': 'Firefox on desktop',
-            'categories': OrderedDict([
-                ('cookies', {
-                    'name': 'Cookies',
-                    'topic': 'cookies',
-                    'tags': ['cookies'],
-                })
-            ]),
-            'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
+            "key": "desktop",
+            "name": "Firefox on desktop",
+            "categories": OrderedDict(
+                [("cookies", {"name": "Cookies", "topic": "cookies", "tags": ["cookies"],})]
+            ),
+            "extra_fields": ["troubleshooting", "ff_version", "os", "plugins"],
         }
         form = NewQuestionForm(product=product)
-        expected = ['troubleshooting', 'ff_version', 'os',
-                    'plugins', 'useragent', 'category']
+        expected = ["troubleshooting", "ff_version", "os", "plugins", "useragent", "category"]
         actual = form.metadata_field_keys
         eq_(sorted(expected), sorted(actual))
 
     def test_cleaned_metadata(self):
         """Test the cleaned_metadata property."""
         # Test with no metadata
-        data = {'title': 'Lorem', 'content': 'ipsum', 'email': 't@t.com'}
+        data = {"title": "Lorem", "content": "ipsum", "email": "t@t.com"}
         product = {
-            'key': 'desktop',
-            'name': 'Firefox on desktop',
-            'categories': OrderedDict([
-                ('cookies', {
-                    'name': 'Cookies',
-                    'topic': 'cookies',
-                    'tags': ['cookies'],
-                })
-            ]),
-            'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
+            "key": "desktop",
+            "name": "Firefox on desktop",
+            "categories": OrderedDict(
+                [("cookies", {"name": "Cookies", "topic": "cookies", "tags": ["cookies"],})]
+            ),
+            "extra_fields": ["troubleshooting", "ff_version", "os", "plugins"],
         }
         form = NewQuestionForm(product=product, data=data)
         form.is_valid()
@@ -91,17 +81,17 @@ class TestNewQuestionForm(TestCaseBase):
         eq_(expected, actual)
 
         # Test with metadata
-        data['os'] = 'Linux'
+        data["os"] = "Linux"
         form = NewQuestionForm(product=product, data=data)
         form.is_valid()
-        expected = {'os': 'Linux'}
+        expected = {"os": "Linux"}
         actual = form.cleaned_metadata
         eq_(expected, actual)
 
         # Add an empty metadata value
-        data['ff_version'] = ''
+        data["ff_version"] = ""
         form = NewQuestionForm(product=product, data=data)
         form.is_valid()
-        expected = {'os': 'Linux'}
+        expected = {"os": "Linux"}
         actual = form.cleaned_metadata
         eq_(expected, actual)

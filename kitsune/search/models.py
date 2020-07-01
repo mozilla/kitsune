@@ -20,7 +20,7 @@ from kitsune.search.tasks import unindex_task
 from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import ModelBase
 
-log = logging.getLogger('k.search.es')
+log = logging.getLogger("k.search.es")
 
 
 # db_table_name -> MappingType class
@@ -45,7 +45,7 @@ _local = local()
 
 def _local_tasks():
     """(Create and) return the threadlocal set of indexing tasks."""
-    if getattr(_local, 'tasks', None) is None:
+    if getattr(_local, "tasks", None) is None:
         _local.tasks = set()
     return _local.tasks
 
@@ -65,6 +65,7 @@ class SearchMixin(object):
                                 instance_to_indexee=lambda r: r.my_model)
 
     """
+
     @classmethod
     def get_mapping_type(cls):
         """Return the MappingType for this model"""
@@ -72,13 +73,15 @@ class SearchMixin(object):
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
-        _local_tasks().add((index_task.delay,
-                           (to_class_path(self.get_mapping_type()), (self.pk,))))
+        _local_tasks().add(
+            (index_task.delay, (to_class_path(self.get_mapping_type()), (self.pk,)))
+        )
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
-        _local_tasks().add((unindex_task.delay,
-                           (to_class_path(self.get_mapping_type()), (self.pk,))))
+        _local_tasks().add(
+            (unindex_task.delay, (to_class_path(self.get_mapping_type()), (self.pk,)))
+        )
 
 
 class SearchMappingType(MappingType, Indexable):
@@ -98,6 +101,7 @@ class SearchMappingType(MappingType, Indexable):
     6. implement get_mapping_type on the related model
 
     """
+
     list_keys = []
     seconds_ago_filter = None
 
@@ -111,7 +115,7 @@ class SearchMappingType(MappingType, Indexable):
 
     @classmethod
     def get_index_group(cls):
-        return 'default'
+        return "default"
 
     @classmethod
     def get_query_fields(cls):
@@ -128,7 +132,7 @@ class SearchMappingType(MappingType, Indexable):
         # through them one at a time in a way that doesn't pull all
         # the data into memory all at once. So we iterate through ids
         # and pull objects one at a time.
-        qs = cls.get_model().objects.order_by('pk').values_list('pk', flat=True)
+        qs = cls.get_model().objects.order_by("pk").values_list("pk", flat=True)
         if seconds_ago:
             if cls.seconds_ago_filter:
                 dt = datetime.datetime.now() - datetime.timedelta(seconds=seconds_ago)
@@ -152,8 +156,7 @@ class SearchMappingType(MappingType, Indexable):
         # FIXME: This builds a new dict from the old dict. Might be
         # cheaper to do it in-place.
         return [
-            dict((key, (val if key in list_keys else val[0]))
-                 for key, val in list(result.items()))
+            dict((key, (val if key in list_keys else val[0])) for key, val in list(result.items()))
             for result in results
         ]
 
@@ -186,10 +189,7 @@ def _identity(s):
     return s
 
 
-def register_for_indexing(app,
-                          sender_class,
-                          instance_to_indexee=_identity,
-                          m2m=False):
+def register_for_indexing(app, sender_class, instance_to_indexee=_identity, m2m=False):
     """Registers a model for signal-based live-indexing.
 
     As data changes in the database, we need to update the relevant
@@ -235,6 +235,7 @@ def register_for_indexing(app,
 
 
     """
+
     def maybe_call_method(instance, is_raw, method_name):
         """Call an (un-)indexing method on instance if appropriate."""
         obj = instance_to_indexee(instance)
@@ -243,11 +244,11 @@ def register_for_indexing(app,
 
     def update(sender, instance, **kw):
         """File an add-to-index task for the indicated object."""
-        maybe_call_method(instance, kw.get('raw'), 'index_later')
+        maybe_call_method(instance, kw.get("raw"), "index_later")
 
     def delete(sender, instance, **kw):
         """File a remove-from-index task for the indicated object."""
-        maybe_call_method(instance, kw.get('raw'), 'unindex_later')
+        maybe_call_method(instance, kw.get("raw"), "unindex_later")
 
     def indexing_receiver(signal, signal_name):
         """Return a routine that registers signal handlers for indexers.
@@ -259,23 +260,26 @@ def register_for_indexing(app,
         return receiver(
             signal,
             sender=sender_class,
-            dispatch_uid='%s.%s.elastic.%s' %
-                         (app, sender_class.__name__, signal_name),
-            weak=False)
+            dispatch_uid="%s.%s.elastic.%s" % (app, sender_class.__name__, signal_name),
+            weak=False,
+        )
 
     if m2m:
         # This is an m2m model, so we regstier m2m_chaned and it
         # updates the existing document in the index.
-        indexing_receiver(m2m_changed, 'm2m_changed')(update)
+        indexing_receiver(m2m_changed, "m2m_changed")(update)
 
     else:
-        indexing_receiver(post_save, 'post_save')(update)
+        indexing_receiver(post_save, "post_save")(update)
 
-        indexing_receiver(pre_delete, 'pre_delete')(
+        indexing_receiver(pre_delete, "pre_delete")(
             # If it's the indexed instance that's been deleted, go ahead
             # and delete it from the index. Otherwise, we just want to
             # update whatever model it's related to.
-            delete if instance_to_indexee is _identity else update)
+            delete
+            if instance_to_indexee is _identity
+            else update
+        )
 
 
 def register_mapping_type(cls):
@@ -311,16 +315,17 @@ class RecordManager(models.Manager):
 
 class Record(ModelBase):
     """Indexing record."""
+
     STATUS_NEW = 0
     STATUS_IN_PROGRESS = 1
     STATUS_FAIL = 2
     STATUS_SUCCESS = 3
 
     STATUS_CHOICES = (
-        (STATUS_NEW, 'new'),
-        (STATUS_IN_PROGRESS, 'in progress'),
-        (STATUS_FAIL, 'done - fail'),
-        (STATUS_SUCCESS, 'done - success'),
+        (STATUS_NEW, "new"),
+        (STATUS_IN_PROGRESS, "in progress"),
+        (STATUS_FAIL, "done - fail"),
+        (STATUS_SUCCESS, "done - success"),
     )
 
     STATUS_OUTSTANDING = [STATUS_NEW, STATUS_IN_PROGRESS]
@@ -336,10 +341,8 @@ class Record(ModelBase):
     objects = RecordManager()
 
     class Meta:
-        ordering = ['-start_time']
-        permissions = (
-            ('reindex', 'Can run a full reindexing'),
-        )
+        ordering = ["-start_time"]
+        permissions = (("reindex", "Can run a full reindexing"),)
 
     def delta(self):
         """Return the timedelta."""
@@ -347,7 +350,7 @@ class Record(ModelBase):
             return self.end_time - self.start_time
         return None
 
-    def _complete(self, status, msg='Done'):
+    def _complete(self, status, msg="Done"):
         self.end_time = datetime.datetime.now()
         self.status = status
         self.message = msg
@@ -361,7 +364,7 @@ class Record(ModelBase):
         self._complete(self.STATUS_FAIL, msg[:255])
         self.save()
 
-    def mark_success(self, msg='Success'):
+    def mark_success(self, msg="Success"):
         """Mark as succeeded.
 
         :arg msg: success message if any
@@ -371,13 +374,14 @@ class Record(ModelBase):
         self.save()
 
     def __str__(self):
-        return '%s:%s%s' % (self.batch_id, self.name, self.status)
+        return "%s:%s%s" % (self.batch_id, self.name, self.status)
 
 
 class Synonym(ModelBase):
     """To be serialized into ES for synonyms."""
+
     from_words = models.CharField(max_length=1024)
     to_words = models.CharField(max_length=1024)
 
     def __str__(self):
-        return '{0} => {1}'.format(self.from_words, self.to_words)
+        return "{0} => {1}".format(self.from_words, self.to_words)

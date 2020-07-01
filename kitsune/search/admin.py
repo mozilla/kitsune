@@ -31,13 +31,13 @@ from kitsune.search.utils import chunked
 from kitsune.search.utils import to_class_path
 
 
-log = logging.getLogger('k.es')
+log = logging.getLogger("k.es")
 
 
 def handle_reset(request):
     """Resets records"""
     for rec in Record.objects.outstanding():
-        rec.mark_fail('Cancelled.')
+        rec.mark_fail("Cancelled.")
 
     return HttpResponseRedirect(request.path)
 
@@ -56,7 +56,7 @@ def create_batch_id():
 
 def handle_delete(request):
     """Deletes an index"""
-    index_to_delete = request.POST.get('delete_index')
+    index_to_delete = request.POST.get("delete_index")
     es_indexes = [name for (name, count) in get_indexes()]
 
     # Rule 1: Has to start with the ES_INDEX_PREFIX.
@@ -70,7 +70,7 @@ def handle_delete(request):
     # Rule 3: Don't delete the default read index.
     # TODO: When the critical index exists, this should be "Don't
     # delete the critical read index."
-    if index_to_delete == read_index('default'):
+    if index_to_delete == read_index("default"):
         raise DeleteError('"%s" is the default read index.' % index_to_delete)
 
     # The index is ok to delete
@@ -91,7 +91,7 @@ def reindex(mapping_type_names):
     """
     outstanding = Record.objects.outstanding().count()
     if outstanding > 0:
-        raise ReindexError('There are %s outstanding chunks.' % outstanding)
+        raise ReindexError("There are %s outstanding chunks." % outstanding)
 
     batch_id = create_batch_id()
 
@@ -99,29 +99,33 @@ def reindex(mapping_type_names):
     # chunkifies by class then by chunk size.
     chunks = []
     for cls, indexable in get_indexable(mapping_types=mapping_type_names):
-        chunks.extend(
-            (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
+        chunks.extend((cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 
     for cls, id_list in chunks:
         index = cls.get_index()
-        chunk_name = 'Indexing: %s %d -> %d' % (
-            cls.get_mapping_type_name(), id_list[0], id_list[-1])
+        chunk_name = "Indexing: %s %d -> %d" % (
+            cls.get_mapping_type_name(),
+            id_list[0],
+            id_list[-1],
+        )
         rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
         index_chunk_task.delay(index, batch_id, rec.id, (to_class_path(cls), id_list))
 
 
 def handle_recreate_index(request):
     """Deletes an index, recreates it, and reindexes it."""
-    groups = [name.replace('check_', '')
-              for name in list(request.POST.keys())
-              if name.startswith('check_')]
+    groups = [
+        name.replace("check_", "")
+        for name in list(request.POST.keys())
+        if name.startswith("check_")
+    ]
 
     indexes = [write_index(group) for group in groups]
     recreate_indexes(indexes=indexes)
 
-    mapping_types_names = [mt.get_mapping_type_name()
-                           for mt in get_mapping_types()
-                           if mt.get_index_group() in groups]
+    mapping_types_names = [
+        mt.get_mapping_type_name() for mt in get_mapping_types() if mt.get_index_group() in groups
+    ]
     reindex(mapping_types_names)
 
     return HttpResponseRedirect(request.path)
@@ -129,9 +133,11 @@ def handle_recreate_index(request):
 
 def handle_reindex(request):
     """Caculates and kicks off indexing tasks"""
-    mapping_type_names = [name.replace('check_', '')
-                          for name in list(request.POST.keys())
-                          if name.startswith('check_')]
+    mapping_type_names = [
+        name.replace("check_", "")
+        for name in list(request.POST.keys())
+        if name.startswith("check_")
+    ]
 
     reindex(mapping_type_names)
 
@@ -140,37 +146,37 @@ def handle_reindex(request):
 
 def search(request):
     """Render the admin view containing search tools"""
-    if not request.user.has_perm('search.reindex'):
+    if not request.user.has_perm("search.reindex"):
         raise PermissionDenied
 
     error_messages = []
     stats = {}
 
-    if 'reset' in request.POST:
+    if "reset" in request.POST:
         try:
             return handle_reset(request)
         except ReindexError as e:
-            error_messages.append('Error: %s' % e.message)
+            error_messages.append("Error: %s" % e.message)
 
-    if 'reindex' in request.POST:
+    if "reindex" in request.POST:
         try:
             return handle_reindex(request)
         except ReindexError as e:
-            error_messages.append('Error: %s' % e.message)
+            error_messages.append("Error: %s" % e.message)
 
-    if 'recreate_index' in request.POST:
+    if "recreate_index" in request.POST:
         try:
             return handle_recreate_index(request)
         except ReindexError as e:
-            error_messages.append('Error: %s' % e.message)
+            error_messages.append("Error: %s" % e.message)
 
-    if 'delete_index' in request.POST:
+    if "delete_index" in request.POST:
         try:
             return handle_delete(request)
         except DeleteError as e:
-            error_messages.append('Error: %s' % e.message)
+            error_messages.append("Error: %s" % e.message)
         except ES_EXCEPTIONS as e:
-            error_messages.append('Error: {0}'.format(repr(e)))
+            error_messages.append("Error: {0}".format(repr(e)))
 
     stats = None
     write_stats = None
@@ -203,7 +209,7 @@ def search(request):
         indexes = get_indexes()
         indexes.sort(key=lambda m: m[0])
     except ES_EXCEPTIONS as e:
-        error_messages.append('Error: {0}'.format(repr(e)))
+        error_messages.append("Error: {0}".format(repr(e)))
 
     recent_records = Record.objects.all()[:100]
     outstanding_records = Record.objects.outstanding()
@@ -211,32 +217,32 @@ def search(request):
     index_groups = set(settings.ES_INDEXES.keys())
     index_groups |= set(settings.ES_WRITE_INDEXES.keys())
 
-    index_group_data = [[group, read_index(group), write_index(group)]
-                        for group in index_groups]
+    index_group_data = [[group, read_index(group), write_index(group)] for group in index_groups]
 
     return render(
         request,
-        'admin/search_maintenance.html',
-        {'title': 'Search',
-         'es_deets': es_deets,
-         'doctype_stats': stats,
-         'doctype_write_stats': write_stats,
-         'indexes': indexes,
-         'index_groups': index_groups,
-         'index_group_data': index_group_data,
-         'read_indexes': all_read_indexes,
-         'write_indexes': all_write_indexes,
-         'error_messages': error_messages,
-         'recent_records': recent_records,
-         'outstanding_records': outstanding_records,
-         'now': datetime.now(),
-         'read_index': read_index,
-         'write_index': write_index,
-         })
+        "admin/search_maintenance.html",
+        {
+            "title": "Search",
+            "es_deets": es_deets,
+            "doctype_stats": stats,
+            "doctype_write_stats": write_stats,
+            "indexes": indexes,
+            "index_groups": index_groups,
+            "index_group_data": index_group_data,
+            "read_indexes": all_read_indexes,
+            "write_indexes": all_write_indexes,
+            "error_messages": error_messages,
+            "recent_records": recent_records,
+            "outstanding_records": outstanding_records,
+            "now": datetime.now(),
+            "read_index": read_index,
+            "write_index": write_index,
+        },
+    )
 
 
-admin.site.register_view(path='search-maintenance', view=search,
-                         name='Search - Index Maintenance')
+admin.site.register_view(path="search-maintenance", view=search, name="Search - Index Maintenance")
 
 
 def _fix_results(results):
@@ -254,20 +260,19 @@ def _fix_results(results):
     for obj in results:
         # Convert datestamps (which are in seconds since epoch) to
         # Python datetime objects.
-        for key in ('indexed_on', 'created', 'updated'):
+        for key in ("indexed_on", "created", "updated"):
             if key in obj and not isinstance(obj[key], datetime):
                 obj[key] = datetime.fromtimestamp(int(obj[key]))
     return results
 
 
 def index_view(request):
-    requested_bucket = request.GET.get('bucket', '')
-    requested_id = request.GET.get('id', '')
+    requested_bucket = request.GET.get("bucket", "")
+    requested_id = request.GET.get("id", "")
     last_20_by_bucket = None
     data = None
 
-    bucket_to_model = dict(
-        [(cls.get_mapping_type_name(), cls) for cls in get_mapping_types()])
+    bucket_to_model = dict([(cls.get_mapping_type_name(), cls) for cls in get_mapping_types()])
 
     if requested_bucket and requested_id:
         # Nix whitespace because I keep accidentally picking up spaces
@@ -292,31 +297,32 @@ def index_view(request):
         # id, title and indexed_on fields, so only pull those back from
         # ES.
         last_20_by_bucket = [
-            (cls_name,
-             _fix_results(cls.search().order_by('-indexed_on')[:20]))
-            for cls_name, cls in list(bucket_to_model.items())]
+            (cls_name, _fix_results(cls.search().order_by("-indexed_on")[:20]))
+            for cls_name, cls in list(bucket_to_model.items())
+        ]
 
     return render(
         request,
-        'admin/search_index.html',
-        {'title': 'Index Browsing',
-         'buckets': [cls_name for cls_name, cls in list(bucket_to_model.items())],
-         'last_20_by_bucket': last_20_by_bucket,
-         'requested_bucket': requested_bucket,
-         'requested_id': requested_id,
-         'requested_data': data
-         })
+        "admin/search_index.html",
+        {
+            "title": "Index Browsing",
+            "buckets": [cls_name for cls_name, cls in list(bucket_to_model.items())],
+            "last_20_by_bucket": last_20_by_bucket,
+            "requested_bucket": requested_bucket,
+            "requested_id": requested_id,
+            "requested_data": data,
+        },
+    )
 
 
-admin.site.register_view(path='search-index', view=index_view,
-                         name='Search - Index Browsing')
+admin.site.register_view(path="search-index", view=index_view, name="Search - Index Browsing")
 
 
 class SynonymAdmin(admin.ModelAdmin):
-    list_display = ('id', 'from_words', 'to_words')
-    list_display_links = ('id', )
-    list_editable = ('from_words', 'to_words')
-    ordering = ('from_words', 'id')
+    list_display = ("id", "from_words", "to_words")
+    list_display_links = ("id",)
+    list_editable = ("from_words", "to_words")
+    ordering = ("from_words", "id")
 
 
 admin.site.register(Synonym, SynonymAdmin)
@@ -326,7 +332,7 @@ def synonym_editor(request):
     parse_errors = []
     all_synonyms = Synonym.objects.all()
 
-    if 'sync_synonyms' in request.POST:
+    if "sync_synonyms" in request.POST:
         # This is a task. Normally we would call tasks asyncronously, right?
         # In this case, since it runs quickly and is in the admin interface,
         # the advantage of it being run in the request/response cycle
@@ -335,7 +341,7 @@ def synonym_editor(request):
         update_synonyms_task()
         return HttpResponseRedirect(request.path)
 
-    synonyms_text = request.POST.get('synonyms_text')
+    synonyms_text = request.POST.get("synonyms_text")
     if synonyms_text is not None:
         db_syns = set((s.from_words, s.to_words) for s in all_synonyms)
 
@@ -350,8 +356,7 @@ def synonym_editor(request):
             for (from_words, to_words) in syns_to_remove:
                 # This uses .get() because I want it to blow up if
                 # there isn't exactly 1 matching synonym.
-                (Synonym.objects.get(from_words=from_words, to_words=to_words)
-                 .delete())
+                (Synonym.objects.get(from_words=from_words, to_words=to_words).delete())
 
             for (from_words, to_words) in syns_to_add:
                 Synonym(from_words=from_words, to_words=to_words).save()
@@ -361,17 +366,20 @@ def synonym_editor(request):
     # If synonyms_text is not None, it came from POST, and there were
     # errors. It shouldn't be modified, so the error messages make sense.
     if synonyms_text is None:
-        synonyms_text = '\n'.join(str(s) for s in all_synonyms)
+        synonyms_text = "\n".join(str(s) for s in all_synonyms)
 
     synonym_add_count, synonym_remove_count = synonym_utils.count_out_of_date()
 
-    return render(request, 'admin/search_synonyms.html', {
-        'synonyms_text': synonyms_text,
-        'errors': parse_errors,
-        'synonym_add_count': synonym_add_count,
-        'synonym_remove_count': synonym_remove_count,
-    })
+    return render(
+        request,
+        "admin/search_synonyms.html",
+        {
+            "synonyms_text": synonyms_text,
+            "errors": parse_errors,
+            "synonym_add_count": synonym_add_count,
+            "synonym_remove_count": synonym_remove_count,
+        },
+    )
 
 
-admin.site.register_view(path='synonym_bulk', view=synonym_editor,
-                         name='Search - Synonym Editor')
+admin.site.register_view(path="synonym_bulk", view=synonym_editor, name="Search - Synonym Editor")

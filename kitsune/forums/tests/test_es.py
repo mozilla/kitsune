@@ -44,14 +44,14 @@ class TestPostUpdate(ElasticTestCase):
     def test_thread_is_reindexed_on_username_change(self):
         search = ThreadMappingType.search()
 
-        u = UserFactory(username='dexter')
-        ThreadFactory(creator=u, title='Hello')
+        u = UserFactory(username="dexter")
+        ThreadFactory(creator=u, title="Hello")
 
         self.refresh()
-        eq_(search.query(post_title='hello')[0]['post_author_ord'], ['dexter'])
+        eq_(search.query(post_title="hello")[0]["post_author_ord"], ["dexter"])
 
         # Change the username and verify the index.
-        u.username = 'walter'
+        u.username = "walter"
         u.save()
         self.refresh()
-        eq_(search.query(post_title='hello')[0]['post_author_ord'], ['walter'])
+        eq_(search.query(post_title="hello")[0]["post_author_ord"], ["walter"])

@@ -12,12 +12,13 @@ def create_user(username, password, email):
 
 
 def enter_data(data):
-    all_users = data['users']
-    user = all_users['default']
-    admin = all_users['admin']
-    create_user(username=user['username'], password=user['password'], email=user['email'])
-    create_superuser(username=admin['username'], password=admin['password'], email=admin['email'])
+    all_users = data["users"]
+    user = all_users["default"]
+    admin = all_users["admin"]
+    create_user(username=user["username"], password=user["password"], email=user["email"])
+    create_superuser(username=admin["username"], password=admin["password"], email=admin["email"])
 
-with open('./scripts/travis/variables.json', 'r') as f:
+
+with open("./scripts/travis/variables.json", "r") as f:
     data = json.load(f)
     enter_data(data)

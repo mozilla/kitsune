@@ -9,6 +9,7 @@ class ExampleForm(forms.Form):
     """
     Example form to test some monkey patched Django fields.
     """
+
     date = forms.DateField()
     time = forms.TimeField()
 
@@ -17,6 +18,7 @@ class TestFields(TestCase):
     """
     We're not breaking fields when monkey patching in ``sumo/monkeypatch.py``.
     """
+
     def setUp(self):
         self.f = ExampleForm()
 
@@ -25,7 +27,7 @@ class TestFields(TestCase):
         eq_(value, doc.attr(attr))
 
     def test_date_field(self):
-        self._attr_eq('date', 'type', 'date')
+        self._attr_eq("date", "type", "date")
 
     def test_time_field(self):
-        self._attr_eq('time', 'type', 'time')
+        self._attr_eq("time", "type", "time")

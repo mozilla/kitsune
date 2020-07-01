@@ -16,25 +16,23 @@ from kitsune.users.models import Profile
 from kitsune.users.utils import add_to_contributors
 from kitsune.users.utils import get_oidc_fxa_setting
 
-log = logging.getLogger('k.users')
+log = logging.getLogger("k.users")
 
 
 class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
-
     def authenticate(self, request, **kwargs):
         """Authenticate a user based on the OIDC code flow."""
 
         # If the request has the /fxa/callback/ path then probably there is a login
         # with Firefox Accounts. In this case just return None and let
         # the FxA backend handle this request.
-        if request and not request.path == django_reverse('oidc_authentication_callback'):
+        if request and not request.path == django_reverse("oidc_authentication_callback"):
             return None
 
         return super(SumoOIDCAuthBackend, self).authenticate(request, **kwargs)
 
 
 class FXAAuthBackend(OIDCAuthenticationBackend):
-
     @staticmethod
     def get_settings(attr, *args):
         """Override settings for Firefox Accounts Provider."""
@@ -51,13 +49,13 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # Firefox Accounts
         profile, created = Profile.objects.get_or_create(user=user)
         profile.is_fxa_migrated = True
-        profile.fxa_uid = claims.get('uid')
-        profile.fxa_avatar = claims.get('avatar', '')
-        profile.name = claims.get('displayName', '')
-        subscriptions = claims.get('subscriptions', [])
+        profile.fxa_uid = claims.get("uid")
+        profile.fxa_avatar = claims.get("avatar", "")
+        profile.name = claims.get("displayName", "")
+        subscriptions = claims.get("subscriptions", [])
         # Let's get the first element even if it's an empty string
         # A few assertions return a locale of None so we need to default to empty string
-        fxa_locale = (claims.get('locale', '') or '').split(',')[0]
+        fxa_locale = (claims.get("locale", "") or "").split(",")[0]
         if fxa_locale in settings.SUMO_LANGUAGES:
             profile.locale = fxa_locale
         else:
@@ -73,35 +71,35 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         messages.success(
             self.request,
             _(
-                '<strong>Welcome!</strong> You are now logged in using Firefox Accounts. ' +
-                '{a_profile}Edit your profile.{a_close}<br>' +
-                'Already have a different Mozilla Support Account? ' +
-                '{a_more}Read more.{a_close}'
+                "<strong>Welcome!</strong> You are now logged in using Firefox Accounts. "
+                + "{a_profile}Edit your profile.{a_close}<br>"
+                + "Already have a different Mozilla Support Account? "
+                + "{a_more}Read more.{a_close}"
             ).format(
-                a_profile='<a href="' + reverse('users.edit_my_profile') + '" target="_blank">',
-                a_more='<a href="' +
-                reverse('wiki.document', args=['firefox-accounts-mozilla-support-faq']) +
-                '" target="_blank">',
-                a_close='</a>'
+                a_profile='<a href="' + reverse("users.edit_my_profile") + '" target="_blank">',
+                a_more='<a href="'
+                + reverse("wiki.document", args=["firefox-accounts-mozilla-support-faq"])
+                + '" target="_blank">',
+                a_close="</a>",
             ),
-            extra_tags="safe"
+            extra_tags="safe",
         )
 
-        if self.request.session.get('is_contributor', False):
+        if self.request.session.get("is_contributor", False):
             add_to_contributors(user, self.request.LANGUAGE_CODE)
-            del self.request.session['is_contributor']
+            del self.request.session["is_contributor"]
 
         return user
 
     def filter_users_by_claims(self, claims):
         """Match users by FxA uid or email."""
-        fxa_uid = claims.get('uid')
+        fxa_uid = claims.get("uid")
         user_model = get_user_model()
         users = user_model.objects.none()
 
         # something went terribly wrong. Return None
         if not fxa_uid:
-            log.warning('Failed to get Firefox Account UID.')
+            log.warning("Failed to get Firefox Account UID.")
             return users
 
         # A existing user is attempting to connect a Firefox Account to the SUMO profile
@@ -129,33 +127,32 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         try:
             sub_response = requests.get(
                 settings.FXA_OP_SUBSCRIPTION_ENDPOINT,
-                headers={
-                    'Authorization': 'Bearer {0}'.format(access_token)
-                },
-                verify=self.get_settings('OIDC_VERIFY_SSL', True))
+                headers={"Authorization": "Bearer {0}".format(access_token)},
+                verify=self.get_settings("OIDC_VERIFY_SSL", True),
+            )
             sub_response.raise_for_status()
         except requests.exceptions.RequestException:
-            log.error('Failed to fetch subscription status', exc_info=True)
+            log.error("Failed to fetch subscription status", exc_info=True)
             # if something went wrong, just return whatever the profile endpoint holds
             return user_info
         # This will override whatever the profile endpoint returns
         # until https://github.com/mozilla/fxa/issues/2463 is fixed
-        user_info['subscriptions'] = sub_response.json().get('subscriptions', [])
+        user_info["subscriptions"] = sub_response.json().get("subscriptions", [])
         return user_info
 
     def update_user(self, user, claims):
         """Update existing user with new claims, if necessary save, and return user"""
         profile = user.profile
-        fxa_uid = claims.get('uid')
-        email = claims.get('email')
+        fxa_uid = claims.get("uid")
+        email = claims.get("email")
         user_attr_changed = False
         # Check if the user has active subscriptions
-        subscriptions = claims.get('subscriptions', [])
+        subscriptions = claims.get("subscriptions", [])
 
         if not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
             if Profile.objects.filter(fxa_uid=fxa_uid).exists():
-                msg = _('This Firefox Account is already used in another profile.')
+                msg = _("This Firefox Account is already used in another profile.")
                 messages.error(self.request, msg)
                 return None
 
@@ -164,22 +161,24 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             profile.fxa_uid = fxa_uid
             # This is the first time an existing user is using FxA. Redirect to profile edit
             # in case the user wants to update any settings.
-            self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
-            messages.info(self.request, 'fxa_notification_updated')
+            self.request.session["oidc_login_next"] = reverse("users.edit_my_profile")
+            messages.info(self.request, "fxa_notification_updated")
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         # unless we have a superuser
         if user.email != email and not user.is_staff:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
-                msg = _('The email used with this Firefox Account is already '
-                        'linked in another profile.')
+                msg = _(
+                    "The email used with this Firefox Account is already "
+                    "linked in another profile."
+                )
                 messages.error(self.request, msg)
                 return None
             user.email = email
             user_attr_changed = True
 
         # Follow avatars from FxA profiles
-        profile.fxa_avatar = claims.get('avatar', '')
+        profile.fxa_avatar = claims.get("avatar", "")
         # User subscription information
         products = Product.objects.filter(codename__in=subscriptions)
         profile.products.clear()
@@ -187,7 +186,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # Users can select their own display name.
         if not profile.name:
-            profile.name = claims.get('displayName', '')
+            profile.name = claims.get("displayName", "")
 
         with transaction.atomic():
             if user_attr_changed:
@@ -201,7 +200,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # If the request has the /oidc/callback/ path then probably there is a login
         # attempt in the admin interface. In this case just return None and let
         # the OIDC backend handle this request.
-        if request and request.path == django_reverse('oidc_authentication_callback'):
+        if request and request.path == django_reverse("oidc_authentication_callback"):
             return None
 
         return super(FXAAuthBackend, self).authenticate(request, **kwargs)

@@ -4,5 +4,5 @@ from kitsune.kpi import views
 
 
 urlpatterns = [
-    url(r'^dashboard$', views.dashboard, name='kpi.dashboard'),
+    url(r"^dashboard$", views.dashboard, name="kpi.dashboard"),
 ]

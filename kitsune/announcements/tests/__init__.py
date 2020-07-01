@@ -11,7 +11,7 @@ from kitsune.users.tests import UserFactory
 class AnnouncementFactory(factory.DjangoModelFactory):
     class Meta:
         model = Announcement
-        exclude = ['visible_dates']
+        exclude = ["visible_dates"]
 
     content = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)

@@ -23,8 +23,7 @@ def run():
         raise
 
 
-class Progress():
-
+class Progress:
     def __init__(self, total):
         self.current = 0
         self.total = total
@@ -34,7 +33,7 @@ class Progress():
         self.draw()
 
     def draw(self):
-        self._wr('{0.current} / {0.total}\r'.format(self))
+        self._wr("{0.current} / {0.total}\r".format(self))
 
     def _wr(self, s):
         sys.stdout.write(s)
@@ -42,20 +41,20 @@ class Progress():
 
 
 def run_():
-    to_process = list(Document.objects.filter(
-        ~Q(parent=None),
-        current_revision__based_on=None,
-        products__slug='thunderbird'))
+    to_process = list(
+        Document.objects.filter(
+            ~Q(parent=None), current_revision__based_on=None, products__slug="thunderbird"
+        )
+    )
 
     if len(to_process) == 0:
-        print('Nothing to do.')
+        print("Nothing to do.")
 
     prog = Progress(len(to_process))
 
     for doc in to_process:
         prog.tick()
-        oldest_parent_rev = (Revision.objects.filter(document=doc.parent)
-                             .order_by('id')[0])
+        oldest_parent_rev = Revision.objects.filter(document=doc.parent).order_by("id")[0]
 
         # It has localizations, clearly it should be localizable.
         if not doc.parent.is_localizable:

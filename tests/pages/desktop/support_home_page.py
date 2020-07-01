@@ -12,13 +12,13 @@ class SupportHomePage(Base):
     performed on them.
     """
 
-    _page_title = 'Mozilla Support'
+    _page_title = "Mozilla Support"
 
-    _main_search_box = (By.ID, 'q')
-    _search_button = (By.CSS_SELECTOR, 'button.img-submit')
-    _top_helpful_content_locator = (By.CSS_SELECTOR, 'div#home-content-quick section ul > li > a')
-    _top_issues_link_locator = (By.CSS_SELECTOR, '#home-content-explore ul > li > a')
-    _for_contributors_locator = (By.CSS_SELECTOR, '#for-contributors h1')
+    _main_search_box = (By.ID, "q")
+    _search_button = (By.CSS_SELECTOR, "button.img-submit")
+    _top_helpful_content_locator = (By.CSS_SELECTOR, "div#home-content-quick section ul > li > a")
+    _top_issues_link_locator = (By.CSS_SELECTOR, "#home-content-explore ul > li > a")
+    _for_contributors_locator = (By.CSS_SELECTOR, "#for-contributors h1")
 
     def do_search_on_main_search_box(self, search_query):
         search_box = self.selenium.find_element(*self._main_search_box)
@@ -26,6 +26,7 @@ class SupportHomePage(Base):
         search_box.type_keys(search_query)
         self.selenium.find_element(*self._search_button).click()
         from .search_page import SearchPage
+
         return SearchPage(self.base_url, self.selenium)
 
     def click_top_common_content_link(self):
@@ -36,5 +37,6 @@ class SupportHomePage(Base):
 
     @property
     def is_for_contributors_expanded(self):
-        return 'expanded' in self.selenium.find_element(
-            *self._for_contributors_locator).get_attribute('class')
+        return "expanded" in self.selenium.find_element(
+            *self._for_contributors_locator
+        ).get_attribute("class")

@@ -12,6 +12,7 @@ class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
 
     If a user has been deactivated, we log them out.
     """
+
     def process_request(self, request):
 
         user = request.user
@@ -19,13 +20,14 @@ class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
         if user.is_authenticated and not user.is_active:
 
             logout(request)
-            return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse("home"))
 
 
 class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
     """Logs out any sessions started before a user changed their
     Firefox Accounts password.
     """
+
     def process_request(self, request):
 
         user = request.user
@@ -36,6 +38,6 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
                 change_time = user.profile.fxa_password_change
                 if change_time and change_time > first_seen:
                     logout(request)
-                    return HttpResponseRedirect(reverse('home'))
+                    return HttpResponseRedirect(reverse("home"))
             else:
                 request.session["first_seen"] = datetime.utcnow()

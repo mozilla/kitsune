@@ -62,9 +62,7 @@ class EditQuestionForm(forms.ModelForm):
 
     title = forms.CharField(label=TITLE_LABEL, min_length=5)
 
-    content = forms.CharField(
-        label=CONTENT_LABEL, min_length=5, widget=forms.Textarea()
-    )
+    content = forms.CharField(label=CONTENT_LABEL, min_length=5, widget=forms.Textarea())
 
     class Meta:
         model = Question
@@ -115,26 +113,18 @@ class EditQuestionForm(forms.ModelForm):
 
         if "started" in extra_fields:
             field = forms.CharField(
-                label=STARTED_LABEL,
-                required=False,
-                max_length=255,
-                widget=forms.TextInput(),
+                label=STARTED_LABEL, required=False, max_length=255, widget=forms.TextInput(),
             )
             self.fields["started"] = field
 
         if "addon" in extra_fields:
             field = forms.CharField(
-                label=ADDON_LABEL,
-                required=False,
-                max_length=255,
-                widget=forms.TextInput(),
+                label=ADDON_LABEL, required=False, max_length=255, widget=forms.TextInput(),
             )
             self.fields["addon"] = field
 
         if "ff_version" in extra_fields:
-            self.fields["ff_version"] = forms.CharField(
-                label=FF_VERSION_LABEL, required=False,
-            )
+            self.fields["ff_version"] = forms.CharField(label=FF_VERSION_LABEL, required=False,)
 
         if "device" in extra_fields:
             self.fields["device"] = forms.CharField(label=DEVICE_LABEL, required=False,)
@@ -219,9 +209,7 @@ class NewQuestionForm(EditQuestionForm):
     # Otherwise, we could grab moderators' user agents.
     useragent = forms.CharField(widget=forms.HiddenInput(), required=False)
 
-    notifications = forms.BooleanField(
-        label=NOTIFICATIONS_LABEL, initial=True, required=False
-    )
+    notifications = forms.BooleanField(label=NOTIFICATIONS_LABEL, initial=True, required=False)
 
     field_order = ["title", "category", "content"]
 

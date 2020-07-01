@@ -65,9 +65,7 @@ def usernames(request):
     if not request.user.is_authenticated:
         return []
 
-    profiles = Profile.objects.filter(Q(name__istartswith=pre)).values_list(
-        "user_id", flat=True
-    )
+    profiles = Profile.objects.filter(Q(name__istartswith=pre)).values_list("user_id", flat=True)
     users = (
         User.objects.filter(Q(username__istartswith=pre) | Q(id__in=profiles))
         .extra(select={"length": "Length(username)"})
@@ -217,9 +215,7 @@ class ProfileFKSerializer(ProfileSerializer):
 
 
 class ProfileViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet,
 ):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
@@ -263,9 +259,7 @@ class ProfileViewSet(
         )
 
         # Turn that list into a dictionary from username -> count.
-        username_to_count = {
-            u["creator__username"]: u["creator__count"] for u in raw_counts
-        }
+        username_to_count = {u["creator__username"]: u["creator__count"] for u in raw_counts}
 
         # Get all the profiles mentioned in the above.
         profiles = Profile.objects.filter(user__username__in=list(username_to_count.keys()))

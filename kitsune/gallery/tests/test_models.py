@@ -9,7 +9,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.upload.tasks import generate_thumbnail
 
 
-@patch('kitsune.upload.tasks._create_image_thumbnail')
+@patch("kitsune.upload.tasks._create_image_thumbnail")
 class ImageTestCase(TestCase):
     def tearDown(self):
         Image.objects.all().delete()
@@ -21,6 +21,6 @@ class ImageTestCase(TestCase):
         img = ImageFactory()
         eq_(img.file.url, img.thumbnail_url_if_set())
 
-        create_thumbnail_mock.return_value = ContentFile('the dude')
-        generate_thumbnail(img, 'file', 'thumbnail')
+        create_thumbnail_mock.return_value = ContentFile("the dude")
+        generate_thumbnail(img, "file", "thumbnail")
         eq_(img.thumbnail.url, img.thumbnail_url_if_set())

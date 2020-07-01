@@ -10,18 +10,18 @@ class SearchPage(Base):
     'Search for Firefox Help' page
     """
 
-    URL_TEMPLATE = '{locale}/search'
+    URL_TEMPLATE = "{locale}/search"
 
-    _page_title = 'Search | Mozilla Support'
-    _search_query_locator = (By.CSS_SELECTOR, 'input.searchbox')
-    _search_box_locator = (By.CSS_SELECTOR, 'input.searchbox')
+    _page_title = "Search | Mozilla Support"
+    _search_query_locator = (By.CSS_SELECTOR, "input.searchbox")
+    _search_box_locator = (By.CSS_SELECTOR, "input.searchbox")
     _search_button = (By.CSS_SELECTOR, 'button[type="submit"]')
-    _search_support_button_locator = (By.CSS_SELECTOR, '.btn-important')
+    _search_support_button_locator = (By.CSS_SELECTOR, ".btn-important")
     _refine_search_link = (By.CSS_SELECTOR, 'a[href *= "a=2"]')
-    _next_page_link = (By.LINK_TEXT, 'Next')
-    _result_div = (By.CSS_SELECTOR, 'div.result')
+    _next_page_link = (By.LINK_TEXT, "Next")
+    _result_div = (By.CSS_SELECTOR, "div.result")
     _results_list_locator = (By.CSS_SELECTOR, 'div.search-results div[class*="result"]')
-    _result_question_locator = (By.CSS_SELECTOR, '#search-results h3 a')
+    _result_question_locator = (By.CSS_SELECTOR, "#search-results h3 a")
 
     def do_search_on_search_query(self, search_query):
         self.selenium.find_element(*self._search_query_locator).send_keys(search_query)
@@ -66,7 +66,7 @@ class SearchPage(Base):
             self.selenium.switch_to_window(h_window)
             self.selenium.implicitly_wait(1)
             title_h_window = self.selenium.title
-            if (link_title in title_h_window):
+            if link_title in title_h_window:
                 # a handle of the window containing it is found
                 isReachedRightPage = True
                 break

@@ -62,10 +62,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         num_answers = self.question.answers.count()
         content = "lorem ipsum dolor sit amet"
         response = post(
-            self.client,
-            "questions.reply",
-            {"content": content},
-            args=[self.question.id],
+            self.client, "questions.reply", {"content": content}, args=[self.question.id],
         )
 
         eq_(1, len(response.redirect_chain))
@@ -84,19 +81,13 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Posting answer attaches an existing uploaded image to the answer."""
         f = open("kitsune/upload/tests/media/test.jpg", "rb")
         post(
-            self.client,
-            "upload.up_image_async",
-            {"image": f},
-            args=["auth.User", self.user.pk],
+            self.client, "upload.up_image_async", {"image": f}, args=["auth.User", self.user.pk],
         )
         f.close()
 
         content = "lorem ipsum dolor sit amet"
         response = post(
-            self.client,
-            "questions.reply",
-            {"content": content},
-            args=[self.question.id],
+            self.client, "questions.reply", {"content": content}, args=[self.question.id],
         )
         eq_(200, response.status_code)
 
@@ -139,9 +130,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(q.solution, ans)
 
         # Unsolve and verify
-        response = post(
-            self.client, "questions.unsolve", args=[self.question.id, ans.id]
-        )
+        response = post(self.client, "questions.unsolve", args=[self.question.id, ans.id])
         q = Question.objects.get(pk=self.question.id)
         eq_(q.solution, None)
         eq_(q.solver, None)
@@ -167,9 +156,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = post(self.client, "questions.solve", args=[self.question.id, ans.id])
         eq_(403, response.status_code)
         # Try to unsolve
-        response = post(
-            self.client, "questions.unsolve", args=[self.question.id, ans.id]
-        )
+        response = post(self.client, "questions.unsolve", args=[self.question.id, ans.id])
         eq_(403, response.status_code)
 
     def test_solve_unsolve_with_perm(self):
@@ -364,14 +351,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
         ans = self.question.last_answer
-        response = get(
-            self.client, "questions.delete_answer", args=[self.question.id, ans.id]
-        )
+        response = get(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         eq_(403, response.status_code)
 
-        response = post(
-            self.client, "questions.delete_answer", args=[self.question.id, ans.id]
-        )
+        response = post(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         eq_(403, response.status_code)
 
     def test_delete_answer_logged_out(self):
@@ -379,9 +362,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.logout()
         q = self.question
         ans = q.last_answer
-        response = get(
-            self.client, "questions.delete_answer", args=[self.question.id, ans.id]
-        )
+        response = get(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
         eq_(
@@ -390,9 +371,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             redirect[0],
         )
 
-        response = post(
-            self.client, "questions.delete_answer", args=[self.question.id, ans.id]
-        )
+        response = post(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
         eq_(
@@ -407,14 +386,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         u = UserFactory()
         add_permission(u, Answer, "delete_answer")
         self.client.login(username=u.username, password="testpass")
-        response = get(
-            self.client, "questions.delete_answer", args=[self.question.id, ans.id]
-        )
+        response = get(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         eq_(200, response.status_code)
 
-        response = post(
-            self.client, "questions.delete_answer", args=[self.question.id, ans.id]
-        )
+        response = post(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         eq_(0, Answer.objects.filter(pk=self.question.id).count())
 
     def test_edit_answer_without_permission(self):
@@ -426,9 +401,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(0, len(doc("ol.answers li.edit")))
 
         answer = self.question.last_answer
-        response = get(
-            self.client, "questions.edit_answer", args=[self.question.id, answer.id]
-        )
+        response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
         eq_(403, response.status_code)
 
         content = "New content for answer"
@@ -453,9 +426,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc("li.edit")))
 
         answer = self.question.last_answer
-        response = get(
-            self.client, "questions.edit_answer", args=[self.question.id, answer.id]
-        )
+        response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
         eq_(200, response.status_code)
 
         content = "New content for answer"
@@ -480,10 +451,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Add an answer and verify the edit link shows up
         content = "lorem ipsum dolor sit amet"
         response = post(
-            self.client,
-            "questions.reply",
-            {"content": content},
-            args=[self.question.id],
+            self.client, "questions.reply", {"content": content}, args=[self.question.id],
         )
         doc = pq(response.content)
         eq_(1, len(doc("li.edit")))
@@ -565,16 +533,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         q = self.question
         q.is_locked = True
         q.save()
-        response = post(
-            self.client, "questions.reply", {"content": "just testing"}, args=[q.id]
-        )
+        response = post(self.client, "questions.reply", {"content": "just testing"}, args=[q.id])
         eq_(403, response.status_code)
 
         # With add_answer permission, it should work.
         add_permission(u, Answer, "add_answer")
-        response = post(
-            self.client, "questions.reply", {"content": "just testing"}, args=[q.id]
-        )
+        response = post(self.client, "questions.reply", {"content": "just testing"}, args=[q.id])
         eq_(200, response.status_code)
 
     def test_edit_answer_locked_question(self):
@@ -591,9 +555,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(0, len(doc("li.edit")))
 
         answer = self.question.last_answer
-        response = get(
-            self.client, "questions.edit_answer", args=[self.question.id, answer.id]
-        )
+        response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
         eq_(403, response.status_code)
 
         # A user with edit_answer permission can edit.
@@ -606,9 +568,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc("li.edit")))
 
         answer = self.question.last_answer
-        response = get(
-            self.client, "questions.edit_answer", args=[self.question.id, answer.id]
-        )
+        response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
         eq_(200, response.status_code)
 
         content = "New content for answer"
@@ -640,10 +600,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         q.is_locked = True
         q.save()
         response = post(
-            self.client,
-            "questions.answer_vote",
-            {"helpful": "y"},
-            args=[q.id, self.answer.id],
+            self.client, "questions.answer_vote", {"helpful": "y"}, args=[q.id, self.answer.id],
         )
         eq_(403, response.status_code)
 
@@ -679,9 +636,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[0],
-            to=["some@bo.dy"],
-            subject="Please confirm your email address",
+            mail.outbox[0], to=["some@bo.dy"], subject="Please confirm your email address",
         )
         assert "questions/confirm/" in mail.outbox[0].body
         assert "New answers" in mail.outbox[0].body
@@ -735,14 +690,9 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
         u = User.objects.get(username=u.username)
         post(
-            self.client,
-            "questions.watch",
-            {"event_type": "reply"},
-            args=[self.question.id],
+            self.client, "questions.watch", {"event_type": "reply"}, args=[self.question.id],
         )
-        assert QuestionReplyEvent.is_notifying(
-            u, self.question
-        ), "Watch was not created"
+        assert QuestionReplyEvent.is_notifying(u, self.question), "Watch was not created"
         return u
 
     def test_watch_solution(self):
@@ -763,9 +713,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[0],
-            to=["some@bo.dy"],
-            subject="Please confirm your email address",
+            mail.outbox[0], to=["some@bo.dy"], subject="Please confirm your email address",
         )
         assert "questions/confirm/" in mail.outbox[0].body
         assert "Solution found" in mail.outbox[0].body
@@ -782,9 +730,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Then unwatch it.
         self.client.login(username=u.username, password="testpass")
         post(self.client, "questions.unwatch", args=[self.question.id])
-        assert not QuestionReplyEvent.is_notifying(
-            u, self.question
-        ), "Watch was not destroyed"
+        assert not QuestionReplyEvent.is_notifying(u, self.question), "Watch was not destroyed"
 
     def test_watch_solution_and_replies(self):
         """User subscribes to solution and replies: page doesn't break"""
@@ -886,9 +832,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         """Assert GETting the add_tag view redirects to the answers page."""
         response = self.client.get(_add_tag_url(self.question.id))
         url = "%s" % reverse(
-            "questions.details",
-            kwargs={"question_id": self.question.id},
-            force_locale=True,
+            "questions.details", kwargs={"question_id": self.question.id}, force_locale=True,
         )
         self.assertRedirects(response, url)
 
@@ -903,17 +847,13 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         """Test adding a tag, case insensitivity, and space stripping."""
         TagFactory(name="PURplepurplepurple", slug="purplepurplepurple")
         response = self.client.post(
-            _add_tag_url(self.question.id),
-            data={"tag-name": " PURplepurplepurple "},
-            follow=True,
+            _add_tag_url(self.question.id), data={"tag-name": " PURplepurplepurple "}, follow=True,
         )
         self.assertContains(response, "purplepurplepurple")
 
     def test_add_no_tag(self):
         """Make sure adding a blank tag shows an error message."""
-        response = self.client.post(
-            _add_tag_url(self.question.id), data={"tag-name": ""}
-        )
+        response = self.client.post(_add_tag_url(self.question.id), data={"tag-name": ""})
         self.assertContains(response, NO_TAG)
 
     # add_tag_async view:
@@ -1032,9 +972,7 @@ class TaggingViewTestsAsAdmin(TestCaseBase):
 
     def test_add_new_tag(self):
         """Assert adding a nonexistent tag sychronously creates & adds it."""
-        self.client.post(
-            _add_tag_url(self.question.id), data={"tag-name": "nonexistent tag"}
-        )
+        self.client.post(_add_tag_url(self.question.id), data={"tag-name": "nonexistent tag"})
         tags_eq(Question.objects.get(id=self.question.id), ["nonexistent tag"])
 
     def test_add_async_new_tag(self):
@@ -1094,9 +1032,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         tagname = "mobile"
         TagFactory(name=tagname, slug=tagname)
         self.client.login(username=u.username, password="testpass")
-        tagged = urlparams(
-            reverse("questions.list", args=["all"]), tagged=tagname, show="all"
-        )
+        tagged = urlparams(reverse("questions.list", args=["all"]), tagged=tagname, show="all")
 
         # First there should be no questions tagged 'mobile'
         response = self.client.get(tagged)
@@ -1105,9 +1041,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # Tag a question 'mobile'
         q = QuestionFactory()
-        response = post(
-            self.client, "questions.add_tag", {"tag-name": tagname}, args=[q.id]
-        )
+        response = post(self.client, "questions.add_tag", {"tag-name": tagname}, args=[q.id])
         eq_(200, response.status_code)
 
         # Add an answer
@@ -1139,9 +1073,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Test one tab is selected for all show args
         show_args = ["needs-attention", "responded", "done", "all"]
         for show_arg in show_args:
-            questions_list = urlparams(
-                reverse("questions.list", args=["all"]), show=show_arg
-            )
+            questions_list = urlparams(reverse("questions.list", args=["all"]), show=show_arg)
             response = self.client.get(questions_list)
             doc = pq(response.content)
             eq_(1, len(doc("#owner-tabs .selected")))
@@ -1256,17 +1188,13 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_("1007", doc(".views-val").text())
 
     def test_no_unarchive_on_old_questions(self):
-        ques = QuestionFactory(
-            created=(datetime.now() - timedelta(days=200)), is_archived=True
-        )
+        ques = QuestionFactory(created=(datetime.now() - timedelta(days=200)), is_archived=True)
         response = get(self.client, "questions.details", args=[ques.id])
         assert b"Archive this post" not in response.content
 
     def test_show_is_empty_string_doesnt_500(self):
         QuestionFactory()
-        response = self.client.get(
-            urlparams(reverse("questions.list", args=["all"]), show="")
-        )
+        response = self.client.get(urlparams(reverse("questions.list", args=["all"]), show=""))
         eq_(200, response.status_code)
 
     def test_product_shows_without_tags(self):
@@ -1274,9 +1202,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         t = TopicFactory(product=p)
         q = QuestionFactory(topic=t)
 
-        response = self.client.get(
-            urlparams(reverse("questions.list", args=["all"]), show="")
-        )
+        response = self.client.get(urlparams(reverse("questions.list", args=["all"]), show=""))
         doc = pq(response.content)
         tag = doc("#question-{id} .tag-list li a".format(id=q.id))
         # Even though there are no tags, the product should be displayed.
@@ -1312,9 +1238,7 @@ class QuestionEditingTests(TestCaseBase):
     def test_extra_fields(self):
         """The edit-question form should show appropriate metadata fields."""
         question_id = QuestionFactory().id
-        response = get(
-            self.client, "questions.edit_question", kwargs={"question_id": question_id}
-        )
+        response = get(self.client, "questions.edit_question", kwargs={"question_id": question_id})
         eq_(response.status_code, 200)
 
         # Make sure each extra metadata field is in the form:
@@ -1331,9 +1255,7 @@ class QuestionEditingTests(TestCaseBase):
     def test_no_extra_fields(self):
         """The edit-question form shouldn't show inappropriate metadata."""
         question_id = QuestionFactory().id
-        response = get(
-            self.client, "questions.edit_question", kwargs={"question_id": question_id}
-        )
+        response = get(self.client, "questions.edit_question", kwargs={"question_id": question_id})
         eq_(response.status_code, 200)
 
         # Take the "os" field as representative. Make sure it doesn't show up:
@@ -1347,18 +1269,12 @@ class QuestionEditingTests(TestCaseBase):
         response = post(
             self.client,
             "questions.edit_question",
-            {
-                "title": "New title",
-                "content": "New content",
-                "ff_version": "New version",
-            },
+            {"title": "New title", "content": "New content", "ff_version": "New version",},
             kwargs={"question_id": q.id},
         )
 
         # Make sure the form redirects and thus appears to succeed:
-        url = "%s" % reverse(
-            "questions.details", kwargs={"question_id": q.id}, force_locale=True
-        )
+        url = "%s" % reverse("questions.details", kwargs={"question_id": q.id}, force_locale=True)
         self.assertRedirects(response, url)
 
         # Make sure the static fields, the metadata, and the updated_by field
@@ -1420,9 +1336,7 @@ class AAQTemplateTestCase(TestCaseBase):
         extra = {}
         if locale is not None:
             extra["locale"] = locale
-        url = urlparams(
-            reverse("questions.aaq_step3", args=["desktop"], **extra)
-        )
+        url = urlparams(reverse("questions.aaq_step3", args=["desktop"], **extra))
 
         # Set 'in-aaq' for the session. It isn't already set because this
         # test doesn't do a GET of the form first.
@@ -1539,9 +1453,7 @@ class RelatedThingsTestCase(ElasticTestCase):
         AnswerFactory(question=q2)
 
         # Questions that belong to different products should not be shown
-        q3 = QuestionFactory(
-            title="lorem ipsum dolor", content="lorem", product=ProductFactory()
-        )
+        q3 = QuestionFactory(title="lorem ipsum dolor", content="lorem", product=ProductFactory())
         a3 = AnswerFactory(question=q3)
         AnswerVoteFactory(answer=a3, helpful=True)
 
@@ -1559,9 +1471,7 @@ class RelatedThingsTestCase(ElasticTestCase):
 
         d1 = DocumentFactory(title="lorem ipsum")
         d1.products.add(self.question.product)
-        r1 = ApprovedRevisionFactory(
-            document=d1, summary="lorem", content="lorem ipsum dolor"
-        )
+        r1 = ApprovedRevisionFactory(document=d1, summary="lorem", content="lorem ipsum dolor")
         d1.current_revision = r1
         d1.save()
 

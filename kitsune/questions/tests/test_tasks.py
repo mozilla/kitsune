@@ -11,7 +11,6 @@ from kitsune.sumo.tests import TestCase
 
 
 class QuestionVoteTestCase(TestCase):
-
     def setUp(self):
         post_save.disconnect(send_vote_update_task, sender=QuestionVote)
 
@@ -29,14 +28,14 @@ class QuestionVoteTestCase(TestCase):
         q2 = QuestionFactory()
 
         # Actually test the task.
-        qs = Question.objects.all().order_by('-num_votes_past_week')
+        qs = Question.objects.all().order_by("-num_votes_past_week")
         eq_(q1.pk, qs[0].pk)
 
         QuestionVoteFactory(question=q2)
         QuestionVoteFactory(question=q2)
-        qs = Question.objects.all().order_by('-num_votes_past_week')
+        qs = Question.objects.all().order_by("-num_votes_past_week")
         eq_(q1.pk, qs[0].pk)
 
         update_question_vote_chunk([q.pk for q in qs])
-        qs = Question.objects.all().order_by('-num_votes_past_week')
+        qs = Question.objects.all().order_by("-num_votes_past_week")
         eq_(q2.pk, qs[0].pk)

@@ -7,10 +7,10 @@ from selenium.webdriver.common.by import By
 
 class Home(Base):
 
-    _page_title = 'Products | Mozilla Support'
+    _page_title = "Products | Mozilla Support"
 
-    _header_locator = (By.CSS_SELECTOR, 'header h1')
-    _search_box_locator = (By.CSS_SELECTOR, '#search input')
+    _header_locator = (By.CSS_SELECTOR, "header h1")
+    _search_box_locator = (By.CSS_SELECTOR, "#search input")
 
     @property
     def header_text(self):
@@ -23,4 +23,5 @@ class Home(Base):
         search_box.submit()
 
         from pages.mobile.search import Search
+
         return Search(self.base_url, self.selenium)

@@ -10,7 +10,7 @@ class ActionFactory(factory.DjangoModelFactory):
         model = Action
 
     actor = factory.SubFactory(UserFactory)
-    verb = 'looked at'
+    verb = "looked at"
 
 
 class NotificationFactory(factory.DjangoModelFactory):

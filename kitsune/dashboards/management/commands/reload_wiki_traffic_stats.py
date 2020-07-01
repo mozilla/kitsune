@@ -6,8 +6,6 @@ from kitsune.dashboards.models import WikiDocumentVisits
 
 
 class Command(BaseCommand):
-
     def handle(self, **options):
         for period, _ in PERIODS:
-            WikiDocumentVisits.reload_period_from_analytics(
-                period, verbose=settings.DEBUG)
+            WikiDocumentVisits.reload_period_from_analytics(period, verbose=settings.DEBUG)

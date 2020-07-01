@@ -83,6 +83,4 @@ class Command(BaseCommand):
         Profile.objects.filter(user__id__in=answer_recipient_ids).update(
             first_answer_email_sent=True
         )
-        Profile.objects.filter(user__id__in=l10n_recipient_ids).update(
-            first_l10n_email_sent=True
-        )
+        Profile.objects.filter(user__id__in=l10n_recipient_ids).update(first_l10n_email_sent=True)

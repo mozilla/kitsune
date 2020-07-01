@@ -7,10 +7,10 @@ from kitsune.customercare.models import Reply
 # not be l10n-ized here--the badge title and description strings get
 # l10n-ized elsewhere. Peace!
 AOA_BADGE = {
-    'slug': '{year}-army-of-awesome-badge',
-    'title': '{year} Army of Awesome Badge',
-    'description': 'This badge is awarded to contributors with 50 '
-                   'Army of Awesome tweets during {year}.',
+    "slug": "{year}-army-of-awesome-badge",
+    "title": "{year} Army of Awesome Badge",
+    "description": "This badge is awarded to contributors with 50 "
+    "Army of Awesome tweets during {year}.",
 }
 
 
@@ -28,6 +28,7 @@ def on_reply_save(sender, instance, **kwargs):
         return
 
     from kitsune.customercare.tasks import maybe_award_badge
+
     maybe_award_badge.delay(AOA_BADGE, year, user.id)
 
 

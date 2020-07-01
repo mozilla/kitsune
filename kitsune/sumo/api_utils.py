@@ -31,6 +31,7 @@ class GenericAPIException(APIException):
     instances of those. That seemed lame, so this class creates instances
     instead of lots of subclasses.
     """
+
     def __init__(self, status_code, detail, **kwargs):
         self.status_code = status_code
         self.detail = detail
@@ -42,13 +43,13 @@ class LocaleNegotiationMixin(object):
     """A mixin for CBV to select a locale based on Accept-Language headers."""
 
     def get_locale(self):
-        accept_language = self.request.META.get('HTTP_ACCEPT_LANGUAGE', '')
+        accept_language = self.request.META.get("HTTP_ACCEPT_LANGUAGE", "")
         lang = get_best_language(accept_language)
         return lang or settings.WIKI_DEFAULT_LANGUAGE
 
     def get_serializer_context(self):
         context = super(LocaleNegotiationMixin, self).get_serializer_context()
-        context['locale'] = self.get_locale()
+        context["locale"] = self.get_locale()
         return context
 
 
@@ -72,8 +73,9 @@ class LocalizedCharField(fields.CharField):
     :args l10n_context: Set the localization context, mainly for fields that
         come from the DB.
     """
-    type_name = 'LocalizedCharField'
-    type_label = 'string'
+
+    type_name = "LocalizedCharField"
+    type_label = "string"
     form_field_class = forms.CharField
     read_only = True
 
@@ -83,7 +85,7 @@ class LocalizedCharField(fields.CharField):
 
     def to_native(self, value):
         value = super(LocalizedCharField, self).from_native(value)
-        locale = self.context.get('locale')
+        locale = self.context.get("locale")
 
         if locale is None:
             return value
@@ -111,7 +113,8 @@ class SplitSourceField(fields.Field):
     :args read_source: The field to read from for serialization.
     :args write_source: The field to write to for deserialization.
     """
-    type_name = 'SplitSourceField'
+
+    type_name = "SplitSourceField"
     read_only = False
 
     def __init__(self, write_source=None, read_source=None, source=None, **kwargs):
@@ -155,10 +158,10 @@ class DateTimeUTCField(fields.DateTimeField):
 
 
 class _IDSerializer(serializers.Serializer):
-    id = fields.Field(source='pk')
+    id = fields.Field(source="pk")
 
     class Meta:
-        fields = ('id', )
+        fields = ("id",)
 
 
 class GenericRelatedField(fields.ReadOnlyField):
@@ -166,18 +169,18 @@ class GenericRelatedField(fields.ReadOnlyField):
     Serializes GenericForeignKey relations using specified type of serializer.
     """
 
-    def __init__(self, serializer_type='fk', **kwargs):
+    def __init__(self, serializer_type="fk", **kwargs):
         self.serializer_type = serializer_type
         super(GenericRelatedField, self).__init__(**kwargs)
 
     def to_representation(self, value):
         content_type = ContentType.objects.get_for_model(value)
-        data = {'type': content_type.model}
+        data = {"type": content_type.model}
 
         if isinstance(value, User):
             value = Profile.objects.get(user=value)
 
-        if hasattr(value, 'get_serializer'):
+        if hasattr(value, "get_serializer"):
             SerializerClass = value.get_serializer(self.serializer_type)
         else:
             SerializerClass = _IDSerializer
@@ -190,40 +193,39 @@ class InequalityFilterBackend(BaseFilterBackend):
     """A filter backend that allows for field__gt style filtering."""
 
     def filter_queryset(self, request, queryset, view):
-        filterset_fields = getattr(view, 'filterset_fields', [])
+        filterset_fields = getattr(view, "filterset_fields", [])
 
         for key, value in list(request.query_params.items()):
-            splits = key.split('__')
+            splits = key.split("__")
             if len(splits) != 2:
                 continue
             field, opname = splits
             if field not in filterset_fields:
                 continue
-            op = getattr(self, 'op_' + opname, None)
+            op = getattr(self, "op_" + opname, None)
             if op:
                 queryset = op(queryset, field, value)
 
         return queryset
 
     def op_gt(self, queryset, key, value):
-        arg = {key + '__gt': value}
+        arg = {key + "__gt": value}
         return queryset.filter(**arg)
 
     def op_lt(self, queryset, key, value):
-        arg = {key + '__lt': value}
+        arg = {key + "__lt": value}
         return queryset.filter(**arg)
 
     def op_gte(self, queryset, key, value):
-        arg = {key + '__gte': value}
+        arg = {key + "__gte": value}
         return queryset.filter(**arg)
 
     def op_lte(self, queryset, key, value):
-        arg = {key + '__lte': value}
+        arg = {key + "__lte": value}
         return queryset.filter(**arg)
 
 
 class GenericDjangoPermission(permissions.BasePermission):
-
     @property
     def permissions(self):
         raise NotImplementedError
@@ -247,8 +249,8 @@ class OnlyCreatorEdits(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         # If flow gets here, the method will modify something.
-        user = getattr(request, 'user', None)
-        creator = getattr(obj, 'creator', None)
+        user = getattr(request, "user", None)
+        creator = getattr(obj, "creator", None)
         # Only the creator can modify things.
         return user == creator
 
@@ -264,7 +266,7 @@ def PermissionMod(field, permissions):
     class Modded(field):
         @classmethod
         def many_init(cls, *args, **kwargs):
-            kwargs['child'] = field()
+            kwargs["child"] = field()
             return PermissionMod(serializers.ListSerializer, permissions)(*args, **kwargs)
 
         def get_attribute(self, instance):
@@ -274,7 +276,7 @@ def PermissionMod(field, permissions):
                 raise fields.SkipField()
 
         def check_permissions(self, obj):
-            request = self.context.get('request')
+            request = self.context.get("request")
             for Perm in permissions:
                 perm = Perm()
                 if not perm.has_permission(request, self):
@@ -301,7 +303,7 @@ class InactiveSessionAuthentication(SessionAuthentication):
 
         # Get the underlying HttpRequest object
         request = request._request
-        user = getattr(request, 'user', None)
+        user = getattr(request, "user", None)
 
         # Unauthenticated, CSRF validation not required
         if not user or user.is_anonymous:
@@ -319,7 +321,7 @@ class InactiveSessionAuthentication(SessionAuthentication):
         reason = CSRFCheck().process_view(request, None, (), {})
         if reason:
             # CSRF failed, bail with explicit error message
-            raise AuthenticationFailed('CSRF Failed: %s' % reason)
+            raise AuthenticationFailed("CSRF Failed: %s" % reason)
 
 
 class ImageUrlField(fields.ImageField):
@@ -337,7 +339,6 @@ class ImageUrlField(fields.ImageField):
 
 
 class JSONRenderer(DRFJSONRenderer):
-
     def render(self, data, accepted_media_type=None, renderer_context=None):
         json = super(JSONRenderer, self).render(data, accepted_media_type, renderer_context)
 
@@ -349,4 +350,4 @@ class JSONRenderer(DRFJSONRenderer):
         # HTML spec: http://www.w3.org/TR/REC-html32-19970114#script
         # JSON spec: http://json.org/
 
-        return json.replace(b'</', b'<\\/')
+        return json.replace(b"</", b"<\\/")

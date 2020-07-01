@@ -10,10 +10,10 @@ class BigVocabTaggableManager(TaggableManager):
     Taggit's seems hard-coupled to taggit's own plain-text-input widget.
 
     """
+
     def formfield(self, form_class=TagField, **kwargs):
         """Swap in our custom TagField."""
-        return super(BigVocabTaggableManager, self).formfield(form_class,
-                                                              **kwargs)
+        return super(BigVocabTaggableManager, self).formfield(form_class, **kwargs)
 
 
 class BigVocabTaggableMixin(models.Model):
@@ -23,6 +23,7 @@ class BigVocabTaggableMixin(models.Model):
     Mix this in after [your caching] ModelBase.
 
     """
+
     tags = BigVocabTaggableManager()
 
     class Meta:

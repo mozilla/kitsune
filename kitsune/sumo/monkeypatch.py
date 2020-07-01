@@ -7,15 +7,15 @@ from elasticutils.contrib import django as elasticutils_django
 
 
 _has_been_patched = False
-TESTING = (len(sys.argv) > 1 and sys.argv[1] == 'test') or sys.argv[0].endswith('py.test')
+TESTING = (len(sys.argv) > 1 and sys.argv[1] == "test") or sys.argv[0].endswith("py.test")
 
 
 class DateWidget(fields.DateField.widget):
-    input_type = 'date'
+    input_type = "date"
 
 
 class TimeWidget(fields.TimeField.widget):
-    input_type = 'time'
+    input_type = "time"
 
 
 def patch():
@@ -41,8 +41,7 @@ def patch():
             else:
                 self.add_edge(None, obj)
         try:
-            return super(NestedObjects, self).collect(
-                objs, source_attr=source_attr, **kwargs)
+            return super(NestedObjects, self).collect(objs, source_attr=source_attr, **kwargs)
         except models.ProtectedError as e:
             self.protected.update(e.protected_objects)
 
@@ -55,8 +54,8 @@ def patch():
     # Patch the admin
     admin.site = AdminSitePlus()
     admin.sites.site = admin.site
-    admin.site.site_header = 'Kitsune Administration'
-    admin.site.site_title = 'Mozilla Support'
+    admin.site.site_header = "Kitsune Administration"
+    admin.site.site_title = "Mozilla Support"
 
     # In testing contexts, patch django.shortcuts.render
     if TESTING:
@@ -70,16 +69,17 @@ def patch():
         from elasticsearch import RequestsHttpConnection
 
         defaults = {
-            'urls': settings.ES_URLS,
-            'timeout': getattr(settings, 'ES_TIMEOUT', 5),
-            'use_ssl': getattr(settings, 'ES_USE_SSL', False),
-            'http_auth': getattr(settings, 'ES_HTTP_AUTH', None),
-            'verify_certs': getattr(settings, 'ES_VERIFY_CERTS', True),
-            'connection_class': RequestsHttpConnection
+            "urls": settings.ES_URLS,
+            "timeout": getattr(settings, "ES_TIMEOUT", 5),
+            "use_ssl": getattr(settings, "ES_USE_SSL", False),
+            "http_auth": getattr(settings, "ES_HTTP_AUTH", None),
+            "verify_certs": getattr(settings, "ES_VERIFY_CERTS", True),
+            "connection_class": RequestsHttpConnection,
         }
 
         defaults.update(overrides)
         return base_get_es(**defaults)
+
     elasticutils_django.get_es = get_es
 
     def S_get_es(self, default_builder=get_es):
@@ -90,6 +90,7 @@ def patch():
 
         """
         return super(elasticutils_django.S, self).get_es(default_builder=default_builder)
+
     elasticutils_django.S.get_es = S_get_es
 
     _has_been_patched = True
@@ -114,6 +115,7 @@ def monkeypatch_render():
         * it does *not* capture all the Jinja2 templates used to render.
         Only the topmost one requested by the render() function.
         """
+
         @wraps(fun)
         def _more_info(request, template_name, *args, **kwargs):
             resp = fun(request, template_name, *args, **kwargs)
@@ -121,12 +123,13 @@ def monkeypatch_render():
             resp.jinja_templates = [template_name]
             if args:
                 resp.jinja_context = args[0]
-            elif 'context' in kwargs:
-                resp.jinja_context = kwargs['context']
+            elif "context" in kwargs:
+                resp.jinja_context = kwargs["context"]
             else:
                 resp.jinja_context = {}
 
             return resp
+
         return _more_info
 
     django.shortcuts.render = more_info(django.shortcuts.render)

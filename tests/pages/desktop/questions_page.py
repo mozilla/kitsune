@@ -12,20 +12,22 @@ class QuestionsPage(Base):
     'Ask a Question' landing page.
     """
 
-    URL_TEMPLATE = '{locale}/questions'
+    URL_TEMPLATE = "{locale}/questions"
 
-    _page_title = 'Support Forum | Mozilla Support'
+    _page_title = "Support Forum | Mozilla Support"
 
-    _ask_question_link_locator = '/en-US/questions/new'
+    _ask_question_link_locator = "/en-US/questions/new"
 
     _all_products_locator = (By.CSS_SELECTOR, '.product a[href$="/all"]')
     _questions_done_tab_locator = (By.CSS_SELECTOR, '#owner-tabs a[href*="done"]')
     _all_questions_tab_locator = (By.CSS_SELECTOR, '#owner-tabs a[href*="show=all"]')
     _sort_solved_link_locator = (By.CSS_SELECTOR, 'a[href*="filter=solved"]')
     _sort_unanswered_locator = (
-        By.CSS_SELECTOR, '.questions-sidebar ul > li > a[href*="unanswered"]')
+        By.CSS_SELECTOR,
+        '.questions-sidebar ul > li > a[href*="unanswered"]',
+    )
     _questions_list_block_locator = (By.CSS_SELECTOR, '.forum--question-item[id*="question"]')
-    _questions_list_locator = (By.CSS_SELECTOR, '.forum--question-item')
+    _questions_list_locator = (By.CSS_SELECTOR, ".forum--question-item")
 
     def click_ask_new_questions_link(self):
         self.selenium.find_element(*self._ask_question_link_locator).click()
@@ -47,14 +49,14 @@ class QuestionsPage(Base):
         # Prevent Selenium automatically scrolling this element to the top of
         # the page, which can lead to unintented  clicks on the banner
         element = self.selenium.find_element(*self._sort_unanswered_locator)
-        self.selenium.execute_script('arguments[0].scrollIntoView(false);', element)
+        self.selenium.execute_script("arguments[0].scrollIntoView(false);", element)
         element.click()
 
     def click_sort_by_solved_questions(self):
         # Prevent Selenium automatically scrolling this element to the top of
         # the page, which can lead to unintented  clicks on the banner
         element = self.selenium.find_element(*self._sort_solved_link_locator)
-        self.selenium.execute_script('arguments[0].scrollIntoView(false);', element)
+        self.selenium.execute_script("arguments[0].scrollIntoView(false);", element)
         element.click()
 
     def click_all_products(self):
@@ -70,15 +72,17 @@ class QuestionsPage(Base):
 
     @property
     def questions(self):
-        return [self.Question(self.base_url, self.selenium, el) for el in
-                self.selenium.find_elements(*self._questions_list_locator)]
+        return [
+            self.Question(self.base_url, self.selenium, el)
+            for el in self.selenium.find_elements(*self._questions_list_locator)
+        ]
 
     class Question(Page):
 
-        _solved_question_locator = (By.CSS_SELECTOR, '.thread-solved')
-        _replies_number_locator = (By.CSS_SELECTOR, 'div.replies > h4')
-        _question_link_locator = (By.CSS_SELECTOR, 'a')
-        _product_name_locator = (By.CSS_SELECTOR, '.content ul.tag-list li:nth-child(1)')
+        _solved_question_locator = (By.CSS_SELECTOR, ".thread-solved")
+        _replies_number_locator = (By.CSS_SELECTOR, "div.replies > h4")
+        _question_link_locator = (By.CSS_SELECTOR, "a")
+        _product_name_locator = (By.CSS_SELECTOR, ".content ul.tag-list li:nth-child(1)")
 
         def __init__(self, base_url, selenium, element):
             Page.__init__(self, base_url, selenium)
@@ -86,8 +90,9 @@ class QuestionsPage(Base):
 
         @property
         def solved_questions_filter(self):
-            return self._root_element.find_element(
-                *self._solved_question_locator).get_attribute('class')
+            return self._root_element.find_element(*self._solved_question_locator).get_attribute(
+                "class"
+            )
 
         @property
         def number_of_replies(self):
@@ -103,7 +108,7 @@ class QuestionsPage(Base):
             # Prevent Selenium automatically scrolling this element to the top
             # of the page, which can lead to unintented  clicks on the banner
             element = self._root_element.find_element(*self._question_link_locator)
-            self.selenium.execute_script('arguments[0].scrollIntoView(false);', element)
+            self.selenium.execute_script("arguments[0].scrollIntoView(false);", element)
             element.click()
             view_question_pg = ViewQuestionPage(self.base_url, self.selenium)
             view_question_pg.is_the_current_page(question_title, product_name)
@@ -120,20 +125,19 @@ class AskNewQuestionsPage(Base):
     Child class of Questions Page
     """
 
-    URL_TEMPLATE = '{locale}/questions/new'
+    URL_TEMPLATE = "{locale}/questions/new"
 
-    _page_title = 'Ask a Question | Mozilla Support'
-    _firefox_product_first_link_locator = (
-        By.CSS_SELECTOR, '#product-picker .card:nth-child(1) a')
-    _category_prob_first_link_locator = (By.CSS_SELECTOR, 'ul.select-one > li > a')
-    _type_question_box_locator = (By.NAME, 'search')
-    _ask_this_button_locator = (By.CSS_SELECTOR, '#ask-search-form .primary-button')
-    _none_of_these_button_locator = (By.CSS_SELECTOR, 'form .sumo-button')
-    _q_content_box_locator = (By.ID, 'id_content')
-    _q_trouble_link_locator = (By.CSS_SELECTOR, '#troubleshooting-manual a')
-    _q_post_button_locator = (By.CSS_SELECTOR, '#question-form .sumo-button')
-    _close_stage_banner_locator = (By.CLASS_NAME, 'close-button')
-    _selected_product_locator = (By.CSS_SELECTOR, '#selected-product span')
+    _page_title = "Ask a Question | Mozilla Support"
+    _firefox_product_first_link_locator = (By.CSS_SELECTOR, "#product-picker .card:nth-child(1) a")
+    _category_prob_first_link_locator = (By.CSS_SELECTOR, "ul.select-one > li > a")
+    _type_question_box_locator = (By.NAME, "search")
+    _ask_this_button_locator = (By.CSS_SELECTOR, "#ask-search-form .primary-button")
+    _none_of_these_button_locator = (By.CSS_SELECTOR, "form .sumo-button")
+    _q_content_box_locator = (By.ID, "id_content")
+    _q_trouble_link_locator = (By.CSS_SELECTOR, "#troubleshooting-manual a")
+    _q_post_button_locator = (By.CSS_SELECTOR, "#question-form .sumo-button")
+    _close_stage_banner_locator = (By.CLASS_NAME, "close-button")
+    _selected_product_locator = (By.CSS_SELECTOR, "#selected-product span")
 
     def click_firefox_product_link(self):
         self.selenium.find_element(*self._firefox_product_first_link_locator).click()
@@ -152,17 +156,19 @@ class AskNewQuestionsPage(Base):
     def selected_product(self):
         return self.selenium.find_element(*self._selected_product_locator).text
 
-    def fill_up_questions_form(self, question_to_ask, q_text='details', q_site='www.example.com'):
+    def fill_up_questions_form(self, question_to_ask, q_text="details", q_site="www.example.com"):
         self.header.dismiss_staging_site_warning_if_present()
         self.selenium.find_element(*self._q_content_box_locator).send_keys(q_text)
         self.header.dismiss_staging_site_warning_if_present()
         self.selenium.find_element(*self._q_trouble_link_locator).click()
-        selected_product = self.selected_product == "Firefox for Desktop" and \
-            "Firefox" or self.selected_product
+        selected_product = (
+            self.selected_product == "Firefox for Desktop" and "Firefox" or self.selected_product
+        )
         self.header.dismiss_staging_site_warning_if_present()
         self.selenium.find_element(*self._q_post_button_locator).click()
         WebDriverWait(self.selenium, self.timeout).until(
-            lambda s: not self.is_element_present(*self._q_post_button_locator))
+            lambda s: not self.is_element_present(*self._q_post_button_locator)
+        )
         view_question_pg = ViewQuestionPage(self.base_url, self.selenium)
         view_question_pg.is_the_current_page(question_to_ask, selected_product)
         return view_question_pg
@@ -173,23 +179,24 @@ class AskNewQuestionsPage(Base):
 
 class ViewQuestionPage(Base):
 
-    _question_locator = (By.CSS_SELECTOR, 'h2.summary')
-    _detail_locator = (By.CSS_SELECTOR, 'div.main-content p')
-    _problem_too_button_locator = (By.CSS_SELECTOR, 'div.me-too > form > button.btn')
-    _problem_count_text_locator = (By.CSS_SELECTOR, 'div.question-meta > ul.cf > li:nth-child(2)')
-    _no_thanks_link_locator = (By.LINK_TEXT, 'No Thanks')
-    _thread_content_box_locator = (By.ID, 'id_content')
+    _question_locator = (By.CSS_SELECTOR, "h2.summary")
+    _detail_locator = (By.CSS_SELECTOR, "div.main-content p")
+    _problem_too_button_locator = (By.CSS_SELECTOR, "div.me-too > form > button.btn")
+    _problem_count_text_locator = (By.CSS_SELECTOR, "div.question-meta > ul.cf > li:nth-child(2)")
+    _no_thanks_link_locator = (By.LINK_TEXT, "No Thanks")
+    _thread_content_box_locator = (By.ID, "id_content")
     _reply_button_locator = (By.CSS_SELECTOR, "button[class='btn btn-submit big']")
-    _answers_locator = (By.CSS_SELECTOR, '.answer.grid_9')
-    _post_author_locator = (By.CSS_SELECTOR, '.asked-by > a')
-    _post_content_locator = (By.CSS_SELECTOR, 'div > p')
-    _page_title = ' Support Forum | Mozilla Support'
+    _answers_locator = (By.CSS_SELECTOR, ".answer.grid_9")
+    _post_author_locator = (By.CSS_SELECTOR, ".asked-by > a")
+    _post_content_locator = (By.CSS_SELECTOR, "div > p")
+    _page_title = " Support Forum | Mozilla Support"
 
     def is_the_current_page(self, question_name, product_name):
         if self._page_title:
-            expected_title = question_name + ' | ' + product_name + self._page_title
+            expected_title = question_name + " | " + product_name + self._page_title
             WebDriverWait(self.selenium, self.timeout).until(
-                lambda s: self.page_title == expected_title)
+                lambda s: self.page_title == expected_title
+            )
 
     @property
     def question(self):
@@ -203,7 +210,7 @@ class ViewQuestionPage(Base):
         # Prevent Selenium automatically scrolling this element to the top of
         # the page, which can lead to unintented  clicks on the banner
         element = self.selenium.find_element(*self._problem_too_button_locator)
-        self.selenium.execute_script('arguments[0].scrollIntoView(false);', element)
+        self.selenium.execute_script("arguments[0].scrollIntoView(false);", element)
         element.click()
         self.wait_for_element_present(*self._no_thanks_link_locator)
 

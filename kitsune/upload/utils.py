@@ -23,7 +23,10 @@ def check_file_size(f, max_allowed_size):
     """
     if f.size > max_allowed_size:
         message = _lazy('"%s" is too large (%sKB), the limit is %sKB') % (
-            f.name, f.size >> 10, max_allowed_size >> 10)
+            f.name,
+            f.size >> 10,
+            max_allowed_size >> 10,
+        )
         raise FileTooLargeError(message)
 
 
@@ -38,13 +41,12 @@ def create_imageattachment(files, user, obj):
     (up_file, is_animated) = _image_to_png(up_file)
 
     image = ImageAttachment(content_object=obj, creator=user)
-    image.file.save(up_file.name, File(up_file),
-                    save=True)
+    image.file.save(up_file.name, File(up_file), save=True)
 
     # Compress and generate thumbnail off thread
-    generate_thumbnail.delay(image, 'file', 'thumbnail')
+    generate_thumbnail.delay(image, "file", "thumbnail")
     if not is_animated:
-        compress_image.delay(image, 'file')
+        compress_image.delay(image, "file")
 
     # Refresh because the image may have been changed by tasks.
     image.refresh_from_db()
@@ -54,10 +56,14 @@ def create_imageattachment(files, user, obj):
     # The filename may contain html in it. Escape it.
     name = bleach.clean(up_file.name)
 
-    return {'name': name, 'url': image.file.url,
-            'thumbnail_url': image.thumbnail_if_set().url,
-            'width': width, 'height': height,
-            'delete_url': image.get_delete_url()}
+    return {
+        "name": name,
+        "url": image.file.url,
+        "thumbnail_url": image.thumbnail_if_set().url,
+        "width": width,
+        "height": height,
+        "delete_url": image.get_delete_url(),
+    }
 
 
 def _image_to_png(up_file):
@@ -79,13 +85,18 @@ def _image_to_png(up_file):
     if not is_animated:
         converted_image = io.BytesIO()
         options = {}
-        if 'transparency' in pil_image.info:
-            options['transparency'] = pil_image.info['transparency']
-        pil_image.save(converted_image, format='PNG', **options)
+        if "transparency" in pil_image.info:
+            options["transparency"] = pil_image.info["transparency"]
+        pil_image.save(converted_image, format="PNG", **options)
 
         up_file = InMemoryUploadedFile(
-            converted_image, None, os.path.splitext(up_file.name)[0] + '.png',
-            'image/png', len(converted_image.getbuffer()), None)
+            converted_image,
+            None,
+            os.path.splitext(up_file.name)[0] + ".png",
+            "image/png",
+            len(converted_image.getbuffer()),
+            None,
+        )
 
     return (up_file, is_animated)
 
@@ -101,8 +112,7 @@ def upload_imageattachment(request, obj):
     callback.
 
     """
-    return upload_media(request, ImageAttachmentUploadForm,
-                        create_imageattachment, obj=obj)
+    return upload_media(request, ImageAttachmentUploadForm, create_imageattachment, obj=obj)
 
 
 def upload_media(request, form_cls, up_file_callback, instance=None, **kwargs):
@@ -118,7 +128,7 @@ def upload_media(request, form_cls, up_file_callback, instance=None, **kwargs):
 
     """
     form = form_cls(request.POST, request.FILES)
-    if request.method == 'POST' and form.is_valid():
+    if request.method == "POST" and form.is_valid():
         return up_file_callback(request.FILES, request.user, **kwargs)
     elif not form.is_valid():
         return form.errors

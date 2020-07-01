@@ -17,13 +17,13 @@ from kitsune.notifications.models import Notification
 from kitsune.notifications.models import PushNotificationRegistration
 from kitsune.notifications.models import RealtimeRegistration
 
-logger = logging.getLogger('k.notifications.tasks')
+logger = logging.getLogger("k.notifications.tasks")
 
 
 def _ct_query(object, actor_only=None, **kwargs):
     ct = ContentType.objects.get_for_model(object)
     if actor_only is not None:
-        kwargs['actor_only'] = actor_only
+        kwargs["actor_only"] = actor_only
     return Q(content_type=ct.pk, object_id=object.pk, **kwargs)
 
 
@@ -59,13 +59,13 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
     """
 
     try:
-        r = requests.put(endpoint, 'version={}'.format(version))
+        r = requests.put(endpoint, "version={}".format(version))
     except RequestException as e:
         # This is something like connection error, not a server error.
         if _retry_count < max_retries:
             return _send_simple_push(endpoint, version, max_retries, _retry_count + 1)
         else:
-            logger.error('SimplePush PUT failed: %s', e)
+            logger.error("SimplePush PUT failed: %s", e)
             return
 
     # If something does wrong, the SimplePush server should give back json encoded error messages.
@@ -73,13 +73,13 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
         try:
             data = r.json()
         except simplejson.scanner.JSONDecodeError:
-            logger.error('SimplePush error (also not JSON?!): %s %s', r.status_code, r.text)
+            logger.error("SimplePush error (also not JSON?!): %s %s", r.status_code, r.text)
             return
 
-        if r.status_code == 503 and data['errno'] == 202 and _retry_count < max_retries:
+        if r.status_code == 503 and data["errno"] == 202 and _retry_count < max_retries:
             return _send_simple_push(endpoint, version, max_retries, _retry_count + 1)
         else:
-            logger.error('SimplePush error: %s %s', r.status_code, r.json())
+            logger.error("SimplePush error: %s %s", r.status_code, r.json())
 
 
 @task(ignore_result=True)

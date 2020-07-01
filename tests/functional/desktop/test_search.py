@@ -13,15 +13,14 @@ class TestSearch:
 
     @pytest.mark.nondestructive
     def test_no_query_adv_forum_search(self, base_url, selenium, variables):
-        if base_url in ['https://support-dev.allizom.org',
-                        'https://support.mozilla.org']:
-            pytest.skip('Search results are not guaranteed to exist on %s' % base_url)
+        if base_url in ["https://support-dev.allizom.org", "https://support.mozilla.org"]:
+            pytest.skip("Search results are not guaranteed to exist on %s" % base_url)
 
         refine_search_pg = RefineSearchPage(base_url, selenium).open()
 
         # do test
         refine_search_pg.click_support_questions_tab()
-        username = variables['users']['default']['username']
+        username = variables["users"]["default"]["username"]
         refine_search_pg.type_in_asked_by_box(username)
         refine_search_pg.click_search_button_support()
 
@@ -30,8 +29,8 @@ class TestSearch:
     @pytest.mark.nondestructive
     def test_user_flow_to_forum_post(self, base_url, selenium):
 
-        if base_url == 'https://support-dev.allizom.org':
-            pytest.skip('Search results are not guaranteed to exist on support-dev.allizom.org')
+        if base_url == "https://support-dev.allizom.org":
+            pytest.skip("Search results are not guaranteed to exist on support-dev.allizom.org")
 
         # 1. start on the home page
         SupportHomePage(base_url, selenium).open()

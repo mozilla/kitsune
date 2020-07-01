@@ -27,20 +27,23 @@ class TitleManager(models.Manager):
 
     def set_top10_contributors(self, user_ids):
         users = User.objects.filter(id__in=user_ids)
-        return self.set_auto_title('Top 10 Contributor', users)
+        return self.set_auto_title("Top 10 Contributor", users)
 
     def set_top25_contributors(self, user_ids):
         users = User.objects.filter(id__in=user_ids)
-        return self.set_auto_title('Top 25 Contributor', users)
+        return self.set_auto_title("Top 25 Contributor", users)
 
 
 class Title(ModelBase):
     """Karma titles."""
+
     name = models.CharField(max_length=100, unique=True)
-    users = models.ManyToManyField(User, blank=True, help_text=(
-        'Assign this title to these users.'))
-    groups = models.ManyToManyField(Group, blank=True, help_text=(
-        'Assign this title to these groups.'))
+    users = models.ManyToManyField(
+        User, blank=True, help_text=("Assign this title to these users.")
+    )
+    groups = models.ManyToManyField(
+        Group, blank=True, help_text=("Assign this title to these groups.")
+    )
 
     # is_auto is True for titles that are set automatically by the system
     # (Top 10 Contributor, Top 25 Contributor, Rising Star, etc.).

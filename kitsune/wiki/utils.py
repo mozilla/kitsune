@@ -142,11 +142,9 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     """
     visits = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
-        .exclude(
-            document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES
-        )
+        .exclude(document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES)
         .order_by("-visits")
-        .select_related('document')
+        .select_related("document")
     )
 
     if product:
@@ -161,9 +159,13 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     else:
         # prefretch localised documents to avoid n+1 problem
         visits = visits.prefetch_related(
-            Prefetch('document__translations',
-                     queryset=Document.objects.filter(locale=locale,
-                                                      current_revision__is_approved=True)))
+            Prefetch(
+                "document__translations",
+                queryset=Document.objects.filter(
+                    locale=locale, current_revision__is_approved=True
+                ),
+            )
+        )
 
         for visit in visits:
             translation = visit.document.translations.first()

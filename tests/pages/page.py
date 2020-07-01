@@ -9,7 +9,7 @@ from selenium.common.exceptions import ElementNotVisibleException
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 
-http_regex = re.compile('https?://((\w+\.)+\w+\.\w+)')
+http_regex = re.compile("https?://((\w+\.)+\w+\.\w+)")
 
 
 class Page(object):
@@ -26,8 +26,7 @@ class Page(object):
     @property
     def canonical_url(self):
         if self.URL_TEMPLATE is not None:
-            return urljoin(self.base_url,
-                           self.URL_TEMPLATE.format(**self.url_kwargs))
+            return urljoin(self.base_url, self.URL_TEMPLATE.format(**self.url_kwargs))
         return self.base_url
 
     def open(self):
@@ -46,7 +45,7 @@ class Page(object):
 
     @property
     def url_current_page(self):
-        return(self.selenium.current_url)
+        return self.selenium.current_url
 
     @property
     def page_title(self):
@@ -81,7 +80,7 @@ class Page(object):
             time.sleep(1)
             count += 1
             if count == self.timeout:
-                raise Exception(*locator + ' has not loaded')
+                raise Exception(*locator + " has not loaded")
 
     def wait_for_element_visible(self, *locator):
         count = 0

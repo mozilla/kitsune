@@ -13,15 +13,16 @@ from kitsune.users.tests import UserFactory
 
 class FlaggedQueueTestCase(TestCaseBase):
     """Test the flagit queue."""
+
     def setUp(self):
         super(FlaggedQueueTestCase, self).setUp()
         self.answer = AnswerFactory()
         self.flagger = UserFactory()
 
         u = UserFactory()
-        add_permission(u, FlaggedObject, 'can_moderate')
+        add_permission(u, FlaggedObject, "can_moderate")
 
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
 
     def tearDown(self):
         super(FlaggedQueueTestCase, self).tearDown()
@@ -31,19 +32,16 @@ class FlaggedQueueTestCase(TestCaseBase):
         # Flag all answers
         num_answers = Answer.objects.count()
         for a in Answer.objects.all():
-            f = FlaggedObject(content_object=a, reason='spam',
-                              creator_id=self.flagger.id)
+            f = FlaggedObject(content_object=a, reason="spam", creator_id=self.flagger.id)
             f.save()
 
         # Verify number of flagged objects
-        response = get(self.client, 'flagit.queue')
+        response = get(self.client, "flagit.queue")
         doc = pq(response.content)
-        eq_(num_answers, len(doc('#flagged-queue li')))
+        eq_(num_answers, len(doc("#flagged-queue li")))
 
         # Reject one flag
         flag = FlaggedObject.objects.all()[0]
-        response = post(self.client, 'flagit.update',
-                        {'status': 2},
-                        args=[flag.id])
+        response = post(self.client, "flagit.update", {"status": 2}, args=[flag.id])
         doc = pq(response.content)
-        eq_(num_answers - 1, len(doc('#flagged-queue li')))
+        eq_(num_answers - 1, len(doc("#flagged-queue li")))

@@ -8,7 +8,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 
 class KnowledgeBase(Base):
-
     @property
     def navigation(self):
         return self.Navigation(self.base_url, self.selenium)
@@ -26,7 +25,9 @@ class KnowledgeBase(Base):
         _translate_article_locator = (By.XPATH, './/*[@id="doc-tools"]/ul/li[1]/ul/li[4]/a')
         _show_history_locator = (By.CSS_SELECTOR, '.sidebar-nav li a[href$="/history"]')
         _show_editing_tools_locator = (
-            By.CSS_SELECTOR, '.sidebar-nav.sidebar-folding > li:first-child span')
+            By.CSS_SELECTOR,
+            ".sidebar-nav.sidebar-folding > li:first-child span",
+        )
 
         def show_editing_tools(self):
             if not self.is_element_visible(*self._edit_article_locator):
@@ -55,8 +56,8 @@ class KnowledgeBase(Base):
 
 class KnowledgeBaseArticle(KnowledgeBase):
 
-    _page_title = ' | How to | Mozilla Support'
-    _title_locator = (By.CSS_SELECTOR, 'h1.title')
+    _page_title = " | How to | Mozilla Support"
+    _title_locator = (By.CSS_SELECTOR, "h1.title")
 
     @property
     def article_title(self):
@@ -65,17 +66,17 @@ class KnowledgeBaseArticle(KnowledgeBase):
 
 class KnowledgeBaseEditArticle(KnowledgeBase):
 
-    _page_title = 'Edit Article | '
-    _description_form_toggle_locator = (By.CSS_SELECTOR, '#document-form summary')
+    _page_title = "Edit Article | "
+    _description_form_toggle_locator = (By.CSS_SELECTOR, "#document-form summary")
     _description_form_save_locator = (By.CSS_SELECTOR, '#document-form button[type="submit"]')
-    _article_keywords_box_locator = (By.ID, 'id_keywords')
-    _article_summary_box_locator = (By.ID, 'id_summary')
-    _article_content_object = 'window.highlighting.editor'
-    _article_topic_expander_locator = (By.CSS_SELECTOR, '#accordion li strong')
-    _article_topic_locator = (By.CSS_SELECTOR, 'input[name=topics]')
-    _article_product_locator = (By.CSS_SELECTOR, 'input[name=products]')
-    _article_submit_btn_locator = (By.CSS_SELECTOR, '.btn-submit')
-    _comment_box_locator = (By.ID, 'id_comment')
+    _article_keywords_box_locator = (By.ID, "id_keywords")
+    _article_summary_box_locator = (By.ID, "id_summary")
+    _article_content_object = "window.highlighting.editor"
+    _article_topic_expander_locator = (By.CSS_SELECTOR, "#accordion li strong")
+    _article_topic_locator = (By.CSS_SELECTOR, "input[name=topics]")
+    _article_product_locator = (By.CSS_SELECTOR, "input[name=products]")
+    _article_submit_btn_locator = (By.CSS_SELECTOR, ".btn-submit")
+    _comment_box_locator = (By.ID, "id_comment")
     _comment_submit_btn_locator = (By.CSS_SELECTOR, '.kbox-wrap button[type="submit"]')
 
     @property
@@ -85,8 +86,7 @@ class KnowledgeBaseEditArticle(KnowledgeBase):
     @property
     def article_contents_text(self):
         # widget doesn't respond well to selenium commands
-        return self.selenium.execute_script("return %s.getValue()" %
-                                            self._article_content_object)
+        return self.selenium.execute_script("return %s.getValue()" % self._article_content_object)
 
     def edit_article(self, mock_article):
         """
@@ -99,9 +99,9 @@ class KnowledgeBaseEditArticle(KnowledgeBase):
         self.check_article_product(2)
         self.save_description_form()
         # Edit Content form
-        self.set_article_keyword(mock_article['keyword'])
-        self.set_article_summary(mock_article['summary'])
-        self.set_article_content(mock_article['content'])
+        self.set_article_keyword(mock_article["keyword"])
+        self.set_article_summary(mock_article["summary"])
+        self.set_article_content(mock_article["content"])
         self.submit_article()
         return self.set_article_comment_box()
 
@@ -117,8 +117,7 @@ class KnowledgeBaseEditArticle(KnowledgeBase):
 
     def set_article_content(self, content):
         # widget doesn't respond well to selenium commands
-        self.selenium.execute_script("%s.setValue('%s')" %
-                                     (self._article_content_object, content))
+        self.selenium.execute_script("%s.setValue('%s')" % (self._article_content_object, content))
 
     def open_description_form(self):
         if not self.is_element_visible(*self._article_topic_locator):
@@ -138,7 +137,7 @@ class KnowledgeBaseEditArticle(KnowledgeBase):
         index = index - 1
         self.selenium.find_elements(*self._article_product_locator)[index].click()
 
-    def set_article_comment_box(self, comment='default comment'):
+    def set_article_comment_box(self, comment="default comment"):
         self.selenium.find_element(*self._comment_box_locator).send_keys(comment)
         self.selenium.find_element(*self._comment_submit_btn_locator).click()
         kb_article_history = KnowledgeBaseShowHistory(self.base_url, self.selenium)
@@ -152,16 +151,18 @@ class KnowledgeBaseEditArticle(KnowledgeBase):
 
 class KnowledgeBaseTranslate(KnowledgeBase):
 
-    _page_title = 'Select language | '
-    _description_title_locator = (By.ID, 'id_title')
-    _description_slug_locator = (By.ID, 'id_slug')
-    _search_result_summary_locator = (By.ID, 'id_summary')
+    _page_title = "Select language | "
+    _description_title_locator = (By.ID, "id_title")
+    _description_slug_locator = (By.ID, "id_slug")
+    _search_result_summary_locator = (By.ID, "id_summary")
     _submit_button_locator = (
-        By.CSS_SELECTOR, '.buttons-and-preview > div.submit:first-of-type .btn-important')
+        By.CSS_SELECTOR,
+        ".buttons-and-preview > div.submit:first-of-type .btn-important",
+    )
 
     # 2 elements inside the modal popup
-    _describe_changes_locator = (By.ID, 'id_comment')
-    _submit_changes_button_locator = (By.CSS_SELECTOR, '#submit-modal > button')
+    _describe_changes_locator = (By.ID, "id_comment")
+    _submit_changes_button_locator = (By.CSS_SELECTOR, "#submit-modal > button")
 
     def click_translate_language(self, language):
         self.selenium.find_element(By.LINK_TEXT, language).click()
@@ -193,21 +194,22 @@ class KnowledgeBaseTranslate(KnowledgeBase):
 
 class KnowledgeBaseShowHistory(KnowledgeBase):
 
-    _page_title = 'Revision History | '
+    _page_title = "Revision History | "
 
     _delete_document_link_locator = (By.CSS_SELECTOR, 'div#delete-doc > a[href*="delete"]')
-    _delete_confirmation_btn_locator = (By.CSS_SELECTOR, '#delete-document input[type=submit]')
+    _delete_confirmation_btn_locator = (By.CSS_SELECTOR, "#delete-document input[type=submit]")
 
-    _revision_history_language_locator = (By.CSS_SELECTOR, '#revision-history > div:nth-child(5)')
+    _revision_history_language_locator = (By.CSS_SELECTOR, "#revision-history > div:nth-child(5)")
 
     # history of the test
-    _top_revision_comment = (By.CSS_SELECTOR, '#revision-list li:nth-child(2) > div.comment')
+    _top_revision_comment = (By.CSS_SELECTOR, "#revision-list li:nth-child(2) > div.comment")
 
     def delete_entire_article_document(self):
         self.click_delete_entire_article_document()
         self.click_delete_confirmation_button()
         WebDriverWait(self.selenium, self.timeout).until(
-            lambda s: not self.is_element_present(*self._delete_confirmation_btn_locator))
+            lambda s: not self.is_element_present(*self._delete_confirmation_btn_locator)
+        )
 
     def click_delete_entire_article_document(self):
         self.selenium.find_element(*self._delete_document_link_locator).click()

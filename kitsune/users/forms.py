@@ -48,16 +48,13 @@ class SettingsForm(forms.Form):
         required=False, label=_lazy("Watch forum threads I comment in")
     )
     kbforums_watch_new_thread = forms.BooleanField(
-        required=False,
-        label=_lazy("Watch KB discussion threads I start"),
+        required=False, label=_lazy("Watch KB discussion threads I start"),
     )
     kbforums_watch_after_reply = forms.BooleanField(
-        required=False,
-        label=_lazy("Watch KB discussion threads I comment in"),
+        required=False, label=_lazy("Watch KB discussion threads I comment in"),
     )
     questions_watch_after_reply = forms.BooleanField(
-        required=False,
-        label=_lazy("Watch Question threads I comment in"),
+        required=False, label=_lazy("Watch Question threads I comment in"),
     )
     email_private_messages = forms.BooleanField(
         required=False, label=_lazy("Send emails for private messages")
@@ -79,9 +76,7 @@ class ProfileForm(forms.ModelForm):
     involved_from = forms.DateField(
         required=False,
         label=_lazy("Involved with Mozilla from"),
-        widget=MonthYearWidget(
-            years=list(range(1998, datetime.today().year + 1)), required=False
-        ),
+        widget=MonthYearWidget(years=list(range(1998, datetime.today().year + 1)), required=False),
     )
 
     class Meta(object):

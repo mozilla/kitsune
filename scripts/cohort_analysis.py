@@ -33,14 +33,14 @@ def run_():
     ranges = list(zip(boundaries[:-1], boundaries[1:]))
 
     reports = [
-        ('L10n', Revision.objects.exclude(document__locale='en-US')),
-        ('KB', Revision.objects.filter(document__locale='en-US')),
-        ('Questions', Answer.objects.all())
+        ("L10n", Revision.objects.exclude(document__locale="en-US")),
+        ("KB", Revision.objects.filter(document__locale="en-US")),
+        ("Questions", Answer.objects.all()),
     ]
 
     for title, queryset in reports:
         data = report_for(queryset, ranges)
-        headers = [title] + [s.strftime('%b') for s, _ in ranges]
+        headers = [title] + [s.strftime("%b") for s, _ in ranges]
         print(tabulate(data, headers=headers))
         print()
 
@@ -48,8 +48,9 @@ def run_():
 def count_contributors_in_range(queryset, users, date_range):
     """Of the group ``users``, count how many made a contribution in ``date_range``."""
     start, end = date_range
-    users = set(o.creator for o in
-                queryset.filter(creator__in=users, created__gte=start, created__lt=end))
+    users = set(
+        o.creator for o in queryset.filter(creator__in=users, created__gte=start, created__lt=end)
+    )
     return len(users)
 
 
@@ -59,7 +60,7 @@ def get_cohort(queryset, date_range):
     potential_users = set(cont.creator for cont in contributions_in_range)
 
     def is_in_cohort(u):
-        first_contrib = queryset.filter(creator=u).order_by('id')[0]
+        first_contrib = queryset.filter(creator=u).order_by("id")[0]
         return start <= first_contrib.created < end
 
     return list(filter(is_in_cohort, potential_users))
@@ -71,13 +72,13 @@ def report_for(queryset, ranges):
         start, end = cohort_range
         data = []
 
-        data.append(start.strftime('%b %Y'))
+        data.append(start.strftime("%b %Y"))
         # Fill months before the cohort started
         for _ in range(i):
             data.append(None)
         data.append(len(cohort_users))
 
-        for return_range in ranges[i + 1:]:
+        for return_range in ranges[i + 1 :]:
             returned = count_contributors_in_range(queryset, cohort_users, return_range)
             data.append(returned)
 

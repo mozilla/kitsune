@@ -4,9 +4,9 @@
 import pytest
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def session_capabilities(session_capabilities):
-    session_capabilities.setdefault('tags', []).append('sumo')
+    session_capabilities.setdefault("tags", []).append("sumo")
     return session_capabilities
 
 

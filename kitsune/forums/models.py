@@ -71,9 +71,7 @@ class Forum(NotificationsMixin, ModelBase):
 
     def allows_viewing_by(self, user):
         """Return whether a user can view me, my threads, and their posts."""
-        return self._allows_public_viewing() or has_perm(
-            user, "forums_forum.view_in_forum", self
-        )
+        return self._allows_public_viewing() or has_perm(user, "forums_forum.view_in_forum", self)
 
     def _allows_public_viewing(self):
         """Return whether I am a world-readable forum.
@@ -90,9 +88,7 @@ class Forum(NotificationsMixin, ModelBase):
 
     def allows_posting_by(self, user):
         """Return whether a user can make threads and posts in me."""
-        return self._allows_public_posting() or has_perm(
-            user, "forums_forum.post_in_forum", self
-        )
+        return self._allows_public_posting() or has_perm(user, "forums_forum.post_in_forum", self)
 
     def _allows_public_posting(self):
         """Return whether I am a world-writable forum."""
@@ -298,8 +294,9 @@ class Post(ModelBase):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, on_delete=models.CASCADE,
-                                   related_name="post_last_updated_by", null=True)
+    updated_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="post_last_updated_by", null=True
+    )
     flags = GenericRelation(FlaggedObject)
 
     class Meta:

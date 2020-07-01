@@ -17,9 +17,7 @@ from kitsune.sumo.redis_utils import redis_client
 def settings(request):
     """Admin view that displays the django settings."""
     settings = debug.get_safe_settings()
-    sorted_settings = [
-        {"key": key, "value": settings[key]} for key in sorted(settings.keys())
-    ]
+    sorted_settings = [{"key": key, "value": settings[key]} for key in sorted(settings.keys())]
 
     return render_to_response(
         "kadmin/settings.html",
@@ -38,9 +36,7 @@ def celery_settings(request):
     sorted_settings = [
         {
             "key": key,
-            "value": "*****"
-            if "password" in key.lower()
-            else getattr(current_app.conf, key),
+            "value": "*****" if "password" in key.lower() else getattr(current_app.conf, key),
         }
         for key in sorted(settings)
     ]
@@ -90,13 +86,9 @@ def redis_info(request):
         redis_info[key]["connection"] = django_settings.REDIS_BACKENDS[key]
         try:
             cfg = client.config_get()
-            redis_info[key]["config"] = [
-                {"key": k, "value": cfg[k]} for k in sorted(cfg)
-            ]
+            redis_info[key]["config"] = [{"key": k, "value": cfg[k]} for k in sorted(cfg)]
             info = client.info()
-            redis_info[key]["info"] = [
-                {"key": k, "value": info[k]} for k in sorted(info)
-            ]
+            redis_info[key]["info"] = [{"key": k, "value": info[k]} for k in sorted(info)]
         except ConnectionError:
             redis_info[key]["down"] = True
 

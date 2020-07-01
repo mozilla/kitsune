@@ -6,26 +6,27 @@ from pages.mobile.home import Home
 
 
 class TestHome:
-
     @pytest.mark.smoke
     @pytest.mark.nondestructive
     def test_the_expandable_header_menu(self, base_url, selenium):
-        expected_menu_items = ['Home',
-                               'Ask a question',
-                               'Support Forum',
-                               'Help other users',
-                               'Switch to desktop site',
-                               'Sign in',
-                               'Switch language']
+        expected_menu_items = [
+            "Home",
+            "Ask a question",
+            "Support Forum",
+            "Help other users",
+            "Switch to desktop site",
+            "Sign in",
+            "Switch language",
+        ]
         home = Home(base_url, selenium).open()
         home.open_menu()
-        assert home.is_menu_exposed, 'Menu is not open'
+        assert home.is_menu_exposed, "Menu is not open"
 
         menu_names = [menu.name for menu in home.menu_items]
         assert expected_menu_items == menu_names
 
         home.close_menu()
-        assert not home.is_menu_exposed, 'Menu is not closed'
+        assert not home.is_menu_exposed, "Menu is not closed"
 
     @pytest.mark.smoke
     @pytest.mark.nondestructive
@@ -33,4 +34,4 @@ class TestHome:
         home = Home(base_url, selenium).open()
         home.is_the_current_page
 
-        assert 'Products' == home.header_text
+        assert "Products" == home.header_text

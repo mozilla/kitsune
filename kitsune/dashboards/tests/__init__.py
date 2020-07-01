@@ -11,6 +11,6 @@ class WikiMetricFactory(factory.DjangoModelFactory):
         model = WikiMetric
 
     code = METRIC_CODE_CHOICES[0][0]
-    locale = 'es'
+    locale = "es"
     date = date.today()
     value = 42.0

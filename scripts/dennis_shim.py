@@ -10,5 +10,5 @@ def path(components):
     return os.path.join(ROOT, *components)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     click_run()

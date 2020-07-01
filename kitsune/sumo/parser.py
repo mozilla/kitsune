@@ -16,40 +16,43 @@ from kitsune.sumo.urlresolvers import reverse
 
 
 ALLOWED_ATTRIBUTES = {
-    'a': ['href', 'title', 'class', 'rel', 'data-mozilla-ui-reset'],
-    'div': ['id', 'class', 'style', 'data-for', 'title', 'data-target',
-            'data-modal'],
-    'h1': ['id'],
-    'h2': ['id'],
-    'h3': ['id'],
-    'h4': ['id'],
-    'h5': ['id'],
-    'h6': ['id'],
-    'li': ['class'],
-    'span': ['class', 'data-for'],
-    'img': ['class', 'src', 'data-original-src', 'alt', 'title', 'height',
-            'width', 'style'],
-    'video': ['height', 'width', 'controls', 'data-fallback', 'poster',
-              'data-width', 'data-height'],
-    'source': ['src', 'type'],
+    "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset"],
+    "div": ["id", "class", "style", "data-for", "title", "data-target", "data-modal"],
+    "h1": ["id"],
+    "h2": ["id"],
+    "h3": ["id"],
+    "h4": ["id"],
+    "h5": ["id"],
+    "h6": ["id"],
+    "li": ["class"],
+    "span": ["class", "data-for"],
+    "img": ["class", "src", "data-original-src", "alt", "title", "height", "width", "style"],
+    "video": [
+        "height",
+        "width",
+        "controls",
+        "data-fallback",
+        "poster",
+        "data-width",
+        "data-height",
+    ],
+    "source": ["src", "type"],
 }
-ALLOWED_STYLES = ['vertical-align']
-IMAGE_PARAMS = ['alt', 'align', 'caption', 'valign', 'frame', 'page', 'link',
-                'width', 'height']
+ALLOWED_STYLES = ["vertical-align"]
+IMAGE_PARAMS = ["alt", "align", "caption", "valign", "frame", "page", "link", "width", "height"]
 IMAGE_PARAM_VALUES = {
-    'align': ('none', 'left', 'center', 'right'),
-    'valign': ('baseline', 'sub', 'super', 'top', 'text-top', 'middle',
-               'bottom', 'text-bottom'),
+    "align": ("none", "left", "center", "right"),
+    "valign": ("baseline", "sub", "super", "top", "text-top", "middle", "bottom", "text-bottom"),
 }
-VIDEO_PARAMS = ['height', 'width', 'modal', 'title', 'placeholder']
-YOUTUBE_PLACEHOLDER = 'YOUTUBE_EMBED_PLACEHOLDER_%s'
+VIDEO_PARAMS = ["height", "width", "modal", "title", "placeholder"]
+YOUTUBE_PLACEHOLDER = "YOUTUBE_EMBED_PLACEHOLDER_%s"
 
 
-def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
-                 nofollow=True, tags=None):
+def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True, tags=None):
     """Wiki Markup -> HTML"""
-    return WikiParser().parse(wiki_markup, show_toc=False, locale=locale,
-                              nofollow=nofollow, tags=tags)
+    return WikiParser().parse(
+        wiki_markup, show_toc=False, locale=locale, nofollow=nofollow, tags=tags
+    )
 
 
 def get_object_fallback(cls, title, locale, default=None, **kwargs):
@@ -72,10 +75,11 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
     # Fallback
     try:
         default_lang_doc = cls.objects.get(
-            title=title, locale=settings.WIKI_DEFAULT_LANGUAGE, **kwargs)
+            title=title, locale=settings.WIKI_DEFAULT_LANGUAGE, **kwargs
+        )
 
         # Return the translation of this English item:
-        if hasattr(default_lang_doc, 'translated_to'):
+        if hasattr(default_lang_doc, "translated_to"):
             trans = default_lang_doc.translated_to(locale)
             if trans and trans.current_revision:
                 return trans
@@ -87,7 +91,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
         # the non-English user to be linked to the English redirect,
         # which would happily redirect them to the English final
         # article.
-        if hasattr(default_lang_doc, 'redirect_document'):
+        if hasattr(default_lang_doc, "redirect_document"):
             target = default_lang_doc.redirect_document()
             if target:
                 trans = target.translated_to(locale)
@@ -113,8 +117,7 @@ def _get_wiki_link(title, locale):
     # to happen) dependencies on client apps.
     from kitsune.wiki.models import Document
 
-    d = get_object_fallback(Document, locale=locale, title=title,
-                            is_template=False)
+    d = get_object_fallback(Document, locale=locale, title=title, is_template=False)
     if d:
         # If the article redirects use its destination article
         while d.redirect_document():
@@ -123,49 +126,50 @@ def _get_wiki_link(title, locale):
         # The locale in the link urls should always match the current
         # document's locale even if the document/slug being linked to
         # is in the default locale.
-        url = reverse('wiki.document', locale=locale, args=[d.slug])
-        return {'found': True, 'url': url, 'text': d.title}
+        url = reverse("wiki.document", locale=locale, args=[d.slug])
+        return {"found": True, "url": url, "text": d.title}
 
     # To avoid circular imports, wiki.models imports wiki_to_html
     from kitsune.sumo.templatetags.jinja_helpers import urlparams
-    return {'found': False,
-            'text': title,
-            'url': urlparams(reverse('wiki.new_document', locale=locale),
-                             title=title)}
+
+    return {
+        "found": False,
+        "text": title,
+        "url": urlparams(reverse("wiki.new_document", locale=locale), title=title),
+    }
 
 
-def build_hook_params(string, locale, allowed_params=[],
-                      allowed_param_values={}):
+def build_hook_params(string, locale, allowed_params=[], allowed_param_values={}):
     """Parses a string of the form 'some-title|opt1|opt2=arg2|opt3...'
 
     Builds a list of items and returns relevant parameters in a dict.
 
     """
-    if '|' not in string:  # No params? Simple and easy.
+    if "|" not in string:  # No params? Simple and easy.
         string = string.strip()
-        return (string, {'alt': string})
+        return (string, {"alt": string})
 
-    items = [i.strip() for i in string.split('|')]
+    items = [i.strip() for i in string.split("|")]
     title = items.pop(0)
     params = {}
 
-    last_item = ''
+    last_item = ""
     for item in items:  # this splits by = or assigns the dict key to True
-        if '=' in item:
-            param, value = item.split('=', 1)
+        if "=" in item:
+            param, value = item.split("=", 1)
             params[param] = value
         else:
             params[item] = True
             last_item = item
 
-    if 'caption' in allowed_params:
-        params['caption'] = title
+    if "caption" in allowed_params:
+        params["caption"] = title
         # Allowed parameters are not caption. All else is.
         if last_item and last_item not in allowed_params:
-            params['caption'] = items.pop()
+            params["caption"] = items.pop()
             del params[last_item]
-        elif last_item == 'caption':
-            params['caption'] = last_item
+        elif last_item == "caption":
+            params["caption"] = last_item
 
     # Validate params allowed
     for p in list(params.keys()):
@@ -178,10 +182,10 @@ def build_hook_params(string, locale, allowed_params=[],
             del params[p]
 
     # Handle page as a special case
-    if 'page' in params and params['page'] is not True:
-        link = _get_wiki_link(params['page'], locale)
-        params['link'] = link['url']
-        params['found'] = link['found']
+    if "page" in params and params["page"] is not True:
+        link = _get_wiki_link(params["page"], locale)
+        params["link"] = link["url"]
+        params["found"] = link["found"]
 
     return (title, params)
 
@@ -191,23 +195,32 @@ class WikiParser(Parser):
     and setup.
     """
 
-    image_template = 'wikiparser/hook_image.html'
+    image_template = "wikiparser/hook_image.html"
 
     def __init__(self, base_url=None):
         super(WikiParser, self).__init__(base_url)
 
         # Register default hooks
         self.registerInternalLinkHook(None, self._hook_internal_link)
-        self.registerInternalLinkHook('Image', self._hook_image_tag)
-        self.registerInternalLinkHook('Video', self._hook_video)
-        self.registerInternalLinkHook('V', self._hook_video)
-        self.registerInternalLinkHook('Button', self._hook_button)
+        self.registerInternalLinkHook("Image", self._hook_image_tag)
+        self.registerInternalLinkHook("Video", self._hook_video)
+        self.registerInternalLinkHook("V", self._hook_video)
+        self.registerInternalLinkHook("Button", self._hook_button)
 
         self.youtube_videos = []
 
-    def parse(self, text, show_toc=None, tags=None, attributes=None,
-              styles=None, locale=settings.WIKI_DEFAULT_LANGUAGE,
-              nofollow=False, youtube_embeds=True, **kwargs):
+    def parse(
+        self,
+        text,
+        show_toc=None,
+        tags=None,
+        attributes=None,
+        styles=None,
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        nofollow=False,
+        youtube_embeds=True,
+        **kwargs,
+    ):
         """Given wiki markup, return HTML.
 
         Pass a locale to get all the hooks to look up Documents or
@@ -242,7 +255,8 @@ class WikiParser(Parser):
                 styles=styles or ALLOWED_STYLES,
                 nofollow=nofollow,
                 strip_comments=True,
-                **kwargs)
+                **kwargs,
+            )
 
         html = _parse(locale)
 
@@ -258,8 +272,7 @@ class WikiParser(Parser):
         allow iframes in the rendered content.
         """
         for video_id in self.youtube_videos:
-            html = html.replace(YOUTUBE_PLACEHOLDER % video_id,
-                                generate_youtube_embed(video_id))
+            html = html.replace(YOUTUBE_PLACEHOLDER % video_id, generate_youtube_embed(video_id))
         return html
 
     def _hook_internal_link(self, parser, space, name):
@@ -268,48 +281,48 @@ class WikiParser(Parser):
         title = name
 
         # Split on pipe -- [[href|name]]
-        if '|' in name:
-            title, text = title.split('|', 1)
+        if "|" in name:
+            title, text = title.split("|", 1)
 
-        hash = ''
-        if '#' in title:
-            title, hash = title.split('#', 1)
+        hash = ""
+        if "#" in title:
+            title, hash = title.split("#", 1)
 
         # Sections use _, page names use +
-        if hash != '':
-            hash = '#' + hash.replace(' ', '_')
+        if hash != "":
+            hash = "#" + hash.replace(" ", "_")
 
         # Links to this page can just contain href="#hash"
-        if title == '' and hash != '':
+        if title == "" and hash != "":
             if not text:
-                text = hash.replace('_', ' ')
+                text = hash.replace("_", " ")
             return '<a href="%s">%s</a>' % (hash, text)
 
         link = _get_wiki_link(title, self.locale)
-        extra_a_attr = ''
-        if not link['found']:
-            extra_a_attr += (' class="new" title="{tooltip}"'
-                             .format(tooltip=_('Page does not exist.')))
+        extra_a_attr = ""
+        if not link["found"]:
+            extra_a_attr += ' class="new" title="{tooltip}"'.format(
+                tooltip=_("Page does not exist.")
+            )
         if not text:
-            text = link['text']
+            text = link["text"]
         return '<a href="{url}{hash}"{extra}>{text}</a>'.format(
-            url=link['url'], hash=hash, extra=extra_a_attr, text=text)
+            url=link["url"], hash=hash, extra=extra_a_attr, text=text
+        )
 
     def _hook_image_tag(self, parser, space, name):
         """Adds syntax for inserting images."""
-        title, params = build_hook_params(name, self.locale, IMAGE_PARAMS,
-                                          IMAGE_PARAM_VALUES)
+        title, params = build_hook_params(name, self.locale, IMAGE_PARAMS, IMAGE_PARAM_VALUES)
 
         message = _lazy('The image "%s" does not exist.') % title
         image = get_object_fallback(Image, title, self.locale, message)
         if isinstance(image, str):
             return image
 
-        return render_to_string(self.image_template, {
-            'image': image,
-            'params': params,
-            'STATIC_URL': settings.STATIC_URL,
-        })
+        return render_to_string(
+            self.image_template,
+            {"image": image, "params": params, "STATIC_URL": settings.STATIC_URL,},
+        )
 
     # Videos are objects that can have one or more files attached to them
     #
@@ -326,12 +339,12 @@ class WikiParser(Parser):
         if _is_youtube_url(title):
             parsed_url = urlparse(title)
             netloc = parsed_url.netloc
-            if netloc == 'youtu.be':
+            if netloc == "youtu.be":
                 # The video id is the path minus the leading /
                 video_id = parsed_url.path[1:]
             else:
                 # The video id is in the v= query param
-                video_id = parse_qs(parsed_url.query)['v'][0]
+                video_id = parse_qs(parsed_url.query)["v"][0]
 
             self.youtube_videos.append(video_id)
 
@@ -346,36 +359,41 @@ class WikiParser(Parser):
     def _hook_button(self, parser, space, btn_type):
         btn_type, params = build_hook_params(btn_type, self.locale)
 
-        if btn_type == 'refresh':
-            template = 'wikiparser/hook_refresh_button.html'
+        if btn_type == "refresh":
+            template = "wikiparser/hook_refresh_button.html"
         else:
             return _lazy('Button of type "%s" does not exist.') % btn_type
 
-        return render_to_string(template, {'params': params})
+        return render_to_string(template, {"params": params})
 
 
 def generate_video(v, params=[]):
     """Takes a video object and returns HTML markup for embedding it."""
     sources = []
     if v.webm:
-        sources.append({'src': _get_video_url(v.webm), 'type': 'webm'})
+        sources.append({"src": _get_video_url(v.webm), "type": "webm"})
     if v.ogv:
-        sources.append({'src': _get_video_url(v.ogv), 'type': 'ogg'})
-    data_fallback = ''
+        sources.append({"src": _get_video_url(v.ogv), "type": "ogg"})
+    data_fallback = ""
     # Flash fallback
     if v.flv:
         data_fallback = _get_video_url(v.flv)
-    return render_to_string('wikiparser/hook_video.html', {
-        'fallback': data_fallback, 'sources': sources, 'params': params,
-        'video': v,
-        'height': settings.WIKI_VIDEO_HEIGHT,
-        'width': settings.WIKI_VIDEO_WIDTH
-    })
+    return render_to_string(
+        "wikiparser/hook_video.html",
+        {
+            "fallback": data_fallback,
+            "sources": sources,
+            "params": params,
+            "video": v,
+            "height": settings.WIKI_VIDEO_HEIGHT,
+            "width": settings.WIKI_VIDEO_WIDTH,
+        },
+    )
 
 
 def generate_youtube_embed(video_id):
     """Takes a youtube video id and returns the embed markup."""
-    return render_to_string('wikiparser/hook_youtube_embed.html', {'video_id': video_id})
+    return render_to_string("wikiparser/hook_youtube_embed.html", {"video_id": video_id})
 
 
 def _get_video_url(video_file):
@@ -388,4 +406,4 @@ def _is_youtube_url(url):
     """Returns true if the URL is to youtube."""
     parsed_url = urlparse(url)
     netloc = parsed_url.netloc
-    return netloc in ['youtu.be', 'youtube.com', 'www.youtube.com']
+    return netloc in ["youtu.be", "youtube.com", "www.youtube.com"]

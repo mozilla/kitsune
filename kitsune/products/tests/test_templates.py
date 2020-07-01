@@ -70,9 +70,7 @@ class ProductViewsTestCase(ElasticTestCase):
         t1 = TopicFactory(product=p)
 
         # Create 3 documents with the topic and product and one without.
-        ApprovedRevisionFactory.create_batch(
-            3, document__products=[p], document__topics=[t1]
-        )
+        ApprovedRevisionFactory.create_batch(3, document__products=[p], document__topics=[t1])
         ApprovedRevisionFactory()
 
         self.refresh()

@@ -13,10 +13,11 @@ try:
 except ImportError:
     newrelic = False
 else:
-    newrelic.agent.initialize('newrelic.ini')
+    newrelic.agent.initialize("newrelic.ini")
 
 import os
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kitsune.settings')  # NOQA
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kitsune.settings")  # NOQA
 
 from django.core.wsgi import get_wsgi_application
 
@@ -25,12 +26,13 @@ from decouple import config
 
 application = get_wsgi_application()
 
-if config('ENABLE_WHITENOISE', default=False, cast=bool):
+if config("ENABLE_WHITENOISE", default=False, cast=bool):
     from whitenoise.django import DjangoWhiteNoise
+
     application = DjangoWhiteNoise(application)
 
 # Add NewRelic
 if newrelic:
-    newrelic_license_key = config('NEW_RELIC_LICENSE_KEY', default=None)
+    newrelic_license_key = config("NEW_RELIC_LICENSE_KEY", default=None)
     if newrelic_license_key:
         application = newrelic.agent.WSGIApplicationWrapper(application)

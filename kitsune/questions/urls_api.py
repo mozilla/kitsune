@@ -4,6 +4,6 @@ from kitsune.questions.api import AnswerViewSet
 from kitsune.questions.api import QuestionViewSet
 
 router = routers.SimpleRouter()
-router.register(r'question', QuestionViewSet)
-router.register(r'answer', AnswerViewSet)
+router.register(r"question", QuestionViewSet)
+router.register(r"answer", AnswerViewSet)
 urlpatterns = router.urls

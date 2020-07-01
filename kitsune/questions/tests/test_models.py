@@ -161,11 +161,10 @@ class TestAnswer(TestCaseBase):
     def test_content_parsed_with_locale(self):
         """Make sure links to localized articles work."""
         rev = TranslatedRevisionFactory(
-            is_approved=True,
-            document__title='Un mejor títuolo',
-            document__locale='es')
+            is_approved=True, document__title="Un mejor títuolo", document__locale="es"
+        )
 
-        a = AnswerFactory(question__locale='es', content='[[%s]]' % rev.document.title)
+        a = AnswerFactory(question__locale="es", content="[[%s]]" % rev.document.title)
 
         assert "es/kb/%s" % rev.document.slug in a.content_parsed
 
@@ -190,13 +189,11 @@ class TestQuestionMetadata(TestCaseBase):
         super(TestQuestionMetadata, self).setUp()
 
         # add a new Question to test with
-        self.question = QuestionFactory(
-            title="Test Question", content="Lorem Ipsum Dolor"
-        )
+        self.question = QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
 
     def test_add_metadata(self):
         """Test the saving of metadata."""
-        metadata = {'version': '3.6.3', 'os': 'Windows 7'}
+        metadata = {"version": "3.6.3", "os": "Windows 7"}
         self.question.add_metadata(**metadata)
         saved = QuestionMetaData.objects.filter(question=self.question)
         eq_(dict((x.name, x.value) for x in saved), metadata)
@@ -229,18 +226,13 @@ class TestQuestionMetadata(TestCaseBase):
         """
         q = self.question
         q.add_metadata(
-            product="desktop",
-            category="fix-problems",
-            useragent="Fyerfocks",
-            crash_id="7",
+            product="desktop", category="fix-problems", useragent="Fyerfocks", crash_id="7",
         )
 
         q.metadata
         q.clear_mutable_metadata()
         md = q.metadata
-        assert (
-            "crash_id" not in md
-        ), "clear_mutable_metadata() didn't clear the cached metadata."
+        assert "crash_id" not in md, "clear_mutable_metadata() didn't clear the cached metadata."
         eq_(dict(product="desktop", category="fix-problems", useragent="Fyerfocks"), md)
 
     def test_auto_tagging(self):
@@ -248,9 +240,7 @@ class TestQuestionMetadata(TestCaseBase):
         Tag.objects.create(slug="green", name="green")
         Tag.objects.create(slug="Fix problems", name="fix-problems")
         q = self.question
-        q.add_metadata(
-            product="desktop", category="fix-problems", ff_version="3.6.8", os="GREen"
-        )
+        q.add_metadata(product="desktop", category="fix-problems", ff_version="3.6.8", os="GREen")
         q.save()
         q.auto_tag()
         tags_eq(q, ["desktop", "fix-problems", "Firefox 3.6.8", "Firefox 3.6", "green"])
@@ -311,8 +301,7 @@ class QuestionTests(TestCaseBase):
 
         """
         eq_(
-            Question._default_manager.__class__,
-            kitsune.questions.managers.QuestionManager,
+            Question._default_manager.__class__, kitsune.questions.managers.QuestionManager,
         )
 
     def test_is_solved_property(self):
@@ -506,9 +495,9 @@ class AddExistingTagTests(TestCaseBase):
 
     def test_add_existing_case_insensitive(self):
         """Assert add_existing_tag works case-insensitively."""
-        TagFactory(name='lemon', slug='lemon')
-        add_existing_tag('LEMON', self.untagged_question.tags)
-        tags_eq(self.untagged_question, ['lemon'])
+        TagFactory(name="lemon", slug="lemon")
+        add_existing_tag("LEMON", self.untagged_question.tags)
+        tags_eq(self.untagged_question, ["lemon"])
 
     @raises(Tag.DoesNotExist)
     def test_add_existing_no_such_tag(self):
@@ -524,15 +513,11 @@ class OldQuestionsArchiveTest(ElasticTestCase):
         q1 = QuestionFactory()
 
         # created 200 days ago
-        q2 = QuestionFactory(
-            created=datetime.now() - timedelta(days=200), updated=last_updated
-        )
+        q2 = QuestionFactory(created=datetime.now() - timedelta(days=200), updated=last_updated)
 
         # created 200 days ago, already archived
         q3 = QuestionFactory(
-            created=datetime.now() - timedelta(days=200),
-            is_archived=True,
-            updated=last_updated,
+            created=datetime.now() - timedelta(days=200), is_archived=True, updated=last_updated,
         )
 
         self.refresh()
@@ -563,9 +548,7 @@ class QuestionVisitsTests(TestCase):
     @mock.patch.object(
         googleanalytics, "pageviews_by_question",
     )
-    def test_visit_count_from_analytics(
-        self, pageviews_by_question, close_old_connections
-    ):
+    def test_visit_count_from_analytics(self, pageviews_by_question, close_old_connections):
         """Verify stored visit counts from mocked data."""
         q1 = QuestionFactory()
         q2 = QuestionFactory()

@@ -35,20 +35,22 @@ class PushNotificationRegistration(ModelBase):
     push_url = models.CharField(max_length=256)
 
 
-@receiver(post_save, sender=Action, dispatch_uid='action_create_notifications')
+@receiver(post_save, sender=Action, dispatch_uid="action_create_notifications")
 def add_notification_for_action(sender, instance, created, **kwargs):
     """When an Action is created, notify every user following something in the Action."""
     if not created:
         return
     from kitsune.notifications import tasks  # avoid circular import
+
     tasks.add_notification_for_action.delay(instance.id)
 
 
-@receiver(post_save, sender=Notification, dispatch_uid='send_notification')
+@receiver(post_save, sender=Notification, dispatch_uid="send_notification")
 def send_notification(sender, instance, created, **kwargs):
     if not created:
         return
     from kitsune.notifications import tasks  # avoid circular import
+
     tasks.send_notification.delay(instance.id)
 
 
@@ -59,12 +61,13 @@ class RealtimeRegistration(ModelBase):
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    target = GenericForeignKey('content_type', 'object_id')
+    target = GenericForeignKey("content_type", "object_id")
 
 
-@receiver(post_save, sender=Action, dispatch_uid='action_send_realtimes')
+@receiver(post_save, sender=Action, dispatch_uid="action_send_realtimes")
 def send_realtimes_for_action(sender, instance, created, **kwargs):
     if not created:
         return
     from kitsune.notifications import tasks  # avoid circular import
+
     tasks.send_realtimes_for_action.delay(instance.id)

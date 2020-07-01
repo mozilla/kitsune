@@ -23,10 +23,10 @@ class TestTopContributorsBase(ElasticTestCase):
         self.api.get_data = lambda request: {}
 
     def test_invalid_filter_name(self):
-        req = self.factory.get('/', {'not_valid': 'wrong'})
+        req = self.factory.get("/", {"not_valid": "wrong"})
         self.api.request = req
         self.api.get_filters()
-        eq_(self.api.warnings, ['Unknown filter not_valid'])
+        eq_(self.api.warnings, ["Unknown filter not_valid"])
 
 
 class TestTopContributorsQuestions(ElasticTestCase):
@@ -49,24 +49,24 @@ class TestTopContributorsQuestions(ElasticTestCase):
 
         self.refresh()
 
-        req = self.factory.get('/')
+        req = self.factory.get("/")
         data = self.api.get_data(req)
 
-        eq_(data['count'], 2)
+        eq_(data["count"], 2)
 
-        eq_(data['results'][0]['user']['username'], u1.username)
-        eq_(data['results'][0]['rank'], 1)
-        eq_(data['results'][0]['answer_count'], 2)
-        eq_(data['results'][0]['solution_count'], 1)
-        eq_(data['results'][0]['helpful_vote_count'], 0)
-        eq_(data['results'][0]['last_contribution_date'], a2.created.replace(microsecond=0))
+        eq_(data["results"][0]["user"]["username"], u1.username)
+        eq_(data["results"][0]["rank"], 1)
+        eq_(data["results"][0]["answer_count"], 2)
+        eq_(data["results"][0]["solution_count"], 1)
+        eq_(data["results"][0]["helpful_vote_count"], 0)
+        eq_(data["results"][0]["last_contribution_date"], a2.created.replace(microsecond=0))
 
-        eq_(data['results'][1]['user']['username'], u2.username)
-        eq_(data['results'][1]['rank'], 2)
-        eq_(data['results'][1]['answer_count'], 1)
-        eq_(data['results'][1]['solution_count'], 0)
-        eq_(data['results'][1]['helpful_vote_count'], 1)
-        eq_(data['results'][1]['last_contribution_date'], a3.created.replace(microsecond=0))
+        eq_(data["results"][1]["user"]["username"], u2.username)
+        eq_(data["results"][1]["rank"], 2)
+        eq_(data["results"][1]["answer_count"], 1)
+        eq_(data["results"][1]["solution_count"], 0)
+        eq_(data["results"][1]["helpful_vote_count"], 1)
+        eq_(data["results"][1]["last_contribution_date"], a3.created.replace(microsecond=0))
 
     def test_filter_by_product(self):
         u1 = UserFactory()
@@ -81,12 +81,12 @@ class TestTopContributorsQuestions(ElasticTestCase):
 
         self.refresh()
 
-        req = self.factory.get('/', {'product': p1.slug})
+        req = self.factory.get("/", {"product": p1.slug})
         data = self.api.get_data(req)
 
-        eq_(data['count'], 1)
-        eq_(data['results'][0]['user']['username'], u1.username)
-        eq_(data['results'][0]['answer_count'], 1)
+        eq_(data["count"], 1)
+        eq_(data["results"][0]["user"]["username"], u1.username)
+        eq_(data["results"][0]["answer_count"], 1)
 
     def test_page_size(self):
         u1 = UserFactory()
@@ -97,15 +97,15 @@ class TestTopContributorsQuestions(ElasticTestCase):
 
         self.refresh()
 
-        req = self.factory.get('/', {'page_size': 2})
+        req = self.factory.get("/", {"page_size": 2})
         data = self.api.get_data(req)
-        eq_(data['count'], 2)
-        eq_(len(data['results']), 2)
+        eq_(data["count"], 2)
+        eq_(len(data["results"]), 2)
 
-        req = self.factory.get('/', {'page_size': 1})
+        req = self.factory.get("/", {"page_size": 1})
         data = self.api.get_data(req)
-        eq_(data['count'], 2)
-        eq_(len(data['results']), 1)
+        eq_(data["count"], 2)
+        eq_(len(data["results"]), 1)
 
     def test_filter_last_contribution(self):
         u1 = UserFactory()
@@ -123,23 +123,23 @@ class TestTopContributorsQuestions(ElasticTestCase):
 
         # Test 1
 
-        req = self.factory.get('/', {'last_contribution_date__gt': yesterday.strftime('%Y-%m-%d')})
+        req = self.factory.get("/", {"last_contribution_date__gt": yesterday.strftime("%Y-%m-%d")})
         data = self.api.get_data(req)
 
-        eq_(data['count'], 1)
-        eq_(data['results'][0]['user']['username'], u1.username)
+        eq_(data["count"], 1)
+        eq_(data["results"][0]["user"]["username"], u1.username)
         # Even though only 1 contribution was made in the time range, this filter
         # is only checking the last contribution time, so both are included.
-        eq_(data['results'][0]['answer_count'], 2)
+        eq_(data["results"][0]["answer_count"], 2)
 
         # Test 2
 
-        req = self.factory.get('/', {'last_contribution_date__lt': yesterday.strftime('%Y-%m-%d')})
+        req = self.factory.get("/", {"last_contribution_date__lt": yesterday.strftime("%Y-%m-%d")})
         data = self.api.get_data(req)
 
-        eq_(data['count'], 1)
-        eq_(data['results'][0]['user']['username'], u2.username)
-        eq_(data['results'][0]['answer_count'], 1)
+        eq_(data["count"], 1)
+        eq_(data["results"][0]["user"]["username"], u2.username)
+        eq_(data["results"][0]["answer_count"], 1)
 
 
 class TestTopContributorsLocalization(ElasticTestCase):
@@ -158,22 +158,22 @@ class TestTopContributorsLocalization(ElasticTestCase):
 
         self.refresh()
 
-        req = self.factory.get('/')
+        req = self.factory.get("/")
         data = self.api.get_data(req)
 
-        eq_(data['count'], 2)
+        eq_(data["count"], 2)
 
-        eq_(data['results'][0]['user']['username'], u1.username)
-        eq_(data['results'][0]['rank'], 1)
-        eq_(data['results'][0]['revision_count'], 2)
-        eq_(data['results'][0]['review_count'], 0)
-        eq_(data['results'][0]['last_contribution_date'], r2.created.replace(microsecond=0))
+        eq_(data["results"][0]["user"]["username"], u1.username)
+        eq_(data["results"][0]["rank"], 1)
+        eq_(data["results"][0]["revision_count"], 2)
+        eq_(data["results"][0]["review_count"], 0)
+        eq_(data["results"][0]["last_contribution_date"], r2.created.replace(microsecond=0))
 
-        eq_(data['results'][1]['user']['username'], u2.username)
-        eq_(data['results'][1]['rank'], 2)
-        eq_(data['results'][1]['revision_count'], 1)
-        eq_(data['results'][1]['review_count'], 1)
-        eq_(data['results'][1]['last_contribution_date'], r3.created.replace(microsecond=0))
+        eq_(data["results"][1]["user"]["username"], u2.username)
+        eq_(data["results"][1]["rank"], 2)
+        eq_(data["results"][1]["revision_count"], 1)
+        eq_(data["results"][1]["review_count"], 1)
+        eq_(data["results"][1]["last_contribution_date"], r3.created.replace(microsecond=0))
 
     def test_filter_by_product(self):
         u1 = UserFactory()
@@ -188,12 +188,12 @@ class TestTopContributorsLocalization(ElasticTestCase):
 
         self.refresh()
 
-        req = self.factory.get('/', {'product': p1.slug})
+        req = self.factory.get("/", {"product": p1.slug})
         data = self.api.get_data(req)
 
-        eq_(data['count'], 1)
-        eq_(data['results'][0]['user']['username'], u1.username)
-        eq_(data['results'][0]['revision_count'], 1)
+        eq_(data["count"], 1)
+        eq_(data["results"][0]["user"]["username"], u1.username)
+        eq_(data["results"][0]["revision_count"], 1)
 
     def test_page_size(self):
         u1 = UserFactory()
@@ -204,15 +204,15 @@ class TestTopContributorsLocalization(ElasticTestCase):
 
         self.refresh()
 
-        req = self.factory.get('/', {'page_size': 2})
+        req = self.factory.get("/", {"page_size": 2})
         data = self.api.get_data(req)
-        eq_(data['count'], 2)
-        eq_(len(data['results']), 2)
+        eq_(data["count"], 2)
+        eq_(len(data["results"]), 2)
 
-        req = self.factory.get('/', {'page_size': 1})
+        req = self.factory.get("/", {"page_size": 1})
         data = self.api.get_data(req)
-        eq_(data['count'], 2)
-        eq_(len(data['results']), 1)
+        eq_(data["count"], 2)
+        eq_(len(data["results"]), 1)
 
     def test_filter_last_contribution(self):
         u1 = UserFactory()
@@ -230,20 +230,20 @@ class TestTopContributorsLocalization(ElasticTestCase):
 
         # Test 1
 
-        req = self.factory.get('/', {'last_contribution_date__gt': yesterday.strftime('%Y-%m-%d')})
+        req = self.factory.get("/", {"last_contribution_date__gt": yesterday.strftime("%Y-%m-%d")})
         data = self.api.get_data(req)
 
-        eq_(data['count'], 1)
-        eq_(data['results'][0]['user']['username'], u1.username)
+        eq_(data["count"], 1)
+        eq_(data["results"][0]["user"]["username"], u1.username)
         # Even though only 1 contribution was made in the time range, this filter
         # is only checking the last contribution time, so both are included.
-        eq_(data['results'][0]['revision_count'], 2)
+        eq_(data["results"][0]["revision_count"], 2)
 
         # Test 2
 
-        req = self.factory.get('/', {'last_contribution_date__lt': yesterday.strftime('%Y-%m-%d')})
+        req = self.factory.get("/", {"last_contribution_date__lt": yesterday.strftime("%Y-%m-%d")})
         data = self.api.get_data(req)
 
-        eq_(data['count'], 1)
-        eq_(data['results'][0]['user']['username'], u2.username)
-        eq_(data['results'][0]['revision_count'], 1)
+        eq_(data["count"], 1)
+        eq_(data["results"][0]["user"]["username"], u2.username)
+        eq_(data["results"][0]["revision_count"], 1)

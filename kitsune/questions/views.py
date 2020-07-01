@@ -82,8 +82,8 @@ from kitsune.wiki.utils import get_featured_articles
 log = logging.getLogger("k.questions")
 
 
-UNAPPROVED_TAG = _lazy('That tag does not exist.')
-NO_TAG = _lazy('Please provide a tag.')
+UNAPPROVED_TAG = _lazy("That tag does not exist.")
+NO_TAG = _lazy("Please provide a tag.")
 IMG_LIMIT = settings.IMAGE_ATTACHMENT_USER_LIMIT
 
 FILTER_GROUPS = {
@@ -92,10 +92,7 @@ FILTER_GROUPS = {
         [("new", _lazy("New")), ("unhelpful-answers", _lazy("Answers didn't help")),]
     ),
     "responded": OrderedDict(
-        [
-            ("needsinfo", _lazy("Needs info")),
-            ("solution-provided", _lazy("Solution provided")),
-        ]
+        [("needsinfo", _lazy("Needs info")), ("solution-provided", _lazy("Solution provided")),]
     ),
     "done": OrderedDict([("solved", _lazy("Solved")), ("locked", _lazy("Locked")),]),
 }
@@ -115,20 +112,14 @@ def product_list(request):
     return render(
         request,
         "questions/product_list.html",
-        {
-            "products": Product.objects.filter(
-                questions_locales__locale=request.LANGUAGE_CODE
-            )
-        },
+        {"products": Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE)},
     )
 
 
 def question_list(request, product_slug):
     """View the list of questions."""
     if settings.DISABLE_QUESTIONS_LIST_GLOBAL:
-        messages.add_message(
-            request, messages.WARNING, "You cannot list questions at this time."
-        )
+        messages.add_message(request, messages.WARNING, "You cannot list questions at this time.")
         return HttpResponseRedirect("/")
 
     filter_ = request.GET.get("filter")
@@ -202,9 +193,7 @@ def question_list(request, product_slug):
         if show == "done":
             question_qs = question_qs.done()
 
-    question_qs = question_qs.select_related(
-        "creator", "last_answer", "last_answer__creator"
-    )
+    question_qs = question_qs.select_related("creator", "last_answer", "last_answer__creator")
     question_qs = question_qs.prefetch_related("topic", "topic__product")
 
     question_qs = question_qs.filter(creator__is_active=1)
@@ -212,7 +201,7 @@ def question_list(request, product_slug):
     if not request.user.has_perm("flagit.can_moderate"):
         question_qs = question_qs.filter(is_spam=False)
 
-    if owner == 'mine' and request.user.is_authenticated:
+    if owner == "mine" and request.user.is_authenticated:
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
     else:
@@ -220,9 +209,7 @@ def question_list(request, product_slug):
 
     feed_urls = (
         (
-            urlparams(
-                reverse("questions.feed"), product=product_slug, topic=topic_slug
-            ),
+            urlparams(reverse("questions.feed"), product=product_slug, topic=topic_slug),
             QuestionsFeed().title(),
         ),
     )
@@ -291,8 +278,7 @@ def question_list(request, product_slug):
     recent_unanswered_count = Question.recent_unanswered_count(extra_filters)
     if recent_asked_count:
         recent_answered_percent = int(
-            (float(recent_asked_count - recent_unanswered_count) / recent_asked_count)
-            * 100
+            (float(recent_asked_count - recent_unanswered_count) / recent_asked_count) * 100
         )
     else:
         recent_answered_percent = 0
@@ -364,19 +350,19 @@ def parse_troubleshooting(troubleshooting_json):
     # An empty path means the parsed json.
     spec = (
         ((), dict),
-        (('accessibility', ), dict),
-        (('accessibility', 'isActive'), bool),
-        (('application', ), dict),
-        (('application', 'name'), str),
-        (('application', 'supportURL'), str),
-        (('application', 'userAgent'), str),
-        (('application', 'version'), str),
-        (('extensions', ), list),
-        (('graphics', ), dict),
-        (('javaScript', ), dict),
-        (('modifiedPreferences', ), dict),
-        (('userJS', ), dict),
-        (('userJS', 'exists'), bool),
+        (("accessibility",), dict),
+        (("accessibility", "isActive"), bool),
+        (("application",), dict),
+        (("application", "name"), str),
+        (("application", "supportURL"), str),
+        (("application", "userAgent"), str),
+        (("application", "version"), str),
+        (("extensions",), list),
+        (("graphics",), dict),
+        (("javaScript",), dict),
+        (("modifiedPreferences",), dict),
+        (("userJS",), dict),
+        (("userJS", "exists"), bool),
     )
 
     for path, type_ in spec:
@@ -394,20 +380,17 @@ def parse_troubleshooting(troubleshooting_json):
     # TODO: If the UI for this gets better, we can include these prefs
     # and just make them collapsible.
 
-    parsed['modifiedPreferences'] = dict(
-        (key, val) for (key, val) in list(parsed['modifiedPreferences'].items())
-        if not key.startswith('print'))
+    parsed["modifiedPreferences"] = dict(
+        (key, val)
+        for (key, val) in list(parsed["modifiedPreferences"].items())
+        if not key.startswith("print")
+    )
 
     return parsed
 
 
 def question_details(
-    request,
-    question_id,
-    form=None,
-    watch_form=None,
-    answer_preview=None,
-    **extra_kwargs
+    request, question_id, form=None, watch_form=None, answer_preview=None, **extra_kwargs
 ):
     """View the answers to a question."""
     ans_ = _answers_data(request, question_id, form, watch_form, answer_preview)
@@ -418,9 +401,7 @@ def question_details(
 
     # Try to parse troubleshooting data as JSON.
     troubleshooting_json = question.metadata.get("troubleshooting")
-    question.metadata["troubleshooting_parsed"] = parse_troubleshooting(
-        troubleshooting_json
-    )
+    question.metadata["troubleshooting_parsed"] = parse_troubleshooting(troubleshooting_json)
 
     if request.user.is_authenticated:
         ct = ContentType.objects.get_for_model(request.user)
@@ -499,11 +480,11 @@ def aaq(request, product_key=None, category_key=None, step=1):
         path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
 
         old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE
-                                           .lower()]
-        msg = (_("The questions forum isn't available in {old_lang}, we "
-                 "have redirected you to the {new_lang} questions forum.")
-               .format(old_lang=old_lang, new_lang=new_lang))
+        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+        msg = _(
+            "The questions forum isn't available in {old_lang}, we "
+            "have redirected you to the {new_lang} questions forum."
+        ).format(old_lang=old_lang, new_lang=new_lang)
         messages.add_message(request, messages.WARNING, msg)
 
         return HttpResponseRedirect(path)
@@ -524,9 +505,7 @@ def aaq(request, product_key=None, category_key=None, step=1):
             product_key = get_mobile_product_from_ua(user_agent)
             if product_key:
                 # redirect needed for InAAQMiddleware
-                step_2 = reverse(
-                    "questions.aaq_step2", kwargs={"product_key": product_key}
-                )
+                step_2 = reverse("questions.aaq_step2", kwargs={"product_key": product_key})
                 return HttpResponseRedirect(step_2)
 
     # Return 404 if the product doesn't exist in config
@@ -542,17 +521,16 @@ def aaq(request, product_key=None, category_key=None, step=1):
             raise Http404
         else:
             # Check if the selected product has a forum in the user's locale
-            if not product.questions_locales.filter(
-                locale=request.LANGUAGE_CODE
-            ).count():
+            if not product.questions_locales.filter(locale=request.LANGUAGE_CODE).count():
                 locale, path = split_path(request.path)
                 path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
 
                 old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
                 new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-                msg = (_("The questions forum isn't available for {product} in {old_lang}, we "
-                         "have redirected you to the {new_lang} questions forum.")
-                       .format(product=product.title, old_lang=old_lang, new_lang=new_lang))
+                msg = _(
+                    "The questions forum isn't available for {product} in {old_lang}, we "
+                    "have redirected you to the {new_lang} questions forum."
+                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
                 messages.add_message(request, messages.WARNING, msg)
 
                 return HttpResponseRedirect(path)
@@ -569,9 +547,7 @@ def aaq(request, product_key=None, category_key=None, step=1):
         context["topics"] = topics_for(product, parent=None)
     elif step == 3:
         form = NewQuestionForm(
-            product=product_config,
-            data=request.POST or None,
-            initial={"category": category_key},
+            product=product_config, data=request.POST or None, initial={"category": category_key},
         )
         context["form"] = form
 
@@ -588,7 +564,7 @@ def aaq(request, product_key=None, category_key=None, step=1):
                 product_config=product_config,
             )
 
-            if form.cleaned_data.get('is_spam'):
+            if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)
 
             # Submitting the question counts as a vote
@@ -667,7 +643,7 @@ def edit_question(request, question_id):
 
             question.save()
 
-            if form.cleaned_data.get('is_spam'):
+            if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)
 
             # TODO: Factor all this stuff up from here and new_question into
@@ -712,9 +688,7 @@ def reply(request, question_id):
     if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
-    form = AnswerForm(request.POST, **{
-        'user': request.user
-    })
+    form = AnswerForm(request.POST, **{"user": request.user})
 
     # NOJS: delete images
     if "delete_images" in request.POST:
@@ -730,14 +704,12 @@ def reply(request, question_id):
 
     if form.is_valid() and not request.limited:
         answer = Answer(
-            question=question,
-            creator=request.user,
-            content=form.cleaned_data["content"],
+            question=question, creator=request.user, content=form.cleaned_data["content"],
         )
         if "preview" in request.POST:
             answer_preview = answer
         else:
-            if form.cleaned_data.get('is_spam'):
+            if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, answer)
             else:
                 answer.save()
@@ -746,9 +718,7 @@ def reply(request, question_id):
             # Move over to the answer all of the images I added to the
             # reply form
             user_ct = ContentType.objects.get_for_model(request.user)
-            up_images = ImageAttachment.objects.filter(
-                creator=request.user, content_type=user_ct
-            )
+            up_images = ImageAttachment.objects.filter(creator=request.user, content_type=user_ct)
             up_images.update(content_type=ans_ct, object_id=answer.id)
 
             # Handle needsinfo tag
@@ -780,10 +750,8 @@ def solve(request, question_id, answer_id):
                 secret=watch_secret, event_type="question reply", user=question.creator
             )
             # Create a new secret.
-            distinguishable_letters = \
-                'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ'
-            new_secret = ''.join(random.choice(distinguishable_letters)
-                                 for x in range(10))
+            distinguishable_letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ"
+            new_secret = "".join(random.choice(distinguishable_letters) for x in range(10))
             watch.update(secret=new_secret)
             request.user = question.creator
         except Watch.DoesNotExist:
@@ -795,22 +763,16 @@ def solve(request, question_id, answer_id):
     if not question.allows_solve(request.user):
         raise PermissionDenied
 
-    if question.creator != request.user and not request.user.has_perm(
-        "questions.change_solution"
-    ):
+    if question.creator != request.user and not request.user.has_perm("questions.change_solution"):
         return HttpResponseForbidden()
 
     if not question.solution:
         question.set_solution(answer, request.user)
 
-        messages.add_message(
-            request, messages.SUCCESS, _("Thank you for choosing a solution!")
-        )
+        messages.add_message(request, messages.SUCCESS, _("Thank you for choosing a solution!"))
     else:
         # The question was already solved.
-        messages.add_message(
-            request, messages.ERROR, _("This question already has a solution.")
-        )
+        messages.add_message(request, messages.ERROR, _("This question already has a solution."))
 
     return HttpResponseRedirect(question.get_absolute_url())
 
@@ -825,18 +787,14 @@ def unsolve(request, question_id, answer_id):
     if not question.allows_unsolve(request.user):
         raise PermissionDenied
 
-    if question.creator != request.user and not request.user.has_perm(
-        "questions.change_solution"
-    ):
+    if question.creator != request.user and not request.user.has_perm("questions.change_solution"):
         return HttpResponseForbidden()
 
     question.solution = None
     question.save()
     question.remove_metadata("solver_id")
 
-    messages.add_message(
-        request, messages.SUCCESS, _("The solution was undone successfully.")
-    )
+    messages.add_message(request, messages.SUCCESS, _("The solution was undone successfully."))
 
     return HttpResponseRedirect(question.get_absolute_url())
 
@@ -890,11 +848,7 @@ def question_vote(request, question_id):
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(
-        Answer,
-        pk=answer_id,
-        question=question_id,
-        is_spam=False,
-        question__is_spam=False,
+        Answer, pk=answer_id, question=question_id, is_spam=False, question__is_spam=False,
     )
 
     if not answer.question.editable:
@@ -982,23 +936,22 @@ def add_tag_async(request, question_id):
     try:
         question, canonical_name = _add_tag(request, question_id)
     except Tag.DoesNotExist:
-        return HttpResponse(json.dumps({'error': str(UNAPPROVED_TAG)}),
-                            content_type='application/json',
-                            status=400)
+        return HttpResponse(
+            json.dumps({"error": str(UNAPPROVED_TAG)}), content_type="application/json", status=400
+        )
 
     if canonical_name:
         question.clear_cached_tags()
         tag = Tag.objects.get(name=canonical_name)
-        tag_url = urlparams(reverse(
-            'questions.list', args=[question.product_slug]), tagged=tag.slug)
-        data = {'canonicalName': canonical_name,
-                'tagUrl': tag_url}
-        return HttpResponse(json.dumps(data),
-                            content_type='application/json')
+        tag_url = urlparams(
+            reverse("questions.list", args=[question.product_slug]), tagged=tag.slug
+        )
+        data = {"canonicalName": canonical_name, "tagUrl": tag_url}
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
-    return HttpResponse(json.dumps({'error': str(NO_TAG)}),
-                        content_type='application/json',
-                        status=400)
+    return HttpResponse(
+        json.dumps({"error": str(NO_TAG)}), content_type="application/json", status=400
+    )
 
 
 @permission_required("questions.tag_question")
@@ -1036,8 +989,9 @@ def remove_tag_async(request, question_id):
         question.clear_cached_tags()
         return HttpResponse("{}", content_type="application/json")
 
-    return HttpResponseBadRequest(json.dumps({'error': str(NO_TAG)}),
-                                  content_type='application/json')
+    return HttpResponseBadRequest(
+        json.dumps({"error": str(NO_TAG)}), content_type="application/json"
+    )
 
 
 @permission_required("flagit.can_moderate")
@@ -1054,9 +1008,7 @@ def mark_spam(request):
 
     obj.mark_as_spam(request.user)
 
-    return HttpResponseRedirect(
-        reverse("questions.details", kwargs={"question_id": question_id})
-    )
+    return HttpResponseRedirect(reverse("questions.details", kwargs={"question_id": question_id}))
 
 
 @permission_required("flagit.can_moderate")
@@ -1076,9 +1028,7 @@ def unmark_spam(request):
     obj.marked_as_spam_by = None
     obj.save()
 
-    return HttpResponseRedirect(
-        reverse("questions.details", kwargs={"question_id": question_id})
-    )
+    return HttpResponseRedirect(reverse("questions.details", kwargs={"question_id": question_id}))
 
 
 @login_required
@@ -1091,9 +1041,7 @@ def delete_question(request, question_id):
 
     if request.method == "GET":
         # Render the confirmation page
-        return render(
-            request, "questions/confirm_question_delete.html", {"question": question}
-        )
+        return render(request, "questions/confirm_question_delete.html", {"question": question})
 
     # Capture the product slug to build the questions.list url below.
     product = question.product_slug
@@ -1115,9 +1063,7 @@ def delete_answer(request, question_id, answer_id):
 
     if request.method == "GET":
         # Render the confirmation page
-        return render(
-            request, "questions/confirm_answer_delete.html", {"answer": answer}
-        )
+        return render(request, "questions/confirm_answer_delete.html", {"answer": answer})
 
     # Handle confirm delete form POST
     log.warning("User %s is deleting answer with id=%s" % (request.user, answer.id))
@@ -1178,11 +1124,9 @@ def edit_answer(request, question_id, answer_id):
 
     if request.method == "GET":
         form = AnswerForm({"content": answer.content}, user=request.user)
-        return render(
-            request, "questions/edit_answer.html", {"form": form, "answer": answer}
-        )
+        return render(request, "questions/edit_answer.html", {"form": form, "answer": answer})
 
-    form = AnswerForm(request.POST, **{'user': request.user})
+    form = AnswerForm(request.POST, **{"user": request.user})
 
     if form.is_valid():
         answer.content = form.cleaned_data["content"]
@@ -1191,11 +1135,9 @@ def edit_answer(request, question_id, answer_id):
             answer.updated = datetime.now()
             answer_preview = answer
         else:
-            log.warning(
-                "User %s is editing answer with id=%s" % (request.user, answer.id)
-            )
+            log.warning("User %s is editing answer with id=%s" % (request.user, answer.id))
 
-            if form.cleaned_data.get('is_spam'):
+            if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, answer)
             else:
                 answer.save()
@@ -1220,9 +1162,7 @@ def watch_question(request, question_id):
     msg = None
     if form.is_valid():
         user_or_email = (
-            request.user
-            if request.user.is_authenticated
-            else form.cleaned_data["email"]
+            request.user if request.user.is_authenticated else form.cleaned_data["email"]
         )
         try:
             if form.cleaned_data["event_type"] == "reply":
@@ -1238,10 +1178,7 @@ def watch_question(request, question_id):
             msg = msg or (
                 _("You will be notified of updates by email.")
                 if request.user.is_authenticated
-                else _(
-                    "You should receive an email shortly "
-                    "to confirm your subscription."
-                )
+                else _("You should receive an email shortly " "to confirm your subscription.")
             )
             return HttpResponse(json.dumps({"message": msg}))
 
@@ -1284,9 +1221,7 @@ def unsubscribe_watch(request, watch_id, secret):
         success = True
 
     return render(
-        request,
-        "questions/unsubscribe_watch.html",
-        {"question": question, "success": success},
+        request, "questions/unsubscribe_watch.html", {"question": question, "success": success},
     )
 
 
@@ -1303,9 +1238,7 @@ def activate_watch(request, watch_id, secret):
         "questions/activate_watch.html",
         {
             "question": question,
-            "unsubscribe_url": reverse(
-                "questions.unsubscribe", args=[watch_id, secret]
-            ),
+            "unsubscribe_url": reverse("questions.unsubscribe", args=[watch_id, secret]),
             "is_active": watch.is_active,
         },
     )
@@ -1377,8 +1310,8 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     #   - ie: [{"created": 1362774285, 'topic-1': 10, 'topic-2': 20}, ...]
 
     for series in histograms_data.values():
-        if series['entries']:
-            earliest_point = series['entries'][0]['key']
+        if series["entries"]:
+            earliest_point = series["entries"][0]["key"]
             break
     else:
         return []
@@ -1408,7 +1341,7 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     # Zero fill the interim data.
     timestamp = earliest_point
     while timestamp <= latest_point:
-        datum = interim_data.get(timestamp, {'date': timestamp})
+        datum = interim_data.get(timestamp, {"date": timestamp})
         for key in histograms_data.keys():
             if key not in datum:
                 datum[key] = 0
@@ -1462,10 +1395,15 @@ def screen_share(request, question_id):
     if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
-    content = _("I invited {user} to a screen sharing session, "
-                "and I'll give an update here once we are done.")
-    answer = Answer(question=question, creator=request.user,
-                    content=content.format(user=display_name(question.creator)))
+    content = _(
+        "I invited {user} to a screen sharing session, "
+        "and I'll give an update here once we are done."
+    )
+    answer = Answer(
+        question=question,
+        creator=request.user,
+        content=content.format(user=display_name(question.creator)),
+    )
     answer.save()
 
     question.add_metadata(screen_sharing="true")
@@ -1475,21 +1413,15 @@ def screen_share(request, question_id):
 
     message = render_to_string(
         "questions/message/screen_share.ltxt",
-        {
-            "asker": display_name(question.creator),
-            "contributor": display_name(request.user),
-        },
+        {"asker": display_name(question.creator), "contributor": display_name(request.user),},
     )
 
     return HttpResponseRedirect(
-        "%s?to=%s&message=%s"
-        % (reverse("messages.new"), question.creator.username, message)
+        "%s?to=%s&message=%s" % (reverse("messages.new"), question.creator.username, message)
     )
 
 
-def _answers_data(
-    request, question_id, form=None, watch_form=None, answer_preview=None
-):
+def _answers_data(request, question_id, form=None, watch_form=None, answer_preview=None):
     """Return a map of the minimal info necessary to draw an answers page."""
     question = get_object_or_404(Question, pk=question_id)
     answers_ = question.answers.all()
@@ -1567,13 +1499,14 @@ def _add_to_moderation_queue(request, instance):
     flag = FlaggedObject(
         content_type=ContentType.objects.get_for_model(instance),
         object_id=instance.id,
-        reason='spam',
+        reason="spam",
         notes="Automatically flagged at creation and marked as spam.",
-        creator=request.user
+        creator=request.user,
     )
     flag.save()
 
     messages.add_message(
-        request, messages.WARNING,
-        _("A moderator must manually approve your post before it will be visible.")
+        request,
+        messages.WARNING,
+        _("A moderator must manually approve your post before it will be visible."),
     )

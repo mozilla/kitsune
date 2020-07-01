@@ -105,12 +105,8 @@ class TranslatedRevisionFactory(ApprovedRevisionFactory):
 
     document = factory.SubFactory(
         DocumentFactory,
-        locale=factory.fuzzy.FuzzyChoice(
-            loc for loc in settings.SUMO_LANGUAGES if loc != "en-US"
-        ),
-        parent=factory.SubFactory(
-            DocumentFactory, locale=settings.WIKI_DEFAULT_LANGUAGE
-        ),
+        locale=factory.fuzzy.FuzzyChoice(loc for loc in settings.SUMO_LANGUAGES if loc != "en-US"),
+        parent=factory.SubFactory(DocumentFactory, locale=settings.WIKI_DEFAULT_LANGUAGE),
     )
     based_on = factory.SubFactory(
         ApprovedRevisionFactory,
@@ -132,8 +128,7 @@ class RedirectRevisionFactory(RevisionFactory):
 
     target = factory.SubFactory(DocumentFactory)
     document__title = factory.LazyAttribute(
-        lambda o: REDIRECT_TITLE
-        % {"old": factory.SelfAttribute("..target.title"), "number": 1}
+        lambda o: REDIRECT_TITLE % {"old": factory.SelfAttribute("..target.title"), "number": 1}
     )
     content = factory.LazyAttribute(lambda o: REDIRECT_CONTENT % o.target.title)
     is_approved = True
@@ -154,9 +149,7 @@ class DraftRevisionFactory(factory.DjangoModelFactory):
     content = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)
     keywords = "test, test1"
-    locale = factory.fuzzy.FuzzyChoice(
-        loc for loc in settings.SUMO_LANGUAGES if loc != "en-US"
-    )
+    locale = factory.fuzzy.FuzzyChoice(loc for loc in settings.SUMO_LANGUAGES if loc != "en-US")
     summary = FuzzyUnicode()
     title = FuzzyUnicode()
     slug = factory.LazyAttribute(lambda o: slugify(o.title))

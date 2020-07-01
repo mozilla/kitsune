@@ -17,11 +17,12 @@ def set_url_prefixer(prefixer):
 
 def get_url_prefixer():
     """Get the Prefixer for the current thread, or None."""
-    return getattr(_locals, 'prefixer', None)
+    return getattr(_locals, "prefixer", None)
 
 
-def reverse(viewname, urlconf=None, args=None, kwargs=None, prefix=None,
-            force_locale=False, locale=None):
+def reverse(
+    viewname, urlconf=None, args=None, kwargs=None, prefix=None, force_locale=False, locale=None
+):
     """Wraps Django's reverse to prepend the correct locale.
 
     force_locale -- Ordinarily, if get_url_prefixer() returns None, we return
@@ -47,7 +48,7 @@ def reverse(viewname, urlconf=None, args=None, kwargs=None, prefix=None,
             prefixer = Prefixer()
 
     if prefixer:
-        prefix = prefix or '/'
+        prefix = prefix or "/"
     url = django_reverse(viewname, urlconf, args, kwargs, prefix)
     if prefixer:
         return prefixer.fix(url)
@@ -56,16 +57,17 @@ def reverse(viewname, urlconf=None, args=None, kwargs=None, prefix=None,
 
 
 def find_supported(test):
-    return [settings.LANGUAGE_URL_MAP[x] for
-            x in settings.LANGUAGE_URL_MAP if
-            x.split('-', 1)[0] == test.lower().split('-', 1)[0]]
+    return [
+        settings.LANGUAGE_URL_MAP[x]
+        for x in settings.LANGUAGE_URL_MAP
+        if x.split("-", 1)[0] == test.lower().split("-", 1)[0]
+    ]
 
 
 def get_non_supported(lang):
     """Find known non-supported locales with fallbacks."""
     lang = lang.lower()
-    langs = dict((k.lower(), v) for k, v in
-                 list(settings.NON_SUPPORTED_LOCALES.items()))
+    langs = dict((k.lower(), v) for k, v in list(settings.NON_SUPPORTED_LOCALES.items()))
     if lang in langs:
         if langs[lang] is None:
             return settings.LANGUAGE_CODE
@@ -81,16 +83,18 @@ def get_best_language(accept_lang):
     LC = settings.LANGUAGE_CODE
     langs = dict(LUM)
     # Add in non-supported first to allow overriding prefix behavior.
-    langs.update((k.lower(), v if v else LC) for k, v in list(NSL.items()) if
-                 k.lower() not in langs)
-    langs.update((k.split('-')[0], v) for k, v in list(LUM.items()) if
-                 k.split('-')[0] not in langs)
+    langs.update(
+        (k.lower(), v if v else LC) for k, v in list(NSL.items()) if k.lower() not in langs
+    )
+    langs.update(
+        (k.split("-")[0], v) for k, v in list(LUM.items()) if k.split("-")[0] not in langs
+    )
     ranked = parse_accept_lang_header(accept_lang)
     for lang, _ in ranked:
         lang = lang.lower()
         if lang in langs:
             return langs[lang]
-        pre = lang.split('-')[0]
+        pre = lang.split("-")[0]
         if pre in langs:
             return langs[pre]
     # Couldn't find any acceptable locale.
@@ -103,10 +107,10 @@ def split_path(path):
 
     locale will be empty if it isn't found.
     """
-    path = path.lstrip('/')
+    path = path.lstrip("/")
 
     # Use partition instead of split since it always returns 3 parts
-    first, _, rest = path.partition('/')
+    first, _, rest = path.partition("/")
 
     lang = first.lower()
     if lang in settings.LANGUAGE_URL_MAP:
@@ -118,7 +122,7 @@ def split_path(path):
         if supported:
             return supported[0], rest
         else:
-            return '', path
+            return "", path
 
 
 class Prefixer(object):
@@ -127,8 +131,7 @@ class Prefixer(object):
         # to avoid circular imports
         from kitsune.users.models import Profile
 
-        self.request = request or WSGIRequest({'REQUEST_METHOD': 'bogus',
-                                               'wsgi.input': None})
+        self.request = request or WSGIRequest({"REQUEST_METHOD": "bogus", "wsgi.input": None})
         self.locale, self.shortened_path = split_path(self.request.path_info)
 
         # We also need to check to see if locale is already given in the url,
@@ -153,29 +156,30 @@ class Prefixer(object):
         user's Accept-Language header to determine which is best. This
         mostly follows the RFCs but read bug 439568 for details.
         """
-        if 'lang' in self.request.GET:
-            lang = self.request.GET['lang'].lower()
+        if "lang" in self.request.GET:
+            lang = self.request.GET["lang"].lower()
             if lang in settings.LANGUAGE_URL_MAP:
                 return settings.LANGUAGE_URL_MAP[lang]
 
-        if self.request.META.get('HTTP_ACCEPT_LANGUAGE'):
-            best = get_best_language(
-                self.request.META['HTTP_ACCEPT_LANGUAGE'])
+        if self.request.META.get("HTTP_ACCEPT_LANGUAGE"):
+            best = get_best_language(self.request.META["HTTP_ACCEPT_LANGUAGE"])
             if best:
                 return best
 
         return settings.LANGUAGE_CODE
 
     def fix(self, path):
-        path = path.lstrip('/')
-        url_parts = [self.request.META['SCRIPT_NAME']]
+        path = path.lstrip("/")
+        url_parts = [self.request.META["SCRIPT_NAME"]]
 
-        first_part = path.partition('/')[0]
-        if (first_part not in settings.SUPPORTED_NONLOCALES and
-                first_part not in settings.LANGUAGE_URL_MAP):
+        first_part = path.partition("/")[0]
+        if (
+            first_part not in settings.SUPPORTED_NONLOCALES
+            and first_part not in settings.LANGUAGE_URL_MAP
+        ):
             locale = self.locale if self.locale else self.get_language()
             url_parts.append(locale)
 
         url_parts.append(path)
 
-        return '/'.join(url_parts)
+        return "/".join(url_parts)

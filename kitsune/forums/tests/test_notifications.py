@@ -73,61 +73,66 @@ https://testserver/en-US/unsubscribe/"""
 class NotificationsTests(ForumTestCase):
     """Test that notifications get sent."""
 
-    @mock.patch.object(NewPostEvent, 'fire')
+    @mock.patch.object(NewPostEvent, "fire")
     def test_fire_on_reply(self, fire):
         """The event fires when there is a reply."""
         u = UserFactory()
         t = ThreadFactory()
-        self.client.login(username=u.username, password='testpass')
-        post(self.client, 'forums.reply', {'content': 'a post'},
-             args=[t.forum.slug, t.id])
+        self.client.login(username=u.username, password="testpass")
+        post(self.client, "forums.reply", {"content": "a post"}, args=[t.forum.slug, t.id])
         # NewPostEvent.fire() is called.
         assert fire.called
 
-    @mock.patch.object(NewThreadEvent, 'fire')
+    @mock.patch.object(NewThreadEvent, "fire")
     def test_fire_on_new_thread(self, fire):
         """The event fires when there is a new thread."""
         u = UserFactory()
         f = ForumFactory()
-        self.client.login(username=u.username, password='testpass')
-        post(self.client, 'forums.new_thread',
-             {'title': 'a title', 'content': 'a post'},
-             args=[f.slug])
+        self.client.login(username=u.username, password="testpass")
+        post(
+            self.client,
+            "forums.new_thread",
+            {"title": "a title", "content": "a post"},
+            args=[f.slug],
+        )
         # NewThreadEvent.fire() is called.
         assert fire.called
 
     def _toggle_watch_thread_as(self, thread, user, turn_on=True):
         """Watch a thread and return it."""
-        self.client.login(username=user.username, password='testpass')
-        watch = 'yes' if turn_on else 'no'
-        post(self.client, 'forums.watch_thread', {'watch': watch},
-             args=[thread.forum.slug, thread.id])
+        self.client.login(username=user.username, password="testpass")
+        watch = "yes" if turn_on else "no"
+        post(
+            self.client,
+            "forums.watch_thread",
+            {"watch": watch},
+            args=[thread.forum.slug, thread.id],
+        )
         # Watch exists or not, depending on watch.
         if turn_on:
-            assert NewPostEvent.is_notifying(user, thread), (
-                'NewPostEvent should be notifying.')
+            assert NewPostEvent.is_notifying(user, thread), "NewPostEvent should be notifying."
         else:
-            assert not NewPostEvent.is_notifying(user, thread), (
-                'NewPostEvent should not be notifying.')
+            assert not NewPostEvent.is_notifying(
+                user, thread
+            ), "NewPostEvent should not be notifying."
 
     def _toggle_watch_forum_as(self, forum, user, turn_on=True):
         """Watch a forum and return it."""
-        self.client.login(username=user.username, password='testpass')
-        watch = 'yes' if turn_on else 'no'
-        post(self.client, 'forums.watch_forum', {'watch': watch},
-             args=[forum.slug])
+        self.client.login(username=user.username, password="testpass")
+        watch = "yes" if turn_on else "no"
+        post(self.client, "forums.watch_forum", {"watch": watch}, args=[forum.slug])
         # Watch exists or not, depending on watch.
         if turn_on:
-            assert NewThreadEvent.is_notifying(user, forum), (
-                'NewThreadEvent should be notifying.')
+            assert NewThreadEvent.is_notifying(user, forum), "NewThreadEvent should be notifying."
         else:
-            assert not NewPostEvent.is_notifying(user, forum), (
-                'NewThreadEvent should not be notifying.')
+            assert not NewPostEvent.is_notifying(
+                user, forum
+            ), "NewThreadEvent should not be notifying."
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_watch_thread_then_reply(self, get_current):
         """The event fires and sends emails when watching a thread."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         t = ThreadFactory()
         f = t.forum
@@ -135,19 +140,18 @@ class NotificationsTests(ForumTestCase):
         watcher = UserFactory()
 
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
-        self.client.login(username=poster.username, password='testpass')
-        post(self.client, 'forums.reply', {'content': 'a post'},
-             args=[t.forum.slug, t.id])
+        self.client.login(username=poster.username, password="testpass")
+        post(self.client, "forums.reply", {"content": "a post"}, args=[t.forum.slug, t.id])
 
-        p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject='Re: {f} - {t}'.format(f=f, t=t))
+        p = Post.objects.all().order_by("-id")[0]
+        attrs_eq(mail.outbox[0], to=[watcher.email], subject="Re: {f} - {t}".format(f=f, t=t))
         body = REPLY_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
-            post_id=p.id)
+            post_id=p.id,
+        )
         starts_with(mail.outbox[0].body, body)
 
     def test_watch_other_thread_then_reply(self):
@@ -159,55 +163,60 @@ class NotificationsTests(ForumTestCase):
         watcher = UserFactory()
 
         self._toggle_watch_thread_as(t1, watcher, turn_on=True)
-        self.client.login(username=poster.username, password='testpass')
-        post(self.client, 'forums.reply', {'content': 'a post'},
-             args=[t2.forum.slug, t2.id])
+        self.client.login(username=poster.username, password="testpass")
+        post(self.client, "forums.reply", {"content": "a post"}, args=[t2.forum.slug, t2.id])
 
         assert not mail.outbox
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_watch_forum_then_new_thread(self, get_current):
         """Watching a forum and creating a new thread should send email."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         f = ForumFactory()
-        poster = UserFactory(username='POSTER', profile__name='Poster')
-        watcher = UserFactory(username='WATCHER', profile__name='Watcher')
+        poster = UserFactory(username="POSTER", profile__name="Poster")
+        watcher = UserFactory(username="WATCHER", profile__name="Watcher")
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
-        self.client.login(username=poster.username, password='testpass')
-        post(self.client, 'forums.new_thread',
-             {'title': 'a title', 'content': 'a post'}, args=[f.slug])
+        self.client.login(username=poster.username, password="testpass")
+        post(
+            self.client,
+            "forums.new_thread",
+            {"title": "a title", "content": "a post"},
+            args=[f.slug],
+        )
 
-        t = Thread.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=[watcher.email], subject='{f} - {t}'.format(f=f, t=t))
+        t = Thread.objects.all().order_by("-id")[0]
+        attrs_eq(mail.outbox[0], to=[watcher.email], subject="{f} - {t}".format(f=f, t=t))
         body = NEW_THREAD_EMAIL.format(
-            username=poster.profile.name,
-            forum_slug=f.slug,
-            thread=t.title,
-            thread_id=t.id)
+            username=poster.profile.name, forum_slug=f.slug, thread=t.title, thread_id=t.id
+        )
         starts_with(mail.outbox[0].body, body)
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_watch_forum_then_new_thread_as_self(self, get_current):
         # Watching a forum and creating a new thread as myself should
         # not send email.
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         f = ForumFactory()
         watcher = UserFactory()
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
-        self.client.login(username=watcher.username, password='testpass')
-        post(self.client, 'forums.new_thread',
-             {'title': 'a title', 'content': 'a post'}, args=[f.slug])
+        self.client.login(username=watcher.username, password="testpass")
+        post(
+            self.client,
+            "forums.new_thread",
+            {"title": "a title", "content": "a post"},
+            args=[f.slug],
+        )
         # Assert no email is sent.
         assert not mail.outbox
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_watch_forum_then_new_post(self, get_current):
         """Watching a forum and replying to a thread should send email."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         t = ThreadFactory()
         f = t.forum
@@ -216,25 +225,24 @@ class NotificationsTests(ForumTestCase):
         watcher = UserFactory()
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
-        self.client.login(username=poster.username, password='testpass')
-        post(self.client, 'forums.reply', {'content': 'a post'},
-             args=[f.slug, t.id])
+        self.client.login(username=poster.username, password="testpass")
+        post(self.client, "forums.reply", {"content": "a post"}, args=[f.slug, t.id])
 
-        p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject='Re: {f} - {t}'.format(f=f, t=t))
+        p = Post.objects.all().order_by("-id")[0]
+        attrs_eq(mail.outbox[0], to=[watcher.email], subject="Re: {f} - {t}".format(f=f, t=t))
         body = REPLY_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
-            post_id=p.id)
+            post_id=p.id,
+        )
         starts_with(mail.outbox[0].body, body)
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_watch_forum_then_new_post_as_self(self, get_current):
         """Watching a forum and replying as myself should not send email."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         t = ThreadFactory()
         f = t.forum
@@ -242,18 +250,17 @@ class NotificationsTests(ForumTestCase):
         watcher = UserFactory()
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
-        self.client.login(username=watcher.username, password='testpass')
-        post(self.client, 'forums.reply', {'content': 'a post'},
-             args=[f.slug, t.id])
+        self.client.login(username=watcher.username, password="testpass")
+        post(self.client, "forums.reply", {"content": "a post"}, args=[f.slug, t.id])
         # Assert no email is sent.
         assert not mail.outbox
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_watch_both_then_new_post(self, get_current):
         """Watching both forum and thread.
 
         Replying to a thread should send ONE email."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         t = ThreadFactory()
         f = t.forum
@@ -263,50 +270,46 @@ class NotificationsTests(ForumTestCase):
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
-        self.client.login(username=poster.username, password='testpass')
-        post(self.client, 'forums.reply', {'content': 'a post'},
-             args=[f.slug, t.id])
+        self.client.login(username=poster.username, password="testpass")
+        post(self.client, "forums.reply", {"content": "a post"}, args=[f.slug, t.id])
 
         eq_(1, len(mail.outbox))
-        p = Post.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject='Re: {f} - {t}'.format(f=f, t=t))
+        p = Post.objects.all().order_by("-id")[0]
+        attrs_eq(mail.outbox[0], to=[watcher.email], subject="Re: {f} - {t}".format(f=f, t=t))
         body = REPLY_EMAIL.format(
             username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
-            post_id=p.id)
+            post_id=p.id,
+        )
         starts_with(mail.outbox[0].body, body)
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_autowatch_new_thread(self, get_current):
         """Creating a new thread should email responses"""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         f = ForumFactory()
         u = UserFactory()
 
-        self.client.login(username=u.username, password='testpass')
-        s = Setting.objects.create(user=u, name='forums_watch_new_thread',
-                                   value='False')
-        data = {'title': 'a title', 'content': 'a post'}
-        post(self.client, 'forums.new_thread', data, args=[f.slug])
-        t1 = Thread.objects.all().order_by('-id')[0]
-        assert not NewPostEvent.is_notifying(u, t1), (
-            'NewPostEvent should not be notifying.')
+        self.client.login(username=u.username, password="testpass")
+        s = Setting.objects.create(user=u, name="forums_watch_new_thread", value="False")
+        data = {"title": "a title", "content": "a post"}
+        post(self.client, "forums.new_thread", data, args=[f.slug])
+        t1 = Thread.objects.all().order_by("-id")[0]
+        assert not NewPostEvent.is_notifying(u, t1), "NewPostEvent should not be notifying."
 
-        s.value = 'True'
+        s.value = "True"
         s.save()
-        post(self.client, 'forums.new_thread', data, args=[f.slug])
-        t2 = Thread.objects.all().order_by('-id')[0]
-        assert NewPostEvent.is_notifying(u, t2), (
-            'NewPostEvent should be notifying.')
+        post(self.client, "forums.new_thread", data, args=[f.slug])
+        t2 = Thread.objects.all().order_by("-id")[0]
+        assert NewPostEvent.is_notifying(u, t2), "NewPostEvent should be notifying."
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_autowatch_reply(self, get_current):
         """Replying to a thread creates a watch."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         u = UserFactory()
         t1 = ThreadFactory()
@@ -315,36 +318,35 @@ class NotificationsTests(ForumTestCase):
         assert not NewPostEvent.is_notifying(u, t1)
         assert not NewPostEvent.is_notifying(u, t2)
 
-        self.client.login(username=u.username, password='testpass')
+        self.client.login(username=u.username, password="testpass")
 
         # If the poster has the forums_watch_after_reply setting set to True,
         # they will start watching threads they reply to.
-        s = Setting.objects.create(user=u, name='forums_watch_after_reply',
-                                   value='True')
-        data = {'content': 'some content'}
-        post(self.client, 'forums.reply', data, args=[t1.forum.slug, t1.pk])
+        s = Setting.objects.create(user=u, name="forums_watch_after_reply", value="True")
+        data = {"content": "some content"}
+        post(self.client, "forums.reply", data, args=[t1.forum.slug, t1.pk])
         assert NewPostEvent.is_notifying(u, t1)
 
         # Setting forums_watch_after_reply back to False, now they shouldn't
         # start watching threads they reply to.
-        s.value = 'False'
+        s.value = "False"
         s.save()
-        post(self.client, 'forums.reply', data, args=[t2.forum.slug, t2.pk])
+        post(self.client, "forums.reply", data, args=[t2.forum.slug, t2.pk])
         assert not NewPostEvent.is_notifying(u, t2)
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_admin_delete_user_with_watched_thread(self, get_current):
         """Test the admin delete view for a user with a watched thread."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         t = ThreadFactory()
         u = t.creator
         watcher = UserFactory()
         admin_user = UserFactory(is_staff=True, is_superuser=True)
 
-        self.client.login(username=admin_user.username, password='testpass')
+        self.client.login(username=admin_user.username, password="testpass")
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
-        url = reverse('admin:auth_user_delete', args=[u.id])
+        url = reverse("admin:auth_user_delete", args=[u.id])
         # url = reverse('admin:users_profile_delete', args=[u.id])
         request = RequestFactory().get(url)
         request.user = admin_user

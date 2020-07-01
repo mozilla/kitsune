@@ -15,7 +15,7 @@ from kitsune.search.es_utils import get_documents
 from kitsune.search.tasks import index_task
 from kitsune.search.utils import to_class_path
 
-log = logging.getLogger('k.cron')
+log = logging.getLogger("k.cron")
 
 
 class Command(BaseCommand):
@@ -32,16 +32,19 @@ class Command(BaseCommand):
         q_ids = list(
             Question.objects.filter(is_archived=False)
             .filter(created__lte=days_180)
-            .values_list('id', flat=True))
+            .values_list("id", flat=True)
+        )
 
         if q_ids:
-            log.info('Updating %d questions', len(q_ids))
+            log.info("Updating %d questions", len(q_ids))
 
             sql = """
                 UPDATE questions_question
                 SET is_archived = 1
                 WHERE id IN (%s)
-                """ % ','.join(map(str, q_ids))
+                """ % ",".join(
+                map(str, q_ids)
+            )
 
             cursor = connection.cursor()
             cursor.execute(sql)
@@ -58,20 +61,21 @@ class Command(BaseCommand):
                     # the chunking code.
 
                     from kitsune.search.utils import chunked
+
                     for chunk in chunked(q_ids, 100):
 
                         # Fetch all the documents we need to update.
                         es_docs = get_documents(QuestionMappingType, chunk)
 
-                        log.info('Updating %d index documents', len(es_docs))
+                        log.info("Updating %d index documents", len(es_docs))
 
                         documents = []
 
                         # For each document, update the data and stick it
                         # back in the index.
                         for doc in es_docs:
-                            doc['question_is_archived'] = True
-                            doc['indexed_on'] = int(time.time())
+                            doc["question_is_archived"] = True
+                            doc["indexed_on"] = int(time.time())
                             documents.append(doc)
 
                         QuestionMappingType.bulk_index(documents)

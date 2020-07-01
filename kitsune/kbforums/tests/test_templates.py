@@ -26,9 +26,7 @@ class PostsTemplateTests(KBForumTestCase):
 
         d = DocumentFactory()
         t = ThreadFactory(document=d)
-        response = post(
-            self.client, "wiki.discuss.reply", {"content": ""}, args=[d.slug, t.id]
-        )
+        response = post(self.client, "wiki.discuss.reply", {"content": ""}, args=[d.slug, t.id])
 
         doc = pq(response.content)
         error_msg = doc("ul.errorlist li a")[0]
@@ -52,8 +50,7 @@ class PostsTemplateTests(KBForumTestCase):
         errors = doc("ul.errorlist li a")
         eq_(
             errors[0].text,
-            "Your message is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your message is too short (4 characters). " + "It must be at least 5 characters.",
         )
 
     def test_edit_thread_template(self):
@@ -149,10 +146,7 @@ class PostsTemplateTests(KBForumTestCase):
         d = DocumentFactory()
         content = "Full of awesome."
         response = post(
-            self.client,
-            "wiki.discuss.post_preview_async",
-            {"content": content},
-            args=[d.slug],
+            self.client, "wiki.discuss.post_preview_async", {"content": content}, args=[d.slug],
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -211,10 +205,7 @@ class ThreadsTemplateTests(KBForumTestCase):
 
         d = DocumentFactory()
         response = post(
-            self.client,
-            "wiki.discuss.new_thread",
-            {"title": "", "content": ""},
-            args=[d.slug],
+            self.client, "wiki.discuss.new_thread", {"title": "", "content": ""}, args=[d.slug],
         )
 
         doc = pq(response.content)
@@ -239,13 +230,11 @@ class ThreadsTemplateTests(KBForumTestCase):
         errors = doc("ul.errorlist li a")
         eq_(
             errors[0].text,
-            "Your title is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your title is too short (4 characters). " + "It must be at least 5 characters.",
         )
         eq_(
             errors[1].text,
-            "Your message is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your message is too short (4 characters). " + "It must be at least 5 characters.",
         )
 
     def test_edit_thread_errors(self):
@@ -256,18 +245,14 @@ class ThreadsTemplateTests(KBForumTestCase):
         d = DocumentFactory()
         t = ThreadFactory(document=d, creator=u)
         response = post(
-            self.client,
-            "wiki.discuss.edit_thread",
-            {"title": "wha?"},
-            args=[d.slug, t.id],
+            self.client, "wiki.discuss.edit_thread", {"title": "wha?"}, args=[d.slug, t.id],
         )
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
         eq_(
             errors[0].text,
-            "Your title is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your title is too short (4 characters). " + "It must be at least 5 characters.",
         )
 
     def test_edit_thread_template(self):
@@ -287,14 +272,10 @@ class ThreadsTemplateTests(KBForumTestCase):
         self.client.login(username=u.username, password="testpass")
 
         d = DocumentFactory()
-        response = post(
-            self.client, "wiki.discuss.watch_forum", {"watch": "yes"}, args=[d.slug]
-        )
+        response = post(self.client, "wiki.discuss.watch_forum", {"watch": "yes"}, args=[d.slug])
         self.assertContains(response, "Stop")
 
-        response = post(
-            self.client, "wiki.discuss.watch_forum", {"watch": "no"}, args=[d.slug]
-        )
+        response = post(self.client, "wiki.discuss.watch_forum", {"watch": "no"}, args=[d.slug])
         self.assertNotContains(response, "Stop")
 
     def test_watch_locale(self):
@@ -345,9 +326,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         d = DocumentFactory()
         t = ThreadFactory(title="Sticky Thread", is_sticky=True, document=d)
         t.new_post(creator=u, content="foo")
-        t2 = ThreadFactory(
-            title="A thread with a very very long", is_sticky=False, document=d
-        )
+        t2 = ThreadFactory(title="A thread with a very very long", is_sticky=False, document=d)
         t2.new_post(creator=u, content="bar")
         time.sleep(1)
         t2.new_post(creator=u, content="last")
@@ -417,10 +396,7 @@ class TestRatelimiting(KBForumTestCase):
         t = Thread.objects.all()[0]
         for i in range(3):
             response = post(
-                self.client,
-                "wiki.discuss.reply",
-                {"content": "hellooo"},
-                args=[d.slug, t.id],
+                self.client, "wiki.discuss.reply", {"content": "hellooo"}, args=[d.slug, t.id],
             )
             eq_(200, response.status_code)
 

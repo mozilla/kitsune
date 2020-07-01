@@ -36,8 +36,9 @@ class Thread(NotificationsMixin, ModelBase):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_thread_set")
-    last_post = models.ForeignKey("Post", on_delete=models.CASCADE,
-                                  related_name="last_post_in", null=True)
+    last_post = models.ForeignKey(
+        "Post", on_delete=models.CASCADE, related_name="last_post_in", null=True
+    )
     replies = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
     is_sticky = models.BooleanField(default=False, db_index=True)
@@ -144,10 +145,7 @@ class Post(ModelBase):
         url_ = reverse(
             "wiki.discuss.posts",
             locale=self.thread.document.locale,
-            kwargs={
-                "document_slug": self.thread.document.slug,
-                "thread_id": self.thread.id,
-            },
+            kwargs={"document_slug": self.thread.document.slug, "thread_id": self.thread.id,},
         )
         return urlparams(url_, hash="post-%s" % self.id, **query)
 

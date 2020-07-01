@@ -22,10 +22,10 @@ class AnnouncementSaveTests(TestCase):
 
         return AnnouncementFactory(creator=u1, group=g, visible_dates=visible_dates)
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_create_announcement(self, get_current):
         """An announcement is created and email is sent to group members."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         a = self._setup_announcement()
 
@@ -39,18 +39,18 @@ class AnnouncementSaveTests(TestCase):
         a.save()
         eq_(2, len(mail.outbox))
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_create_invisible_announcement(self, get_current):
         """No emails sent if announcement is not visible."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         self._setup_announcement(visible_dates=False)
         eq_(0, len(mail.outbox))
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_send_nonexistent(self, get_current):
         """Send a non-existent announcement by email shouldn't break."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
         send_group_email(1)
         eq_(0, len(mail.outbox))

@@ -19,7 +19,7 @@ def group_avatar(group_profile):
 def group_link(group):
     try:
         profile = GroupProfile.objects.get(group=group)
-        url = reverse('groups.profile', args=[profile.slug])
+        url = reverse("groups.profile", args=[profile.slug])
         html = '<a href="%s">%s</a>' % (jinja2.escape(url), jinja2.escape(group.name))
         return jinja2.Markup(html)
     except GroupProfile.DoesNotExist:

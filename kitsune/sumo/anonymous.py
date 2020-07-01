@@ -31,16 +31,17 @@ from django.utils.http import cookie_date
 
 
 # Use the system (hardware-based) random number generator if it exists.
-if hasattr(random, 'SystemRandom'):
+if hasattr(random, "SystemRandom"):
     randrange = random.SystemRandom().randrange
 else:
     randrange = random.randrange
 
-MAX_ANONYMOUS_ID = 18446744073709551616     # 2 << 63
+MAX_ANONYMOUS_ID = 18446744073709551616  # 2 << 63
 
 
 class AnonymousIdentity(object):
     """Used to generate an id for anonymous users."""
+
     def __init__(self, anonymous_id=None):
         self._anonymous_id = anonymous_id
         self.modified = False
@@ -69,17 +70,20 @@ class AnonymousIdentity(object):
             pid = 1
 
         md5 = hashlib.md5()
-        md5.update(('%s%s%s%s' % (
-            randrange(0, MAX_ANONYMOUS_ID),
-            pid, time.time(), settings.SECRET_KEY)).encode())
+        md5.update(
+            (
+                "%s%s%s%s"
+                % (randrange(0, MAX_ANONYMOUS_ID), pid, time.time(), settings.SECRET_KEY)
+            ).encode()
+        )
         return md5.hexdigest()
 
 
 class AnonymousIdentityMiddleware(MiddlewareMixin):
     """Middleware for identifying anonymous users via a cookie."""
+
     def process_request(self, request):
-        anonymous_id = request.COOKIES.get(settings.ANONYMOUS_COOKIE_NAME,
-                                           None)
+        anonymous_id = request.COOKIES.get(settings.ANONYMOUS_COOKIE_NAME, None)
         request.anonymous = AnonymousIdentity(anonymous_id)
 
     def process_response(self, request, response):
@@ -93,9 +97,11 @@ class AnonymousIdentityMiddleware(MiddlewareMixin):
                 max_age = settings.ANONYMOUS_COOKIE_MAX_AGE
                 expires_time = time.time() + max_age
                 expires = cookie_date(expires_time)
-                response.set_cookie(settings.ANONYMOUS_COOKIE_NAME,
-                                    request.anonymous.anonymous_id,
-                                    max_age=max_age,
-                                    expires=expires)
+                response.set_cookie(
+                    settings.ANONYMOUS_COOKIE_NAME,
+                    request.anonymous.anonymous_id,
+                    max_age=max_age,
+                    expires=expires,
+                )
 
         return response

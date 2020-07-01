@@ -6,22 +6,21 @@ from pages.mobile.home import Home
 
 
 class TestMobileLoginLogout:
-
     @pytest.mark.nondestructive
     def test_login(self, base_url, selenium, variables):
-        user = variables['users']['default']
+        user = variables["users"]["default"]
         home_page = Home(base_url, selenium).open()
-        home_page.log_in(user['username'], user['password'])
+        home_page.log_in(user["username"], user["password"])
 
-        assert home_page.is_user_logged_in, 'User not shown to be logged in'
+        assert home_page.is_user_logged_in, "User not shown to be logged in"
 
     @pytest.mark.nondestructive
     def test_logout(self, base_url, selenium, variables):
-        user = variables['users']['default']
+        user = variables["users"]["default"]
         home_page = Home(base_url, selenium).open()
-        home_page.log_in(user['username'], user['password'])
+        home_page.log_in(user["username"], user["password"])
 
-        assert home_page.is_user_logged_in, 'User is not shown to be logged in'
+        assert home_page.is_user_logged_in, "User is not shown to be logged in"
 
         # sign out
         home_page.log_out()

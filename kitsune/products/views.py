@@ -33,9 +33,7 @@ def product_landing(request, slug):
         topic_list = list()
         for t in Topic.objects.filter(product=product, visible=True):
             topic_list.append({"id": t.id, "title": t.title})
-        return HttpResponse(
-            json.dumps({"topics": topic_list}), content_type="application/json"
-        )
+        return HttpResponse(json.dumps({"topics": topic_list}), content_type="application/json")
 
     if slug == "firefox":
         latest_version = product_details.firefox_versions["LATEST_FIREFOX_VERSION"]
@@ -69,17 +67,13 @@ def product_landing(request, slug):
 def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
     """The document listing page for a product + topic."""
     product = get_object_or_404(Product, slug=product_slug)
-    topic = get_object_or_404(
-        Topic, slug=topic_slug, product=product, parent__isnull=True
-    )
+    topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
     template = "products/documents.html"
 
     doc_kw = {"locale": request.LANGUAGE_CODE, "products": [product]}
 
     if subtopic_slug is not None:
-        subtopic = get_object_or_404(
-            Topic, slug=subtopic_slug, product=product, parent=topic
-        )
+        subtopic = get_object_or_404(Topic, slug=subtopic_slug, product=product, parent=topic)
         doc_kw["topics"] = [subtopic]
     else:
         subtopic = None

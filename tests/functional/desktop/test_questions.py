@@ -10,18 +10,17 @@ from pages.desktop.questions_page import QuestionsPage
 
 
 class TestQuestions:
-
     @pytest.mark.native
     def test_that_posting_question_works(self, base_url, selenium, variables):
         """Posts a question to /questions"""
-        user = variables['users']['default']
+        user = variables["users"]["default"]
         timestamp = datetime.datetime.today()
         q_to_ask = "automation test question %s" % (timestamp)
         q_details = "This is a test. %s" % (timestamp)
 
         # go to the /questions/new page and log in
         ask_new_questions_page = AskNewQuestionsPage(base_url, selenium).open()
-        ask_new_questions_page.sign_in(user['username'], user['password'])
+        ask_new_questions_page.sign_in(user["username"], user["password"])
 
         # post a question
         ask_new_questions_page.click_firefox_product_link()
@@ -53,7 +52,7 @@ class TestQuestions:
 
         for question in questions_page.questions:
             # if solved mark is highlighted the question is really solved
-            assert 'highlighted' in question.solved_questions_filter
+            assert "highlighted" in question.solved_questions_filter
 
     @pytest.mark.nondestructive
     def test_questions_sorts_correctly_by_filter_equal_to_unanswered(self, base_url, selenium):
@@ -101,13 +100,13 @@ class TestQuestions:
         # 3. Use the contributor bar to go to the forums.
         #    The questions page should list 20 posts.
         # 3.1 go to the question page
-        user = variables['users']['default']
+        user = variables["users"]["default"]
         questions_page = QuestionsPage(base_url, selenium).open()
-        questions_page.sign_in(user['username'], user['password'])
+        questions_page.sign_in(user["username"], user["password"])
 
         questions_page.click_all_products()
         # 3.2 ensure the size of the list is 20
-        assert questions_page.questions_count > 0, 'There is not at least one question displayed.'
+        assert questions_page.questions_count > 0, "There is not at least one question displayed."
 
         # 4. Click on a question. (URL is in the forum of /questions/[some number])
         # 4.1 pick up an arbitrary question and click
@@ -122,6 +121,6 @@ class TestQuestions:
         reply = "reply"
         forum_page.post_reply(reply)
         # 7.2 check if posting a reply finishes without an error
-        assert forum_page.is_reply_text_present(user['username'], reply), \
-            'reply with "%s" text posted by %s is not present' % (
-                reply, user['username'])
+        assert forum_page.is_reply_text_present(
+            user["username"], reply
+        ), 'reply with "%s" text posted by %s is not present' % (reply, user["username"])

@@ -57,16 +57,11 @@ class Command(BaseCommand):
                 up_to_date_docs, num_docs = utils._get_up_to_date_count(top_60_docs, locale)
 
             if num_docs and total_visits:
-                coverage += (float(up_to_date_docs) / num_docs) * (
-                    float(visits) / total_visits
-                )
+                coverage += (float(up_to_date_docs) / num_docs) * (float(visits) / total_visits)
 
         # Save the value to Metric table.
         metric_kind = MetricKind.objects.get_or_create(code=L10N_METRIC_CODE)[0]
         day = date.today()
         Metric.objects.create(
-            kind=metric_kind,
-            start=day,
-            end=day + timedelta(days=1),
-            value=int(coverage * 100),
+            kind=metric_kind, start=day, end=day + timedelta(days=1), value=int(coverage * 100),
         )  # Store as a % int.

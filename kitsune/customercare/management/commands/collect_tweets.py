@@ -34,9 +34,7 @@ def get_word_blacklist_regex():
     This doesn't use raw strings (r'') because the "mismatched" parens
     were confusing my syntax highlighter, which was confusing me.
     """
-    return re.compile(
-        "\\b(" + "|".join(map(re.escape, settings.CC_WORD_BLACKLIST)) + ")\\b"
-    )
+    return re.compile("\\b(" + "|".join(map(re.escape, settings.CC_WORD_BLACKLIST)) + ")\\b")
 
 
 class Command(BaseCommand):
