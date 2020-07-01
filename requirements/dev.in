@@ -12,7 +12,7 @@ jsonschema~=2.5
 pep8
 pip-compile-multi
 pip-tools~=4.4
-pre-commit~=1.21
+pre-commit~=2.4.0
 python-language-server
 q~=2.6
 rope
