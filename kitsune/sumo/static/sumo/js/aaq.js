@@ -188,6 +188,12 @@
             handleData(browserData);
             return false;
           });
+        } else {
+          $("#share-data").click(function (e) {
+            e.preventDefault();
+            handleData({});
+            return false;
+          });
         }
       });
 
@@ -203,9 +209,8 @@
         // The last two parameters cause this to pretty print,
         // in case anyone looks at it.
         data = JSON.stringify(data, null, "  ");
-        $("#api-section").remove();
         $("#id_troubleshooting").val(data);
-        $("#troubleshooting-explanation").show();
+        $("#troubleshooting-field").fadeIn();
       }
     }
   };
