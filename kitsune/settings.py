@@ -919,7 +919,6 @@ if not CELERY_TASK_ALWAYS_EAGER:
 CELERY_WORKER_CONCURRENCY = config('CELERY_WORKER_CONCURRENCY', default=4, cast=int)
 CELERY_TASK_EAGER_PROPAGATES = config('CELERY_TASK_EAGER_PROPAGATES', default=True, cast=bool)  # Explode loudly during tests.
 CELERY_WORKER_HIJACK_ROOT_LOGGER = config('CELERY_WORKER_HIJACK_ROOT_LOGGER', default=False, cast=bool)
-CELERY_WORKER_PREFETCH_MULTIPLIER = config('CELERY_WORKER_PREFETCH_MULTIPLIER', default=4, cast=int)
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
