@@ -122,6 +122,8 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 @library.filter
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
     """Wiki Markup -> HTML jinja2.Markup object"""
+    if not wiki_markup:
+        return ""
     return jinja2.Markup(
         parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
     )
