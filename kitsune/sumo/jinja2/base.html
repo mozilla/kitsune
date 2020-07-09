@@ -57,24 +57,8 @@
   <![endif]-->
 
   {% include "includes/google-analytics.html" %}
-
-  {# TrafficCop experiment_fxa_cta_topbar #}
-  {% set run_experiments = False %}
-  {% if waffle.flag('experiment_fxa_cta_topbar') %}
-    {% if request.path in ['/en-US/kb/install-firefox-android-device-using-google-play',
-                           '/en-US/kb/will-firefox-work-my-mobile-device',
-                           '/en-US/kb/get-started-firefox-overview-main-features',
-                           '/en-US/kb/update-firefox-latest-version',
-                           '/en-US/kb/install-firefox-your-ipad-iphone-or-ipod'] %}
-      {% set run_experiments = True %}
-    {% endif %}
-  {% endif %}
-  {% if run_experiments %}
-    {% javascript 'experiment_fxa_cta_topbar' %}
-  {% endif %}
-  {# end TrafficCop #}
-
 </head>
+
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
@@ -111,18 +95,6 @@
 {% endif %}
 
 <div class="media-test"></div>
-
-{# TrafficCop experiment_fxa_cta_topbar #}
-{% if run_experiments %}
-  <div id="promotions" class="hidden">
-    Sync your Firefox bookmarks, tabs and more to your phone.
-    <a href="https://www.mozilla.org/firefox/features/sync/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Learn more</a>
-    <a class="hidden" data-variation="a" href="https://accounts.firefox.com/?entrypoint=support.mozilla.org&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Get started</a>
-    <a class="hidden" data-variation="b" href="https://accounts.firefox.com/signup?service=sync&context=fx_desktop_v3&entrypoint=support.mozilla.org&utm_source=support.mozilla.org&utm_campaign=sumo_promotions">Get started</a>
-    <a class="hidden" data-variation="c" href="https://www.mozilla.org/firefox/accounts/features/?entrypoint=support.mozilla.org&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Get started</a>
-  </div>
-{% endif %}
-{# end TrafficCop #}
 
 <div id="announcements">
   {% call announcement_bar('geoip-suggestion', 'warning', close_memory="remember", close_type="remove") %}{% endcall %}
