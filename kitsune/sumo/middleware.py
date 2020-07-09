@@ -303,7 +303,7 @@ class InAAQMiddleware(MiddlewareMixin):
         if not request.session or not callback:
             return None
         try:
-            view_name = callback.func_name
+            view_name = callback.__name__
         except AttributeError:
             return None
 
