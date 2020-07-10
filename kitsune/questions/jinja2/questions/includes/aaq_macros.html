@@ -150,23 +150,23 @@
 {% macro troubleshooting_instructions(field) %}
   <div>
     <div id="api-section">
-      <div class="sumo-button-wrap">
-        <a href="#" class="sumo-button" id="share-data">
+      <div id="troubleshooting-button" class="sumo-button-wrap">
+        <button class="sumo-button" id="share-data" type="button">
           {{ _('Share Data') }}
-        </a>
-
-        <a href="#troubleshooting-field" class="sumo-button link-button expander">{{ _('Show info') }} »</a>
+        </button>
       </div>
+      <p id="troubleshooting-manual" class="hide-until-expanded">
+        {% trans %}
+          We can't automatically get your browser's troubleshooting data, please
+          <a href="https://support.mozilla.org/kb/use-troubleshooting-information-page-fix-firefox">try these manual steps</a>.
+        {% endtrans %}
+      </p>
       <div id="troubleshooting-field" class="hide-until-expanded field full-width">
         {{ field }}
       </div>
-      <p>{% trans %}
-          This information gives details about the internal workings of your
-          browser that will help in answering your question. A window will
-          open in the top corner. Click Allow, and then click Install. If the
-          automated way doesn't work, <a href="#">try these manual steps</a>.
-         {% endtrans %}
-       </p>
+      <p>
+        {{ _('This information gives details about the internal workings of your browser that will help in answering your question.') }}
+      </p>
     </div>
   </div>
 {% endmacro %}
