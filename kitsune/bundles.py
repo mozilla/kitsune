@@ -243,15 +243,6 @@ PIPELINE_JS = {
         "source_filenames": ("d3/d3.js", "kpi/js/kpi.browserify.js",),
         "output_filename": "build/kpi.dashboard-min.js",
     },
-    "experiment_fxa_cta_topbar": {
-        "source_filenames": (
-            "sumo/js/libs/mozilla-dnt-helper.js",
-            "sumo/js/libs/mozilla-cookie-helper.js",
-            "sumo/js/libs/mozilla-traffic-cop.js",
-            "sumo/js/experiment-fxa-cta-topbar.js",
-        ),
-        "output_filename": "build/experiment-fxa-cta-topbar-min.js",
-    },
     "gtm-snippet": {
         "source_filenames": ("sumo/js/dnt-helper.js", "sumo/js/gtm-snippet.js",),
         "output_filename": "build/gtm-snippet-min.js",
