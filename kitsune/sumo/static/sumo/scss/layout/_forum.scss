@@ -370,9 +370,14 @@
   }
 }
 
-.question, .answer, .forum--entry-content {
+.question, .answer, .forum--entry-content, .response-preview-rendered {
   .content {
     @include c.ulol;
+
+    p {
+      white-space: pre-line;
+      overflow-wrap: break-word;
+    }
   }
 }
 
