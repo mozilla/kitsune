@@ -374,7 +374,7 @@
   .content {
     @include c.ulol;
 
-    p {
+    p, blockquote {
       white-space: pre-line;
       overflow-wrap: break-word;
     }
