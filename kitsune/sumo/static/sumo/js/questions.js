@@ -296,7 +296,7 @@
         $content = $('#' + contentId),
         text = $content.find('.content-raw').text(),
         user = $content.find('.display-name').text(),
-        reply = template("''<p>{user} [[#{contentId}|{said}]]</p>''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+        reply = template("''<p>{user} [[#{contentId}|{said}]]</p>''\n<blockquote>{text}\n</blockquote>\n\n"),
         reply_text,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();
