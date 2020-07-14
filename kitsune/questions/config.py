@@ -438,8 +438,8 @@ products = OrderedDict([
         ])
     }),
     ('firefox-private-network-vpn', {
-        'name': _lazy(u'Firefox Private Network Device-level Protection'),
-        'subtitle': _lazy(u'Firefox Private Network Device-level Protection'),
+        'name': _lazy(u'Mozilla VPN'),
+        'subtitle': _lazy(u'Mozilla VPN'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-private-network-vpn',
