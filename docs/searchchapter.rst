@@ -4,6 +4,9 @@
 Search
 ======
 
+.. warning::
+    This section of documentation may be outdated.
+
 Kitsune uses `Elasticsearch <https://www.elastic.co/>`_ to
 power its on-site search facility.
 

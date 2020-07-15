@@ -4,6 +4,9 @@
 All about testing
 =================
 
+.. warning::
+    This section of documentation may be outdated.
+
 Kitsune has a fairly comprehensive Python test suite. Changes should
 not break tests---only change a test if there is a good reason to
 change the expected behavior---and new code should come with tests.
@@ -12,8 +15,8 @@ change the expected behavior---and new code should come with tests.
 Running the Test Suite
 ======================
 
-If you followed the steps in :ref:`the installation docs
-<hacking-howto-chapter>`, then you should be all set setup-wise.
+If you followed the steps in :any:`the installation docs
+<hacking_howto>`, then you should be all set setup-wise.
 
 To run the tests, you need to do::
 
@@ -176,7 +179,7 @@ They're located in the ``tests/functional`` directory.
 Installing dependencies
 -----------------------
 
-Follow the steps in :ref:`the installation docs <hacking-howto-chapter>`,
+Follow the steps in :any:`the installation docs <hacking_howto>`,
 including the test dependencies to make sure you have everything you need to
 run the tests. If you're running the tests against a deployed environment then
 there's no need to install anything other than

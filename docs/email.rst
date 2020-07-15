@@ -44,4 +44,4 @@ having sendmail working is to send email via a Gmail account.
 
 Yeah, you need to put your Gmail password in a plain text file on your
 computer. It's not for everyone. Be **very** careful copying and pasting
-settings from ``kitsune/settings_local.py`` if you go this route.
+settings from ``.env`` if you go this route.

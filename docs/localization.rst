@@ -407,7 +407,7 @@ Linting localized strings
 
 You can lint localized strings for warnings and errors::
 
-    $ dennis-cmd locale/
+    $ dennis-cmd lint locale/
 
 Or just errors::
 
@@ -489,12 +489,24 @@ There is a shell script to compile the MO files for you::
 Done!
 
 
-Reporting errors in .po files
-==============================
+Why aren't localized strings getting updated on prod?
+=====================================================
 
-We use Dennis to lint .po files for errors that cause HTTP 500 errors in
-production. Things like malformed variables, variables in the translated
-string that aren't in the original and that sort of thing.
+We use Dennis to :ref:`lint .po files for errors<localization:Linting localized strings>` that cause HTTP 500 errors in production.
+Things like malformed variables,
+variables in the translated string that aren't in the original and that sort of thing.
+
+For example, this would cause the site to break::
+
+    #: kitsune/questions/templates/questions/includes/answer.html:19
+    msgid "{num} answers"
+    msgstr "{0} antwoorden"
+
+In this example, the ``{0}`` is wrong.
+
+
+Reporting errors in .po files
+-----------------------------
 
 When we do a deployment to production, we dump all the Dennis output into:
 

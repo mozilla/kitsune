@@ -4,6 +4,9 @@
 Patching Kitsune
 ================
 
+.. warning::
+    This section of documentation may be outdated.
+
 Submitting a patch to `Kitsune <https://support.mozilla.com>`_ is easy! (Fair
 warning: writing the patch may not be ;)
 
@@ -16,11 +19,10 @@ fairly straight-forward workflow in git for submitting patches. This is
 outlined below.
 
 You should run the tests before submitting a pull request. You can find help
-for getting set up in the :ref:`installation docs <hacking-howto-chapter>` and
+for getting set up in the :any:`installation docs <hacking_howto>` and
 help for running tests in the :ref:`testing docs <tests-chapter>`.
 
-If you ever find yourself stuck, come look for us in `#sumodev
-<ircs://irc.mozilla.org/sumodev>`_ on Mozilla's IRC network. We're happy to
+If you ever find yourself stuck, :any:`contact us <contactus>`. We're happy to
 help!
 
 You'll need a Github account and a Bugzilla account.

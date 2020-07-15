@@ -2,14 +2,8 @@
 Users
 =====
 
-This document explains how to manage permissions for users,
-user roles and removing users.
+Firefox Accounts
+================
 
-User Roles
-==========
-
-Managing Permissions
-====================
-
-Removing Users
-==============
+Kitsune uses Firefox Accounts for authentication:
+https://support.mozilla.org/kb/firefox-accounts-mozilla-support-faq

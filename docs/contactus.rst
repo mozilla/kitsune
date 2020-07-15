@@ -15,24 +15,14 @@ for SUMO community discussions.
 Kitsune hackers
 ===============
 
-If you're hacking on the Kitsune code and have questions, ping us on
-IRC.
+If you're hacking on the Kitsune code and have questions, ping us on `Matrix <https://wiki.mozilla.org/Matrix>`_.
 
-We hang out in ``#sumodev`` on irc.mozilla.org. We're usually around
-during the day in Eastern Time.
+We hang out in `#support-platform:mozilla.org <https://chat.mozilla.org/#/room/#support-platform:mozilla.org>`_.
 
 If you ask something and all you get is silence, then it's probably
 the case that we're not around. Please try pinging us again.
 
-You can also use the `dev-sumo mailing list
-<https://www.mozilla.org/about/forums/#dev-sumo>`_.
+Current developers:
 
-Current primary developers:
-
-.. This is a slight repeat from AUTHORS. We just need to point out
-.. people to contact if someone is having problems.
-
-* Ricky Rosario (r1cky)
-* Will Kahn-Greene (willkg)
-* Rehan Dalal (rdalal)
-* Mike Cooper (mythmon)
+* Tasos Katsoulas (tasos)
+* Leo McArdle (leo)

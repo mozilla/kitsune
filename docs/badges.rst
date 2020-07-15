@@ -2,6 +2,9 @@
 Badges
 ======
 
+.. warning::
+    This section of documentation may be outdated.
+
 Badges in kitsune are based off of `Django Badger <https://github.com/mozilla/django-badger>`_,
 
 As of Q3 2018, kitsune issues four badges per calendar year:

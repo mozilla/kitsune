@@ -2,6 +2,9 @@
 Service Level Agreement
 =======================
 
+.. warning::
+    This section of documentation may be outdated.
+
 This isn't a zero-tolerance policy, but a series of policy points we
 work towards when making changes to the site.
 

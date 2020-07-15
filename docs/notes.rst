@@ -4,6 +4,9 @@
 Other Notes
 ===========
 
+.. warning::
+    This section of documentation may be outdated.
+
 Questions
 =========
 
@@ -23,7 +26,7 @@ Run the ssl server::
 
     $ ./manage.py runsslserver
 
-Then you need to run the following in the Browser Console:
+Then you need to run the following in the Browser Console::
 
     Services.perms.add(Services.io.newURI("https://localhost:8000", null, null), "remote-troubleshooting", Services.perms.ALLOW_ACTION);
 
@@ -34,3 +37,16 @@ Then you need to run the following in the Browser Console:
 	so that you can access the browser console.
 
 	See also https://developer.mozilla.org/en-US/docs/Tools/Browser_Console
+
+memcached
+---------
+
+.. Note::
+
+   This should probably be somewhere else, but the easy way to flush
+   your cache is something like this::
+
+       echo "flush_all" | nc localhost 11211
+
+
+   Assuming you have memcache configured to listen to 11211.
