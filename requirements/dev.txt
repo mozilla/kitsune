@@ -91,16 +91,17 @@ filelock==3.0.12 \
     --hash=sha256:18d82244ee114f543149c66a6e0c14e9c4f8a1044b5cdaadd0f82159d6a6ff59 \
     --hash=sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836 \
     # via virtualenv
-flower==0.9.4 \
-    --hash=sha256:25782840f7ffc25dcf478d94535a2d815448de4aa6c71426be6abfa9ca417448 \
-    --hash=sha256:616428951bd28c0463ce225331b22be1914f2240dec37ca7fabdb089ba46acec \
+flower==0.9.5 \
+    --hash=sha256:56916d1d2892e25453d6023437427fc04706a1308e0bd4822321da34e1643f9c \
+    --hash=sha256:71be02bff7b2f56b0a07bd947fb3c748acba7f44f80ae88125d8954ce1a89697 \
     # via -r dev.in
 hashin==0.15.0 \
     --hash=sha256:0ca4ce1507216b1fdeffb8cc009eb0561e81449668ffe436484f156ec27e6c22 \
     --hash=sha256:316dff5c5f0bf98560682e92386fa4386a8ae402592f647d07bf7e450ea8f053 \
     # via -r dev.in
-humanize==0.5.1 \
-    --hash=sha256:a43f57115831ac7c70de098e6ac46ac13be00d69abbf60bdcac251344785bb19 \
+humanize==2.5.0 \
+    --hash=sha256:89062c6db8601693b7d223443d0d7529aa9577df43a1387ddd4b9c273abb4a51 \
+    --hash=sha256:8a68bd9bccb899fd9bfb1e6d96c1e84e4475551cc9a5b5bdbd69b9b1cfd19c80 \
     # via flower
 identify==1.4.21 \
     --hash=sha256:c4d07f2b979e3931894170a9e0d4b8281e6905ea6d018c326f7ffefaf20db680 \
@@ -117,9 +118,9 @@ ipython==7.16.1 \
     --hash=sha256:2dbcc8c27ca7d3cfe4fcdff7f45b27f9a8d3edfa70ff8024a71c7a8eb5f09d64 \
     --hash=sha256:9f4fcb31d3b2c533333893b9172264e4821c1ac91839500f31bd43f2c59b3ccf \
     # via ipdb
-isort==4.3.21 \
-    --hash=sha256:54da7e92468955c4fceacd0c86bd0ec997b0e1ee80d97f67c35a78b719dccab1 \
-    --hash=sha256:6e811fcb295968434526407adb8796944f1988c5b65e8139058f2014cbe100fd \
+isort==5.0.7 \
+    --hash=sha256:46bd31573158ac69e598a2ab14b207e6a43a2b2872009d2ad0f62f179876037a \
+    --hash=sha256:6bc0b408d7c62e331d355085914dd28fd352635f6babd5e4605702ff3b6d9c09 \
     # via -r dev.in
 jedi==0.17.1 \
     --hash=sha256:1ddb0ec78059e8e27ec9eb5098360b4ea0a3dd840bedf21415ea820c21b40a22 \
@@ -168,6 +169,10 @@ pre-commit==2.4.0 \
     --hash=sha256:5559e09afcac7808933951ffaf4ff9aac524f31efbc3f24d021540b6c579813c \
     --hash=sha256:703e2e34cbe0eedb0d319eff9f7b83e2022bb5a3ab5289a6a8841441076514d0 \
     # via -r dev.in
+prometheus-client==0.8.0 \
+    --hash=sha256:983c7ac4b47478720db338f1491ef67a100b474e3bc7dafcbaefb7d0b8f9b01c \
+    --hash=sha256:c6e6b706833a6bd1fd51711299edee907857be10ece535126a158f911ee80915 \
+    # via flower
 prompt-toolkit==3.0.5 \
     --hash=sha256:563d1a4140b63ff9dd587bda9557cffb2fe73650205ab6f4383092fb882e7dc8 \
     --hash=sha256:df7e9e63aea609b1da3a65641ceaf5bc7d05e0a04de5bd45d05dbeffbabf9e04 \
@@ -180,9 +185,9 @@ python-jsonrpc-server==0.3.4 \
     --hash=sha256:1f85f75f37f923149cc0aa078474b6df55b708e82ed819ca8846a65d7d0ada7f \
     --hash=sha256:c73bf5495c9dd4d2f902755bedeb6da5afe778e0beee82f0e195c4655352fe37 \
     # via python-language-server
-python-language-server==0.34.0 \
-    --hash=sha256:0353b75b293d1f098a1d676a29d1a7dbb765aa11f250cfb4915e5a9ca2c2cc37 \
-    --hash=sha256:effc492a6e1c88ea5ca027ab272b39daf5699227348ea9e30afd4b62dbbaf575 \
+python-language-server==0.34.1 \
+    --hash=sha256:47dd678c261f8fc8af16ce738a637e49e0597ad5e4af10b76f4144ab2d96f247 \
+    --hash=sha256:b96ff466b5aa24e212493de863899298f229a9e250e7353972563c7f2495d23d \
     # via -r dev.in
 pyyaml==5.3.1 \
     --hash=sha256:06a0d7ba600ce0b2d2fe2e78453a470b5a6e000a985dd4a4e54e436cc36b0e97 \
@@ -284,9 +289,9 @@ urlwait==0.4 \
     --hash=sha256:395fc0c2a7f9736858a2c2f449aa20c6e9da1f86bfc2d1fda4f2f5b78a5c115a \
     --hash=sha256:fc39ff2c8abbcaad5043e1f79699dcb15a036cc4b0ff4d1aa825ea105d4889ff \
     # via -r dev.in
-virtualenv==20.0.25 \
-    --hash=sha256:f332ba0b2dfbac9f6b1da9f11224f0036b05cdb4df23b228527c2a2d5504aeed \
-    --hash=sha256:ffffcb3c78a671bb3d590ac3bc67c081ea2188befeeb058870cba13e7f82911b \
+virtualenv==20.0.26 \
+    --hash=sha256:c11a475400e98450403c0364eb3a2d25d42f71cf1493da64390487b666de4324 \
+    --hash=sha256:e10cc66f40cbda459720dfe1d334c4dc15add0d80f09108224f171006a97a172 \
     # via pre-commit
 
 # WARNING: The following packages were not pinned, but pip requires them to be
