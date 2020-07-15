@@ -267,7 +267,7 @@ products = OrderedDict([
 
     ('firefox-lite', {
         'name': _lazy('Firefox Lite'),
-        'subtitle': _lazy('Mobile browser for Indonesia'),
+        'subtitle': _lazy('Mobile browser for Indonesia, India, The Philippines, and Thailand'),
         'extra_fields': [],
         'tags': ['firefox-lite'],
         'product': 'firefox-lite',
@@ -287,7 +287,7 @@ products = OrderedDict([
 
     ('firefox-enterprise', {
         'name': _lazy('Firefox for Enterprise'),
-        'subtitle': _lazy('Enterprise version of Firefox'),
+        'subtitle': _lazy('Firefox Quantum for businesses'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-enterprise',
@@ -317,7 +317,7 @@ products = OrderedDict([
 
     ('firefox-reality', {
         'name': _lazy('Firefox Reality'),
-        'subtitle': _lazy('Firefox for Virtual Reality'),
+        'subtitle': _lazy('Firefox for Virtual Reality headsets'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-reality',
@@ -336,8 +336,8 @@ products = OrderedDict([
     }),
 
     ('firefox-preview', {
-        'name': _lazy('Firefox Preview'),
-        'subtitle': _lazy('Firefox for Android'),
+        'name': _lazy('Firefox for Android Beta'),
+        'subtitle': _lazy('Early version of an experimental Firefox browser for Android'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-preview',
@@ -391,7 +391,8 @@ products = OrderedDict([
     }),
     ('firefox-lockwise', {
         'name': _lazy('Firefox Lockwise'),
-        'subtitle': _lazy('Firefox Lockwise'),
+        'subtitle': _lazy('Mobile app that gives you access to passwords '
+                          'you have saved to Firefox'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-lockwise',
@@ -415,7 +416,7 @@ products = OrderedDict([
     }),
     ('firefox-private-network', {
         'name': _lazy('Firefox Private Network Browser-level Protection'),
-        'subtitle': _lazy('Firefox Private Network Browser-level Protection'),
+        'subtitle': _lazy('Browse securely on public Wi-Fi'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-private-network',
@@ -439,7 +440,7 @@ products = OrderedDict([
     }),
     ('firefox-private-network-vpn', {
         'name': _lazy('Mozilla VPN'),
-        'subtitle': _lazy('Mozilla VPN'),
+        'subtitle': _lazy('VPN for Windows 10, Android and iOS devices'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-private-network-vpn',
