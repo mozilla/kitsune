@@ -2,6 +2,9 @@
 Frontend Infrastructure
 =======================
 
+.. warning::
+    This section of documentation may be outdated.
+
 Frontends assets for Kitsune are managed through `Django Pipeline`_.
 
 .. _Django Pipeline: https://django-pipeline.readthedocs.io/
@@ -25,13 +28,11 @@ resources, and for clients to get updates faster when we make changes.
 Style Sheets
 ============
 
-The styles written for Kitsune is written in `Less`_. Libraries, of course,
-have styles written in CSS. These are combined into bundles and shipped as
-minified CSS.
+The styles written for Kitsune is mostly written in `Sass`_ using the SCSS synatax.
 
-Less files are recognized by an extension of ``.less``.
+Sass files are recognized by an extension of ``.scss``.
 
-.. _Less: http://lesscss.org/
+.. _Sass: https://sass-lang.com/
 
 Javascript
 ==========
