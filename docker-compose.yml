@@ -17,6 +17,7 @@ services:
       - celery-fxa
       - celery-flower
       - celery-beat
+      - mailcatcher
     ports:
       - "8000:8000"
 
@@ -187,6 +188,11 @@ services:
     depends_on:
       - mariadb
       - redis
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - "1080:1080"
 
 volumes:
     mysqlvolume:
