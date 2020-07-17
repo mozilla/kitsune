@@ -6,6 +6,7 @@
   $(document).ready(function() {
     initFolding();
     initAnnouncements();
+    initRefreshFirefox();
 
     $('#delete-profile-username-input').keyup(function(ev) {
       var username = $('#delete-profile-username').val();
@@ -385,19 +386,39 @@
   $(document).on('change', '[data-validate-url] input', _.throttle(validate_field_cb, 200));
   $(window).on('hashchange', correctFixedHeader);
 
-  $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
-    ev.preventDefault();
-    if (Mozilla && Mozilla.UITour) {
-      // Send event to GA for metrics/reporting purposes.
-      trackEvent('Refresh Firefox', 'click refresh button');
-
-      if (JSON.parse($('body').data('waffle-refresh-survey'))) {
-        $.cookie('showFirefoxResetSurvey', '1', {expires: 365});
-      }
-
-      Mozilla.UITour.resetFirefox();
+  function initRefreshFirefox() {
+    const buttons = document.querySelectorAll('[data-mozilla-ui-reset]');
+    const listener = e => {
+      e.preventDefault();
+      alert(gettext('Sorry "Refresh Firefox" only works on Firefox Desktop'));
     }
-    return false;
-  });
+
+    if (buttons.length && Mozilla && Mozilla.UITour) {
+      buttons.forEach(button => button.addEventListener('click', listener));
+
+      Mozilla.UITour.getConfiguration('canReset', (result) => {
+        buttons.forEach(button => {
+          button.removeEventListener('click', listener);
+
+          button.addEventListener('click', e => {
+            e.preventDefault();
+
+            if (result) {
+              // Send event to GA for metrics/reporting purposes.
+              trackEvent('Refresh Firefox', 'click refresh button');
+
+              if (JSON.parse($('body').data('waffle-refresh-survey'))) {
+                $.cookie('showFirefoxResetSurvey', '1', { expires: 365 });
+              }
+
+              Mozilla.UITour.resetFirefox();
+            } else {
+              alert(gettext('Sorry Firefox can\'t be refreshed at this time.'));
+            }
+          });
+        });
+      });
+    }
+  }
 
 })(jQuery);

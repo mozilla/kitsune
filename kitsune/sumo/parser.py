@@ -13,7 +13,7 @@ from kitsune.sumo.urlresolvers import reverse
 
 
 ALLOWED_ATTRIBUTES = {
-    'a': ['href', 'title', 'class', 'rel', 'data-mozilla-ui-reset'],
+    'a': ['href', 'title', 'class', 'rel', 'data-mozilla-ui-reset', 'role'],
     'div': ['id', 'class', 'style', 'data-for', 'title', 'data-target',
             'data-modal'],
     'h1': ['id'],
