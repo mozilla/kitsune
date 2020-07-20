@@ -42,8 +42,8 @@ questions-reply&utm_source=notification&utm_medium=email\
 {replier} wrote:
 "{content}"
 
-Beware of phishing attacks: Mozilla will never ask you to call a number or \
-visit a non-Mozilla website. Please ignore such requests. Learn more:
+Avoid support scams. We will never ask you to call or text a phone number \
+or share personal information. Learn more:
 https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
 
 See the comment:
@@ -74,8 +74,8 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 {replier} wrote:
 "{content}"
 
-Beware of phishing attacks: Mozilla will never ask you to call a number or \
-visit a non-Mozilla website. Please ignore such requests. Learn more:
+Avoid support scams. We will never ask you to call or text a phone number \
+or share personal information. Learn more:
 https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
 
 If this doesn't solve your problem, let {replier} know by replying on the \
