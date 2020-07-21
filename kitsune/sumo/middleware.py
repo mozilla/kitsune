@@ -95,7 +95,7 @@ class LocaleURLMiddleware(MiddlewareMixin):
 
             prefixer.locale = ''
             new_path = prefixer.fix(prefixer.shortened_path)
-            query = dict((smart_bytes(k), v) for
+            query = dict((smart_text(k), v) for
                          k, v in request.GET.items() if k != 'lang')
 
             # 'lang' is only used on the language selection page. If this is
