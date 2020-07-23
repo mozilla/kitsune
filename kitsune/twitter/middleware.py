@@ -41,9 +41,7 @@ class SessionMiddleware(MiddlewareMixin):
             return
 
         if request.twitter.authed:
-            request.twitter.api = get_twitter_api(
-                request.twitter.key, request.twitter.secret
-            )
+            request.twitter.api = get_twitter_api(request.twitter.key, request.twitter.secret)
             return
 
         verifier = request.GET.get("oauth_verifier")
@@ -65,10 +63,7 @@ class SessionMiddleware(MiddlewareMixin):
                     # Override path to drop query string.
                     ssl_url = url(
                         request,
-                        {
-                            "scheme": "https" if is_secure else "http",
-                            "path": request.path,
-                        },
+                        {"scheme": "https" if is_secure else "http", "path": request.path,},
                     )
                     response = http.HttpResponseRedirect(ssl_url)
 
@@ -92,13 +87,9 @@ class SessionMiddleware(MiddlewareMixin):
                 log.warning("Twython error while getting authorization " "url")
             else:
                 response = http.HttpResponseRedirect(auth_props["auth_url"])
+                response.set_cookie(REQUEST_KEY_NAME, auth_props["oauth_token"], secure=is_secure)
                 response.set_cookie(
-                    REQUEST_KEY_NAME, auth_props["oauth_token"], secure=is_secure
-                )
-                response.set_cookie(
-                    REQUEST_SECRET_NAME,
-                    auth_props["oauth_token_secret"],
-                    secure=is_secure,
+                    REQUEST_SECRET_NAME, auth_props["oauth_token_secret"], secure=is_secure,
                 )
                 return response
 
