@@ -19,50 +19,52 @@ class QuestionsFeed(Feed):
     def get_object(self, request):
         query = {}
 
-        product_slug = request.GET.get('product')
-        topic_slug = request.GET.get('topic')
+        product_slug = request.GET.get("product")
+        topic_slug = request.GET.get("topic")
         locale = request.LANGUAGE_CODE
 
-        if product_slug and product_slug != 'all':
-            query['product'] = get_object_or_404(Product, slug=product_slug)
+        if product_slug and product_slug != "all":
+            query["product"] = get_object_or_404(Product, slug=product_slug)
 
             if topic_slug:
-                query['topic'] = get_object_or_404(Topic, slug=topic_slug,
-                                                   product__slug=product_slug)
+                query["topic"] = get_object_or_404(
+                    Topic, slug=topic_slug, product__slug=product_slug
+                )
         if locale:
-            query['locale'] = locale
+            query["locale"] = locale
 
         return query
 
     def title(self):
-        return _('Recently updated questions')
+        return _("Recently updated questions")
 
     def link(self, query):
         slugs = {}
 
-        if 'product' in query:
-            slugs['product'] = query['product'].slug
+        if "product" in query:
+            slugs["product"] = query["product"].slug
 
-            if 'topic' in query:
-                slugs['topic'] = query['topic'].slug
+            if "topic" in query:
+                slugs["topic"] = query["topic"].slug
 
-        url = reverse('questions.list', args=[slugs.get('product', 'all')],
-                      locale=query.get('locale'))
+        url = reverse(
+            "questions.list", args=[slugs.get("product", "all")], locale=query.get("locale")
+        )
         return urlparams(url, **slugs)
 
     def items(self, query):
         qs = Question.objects.filter(creator__is_active=True, is_spam=False)
 
-        if 'product' in query:
-            qs = qs.filter(product=query['product'])
+        if "product" in query:
+            qs = qs.filter(product=query["product"])
 
-            if 'topic' in query:
-                qs = qs.filter(topic=query['topic'])
+            if "topic" in query:
+                qs = qs.filter(topic=query["topic"])
 
-        if 'locale' in query:
-            qs = qs.filter(locale=query['locale'])
+        if "locale" in query:
+            qs = qs.filter(locale=query["locale"])
 
-        return qs.select_related('creator').order_by('-updated')[:config.QUESTIONS_PER_PAGE]
+        return qs.select_related("creator").order_by("-updated")[: config.QUESTIONS_PER_PAGE]
 
     def item_title(self, item):
         return item.title
@@ -78,22 +80,20 @@ class QuestionsFeed(Feed):
 
 
 class TaggedQuestionsFeed(QuestionsFeed):
-
     def get_object(self, request, tag_slug):
         return get_object_or_404(Tag, slug=tag_slug)
 
     def title(self, tag):
-        return _('Recently updated questions tagged %s' % tag.name)
+        return _("Recently updated questions tagged %s" % tag.name)
 
     def link(self, tag):
-        return urlparams(reverse('questions.list', args=['all']),
-                         tagged=tag.slug)
+        return urlparams(reverse("questions.list", args=["all"]), tagged=tag.slug)
 
     def items(self, tag):
-        qs = Question.objects.filter(creator__is_active=True,
-                                     tags__name__in=[tag.name],
-                                     is_spam=False).distinct()
-        return qs.order_by('-updated')[:config.QUESTIONS_PER_PAGE]
+        qs = Question.objects.filter(
+            creator__is_active=True, tags__name__in=[tag.name], is_spam=False
+        ).distinct()
+        return qs.order_by("-updated")[: config.QUESTIONS_PER_PAGE]
 
 
 class AnswersFeed(Feed):
@@ -103,7 +103,7 @@ class AnswersFeed(Feed):
         return get_object_or_404(Question, pk=question_id)
 
     def title(self, question):
-        return _('Recent answers to %s') % question.title
+        return _("Recent answers to %s") % question.title
 
     def link(self, question):
         return question.get_absolute_url()
@@ -112,9 +112,11 @@ class AnswersFeed(Feed):
         return self.title(question)
 
     def items(self, question):
-        return question.answers.filter(
-            is_spam=False,
-        ).select_related('creator').order_by('-created')[:config.ANSWERS_PER_PAGE]
+        return (
+            question.answers.filter(is_spam=False,)
+            .select_related("creator")
+            .order_by("-created")[: config.ANSWERS_PER_PAGE]
+        )
 
     def item_title(self, item):
         return strip_tags(item.content_parsed)[:100]

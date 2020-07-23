@@ -8,8 +8,7 @@ import actstream
 import actstream.actions
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import (GenericForeignKey,
-                                                GenericRelation)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import close_old_connections, connection, models
@@ -25,13 +24,15 @@ from taggit.models import Tag, TaggedItem
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
-from kitsune.questions.managers import (AnswerManager, QuestionLocaleManager,
-                                        QuestionManager)
+from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
 from kitsune.questions.tasks import update_answer_pages, update_question_votes
 from kitsune.search.es_utils import ES_EXCEPTIONS, UnindexMeBro
-from kitsune.search.models import (SearchMappingType, SearchMixin,
-                                   register_for_indexing,
-                                   register_mapping_type)
+from kitsune.search.models import (
+    SearchMappingType,
+    SearchMixin,
+    register_for_indexing,
+    register_mapping_type,
+)
 from kitsune.search.tasks import index_task
 from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import LocaleField, ModelBase
@@ -73,8 +74,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         "Answer", on_delete=models.CASCADE, related_name="last_reply_in", null=True, blank=True
     )
     num_answers = models.IntegerField(default=0, db_index=True)
-    solution = models.ForeignKey("Answer", on_delete=models.CASCADE,
-                                 related_name="solution_for", null=True)
+    solution = models.ForeignKey(
+        "Answer", on_delete=models.CASCADE, related_name="solution_for", null=True
+    )
     is_locked = models.BooleanField(default=False)
     is_archived = models.NullBooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
@@ -156,9 +158,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         if new:
             # actstream
             # Authors should automatically follow their own questions.
-            actstream.actions.follow(
-                self.creator, self, send_action=False, actor_only=False
-            )
+            actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.
@@ -178,9 +178,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         This excludes immutable fields: user agent, product, and category.
 
         """
-        self.metadata_set.exclude(
-            name__in=["useragent", "product", "category"]
-        ).delete()
+        self.metadata_set.exclude(name__in=["useragent", "product", "category"]).delete()
         self._metadata = None
 
     def remove_metadata(self, name):
@@ -240,9 +238,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         You don't need to call save on the question after this.
 
         """
-        to_add = self.product_config.get("tags", []) + self.category_config.get(
-            "tags", []
-        )
+        to_add = self.product_config.get("tags", []) + self.category_config.get("tags", [])
         version = self.metadata.get("ff_version", "")
 
         # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
@@ -500,9 +496,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         documents = cache.get(key)
         if documents is not None:
             log.debug(
-                "Getting MLT documents for {question} from cache.".format(
-                    question=repr(self)
-                )
+                "Getting MLT documents for {question} from cache.".format(question=repr(self))
             )
             return documents
 
@@ -518,11 +512,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 )
                 .query(
                     __mlt={
-                        "fields": [
-                            "document_title",
-                            "document_summary",
-                            "document_content",
-                        ],
+                        "fields": ["document_title", "document_summary", "document_content",],
                         "like_text": self.title,
                         "min_term_freq": 1,
                         "min_doc_freq": 1,
@@ -548,9 +538,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         questions = cache.get(key)
         if questions is not None:
             log.debug(
-                "Getting MLT questions for {question} from cache.".format(
-                    question=repr(self)
-                )
+                "Getting MLT questions for {question} from cache.".format(question=repr(self))
             )
             return questions
 
@@ -606,9 +594,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def allows_new_answer(self, user):
         """Return whether `user` can answer (reply to) this question."""
-        return user.has_perm("questions.add_answer") or (
-            self.editable and user.is_authenticated
-        )
+        return user.has_perm("questions.add_answer") or (self.editable and user.is_authenticated)
 
     def allows_solve(self, user):
         """Return whether `user` can select the solution to this question."""
@@ -815,15 +801,11 @@ class QuestionMappingType(SearchMappingType):
         d["question_has_answers"] = bool(obj["num_answers"])
 
         d["question_creator"] = obj["creator__username"]
-        d["question_num_votes"] = QuestionVote.objects.filter(
-            question=obj["id"]
-        ).count()
+        d["question_num_votes"] = QuestionVote.objects.filter(question=obj["id"]).count()
         d["question_num_votes_past_week"] = obj["num_votes_past_week"]
 
         d["question_tag"] = list(
-            TaggedItem.tags_for(Question, Question(pk=obj_id)).values_list(
-                "name", flat=True
-            )
+            TaggedItem.tags_for(Question, Question(pk=obj_id)).values_list("name", flat=True)
         )
 
         d["question_locale"] = obj["locale"]
@@ -841,9 +823,7 @@ class QuestionMappingType(SearchMappingType):
             d["question_has_helpful"] = False
         else:
             d["question_has_helpful"] = (
-                Answer.objects.filter(question=obj_id)
-                .filter(votes__helpful=True)
-                .exists()
+                Answer.objects.filter(question=obj_id).filter(votes__helpful=True).exists()
             )
 
         return d
@@ -916,10 +896,7 @@ class QuestionVisits(ModelBase):
                     # The question doesn't exist anymore, move on.
                     continue
         else:
-            log.warning(
-                "Google Analytics returned no interesting data,"
-                " so I kept what I had."
-            )
+            log.warning("Google Analytics returned no interesting data," " so I kept what I had.")
 
 
 class QuestionLocale(ModelBase):
@@ -995,9 +972,9 @@ class Answer(ModelBase, SearchMixin):
         self.question.num_answers = Answer.objects.filter(
             question=self.question, is_spam=False
         ).count()
-        latest = Answer.objects.filter(question=self.question, is_spam=False).order_by(
-            "-created"
-        )[:1]
+        latest = Answer.objects.filter(question=self.question, is_spam=False).order_by("-created")[
+            :1
+        ]
         self.question.last_answer = self if new else latest[0] if len(latest) else None
         self.question.save(update)
 
@@ -1012,13 +989,12 @@ class Answer(ModelBase, SearchMixin):
                 # tidings
                 # Avoid circular import: events.py imports Question.
                 from kitsune.questions.events import QuestionReplyEvent
+
                 if not self.is_spam:
                     QuestionReplyEvent(self).fire(exclude=self.creator)
 
                 # actstream
-                actstream.actions.follow(
-                    self.creator, self, send_action=False, actor_only=False
-                )
+                actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
                 actstream.actions.follow(
                     self.creator, self.question, send_action=False, actor_only=False
                 )
@@ -1058,8 +1034,7 @@ class Answer(ModelBase, SearchMixin):
 
     def get_solution_url(self, watch):
         url = reverse(
-            "questions.solve",
-            kwargs={"question_id": self.question_id, "answer_id": self.id},
+            "questions.solve", kwargs={"question_id": self.question_id, "answer_id": self.id},
         )
         return urlparams(url, watch=watch.secret)
 
@@ -1242,9 +1217,7 @@ class AnswerMetricsMappingType(SearchMappingType):
         # and we don't want to create an instance because it's a DB
         # hit and expensive. So we do it by hand. get_absolute_url
         # doesn't change much, so this is probably ok.
-        url = reverse(
-            "questions.details", kwargs={"question_id": obj_dict["question_id"]}
-        )
+        url = reverse("questions.details", kwargs={"question_id": obj_dict["question_id"]})
         d["url"] = urlparams(url, hash="answer-%s" % obj_dict["id"])
 
         d["indexed_on"] = int(time.time())
@@ -1297,9 +1270,7 @@ def user_pre_save(sender, instance, **kw):
         user = User.objects.get(id=instance.id)
         if user.username != instance.username:
             questions = (
-                Question.objects.filter(
-                    Q(creator=instance) | Q(answers__creator=instance)
-                )
+                Question.objects.filter(Q(creator=instance) | Q(answers__creator=instance))
                 .only("id")
                 .distinct()
             )
@@ -1317,19 +1288,16 @@ class QuestionVote(ModelBase):
 
     question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="votes")
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, on_delete=models.CASCADE,
-                                related_name="question_votes", null=True)
+    creator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="question_votes", null=True
+    )
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
-        VoteMetadata.objects.create(
-            vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH]
-        )
+        VoteMetadata.objects.create(vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
-register_for_indexing(
-    "questions", QuestionVote, instance_to_indexee=lambda v: v.question
-)
+register_for_indexing("questions", QuestionVote, instance_to_indexee=lambda v: v.question)
 
 
 class AnswerVote(ModelBase):
@@ -1338,23 +1306,20 @@ class AnswerVote(ModelBase):
     answer = models.ForeignKey("Answer", on_delete=models.CASCADE, related_name="votes")
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, on_delete=models.CASCADE,
-                                related_name="answer_votes", null=True)
+    creator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="answer_votes", null=True
+    )
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
-        VoteMetadata.objects.create(
-            vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH]
-        )
+        VoteMetadata.objects.create(vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
 # TODO: We only need to update the helpful bit.  It's possible
 # we could ignore all AnswerVotes that aren't helpful and if
 # they're marked as helpful, then update the index.  Look into
 # this.
-register_for_indexing(
-    "questions", AnswerVote, instance_to_indexee=lambda v: v.answer.question
-)
+register_for_indexing("questions", AnswerVote, instance_to_indexee=lambda v: v.answer.question)
 
 
 class VoteMetadata(ModelBase):
@@ -1403,9 +1368,7 @@ def _has_beta(version, dev_releases):
     and you pass '5.0', it return True since there are 5.0 betas in the
     dev_releases dict. If you pass '6.0', it returns False.
     """
-    return version in [
-        re.search(r"(\d+\.)+\d+", s).group(0) for s in list(dev_releases.keys())
-    ]
+    return version in [re.search(r"(\d+\.)+\d+", s).group(0) for s in list(dev_releases.keys())]
 
 
 def _content_parsed(obj, locale):
@@ -1427,8 +1390,5 @@ def add_action_for_new_question(sender, instance, created, **kwargs):
 def add_action_for_new_answer(sender, instance, created, **kwargs):
     if created:
         actstream.action.send(
-            instance.creator,
-            verb="answered",
-            action_object=instance,
-            target=instance.question,
+            instance.creator, verb="answered", action_object=instance, target=instance.question,
         )

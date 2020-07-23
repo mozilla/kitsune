@@ -6,7 +6,6 @@ from kitsune.sumo.tests import TestCase
 
 
 class QuestionManagerTestCase(TestCase):
-
     def test_done(self):
         """Verify the done queryset."""
         # Create a question, there shouldn't be any done yet.
@@ -97,7 +96,6 @@ class QuestionManagerTestCase(TestCase):
 
 
 class AnswerManagerTestCase(TestCase):
-
     def test_not_by_asker(self):
         """Verify that only answers by users other than the original asker are returned"""
         q = QuestionFactory()
