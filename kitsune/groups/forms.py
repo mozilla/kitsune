@@ -15,7 +15,7 @@ class GroupProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = GroupProfile
-        fields = ['information']
+        fields = ["information"]
 
 
 class GroupAvatarForm(forms.ModelForm):
@@ -25,13 +25,13 @@ class GroupAvatarForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(GroupAvatarForm, self).__init__(*args, **kwargs)
-        self.fields["avatar"].help_text = _(
-            "Your avatar will be resized to {size}x{size}"
-        ).format(size=settings.AVATAR_SIZE)
+        self.fields["avatar"].help_text = _("Your avatar will be resized to {size}x{size}").format(
+            size=settings.AVATAR_SIZE
+        )
 
     class Meta(object):
         model = GroupProfile
-        fields = ['avatar']
+        fields = ["avatar"]
 
     def clean_avatar(self):
         if not ("avatar" in self.cleaned_data and self.cleaned_data["avatar"]):
@@ -43,11 +43,14 @@ class GroupAvatarForm(forms.ModelForm):
         return self.cleaned_data["avatar"]
 
 
-USERS_PLACEHOLDER = _lazy('username')
+USERS_PLACEHOLDER = _lazy("username")
 
 
 class AddUserForm(forms.Form):
     """Form to add members or leaders to group."""
+
     users = MultiUsernameField(
-        widget=forms.TextInput(attrs={'placeholder': USERS_PLACEHOLDER,
-                                      'class': 'user-autocomplete'}))
+        widget=forms.TextInput(
+            attrs={"placeholder": USERS_PLACEHOLDER, "class": "user-autocomplete"}
+        )
+    )
