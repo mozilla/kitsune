@@ -7,7 +7,7 @@ from kitsune.users.tests import TestCase, UserFactory
 class KarmaTitleTests(TestCase):
     def test_top_contributors_title(self):
         # Set top 10 title to 3 users and verify
-        title = 'Top 10 Contributor'
+        title = "Top 10 Contributor"
         u1 = UserFactory()
         u2 = UserFactory()
         u3 = UserFactory()
