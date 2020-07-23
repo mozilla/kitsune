@@ -88,7 +88,7 @@ class ActiveContributorsTestCase(TestCase):
 @override_settings(BITLY_LOGIN="test", BITLY_API_KEY="test-apikey")
 class GenerateShortUrlTestCase(TestCase):
     def setUp(self):
-        self.test_url = "https://support.mozilla.org/en-US/kb/" "update-firefox-latest-version"
+        self.test_url = "https://support.mozilla.org/en-US/kb/update-firefox-latest-version"
 
     @mock.patch("kitsune.wiki.utils.requests")
     def test_generate_short_url_200(self, mock_requests):

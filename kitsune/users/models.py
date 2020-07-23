@@ -355,7 +355,7 @@ class Setting(ModelBase):
         form = SettingsForm()
         if name not in list(form.fields.keys()):
             raise KeyError(
-                ("'{name}' is not a field in " "user.forms.SettingsFrom()").format(name=name)
+                ("'{name}' is not a field in user.forms.SettingsFrom()").format(name=name)
             )
         try:
             setting = Setting.objects.get(user=user, name=name)

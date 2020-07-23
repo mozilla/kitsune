@@ -50,7 +50,7 @@ SIGNIFICANCES = [
 
 SIGNIFICANCES_HELP = {
     TYPO_SIGNIFICANCE: _lazy(
-        "These minor changes are not important for localizers and " "they will not be notified."
+        "These minor changes are not important for localizers and they will not be notified."
     ),
     MEDIUM_SIGNIFICANCE: _lazy(
         "This will notify localizers and translations will be marked as "

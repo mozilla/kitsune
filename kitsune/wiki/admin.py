@@ -45,9 +45,9 @@ class DocumentAdmin(admin.ModelAdmin):
     def _show_archival_message(self, request, queryset, verb):
         count = len(queryset)
         phrase = (
-            "document, along with its English version or translations, was " "marked as "
+            "document, along with its English version or translations, was marked as "
             if count == 1
-            else "documents, along with their English versions or translations, " "were marked as "
+            else "documents, along with their English versions or translations, were marked as "
         )
         self.message_user(request, "%s %s %s." % (count, phrase, verb))
 

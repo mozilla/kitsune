@@ -125,9 +125,9 @@ def send_contributor_notification(
     @email_utils.safe_translation
     def _make_mail(locale, user):
         if revision.is_approved:
-            subject = _("A revision you contributed to has " "been approved: {title}")
+            subject = _("A revision you contributed to has been approved: {title}")
         else:
-            subject = _("A revision you contributed to has " "been reviewed: {title}")
+            subject = _("A revision you contributed to has been reviewed: {title}")
         subject = subject.format(title=document.title)
 
         mail = email_utils.make_mail(

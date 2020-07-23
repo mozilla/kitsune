@@ -673,9 +673,7 @@ class NewDocumentTests(TestCaseBase):
         doc = pq(response.content)
         ul = doc("#document-form > ul.errorlist")
         eq_(1, len(ul))
-        assert (
-            "Select a valid choice. 963 is not one of the available " "choices." in ul("li").text()
-        )
+        assert "Select a valid choice. 963 is not one of the available choices." in ul("li").text()
 
     def test_new_document_missing_category(self):
         """Test the DocumentForm's category validation.

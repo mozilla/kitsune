@@ -303,7 +303,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 url = reverse("wiki.translate", args=[document.slug], locale=locale)
                 c["l10n_url"] = add_utm(url, "wiki-ready-l10n")
 
-                subject = _("{title} has a revision ready for " "localization")
+                subject = _("{title} has a revision ready for localization")
                 text_template = "wiki/email/ready_for_l10n.ltxt"
                 html_template = "wiki/email/ready_for_l10n.html"
 
@@ -318,7 +318,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 c["watch"] = watches[0]
                 c["reviewer"] = revision.reviewer
 
-                subject = _("{title} ({locale}) has a new approved " "revision ({reviewer})")
+                subject = _("{title} ({locale}) has a new approved revision ({reviewer})")
                 text_template = "wiki/email/approved.ltxt"
                 html_template = "wiki/email/approved.html"
 

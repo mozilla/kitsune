@@ -339,7 +339,7 @@ class TestWikiInternalLinks(TestCase):
         """Internal link with hash and name."""
         text = "[[Installing Firefox#section 3|this name]]"
         eq_(
-            '<p><a href="/en-US/kb/installing-firefox#section_3"' + ">this name</a>\n</p>",
+            '<p><a href="/en-US/kb/installing-firefox#section_3">this name</a>\n</p>',
             self.p.parse(text),
         )
 

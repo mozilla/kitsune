@@ -225,9 +225,9 @@ class DocumentTests(TestCase):
         trans = DocumentFactory(parent=parent_rev.document, locale="de")
         trans_rev = RevisionFactory(document=trans, is_approved=True)
 
-        assert trans_rev.based_on is None, (
-            "based_on defaulted to something non-None, which this test " "wasn't expecting."
-        )
+        assert (
+            trans_rev.based_on is None
+        ), "based_on defaulted to something non-None, which this test wasn't expecting."
 
         assert not trans.is_majorly_outdated(), (
             "A translation was considered majorly out of date even though "

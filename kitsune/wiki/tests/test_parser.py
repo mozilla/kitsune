@@ -64,7 +64,7 @@ class SimpleSyntaxTestCase(TestCase):
     def test_warning_multiline_breaks(self):
         """Multiline breaks warning syntax"""
         p = WikiParser()
-        doc = pq(p.parse("\n\n{warning}\n\nthis is a warning\n\n" "{/warning}\n\n"))
+        doc = pq(p.parse("\n\n{warning}\n\nthis is a warning\n\n{/warning}\n\n"))
         eq_("this is a warning", doc("div.warning").text())
 
     def test_general_warning_note(self):
@@ -125,7 +125,7 @@ class SimpleSyntaxTestCase(TestCase):
             key_p.sub(_key_split, '{key  "Param-One" and + param+two}'),
         )
         eq_(
-            '<span class="key">multi\nline</span> + ' '<span class="key">me</span>',
+            '<span class="key">multi\nline</span> + <span class="key">me</span>',
             key_p.sub(_key_split, "{key multi\nline\n+me}"),
         )
 
@@ -133,7 +133,7 @@ class SimpleSyntaxTestCase(TestCase):
         """Adding brace inside {key ...}"""
         key_p = PATTERNS[2][0]
         eq_(
-            '<span class="key">ctrl</span> + <span class="key">and</span> ' "Here is }",
+            '<span class="key">ctrl</span> + <span class="key">and</span> Here is }',
             key_p.sub(_key_split, "{key ctrl + and} Here is }"),
         )
         eq_(
@@ -613,7 +613,7 @@ class ForWikiTests(TestCase):
         just before the enclosing element."""
         self.assertWikiHtmlEqual(
             "*{for}One\n*Fish\n\nTwo\n{/for}",
-            '<ul><li><span class="for">One</span></li>' "<li>Fish</li></ul><p>Two</p>",
+            '<ul><li><span class="for">One</span></li><li>Fish</li></ul><p>Two</p>',
         )
 
     def test_missing_close(self):

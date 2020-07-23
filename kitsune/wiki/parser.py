@@ -438,9 +438,7 @@ class WikiParser(sumo_parser.WikiParser):
         short_title = params.pop(0)
         template_title = "Template:" + short_title
 
-        message = (
-            _('The template "%s" does not exist or has no approved ' "revision.") % short_title
-        )
+        message = _('The template "%s" does not exist or has no approved revision.') % short_title
         template = get_object_fallback(
             Document, template_title, locale=self.locale, is_template=True
         )
