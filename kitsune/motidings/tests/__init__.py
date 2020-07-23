@@ -7,6 +7,6 @@ class WatchFactory(DjangoModelFactory):
     class Meta:
         model = Watch
 
-    event_type = 'fooevent'
+    event_type = "fooevent"
     is_active = True
     secret = fuzzy.FuzzyText(length=10)
