@@ -50,8 +50,5 @@ class Command(BaseCommand):
                 kind=searches_kind, start=day, end=day + timedelta(days=1), value=1000
             )
             Metric.objects.create(
-                kind=clicks_kind,
-                start=day,
-                end=day + timedelta(days=1),
-                value=round(ctr, 1) * 10,
+                kind=clicks_kind, start=day, end=day + timedelta(days=1), value=round(ctr, 1) * 10,
             )
