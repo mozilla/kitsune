@@ -21,9 +21,8 @@ class RenameFileStorage(DjangoStorage):
         file_root, file_ext = os.path.splitext(file_name)
 
         # Set file_root to something we like: clean and all ascii
-        md5_sub = hashlib.md5(file_root.encode('utf8')).hexdigest()[0:6]
-        file_root = time.strftime('%Y-%m-%d-%H-%M-%S-',
-                                  time.localtime()) + md5_sub
+        md5_sub = hashlib.md5(file_root.encode("utf8")).hexdigest()[0:6]
+        file_root = time.strftime("%Y-%m-%d-%H-%M-%S-", time.localtime()) + md5_sub
         name = os.path.join(dir_name, file_root + file_ext)
 
         # If the filename already exists, add an underscore and a number
@@ -32,7 +31,6 @@ class RenameFileStorage(DjangoStorage):
         count = itertools.count(1)
         while self.exists(name):
             # file_ext includes the dot.
-            name = os.path.join(dir_name, "%s_%s%s" %
-                                (file_root, next(count), file_ext))
+            name = os.path.join(dir_name, "%s_%s%s" % (file_root, next(count), file_ext))
 
         return name
