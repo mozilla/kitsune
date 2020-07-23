@@ -204,7 +204,7 @@ class Badge(models.Model):
     # TODO: Rename? Eventually we'll want a globally-unique badge. That is, one
     # unique award for one person for the whole site.
     unique = models.BooleanField(
-        default=True, help_text=("Should awards of this badge be limited to " "one-per-person?"),
+        default=True, help_text=("Should awards of this badge be limited to one-per-person?"),
     )
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)

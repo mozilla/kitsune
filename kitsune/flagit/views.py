@@ -44,7 +44,7 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
         )
         flag.save()
         msg = _(
-            "You have flagged this content. A moderator will review " + "your submission shortly."
+            "You have flagged this content. A moderator will review your submission shortly."
         )
 
     if request.is_ajax():
