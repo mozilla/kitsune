@@ -1,1 +1,1 @@
-default_app_config = 'kitsune.notifications.apps.NotificationsConfig'
+default_app_config = "kitsune.notifications.apps.NotificationsConfig"

@@ -7,7 +7,6 @@ from kitsune.sumo.tests import TestCase
 
 
 class TestNotificationModel(TestCase):
-
     def test_is_read_false(self):
         n = NotificationFactory(read_at=None)
         eq_(n.is_read, False)

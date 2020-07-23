@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class NotificationsConfig(AppConfig):
-    name = 'kitsune.notifications'
+    name = "kitsune.notifications"
 
     def ready(self):
         from django.contrib.auth.models import User
