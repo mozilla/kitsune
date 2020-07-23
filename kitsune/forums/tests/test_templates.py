@@ -18,9 +18,7 @@ class PostsTemplateTests(ForumTestCase):
         t = ThreadFactory()
 
         self.client.login(username=u.username, password="testpass")
-        response = post(
-            self.client, "forums.reply", {"content": ""}, args=[t.forum.slug, t.id]
-        )
+        response = post(self.client, "forums.reply", {"content": ""}, args=[t.forum.slug, t.id])
 
         doc = pq(response.content)
         error_msg = doc("ul.errorlist li a")[0]
@@ -34,18 +32,14 @@ class PostsTemplateTests(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         response = post(
-            self.client,
-            "forums.edit_post",
-            {"content": "wha?"},
-            args=[t.forum.slug, t.id, p.id],
+            self.client, "forums.edit_post", {"content": "wha?"}, args=[t.forum.slug, t.id, p.id],
         )
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
         eq_(
             errors[0].text,
-            "Your message is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your message is too short (4 characters). " + "It must be at least 5 characters.",
         )
 
     def test_edit_thread_template(self):
@@ -54,11 +48,7 @@ class PostsTemplateTests(ForumTestCase):
         u = p.author
 
         self.client.login(username=u.username, password="testpass")
-        res = get(
-            self.client,
-            "forums.edit_post",
-            args=[p.thread.forum.slug, p.thread.id, p.id],
-        )
+        res = get(self.client, "forums.edit_post", args=[p.thread.forum.slug, p.thread.id, p.id],)
 
         doc = pq(res.content)
         eq_(len(doc("form.edit-post")), 1)
@@ -84,14 +74,10 @@ class PostsTemplateTests(ForumTestCase):
         """Posts render for [fr] locale."""
         t = ThreadFactory()
 
-        response = get(
-            self.client, "forums.posts", args=[t.forum.slug, t.id], locale="fr"
-        )
+        response = get(self.client, "forums.posts", args=[t.forum.slug, t.id], locale="fr")
         eq_(200, response.status_code)
         eq_(
-            "{c}/fr/forums/{f}/{t}".format(
-                c=settings.CANONICAL_URL, f=t.forum.slug, t=t.id
-            ),
+            "{c}/fr/forums/{f}/{t}".format(c=settings.CANONICAL_URL, f=t.forum.slug, t=t.id),
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
 
@@ -164,18 +150,12 @@ class PostsTemplateTests(ForumTestCase):
         self.client.login(username=u.username, password="testpass")
 
         response = post(
-            self.client,
-            "forums.watch_thread",
-            {"watch": "yes"},
-            args=[t.forum.slug, t.id],
+            self.client, "forums.watch_thread", {"watch": "yes"}, args=[t.forum.slug, t.id],
         )
         self.assertContains(response, "Stop watching this thread")
 
         response = post(
-            self.client,
-            "forums.watch_thread",
-            {"watch": "no"},
-            args=[t.forum.slug, t.id],
+            self.client, "forums.watch_thread", {"watch": "no"}, args=[t.forum.slug, t.id],
         )
         self.assertNotContains(response, "Stop watching this thread")
 
@@ -195,9 +175,7 @@ class PostsTemplateTests(ForumTestCase):
         ct = ContentType.objects.get_for_model(f)
         # If the forum has the permission and the user isn't assigned said
         # permission, then they can't post.
-        PermissionFactory(
-            codename="forums_forum.post_in_forum", content_type=ct, object_id=f.id
-        )
+        PermissionFactory(codename="forums_forum.post_in_forum", content_type=ct, object_id=f.id)
         u = UserFactory()
 
         self.client.login(username=u.username, password="testpass")
@@ -220,14 +198,14 @@ class PostsTemplateTests(ForumTestCase):
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
-        assert b'0 Replies' in response.content
+        assert b"0 Replies" in response.content
 
         PostFactory(thread=t)
         PostFactory(thread=t)
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
-        assert b'2 Replies' in response.content
+        assert b"2 Replies" in response.content
 
     def test_youtube_in_post(self):
         """Verify youtube video embedding."""
@@ -243,11 +221,7 @@ class PostsTemplateTests(ForumTestCase):
         )
 
         doc = pq(response.content)
-        assert (
-            doc("iframe")[0]
-            .attrib["src"]
-            .startswith("//www.youtube.com/embed/oHg5SJYRHA0")
-        )
+        assert doc("iframe")[0].attrib["src"].startswith("//www.youtube.com/embed/oHg5SJYRHA0")
 
 
 class ThreadsTemplateTests(ForumTestCase):
@@ -270,10 +244,7 @@ class ThreadsTemplateTests(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         response = post(
-            self.client,
-            "forums.new_thread",
-            {"title": "", "content": ""},
-            args=[f.slug],
+            self.client, "forums.new_thread", {"title": "", "content": ""}, args=[f.slug],
         )
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
@@ -287,23 +258,18 @@ class ThreadsTemplateTests(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         response = post(
-            self.client,
-            "forums.new_thread",
-            {"title": "wha?", "content": "wha?"},
-            args=[f.slug],
+            self.client, "forums.new_thread", {"title": "wha?", "content": "wha?"}, args=[f.slug],
         )
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
         eq_(
             errors[0].text,
-            "Your title is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your title is too short (4 characters). " + "It must be at least 5 characters.",
         )
         eq_(
             errors[1].text,
-            "Your message is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your message is too short (4 characters). " + "It must be at least 5 characters.",
         )
 
     def test_edit_thread_errors(self):
@@ -313,18 +279,14 @@ class ThreadsTemplateTests(ForumTestCase):
 
         self.client.login(username=creator.username, password="testpass")
         response = post(
-            self.client,
-            "forums.edit_thread",
-            {"title": "wha?"},
-            args=[t.forum.slug, t.id],
+            self.client, "forums.edit_thread", {"title": "wha?"}, args=[t.forum.slug, t.id],
         )
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
         eq_(
             errors[0].text,
-            "Your title is too short (4 characters). "
-            + "It must be at least 5 characters.",
+            "Your title is too short (4 characters). " + "It must be at least 5 characters.",
         )
 
     def test_edit_thread_template(self):
@@ -345,14 +307,10 @@ class ThreadsTemplateTests(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
 
-        response = post(
-            self.client, "forums.watch_forum", {"watch": "yes"}, args=[f.slug]
-        )
+        response = post(self.client, "forums.watch_forum", {"watch": "yes"}, args=[f.slug])
         self.assertContains(response, "Stop watching this forum")
 
-        response = post(
-            self.client, "forums.watch_forum", {"watch": "no"}, args=[f.slug]
-        )
+        response = post(self.client, "forums.watch_forum", {"watch": "no"}, args=[f.slug])
         self.assertNotContains(response, "Stop watching this forum")
 
     def test_canonical_url(self):
@@ -381,9 +339,7 @@ class ThreadsTemplateTests(ForumTestCase):
         ct = ContentType.objects.get_for_model(f)
         # If the forum has the permission and the user isn't assigned said
         # permission, then they can't post.
-        PermissionFactory(
-            codename="forums_forum.post_in_forum", content_type=ct, object_id=f.id
-        )
+        PermissionFactory(codename="forums_forum.post_in_forum", content_type=ct, object_id=f.id)
         u = UserFactory()
 
         self.client.login(username=u.username, password="testpass")
@@ -409,9 +365,7 @@ class ForumsTemplateTests(ForumTestCase):
         # Make it restricted.
         ct = ContentType.objects.get_for_model(restricted_forum)
         PermissionFactory(
-            codename="forums_forum.view_in_forum",
-            content_type=ct,
-            object_id=restricted_forum.id,
+            codename="forums_forum.view_in_forum", content_type=ct, object_id=restricted_forum.id,
         )
 
         response = get(self.client, "forums.forums")

@@ -26,21 +26,24 @@ def create_image(files, user):
 
     # Async uploads fallback to these defaults.
     image.title = get_draft_title(user)
-    image.description = 'Autosaved draft.'
+    image.description = "Autosaved draft."
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
     (up_file, is_animated) = _image_to_png(up_file)
 
     # Finally save the image along with uploading the file.
-    image.file.save(up_file.name,
-                    File(up_file), save=True)
+    image.file.save(up_file.name, File(up_file), save=True)
 
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
-    delete_url = reverse('gallery.delete_media', args=['image', image.id])
-    return {'name': up_file.name, 'url': image.get_absolute_url(),
-            'thumbnail_url': image.thumbnail_url_if_set(),
-            'width': width, 'height': height,
-            'delete_url': delete_url}
+    delete_url = reverse("gallery.delete_media", args=["image", image.id])
+    return {
+        "name": up_file.name,
+        "url": image.get_absolute_url(),
+        "thumbnail_url": image.thumbnail_url_if_set(),
+        "width": width,
+        "height": height,
+        "delete_url": delete_url,
+    }
 
 
 def upload_image(request):
@@ -58,10 +61,10 @@ def check_media_permissions(media, user, perm_type):
 
     """
     media_type = media.__class__.__name__.lower()
-    perm_name = 'gallery.%s_%s' % (perm_type, media_type)
+    perm_name = "gallery.%s_%s" % (perm_type, media_type)
     if user != media.creator and not user.has_perm(perm_name):
         raise PermissionDenied
 
 
 def get_draft_title(user):
-    return 'Draft for user %s. Created at: %s' % (user.username, datetime.now())
+    return "Draft for user %s. Created at: %s" % (user.username, datetime.now())
