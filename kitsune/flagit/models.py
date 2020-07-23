@@ -19,28 +19,28 @@ class FlaggedObject(ModelBase):
     """A flag raised on an object."""
 
     REASONS = (
-        ('spam', _lazy('Spam or other unrelated content')),
-        ('language', _lazy('Inappropriate language/dialog')),
-        ('bug_support', _lazy('Misplaced bug report or support request')),
-        ('abuse', _lazy('Abusive content')),
-        ('other', _lazy('Other (please specify)')),
+        ("spam", _lazy("Spam or other unrelated content")),
+        ("language", _lazy("Inappropriate language/dialog")),
+        ("bug_support", _lazy("Misplaced bug report or support request")),
+        ("abuse", _lazy("Abusive content")),
+        ("other", _lazy("Other (please specify)")),
     )
 
     STATUSES = (
-        (0, _lazy('Pending')),
-        (1, _lazy('Accepted and Fixed')),
-        (2, _lazy('Rejected')),
+        (0, _lazy("Pending")),
+        (1, _lazy("Accepted and Fixed")),
+        (2, _lazy("Rejected")),
     )
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey("content_type", "object_id")
 
     status = models.IntegerField(default=0, db_index=True, choices=STATUSES)
     reason = models.CharField(max_length=64, choices=REASONS)
-    notes = models.TextField(default='', blank=True)
+    notes = models.TextField(default="", blank=True)
 
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='flags')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="flags")
     created = models.DateTimeField(default=datetime.now, db_index=True)
 
     handled = models.DateTimeField(default=datetime.now, db_index=True)
@@ -49,8 +49,6 @@ class FlaggedObject(ModelBase):
     objects = FlaggedObjectManager()
 
     class Meta:
-        unique_together = (('content_type', 'object_id', 'creator'),)
-        ordering = ['created']
-        permissions = (
-            ('can_moderate', 'Can moderate flagged objects'),
-        )
+        unique_together = (("content_type", "object_id", "creator"),)
+        ordering = ["created"]
+        permissions = (("can_moderate", "Can moderate flagged objects"),)
