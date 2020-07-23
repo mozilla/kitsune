@@ -108,10 +108,7 @@ class GalleryUploadTestCase(TestCase):
         """Posting to the page saves the field values for the image draft."""
         ImageFactory(is_draft=True, creator=self.u)
         response = post(
-            self.client,
-            "gallery.gallery",
-            {"description": "??", "title": "test"},
-            args=["image"],
+            self.client, "gallery.gallery", {"description": "??", "title": "test"}, args=["image"],
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -122,9 +119,7 @@ class GalleryUploadTestCase(TestCase):
     def test_video_draft_post(self):
         """Posting to the page saves the field values for the video draft."""
         VideoFactory(is_draft=True, creator=self.u)
-        response = post(
-            self.client, "gallery.gallery", {"title": "zTestz"}, args=["image"]
-        )
+        response = post(self.client, "gallery.gallery", {"title": "zTestz"}, args=["image"])
         eq_(200, response.status_code)
         doc = pq(response.content)
         # Preview for all 3 video formats: flv, ogv, webm

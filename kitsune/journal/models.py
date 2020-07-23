@@ -3,13 +3,13 @@ from datetime import datetime
 from django.db import models
 
 
-RECORD_INFO = 'info'
-RECORD_ERROR = 'error'
+RECORD_INFO = "info"
+RECORD_ERROR = "error"
 
 
 class RecordManager(models.Manager):
     def log(self, level, src, msg, **kwargs):
-        msg = msg.format(**kwargs).encode('utf-8')
+        msg = msg.format(**kwargs).encode("utf-8")
         return Record.objects.create(level=RECORD_INFO, src=src, msg=msg)
 
     def info(self, src, msg, **kwargs):
@@ -42,4 +42,4 @@ class Record(models.Model):
     objects = RecordManager()
 
     def __str__(self):
-        return '<Record {self.src} {self.msg}>'.format(self=self)
+        return "<Record {self.src} {self.msg}>".format(self=self)

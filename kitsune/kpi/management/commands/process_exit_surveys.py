@@ -36,8 +36,8 @@ class Command(BaseCommand):
 
         for survey in list(SURVEYS.keys()):
             if (
-                not SURVEYS[survey]["active"] or
-                "email_collection_survey_id" not in SURVEYS[survey]
+                not SURVEYS[survey]["active"]
+                or "email_collection_survey_id" not in SURVEYS[survey]
             ):
                 # Some surveys don't have email collection on the site
                 # (the askers survey, for example).

@@ -14,9 +14,7 @@ from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
 
 IMG_MAX_SIZE = getattr(settings, "BADGER_IMG_MAX_SIZE", (256, 256))
 
-MK_UPLOAD_TMPL = (
-    "%(base)s/%(h1)s/%(h2)s/%(hash)s_%(field_fn)s_%(now)s_%(rand)04d.%(ext)s"
-)
+MK_UPLOAD_TMPL = "%(base)s/%(h1)s/%(h2)s/%(hash)s_%(field_fn)s_%(now)s_%(rand)04d.%(ext)s"
 
 DEFAULT_HTTP_PROTOCOL = getattr(settings, "DEFAULT_HTTP_PROTOCOL", "http")
 
@@ -192,9 +190,7 @@ class Badge(models.Model):
         max_length=255, blank=False, unique=True, help_text="Short, descriptive title"
     )
     slug = models.SlugField(
-        blank=False,
-        unique=True,
-        help_text="Very short name, for use in URLs and links",
+        blank=False, unique=True, help_text="Very short name, for use in URLs and links",
     )
     description = models.TextField(
         blank=True, help_text="Longer description of the badge and its criteria"
@@ -208,8 +204,7 @@ class Badge(models.Model):
     # TODO: Rename? Eventually we'll want a globally-unique badge. That is, one
     # unique award for one person for the whole site.
     unique = models.BooleanField(
-        default=True,
-        help_text=("Should awards of this badge be limited to " "one-per-person?"),
+        default=True, help_text=("Should awards of this badge be limited to one-per-person?"),
     )
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
@@ -282,12 +277,7 @@ class Badge(models.Model):
         return False
 
     def award_to(
-        self,
-        awardee=None,
-        email=None,
-        awarder=None,
-        description="",
-        raise_already_awarded=False,
+        self, awardee=None, email=None, awarder=None, description="", raise_already_awarded=False,
     ):
         """Award this badge to the awardee on the awarder's behalf"""
         # If no awarder given, assume this is on the badge creator's behalf.
@@ -335,9 +325,7 @@ class Award(models.Model):
         blank=True, help_text="Explanation and evidence for the badge award"
     )
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
-    image = models.ImageField(
-        blank=True, null=True, upload_to=settings.BADGE_IMAGE_PATH
-    )
+    image = models.ImageField(blank=True, null=True, upload_to=settings.BADGE_IMAGE_PATH)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="award_user")
     creator = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="award_creator", blank=True, null=True

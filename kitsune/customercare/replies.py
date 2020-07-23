@@ -5,7 +5,7 @@ from pyquery import PyQuery
 from kitsune.wiki.models import Document
 
 
-REPLIES_DOCUMENT_SLUG = 'army-of-awesome-common-replies'
+REPLIES_DOCUMENT_SLUG = "army-of-awesome-common-replies"
 
 
 def get_common_replies(locale=settings.WIKI_DEFAULT_LANGUAGE):
@@ -65,8 +65,8 @@ def get_common_replies(locale=settings.WIKI_DEFAULT_LANGUAGE):
     # Get the replies document in the right locale, if available.
     try:
         default_doc = Document.objects.get(
-            slug=REPLIES_DOCUMENT_SLUG,
-            locale=settings.WIKI_DEFAULT_LANGUAGE)
+            slug=REPLIES_DOCUMENT_SLUG, locale=settings.WIKI_DEFAULT_LANGUAGE
+        )
     except Document.DoesNotExist:
         return replies
 
@@ -84,30 +84,26 @@ def get_common_replies(locale=settings.WIKI_DEFAULT_LANGUAGE):
 
     # Start at the first h1 and traverse down from there.
     try:
-        current_node = pq('h1')[0]
+        current_node = pq("h1")[0]
     except IndexError:
         return replies
 
     current_category = None
     current_response = None
     while current_node is not None:
-        if current_node.tag == 'h1':
+        if current_node.tag == "h1":
             # New category.
-            current_category = {
-                'title': current_node.text,
-                'responses': []}
+            current_category = {"title": current_node.text, "responses": []}
             replies.append(current_category)
-        elif current_node.tag == 'h2':
+        elif current_node.tag == "h2":
             # New response.
-            current_response = {
-                'title': current_node.text,
-                'response': ''}
-            current_category['responses'].append(current_response)
-        elif current_node.tag == 'p':
+            current_response = {"title": current_node.text, "response": ""}
+            current_category["responses"].append(current_response)
+        elif current_node.tag == "p":
             # The text for a response.
             text = current_node.text_content().strip()
             if text and current_response:
-                current_response['response'] = text
+                current_response["response"] = text
 
         # Ignore any other tags that come through.
 

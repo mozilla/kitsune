@@ -141,10 +141,7 @@ PIPELINE_JS = {
         "output_filename": "build/forums-min.js",
     },
     "gallery": {
-        "source_filenames": (
-            "sumo/js/libs/jquery.ajaxupload.js",
-            "sumo/js/gallery.js",
-        ),
+        "source_filenames": ("sumo/js/libs/jquery.ajaxupload.js", "sumo/js/gallery.js",),
         "output_filename": "build/gallery-min.js",
     },
     "wiki": {
@@ -184,10 +181,7 @@ PIPELINE_JS = {
         "output_filename": "build/wiki.history-min.js",
     },
     "wiki.diff": {
-        "source_filenames": (
-            "sumo/js/libs/diff_match_patch_uncompressed.js",
-            "sumo/js/diff.js",
-        ),
+        "source_filenames": ("sumo/js/libs/diff_match_patch_uncompressed.js", "sumo/js/diff.js",),
         "output_filename": "build/wiki.diff-min.js",
     },
     "wiki.editor": {

@@ -11,8 +11,12 @@ from django.views.decorators.http import require_GET
 from kitsune.announcements.views import user_can_announce
 from kitsune.dashboards import PERIODS
 from kitsune.dashboards.readouts import (
-    l10n_overview_rows, kb_overview_rows, READOUTS, L10N_READOUTS,
-    CONTRIBUTOR_READOUTS)
+    l10n_overview_rows,
+    kb_overview_rows,
+    READOUTS,
+    L10N_READOUTS,
+    CONTRIBUTOR_READOUTS,
+)
 from kitsune.dashboards.utils import render_readouts, get_locales_by_visit
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
@@ -21,11 +25,10 @@ from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Locale
 
 
-log = logging.getLogger('k.dashboards')
+log = logging.getLogger("k.dashboards")
 
 
-def _kb_readout(request, readout_slug, readouts, locale=None, mode=None,
-                product=None):
+def _kb_readout(request, readout_slug, readouts, locale=None, mode=None, product=None):
     """Instantiate and return the readout with the given slug.
 
     Raise Http404 if there is no such readout.
@@ -33,21 +36,25 @@ def _kb_readout(request, readout_slug, readouts, locale=None, mode=None,
     """
     if readout_slug not in readouts:
         raise Http404
-    return readouts[readout_slug](request, locale=locale, mode=mode,
-                                  product=product)
+    return readouts[readout_slug](request, locale=locale, mode=mode, product=product)
 
 
-def _kb_detail(request, readout_slug, readouts, main_view_name,
-               main_dash_title, locale=None, product=None):
+def _kb_detail(
+    request, readout_slug, readouts, main_view_name, main_dash_title, locale=None, product=None
+):
     """Show all the rows for the given KB article statistics table."""
-    return render(request, 'dashboards/kb_detail.html', {
-        'readout': _kb_readout(request, readout_slug, readouts, locale,
-                               product=product),
-        'locale': locale,
-        'main_dash_view': main_view_name,
-        'main_dash_title': main_dash_title,
-        'product': product,
-        'products': Product.objects.filter(visible=True)})
+    return render(
+        request,
+        "dashboards/kb_detail.html",
+        {
+            "readout": _kb_readout(request, readout_slug, readouts, locale, product=product),
+            "locale": locale,
+            "main_dash_view": main_view_name,
+            "main_dash_title": main_dash_title,
+            "product": product,
+            "products": Product.objects.filter(visible=True),
+        },
+    )
 
 
 @require_GET
@@ -55,9 +62,15 @@ def contributors_detail(request, readout_slug):
     """Show all the rows for the given contributor dashboard table."""
     product = _get_product(request)
 
-    return _kb_detail(request, readout_slug, CONTRIBUTOR_READOUTS,
-                      'dashboards.contributors', _('Knowledge Base Dashboard'),
-                      locale=settings.WIKI_DEFAULT_LANGUAGE, product=product)
+    return _kb_detail(
+        request,
+        readout_slug,
+        CONTRIBUTOR_READOUTS,
+        "dashboards.contributors",
+        _("Knowledge Base Dashboard"),
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        product=product,
+    )
 
 
 @require_GET
@@ -65,18 +78,26 @@ def contributors_overview(request):
     product = _get_product(request)
     category = _get_category(request)
 
-    return render(request, 'dashboards/contributors_overview.html', {
-        'overview_rows': kb_overview_rows(
-            locale=request.LANGUAGE_CODE, product=product,
-            mode=smart_int(request.GET.get('mode'), None),
-            max=None, category=category),
-        'main_dash_view': 'dashboards.contributors',
-        'main_dash_title': _('Knowledge Base Dashboard'),
-        'locale': request.LANGUAGE_CODE,
-        'product': product,
-        'products': Product.objects.filter(visible=True),
-        'category': category,
-        'categories': CATEGORIES})
+    return render(
+        request,
+        "dashboards/contributors_overview.html",
+        {
+            "overview_rows": kb_overview_rows(
+                locale=request.LANGUAGE_CODE,
+                product=product,
+                mode=smart_int(request.GET.get("mode"), None),
+                max=None,
+                category=category,
+            ),
+            "main_dash_view": "dashboards.contributors",
+            "main_dash_title": _("Knowledge Base Dashboard"),
+            "locale": request.LANGUAGE_CODE,
+            "product": product,
+            "products": Product.objects.filter(visible=True),
+            "category": category,
+            "categories": CATEGORIES,
+        },
+    )
 
 
 @require_GET
@@ -84,16 +105,21 @@ def localization_detail(request, readout_slug):
     """Show all the rows for the given localizer dashboard table."""
     product = _get_product(request)
 
-    return _kb_detail(request, readout_slug, L10N_READOUTS,
-                      'dashboards.localization', _('Localization Dashboard'),
-                      product=product)
+    return _kb_detail(
+        request,
+        readout_slug,
+        L10N_READOUTS,
+        "dashboards.localization",
+        _("Localization Dashboard"),
+        product=product,
+    )
 
 
 @require_GET
 def localization(request):
     """Render aggregate data about articles in a non-default locale."""
     if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
-        return HttpResponseRedirect(reverse('dashboards.contributors'))
+        return HttpResponseRedirect(reverse("dashboards.contributors"))
     locales = Locale.objects.filter(locale=request.LANGUAGE_CODE)
     if locales:
         permission = user_can_announce(request.user, locales[0])
@@ -103,12 +129,12 @@ def localization(request):
     product = _get_product(request)
 
     data = {
-        'overview_rows': l10n_overview_rows(
-            request.LANGUAGE_CODE, product=product),
-        'user_can_announce': permission,
+        "overview_rows": l10n_overview_rows(request.LANGUAGE_CODE, product=product),
+        "user_can_announce": permission,
     }
-    return render_readouts(request, L10N_READOUTS, 'localization.html',
-                           extra_data=data, product=product)
+    return render_readouts(
+        request, L10N_READOUTS, "localization.html", extra_data=data, product=product
+    )
 
 
 @require_GET
@@ -120,19 +146,22 @@ def contributors(request):
     return render_readouts(
         request,
         CONTRIBUTOR_READOUTS,
-        'contributors.html',
+        "contributors.html",
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         product=product,
         extra_data={
-            'overview_rows': kb_overview_rows(
-                locale=request.LANGUAGE_CODE, product=product,
-                mode=smart_int(request.GET.get('mode'), None),
-                max=smart_int(request.GET.get('max'), 10),
-                category=category),
-            'overview_modes': PERIODS,
-            'category': category,
-            'categories': CATEGORIES,
-        })
+            "overview_rows": kb_overview_rows(
+                locale=request.LANGUAGE_CODE,
+                product=product,
+                mode=smart_int(request.GET.get("mode"), None),
+                max=smart_int(request.GET.get("max"), 10),
+                category=category,
+            ),
+            "overview_modes": PERIODS,
+            "category": category,
+            "categories": CATEGORIES,
+        },
+    )
 
 
 @require_GET
@@ -143,9 +172,10 @@ def contributors_old(request):
     return render_readouts(
         request,
         CONTRIBUTOR_READOUTS,
-        'contributors_old.html',
+        "contributors_old.html",
         locale=settings.WIKI_DEFAULT_LANGUAGE,
-        product=product)
+        product=product,
+    )
 
 
 @require_GET
@@ -153,11 +183,15 @@ def wiki_rows(request, readout_slug):
     """Return the table contents HTML for the given readout and mode."""
     product = _get_product(request)
 
-    readout = _kb_readout(request, readout_slug, READOUTS,
-                          locale=request.GET.get('locale'),
-                          mode=smart_int(request.GET.get('mode'), None),
-                          product=product)
-    max_rows = smart_int(request.GET.get('max'), fallback=None)
+    readout = _kb_readout(
+        request,
+        readout_slug,
+        READOUTS,
+        locale=request.GET.get("locale"),
+        mode=smart_int(request.GET.get("mode"), None),
+        product=product,
+    )
+    max_rows = smart_int(request.GET.get("max"), fallback=None)
     return HttpResponse(readout.render(max_rows=max_rows))
 
 
@@ -166,12 +200,15 @@ def contributors_overview_rows(request):
     product = _get_product(request)
 
     overview_rows = kb_overview_rows(
-        locale=request.LANGUAGE_CODE, product=product,
-        mode=smart_int(request.GET.get('mode'), None),
-        max=smart_int(request.GET.get('max'), 10))
+        locale=request.LANGUAGE_CODE,
+        product=product,
+        mode=smart_int(request.GET.get("mode"), None),
+        max=smart_int(request.GET.get("max"), 10),
+    )
 
-    return render(request, 'dashboards/includes/kb_overview.html', {
-        'overview_rows': overview_rows})
+    return render(
+        request, "dashboards/includes/kb_overview.html", {"overview_rows": overview_rows}
+    )
 
 
 @require_GET
@@ -185,12 +222,13 @@ def locale_metrics(request, locale_code):
 
     return render(
         request,
-        'dashboards/locale_metrics.html',
+        "dashboards/locale_metrics.html",
         {
-            'current_locale': locale_code,
-            'product': product,
-            'products': Product.objects.filter(visible=True),
-        })
+            "current_locale": locale_code,
+            "product": product,
+            "products": Product.objects.filter(visible=True),
+        },
+    )
 
 
 @require_GET
@@ -202,17 +240,18 @@ def aggregated_metrics(request):
 
     return render(
         request,
-        'dashboards/aggregated_metrics.html',
+        "dashboards/aggregated_metrics.html",
         {
-            'locales_json': json.dumps(settings.SUMO_LANGUAGES),
-            'locales': locales,
-            'product': product,
-            'products': Product.objects.filter(visible=True),
-        })
+            "locales_json": json.dumps(settings.SUMO_LANGUAGES),
+            "locales": locales,
+            "product": product,
+            "products": Product.objects.filter(visible=True),
+        },
+    )
 
 
 def _get_product(request):
-    product_slug = request.GET.get('product')
+    product_slug = request.GET.get("product")
     if product_slug:
         return get_object_or_404(Product, slug=product_slug)
 
@@ -220,12 +259,12 @@ def _get_product(request):
 
 
 def _get_category(request):
-    category = request.GET.get('category')
+    category = request.GET.get("category")
 
     if category:
         for c in CATEGORIES:
             if str(c[0]) == category:
                 return c[0]
-        raise Http404('Invalid category.')
+        raise Http404("Invalid category.")
 
     return None

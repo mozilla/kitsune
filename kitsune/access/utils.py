@@ -4,16 +4,15 @@ from authority.sites import get_check
 from authority.models import Permission
 
 
-def has_perm_or_owns(user, perm, obj, perm_obj,
-                     field_name='creator'):
+def has_perm_or_owns(user, perm, obj, perm_obj, field_name="creator"):
     """Given a user, a permission, an object (obj) and another object to check
     permissions against (perm_obj), return True if the user has perm on
     obj."""
     if user.is_anonymous:
         return False
 
-    if hasattr(obj, '%s_id' % field_name):
-        if getattr(obj, '%s_id' % field_name) == user.pk:
+    if hasattr(obj, "%s_id" % field_name):
+        if getattr(obj, "%s_id" % field_name) == user.pk:
             return True
     elif user == getattr(obj, field_name):
         return True
@@ -42,4 +41,5 @@ def perm_is_defined_on(perm, obj):
         codename=perm,
         content_type=ContentType.objects.get_for_model(obj).pk,
         object_id=obj.pk,
-        approved=True).exists()
+        approved=True,
+    ).exists()
