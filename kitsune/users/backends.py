@@ -5,4 +5,5 @@ from django.contrib.auth.backends import ModelBackend
 # TODO: Remove after there are no more sessions using this in prod.
 class Sha256Backend(ModelBackend):
     """Overriding the Django model backend without changes."""
+
     pass

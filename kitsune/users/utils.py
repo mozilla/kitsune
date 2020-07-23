@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 from kitsune.sumo import email_utils
 from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
 
-log = logging.getLogger('k.users')
+log = logging.getLogger("k.users")
 
 
 def add_to_contributors(user, language_code):
@@ -20,12 +20,13 @@ def add_to_contributors(user, language_code):
     @email_utils.safe_translation
     def _make_mail(locale):
         mail = email_utils.make_mail(
-            subject=_('Welcome to SUMO!'),
-            text_template='users/email/contributor.ltxt',
-            html_template='users/email/contributor.html',
-            context_vars={'contributor': user},
+            subject=_("Welcome to SUMO!"),
+            text_template="users/email/contributor.ltxt",
+            html_template="users/email/contributor.html",
+            context_vars={"contributor": user},
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to_email=user.email)
+            to_email=user.email,
+        )
 
         return mail
 
@@ -33,16 +34,16 @@ def add_to_contributors(user, language_code):
 
 
 def suggest_username(email):
-    username = email.split('@', 1)[0]
+    username = email.split("@", 1)[0]
 
-    username_regex = r'^{0}[0-9]*$'.format(username)
+    username_regex = r"^{0}[0-9]*$".format(username)
     users = User.objects.filter(username__iregex=username_regex)
 
     if users.count() > 0:
         ids = []
         for user in users:
             # get the number at the end
-            i = user.username[len(username):]
+            i = user.username[len(username) :]
 
             # in case there's no number in the case where just the base is taken
             if i:
@@ -60,7 +61,7 @@ def suggest_username(email):
                 if suggested_number != ids[index + 1] and suggested_number not in ids:
                     break
 
-        username = '{0}{1}'.format(username, i + 1)
+        username = "{0}{1}".format(username, i + 1)
 
     return username
 
@@ -79,12 +80,12 @@ def anonymize_user(user):
     # Clear the profile
     profile = user.profile
     profile.clear()
-    profile.fxa_uid = '{user_id}-{uid}'.format(user_id=user.id, uid=str(uuid4()))
+    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uuid4()))
     profile.save()
 
     # Deactivate the user and change key information
-    user.username = 'user%s' % user.id
-    user.email = '%s@example.com' % user.id
+    user.username = "user%s" % user.id
+    user.email = "%s@example.com" % user.id
     deactivate_user(user, user)
 
     # Remove from all groups
@@ -96,21 +97,21 @@ def anonymize_user(user):
 def get_oidc_fxa_setting(attr):
     """Helper method to return the appropriate setting for Firefox Accounts authentication."""
     FXA_CONFIGURATION = {
-        'OIDC_OP_TOKEN_ENDPOINT': settings.FXA_OP_TOKEN_ENDPOINT,
-        'OIDC_OP_AUTHORIZATION_ENDPOINT': settings.FXA_OP_AUTHORIZATION_ENDPOINT,
-        'OIDC_OP_USER_ENDPOINT': settings.FXA_OP_USER_ENDPOINT,
-        'OIDC_OP_JWKS_ENDPOINT': settings.FXA_OP_JWKS_ENDPOINT,
-        'OIDC_RP_CLIENT_ID': settings.FXA_RP_CLIENT_ID,
-        'OIDC_RP_CLIENT_SECRET': settings.FXA_RP_CLIENT_SECRET,
-        'OIDC_AUTHENTICATION_CALLBACK_URL': 'users.fxa_authentication_callback',
-        'OIDC_CREATE_USER': settings.FXA_CREATE_USER,
-        'OIDC_RP_SIGN_ALGO': settings.FXA_RP_SIGN_ALGO,
-        'OIDC_USE_NONCE': settings.FXA_USE_NONCE,
-        'OIDC_RP_SCOPES': settings.FXA_RP_SCOPES,
-        'LOGOUT_REDIRECT_URL': settings.FXA_LOGOUT_REDIRECT_URL,
-        'OIDC_USERNAME_ALGO': settings.FXA_USERNAME_ALGO,
-        'OIDC_STORE_ACCESS_TOKEN': settings.FXA_STORE_ACCESS_TOKEN,
-        'OIDC_STORE_ID_TOKEN': settings.FXA_STORE_ID_TOKEN
+        "OIDC_OP_TOKEN_ENDPOINT": settings.FXA_OP_TOKEN_ENDPOINT,
+        "OIDC_OP_AUTHORIZATION_ENDPOINT": settings.FXA_OP_AUTHORIZATION_ENDPOINT,
+        "OIDC_OP_USER_ENDPOINT": settings.FXA_OP_USER_ENDPOINT,
+        "OIDC_OP_JWKS_ENDPOINT": settings.FXA_OP_JWKS_ENDPOINT,
+        "OIDC_RP_CLIENT_ID": settings.FXA_RP_CLIENT_ID,
+        "OIDC_RP_CLIENT_SECRET": settings.FXA_RP_CLIENT_SECRET,
+        "OIDC_AUTHENTICATION_CALLBACK_URL": "users.fxa_authentication_callback",
+        "OIDC_CREATE_USER": settings.FXA_CREATE_USER,
+        "OIDC_RP_SIGN_ALGO": settings.FXA_RP_SIGN_ALGO,
+        "OIDC_USE_NONCE": settings.FXA_USE_NONCE,
+        "OIDC_RP_SCOPES": settings.FXA_RP_SCOPES,
+        "LOGOUT_REDIRECT_URL": settings.FXA_LOGOUT_REDIRECT_URL,
+        "OIDC_USERNAME_ALGO": settings.FXA_USERNAME_ALGO,
+        "OIDC_STORE_ACCESS_TOKEN": settings.FXA_STORE_ACCESS_TOKEN,
+        "OIDC_STORE_ID_TOKEN": settings.FXA_STORE_ID_TOKEN,
     }
 
     return FXA_CONFIGURATION.get(attr, None)
