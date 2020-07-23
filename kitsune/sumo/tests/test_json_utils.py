@@ -104,5 +104,5 @@ class TestMarkupJson(TestCase):
 
 
 def test_template_json():
-    eq_(template_json([]), '[]')
+    eq_(template_json([]), "[]")
     eq_(type(template_json([])), str)

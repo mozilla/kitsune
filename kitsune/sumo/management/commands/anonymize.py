@@ -5,10 +5,10 @@ from kitsune.settings import path
 
 
 class Command(BaseCommand):
-    help = 'Anonymize the database. Will wipe out some data.'
+    help = "Anonymize the database. Will wipe out some data."
 
     def handle(self, *arg, **kwargs):
-        with open(path('scripts/anonymize.sql')) as fp:
+        with open(path("scripts/anonymize.sql")) as fp:
             sql = fp.read()
             cursor = connection.cursor()
             cursor.execute(sql)
