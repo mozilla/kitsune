@@ -22,7 +22,7 @@ def _append_tz(t):
 @library.filter
 def isotime(t):
     """Date/Time format according to ISO 8601"""
-    if not hasattr(t, 'tzinfo'):
+    if not hasattr(t, "tzinfo"):
         return
     return _append_tz(t).astimezone(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 

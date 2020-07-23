@@ -5,8 +5,12 @@ from datetime import datetime, timedelta
 from email.utils import parsedate
 
 from django.conf import settings
-from django.http import (HttpResponse, HttpResponseBadRequest,
-                         HttpResponseNotFound, HttpResponseServerError)
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseNotFound,
+    HttpResponseServerError,
+)
 from django.shortcuts import render
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from django.views.decorators.http import require_POST, require_GET
@@ -22,19 +26,23 @@ from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
 
-log = logging.getLogger('k.customercare')
+log = logging.getLogger("k.customercare")
 
 MAX_TWEETS = 20
-FILTERS = OrderedDict([('recent', _lazy('Most Recent')),
-                      ('unanswered', _lazy('Unanswered')),
-                      ('answered', _lazy('Answered')),
-                      ('all', _lazy('All'))])
+FILTERS = OrderedDict(
+    [
+        ("recent", _lazy("Most Recent")),
+        ("unanswered", _lazy("Unanswered")),
+        ("answered", _lazy("Answered")),
+        ("all", _lazy("All")),
+    ]
+)
 
 
 def _tweet_for_template(tweet, https=False):
     """Return the dict needed for tweets.html to render a tweet + replies."""
     data = json.loads(tweet.raw_json)
-    parsed_date = parsedate(data['created_at'])
+    parsed_date = parsedate(data["created_at"])
     date = datetime(*parsed_date[0:6])
 
     # Recursively fetch replies.
@@ -44,31 +52,39 @@ def _tweet_for_template(tweet, https=False):
     else:
         replies = None
 
-    if 'from_user' in data:  # For tweets collected using v1 API
+    if "from_user" in data:  # For tweets collected using v1 API
         user_data = data
-        from_user = data['from_user']
+        from_user = data["from_user"]
     else:
-        user_data = data['user']
-        from_user = user_data['screen_name']
+        user_data = data["user"]
+        from_user = user_data["screen_name"]
 
     if https:
-        img = bleach.clean(user_data['profile_image_url_https'])
+        img = bleach.clean(user_data["profile_image_url_https"])
     else:
-        img = bleach.clean(user_data['profile_image_url'])
+        img = bleach.clean(user_data["profile_image_url"])
 
-    return {'profile_img': img,
-            'user': from_user,
-            'text': bleach.clean(data['text']),
-            'id': tweet.pk,
-            'date': date,
-            'reply_count': len(replies) if replies else 0,
-            'replies': replies,
-            'reply_to': tweet.reply_to and tweet.reply_to.pk,
-            'hidden': tweet.hidden}
+    return {
+        "profile_img": img,
+        "user": from_user,
+        "text": bleach.clean(data["text"]),
+        "id": tweet.pk,
+        "date": date,
+        "reply_count": len(replies) if replies else 0,
+        "replies": replies,
+        "reply_to": tweet.reply_to and tweet.reply_to.pk,
+        "hidden": tweet.hidden,
+    }
 
 
-def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
-                reply_to=None, filter=None, https=False):
+def _get_tweets(
+    locale=settings.LANGUAGE_CODE,
+    limit=MAX_TWEETS,
+    max_id=None,
+    reply_to=None,
+    filter=None,
+    https=False,
+):
     """
     Fetch a list of tweets.
 
@@ -82,19 +98,16 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
     locale = settings.LOCALES[locale].iso639_1
     created_limit = datetime.now() - timedelta(days=settings.CC_TWEETS_DAYS)
 
-    q = Tweet.objects.filter(
-        locale=locale,
-        reply_to=reply_to,
-        created__gt=created_limit)
+    q = Tweet.objects.filter(locale=locale, reply_to=reply_to, created__gt=created_limit)
 
     if max_id:
         q = q.filter(pk__lt=max_id)
 
-    if filter != 'all':
+    if filter != "all":
         q = q.filter(hidden=False)
-    if filter == 'unanswered':
+    if filter == "unanswered":
         q = q.filter(replies__pk__isnull=True)
-    elif filter == 'answered':
+    elif filter == "answered":
         q = q.filter(replies__pk__isnull=False)
 
     if limit:
@@ -104,7 +117,7 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
 
 
 def _count_answered_tweets(since=None):
-    q = Reply.objects.values('reply_to_tweet_id').distinct()
+    q = Reply.objects.values("reply_to_tweet_id").distinct()
 
     if since:
         q = q.filter(created__gte=since)
@@ -115,17 +128,23 @@ def _count_answered_tweets(since=None):
 @require_GET
 def more_tweets(request):
     """AJAX view returning a list of tweets."""
-    max_id = request.GET.get('max_id')
+    max_id = request.GET.get("max_id")
 
-    raw_filter = request.GET.get('filter')
-    filter = raw_filter if raw_filter in FILTERS else 'recent'
+    raw_filter = request.GET.get("filter")
+    filter = raw_filter if raw_filter in FILTERS else "recent"
 
-    return render(request, 'customercare/tweets.html', {
-        'tweets': _get_tweets(
-            locale=request.LANGUAGE_CODE,
-            max_id=max_id,
-            filter=filter,
-            https=request.is_secure())})
+    return render(
+        request,
+        "customercare/tweets.html",
+        {
+            "tweets": _get_tweets(
+                locale=request.LANGUAGE_CODE,
+                max_id=max_id,
+                filter=filter,
+                https=request.is_secure(),
+            )
+        },
+    )
 
 
 @ssl_required
@@ -137,9 +156,9 @@ def landing(request):
     # Get a redis client
     redis = None
     try:
-        redis = redis_client(name='default')
+        redis = redis_client(name="default")
     except RedisError as e:
-        log.error('Redis error: %s' % e)
+        log.error("Redis error: %s" % e)
 
     contributor_stats = redis and redis.get(settings.CC_TOP_CONTRIB_CACHE_KEY)
     if contributor_stats:
@@ -153,31 +172,36 @@ def landing(request):
             # Bad oauth token. Create a new session so user re-auths.
             request.twitter = twitter.Session()
         else:
-            twitter_user = credentials['screen_name']
+            twitter_user = credentials["screen_name"]
 
     yesterday = datetime.now() - timedelta(days=1)
 
     recent_replied_count = _count_answered_tweets(since=yesterday)
 
-    return render(request, 'customercare/landing.html', {
-        'contributor_stats': contributor_stats,
-        'canned_responses': get_common_replies(request.LANGUAGE_CODE),
-        'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
-                              filter='unanswered',
-                              https=request.is_secure()),
-        'authed': request.user.is_authenticated and request.twitter.authed,
-        'twitter_user': twitter_user,
-        'filters': FILTERS,
-        'filter': 'unanswered',
-        'time': datetime.now(),
-        'goal': settings.CC_REPLIES_GOAL,
-        'recent_replied_count': recent_replied_count})
+    return render(
+        request,
+        "customercare/landing.html",
+        {
+            "contributor_stats": contributor_stats,
+            "canned_responses": get_common_replies(request.LANGUAGE_CODE),
+            "tweets": _get_tweets(
+                locale=request.LANGUAGE_CODE, filter="unanswered", https=request.is_secure()
+            ),
+            "authed": request.user.is_authenticated and request.twitter.authed,
+            "twitter_user": twitter_user,
+            "filters": FILTERS,
+            "filter": "unanswered",
+            "time": datetime.now(),
+            "goal": settings.CC_REPLIES_GOAL,
+            "recent_replied_count": recent_replied_count,
+        },
+    )
 
 
-@permission_required('customercare.ban_account')
+@permission_required("customercare.ban_account")
 def moderate(request):
     """Moderate banned AoA twitter handles."""
-    return render(request, 'customercare/moderate.html')
+    return render(request, "customercare/moderate.html")
 
 
 @require_POST
@@ -187,87 +211,87 @@ def twitter_post(request):
     """Post a tweet, and return a rendering of it (and any replies)."""
 
     try:
-        reply_to_id = int(request.POST.get('reply_to', ''))
+        reply_to_id = int(request.POST.get("reply_to", ""))
     except ValueError:
         # L10n: the tweet needs to be a reply to another tweet.
-        return HttpResponseBadRequest(_('Reply-to is empty'))
+        return HttpResponseBadRequest(_("Reply-to is empty"))
 
     original = Tweet.objects.get(pk=reply_to_id)
     if original.replies.count() > 0:
-        return HttpResponseBadRequest(_('Tweet has already been replied to'))
+        return HttpResponseBadRequest(_("Tweet has already been replied to"))
 
-    content = request.POST.get('content', '')
+    content = request.POST.get("content", "")
     if len(content) == 0:
         # L10n: the tweet has no content.
-        return HttpResponseBadRequest(_('Message is empty'))
+        return HttpResponseBadRequest(_("Message is empty"))
 
     if len(content) > 140:
-        return HttpResponseBadRequest(_('Message is too long'))
+        return HttpResponseBadRequest(_("Message is too long"))
 
     try:
         credentials = request.twitter.api.verify_credentials()
-        username = credentials['screen_name']
-        banned = (TwitterAccount.objects
-                  .filter(username=username, banned=True)
-                  .first())
+        username = credentials["screen_name"]
+        banned = TwitterAccount.objects.filter(username=username, banned=True).first()
         if banned:
-            return render(request, 'customercare/tweets.html',
-                          {'tweets': []})
+            return render(request, "customercare/tweets.html", {"tweets": []})
         result = request.twitter.api.update_status(
-            status=content,
-            in_reply_to_status_id=reply_to_id)
+            status=content, in_reply_to_status_id=reply_to_id
+        )
     except (TwythonError, TwythonAuthError) as e:
         # L10n: {message} is an error coming from our twitter api library
-        return HttpResponseBadRequest(
-            _('An error occured: {message}').format(message=e))
+        return HttpResponseBadRequest(_("An error occured: {message}").format(message=e))
 
     # Store reply in database.
 
     # If tweepy's status models actually implemented a dictionary, it would
     # be too boring.
     status = result
-    author = result['user']
-    created_at = datetime.strptime(status['created_at'],
-                                   '%a %b %d %H:%M:%S +0000 %Y')
+    author = result["user"]
+    created_at = datetime.strptime(status["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
 
     # Raw JSON blob data
     # Note: The JSON for the tweet posted is different than what we get from
     # the search API. This makes it similar with the fields that we use.
     raw_tweet_data = {
-        'id': status['id'],
-        'text': status['text'],
-        'created_at': status['created_at'],
-        'iso_language_code': author['lang'],
-        'from_user_id': author['id'],
-        'from_user': author['screen_name'],
-        'profile_image_url': author['profile_image_url'],
-        'profile_image_url_https': author['profile_image_url_https'],
+        "id": status["id"],
+        "text": status["text"],
+        "created_at": status["created_at"],
+        "iso_language_code": author["lang"],
+        "from_user_id": author["id"],
+        "from_user": author["screen_name"],
+        "profile_image_url": author["profile_image_url"],
+        "profile_image_url_https": author["profile_image_url_https"],
     }
 
     # The tweet with id `reply_to_id` will not be missing from the DB unless
     # the purge cron job has run since the user loaded the form and we are
     # replying to a deleted tweet. TODO: Catch integrity error and log or
     # something.
-    tweet = Tweet.objects.create(pk=status['id'],
-                                 raw_json=json.dumps(raw_tweet_data),
-                                 locale=author['lang'],
-                                 created=created_at,
-                                 reply_to_id=reply_to_id)
+    tweet = Tweet.objects.create(
+        pk=status["id"],
+        raw_json=json.dumps(raw_tweet_data),
+        locale=author["lang"],
+        created=created_at,
+        reply_to_id=reply_to_id,
+    )
 
     # Record in our Reply table.
     Reply.objects.create(
         user=request.user if request.user.is_authenticated else None,
-        twitter_username=author['screen_name'],
-        tweet_id=status['id'],
+        twitter_username=author["screen_name"],
+        tweet_id=status["id"],
         raw_json=json.dumps(raw_tweet_data),
-        locale=author['lang'],
+        locale=author["lang"],
         created=created_at,
-        reply_to_tweet_id=reply_to_id
+        reply_to_tweet_id=reply_to_id,
     )
 
     # We could optimize by not encoding and then decoding JSON.
-    return render(request, 'customercare/tweets.html', {
-        'tweets': [_tweet_for_template(tweet, request.is_secure())]})
+    return render(
+        request,
+        "customercare/tweets.html",
+        {"tweets": [_tweet_for_template(tweet, request.is_secure())]},
+    )
 
 
 @require_POST
@@ -284,25 +308,24 @@ def hide_tweet(request):
         return HttpResponse(status=418)  # I'm a teapot.
 
     try:
-        id = int(request.POST.get('id'))
+        id = int(request.POST.get("id"))
     except (ValueError, TypeError):
-        return HttpResponseBadRequest(_('Invalid ID.'))
+        return HttpResponseBadRequest(_("Invalid ID."))
 
     try:
         tweet = Tweet.objects.get(pk=id)
     except Tweet.DoesNotExist:
-        return HttpResponseNotFound(_('Invalid ID.'))
+        return HttpResponseNotFound(_("Invalid ID."))
 
-    if (tweet.reply_to is not None or
-            Tweet.objects.filter(reply_to=tweet).exists()):
-        return HttpResponseBadRequest(_('Tweets that are replies or have '
-                                        'replies must not be hidden.'))
+    if tweet.reply_to is not None or Tweet.objects.filter(reply_to=tweet).exists():
+        return HttpResponseBadRequest(
+            _("Tweets that are replies or have " "replies must not be hidden.")
+        )
 
     try:
         tweet.hidden = True
         tweet.save(force_update=True)
     except Exception as e:
-        return HttpResponseServerError(
-            _('An error occured: {message}').format(message=e))
+        return HttpResponseServerError(_("An error occured: {message}").format(message=e))
 
-    return HttpResponse('ok')
+    return HttpResponse("ok")

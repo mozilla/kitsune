@@ -27,9 +27,8 @@ def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
 
     # Count the number of replies tweeted in the current year.
     qs = Reply.objects.filter(
-        user=user,
-        created__gte=date(year, 1, 1),
-        created__lt=date(year + 1, 1, 1))
+        user=user, created__gte=date(year, 1, 1), created__lt=date(year + 1, 1, 1)
+    )
 
     # If the count is 50 or higher, award the badge.
     if qs.count() >= settings.BADGE_LIMIT_ARMY_OF_AWESOME:
