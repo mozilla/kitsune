@@ -5,12 +5,15 @@ from kitsune.search.utils import FakeLogger
 
 
 class Command(BaseCommand):
-    help = 'Shows elastic search index status.'
+    help = "Shows elastic search index status."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--checkindex', action='store_true', dest='checkindex',
-            help='Checks the index contents')
+            "--checkindex",
+            action="store_true",
+            dest="checkindex",
+            help="Checks the index contents",
+        )
 
     def handle(self, *args, **options):
-        es_status_cmd(options['checkindex'], log=FakeLogger(self.stdout))
+        es_status_cmd(options["checkindex"], log=FakeLogger(self.stdout))

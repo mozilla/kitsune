@@ -8,12 +8,13 @@ from kitsune.sumo.tests import TestCase
 
 
 # Dummy request for passing to question_searcher() and brethren.
-dummy_request = RequestFactory().get('/')
+dummy_request = RequestFactory().get("/")
 
 
 @override_settings(ES_LIVE_INDEXING=True)
 class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
+
     search_tests = True
 
 

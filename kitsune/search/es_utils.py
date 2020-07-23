@@ -22,16 +22,15 @@ from kitsune.search.utils import chunked
 # tests want to be able to dynamically change settings at run time,
 # which isn't possible if these are constants.
 
+
 def read_index(group):
     """Gets the name of the read index for a group."""
-    return ('%s_%s' % (settings.ES_INDEX_PREFIX,
-                       settings.ES_INDEXES[group]))
+    return "%s_%s" % (settings.ES_INDEX_PREFIX, settings.ES_INDEXES[group])
 
 
 def write_index(group):
     """Gets the name of the write index for a group."""
-    return ('%s_%s' % (settings.ES_INDEX_PREFIX,
-                       settings.ES_WRITE_INDEXES[group]))
+    return "%s_%s" % (settings.ES_INDEX_PREFIX, settings.ES_WRITE_INDEXES[group])
 
 
 def all_read_indexes():
@@ -47,21 +46,22 @@ def all_write_indexes():
 CHUNK_SIZE = 20000
 
 
-log = logging.getLogger('k.search.es')
+log = logging.getLogger("k.search.es")
 
 
 class MappingMergeError(Exception):
     """Represents a mapping merge error"""
+
     pass
 
 
 class UnindexMeBro(Exception):
     """Raise in extract_document when doc should be removed."""
+
     pass
 
 
 class AnalyzerMixin(object):
-
     def _with_analyzer(self, key, val, action):
         """Do a normal kind of query, with a analyzer added.
 
@@ -72,61 +72,41 @@ class AnalyzerMixin(object):
             match_phrase
         """
         query, analyzer = val
-        clause = {
-            action: {
-                key: {
-                    'query': query,
-                    'analyzer': analyzer,
-                }
-            }
-        }
+        clause = {action: {key: {"query": query, "analyzer": analyzer,}}}
 
         boost = self.field_boosts.get(key)
         if boost is not None:
-            clause[action][key]['boost'] = boost
+            clause[action][key]["boost"] = boost
 
         return clause
 
     def process_query_match_phrase_analyzer(self, key, val, action):
         """A match phrase query that includes an analyzer."""
-        return self._with_analyzer(key, val, 'match_phrase')
+        return self._with_analyzer(key, val, "match_phrase")
 
     def process_query_match_analyzer(self, key, val, action):
         """A match query that includes an analyzer."""
-        return self._with_analyzer(key, val, 'match')
+        return self._with_analyzer(key, val, "match")
 
     def process_query_sqs(self, key, val, action):
         """Implements simple_query_string query"""
-        return {
-            'simple_query_string': {
-                'fields': [key],
-                'query': val,
-                'default_operator': 'or',
-            }
-        }
+        return {"simple_query_string": {"fields": [key], "query": val, "default_operator": "or",}}
 
     def process_query_sqs_analyzer(self, key, val, action):
         """Implements sqs query that includes an analyzer"""
         query, analyzer = val
         return {
-            'simple_query_string': {
-                'fields': [key],
-                'query': query,
-                'analyzer': analyzer,
-                'default_operator': 'or',
+            "simple_query_string": {
+                "fields": [key],
+                "query": query,
+                "analyzer": analyzer,
+                "default_operator": "or",
             }
         }
 
     def process_query_match_whitespace(self, key, val, action):
         """A match query that uses the whitespace analyzer."""
-        return {
-            'match': {
-                key: {
-                    'query': val,
-                    'analyzer': 'whitespace',
-                }
-            }
-        }
+        return {"match": {key: {"query": val, "analyzer": "whitespace",}}}
 
 
 class Sphilastic(S, AnalyzerMixin):
@@ -141,6 +121,7 @@ class Sphilastic(S, AnalyzerMixin):
        different, build your own S.
 
     """
+
     def print_query(self):
         pprint.pprint(self._build_query())
 
@@ -159,7 +140,7 @@ class Sphilastic(S, AnalyzerMixin):
             }
         """
         return {
-            'more_like_this': val,
+            "more_like_this": val,
         }
 
 
@@ -171,6 +152,7 @@ class AnalyzerS(UntypedS, AnalyzerMixin):
 
     This just exists as a way to mix together UntypedS and AnalyzerMixin.
     """
+
     pass
 
 
@@ -178,6 +160,7 @@ def get_mappings(index):
     mappings = {}
 
     from kitsune.search.models import get_mapping_types
+
     for cls in get_mapping_types():
         group = cls.get_index_group()
         if index == write_index(group) or index == read_index(group):
@@ -190,6 +173,7 @@ def get_all_mappings():
     mappings = {}
 
     from kitsune.search.models import get_mapping_types
+
     for cls in get_mapping_types():
         mappings[cls.get_mapping_type_name()] = cls.get_mapping()
 
@@ -203,14 +187,14 @@ def get_indexes(all_indexes=False):
     """
     es = get_es()
     status = es.indices.status()
-    indexes = status['indices']
+    indexes = status["indices"]
 
     if not all_indexes:
-        indexes = dict((k, v) for k, v in list(indexes.items())
-                       if k.startswith(settings.ES_INDEX_PREFIX))
+        indexes = dict(
+            (k, v) for k, v in list(indexes.items()) if k.startswith(settings.ES_INDEX_PREFIX)
+        )
 
-    return [(name, value['docs']['num_docs'])
-            for name, value in list(indexes.items())]
+    return [(name, value["docs"]["num_docs"]) for name, value in list(indexes.items())]
 
 
 def get_doctype_stats(index):
@@ -229,6 +213,7 @@ def get_doctype_stats(index):
     stats = {}
 
     from kitsune.search.models import get_mapping_types
+
     for cls in get_mapping_types():
         if cls.get_index() == index:
             # Note: Can't use cls.search() here since that returns a
@@ -261,8 +246,8 @@ def get_documents(cls, ids):
     """
     # FIXME: We pull the field names from the mapping, but I'm not
     # sure if this works in all cases or not and it's kind of hacky.
-    fields = list(cls.get_mapping()['properties'].keys())
-    ret = cls.search().filter(id__in=ids).values_dict(*fields)[:len(ids)]
+    fields = list(cls.get_mapping()["properties"].keys())
+    ret = cls.search().filter(id__in=ids).values_dict(*fields)[: len(ids)]
     return cls.reshape(ret)
 
 
@@ -278,30 +263,30 @@ def get_analysis():
     # The keys are locales to look up to decide the analyzer's name.
     # The values are the language name to set for Snowball.
     snowball_langs = {
-        'eu': 'Basque',
-        'ca': 'Catalan',
-        'da': 'Danish',
-        'nl': 'Dutch',
-        'en-US': 'English',
-        'fi': 'Finnish',
-        'fr': 'French',
-        'de': 'German',
-        'hu': 'Hungarian',
-        'it': 'Italian',
-        'no': 'Norwegian',
-        'pt-BR': 'Portuguese',
-        'ro': 'Romanian',
-        'ru': 'Russian',
-        'es': 'Spanish',
-        'sv': 'Swedish',
-        'tr': 'Turkish',
+        "eu": "Basque",
+        "ca": "Catalan",
+        "da": "Danish",
+        "nl": "Dutch",
+        "en-US": "English",
+        "fi": "Finnish",
+        "fr": "French",
+        "de": "German",
+        "hu": "Hungarian",
+        "it": "Italian",
+        "no": "Norwegian",
+        "pt-BR": "Portuguese",
+        "ro": "Romanian",
+        "ru": "Russian",
+        "es": "Spanish",
+        "sv": "Swedish",
+        "tr": "Turkish",
     }
 
     for locale, language in list(snowball_langs.items()):
         analyzer_name = es_analyzer_for_locale(locale, synonyms=False)
         analyzers[analyzer_name] = {
-            'type': 'snowball',
-            'language': language,
+            "type": "snowball",
+            "language": language,
         }
 
         # The snowball analyzer is actually just a shortcut that does
@@ -311,29 +296,29 @@ def get_analysis():
         if locale in config.ES_SYNONYM_LOCALES:
             analyzer_name = es_analyzer_for_locale(locale, synonyms=True)
             analyzers[analyzer_name] = {
-                'type': 'custom',
-                'tokenizer': 'standard',
-                'filter': [
-                    'standard',
-                    'lowercase',
-                    'synonyms-' + locale,
-                    'stop',
-                    'snowball-' + locale,
+                "type": "custom",
+                "tokenizer": "standard",
+                "filter": [
+                    "standard",
+                    "lowercase",
+                    "synonyms-" + locale,
+                    "stop",
+                    "snowball-" + locale,
                 ],
             }
 
     for locale in config.ES_SYNONYM_LOCALES:
         filter_name, filter_body = es_get_synonym_filter(locale)
         filters[filter_name] = filter_body
-        filters['snowball-' + locale] = {
-            'type': 'snowball',
-            'language': snowball_langs[locale],
+        filters["snowball-" + locale] = {
+            "type": "snowball",
+            "language": snowball_langs[locale],
         }
 
     # Done!
     return {
-        'analyzer': analyzers,
-        'filter': filters,
+        "analyzer": analyzers,
+        "filter": filters,
     }
 
 
@@ -346,11 +331,11 @@ def es_get_synonym_filter(locale):
     # synonym from one word to itself.
 
     # TODO: Someday this should be something like .filter(locale=locale)
-    synonyms = list(Synonym.objects.all()) or ['firefox => firefox']
-    name = 'synonyms-' + locale
+    synonyms = list(Synonym.objects.all()) or ["firefox => firefox"]
+    name = "synonyms-" + locale
     body = {
-        'type': 'synonym',
-        'synonyms': [str(s) for s in synonyms],
+        "type": "synonym",
+        "synonyms": [str(s) for s in synonyms],
     }
 
     return name, body
@@ -378,21 +363,18 @@ def recreate_indexes(es=None, indexes=None):
         # the tokenizers, so live indexing doesn't get a chance to index
         # anything between and infer a bogus mapping (which ES then freaks
         # out over when we try to lay in an incompatible explicit mapping).
-        es.indices.create(index=index, body={
-            'mappings': get_mappings(index),
-            'settings': {
-                'analysis': get_analysis(),
-            }
-        })
+        es.indices.create(
+            index=index,
+            body={"mappings": get_mappings(index), "settings": {"analysis": get_analysis(),}},
+        )
 
     # Wait until the index is there.
-    es.cluster.health(wait_for_status='yellow')
+    es.cluster.health(wait_for_status="yellow")
 
 
 def get_index_settings(index):
     """Returns ES settings for this index"""
-    return (get_es().indices.get_settings(index=index)
-            .get(index, {}).get('settings', {}))
+    return get_es().indices.get_settings(index=index).get(index, {}).get("settings", {})
 
 
 def get_indexable(percent=100, seconds_ago=0, mapping_types=None):
@@ -414,7 +396,7 @@ def get_indexable(percent=100, seconds_ago=0, mapping_types=None):
     for cls in mapping_types:
         indexable = cls.get_indexable(seconds_ago=seconds_ago)
         if percent < 1:
-            indexable = indexable[:int(indexable.count() * percent)]
+            indexable = indexable[: int(indexable.count() * percent)]
         to_index.append((cls, indexable))
 
     return to_index
@@ -448,13 +430,12 @@ def index_chunk(cls, id_list, reraise=False):
                 cls.unindex(id_)
 
             except Exception:
-                log.exception('Unable to extract/index document (id: %d)',
-                              id_)
+                log.exception("Unable to extract/index document (id: %d)", id_)
                 if reraise:
                     raise
 
         if documents:
-            cls.bulk_index(documents, id_field='id')
+            cls.bulk_index(documents, id_field="id")
 
         if settings.DEBUG:
             # Nix queries so that this doesn't become a complete
@@ -462,8 +443,9 @@ def index_chunk(cls, id_list, reraise=False):
             reset_queries()
 
 
-def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
-                   criticalmass=False, seconds_ago=0, log=log):
+def es_reindex_cmd(
+    percent=100, delete=False, mapping_types=None, criticalmass=False, seconds_ago=0, log=log
+):
     """Rebuild ElasticSearch indexes
 
     :arg percent: 1 to 100--the percentage of the db to index
@@ -490,14 +472,13 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
             get_doctype_stats(index)
         except ES_EXCEPTIONS:
             if not delete:
-                log.error('The index "%s" does not exist. '
-                          'You must specify --delete.' % index)
+                log.error('The index "%s" does not exist. ' "You must specify --delete." % index)
                 need_delete = True
     if need_delete:
         return
 
     if delete:
-        log.info('wiping and recreating %s...', ', '.join(indexes))
+        log.info("wiping and recreating %s...", ", ".join(indexes))
         recreate_indexes(es, indexes)
 
     if criticalmass:
@@ -507,15 +488,13 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
         # indexable here.
 
         # Get only questions and wiki document stuff.
-        all_indexable = get_indexable(
-            mapping_types=['questions_question', 'wiki_document'])
+        all_indexable = get_indexable(mapping_types=["questions_question", "wiki_document"])
 
         # The first item is questions because we specified that
         # order. Old questions don't show up in searches, so we nix
         # them by reversing the list (ordered by id ascending) and
         # slicing it.
-        all_indexable[0] = (all_indexable[0][0],
-                            list(reversed(all_indexable[0][1]))[:15000])
+        all_indexable[0] = (all_indexable[0][0], list(reversed(all_indexable[0][1]))[:15000])
 
     elif mapping_types:
         all_indexable = get_indexable(percent, seconds_ago, mapping_types)
@@ -528,11 +507,9 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
         # We're doing a lot of indexing, so we get the refresh_interval of
         # the index currently, then nix refreshing. Later we'll restore it.
         for index in indexes:
-            old_refreshes[index] = (get_index_settings(index)
-                                    .get('index.refresh_interval', '1s'))
+            old_refreshes[index] = get_index_settings(index).get("index.refresh_interval", "1s")
             # Disable automatic refreshing
-            es.indices.put_settings(index=index,
-                                    body={'index': {'refresh_interval': '-1'}})
+            es.indices.put_settings(index=index, body={"index": {"refresh_interval": "-1"}})
 
         start_time = time.time()
         for cls, indexable in all_indexable:
@@ -543,8 +520,7 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
                 continue
 
             chunk_start_time = time.time()
-            log.info('reindexing %s. %s to index....',
-                     cls.get_mapping_type_name(), total)
+            log.info("reindexing %s. %s to index....", cls.get_mapping_type_name(), total)
 
             i = 0
             for chunk in chunked(indexable, 1000):
@@ -556,27 +532,29 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
                 per_1000 = (time.time() - cls_start_time) / (i / 1000.0)
                 this_1000 = time.time() - chunk_start_time
 
-                log.info('   %s/%s %s... (%s/1000 avg, %s ETA)',
-                         i,
-                         total,
-                         format_time(this_1000),
-                         format_time(per_1000),
-                         format_time(time_to_go))
+                log.info(
+                    "   %s/%s %s... (%s/1000 avg, %s ETA)",
+                    i,
+                    total,
+                    format_time(this_1000),
+                    format_time(per_1000),
+                    format_time(time_to_go),
+                )
 
             delta_time = time.time() - cls_start_time
-            log.info('   done! (%s total, %s/1000 avg)',
-                     format_time(delta_time),
-                     format_time(delta_time / (total / 1000.0)))
+            log.info(
+                "   done! (%s total, %s/1000 avg)",
+                format_time(delta_time),
+                format_time(delta_time / (total / 1000.0)),
+            )
 
         delta_time = time.time() - start_time
-        log.info('done! (%s total)', format_time(delta_time))
+        log.info("done! (%s total)", format_time(delta_time))
 
     finally:
         # Re-enable automatic refreshing
         for index, old_refresh in list(old_refreshes.items()):
-            es.indices.put_settings(
-                index=index,
-                body={'index': {'refresh_interval': old_refresh}})
+            es.indices.put_settings(index=index, body={"index": {"refresh_interval": old_refresh}})
 
 
 def es_delete_cmd(index, noinput=False, log=log):
@@ -584,8 +562,10 @@ def es_delete_cmd(index, noinput=False, log=log):
     try:
         indexes = [name for name, count in get_indexes()]
     except ES_EXCEPTIONS:
-        log.error('Your elasticsearch process is not running or ES_URLS '
-                  'is set wrong in your settings_local.py file.')
+        log.error(
+            "Your elasticsearch process is not running or ES_URLS "
+            "is set wrong in your settings_local.py file."
+        )
         return
 
     if index not in indexes:
@@ -593,15 +573,16 @@ def es_delete_cmd(index, noinput=False, log=log):
         return
 
     if index in all_read_indexes() and not noinput:
-        ret = input('"%s" is a read index. Are you sure you want '
-                    'to delete it? (yes/no) ' % index)
-        if ret != 'yes':
-            log.info('Not deleting the index.')
+        ret = input(
+            '"%s" is a read index. Are you sure you want ' "to delete it? (yes/no) " % index
+        )
+        if ret != "yes":
+            log.info("Not deleting the index.")
             return
 
     log.info('Deleting index "%s"...', index)
     delete_index(index)
-    log.info('Done!')
+    log.info("Done!")
 
 
 def es_status_cmd(checkindex=False, log=log):
@@ -634,67 +615,68 @@ def es_status_cmd(checkindex=False, log=log):
     try:
         indexes = get_indexes(all_indexes=True)
     except ES_EXCEPTIONS:
-        log.error('Your elasticsearch process is not running or ES_URLS '
-                  'is set wrong in your settings_local.py file.')
+        log.error(
+            "Your elasticsearch process is not running or ES_URLS "
+            "is set wrong in your settings_local.py file."
+        )
         return
 
-    log.info('Elasticsearch:')
-    log.info('  Version                 : %s', es_deets['version']['number'])
+    log.info("Elasticsearch:")
+    log.info("  Version                 : %s", es_deets["version"]["number"])
 
-    log.info('Settings:')
-    log.info('  ES_URLS                 : %s', settings.ES_URLS)
-    log.info('  ES_INDEX_PREFIX         : %s', settings.ES_INDEX_PREFIX)
-    log.info('  ES_LIVE_INDEXING        : %s', settings.ES_LIVE_INDEXING)
-    log.info('  ES_INDEXES              : %s', settings.ES_INDEXES)
-    log.info('  ES_WRITE_INDEXES        : %s', settings.ES_WRITE_INDEXES)
+    log.info("Settings:")
+    log.info("  ES_URLS                 : %s", settings.ES_URLS)
+    log.info("  ES_INDEX_PREFIX         : %s", settings.ES_INDEX_PREFIX)
+    log.info("  ES_LIVE_INDEXING        : %s", settings.ES_LIVE_INDEXING)
+    log.info("  ES_INDEXES              : %s", settings.ES_INDEXES)
+    log.info("  ES_WRITE_INDEXES        : %s", settings.ES_WRITE_INDEXES)
 
-    log.info('Index stats:')
+    log.info("Index stats:")
 
     if indexes:
-        log.info('  List of indexes:')
+        log.info("  List of indexes:")
         for name, count in sorted(indexes):
             read_write = []
             if name in all_read_indexes():
-                read_write.append('READ')
+                read_write.append("READ")
             if name in all_write_indexes():
-                read_write.append('WRITE')
-            log.info('    %-22s: %s %s', name, count,
-                     '/'.join(read_write))
+                read_write.append("WRITE")
+            log.info("    %-22s: %s %s", name, count, "/".join(read_write))
     else:
-        log.info('  There are no %s indexes.', settings.ES_INDEX_PREFIX)
+        log.info("  There are no %s indexes.", settings.ES_INDEX_PREFIX)
 
     if not read_doctype_stats:
-        read_index_names = ', '.join(all_read_indexes())
-        log.info('  No read indexes exist. (%s)', read_index_names)
+        read_index_names = ", ".join(all_read_indexes())
+        log.info("  No read indexes exist. (%s)", read_index_names)
     else:
-        log.info('  Read indexes:')
+        log.info("  Read indexes:")
         for index, stats in list(read_doctype_stats.items()):
             if stats is None:
-                log.info('    %s does not exist', index)
+                log.info("    %s does not exist", index)
             else:
-                log.info('    %s:', index)
+                log.info("    %s:", index)
                 for name, count in sorted(stats.items()):
-                    log.info('      %-22s: %d', name, count)
+                    log.info("      %-22s: %d", name, count)
 
     if set(all_read_indexes()) == set(all_write_indexes()):
-        log.info('  Write indexes are the same as the read indexes.')
+        log.info("  Write indexes are the same as the read indexes.")
     else:
         if not write_doctype_stats:
-            write_index_names = ', '.join(all_write_indexes())
-            log.info('  No write indexes exist. (%s)', write_index_names)
+            write_index_names = ", ".join(all_write_indexes())
+            log.info("  No write indexes exist. (%s)", write_index_names)
         else:
-            log.info('  Write indexes:')
+            log.info("  Write indexes:")
             for index, stats in list(write_doctype_stats.items()):
                 if stats is None:
-                    log.info('    %s does not exist', index)
+                    log.info("    %s does not exist", index)
                 else:
-                    log.info('    %s:', index)
+                    log.info("    %s:", index)
                     for name, count in sorted(stats.items()):
-                        log.info('      %-22s: %d', name, count)
+                        log.info("      %-22s: %d", name, count)
 
     if checkindex:
         # Go through the index and verify everything
-        log.info('Checking index contents....')
+        log.info("Checking index contents....")
 
         missing_docs = 0
 
@@ -702,15 +684,14 @@ def es_status_cmd(checkindex=False, log=log):
             for id_group in chunked(id_list, 100):
                 doc_list = get_documents(cls, id_group)
                 if len(id_group) != len(doc_list):
-                    doc_list_ids = [doc['id'] for doc in doc_list]
+                    doc_list_ids = [doc["id"] for doc in doc_list]
                     for id_ in id_group:
                         if id_ not in doc_list_ids:
-                            log.info('   Missing %s %s',
-                                     cls.get_model_name(), id_)
+                            log.info("   Missing %s %s", cls.get_model_name(), id_)
                             missing_docs += 1
 
         if missing_docs:
-            print('There were %d missing_docs' % missing_docs)
+            print("There were %d missing_docs" % missing_docs)
 
 
 def es_search_cmd(query, pages=1, log=log):
@@ -728,55 +709,56 @@ def es_search_cmd(query, pages=1, log=log):
     client = LocalizingClient()
 
     output = []
-    output.append('Search for: %s' % query)
-    output.append('')
+    output.append("Search for: %s" % query)
+    output.append("")
 
-    data = {'q': query, 'format': 'json'}
-    url = reverse('search')
+    data = {"q": query, "format": "json"}
+    url = reverse("search")
 
     # The search view shows 10 results at a time. So we hit it few
     # times---once for each page.
     for pageno in range(pages):
         pageno = pageno + 1
-        data['page'] = pageno
+        data["page"] = pageno
         resp = client.get(url, data)
         if resp.status_code != 200:
-            output.append('ERROR: %s' % resp.content)
+            output.append("ERROR: %s" % resp.content)
             break
 
         else:
             content = json.loads(resp.content)
-            results = content['results']
+            results = content["results"]
 
             for mem in results:
-                output.append('%4d  %5.2f  %-10s  %-20s' % (
-                              mem['rank'], mem['score'], mem['type'],
-                              mem['title']))
+                output.append(
+                    "%4d  %5.2f  %-10s  %-20s"
+                    % (mem["rank"], mem["score"], mem["type"], mem["title"])
+                )
 
-            output.append('')
+            output.append("")
 
     for line in output:
-        log.info(line.encode('ascii', 'ignore'))
+        log.info(line.encode("ascii", "ignore"))
 
 
 def es_verify_cmd(log=log):
-    log.info('Behold! I am the magificent esverify command and I shall verify')
-    log.info('all things verifyable so that you can rest assured that your')
-    log.info('changes are bereft of the tawdry clutches of whimsy and')
-    log.info('misfortune.')
-    log.info('')
+    log.info("Behold! I am the magificent esverify command and I shall verify")
+    log.info("all things verifyable so that you can rest assured that your")
+    log.info("changes are bereft of the tawdry clutches of whimsy and")
+    log.info("misfortune.")
+    log.info("")
 
-    log.info('Verifying mappings do not conflict.')
+    log.info("Verifying mappings do not conflict.")
 
     # Verify mappings that share the same index don't conflict
     for index in all_write_indexes():
         merged_mapping = {}
 
-        log.info('Verifying mappings for index: {index}'.format(index=index))
+        log.info("Verifying mappings for index: {index}".format(index=index))
 
         start_time = time.time()
         for cls_name, mapping in list(get_mappings(index).items()):
-            mapping = mapping['properties']
+            mapping = mapping["properties"]
             for key, val in list(mapping.items()):
                 if key not in merged_mapping:
                     merged_mapping[key] = (val, [cls_name])
@@ -786,16 +768,16 @@ def es_verify_cmd(log=log):
                 # work for non-trivial dicts.
                 if merged_mapping[key][0] != val:
                     raise MappingMergeError(
-                        '%s key different for %s and %s' %
-                        (key, cls_name, merged_mapping[key][1]))
+                        "%s key different for %s and %s" % (key, cls_name, merged_mapping[key][1])
+                    )
 
                 merged_mapping[key][1].append(cls_name)
 
-    log.info('Done! {0}'.format(format_time(time.time() - start_time)))
-    log.info('')
+    log.info("Done! {0}".format(format_time(time.time() - start_time)))
+    log.info("")
 
 
-def es_analyzer_for_locale(locale, synonyms=False, fallback='standard'):
+def es_analyzer_for_locale(locale, synonyms=False, fallback="standard"):
     """Pick an appropriate analyzer for a given locale.
 
     If no analyzer is defined for `locale`, return fallback instead,
@@ -809,12 +791,11 @@ def es_analyzer_for_locale(locale, synonyms=False, fallback='standard'):
     if locale in settings.ES_LOCALE_ANALYZERS:
         analyzer = settings.ES_LOCALE_ANALYZERS[locale]
         if synonyms and locale in config.ES_SYNONYM_LOCALES:
-            analyzer += '-synonyms'
+            analyzer += "-synonyms"
     else:
         analyzer = fallback
 
-    if (not settings.ES_USE_PLUGINS and
-            analyzer in settings.ES_PLUGIN_ANALYZERS):
+    if not settings.ES_USE_PLUGINS and analyzer in settings.ES_PLUGIN_ANALYZERS:
         analyzer = fallback
 
     return analyzer
@@ -827,14 +808,15 @@ def es_query_with_analyzer(query, locale):
 
     # Import locally to avoid circular import
     from kitsune.search.models import get_mapping_types
+
     localized_fields = []
     for mt in get_mapping_types():
         localized_fields.extend(mt.get_localized_fields())
 
     for k, v in list(query.items()):
-        field, action = k.split('__')
+        field, action = k.split("__")
         if field in localized_fields:
-            new_query[k + '_analyzer'] = (v, analyzer)
+            new_query[k + "_analyzer"] = (v, analyzer)
         else:
             new_query[k] = v
 
@@ -844,6 +826,7 @@ def es_query_with_analyzer(query, locale):
 def indexes_for_doctypes(doctype):
     # Import locally to avoid circular import.
     from kitsune.search.models import get_mapping_types
+
     return set(d.get_index() for d in get_mapping_types(doctype))
 
 
@@ -860,6 +843,7 @@ def handle_es_errors(template, status_code=503):
     :returns: content-type-appropriate HttpResponse
 
     """
+
     def handler(fun):
         @wraps(fun)
         def _handler(request, *args, **kwargs):
@@ -867,14 +851,15 @@ def handle_es_errors(template, status_code=503):
                 return fun(request, *args, **kwargs)
 
             except ES_EXCEPTIONS as exc:
-                is_json = (request.GET.get('format') == 'json')
-                callback = request.GET.get('callback', '').strip()
-                content_type = 'application/x-javascript' if callback else 'application/json'
+                is_json = request.GET.get("format") == "json"
+                callback = request.GET.get("callback", "").strip()
+                content_type = "application/x-javascript" if callback else "application/json"
                 if is_json:
                     return HttpResponse(
-                        json.dumps({'error': _('Search Unavailable')}),
+                        json.dumps({"error": _("Search Unavailable")}),
                         content_type=content_type,
-                        status=status_code)
+                        status=status_code,
+                    )
 
                 # If template is a function, call it with the request, args
                 # and kwargs to get the template.
@@ -889,4 +874,5 @@ def handle_es_errors(template, status_code=503):
                 return render(request, actual_template, status=503)
 
         return _handler
+
     return handler
