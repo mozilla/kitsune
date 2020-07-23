@@ -18,7 +18,7 @@ class ModelBase(models.Model):
 
         If _signal=False is in ``kw`` the post_save signal won't be sent.
         """
-        signal = kw.pop('_signal', True)
+        signal = kw.pop("_signal", True)
         cls = self.__class__
         for k, v in list(kw.items()):
             setattr(self, k, v)
@@ -33,14 +33,20 @@ class ModelBase(models.Model):
                     setattr(self, k, v)
         cls.objects.filter(pk=self.pk).update(**kw)
         if signal:
-            models.signals.post_save.send(sender=cls, instance=self,
-                                          created=False)
+            models.signals.post_save.send(sender=cls, instance=self, created=False)
 
 
 class LocaleField(models.CharField):
     """CharField with locale settings specific to SUMO defaults."""
-    def __init__(self, max_length=7, default=settings.LANGUAGE_CODE,
-                 choices=settings.LANGUAGE_CHOICES, *args, **kwargs):
+
+    def __init__(
+        self,
+        max_length=7,
+        default=settings.LANGUAGE_CODE,
+        choices=settings.LANGUAGE_CHOICES,
+        *args,
+        **kwargs,
+    ):
         return super(LocaleField, self).__init__(
-            max_length=max_length, default=default, choices=choices,
-            *args, **kwargs)
+            max_length=max_length, default=default, choices=choices, *args, **kwargs
+        )

@@ -7,17 +7,16 @@ from kitsune.users.forms import SettingsForm
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 
-log = logging.getLogger('k.users')
+log = logging.getLogger("k.users")
 
 
 class UserSettingsTests(TestCase):
-
     def setUp(self):
         self.u = UserFactory()
 
     def test_non_existant_setting(self):
         form = SettingsForm()
-        bad_setting = 'doesnt_exist'
+        bad_setting = "doesnt_exist"
         assert bad_setting not in list(form.fields.keys())
         with self.assertRaises(KeyError):
             Setting.get_for_user(self.u, bad_setting)

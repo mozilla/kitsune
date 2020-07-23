@@ -9,5 +9,4 @@ class Command(BaseCommand):
     help = "Reindex wiki_document."
 
     def handle(self, **options):
-        index_task.delay(to_class_path(DocumentMappingType),
-                         DocumentMappingType.get_indexable())
+        index_task.delay(to_class_path(DocumentMappingType), DocumentMappingType.get_indexable())

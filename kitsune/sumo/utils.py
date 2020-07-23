@@ -17,8 +17,8 @@ from kitsune.lib.tlds import VALID_TLDS
 from kitsune.journal.models import Record
 from kitsune.sumo import paginator
 
-POTENTIAL_LINK_REGEX = re.compile(r'[^\s/]+\.([^\s/.]{2,})')
-POTENTIAL_IP_REGEX = re.compile(r'(?:[0-9]{1,3}\.){3}[0-9]{1,3}')
+POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
+POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 
 
 def paginate(request, queryset, per_page=20, count=None):
@@ -27,7 +27,7 @@ def paginate(request, queryset, per_page=20, count=None):
 
     # Get the page from the request, make sure it's an int.
     try:
-        page = int(request.GET.get('page', 1))
+        page = int(request.GET.get("page", 1))
     except ValueError:
         page = 1
 
@@ -47,7 +47,7 @@ def simple_paginate(request, queryset, per_page=20):
     p = paginator.SimplePaginator(queryset, per_page)
 
     # Let the view the handle exceptions.
-    page = p.page(request.GET.get('page', 1))
+    page = p.page(request.GET.get("page", 1))
     page.url = build_paged_url(request)
 
     return page
@@ -57,12 +57,11 @@ def build_paged_url(request):
     """Build the url for the paginator."""
     base = request.build_absolute_uri(request.path)
 
-    items = [(k, v) for k in request.GET if k != 'page'
-             for v in request.GET.getlist(k) if v]
+    items = [(k, v) for k in request.GET if k != "page" for v in request.GET.getlist(k) if v]
 
     qsa = urlencode(items)
 
-    return '%s?%s' % (base, qsa)
+    return "%s?%s" % (base, qsa)
 
 
 # By Ned Batchelder.
@@ -81,7 +80,7 @@ def chunked(seq, n, length=None):
     if not length:
         length = len(seq)
     for i in range(0, length, n):
-        yield seq[i:i + n]
+        yield seq[i : i + n]
 
 
 def smart_int(string, fallback=0):
@@ -120,15 +119,16 @@ def get_next_url(request):
     Useful for e.g. redirects back to original page after a POST request.
 
     """
-    if 'next' in request.POST:
-        url = request.POST.get('next')
-    elif 'next' in request.GET:
-        url = request.GET.get('next')
+    if "next" in request.POST:
+        url = request.POST.get("next")
+    elif "next" in request.GET:
+        url = request.GET.get("next")
     else:
-        url = request.META.get('HTTP_REFERER')
+        url = request.META.get("HTTP_REFERER")
 
-    if not settings.DEBUG and not is_safe_url(url,
-                                              allowed_hosts={Site.objects.get_current().domain}):
+    if not settings.DEBUG and not is_safe_url(
+        url, allowed_hosts={Site.objects.get_current().domain}
+    ):
         return None
 
     return url
@@ -158,8 +158,7 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     # Make a copy, so that we don't modify the original
     dupe = json.loads(orig)
     if len(dupe[key]) < diff:
-        raise TruncationException("Can't truncate enough to satisfy "
-                                  "`max_length`.")
+        raise TruncationException("Can't truncate enough to satisfy " "`max_length`.")
     dupe[key] = dupe[key][:-diff]
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
 
@@ -214,7 +213,7 @@ def rabbitmq_queue_size():
 
     # FIXME: This hard-codes the exchange, but I'm not sure how else
     # to figure it out.
-    queue = chan.queue_declare('celery', passive=True)
+    queue = chan.queue_declare("celery", passive=True)
     return queue.message_count
 
 
@@ -252,7 +251,7 @@ class Progress(object):
         self.total = total
         self.milestone_stride = milestone_stride
         self.milestone_time = datetime.now()
-        self.estimated = '?'
+        self.estimated = "?"
 
     def tick(self, incr=1):
         """Advance the current progress, and redraw the screen.
@@ -274,15 +273,14 @@ class Progress(object):
 
     def draw(self):
         """Just redraw the screen."""
-        self._wr('{0.current}/{0.total} (Est. {0.estimated} min. remaining)\r'
-                 .format(self))
+        self._wr("{0.current}/{0.total} (Est. {0.estimated} min. remaining)\r".format(self))
 
     def _wr(self, s):
         sys.stdout.write(s)
         sys.stdout.flush()
 
 
-def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False):
+def is_ratelimited(request, name, rate, method=["POST"], skip_if=lambda r: False):
     """
     Reimplement ``ratelimit.helpers.is_ratelimited``, with sumo-specific details:
 
@@ -290,29 +288,31 @@ def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False
     * Log times when users are rate limited.
     * Always uses ``user_or_ip`` for the rate limit key.
     """
-    if skip_if(request) or request.user.has_perm('sumo.bypass_ratelimit'):
+    if skip_if(request) or request.user.has_perm("sumo.bypass_ratelimit"):
         request.limited = False
     else:
         # TODO: make sure 'group' value below is sufficient
         # TODO: make sure 'user_or_ip' is a valid replacement for
         # old/deleted custom user_or_ip method
-        rl_is_ratelimited(request, increment=True, group='sumo.utils.is_ratelimited',
-                          rate=rate, key='user_or_ip')
+        rl_is_ratelimited(
+            request, increment=True, group="sumo.utils.is_ratelimited", rate=rate, key="user_or_ip"
+        )
         if request.limited:
-            if hasattr(request, 'user') and request.user.is_authenticated:
+            if hasattr(request, "user") and request.user.is_authenticated:
                 key = 'user "{}"'.format(request.user.username)
             else:
-                ip = request.META.get('HTTP_X_CLUSTER_CLIENT_IP', request.META['REMOTE_ADDR'])
-                key = 'anonymous user ({})'.format(ip)
-            Record.objects.info('sumo.ratelimit', '{key} hit the rate limit for {name}',
-                                key=key, name=name)
+                ip = request.META.get("HTTP_X_CLUSTER_CLIENT_IP", request.META["REMOTE_ADDR"])
+                key = "anonymous user ({})".format(ip)
+            Record.objects.info(
+                "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
+            )
     return request.limited
 
 
 def get_browser(user_agent):
     """Get Browser Name from User Agent"""
 
-    match = re.search(r'(?i)(firefox|msie|chrome|safari|trident)', user_agent, re.IGNORECASE)
+    match = re.search(r"(?i)(firefox|msie|chrome|safari|trident)", user_agent, re.IGNORECASE)
     if match:
         browser = match.group(1)
     else:

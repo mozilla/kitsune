@@ -49,30 +49,29 @@ class Command(BaseCommand):
 
     Database columns are expected to be CharFields or TextFields.
     """
-    help = ('Pulls strings from the database and writes them to python file.')
+
+    help = "Pulls strings from the database and writes them to python file."
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--output-file', '-o',
-            default=os.path.join(
-                settings.ROOT, 'kitsune', 'sumo', 'db_strings.py'),
-            dest='outputfile',
-            help=(
-                'The file where extracted strings are written to. '
-                '(Default: %default)'),
+            "--output-file",
+            "-o",
+            default=os.path.join(settings.ROOT, "kitsune", "sumo", "db_strings.py"),
+            dest="outputfile",
+            help=("The file where extracted strings are written to. " "(Default: %default)"),
         )
 
     def handle(self, *args, **options):
         try:
             django_apps = settings.DB_LOCALIZE
         except AttributeError:
-            raise CommandError('DB_LOCALIZE setting is not defined!')
+            raise CommandError("DB_LOCALIZE setting is not defined!")
 
         strings = []
         for app, models in list(django_apps.items()):
             for model, params in list(models.items()):
                 model_class = apps.get_model(app, model)
-                attrs = params['attrs']
+                attrs = params["attrs"]
                 qs = model_class.objects.all().values_list(*attrs).distinct()
                 for item in qs:
                     for i in range(len(attrs)):
@@ -81,22 +80,23 @@ class Command(BaseCommand):
                             # are super bad.
                             continue
                         msg = {
-                            'id': item[i],
-                            'context': 'DB: %s.%s.%s' % (app, model, attrs[i]),
-                            'comments': params.get('comments')}
+                            "id": item[i],
+                            "context": "DB: %s.%s.%s" % (app, model, attrs[i]),
+                            "comments": params.get("comments"),
+                        }
                         strings.append(msg)
 
-        py_file = os.path.expanduser(options.get('outputfile'))
+        py_file = os.path.expanduser(options.get("outputfile"))
         py_file = os.path.abspath(py_file)
 
-        print('Outputting db strings to: {filename}'.format(filename=py_file))
-        with open(py_file, 'w+') as f:
+        print("Outputting db strings to: {filename}".format(filename=py_file))
+        with open(py_file, "w+") as f:
             f.write(HEADER)
-            f.write('from django.utils.translation import pgettext\n\n')
+            f.write("from django.utils.translation import pgettext\n\n")
             for s in strings:
-                comments = s['comments']
+                comments = s["comments"]
                 if comments:
                     for c in comments:
-                        f.write('# {comment}\n'.format(comment=c).encode('utf8'))
+                        f.write("# {comment}\n".format(comment=c).encode("utf8"))
 
-                f.write(L10N_STRING.format(id=s['id'], context=s['context']).encode('utf8'))
+                f.write(L10N_STRING.format(id=s["id"], context=s["context"]).encode("utf8"))

@@ -17,12 +17,12 @@ class UserFactory(factory.DjangoModelFactory):
         model = User
 
     username = factory.fuzzy.FuzzyText()
-    email = factory.LazyAttribute(lambda u: '{}@example.com'.format(u.username))
-    password = factory.PostGenerationMethodCall('set_password', 'testpass')
+    email = factory.LazyAttribute(lambda u: "{}@example.com".format(u.username))
+    password = factory.PostGenerationMethodCall("set_password", "testpass")
 
     # We pass in 'user' to link the generated Profile to our just-generated User.
     # This will call ProfileFactory(user=our_new_user), thus skipping the SubFactory.
-    profile = factory.RelatedFactory('kitsune.users.tests.ProfileFactory', 'user')
+    profile = factory.RelatedFactory("kitsune.users.tests.ProfileFactory", "user")
 
     @factory.post_generation
     def groups(user, created, extracted, **kwargs):
@@ -37,11 +37,11 @@ class ProfileFactory(factory.DjangoModelFactory):
 
     name = FuzzyUnicode()
     bio = FuzzyUnicode()
-    website = 'http://support.example.com'
+    website = "http://support.example.com"
     timezone = None
-    country = 'US'
-    city = 'Portland'
-    locale = 'en-US'
+    country = "US"
+    city = "Portland"
+    locale = "en-US"
     is_fxa_migrated = True
     user = factory.SubFactory(UserFactory, profile=None)
 
@@ -63,7 +63,8 @@ def add_permission(user, model, permission_codename):
     permission, created = Permission.objects.get_or_create(
         codename=permission_codename,
         content_type=content_type,
-        defaults={'name': permission_codename})
+        defaults={"name": permission_codename},
+    )
     user.user_permissions.add(permission)
 
 
@@ -78,9 +79,7 @@ class SettingFactory(factory.DjangoModelFactory):
 # pulled from https://github.com/mozilla/django-tidings/blob/master/tests/base.py#L23
 def tidings_watch(save=False, **kwargs):
     # TODO: better defaults, when there are events available.
-    defaults = {'user': kwargs.get('user'),
-                'is_active': True,
-                'secret': 'abcdefghjk'}
+    defaults = {"user": kwargs.get("user"), "is_active": True, "secret": "abcdefghjk"}
     defaults.update(kwargs)
     w = Watch.objects.create(**defaults)
     if save:

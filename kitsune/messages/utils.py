@@ -16,11 +16,10 @@ def send_message(to, text, sender=None):
         msg.to.add(*to)
     for user in to:
         im = InboxMessage.objects.create(sender=sender, to=user, message=text)
-        if Setting.get_for_user(user, 'email_private_messages'):
+        if Setting.get_for_user(user, "email_private_messages"):
             email_private_message(inbox_message_id=im.id)
 
-    message_sent.send(sender=InboxMessage, to=to, text=text,
-                      msg_sender=sender)
+    message_sent.send(sender=InboxMessage, to=to, text=text, msg_sender=sender)
 
 
 def unread_count_for(user):

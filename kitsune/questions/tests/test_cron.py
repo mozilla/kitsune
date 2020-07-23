@@ -11,17 +11,16 @@ from kitsune.users.tests import UserFactory
 
 
 class TestEmployeeReportCron(TestCase):
-
     def test_report_employee_answers(self):
         # Note: This depends on two groups that are created in migrations.
         # If we fix the tests to not run migrations, we'll need to create the
         # two groups here: 'Support Forum Tracked', 'Support Forum Metrics'
 
-        tracked_group = Group.objects.get(name='Support Forum Tracked')
+        tracked_group = Group.objects.get(name="Support Forum Tracked")
         tracked_user = UserFactory()
         tracked_user.groups.add(tracked_group)
 
-        report_group = Group.objects.get(name='Support Forum Metrics')
+        report_group = Group.objects.get(name="Support Forum Metrics")
         report_user = UserFactory()
         report_user.groups.add(report_group)
 
@@ -43,13 +42,13 @@ class TestEmployeeReportCron(TestCase):
         AnswerFactory(question=q)
         QuestionFactory()
 
-        call_command('report_employee_answers')
+        call_command("report_employee_answers")
 
         # Get the last email and verify contents
         email = mail.outbox[len(mail.outbox) - 1]
 
-        assert 'Number of questions asked: 3' in email.body
-        assert 'Number of questions answered: 2' in email.body
-        assert '{username}: 1'.format(username=tracked_user.username) in email.body
+        assert "Number of questions asked: 3" in email.body
+        assert "Number of questions answered: 2" in email.body
+        assert "{username}: 1".format(username=tracked_user.username) in email.body
 
         eq_([report_user.email], email.to)

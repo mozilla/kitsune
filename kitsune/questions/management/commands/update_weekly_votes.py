@@ -14,13 +14,13 @@ class Command(BaseCommand):
         # Get all questions (id) with a vote in the last week.
         recent = datetime.now() - timedelta(days=7)
         q = QuestionVote.objects.filter(created__gte=recent)
-        q = q.values_list('question_id', flat=True).order_by('question')
+        q = q.values_list("question_id", flat=True).order_by("question")
         q = q.distinct()
         q_with_recent_votes = list(q)
 
         # Get all questions with num_votes_past_week > 0
         q = Question.objects.filter(num_votes_past_week__gt=0)
-        q = q.values_list('id', flat=True)
+        q = q.values_list("id", flat=True)
         q_with_nonzero_votes = list(q)
 
         # Union.
