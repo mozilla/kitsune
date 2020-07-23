@@ -8,17 +8,17 @@ from kitsune.wiki.models import Revision
 # not be l10n-ized here--the badge title and description strings get
 # l10n-ized elsewhere. Peace!
 WIKI_BADGES = {
-    'kb-badge': {
-        'slug': '{year}-kb-badge',
-        'title': '{year} KB Badge',
-        'description': 'This badge is awarded to contributors with 10 '
-                       'approved English edits during {year}.',
+    "kb-badge": {
+        "slug": "{year}-kb-badge",
+        "title": "{year} KB Badge",
+        "description": "This badge is awarded to contributors with 10 "
+        "approved English edits during {year}.",
     },
-    'l10n-badge': {
-        'slug': '{year}-l10n-badge',
-        'title': '{year} L10n Badge',
-        'description': 'This badge is awarded to contributors with 10 '
-                       'approved translations edits during {year}.',
+    "l10n-badge": {
+        "slug": "{year}-l10n-badge",
+        "title": "{year} L10n Badge",
+        "description": "This badge is awarded to contributors with 10 "
+        "approved translations edits during {year}.",
     },
 }
 
@@ -39,11 +39,12 @@ def on_revision_save(sender, instance, **kwargs):
 
     # The badge to be awarded depends on the locale.
     if rev.document.locale == settings.WIKI_DEFAULT_LANGUAGE:
-        badge_template = WIKI_BADGES['kb-badge']
+        badge_template = WIKI_BADGES["kb-badge"]
     else:
-        badge_template = WIKI_BADGES['l10n-badge']
+        badge_template = WIKI_BADGES["l10n-badge"]
 
     from kitsune.wiki.tasks import maybe_award_badge
+
     maybe_award_badge.delay(badge_template, year, creator.id)
 
 

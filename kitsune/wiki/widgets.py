@@ -17,25 +17,23 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
         for topic in topics:
             self.process_topic(value, topic)
 
-            topic.my_subtopics = [t for t in topics_and_subtopics
-                                  if t.parent_id == topic.id]
+            topic.my_subtopics = [t for t in topics_and_subtopics if t.parent_id == topic.id]
 
             for subtopic in topic.my_subtopics:
                 self.process_topic(value, subtopic)
 
         return render_to_string(
-            'wiki/includes/product_topics_widget.html',
-            {
-                'topics': topics,
-                'name': name,
-            })
+            "wiki/includes/product_topics_widget.html", {"topics": topics, "name": name,}
+        )
 
     def process_topic(self, value, topic):
         if isinstance(value, int) and topic.id == value:
             topic.checked = True
-        elif (not isinstance(value, str) and
-              isinstance(value, collections.Iterable) and
-              topic.id in value):
+        elif (
+            not isinstance(value, str)
+            and isinstance(value, collections.Iterable)
+            and topic.id in value
+        ):
             topic.checked = True
         else:
             topic.checked = False
@@ -53,8 +51,6 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
             related_documents = Document.objects.none()
 
         return render_to_string(
-            'wiki/includes/related_docs_widget.html',
-            {
-                'related_documents': related_documents,
-                'name': name
-            })
+            "wiki/includes/related_docs_widget.html",
+            {"related_documents": related_documents, "name": name},
+        )

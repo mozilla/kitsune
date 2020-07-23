@@ -16,7 +16,7 @@ class Command(BaseCommand):
 
             for d in docs:
                 revs = Revision.objects.filter(document=d, is_approved=True)
-                revs = list(revs.order_by('-reviewed')[:1])
+                revs = list(revs.order_by("-reviewed")[:1])
 
                 if len(revs):
                     rev = revs[0]
