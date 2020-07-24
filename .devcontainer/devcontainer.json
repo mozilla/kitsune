@@ -25,6 +25,7 @@
     "extensions": [
         "visualstudioexptteam.vscodeintellicode",
         "ms-python.python",
+        "ms-python.vscode-pylance",
         "esbenp.prettier-vscode",
         "eamodio.gitlens",
         "ms-azuretools.vscode-docker",
@@ -33,7 +34,8 @@
         "donjayamanne.python-extension-pack",
         "wholroyd.jinja",
         "ms-vscode.js-debug-nightly",
-        "vscode-icons-team.vscode-icons"
+        "vscode-icons-team.vscode-icons",
+        "syler.sass-indented"
     ],
 
     // Uncomment the next line if you want start specific services in your Docker Compose config.
