@@ -19,6 +19,6 @@ rope
 tabulate~=0.7
 urlwait~=0.4
 debugpy
+pylint
 black
-pyflakes
 flower
