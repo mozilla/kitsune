@@ -45,19 +45,6 @@
         $form.find('li.system-details-info').hide();
       }
 
-      // Expanders.
-      $("a.expander").on("click", function(ev) {
-        ev.preventDefault();
-        var selector = $(this).attr("href");
-        $(selector).fadeToggle();
-      });
-
-      $("#show-login a").on("click", function(ev) {
-        $("#login-form").show();
-        $(this).remove();
-        return false;
-      });
-
       self.getTroubleshootingInfo();
     },
     getOS: function() {
@@ -191,7 +178,9 @@
         } else {
           $("#share-data").click(function (e) {
             e.preventDefault();
-            handleData({});
+            $("#troubleshooting-button").hide();
+            $("#troubleshooting-manual").show();
+            $("#troubleshooting-field").show();
             return false;
           });
         }
@@ -210,7 +199,7 @@
         // in case anyone looks at it.
         data = JSON.stringify(data, null, "  ");
         $("#id_troubleshooting").val(data);
-        $("#troubleshooting-field").fadeIn();
+        $("#troubleshooting-field").show();
       }
     }
   };
