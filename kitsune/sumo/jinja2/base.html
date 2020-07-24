@@ -304,9 +304,16 @@
       </div>
       <div class="mzp-c-footer-legal-col">
         <p>
-          {{ _('Mozilla Corporation’s not-for-profit parent, the Mozilla Foundation.') }}
+          {% trans %}
+            Visit <a href="https://www.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Corporation">Mozilla Corporation’s</a>
+            not-for-profit parent, the <a href="https://foundation.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Foundation">Mozilla Foundation</a>.
+          {% endtrans %}
         </p>
-        <p>{{ _('Portions of this content are c.1998–2019 by individual mozilla.org contributors. Content available under a Creative Common license.') }}
+        <p>
+          {% trans %}
+            Portions of this content are ©1998–2020 by individual mozilla.org contributors. Content available under a
+            <a rel="external noopener" href="https://www.mozilla.org/foundation/licensing/website-content/">Creative Commons license</a>.
+          {% endtrans %}
         </p>
       </div>
     </nav>
