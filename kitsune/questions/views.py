@@ -243,7 +243,8 @@ def question_list(request, product_slug):
     question_qs = question_qs.filter(locale_query)
 
     # Set the order.
-    order_by = ORDER_BY[order][0]
+    # Set a default value if a user requested a non existing order parameter
+    order_by = ORDER_BY.get(order, ["updated"])[0]
     question_qs = question_qs.order_by(order_by if sort == "asc" else "-%s" % order_by)
 
     try:
