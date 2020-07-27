@@ -592,15 +592,13 @@ class Document(
         if not rev or not self.is_localizable:
             rejected = Q(is_approved=False, reviewed__isnull=False)
 
-            # Try latest approved revision:
+            # Try latest approved revision
+            # or not approved revs. Try unrejected
+            # or not unrejected revs. Maybe fall back to rejected
             rev = (
                 latest(self.revisions.filter(is_approved=True))
-                or
-                # No approved revs. Try unrejected:
-                latest(self.revisions.exclude(rejected))
-                or
-                # No unrejected revs. Maybe fall back to rejected:
-                (latest(self.revisions) if include_rejected else None)
+                or latest(self.revisions.exclude(rejected))
+                or (latest(self.revisions) if include_rejected else None)
             )
         return rev
 
