@@ -23,21 +23,23 @@ ENV PATH="/venv/bin:$PATH"
 
 RUN pip install --upgrade pip"==20.1.1"
 RUN python -m venv /venv
+RUN mkdir /vendor
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-            gettext build-essential \
-            libxml2-dev libxslt1-dev zlib1g-dev git \
-            libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
-            libmariadb3 mariadb-client && \
+    gettext build-essential \
+    libxml2-dev libxslt1-dev zlib1g-dev git \
+    libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
+    libmariadb3 mariadb-client && \
     rm -rf /var/lib/apt/lists/*
 
 COPY ./requirements/*.txt /app/requirements/
 
 RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt && \
     pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/test.txt
+    pip install --no-cache-dir --require-hashes -r requirements/test.txt && \
+    pip install --no-cache-dir --require-hashes --no-deps -t /venodr -r requirements/es7.txt
 
 ARG GIT_SHA=head
 ENV GIT_SHA=${GIT_SHA}
@@ -119,6 +121,7 @@ RUN apt-get update && \
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
 COPY --from=base --chown=kitsune:kitsune /venv /venv
+COPY --from=base --chown=kitsune:kitsune /vendor /vendor
 COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
 COPY --from=staticfiles --chown=kitsune:kitsune /app/jsi18n /app/jsi18n
 

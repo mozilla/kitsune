@@ -618,6 +618,7 @@ INSTALLED_APPS = (
     "kitsune.access",
     "kitsune.sumo",
     "kitsune.search",
+    "kitsune.search.v2",
     "kitsune.forums",
     "tidings",
     "rest_framework.authtoken",
@@ -760,6 +761,9 @@ SESSION_SERIALIZER = config(
 #
 # Connection information for Elastic
 ES_URLS = [config("ES_URLS", default="localhost:9200")]
+# Connection information for Elastic 7
+ES7_URLS = config("ES7_URLS", cast=Csv(), default="elasticsearch7:9200")
+
 # Indexes for reading
 ES_INDEXES = {
     "default": config("ES_INDEXES_DEFAULT", default="default"),
@@ -799,7 +803,6 @@ IA_DEFAULT_CATEGORIES = (
 
 # The length for which we would like the user to cache search forms
 # and results, in minutes.
-SEARCH_CACHE_PERIOD = config("SEARCH_CACHE_PERIOD", default=15, cast=int)
 
 # Maximum length of the filename. Forms should use this and raise
 # ValidationError if the length is exceeded.
