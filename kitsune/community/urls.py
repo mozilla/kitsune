@@ -12,9 +12,4 @@ urlpatterns = [
         views.top_contributors,
         name="community.top_contributors",
     ),
-    url(
-        r"^/top-contributors/(?P<area>[\w-]+)/new$",
-        views.top_contributors_new,
-        name="community.top_contributors_new",
-    ),
 ]
