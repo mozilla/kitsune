@@ -189,34 +189,6 @@ def uselocale(locale):
     translation.activate(currlocale)
 
 
-def rabbitmq_queue_size():
-    """Returns the rabbitmq queue size.
-
-    Two things to know about the queue size:
-
-    1. It's not 100% accurate, but the size is generally near that
-       number
-
-    2. I can't think of a second thing, but that first thing is
-       pretty important.
-
-    """
-    # FIXME: 2015-04-23: This is busted.
-
-    from celery import current_app
-
-    # FIXME: This uses a private method, but I'm not sure how else to
-    # figure this out, either.
-    app = current_app._get_current_object()
-    conn = app.connection()
-    chan = conn.default_channel
-
-    # FIXME: This hard-codes the exchange, but I'm not sure how else
-    # to figure it out.
-    queue = chan.queue_declare("celery", passive=True)
-    return queue.message_count
-
-
 class Progress(object):
     """A widget to show progress during interactive CLI scripts.
 
