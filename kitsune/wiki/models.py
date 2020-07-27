@@ -1109,7 +1109,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
         # Also, if significance is trivial, it shouldn't be translated.
         return (
             self.is_approved
-            and self.significance > TYPO_SIGNIFICANCE
+            and (self.significance or 0) > TYPO_SIGNIFICANCE
             and self.document.locale == settings.WIKI_DEFAULT_LANGUAGE
         )
 
