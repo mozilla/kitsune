@@ -12,6 +12,7 @@ services:
     depends_on:
       - mariadb
       - elasticsearch
+      - elasticsearch7
       - redis
       - celery
       - celery-fxa
@@ -31,6 +32,7 @@ services:
     depends_on:
       - mariadb
       - elasticsearch
+      - elasticsearch7
       - redis
 
   test-js:
@@ -48,6 +50,7 @@ services:
     depends_on:
       - mariadb
       - elasticsearch
+      - elasticsearch7
       - redis
 
   test-image-js:
@@ -139,6 +142,11 @@ services:
 
   elasticsearch:
     image: elasticsearch:2.4
+
+  elasticsearch7:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.3.2
+    environment:
+      - discovery.type=single-node
 
   redis:
     image: redis:3
