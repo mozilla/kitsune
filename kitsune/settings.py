@@ -976,9 +976,6 @@ GA_PROFILE_ID = config(
 GA_START_DATE = date(2012, 11, 10)
 GTM_CONTAINER_ID = config("GTM_CONTAINER_ID", default="")  # Google container ID
 
-# Key to access /services/version. Set to None to disallow.
-VERSION_CHECK_TOKEN = config("VERSION_CHECK_TOKEN", default=None)
-
 REDIS_BACKENDS = {
     # TODO: Make sure that db number is respected
     "default": config("REDIS_DEFAULT_URL"),
