@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
@@ -67,6 +68,14 @@ class SettingsForm(forms.Form):
             if update_count == 0:
                 # This user didn't have this setting so create it.
                 user.settings.create(name=field, value=value)
+
+
+class UserForm(forms.ModelForm):
+    """Form for editing the username of Django's user model."""
+
+    class Meta:
+        model = User
+        fields = ["username"]
 
 
 class ProfileForm(forms.ModelForm):
