@@ -20,24 +20,26 @@ class EditProfileTests(TestCaseBase):
         url = reverse("users.edit_my_profile")
         self.client.login(username=user.username, password="testpass")
         data = {
+            "username": "jonh_doe",
             "name": "John Doe",
             "public_email": True,
             "bio": "my bio",
             "website": "http://google.com/",
             "twitter": "",
-            "facebook": "",
-            "mozillians": "",
-            "irc_handle": "johndoe",
+            "community_mozilla_org": "",
+            "people_mozilla_org": "",
+            "matrix_handle": "johndoe",
             "timezone": "America/New_York",
             "country": "US",
             "city": "Disney World",
             "locale": "en-US",
         }
+
         response = self.client.post(url, data)
         eq_(302, response.status_code)
         profile = Profile.objects.get(user=user)
         for key in data:
-            if key != "timezone":
+            if key not in ["timezone", "username"]:
                 assert data[key] == getattr(profile, key), "%r != %r (for key '%s')" % (
                     data[key],
                     getattr(profile, key),
@@ -45,6 +47,7 @@ class EditProfileTests(TestCaseBase):
                 )
 
         eq_(data["timezone"], profile.timezone.zone)
+        eq_(data["username"], profile.user.username)
 
     def test_user_cant_edit_others_profile_without_permission(self):
         u1 = UserFactory()
@@ -75,14 +78,15 @@ class EditProfileTests(TestCaseBase):
 
         # Try POST
         data = {
+            "username": "jonh_doe",
             "name": "John Doe",
             "public_email": True,
             "bio": "my bio",
             "website": "http://google.com/",
             "twitter": "",
-            "facebook": "",
-            "mozillians": "",
-            "irc_handle": "johndoe",
+            "community_mozilla_org": "",
+            "people_mozilla_org": "",
+            "matrix_handle": "johndoe",
             "timezone": "America/New_York",
             "country": "US",
             "city": "Disney World",
@@ -92,7 +96,7 @@ class EditProfileTests(TestCaseBase):
         eq_(302, resp.status_code)
         profile = Profile.objects.get(user=user1)
         for key in data:
-            if key != "timezone":
+            if key not in ["timezone", "username"]:
                 assert data[key] == getattr(profile, key), "%r != %r (for key '%s')" % (
                     data[key],
                     getattr(profile, key),
@@ -100,6 +104,7 @@ class EditProfileTests(TestCaseBase):
                 )
 
         eq_(data["timezone"], profile.timezone.zone)
+        eq_(data["username"], profile.user.username)
 
 
 class ViewProfileTests(TestCaseBase):
