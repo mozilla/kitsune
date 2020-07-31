@@ -123,10 +123,6 @@ PIPELINE_JS = {
         "source_filenames": ("sumo/js/questions.metrics-dashboard.js",),
         "output_filename": "build/questions.metrics-min.js",
     },
-    "products": {
-        "source_filenames": ("sumo/js/compare_versions.js", "sumo/js/products.js",),
-        "output_filename": "build/products-min.js",
-    },
     "search": {
         "source_filenames": ("sumo/js/search.js",),
         "output_filename": "build/search-min.js",

@@ -182,6 +182,17 @@
     background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60.41 14.4"><path fill="none" stroke="#5e5e72" stroke-miterlimit="10" stroke-width="2" d="M60.41 13.4H4.14V3.62M37.63 3.62v9.78"/><path fill="#5e5e72" d="M4.14 0l4.14 7.17H0L4.14 0zM37.63 0l4.14 7.17h-8.28L37.63 0z"/></svg>');
     align-self: flex-start;
   }
+
+  &.overflow-ellipsis {
+    min-width: 0;
+    white-space: nowrap;
+
+    span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 
 .sumo-button:focus,

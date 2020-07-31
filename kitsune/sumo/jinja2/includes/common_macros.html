@@ -47,7 +47,9 @@
     {% endif %}
   {% endif %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">{{ _('Get Help') }}</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">
+      <span class="sumo-nav--link--title">{{ _('Get Help') }}</span>
+    </a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
@@ -97,7 +99,9 @@
   {% if user.is_authenticated %}
   <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
     <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools" data-event-category="navigation"
-       data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
+       data-event-action="main navigation" data-event-label="Contributor Tools">
+      <span class="sumo-nav--link--title">{{ _('Contributor Tools') }}</span>
+    </a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
       <div class="sumo-nav--dropdown-container">
         <div class="sumo-nav--dropdown-grid">
@@ -140,27 +144,25 @@
   {% endif %}
 
   <li class="mzp-c-menu-category">
-    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.get_involved') }}">{{ _('Volunteer') }}</a>
+    <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.get_involved') }}">
+      <span class="sumo-nav--link--title">{{ _('Volunteer') }}</span>
+    </a>
   </li>
 {% endmacro %}
 
-
 {% macro profile_nav(user, hide_aaq_link=False) %}
 {% if not hide_header_search %}
-<li class="mzp-c-menu-category sumo-nav--item-right">
+<li class="mzp-c-menu-category hide-on-mobile">
   {{ search_box(settings, id='support-search', params=search_params) }}
 
-  {% if show_header_fx_download() %}
-    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-    <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden sumo-button primary-button button-lg" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
-  {% endif %}
+  {{ download_firefox() }}
 </li>
 {% endif %}
 
-<li class="mzp-c-menu-category {% if user.is_authenticated %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
+<li class="mzp-c-menu-category {% if user.is_authenticated %}mzp-has-drop-down mzp-js-expandable{% else %}logged-out-button-row{% endif %}">
   {% if user.is_authenticated %}
     <a class="mzp-c-menu-title sumo-nav--link has-avatar hide-on-mobile" href="{{ url('users.auth') }}">
-      <span class="sumo-nav--username">{{ display_name(user) }}</span>
+      <span class="username"><span class="username--inner">{{ display_name(user) }}</span></span>
       <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
     </a>
     <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
@@ -221,7 +223,9 @@
       </div>
     </div>
   {% elif not request.path == url('users.auth') %}
-    <a href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">{{ _('Sign In/Up') }}</a>
+    <a href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg overflow-ellipsis" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
+      <span>{{ _('Sign In/Up') }}</span>
+    </a>
   {% endif %}
 </li>
 {% endmacro %}
@@ -325,49 +329,15 @@
 {% endmacro %}
 
 {% macro download_firefox() %}
-{# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-<div class="firefox-download-button hidden">
-  <div class="download-buttons">
-    <div class="download-firefox">
-      <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button"
-        class="download-button sumo-button primary-button button-lg"
-        data-event-category="Download Button"
-        data-event-action="Panel Opening"
-        data-event-label="{{ latest_version }}">
-        {{ _('Download Firefox') }}
-      </a>
-      <ul class="download-info text-body-xs">
-        <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-        <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-      </ul>
-    </div>
-    {#
-      afaict, this button is never shown. products.js is looking for a
-      data-latest-version attribute on the .download-button element above,
-      but it's not present. this should be fixed?
-    #}
-    <div class="refresh-firefox">
-      <p class="help-text">{{ _('Give Firefox a tune up') }}</p>
-      <a data-mozilla-ui-reset="reset" class="download-button sumo-button primary-button button-lg">
-        {{ _('Refresh Firefox') }}
-      </a>
-      <ul class="download-info text-body-xs">
-        <li><a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-          {{ _('How does it work?') }}
-        </a></li>
-        <li>
-          <a href="https://www.mozilla.org/firefox/new/#download-fx"
-            data-event-category="Download Button"
-            data-event-action="Panel Opening"
-            data-event-label="{{ latest_version }}">
-            {{ _('Download a fresh copy') }}
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
+  {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+  <a
+    href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button"
+    class="firefox-download-button hidden sumo-button primary-button button-lg overflow-ellipsis"
+    data-event-category="Download Button"
+    data-event-action="Firefox"
+  >
+    <span>{{ _('Download Firefox') }}</span>
+  </a>
 {% endmacro %}
 
 {% macro field(field=None, extra_classes=None) %}

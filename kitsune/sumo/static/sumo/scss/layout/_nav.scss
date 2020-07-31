@@ -38,6 +38,7 @@
     padding-bottom: 12px;
     width: 96px;
     height: auto;
+    flex-shrink: 0;
 
     a, img {
       display: block;
@@ -52,7 +53,12 @@
     }
   }
 
+  &--list-wrap {
+    min-width: 0;
+  }
+
   &--list-wrap-right {
+    min-width: 0;
     @include p.bidi((
       (margin-left, auto, 0),
       (margin-right, 0, auto)
@@ -67,16 +73,32 @@
   }
 
   &--link {
+    &--title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     &.has-avatar {
-      @include p.bidi((
-        (padding-right, 0, 24px),
-        (padding-left, 24px, 0),
-      ));
+      min-width: 0;
+      padding-left: 0;
+      padding-right: 0;
+
+      .username {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        &--inner {
+          @include p.bidi((
+            (padding-right, 20px, 24px),
+            (padding-left, 24px, 20px),
+          ));
+        }
+      }
 
       .avatar {
         display: block;
-        @include p.bidi(((margin, -6px 0 -6px 20px, -6px 20px -6px 0),));
+        margin: -6px 0;
         width: 36px;
+        max-width: 36px;
         height: 36px;
         border-radius: 50%;
       }
@@ -259,7 +281,7 @@
     }
 
     .sumo-nav--list-wrap-right {
-      .sumo-button {
+      .logged-out-button-row {
         display: none;
       }
 
@@ -267,17 +289,28 @@
         display: inline-flex;
       }
     }
+
+    .username {
+      display: none;
+    }
   }
 
   .firefox-download-button {
-    @include p.bidi(((margin, 0 p.$spacing-lg 0 p.$spacing-sm, 0 p.$spacing-sm 0 p.$spacing-lg),));
+    @include p.bidi((
+      (margin-left, p.$spacing-sm, 0),
+      (margin-right, 0, p.$spacing-sm)
+    ))
+  }
+
+  .firefox-download-wrapper.mobile-only {
+    margin-bottom: p.$spacing-lg;
   }
 
   .searchbox {
-    width: 200px;
+    max-width: 200px;
 
     @media #{p.$mq-lg} {
-      width: 300px;
+      max-width: 300px;
     }
   }
 
@@ -299,12 +332,14 @@
   }
 
   .mzp-c-menu-category .mzp-c-menu-title {
+    min-width: 0;
     padding-top: 12px;
     padding-bottom: 12px;
 
     @media #{p.$mq-md} {
       padding-top: p.$spacing-sm;
       padding-bottom: 18px;
+      white-space: nowrap;
     }
   }
 
@@ -317,9 +352,15 @@
   }
 
   .mzp-c-menu-category {
+    min-width: 0;
+
     &.logged-out-button-row {
       display: flex;
       justify-content: flex-end;
+      @include p.bidi((
+        (margin-left, p.$spacing-sm, 0),
+        (margin-right, 0, p.$spacing-sm)
+      ))
     }
 
     @media #{p.$mq-md} {
@@ -375,5 +416,18 @@ body.scroll-header:not(.lock-body) {
 
   @media #{p.$mq-lg} {
     padding-top: 74px;
+  }
+}
+
+#profile-navigation {
+  flex-shrink: 3;
+
+  .mzp-c-menu-category:last-child:not(.logged-out-button-row) {
+    min-width: 36px;
+    flex-shrink: 999;
+    @include p.bidi((
+      (margin-left, p.$spacing-sm, 0),
+      (margin-right, 0, p.$spacing-sm)
+    ))
   }
 }

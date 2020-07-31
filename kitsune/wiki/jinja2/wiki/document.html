@@ -3,7 +3,7 @@
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
-{% from "includes/common_macros.html" import download_firefox, sumo_cta_banner %}
+{% from "includes/common_macros.html" import sumo_cta_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
@@ -68,9 +68,6 @@
           <a href="{{ prod_url }}" title="{{ pgettext('DB: products.Product.title', product.title) }}">
             <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
           </a>
-          {% if product.slug == 'firefox' %}
-            {{ download_firefox() }}
-          {% endif %}
         </div>
         {{ document_title(document) }}
       </div>

@@ -56,15 +56,6 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(11, len(doc("#help-topics li")))
         eq_(p.slug, doc("#support-search input[name=product]").attr["value"])
 
-    def test_firefox_product_landing(self):
-        """Verify that there are no firefox button at header in the firefox landing page"""
-        p = ProductFactory(slug="firefox")
-        url = reverse("products.product", args=[p.slug])
-        r = self.client.get(url, follow=True)
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(False, doc(".firefox-download-button").length)
-
     def test_document_listing(self):
         """Verify /products/<product slug>/<topic slug> renders articles."""
         # Create a topic and product.

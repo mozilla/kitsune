@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
-{% from 'includes/common_macros.html' import download_firefox %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
@@ -40,9 +39,6 @@
           <div class="documents-product-title">
             {% set prod_url = url('products.product', slug=product.slug) %}
             <a href="{{ prod_url }}"><img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" /></a>
-            {% if product.slug == 'firefox' %}
-              {{ download_firefox() }}
-            {% endif %}
           </div>
 
           {% if subtopic %}
