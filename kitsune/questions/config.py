@@ -568,7 +568,7 @@ products = OrderedDict(
         (
             "firefox-private-network",
             {
-                "name": _lazy("Firefox Private Network Browser-level Protection"),
+                "name": _lazy("Firefox Private Network"),
                 "subtitle": _lazy("Browse securely on public Wi-Fi"),
                 "extra_fields": [],
                 "tags": [],
@@ -576,27 +576,35 @@ products = OrderedDict(
                 "categories": OrderedDict(
                     [
                         (
-                            "get-started",
+                            "technical",
                             {
-                                "name": _lazy("Get started"),
-                                "topic": "get-started",
-                                "tags": ["get-started"],
+                                "name": _lazy("Technical"),
+                                "topic": "technical",
+                                "tags": ["technical"],
                             },
                         ),
                         (
-                            "manage-account-and-settings",
+                            "accounts",
                             {
-                                "name": _lazy("Manage accounts and settings"),
-                                "topic": "manage-account-and-settings",
-                                "tags": ["customization"],
+                                "name": _lazy("Accounts"),
+                                "topic": "accounts",
+                                "tags": ["accounts"],
                             },
                         ),
                         (
-                            "fix-problems",
+                            "payments",
                             {
-                                "name": _lazy("Fix problems with Firefox Private Network"),
-                                "topic": "fix-problems",
-                                "tags": ["fix-problems"],
+                                "name": _lazy("Payments"),
+                                "topic": "payments",
+                                "tags": ["payments"],
+                            },
+                        ),
+                        (
+                            "troubleshooting",
+                            {
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
+                                "tags": ["troubleshooting"],
                             },
                         ),
                     ]
