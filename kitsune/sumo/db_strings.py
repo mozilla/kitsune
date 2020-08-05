@@ -15,303 +15,100 @@
 #######################################################################
 from django.utils.translation import pgettext
 
-pgettext("DB: kbadge.Badge.title", """2021 KB Badge""")
+# This is a karma title.
+pgettext("DB: karma.Title.name", """Administrator""")
+# This is a karma title.
+pgettext("DB: karma.Title.name", """Buddy of the Month! (10/2015)""")
+# This is a karma title.
+pgettext("DB: karma.Title.name", """Locale Leader""")
+# This is a karma title.
+pgettext("DB: karma.Title.name", """Moderator""")
+# This is a karma title.
+pgettext("DB: karma.Title.name", """SUMO Warrior""")
+# This is a karma title.
+pgettext("DB: karma.Title.name", """Top 10 Contributor""")
+# This is a karma title.
+pgettext("DB: karma.Title.name", """Top 25 Contributor""")
+pgettext("DB: products.Product.title", """Firefox""")
+pgettext("DB: products.Product.description", """Web browser for Windows, Mac and Linux""")
+pgettext("DB: products.Product.title", """Firefox for Android""")
+pgettext("DB: products.Product.description", """Web browser for Android smartphones and tablets""")
+pgettext("DB: products.Product.title", """Firefox for iOS""")
+pgettext("DB: products.Product.description", """Firefox for iPhone, iPad and iPod touch devices""")
+pgettext("DB: products.Product.title", """Firefox Accounts""")
+pgettext("DB: products.Product.description", """Privacy-first products for desktop and mobile""")
+pgettext("DB: products.Product.title", """Firefox for Android Beta""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved English edits during 2021.""",
+    "DB: products.Product.description",
+    """Early version of an experimental Firefox browser for Android.""",
 )
-pgettext("DB: kbadge.Badge.title", """2020 KB Badge""")
+pgettext("DB: products.Product.title", """Firefox for Enterprise""")
+pgettext("DB: products.Product.description", """Firefox Quantum for businesses""")
+pgettext("DB: products.Product.title", """Firefox OS""")
+pgettext("DB: products.Product.description", """Mobile OS for smartphones""")
+pgettext("DB: products.Product.title", """Firefox Lite""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved English edits during 2020.""",
+    "DB: products.Product.description",
+    """Mobile browser for Indonesia, India, The Philippines, and Thailand""",
 )
-pgettext("DB: kbadge.Badge.title", """2019 KB Badge""")
+pgettext("DB: products.Product.title", """Contributors""")
+pgettext("DB: products.Product.description", """Contributor articles""")
+pgettext("DB: products.Product.title", """Firefox Reality""")
+pgettext("DB: products.Product.description", """Web browser for virtual reality headsets""")
+pgettext("DB: products.Product.title", """Mozilla VPN""")
+pgettext("DB: products.Product.description", """VPN for Windows 10, Android, and iOS devices""")
+pgettext("DB: products.Product.title", """Firefox Private Network""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved English edits during 2019.""",
+    "DB: products.Product.description",
+    """Browse securely on public Wi-Fi using a Firefox add-on.""",
 )
-pgettext("DB: kbadge.Badge.title", """2020 Support Forum Badge""")
+pgettext("DB: products.Product.title", """Open Badges""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 20 support forum replies during 2020.""",
+    "DB: products.Product.description",
+    """A new online standard to recognize and verify learning""",
 )
-pgettext("DB: kbadge.Badge.title", """2019 Support Forum Badge""")
+pgettext("DB: products.Product.title", """Webmaker""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 20 support forum replies during 2019.""",
+    "DB: products.Product.description",
+    """Webmaker and other tools for teaching and learning the Web""",
 )
-pgettext("DB: kbadge.Badge.title", """2020 Army of Awesome Badge""")
+pgettext("DB: products.Product.title", """Firefox for Android (ESR)""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2020.""",
+    "DB: products.Product.description",
+    """Older version of Firefox for Android (no longer supported)""",
 )
-pgettext("DB: kbadge.Badge.title", """2019 Army of Awesome Badge""")
+pgettext("DB: products.Product.title", """Firefox for Windows 8 Touch""")
+pgettext("DB: products.Product.description", """Firefox for Windows 8 touch devices""")
+pgettext("DB: products.Product.title", """Firefox Lockwise""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2019.""",
+    "DB: products.Product.description",
+    """Mobile app that gives you access to passwords you've saved to Firefox.""",
 )
-pgettext("DB: kbadge.Badge.title", """2020 L10n Badge""")
+pgettext("DB: products.Product.title", """Pocket""")
+pgettext("DB: products.Product.description", """Discover and save stories for later""")
+pgettext("DB: products.Product.title", """Privacy and Security""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2020.""",
+    "DB: products.Product.description",
+    """Learn more about Mozilla's privacy and security practices.""",
 )
-pgettext("DB: kbadge.Badge.title", """2019 L10n Badge""")
+pgettext("DB: products.Product.title", """Firefox ScreenshotGo""")
+pgettext("DB: products.Product.description", """Screenshot app for mobile""")
+pgettext("DB: products.Product.title", """Firefox Send""")
+pgettext("DB: products.Product.description", """An app for sending files to anyone.""")
+pgettext("DB: products.Product.title", """Firefox Klar""")
+pgettext("DB: products.Product.description", """Was ist Firefox Klar?""")
+pgettext("DB: products.Product.title", """Hubs""")
 pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2019.""",
+    "DB: products.Product.description", """Social virtual reality for headsets and browsers"""
 )
-pgettext("DB: kbadge.Badge.title", """2018 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2018.""",
-)
-pgettext("DB: kbadge.Badge.title", """2018 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved English edits during 2018.""",
-)
-pgettext("DB: kbadge.Badge.title", """2018 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2018.""",
-)
-pgettext("DB: kbadge.Badge.title", """2018 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 20 support forum replies during 2018.""",
-)
-pgettext("DB: kbadge.Badge.title", """2017 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2017.""",
-)
-pgettext("DB: kbadge.Badge.title", """2017 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved English edits during 2017.""",
-)
-pgettext("DB: kbadge.Badge.title", """2017 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2017.""",
-)
-pgettext("DB: kbadge.Badge.title", """2017 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 20 support forum replies during 2017.""",
-)
-pgettext("DB: kbadge.Badge.title", """2016 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2016.""",
-)
-pgettext("DB: kbadge.Badge.title", """2016 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 30 support forum replies during 2016.""",
-)
-pgettext("DB: kbadge.Badge.title", """2016 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved English edits during 2016.""",
-)
-pgettext("DB: kbadge.Badge.title", """2016 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2016.""",
-)
-pgettext("DB: kbadge.Badge.title", """2015 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 30 support forum replies during 2015.""",
-)
-pgettext("DB: kbadge.Badge.title", """2015 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2015.""",
-)
-pgettext("DB: kbadge.Badge.title", """2015 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved English edits during 2015.""",
-)
-pgettext("DB: kbadge.Badge.title", """2015 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2015.""",
-)
-pgettext("DB: kbadge.Badge.title", """2014 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Army of Awesome 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2014 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2014 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO L10n 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2014 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2014 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO KB 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2014 badge earners for advancing the Mozilla Mission""",
-)
-pgettext("DB: kbadge.Badge.title", """2014 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Forum 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2014 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """Firefox 29 Launch Team""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks! 
-
-Firefox 29 features:
-
-1. Firefox Desktop: Australis new look and feel
-AND Firefox Accounts based sync
-
-2. Firefox for Android: Firefox Accounts based sync
-
-MOAR:
-
-https://sumo.etherpad.mozilla.org/sumo-australis-badges""",
-)
-pgettext("DB: kbadge.Badge.title", """2008 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2008.""",
-)
-pgettext("DB: kbadge.Badge.title", """2009 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """This badge is awarded to contributors with 10 approved translations edits during 2009.""",
-)
-pgettext("DB: kbadge.Badge.title", """2012 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Army of Awesome 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2012 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2013 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Army of Awesome 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2013 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2010 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Army of Awesome 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2010 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2011 Army of Awesome Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Army of Awesome 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2011 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2012 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Forum 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2012 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2010 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO KB 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2010 badge earners for advancing the Mozilla Mission""",
-)
-pgettext("DB: kbadge.Badge.title", """2010 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO L10n 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2010 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2010 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Forum 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2010 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2011 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO KB 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2011 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2011 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO L10n 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2011 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2011 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Forum 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2011 badge earners for advancing the Mozilla Mission!
-""",
-)
-pgettext("DB: kbadge.Badge.title", """2012 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO KB 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2012 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2013 KB Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO KB 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2013 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2013 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO L10n 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2013 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """2013 Support Forum Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO Forum 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2013 badge earners for advancing the Mozilla Mission""",
-)
-pgettext("DB: kbadge.Badge.title", """2012 L10n Badge""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """The SUMO L10n 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2012 badge earners for advancing the Mozilla Mission!""",
-)
-pgettext("DB: kbadge.Badge.title", """Kitsune Contributor""")
-pgettext(
-    "DB: kbadge.Badge.description",
-    """Badge awarded to those who have contributed to the Kitsune code base.""",
-)
+pgettext("DB: products.Product.title", """Firefox for Amazon Devices""")
+pgettext("DB: products.Product.description", """Browser for Amazon devices""")
+pgettext("DB: products.Product.title", """Thunderbird""")
+pgettext("DB: products.Product.description", """Email software for Windows, Mac and Linux""")
+pgettext("DB: products.Product.title", """Firefox Focus""")
+pgettext("DB: products.Product.description", """Automatic privacy browser and content blocker""")
+pgettext("DB: products.Product.title", """Firefox for Fire TV""")
+pgettext("DB: products.Product.description", """Browser for Amazon Fire TV""")
 pgettext("DB: products.Topic.title", """Learn the Basics: get started""")
 pgettext(
     "DB: products.Topic.description", """Learn all you need to know to get started with Firefox."""
@@ -653,6 +450,16 @@ pgettext("DB: products.Topic.title", """Date and Time""")
 pgettext("DB: products.Topic.description", """Setting a date and time on your Firefox OS phone""")
 pgettext("DB: products.Topic.title", """Display""")
 pgettext("DB: products.Topic.description", """Customize your screen on your Firefox OS device.""")
+pgettext("DB: products.Topic.title", """Release notes""")
+pgettext(
+    "DB: products.Topic.description", """Where to find release notes and upcoming features."""
+)
+pgettext("DB: products.Topic.title", """Windows""")
+pgettext("DB: products.Topic.description", """Deploying Firefox on Windows computers.""")
+pgettext("DB: products.Topic.title", """Manage certificates""")
+pgettext(
+    "DB: products.Topic.description", """Set up certificates on Firefox for your organization."""
+)
 pgettext("DB: products.Topic.title", """Install and update""")
 pgettext(
     "DB: products.Topic.description", """Download and install the mobile app on your device."""
@@ -663,6 +470,23 @@ pgettext("DB: products.Topic.title", """Calling and Contacts""")
 pgettext(
     "DB: products.Topic.description",
     """Learn how to add and manage contacts, as well as make one-to-one or conference calls on your Firefox OS phone.""",
+)
+pgettext("DB: products.Topic.title", """Customization of Firefox in an enterprise environment""")
+pgettext(
+    "DB: products.Topic.description", """Customization of Firefox in an enterprise environment"""
+)
+pgettext("DB: products.Topic.title", """Installation""")
+pgettext("DB: products.Topic.description", """How to install Firefox for Enterprise""")
+pgettext("DB: products.Topic.title", """Explore""")
+pgettext("DB: products.Topic.description", """Learn about Firefox for Enterprise""")
+pgettext("DB: products.Topic.title", """Mac""")
+pgettext(
+    "DB: products.Topic.description", """Deploy Firefox on your organization's Mac computers"""
+)
+pgettext("DB: products.Topic.title", """Policies overview""")
+pgettext(
+    "DB: products.Topic.description",
+    """How to set up policies on Firefox for your organization.""",
 )
 pgettext("DB: products.Topic.title", """Browsing""")
 pgettext("DB: products.Topic.description", """Surf and navigate the Web on Firefox Preview""")
@@ -675,6 +499,20 @@ pgettext(
     "DB: products.Topic.description",
     """Keep in touch with your contacts through email and messaging.""",
 )
+pgettext("DB: products.Topic.title", """Deploy""")
+pgettext(
+    "DB: products.Topic.description", """Deployment of Firefox in an enterprise environment"""
+)
+pgettext("DB: products.Topic.title", """Manage updates, policies & customization""")
+pgettext("DB: products.Topic.description", """Policies for Firefox for Enterprise""")
+pgettext("DB: products.Topic.title", """Autoconfiguration""")
+pgettext("DB: products.Topic.description", """How to configure Firefox for Enterprise""")
+pgettext("DB: products.Topic.title", """Linux""")
+pgettext(
+    "DB: products.Topic.description", """Deploy Firefox on your organization's Linux machines."""
+)
+pgettext("DB: products.Topic.title", """Manage settings via policy""")
+pgettext("DB: products.Topic.description", """Change Firefox's settings using policies.""")
 pgettext("DB: products.Topic.title", """Library""")
 pgettext("DB: products.Topic.description", """Manage bookmarks and history""")
 pgettext("DB: products.Topic.title", """Services and Subscriptions""")
@@ -683,6 +521,10 @@ pgettext("DB: products.Topic.title", """Music, Photos and Video""")
 pgettext(
     "DB: products.Topic.description",
     """Take pictures, record videos and listen to music on your Firefox OS phone.""",
+)
+pgettext("DB: products.Topic.title", """Manage add-ons""")
+pgettext(
+    "DB: products.Topic.description", """Working with add-ons on Firefox for your organization."""
 )
 pgettext("DB: products.Topic.title", """Sync""")
 pgettext(
@@ -734,31 +576,58 @@ pgettext("DB: products.Topic.title", """Mozilla Persona""")
 pgettext("DB: products.Topic.description", """Mozilla Persona""")
 pgettext("DB: products.Topic.title", """Hot topics""")
 pgettext("DB: products.Topic.description", """Hot topics""")
-pgettext("DB: products.Topic.title", """Technical""")
+pgettext("DB: products.Topic.title", """Get started""")
+pgettext("DB: products.Topic.description", """Everything you need to know to use Firefox Lite.""")
+pgettext("DB: products.Topic.title", """Preferences""")
+pgettext("DB: products.Topic.description", """Customize Firefox Lite to your desired settings""")
+pgettext("DB: products.Topic.title", """Fix problems""")
+pgettext("DB: products.Topic.description", """Troubleshoot problems with Firefox Lite.""")
+pgettext("DB: products.Topic.title", """General contribution""")
 pgettext(
     "DB: products.Topic.description",
-    """Find solutions for how to use the Firefox Private Network VPN""",
+    """Topic for any KB articles related to the contribution in general""",
 )
+pgettext("DB: products.Topic.title", """Get started""")
+pgettext("DB: products.Topic.description", """How to use Firefox Reality""")
+pgettext("DB: products.Topic.title", """Forum Support""")
+pgettext(
+    "DB: products.Topic.description",
+    """Topic for any KB articles related to the Forum Support contribution""",
+)
+pgettext("DB: products.Topic.title", """Social Support""")
+pgettext(
+    "DB: products.Topic.description",
+    """Topic for any KB articles related to the Social Support Program""",
+)
+pgettext("DB: products.Topic.title", """Localization""")
+pgettext(
+    "DB: products.Topic.description",
+    """Topic for any KB articles related to the Localization contribution""",
+)
+pgettext("DB: products.Topic.title", """KB Contribution""")
+pgettext(
+    "DB: products.Topic.description",
+    """Topic for any KB articles related to the KB articles contribution""",
+)
+pgettext("DB: products.Topic.title", """Respond tool""")
+pgettext(
+    "DB: products.Topic.description",
+    """Topic for any KB articles related to the Respond Tool contribution""",
+)
+pgettext("DB: products.Topic.title", """Troubleshooting""")
+pgettext("DB: products.Topic.description", """Fix problems with Firefox Reality""")
+pgettext("DB: products.Topic.title", """[Obsolete] Mozilla Persona""")
+pgettext("DB: products.Topic.description", """Mozilla Persona""")
+pgettext("DB: products.Topic.title", """[Obsolete] Hot topics""")
+pgettext("DB: products.Topic.description", """Hot topics""")
+pgettext("DB: products.Topic.title", """Technical""")
+pgettext("DB: products.Topic.description", """Find solutions for how to use the Mozilla VPN.""")
 pgettext("DB: products.Topic.title", """Accounts""")
 pgettext("DB: products.Topic.description", """Find solutions on managing your account""")
 pgettext("DB: products.Topic.title", """Payments""")
 pgettext("DB: products.Topic.description", """Manage your payment and subscription""")
 pgettext("DB: products.Topic.title", """Troubleshooting""")
 pgettext("DB: products.Topic.description", """Fix problems with Firefox Private Network VPN""")
-pgettext("DB: products.Topic.title", """Firefox for Fire TV""")
-pgettext("DB: products.Topic.description", """Browser for the Amazon Fire TV.""")
-pgettext("DB: products.Topic.title", """Firefox for Echo Show""")
-pgettext("DB: products.Topic.description", """Browser for the Amazon Echo Show""")
-pgettext("DB: products.Topic.title", """Get started""")
-pgettext("DB: products.Topic.description", """Get Started with Firefox for Fire TV""")
-pgettext("DB: products.Topic.title", """Get started""")
-pgettext("DB: products.Topic.description", """Basics for using Firefox Private Network.""")
-pgettext("DB: products.Topic.title", """Fix problems""")
-pgettext("DB: products.Topic.description", """Troubleshoot problems with Firefox Fire TV""")
-pgettext("DB: products.Topic.title", """Manage account and settings""")
-pgettext("DB: products.Topic.description", """Change account and settings for Private Network.""")
-pgettext("DB: products.Topic.title", """Fix problems""")
-pgettext("DB: products.Topic.description", """Troubleshoot issues for Private Network""")
 pgettext("DB: products.Topic.title", """Popcorn Maker""")
 pgettext(
     "DB: products.Topic.description",
@@ -768,15 +637,10 @@ pgettext("DB: products.Topic.title", """Webmaker for Android""")
 pgettext("DB: products.Topic.description", """Get help with the Webmaker app for Android.""")
 pgettext("DB: products.Topic.title", """Intro to Open Badges""")
 pgettext("DB: products.Topic.description", """Learn the basic about Open Badges""")
-pgettext("DB: products.Topic.title", """Release notes""")
+pgettext("DB: products.Topic.title", """Technical""")
 pgettext(
-    "DB: products.Topic.description", """Where to find release notes and upcoming features."""
-)
-pgettext("DB: products.Topic.title", """Windows""")
-pgettext("DB: products.Topic.description", """Deploying Firefox on Windows computers.""")
-pgettext("DB: products.Topic.title", """Manage certificates""")
-pgettext(
-    "DB: products.Topic.description", """Set up certificates on Firefox for your organization."""
+    "DB: products.Topic.description",
+    """Find solutions for how to use the Firefox Private Network add-on.""",
 )
 pgettext("DB: products.Topic.title", """Thimble""")
 pgettext(
@@ -785,53 +649,24 @@ pgettext(
 )
 pgettext("DB: products.Topic.title", """BadgeKit""")
 pgettext("DB: products.Topic.description", """Learn how to create, assess and issue badges""")
-pgettext("DB: products.Topic.title", """Customization of Firefox in an enterprise environment""")
-pgettext(
-    "DB: products.Topic.description", """Customization of Firefox in an enterprise environment"""
-)
-pgettext("DB: products.Topic.title", """Installation""")
-pgettext("DB: products.Topic.description", """How to install Firefox for Enterprise""")
-pgettext("DB: products.Topic.title", """Explore""")
-pgettext("DB: products.Topic.description", """Learn about Firefox for Enterprise""")
-pgettext("DB: products.Topic.title", """Mac""")
-pgettext(
-    "DB: products.Topic.description", """Deploy Firefox on your organization's Mac computers"""
-)
-pgettext("DB: products.Topic.title", """Policies overview""")
-pgettext(
-    "DB: products.Topic.description",
-    """How to set up policies on Firefox for your organization.""",
-)
+pgettext("DB: products.Topic.title", """Accounts""")
+pgettext("DB: products.Topic.description", """Change account and settings for Private Network.""")
 pgettext("DB: products.Topic.title", """X-Ray Goggles""")
 pgettext(
     "DB: products.Topic.description", """Learn how to inspect the code behind every webpage."""
 )
 pgettext("DB: products.Topic.title", """Get Involved""")
 pgettext("DB: products.Topic.description", """Help the Open Badges community""")
-pgettext("DB: products.Topic.title", """Deploy""")
-pgettext(
-    "DB: products.Topic.description", """Deployment of Firefox in an enterprise environment"""
-)
-pgettext("DB: products.Topic.title", """Manage updates, policies & customization""")
-pgettext("DB: products.Topic.description", """Policies for Firefox for Enterprise""")
-pgettext("DB: products.Topic.title", """Autoconfiguration""")
-pgettext("DB: products.Topic.description", """How to configure Firefox for Enterprise""")
-pgettext("DB: products.Topic.title", """Linux""")
-pgettext(
-    "DB: products.Topic.description", """Deploy Firefox on your organization's Linux machines."""
-)
-pgettext("DB: products.Topic.title", """Manage settings via policy""")
-pgettext("DB: products.Topic.description", """Change Firefox's settings using policies.""")
+pgettext("DB: products.Topic.title", """Payments""")
+pgettext("DB: products.Topic.description", """Manage your payment and subscription""")
 pgettext("DB: products.Topic.title", """Get the most from webmaker.org""")
 pgettext("DB: products.Topic.description", """Help or get help on a Webmaker project.""")
 pgettext("DB: products.Topic.title", """Earn Badges""")
 pgettext(
     "DB: products.Topic.description", """Earn Badges for the skills you learn online and offline"""
 )
-pgettext("DB: products.Topic.title", """Manage add-ons""")
-pgettext(
-    "DB: products.Topic.description", """Working with add-ons on Firefox for your organization."""
-)
+pgettext("DB: products.Topic.title", """Troubleshooting""")
+pgettext("DB: products.Topic.description", """Troubleshoot issues for Private Network""")
 pgettext("DB: products.Topic.title", """Events and help for Mentors""")
 pgettext(
     "DB: products.Topic.description",
@@ -853,6 +688,11 @@ pgettext("DB: products.Topic.title", """Pocket Basics""")
 pgettext("DB: products.Topic.description", """New to Pocket? Start here.""")
 pgettext("DB: products.Topic.title", """Install and set up""")
 pgettext("DB: products.Topic.description", """Sync your logins across Firefox and your apps.""")
+pgettext("DB: products.Topic.title", """Older versions of Firefox for Android""")
+pgettext(
+    "DB: products.Topic.description",
+    """See articles for an unsupported version of Firefox for Android.""",
+)
 pgettext("DB: products.Topic.title", """About Data Sharing""")
 pgettext(
     "DB: products.Topic.description",
@@ -904,72 +744,28 @@ pgettext(
 )
 pgettext("DB: products.Topic.title", """Other""")
 pgettext("DB: products.Topic.description", """Other questions with Firefox for Windows 8 Touch.""")
-pgettext("DB: products.Topic.title", """General contribution""")
-pgettext(
-    "DB: products.Topic.description",
-    """Topic for any KB articles related to the contribution in general""",
-)
 pgettext("DB: products.Topic.title", """Get started""")
-pgettext("DB: products.Topic.description", """How to use Firefox Reality""")
-pgettext("DB: products.Topic.title", """Forum Support""")
-pgettext(
-    "DB: products.Topic.description",
-    """Topic for any KB articles related to the Forum Support contribution""",
-)
-pgettext("DB: products.Topic.title", """Social Support""")
-pgettext(
-    "DB: products.Topic.description",
-    """Topic for any KB articles related to the Social Support Program""",
-)
-pgettext("DB: products.Topic.title", """Localization""")
-pgettext(
-    "DB: products.Topic.description",
-    """Topic for any KB articles related to the Localization contribution""",
-)
-pgettext("DB: products.Topic.title", """KB Contribution""")
-pgettext(
-    "DB: products.Topic.description",
-    """Topic for any KB articles related to the KB articles contribution""",
-)
-pgettext("DB: products.Topic.title", """Respond tool""")
-pgettext(
-    "DB: products.Topic.description",
-    """Topic for any KB articles related to the Respond Tool contribution""",
-)
-pgettext("DB: products.Topic.title", """Troubleshooting""")
-pgettext("DB: products.Topic.description", """Fix problems with Firefox Reality""")
-pgettext("DB: products.Topic.title", """[Obsolete] Mozilla Persona""")
-pgettext("DB: products.Topic.description", """Mozilla Persona""")
-pgettext("DB: products.Topic.title", """[Obsolete] Hot topics""")
-pgettext("DB: products.Topic.description", """Hot topics""")
+pgettext("DB: products.Topic.description", """Learn the basics about ScreenshotGo""")
 pgettext("DB: products.Topic.title", """Get Started""")
 pgettext("DB: products.Topic.description", """Klar verwenden""")
 pgettext("DB: products.Topic.title", """Firefox Klar for iOS""")
 pgettext("DB: products.Topic.description", """Privacy browser for iOS""")
-pgettext("DB: products.Topic.title", """Get started""")
-pgettext("DB: products.Topic.description", """Everything you need to know to use Firefox Lite.""")
 pgettext("DB: products.Topic.title", """Features""")
 pgettext("DB: products.Topic.description", """Getting started with Hubs""")
 pgettext("DB: products.Topic.title", """Firefox Klar for Android""")
 pgettext("DB: products.Topic.description", """Privacy browser for Android""")
-pgettext("DB: products.Topic.title", """Preferences""")
-pgettext("DB: products.Topic.description", """Customize Firefox Lite to your desired settings""")
 pgettext("DB: products.Topic.title", """Controls""")
 pgettext("DB: products.Topic.description", """How to navigate Hubs""")
-pgettext("DB: products.Topic.title", """Fix problems""")
-pgettext("DB: products.Topic.description", """Troubleshoot problems with Firefox Lite.""")
 pgettext("DB: products.Topic.title", """Moderation""")
 pgettext("DB: products.Topic.description", """Tools for making Hubs a good experience for all.""")
 pgettext("DB: products.Topic.title", """Spoke""")
 pgettext("DB: products.Topic.description", """Build scenes with Spoke""")
 pgettext("DB: products.Topic.title", """Creators""")
 pgettext("DB: products.Topic.description", """Advanced Hubs customization for creators""")
-pgettext("DB: products.Topic.title", """Firefox Focus for iOS""")
-pgettext("DB: products.Topic.description", """Firefox Focus for iOS""")
-pgettext("DB: products.Topic.title", """Firefox Focus for Android""")
-pgettext("DB: products.Topic.description", """Privacy browser for Android""")
-pgettext("DB: products.Topic.title", """Get started""")
-pgettext("DB: products.Topic.description", """Learn the basics about ScreenshotGo""")
+pgettext("DB: products.Topic.title", """Firefox for Fire TV""")
+pgettext("DB: products.Topic.description", """Browser for the Amazon Fire TV.""")
+pgettext("DB: products.Topic.title", """Firefox for Echo Show""")
+pgettext("DB: products.Topic.description", """Browser for the Amazon Echo Show""")
 pgettext("DB: products.Topic.title", """Learn the Basics. Get Started""")
 pgettext("DB: products.Topic.description", """Learn the Basics. Get Started""")
 pgettext("DB: products.Topic.title", """Tips and tricks""")
@@ -1069,94 +865,308 @@ pgettext(
 )
 pgettext("DB: products.Topic.title", """Other""")
 pgettext("DB: products.Topic.description", """Other""")
-pgettext("DB: products.Product.title", """Firefox""")
-pgettext("DB: products.Product.description", """Web browser for Windows, Mac and Linux""")
-pgettext("DB: products.Product.title", """Firefox for Android""")
-pgettext("DB: products.Product.description", """Web browser for Android smartphones and tablets""")
-pgettext("DB: products.Product.title", """Firefox for iOS""")
-pgettext("DB: products.Product.description", """Firefox for iPhone, iPad and iPod touch devices""")
-pgettext("DB: products.Product.title", """Firefox Accounts""")
-pgettext("DB: products.Product.description", """Privacy-first products for desktop and mobile""")
-pgettext("DB: products.Product.title", """Firefox OS""")
-pgettext("DB: products.Product.description", """Mobile OS for smartphones""")
-pgettext("DB: products.Product.title", """Firefox Preview""")
+pgettext("DB: products.Topic.title", """Firefox Focus for iOS""")
+pgettext("DB: products.Topic.description", """Firefox Focus for iOS""")
+pgettext("DB: products.Topic.title", """Get started""")
+pgettext("DB: products.Topic.description", """Get Started with Firefox for Fire TV""")
+pgettext("DB: products.Topic.title", """Firefox Focus for Android""")
+pgettext("DB: products.Topic.description", """Privacy browser for Android""")
+pgettext("DB: products.Topic.title", """Fix problems""")
+pgettext("DB: products.Topic.description", """Troubleshoot problems with Firefox Fire TV""")
+pgettext("DB: kbadge.Badge.title", """2021 KB Badge""")
 pgettext(
-    "DB: products.Product.description",
-    """Early version of an experimental Firefox browser for Android.""",
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved English edits during 2021.""",
 )
-pgettext("DB: products.Product.title", """Mozilla VPN""")
-pgettext("DB: products.Product.description", """VPN for Windows 10, Android, and iOS devices""")
-pgettext("DB: products.Product.title", """Firefox for Amazon Devices""")
-pgettext("DB: products.Product.description", """Browser for Amazon devices""")
-pgettext("DB: products.Product.title", """Firefox for Fire TV""")
-pgettext("DB: products.Product.description", """Browser for Amazon Fire TV""")
-pgettext("DB: products.Product.title", """Firefox Private Network Browser-level protection""")
-pgettext("DB: products.Product.description", """Browse securely on public Wi-Fi""")
-pgettext("DB: products.Product.title", """Firefox for Enterprise""")
-pgettext("DB: products.Product.description", """Firefox Quantum for businesses""")
-pgettext("DB: products.Product.title", """Open Badges""")
+pgettext("DB: kbadge.Badge.title", """2020 KB Badge""")
 pgettext(
-    "DB: products.Product.description",
-    """A new online standard to recognize and verify learning""",
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved English edits during 2020.""",
 )
-pgettext("DB: products.Product.title", """Webmaker""")
+pgettext("DB: kbadge.Badge.title", """2019 KB Badge""")
 pgettext(
-    "DB: products.Product.description",
-    """Webmaker and other tools for teaching and learning the Web""",
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved English edits during 2019.""",
 )
-pgettext("DB: products.Product.title", """Firefox for Android (ESR)""")
+pgettext("DB: kbadge.Badge.title", """2020 Support Forum Badge""")
 pgettext(
-    "DB: products.Product.description",
-    """Older version of Firefox for Android (no longer supported)""",
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 20 support forum replies during 2020.""",
 )
-pgettext("DB: products.Product.title", """Firefox for Windows 8 Touch""")
-pgettext("DB: products.Product.description", """Firefox for Windows 8 touch devices""")
-pgettext("DB: products.Product.title", """Firefox Lockwise""")
+pgettext("DB: kbadge.Badge.title", """2019 Support Forum Badge""")
 pgettext(
-    "DB: products.Product.description",
-    """Mobile app that gives you access to passwords you've saved to Firefox.""",
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 20 support forum replies during 2019.""",
 )
-pgettext("DB: products.Product.title", """Pocket""")
-pgettext("DB: products.Product.description", """Discover and save stories for later""")
-pgettext("DB: products.Product.title", """Privacy and Security""")
+pgettext("DB: kbadge.Badge.title", """2020 Army of Awesome Badge""")
 pgettext(
-    "DB: products.Product.description",
-    """Learn more about Mozilla's privacy and security practices.""",
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2020.""",
 )
-pgettext("DB: products.Product.title", """Contributors""")
-pgettext("DB: products.Product.description", """Contributor articles""")
-pgettext("DB: products.Product.title", """Firefox Reality""")
-pgettext("DB: products.Product.description", """Web browser for virtual reality headsets""")
-pgettext("DB: products.Product.title", """Firefox Send""")
-pgettext("DB: products.Product.description", """An app for sending files to anyone.""")
-pgettext("DB: products.Product.title", """Firefox Klar""")
-pgettext("DB: products.Product.description", """Was ist Firefox Klar?""")
-pgettext("DB: products.Product.title", """Firefox Lite""")
+pgettext("DB: kbadge.Badge.title", """2019 Army of Awesome Badge""")
 pgettext(
-    "DB: products.Product.description",
-    """Mobile browser for Indonesia, India, The Philippines, and Thailand""",
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2019.""",
 )
-pgettext("DB: products.Product.title", """Hubs""")
+pgettext("DB: kbadge.Badge.title", """2020 L10n Badge""")
 pgettext(
-    "DB: products.Product.description", """Social virtual reality for headsets and browsers"""
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2020.""",
 )
-pgettext("DB: products.Product.title", """Firefox Focus""")
-pgettext("DB: products.Product.description", """Automatic privacy browser and content blocker""")
-pgettext("DB: products.Product.title", """Firefox ScreenshotGo""")
-pgettext("DB: products.Product.description", """Screenshot app for mobile""")
-pgettext("DB: products.Product.title", """Thunderbird""")
-pgettext("DB: products.Product.description", """Email software for Windows, Mac and Linux""")
-# This is a karma title.
-pgettext("DB: karma.Title.name", """Administrator""")
-# This is a karma title.
-pgettext("DB: karma.Title.name", """Buddy of the Month! (10/2015)""")
-# This is a karma title.
-pgettext("DB: karma.Title.name", """Locale Leader""")
-# This is a karma title.
-pgettext("DB: karma.Title.name", """Moderator""")
-# This is a karma title.
-pgettext("DB: karma.Title.name", """SUMO Warrior""")
-# This is a karma title.
-pgettext("DB: karma.Title.name", """Top 10 Contributor""")
-# This is a karma title.
-pgettext("DB: karma.Title.name", """Top 25 Contributor""")
+pgettext("DB: kbadge.Badge.title", """2019 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2019.""",
+)
+pgettext("DB: kbadge.Badge.title", """2018 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2018.""",
+)
+pgettext("DB: kbadge.Badge.title", """2018 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved English edits during 2018.""",
+)
+pgettext("DB: kbadge.Badge.title", """2018 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2018.""",
+)
+pgettext("DB: kbadge.Badge.title", """2018 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 20 support forum replies during 2018.""",
+)
+pgettext("DB: kbadge.Badge.title", """2017 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2017.""",
+)
+pgettext("DB: kbadge.Badge.title", """2017 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved English edits during 2017.""",
+)
+pgettext("DB: kbadge.Badge.title", """2017 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2017.""",
+)
+pgettext("DB: kbadge.Badge.title", """2017 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 20 support forum replies during 2017.""",
+)
+pgettext("DB: kbadge.Badge.title", """2016 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2016.""",
+)
+pgettext("DB: kbadge.Badge.title", """2016 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 30 support forum replies during 2016.""",
+)
+pgettext("DB: kbadge.Badge.title", """2016 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved English edits during 2016.""",
+)
+pgettext("DB: kbadge.Badge.title", """2016 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2016.""",
+)
+pgettext("DB: kbadge.Badge.title", """2015 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 30 support forum replies during 2015.""",
+)
+pgettext("DB: kbadge.Badge.title", """2015 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 50 Army of Awesome tweets during 2015.""",
+)
+pgettext("DB: kbadge.Badge.title", """2015 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved English edits during 2015.""",
+)
+pgettext("DB: kbadge.Badge.title", """2015 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2015.""",
+)
+pgettext("DB: kbadge.Badge.title", """2014 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Army of Awesome 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2014 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2014 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO L10n 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2014 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2014 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO KB 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2014 badge earners for advancing the Mozilla Mission""",
+)
+pgettext("DB: kbadge.Badge.title", """2014 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Forum 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2014 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """Firefox 29 Launch Team""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks! 
+
+Firefox 29 features:
+
+1. Firefox Desktop: Australis new look and feel
+AND Firefox Accounts based sync
+
+2. Firefox for Android: Firefox Accounts based sync
+
+MOAR:
+
+https://sumo.etherpad.mozilla.org/sumo-australis-badges""",
+)
+pgettext("DB: kbadge.Badge.title", """2008 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2008.""",
+)
+pgettext("DB: kbadge.Badge.title", """2009 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """This badge is awarded to contributors with 10 approved translations edits during 2009.""",
+)
+pgettext("DB: kbadge.Badge.title", """2012 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Army of Awesome 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2012 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2013 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Army of Awesome 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2013 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2010 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Army of Awesome 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2010 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2011 Army of Awesome Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Army of Awesome 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2011 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2012 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Forum 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2012 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2010 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO KB 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2010 badge earners for advancing the Mozilla Mission""",
+)
+pgettext("DB: kbadge.Badge.title", """2010 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO L10n 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2010 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2010 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Forum 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2010 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2011 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO KB 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2011 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2011 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO L10n 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2011 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2011 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Forum 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2011 badge earners for advancing the Mozilla Mission!
+""",
+)
+pgettext("DB: kbadge.Badge.title", """2012 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO KB 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2012 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2013 KB Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO KB 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2013 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2013 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO L10n 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2013 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """2013 Support Forum Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO Forum 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2013 badge earners for advancing the Mozilla Mission""",
+)
+pgettext("DB: kbadge.Badge.title", """2012 L10n Badge""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """The SUMO L10n 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2012 badge earners for advancing the Mozilla Mission!""",
+)
+pgettext("DB: kbadge.Badge.title", """Kitsune Contributor""")
+pgettext(
+    "DB: kbadge.Badge.description",
+    """Badge awarded to those who have contributed to the Kitsune code base.""",
+)
