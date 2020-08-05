@@ -90,13 +90,13 @@ class Command(BaseCommand):
         py_file = os.path.abspath(py_file)
 
         print("Outputting db strings to: {filename}".format(filename=py_file))
-        with open(py_file, "w+") as f:
+        with open(py_file, "w+", encoding="utf-8") as f:
             f.write(HEADER)
             f.write("from django.utils.translation import pgettext\n\n")
             for s in strings:
                 comments = s["comments"]
                 if comments:
                     for c in comments:
-                        f.write("# {comment}\n".format(comment=c).encode("utf8"))
+                        f.write("# {comment}\n".format(comment=c))
 
-                f.write(L10N_STRING.format(id=s["id"], context=s["context"]).encode("utf8"))
+                f.write(L10N_STRING.format(id=s["id"], context=s["context"]))
