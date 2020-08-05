@@ -48,10 +48,8 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ["full_user", "name", "get_products"]
     list_select_related = True
     list_filter = ["is_fxa_migrated", "country"]
-    search_fields = ["user__username", "user__email", "name"]
-
-    # This reduces the load to the db.
-    readonly_fields = ["user"]
+    search_fields = ["user__username", "user__email", "name", "fxa_uid"]
+    autocomplete_fields = ["user"]
 
     def get_products(self, obj):
         """Get a list of products that a user is subscribed to."""
@@ -79,7 +77,11 @@ class AccountEventAdmin(admin.ModelAdmin):
     """Admin entry for SET tokens."""
 
     list_display = ["status", "event_type", "fxa_uid"]
-    search_fields = ["fxa_uid", "profile__user__username", "profile__user__email", "profile__name"]
+    list_filter = (
+        "event_type",
+        "status",
+    )
+    autocomplete_fields = ["profile"]
 
     class Meta:
         model = AccountEvent
