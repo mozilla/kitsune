@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 services:
   web:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
@@ -15,7 +15,6 @@ services:
       - elasticsearch7
       - redis
       - celery
-      - celery-fxa
       - celery-flower
       - celery-beat
       - mailcatcher
@@ -142,11 +141,17 @@ services:
 
   elasticsearch:
     image: elasticsearch:2.4
+    ports:
+      - "9201:9200"
+      - "9301:9300"
 
   elasticsearch7:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.3.2
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.8.1
     environment:
       - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
 
   redis:
     image: redis:3
@@ -154,17 +159,6 @@ services:
   celery:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
     command: celery -A kitsune worker -l info -n default@%h
-    env_file: .env
-    volumes:
-      - ./:/app:delegated
-    user: ${UID:-kitsune}
-    depends_on:
-      - mariadb
-      - redis
-
-  celery-fxa:
-    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery -A kitsune worker -Q fxa -l info -n fxa@%h
     env_file: .env
     volumes:
       - ./:/app:delegated
@@ -203,4 +197,4 @@ services:
       - "1080:1080"
 
 volumes:
-    mysqlvolume:
+  mysqlvolume:

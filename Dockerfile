@@ -39,7 +39,7 @@ COPY ./requirements/*.txt /app/requirements/
 RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt && \
     pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
     pip install --no-cache-dir --require-hashes -r requirements/test.txt && \
-    pip install --no-cache-dir --require-hashes --no-deps -t /venodr -r requirements/es7.txt
+    pip install --no-cache-dir --require-hashes --no-deps -t /vendor -r requirements/es7.txt
 
 ARG GIT_SHA=head
 ENV GIT_SHA=${GIT_SHA}
