@@ -12,7 +12,7 @@ repos:
     rev: 19.10b0
     hooks:
       - id: black
-        exclude: "^.*/migrations/.*$"
+        exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
   - repo: https://gitlab.com/pycqa/flake8.git
     rev: 3.8.2
     hooks:
