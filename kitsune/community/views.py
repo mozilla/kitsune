@@ -5,7 +5,6 @@ from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 
-from kitsune.community import api
 from kitsune.community.utils import (
     top_contributors_aoa,
     top_contributors_questions,
@@ -14,10 +13,8 @@ from kitsune.community.utils import (
 )
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
-from kitsune.products.api import ProductSerializer
 from kitsune.questions.models import QuestionLocale
 from kitsune.search.es_utils import ES_EXCEPTIONS
-from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import Document
@@ -186,43 +183,6 @@ def top_contributors(request, area):
             "products": Product.objects.filter(visible=True),
             "page": page,
             "page_size": page_size,
-        },
-    )
-
-
-def top_contributors_new(request, area):
-    to_json = JSONRenderer().render
-
-    if area == "questions":
-        api_endpoint = api.TopContributorsQuestions
-        locales = sorted(
-            (settings.LOCALES[code].english, code)
-            for code in QuestionLocale.objects.locales_list()
-        )
-    elif area == "l10n":
-        api_endpoint = api.TopContributorsLocalization
-        locales = sorted(
-            (settings.LOCALES[code].english, code) for code in settings.SUMO_LANGUAGES
-        )
-    else:
-        raise Http404
-
-    if request.LANGUAGE_CODE != "en-US" and request.LANGUAGE_CODE in [loc[1] for loc in locales]:
-        new_get = {"locale": request.LANGUAGE_CODE}
-        new_get.update(request.GET)
-        request.GET = new_get
-
-    contributors = api_endpoint().get_data(request)
-    products = ProductSerializer(Product.objects.filter(visible=True), many=True)
-
-    return render(
-        request,
-        "community/top_contributors_react.html",
-        {
-            "area": area,
-            "contributors_json": to_json(contributors),
-            "locales_json": to_json(locales),
-            "products_json": to_json(products.data),
         },
     )
 
