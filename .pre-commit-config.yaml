@@ -13,6 +13,7 @@ repos:
     hooks:
       - id: black
         exclude: "^.*/migrations/.*$"
+        language_version: python3.8
   - repo: https://gitlab.com/pycqa/flake8.git
     rev: 3.8.2
     hooks:
