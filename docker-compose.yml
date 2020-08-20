@@ -153,6 +153,14 @@ services:
       - "9200:9200"
       - "9300:9300"
 
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:7.8.1
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch7:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch7:9200
+
   redis:
     image: redis:3
 
