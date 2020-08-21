@@ -7,6 +7,7 @@ from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.fields import WikiLocaleText
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki import models as wiki_models
+from kitsune.questions import models as question_models
 
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
@@ -134,3 +135,90 @@ class WikiDocument(DSLDocument):
     @classmethod
     def get_model(cls):
         return wiki_models.Document
+
+
+class QuestionDocument(DSLDocument):
+    """
+    """
+
+    question_id = field.Integer()
+    question_title = field.Keyword(fields={"text": field.Text()})
+    question_content = field.Object(
+        properties={
+            "en-US": field.Text(analyzer="english"),
+            "cs": field.Text(analyzer="czech"),
+            "hu": field.Text(analyzer="hungarian"),
+        }
+    )
+
+    locale = field.Keyword()
+
+    class Index:
+        name = config.QUESTION_INDEX_NAME
+        using = config.DEFAULT_ES7_CONNECTION
+
+    @classmethod
+    def prepare_locale(cls, instance):
+        return cls.get_question_instance(instance).locale
+
+    @classmethod
+    def prepare(cls, instance):
+        """Prepare an object given a model instance"""
+
+        fields = ["question_id", "question_title", "question_content", "locale"] + cls.get_fields()
+        locale_fields = ["question_content"]
+
+        obj = cls()
+
+        # Iterate over fields and either set the value directly from the instance
+        # or prepare based on `prepare_<field>` method
+        for f in fields:
+            try:
+                prepare_method = getattr(obj, "prepare_{}".format(f))
+                value = prepare_method(instance)
+            except AttributeError:
+                if f.startswith("question_"):
+                    value = getattr(cls.get_question_instance(instance), f[len("question_") :])
+                else:
+                    value = getattr(instance, f)
+
+            if f in locale_fields:
+                setattr(obj, f, {})
+                setattr(obj[f], cls.prepare_locale(instance), value)
+            else:
+                setattr(obj, f, value)
+
+        obj.meta.id = instance.id
+
+        return obj
+
+    @classmethod
+    def get_fields(cls):
+        return []
+
+    @classmethod
+    def get_question_instance(cls, instance):
+        return instance
+
+    @classmethod
+    def get_model(cls):
+        return question_models.Question
+
+
+class AnswerDocument(QuestionDocument):
+    """
+    """
+
+    content = field.Text()
+
+    @classmethod
+    def get_fields(cls):
+        return ["content"]
+
+    @classmethod
+    def get_question_instance(cls, instance):
+        return instance.question
+
+    @classmethod
+    def get_model(cls):
+        return question_models.Answer
