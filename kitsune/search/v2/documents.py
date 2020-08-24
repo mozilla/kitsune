@@ -1,5 +1,5 @@
 from elasticsearch_dsl import Document as DSLDocument
-from elasticsearch_dsl import connections, field
+from elasticsearch_dsl import connections, field, InnerDoc
 from kitsune.questions import models as question_models
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
@@ -90,12 +90,37 @@ class WikiDocument(SumoDocument):
         return wiki_models.Document
 
 
+class UserInnerDoc(InnerDoc):
+    id = field.Integer()
+    username = field.Keyword()
+
+
+class ProductInnerDoc(InnerDoc):
+    id = field.Integer()
+    title = field.Keyword()
+    slug = field.Keyword()
+
+
+class TopicInnerDoc(InnerDoc):
+    id = field.Integer()
+    title = field.Keyword()
+    slug = field.Keyword()
+
+
+class TagInnerDoc(InnerDoc):
+    id = field.Integer()
+    name = field.Keyword()
+    slug = field.Keyword()
+
+
 class QuestionDocument(DSLDocument):
     """
     """
 
     question_id = field.Integer()
+
     question_title = field.Keyword(fields={"text": field.Text()})
+    question_creator = field.Object(UserInnerDoc)
     question_content = field.Object(
         properties={
             "en-US": field.Text(analyzer="english"),
@@ -104,11 +129,69 @@ class QuestionDocument(DSLDocument):
         }
     )
 
+    question_updated = field.Date()
+    question_updated_by = field.Object(UserInnerDoc)
+    question_solution = field.Integer()
+    question_is_locked = field.Boolean()
+    question_is_archived = field.Boolean()
+
+    question_is_spam = field.Boolean()
+    question_marked_as_spam = field.Date()
+    question_marked_as_spam_by = field.Object(UserInnerDoc)
+
+    question_product = field.Object(ProductInnerDoc)
+    question_topic = field.Object(TopicInnerDoc)
+
+    question_taken_by = field.Object(UserInnerDoc)
+    question_taken_until = field.Date()
+
+    question_tags = field.Object(TagInnerDoc)
+
     locale = field.Keyword()
 
     class Index:
         name = config.QUESTION_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
+
+    @classmethod
+    def prepare_question_creator(cls, instance):
+        user = cls.get_question_instance(instance).creator
+        return UserInnerDoc(id=user.id, username=user.username)
+
+    @classmethod
+    def prepare_question_updated_by(cls, instance):
+        user = cls.get_question_instance(instance).updated_by
+        return UserInnerDoc(id=user.id, username=user.username)
+
+    @classmethod
+    def prepare_question_marked_as_spam_by(cls, instance):
+        user = cls.get_question_instance(instance).marked_as_spam_by
+        return UserInnerDoc(id=user.id, username=user.username)
+
+    @classmethod
+    def prepare_question_taken_by(cls, instance):
+        user = cls.get_question_instance(instance).taken_by
+        return UserInnerDoc(id=user.id, username=user.username)
+
+    @classmethod
+    def prepare_question_solution(cls, instance):
+        solution = cls.get_question_instance(instance).solution
+        return solution.id if solution else None
+
+    @classmethod
+    def prepare_question_product(cls, instance):
+        product = cls.get_question_instance(instance).product
+        return ProductInnerDoc(id=product.id, title=product.title, slug=product.slug)
+
+    @classmethod
+    def prepare_question_topic(cls, instance):
+        topic = cls.get_question_instance(instance).topic
+        return TopicInnerDoc(id=topic.id, title=topic.title, slug=topic.slug)
+
+    @classmethod
+    def prepare_question_tags(cls, instance):
+        tags = cls.get_question_instance(instance).tags.all()
+        return [TagInnerDoc(id=tag.id, name=tag.name, slug=tag.slug) for tag in tags]
 
     @classmethod
     def prepare_locale(cls, instance):
@@ -118,7 +201,25 @@ class QuestionDocument(DSLDocument):
     def prepare(cls, instance):
         """Prepare an object given a model instance"""
 
-        fields = ["question_id", "question_title", "question_content", "locale"] + cls.get_fields()
+        fields = [
+            "question_id",
+            "question_title",
+            "question_creator",
+            "question_content",
+            "question_updated",
+            "question_updated_by",
+            "question_solution",
+            "question_is_locked",
+            "question_is_spam",
+            "question_marked_as_spam",
+            "question_marked_as_spam_by",
+            "question_product",
+            "question_topic",
+            "question_taken_by",
+            "question_taken_until",
+            "question_tags",
+            "locale",
+        ] + cls.get_fields()
         locale_fields = ["question_content"]
 
         obj = cls()
@@ -164,9 +265,16 @@ class AnswerDocument(QuestionDocument):
 
     content = field.Text()
 
+    is_solution = field.Boolean()
+
+    @classmethod
+    def prepare_is_solution(cls, instance):
+        solution = instance.question.solution
+        return bool(solution) and solution.id == instance.id
+
     @classmethod
     def get_fields(cls):
-        return ["content"]
+        return ["content", "is_solution"]
 
     @classmethod
     def get_question_instance(cls, instance):
