@@ -757,6 +757,8 @@ SESSION_SERIALIZER = config(
     "SESSION_SERIALIZER", default="django.contrib.sessions.serializers.PickleSerializer"
 )
 
+# CSRF
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
 # Connection information for Elastic
 ES_URLS = [config("ES_URLS", default="localhost:9200")]
