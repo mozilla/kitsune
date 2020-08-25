@@ -94,11 +94,19 @@ class UserInnerDoc(InnerDoc):
     id = field.Integer()
     username = field.Keyword()
 
+    @classmethod
+    def prepare(cls, instance):
+        return cls(id=instance.id, username=instance.username)
+
 
 class ProductInnerDoc(InnerDoc):
     id = field.Integer()
     title = field.Keyword()
     slug = field.Keyword()
+
+    @classmethod
+    def prepare(cls, instance):
+        return cls(id=instance.id, title=instance.title, slug=instance.slug)
 
 
 class TopicInnerDoc(InnerDoc):
@@ -106,11 +114,19 @@ class TopicInnerDoc(InnerDoc):
     title = field.Keyword()
     slug = field.Keyword()
 
+    @classmethod
+    def prepare(cls, instance):
+        return cls(id=instance.id, title=instance.title, slug=instance.slug)
+
 
 class TagInnerDoc(InnerDoc):
     id = field.Integer()
     name = field.Keyword()
     slug = field.Keyword()
+
+    @classmethod
+    def prepare(cls, instance):
+        return cls(id=instance.id, name=instance.name, slug=instance.slug)
 
 
 class QuestionDocument(DSLDocument):
@@ -156,22 +172,12 @@ class QuestionDocument(DSLDocument):
     @classmethod
     def prepare_question_creator(cls, instance):
         user = cls.get_question_instance(instance).creator
-        return UserInnerDoc(id=user.id, username=user.username)
+        return UserInnerDoc.prepare(user)
 
     @classmethod
     def prepare_question_updated_by(cls, instance):
         user = cls.get_question_instance(instance).updated_by
-        return UserInnerDoc(id=user.id, username=user.username)
-
-    @classmethod
-    def prepare_question_marked_as_spam_by(cls, instance):
-        user = cls.get_question_instance(instance).marked_as_spam_by
-        return UserInnerDoc(id=user.id, username=user.username)
-
-    @classmethod
-    def prepare_question_taken_by(cls, instance):
-        user = cls.get_question_instance(instance).taken_by
-        return UserInnerDoc(id=user.id, username=user.username)
+        return UserInnerDoc.prepare(user)
 
     @classmethod
     def prepare_question_solution(cls, instance):
@@ -179,19 +185,29 @@ class QuestionDocument(DSLDocument):
         return solution.id if solution else None
 
     @classmethod
+    def prepare_question_marked_as_spam_by(cls, instance):
+        user = cls.get_question_instance(instance).marked_as_spam_by
+        return UserInnerDoc.prepare(user)
+
+    @classmethod
     def prepare_question_product(cls, instance):
         product = cls.get_question_instance(instance).product
-        return ProductInnerDoc(id=product.id, title=product.title, slug=product.slug)
+        return ProductInnerDoc.prepare(product)
 
     @classmethod
     def prepare_question_topic(cls, instance):
         topic = cls.get_question_instance(instance).topic
-        return TopicInnerDoc(id=topic.id, title=topic.title, slug=topic.slug)
+        return TopicInnerDoc.prepare(topic)
+
+    @classmethod
+    def prepare_question_taken_by(cls, instance):
+        user = cls.get_question_instance(instance).taken_by
+        return UserInnerDoc.prepare(user)
 
     @classmethod
     def prepare_question_tags(cls, instance):
         tags = cls.get_question_instance(instance).tags.all()
-        return [TagInnerDoc(id=tag.id, name=tag.name, slug=tag.slug) for tag in tags]
+        return [TagInnerDoc.prepare(tag) for tag in tags]
 
     @classmethod
     def prepare_locale(cls, instance):
