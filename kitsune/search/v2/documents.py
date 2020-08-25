@@ -145,6 +145,7 @@ class QuestionDocument(DSLDocument):
         }
     )
 
+    question_created = field.Date()
     question_updated = field.Date()
     question_updated_by = field.Object(UserInnerDoc)
     question_solution = field.Integer()
@@ -162,6 +163,7 @@ class QuestionDocument(DSLDocument):
     question_taken_until = field.Date()
 
     question_tags = field.Object(TagInnerDoc)
+    question_num_votes = field.Integer()
 
     locale = field.Keyword()
 
@@ -222,6 +224,7 @@ class QuestionDocument(DSLDocument):
             "question_title",
             "question_creator",
             "question_content",
+            "question_created",
             "question_updated",
             "question_updated_by",
             "question_solution",
@@ -234,6 +237,7 @@ class QuestionDocument(DSLDocument):
             "question_taken_by",
             "question_taken_until",
             "question_tags",
+            "question_num_votes",
             "locale",
         ] + cls.get_fields()
         locale_fields = ["question_content"]
@@ -279,9 +283,32 @@ class AnswerDocument(QuestionDocument):
     """
     """
 
+    creator = field.Object(UserInnerDoc)
+    created = field.Date()
     content = field.Text()
+    updated = field.Date()
+    updated_by = field.Object(UserInnerDoc)
+
+    is_spam = field.Boolean()
+    marked_as_spam = field.Date()
+    marked_as_spam_by = field.Object(UserInnerDoc)
+
+    num_helpful_votes = field.Integer()
+    num_unhelpful_votes = field.Integer()
 
     is_solution = field.Boolean()
+
+    @classmethod
+    def prepare_creator(cls, instance):
+        return UserInnerDoc.prepare(instance.creator)
+
+    @classmethod
+    def prepare_updated_by(cls, instance):
+        return UserInnerDoc.prepare(instance.updated_by)
+
+    @classmethod
+    def prepare_marked_as_spam_by(cls, instance):
+        return UserInnerDoc.prepare(instance.marked_as_spam_by)
 
     @classmethod
     def prepare_is_solution(cls, instance):
@@ -290,7 +317,19 @@ class AnswerDocument(QuestionDocument):
 
     @classmethod
     def get_fields(cls):
-        return ["content", "is_solution"]
+        return [
+            "creator",
+            "created",
+            "content",
+            "updated",
+            "updated_by",
+            "is_spam",
+            "marked_as_spam",
+            "marked_as_spam_by",
+            "num_helpful_votes",
+            "num_unhelpful_votes",
+            "is_solution",
+        ]
 
     @classmethod
     def get_question_instance(cls, instance):
