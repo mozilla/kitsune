@@ -90,9 +90,3 @@ class PatternURLWidget(URLInput):
     def render(self, *args, **kwargs):
         self.attrs["pattern"] = self.pattern
         return super(PatternURLWidget, self).render(*args, **kwargs)
-
-
-class FacebookURLWidget(PatternURLWidget):
-    """A URLWidget that requires a Facebook URL."""
-
-    pattern = r"https?://(?:www\.)?facebook\.com/.+"

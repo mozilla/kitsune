@@ -7,123 +7,127 @@
 {% set crumbs = [(profile_url(profile.user), profile.user.username), (None, title)] %}
 
 {% block above_main %}
-  {% if fxa_messages %}
-    {% for message in fxa_messages %}
-      {% if message == 'fxa_notification_updated' %}
-        {{ notification_fxa_updated(STATIC_URL) }}
-      {% endif %}
-    {% endfor %}
-  {% endif %}
+{% if fxa_messages %}
+  {% for message in fxa_messages %}
+    {% if message == 'fxa_notification_updated' %}
+      {{ notification_fxa_updated(STATIC_URL) }}
+    {% endif %}
+  {% endfor %}
+{% endif %}
 {% endblock %}
 
 {% block breadcrumbs %}
 {% endblock %}
 
 {% block content %}
-  <article id="edit-profile" class="sumo-page-section">
-      {% if profile and profile.is_fxa_migrated %}
-      <h1 class="sumo-page-heading">{{ _('Account') }}</h1>
-      <p class="mb-0"><strong>{{ user.email }}</strong></p>
-      <p>
-        {{ _('You can change your email address on Firefox Accounts.') }}
-        <a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
-      </p>
+<article id="edit-profile" class="sumo-page-section">
+  {% if profile and profile.is_fxa_migrated %}
+    <h1 class="sumo-page-heading">{{ _('Account') }}</h1>
+    <p class="mb-0"><strong>{{ user.email }}</strong></p>
+    <p>
+      {{ _('You can change your email address on Firefox Accounts.') }}
+      <a
+        href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
+    </p>
 
-      <div class="manage-account">
-        <a href="https://accounts.firefox.com/settings" target="_blank" class="sumo-button primary-button button-lg">{{ _('Manage Firefox Account') }}</a>
+    <div class="manage-account">
+      <a href="https://accounts.firefox.com/settings" target="_blank"
+        class="sumo-button primary-button button-lg">{{ _('Manage Firefox Account') }}</a>
+    </div>
+
+    <hr class="section-break" />
+  {% endif %}
+
+  <h1 class="sumo-page-heading">{{ title }}</h1>
+  <p>
+    {% trans %}
+    Tell users a bit more information about yourself. Most fields are
+    optional, but they'll help other users get to know you better.
+    {% endtrans %}
+  </p>
+  <form method="post" action="">
+    {% csrf_token %}
+    {% if request.user == profile.user %}
+      <div>
+        <section class="avatar-group">
+          <figure class="avatar-group--figure">
+            <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+            {% if not profile.is_fxa_migrated %}
+              <a class="change-avatar text-body-sm display-block" href="https://gravatar.com/emails" target="_blank">
+                {{ pgettext('avatar', 'Choose Photo') }}
+                <span class="tip">
+                  {% trans %}
+                  <p>
+                    SUMO is now using Gravatars as avatars. You must change
+                    your Gravatar on gravatar.com.
+                  </p>
+                  <p>
+                    It can take a few minutes for the avatar change to take
+                    effect. You may need to wait a few minutes and reload
+                    the page to see your new Gravatar.
+                  </p>
+                  {% endtrans %}
+                </span>
+              </a>
+              {% if profile.avatar %}
+                <a class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
+              {% endif %}
+            {% endif %}
+          </figure>
+        </section>
       </div>
+    {% endif %}
 
-      <hr class="section-break"/>
-      {% endif %}
+    {{ field(user_form.username) }}
+    {{ field(profile_form.name) }}
+    {{ field(profile_form.bio) }}
+    {% if profile_form.public_email %}
+      {{ checkbox(profile_form.public_email) }}
+    {% endif %}
+    {{ field(profile_form.website) }}
+    {{ field(profile_form.twitter) }}
+    {{ field(profile_form.community_mozilla_org) }}
+    {{ field(profile_form.people_mozilla_org) }}
+    {{ field(profile_form.matrix_handle) }}
+    {{ field(profile_form.country) }}
+    {{ field(profile_form.city) }}
+    {{ field(profile_form.timezone) }}
+    {{ field(profile_form.locale) }}
+    {{ field(profile_form.involved_from) }}
 
-      <h1 class="sumo-page-heading">{{ title }}</h1>
-      <p>
-        {% trans %}
-        Tell users a bit more information about yourself. Most fields are
-        optional, but they'll help other users get to know you better.
-        {% endtrans %}
-      </p>
-      <form method="post" action="">
+    <div class="sumo-button-wrap reverse-on-desktop align-full">
+      <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update My Profile') }}</button>
+      <button class="sumo-button button-lg" type="reset">Cancel</button>
+    </div>
+  </form>
+  {% if request.user == profile.user %}
+    <p class="delete-account-link">
+      <a href="javascript:;" data-sumo-modal="delete-profile"
+        class="warning-link mt-0">{{ _('Close account and delete all profile information') }}</a>
+    </p>
+  {% endif %}
+
+  {% if request.user == profile.user %}
+    <div class="mzp-u-modal-content kbox" title="{{ _('Are you sure') }}" id="delete-profile">
+      <form method="post" action="{{ url('users.close_account') }}">
         {% csrf_token %}
-          {% if request.user == profile.user %}
-            <div>
-              <section class="avatar-group">
-                <figure class="avatar-group--figure">
-                  <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-                  {% if not profile.is_fxa_migrated %}
-                    <a class="change-avatar text-body-sm display-block" href="https://gravatar.com/emails" target="_blank">
-                      {{ pgettext('avatar', 'Choose Photo') }}
-                      <span class="tip">
-                        {% trans %}
-                          <p>
-                            SUMO is now using Gravatars as avatars. You must change
-                            your Gravatar on gravatar.com.
-                          </p>
-                          <p>
-                            It can take a few minutes for the avatar change to take
-                            effect. You may need to wait a few minutes and reload
-                            the page to see your new Gravatar.
-                          </p>
-                        {% endtrans %}
-                      </span>
-                    </a>
-                    {% if profile.avatar %}
-                      <a class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
-                    {% endif %}
-                  {% endif %}
-                </figure>
-              </section>
-            </div>
-
-          {% endif %}
-
-          {{ field(form.name) }}
-          {{ field(form.bio) }}
-          {% if form.public_email %}
-            {{ checkbox(form.public_email) }}
-          {% endif %}
-          {{ field(form.website) }}
-          {{ field(form.twitter) }}
-          {{ field(form.facebook) }}
-          {{ field(form.mozillians) }}
-          {{ field(form.irc_handle) }}
-          {{ field(form.country) }}
-          {{ field(form.city) }}
-          {{ field(form.timezone) }}
-          {{ field(form.locale) }}
-          {{ field(form.involved_from) }}
-
-        <div class="sumo-button-wrap reverse-on-desktop align-full">
-          <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update My Profile') }}</button>
-          <button class="sumo-button button-lg" type="reset">Cancel</button>
+        <p>
+          {{ _('Deleting your account will prevent you from answering or posting questions in Mozilla Support. This action will clear your profile and cannot be restored again.') }}
+        </p>
+        <p>
+          {{ _('Please type in your username to confirm') }}
+        </p>
+        <div class="field">
+          <input id="delete-profile-username-input" name="entered_username" type="text">
+          <input id="delete-profile-username" name="account_username" type="hidden" value="{{ profile.user.username }}">
         </div>
+        <p>
+          <button type="submit" id="delete-profile-button" class="sumo-button secondary-button button-lg warning-button"
+            disabled>{{ _('Delete My Account') }}</button>
+        </p>
       </form>
-      {% if request.user == profile.user %}
-      <p class="delete-account-link">
-        <a href="javascript:;" data-sumo-modal="delete-profile" class="warning-link mt-0">{{ _('Close account and delete all profile information') }}</a>
-      </p>
-      {% endif %}
+    </div>
+  {% endif %}
 
-      {% if request.user == profile.user %}
-      <div class="mzp-u-modal-content kbox" title="{{ _('Are you sure') }}" id="delete-profile">
-        <form method="post" action="{{ url('users.close_account') }}">
-          {% csrf_token %}
-          <p>
-            {{ _('Deleting your account will prevent you from answering or posting questions in Mozilla Support. This action will clear your profile and cannot be restored again.') }}
-          </p>
-          <p>
-            {{ _('Please type in your username to confirm') }}
-          </p>
-          <div class="field">
-            <input id="delete-profile-username-input" name="entered_username" type="text">
-            <input id="delete-profile-username" name="account_username" type="hidden" value="{{ profile.user.username }}">
-          </div>
-          <p>
-            <button type="submit" id="delete-profile-button" class="sumo-button secondary-button button-lg warning-button" disabled>{{ _('Delete My Account') }}</button>
-          </p>
-        </form>
-      </div>
-      {% endif %}
-
-    </article>
+</article>
 {% endblock %}

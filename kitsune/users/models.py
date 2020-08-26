@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
+from timezone_field import TimeZoneField
+
 from kitsune.lib.countries import COUNTRIES
 from kitsune.products.models import Product
 from kitsune.search.es_utils import UnindexMeBro
@@ -21,7 +23,6 @@ from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 from kitsune.users.validators import TwitterValidator
-from timezone_field import TimeZoneField
 
 log = logging.getLogger("k.users")
 
@@ -72,14 +73,14 @@ class Profile(ModelBase, SearchMixin):
         validators=[TwitterValidator],
         verbose_name=_lazy("Twitter Username"),
     )
-    facebook = models.URLField(
-        max_length=255, null=True, blank=True, verbose_name=_lazy("Facebook URL")
+    community_mozilla_org = models.CharField(
+        max_length=255, default="", blank=True, verbose_name=_lazy("Community Portal Username")
     )
-    mozillians = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name=_lazy("Mozillians Username")
+    people_mozilla_org = models.CharField(
+        max_length=255, blank=True, default="", verbose_name=_lazy("People Directory Username")
     )
-    irc_handle = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name=_lazy("IRC nickname")
+    matrix_handle = models.CharField(
+        max_length=255, default="", blank=True, verbose_name=_lazy("Matrix Nickname")
     )
     timezone = TimeZoneField(
         null=True, blank=True, default="US/Pacific", verbose_name=_lazy("Timezone")
@@ -134,9 +135,9 @@ class Profile(ModelBase, SearchMixin):
         self.bio = ""
         self.website = ""
         self.twitter = ""
-        self.facebook = ""
-        self.mozillians = ""
-        self.irc_handle = ""
+        self.community_mozilla_org = ""
+        self.people_mozilla_org = ""
+        self.matrix_handle = ""
         self.city = ""
         self.is_fxa_migrated = False
         self.fxa_uid = ""

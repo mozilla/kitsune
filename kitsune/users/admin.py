@@ -35,7 +35,13 @@ class ProfileAdmin(admin.ModelAdmin):
         (
             "Contact Info",
             {
-                "fields": ["website", "twitter", "facebook", "mozillians", "irc_handle"],
+                "fields": [
+                    "website",
+                    "twitter",
+                    "community_mozilla_org",
+                    "people_mozilla_org",
+                    "matrix_handle",
+                ],
                 "classes": ["collapse"],
             },
         ),

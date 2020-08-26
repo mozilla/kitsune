@@ -1,47 +1,9 @@
-import re
-
 from django.forms import ValidationError
 from nose.tools import eq_
-from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.forms import ProfileForm, username_allowed
-from kitsune.users.tests import TestCaseBase
+from kitsune.users.forms import username_allowed
 from kitsune.users.validators import TwitterValidator
-
-FACEBOOK_URLS = (
-    ("https://facebook.com/valid", True),
-    ("http://www.facebook.com/valid", True),
-    ("htt://facebook.com/invalid", False),
-    ("http://notfacebook.com/invalid", False),
-    ("http://facebook.com/", False),
-)
-
-
-class ProfileFormTestCase(TestCaseBase):
-    form = ProfileForm()
-
-    def setUp(self):
-        self.form.cleaned_data = {}
-
-    def test_facebook_pattern_attr(self):
-        """Facebook field has the correct pattern attribute."""
-        fragment = pq(self.form.as_ul())
-        facebook = fragment("#id_facebook")[0]
-        assert "pattern" in facebook.attrib
-
-        pattern = re.compile(facebook.attrib["pattern"])
-        for url, match in FACEBOOK_URLS:
-            eq_(bool(pattern.match(url)), match)
-
-    def test_clean_facebook(self):
-        clean = self.form.clean_facebook
-        for url, match in FACEBOOK_URLS:
-            self.form.cleaned_data["facebook"] = url
-            if match:
-                clean()  # Should not raise.
-            else:
-                self.assertRaises(ValidationError, clean)
 
 
 class TwitterValidatorTestCase(TestCase):

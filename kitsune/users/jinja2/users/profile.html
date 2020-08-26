@@ -55,7 +55,7 @@
         </figure>
         <div class="avatar-group--details">
           {% if profile.public_email or profile.website or profile.twitter or
-                profile.facebook or profile.mozillians or profile.irc_handle %}
+                profile.community_mozilla_org or profile.people_mozilla_org or profile.matrix_handle %}
               <ul class="avatar-group--details-list">
                 {% if profile.public_email and request.user.is_authenticated %}
                   <li class="avatar-group--details-item">
@@ -75,22 +75,22 @@
                     <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
                   </li>
                 {% endif %}
-                {% if profile.facebook %}
+                {% if profile.community_mozilla_org %}
                   <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('Facebook') }}:</label>
-                    <a rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
+                    <label class="avatar-group--details-label">{{ _('Community Portal') }}:</label>
+                    <a rel="nofollow" href="https://community.mozilla.org/people/{{profile.community_mozilla_org}}/">{{ profile.community_mozilla_org }}</a>
                   </li>
                 {% endif %}
-                {% if profile.mozillians %}
+                {% if profile.people_mozilla_org %}
                   <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('Mozillians') }}:</label>
-                    <a rel="nofollow" href="https://mozillians.org/u/{{profile.mozillians}}/">{{ profile.mozillians }}</a>
+                    <label class="avatar-group--details-label">{{ _('People Directory') }}:</label>
+                    <a rel="nofollow" href="https://people.mozilla.org/p/{{profile.people_mozilla_org}}/">{{ profile.people_mozilla_org }}</a>
                   </li>
                 {% endif %}
-                {% if profile.irc_handle %}
+                {% if profile.matrix_handle %}
                   <li class="avatar-group--details-item">
-                    <label class="avatar-group--details-label">{{ _('IRC') }}:</label>
-                    {{ profile.irc_handle }}
+                    <label class="avatar-group--details-label">{{ _('Matrix') }}:</label>
+                    {{ profile.matrix_handle }}
                   </li>
                 {% endif %}
               </ul>
