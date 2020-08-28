@@ -364,14 +364,6 @@
       <li class="rss">
         <a href="{{ url('questions.answers.feed', question.id) }}">{{ _("Subscribe to feed") }}</a>
       </li>
-      {% if user.has_perm('users.screen_share') %}
-      <li>
-        <form class="screen-share-form cf" method="post" action="{{ url('questions.screen_share', question.id) }}">
-          {% csrf_token %}
-          <a href="#" class="btn btn-submit" data-type="submit">{{ _('Invite to share screen') }}</a>
-        </form>
-      </li>
-      {% endif %}
 
       {% if user.has_perm('flagit.can_moderate') %}
       <li>

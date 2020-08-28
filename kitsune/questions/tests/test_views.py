@@ -21,7 +21,6 @@ from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient, eq_msg, get, template_used
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
@@ -691,32 +690,6 @@ class TestRateLimiting(TestCaseBase):
             self.client.post(url, {"content": content})
 
         eq_(4, Answer.objects.count())
-
-
-class TestScreenShare(TestCaseBase):
-    def setUp(self):
-        self.user = UserFactory()
-        add_permission(self.user, Profile, "screen_share")
-        self.question = QuestionFactory()
-
-    def test_screen_share_answer(self):
-        """Test that the answer gets created when the screen sharing invite is sent."""
-        eq_(self.question.answers.count(), 0)
-        self.client.login(username=self.user.username, password="testpass")
-        url = reverse("questions.screen_share", args=[self.question.id])
-        res = self.client.post(url, follow=True)
-        eq_(res.status_code, 200)
-        eq_(self.question.answers.count(), 1)
-
-    def test_screen_share_metadata(self):
-        """Test that the screen sharing meta data is added to the question."""
-        eq_(self.question.metadata.get("screen_sharing"), None)
-        self.client.login(username=self.user.username, password="testpass")
-        url = reverse("questions.screen_share", args=[self.question.id])
-        res = self.client.post(url, follow=True)
-        eq_(res.status_code, 200)
-        q = Question.objects.get(pk=self.question.pk)
-        eq_(q.metadata.get("screen_sharing"), "true")
 
 
 class TestStats(ElasticTestCase):

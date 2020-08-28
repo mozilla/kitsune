@@ -62,7 +62,6 @@ from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
 from kitsune.users.models import Setting
-from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import topics_for
 from kitsune.wiki.utils import get_featured_articles
 
@@ -1415,43 +1414,6 @@ def metrics(request, locale_code=None):
     }
 
     return render(request, template, data)
-
-
-@require_POST
-@permission_required("users.screen_share")
-def screen_share(request, question_id):
-    question = get_object_or_404(Question, pk=question_id, is_spam=False)
-
-    if not question.allows_new_answer(request.user):
-        raise PermissionDenied
-
-    content = _(
-        "I invited {user} to a screen sharing session, "
-        "and I'll give an update here once we are done."
-    )
-    answer = Answer(
-        question=question,
-        creator=request.user,
-        content=content.format(user=display_name(question.creator)),
-    )
-    answer.save()
-
-    question.add_metadata(screen_sharing="true")
-
-    if Setting.get_for_user(request.user, "questions_watch_after_reply"):
-        QuestionReplyEvent.notify(request.user, question)
-
-    message = render_to_string(
-        "questions/message/screen_share.ltxt",
-        {
-            "asker": display_name(question.creator),
-            "contributor": display_name(request.user),
-        },
-    )
-
-    return HttpResponseRedirect(
-        "%s?to=%s&message=%s" % (reverse("messages.new"), question.creator.username, message)
-    )
 
 
 def _answers_data(request, question_id, form=None, watch_form=None, answer_preview=None):
