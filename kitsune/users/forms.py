@@ -3,12 +3,13 @@ from datetime import datetime
 
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.users.models import Profile
-from kitsune.users.widgets import FacebookURLWidget, MonthYearWidget
+from kitsune.users.widgets import MonthYearWidget
 
 USERNAME_INVALID = _lazy(
     "Username may contain only English letters, " "numbers and ./-/_ characters."
@@ -69,6 +70,14 @@ class SettingsForm(forms.Form):
                 user.settings.create(name=field, value=value)
 
 
+class UserForm(forms.ModelForm):
+    """Form for editing the username of Django's user model."""
+
+    class Meta:
+        model = User
+        fields = ["username"]
+
+
 class ProfileForm(forms.ModelForm):
     """The form for editing the user's profile."""
 
@@ -86,9 +95,9 @@ class ProfileForm(forms.ModelForm):
             "public_email",
             "website",
             "twitter",
-            "facebook",
-            "mozillians",
-            "irc_handle",
+            "people_mozilla_org",
+            "community_mozilla_org",
+            "matrix_handle",
             "country",
             "city",
             "timezone",
@@ -96,22 +105,12 @@ class ProfileForm(forms.ModelForm):
             "involved_from",
         )
 
-        widgets = {
-            "facebook": FacebookURLWidget,
-        }
-
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
 
         for field in list(self.fields.values()):
             if isinstance(field, forms.CharField):
                 field.empty_value = ""
-
-    def clean_facebook(self):
-        facebook = self.cleaned_data["facebook"]
-        if facebook and not re.match(FacebookURLWidget.pattern, facebook):
-            raise forms.ValidationError(_("Please enter a facebook.com URL."))
-        return facebook
 
 
 def username_allowed(username):

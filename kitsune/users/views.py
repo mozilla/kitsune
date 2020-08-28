@@ -2,7 +2,6 @@ import json
 from ast import literal_eval
 
 import requests
-
 from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
@@ -25,24 +24,6 @@ from django.views.generic import View
 # from axes.decorators import watch_login
 from josepy.jwk import JWK
 from josepy.jws import JWS
-from kitsune import users as constants
-from kitsune.access.decorators import login_required, logout_required, permission_required
-from kitsune.kbadge.models import Award
-from kitsune.questions.utils import mark_content_as_spam, num_answers, num_questions, num_solutions
-from kitsune.sumo.decorators import ssl_required
-from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, simple_paginate
-from kitsune.users.forms import ProfileForm, SettingsForm
-from kitsune.users.models import AccountEvent, Deactivation, Profile, SET_ID_PREFIX
-from kitsune.users.templatetags.jinja_helpers import profile_url
-from kitsune.users.utils import (
-    add_to_contributors,
-    deactivate_user,
-    get_oidc_fxa_setting,
-    anonymize_user,
-)
-from kitsune.wiki.models import user_documents, user_num_documents, user_redirects
 from mozilla_django_oidc.utils import import_from_settings
 
 # from axes.decorators import watch_login
@@ -52,11 +33,30 @@ from mozilla_django_oidc.views import (
     OIDCLogoutView,
 )
 from tidings.models import Watch
+
+from kitsune import users as constants
+from kitsune.access.decorators import login_required, logout_required, permission_required
+from kitsune.kbadge.models import Award
+from kitsune.questions.utils import mark_content_as_spam, num_answers, num_questions, num_solutions
+from kitsune.sumo.decorators import ssl_required
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import get_next_url, simple_paginate
+from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
+from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
     process_event_delete_user,
     process_event_password_change,
     process_event_subscription_state_change,
 )
+from kitsune.users.templatetags.jinja_helpers import profile_url
+from kitsune.users.utils import (
+    add_to_contributors,
+    anonymize_user,
+    deactivate_user,
+    get_oidc_fxa_setting,
+)
+from kitsune.wiki.models import user_documents, user_num_documents, user_redirects
 
 
 @ssl_required
@@ -246,7 +246,7 @@ def edit_watch_list(request):
 def edit_profile(request, username=None):
     """Edit user profile."""
     # If a username is specified, we are editing somebody else's profile.
-    if username is not None and username != request.user.username:
+    if username and username != request.user.username:
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
@@ -265,18 +265,18 @@ def edit_profile(request, username=None):
         # a profile. We can remove this fallback.
         user_profile = Profile.objects.create(user=user)
 
-    if request.method == "POST":
-        form = ProfileForm(request.POST, request.FILES, instance=user_profile)
-        if form.is_valid():
-            user_profile = form.save()
-            new_timezone = user_profile.timezone
-            if new_timezone:
-                tz_changed = request.session.get("timezone", None) != new_timezone
-                if tz_changed and user == request.user:
-                    request.session["timezone"] = new_timezone
-            return HttpResponseRedirect(reverse("users.profile", args=[user.username]))
-    else:  # request.method == 'GET'
-        form = ProfileForm(instance=user_profile)
+    profile_form = ProfileForm(request.POST or None, request.FILES or None, instance=user_profile)
+    user_form = UserForm(request.POST or None, instance=user_profile.user)
+
+    if profile_form.is_valid() and user_form.is_valid():
+        user_profile = profile_form.save()
+        user = user_form.save()
+        new_timezone = user_profile.timezone
+        if new_timezone:
+            tz_changed = request.session.get("timezone", None) != new_timezone
+            if tz_changed and user == request.user:
+                request.session["timezone"] = new_timezone
+        return HttpResponseRedirect(reverse("users.profile", args=[user.username]))
 
     # TODO: detect timezone automatically from client side, see
     msgs = messages.get_messages(request)
@@ -285,7 +285,12 @@ def edit_profile(request, username=None):
     return render(
         request,
         "users/edit_profile.html",
-        {"form": form, "profile": user_profile, "fxa_messages": fxa_messages},
+        {
+            "profile_form": profile_form,
+            "user_form": user_form,
+            "profile": user_profile,
+            "fxa_messages": fxa_messages,
+        },
     )
 
 

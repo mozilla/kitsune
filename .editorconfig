@@ -25,10 +25,6 @@ indent_size = 2
 [*.svg]
 indent_size = 2
 
-[.travis.yml]
-# The travis CLI tool forces 2 spaces. No use fighting it.
-indent_size = 2
-
 [*.js]
 indent_size = 2
 

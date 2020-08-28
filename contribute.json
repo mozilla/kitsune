@@ -4,7 +4,7 @@
     "repository": {
         "url": "https://github.com/mozilla/kitsune/",
         "license": "BSD 3-Clause",
-        "tests": "https://travis-ci.org/mozilla/kitsune"
+        "tests": "https://app.circleci.com/pipelines/github/mozilla/kitsune"
     },
     "participate": {
         "home": "https://kitsune.readthedocs.io/en/latest/contributors.html",

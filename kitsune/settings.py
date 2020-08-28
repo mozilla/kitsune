@@ -758,6 +758,8 @@ SESSION_SERIALIZER = config(
     "SESSION_SERIALIZER", default="django.contrib.sessions.serializers.PickleSerializer"
 )
 
+# CSRF
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
 # Connection information for Elastic
 ES_URLS = [config("ES_URLS", default="localhost:9200")]
@@ -1166,7 +1168,7 @@ EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
 SUMO_BANNER_STRING = config("SUMO_BANNER_STRING", default="", cast=Csv())
 
 # List of domains that links are allowed
-ALLOW_LINKS_FROM = ["mozilla.org", "mozilla.com", "mozillafoundation.org", "getpocket.com"]
+ALLOW_LINKS_FROM = ["mozilla.org", "mozilla.com", "mozillafoundation.org", "getpocket.com", "thunderbird.net"]
 
 # Regexes
 TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")
