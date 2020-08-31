@@ -1,5 +1,6 @@
 DC_CI = "bin/dc.sh"
 DC = $(shell which docker-compose)
+PIP_TIMEOUT=60
 
 default: help
 	@echo ""
@@ -49,7 +50,7 @@ build: .docker-build-pull
 build-full: .docker-build-pull
 	${DC} build full
 #   tag other images
-	${DC} build base base-dev staticfiles locales full-no-locales
+	${DC} build --build-arg PIP_DEFAULT_TIMEOUT=${PIP_TIMEOUT} base base-dev staticfiles locales full-no-locales
 	touch .docker-build-full
 
 pull: .env
@@ -122,7 +123,7 @@ docs: .docker-build-pull
 build-ci: .docker-build-pull
 	${DC_CI} build full
 #	tag intermediate images using cache
-	${DC_CI} build base base-dev staticfiles locales full-no-locales
+	${DC_CI} build --build-arg PIP_DEFAULT_TIMEOUT=${PIP_TIMEOUT} base base-dev staticfiles locales full-no-locales
 	touch .docker-build-ci
 
 test-ci: .docker-build-ci

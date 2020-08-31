@@ -68,6 +68,7 @@ services:
       context: .
       target: base
       args:
+        - PIP_DEFAULT_TIMEOUT
         - GIT_SHA
     image: itsre/sumo-kitsune:base-${GIT_COMMIT_SHORT:-latest}
 

@@ -23,6 +23,13 @@ and follow the following steps.
    make init
    make build
    ```
+  If you have low bandwidth, you may get a **timeout** error, see [issue#4511](https://github.com/mozilla/kitsune/issues/4511) for more information. You can change default pip's timeout value (which is 60 seconds) by running:
+
+  ```
+  make build PIP_TIMEOUT=300
+  ```
+
+  In above command, we are setting default value of [PIP_DEFAULT_TIMEOUT](https://pip.pypa.io/en/stable/user_guide/#environment-variables) to 5 minutes, change it according to your need.
 
 3. Run Kitsune.
    ```
