@@ -1,3 +1,6 @@
+@use '../config'as c;
+@use '../protocol'as p;
+
 .badges-list {
   display: flex;
   flex-wrap: wrap;
@@ -7,4 +10,8 @@
     max-width: 150px;
     margin: 0 20px 20px 0;
   }
+}
+
+.avatar {
+  padding-top: p.$spacing-lg;
 }

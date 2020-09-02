@@ -1,5 +1,5 @@
-@use '../../config' as c;
-@use '../../protocol' as p;
+@use '../../config'as c;
+@use '../../protocol'as p;
 
 :root {
   --field-border-color-default: var(--color-marketing-gray-05);
@@ -9,6 +9,7 @@
   --field-background-color-disabled: var(--color-marketing-gray-01);
   --field-color-disabled: var(--color-marketing-gray-03);
 }
+
 // Forms
 //
 // Forms are used throughout the system and can be arranged in several ways. The
@@ -57,8 +58,9 @@ label {
   color: var(--color-marketing-gray-07);
   font-weight: bold;
 }
+
 .field,
-.form-as-ul > li {
+.form-as-ul>li {
   position: relative;
   margin-bottom: p.$spacing-lg;
   max-width: p.remify(480px);
@@ -174,7 +176,7 @@ label {
   @include c.text-body-sm;
 }
 
-.form-as-ul.full-width > li {
+.form-as-ul.full-width>li {
   max-width: 100%;
 }
 
@@ -198,10 +200,10 @@ textarea,
   border: 2px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
   background-color: var(--color-white);
-  color:#0c0c0d;
-  outline:0;
-  transition-duration:150ms;
-  transition-property:border-color;
+  color: #0c0c0d;
+  outline: 0;
+  transition-duration: 150ms;
+  transition-property: border-color;
   @include c.text-body-sm;
 
   &:hover {
@@ -274,18 +276,17 @@ select,
   position: relative;
   background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
   background-color: var(--color-white);
-  @include p.bidi((
-    (background-position, top 14px right 14px, top 14px left 14px),
-    (padding-right, 40px, p.$spacing-sm),
-    (padding-left, p.$spacing-sm, 40px),
-    (text-align, left, right),
-  ));
+  @include p.bidi(((background-position, top 14px right 14px, top 14px left 14px),
+      (padding-right, 40px, p.$spacing-sm),
+      (padding-left, p.$spacing-sm, 40px),
+      (text-align, left, right),
+    ));
   background-repeat: no-repeat;
   background-size: 12px 12px;
   max-width: p.remify(360px);
 
-  :not([class*="has-"]) > &:hover,
-  :not([class*="has-"]) > &:focus {
+  :not([class*="has-"])>&:hover,
+  :not([class*="has-"])>&:focus {
     background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#0250BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
   }
 
@@ -357,13 +358,12 @@ textarea {
 .delete-account-link {
   margin-top: p.$spacing-lg;
   padding-top: p.$spacing-md;
-  text-align: center;
+  @include p.bidi(((text-align, right, left), ));
   border-top: 1px solid var(--color-marketing-gray-03);
 
   @media #{p.$mq-md} {
     border-top: none;
     padding-top: 0;
-    text-align: left;
   }
 }
 
@@ -393,19 +393,17 @@ textarea {
   &--sublist {
     margin-left: 32px;
 
-    @include p.bidi((
-      (margin-left, 32px, 0),
-      (margin-right, 0, 32px),
-    ));
+    @include p.bidi(((margin-left, 32px, 0),
+        (margin-right, 0, 32px),
+      ));
 
   }
 }
 
 .products.mzp-c-details .is-summary button {
-  @include p.bidi((
-    (padding-left, 0, 48px),
-    (padding-right, 48px, 0),
-  ));
+  @include p.bidi(((padding-left, 0, 48px),
+      (padding-right, 48px, 0),
+    ));
 }
 
 .mzp-c-details.has-border-bottom {

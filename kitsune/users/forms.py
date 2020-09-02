@@ -76,6 +76,15 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["username"]
+        help_texts = {
+            "username": _lazy(
+                """
+                Keep in mind your username is visible to the public.
+                This is a required field that must be unique, 150 characters or fewer.
+                Letters, digits and @.+-_ only.
+                """
+            )
+        }
 
 
 class ProfileForm(forms.ModelForm):

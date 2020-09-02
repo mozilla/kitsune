@@ -117,7 +117,7 @@ class ViewProfileTests(TestCaseBase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(0, doc("#edit-profile-link").length)
-        eq_(self.u.username, doc("h1.user").text())
+        eq_(self.u.username, doc("h2.user").text())
         # No name set => no optional fields.
         eq_(0, doc(".contact").length)
         # Check canonical url
