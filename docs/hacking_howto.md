@@ -99,6 +99,7 @@ First, make sure you have run the "Create some data" step above.
 1. Enter the web container: `docker-compose exec web bash`
 2. Build the indicies: `./manage.py esreindex` (You may need to pass the `--delete` flag)
 3. Precompile the nunjucks templates: `./manage.py nunjucks_precompile`
+4. Now, exit from web's bash shell: `exit`
 
 ## Further setup
 
@@ -108,7 +109,7 @@ First, make sure you have run the "Create some data" step above.
 We include some sample data to get you started. You can install it by
 running this command::
 
-    $ ./manage.py generatedata
+    docker-compose exec web ./manage.py generatedata
 ```
 
 ### Install linting tools
@@ -141,7 +142,7 @@ JSON files containing historical Firefox version data and write them
 within its package directory. To set this up, run this command to do
 the initial fetch::
 
-    $ ./manage.py update_product_details
+    docker-compose exec web ./manage.py update_product_details
 ```
 
 ### Pre-compiling JavaScript Templates
@@ -151,7 +152,7 @@ We use nunjucks to render Jinja-style templates for front-end use. These
 templates get updated from time to time and you will need to pre-compile them
 to ensure that they render correctly::
 
-      $ ./manage.py nunjucks_precompile
+      docker-compose exec web ./manage.py nunjucks_precompile
 
 ```
 
