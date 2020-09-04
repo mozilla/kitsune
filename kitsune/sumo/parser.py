@@ -403,4 +403,4 @@ def _is_youtube_url(url):
     """Returns true if the URL is to youtube."""
     parsed_url = urlparse(url)
     netloc = parsed_url.netloc
-    return netloc in ["youtu.be", "youtube.com", "www.youtube.com"]
+    return netloc in ["youtu.be", "youtube.com", "www.youtube.com", "www.youtube-nocookie.com"]
