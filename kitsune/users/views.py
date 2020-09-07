@@ -107,6 +107,7 @@ def profile(request, username):
     # The browser replaces '+' in URL's with ' ' but since we never have ' ' in
     # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
     # We do this to deal with legacy usernames that have a '+' in them.
+
     username = username.replace(" ", "+")
 
     user = User.objects.filter(username=username).first()
@@ -246,16 +247,20 @@ def edit_watch_list(request):
 def edit_profile(request, username=None):
     """Edit user profile."""
     # If a username is specified, we are editing somebody else's profile.
-    if username and username != request.user.username:
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise Http404
+    user = None
+    if username:
+        username = username.replace(" ", "+")
 
-        # Make sure the auth'd user has permission:
-        if not request.user.has_perm("users.change_profile"):
-            return HttpResponseForbidden()
-    else:
+        if username != request.user.username:
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                raise Http404
+
+            # Make sure the auth'd user has permission:
+            if not request.user.has_perm("users.change_profile"):
+                return HttpResponseForbidden()
+    if not user:
         user = request.user
 
     try:

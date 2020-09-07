@@ -39,10 +39,12 @@
           {% endif %}
         </h2>
         <p>
-          {% trans a_open='<a href="'|safe + url("users.edit_profile", profile.user.username) + '">'|safe, a_close='</a>'|safe %}
-            Your privacy is important to us, your username is always visible to the public,
-            if you would like to edit your username {{ a_open }} click here {{ a_close }}.
-          {% endtrans %}
+          {% if is_owner %}
+            {% trans a_open='<a href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
+              Your privacy is important to us, your username is always visible to the public,
+              if you would like to edit your username {{ a_open }} click here {{ a_close }}
+            {% endtrans %}
+          {% endif %}
         </p>
 
         <h2 class="sumo-page-subheading location">

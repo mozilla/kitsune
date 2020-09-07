@@ -81,7 +81,7 @@ class UserForm(forms.ModelForm):
                 """
                 Keep in mind your username is visible to the public.
                 This is a required field that must be unique, 150 characters or fewer.
-                Letters, digits and @.+-_ only.
+                This value may contain only letters, numbers, and @/./+/-/_ characters.
                 """
             )
         }
