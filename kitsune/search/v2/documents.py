@@ -7,6 +7,7 @@ from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.questions import models as question_models
 from kitsune.users.models import Profile
+from kitsune.forums.models import Thread
 
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
@@ -242,3 +243,46 @@ class ProfileDocument(SumoDocument):
     @classmethod
     def get_model(cls):
         return Profile
+
+
+class PostInnerDoc(InnerDoc):
+    content = field.Text()
+    author_id = field.Keyword()
+    created = field.Date()
+    updated = field.Date()
+    updated_by_id = field.Keyword()
+
+    @classmethod
+    def prepare(cls, instance):
+        return cls(
+            content=instance.content,
+            author_id=instance.author_id,
+            created=instance.created,
+            updated=instance.updated,
+            updated_by_id=instance.updated_by_id if instance.updated_by_id else None,
+        )
+
+
+class ForumThreadDocument(SumoDocument):
+    title = field.Text()
+    forum_id = field.Keyword()
+    created = field.Date()
+    creator_id = field.Keyword()
+    is_locked = field.Boolean()
+    is_sticky = field.Boolean()
+
+    # using Object rather than Nested here for performance at the expense of specificity
+    # e.g. we can't search for a thread in which a user jsmith posted "hello world",
+    # but we can search for a thread in which "hello world" was posted and jsmith posted
+    posts = field.Object(PostInnerDoc, multi=True)
+
+    class Index:
+        name = config.FORUM_THREAD_INDEX_NAME
+        using = config.DEFAULT_ES7_CONNECTION
+
+    def prepare_posts(self, instance):
+        return [PostInnerDoc.prepare(post) for post in instance.post_set.all()]
+
+    @classmethod
+    def get_model(cls):
+        return Thread
