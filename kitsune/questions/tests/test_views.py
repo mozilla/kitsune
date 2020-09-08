@@ -46,7 +46,8 @@ class AAQSearchTests(ElasticTestCase):
         self.refresh()
 
         url = urlparams(
-            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]), search="cupcakes",
+            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
+            search="cupcakes",
         )
 
         response = self.client.get(url, follow=True)
@@ -75,7 +76,8 @@ class AAQSearchTests(ElasticTestCase):
         self.refresh()
 
         url = urlparams(
-            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]), search="cupcakes",
+            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
+            search="cupcakes",
         )
 
         response = self.client.get(url, follow=True)
@@ -119,7 +121,11 @@ class AAQSearchTests(ElasticTestCase):
 
         def sub_test(locale, *titles):
             url = urlparams(
-                reverse("questions.aaq_step4", args=["desktop", "fix-problems"], locale=locale,),
+                reverse(
+                    "questions.aaq_step4",
+                    args=["desktop", "fix-problems"],
+                    locale=locale,
+                ),
                 search="question",
             )
             response = self.client.get(url, follow=True)
@@ -292,13 +298,16 @@ class TestQuestionUpdates(TestCaseBase):
 
         self.q = Question.objects.get(pk=self.q.id)
         eq_(
-            updated.strftime(self.date_format), self.q.updated.strftime(self.date_format),
+            updated.strftime(self.date_format),
+            self.q.updated.strftime(self.date_format),
         )
 
     def test_no_update_edit(self):
         url = urlparams(reverse("questions.edit_question", args=[self.q.id]))
         self._request_and_no_update(
-            url, req_type="POST", data={"title": "A new title.", "content": "Some new content."},
+            url,
+            req_type="POST",
+            data={"title": "A new title.", "content": "Some new content."},
         )
 
     def test_no_update_solve(self):

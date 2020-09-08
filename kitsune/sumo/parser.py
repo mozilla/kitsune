@@ -318,7 +318,11 @@ class WikiParser(Parser):
 
         return render_to_string(
             self.image_template,
-            {"image": image, "params": params, "STATIC_URL": settings.STATIC_URL,},
+            {
+                "image": image,
+                "params": params,
+                "STATIC_URL": settings.STATIC_URL,
+            },
         )
 
     # Videos are objects that can have one or more files attached to them

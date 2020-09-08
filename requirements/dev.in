@@ -20,5 +20,5 @@ tabulate~=0.7
 urlwait~=0.4
 debugpy
 pylint
-black
+black==20.8b1
 flower

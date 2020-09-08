@@ -167,6 +167,11 @@ def update_synonyms_task():
     # if anything goes wrong, it is very important to re-open the index.
     try:
         es.indices.close(index)
-        es.indices.put_settings(index=index, body={"analysis": analysis,})
+        es.indices.put_settings(
+            index=index,
+            body={
+                "analysis": analysis,
+            },
+        )
     finally:
         es.indices.open(index)

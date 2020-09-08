@@ -108,7 +108,10 @@ class GalleryUploadTestCase(TestCase):
         """Posting to the page saves the field values for the image draft."""
         ImageFactory(is_draft=True, creator=self.u)
         response = post(
-            self.client, "gallery.gallery", {"description": "??", "title": "test"}, args=["image"],
+            self.client,
+            "gallery.gallery",
+            {"description": "??", "title": "test"},
+            args=["image"],
         )
         eq_(200, response.status_code)
         doc = pq(response.content)

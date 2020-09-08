@@ -26,7 +26,13 @@ class TestFilterGenerator(TestCase):
     def test_no_synonyms(self):
         """Test that when there are no synonyms an alternate filter is made."""
         _, body = es_utils.es_get_synonym_filter("en-US")
-        eq_(body, {"type": "synonym", "synonyms": ["firefox => firefox"],})
+        eq_(
+            body,
+            {
+                "type": "synonym",
+                "synonyms": ["firefox => firefox"],
+            },
+        )
 
     def test_with_some_synonyms(self):
         SynonymFactory(from_words="foo", to_words="bar")
@@ -36,7 +42,10 @@ class TestFilterGenerator(TestCase):
 
         expected = {
             "type": "synonym",
-            "synonyms": ["foo => bar", "baz => qux",],
+            "synonyms": [
+                "foo => bar",
+                "baz => qux",
+            ],
         }
         eq_(body, expected)
 

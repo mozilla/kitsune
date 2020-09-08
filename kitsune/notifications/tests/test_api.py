@@ -52,7 +52,9 @@ class TestPushNotificationRegistrationSerializer(TestCase):
         ok_(not serializer.is_valid())
         eq_(
             serializer.errors,
-            {"creator": ["Can't register push notifications for another user."],},
+            {
+                "creator": ["Can't register push notifications for another user."],
+            },
         )
 
 

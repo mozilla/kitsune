@@ -201,7 +201,9 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFil
         log.debug("Sending ready for review email for revision (id=%s)" % revision.id)
         subject = _lazy("{title} is ready for review ({creator})")
         url = reverse(
-            "wiki.review_revision", locale=document.locale, args=[document.slug, revision.id],
+            "wiki.review_revision",
+            locale=document.locale,
+            args=[document.slug, revision.id],
         )
 
         context = context_dict(revision)
@@ -323,7 +325,9 @@ class ApprovedOrReadyUnion(EventUnion):
                 html_template = "wiki/email/approved.html"
 
             subject = subject.format(
-                title=document.title, reviewer=revision.reviewer.username, locale=document.locale,
+                title=document.title,
+                reviewer=revision.reviewer.username,
+                locale=document.locale,
             )
 
             mail = email_utils.make_mail(

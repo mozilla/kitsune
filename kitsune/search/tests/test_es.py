@@ -137,10 +137,22 @@ class TestAnalyzers(ElasticTestCase):
         super(TestAnalyzers, self).setUp()
 
         self.locale_data = {
-            "en-US": {"analyzer": "snowball-english", "content": "I have a cat.",},
-            "es": {"analyzer": "snowball-spanish", "content": "Tieno un gato.",},
-            "ar": {"analyzer": "arabic", "content": "لدي اثنين من القطط",},
-            "he": {"analyzer": "standard", "content": "גאולוגיה היא אחד",},
+            "en-US": {
+                "analyzer": "snowball-english",
+                "content": "I have a cat.",
+            },
+            "es": {
+                "analyzer": "snowball-spanish",
+                "content": "Tieno un gato.",
+            },
+            "ar": {
+                "analyzer": "arabic",
+                "content": "لدي اثنين من القطط",
+            },
+            "he": {
+                "analyzer": "standard",
+                "content": "גאולוגיה היא אחד",
+            },
         }
 
         self.docs = {}

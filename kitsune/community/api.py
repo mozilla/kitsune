@@ -200,7 +200,10 @@ class TopContributorsQuestions(TopContributorsBase):
         # to also put the filter in the facet ourselves.
         helpful_query = query.facet_raw(
             creator_id={
-                "terms_stats": {"key_field": "creator_id", "value_field": "helpful_count",},
+                "terms_stats": {
+                    "key_field": "creator_id",
+                    "value_field": "helpful_count",
+                },
                 "facet_filter": query._process_filters(base_filters.filters),
             }
         )
@@ -212,7 +215,11 @@ class TopContributorsQuestions(TopContributorsBase):
 
         # Combine all the metric types into one big list.
         combined = defaultdict(
-            lambda: {"answer_count": 0, "solution_count": 0, "helpful_vote_count": 0,}
+            lambda: {
+                "answer_count": 0,
+                "solution_count": 0,
+                "helpful_vote_count": 0,
+            }
         )
 
         for d in creator_answer_counts:
@@ -318,7 +325,12 @@ class TopContributorsLocalization(TopContributorsBase):
         revision_reviewer_counts = reviewer_query.facet_counts()["reviewer_id"]["terms"]
 
         # Combine all the metric types into one big list.
-        combined = defaultdict(lambda: {"revision_count": 0, "review_count": 0,})
+        combined = defaultdict(
+            lambda: {
+                "revision_count": 0,
+                "review_count": 0,
+            }
+        )
 
         for d in revision_creator_counts:
             combined[d["term"]]["user_id"] = d["term"]

@@ -236,8 +236,7 @@ class SaveDateTestCase(ForumTestCase):
         self.forum = self.thread.forum
 
     def assertDateTimeAlmostEqual(self, a, b, delta, msg=None):
-        """Assert that two datetime objects are within `range` (a timedelta).
-        """
+        """Assert that two datetime objects are within `range` (a timedelta)."""
         diff = abs(a - b)
         assert diff < abs(delta), msg or "%s ~= %s" % (a, b)
 

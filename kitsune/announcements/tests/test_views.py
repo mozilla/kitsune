@@ -17,7 +17,13 @@ class TestCreateLocaleAnnouncement(TestCase):
     def _create_test(self, status, count):
         """Login, or other setup, then call this."""
         url = reverse("announcements.create_for_locale", locale="es")
-        resp = self.client.post(url, {"content": "Look at me!", "show_after": "2012-01-01",})
+        resp = self.client.post(
+            url,
+            {
+                "content": "Look at me!",
+                "show_after": "2012-01-01",
+            },
+        )
         eq_(resp.status_code, status)
         eq_(Announcement.objects.count(), count)
 

@@ -48,13 +48,13 @@ class SettingsForm(forms.Form):
         required=False, label=_lazy("Watch forum threads I comment in")
     )
     kbforums_watch_new_thread = forms.BooleanField(
-        required=False, label=_lazy("Watch KB discussion threads I start"),
+        required=False, label=_lazy("Watch KB discussion threads I start")
     )
     kbforums_watch_after_reply = forms.BooleanField(
-        required=False, label=_lazy("Watch KB discussion threads I comment in"),
+        required=False, label=_lazy("Watch KB discussion threads I comment in")
     )
     questions_watch_after_reply = forms.BooleanField(
-        required=False, label=_lazy("Watch Question threads I comment in"),
+        required=False, label=_lazy("Watch Question threads I comment in")
     )
     email_private_messages = forms.BooleanField(
         required=False, label=_lazy("Send emails for private messages")

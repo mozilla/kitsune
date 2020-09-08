@@ -13,8 +13,7 @@ from kitsune.wiki.tests import LocaleFactory, ApprovedRevisionFactory
 
 class LocalizationDashTests(TestCase):
     def test_redirect_to_contributor_dash(self):
-        """Should redirect to Contributor Dash if the locale is the default
-        """
+        """Should redirect to Contributor Dash if the locale is the default"""
         response = self.client.get(reverse("dashboards.localization", locale="en-US"), follow=True)
         self.assertRedirects(response, reverse("dashboards.contributors", locale="en-US"))
 
@@ -67,8 +66,7 @@ class ContributorDashTests(TestCase):
         eq_(200, response.status_code)
 
     def test_detail_view(self):
-        """Assert the detail page of the contributor dash resolves, renders.
-        """
+        """Assert the detail page of the contributor dash resolves, renders."""
         readoutKey = list(CONTRIBUTOR_READOUTS.keys())[0]
         response = self.client.get(
             reverse(
@@ -86,7 +84,8 @@ class ContributorDashTests(TestCase):
 
         change_comment = b"lorem OMG FIX ipsum dolor"
         ApprovedRevisionFactory(
-            document__needs_change=True, document__needs_change_comment=change_comment,
+            document__needs_change=True,
+            document__needs_change_comment=change_comment,
         )
 
         response = self.client.get(reverse("dashboards.contributors", locale="en-US"))

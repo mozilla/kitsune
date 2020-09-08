@@ -88,8 +88,7 @@ class TestAnswer(TestCaseBase):
         eq_(0, FlaggedObject.objects.count())
 
     def test_delete_last_answer_of_question(self):
-        """Deleting the last_answer of a Question should update the question.
-        """
+        """Deleting the last_answer of a Question should update the question."""
         yesterday = datetime.now() - timedelta(days=1)
         q = AnswerFactory(created=yesterday).question
         last_answer = q.last_answer
@@ -107,8 +106,7 @@ class TestAnswer(TestCaseBase):
         eq_(Answer.objects.filter(pk=a.id).count(), 0)
 
     def test_delete_solution_of_question(self):
-        """Deleting the solution of a Question should update the question.
-        """
+        """Deleting the solution of a Question should update the question."""
         # set a solution to the question
         q = AnswerFactory().question
         solution = q.last_answer
@@ -225,7 +223,10 @@ class TestQuestionMetadata(TestCaseBase):
         """
         q = self.question
         q.add_metadata(
-            product="desktop", category="fix-problems", useragent="Fyerfocks", crash_id="7",
+            product="desktop",
+            category="fix-problems",
+            useragent="Fyerfocks",
+            crash_id="7",
         )
 
         q.metadata
@@ -300,7 +301,8 @@ class QuestionTests(TestCaseBase):
 
         """
         eq_(
-            Question._default_manager.__class__, kitsune.questions.managers.QuestionManager,
+            Question._default_manager.__class__,
+            kitsune.questions.managers.QuestionManager,
         )
 
     def test_is_solved_property(self):
@@ -516,7 +518,9 @@ class OldQuestionsArchiveTest(ElasticTestCase):
 
         # created 200 days ago, already archived
         q3 = QuestionFactory(
-            created=datetime.now() - timedelta(days=200), is_archived=True, updated=last_updated,
+            created=datetime.now() - timedelta(days=200),
+            is_archived=True,
+            updated=last_updated,
         )
 
         self.refresh()
@@ -545,7 +549,8 @@ class QuestionVisitsTests(TestCase):
     # does something screwy with the testing infra around transactions.
     @mock.patch.object(models, "close_old_connections")
     @mock.patch.object(
-        googleanalytics, "pageviews_by_question",
+        googleanalytics,
+        "pageviews_by_question",
     )
     def test_visit_count_from_analytics(self, pageviews_by_question, close_old_connections):
         """Verify stored visit counts from mocked data."""

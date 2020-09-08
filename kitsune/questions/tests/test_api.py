@@ -72,7 +72,12 @@ class TestQuestionSerializerDeserialization(TestCase):
         del self.data["topic"]
         serializer = api.QuestionSerializer(context=self.context, data=self.data)
         ok_(not serializer.is_valid())
-        eq_(serializer.errors, {"topic": ["This field is required."],})
+        eq_(
+            serializer.errors,
+            {
+                "topic": ["This field is required."],
+            },
+        )
 
     def test_topic_disambiguation(self):
         # First make another product, and a colliding topic.
@@ -187,7 +192,10 @@ class TestQuestionSerializerSerialization(TestCase):
         serializer = api.QuestionSerializer(instance=self.question)
         eq_(
             serializer.data["tags"],
-            [{"name": "tag1", "slug": "tag1"}, {"name": "tag2", "slug": "tag2"},],
+            [
+                {"name": "tag1", "slug": "tag1"},
+                {"name": "tag2", "slug": "tag2"},
+            ],
         )
 
 

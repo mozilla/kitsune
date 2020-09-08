@@ -42,13 +42,24 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_json_format(self):
         """JSON without callback should return application/json"""
-        response = self.client.get(reverse("search"), {"q": "bookmarks", "format": "json",})
+        response = self.client.get(
+            reverse("search"),
+            {
+                "q": "bookmarks",
+                "format": "json",
+            },
+        )
         eq_(response["Content-Type"], "application/json")
 
     def test_json_callback_validation(self):
         """Various json callbacks -- validation"""
         response = self.client.get(
-            reverse("search"), {"q": "bookmarks", "format": "json", "callback": "callback",}
+            reverse("search"),
+            {
+                "q": "bookmarks",
+                "format": "json",
+                "callback": "callback",
+            },
         )
         eq_(response["Content-Type"], "application/x-javascript")
         eq_(response.status_code, 200)
@@ -57,7 +68,14 @@ class SimpleSearchTests(ElasticTestCase):
         """Empty query returns JSON format"""
         # NOTE: We need to follow redirects here because advanced search
         # is at a different URL and gets redirected.
-        response = self.client.get(reverse("search"), {"format": "json", "a": 0,}, follow=True)
+        response = self.client.get(
+            reverse("search"),
+            {
+                "format": "json",
+                "a": 0,
+            },
+            follow=True,
+        )
         eq_(response["Content-Type"], "application/json")
 
     def test_page_invalid(self):

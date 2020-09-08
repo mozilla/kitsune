@@ -180,8 +180,7 @@ class LocalizingClient(Client):
 
 
 def eq_msg(a, b, msg=None):
-    """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
-    """
+    """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'"""
     assert a == b, (str(msg) or "") + " (%r != %r)" % (a, b)
 
 

@@ -72,7 +72,14 @@ class AnalyzerMixin(object):
             match_phrase
         """
         query, analyzer = val
-        clause = {action: {key: {"query": query, "analyzer": analyzer,}}}
+        clause = {
+            action: {
+                key: {
+                    "query": query,
+                    "analyzer": analyzer,
+                }
+            }
+        }
 
         boost = self.field_boosts.get(key)
         if boost is not None:
@@ -90,7 +97,13 @@ class AnalyzerMixin(object):
 
     def process_query_sqs(self, key, val, action):
         """Implements simple_query_string query"""
-        return {"simple_query_string": {"fields": [key], "query": val, "default_operator": "or",}}
+        return {
+            "simple_query_string": {
+                "fields": [key],
+                "query": val,
+                "default_operator": "or",
+            }
+        }
 
     def process_query_sqs_analyzer(self, key, val, action):
         """Implements sqs query that includes an analyzer"""
@@ -106,7 +119,14 @@ class AnalyzerMixin(object):
 
     def process_query_match_whitespace(self, key, val, action):
         """A match query that uses the whitespace analyzer."""
-        return {"match": {key: {"query": val, "analyzer": "whitespace",}}}
+        return {
+            "match": {
+                key: {
+                    "query": val,
+                    "analyzer": "whitespace",
+                }
+            }
+        }
 
 
 class Sphilastic(S, AnalyzerMixin):
@@ -365,7 +385,12 @@ def recreate_indexes(es=None, indexes=None):
         # out over when we try to lay in an incompatible explicit mapping).
         es.indices.create(
             index=index,
-            body={"mappings": get_mappings(index), "settings": {"analysis": get_analysis(),}},
+            body={
+                "mappings": get_mappings(index),
+                "settings": {
+                    "analysis": get_analysis(),
+                },
+            },
         )
 
     # Wait until the index is there.

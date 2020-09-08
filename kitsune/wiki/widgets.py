@@ -23,7 +23,11 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
                 self.process_topic(value, subtopic)
 
         return render_to_string(
-            "wiki/includes/product_topics_widget.html", {"topics": topics, "name": name,}
+            "wiki/includes/product_topics_widget.html",
+            {
+                "topics": topics,
+                "name": name,
+            },
         )
 
     def process_topic(self, value, topic):

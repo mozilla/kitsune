@@ -55,7 +55,10 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, doc_id=None
 
     with uselocale(locale):
         content = parser_cls(doc_id=doc_id).parse(
-            wiki_markup, show_toc=False, locale=locale, toc_string=_("Table of Contents"),
+            wiki_markup,
+            show_toc=False,
+            locale=locale,
+            toc_string=_("Table of Contents"),
         )
     return content
 

@@ -9,7 +9,7 @@ repos:
       - id: check-merge-conflict
       - id: debug-statements
   - repo: https://github.com/psf/black
-    rev: 19.10b0
+    rev: 20.8b1
     hooks:
       - id: black
         exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
