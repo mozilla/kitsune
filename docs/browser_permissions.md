@@ -1,7 +1,8 @@
 # Elevated Browser Permissions
 
 support.mozilla.org has certain elevated permissions in Firefox,
-shown in [the Firefox source code](https://searchfox.org/mozilla-central/source/browser/app/permissions).
+shown in [the Firefox source code](https://searchfox.org/mozilla-central/source/browser/app/permissions),
+allowing it to control various aspects of Firefox's UI and retrieve debugging information.
 
 Testing this on our [other deployments](deployments) or locally requires extra configuration and setup.
 
