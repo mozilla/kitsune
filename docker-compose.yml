@@ -13,6 +13,7 @@ services:
       - mariadb
       - elasticsearch
       - elasticsearch7
+      - kibana
       - redis
       - celery
       - celery-flower
