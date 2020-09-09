@@ -1,13 +1,13 @@
 import importlib
 import inspect
 
+from celery import task
 from django.conf import settings
 
-from celery import task
-from elasticsearch_dsl import token_filter, analyzer, Document
-
+from elasticsearch_dsl import Document, analyzer, token_filter
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
+from kitsune.search.v2.base import SumoDocument
 
 
 def _get_locale_specific_analyzer(locale):
@@ -65,7 +65,12 @@ def get_doc_types(paths=["kitsune.search.v2.documents"]):
     for module in modules:
         for key in dir(module):
             cls = getattr(module, key)
-            if inspect.isclass(cls) and issubclass(cls, Document) and cls != Document:
+            if (
+                inspect.isclass(cls)
+                and issubclass(cls, Document)
+                and cls != Document
+                and cls != SumoDocument
+            ):
                 doc_types.append(cls)
     return doc_types
 
