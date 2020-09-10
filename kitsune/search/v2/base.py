@@ -1,6 +1,6 @@
 from django.utils import timezone
 
-from elasticsearch_dsl import Document as DSLDocument
+from elasticsearch_dsl import InnerDoc, Document as DSLDocument
 from elasticsearch_dsl import field
 
 
@@ -22,11 +22,16 @@ class SumoDocument(DSLDocument):
 
             # This will allow child classes to have their own methods in the form of prepare_field
             prepare_method = getattr(obj, "prepare_{}".format(f), None)
-            value = cls.get_field_value(f, instance, prepare_method)
+            value = obj.get_field_value(f, instance, prepare_method)
 
-            # Assign values to each field. Assign a dictionary to multi locale Objects
+            # Assign values to each field.
             field_type = doc_mapping.resolve_field(f)
-            if isinstance(field_type, field.Object) and "en-US" in field_type._mapping:
+            if isinstance(field_type, field.Object) and not (
+                isinstance(value, InnerDoc)
+                or (isinstance(value, list) and isinstance((value or [None])[0], InnerDoc))
+            ):
+                # if the field is an Object but the value isn't an InnerDoc
+                # or a list containing an InnerDoc then we're dealing with locales
                 locale = obj.prepare_locale(instance)
                 if locale and value:
                     obj[f] = {locale: value}
@@ -38,13 +43,11 @@ class SumoDocument(DSLDocument):
 
         return obj
 
-    @classmethod
-    def get_field_value(cls, field, instance, prepare_method):
+    def get_field_value(self, field, instance, prepare_method):
         """Allow child classes to define their own logic for getting field values."""
         if prepare_method is not None:
             return prepare_method(instance)
-        else:
-            return getattr(instance, field)
+        return getattr(instance, field)
 
     def prepare_locale(self, instance):
         """Return the locale of an object if exists."""

@@ -100,19 +100,7 @@ class UserInnerDoc(InnerDoc):
         return cls(id=instance.id, username=instance.username)
 
 
-class ProductInnerDoc(InnerDoc):
-    id = field.Keyword()
-    title = field.Keyword()
-    slug = field.Keyword()
-
-    @classmethod
-    def prepare(cls, instance):
-        if not instance:
-            return None
-        return cls(id=instance.id, title=instance.title, slug=instance.slug)
-
-
-class TopicInnerDoc(InnerDoc):
+class TitleSlugInnerDoc(InnerDoc):
     id = field.Keyword()
     title = field.Keyword()
     slug = field.Keyword()
@@ -157,8 +145,8 @@ class QuestionDocument(SumoDocument):
     question_marked_as_spam = field.Date()
     question_marked_as_spam_by = field.Object(UserInnerDoc)
 
-    question_product = field.Object(ProductInnerDoc)
-    question_topic = field.Object(TopicInnerDoc)
+    question_product = field.Object(TitleSlugInnerDoc)
+    question_topic = field.Object(TitleSlugInnerDoc)
 
     question_taken_by = field.Object(UserInnerDoc)
     question_taken_until = field.Date()
@@ -172,44 +160,31 @@ class QuestionDocument(SumoDocument):
         name = config.QUESTION_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
 
-    @classmethod
-    def prepare_question_creator(cls, instance):
+    def prepare_question_creator(self, instance):
         return UserInnerDoc.prepare(instance.creator)
 
-    @classmethod
-    def prepare_question_updated_by(cls, instance):
+    def prepare_question_updated_by(self, instance):
         return UserInnerDoc.prepare(instance.updated_by)
 
-    @classmethod
-    def prepare_question_marked_as_spam_by(cls, instance):
+    def prepare_question_marked_as_spam_by(self, instance):
         return UserInnerDoc.prepare(instance.marked_as_spam_by)
 
-    @classmethod
-    def prepare_question_product(cls, instance):
-        return ProductInnerDoc.prepare(instance.product)
+    def prepare_question_product(self, instance):
+        return TitleSlugInnerDoc.prepare(instance.product)
 
-    @classmethod
-    def prepare_question_topic(cls, instance):
-        return TopicInnerDoc.prepare(instance.topic)
+    def prepare_question_topic(self, instance):
+        return TitleSlugInnerDoc.prepare(instance.topic)
 
-    @classmethod
-    def prepare_question_taken_by(cls, instance):
+    def prepare_question_taken_by(self, instance):
         return UserInnerDoc.prepare(instance.taken_by)
 
-    @classmethod
-    def prepare_question_tags(cls, instance):
+    def prepare_question_tags(self, instance):
         return [TagInnerDoc.prepare(tag) for tag in instance.tags.all()]
 
-    @classmethod
-    def prepare_question_has_solution(cls, instance):
+    def prepare_question_has_solution(self, instance):
         return instance.solution_id is not None
 
-    @classmethod
-    def prepare_locale(cls, instance):
-        return instance.locale
-
-    @classmethod
-    def get_field_value(cls, field, *args):
+    def get_field_value(self, field, *args):
         if field.startswith("question_"):
             field = field[len("question_") :]
         return super().get_field_value(field, *args)
@@ -238,29 +213,23 @@ class AnswerDocument(QuestionDocument):
 
     is_solution = field.Boolean()
 
-    @classmethod
-    def prepare_creator(cls, instance):
+    def prepare_creator(self, instance):
         return UserInnerDoc.prepare(instance.creator)
 
-    @classmethod
-    def prepare_updated_by(cls, instance):
+    def prepare_updated_by(self, instance):
         return UserInnerDoc.prepare(instance.updated_by)
 
-    @classmethod
-    def prepare_marked_as_spam_by(cls, instance):
+    def prepare_marked_as_spam_by(self, instance):
         return UserInnerDoc.prepare(instance.marked_as_spam_by)
 
-    @classmethod
-    def prepare_is_solution(cls, instance):
+    def prepare_is_solution(self, instance):
         solution_id = instance.question.solution_id
         return solution_id is not None and solution_id == instance.id
 
-    @classmethod
-    def prepare_locale(cls, instance):
+    def prepare_locale(self, instance):
         return instance.question.locale
 
-    @classmethod
-    def get_field_value(cls, field, instance, *args):
+    def get_field_value(self, field, instance, *args):
         if field.startswith("question_"):
             instance = instance.question
         return super().get_field_value(field, instance, *args)
