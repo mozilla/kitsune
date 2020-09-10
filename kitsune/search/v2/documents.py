@@ -1,31 +1,28 @@
-from django.utils import timezone
-
-from elasticsearch_dsl import connections, field, Document as DSLDocument
-
-from kitsune.search import config
-from kitsune.search.v2.es7_utils import es7_client
-from kitsune.search.v2.fields import WikiLocaleText
-from kitsune.wiki.config import REDIRECT_HTML
-from kitsune.wiki import models as wiki_models
+from elasticsearch_dsl import Document as DSLDocument
+from elasticsearch_dsl import connections, field
 from kitsune.questions import models as question_models
-
+from kitsune.search import config
+from kitsune.search.v2.base import SumoDocument
+from kitsune.search.v2.es7_utils import es7_client
+from kitsune.search.v2.fields import SumoLocaleAwareTextField
+from kitsune.wiki import models as wiki_models
+from kitsune.wiki.config import REDIRECT_HTML
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
 
-class WikiDocument(DSLDocument):
+class WikiDocument(SumoDocument):
     url = field.Keyword()
-    indexed_on = field.Date()
     updated = field.Date()
 
     product = field.Keyword()
     topic = field.Keyword()
 
     # Document specific fields (locale aware)
-    title = WikiLocaleText()
-    keywords = WikiLocaleText()
-    content = WikiLocaleText(store=True, term_vector="with_positions_offsets",)
-    summary = WikiLocaleText(store=True, term_vector="with_positions_offsets")
+    title = SumoLocaleAwareTextField()
+    content = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets",)
+    summary = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
+    keywords = SumoLocaleAwareTextField(multi=True)
 
     locale = field.Keyword()
     current_id = field.Integer()
@@ -42,9 +39,6 @@ class WikiDocument(DSLDocument):
 
     def prepare_url(self, instance):
         return instance.get_absolute_url()
-
-    def prepare_indexed_on(self, instance):
-        return timezone.now()
 
     def prepare_updated(self, instance):
         return getattr(instance.current_revision, "created", None)
@@ -90,47 +84,6 @@ class WikiDocument(DSLDocument):
 
     def prepare_display_order(self, instance):
         return instance.original.display_order
-
-    @classmethod
-    def prepare(cls, instance):
-        """Prepare an object given a model instance"""
-
-        fields = [
-            "url",
-            "indexed_on",
-            "updated",
-            "product",
-            "topic",
-            "title",
-            "keywords",
-            "content",
-            "summary",
-            "locale",
-            "current_id",
-            "parent_id",
-            "category",
-            "slug",
-            "is_archived",
-            "recent_helpful_votes",
-            "display_order",
-        ]
-
-        obj = cls()
-
-        # Iterate over fields and either set the value directly from the instance
-        # or prepare based on `prepare_<field>` method
-        for f in fields:
-            try:
-                prepare_method = getattr(obj, "prepare_{}".format(f))
-                value = prepare_method(instance)
-            except AttributeError:
-                value = getattr(instance, f)
-
-            setattr(obj, f, value)
-
-        obj.meta.id = instance.id
-
-        return obj
 
     @classmethod
     def get_model(cls):
