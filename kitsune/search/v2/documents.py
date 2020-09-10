@@ -1,4 +1,3 @@
-from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import connections, field, InnerDoc
 from kitsune.questions import models as question_models
 from kitsune.search import config
@@ -20,7 +19,7 @@ class WikiDocument(SumoDocument):
 
     # Document specific fields (locale aware)
     title = SumoLocaleAwareTextField()
-    content = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets",)
+    content = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
     summary = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
     keywords = SumoLocaleAwareTextField(multi=True)
 
@@ -91,64 +90,66 @@ class WikiDocument(SumoDocument):
 
 
 class UserInnerDoc(InnerDoc):
-    id = field.Integer()
+    id = field.Keyword()
     username = field.Keyword()
 
     @classmethod
     def prepare(cls, instance):
+        if not instance:
+            return None
         return cls(id=instance.id, username=instance.username)
 
 
 class ProductInnerDoc(InnerDoc):
-    id = field.Integer()
+    id = field.Keyword()
     title = field.Keyword()
     slug = field.Keyword()
 
     @classmethod
     def prepare(cls, instance):
+        if not instance:
+            return None
         return cls(id=instance.id, title=instance.title, slug=instance.slug)
 
 
 class TopicInnerDoc(InnerDoc):
-    id = field.Integer()
+    id = field.Keyword()
     title = field.Keyword()
     slug = field.Keyword()
 
     @classmethod
     def prepare(cls, instance):
+        if not instance:
+            return None
         return cls(id=instance.id, title=instance.title, slug=instance.slug)
 
 
 class TagInnerDoc(InnerDoc):
-    id = field.Integer()
+    id = field.Keyword()
     name = field.Keyword()
     slug = field.Keyword()
 
     @classmethod
     def prepare(cls, instance):
+        if not instance:
+            return None
         return cls(id=instance.id, name=instance.name, slug=instance.slug)
 
 
-class QuestionDocument(DSLDocument):
+class QuestionDocument(SumoDocument):
     """
     """
 
-    question_id = field.Integer()
+    question_id = field.Keyword()
 
-    question_title = field.Keyword(fields={"text": field.Text()})
+    question_title = SumoLocaleAwareTextField()
     question_creator = field.Object(UserInnerDoc)
-    question_content = field.Object(
-        properties={
-            "en-US": field.Text(analyzer="english"),
-            "cs": field.Text(analyzer="czech"),
-            "hu": field.Text(analyzer="hungarian"),
-        }
-    )
+    question_content = SumoLocaleAwareTextField(term_vector="with_positions_offsets")
 
     question_created = field.Date()
     question_updated = field.Date()
     question_updated_by = field.Object(UserInnerDoc)
-    question_solution = field.Integer()
+    question_has_solution = field.Boolean()
     question_is_locked = field.Boolean()
     question_is_archived = field.Boolean()
 
@@ -162,7 +163,7 @@ class QuestionDocument(DSLDocument):
     question_taken_by = field.Object(UserInnerDoc)
     question_taken_until = field.Date()
 
-    question_tags = field.Object(TagInnerDoc)
+    question_tags = field.Object(TagInnerDoc, multi=True)
     question_num_votes = field.Integer()
 
     locale = field.Keyword()
@@ -180,11 +181,6 @@ class QuestionDocument(DSLDocument):
     def prepare_question_updated_by(cls, instance):
         user = cls.get_question_instance(instance).updated_by
         return UserInnerDoc.prepare(user)
-
-    @classmethod
-    def prepare_question_solution(cls, instance):
-        solution = cls.get_question_instance(instance).solution
-        return solution.id if solution else None
 
     @classmethod
     def prepare_question_marked_as_spam_by(cls, instance):
@@ -212,63 +208,18 @@ class QuestionDocument(DSLDocument):
         return [TagInnerDoc.prepare(tag) for tag in tags]
 
     @classmethod
+    def prepare_question_has_solution(cls, instance):
+        return cls.get_question_instance(instance).solution_id is not None
+
+    @classmethod
     def prepare_locale(cls, instance):
         return cls.get_question_instance(instance).locale
 
     @classmethod
-    def prepare(cls, instance):
-        """Prepare an object given a model instance"""
-
-        fields = [
-            "question_id",
-            "question_title",
-            "question_creator",
-            "question_content",
-            "question_created",
-            "question_updated",
-            "question_updated_by",
-            "question_solution",
-            "question_is_locked",
-            "question_is_spam",
-            "question_marked_as_spam",
-            "question_marked_as_spam_by",
-            "question_product",
-            "question_topic",
-            "question_taken_by",
-            "question_taken_until",
-            "question_tags",
-            "question_num_votes",
-            "locale",
-        ] + cls.get_fields()
-        locale_fields = ["question_content"]
-
-        obj = cls()
-
-        # Iterate over fields and either set the value directly from the instance
-        # or prepare based on `prepare_<field>` method
-        for f in fields:
-            try:
-                prepare_method = getattr(obj, "prepare_{}".format(f))
-                value = prepare_method(instance)
-            except AttributeError:
-                if f.startswith("question_"):
-                    value = getattr(cls.get_question_instance(instance), f[len("question_") :])
-                else:
-                    value = getattr(instance, f)
-
-            if f in locale_fields:
-                setattr(obj, f, {})
-                setattr(obj[f], cls.prepare_locale(instance), value)
-            else:
-                setattr(obj, f, value)
-
-        obj.meta.id = instance.id
-
-        return obj
-
-    @classmethod
-    def get_fields(cls):
-        return []
+    def get_field_value(cls, instance, field):
+        if field.startswith("question_"):
+            return getattr(cls.get_question_instance(instance), field[len("question_") :])
+        return getattr(instance, field)
 
     @classmethod
     def get_question_instance(cls, instance):
@@ -285,7 +236,7 @@ class AnswerDocument(QuestionDocument):
 
     creator = field.Object(UserInnerDoc)
     created = field.Date()
-    content = field.Text()
+    content = SumoLocaleAwareTextField(term_vector="with_positions_offsets")
     updated = field.Date()
     updated_by = field.Object(UserInnerDoc)
 
@@ -312,24 +263,8 @@ class AnswerDocument(QuestionDocument):
 
     @classmethod
     def prepare_is_solution(cls, instance):
-        solution = instance.question.solution
-        return bool(solution) and solution.id == instance.id
-
-    @classmethod
-    def get_fields(cls):
-        return [
-            "creator",
-            "created",
-            "content",
-            "updated",
-            "updated_by",
-            "is_spam",
-            "marked_as_spam",
-            "marked_as_spam_by",
-            "num_helpful_votes",
-            "num_unhelpful_votes",
-            "is_solution",
-        ]
+        solution_id = instance.question.solution_id
+        return solution_id is not None and solution_id == instance.id
 
     @classmethod
     def get_question_instance(cls, instance):

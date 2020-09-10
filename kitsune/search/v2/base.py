@@ -22,18 +22,18 @@ class SumoDocument(DSLDocument):
 
             # This will allow child classes to have their own methods in the form of prepare_field
             prepare_method = getattr(obj, "prepare_{}".format(f), None)
-            # Ovewrite the value if there is a specific method implented for the specific field
+            # Overwrite the value if there is a specific method implemented for the specific field
             if prepare_method is not None:
                 value = prepare_method(instance)
             else:
-                value = getattr(instance, f)
+                value = cls.get_field_value(instance, f)
 
-            # Assign values to each field. Assign a dictionary to Objects
-            if isinstance(doc_mapping.resolve_field(f), field.Object):
+            # Assign values to each field. Assign a dictionary to multi locale Objects
+            field_type = doc_mapping.resolve_field(f)
+            if isinstance(field_type, field.Object) and "en-US" in field_type._mapping:
                 locale = obj.prepare_locale(instance)
                 if locale and value:
                     obj[f] = {locale: value}
-                # We  populate non-locale object fields here
             else:
                 setattr(obj, f, value)
 
@@ -41,6 +41,14 @@ class SumoDocument(DSLDocument):
         obj.indexed_on = timezone.now()
 
         return obj
+
+    @classmethod
+    def get_field_value(cls, instance, field):
+        """
+        Allow child classes to define their own logic for getting field values when a specific
+        method doesn't exist.
+        """
+        return getattr(instance, field)
 
     def prepare_locale(self, instance):
         """Return the locale of an object if exists."""
