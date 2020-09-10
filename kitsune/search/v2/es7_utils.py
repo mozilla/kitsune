@@ -30,7 +30,10 @@ def _get_locale_specific_analyzer(locale):
         # The standard analyzer is basically a analyzer with standard tokenizer
         # and standard, lowercase and stop filter
         locale_analyzer = analyzer(
-            locale, tokenizer="standard", filter=["lowercase", "stop", snowball_filter]
+            locale,
+            tokenizer="standard",
+            filter=["lowercase", "stop", snowball_filter],
+            char_filter=["html_strip"],
         )
         return locale_analyzer
 
@@ -48,7 +51,9 @@ def es_analyzer_for_locale(locale):
 
     # No specific analyzer found for the locale
     # So use the standard analyzer as default
-    return analyzer("default_sumo", tokenizer="standard", filter=["lowercase"])
+    return analyzer(
+        "default_sumo", tokenizer="standard", filter=["lowercase"], char_filter=["html_strip"],
+    )
 
 
 def es7_client():
