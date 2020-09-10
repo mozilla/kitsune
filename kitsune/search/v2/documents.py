@@ -174,56 +174,45 @@ class QuestionDocument(SumoDocument):
 
     @classmethod
     def prepare_question_creator(cls, instance):
-        user = cls.get_question_instance(instance).creator
-        return UserInnerDoc.prepare(user)
+        return UserInnerDoc.prepare(instance.creator)
 
     @classmethod
     def prepare_question_updated_by(cls, instance):
-        user = cls.get_question_instance(instance).updated_by
-        return UserInnerDoc.prepare(user)
+        return UserInnerDoc.prepare(instance.updated_by)
 
     @classmethod
     def prepare_question_marked_as_spam_by(cls, instance):
-        user = cls.get_question_instance(instance).marked_as_spam_by
-        return UserInnerDoc.prepare(user)
+        return UserInnerDoc.prepare(instance.marked_as_spam_by)
 
     @classmethod
     def prepare_question_product(cls, instance):
-        product = cls.get_question_instance(instance).product
-        return ProductInnerDoc.prepare(product)
+        return ProductInnerDoc.prepare(instance.product)
 
     @classmethod
     def prepare_question_topic(cls, instance):
-        topic = cls.get_question_instance(instance).topic
-        return TopicInnerDoc.prepare(topic)
+        return TopicInnerDoc.prepare(instance.topic)
 
     @classmethod
     def prepare_question_taken_by(cls, instance):
-        user = cls.get_question_instance(instance).taken_by
-        return UserInnerDoc.prepare(user)
+        return UserInnerDoc.prepare(instance.taken_by)
 
     @classmethod
     def prepare_question_tags(cls, instance):
-        tags = cls.get_question_instance(instance).tags.all()
-        return [TagInnerDoc.prepare(tag) for tag in tags]
+        return [TagInnerDoc.prepare(tag) for tag in instance.tags.all()]
 
     @classmethod
     def prepare_question_has_solution(cls, instance):
-        return cls.get_question_instance(instance).solution_id is not None
+        return instance.solution_id is not None
 
     @classmethod
     def prepare_locale(cls, instance):
-        return cls.get_question_instance(instance).locale
+        return instance.locale
 
     @classmethod
-    def get_field_value(cls, instance, field):
+    def get_field_value(cls, field, *args):
         if field.startswith("question_"):
-            return getattr(cls.get_question_instance(instance), field[len("question_") :])
-        return getattr(instance, field)
-
-    @classmethod
-    def get_question_instance(cls, instance):
-        return instance
+            field = field[len("question_") :]
+        return super().get_field_value(field, *args)
 
     @classmethod
     def get_model(cls):
@@ -267,8 +256,14 @@ class AnswerDocument(QuestionDocument):
         return solution_id is not None and solution_id == instance.id
 
     @classmethod
-    def get_question_instance(cls, instance):
-        return instance.question
+    def prepare_locale(cls, instance):
+        return instance.question.locale
+
+    @classmethod
+    def get_field_value(cls, field, instance, *args):
+        if field.startswith("question_"):
+            instance = instance.question
+        return super().get_field_value(field, instance, *args)
 
     @classmethod
     def get_model(cls):
