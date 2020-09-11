@@ -512,7 +512,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 )
                 .query(
                     __mlt={
-                        "fields": ["document_title", "document_summary", "document_content",],
+                        "fields": [
+                            "document_title",
+                            "document_summary",
+                            "document_content",
+                        ],
                         "like_text": self.title,
                         "min_term_freq": 1,
                         "min_doc_freq": 1,
@@ -1034,7 +1038,8 @@ class Answer(ModelBase, SearchMixin):
 
     def get_solution_url(self, watch):
         url = reverse(
-            "questions.solve", kwargs={"question_id": self.question_id, "answer_id": self.id},
+            "questions.solve",
+            kwargs={"question_id": self.question_id, "answer_id": self.id},
         )
         return urlparams(url, watch=watch.secret)
 
@@ -1390,5 +1395,8 @@ def add_action_for_new_question(sender, instance, created, **kwargs):
 def add_action_for_new_answer(sender, instance, created, **kwargs):
     if created:
         actstream.action.send(
-            instance.creator, verb="answered", action_object=instance, target=instance.question,
+            instance.creator,
+            verb="answered",
+            action_object=instance,
+            target=instance.question,
         )

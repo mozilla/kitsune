@@ -42,7 +42,11 @@ def send_award_notification(award_id: int):
 
     msg = _make_mail(
         locale=award.user.profile.locale,
-        context={"host": Site.objects.get_current().domain, "award": award, "badge": award.badge,},
+        context={
+            "host": Site.objects.get_current().domain,
+            "award": award,
+            "badge": award.badge,
+        },
         email=award.user.email,
     )
 

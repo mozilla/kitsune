@@ -143,7 +143,10 @@ class Topic(ModelBase):
         if self.parent is None:
             return reverse(
                 "products.documents",
-                kwargs={"product_slug": self.product.slug, "topic_slug": self.slug,},
+                kwargs={
+                    "product_slug": self.product.slug,
+                    "topic_slug": self.slug,
+                },
             )
         else:
             assert self.parent.parent is None

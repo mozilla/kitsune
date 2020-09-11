@@ -96,7 +96,10 @@ PIPELINE_JS = {
         "output_filename": "build/questions.metrics-min.js",
     },
     "products": {
-        "source_filenames": ("sumo/js/compare_versions.js", "sumo/js/products.js",),
+        "source_filenames": (
+            "sumo/js/compare_versions.js",
+            "sumo/js/products.js",
+        ),
         "output_filename": "build/products-min.js",
     },
     "search": {
@@ -113,7 +116,10 @@ PIPELINE_JS = {
         "output_filename": "build/forums-min.js",
     },
     "gallery": {
-        "source_filenames": ("sumo/js/libs/jquery.ajaxupload.js", "sumo/js/gallery.js",),
+        "source_filenames": (
+            "sumo/js/libs/jquery.ajaxupload.js",
+            "sumo/js/gallery.js",
+        ),
         "output_filename": "build/gallery-min.js",
     },
     "wiki": {
@@ -153,7 +159,10 @@ PIPELINE_JS = {
         "output_filename": "build/wiki.history-min.js",
     },
     "wiki.diff": {
-        "source_filenames": ("sumo/js/libs/diff_match_patch_uncompressed.js", "sumo/js/diff.js",),
+        "source_filenames": (
+            "sumo/js/libs/diff_match_patch_uncompressed.js",
+            "sumo/js/diff.js",
+        ),
         "output_filename": "build/wiki.diff-min.js",
     },
     "wiki.editor": {
@@ -181,7 +190,10 @@ PIPELINE_JS = {
         "output_filename": "build/customercare-min.js",
     },
     "users": {
-        "source_filenames": ("sumo/js/users.js", "sumo/js/reportabuse.js",),
+        "source_filenames": (
+            "sumo/js/users.js",
+            "sumo/js/reportabuse.js",
+        ),
         "output_filename": "build/users-min.js",
     },
     "messages": {
@@ -206,11 +218,17 @@ PIPELINE_JS = {
         "output_filename": "build/groups-min.js",
     },
     "kpi.dashboard": {
-        "source_filenames": ("d3/d3.js", "kpi/js/kpi.browserify.js",),
+        "source_filenames": (
+            "d3/d3.js",
+            "kpi/js/kpi.browserify.js",
+        ),
         "output_filename": "build/kpi.dashboard-min.js",
     },
     "gtm-snippet": {
-        "source_filenames": ("sumo/js/dnt-helper.js", "sumo/js/gtm-snippet.js",),
+        "source_filenames": (
+            "sumo/js/dnt-helper.js",
+            "sumo/js/gtm-snippet.js",
+        ),
         "output_filename": "build/gtm-snippet-min.js",
     },
 }

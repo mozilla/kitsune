@@ -140,7 +140,10 @@ class PostsTemplateTests(KBForumTestCase):
         d = DocumentFactory()
         content = "Full of awesome."
         response = post(
-            self.client, "wiki.discuss.post_preview_async", {"content": content}, args=[d.slug],
+            self.client,
+            "wiki.discuss.post_preview_async",
+            {"content": content},
+            args=[d.slug],
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -199,7 +202,10 @@ class ThreadsTemplateTests(KBForumTestCase):
 
         d = DocumentFactory()
         response = post(
-            self.client, "wiki.discuss.new_thread", {"title": "", "content": ""}, args=[d.slug],
+            self.client,
+            "wiki.discuss.new_thread",
+            {"title": "", "content": ""},
+            args=[d.slug],
         )
 
         doc = pq(response.content)
@@ -239,7 +245,10 @@ class ThreadsTemplateTests(KBForumTestCase):
         d = DocumentFactory()
         t = ThreadFactory(document=d, creator=u)
         response = post(
-            self.client, "wiki.discuss.edit_thread", {"title": "wha?"}, args=[d.slug, t.id],
+            self.client,
+            "wiki.discuss.edit_thread",
+            {"title": "wha?"},
+            args=[d.slug, t.id],
         )
 
         doc = pq(response.content)
@@ -390,7 +399,10 @@ class TestRatelimiting(KBForumTestCase):
         t = Thread.objects.all()[0]
         for i in range(3):
             response = post(
-                self.client, "wiki.discuss.reply", {"content": "hellooo"}, args=[d.slug, t.id],
+                self.client,
+                "wiki.discuss.reply",
+                {"content": "hellooo"},
+                args=[d.slug, t.id],
             )
             eq_(200, response.status_code)
 

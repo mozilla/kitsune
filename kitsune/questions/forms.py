@@ -111,29 +111,46 @@ class EditQuestionForm(forms.ModelForm):
 
         if "started" in extra_fields:
             field = forms.CharField(
-                label=STARTED_LABEL, required=False, max_length=255, widget=forms.TextInput(),
+                label=STARTED_LABEL,
+                required=False,
+                max_length=255,
+                widget=forms.TextInput(),
             )
             self.fields["started"] = field
 
         if "addon" in extra_fields:
             field = forms.CharField(
-                label=ADDON_LABEL, required=False, max_length=255, widget=forms.TextInput(),
+                label=ADDON_LABEL,
+                required=False,
+                max_length=255,
+                widget=forms.TextInput(),
             )
             self.fields["addon"] = field
 
         if "ff_version" in extra_fields:
-            self.fields["ff_version"] = forms.CharField(label=FF_VERSION_LABEL, required=False,)
+            self.fields["ff_version"] = forms.CharField(
+                label=FF_VERSION_LABEL,
+                required=False,
+            )
 
         if "device" in extra_fields:
-            self.fields["device"] = forms.CharField(label=DEVICE_LABEL, required=False,)
+            self.fields["device"] = forms.CharField(
+                label=DEVICE_LABEL,
+                required=False,
+            )
 
         if "os" in extra_fields:
-            self.fields["os"] = forms.CharField(label=OS_LABEL, required=False,)
+            self.fields["os"] = forms.CharField(
+                label=OS_LABEL,
+                required=False,
+            )
 
         if "plugins" in extra_fields:
             widget = forms.Textarea(attrs={"class": "plugins"})
             self.fields["plugins"] = forms.CharField(
-                label=PLUGINS_LABEL, required=False, widget=widget,
+                label=PLUGINS_LABEL,
+                required=False,
+                widget=widget,
             )
 
         if "troubleshooting" in extra_fields:
@@ -201,7 +218,7 @@ class EditQuestionForm(forms.ModelForm):
 class NewQuestionForm(EditQuestionForm):
     """Form to start a new question"""
 
-    category = forms.ChoiceField(label=CATEGORY_LABEL, choices=[],)
+    category = forms.ChoiceField(label=CATEGORY_LABEL, choices=[])
 
     # Collect user agent only when making a question for the first time.
     # Otherwise, we could grab moderators' user agents.

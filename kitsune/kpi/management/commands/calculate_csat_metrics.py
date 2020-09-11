@@ -104,5 +104,8 @@ class Command(BaseCommand):
                 csat[code] // counts[code] if counts[code] else 50
             )  # If no responses assume neutral
             Metric.objects.update_or_create(
-                kind=metric_kind, start=startdate, end=enddate, defaults={"value": value},
+                kind=metric_kind,
+                start=startdate,
+                end=enddate,
+                defaults={"value": value},
             )

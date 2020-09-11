@@ -15,10 +15,18 @@ COLLAPSIBLE_DOCUMENTS = {
         "navigate-support-forum-platform",
         "how-stop-firefox-making-automatic-connections",
     ],
-    "cs": ["jak-firefoxu-zabranit-v-automatickem-navazovani-sp",],
-    "de": ["Firefox-baut-unaufgeforderte-Verbindungen-auf",],
-    "it": ["firefox-connessioni-non-richieste",],
-    "pt-BR": ["como-fazer-o-firefox-parar-de-se-conectar-automati",],
+    "cs": [
+        "jak-firefoxu-zabranit-v-automatickem-navazovani-sp",
+    ],
+    "de": [
+        "Firefox-baut-unaufgeforderte-Verbindungen-auf",
+    ],
+    "it": [
+        "firefox-connessioni-non-richieste",
+    ],
+    "pt-BR": [
+        "como-fazer-o-firefox-parar-de-se-conectar-automati",
+    ],
 }
 FALLBACK_LOCALES = {
     "ca": ["es"],  # Bug 800880
@@ -40,8 +48,14 @@ MEDIUM_SIGNIFICANCE = 20
 MAJOR_SIGNIFICANCE = 30
 
 SIGNIFICANCES = [
-    (TYPO_SIGNIFICANCE, _lazy("Minor details that don't affect the instructions")),
-    (MEDIUM_SIGNIFICANCE, _lazy("Content changes that don't require immediate translation"),),
+    (
+        TYPO_SIGNIFICANCE,
+        _lazy("Minor details that don't affect the instructions"),
+    ),
+    (
+        MEDIUM_SIGNIFICANCE,
+        _lazy("Content changes that don't require immediate translation"),
+    ),
     (
         MAJOR_SIGNIFICANCE,
         _lazy("Major content changes that will make older translations " "inaccurate"),

@@ -51,7 +51,16 @@ class TestNewQuestionForm(TestCaseBase):
             "key": "desktop",
             "name": "Firefox on desktop",
             "categories": OrderedDict(
-                [("cookies", {"name": "Cookies", "topic": "cookies", "tags": ["cookies"],})]
+                [
+                    (
+                        "cookies",
+                        {
+                            "name": "Cookies",
+                            "topic": "cookies",
+                            "tags": ["cookies"],
+                        },
+                    )
+                ]
             ),
             "extra_fields": ["troubleshooting", "ff_version", "os", "plugins"],
         }
@@ -68,7 +77,16 @@ class TestNewQuestionForm(TestCaseBase):
             "key": "desktop",
             "name": "Firefox on desktop",
             "categories": OrderedDict(
-                [("cookies", {"name": "Cookies", "topic": "cookies", "tags": ["cookies"],})]
+                [
+                    (
+                        "cookies",
+                        {
+                            "name": "Cookies",
+                            "topic": "cookies",
+                            "tags": ["cookies"],
+                        },
+                    )
+                ]
             ),
             "extra_fields": ["troubleshooting", "ff_version", "os", "plugins"],
         }

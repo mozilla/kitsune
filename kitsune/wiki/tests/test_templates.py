@@ -146,7 +146,8 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         eq_(r.document.title, doc("h1.sumo-page-heading").text())
         eq_(
-            "This article doesn't have approved content yet.", doc("#doc-content").text(),
+            "This article doesn't have approved content yet.",
+            doc("#doc-content").text(),
         )
 
     def test_translation_document_no_approved_content(self):
@@ -258,8 +259,7 @@ class DocumentTests(TestCaseBase):
         eq_(settings.CANONICAL_URL + target_url, doc("link[rel=canonical]").attr("href"))
 
     def test_redirect_no_vote(self):
-        """Make sure documents with REDIRECT directives have no vote form.
-        """
+        """Make sure documents with REDIRECT directives have no vote form."""
         target = DocumentFactory()
         redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
@@ -441,7 +441,8 @@ class DocumentTests(TestCaseBase):
     def test_document_share_link_escape(self):
         """Ensure that the share link isn't escaped."""
         r = ApprovedRevisionFactory(
-            content="Test", document__share_link="https://www.example.org",
+            content="Test",
+            document__share_link="https://www.example.org",
         )
         response = self.client.get(r.document.get_absolute_url())
         doc = pq(response.content)
@@ -756,8 +757,7 @@ class NewRevisionTests(TestCaseBase):
         self.client.login(username=self.user.username, password="testpass")
 
     def test_new_revision_GET_logged_out(self):
-        """Creating a revision without being logged in redirects to login page.
-        """
+        """Creating a revision without being logged in redirects to login page."""
         self.client.logout()
         response = self.client.get(reverse("wiki.edit_document", args=[self.d.slug]))
         eq_(302, response.status_code)
@@ -965,12 +965,12 @@ class NewRevisionTests(TestCaseBase):
         )
         assert len(pq(response.content)(".mzp-t-warning"))
 
-    def test_new_revision_warning(self,):
+    def test_new_revision_warning(self):
         """When editing based on current revision, we should show a warning if
         there are newer unapproved revisions."""
         self._test_new_revision_warning(self.d)
 
-    def test_new_revision_warning_l10n(self,):
+    def test_new_revision_warning_l10n(self):
         """When translating based on current revision, we should show a
         warning if there are newer unapproved revisions."""
         # Make the en-US revision ready for l10n first
@@ -1350,7 +1350,8 @@ class DocumentRevisionsTests(TestCaseBase):
         # Verify there is no Review link
         eq_(0, len(doc("#revision-list th.status a")))
         eq_(
-            "Unreviewed", doc("#revision-list td.status").first().text(),
+            "Unreviewed",
+            doc("#revision-list td.status").first().text(),
         )
 
         # Log in as user with permission to review
@@ -1432,7 +1433,9 @@ class ReviewRevisionTests(TestCaseBase):
         self.document.save()
 
         response = get(
-            self.client, "wiki.review_revision", args=[self.document.slug, self.revision.id],
+            self.client,
+            "wiki.review_revision",
+            args=[self.document.slug, self.revision.id],
         )
 
         # Does the {for} syntax seem to have rendered?
@@ -1774,12 +1777,15 @@ class ReviewRevisionTests(TestCaseBase):
     def test_default_significance(self):
         """Verify the default significance is MEDIUM_SIGNIFICANCE."""
         response = get(
-            self.client, "wiki.review_revision", args=[self.document.slug, self.revision.id],
+            self.client,
+            "wiki.review_revision",
+            args=[self.document.slug, self.revision.id],
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(
-            MEDIUM_SIGNIFICANCE, int(doc("input[name=significance][checked]")[0].attrib["value"]),
+            MEDIUM_SIGNIFICANCE,
+            int(doc("input[name=significance][checked]")[0].attrib["value"]),
         )
 
     def test_self_approve_without_revision_contributors(self):
@@ -2253,7 +2259,9 @@ class TranslateTests(TestCaseBase):
         DocumentFactory(locale="de", parent=en_doc)
 
         url = reverse(
-            "wiki.show_translations", locale=settings.WIKI_DEFAULT_LANGUAGE, args=[en_doc.slug],
+            "wiki.show_translations",
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            args=[en_doc.slug],
         )
         r = self.client.get(url)
         doc = pq(r.content)
@@ -2411,7 +2419,11 @@ class ArticlePreviewTests(TestCaseBase):
         response = post(
             self.client,
             "wiki.preview",
-            {"content": "=Test Content=", "slug": d.slug, "locale": d.locale,},
+            {
+                "content": "=Test Content=",
+                "slug": d.slug,
+                "locale": d.locale,
+            },
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -2425,7 +2437,12 @@ class ArticlePreviewTests(TestCaseBase):
         # Preview content that links to it and verify link is in locale.
         url = reverse("wiki.preview", locale="es")
         response = self.client.post(
-            url, {"content": "[[Test Document]]", "slug": d.slug, "locale": d.locale,}
+            url,
+            {
+                "content": "[[Test Document]]",
+                "slug": d.slug,
+                "locale": d.locale,
+            },
         )
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -2451,7 +2468,12 @@ class HelpfulVoteTests(TestCaseBase):
         response = post(
             self.client,
             "wiki.document_vote",
-            {"helpful": "Yes", "revision_id": r.id, "referrer": referrer, "query": query,},
+            {
+                "helpful": "Yes",
+                "revision_id": r.id,
+                "referrer": referrer,
+                "query": query,
+            },
             args=[self.document.slug],
         )
         eq_(200, response.status_code)
@@ -2474,7 +2496,12 @@ class HelpfulVoteTests(TestCaseBase):
         response = post(
             self.client,
             "wiki.document_vote",
-            {"not-helpful": "No", "revision_id": r.id, "referrer": referrer, "query": query,},
+            {
+                "not-helpful": "No",
+                "revision_id": r.id,
+                "referrer": referrer,
+                "query": query,
+            },
             args=[self.document.slug],
         )
         eq_(200, response.status_code)
@@ -2494,7 +2521,12 @@ class HelpfulVoteTests(TestCaseBase):
         response = post(
             self.client,
             "wiki.document_vote",
-            {"helpful": "Yes", "revision_id": r.id, "referrer": referrer, "query": query,},
+            {
+                "helpful": "Yes",
+                "revision_id": r.id,
+                "referrer": referrer,
+                "query": query,
+            },
             args=[self.document.slug],
         )
         eq_(200, response.status_code)
@@ -2516,7 +2548,12 @@ class HelpfulVoteTests(TestCaseBase):
         url = reverse("wiki.document_vote", args=[self.document.slug])
         response = self.client.post(
             url,
-            data={"helpful": "Yes", "revision_id": r.id, "referrer": referrer, "query": query,},
+            data={
+                "helpful": "Yes",
+                "revision_id": r.id,
+                "referrer": referrer,
+                "query": query,
+            },
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         eq_(200, response.status_code)
@@ -2815,7 +2852,10 @@ class RecentRevisionsTest(TestCaseBase):
         _create_document(title="1", rev_kwargs={"creator": self.u1})
         _create_document(
             title="2",
-            rev_kwargs={"creator": self.u1, "created": datetime(2013, 3, 1, 0, 0, 0, 0),},
+            rev_kwargs={
+                "creator": self.u1,
+                "created": datetime(2013, 3, 1, 0, 0, 0, 0),
+            },
         )
         _create_document(title="3", locale="de", rev_kwargs={"creator": self.u2})
         _create_document(title="4", locale="fr", rev_kwargs={"creator": self.u2})

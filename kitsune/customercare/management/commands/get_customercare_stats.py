@@ -78,7 +78,9 @@ class Command(BaseCommand):
         limit = settings.CC_TOP_CONTRIB_LIMIT
         # Sort by whatever is in settings, break ties with 'all'
         contributor_stats = sorted(
-            list(contributor_stats.values()), key=lambda c: (c[sort_key], c["all"]), reverse=True,
+            list(contributor_stats.values()),
+            key=lambda c: (c[sort_key], c["all"]),
+            reverse=True,
         )[:limit]
 
         try:

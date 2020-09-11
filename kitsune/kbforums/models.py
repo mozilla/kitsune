@@ -145,7 +145,10 @@ class Post(ModelBase):
         url_ = reverse(
             "wiki.discuss.posts",
             locale=self.thread.document.locale,
-            kwargs={"document_slug": self.thread.document.slug, "thread_id": self.thread.id,},
+            kwargs={
+                "document_slug": self.thread.document.slug,
+                "thread_id": self.thread.id,
+            },
         )
         return urlparams(url_, hash="post-%s" % self.id, **query)
 

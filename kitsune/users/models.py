@@ -259,7 +259,7 @@ class UserMappingType(SearchMappingType):
                 "idisplay_name": {"type": "string", "analyzer": "whitespace"},
                 "itwitter_usernames": {"type": "string", "index": "not_analyzed"},
                 "avatar": {"type": "string", "index": "not_analyzed"},
-                "suggest": {"type": "completion", "analyzer": "whitespace", "payloads": True,},
+                "suggest": {"type": "completion", "analyzer": "whitespace", "payloads": True},
             }
         }
 

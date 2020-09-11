@@ -105,7 +105,12 @@ class SuggestViewTests(ElasticTestCase):
 
     def test_invalid_numbers(self):
         res = self.client.get(
-            reverse("search.suggest"), {"max_questions": "a", "max_documents": "b", "q": "search",}
+            reverse("search.suggest"),
+            {
+                "max_questions": "a",
+                "max_documents": "b",
+                "q": "search",
+            },
         )
         eq_(res.status_code, 400)
         eq_(

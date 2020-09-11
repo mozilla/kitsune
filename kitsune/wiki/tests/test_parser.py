@@ -179,7 +179,7 @@ class SimpleSyntaxTestCase(TestCase):
 
     def test_internal_links(self):
         """Make sure internal links work correctly when not to redirected
-           articles and when to redirected articles"""
+        articles and when to redirected articles"""
         p = WikiParser()
 
         # Create a new article
@@ -567,8 +567,7 @@ class ForWikiTests(TestCase):
         )
 
     def test_inline(self):
-        """A for not meeting the conditions in test_block should be inline.
-        """
+        """A for not meeting the conditions in test_block should be inline."""
         self.assertWikiHtmlEqual(
             "Joe\n\nRed {for}riding{/for} hood\n\nBlow",
             '<p>Joe</p><p>Red <span class="for">riding</span> hood</p><p>Blow</p>',

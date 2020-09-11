@@ -107,8 +107,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         eq_(405, response.status_code)
 
     def test_watch_forum_without_permission(self):
-        """Watching forums without the view_in_forum permission should 404.
-        """
+        """Watching forums without the view_in_forum permission should 404."""
         rforum = RestrictedForumFactory()
         u = UserFactory()
 
@@ -119,8 +118,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         eq_(404, response.status_code)
 
     def test_watch_thread_without_permission(self):
-        """Watching threads without the view_in_forum permission should 404.
-        """
+        """Watching threads without the view_in_forum permission should 404."""
         rforum = RestrictedForumFactory()
         t = ThreadFactory(forum=rforum)
         u = UserFactory()
@@ -134,8 +132,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         eq_(404, response.status_code)
 
     def test_read_without_permission(self):
-        """Listing threads without the view_in_forum permission should 404.
-        """
+        """Listing threads without the view_in_forum permission should 404."""
         rforum = RestrictedForumFactory()
         response = get(self.client, "forums.threads", args=[rforum.slug])
         eq_(404, response.status_code)

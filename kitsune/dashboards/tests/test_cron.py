@@ -39,8 +39,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         eq_(0, len(result))
 
     def test_no_current_articles(self):
-        """Make sure _get_current_articles() returns nothing with no votes.
-        """
+        """Make sure _get_current_articles() returns nothing with no votes."""
         result = _get_current_unhelpful({})
         eq_(0, len(result))
 

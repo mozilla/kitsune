@@ -47,7 +47,11 @@ def showfor_data(products):
     for prod_slug, plats in list(platforms.items()):
         for plat in sorted(plats, key=order):
             data["platforms"].setdefault(prod_slug, []).append(
-                {"name": plat.name, "slug": plat.slug, "visible": plat.visible,}
+                {
+                    "name": plat.name,
+                    "slug": plat.slug,
+                    "visible": plat.visible,
+                }
             )
 
     return data

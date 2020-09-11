@@ -85,7 +85,8 @@ def login(request):
     if request.user.is_authenticated:
         # We re-direct to the profile screen
         user_profile_url = urlparams(
-            reverse("users.profile", args=[request.user.username]), fpa=1,
+            reverse("users.profile", args=[request.user.username]),
+            fpa=1,
         )
         return HttpResponseRedirect(user_profile_url)
 
