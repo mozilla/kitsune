@@ -1,4 +1,4 @@
-from elasticsearch_dsl import connections, field, InnerDoc
+from elasticsearch_dsl import connections, field
 from kitsune.questions import models as question_models
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
@@ -89,41 +89,6 @@ class WikiDocument(SumoDocument):
         return wiki_models.Document
 
 
-class UserInnerDoc(InnerDoc):
-    id = field.Keyword()
-    username = field.Keyword()
-
-    @classmethod
-    def prepare(cls, instance):
-        if not instance:
-            return None
-        return cls(id=instance.id, username=instance.username)
-
-
-class TitleSlugInnerDoc(InnerDoc):
-    id = field.Keyword()
-    title = field.Keyword()
-    slug = field.Keyword()
-
-    @classmethod
-    def prepare(cls, instance):
-        if not instance:
-            return None
-        return cls(id=instance.id, title=instance.title, slug=instance.slug)
-
-
-class TagInnerDoc(InnerDoc):
-    id = field.Keyword()
-    name = field.Keyword()
-    slug = field.Keyword()
-
-    @classmethod
-    def prepare(cls, instance):
-        if not instance:
-            return None
-        return cls(id=instance.id, name=instance.name, slug=instance.slug)
-
-
 class QuestionDocument(SumoDocument):
     """
     """
@@ -131,27 +96,27 @@ class QuestionDocument(SumoDocument):
     question_id = field.Keyword()
 
     question_title = SumoLocaleAwareTextField()
-    question_creator = field.Object(UserInnerDoc)
+    question_creator_id = field.Keyword()
     question_content = SumoLocaleAwareTextField(term_vector="with_positions_offsets")
 
     question_created = field.Date()
     question_updated = field.Date()
-    question_updated_by = field.Object(UserInnerDoc)
+    question_updated_by_id = field.Keyword()
     question_has_solution = field.Boolean()
     question_is_locked = field.Boolean()
     question_is_archived = field.Boolean()
 
     question_is_spam = field.Boolean()
     question_marked_as_spam = field.Date()
-    question_marked_as_spam_by = field.Object(UserInnerDoc)
+    question_marked_as_spam_by_id = field.Keyword()
 
-    question_product = field.Object(TitleSlugInnerDoc)
-    question_topic = field.Object(TitleSlugInnerDoc)
+    question_product_id = field.Keyword()
+    question_topic_id = field.Keyword()
 
-    question_taken_by = field.Object(UserInnerDoc)
+    question_taken_by_id = field.Keyword()
     question_taken_until = field.Date()
 
-    question_tags = field.Object(TagInnerDoc, multi=True)
+    question_tag_id = field.Keyword(multi=True)
     question_num_votes = field.Integer()
 
     locale = field.Keyword()
@@ -160,26 +125,8 @@ class QuestionDocument(SumoDocument):
         name = config.QUESTION_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
 
-    def prepare_question_creator(self, instance):
-        return UserInnerDoc.prepare(instance.creator)
-
-    def prepare_question_updated_by(self, instance):
-        return UserInnerDoc.prepare(instance.updated_by)
-
-    def prepare_question_marked_as_spam_by(self, instance):
-        return UserInnerDoc.prepare(instance.marked_as_spam_by)
-
-    def prepare_question_product(self, instance):
-        return TitleSlugInnerDoc.prepare(instance.product)
-
-    def prepare_question_topic(self, instance):
-        return TitleSlugInnerDoc.prepare(instance.topic)
-
-    def prepare_question_taken_by(self, instance):
-        return UserInnerDoc.prepare(instance.taken_by)
-
-    def prepare_question_tags(self, instance):
-        return [TagInnerDoc.prepare(tag) for tag in instance.tags.all()]
+    def prepare_question_tag_id(self, instance):
+        return [tag.id for tag in instance.tags.all()]
 
     def prepare_question_has_solution(self, instance):
         return instance.solution_id is not None
@@ -198,29 +145,20 @@ class AnswerDocument(QuestionDocument):
     """
     """
 
-    creator = field.Object(UserInnerDoc)
+    creator_id = field.Keyword()
     created = field.Date()
     content = SumoLocaleAwareTextField(term_vector="with_positions_offsets")
     updated = field.Date()
-    updated_by = field.Object(UserInnerDoc)
+    updated_by_id = field.Keyword()
 
     is_spam = field.Boolean()
     marked_as_spam = field.Date()
-    marked_as_spam_by = field.Object(UserInnerDoc)
+    marked_as_spam_by_id = field.Keyword()
 
     num_helpful_votes = field.Integer()
     num_unhelpful_votes = field.Integer()
 
     is_solution = field.Boolean()
-
-    def prepare_creator(self, instance):
-        return UserInnerDoc.prepare(instance.creator)
-
-    def prepare_updated_by(self, instance):
-        return UserInnerDoc.prepare(instance.updated_by)
-
-    def prepare_marked_as_spam_by(self, instance):
-        return UserInnerDoc.prepare(instance.marked_as_spam_by)
 
     def prepare_is_solution(self, instance):
         solution_id = instance.question.solution_id
