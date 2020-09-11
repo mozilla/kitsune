@@ -11,8 +11,9 @@
     @include c.col;
   }
 
-  &--details-list {
-
+  &--figure {
+    margin-bottom: p.$spacing-xl;
+    max-width: 300px;
   }
 
   &--details-item {
@@ -32,6 +33,7 @@
     &--figure,
     &--details {
       width: c.col-width(2, 4);
+      margin-bottom: 0;
     }
   }
 

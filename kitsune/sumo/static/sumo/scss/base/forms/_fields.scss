@@ -57,6 +57,10 @@ label {
   @include c.text-body-md;
   color: var(--color-marketing-gray-07);
   font-weight: bold;
+
+  .required {
+    color: var(--color-red-08);
+  }
 }
 
 .field,
