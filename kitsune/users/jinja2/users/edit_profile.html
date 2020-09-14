@@ -22,10 +22,10 @@
 {% endblock %}
 
 {% block content %}
-<article id="edit-profile" class="sumo-page-section">
+<article id="edit-profile">
   {% if profile and profile.is_fxa_migrated and request.user == profile.user %}
     <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
-    <p><strong>{{ user.email }}</strong></p>
+    <p class="mb-0"><strong>{{ user.email }}</strong></p>
     <p>
       {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
         To change your email or avatar, visit the Firefox Accounts page, {{ a_open }} learn more. {{ a_close }}
