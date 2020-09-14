@@ -15,7 +15,7 @@
       {% endif %}
       <form name="find-contributor" id="find-contributor" class="simple-search-form" action="" method="get">
         <fieldset>
-          <input type="text" name="q" id="search" class="searchbox" value="{{ q }}" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
+          <input type="text" name="q" id="search" class="searchbox" value="{{ q or "" }}" placeholder="{{ _('Username or Display Name') }}" />
           <input type="submit" value="{{ _('Search') }}" class="search-button" />
         </fieldset>
       </form>
