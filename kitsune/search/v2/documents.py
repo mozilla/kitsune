@@ -1,4 +1,3 @@
-from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import connections, field, InnerDoc
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
@@ -199,7 +198,7 @@ class GroupInnerDoc(InnerDoc):
         return cls(id=instance.id, name=instance.name)
 
 
-class ProfileDocument(DSLDocument):
+class ProfileDocument(SumoDocument):
     username = field.Keyword(normalizer="lowercase")
     name = field.Text()
     email = field.Keyword()
@@ -220,65 +219,25 @@ class ProfileDocument(DSLDocument):
         name = config.USER_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
 
-    @classmethod
-    def prepare_username(cls, instance):
+    def prepare_username(self, instance):
         return instance.user.username
 
-    @classmethod
-    def prepare_email(cls, instance):
+    def prepare_email(self, instance):
         if instance.public_email:
             return instance.user.email
 
-    @classmethod
-    def prepare_avatar(cls, instance):
+    def prepare_avatar(self, instance):
         if avatar := instance.fxa_avatar:
             return {"url": avatar}
 
-    @classmethod
-    def prepare_timezone(cls, instance):
-        return instance.timezone.zone
+    def prepare_timezone(self, instance):
+        return instance.timezone.zone if instance.timezone else None
 
-    @classmethod
-    def prepare_products(cls, instance):
+    def prepare_products(self, instance):
         return [ProductInnerDoc.prepare(product) for product in instance.products.all()]
 
-    @classmethod
-    def prepare_groups(cls, instance):
+    def prepare_groups(self, instance):
         return [GroupInnerDoc.prepare(groups) for groups in instance.user.groups.all()]
-
-    @classmethod
-    def prepare(cls, instance):
-        """Prepare an object given a model instance"""
-
-        fields = [
-            "username",
-            "name",
-            "email",
-            "avatar",
-            "timezone",
-            "country",
-            "locale",
-            "involved_from",
-            "products",
-            "groups",
-        ]
-
-        obj = cls()
-
-        # Iterate over fields and either set the value directly from the instance
-        # or prepare based on `prepare_<field>` method
-        for f in fields:
-            try:
-                prepare_method = getattr(obj, "prepare_{}".format(f))
-                value = prepare_method(instance)
-            except AttributeError:
-                value = getattr(instance, f)
-
-            setattr(obj, f, value)
-
-        obj.meta.id = instance.pk
-
-        return obj
 
     @classmethod
     def get_model(cls):
