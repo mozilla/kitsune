@@ -43,7 +43,7 @@ class Profile(ModelBase, SearchMixin):
         max_length=255, null=True, blank=True, verbose_name=_lazy("Display name")
     )
     public_email = models.BooleanField(  # show/hide email
-        default=False, verbose_name=_lazy("Make my email public")
+        default=False, verbose_name=_lazy("Make my email address visible to logged in users")
     )
     avatar = models.ImageField(
         upload_to=settings.USER_AVATAR_PATH,
