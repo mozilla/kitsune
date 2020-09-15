@@ -96,10 +96,26 @@ After the above you can do some optional steps if you want to use the admin:
 
 First, make sure you have run the "Create some data" step above.
 
-1. Enter the web container: `docker-compose exec web bash`
-2. Build the indicies: `./manage.py esreindex` (You may need to pass the `--delete` flag)
-3. Precompile the nunjucks templates: `./manage.py nunjucks_precompile`
-4. Now, exit from web's bash shell: `exit`
+1. Enter into the web container
+    ```
+    docker-compose exec web bash
+    ```
+
+2. Build the indicies
+    ```
+    $ ./manage.py esreindex
+    ```
+  (You may need to pass the `--delete` flag.)
+
+3. Precompile the nunjucks templates
+    ```
+    $ ./manage.py nunjucks_precompile
+    ```
+
+4. Now, exit from web's bash shell
+    ```
+    $ exit
+    ```
 
 ## Further setup
 
@@ -153,7 +169,6 @@ templates get updated from time to time and you will need to pre-compile them
 to ensure that they render correctly::
 
       docker-compose exec web ./manage.py nunjucks_precompile
-
 ```
 
 ## Running the tests
