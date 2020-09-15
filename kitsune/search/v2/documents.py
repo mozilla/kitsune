@@ -228,7 +228,7 @@ class ProfileDocument(SumoDocument):
 
     def prepare_avatar(self, instance):
         if avatar := instance.fxa_avatar:
-            return {"url": avatar}
+            return InnerDoc(url=avatar)
 
     def prepare_timezone(self, instance):
         return instance.timezone.zone if instance.timezone else None
