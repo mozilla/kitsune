@@ -131,7 +131,7 @@ running this command::
 ### Install linting tools
 
 ```eval_rst
-Kitsune uses `Yelps Pre-commit <http://pre-commit.com/>`_ for linting. It is
+Kitsune uses `Yelps Pre-commit <https://pre-commit.com/>`_ for linting. It is
 installed as a part of the dev dependencies in ``requirements/dev.txt``. To
 install it as a Git pre-commit hook, run it::
 
@@ -147,7 +147,7 @@ checks for all files::
 
    $ venv/bin/pre-commit run --all-files
 
-For more details see the `Pre-commit docs <http://pre-commit.com/>`_.
+For more details see the `Pre-commit docs <https://pre-commit.com/>`_.
 ```
 
 ### Product Details Initialization
