@@ -9,4 +9,4 @@ sys.path.insert(0, "/vendor")
 f, filename, description = imp.find_module("elasticsearch")
 elasticsearch7 = imp.load_module("elasticsearch7", f, filename, description)
 
-default_app_config = "kitsune.search.v2.apps.SearchV2Config"
+default_app_config = "kitsune.search.apps.SearchV2Config"
