@@ -1,11 +1,13 @@
-from elasticsearch_dsl import connections, field
-from kitsune.questions import models as question_models
+from elasticsearch_dsl import connections, field, InnerDoc
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
 from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.fields import SumoLocaleAwareTextField
 from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import REDIRECT_HTML
+from kitsune.questions import models as question_models
+from kitsune.users.models import Profile
+
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
@@ -175,3 +177,68 @@ class AnswerDocument(QuestionDocument):
     @classmethod
     def get_model(cls):
         return question_models.Answer
+
+
+class ProductInnerDoc(InnerDoc):
+    id = field.Integer()
+    title = field.Keyword()
+    slug = field.Keyword()
+
+    @classmethod
+    def prepare(cls, instance):
+        return cls(id=instance.id, title=instance.title, slug=instance.slug)
+
+
+class GroupInnerDoc(InnerDoc):
+    id = field.Integer()
+    name = field.Keyword()
+
+    @classmethod
+    def prepare(cls, instance):
+        return cls(id=instance.id, name=instance.name)
+
+
+class ProfileDocument(SumoDocument):
+    username = field.Keyword(normalizer="lowercase")
+    name = field.Text()
+    email = field.Keyword()
+    # store avatar url so we don't need to hit the db when searching users
+    # but set enabled=False to ensure ES does no parsing of it
+    avatar = field.Object(enabled=False)
+
+    timezone = field.Keyword()
+    country = field.Keyword()
+    locale = field.Keyword()
+
+    involved_from = field.Date()
+
+    products = field.Object(ProductInnerDoc)
+    groups = field.Object(GroupInnerDoc)
+
+    class Index:
+        name = config.USER_INDEX_NAME
+        using = config.DEFAULT_ES7_CONNECTION
+
+    def prepare_username(self, instance):
+        return instance.user.username
+
+    def prepare_email(self, instance):
+        if instance.public_email:
+            return instance.user.email
+
+    def prepare_avatar(self, instance):
+        if avatar := instance.fxa_avatar:
+            return InnerDoc(url=avatar)
+
+    def prepare_timezone(self, instance):
+        return instance.timezone.zone if instance.timezone else None
+
+    def prepare_products(self, instance):
+        return [ProductInnerDoc.prepare(product) for product in instance.products.all()]
+
+    def prepare_groups(self, instance):
+        return [GroupInnerDoc.prepare(groups) for groups in instance.user.groups.all()]
+
+    @classmethod
+    def get_model(cls):
+        return Profile

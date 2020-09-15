@@ -38,7 +38,7 @@ class SumoDocument(DSLDocument):
             else:
                 setattr(obj, f, value)
 
-        obj.meta.id = instance.id
+        obj.meta.id = instance.pk
         obj.indexed_on = timezone.now()
 
         return obj

@@ -87,6 +87,15 @@ def index_object(doc_type_name, obj_id):
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
     model = doc_type.get_model()
 
-    obj = model.objects.get(id=obj_id)
+    obj = model.objects.get(pk=obj_id)
     doc = doc_type.prepare(obj)
     doc.save()
+
+
+@task
+def delete_object(doc_type_name, obj_id):
+    """Unindex an ORM object given an object id and document type name."""
+
+    doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
+
+    doc_type.get(obj_id).delete()

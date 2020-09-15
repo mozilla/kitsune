@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 
 from django.conf import settings
 from django.http import Http404
@@ -14,10 +13,11 @@ from kitsune.community.utils import (
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
 from kitsune.questions.models import QuestionLocale
-from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.sumo.parser import get_object_fallback
-from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import Document
+
+from elasticsearch_dsl import Search
+from kitsune.search.v2.es7_utils import es7_client
 
 
 log = logging.getLogger("k.community")
@@ -82,53 +82,20 @@ def search(request):
     Uses the ES user's index.
     """
     results = []
-    search_errored = False
     q = request.GET.get("q")
 
     if q:
-        lowerq = q.lower()
-        try:
-            results = (
-                UserMappingType.search()
-                .query(
-                    iusername__match=lowerq,
-                    idisplay_name__match_whitespace=lowerq,
-                    itwitter_usernames__match=lowerq,
-                    should=True,
-                )
-                .values_dict(
-                    "id",
-                    "username",
-                    "display_name",
-                    "avatar",
-                    "twitter_usernames",
-                    "last_contribution_date",
-                )
-            )
-            results = UserMappingType.reshape(results)
+        search = Search(using=es7_client(), index="sumo_user").query(
+            "simple_query_string", query=q, fields=["username", "name"], default_operator="AND"
+        )
 
-        except ES_EXCEPTIONS:
-            search_errored = True
-            log.exception("User search failed.")
+        results = search.execute().hits
 
     # For now, we're just truncating results at 30 and not doing any
     # pagination. If somebody complains, we can add pagination or something.
     results = list(results[:30])
 
-    # Calculate days since last activity.
-    for r in results:
-        lcd = r.get("last_contribution_date", None)
-        if lcd:
-            delta = datetime.now() - lcd
-            r["days_since_last_activity"] = delta.days
-        else:
-            r["days_since_last_activity"] = None
-
-    data = {
-        "q": q,
-        "results": results,
-        "search_errored": search_errored,
-    }
+    data = {"q": q, "results": results}
 
     return render(request, "community/search.html", data)
 

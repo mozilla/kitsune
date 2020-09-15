@@ -15,17 +15,14 @@
       {% endif %}
       <form name="find-contributor" id="find-contributor" class="simple-search-form" action="" method="get">
         <fieldset>
-          <input type="text" name="q" id="search" class="searchbox" value="{{ q }}" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
+          <input type="text" name="q" id="search" class="searchbox" value="{{ q or "" }}" placeholder="{{ _('Username or Display Name') }}" />
           <input type="submit" value="{{ _('Search') }}" class="search-button" />
         </fieldset>
       </form>
     </section>
 
     <section class="sumo-page-section">
-      {% if search_errored %}
-      <p class="sumo-page-intro">{{ _('Sorry! Search is currently unavailable. Please try again soon.') }}</p>
-      
-      {% elif q and not results %}
+      {% if q and not results %}
       <p class="sumo-page-intro">{{ _('No users were found for your search query.') }}</p>
 
       {% else %}
@@ -33,27 +30,15 @@
           <div class="scroll-wrap">
             {% for result in results %}
               <section class="card elevation-01 results-user">
-		<img src="{{ result['avatar'] }}" alt="" class="user-img-results card--img" />
+                {% if result['avatar'] %}
+		              <img src="{{ result['avatar']['url'] }}" alt="" class="user-img-results card--img" />
+                {% endif %}
                 <div class="card--details user-details">
-                  <h2 class="card--title">{{ result['display_name'] }}</h2>
+                  <h2 class="card--title">{{ result['name'] }}</h2>
                   <ul class="results-user-details">
                     <li>{{ result['username'] }}</li>
-                    {% if result['twitter_usernames'] %}
-                      <li>
-                        {{ _('Twitter Handles:') }}
-                        {% for handle in result['twitter_usernames'] %}
-                          {{ handle }}
-                        {% endfor %}
-                      </li>
-                    {% endif %}
-                    <li><a href="{{ url('users.profile', result['id']) }}">{{ _('View Profile') }}</a></li>
+                    <li><a href="{{ url('users.profile', result['meta']['id']) }}">{{ _('View Profile') }}</a></li>
                     <li><a href="{{ url('messages.new')|urlparams(to=result['username']) }}">{{ _('Private Message') }}</a></li>
-                    {% if result['days_since_last_activity'] != None %}
-                      <li>
-                        {{ _('Days since last activity:') }}
-                        {{ result['days_since_last_activity'] }}
-                      </li>
-                    {% endif %}
                   </ul>
                 </div>
               </section>

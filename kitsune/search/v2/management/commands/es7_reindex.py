@@ -40,7 +40,7 @@ class Command(BaseCommand):
             progress = 0
 
             for obj in qs:
-                index_object.delay(dt.__name__, obj.id)
+                index_object.delay(dt.__name__, obj.pk)
 
                 progress += 1
                 if progress % 100 == 0:
