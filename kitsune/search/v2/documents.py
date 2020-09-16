@@ -246,6 +246,10 @@ class ProfileDocument(SumoDocument):
 
 
 class ForumDocument(SumoDocument):
+    """
+    ES document for forum posts. Thread information is duplicated across all posts in that thread.
+    """
+
     thread_title = field.Text()
     thread_forum_id = field.Keyword()
     thread_created = field.Date()
