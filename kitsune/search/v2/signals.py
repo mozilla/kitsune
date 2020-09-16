@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group
 from kitsune.users.models import Profile
 from kitsune.search.v2.es7_utils import index_object, delete_object
 from kitsune.products.models import Product
+from kitsune.forums.models import Thread, Post
 
 
 @receiver(post_save, sender=User)
@@ -28,4 +29,26 @@ def handle_product_save(instance, **kwargs):
 
 @receiver(post_delete, sender=Profile)
 def handle_profile_delete(instance, **kwargs):
-    delete_object("ProfileDocument", instance.pk)
+    delete_object.delay("ProfileDocument", instance.pk)
+
+
+@receiver(post_save, sender=Thread)
+def handle_forum_thread_save(instance, **kwargs):
+    for post in instance.post_set.all():
+        index_object.delay("ForumDocument", post.id)
+
+
+@receiver(post_delete, sender=Thread)
+def handle_forum_thread_delete(instance, **kwargs):
+    for post in instance.post_set.all():
+        delete_object.delay("ForumDocument", post.id)
+
+
+@receiver(post_save, sender=Post)
+def handle_forum_post_save(instance, **kwargs):
+    index_object.delay("ForumDocument", instance.id)
+
+
+@receiver(post_delete, sender=Post)
+def handle_forum_post_delete(instance, **kwargs):
+    delete_object.delay("ForumDocument", instance.id)
