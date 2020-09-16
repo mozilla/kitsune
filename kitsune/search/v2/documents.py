@@ -7,6 +7,7 @@ from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.questions import models as question_models
 from kitsune.users.models import Profile
+from kitsune.forums.models import Post
 
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
@@ -242,3 +243,36 @@ class ProfileDocument(SumoDocument):
     @classmethod
     def get_model(cls):
         return Profile
+
+
+class ForumDocument(SumoDocument):
+    """
+    ES document for forum posts. Thread information is duplicated across all posts in that thread.
+    """
+
+    thread_title = field.Text()
+    thread_forum_id = field.Keyword()
+    thread_created = field.Date()
+    thread_creator_id = field.Keyword()
+    thread_is_locked = field.Boolean()
+    thread_is_sticky = field.Boolean()
+
+    content = field.Text()
+    author_id = field.Keyword()
+    created = field.Date()
+    updated = field.Date()
+    updated_by_id = field.Keyword()
+
+    class Index:
+        name = config.FORUM_INDEX_NAME
+        using = config.DEFAULT_ES7_CONNECTION
+
+    def get_field_value(self, field, instance, *args):
+        if field.startswith("thread_"):
+            instance = instance.thread
+            field = field[len("thread_") :]
+        return super().get_field_value(field, instance, *args)
+
+    @classmethod
+    def get_model(cls):
+        return Post

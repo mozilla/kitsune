@@ -14,6 +14,7 @@ ES_SYNONYM_LOCALES = [
 WIKI_DOCUMENT_INDEX_NAME = get_index_name("wiki_document")
 QUESTION_INDEX_NAME = get_index_name("question")
 USER_INDEX_NAME = get_index_name("user")
+FORUM_INDEX_NAME = get_index_name("forum_document")
 
 ES_LOCALE_ANALYZERS = {
     "ar": "arabic",
