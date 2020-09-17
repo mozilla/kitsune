@@ -51,16 +51,18 @@ class Command(BaseCommand):
 
             model = dt.get_model()
             qs = model.objects.all()
-            count = qs.count()
+            total = qs.count()
+            count = kwargs["count"]
 
             percentage = kwargs["percentage"]
-            total = count
-            if count := kwargs["count"]:
+            if count:
                 print("Indexing {} documents out of {}".format(count, total))
             else:
                 if percentage < 100:
-                    count = int(count * percentage / 100)
+                    count = int(total * percentage / 100)
                     qs = qs[:count]
+                else:
+                    count = total
                 print("Indexing {}%, so {} documents out of {}".format(percentage, count, total))
 
             id_list = list(qs.values_list("pk", flat=True))

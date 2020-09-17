@@ -1,11 +1,12 @@
 from elasticsearch_dsl import connections, field, InnerDoc
+from django.db.models import Prefetch, Count, Q
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
 from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.fields import SumoLocaleAwareTextField
 from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import REDIRECT_HTML
-from kitsune.questions import models as question_models
+from kitsune.questions.models import Question, Answer
 from kitsune.users.models import Profile
 from kitsune.forums.models import Post
 
@@ -134,6 +135,11 @@ class QuestionDocument(SumoDocument):
     def prepare_question_has_solution(self, instance):
         return instance.solution_id is not None
 
+    def prepare_question_num_votes(self, instance):
+        if hasattr(instance, "es_question_num_votes"):
+            return instance.es_question_num_votes
+        return instance.num_votes
+
     def get_field_value(self, field, *args):
         if field.startswith("question_"):
             field = field[len("question_") :]
@@ -141,7 +147,17 @@ class QuestionDocument(SumoDocument):
 
     @classmethod
     def get_model(cls):
-        return question_models.Question
+        return Question
+
+    @classmethod
+    def get_queryset(cls):
+        return (
+            Question.objects
+            # prefetch tags to avoid extra queries when iterating over them
+            .prefetch_related("tags")
+            # count votes in db to improve performance
+            .annotate(es_question_num_votes=Count("votes"))
+        )
 
 
 class AnswerDocument(QuestionDocument):
@@ -170,6 +186,16 @@ class AnswerDocument(QuestionDocument):
     def prepare_locale(self, instance):
         return instance.question.locale
 
+    def prepare_num_helpful_votes(self, instance):
+        if hasattr(instance, "es_num_helpful_votes"):
+            return instance.es_num_helpful_votes
+        return instance.num_helpful_votes
+
+    def prepare_num_unhelpful_votes(self, instance):
+        if hasattr(instance, "es_num_unhelpful_votes"):
+            return instance.es_num_unhelpful_votes
+        return instance.num_unhelpful_votes
+
     def get_field_value(self, field, instance, *args):
         if field.startswith("question_"):
             instance = instance.question
@@ -177,7 +203,21 @@ class AnswerDocument(QuestionDocument):
 
     @classmethod
     def get_model(cls):
-        return question_models.Answer
+        return Answer
+
+    @classmethod
+    def get_queryset(cls):
+        return (
+            Answer.objects
+            # prefetch each answer's question,
+            # applying the same optimizations as in the QuestionDocument
+            .prefetch_related(Prefetch("question", queryset=super().get_queryset()))
+            # count votes in db to improve performance
+            .annotate(
+                es_num_helpful_votes=Count("votes", filter=Q(votes__helpful=True)),
+                es_num_unhelpful_votes=Count("votes", filter=Q(votes__helpful=False)),
+            )
+        )
 
 
 class ProductInnerDoc(InnerDoc):
@@ -244,6 +284,10 @@ class ProfileDocument(SumoDocument):
     def get_model(cls):
         return Profile
 
+    @classmethod
+    def get_queryset(cls):
+        return Profile.objects.select_related("user").prefetch_related("products", "user__groups")
+
 
 class ForumDocument(SumoDocument):
     """
@@ -276,3 +320,7 @@ class ForumDocument(SumoDocument):
     @classmethod
     def get_model(cls):
         return Post
+
+    @classmethod
+    def get_queryset(cls):
+        return Post.objects.select_related("thread")

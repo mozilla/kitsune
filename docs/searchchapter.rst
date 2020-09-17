@@ -6,6 +6,7 @@ Search
 
 .. warning::
     This section of documentation may be outdated.
+    See :any:`search-v2` for up-to-date (but partial) documentation.
 
 Kitsune uses `Elasticsearch <https://www.elastic.co/>`_ to
 power its on-site search facility.

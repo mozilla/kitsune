@@ -28,6 +28,7 @@ Part 2: Developer's Guide
    email
    localization
    searchchapter
+   search-v2
    frontend
    notes
 

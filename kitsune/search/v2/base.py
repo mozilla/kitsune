@@ -43,6 +43,15 @@ class SumoDocument(DSLDocument):
 
         return obj
 
+    @classmethod
+    def get_queryset(cls):
+        """
+        Return the manager for a document's model.
+        This allows child classes to add optimizations like select_related or prefetch_related
+        to improve indexing performance.
+        """
+        return cls.get_model()._default_manager
+
     def get_field_value(self, field, instance, prepare_method):
         """Allow child classes to define their own logic for getting field values."""
         if prepare_method is not None:
