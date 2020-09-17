@@ -7,6 +7,7 @@ from django.conf import settings
 from elasticsearch_dsl import Document, analyzer, token_filter
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
+from elasticsearch7.helpers import bulk as es7_bulk
 from kitsune.search.v2.base import SumoDocument
 
 
@@ -90,6 +91,18 @@ def index_object(doc_type_name, obj_id):
     obj = model.objects.get(pk=obj_id)
     doc = doc_type.prepare(obj)
     doc.save()
+
+
+@task
+def index_objects_bulk(doc_type_name, obj_ids):
+    """Bulk index ORM objects given a list of object ids and a document type name."""
+
+    doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
+    model = doc_type.get_model()
+
+    objects = model.objects.filter(pk__in=obj_ids)
+    docs = [doc_type.prepare(obj).to_dict(include_meta=True) for obj in objects]
+    es7_bulk(es7_client(), docs)
 
 
 @task
