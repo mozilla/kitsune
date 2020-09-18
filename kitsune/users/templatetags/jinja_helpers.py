@@ -1,10 +1,4 @@
-import hashlib
-import urllib.error
-import urllib.parse
-import urllib.request
-
 from django.conf import settings
-from django.utils.encoding import force_bytes
 from django.utils.translation import ugettext as _
 from django_jinja import library
 from jinja2 import Markup, escape
@@ -36,34 +30,11 @@ def profile_avatar(user, size=200):
     try:  # This is mostly for tests.
         profile = Profile.objects.get(user_id=user.id)
     except (Profile.DoesNotExist, AttributeError):
-        avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
         profile = None
     else:
-        if profile.is_fxa_migrated:
-            avatar = profile.fxa_avatar
-        elif profile.avatar:
-            avatar = profile.avatar.url
-        else:
-            avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
-
-    if avatar.startswith("//"):
-        avatar = "https:%s" % avatar
-
-    if user and hasattr(user, "email"):
-        email_hash = hashlib.md5(force_bytes(user.email.lower())).hexdigest()
-    else:
-        email_hash = "00000000000000000000000000000000"
-
-    url = "https://secure.gravatar.com/avatar/%s?s=%s" % (email_hash, size)
-
-    # If the url doesn't start with http (local dev), don't pass it to
-    # to gravatar because it can't use it.
-    if avatar.startswith("https") and profile and profile.is_fxa_migrated:
-        url = avatar
-    elif avatar.startswith("http"):
-        url = url + "&d=%s" % urllib.parse.quote(avatar)
-
-    return url
+        if profile and profile.is_fxa_migrated:
+            return profile.fxa_avatar
+        return settings.STATIC_URL + settings.DEFAULT_AVATAR
 
 
 @library.global_function
