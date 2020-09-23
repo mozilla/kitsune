@@ -22,8 +22,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
+RUN whereis pip && pip -V
 RUN pip install --upgrade pip"==20.1.1"
+RUN whereis pip && pip -V
 RUN python -m venv /venv
+RUN whereis pip && pip -V
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && \
@@ -36,6 +39,7 @@ RUN apt-get update && \
 
 COPY ./requirements/*.txt /app/requirements/
 
+RUN whereis pip && pip -V
 RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt && \
     pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
     pip install --no-cache-dir --require-hashes -r requirements/test.txt
