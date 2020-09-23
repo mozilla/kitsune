@@ -23,9 +23,9 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
 RUN whereis pip && pip -V
-RUN pip install --upgrade pip"==20.1.1"
-RUN whereis pip && pip -V
 RUN python -m venv /venv
+RUN whereis pip && pip -V
+RUN pip install --upgrade "pip==20.2.3"
 RUN whereis pip && pip -V
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 

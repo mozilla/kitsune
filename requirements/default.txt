@@ -626,10 +626,6 @@ twython==3.8.2 \
     --hash=sha256:a469d673fdd20d1c346e9b9f784212db521aa611bbdfc4912229ab701b36002b \
     --hash=sha256:c6ca64309260e0ab47267f76217c80812f591991437f376fc61498816384f9e7 \
     # via -r default.in
-typing==3.7.4.3 \
-    --hash=sha256:1187fb9c82fd670d10aa07bbb6cfcfe4bdda42d6fab8d5134f04e8c4d0b71cc9 \
-    --hash=sha256:283d868f5071ab9ad873e5e52268d611e851c870a2ba354193026f2dfb29d8b5 \
-    # via -r default.in
 tzlocal==2.1 \
     --hash=sha256:643c97c5294aedc737780a49d9df30889321cbe1204eac2c2ec6134035a92e44 \
     --hash=sha256:e2cb6c6b5b604af38597403e9852872d7f534962ae2954c7f35efcb1ccacf4a4 \
