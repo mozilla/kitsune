@@ -31,3 +31,8 @@ class UtilsTestCase(TestCase):
         User.objects.create(username="user2")
         suggested = suggest_username("user@test.com")
         eq_("user3", suggested)
+
+        User.objects.create(username="testuser+1")
+        User.objects.create(username="testuser+11")
+        suggested = suggest_username("testuser+1@example.com")
+        eq_("testuser+12", suggested)
