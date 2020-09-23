@@ -18,6 +18,6 @@ repos:
     hooks:
       - id: flake8
   - repo: https://github.com/peterdemin/pip-compile-multi
-    rev: v1.3.2
+    rev: v2.1.0
     hooks:
       - id: pip-compile-multi-verify

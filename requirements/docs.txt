@@ -33,7 +33,7 @@ pyparsing==2.4.7 \
 recommonmark==0.6.0 \
     --hash=sha256:29cd4faeb6c5268c633634f2d69aef9431e0f4d347f90659fd0aab20e541efeb \
     --hash=sha256:2ec4207a574289355d5b6ae4ae4abb29043346ca12cdd5f07d374dc5987d2852 \
-    # via -r docs.in
+    # via -r requirements/docs.in
 snowballstemmer==2.0.0 \
     --hash=sha256:209f257d7533fdb3cb73bdbd24f436239ca3b2fa67d56f6ff88e86be08cc5ef0 \
     --hash=sha256:df3bac3df4c2c01363f3dd2cfa78cce2840a79b9f1c2d2de9ce8d31683992f52 \
@@ -41,11 +41,11 @@ snowballstemmer==2.0.0 \
 sphinx-rtd-theme==0.5.0 \
     --hash=sha256:22c795ba2832a169ca301cd0a083f7a434e09c538c70beb42782c073651b707d \
     --hash=sha256:373413d0f82425aaa28fb288009bf0d0964711d347763af2f1b65cafcb028c82 \
-    # via -r docs.in
+    # via -r requirements/docs.in
 sphinx==3.1.2 \
     --hash=sha256:97dbf2e31fc5684bb805104b8ad34434ed70e6c588f6896991b2fdfd2bef8c00 \
     --hash=sha256:b9daeb9b39aa1ffefc2809b43604109825300300b987a24f45976c001ba1a8fd \
-    # via -r docs.in, recommonmark, sphinx-rtd-theme, sphinxcontrib-httpdomain
+    # via -r requirements/docs.in, recommonmark, sphinx-rtd-theme, sphinxcontrib-httpdomain
 sphinxcontrib-applehelp==1.0.2 \
     --hash=sha256:806111e5e962be97c29ec4c1e7fe277bfd19e9652fb1a4392105b43e01af885a \
     --hash=sha256:a072735ec80e7675e3f432fcae8610ecf509c5f1869d17e2eecff44389cdbc58 \
@@ -61,7 +61,7 @@ sphinxcontrib-htmlhelp==1.0.3 \
 sphinxcontrib-httpdomain==1.7.0 \
     --hash=sha256:1fb5375007d70bf180cdd1c79e741082be7aa2d37ba99efe561e1c2e3f38191e \
     --hash=sha256:ac40b4fba58c76b073b03931c7b8ead611066a6aebccafb34dc19694f4eb6335 \
-    # via -r docs.in
+    # via -r requirements/docs.in
 sphinxcontrib-jsmath==1.0.1 \
     --hash=sha256:2ec2eaebfb78f3f2078e73666b1415417a116cc848b72e5172e596c871103178 \
     --hash=sha256:a9925e4a4587247ed2191a22df5f6970656cb8ca2bd6284309578f2153e0c4b8 \
