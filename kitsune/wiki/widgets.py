@@ -1,15 +1,16 @@
 import sys
 
-if sys.version_info >= (3,3):
-    from collections.abc import Iterable
-else:
-    from collections import Iterable
 
 from django import forms
 from django.template.loader import render_to_string
 
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document
+
+if sys.version_info >= (3,3):
+    from collections.abc import Iterable
+else:
+    from collections import Iterable
 
 
 class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
