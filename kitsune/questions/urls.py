@@ -83,9 +83,6 @@ urlpatterns = [
         views.remove_tag_async,
         name="questions.remove_tag_async",
     ),
-    url(
-        r"^/(?P<question_id>\d+)/screen-share/$", views.screen_share, name="questions.screen_share"
-    ),
     # Feeds
     # Note: this needs to be above questions.list because "feed"
     # matches the product slug regex.

@@ -115,7 +115,6 @@ class Profile(ModelBase, SearchMixin):
         permissions = (
             ("view_karma_points", "Can view karma points"),
             ("deactivate_users", "Can deactivate users"),
-            ("screen_share", "Can screen share"),
         )
 
     def __str__(self):
