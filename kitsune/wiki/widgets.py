@@ -7,9 +7,9 @@ from django.template.loader import render_to_string
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document
 
-if sys.version_info >= (3,3):
+try:
     from collections.abc import Iterable
-else:
+except ImportError:
     from collections import Iterable
 
 
