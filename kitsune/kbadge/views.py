@@ -33,7 +33,14 @@ def detail(request, slug):
 
     awards = (Award.objects.filter(badge=badge).order_by("-created"))[: settings.BADGE_MAX_RECENT]
 
-    return render(request, "badger/badge_detail.html", dict(badge=badge, award_list=awards,))
+    return render(
+        request,
+        "badger/badge_detail.html",
+        dict(
+            badge=badge,
+            award_list=awards,
+        ),
+    )
 
 
 class AwardsListView(ListView):
@@ -71,7 +78,14 @@ def award_detail(request, slug, id):
     if not award.allows_detail_by(request.user):
         return HttpResponseForbidden("Award detail forbidden")
 
-    return render(request, "badger/award_detail.html", dict(badge=badge, award=award,))
+    return render(
+        request,
+        "badger/award_detail.html",
+        dict(
+            badge=badge,
+            award=award,
+        ),
+    )
 
 
 @require_GET
@@ -79,7 +93,14 @@ def awards_by_user(request, username):
     """Badge awards by user"""
     user = get_object_or_404(User, username=username)
     awards = Award.objects.filter(user=user)
-    return render(request, "badger/awards_by_user.html", dict(user=user, award_list=awards,))
+    return render(
+        request,
+        "badger/awards_by_user.html",
+        dict(
+            user=user,
+            award_list=awards,
+        ),
+    )
 
 
 @require_GET
@@ -87,7 +108,14 @@ def awards_by_badge(request, slug):
     """Badge awards by badge"""
     badge = get_object_or_404(Badge, slug=slug)
     awards = Award.objects.filter(badge=badge)
-    return render(request, "badger/awards_by_badge.html", dict(badge=badge, awards=awards,))
+    return render(
+        request,
+        "badger/awards_by_badge.html",
+        dict(
+            badge=badge,
+            awards=awards,
+        ),
+    )
 
 
 @require_GET
@@ -95,4 +123,11 @@ def badges_by_user(request, username):
     """Badges created by user"""
     user = get_object_or_404(User, username=username)
     badges = Badge.objects.filter(creator=user)
-    return render(request, "badger/badges_by_user.html", dict(user=user, badge_list=badges,))
+    return render(
+        request,
+        "badger/badges_by_user.html",
+        dict(
+            user=user,
+            badge_list=badges,
+        ),
+    )

@@ -13,12 +13,18 @@
 {% block content %}
       <article id="profile">
         {% if is_owner and profile.is_fxa_migrated %}
-        <h1 class="sumo-page-heading">{{ _('Account') }}</h1>
+        <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
         <p class="mb-0"><strong>{{ user.email }}</strong></p>
         <p>
-          {{ _('You can change your email address on Firefox Accounts.') }}
-          <a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
+          {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+            To change your email or avatar, visit the Firefox Accounts page, {{ a_open }} learn more. {{ a_close }}
+          {% endtrans %}
         </p>
+        <section class="avatar-group">
+          <figure class="avatar-group--figure">
+            <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+          </figure>
+        </section>
         <hr class="section-break"/>
         {% endif %}
 
@@ -32,11 +38,19 @@
           {% endif %}
           {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
         {% endif %}
-        <h1 class="sumo-page-heading user">{{ display_name(profile.user) }}
+        <h2 class="sumo-callout-heading user">{{ display_name(profile.user) }}
           {% if profile.name %}
             <span class="username">({{ profile.user.username }})</span>
           {% endif %}
-        </h1>
+        </h2>
+        <p>
+          {% if is_owner %}
+            {% trans a_open='<a href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
+              Your privacy is important to us, your username is always visible to the public,
+              if you would like to edit your username {{ a_open }} click here. {{ a_close }}
+            {% endtrans %}
+          {% endif %}
+        </p>
 
         <h2 class="sumo-page-subheading location">
           {% if profile.city and profile.country %}
@@ -50,9 +64,11 @@
         </h2>
 
       <section class="avatar-group">
+        {% if not is_owner %}
         <figure class="avatar-group--figure">
           <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
         </figure>
+        {% endif %}
         <div class="avatar-group--details">
           {% if profile.public_email or profile.website or profile.twitter or
                 profile.community_mozilla_org or profile.people_mozilla_org or profile.matrix_handle %}
@@ -186,7 +202,7 @@
             {% csrf_token %}
           </form>
           <a
-            class="sumo-button primary-button button-lg"
+            class="sumo-button primary-button push-right"
             data-type="submit"
             data-form="sign-out"
             href="#sign-out"

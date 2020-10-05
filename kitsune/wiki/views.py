@@ -1268,7 +1268,11 @@ def get_helpful_votes_async(request, document_slug):
         date = int(time.mktime(res[3].timetuple()) // 86400) * 86400
 
         datums.append(
-            {"yes": int(res[1]), "no": int(res[2]), "date": date,}
+            {
+                "yes": int(res[1]),
+                "no": int(res[2]),
+                "date": date,
+            }
         )
         dates_with_data.add(date)
 
@@ -1285,7 +1289,11 @@ def get_helpful_votes_async(request, document_slug):
     while timestamp <= end:
         if timestamp not in dates_with_data:
             datums.append(
-                {"yes": 0, "no": 0, "date": timestamp,}
+                {
+                    "yes": 0,
+                    "no": 0,
+                    "date": timestamp,
+                }
             )
             dates_with_data.add(timestamp)
         timestamp += 24 * 60 * 60
@@ -1307,11 +1315,19 @@ def get_helpful_votes_async(request, document_slug):
 
     if flag_data:
         send["annotations"].append(
-            {"name": _("Firefox Releases"), "slug": "releases", "data": flag_data,}
+            {
+                "name": _("Firefox Releases"),
+                "slug": "releases",
+                "data": flag_data,
+            }
         )
     if rev_data:
         send["annotations"].append(
-            {"name": _("Article Revisions"), "slug": "revisions", "data": rev_data,}
+            {
+                "name": _("Article Revisions"),
+                "slug": "revisions",
+                "data": rev_data,
+            }
         )
 
     return HttpResponse(json.dumps(send), content_type="application/json")

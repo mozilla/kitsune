@@ -328,7 +328,14 @@ class DocumentEditingTests(TestCase):
         fr_d = DocumentFactory(parent=en_r.document, locale="fr")
         RevisionFactory(document=fr_d, based_on=en_r, is_approved=True)
         fr_r = RevisionFactory(document=fr_d, based_on=en_r, keywords="oui", summary="lipsum")
-        url = reverse("wiki.new_revision_based_on", locale="fr", args=(fr_d.slug, fr_r.pk,))
+        url = reverse(
+            "wiki.new_revision_based_on",
+            locale="fr",
+            args=(
+                fr_d.slug,
+                fr_r.pk,
+            ),
+        )
         response = self.client.get(url)
         doc = pq(response.content)
         input = doc("#id_based_on")[0]
@@ -578,7 +585,14 @@ class VoteTests(TestCase):
         """Test that the source metadata field works."""
         rev = RevisionFactory()
         url = reverse("wiki.document_vote", kwargs={"document_slug": rev.document.slug})
-        self.client.post(url, {"revision_id": rev.id, "helpful": True, "source": "test",})
+        self.client.post(
+            url,
+            {
+                "revision_id": rev.id,
+                "helpful": True,
+                "source": "test",
+            },
+        )
 
         eq_(HelpfulVoteMetadata.objects.filter(key="source").count(), 1)
 

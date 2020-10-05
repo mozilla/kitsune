@@ -69,7 +69,11 @@ products = OrderedDict(
                         ),
                         (
                             "tips",
-                            {"name": _lazy("Tips and tricks"), "topic": "tips", "tags": ["tips"],},
+                            {
+                                "name": _lazy("Tips and tricks"),
+                                "topic": "tips",
+                                "tags": ["tips"],
+                            },
                         ),
                         (
                             "bookmarks",
@@ -81,9 +85,20 @@ products = OrderedDict(
                         ),
                         (
                             "cookies",
-                            {"name": _lazy("Cookies"), "topic": "cookies", "tags": ["cookies"],},
+                            {
+                                "name": _lazy("Cookies"),
+                                "topic": "cookies",
+                                "tags": ["cookies"],
+                            },
                         ),
-                        ("tabs", {"name": _lazy("Tabs"), "topic": "tabs", "tags": ["tabs"],}),
+                        (
+                            "tabs",
+                            {
+                                "name": _lazy("Tabs"),
+                                "topic": "tabs",
+                                "tags": ["tabs"],
+                            },
+                        ),
                         (
                             "websites",
                             {
@@ -94,9 +109,20 @@ products = OrderedDict(
                         ),
                         (
                             "sync",
-                            {"name": _lazy("Firefox Sync"), "topic": "sync", "tags": ["sync"],},
+                            {
+                                "name": _lazy("Firefox Sync"),
+                                "topic": "sync",
+                                "tags": ["sync"],
+                            },
                         ),
-                        ("other", {"name": _lazy("Other"), "topic": "other", "tags": ["other"],}),
+                        (
+                            "other",
+                            {
+                                "name": _lazy("Other"),
+                                "topic": "other",
+                                "tags": ["other"],
+                            },
+                        ),
                     ]
                 ),
             },
@@ -149,7 +175,11 @@ products = OrderedDict(
                         ),
                         (
                             "tips",
-                            {"name": _lazy("Tips and tricks"), "topic": "tips", "tags": ["tips"],},
+                            {
+                                "name": _lazy("Tips and tricks"),
+                                "topic": "tips",
+                                "tags": ["tips"],
+                            },
                         ),
                         (
                             "bookmarks",
@@ -161,9 +191,20 @@ products = OrderedDict(
                         ),
                         (
                             "cookies",
-                            {"name": _lazy("Cookies"), "topic": "cookies", "tags": ["cookies"],},
+                            {
+                                "name": _lazy("Cookies"),
+                                "topic": "cookies",
+                                "tags": ["cookies"],
+                            },
                         ),
-                        ("tabs", {"name": _lazy("Tabs"), "topic": "tabs", "tags": ["tabs"],}),
+                        (
+                            "tabs",
+                            {
+                                "name": _lazy("Tabs"),
+                                "topic": "tabs",
+                                "tags": ["tabs"],
+                            },
+                        ),
                         (
                             "websites",
                             {
@@ -174,9 +215,20 @@ products = OrderedDict(
                         ),
                         (
                             "sync",
-                            {"name": _lazy("Firefox Sync"), "topic": "sync", "tags": ["sync"],},
+                            {
+                                "name": _lazy("Firefox Sync"),
+                                "topic": "sync",
+                                "tags": ["sync"],
+                            },
                         ),
-                        ("other", {"name": _lazy("Other"), "topic": "other", "tags": ["other"],}),
+                        (
+                            "other",
+                            {
+                                "name": _lazy("Other"),
+                                "topic": "other",
+                                "tags": ["other"],
+                            },
+                        ),
                     ]
                 ),
             },
@@ -334,7 +386,14 @@ products = OrderedDict(
                                 "tags": ["calendar"],
                             },
                         ),
-                        ("other", {"name": _lazy("Other"), "topic": "other", "tags": ["other"],}),
+                        (
+                            "other",
+                            {
+                                "name": _lazy("Other"),
+                                "topic": "other",
+                                "tags": ["other"],
+                            },
+                        ),
                     ]
                 ),
             },
@@ -483,11 +542,19 @@ products = OrderedDict(
                         ),
                         (
                             "library-firefox-preview",
-                            {"name": _lazy("Library"), "topic": "library", "tags": ["library"],},
+                            {
+                                "name": _lazy("Library"),
+                                "topic": "library",
+                                "tags": ["library"],
+                            },
                         ),
                         (
                             "sync-firefox-preview",
-                            {"name": _lazy("Sync"), "topic": "sync-preview", "tags": ["sync"],},
+                            {
+                                "name": _lazy("Sync"),
+                                "topic": "sync-preview",
+                                "tags": ["sync"],
+                            },
                         ),
                         (
                             "privacy-and-security-firefox-preview",

@@ -44,8 +44,14 @@ class TestTopicListView(TestCase):
                 "next": None,
                 "previous": None,
                 "results": [
-                    {"title": t1.title, "slug": t1.slug,},
-                    {"title": t2.title, "slug": t2.slug,},
+                    {
+                        "title": t1.title,
+                        "slug": t1.slug,
+                    },
+                    {
+                        "title": t2.title,
+                        "slug": t2.slug,
+                    },
                 ],
             },
         )

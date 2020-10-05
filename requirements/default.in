@@ -70,5 +70,4 @@ simplejson~=3.17.0
 timeout-decorator
 translate-toolkit~=2.5.1
 twython~=3.8.0
-typing~=3.7.4.1
 whitenoise~=3.3.1

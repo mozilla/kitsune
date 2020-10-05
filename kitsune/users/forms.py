@@ -48,13 +48,13 @@ class SettingsForm(forms.Form):
         required=False, label=_lazy("Watch forum threads I comment in")
     )
     kbforums_watch_new_thread = forms.BooleanField(
-        required=False, label=_lazy("Watch KB discussion threads I start"),
+        required=False, label=_lazy("Watch KB discussion threads I start")
     )
     kbforums_watch_after_reply = forms.BooleanField(
-        required=False, label=_lazy("Watch KB discussion threads I comment in"),
+        required=False, label=_lazy("Watch KB discussion threads I comment in")
     )
     questions_watch_after_reply = forms.BooleanField(
-        required=False, label=_lazy("Watch Question threads I comment in"),
+        required=False, label=_lazy("Watch Question threads I comment in")
     )
     email_private_messages = forms.BooleanField(
         required=False, label=_lazy("Send emails for private messages")
@@ -76,6 +76,15 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["username"]
+        help_texts = {
+            "username": _lazy(
+                """
+                Keep in mind your username is visible to the public.
+                This is a required field that must be unique, 150 characters or fewer.
+                This value may contain only letters, numbers, and @/./+/-/_ characters.
+                """
+            )
+        }
 
 
 class ProfileForm(forms.ModelForm):

@@ -40,7 +40,12 @@ class ReadOnlyModeTest(TestCase):
         # This tries to do a db write.
         url = reverse("users.login", locale="en-US")
         r = self.client.post(
-            url, {"username": self.user.username, "password": "testpass",}, follow=True
+            url,
+            {
+                "username": self.user.username,
+                "password": "testpass",
+            },
+            follow=True,
         )
         eq_(r.status_code, 503)
         title = pq(r.content)("title").text()

@@ -520,7 +520,10 @@ class AnswerViewSet(viewsets.ModelViewSet):
         num_helpful_votes = AnswerVote.objects.filter(answer=answer, helpful=True).count()
         num_unhelpful_votes = AnswerVote.objects.filter(answer=answer, helpful=False).count()
         return Response(
-            {"num_helpful_votes": num_helpful_votes, "num_unhelpful_votes": num_unhelpful_votes,}
+            {
+                "num_helpful_votes": num_helpful_votes,
+                "num_unhelpful_votes": num_unhelpful_votes,
+            }
         )
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])

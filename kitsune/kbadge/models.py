@@ -190,7 +190,9 @@ class Badge(models.Model):
         max_length=255, blank=False, unique=True, help_text="Short, descriptive title"
     )
     slug = models.SlugField(
-        blank=False, unique=True, help_text="Very short name, for use in URLs and links",
+        blank=False,
+        unique=True,
+        help_text="Very short name, for use in URLs and links",
     )
     description = models.TextField(
         blank=True, help_text="Longer description of the badge and its criteria"
@@ -204,7 +206,8 @@ class Badge(models.Model):
     # TODO: Rename? Eventually we'll want a globally-unique badge. That is, one
     # unique award for one person for the whole site.
     unique = models.BooleanField(
-        default=True, help_text=("Should awards of this badge be limited to one-per-person?"),
+        default=True,
+        help_text=("Should awards of this badge be limited to one-per-person?"),
     )
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
@@ -277,7 +280,12 @@ class Badge(models.Model):
         return False
 
     def award_to(
-        self, awardee=None, email=None, awarder=None, description="", raise_already_awarded=False,
+        self,
+        awardee=None,
+        email=None,
+        awarder=None,
+        description="",
+        raise_already_awarded=False,
     ):
         """Award this badge to the awardee on the awarder's behalf"""
         # If no awarder given, assume this is on the badge creator's behalf.

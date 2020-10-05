@@ -113,7 +113,7 @@ class AnswersFeed(Feed):
 
     def items(self, question):
         return (
-            question.answers.filter(is_spam=False,)
+            question.answers.filter(is_spam=False)
             .select_related("creator")
             .order_by("-created")[: config.ANSWERS_PER_PAGE]
         )

@@ -1,6 +1,7 @@
 import bisect
 import logging
 from uuid import uuid4
+from re import escape
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -36,7 +37,7 @@ def add_to_contributors(user, language_code):
 def suggest_username(email):
     username = email.split("@", 1)[0]
 
-    username_regex = r"^{0}[0-9]*$".format(username)
+    username_regex = r"^{0}[0-9]*$".format(escape(username))
     users = User.objects.filter(username__iregex=username_regex)
 
     if users.count() > 0:

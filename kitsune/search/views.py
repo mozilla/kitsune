@@ -230,7 +230,12 @@ def simple_search(request):
         return HttpResponse(json_data, content_type=request.CONTENT_TYPE)
 
     data.update(
-        {"product": product, "pages": pages, "search_form": search_form, "advanced": False,}
+        {
+            "product": product,
+            "pages": pages,
+            "search_form": search_form,
+            "advanced": False,
+        }
     )
     resp = cache_control(render(request, template, data), settings.SEARCH_CACHE_PERIOD)
     resp.set_cookie(

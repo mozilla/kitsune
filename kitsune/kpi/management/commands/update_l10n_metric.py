@@ -60,5 +60,8 @@ class Command(BaseCommand):
         metric_kind = MetricKind.objects.get_or_create(code=L10N_METRIC_CODE)[0]
         day = date.today()
         Metric.objects.create(
-            kind=metric_kind, start=day, end=day + timedelta(days=1), value=int(coverage * 100),
+            kind=metric_kind,
+            start=day,
+            end=day + timedelta(days=1),
+            value=int(coverage * 100),
         )  # Store as a % int.

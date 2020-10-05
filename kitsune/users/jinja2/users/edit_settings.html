@@ -4,8 +4,9 @@
 {% set active = 'edit-settings' %}
 {% set crumbs = [(None, title)] %}
 
+{% block breadcrumbs %}{% endblock %}
 {% block content %}
-<article id="edit-settings" class="main sumo-page-section">
+<article id="edit-settings" class="main">
   <h1 class="sumo-page-heading">{{ title }}</h1>
   <form method="post" action="">
     {% csrf_token %}

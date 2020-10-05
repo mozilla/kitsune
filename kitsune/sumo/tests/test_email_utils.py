@@ -14,7 +14,11 @@ from kitsune.users.tests import UserFactory
 
 mock_translations = {
     "Hello": {"en-us": "Hello", "fr": "Bonjour", "es": "Hola"},
-    "Hello {name}": {"en-us": "Hello {name}", "fr": "Bonjour {0}", "es": "Hola {name}",},
+    "Hello {name}": {
+        "en-us": "Hello {name}",
+        "fr": "Bonjour {0}",
+        "es": "Hola {name}",
+    },
 }
 
 

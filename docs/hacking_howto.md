@@ -23,6 +23,13 @@ and follow the following steps.
    make init
    make build
    ```
+  If you have low bandwidth, you may get a **timeout** error, see [issue#4511](https://github.com/mozilla/kitsune/issues/4511) for more information. You can change default pip's timeout value (which is 60 seconds) by running:
+
+  ```
+  make build PIP_TIMEOUT=300
+  ```
+
+  In above command, we are setting default value of [PIP_DEFAULT_TIMEOUT](https://pip.pypa.io/en/stable/user_guide/#environment-variables) to 5 minutes, change it according to your need.
 
 3. Run Kitsune.
    ```
@@ -89,9 +96,26 @@ After the above you can do some optional steps if you want to use the admin:
 
 First, make sure you have run the "Create some data" step above.
 
-1. Enter the web container: `docker-compose exec web bash`
-2. Build the indicies: `./manage.py esreindex` (You may need to pass the `--delete` flag)
-3. Precompile the nunjucks templates: `./manage.py nunjucks_precompile`
+1. Enter into the web container
+    ```
+    docker-compose exec web bash
+    ```
+
+2. Build the indicies
+    ```
+    $ ./manage.py esreindex
+    ```
+  (You may need to pass the `--delete` flag.)
+
+3. Precompile the nunjucks templates
+    ```
+    $ ./manage.py nunjucks_precompile
+    ```
+
+4. Now, exit from web's bash shell
+    ```
+    $ exit
+    ```
 
 ## Further setup
 
@@ -101,13 +125,13 @@ First, make sure you have run the "Create some data" step above.
 We include some sample data to get you started. You can install it by
 running this command::
 
-    $ ./manage.py generatedata
+    docker-compose exec web ./manage.py generatedata
 ```
 
 ### Install linting tools
 
 ```eval_rst
-Kitsune uses `Yelps Pre-commit <http://pre-commit.com/>`_ for linting. It is
+Kitsune uses `Yelps Pre-commit <https://pre-commit.com/>`_ for linting. It is
 installed as a part of the dev dependencies in ``requirements/dev.txt``. To
 install it as a Git pre-commit hook, run it::
 
@@ -123,7 +147,7 @@ checks for all files::
 
    $ venv/bin/pre-commit run --all-files
 
-For more details see the `Pre-commit docs <http://pre-commit.com/>`_.
+For more details see the `Pre-commit docs <https://pre-commit.com/>`_.
 ```
 
 ### Product Details Initialization
@@ -134,7 +158,7 @@ JSON files containing historical Firefox version data and write them
 within its package directory. To set this up, run this command to do
 the initial fetch::
 
-    $ ./manage.py update_product_details
+    docker-compose exec web ./manage.py update_product_details
 ```
 
 ### Pre-compiling JavaScript Templates
@@ -144,8 +168,7 @@ We use nunjucks to render Jinja-style templates for front-end use. These
 templates get updated from time to time and you will need to pre-compile them
 to ensure that they render correctly::
 
-      $ ./manage.py nunjucks_precompile
-
+      docker-compose exec web ./manage.py nunjucks_precompile
 ```
 
 ## Running the tests

@@ -62,7 +62,6 @@ from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
 from kitsune.users.models import Setting
-from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.wiki.facets import topics_for
 from kitsune.wiki.utils import get_featured_articles
 
@@ -74,14 +73,29 @@ NO_TAG = _lazy("Please provide a tag.")
 IMG_LIMIT = settings.IMAGE_ATTACHMENT_USER_LIMIT
 
 FILTER_GROUPS = {
-    "all": OrderedDict([("recently-unanswered", _lazy("Recently unanswered")),]),
+    "all": OrderedDict(
+        [
+            ("recently-unanswered", _lazy("Recently unanswered")),
+        ]
+    ),
     "needs-attention": OrderedDict(
-        [("new", _lazy("New")), ("unhelpful-answers", _lazy("Answers didn't help")),]
+        [
+            ("new", _lazy("New")),
+            ("unhelpful-answers", _lazy("Answers didn't help")),
+        ]
     ),
     "responded": OrderedDict(
-        [("needsinfo", _lazy("Needs info")), ("solution-provided", _lazy("Solution provided")),]
+        [
+            ("needsinfo", _lazy("Needs info")),
+            ("solution-provided", _lazy("Solution provided")),
+        ]
     ),
-    "done": OrderedDict([("solved", _lazy("Solved")), ("locked", _lazy("Locked")),]),
+    "done": OrderedDict(
+        [
+            ("solved", _lazy("Solved")),
+            ("locked", _lazy("Locked")),
+        ]
+    ),
 }
 
 ORDER_BY = OrderedDict(
@@ -535,7 +549,9 @@ def aaq(request, product_key=None, category_key=None, step=1):
         context["topics"] = topics_for(product, parent=None)
     elif step == 3:
         form = NewQuestionForm(
-            product=product_config, data=request.POST or None, initial={"category": category_key},
+            product=product_config,
+            data=request.POST or None,
+            initial={"category": category_key},
         )
         context["form"] = form
 
@@ -582,7 +598,8 @@ def aaq(request, product_key=None, category_key=None, step=1):
 
         user_ct = ContentType.objects.get_for_model(request.user)
         context["images"] = ImageAttachment.objects.filter(
-            creator=request.user, content_type=user_ct,
+            creator=request.user,
+            content_type=user_ct,
         ).order_by("-id")[:IMG_LIMIT]
 
     return render(request, template, context)
@@ -598,7 +615,12 @@ def aaq_step2(request, product_key):
 @ssl_required
 def aaq_step3(request, product_key, category_key=None):
     """Step 3: Show full question form."""
-    return aaq(request, product_key=product_key, category_key=category_key, step=3,)
+    return aaq(
+        request,
+        product_key=product_key,
+        category_key=category_key,
+        step=3,
+    )
 
 
 @require_http_methods(["GET", "POST"])
@@ -617,9 +639,15 @@ def edit_question(request, question_id):
     if request.method == "GET":
         initial = question.metadata.copy()
         initial.update(title=question.title, content=question.content)
-        form = EditQuestionForm(product=question.product_config, initial=initial,)
+        form = EditQuestionForm(
+            product=question.product_config,
+            initial=initial,
+        )
     else:
-        form = EditQuestionForm(data=request.POST, product=question.product_config,)
+        form = EditQuestionForm(
+            data=request.POST,
+            product=question.product_config,
+        )
 
         # NOJS: upload images, if any
         upload_imageattachment(request, question)
@@ -692,7 +720,9 @@ def reply(request, question_id):
 
     if form.is_valid() and not request.limited:
         answer = Answer(
-            question=question, creator=request.user, content=form.cleaned_data["content"],
+            question=question,
+            creator=request.user,
+            content=form.cleaned_data["content"],
         )
         if "preview" in request.POST:
             answer_preview = answer
@@ -823,7 +853,12 @@ def question_vote(request, question_id):
             tmpl = "questions/includes/question_vote_thanks.html"
             form = _init_watch_form(request)
             html = render_to_string(
-                tmpl, {"question": question, "user": request.user, "watch_form": form,}
+                tmpl,
+                {
+                    "question": question,
+                    "user": request.user,
+                    "watch_form": form,
+                },
             )
 
             return HttpResponse(json.dumps({"html": html, "ignored": request.limited}))
@@ -836,7 +871,11 @@ def question_vote(request, question_id):
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(
-        Answer, pk=answer_id, question=question_id, is_spam=False, question__is_spam=False,
+        Answer,
+        pk=answer_id,
+        question=question_id,
+        is_spam=False,
+        question__is_spam=False,
     )
 
     if not answer.question.editable:
@@ -1209,7 +1248,9 @@ def unsubscribe_watch(request, watch_id, secret):
         success = True
 
     return render(
-        request, "questions/unsubscribe_watch.html", {"question": question, "success": success},
+        request,
+        "questions/unsubscribe_watch.html",
+        {"question": question, "success": success},
     )
 
 
@@ -1373,40 +1414,6 @@ def metrics(request, locale_code=None):
     }
 
     return render(request, template, data)
-
-
-@require_POST
-@permission_required("users.screen_share")
-def screen_share(request, question_id):
-    question = get_object_or_404(Question, pk=question_id, is_spam=False)
-
-    if not question.allows_new_answer(request.user):
-        raise PermissionDenied
-
-    content = _(
-        "I invited {user} to a screen sharing session, "
-        "and I'll give an update here once we are done."
-    )
-    answer = Answer(
-        question=question,
-        creator=request.user,
-        content=content.format(user=display_name(question.creator)),
-    )
-    answer.save()
-
-    question.add_metadata(screen_sharing="true")
-
-    if Setting.get_for_user(request.user, "questions_watch_after_reply"):
-        QuestionReplyEvent.notify(request.user, question)
-
-    message = render_to_string(
-        "questions/message/screen_share.ltxt",
-        {"asker": display_name(question.creator), "contributor": display_name(request.user),},
-    )
-
-    return HttpResponseRedirect(
-        "%s?to=%s&message=%s" % (reverse("messages.new"), question.creator.username, message)
-    )
 
 
 def _answers_data(request, question_id, form=None, watch_form=None, answer_preview=None):

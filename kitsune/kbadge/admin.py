@@ -16,7 +16,7 @@ def show_image(obj):
     img_url = obj.image.url
     return mark_safe(
         '<a href="%s" target="_new"><img src="%s" width="48" height="48" /></a>'
-        % (img_url, img_url,)
+        % (img_url, img_url)
     )
 
 
@@ -34,7 +34,7 @@ def build_related_link(self, model_name, name_single, name_plural, qs):
     )
     count = qs.count()
     what = (count == 1) and name_single or name_plural
-    return '<a href="%s">%s %s</a> (<a href="%s">new</a>)' % (link, count, what, new_link,)
+    return '<a href="%s">%s %s</a> (<a href="%s">new</a>)' % (link, count, what, new_link)
 
 
 def related_awards_link(self):

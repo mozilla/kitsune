@@ -51,13 +51,31 @@ def json_view(f):
             blob = json.dumps(ret)
             return http.HttpResponse(blob, content_type=JSON)
         except http.Http404 as e:
-            blob = json.dumps({"success": False, "error": 404, "message": str(e),})
+            blob = json.dumps(
+                {
+                    "success": False,
+                    "error": 404,
+                    "message": str(e),
+                }
+            )
             return http.HttpResponseNotFound(blob, content_type=JSON)
         except PermissionDenied as e:
-            blob = json.dumps({"success": False, "error": 403, "message": str(e),})
+            blob = json.dumps(
+                {
+                    "success": False,
+                    "error": 403,
+                    "message": str(e),
+                }
+            )
             return http.HttpResponseForbidden(blob, content_type=JSON)
         except Exception as e:
-            blob = json.dumps({"success": False, "error": 500, "message": str(e),})
+            blob = json.dumps(
+                {
+                    "success": False,
+                    "error": 500,
+                    "message": str(e),
+                }
+            )
             return http.HttpResponseServerError(blob, content_type=JSON)
 
     return _wrapped

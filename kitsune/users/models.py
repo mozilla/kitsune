@@ -43,7 +43,7 @@ class Profile(ModelBase, SearchMixin):
         max_length=255, null=True, blank=True, verbose_name=_lazy("Display name")
     )
     public_email = models.BooleanField(  # show/hide email
-        default=False, verbose_name=_lazy("Make my email public")
+        default=False, verbose_name=_lazy("Make my email address visible to logged in users")
     )
     avatar = models.ImageField(
         upload_to=settings.USER_AVATAR_PATH,
@@ -115,7 +115,6 @@ class Profile(ModelBase, SearchMixin):
         permissions = (
             ("view_karma_points", "Can view karma points"),
             ("deactivate_users", "Can deactivate users"),
-            ("screen_share", "Can screen share"),
         )
 
     def __str__(self):
@@ -259,7 +258,7 @@ class UserMappingType(SearchMappingType):
                 "idisplay_name": {"type": "string", "analyzer": "whitespace"},
                 "itwitter_usernames": {"type": "string", "index": "not_analyzed"},
                 "avatar": {"type": "string", "index": "not_analyzed"},
-                "suggest": {"type": "completion", "analyzer": "whitespace", "payloads": True,},
+                "suggest": {"type": "completion", "analyzer": "whitespace", "payloads": True},
             }
         }
 

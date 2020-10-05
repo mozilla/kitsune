@@ -106,7 +106,8 @@ class GetObjectFallbackTests(TestCase):
         ApprovedRevisionFactory(document__title="redirect", content="REDIRECT [[target]]")
 
         eq_(
-            translated_target_rev.document, get_object_fallback(Document, "redirect", "de"),
+            translated_target_rev.document,
+            get_object_fallback(Document, "redirect", "de"),
         )
 
     def test_redirect_translations_only(self):
@@ -200,7 +201,11 @@ class TestWikiParser(TestCase):
     def test_get_wiki_link(self):
         """Wiki links are properly built for existing pages."""
         eq_(
-            {"found": True, "url": "/en-US/kb/installing-firefox", "text": "Installing Firefox",},
+            {
+                "found": True,
+                "url": "/en-US/kb/installing-firefox",
+                "text": "Installing Firefox",
+            },
             _get_wiki_link("Installing Firefox", locale=settings.WIKI_DEFAULT_LANGUAGE),
         )
 

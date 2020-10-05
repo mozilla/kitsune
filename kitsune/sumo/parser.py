@@ -318,7 +318,11 @@ class WikiParser(Parser):
 
         return render_to_string(
             self.image_template,
-            {"image": image, "params": params, "STATIC_URL": settings.STATIC_URL,},
+            {
+                "image": image,
+                "params": params,
+                "STATIC_URL": settings.STATIC_URL,
+            },
         )
 
     # Videos are objects that can have one or more files attached to them
@@ -403,4 +407,4 @@ def _is_youtube_url(url):
     """Returns true if the URL is to youtube."""
     parsed_url = urlparse(url)
     netloc = parsed_url.netloc
-    return netloc in ["youtu.be", "youtube.com", "www.youtube.com"]
+    return netloc in ["youtu.be", "youtube.com", "www.youtube.com", "www.youtube-nocookie.com"]

@@ -195,7 +195,11 @@ class NotificationsTests(KBForumTestCase):
         starts_with(
             mail.outbox[0].body,
             NEW_THREAD_EMAIL
-            % {"user": u2.profile.name, "document_slug": d.slug, "thread_id": t.id,},
+            % {
+                "user": u2.profile.name,
+                "document_slug": d.slug,
+                "thread_id": t.id,
+            },
         )
 
         self._toggle_watch_kbforum_as(u.username, d, turn_on=False)
@@ -402,7 +406,11 @@ class NotificationsTests(KBForumTestCase):
         starts_with(
             mail.outbox[0].body,
             NEW_THREAD_EMAIL
-            % {"user": u2.profile.name, "document_slug": d.slug, "thread_id": t.id,},
+            % {
+                "user": u2.profile.name,
+                "document_slug": d.slug,
+                "thread_id": t.id,
+            },
         )
 
     @mock.patch.object(Site.objects, "get_current")

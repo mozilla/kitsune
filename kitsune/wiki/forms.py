@@ -237,7 +237,9 @@ class RevisionForm(forms.ModelForm):
     """Form to create new revisions."""
 
     keywords = forms.CharField(
-        required=False, label=_lazy("Keywords:"), help_text=_lazy("Affects search results"),
+        required=False,
+        label=_lazy("Keywords:"),
+        help_text=_lazy("Affects search results"),
     )
 
     summary = forms.CharField(

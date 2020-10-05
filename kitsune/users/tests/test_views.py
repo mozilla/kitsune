@@ -416,7 +416,12 @@ class WebhookViewTests(TestCase):
     @setup_key
     def test_id_token(self, key):
         payload = json.dumps(
-            {"iss": "http://example.com", "sub": "54321", "aud": "12345", "iat": 1565720808,}
+            {
+                "iss": "http://example.com",
+                "sub": "54321",
+                "aud": "12345",
+                "iat": 1565720808,
+            }
         )
 
         jwt = jws.JWS.sign(

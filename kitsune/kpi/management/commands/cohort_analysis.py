@@ -39,13 +39,16 @@ class Command(BaseCommand):
             ),
             (
                 KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-                [(Revision.objects.filter(document__locale="en-US"), ("creator", "reviewer"),)],
+                [(Revision.objects.filter(document__locale="en-US"), ("creator", "reviewer"))],
             ),
             (
                 KB_L10N_CONTRIBUTOR_COHORT_CODE,
-                [(Revision.objects.exclude(document__locale="en-US"), ("creator", "reviewer"),)],
+                [(Revision.objects.exclude(document__locale="en-US"), ("creator", "reviewer"))],
             ),
-            (SUPPORT_FORUM_HELPER_COHORT_CODE, [(Answer.objects.not_by_asker(), ("creator",))],),
+            (
+                SUPPORT_FORUM_HELPER_COHORT_CODE,
+                [(Answer.objects.not_by_asker(), ("creator",))],
+            ),
             (AOA_CONTRIBUTOR_COHORT_CODE, [(Reply.objects.all(), ("user",))]),
         ]
 

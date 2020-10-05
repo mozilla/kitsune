@@ -71,9 +71,7 @@ def documents_for(locale, topics=None, products=None):
 
 
 def _documents_for(locale, topics=None, products=None):
-    """Returns a list of articles that apply to passed in topics and products.
-
-    """
+    """Returns a list of articles that apply to passed in topics and products."""
     # First try to get the results from the cache
     documents = cache.get(_documents_for_cache_key(locale, topics, products))
     if documents:

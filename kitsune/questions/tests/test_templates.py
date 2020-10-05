@@ -58,7 +58,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         num_answers = self.question.answers.count()
         content = "lorem ipsum dolor sit amet"
         response = post(
-            self.client, "questions.reply", {"content": content}, args=[self.question.id],
+            self.client,
+            "questions.reply",
+            {"content": content},
+            args=[self.question.id],
         )
 
         eq_(1, len(response.redirect_chain))
@@ -77,13 +80,19 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Posting answer attaches an existing uploaded image to the answer."""
         f = open("kitsune/upload/tests/media/test.jpg", "rb")
         post(
-            self.client, "upload.up_image_async", {"image": f}, args=["auth.User", self.user.pk],
+            self.client,
+            "upload.up_image_async",
+            {"image": f},
+            args=["auth.User", self.user.pk],
         )
         f.close()
 
         content = "lorem ipsum dolor sit amet"
         response = post(
-            self.client, "questions.reply", {"content": content}, args=[self.question.id],
+            self.client,
+            "questions.reply",
+            {"content": content},
+            args=[self.question.id],
         )
         eq_(200, response.status_code)
 
@@ -447,7 +456,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Add an answer and verify the edit link shows up
         content = "lorem ipsum dolor sit amet"
         response = post(
-            self.client, "questions.reply", {"content": content}, args=[self.question.id],
+            self.client,
+            "questions.reply",
+            {"content": content},
+            args=[self.question.id],
         )
         doc = pq(response.content)
         eq_(1, len(doc("li.edit")))
@@ -596,7 +608,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         q.is_locked = True
         q.save()
         response = post(
-            self.client, "questions.answer_vote", {"helpful": "y"}, args=[q.id, self.answer.id],
+            self.client,
+            "questions.answer_vote",
+            {"helpful": "y"},
+            args=[q.id, self.answer.id],
         )
         eq_(403, response.status_code)
 
@@ -632,7 +647,9 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[0], to=["some@bo.dy"], subject="Please confirm your email address",
+            mail.outbox[0],
+            to=["some@bo.dy"],
+            subject="Please confirm your email address",
         )
         assert "questions/confirm/" in mail.outbox[0].body
         assert "New answers" in mail.outbox[0].body
@@ -686,7 +703,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
         u = User.objects.get(username=u.username)
         post(
-            self.client, "questions.watch", {"event_type": "reply"}, args=[self.question.id],
+            self.client,
+            "questions.watch",
+            {"event_type": "reply"},
+            args=[self.question.id],
         )
         assert QuestionReplyEvent.is_notifying(u, self.question), "Watch was not created"
         return u
@@ -709,7 +729,9 @@ class AnswersTemplateTestCase(TestCaseBase):
         ), "Watch was not created"
 
         attrs_eq(
-            mail.outbox[0], to=["some@bo.dy"], subject="Please confirm your email address",
+            mail.outbox[0],
+            to=["some@bo.dy"],
+            subject="Please confirm your email address",
         )
         assert "questions/confirm/" in mail.outbox[0].body
         assert "Solution found" in mail.outbox[0].body
@@ -828,7 +850,9 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         """Assert GETting the add_tag view redirects to the answers page."""
         response = self.client.get(_add_tag_url(self.question.id))
         url = "%s" % reverse(
-            "questions.details", kwargs={"question_id": self.question.id}, force_locale=True,
+            "questions.details",
+            kwargs={"question_id": self.question.id},
+            force_locale=True,
         )
         self.assertRedirects(response, url)
 
@@ -843,7 +867,9 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         """Test adding a tag, case insensitivity, and space stripping."""
         TagFactory(name="PURplepurplepurple", slug="purplepurplepurple")
         response = self.client.post(
-            _add_tag_url(self.question.id), data={"tag-name": " PURplepurplepurple "}, follow=True,
+            _add_tag_url(self.question.id),
+            data={"tag-name": " PURplepurplepurple "},
+            follow=True,
         )
         self.assertContains(response, "purplepurplepurple")
 
@@ -1265,7 +1291,11 @@ class QuestionEditingTests(TestCaseBase):
         response = post(
             self.client,
             "questions.edit_question",
-            {"title": "New title", "content": "New content", "ff_version": "New version",},
+            {
+                "title": "New title",
+                "content": "New content",
+                "ff_version": "New version",
+            },
             kwargs={"question_id": q.id},
         )
 

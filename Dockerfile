@@ -16,14 +16,15 @@ FROM python:3.8-buster AS base
 WORKDIR /app
 EXPOSE 8000
 
+ARG PIP_DEFAULT_TIMEOUT=60
 ENV LANG=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
-RUN pip install --upgrade pip"==20.1.1"
 RUN python -m venv /venv
 RUN mkdir /vendor
+RUN pip install --upgrade "pip==20.2.3"
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && \

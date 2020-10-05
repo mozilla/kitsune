@@ -79,7 +79,12 @@ def usernames(request):
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def test_auth(request):
-    return Response({"username": request.user.username, "authorized": True,})
+    return Response(
+        {
+            "username": request.user.username,
+            "authorized": True,
+        }
+    )
 
 
 class OnlySelf(permissions.BasePermission):
@@ -204,7 +209,9 @@ class ProfileFKSerializer(ProfileSerializer):
 
 
 class ProfileViewSet(
-    mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
 ):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer

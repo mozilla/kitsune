@@ -1,10 +1,14 @@
-import collections
 
 from django import forms
 from django.template.loader import render_to_string
 
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document
+
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 
 
 class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
@@ -23,7 +27,11 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
                 self.process_topic(value, subtopic)
 
         return render_to_string(
-            "wiki/includes/product_topics_widget.html", {"topics": topics, "name": name,}
+            "wiki/includes/product_topics_widget.html",
+            {
+                "topics": topics,
+                "name": name,
+            },
         )
 
     def process_topic(self, value, topic):
@@ -31,7 +39,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
             topic.checked = True
         elif (
             not isinstance(value, str)
-            and isinstance(value, collections.Iterable)
+            and isinstance(value, Iterable)
             and topic.id in value
         ):
             topic.checked = True
@@ -45,7 +53,7 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
     def render(self, name, value, attrs=None, renderer=None):
         if isinstance(value, int):
             related_documents = Document.objects.filter(id__in=[value])
-        elif not isinstance(value, str) and isinstance(value, collections.Iterable):
+        elif not isinstance(value, str) and isinstance(value, Iterable):
             related_documents = Document.objects.filter(id__in=value)
         else:
             related_documents = Document.objects.none()

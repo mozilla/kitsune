@@ -354,12 +354,25 @@ USE_I18N = True
 USE_L10N = True
 
 DB_LOCALIZE = {
-    "karma": {"Title": {"attrs": ["name"], "comments": ["This is a karma title."],}},
-    "products": {
-        "Product": {"attrs": ["title", "description"],},
-        "Topic": {"attrs": ["title", "description"],},
+    "karma": {
+        "Title": {
+            "attrs": ["name"],
+            "comments": ["This is a karma title."],
+        }
     },
-    "kbadge": {"Badge": {"attrs": ["title", "description"],},},
+    "products": {
+        "Product": {
+            "attrs": ["title", "description"],
+        },
+        "Topic": {
+            "attrs": ["title", "description"],
+        },
+    },
+    "kbadge": {
+        "Badge": {
+            "attrs": ["title", "description"],
+        },
+    },
 }
 
 # locale is in the kitsune git repo project directory, so that's
@@ -454,7 +467,10 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
         "APP_DIRS": True,
-        "OPTIONS": {"debug": DEBUG, "context_processors": _CONTEXT_PROCESSORS,},
+        "OPTIONS": {
+            "debug": DEBUG,
+            "context_processors": _CONTEXT_PROCESSORS,
+        },
     },
 ]
 
@@ -672,7 +688,9 @@ TEST_RUNNER = "kitsune.sumo.tests.TestSuiteRunner"
 
 def JINJA_CONFIG():
     config = {
-        "extensions": ["puente.ext.i18n",],
+        "extensions": [
+            "puente.ext.i18n",
+        ],
         "finalize": lambda x: x if x is not None else "",
         "autoescape": True,
     }
@@ -736,7 +754,9 @@ PIPELINE = {
     "BROWSERIFY_BINARY": path("node_modules/.bin/browserify"),
     "BROWSERIFY_ARGUMENTS": "-t babelify",
     "PIPELINE_COLLECTOR_ENABLED": config(
-        "PIPELINE_COLLECTOR_ENABLED", default=not DEBUG, cast=bool,
+        "PIPELINE_COLLECTOR_ENABLED",
+        default=not DEBUG,
+        cast=bool,
     ),
 }
 
@@ -1168,7 +1188,13 @@ EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES = [
 SUMO_BANNER_STRING = config("SUMO_BANNER_STRING", default="", cast=Csv())
 
 # List of domains that links are allowed
-ALLOW_LINKS_FROM = ["mozilla.org", "mozilla.com", "mozillafoundation.org", "getpocket.com", "thunderbird.net"]
+ALLOW_LINKS_FROM = [
+    "mozilla.org",
+    "mozilla.com",
+    "mozillafoundation.org",
+    "getpocket.com",
+    "thunderbird.net",
+]
 
 # Regexes
 TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")

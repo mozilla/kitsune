@@ -90,7 +90,10 @@ class LoggingEmailBackend(object):
             self.log(
                 logging.ERROR,
                 "Failed to send all emails. Sent %(sent)s out of %(to_send)s."
-                % {"sent": num_sent, "to_send": num_to_send,},
+                % {
+                    "sent": num_sent,
+                    "to_send": num_to_send,
+                },
             )
         else:
             # Somehow the backend sent more emails than we asked for.

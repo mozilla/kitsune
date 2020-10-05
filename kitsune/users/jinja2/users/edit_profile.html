@@ -4,7 +4,9 @@
 {% set title = _('Edit Profile') %}
 {% set classes = 'profile' %}
 {% set active = 'edit-profile' %}
-{% set crumbs = [(profile_url(profile.user), profile.user.username), (None, title)] %}
+{% if not user_form.errors %}
+ {% set crumbs = [(profile_url(user=profile.user), profile.user.username), (None, title)] %}
+{% endif %}
 
 {% block above_main %}
 {% if fxa_messages %}
@@ -20,17 +22,25 @@
 {% endblock %}
 
 {% block content %}
-<article id="edit-profile" class="sumo-page-section">
-  {% if profile and profile.is_fxa_migrated %}
-    <h1 class="sumo-page-heading">{{ _('Account') }}</h1>
+<article id="edit-profile">
+  {% if profile and profile.is_fxa_migrated and request.user == profile.user %}
+    <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
     <p class="mb-0"><strong>{{ user.email }}</strong></p>
     <p>
-      {{ _('You can change your email address on Firefox Accounts.') }}
-      <a
-        href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
+      {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+        To change your email or avatar, visit the Firefox Accounts page, {{ a_open }} learn more. {{ a_close }}
+      {% endtrans %}
     </p>
 
-    <div class="manage-account">
+    <div>
+      <section class="avatar-group">
+        <figure class="avatar-group--figure">
+          <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+        </figure>
+      </section>
+    </div>
+
+    <div class="sumo-button-wrap align-end">
       <a href="https://accounts.firefox.com/settings" target="_blank"
         class="sumo-button primary-button button-lg">{{ _('Manage Firefox Account') }}</a>
     </div>
@@ -38,45 +48,15 @@
     <hr class="section-break" />
   {% endif %}
 
-  <h1 class="sumo-page-heading">{{ title }}</h1>
+  <h2 class="sumo-callout-heading">{{ title }}</h2>
   <p>
     {% trans %}
-    Tell users a bit more information about yourself. Most fields are
-    optional, but they'll help other users get to know you better.
+    Share some things about yourself. Most fields are
+    optional, but they help the community to get to know you better.
     {% endtrans %}
   </p>
   <form method="post" action="">
     {% csrf_token %}
-    {% if request.user == profile.user %}
-      <div>
-        <section class="avatar-group">
-          <figure class="avatar-group--figure">
-            <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-            {% if not profile.is_fxa_migrated %}
-              <a class="change-avatar text-body-sm display-block" href="https://gravatar.com/emails" target="_blank">
-                {{ pgettext('avatar', 'Choose Photo') }}
-                <span class="tip">
-                  {% trans %}
-                  <p>
-                    SUMO is now using Gravatars as avatars. You must change
-                    your Gravatar on gravatar.com.
-                  </p>
-                  <p>
-                    It can take a few minutes for the avatar change to take
-                    effect. You may need to wait a few minutes and reload
-                    the page to see your new Gravatar.
-                  </p>
-                  {% endtrans %}
-                </span>
-              </a>
-              {% if profile.avatar %}
-                <a class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
-              {% endif %}
-            {% endif %}
-          </figure>
-        </section>
-      </div>
-    {% endif %}
 
     {{ field(user_form.username) }}
     {{ field(profile_form.name) }}
@@ -95,9 +75,9 @@
     {{ field(profile_form.locale) }}
     {{ field(profile_form.involved_from) }}
 
-    <div class="sumo-button-wrap reverse-on-desktop align-full">
-      <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update My Profile') }}</button>
-      <button class="sumo-button button-lg" type="reset">Cancel</button>
+    <div class="sumo-button-wrap reverse-on-desktop">
+      <button class="sumo-button primary-button" type="submit">{{ _('Update My Profile') }}</button>
+      <button class="sumo-button secondary-button push-right" type="reset">Cancel</button>
     </div>
   </form>
   {% if request.user == profile.user %}

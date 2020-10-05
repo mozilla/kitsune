@@ -80,7 +80,11 @@ urlpatterns = [
     # These API urls include both v1 and v2 urls.
     url(r"^api/", include("kitsune.users.urls_api")),
     # contribute.json url
-    url(r"^(?P<path>contribute\.json)$", servestatic, kwargs={"document_root": settings.ROOT},),
+    url(
+        r"^(?P<path>contribute\.json)$",
+        servestatic,
+        kwargs={"document_root": settings.ROOT},
+    ),
 ]
 
 # Handle 404 and 500 errors

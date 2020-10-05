@@ -33,7 +33,13 @@ class AdvancedSearchTests(ElasticTestCase):
     def test_json_format(self):
         """JSON without callback should return application/json"""
         response = self.client.get(
-            reverse("search"), {"q": "bookmarks", "a": "1", "format": "json",}, follow=True
+            reverse("search"),
+            {
+                "q": "bookmarks",
+                "a": "1",
+                "format": "json",
+            },
+            follow=True,
         )
         eq_(response.status_code, 200)
         eq_(response["Content-Type"], "application/json")
@@ -42,7 +48,12 @@ class AdvancedSearchTests(ElasticTestCase):
         """Various json callbacks -- validation"""
         response = self.client.get(
             reverse("search"),
-            {"q": "bookmarks", "a": "1", "format": "json", "callback": "callback",},
+            {
+                "q": "bookmarks",
+                "a": "1",
+                "format": "json",
+                "callback": "callback",
+            },
             follow=True,
         )
         eq_(response.status_code, 200)
@@ -50,14 +61,28 @@ class AdvancedSearchTests(ElasticTestCase):
 
     def test_json_empty_query_a_1(self):
         """Empty query returns JSON format"""
-        response = self.client.get(reverse("search"), {"format": "json", "a": 1,}, follow=True)
+        response = self.client.get(
+            reverse("search"),
+            {
+                "format": "json",
+                "a": 1,
+            },
+            follow=True,
+        )
         eq_(response.status_code, 200)
         eq_(response["Content-Type"], "application/json")
 
     def test_json_empty_query_a_2(self):
         """Empty query asking for form returns 400"""
         # Test with flags for advanced search or not
-        response = self.client.get(reverse("search"), {"format": "json", "a": 2,}, follow=True)
+        response = self.client.get(
+            reverse("search"),
+            {
+                "format": "json",
+                "a": 2,
+            },
+            follow=True,
+        )
         eq_(response.status_code, 400)
         eq_(response["Content-Type"], "application/json")
 
@@ -86,7 +111,12 @@ class AdvancedSearchTests(ElasticTestCase):
 
         response = self.client.get(
             reverse("search.advanced"),
-            {"a": "1", "product": ["product-one", "product-two"], "q": "cookies", "w": "1",},
+            {
+                "a": "1",
+                "product": ["product-one", "product-two"],
+                "q": "cookies",
+                "w": "1",
+            },
         )
 
         eq_(200, response.status_code)

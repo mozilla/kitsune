@@ -47,7 +47,10 @@ class ProfileAdmin(admin.ModelAdmin):
         ),
         (
             "Location",
-            {"fields": ["timezone", ("country", "city"), "locale"], "classes": ["collapse"],},
+            {
+                "fields": ["timezone", ("country", "city"), "locale"],
+                "classes": ["collapse"],
+            },
         ),
     )
     form = ProfileAdminForm

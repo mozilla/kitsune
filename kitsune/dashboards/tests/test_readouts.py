@@ -196,8 +196,7 @@ class L10NOverviewTests(TestCase):
         eq_(0, overview["top-100"]["numerator"])
 
     def test_not_counting_how_to_contribute(self):
-        """Articles with the How to contribute category should not be counted.
-        """
+        """Articles with the How to contribute category should not be counted."""
         t = TranslatedRevisionFactory(document__locale="de", is_approved=True)
         overview = l10n_overview_rows("de")
         eq_(1, overview["all"]["numerator"])
@@ -217,8 +216,7 @@ class L10NOverviewTests(TestCase):
         eq_(0, overview["top-100"]["numerator"])
 
     def test_not_counting_untranslated(self):
-        """Translations with no approved revisions shouldn't count as done.
-        """
+        """Translations with no approved revisions shouldn't count as done."""
         TranslatedRevisionFactory(document__locale="de", is_approved=False)
         overview = l10n_overview_rows("de")
         eq_(0, overview["top-20"]["numerator"])
@@ -227,8 +225,7 @@ class L10NOverviewTests(TestCase):
         eq_(0, overview["all"]["numerator"])
 
     def test_not_counting_templates(self):
-        """Articles in the Templates category should not be counted.
-        """
+        """Articles in the Templates category should not be counted."""
         t = TranslatedRevisionFactory(document__locale="de", is_approved=True)
         overview = l10n_overview_rows("de")
         eq_(1, overview["all"]["numerator"])
@@ -322,8 +319,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
     readout = UnreviewedReadout
 
     def test_unrevieweds_after_current(self):
-        """Show unreviewed revisions with later creation dates than current
-        """
+        """Show unreviewed revisions with later creation dates than current"""
         current = TranslatedRevisionFactory(
             document__locale="de", reviewed=None, is_approved=True, created=datetime(2000, 1, 1)
         )
@@ -535,8 +531,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         eq_(str(row["status"]), "Translation Needed")
 
     def test_up_to_date(self):
-        """Show up-to-date translations have no status, just a happy class.
-        """
+        """Show up-to-date translations have no status, just a happy class."""
         translation = TranslatedRevisionFactory(document__locale="de", is_approved=True)
         row = self.row()
         eq_(row["title"], translation.document.title)
@@ -620,8 +615,7 @@ class TemplateTranslationsTests(ReadoutTestCase):
     readout = TemplateTranslationsReadout
 
     def test_not_template(self):
-        """Documents that are not templates shouldn't show up in the list.
-        """
+        """Documents that are not templates shouldn't show up in the list."""
         TranslatedRevisionFactory(document__locale="de", is_approved=False)
         self.assertRaises(IndexError, self.row)
 
@@ -660,8 +654,7 @@ class UnreadyTests(ReadoutTestCase):
         eq_([], self.titles())
 
     def test_unapproved_revs(self):
-        """Don't show articles with unreviewed or rejected revs after latest
-        """
+        """Don't show articles with unreviewed or rejected revs after latest"""
         d = DocumentFactory()
         RevisionFactory(document=d, is_approved=True, is_ready_for_localization=True)
         RevisionFactory(
