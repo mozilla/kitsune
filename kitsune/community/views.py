@@ -112,6 +112,7 @@ def top_contributors(request, area):
     except ValueError:
         page = 1
     page_size = 100
+    exceeds_page_size = False
 
     locale = _validate_locale(request.GET.get("locale"))
     product = request.GET.get("product")
@@ -123,8 +124,11 @@ def top_contributors(request, area):
         locales = settings.SUMO_LANGUAGES
     elif area == "questions":
         results, total = top_contributors_questions(
-            locale=locale, product=product, count=page_size, page=page
+            locale=locale, product=product, count=page_size
         )
+        if total == page_size + 1:
+            total -= 1
+            exceeds_page_size = True
         locales = QuestionLocale.objects.locales_list()
     elif area == "kb":
         results, total = top_contributors_kb(product=product, count=page_size, page=page)
@@ -150,6 +154,7 @@ def top_contributors(request, area):
             "products": Product.objects.filter(visible=True),
             "page": page,
             "page_size": page_size,
+            "exceeds_page_size": exceeds_page_size,
         },
     )
 
