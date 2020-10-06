@@ -243,8 +243,8 @@ class TestWikiParser(TestCase):
 <svg/onload=alert(1)"""
 
         eq_(
-            '<p>&lt;iframe &lt;="" \\="" onload="prompt(1)" p="" '
-            'src=""&gt;&lt;p&gt;&lt;iframe/onreadystatechange='
+            '<p>&lt;iframe src="" \\="" onload="prompt(1)" &lt;="" p=""'
+            "&gt;&lt;p&gt;&lt;iframe/onreadystatechange="
             "alert(/@blinkms/)\n&lt;/p&gt;&lt;p&gt;&lt;"
             "svg/onload=alert(1)\n&lt;/p&gt;&lt;/iframe&gt;</p>",
             self.p.parse(content),
@@ -538,7 +538,7 @@ class TestWikiImageTags(TestCase):
             ),
             (
                 "an'<script>alert()</script>",
-                "an'&amp;lt;script&amp;gt;alert()&amp;lt;/script&amp;gt;",
+                "an'&lt;script&gt;alert()&lt;/script&gt;",
             ),
             ("single'\"double", "single'&quot;double"),
         )
