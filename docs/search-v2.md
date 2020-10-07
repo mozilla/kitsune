@@ -57,3 +57,27 @@ Consider using some combination of
 [`prefetch_related`](https://docs.djangoproject.com/en/dev/ref/models/querysets/#prefetch-related)
 or [annotations](https://docs.djangoproject.com/en/dev/ref/models/querysets/#annotate)
 to bring that number down.
+
+### Datetimes and timezones
+
+As a first step in our migration to using timezone-aware datetimes throughout the application,
+all datetimes stored in Elastic should be timezone-aware,
+so as to avoid having to migrate them later.
+
+If inheriting from `SumoDocument`,
+any naive datetime set in a `Date` field will be automatically converted into a timezone-aware datetime,
+with the naive datetime assumed to be in the application's `TIME_ZONE`.
+
+To avoid loss of precision around DST switches,
+where possible aware datetimes should be set.
+To generate an aware datetime do:
+
+```python
+import datetime, timezone
+
+datetime.now(timezone.utc)
+```
+
+This should be used instead of
+[`django.utils.timezone.now()`](https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.now)
+as that returns a naive or aware datetime depending on the value of `USE_TZ`, whereas we want datetimes in Elastic to always be timezone-aware.
