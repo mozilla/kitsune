@@ -98,9 +98,8 @@ def index_objects_bulk(doc_type_name, obj_ids):
     """Bulk index ORM objects given a list of object ids and a document type name."""
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
-    model = doc_type.get_model()
 
-    objects = model.objects.filter(pk__in=obj_ids)
+    objects = doc_type.get_queryset().filter(pk__in=obj_ids)
     docs = [doc_type.prepare(obj).to_dict(include_meta=True) for obj in objects]
     es7_bulk(es7_client(), docs)
 

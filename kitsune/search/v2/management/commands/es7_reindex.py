@@ -17,10 +17,21 @@ class Command(BaseCommand):
             help="Limit to specific doc types",
         )
         parser.add_argument(
-            "--percentage", type=float, default=100,
+            "--percentage", type=float, default=100, help="Index a percentage of total documents",
         )
         parser.add_argument(
-            "--bulk-count", type=int, default=100,
+            "--count",
+            type=int,
+            default=None,
+            help="Index a set number of documents per type (overrides --percentage)",
+        )
+        parser.add_argument(
+            "--bulk-count", type=int, default=100, help="Index this number of documents at once",
+        )
+        parser.add_argument(
+            "--print-sql-count",
+            action="store_true",
+            help="Print the number of SQL statements executed",
         )
 
     def handle(self, *args, **kwargs):
@@ -32,19 +43,27 @@ class Command(BaseCommand):
 
         progress_msg = "Indexed {progress} out of {count}"
 
+        if kwargs["print_sql_count"]:
+            from django.db import connection, reset_queries
+
         for dt in doc_types:
             self.stdout.write("Reindexing: {}".format(dt.__name__))
 
             model = dt.get_model()
             qs = model.objects.all()
-            count = qs.count()
+            total = qs.count()
+            count = kwargs["count"]
 
             percentage = kwargs["percentage"]
-            total = count
-            if percentage < 100:
-                count = int(count * percentage / 100)
-                qs = qs[:count]
-            print("Indexing {}%, so {} documents out of {}".format(percentage, count, total))
+            if count:
+                print("Indexing {} documents out of {}".format(count, total))
+            else:
+                if percentage < 100:
+                    count = int(total * percentage / 100)
+                    qs = qs[:count]
+                else:
+                    count = total
+                print("Indexing {}%, so {} documents out of {}".format(percentage, count, total))
 
             id_list = list(qs.values_list("pk", flat=True))
             bulk_count = kwargs["bulk_count"]
@@ -53,4 +72,7 @@ class Command(BaseCommand):
                 start = x * bulk_count
                 end = start + bulk_count
                 index_objects_bulk.delay(dt.__name__, id_list[start:end])
+                if kwargs["print_sql_count"]:
+                    print("{} SQL queries executed".format(len(connection.queries)))
+                    reset_queries()
                 print(progress_msg.format(progress=min(end, count), count=count))
