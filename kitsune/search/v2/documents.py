@@ -94,8 +94,7 @@ class WikiDocument(SumoDocument):
 
 
 class QuestionDocument(SumoDocument):
-    """
-    """
+    """"""
 
     question_id = field.Keyword()
 
@@ -161,8 +160,7 @@ class QuestionDocument(SumoDocument):
 
 
 class AnswerDocument(QuestionDocument):
-    """
-    """
+    """"""
 
     creator_id = field.Keyword()
     created = field.Date()
