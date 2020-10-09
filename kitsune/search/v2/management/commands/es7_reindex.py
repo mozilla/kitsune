@@ -1,5 +1,6 @@
 from math import ceil
 from django.core.management.base import BaseCommand
+from django.db import connection, reset_queries
 
 from kitsune.search.v2.es7_utils import get_doc_types, index_objects_bulk
 
@@ -48,9 +49,6 @@ class Command(BaseCommand):
             doc_types = [dt for dt in doc_types if dt.__name__ in limit]
 
         progress_msg = "Indexed {progress} out of {count}"
-
-        if kwargs["print_sql_count"]:
-            from django.db import connection, reset_queries
 
         for dt in doc_types:
             self.stdout.write("Reindexing: {}".format(dt.__name__))
