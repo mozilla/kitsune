@@ -53,7 +53,10 @@ def es_analyzer_for_locale(locale):
     # No specific analyzer found for the locale
     # So use the standard analyzer as default
     return analyzer(
-        "default_sumo", tokenizer="standard", filter=["lowercase"], char_filter=["html_strip"],
+        "default_sumo",
+        tokenizer="standard",
+        filter=["lowercase"],
+        char_filter=["html_strip"],
     )
 
 

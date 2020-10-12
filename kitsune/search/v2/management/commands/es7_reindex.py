@@ -17,7 +17,10 @@ class Command(BaseCommand):
             help="Limit to specific doc types",
         )
         parser.add_argument(
-            "--percentage", type=float, default=100, help="Index a percentage of total documents",
+            "--percentage",
+            type=float,
+            default=100,
+            help="Index a percentage of total documents",
         )
         parser.add_argument(
             "--count",
@@ -26,7 +29,10 @@ class Command(BaseCommand):
             help="Index a set number of documents per type (overrides --percentage)",
         )
         parser.add_argument(
-            "--bulk-count", type=int, default=100, help="Index this number of documents at once",
+            "--bulk-count",
+            type=int,
+            default=100,
+            help="Index this number of documents at once",
         )
         parser.add_argument(
             "--print-sql-count",
