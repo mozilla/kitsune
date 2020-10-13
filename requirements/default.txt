@@ -29,13 +29,13 @@ bleach==3.2.1 \
     --hash=sha256:52b5919b81842b1854196eaae5ca29679a2f2e378905c346d3ca8227c2c66080 \
     --hash=sha256:9f8ccbeb6183c6e6cddea37592dfb0167485c1e3b13b3363bc325aa8bda3adbd \
     # via -r requirements/default.in, py-wikimarkup
-boto3==1.15.12 \
-    --hash=sha256:cb3becf1b2f2cb5f58030fe947a6abd26f27c01df0403097ae2a52bfadefcf19 \
-    --hash=sha256:de2bdcd9a8d638c2ef391ffc6d4b692ad701a6d8ad6e9d77d016059cf89b481a \
+boto3==1.15.16 \
+    --hash=sha256:454a8dfb7b367a058c7967ef6b4e2a192c318f10761769fd1003cf7f2f5a7db9 \
+    --hash=sha256:557320fe8b65cfc85953e6a63d2328e8efec95bf4ec383b92fa2d01119209716 \
     # via -r requirements/default.in, django-storages
-botocore==1.18.12 \
-    --hash=sha256:12b2381ee82ff32d5135c0887eadec18d38c8ff7fac06405ba6a8584f2159c3c \
-    --hash=sha256:368f85992b0c7fda95b216776d475791c59e4c4415325fda683a02c5c110cf35 \
+botocore==1.18.16 \
+    --hash=sha256:e586e4d6eddbca31e6447a25df9972329ea3de64b1fb0eb17e7ab0c9b91f7720 \
+    --hash=sha256:f0616d2c719691b94470307cee8adf89ceb1657b7b6f9aa1bf61f9de5543dbbb \
     # via boto3, s3transfer
 cachetools==4.1.1 \
     --hash=sha256:513d4ff98dd27f85743a8dc0e92f55ddb1b49e060c2d5961512855cda2c01a98 \
@@ -625,9 +625,9 @@ six==1.15.0 \
     --hash=sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259 \
     --hash=sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced \
     # via apscheduler, babis, bleach, cryptography, django-extensions, django-jsonfield, django-statici18n, django-waffle, elasticutils, google-api-core, google-api-python-client, google-auth, google-auth-httplib2, html5lib, josepy, mozilla-django-oidc, oauth2client, packaging, protobuf, pyopenssl, python-dateutil, python-memcached, translate-toolkit
-sqlparse==0.3.1 \
-    --hash=sha256:022fb9c87b524d1f7862b3037e541f68597a730a8843245c349fc93e1643dc4e \
-    --hash=sha256:e162203737712307dfe78860cc56c8da8a852ab2ee33750e33aeadf38d12c548 \
+sqlparse==0.4.1 \
+    --hash=sha256:017cde379adbd6a1f15a61873f43e8274179378e95ef3fede90b5aa64d304ed0 \
+    --hash=sha256:0f91fd2e829c44362cbcfab3e9ae12e22badaa8a29ad5ff599f9ec109f0454e8 \
     # via django
 text-unidecode==1.3 \
     --hash=sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8 \
