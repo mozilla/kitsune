@@ -15,7 +15,7 @@ repos:
         exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
         language_version: python3.8
   - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.8.2
+    rev: 3.8.4
     hooks:
       - id: flake8
   - repo: https://github.com/peterdemin/pip-compile-multi
