@@ -1,15 +1,15 @@
-from elasticsearch_dsl import connections, field, InnerDoc
-from django.db.models import Prefetch, Count, Q
+from django.db.models import Count, Prefetch, Q
+from elasticsearch_dsl import InnerDoc, connections, field
+
+from kitsune.forums.models import Post
+from kitsune.questions.models import Answer, Question
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
 from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.fields import SumoLocaleAwareTextField
+from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import REDIRECT_HTML
-from kitsune.questions.models import Question, Answer
-from kitsune.users.models import Profile
-from kitsune.forums.models import Post
-
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
@@ -18,8 +18,8 @@ class WikiDocument(SumoDocument):
     url = field.Keyword()
     updated = field.Date()
 
-    product = field.Keyword()
-    topic = field.Keyword()
+    product_ids = field.Keyword(multi=True)
+    topic_ids = field.Keyword(multi=True)
 
     # Document specific fields (locale aware)
     title = SumoLocaleAwareTextField()
@@ -30,11 +30,10 @@ class WikiDocument(SumoDocument):
     locale = field.Keyword()
     current_id = field.Integer()
     parent_id = field.Integer()
-    category = field.Integer()
+    category = field.Keyword()
     slug = field.Keyword()
     is_archived = field.Boolean()
     recent_helpful_votes = field.Integer()
-    display_order = field.Integer()
 
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
@@ -46,12 +45,6 @@ class WikiDocument(SumoDocument):
     def prepare_updated(self, instance):
         return getattr(instance.current_revision, "created", None)
 
-    def prepare_product(self, instance):
-        return [t.slug for t in instance.get_products()]
-
-    def prepare_topic(self, instance):
-        return [t.slug for t in instance.get_topics()]
-
     def prepare_keywords(self, instance):
         return getattr(instance.current_revision, "keywords", None)
 
@@ -62,6 +55,12 @@ class WikiDocument(SumoDocument):
         if instance.current_revision:
             return instance.summary
         return None
+
+    def prepare_product_ids(self, instance):
+        return [product.id for product in instance.products.all()]
+
+    def prepare_topic_ids(self, instance):
+        return [topic.id for topic in instance.topics.all()]
 
     def prepare_current_id(self, instance):
         if instance.current_revision:
@@ -119,7 +118,7 @@ class QuestionDocument(SumoDocument):
     question_taken_by_id = field.Keyword()
     question_taken_until = field.Date()
 
-    question_tag_id = field.Keyword(multi=True)
+    question_tag_ids = field.Keyword(multi=True)
     question_num_votes = field.Integer()
 
     locale = field.Keyword()
@@ -128,7 +127,7 @@ class QuestionDocument(SumoDocument):
         name = config.QUESTION_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
 
-    def prepare_question_tag_id(self, instance):
+    def prepare_question_tag_ids(self, instance):
         return [tag.id for tag in instance.tags.all()]
 
     def prepare_question_has_solution(self, instance):
@@ -218,28 +217,9 @@ class AnswerDocument(QuestionDocument):
         )
 
 
-class ProductInnerDoc(InnerDoc):
-    id = field.Integer()
-    title = field.Keyword()
-    slug = field.Keyword()
-
-    @classmethod
-    def prepare(cls, instance):
-        return cls(id=instance.id, title=instance.title, slug=instance.slug)
-
-
-class GroupInnerDoc(InnerDoc):
-    id = field.Integer()
-    name = field.Keyword()
-
-    @classmethod
-    def prepare(cls, instance):
-        return cls(id=instance.id, name=instance.name)
-
-
 class ProfileDocument(SumoDocument):
     username = field.Keyword(normalizer="lowercase")
-    name = field.Text()
+    name = field.Text(fields={"keyword": field.Keyword()})
     email = field.Keyword()
     # store avatar url so we don't need to hit the db when searching users
     # but set enabled=False to ensure ES does no parsing of it
@@ -251,8 +231,8 @@ class ProfileDocument(SumoDocument):
 
     involved_from = field.Date()
 
-    products = field.Object(ProductInnerDoc)
-    groups = field.Object(GroupInnerDoc)
+    product_ids = field.Keyword(multi=True)
+    group_ids = field.Keyword(multi=True)
 
     class Index:
         name = config.USER_INDEX_NAME
@@ -272,11 +252,11 @@ class ProfileDocument(SumoDocument):
     def prepare_timezone(self, instance):
         return instance.timezone.zone if instance.timezone else None
 
-    def prepare_products(self, instance):
-        return [ProductInnerDoc.prepare(product) for product in instance.products.all()]
+    def prepare_product_ids(self, instance):
+        return [product.id for product in instance.products.all()]
 
-    def prepare_groups(self, instance):
-        return [GroupInnerDoc.prepare(groups) for groups in instance.user.groups.all()]
+    def prepare_group_ids(self, instance):
+        return [group.id for group in instance.user.groups.all()]
 
     @classmethod
     def get_model(cls):
