@@ -2,10 +2,10 @@
 
 ## Development tips
 
-### Adding or editing documents
+### Indexing performance
 
 When adding or editing elastic documents,
-be sure to pass the `--print-sql-count` argument when testing out your changes,
+you might want to add the `--print-sql-count` argument when testing out your changes,
 to see how many SQL queries are being executed:
 
 ```sh

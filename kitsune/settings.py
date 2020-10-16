@@ -825,6 +825,7 @@ IA_DEFAULT_CATEGORIES = (
 
 # The length for which we would like the user to cache search forms
 # and results, in minutes.
+SEARCH_CACHE_PERIOD = config("SEARCH_CACHE_PERIOD", default=15, cast=int)
 
 # Maximum length of the filename. Forms should use this and raise
 # ValidationError if the length is exceeded.

@@ -209,7 +209,7 @@ class AnswerDocument(QuestionDocument):
             Answer.objects
             # prefetch each answer's question,
             # applying the same optimizations as in the QuestionDocument
-            .prefetch_related(Prefetch("question", queryset=super().get_queryset()))
+            .prefetch_related(Prefetch("question", queryset=QuestionDocument.get_queryset()))
             # count votes in db to improve performance
             .annotate(
                 es_num_helpful_votes=Count("votes", filter=Q(votes__helpful=True)),
