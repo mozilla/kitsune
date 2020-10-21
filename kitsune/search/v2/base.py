@@ -1,7 +1,6 @@
 from django.utils import timezone
-
-from elasticsearch_dsl import InnerDoc, Document as DSLDocument
-from elasticsearch_dsl import field
+from elasticsearch_dsl import Document as DSLDocument
+from elasticsearch_dsl import InnerDoc, field
 
 
 class SumoDocument(DSLDocument):
