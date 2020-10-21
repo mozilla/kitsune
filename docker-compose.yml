@@ -14,9 +14,7 @@ services:
       - elasticsearch
       - redis
       - celery
-      - celery-fxa
       - celery-flower
-      - celery-beat
       - mailcatcher
     ports:
       - "8000:8000"
@@ -155,17 +153,6 @@ services:
       - mariadb
       - redis
 
-  celery-fxa:
-    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery -A kitsune worker -Q fxa -l info -n fxa@%h
-    env_file: .env
-    volumes:
-      - ./:/app:delegated
-    user: ${UID:-kitsune}
-    depends_on:
-      - mariadb
-      - redis
-
   celery-flower:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
     command: celery -A kitsune flower -l info --address=0.0.0.0 --port=5555
@@ -178,17 +165,6 @@ services:
       - redis
     ports:
       - "5555:5555"
-
-  celery-beat:
-    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery -A kitsune beat -l info
-    env_file: .env
-    volumes:
-      - ./:/app:delegated
-    user: ${UID:-kitsune}
-    depends_on:
-      - mariadb
-      - redis
 
   mailcatcher:
     image: schickling/mailcatcher
