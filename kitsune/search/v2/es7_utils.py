@@ -3,11 +3,12 @@ import inspect
 
 from celery import task
 from django.conf import settings
-
+from elasticsearch7.exceptions import NotFoundError
+from elasticsearch7.helpers import bulk as es7_bulk
 from elasticsearch_dsl import Document, analyzer, token_filter
+
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
-from elasticsearch7.helpers import bulk as es7_bulk
 from kitsune.search.v2.base import SumoDocument
 
 
@@ -87,13 +88,25 @@ def get_doc_types(paths=["kitsune.search.v2.documents"]):
 @task
 def index_object(doc_type_name, obj_id):
     """Index an ORM object given an object id and a document type name."""
+    from kitsune.search.v2.documents import WikiDocument
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
     model = doc_type.get_model()
 
     obj = model.objects.get(pk=obj_id)
-    doc = doc_type.prepare(obj)
-    doc.save()
+    prepare_obj_kwargs = {}
+    # If we have a KB documents, let's merge the child docs into parent
+    if doc_type is WikiDocument:
+        prepare_obj_kwargs.update({"merge_docs": True})
+    doc = doc_type.prepare(obj, **prepare_obj_kwargs)
+    try:
+        # Update the document is exists
+        # We are using doc.meta.id for the update. The prepare method
+        # returns the correct id to update here
+        doc_type(_id=doc.meta.id).update(**doc.to_dict())
+    except NotFoundError:
+        # There is no document to update, let's create one
+        doc.save()
 
 
 @task
@@ -103,7 +116,14 @@ def index_objects_bulk(doc_type_name, obj_ids):
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
 
     objects = doc_type.get_queryset().filter(pk__in=obj_ids)
+    # prepare the docs for indexing
     docs = [doc_type.prepare(obj).to_dict(include_meta=True) for obj in objects]
+    # Replace _source with doc in order to do a bulk update
+    for doc in docs:
+        doc["doc"] = doc["_source"]
+        del doc["_source"]
+        doc.update({"_op_type": "update", "doc_as_upsert": True})
+
     es7_bulk(es7_client(), docs)
 
 
