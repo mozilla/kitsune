@@ -17,7 +17,6 @@ services:
       - redis
       - celery
       - celery-flower
-      - celery-beat
       - mailcatcher
     ports:
       - "8000:8000"
@@ -189,17 +188,6 @@ services:
       - redis
     ports:
       - "5555:5555"
-
-  celery-beat:
-    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: celery -A kitsune beat -l info
-    env_file: .env
-    volumes:
-      - ./:/app:delegated
-    user: ${UID:-kitsune}
-    depends_on:
-      - mariadb
-      - redis
 
   mailcatcher:
     image: schickling/mailcatcher
