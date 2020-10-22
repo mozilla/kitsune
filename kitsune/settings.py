@@ -418,6 +418,7 @@ SUPPORTED_NONLOCALES = (
     "oidc",
     "healthz",
     "readiness",
+    "__debug__",
 )
 
 # Make this unique, and don't share it with anybody.
