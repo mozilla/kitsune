@@ -1,12 +1,16 @@
 from django.utils import timezone
 from elasticsearch_dsl import Document as DSLDocument
-from elasticsearch_dsl import InnerDoc, field
+from elasticsearch_dsl import InnerDoc, field, MetaField
 
 
 class SumoDocument(DSLDocument):
     """Base class with common methods for all the different documents."""
 
     indexed_on = field.Date()
+
+    class Meta:
+        # ignore fields if they don't exist in the mapping
+        dynamic = MetaField("false")
 
     @classmethod
     def prepare(cls, instance):
