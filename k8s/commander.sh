@@ -17,8 +17,16 @@ function deploy {
     DEPLOY_SECRETS=${5:-NO}
     K8S_NAMESPACE="sumo-${REGION_ENV}"
 
-    export KUBECTL_BIN="./regions/${REGION}/kubectl"
-    export KUBECONFIG="./regions/${REGION}/kubeconfig"
+    if [ -f "./regions/${REGION}/kubectl" ] ; then
+        KUBECTL_BIN="./regions/${REGION}/kubectl"
+    else
+        KUBECTL_BIN=$(which kubectl)
+    fi
+    export KUBECTL_BIN
+
+    if [ -f "./regions/${REGION}/kubeconfig" ] ; then
+        export KUBECONFIG="./regions/${REGION}/kubeconfig"
+    fi
 
     if [[ "${DEPLOY_SECRETS}" == "secrets" ]]; then
         echo "Applying secrets";
@@ -27,14 +35,14 @@ function deploy {
         echo "Secrets will *NOT* be applied";
     fi
 
-    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag full-${COMMIT_HASH}
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag "full-${COMMIT_HASH}"
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-celery
-    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag full-${COMMIT_HASH}
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag "full-${COMMIT_HASH}"
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-cron
-    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag full-${COMMIT_HASH}
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag "full-${COMMIT_HASH}"
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-web
 
-    post-deploy $@
+    post-deploy "$@"
 
     if command -v slack-cli > /dev/null; then
         slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
