@@ -297,6 +297,14 @@ products = OrderedDict(
                                 "tags": ["firefox-focus-android"],
                             },
                         ),
+                        (
+                            "testing-topic-x",
+                            {
+                                "name": _lazy("Firefox Focus AAQ X"),
+                                "topic": "testing-topic-x",
+                                "tags": ["other-tag"],
+                            },
+                        ),
                     ]
                 ),
             },
