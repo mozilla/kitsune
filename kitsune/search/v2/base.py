@@ -40,7 +40,11 @@ class SumoDocument(DSLDocument):
                 if locale and value:
                     obj[f] = {locale: value}
             else:
-                if isinstance(field_type, field.Date) and timezone.is_naive(value):
+                if (
+                    isinstance(field_type, field.Date)
+                    and isinstance(value, datetime)
+                    and timezone.is_naive(value)
+                ):
                     # set is_dst=False to avoid errors when an ambiguous time is sent:
                     # https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.make_aware
                     value = timezone.make_aware(value, is_dst=False).astimezone(timezone.utc)
