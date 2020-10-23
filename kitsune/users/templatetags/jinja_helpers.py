@@ -34,7 +34,7 @@ def profile_url(user, edit=False):
 def profile_avatar(user, size=200):
     """Return a URL to the user's avatar."""
     try:  # This is mostly for tests.
-        profile = Profile.objects.get(user_id=user.id)
+        profile = user.profile
     except (Profile.DoesNotExist, AttributeError):
         avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
         profile = None
