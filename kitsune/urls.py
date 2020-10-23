@@ -100,6 +100,12 @@ if settings.DEBUG:
             {"document_root": settings.MEDIA_ROOT},
         ),
     ]
+    if settings.USE_DEBUG_TOOLBAR:
+        import debug_toolbar
+
+        urlpatterns += [
+            url("__debug__/", include(debug_toolbar.urls)),
+        ]
 
 
 if settings.ENABLE_ADMIN:
