@@ -1,5 +1,5 @@
 import hashlib
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from operator import itemgetter
 
 from django.conf import settings
@@ -65,7 +65,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
         if bucket.key != user.meta.id:
             raise RuntimeError("ES returned profiles out of order")
         last_activity = datetime.fromisoformat(bucket.latest.hits.hits[0]._source.created)
-        days_since_last_activity = (datetime.now() - last_activity).days
+        days_since_last_activity = (datetime.now(tz=timezone.utc) - last_activity).days
         top_contributors.append(
             {
                 "count": bucket.doc_count,
