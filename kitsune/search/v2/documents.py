@@ -6,7 +6,7 @@ from kitsune.questions.models import Answer, Question
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
 from kitsune.search.v2.es7_utils import es7_client
-from kitsune.search.v2.fields import SumoLocaleAwareTextField
+from kitsune.search.v2.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import REDIRECT_HTML
@@ -15,38 +15,33 @@ connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
 
 class WikiDocument(SumoDocument):
-    url = field.Keyword()
     updated = field.Date()
 
     product_ids = field.Keyword(multi=True)
     topic_ids = field.Keyword(multi=True)
-
-    # Document specific fields (locale aware)
-    title = SumoLocaleAwareTextField()
-    content = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
-    summary = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
-    keywords = SumoLocaleAwareTextField(multi=True)
-
     locale = field.Keyword()
-    current_id = field.Integer()
-    parent_id = field.Integer()
+    parent_id = field.Keyword()
     category = field.Keyword()
     slug = field.Keyword()
     is_archived = field.Boolean()
     recent_helpful_votes = field.Integer()
 
+    # Document specific fields (locale aware)
+    title = SumoLocaleAwareTextField()
+    content = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
+    summary = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
+    keywords = SumoLocaleAwareKeywordField(multi=True)
+
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
-
-    def prepare_url(self, instance):
-        return instance.get_absolute_url()
 
     def prepare_updated(self, instance):
         return getattr(instance.current_revision, "created", None)
 
     def prepare_keywords(self, instance):
-        return getattr(instance.current_revision, "keywords", None)
+        """Return a list of keywords, splitted by space or None"""
+        return getattr(instance.current_revision, "keywords", "").split() or None
 
     def prepare_content(self, instance):
         return instance.html
@@ -61,11 +56,6 @@ class WikiDocument(SumoDocument):
 
     def prepare_topic_ids(self, instance):
         return [topic.id for topic in instance.topics.all()]
-
-    def prepare_current_id(self, instance):
-        if instance.current_revision:
-            return instance.current_revision.id
-        return None
 
     def prepare_parent_id(self, instance):
         if instance.parent:

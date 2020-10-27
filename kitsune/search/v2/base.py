@@ -1,7 +1,8 @@
 from datetime import datetime
+
 from django.utils import timezone
 from elasticsearch_dsl import Document as DSLDocument
-from elasticsearch_dsl import InnerDoc, field, MetaField
+from elasticsearch_dsl import InnerDoc, MetaField, field
 
 
 class SumoDocument(DSLDocument):
@@ -15,7 +16,8 @@ class SumoDocument(DSLDocument):
 
     @classmethod
     def prepare(cls, instance):
-        """Prepare an object given a model instance"""
+        """Prepare an object given a model instance."""
+
         obj = cls()
         doc_mapping = obj._doc_type.mapping
         fields = [f for f in doc_mapping]
@@ -37,8 +39,10 @@ class SumoDocument(DSLDocument):
                 # if the field is an Object but the value isn't an InnerDoc
                 # or a list containing an InnerDoc then we're dealing with locales
                 locale = obj.prepare_locale(instance)
-                if locale and value:
+                # Check specifically against None, False is a valid value
+                if locale and (value is not None):
                     obj[f] = {locale: value}
+
             else:
                 if (
                     isinstance(field_type, field.Date)
@@ -48,12 +52,40 @@ class SumoDocument(DSLDocument):
                     # set is_dst=False to avoid errors when an ambiguous time is sent:
                     # https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.make_aware
                     value = timezone.make_aware(value, is_dst=False).astimezone(timezone.utc)
+
                 setattr(obj, f, value)
 
-        obj.meta.id = instance.pk
         obj.indexed_on = datetime.now(timezone.utc)
+        obj.meta.id = instance.pk
 
         return obj
+
+    def to_action(self, action=None, is_bulk=False, **kwargs):
+        """Method to construct the data for save, delete, update operations.
+
+        Useful for bulk operations.
+        """
+
+        # Default to index if no action is defined or if it's `save`
+        if not action or action == "index":
+            self.save(**kwargs)
+        elif action == "update":
+            # if we have a bulk update, we need to include the meta info
+            payload = self.to_dict(include_meta=is_bulk)
+            # add any additional args like doc_as_upsert
+            payload.update(kwargs)
+
+            if is_bulk:
+                # this is a bit idiomatic b/c dsl does not have a wrapper around bulk operations
+                # we need to return the payload and let elasticsearch-py bulk method deal with
+                # the update
+                payload["doc"] = payload["_source"]
+                payload.update({"_op_type": "update"})
+                del payload["_source"]
+                return payload
+            self.update(**payload)
+        elif action == "delete":
+            self.delete()
 
     @classmethod
     def get_queryset(cls):
