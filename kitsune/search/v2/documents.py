@@ -93,7 +93,17 @@ class WikiDocument(SumoDocument):
 
 
 class QuestionDocument(SumoDocument):
-    """"""
+    """
+    ES document for Questions. Every Question in DB gets a QuestionDocument in ES.
+
+    Parent class to AnswerDocument, so most fields are prefixed with "question_".
+    QuestionDocument and AnswerDocument are stored in the same index, so QuestionDocument
+    cannot define a field with the same name as AnswerDocument.
+    Distinguish QuestionDocuments from AnswerDocuments by filtering on whether the
+    document has a null "created" field.
+
+    Enables searching for AAQ threads as a unit.
+    """
 
     question_id = field.Keyword()
 
@@ -121,6 +131,9 @@ class QuestionDocument(SumoDocument):
     question_tag_ids = field.Keyword(multi=True)
     question_num_votes = field.Integer()
 
+    # store answer content to optimise searching for AAQ threads as a unit
+    answer_content = SumoLocaleAwareTextField(multi=True, term_vector="with_positions_offsets")
+
     locale = field.Keyword()
 
     class Index:
@@ -138,6 +151,9 @@ class QuestionDocument(SumoDocument):
             return instance.es_question_num_votes
         return instance.num_votes
 
+    def prepare_answer_content(self, instance):
+        return [answer.content for answer in instance.answers.all()]
+
     def get_field_value(self, field, *args):
         if field.startswith("question_"):
             field = field[len("question_") :]
@@ -150,7 +166,7 @@ class QuestionDocument(SumoDocument):
     @classmethod
     def get_queryset(cls):
         return (
-            Question.objects
+            Question.objects.prefetch_related("answers")
             # prefetch tags to avoid extra queries when iterating over them
             .prefetch_related("tags")
             # count votes in db to improve performance
@@ -159,7 +175,18 @@ class QuestionDocument(SumoDocument):
 
 
 class AnswerDocument(QuestionDocument):
-    """"""
+    """
+    ES document for Answers. Every Answer in DB gets an AnswerDocument in ES.
+
+    Child class to QuestionDocument and stored in the same index, so AnswerDocument
+    cannot define a field with the same name as one in QuestionDocument.
+    Most QuestionDocument fields are prefixed by "question_".
+    Distingish AnswerDocuments from QuestionDocuments by filtering on whether the document
+    has a non-null "created" field.
+
+    Enables aggregations on answers, such as when creating contribution metrics, and enables
+    searching within an AAQ thread, or on Answer-specific properties like being a solution.
+    """
 
     creator_id = field.Keyword()
     created = field.Date()
@@ -192,6 +219,11 @@ class AnswerDocument(QuestionDocument):
         if hasattr(instance, "es_num_unhelpful_votes"):
             return instance.es_num_unhelpful_votes
         return instance.num_unhelpful_votes
+
+    def prepare_answer_content(self, instance):
+        # clear answer_content field from QuestionDocument,
+        # as we don't need the content of sibling answers in an AnswerDocument
+        return None
 
     def get_field_value(self, field, instance, *args):
         if field.startswith("question_"):
