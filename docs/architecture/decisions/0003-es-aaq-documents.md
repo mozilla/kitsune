@@ -21,6 +21,11 @@ A non-exhaustive list of these are:
 * Searching within questions and their solutions
 * Aggregating answers to create contribution data
 
+We also want search to be *fast*,
+so should model our data to avoid nested fields and parent-child relationships,
+and use de-normalization wherever possible:
+https://www.elastic.co/guide/en/elasticsearch/reference/7.9/tune-for-search-speed.html#_document_modeling
+
 ## Decision
 
 We will use a structure of two document "types" within one index,

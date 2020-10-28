@@ -96,11 +96,12 @@ class QuestionDocument(SumoDocument):
     """
     ES document for Questions. Every Question in DB gets a QuestionDocument in ES.
 
-    Parent class to AnswerDocument, so most fields are prefixed with "question_".
-    QuestionDocument and AnswerDocument are stored in the same index, so QuestionDocument
-    cannot define a field with the same name as AnswerDocument.
-    Distinguish QuestionDocuments from AnswerDocuments by filtering on whether the
-    document has a null "created" field.
+    Parent class to AnswerDocument, with most fields here prefixed with "question_".
+
+    This document defines the question-specific fields (most of) which are de-normalized
+    in the AnswerDocument. Since QuestionDocument and AnswerDocument are stored in the
+    same index, ES sees QuestionDocuments and AnswerDocuments the same, just with some
+    documents missing certain fields.
 
     Enables searching for AAQ threads as a unit.
     """
@@ -178,11 +179,13 @@ class AnswerDocument(QuestionDocument):
     """
     ES document for Answers. Every Answer in DB gets an AnswerDocument in ES.
 
-    Child class to QuestionDocument and stored in the same index, so AnswerDocument
-    cannot define a field with the same name as one in QuestionDocument.
-    Most QuestionDocument fields are prefixed by "question_".
-    Distingish AnswerDocuments from QuestionDocuments by filtering on whether the document
-    has a non-null "created" field.
+    Child class to QuestionDocument, with fields here un-prefixed.
+
+    This document defines the answer-specific fields which are included in an AnswerDocument
+    in addition to the de-normalized fields of an Answer's Question which are defined in
+    QuestionDocument. Since QuestionDocument and AnswerDocument are stored in the same index,
+    ES sees QuestionDocuments and AnswerDocuments the same, just with some documents missing
+    certain fields.
 
     Enables aggregations on answers, such as when creating contribution metrics, and enables
     searching within an AAQ thread, or on Answer-specific properties like being a solution.
