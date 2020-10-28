@@ -1,5 +1,5 @@
 #!/bin/bash
-set -exo pipefail
+set -eo pipefail
 GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 SLACK_CHANNEL=sumodev
@@ -55,8 +55,17 @@ function post-deploy {
     REGION_ENV=${3}
     K8S_NAMESPACE="sumo-${REGION_ENV}"
 
-    export KUBECTL_BIN="./regions/${REGION}/kubectl"
-    export KUBECONFIG="./regions/${REGION}/kubeconfig"
+    if [ -f "./regions/${REGION}/kubectl" ] ; then
+        KUBECTL_BIN="./regions/${REGION}/kubectl"
+    else
+        KUBECTL_BIN=$(which kubectl)
+    fi
+    export KUBECTL_BIN
+
+    if [ -f "./regions/${REGION}/kubeconfig" ] ; then
+        export KUBECONFIG="./regions/${REGION}/kubeconfig"
+    fi
+
 
     # run post-deployment tasks
     echo "Running post-deployment tasks"
