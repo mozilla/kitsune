@@ -24,7 +24,7 @@
         <button id="sign-up-contributor" class="sumo-button primary-button button-lg" data-event-category="Sign Me Up Click" data-event-action="Logged In">{{ _('Sign me up') }} &raquo;</button>
       </form>
     {% else %}
-      <a id="sign-up-contributor" class="sumo-button primary-button" href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}&is_contributor=True" data-event-category="Sign Me Up Click" data-event-action="Logged In">
+      <a id="sign-up-contributor" class="sumo-button primary-button" href="/{{ url('users.fxa_authentication_init') }}?next={{ next_url }}&is_contributor=True" data-event-category="Sign Me Up Click" data-event-action="Logged In">
         {{ _('Sign me up') }} &raquo;
       </a>
     {% endif %}
