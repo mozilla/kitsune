@@ -36,7 +36,6 @@ django-user-agents~=0.4.0
 django-waffle~=0.20.0
 django-watchman~=1.1.1
 djangorestframework~=3.11.0
-docutils~=0.15.2
 elasticsearch~=1.2.0  # Listed explicitly because elasticutils does not constrain appropriately.
 elasticutils~=0.10.3
 factory-boy~=2.12.0
