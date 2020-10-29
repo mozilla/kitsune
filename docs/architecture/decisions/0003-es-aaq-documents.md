@@ -4,7 +4,7 @@ Date: 2020-10-27
 
 ## Status
 
-Accepted
+Pending
 
 ## Context
 
@@ -28,7 +28,11 @@ https://www.elastic.co/guide/en/elasticsearch/reference/7.9/tune-for-search-spee
 
 ## Decision
 
-We will use a structure of two document "types" within one index,
+We will model our data in ES based on what makes most sense for our expected use-cases,
+and what will make those fast and efficient,
+rather than feeling like we must have a 1:1 copy of our data structure in our database.
+
+In this vein, we will use a structure of two document "types" within one index,
 `QuestionDocument` and `AnswerDocument`,
 where a `QuestionDocument` will exist for each `Question` which exists in the database,
 and an `AnswerDocument` will exist for each `Answer` which exists in the database.
