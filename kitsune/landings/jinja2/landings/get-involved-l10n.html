@@ -26,6 +26,7 @@
 </section>
 {% set user_is_contributor = is_contributor(user) %}
 {% set signup_headline = _('Translate help articles to your language') %}
+{% set next_url = url('landings.get_involved_l10n') %}
 {% include 'landings/includes/register_contributor.html' %}
 
   <section class="sumo-page-section has-moz-headings pick-a-way text-left">
