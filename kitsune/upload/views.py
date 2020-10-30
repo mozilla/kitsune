@@ -75,9 +75,16 @@ def del_image_async(request, image_id):
         message = _("You do not have permission to do that.")
         return HttpResponseForbidden(json.dumps({"status": "error", "message": message}))
 
+    content_object = image.content_object
+
     image.file.delete()
     if image.thumbnail:
         image.thumbnail.delete()
     image.delete()
+
+    if hasattr(content_object, "clear_cached_images"):
+        # if the object the image was attached to has a `clear_cached_images` method,
+        # like questions and answers do, call it
+        content_object.clear_cached_images()
 
     return HttpResponse(json.dumps({"status": "success"}))

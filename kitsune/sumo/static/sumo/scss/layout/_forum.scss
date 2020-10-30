@@ -471,20 +471,14 @@
   }
 }
 
-
-
-// TODO: test this on prod, as my database doesn't support it.
-.attachments-upload,
-.ans-attachments {
-  .adding-attachment {
+.attachments-upload {
+  .adding-attachment,
+  .empty {
     display: none;
   }
+}
 
-  .empty,
-  .upload-progress {
-    display: none;
-  }
-
+.attachments-list {
   .attachment {
     display: inline-block;
     position: relative;
@@ -532,6 +526,7 @@
   }
 
   .upload-progress {
+    display: none;
     background: url('../img/wait-trans.gif') no-repeat center;
     border: 1px solid #ccc;
     margin: 5px;
