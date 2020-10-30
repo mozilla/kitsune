@@ -446,7 +446,6 @@ def locale_discussions(request):
     threads_ = sort_threads(threads, sort, desc)
 
     # Ignore sticky-ness:
-    threads_ = threads_.order_by("-last_post__created")
     threads_ = paginate(request, threads_, per_page=kbforums.THREADS_PER_PAGE)
     is_watching_locale = request.user.is_authenticated and NewThreadInLocaleEvent.is_notifying(
         request.user, locale=request.LANGUAGE_CODE
