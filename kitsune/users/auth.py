@@ -58,7 +58,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if fxa_locale in settings.SUMO_LANGUAGES:
             profile.locale = fxa_locale
         else:
-            profile.locale = settings.LANGUAGE_CODE
+            profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
 
         profile.save()
         # User subscription information
@@ -85,7 +85,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         )
 
         if self.request.session.get("is_contributor", False):
-            add_to_contributors(user, self.request.LANGUAGE_CODE)
+            add_to_contributors(user, profile.locale)
             del self.request.session["is_contributor"]
 
         return user
