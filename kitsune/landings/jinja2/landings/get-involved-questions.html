@@ -28,6 +28,7 @@
 
   {% set user_is_contributor = is_contributor(user) %}
   {% set signup_headline = _('Help users in the forums') %}
+  {% set next_url = url('landings.get_involved_questions') %}
   {% include 'landings/includes/register_contributor.html' %}
 
 <section class="sumo-page-section has-moz-headings">
