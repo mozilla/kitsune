@@ -1046,10 +1046,15 @@ AXES_BEHIND_REVERSE_PROXY = config("AXES_BEHIND_REVERSE_PROXY", default=not DEBU
 AXES_REVERSE_PROXY_HEADER = config("AXES_REVERSE_PROXY_HEADER", default="HTTP_X_CLUSTER_CLIENT_IP")
 
 USE_DEBUG_TOOLBAR = config("USE_DEBUG_TOOLBAR", default=False, cast=bool)
-if DEBUG and USE_DEBUG_TOOLBAR:
 
-    def show_toolbar_callback(request):
-        return True
+
+def show_toolbar_callback(*args):
+    return DEBUG and USE_DEBUG_TOOLBAR
+
+
+SHOW_DEBUG_TOOLBAR = show_toolbar_callback()
+
+if SHOW_DEBUG_TOOLBAR:
 
     DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": "kitsune.settings.show_toolbar_callback"}
 
