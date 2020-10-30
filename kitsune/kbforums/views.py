@@ -48,7 +48,7 @@ def sort_threads(threads_, sort=0, desc=0):
         return threads_.order_by(prefix + "last_post__created").all()
 
     # If nothing matches, use default sorting
-    return threads_.all()
+    return threads_.order_by("-last_post__created")
 
 
 def threads(request, document_slug):
