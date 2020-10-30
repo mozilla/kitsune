@@ -144,12 +144,16 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def clear_cached_contributors(self):
         cache.delete(self.contributors_cache_key % self.id)
 
+    def clear_cached_images(self):
+        cache.delete(self.images_cache_key % self.id)
+
     def save(self, update=False, *args, **kwargs):
         """Override save method to take care of updated if requested."""
         new = not self.id
 
         if not new:
             self.clear_cached_html()
+            self.clear_cached_images()
             if update:
                 self.updated = datetime.now()
 
