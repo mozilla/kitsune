@@ -48,7 +48,7 @@ def sort_threads(threads_, sort=0, desc=0):
         return threads_.order_by(prefix + "last_post__created").all()
 
     # If nothing matches, use default sorting
-    return threads_.order_by("-last_post__created")
+    return threads_.all()
 
 
 def threads(request, document_slug):
@@ -433,19 +433,17 @@ def locale_discussions(request):
         document__locale=request.LANGUAGE_CODE, document__allow_discussion=True
     )
     try:
-        sort = int(request.GET.get("sort", 0))
+        sort = int(request.GET.get("sort", 5))
     except ValueError:
-        sort = 0
+        sort = 5
 
     try:
-        desc = int(request.GET.get("desc", 0))
+        desc = int(request.GET.get("desc", 1))
     except ValueError:
-        desc = 0
+        desc = 1
     desc_toggle = 0 if desc else 1
 
     threads_ = sort_threads(threads, sort, desc)
-
-    # Ignore sticky-ness:
     threads_ = paginate(request, threads_, per_page=kbforums.THREADS_PER_PAGE)
     is_watching_locale = request.user.is_authenticated and NewThreadInLocaleEvent.is_notifying(
         request.user, locale=request.LANGUAGE_CODE
