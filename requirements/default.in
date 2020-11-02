@@ -7,7 +7,7 @@ bleach~=3.2.1
 boto3>=1.2.3  # pip-compile does not handle extras properly (django-storages)
 celery==4.4.3
 commonware~=0.6.0
-cryptography~=2.9.2  # pip-compile does not handle extras properly (requests)
+cryptography~=3.2  # pip-compile does not handle extras properly (requests)
 denniS~=0.9
 dj-database-url~=0.5.0
 django-activity-stream[jsonfield]~=0.8.0
