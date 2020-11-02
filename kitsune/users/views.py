@@ -330,6 +330,9 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
     def get(self, request):
         is_contributor = request.GET.get("is_contributor") == "True"
         request.session["is_contributor"] = is_contributor
+
+        request.session["login_locale"] = getattr(request, "LANGUAGE_CODE", settings.LANGUAGE_CODE)
+
         return super(FXAAuthenticateView, self).get(request)
 
 
