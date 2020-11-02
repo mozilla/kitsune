@@ -101,6 +101,13 @@ if settings.DEBUG:
         ),
     ]
 
+if settings.SHOW_DEBUG_TOOLBAR:
+    import debug_toolbar
+
+    urlpatterns += [
+        url("__debug__/", include(debug_toolbar.urls)),
+    ]
+
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [

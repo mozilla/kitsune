@@ -171,6 +171,34 @@ to ensure that they render correctly::
       docker-compose exec web ./manage.py nunjucks_precompile
 ```
 
+### Using Django Debug Toolbar
+
+[Django Debug Toolbar](https://github.com/jazzband/django-debug-toolbar)
+provides some very useful information when debugging various things in Django,
+especially slow running SQL queries.
+
+To enable it, ensure `DEBUG` and `USE_DEBUG_TOOLBAR` are enabled in `.env`:
+
+```
+DEBUG=True
+USE_DEBUG_TOOLBAR=True
+```
+
+If you are using it to debug slow running SQL queries,
+you may want to disable the [MariaDB query cache](https://mariadb.com/kb/en/query-cache/).
+Do that by adding the following lines under the `services.mariadb.entrypoint` key in `docker-compose.yml`:
+
+```
+- --query-cache-type=0
+- --query-cache-size=0
+```
+
+And restart the database:
+
+```
+docker-compose restart mariadb
+```
+
 ## Running the tests
 
 Running the test suite is easy:

@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import pytz
-import waffle
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
@@ -54,26 +53,52 @@ def usernames(request):
     if not request.user.is_authenticated:
         return []
 
-    profiles = Profile.objects.filter(Q(name__istartswith=pre)).values_list("user_id", flat=True)
-    users = (
-        User.objects.filter(Q(username__istartswith=pre) | Q(id__in=profiles))
-        .extra(select={"length": "Length(username)"})
-        .order_by("length")
-        .select_related("profile")
+    profile_ids = list(
+        Profile.objects.filter(Q(name__istartswith=pre)).values_list("user_id", flat=True)[:10]
     )
+    users = (
+        User.objects.filter(Q(username__istartswith=pre) | Q(id__in=profile_ids))
+        .filter(is_active=True)
+        .select_related("profile")
+    )[:10]
 
-    if not waffle.switch_is_active("users-dont-limit-by-login"):
-        last_login = datetime.now() - timedelta(weeks=12)
-        users = users.filter(last_login__gte=last_login)
+    autocomplete_list = []
+    exact_match_in_list = False
 
-    return [
-        {
-            "username": u.username,
-            "display_name": display_name_or_none(u),
-            "avatar": profile_avatar(u, 24),
-        }
-        for u in users[:10]
-    ]
+    for user in users:
+        if user.username.lower() == pre.lower():
+            exact_match_in_list = True
+        autocomplete_list.append(
+            {
+                "username": user.username,
+                "display_name": display_name_or_none(user),
+                "avatar": profile_avatar(user, 24),
+            }
+        )
+
+    if not exact_match_in_list:
+        # The front-end dropdown which uses this API requires the exact match to be in the list
+        # if it exists, so that user can be selected. Our code above won't necessarily always
+        # return an exact match, even if it exists, so if it's missing attempt to fetch it and
+        # prepend it to the list
+        try:
+            exact_match = (
+                User.objects.filter(username__iexact=pre)
+                .filter(is_active=True)
+                .select_related("profile")
+                .get()
+            )
+            autocomplete_list = [
+                {
+                    "username": exact_match.username,
+                    "display_name": display_name_or_none(exact_match),
+                    "avatar": profile_avatar(exact_match, 24),
+                }
+            ] + autocomplete_list
+        except User.DoesNotExist:
+            pass
+
+    return autocomplete_list
 
 
 @api_view(["GET"])

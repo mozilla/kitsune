@@ -19,7 +19,7 @@ The production branch maintains an image that can be released in production with
 
 ## Deploying SUMO
 
-#### Setup
+### Setup
 
 - Move to the SUMO `k8s` directory
 
@@ -34,18 +34,6 @@ The production branch maintains an image that can be released in production with
   pip install -r ./requirements.txt
   ```
 
-- Create symbolic links to `kubectl` and `kubeconfig` to use in each region
-
-  e.g. `ln -s ~/bin/kubectl ./regions/frankfurt/kubectl`
-
-  Files to be created:
-    - ./regions/frankfurt/kubectl
-    - ./regions/frankfurt/kubeconfig
-    - ./regions/oregon-a/kubectl
-    - ./regions/oregon-a/kubeconfig
-    - ./regions/oregon-b/kubectl
-    - ./regions/oregon-b/kubeconfig
-
 - Create symbolic links to secrets for each namespace and region.
 
   e.g. `ln -s ~/sumo-encrypted/k8s/secrets/frankfurt/sumo-dev-secrets.yaml ./regions/frankfurt/dev-secrets.yaml`
@@ -59,20 +47,50 @@ The production branch maintains an image that can be released in production with
     - ./regions/oregon-b/stage-secrets.yaml
     - ./regions/oregon-b/prod-secrets.yaml
 
+#### Configuration for deploying into a Kops cluster
+- Create symbolic links to `kubectl` and `kubeconfig` to use in each region. Note that `kubectl` should match the version of the cluster, or have a version skew of 1 minor version.
+
+  e.g. `ln -s ~/bin/kubectl ./regions/frankfurt/kubectl`
+
+  Files to be created:
+    - ./regions/frankfurt/kubectl
+    - ./regions/frankfurt/kubeconfig
+    - ./regions/oregon-a/kubectl
+    - ./regions/oregon-a/kubeconfig
+    - ./regions/oregon-b/kubectl
+    - ./regions/oregon-b/kubeconfig
+
+- Establish a connection to Mozilla's VPN.
+
+#### Configuration for deploying into an EKS cluster
+- Ensure that your `kubectl` binary matches the cluster version (check the cluster version in the table below).
+
+- Authorize yourself into AWS. After making sure you are part of the right LDAP groups, run `$(maws)` to get a short lived AWS token. More on installing maws [here](https://mana.mozilla.org/wiki/display/SECURITY/How+to+login+to+AWS+with+Single+Sign+On).
+
+- Get the `kubeconfig` file running `aws eks update-kubeconfig --name <cluster-name> --region <region>` adding the cluster name and region. You can find a table with the EKS clusters and regions below. 
+This command will by default append the configuration to `~/.kube/config`. After that, you should be able to talk to the cluster and perform operations like `kubectl get namespaces`.
+
+Here there is a list with the names of the clusters per region:
+| Region  | Cluster | Version |
+|---|---|---|
+| eu-central-1 | sumo-eks-eu-central-1 | 1.17 |
+| us-west-2  |  | |
+
 
 #### Deploy SUMO with commander (recommended)
 
 Choose a region and env:
 
-| Region  | Env  |
-|---|---|
-| frankfurt  | dev  |
-| frankfurt  | stage |
-| frankfurt  | prod |
-| oregon-a  | stage |
-| oregon-a  | prod |
-| oregon-b  | stage |
-| oregon-b  | prod |
+| Region  | Env  | Cluster | Version |
+|---|---|---|---|
+| frankfurt  | test | kops | 1.11 |
+| frankfurt  | dev | kops | 1.11 |
+| frankfurt  | stage | kops |1.11 |
+| frankfurt  | prod | kops |1.11 |
+| oregon-a  | stage | kops |1.11 |
+| oregon-a  | prod | kops |1.11 |
+| oregon-b  | stage | kops |1.11 |
+| oregon-b  | prod | kops |1.11 |
 
 
 - Update the settings file with new image tags and settings.
