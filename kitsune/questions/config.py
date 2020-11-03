@@ -724,6 +724,55 @@ products = OrderedDict(
                 ),
             },
         ),
+        (
+            "hubs",
+            {
+                "name": _lazy("Hubs"),
+                "subtitle": _lazy(
+                    "Virtual 3D meeting spaces for collaborating with friends, family, "
+                    "and colleagues on your browser or VR headset"
+                ),
+                "extra_fields": [],
+                "tags": ["hubs"],
+                "product": "hubs",
+                "categories": OrderedDict(
+                    [
+                        (
+                            "hubs-avatars",
+                            {
+                                "name": _lazy("Avatars"),
+                                "topic": "hubs-avatars",
+                                "tags": ["hubs-avatars"],
+                            },
+                        ),
+                        (
+                            "hubs-accounts",
+                            {
+                                "name": _lazy("Accounts"),
+                                "topic": "hubs-accounts",
+                                "tags": ["hubs-accounts"],
+                            },
+                        ),
+                        (
+                            "hubs-rooms",
+                            {
+                                "name": _lazy("Rooms"),
+                                "topic": "hubs-rooms",
+                                "tags": ["hubs-rooms"],
+                            },
+                        ),
+                        (
+                            "hubs-moderators",
+                            {
+                                "name": _lazy("Moderators & Hosts"),
+                                "topic": "hubs-moderators",
+                                "tags": ["hubs-moderators"],
+                            },
+                        ),
+                    ]
+                ),
+            },
+        ),
     ]
 )
 
