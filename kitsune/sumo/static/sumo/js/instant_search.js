@@ -3,7 +3,12 @@
   var searchTimeout;
   var locale = $('html').attr('lang');
 
-  var search = new k.Search('/' + locale + '/search');
+  if (window.localStorage.getItem("enable_search_v2") === "true") {
+    var search = new k.Search("/" + locale + "/search/v2/");
+  } else {
+    var search = new k.Search("/" + locale + "/search");
+  }
+
   var cxhr = new k.CachedXHR();
   var aaq_explore_step = $("#question-search-masthead").length > 0;
 

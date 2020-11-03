@@ -88,6 +88,7 @@ def _documents_for(locale, topics=None, products=None):
         # 30 days). It is better to return them in the wrong order
         # than not to return them at all.
         documents = _db_documents_for(locale, topics, products)
+        cache.add(_documents_for_cache_key(locale, topics, products), documents)
 
     return documents
 
@@ -121,7 +122,7 @@ def _db_documents_for(locale, topics=None, products=None):
         is_archived=False,
         current_revision__isnull=False,
         category__in=settings.IA_DEFAULT_CATEGORIES,
-    )
+    ).prefetch_related("current_revision")
     for topic in topics or []:
         qs = qs.filter(topics=topic)
     for product in products or []:
