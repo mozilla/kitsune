@@ -1,26 +1,25 @@
 import json
+from functools import wraps
 from textwrap import dedent
-
 from unittest import mock
+
 from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-
 from josepy import jwa, jwk, jws
+from nose.tools import eq_
+from pyquery import PyQuery as pq
 
+from kitsune.messages.models import InboxMessage
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import CONTRIBUTOR_GROUP, AccountEvent, Deactivation, Profile, Setting
-from kitsune.users.tests import GroupFactory, UserFactory, add_permission
+from kitsune.users.tests import GroupFactory, ProfileFactory, UserFactory, add_permission
 from kitsune.users.views import edit_profile
-from nose.tools import eq_
-from pyquery import PyQuery as pq
-from kitsune.users.tests import ProfileFactory
-from functools import wraps
 
 
 class MakeContributorTests(TestCase):
@@ -120,6 +119,18 @@ class UserProfileTests(TestCase):
         eq_(0, Question.objects.filter(creator=u, is_spam=False).count())
         eq_(1, Answer.objects.filter(creator=u, is_spam=True).count())
         eq_(0, Answer.objects.filter(creator=u, is_spam=False).count())
+
+    def test_inbox_deletion_on_deactivation(self):
+        """Test message deletion on deactivation"""
+        recipient = UserFactory()
+        sender = UserFactory()
+        InboxMessage.objects.create(
+            to=recipient, sender=sender, message="testing message deletion"
+        )
+        self.client.login(username=recipient.username, password="testpass")
+        self.client.post(reverse("users.close_account", locale="en-US"), {"user_id": recipient.pk})
+
+        eq_(0, InboxMessage.objects.filter(to=recipient).count())
 
 
 class ProfileNotificationTests(TestCase):

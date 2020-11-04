@@ -1,12 +1,13 @@
 import bisect
 import logging
-from uuid import uuid4
 from re import escape
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.utils.translation import ugettext as _
 
+from kitsune.messages.models import InboxMessage
 from kitsune.sumo import email_utils
 from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
 
@@ -87,8 +88,9 @@ def anonymize_user(user):
     # Deactivate the user and change key information
     user.username = "user%s" % user.id
     user.email = "%s@example.com" % user.id
+    # Delete the inbox of the user
+    InboxMessage.objects.filter(to=user).delete()
     deactivate_user(user, user)
-
     # Remove from all groups
     user.groups.clear()
 
