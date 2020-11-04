@@ -3,11 +3,11 @@ import inspect
 
 from celery import task
 from django.conf import settings
-
+from elasticsearch7.helpers import bulk as es7_bulk
 from elasticsearch_dsl import Document, analyzer, token_filter
+
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
-from elasticsearch7.helpers import bulk as es7_bulk
 from kitsune.search.v2.base import SumoDocument
 
 
@@ -92,19 +92,26 @@ def index_object(doc_type_name, obj_id):
     model = doc_type.get_model()
 
     obj = model.objects.get(pk=obj_id)
-    doc = doc_type.prepare(obj)
-    doc.save()
+    doc_type.prepare(obj).to_action("index")
 
 
 @task
 def index_objects_bulk(doc_type_name, obj_ids):
     """Bulk index ORM objects given a list of object ids and a document type name."""
+    from kitsune.search.v2.documents import WikiDocument
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
 
     objects = doc_type.get_queryset().filter(pk__in=obj_ids)
-    docs = [doc_type.prepare(obj).to_dict(include_meta=True) for obj in objects]
-    es7_bulk(es7_client(), docs)
+    # prepare the docs for indexing
+    docs = [doc_type.prepare(obj) for obj in objects]
+    # set the appropriate action per document type
+    action = "index"
+    kwargs = {"is_bulk": True}
+    if doc_type is WikiDocument:
+        action = "update"
+        kwargs.update({"doc_as_upsert": True})
+    es7_bulk(es7_client(), (doc.to_action(action=action, **kwargs) for doc in docs))
 
 
 @task

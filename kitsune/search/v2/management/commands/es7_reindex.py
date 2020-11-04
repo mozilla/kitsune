@@ -1,4 +1,5 @@
 from math import ceil
+
 from django.core.management.base import BaseCommand
 from django.db import connection, reset_queries
 
