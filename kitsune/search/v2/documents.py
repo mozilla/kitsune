@@ -6,10 +6,13 @@ from kitsune.questions.models import Answer, Question
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
 from kitsune.search.v2.es7_utils import es7_client
-from kitsune.search.v2.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
+from kitsune.search.v2.fields import (
+    SumoLocaleAwareBooleanField,
+    SumoLocaleAwareKeywordField,
+    SumoLocaleAwareTextField,
+)
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
-from kitsune.wiki.config import REDIRECT_HTML
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
@@ -20,21 +23,25 @@ class WikiDocument(SumoDocument):
     product_ids = field.Keyword(multi=True)
     topic_ids = field.Keyword(multi=True)
     locale = field.Keyword()
-    parent_id = field.Keyword()
     category = field.Keyword()
-    slug = field.Keyword()
-    is_archived = field.Boolean()
-    recent_helpful_votes = field.Integer()
 
     # Document specific fields (locale aware)
     title = SumoLocaleAwareTextField()
     content = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
     summary = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
     keywords = SumoLocaleAwareKeywordField(multi=True)
+    slug = SumoLocaleAwareKeywordField(store=True)
+    doc_id = SumoLocaleAwareKeywordField(store=True)
+    is_archived = SumoLocaleAwareBooleanField()
 
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
+
+    @classmethod
+    def prepare(cls, instance):
+        """Override super method to merge docs for KB."""
+        return super(WikiDocument, cls).prepare(instance, merge_docs=True)
 
     def prepare_updated(self, instance):
         return getattr(instance.current_revision, "created", None)
@@ -51,28 +58,19 @@ class WikiDocument(SumoDocument):
             return instance.summary
         return None
 
-    def prepare_product_ids(self, instance):
-        return [product.id for product in instance.products.all()]
+    def prepare_doc_id(self, instance):
+        return instance.pk
 
     def prepare_topic_ids(self, instance):
         return [topic.id for topic in instance.topics.all()]
+
+    def prepare_product_ids(self, instance):
+        return [product.id for product in instance.products.all()]
 
     def prepare_parent_id(self, instance):
         if instance.parent:
             return instance.parent.id
         return None
-
-    def prepare_recent_helpful_votes(self, instance):
-        # Don't extract helpful votes if the document doesn't have a current
-        # revision, or is a template, or is a redirect, or is in Navigation
-        # category (50).
-        if instance.current_revision and not (
-            instance.is_template
-            and instance.html.startswith(REDIRECT_HTML)
-            and instance.category == 50
-        ):
-            return instance.recent_helpful_votes
-        return 0
 
     def prepare_display_order(self, instance):
         return instance.original.display_order

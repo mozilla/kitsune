@@ -105,10 +105,13 @@ def index_objects_bulk(doc_type_name, obj_ids):
     objects = doc_type.get_queryset().filter(pk__in=obj_ids)
     # prepare the docs for indexing
     docs = [doc_type.prepare(obj) for obj in objects]
+    # set the appropriate action per document type
     action = "index"
+    kwargs = {"is_bulk": True}
     if doc_type is WikiDocument:
         action = "update"
-    es7_bulk(es7_client(), (doc.to_action(action=action, is_bulk=True) for doc in docs))
+        kwargs.update({"doc_as_upsert": True})
+    es7_bulk(es7_client(), (doc.to_action(action=action, **kwargs) for doc in docs))
 
 
 @task
