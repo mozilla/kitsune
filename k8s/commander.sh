@@ -17,17 +17,6 @@ function deploy {
     DEPLOY_SECRETS=${5:-NO}
     K8S_NAMESPACE="sumo-${REGION_ENV}"
 
-    if [ -f "./regions/${REGION}/kubectl" ] ; then
-        KUBECTL_BIN="./regions/${REGION}/kubectl"
-    else
-        KUBECTL_BIN=$(which kubectl)
-    fi
-    export KUBECTL_BIN
-
-    if [ -f "./regions/${REGION}/kubeconfig" ] ; then
-        export KUBECONFIG="./regions/${REGION}/kubeconfig"
-    fi
-
     if [[ "${DEPLOY_SECRETS}" == "secrets" ]]; then
         echo "Applying secrets";
         ${KUBECTL_BIN} -n "${K8S_NAMESPACE}" apply -f "regions/${REGION}/${REGION_ENV}-secrets.yaml"
@@ -55,9 +44,6 @@ function post-deploy {
     REGION_ENV=${3}
     K8S_NAMESPACE="sumo-${REGION_ENV}"
 
-    export KUBECTL_BIN="./regions/${REGION}/kubectl"
-    export KUBECONFIG="./regions/${REGION}/kubeconfig"
-
     # run post-deployment tasks
     echo "Running post-deployment tasks"
     # Get the name of a running web pod on which we can run the post-deploy script
@@ -65,6 +51,43 @@ function post-deploy {
     ${KUBECTL_BIN} -n "${K8S_NAMESPACE}" exec "${SUMO_POD}" bin/run-post-deploy.sh
 }
 
+function initialize {
+    REGION=${2}
+
+    if [ -f "./regions/${REGION}/kubectl" ] ; then
+        KUBECTL_BIN="./regions/${REGION}/kubectl"
+    else
+        KUBECTL_BIN=$(which kubectl)
+    fi
+    export KUBECTL_BIN
+
+    if [ -f "./regions/${REGION}/kubeconfig" ] ; then
+        export KUBECONFIG="./regions/${REGION}/kubeconfig"
+    fi
+
+    ${KUBECTL_BIN} version > /dev/null
+    if [ $? == 1 ] ; then
+        echo "Can't connect to the Kubernetes server. Exiting here"
+        exit 1
+    fi
+
+    compare-client-server-versions
+}
+
+function compare-client-server-versions {
+    CLIENT_VERSION=$(${KUBECTL_BIN} version --short | grep Client | awk -F. '{print $2}')
+    SERVER_VERSION=$(${KUBECTL_BIN} version --short | grep Server | awk -F. '{print $2}')
+
+    # Calculate difference between versions
+    DIFFERENCE=$((CLIENT_VERSION - SERVER_VERSION))
+    if ((DIFFERENCE > 1)) || ((DIFFERENCE < -1)) ; then
+        echo "Version mismatch; Client and server versions must be equal or have 1 minor version step. Exiting here"
+        echo "Client version: $CLIENT_VERSION, Server version: $SERVER_VERSION "
+        exit 1
+    fi
+}
+
 source venv/bin/activate
+initialize "$@"
 
 $1 $@

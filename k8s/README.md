@@ -74,7 +74,9 @@ Here there is a list with the names of the clusters per region:
 | Region  | Cluster | Version |
 |---|---|---|
 | eu-central-1 | sumo-eks-eu-central-1 | 1.17 |
-| us-west-2  |  | |
+| eu-central-1a | k8s.eu-central-1a.sumo.mozit.cloud | 1.11 |
+| us-west-2a  | k8s.us-west-2a.sumo.mozit.cloud | 1.11 |
+| us-west-2b  | k8s.us-west-2b.sumo.mozit.cloud | 1.11 |
 
 
 #### Deploy SUMO with commander (recommended)
@@ -83,8 +85,8 @@ Choose a region and env:
 
 | Region  | Env  | Cluster | Version |
 |---|---|---|---|
-| frankfurt  | test | kops | 1.11 |
-| frankfurt  | dev | kops | 1.11 |
+| frankfurt  | test | eks | 1.17 |
+| frankfurt  | dev | eks | 1.17 |
 | frankfurt  | stage | kops |1.11 |
 | frankfurt  | prod | kops |1.11 |
 | oregon-a  | stage | kops |1.11 |
