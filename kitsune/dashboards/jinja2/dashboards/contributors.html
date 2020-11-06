@@ -64,7 +64,7 @@
     {% include 'dashboards/includes/kb_overview.html' %}
   </table>
   <div class="table-footer">
-    <a href="{{ url('dashboards.contributors_overview')|urlparams(product=product.slug, category=category) }}">{{ _('Complete overview...') }}</a>
+    <a href="{{ url('dashboards.contributors_overview')|urlparams(category=category) }}">{{ _('Complete overview...') }}</a>
   </div>
 {% endblock %}
 

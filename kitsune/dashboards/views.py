@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET
 
@@ -252,10 +252,10 @@ def aggregated_metrics(request):
 
 def _get_product(request):
     product_slug = request.GET.get("product")
-    try:
-        return Product.objects.get(slug=product_slug)
-    except Product.DoesNotExist:
-        return None
+    if product_slug:
+        return get_object_or_404(Product, slug=product_slug)
+
+    return None
 
 
 def _get_category(request):
