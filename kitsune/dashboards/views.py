@@ -252,10 +252,10 @@ def aggregated_metrics(request):
 
 def _get_product(request):
     product_slug = request.GET.get("product")
-    if product_slug:
-        return get_object_or_404(Product, slug=product_slug)
-
-    return None
+    try:
+        return Product.objects.get(slug=product_slug)
+    except:
+        return None
 
 
 def _get_category(request):
