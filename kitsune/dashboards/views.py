@@ -254,7 +254,7 @@ def _get_product(request):
     product_slug = request.GET.get("product")
     try:
         return Product.objects.get(slug=product_slug)
-    except:
+    except Product.DoesNotExist:
         return None
 
 
