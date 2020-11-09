@@ -153,7 +153,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         if not new:
             self.clear_cached_html()
-            self.clear_cached_images()
             if update:
                 self.updated = datetime.now()
 
@@ -1006,10 +1005,6 @@ class Answer(ModelBase, SearchMixin):
                 actstream.actions.follow(
                     self.creator, self.question, send_action=False, actor_only=False
                 )
-
-        if not new:
-            # Clear the attached images cache.
-            self.clear_cached_images()
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent question info."""

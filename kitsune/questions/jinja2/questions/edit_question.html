@@ -12,6 +12,7 @@
 
 {% block attachments_form %}
   {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+  <p class="explain-upload">{{ _('When editing a question, uploading new images or deleting existing ones will happen instantly.') }}</p>
 {% endblock %}
 
 {% block submit_button_value %}{{ _('Save Question') }}{% endblock %}

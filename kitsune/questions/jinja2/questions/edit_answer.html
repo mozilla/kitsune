@@ -46,6 +46,7 @@
           </div>
 
           {{ attachments_form('questions.Answer', answer.pk, answer.images.all(), settings, request.user) }}
+          <p>{{ _('When editing an answer, uploading new images or deleting existing ones will happen instantly.') }}</p>
 
           <div class="form-widget submit sumo-button-wrap reverse-on-desktop">
             <button type="submit" class="sumo-button primary-button">{{ _('Update answer') }}</button>
