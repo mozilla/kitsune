@@ -64,7 +64,7 @@
     {% include 'dashboards/includes/kb_overview.html' %}
   </table>
   <div class="table-footer">
-    {% set pslug=product.slug if product!=None else None%}
+    {% set pslug=product.slug if product!=None else None %}
     <a href="{{ url('dashboards.contributors_overview')|urlparams(product=pslug, category=category) }}">{{ _('Complete overview...') }}</a>
   </div>
 {% endblock %}
