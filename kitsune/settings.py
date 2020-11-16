@@ -344,7 +344,7 @@ ES_LOCALE_ANALYZERS = {
 
 ES_PLUGIN_ANALYZERS = ["polish"]
 
-ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=True, cast=bool)
+ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=not DEBUG, cast=bool)
 
 TEXT_DOMAIN = "messages"
 
