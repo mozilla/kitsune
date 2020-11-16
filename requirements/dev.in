@@ -10,7 +10,7 @@ ipdb
 isort
 jsonschema~=2.5
 pep8
-pip==20.2.3
+pip==20.2.4
 pip-compile-multi~=2.1.0
 pip-tools~=5.3.1
 pre-commit~=2.4.0
