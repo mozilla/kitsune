@@ -222,6 +222,20 @@ class AnswerDocument(QuestionDocument):
         return super().get_field_value(field, instance, *args)
 
     @classmethod
+    def prepare(cls, instance, **kwargs):
+        obj = super().prepare(instance, **kwargs)
+        # add a prefix to the id so we don't clash with QuestionDocuments
+        obj.meta.id = "a_{}".format(obj.meta.id)
+        return obj
+
+    @classmethod
+    def get(cls, id, **kwargs):
+        # if the id is un-prefixed, add it
+        if not str(id).startswith("a_"):
+            id = "a_{}".format(id)
+        return super().get(id, **kwargs)
+
+    @classmethod
     def get_model(cls):
         return Answer
 
