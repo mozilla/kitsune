@@ -95,7 +95,7 @@ class SumoDocument(DSLDocument):
         # Default to index if no action is defined or if it's `save`
         # if we have a bulk update, we need to include the meta info
         # and return the data by calling the to_dict() method of DSL
-        payload = self.to_dict(include_meta=is_bulk)
+        payload = self.to_dict(include_meta=is_bulk, skip_empty=False)
 
         if not action or action == "index":
             return payload if is_bulk else self.save(**kwargs)
