@@ -1,4 +1,4 @@
 [tool.black]
 line-length = 99
-target-version = ['py38']
+target-version = ['py39']
 exclude = "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
