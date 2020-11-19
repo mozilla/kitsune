@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from kitsune.sumo.tests import TestCase
 from kitsune.questions.tests import (
     QuestionFactory,
@@ -40,3 +41,19 @@ class AnswerDocumentTests(TestCase):
         self.assertEqual(document.question_num_votes, 4)
         self.assertEqual(document.num_unhelpful_votes, 3)
         self.assertEqual(document.num_helpful_votes, 2)
+
+    def test_id_wont_clash_with_question_id(self):
+        answer = AnswerFactory()
+        document = AnswerDocument.prepare(answer)
+        self.assertNotEqual(answer.id, document.meta.id)
+        self.assertIn(str(answer.id), str(document.meta.id))
+
+    @patch("kitsune.search.v2.documents.SumoDocument.get")
+    def test_get_works_with_unprefixed_ids(self, mock_get):
+        AnswerDocument.get(123)
+        mock_get.assert_called_with("a_123")
+
+    @patch("kitsune.search.v2.documents.SumoDocument.get")
+    def test_get_works_with_prefixed_ids(self, mock_get):
+        AnswerDocument.get("a_123")
+        mock_get.assert_called_with("a_123")
