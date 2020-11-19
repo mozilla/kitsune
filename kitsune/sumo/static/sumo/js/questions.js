@@ -16,13 +16,17 @@
     $('.has-error input, .has-error textarea').first().focus();
 
     if ($body.is('.new-question')) {
-      initNewQuestion();
+      initQuestion();
 
       if (window.location.search.indexOf('step=aaq-register') > -1) {
         trackEvent('Ask A Question Flow', 'step 1 page');
       } else if (window.location.search.indexOf('step=aaq-question') > -1) {
         trackEvent('Ask A Question Flow', 'step 2 page');
       }
+    }
+
+    if ($body.is('.edit-question')) {
+      initQuestion("editing");
     }
 
     if ($body.is('.questions')) {
@@ -96,12 +100,16 @@
   }
 
   /*
-  * Initialize the new question page/form
+  * Initialize the new/edit question page/form
   */
-  function initNewQuestion() {
+  function initQuestion(action) {
     var $questionForm = $('#question-form');
     var aaq = new AAQSystemInfo($questionForm);
-    hideDetails($questionForm, aaq);
+    if (action === "editing") {
+      $("#troubleshooting-field").show();
+    } else {
+      hideDetails($questionForm, aaq);
+    }
   }
 
   function isLoggedIn() {

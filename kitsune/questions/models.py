@@ -144,6 +144,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def clear_cached_contributors(self):
         cache.delete(self.contributors_cache_key % self.id)
 
+    def clear_cached_images(self):
+        cache.delete(self.images_cache_key % self.id)
+
     def save(self, update=False, *args, **kwargs):
         """Override save method to take care of updated if requested."""
         new = not self.id
@@ -1002,10 +1005,6 @@ class Answer(ModelBase, SearchMixin):
                 actstream.actions.follow(
                     self.creator, self.question, send_action=False, actor_only=False
                 )
-
-        if not new:
-            # Clear the attached images cache.
-            self.clear_cached_images()
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent question info."""

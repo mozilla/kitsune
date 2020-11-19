@@ -11,7 +11,7 @@ RUN npm run production
 ################################
 # Python dependencies builder
 #
-FROM python:3.8-buster AS base
+FROM python:3.9-buster AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -24,7 +24,7 @@ ENV PATH="/venv/bin:$PATH"
 
 RUN python -m venv /venv
 RUN mkdir /vendor
-RUN pip install --upgrade "pip==20.2.3"
+RUN pip install --upgrade "pip==20.2.4"
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && \
@@ -39,7 +39,6 @@ COPY ./requirements/*.txt /app/requirements/
 
 RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt && \
     pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/test.txt && \
     pip install --no-cache-dir --require-hashes --no-deps -t /vendor -r requirements/es7.txt
 
 ARG GIT_SHA=head
@@ -76,7 +75,7 @@ RUN cp .env-build .env && \
 ################################
 # Fetch locales
 #
-FROM python:3.8-buster AS locales
+FROM python:3.9-buster AS locales
 
 WORKDIR /app
 
@@ -102,7 +101,7 @@ ENV GIT_SHA ${GIT_SHA}
 ################################
 # Full prod image sans locales
 #
-FROM python:3.8-slim-buster AS full-no-locales
+FROM python:3.9-slim-buster AS full-no-locales
 
 WORKDIR /app
 
