@@ -17,6 +17,16 @@ class SumoDocument(DSLDocument):
         dynamic = MetaField("false")
 
     @classmethod
+    @property
+    def update_document(cls):
+        """Controls if a document should be indexed or updated in ES.
+
+        True: An update action will be performed in ES.
+        False: An index action will be performed in ES.
+        """
+        return False
+
+    @classmethod
     def prepare(cls, instance, **kwargs):
         """Prepare an object given a model instance.
 
@@ -76,18 +86,16 @@ class SumoDocument(DSLDocument):
 
         return obj
 
-    def to_action(self, action=None, **kwargs):
+    def to_action(self, action=None, is_bulk=False, **kwargs):
         """Method to construct the data for save, delete, update operations.
 
         Useful for bulk operations.
         """
 
         # Default to index if no action is defined or if it's `save`
-        payload = {}
         # if we have a bulk update, we need to include the meta info
         # and return the data by calling the to_dict() method of DSL
-        if is_bulk := kwargs.pop("is_bulk", False):
-            payload = self.to_dict(include_meta=is_bulk)
+        payload = self.to_dict(include_meta=is_bulk)
 
         if not action or action == "index":
             return payload if is_bulk else self.save(**kwargs)

@@ -92,13 +92,15 @@ def index_object(doc_type_name, obj_id):
     model = doc_type.get_model()
 
     obj = model.objects.get(pk=obj_id)
-    doc_type.prepare(obj).to_action("index")
+    if doc_type.update_document:
+        doc_type.prepare(obj).to_action("update", doc_as_upsert=True)
+    else:
+        doc_type.prepare(obj).to_action("index")
 
 
 @task
 def index_objects_bulk(doc_type_name, obj_ids):
     """Bulk index ORM objects given a list of object ids and a document type name."""
-    from kitsune.search.v2.documents import WikiDocument
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
 
@@ -107,11 +109,12 @@ def index_objects_bulk(doc_type_name, obj_ids):
     docs = [doc_type.prepare(obj) for obj in objects]
     # set the appropriate action per document type
     action = "index"
-    kwargs = {"is_bulk": True}
-    if doc_type is WikiDocument:
+    kwargs = {}
+    # If the `update_document` is true we are using update instead of index
+    if doc_type.update_document:
         action = "update"
         kwargs.update({"doc_as_upsert": True})
-    es7_bulk(es7_client(), (doc.to_action(action=action, **kwargs) for doc in docs))
+    es7_bulk(es7_client(), (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs))
 
 
 @task

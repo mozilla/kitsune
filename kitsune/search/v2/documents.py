@@ -22,7 +22,6 @@ class WikiDocument(SumoDocument):
 
     product_ids = field.Keyword(multi=True)
     topic_ids = field.Keyword(multi=True)
-    locale = field.Keyword()
     category = field.Keyword()
 
     # Document specific fields (locale aware)
@@ -37,6 +36,12 @@ class WikiDocument(SumoDocument):
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
+
+    @classmethod
+    @property
+    def update_document(cls):
+        """Wiki Documents should be merged/updated."""
+        return True
 
     @classmethod
     def prepare(cls, instance):
