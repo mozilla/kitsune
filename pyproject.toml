@@ -1,4 +1,7 @@
 [tool.black]
 line-length = 99
-target-version = ['py39']
+# NB: this can only be updated once black supports the target python version,
+# so may lag behind the version of python we're using. This shouldn't matter
+# unless we're using completely new syntax:
+target-version = ['py38']
 exclude = "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
