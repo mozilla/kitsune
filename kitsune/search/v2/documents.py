@@ -52,8 +52,8 @@ class WikiDocument(SumoDocument):
         return getattr(instance.current_revision, "created", None)
 
     def prepare_keywords(self, instance):
-        """Return a list of keywords, splitted by space or None"""
-        return getattr(instance.current_revision, "keywords", "").split() or None
+        """Return a list of keywords split by space, or an empty list."""
+        return getattr(instance.current_revision, "keywords", "").split()
 
     def prepare_content(self, instance):
         return instance.html
@@ -61,7 +61,7 @@ class WikiDocument(SumoDocument):
     def prepare_summary(self, instance):
         if instance.current_revision:
             return instance.summary
-        return None
+        return ""
 
     def prepare_doc_id(self, instance):
         return instance.pk
@@ -71,11 +71,6 @@ class WikiDocument(SumoDocument):
 
     def prepare_product_ids(self, instance):
         return [product.id for product in instance.products.all()]
-
-    def prepare_parent_id(self, instance):
-        if instance.parent:
-            return instance.parent.id
-        return None
 
     def prepare_display_order(self, instance):
         return instance.original.display_order

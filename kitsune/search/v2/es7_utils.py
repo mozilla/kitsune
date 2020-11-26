@@ -4,7 +4,7 @@ import inspect
 from celery import task
 from django.conf import settings
 from elasticsearch7.helpers import bulk as es7_bulk
-from elasticsearch_dsl import Document, analyzer, token_filter
+from elasticsearch_dsl import Document, analyzer, token_filter, UpdateByQuery
 
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
@@ -91,7 +91,11 @@ def index_object(doc_type_name, obj_id):
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
     model = doc_type.get_model()
 
-    obj = model.objects.get(pk=obj_id)
+    try:
+        obj = model.objects.get(pk=obj_id)
+    except model.DoesNotExist:
+        return
+
     if doc_type.update_document:
         doc_type.prepare(obj).to_action("update", doc_as_upsert=True)
     else:
@@ -115,6 +119,27 @@ def index_objects_bulk(doc_type_name, obj_ids):
         action = "update"
         kwargs.update({"doc_as_upsert": True})
     es7_bulk(es7_client(), (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs))
+
+
+@task
+def remove_from_field(doc_type_name, field_name, field_value):
+    """Remove a value from all documents in the doc_type's index."""
+    doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
+
+    script = (
+        f"if (ctx._source.{field_name}.contains(params.value)) {{"
+        f"ctx._source.{field_name}.remove(ctx._source.{field_name}.indexOf(params.value))"
+        f"}}"
+    )
+
+    update = UpdateByQuery(using=es7_client(), index=doc_type._index._name)
+    update = update.filter("term", **{field_name: field_value})
+    update = update.script(source=script, params={"value": field_value}, conflicts="proceed")
+
+    # refresh index to ensure search fetches all matches
+    doc_type._index.refresh()
+
+    update.execute()
 
 
 @task
