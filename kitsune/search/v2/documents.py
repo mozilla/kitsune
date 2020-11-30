@@ -52,8 +52,8 @@ class WikiDocument(SumoDocument):
         return getattr(instance.current_revision, "created", None)
 
     def prepare_keywords(self, instance):
-        """Return a list of keywords, splitted by space or None"""
-        return getattr(instance.current_revision, "keywords", "").split() or None
+        """Return a list of keywords split by space, or an empty list."""
+        return getattr(instance.current_revision, "keywords", "").split()
 
     def prepare_content(self, instance):
         return instance.html
@@ -61,7 +61,7 @@ class WikiDocument(SumoDocument):
     def prepare_summary(self, instance):
         if instance.current_revision:
             return instance.summary
-        return None
+        return ""
 
     def prepare_doc_id(self, instance):
         return instance.pk
@@ -71,11 +71,6 @@ class WikiDocument(SumoDocument):
 
     def prepare_product_ids(self, instance):
         return [product.id for product in instance.products.all()]
-
-    def prepare_parent_id(self, instance):
-        if instance.parent:
-            return instance.parent.id
-        return None
 
     def prepare_display_order(self, instance):
         return instance.original.display_order
@@ -233,11 +228,17 @@ class AnswerDocument(QuestionDocument):
         obj.meta.id = "a_{}".format(obj.meta.id)
         return obj
 
+    def to_action(self, *args, **kwargs):
+        # if the id is un-prefixed, add it
+        if not str(self.meta.id).startswith("a_"):
+            self.meta.id = f"a_{self.meta.id}"
+        return super().to_action(*args, **kwargs)
+
     @classmethod
     def get(cls, id, **kwargs):
         # if the id is un-prefixed, add it
         if not str(id).startswith("a_"):
-            id = "a_{}".format(id)
+            id = f"a_{id}"
         return super().get(id, **kwargs)
 
     @classmethod
