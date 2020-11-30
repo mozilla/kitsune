@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from elasticsearch_dsl import Search as DSLSearch, Q
 from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.config import WIKI_DOCUMENT_INDEX_NAME, QUESTION_INDEX_NAME
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY
 
 HIGHLIGHT_TAG = "strong"
 
@@ -55,7 +56,7 @@ class BaseConfig(ABC):
     @property
     def filter(self):
         """A filter which returns all documents of this type to search over."""
-        return Q("match", _index=self.index)
+        return Q("term", _index=self.index)
 
     @abstractmethod
     def product_filter(self, product):
@@ -78,15 +79,20 @@ class AAQConfig(BaseConfig):
         "answer_content.{}^3",
     ]
     highlight_fields = ["question_content.{}", "answer_content.{}"]
-    # exclude AnswerDocuments from the search:
-    filter = Q("bool", must_not=Q("exists", field="updated"))
+
+    @property
+    def filter(self):
+        return Q(
+            "bool",
+            filter=super().filter,
+            # exclude AnswerDocuments from the search:
+            must_not=Q("exists", field="updated"),
+        )
 
     def product_filter(self, product):
-        return Q("match", question_product_id=product.id)
+        return Q("term", question_product_id=product.id)
 
     def make_result(self, hit, locale):
-        locale = hit.locale
-
         summary = first_highlight(hit)
         if not summary:
             summary = hit.question_content[locale][:500]
@@ -122,13 +128,21 @@ class KBConfig(BaseConfig):
     ]
     highlight_fields = ["summary.{}", "content.{}"]
 
+    @property
+    def filter(self):
+        return Q(
+            "bool",
+            filter=super().filter,
+            must_not=Q("terms", category=[TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]),
+        )
+
     def product_filter(self, product):
-        return Q("match", product_ids=product.id)
+        return Q("term", product_ids=product.id)
 
     def make_result(self, hit, locale):
         summary = first_highlight(hit)
-        if not summary:
-            summary = hit.summary[locale]
+        if not summary and hasattr(hit, "summary"):
+            summary = getattr(hit.summary, locale, None)
         if not summary:
             summary = hit.content[locale][:500]
         summary = sanitize(summary)
