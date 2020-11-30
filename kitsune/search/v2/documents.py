@@ -228,11 +228,17 @@ class AnswerDocument(QuestionDocument):
         obj.meta.id = "a_{}".format(obj.meta.id)
         return obj
 
+    def to_action(self, *args, **kwargs):
+        # if the id is un-prefixed, add it
+        if not str(self.meta.id).startswith("a_"):
+            self.meta.id = f"a_{self.meta.id}"
+        return super().to_action(*args, **kwargs)
+
     @classmethod
     def get(cls, id, **kwargs):
         # if the id is un-prefixed, add it
         if not str(id).startswith("a_"):
-            id = "a_{}".format(id)
+            id = f"a_{id}"
         return super().get(id, **kwargs)
 
     @classmethod

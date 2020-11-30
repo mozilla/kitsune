@@ -94,6 +94,9 @@ def index_object(doc_type_name, obj_id):
     try:
         obj = model.objects.get(pk=obj_id)
     except model.DoesNotExist:
+        # if the row doesn't exist in DB, it may have been deleted while this job
+        # was in the celery queue - this shouldn't be treated as a failure, so
+        # just return
         return
 
     if doc_type.update_document:
@@ -147,5 +150,6 @@ def delete_object(doc_type_name, obj_id):
     """Unindex an ORM object given an object id and document type name."""
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
-
-    doc_type.get(obj_id).delete()
+    doc = doc_type()
+    doc.meta.id = obj_id
+    doc.to_action("delete")
