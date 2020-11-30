@@ -111,6 +111,8 @@ class Profile(ModelBase, SearchMixin):
     products = models.ManyToManyField(Product, related_name="subscribed_users")
     fxa_password_change = models.DateTimeField(blank=True, null=True)
 
+    updated_column_name = "user__date_joined"
+
     class Meta(object):
         permissions = (
             ("view_karma_points", "Can view karma points"),

@@ -92,8 +92,7 @@ def job_process_exit_surveys():
 @scheduled_job("cron", month="*", day="*", hour="*", minute="45", max_instances=1, coalesce=True)
 @babis.decorator(ping_after=settings.DMS_REINDEX)
 def job_reindex():
-    # Look back 90 minutes for new items to avoid racing conditions between
-    # cron execution and db updates.
+    # Index items newer than 90 minutes old in ES2
     call_command("esreindex --minutes-ago 90")
 
 

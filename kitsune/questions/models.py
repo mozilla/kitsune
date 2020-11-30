@@ -106,6 +106,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     contributors_cache_key = "question:contributors:%s"
 
     objects = QuestionManager()
+    updated_column_name = "updated"
 
     class Meta:
         ordering = ["-updated"]
@@ -941,6 +942,7 @@ class Answer(ModelBase, SearchMixin):
     images_cache_key = "answer:images:%s"
 
     objects = AnswerManager()
+    updated_column_name = "updated"
 
     class Meta:
         ordering = ["created"]
