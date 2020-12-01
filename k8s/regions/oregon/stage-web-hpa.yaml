@@ -8,6 +8,6 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: sumo-stage-web
-  minReplicas: 2
-  maxReplicas: 4
-  targetCPUUtilizationPercentage: 80
+  minReplicas: 4
+  maxReplicas: 12
+  targetCPUUtilizationPercentage: 60
