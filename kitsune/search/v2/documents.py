@@ -46,7 +46,7 @@ class WikiDocument(SumoDocument):
     @classmethod
     def prepare(cls, instance):
         """Override super method to merge docs for KB."""
-        return super(WikiDocument, cls).prepare(instance, merge_docs=True)
+        return super(WikiDocument, cls).prepare(instance, parent_id=instance.parent_id)
 
     def prepare_updated(self, instance):
         return getattr(instance.current_revision, "created", None)
@@ -78,6 +78,16 @@ class WikiDocument(SumoDocument):
     @classmethod
     def get_model(cls):
         return wiki_models.Document
+
+    @classmethod
+    def get_queryset(cls):
+        return (
+            wiki_models.Document.objects
+            # all documents will need their current revision:
+            .select_related("current_revision")
+            # parent documents will need their topics and products:
+            .prefetch_related("topics", "products")
+        )
 
 
 class QuestionDocument(SumoDocument):
