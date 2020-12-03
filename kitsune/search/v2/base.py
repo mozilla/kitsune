@@ -4,8 +4,6 @@ from django.utils import timezone
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField, field
 
-from kitsune.wiki.models import Document
-
 
 class SumoDocument(DSLDocument):
     """Base class with common methods for all the different documents."""
@@ -27,23 +25,18 @@ class SumoDocument(DSLDocument):
         return False
 
     @classmethod
-    def prepare(cls, instance, **kwargs):
+    def prepare(cls, instance, parent_id=None, **kwargs):
         """Prepare an object given a model instance.
 
-        merge_docs: Controls whether multiple docements will be merged into the parent one.
-        Currently used by the Knowledge Base
+        parent_id: Supplying a parent_id will ignore any fields which aren't a
+        SumoLocaleAware field, and set the meta.id value to the parent_id one.
         """
 
         obj = cls()
         doc_mapping = obj._doc_type.mapping
         fields = [f for f in doc_mapping]
         fields.remove("indexed_on")
-        # this flag toggles the merging of child docs into parents
-        use_parent_obj = (
-            isinstance(instance, Document)
-            and kwargs.pop("merge_docs", False)
-            and instance.parent is not None
-        )
+
         # Loop through the fields of each object and set the right values
         for f in fields:
 
@@ -74,15 +67,13 @@ class SumoDocument(DSLDocument):
                     # https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.make_aware
                     value = timezone.make_aware(value, is_dst=False).astimezone(timezone.utc)
 
-                if use_parent_obj:
-                    value = obj.get_field_value(f, instance.parent, prepare_method)
-
-                setattr(obj, f, value)
+                if not parent_id:
+                    setattr(obj, f, value)
 
         obj.indexed_on = datetime.now(timezone.utc)
         obj.meta.id = instance.pk
-        if use_parent_obj:
-            obj.meta.id = instance.parent.pk
+        if parent_id:
+            obj.meta.id = parent_id
 
         return obj
 
