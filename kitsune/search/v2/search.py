@@ -1,27 +1,22 @@
 import bleach
 from datetime import datetime
-from abc import ABC, abstractmethod
 
-from elasticsearch_dsl import Search as DSLSearch, Q
-from kitsune.search.v2.es7_utils import es7_client
+from elasticsearch_dsl import Q as DSLQ
+from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.config import WIKI_DOCUMENT_INDEX_NAME, QUESTION_INDEX_NAME
+from kitsune.search.v2.base import SumoSearch
 from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY
-
-HIGHLIGHT_TAG = "strong"
+from kitsune.sumo.urlresolvers import reverse
 
 
 def first_highlight(hit):
     highlight = getattr(hit.meta, "highlight", None)
     if highlight:
-        return bleach.clean(
-            # `highlight` is of type AttrDict, which is internal to elasticsearch_dsl
-            # when converted to a dict, it's like:
-            # `{ 'es_field_name' : ['highlight1', 'highlight2'], 'field2': ... }`
-            # so here we're getting the first item in the first value in that dict:
-            next(iter(highlight.to_dict().values()))[0],
-            tags=[HIGHLIGHT_TAG],
-            strip=True,
-        )
+        # `highlight` is of type AttrDict, which is internal to elasticsearch_dsl
+        # when converted to a dict, it's like:
+        # `{ 'es_field_name' : ['highlight1', 'highlight2'], 'field2': ... }`
+        # so here we're getting the first item in the first value in that dict:
+        return next(iter(highlight.to_dict().values()))[0]
     return None
 
 
@@ -33,206 +28,163 @@ def sanitize(summary):
     )
 
 
-class BaseConfig(ABC):
-    """Semi-abstract base class for Search configs."""
+class QuestionSearch(SumoSearch):
+    """Search over questions."""
 
     @property
-    @abstractmethod
     def index(self):
-        pass
+        return QUESTION_INDEX_NAME
 
     @property
-    @abstractmethod
     def fields(self):
-        """An array of fields to search over."""
-        pass
+        return [
+            # ^x boosts the score from that field by x amount
+            f"question_title.{self.locale}^4",
+            f"question_content.{self.locale}^3",
+            f"answer_content.{self.locale}^3",
+        ]
 
     @property
-    @abstractmethod
     def highlight_fields(self):
-        """An array of fields to highlight."""
-        pass
+        return [
+            f"question_content.{self.locale}",
+            f"answer_content.{self.locale}",
+        ]
 
     @property
     def filter(self):
-        """A filter which returns all documents of this type to search over."""
-        return Q("term", _index=self.index)
-
-    @abstractmethod
-    def product_filter(self, product):
-        """A filter which returns documents with the correct product."""
-        pass
-
-    @abstractmethod
-    def make_result(self, hit, locale):
-        """Transform a hit into a result dictionary."""
-        pass
-
-
-class AAQConfig(BaseConfig):
-    """Search config for AAQ."""
-
-    index = QUESTION_INDEX_NAME
-    fields = [
-        "question_title.{}^4",
-        "question_content.{}^3",
-        "answer_content.{}^3",
-    ]
-    highlight_fields = ["question_content.{}", "answer_content.{}"]
-
-    @property
-    def filter(self):
-        return Q(
+        query = DSLQ("term", _index=self.index)
+        if self.product:
+            query = query & DSLQ("term", question_product_id=self.product.id)
+        return DSLQ(
             "bool",
-            filter=super().filter,
+            filter=query,
             # exclude AnswerDocuments from the search:
-            must_not=Q("exists", field="updated"),
+            must_not=DSLQ("exists", field="updated"),
         )
 
-    def product_filter(self, product):
-        return Q("term", question_product_id=product.id)
-
-    def make_result(self, hit, locale):
+    def make_result(self, hit):
+        # generate a summary for search:
         summary = first_highlight(hit)
         if not summary:
-            summary = hit.question_content[locale][:500]
+            summary = hit.question_content[self.locale][:SNIPPET_LENGTH]
         summary = sanitize(summary)
 
-        num_answers = 0
+        # for questions that have no answers:
         answer_content = getattr(hit, "answer_content", None)
-        if answer_content:
-            num_answers = len(answer_content[locale])
 
         return {
             "type": "question",
-            "url": "/questions/{}".format(hit.question_id),
+            "url": reverse("questions.details", kwargs={"question_id": hit.question_id}),
             "score": hit.meta.score,
-            "title": hit.question_title[locale],
+            "title": hit.question_title[self.locale],
             "search_summary": summary,
             "last_updated": datetime.fromisoformat(hit.question_updated),
             "is_solved": hit.question_has_solution,
-            "num_answers": num_answers,
+            "num_answers": len(answer_content[self.locale]) if answer_content else 0,
             "num_votes": hit.question_num_votes,
         }
 
 
-class KBConfig(BaseConfig):
-    """Search config for the Knowledge Base."""
+class WikiSearch(SumoSearch):
+    """Search over Knowledge Base articles."""
 
-    index = WIKI_DOCUMENT_INDEX_NAME
-    fields = [
-        "keywords.{}^8",
-        "title.{}^6",
-        "summary.{}^2",
-        "content.{}^1",
-    ]
-    highlight_fields = ["summary.{}", "content.{}"]
+    @property
+    def index(self):
+        return WIKI_DOCUMENT_INDEX_NAME
+
+    @property
+    def fields(self):
+        return [
+            # ^x boosts the score from that field by x amount
+            f"keywords.{self.locale}^8",
+            f"title.{self.locale}^6",
+            f"summary.{self.locale}^2",
+            f"content.{self.locale}^1",
+        ]
+
+    @property
+    def highlight_fields(self):
+        return [
+            f"summary.{self.locale}",
+            f"content.{self.locale}",
+        ]
 
     @property
     def filter(self):
-        return Q(
+        query = DSLQ("term", _index=self.index)
+        if self.product:
+            query = query & DSLQ("term", product_ids=self.product.id)
+        return DSLQ(
             "bool",
-            filter=super().filter,
-            must_not=Q("terms", category=[TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]),
+            filter=query,
+            must_not=DSLQ("terms", category=[TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]),
         )
 
-    def product_filter(self, product):
-        return Q("term", product_ids=product.id)
-
-    def make_result(self, hit, locale):
+    def make_result(self, hit):
+        # generate a summary for search:
         summary = first_highlight(hit)
         if not summary and hasattr(hit, "summary"):
-            summary = getattr(hit.summary, locale, None)
+            summary = getattr(hit.summary, self.locale, None)
         if not summary:
-            summary = hit.content[locale][:500]
+            summary = hit.content[self.locale][:SNIPPET_LENGTH]
         summary = sanitize(summary)
 
         return {
             "type": "document",
-            "url": "/{}/kb/{}".format(locale, hit.slug[locale]),
+            "url": reverse("wiki.document", args=[hit.slug[self.locale]], locale=self.locale),
             "score": hit.meta.score,
-            "title": hit.title[locale],
+            "title": hit.title[self.locale],
             "search_summary": summary,
         }
 
 
-class Search:
-    """Create an ES7 Search."""
+class CompoundSearch(SumoSearch):
+    """Combine a number of SumoSearch classes into one search."""
 
-    def __init__(self, query, language, product=None, page=1):
-        self.config_classes = []
-        self.query = query
-        self.language = language
-        self.product = product
-        self.page = page
+    def __init__(self, locale, product=None):
+        self._children = []
+        super().__init__(locale, product)
 
-    def add_config(self, config):
-        self.config_classes.append(config())
+    def add(self, child):
+        """Add a SumoSearch to search over."""
+        self._children.append(child(self.locale, self.product))
+        return self
 
-    def execute(self):
-        # determine indices to search over, and create DSL search object
-        index = ",".join(self._getattr("index"))
-        search = DSLSearch(using=es7_client(), index=index)
-
-        # add filters
-        filters = self._getattr("filter")
-        search = search.query("bool", should=filters)
-
-        # add product filters
-        if self.product:
-            product_filters = self._getattr("product_filter", self.product)
-            search = search.query("bool", should=product_filters)
-
-        # add query
-        fields = self._localize_fields(self._getattr("fields"))
-        search = search.query(
-            "simple_query_string", query=self.query, default_operator="AND", fields=fields
-        )
-
-        # add highlights
-        highlight_fields = self._localize_fields(self._getattr("highlight_fields"))
-        search = search.highlight(
-            *highlight_fields,
-            type="fvh",
-            order="score",
-            number_of_fragments=1,
-            boundary_scanner="sentence",
-            pre_tags=["<{}>".format(HIGHLIGHT_TAG)],
-            post_tags=["</{}>".format(HIGHLIGHT_TAG)],
-        )
-
-        # do pagination
-        start = (self.page - 1) * 10
-        search = search[start : start + 10]
-
-        # perform search
-        self.hits = search.execute().hits
-
-        self.total = self.hits.total.value if self.hits else 0
-        self.results = [self._make_result(hit) for hit in self.hits]
-
-    def _make_result(self, hit):
-        index = hit.meta.index
-        for config in self.config_classes:
-            if index == config.index:
-                return config.make_result(hit, self.language)
-
-    def _getattr(self, name, *args, **kwargs):
+    def _from_children(self, name, *args, **kwargs):
         """
-        Get an attribute from all config_classes.
+        Get an attribute from all children.
 
-        Calls callable attributes and flattens lists.
+        Will flatten lists.
         """
         value = []
-        for config in self.config_classes:
-            attr = getattr(config, name)
-            if callable(attr):
-                attr = attr(*args, **kwargs)
+        for child in self._children:
+            attr = getattr(child, name)
             if isinstance(attr, list):
+                # if the attribute's value is itself a list, unpack it
                 value = [*value, *attr]
             else:
                 value.append(attr)
         return value
 
-    def _localize_fields(self, fields):
-        return [field.format(self.language) for field in fields]
+    @property
+    def index(self):
+        return ",".join(self._from_children("index"))
+
+    @property
+    def fields(self):
+        return self._from_children("fields")
+
+    @property
+    def highlight_fields(self):
+        return self._from_children("highlight_fields")
+
+    @property
+    def filter(self):
+        return self._from_children("filter")
+
+    def make_result(self, hit):
+        index = hit.meta.index
+        for child in self._children:
+            if index == child.index:
+                return child.make_result(hit)

@@ -1,8 +1,11 @@
 from datetime import datetime
+from abc import ABC, abstractmethod
 
 from django.utils import timezone
-from elasticsearch_dsl import Document as DSLDocument
+from elasticsearch_dsl import Document as DSLDocument, Search as DSLSearch
 from elasticsearch_dsl import InnerDoc, MetaField, field
+from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
+from kitsune.search.v2.es7_utils import es7_client
 
 
 class SumoDocument(DSLDocument):
@@ -126,3 +129,91 @@ class SumoDocument(DSLDocument):
         if getattr(instance, "locale"):
             return instance.locale
         return ""
+
+
+class SumoSearch(ABC):
+    """Base class for search classes.
+
+    Implements the run() function, which will perform the search.
+
+    Child classes should define values for the various abstract properties this
+    class has, relevant to the documents the child class is searching over.
+    """
+
+    def __init__(self, locale, product=None):
+        self.locale = locale
+        self.product = product
+        self.results_per_page = 10
+
+    def run(self, query, page=1):
+        """Perform search, placing the results in `self.results`, and the total
+        number of results (across all pages) in `self.total`. Chainable."""
+
+        search = DSLSearch(using=es7_client(), index=self.index)
+
+        # add the search class' filter
+        # `should` with `minimum_should_match=1` acts like an OR filter
+        search = search.query("bool", should=self.filter, minimum_should_match=1)
+
+        # add query, search over the search class' fields
+        search = search.query(
+            "simple_query_string", query=query, default_operator="AND", fields=self.fields
+        )
+
+        # add highlights for the search class' highlight_fields
+        search = search.highlight(
+            *self.highlight_fields,
+            type="fvh",
+            # order highlighted fragments by their relevance:
+            order="score",
+            # only get one fragment per field:
+            number_of_fragments=1,
+            # split fragments at the end of sentences:
+            boundary_scanner="sentence",
+            # return fragments roughly this size:
+            fragment_size=SNIPPET_LENGTH,
+            # add these tags before/after the highlighted sections:
+            pre_tags=[f"<{HIGHLIGHT_TAG}>"],
+            post_tags=[f"</{HIGHLIGHT_TAG}>"],
+        )
+
+        # do pagination
+        start = (page - 1) * self.results_per_page
+        search = search[start : start + self.results_per_page]
+
+        # perform search
+        self.hits = search.execute().hits
+
+        self.total = self.hits.total.value if self.hits else 0
+        self.results = [self.make_result(hit) for hit in self.hits]
+
+        return self
+
+    @property
+    @abstractmethod
+    def index(self):
+        """The index or comma-seperated indices to search over."""
+        pass
+
+    @property
+    @abstractmethod
+    def fields(self):
+        """An array of fields to search over."""
+        pass
+
+    @property
+    @abstractmethod
+    def highlight_fields(self):
+        """An array of fields to highlight."""
+        pass
+
+    @property
+    @abstractmethod
+    def filter(self):
+        """A query which filters for all documents to be searched over."""
+        pass
+
+    @abstractmethod
+    def make_result(self, hit):
+        """Takes a hit and returns a result dictionary."""
+        pass

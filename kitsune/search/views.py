@@ -222,7 +222,7 @@ def simple_search(request):
             url=pages.pager.url,
         )
         if not results:
-            data["message"] = _("No pages matched the search criteria")
+            data["message"] = constants.NO_MATCH
 
         json_data = to_json(data)
         if request.JSON_CALLBACK:
@@ -579,7 +579,7 @@ def advanced_search(request):
             url=pages.pager.url,
         )
         if not results:
-            data["message"] = _("No pages matched the search criteria")
+            data["message"] = constants.NO_MATCH
         json_data = to_json(data)
         if request.JSON_CALLBACK:
             json_data = request.JSON_CALLBACK + "(" + json_data + ");"

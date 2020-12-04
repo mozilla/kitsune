@@ -11,7 +11,7 @@ from kitsune.sumo.utils import build_paged_url
 from kitsune.products.models import Product
 from kitsune.search.views import _fallback_results
 from kitsune.search.utils import locale_or_default
-from kitsune.search.v2.search import Search, KBConfig, AAQConfig
+from kitsune.search.v2.search import CompoundSearch, QuestionSearch, WikiSearch
 
 
 def simple_search(request):
@@ -44,16 +44,16 @@ def simple_search(request):
         page = 1
 
     # create search object
-    search = Search(cleaned["q"], language, product=product, page=page)
+    search = CompoundSearch(language, product=product)
 
     # apply aaq/kb configs
     if cleaned["w"] & constants.WHERE_WIKI:
-        search.add_config(KBConfig)
+        search.add(WikiSearch)
     if cleaned["w"] & constants.WHERE_SUPPORT:
-        search.add_config(AAQConfig)
+        search.add(QuestionSearch)
 
     # execute search
-    search.execute()
+    search.run(cleaned["q"], page=page)
     total = search.total
     results = search.results
 
@@ -80,7 +80,7 @@ def simple_search(request):
     if product:
         data["product"] = product.slug
     if not results:
-        data["message"] = _("No pages matched the search criteria")
+        data["message"] = constants.NO_MATCH
 
     json_data = JSONRenderer().render(data)
     return HttpResponse(json_data, content_type="application/json")

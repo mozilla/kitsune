@@ -8,7 +8,6 @@ from elasticsearch_dsl import Document, analyzer, token_filter, UpdateByQuery
 
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
-from kitsune.search.v2.base import SumoDocument
 
 
 def _get_locale_specific_analyzer(locale):
@@ -78,7 +77,7 @@ def get_doc_types(paths=["kitsune.search.v2.documents"]):
                 inspect.isclass(cls)
                 and issubclass(cls, Document)
                 and cls != Document
-                and cls != SumoDocument
+                and cls.__name__ != "SumoDocument"
             ):
                 doc_types.append(cls)
     return doc_types
