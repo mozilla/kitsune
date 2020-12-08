@@ -1,6 +1,7 @@
 from datetime import datetime
 from abc import ABC, abstractmethod
 
+from django.conf import settings
 from django.utils import timezone
 from elasticsearch_dsl import Document as DSLDocument, Search as DSLSearch
 from elasticsearch_dsl import InnerDoc, MetaField, field
@@ -140,29 +141,57 @@ class SumoSearch(ABC):
     class has, relevant to the documents the child class is searching over.
     """
 
-    def __init__(self, locale, product=None):
-        self.locale = locale
-        self.product = product
-        self.results_per_page = 10
+    def __init__(self, **kwargs):
+        self.results_per_page = settings.SEARCH_RESULTS_PER_PAGE
+        self.hits = []
+        self.total = 0
+        self.results = []
 
-    def run(self, query, page=1):
+    @abstractmethod
+    def get_index(self):
+        """The index or comma-seperated indices to search over."""
+        pass
+
+    @abstractmethod
+    def get_fields(self):
+        """An array of fields to search over."""
+        pass
+
+    @abstractmethod
+    def get_highlight_fields(self):
+        """An array of fields to highlight."""
+        pass
+
+    @abstractmethod
+    def get_filter(self):
+        """A query which filters for all documents to be searched over."""
+        pass
+
+    @abstractmethod
+    def make_result(self, hit):
+        """Takes a hit and returns a result dictionary."""
+        pass
+
+    def run(self, query, page=1, default_operator="AND"):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
-        search = DSLSearch(using=es7_client(), index=self.index)
+        search = DSLSearch(using=es7_client(), index=self.get_index())
 
         # add the search class' filter
-        # `should` with `minimum_should_match=1` acts like an OR filter
-        search = search.query("bool", should=self.filter, minimum_should_match=1)
+        search = search.query("bool", filter=self.get_filter())
 
         # add query, search over the search class' fields
         search = search.query(
-            "simple_query_string", query=query, default_operator="AND", fields=self.fields
+            "simple_query_string",
+            query=query,
+            default_operator=default_operator,
+            fields=self.get_fields(),
         )
 
         # add highlights for the search class' highlight_fields
         search = search.highlight(
-            *self.highlight_fields,
+            *self.get_highlight_fields(),
             type="fvh",
             # order highlighted fragments by their relevance:
             order="score",
@@ -188,32 +217,3 @@ class SumoSearch(ABC):
         self.results = [self.make_result(hit) for hit in self.hits]
 
         return self
-
-    @property
-    @abstractmethod
-    def index(self):
-        """The index or comma-seperated indices to search over."""
-        pass
-
-    @property
-    @abstractmethod
-    def fields(self):
-        """An array of fields to search over."""
-        pass
-
-    @property
-    @abstractmethod
-    def highlight_fields(self):
-        """An array of fields to highlight."""
-        pass
-
-    @property
-    @abstractmethod
-    def filter(self):
-        """A query which filters for all documents to be searched over."""
-        pass
-
-    @abstractmethod
-    def make_result(self, hit):
-        """Takes a hit and returns a result dictionary."""
-        pass

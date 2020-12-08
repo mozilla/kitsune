@@ -44,7 +44,7 @@ def simple_search(request):
         page = 1
 
     # create search object
-    search = CompoundSearch(language, product=product)
+    search = CompoundSearch(locale=language, product=product)
 
     # apply aaq/kb configs
     if cleaned["w"] & constants.WHERE_WIKI:

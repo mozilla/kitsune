@@ -20,7 +20,7 @@ def first_highlight(hit):
     return None
 
 
-def sanitize(summary):
+def strip_html(summary):
     return bleach.clean(
         summary,
         tags=[HIGHLIGHT_TAG],
@@ -31,12 +31,15 @@ def sanitize(summary):
 class QuestionSearch(SumoSearch):
     """Search over questions."""
 
-    @property
-    def index(self):
+    def __init__(self, locale="en-US", product=None, **kwargs):
+        self.locale = locale
+        self.product = product
+        super().__init__(**kwargs)
+
+    def get_index(self):
         return QUESTION_INDEX_NAME
 
-    @property
-    def fields(self):
+    def get_fields(self):
         return [
             # ^x boosts the score from that field by x amount
             f"question_title.{self.locale}^4",
@@ -44,21 +47,19 @@ class QuestionSearch(SumoSearch):
             f"answer_content.{self.locale}^3",
         ]
 
-    @property
-    def highlight_fields(self):
+    def get_highlight_fields(self):
         return [
             f"question_content.{self.locale}",
             f"answer_content.{self.locale}",
         ]
 
-    @property
-    def filter(self):
-        query = DSLQ("term", _index=self.index)
+    def get_filter(self):
+        filters = [DSLQ("term", _index=self.get_index())]
         if self.product:
-            query = query & DSLQ("term", question_product_id=self.product.id)
+            filters.append(DSLQ("term", question_product_id=self.product.id))
         return DSLQ(
             "bool",
-            filter=query,
+            filter=filters,
             # exclude AnswerDocuments from the search:
             must_not=DSLQ("exists", field="updated"),
         )
@@ -68,9 +69,9 @@ class QuestionSearch(SumoSearch):
         summary = first_highlight(hit)
         if not summary:
             summary = hit.question_content[self.locale][:SNIPPET_LENGTH]
-        summary = sanitize(summary)
+        summary = strip_html(summary)
 
-        # for questions that have no answers:
+        # for questions that have no answers, set to None:
         answer_content = getattr(hit, "answer_content", None)
 
         return {
@@ -89,12 +90,15 @@ class QuestionSearch(SumoSearch):
 class WikiSearch(SumoSearch):
     """Search over Knowledge Base articles."""
 
-    @property
-    def index(self):
+    def __init__(self, locale="en-US", product=None, **kwargs):
+        self.locale = locale
+        self.product = product
+        super().__init__(**kwargs)
+
+    def get_index(self):
         return WIKI_DOCUMENT_INDEX_NAME
 
-    @property
-    def fields(self):
+    def get_fields(self):
         return [
             # ^x boosts the score from that field by x amount
             f"keywords.{self.locale}^8",
@@ -103,21 +107,19 @@ class WikiSearch(SumoSearch):
             f"content.{self.locale}^1",
         ]
 
-    @property
-    def highlight_fields(self):
+    def get_highlight_fields(self):
         return [
             f"summary.{self.locale}",
             f"content.{self.locale}",
         ]
 
-    @property
-    def filter(self):
-        query = DSLQ("term", _index=self.index)
+    def get_filter(self):
+        filters = [DSLQ("term", _index=self.get_index())]
         if self.product:
-            query = query & DSLQ("term", product_ids=self.product.id)
+            filters.append(DSLQ("term", product_ids=self.product.id))
         return DSLQ(
             "bool",
-            filter=query,
+            filter=filters,
             must_not=DSLQ("terms", category=[TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]),
         )
 
@@ -128,7 +130,7 @@ class WikiSearch(SumoSearch):
             summary = getattr(hit.summary, self.locale, None)
         if not summary:
             summary = hit.content[self.locale][:SNIPPET_LENGTH]
-        summary = sanitize(summary)
+        summary = strip_html(summary)
 
         return {
             "type": "document",
@@ -142,13 +144,14 @@ class WikiSearch(SumoSearch):
 class CompoundSearch(SumoSearch):
     """Combine a number of SumoSearch classes into one search."""
 
-    def __init__(self, locale, product=None):
+    def __init__(self, **kwargs):
         self._children = []
-        super().__init__(locale, product)
+        self._kwargs = kwargs
+        super().__init__(**kwargs)
 
     def add(self, child):
-        """Add a SumoSearch to search over."""
-        self._children.append(child(self.locale, self.product))
+        """Add a SumoSearch to search over. Chainable."""
+        self._children.append(child(**self._kwargs))
         return self
 
     def _from_children(self, name, *args, **kwargs):
@@ -159,7 +162,7 @@ class CompoundSearch(SumoSearch):
         """
         value = []
         for child in self._children:
-            attr = getattr(child, name)
+            attr = getattr(child, name)()
             if isinstance(attr, list):
                 # if the attribute's value is itself a list, unpack it
                 value = [*value, *attr]
@@ -167,24 +170,21 @@ class CompoundSearch(SumoSearch):
                 value.append(attr)
         return value
 
-    @property
-    def index(self):
-        return ",".join(self._from_children("index"))
+    def get_index(self):
+        return ",".join(self._from_children("get_index"))
 
-    @property
-    def fields(self):
-        return self._from_children("fields")
+    def get_fields(self):
+        return self._from_children("get_fields")
 
-    @property
-    def highlight_fields(self):
-        return self._from_children("highlight_fields")
+    def get_highlight_fields(self):
+        return self._from_children("get_highlight_fields")
 
-    @property
-    def filter(self):
-        return self._from_children("filter")
+    def get_filter(self):
+        # `should` with `minimum_should_match=1` acts like an OR filter
+        return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
 
     def make_result(self, hit):
         index = hit.meta.index
         for child in self._children:
-            if index == child.index:
+            if index == child.get_index():
                 return child.make_result(hit)
