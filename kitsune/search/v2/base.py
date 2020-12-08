@@ -1,8 +1,12 @@
 from datetime import datetime
+from abc import ABC, abstractmethod
 
+from django.conf import settings
 from django.utils import timezone
-from elasticsearch_dsl import Document as DSLDocument
+from elasticsearch_dsl import Document as DSLDocument, Search as DSLSearch
 from elasticsearch_dsl import InnerDoc, MetaField, field
+from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
+from kitsune.search.v2.es7_utils import es7_client
 
 
 class SumoDocument(DSLDocument):
@@ -126,3 +130,90 @@ class SumoDocument(DSLDocument):
         if getattr(instance, "locale"):
             return instance.locale
         return ""
+
+
+class SumoSearch(ABC):
+    """Base class for search classes.
+
+    Implements the run() function, which will perform the search.
+
+    Child classes should define values for the various abstract properties this
+    class has, relevant to the documents the child class is searching over.
+    """
+
+    def __init__(self, **kwargs):
+        self.results_per_page = settings.SEARCH_RESULTS_PER_PAGE
+        self.hits = []
+        self.total = 0
+        self.results = []
+
+    @abstractmethod
+    def get_index(self):
+        """The index or comma-seperated indices to search over."""
+        pass
+
+    @abstractmethod
+    def get_fields(self):
+        """An array of fields to search over."""
+        pass
+
+    @abstractmethod
+    def get_highlight_fields(self):
+        """An array of fields to highlight."""
+        pass
+
+    @abstractmethod
+    def get_filter(self):
+        """A query which filters for all documents to be searched over."""
+        pass
+
+    @abstractmethod
+    def make_result(self, hit):
+        """Takes a hit and returns a result dictionary."""
+        pass
+
+    def run(self, query, page=1, default_operator="AND"):
+        """Perform search, placing the results in `self.results`, and the total
+        number of results (across all pages) in `self.total`. Chainable."""
+
+        search = DSLSearch(using=es7_client(), index=self.get_index())
+
+        # add the search class' filter
+        search = search.query("bool", filter=self.get_filter())
+
+        # add query, search over the search class' fields
+        search = search.query(
+            "simple_query_string",
+            query=query,
+            default_operator=default_operator,
+            fields=self.get_fields(),
+        )
+
+        # add highlights for the search class' highlight_fields
+        search = search.highlight(
+            *self.get_highlight_fields(),
+            type="fvh",
+            # order highlighted fragments by their relevance:
+            order="score",
+            # only get one fragment per field:
+            number_of_fragments=1,
+            # split fragments at the end of sentences:
+            boundary_scanner="sentence",
+            # return fragments roughly this size:
+            fragment_size=SNIPPET_LENGTH,
+            # add these tags before/after the highlighted sections:
+            pre_tags=[f"<{HIGHLIGHT_TAG}>"],
+            post_tags=[f"</{HIGHLIGHT_TAG}>"],
+        )
+
+        # do pagination
+        start = (page - 1) * self.results_per_page
+        search = search[start : start + self.results_per_page]
+
+        # perform search
+        self.hits = search.execute().hits
+
+        self.total = self.hits.total.value if self.hits else 0
+        self.results = [self.make_result(hit) for hit in self.hits]
+
+        return self

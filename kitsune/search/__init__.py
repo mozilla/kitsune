@@ -74,3 +74,8 @@ SORTBY_DOCUMENTS_CHOICES = (
     ("relevance", _lazy("Relevance")),
     ("helpful", _lazy("Helpful votes")),
 )
+
+HIGHLIGHT_TAG = "strong"
+SNIPPET_LENGTH = 500
+
+NO_MATCH = _lazy("No pages matched the search criteria")
