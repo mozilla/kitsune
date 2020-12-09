@@ -4,7 +4,7 @@ import inspect
 from celery import task
 from django.conf import settings
 from elasticsearch7.helpers import bulk as es7_bulk
-from elasticsearch_dsl import Document, analyzer, token_filter, UpdateByQuery
+from elasticsearch_dsl import Document, UpdateByQuery, analyzer, token_filter
 
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
@@ -61,7 +61,12 @@ def es_analyzer_for_locale(locale):
 
 def es7_client():
     """Return an ES7 Elasticsearch client"""
-    return elasticsearch7.Elasticsearch(settings.ES7_URLS)
+    init_args = {}
+    if es7_cloud_id := settings.ES7_CLOUD_ID:
+        init_args.update({"cloud_id": es7_cloud_id, "http_auth": settings.ES7_HTTP_AUTH})
+    else:
+        init_args.update({"hosts": settings.ES7_URLS})
+    return elasticsearch7.Elasticsearch(**init_args)
 
 
 def get_doc_types(paths=["kitsune.search.v2.documents"]):
