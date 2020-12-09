@@ -786,6 +786,9 @@ CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 ES_URLS = [config("ES_URLS", default="localhost:9200")]
 # Connection information for Elastic 7
 ES7_URLS = config("ES7_URLS", cast=Csv(), default="elasticsearch7:9200")
+ES7_CLOUD_ID = config("ES7_CLOUD_ID", default="")
+ES7_USE_SSL = config("ES7_USE_SSL", default=False, cast=bool)
+ES7_HTTP_AUTH = config("ES7_HTTP_AUTH", default="", cast=Csv())
 
 # Indexes for reading
 ES_INDEXES = {
