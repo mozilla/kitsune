@@ -12,18 +12,22 @@ class Command(BaseCommand):
             # Sends all writes to the master DB. Slaves are readonly.
             pin_this_thread()
 
-            docs = Document.objects.all()
+            # Since we currently use MySQL, we have to load the whole table into memory
+            # at once - iterator() won't chunk requests to MySQL. However, we can massively
+            # reduce memory usage by only loading the columns we need:
+            docs = Document.objects.all().values("id", "current_revision_id")
 
-            for d in docs:
-                revs = Revision.objects.filter(document=d, is_approved=True)
-                revs = list(revs.order_by("-reviewed")[:1])
+            for d in docs.iterator():
+                revs = Revision.objects.filter(document_id=d["id"], is_approved=True)
+                revs = revs.order_by("-reviewed").values_list("id", flat=True)[:1]
 
                 if len(revs):
-                    rev = revs[0]
+                    rev_id = revs[0]
 
-                    if d.current_revision != rev:
-                        d.current_revision = rev
-                        d.save()
-                        print(d.get_absolute_url())
+                    if d["current_revision_id"] != rev_id:
+                        doc = Document.objects.get(id=d["id"])
+                        doc.current_revision_id = rev_id
+                        doc.save()
+                        print(doc.get_absolute_url())
         finally:
             unpin_this_thread()
