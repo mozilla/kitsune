@@ -62,6 +62,7 @@ def es_analyzer_for_locale(locale):
 def es7_client():
     """Return an ES7 Elasticsearch client"""
     init_args = {}
+    # prefer a cloud_id if available
     if es7_cloud_id := settings.ES7_CLOUD_ID:
         init_args.update({"cloud_id": es7_cloud_id, "http_auth": settings.ES7_HTTP_AUTH})
     else:
