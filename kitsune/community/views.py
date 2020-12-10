@@ -16,8 +16,7 @@ from kitsune.questions.models import QuestionLocale
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.wiki.models import Document
 
-from elasticsearch_dsl import Search
-from kitsune.search.v2.es7_utils import es7_client
+from kitsune.search.v2.documents import ProfileDocument
 
 
 log = logging.getLogger("k.community")
@@ -85,8 +84,11 @@ def search(request):
     q = request.GET.get("q")
 
     if q:
-        search = Search(using=es7_client(), index="sumo_user").query(
-            "simple_query_string", query=q, fields=["username", "name"], default_operator="AND"
+        search = ProfileDocument.search().query(
+            "simple_query_string",
+            query=q,
+            fields=["username", "name"],
+            default_operator="AND",
         )
 
         results = search.execute().hits
