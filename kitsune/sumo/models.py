@@ -5,11 +5,32 @@ from django.db import models
 class ModelBase(models.Model):
     """Base class for SUMO models.
 
+    * Adds objects_range class method.
     * Adds update method.
     """
 
     class Meta:
         abstract = True
+
+    @classmethod
+    def objects_range(cls, before=None, after=None):
+        """
+        Returns a QuerySet of rows updated before, after or between the supplied datetimes.
+
+        The `updated_column_name` property must be defined on a model using this,
+        as that will be used as the column to filter on.
+        """
+        column_name = getattr(cls, "updated_column_name", None)
+        if not column_name:
+            raise NotImplementedError
+
+        queryset = cls._default_manager
+        if before:
+            queryset = queryset.filter(**{f"{column_name}__lt": before})
+        if after:
+            queryset = queryset.filter(**{f"{column_name}__gt": after})
+
+        return queryset
 
     # TODO: Remove this in django 1.6, which comes with a smarter save().
     def update(self, **kw):

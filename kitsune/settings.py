@@ -344,7 +344,7 @@ ES_LOCALE_ANALYZERS = {
 
 ES_PLUGIN_ANALYZERS = ["polish"]
 
-ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=True, cast=bool)
+ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=not DEBUG, cast=bool)
 
 TEXT_DOMAIN = "messages"
 
@@ -635,6 +635,7 @@ INSTALLED_APPS = (
     "kitsune.access",
     "kitsune.sumo",
     "kitsune.search",
+    "kitsune.search.v2",
     "kitsune.forums",
     "tidings",
     "rest_framework.authtoken",
@@ -783,6 +784,12 @@ CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
 # Connection information for Elastic
 ES_URLS = [config("ES_URLS", default="localhost:9200")]
+# Connection information for Elastic 7
+ES7_URLS = config("ES7_URLS", cast=Csv(), default="elasticsearch7:9200")
+ES7_CLOUD_ID = config("ES7_CLOUD_ID", default="")
+ES7_USE_SSL = config("ES7_USE_SSL", default=False, cast=bool)
+ES7_HTTP_AUTH = config("ES7_HTTP_AUTH", default="", cast=Csv())
+
 # Indexes for reading
 ES_INDEXES = {
     "default": config("ES_INDEXES_DEFAULT", default="default"),

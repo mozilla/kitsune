@@ -1,59 +1,86 @@
 import hashlib
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from operator import itemgetter
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Count, F
+from django.db.models import Count
 
 from kitsune.products.models import Product
-from kitsune.questions.models import Answer
 from kitsune.users.models import User, UserMappingType
 from kitsune.wiki.models import Revision
 
+from elasticsearch_dsl import A
+from kitsune.search.v2.documents import AnswerDocument, ProfileDocument
 
-def top_contributors_questions(
-    start=None, end=None, locale=None, product=None, count=10, page=1, use_cache=True
-):
+
+def top_contributors_questions(start=None, end=None, locale=None, product=None, count=10):
     """Get the top Support Forum contributors."""
-    if use_cache:
-        cache_key = "{}_{}_{}_{}_{}_{}".format(start, end, locale, product, count, page)
-        cache_key = hashlib.sha1(cache_key.encode("utf-8")).hexdigest()
-        cache_key = "top_contributors_questions_{}".format(cache_key)
-        cached = cache.get(cache_key, None)
-        if cached:
-            return cached
 
-    answers = (
-        Answer.objects.exclude(is_spam=True).exclude(question__is_spam=True)
-        # Adding answer to your own question, isn't a contribution.
-        .exclude(creator_id=F("question__creator_id"))
+    search = AnswerDocument.search()
+
+    search = search.filter(
+        # filter out answers by the question author
+        "script",
+        script="doc['creator_id'].value != doc['question_creator_id'].value",
+    ).filter(
+        # filter answers created between `start` and `end`, or within the last 90 days
+        "range",
+        created={"gte": start or datetime.now() - timedelta(days=90), "lte": end},
     )
-
-    if start is None:
-        # By default we go back 90 days.
-        start = date.today() - timedelta(days=90)
-        answers = answers.filter(created__gte=start)
-    if end:
-        # If no end is specified, we don't need to filter by it.
-        answers = answers.filter(created__lt=end)
     if locale:
-        answers = answers.filter(question__locale=locale)
+        search = search.filter("term", locale=locale)
     if product:
-        if isinstance(product, Product):
-            product = product.slug
-        answers = answers.filter(question__product__slug=product)
+        search = search.filter("term", question_product_id=product.id)
 
-    users = (
-        User.objects.filter(answers__in=answers)
-        .annotate(query_count=Count("answers"))
-        .order_by("-query_count")
+    search.aggs.bucket(
+        # create buckets for the `count + 1` most active contributors
+        "contributions",
+        A("terms", field="creator_id", size=count + 1),
+    ).bucket(
+        # within each of those, create a bucket for the most recent answer, and extract its date
+        "latest",
+        A(
+            "top_hits",
+            sort={"created": {"order": "desc"}},
+            _source={"includes": "created"},
+            size=1,
+        ),
     )
-    counts = _get_creator_counts(users, count, page)
 
-    if use_cache:
-        cache.set(cache_key, counts, 60 * 180)  # 3 hours
-    return counts
+    contribution_buckets = search.execute().aggregations.contributions.buckets
+    total_contributors = len(contribution_buckets)
+
+    if not total_contributors:
+        return [], 0
+
+    user_ids = [bucket.key for bucket in contribution_buckets[:count]]
+    users = ProfileDocument.mget(user_ids, missing="none")
+
+    top_contributors = []
+    for loop_index, bucket in enumerate(contribution_buckets[:count]):
+        user = users[loop_index]
+        if user is None:
+            continue
+        if bucket.key != user.meta.id:
+            raise RuntimeError("ES returned profiles out of order")
+        last_activity = datetime.fromisoformat(bucket.latest.hits.hits[0]._source.created)
+        days_since_last_activity = (datetime.now(tz=timezone.utc) - last_activity).days
+        top_contributors.append(
+            {
+                "count": bucket.doc_count,
+                "term": bucket.key,
+                "user": {
+                    "id": user.meta.id,
+                    "username": user.username,
+                    "display_name": user.name,
+                    "avatar": getattr(user.avatar, "url", None),
+                    "days_since_last_activity": days_since_last_activity,
+                },
+            }
+        )
+
+    return top_contributors, total_contributors
 
 
 def top_contributors_kb(start=None, end=None, product=None, count=10, page=1, use_cache=True):

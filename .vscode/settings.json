@@ -10,5 +10,11 @@
         "--disable=C0111",
         "--enable=W0614",
         "--load-plugins=pylint_django"
+    ],
+    "python.autoComplete.extraPaths": [
+        "/vendor"
+    ],
+    "python.analysis.extraPaths": [
+        "/vendor"
     ]
 }

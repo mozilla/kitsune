@@ -97,6 +97,9 @@ app:
     es_live_indexing: True
     es_use_ssl: True
     es_urls: SECRET
+    es7_use_ssl: True
+    es7_http_auth: SECRET
+    es7_cloud_id: SECRET
     ga_account: SECRET
     ga_key: SECRET
     ga_profile_id: SECRET

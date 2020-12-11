@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 services:
   web:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
@@ -12,6 +12,8 @@ services:
     depends_on:
       - mariadb
       - elasticsearch
+      - elasticsearch7
+      - kibana
       - redis
       - celery
       - celery-flower
@@ -29,6 +31,7 @@ services:
     depends_on:
       - mariadb
       - elasticsearch
+      - elasticsearch7
       - redis
 
   test-js:
@@ -46,6 +49,7 @@ services:
     depends_on:
       - mariadb
       - elasticsearch
+      - elasticsearch7
       - redis
 
   test-image-js:
@@ -138,6 +142,25 @@ services:
 
   elasticsearch:
     image: elasticsearch:2.4
+    ports:
+      - "9201:9200"
+      - "9301:9300"
+
+  elasticsearch7:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.0
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:7.10.0
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch7:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch7:9200
 
   redis:
     image: redis:3
@@ -172,4 +195,4 @@ services:
       - "1080:1080"
 
 volumes:
-    mysqlvolume:
+  mysqlvolume:

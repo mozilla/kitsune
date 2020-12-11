@@ -300,6 +300,8 @@ class Post(ModelBase):
     )
     flags = GenericRelation(FlaggedObject)
 
+    updated_column_name = "updated"
+
     class Meta:
         ordering = ["created"]
 

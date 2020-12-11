@@ -154,6 +154,8 @@ class Document(
     # List of related documents
     related_documents = models.ManyToManyField("self", blank=True)
 
+    updated_column_name = "current_revision__created"
+
     # firefox_versions,
     # operating_systems:
     #    defined in the respective classes below. Use them as in

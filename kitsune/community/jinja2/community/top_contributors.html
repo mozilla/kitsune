@@ -96,7 +96,13 @@
       {% endif %}
       </div>
 
-      <p class="sumo-page-intro">{{ _('There are {total} users with at least one contribution in the last 90 days.')|f(total=total) }}</p>
+      <p class="sumo-page-intro">
+        {% if exceeds_page_size %}
+          {{ _('There are more than {total} users with at least one contribution in the last 90 days.')|f(total=total) }}
+        {% else %}
+          {{ _('There are {total} users with at least one contribution in the last 90 days.')|f(total=total) }}
+        {% endif %}
+      </p>
 
     </section>
 
@@ -105,7 +111,9 @@
         <div class="scroll-wrap">
           {% for result in results %}
             <div class="card elevation-01 results-user">
-              <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results card--img" />
+              {% if result['user']['avatar'] %}
+                <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results card--img" />
+              {% endif %}
               <span class="numbered">{{ loop.index + ((page - 1) * page_size) }}</span>
               <div class="card--details user-details">
                 <h2 class="card--title">{{ result['user']['display_name'] }}</h2>
