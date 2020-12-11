@@ -1,5 +1,47 @@
 # Search v2
 
+## Testing on Staging
+
+### Enabling in Instant Search
+
+Open [support.allizom.org](https://support.allizom.org) and then open Firefox's [Web Console](https://developer.mozilla.org/en-US/docs/Tools/Web_Console).
+
+Paste the following JS in, and hit return on your keyboard:
+
+```
+window.localStorage.setItem("enable_search_v2", "true")
+```
+
+Pasting JS into your Web Console without understanding what it does is a *very bad idea*,
+so to explain this:
+
+* `window.localStorage` uses the [Local Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) to get access to a small store which sites can use to store small pieces of information in your browser.
+* `setItem()` is the function which allows us to write a piece of information to the store.
+* `"enable_search_v2"` is the name of the piece of information we're storing.
+* `"true"` is its value.
+
+Now refresh the page and instant search should be using search v2.
+You can check this by using some of the syntax which search v2 supports,
+like wildcards.
+A search for `fir*` in search v1 should return next to no results,
+whereas in search v2 it should return at least as many as a search for `firefox`.
+
+### Disabling in Instant Search
+
+You can disable search v2 in instant search by opening Firefox's Web Console on support.allizom.org again,
+but running this snippet instead:
+
+```
+window.localStorage.removeItem("enable_search_v2")
+```
+
+* `window.localStorage` is the same Local Storage API from before.
+* `removeItem()` is the function to remove a piece of information.
+* `"enable_search_v2"` is the name of the piece of information to remove.
+
+Refresh the page,
+and instant search will be using search v1 again.
+
 ## Development tips
 
 ### Adding fields to a live index
