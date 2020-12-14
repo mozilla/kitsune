@@ -5,6 +5,7 @@ from elasticsearch_dsl import Q as DSLQ
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.config import WIKI_DOCUMENT_INDEX_NAME, QUESTION_INDEX_NAME
 from kitsune.search.v2.base import SumoSearch
+from kitsune.search.v2.es7_utils import es_analyzer_for_locale
 from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY
 from kitsune.sumo.urlresolvers import reverse
 
@@ -46,6 +47,9 @@ class QuestionSearch(SumoSearch):
             f"question_content.{self.locale}^3",
             f"answer_content.{self.locale}^3",
         ]
+
+    def get_analyzer(self):
+        return es_analyzer_for_locale(self.locale)
 
     def get_highlight_fields(self):
         return [
@@ -106,6 +110,9 @@ class WikiSearch(SumoSearch):
             f"summary.{self.locale}^2",
             f"content.{self.locale}^1",
         ]
+
+    def get_analyzer(self):
+        return es_analyzer_for_locale(self.locale)
 
     def get_highlight_fields(self):
         return [
@@ -175,6 +182,13 @@ class CompoundSearch(SumoSearch):
 
     def get_fields(self):
         return self._from_children("get_fields")
+
+    def get_analyzer(self):
+        analyzers = self._from_children("get_analyzer")
+        if analyzers.count(analyzers[0]) != len(analyzers):
+            # if the children specify different analyzers, use the default analyzer:
+            return es_analyzer_for_locale("default")
+        return analyzers[0]
 
     def get_highlight_fields(self):
         return self._from_children("get_highlight_fields")

@@ -158,6 +158,11 @@ class SumoSearch(ABC):
         pass
 
     @abstractmethod
+    def get_analyzer(self):
+        """The analyzer which should be used on the search query string."""
+        pass
+
+    @abstractmethod
     def get_highlight_fields(self):
         """An array of fields to highlight."""
         pass
@@ -187,6 +192,7 @@ class SumoSearch(ABC):
             query=query,
             default_operator=default_operator,
             fields=self.get_fields(),
+            analyzer=self.get_analyzer(),
         )
 
         # add highlights for the search class' highlight_fields
