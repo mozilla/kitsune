@@ -1,5 +1,6 @@
 from math import ceil
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, reset_queries
 from dateutil.parser import parse as dateutil_parse
@@ -36,6 +37,12 @@ class Command(BaseCommand):
             type=int,
             default=100,
             help="Index this number of documents at once",
+        )
+        parser.add_argument(
+            "--timeout",
+            type=float,
+            default=settings.ES_BULK_DEFAULT_TIMEOUT,
+            help="Set the request timeout (in seconds)",
         )
         parser.add_argument(
             "--updated-before",
@@ -103,7 +110,11 @@ class Command(BaseCommand):
             for x in range(ceil(count / bulk_count)):
                 start = x * bulk_count
                 end = start + bulk_count
-                index_objects_bulk.delay(dt.__name__, id_list[start:end])
+                index_objects_bulk.delay(
+                    dt.__name__,
+                    id_list[start:end],
+                    timeout=kwargs["timeout"],
+                )
                 if kwargs["print_sql_count"]:
                     print("{} SQL queries executed".format(len(connection.queries)))
                     reset_queries()
