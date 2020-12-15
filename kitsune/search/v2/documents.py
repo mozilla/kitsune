@@ -28,7 +28,8 @@ class WikiDocument(SumoDocument):
     title = SumoLocaleAwareTextField()
     content = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
     summary = SumoLocaleAwareTextField(store=True, term_vector="with_positions_offsets")
-    keywords = SumoLocaleAwareKeywordField(multi=True)
+    # store keywords in a text field so they're stemmed:
+    keywords = SumoLocaleAwareTextField()
     slug = SumoLocaleAwareKeywordField(store=True)
     doc_id = SumoLocaleAwareKeywordField(store=True)
     is_archived = SumoLocaleAwareBooleanField()
@@ -52,8 +53,8 @@ class WikiDocument(SumoDocument):
         return getattr(instance.current_revision, "created", None)
 
     def prepare_keywords(self, instance):
-        """Return a list of keywords split by space, or an empty list."""
-        return getattr(instance.current_revision, "keywords", "").split()
+        """Return the current revision's keywords as a string."""
+        return getattr(instance.current_revision, "keywords", "")
 
     def prepare_content(self, instance):
         return instance.html
