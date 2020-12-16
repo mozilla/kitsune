@@ -346,6 +346,9 @@ ES_PLUGIN_ANALYZERS = ["polish"]
 
 ES_USE_PLUGINS = config("ES_USE_PLUGINS", default=not DEBUG, cast=bool)
 
+ES_BULK_DEFAULT_TIMEOUT = config("ES_BULK_DEFAULT_TIMEOUT", default=10, cast=float)
+ES_BULK_MAX_RETRIES = config("ES_BULK_MAX_RETRIES", default=1, cast=int)
+
 TEXT_DOMAIN = "messages"
 
 SITE_ID = 1

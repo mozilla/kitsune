@@ -59,15 +59,14 @@ def es_analyzer_for_locale(locale):
     )
 
 
-def es7_client():
+def es7_client(**kwargs):
     """Return an ES7 Elasticsearch client"""
-    init_args = {}
     # prefer a cloud_id if available
     if es7_cloud_id := settings.ES7_CLOUD_ID:
-        init_args.update({"cloud_id": es7_cloud_id, "http_auth": settings.ES7_HTTP_AUTH})
+        kwargs.update({"cloud_id": es7_cloud_id, "http_auth": settings.ES7_HTTP_AUTH})
     else:
-        init_args.update({"hosts": settings.ES7_URLS})
-    return elasticsearch7.Elasticsearch(**init_args)
+        kwargs.update({"hosts": settings.ES7_URLS})
+    return elasticsearch7.Elasticsearch(**kwargs)
 
 
 def get_doc_types(paths=["kitsune.search.v2.documents"]):
@@ -111,7 +110,7 @@ def index_object(doc_type_name, obj_id):
 
 
 @task
-def index_objects_bulk(doc_type_name, obj_ids):
+def index_objects_bulk(doc_type_name, obj_ids, timeout=settings.ES_BULK_DEFAULT_TIMEOUT):
     """Bulk index ORM objects given a list of object ids and a document type name."""
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
@@ -126,7 +125,19 @@ def index_objects_bulk(doc_type_name, obj_ids):
     if doc_type.update_document:
         action = "update"
         kwargs.update({"doc_as_upsert": True})
-    es7_bulk(es7_client(), (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs))
+
+    # if the request doesn't resolve within `timeout`,
+    # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
+    # before raising an exception:
+    es7_bulk(
+        es7_client(
+            timeout=timeout,
+            retry_on_timeout=True,
+            initial_backoff=timeout,
+            max_retries=settings.ES_BULK_MAX_RETRIES,
+        ),
+        (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
+    )
 
 
 @task
