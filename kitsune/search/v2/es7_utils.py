@@ -4,38 +4,56 @@ import inspect
 from celery import task
 from django.conf import settings
 from elasticsearch7.helpers import bulk as es7_bulk
-from elasticsearch_dsl import Document, UpdateByQuery, analyzer, token_filter
+from elasticsearch_dsl import Document, UpdateByQuery, analyzer, token_filter, char_filter
 
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
+
+
+def _insert_custom_filters(locale, filter_list, char=False):
+    """
+    Takes a list containing in-built filters (as strings), and the settings for custom filters
+    (as dicts). Turns the dicts into instances of `token_filter` or `char_filter` depending
+    on the value of the `char` argument.
+    """
+
+    def mapping_func(filter):
+        if type(filter) is dict:
+            name = f'{locale}_{filter["type"]}'
+            if char:
+                return char_filter(name, **filter)
+            return token_filter(name, **filter)
+        return filter
+
+    return list(map(mapping_func, filter_list))
 
 
 def _get_locale_specific_analyzer(locale):
     """Get an analyzer for locales specified in config otherwise return `None`"""
 
     locale_analyzer = config.ES_LOCALE_ANALYZERS.get(locale)
-    if locale_analyzer:
-        if not settings.ES_USE_PLUGINS and locale_analyzer in settings.ES_PLUGIN_ANALYZERS:
-            return None
 
-        return analyzer(locale, type=locale_analyzer)
+    if not locale_analyzer:
+        return None
 
-    snowball_language = config.ES_SNOWBALL_LOCALES.get(locale)
-    if snowball_language:
-        # The locale is configured to use snowball filter
-        token_name = "snowball_{}".format(locale.lower())
-        snowball_filter = token_filter(token_name, type="snowball", language=snowball_language)
+    if locale_analyzer.get("plugin") and not settings.ES_USE_PLUGINS:
+        return None
 
-        # Use language specific snowball filter with standard analyzer.
-        # The standard analyzer is basically a analyzer with standard tokenizer
-        # and standard, lowercase and stop filter
-        locale_analyzer = analyzer(
-            locale,
-            tokenizer="standard",
-            filter=["lowercase", "stop", snowball_filter],
-            char_filter=["html_strip"],
-        )
-        return locale_analyzer
+    # use default values from ES_DEFAULT_ANALYZER if not overridden
+    locale_analyzer = config.ES_DEFAULT_ANALYZER | locale_analyzer
+
+    # turn dictionaries into `char_filter` and `token_filter` instances
+    locale_analyzer["filter"] = _insert_custom_filters(locale, locale_analyzer["filter"])
+    locale_analyzer["char_filter"] = _insert_custom_filters(
+        locale, locale_analyzer["char_filter"], char=True
+    )
+
+    return analyzer(
+        locale,
+        tokenizer=locale_analyzer["tokenizer"],
+        filter=locale_analyzer["filter"],
+        char_filter=locale_analyzer["char_filter"],
+    )
 
 
 def es_analyzer_for_locale(locale):
@@ -53,9 +71,9 @@ def es_analyzer_for_locale(locale):
     # So use the standard analyzer as default
     return analyzer(
         "default_sumo",
-        tokenizer="standard",
-        filter=["lowercase"],
-        char_filter=["html_strip"],
+        tokenizer=config.ES_DEFAULT_ANALYZER["tokenizer"],
+        filter=config.ES_DEFAULT_ANALYZER["filter"],
+        char_filter=config.ES_DEFAULT_ANALYZER["char_filter"],
     )
 
 
