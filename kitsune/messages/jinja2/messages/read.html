@@ -11,7 +11,7 @@
         data-message-content="{{ message.message }}">
         <h1>{{ title }}</h1>
         {{ inbox_message(message) }}
-        {% if message.sender %}
+        {% if message.sender and message.sender.is_active %}
           <form class="reply" action="{{ url('messages.new') }}" method="POST">
             {% csrf_token %}
             {{ message_form(form) }}
@@ -23,6 +23,8 @@
                 data-preview-content-id="id_message" />
             </div>
           </form>
+        {% else %}
+          <i> {{ _('You can no longer reply to the sender of this message. The user is no longer active.') }} </i>
         {% endif %}
       </section>
       <section id="preview" class="message-view"></section>

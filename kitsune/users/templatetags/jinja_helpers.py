@@ -100,6 +100,9 @@ def user_list(users):
 @library.global_function
 def private_message(user):
     """Return a link to private message the user."""
+    # return an empty element - can match the :empty pseudo selector
+    if not user.is_active:
+        return Markup("<div></div>")
     url = urlparams(reverse("messages.new"), to=user.username)
     msg = _("Private message")
     return Markup(
