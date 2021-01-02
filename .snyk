@@ -54,3 +54,6 @@ patch:
         patched: '2021-01-02T15:17:17.649Z'
     - mocha > jade > transformers > uglify-js:
         patched: '2021-01-02T15:17:17.649Z'
+  'npm:uglify-js:20150824':
+    - debowerify > bower > handlebars > uglify-js:
+        patched: '2021-01-02T18:28:11.187Z'
