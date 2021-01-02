@@ -1,0 +1,56 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.19.0
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:hawk:20160119':
+    - debowerify > bower > request > hawk:
+        patched: '2021-01-02T15:17:17.649Z'
+    - debowerify > bower > bower-registry-client > request > hawk:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:http-signature:20150122':
+    - debowerify > bower > request > http-signature:
+        patched: '2021-01-02T15:17:17.649Z'
+    - debowerify > bower > bower-registry-client > request > http-signature:
+        patched: '2021-01-02T15:17:17.649Z'
+  SNYK-JS-LODASH-567746:
+    - eslint > handlebars > async > lodash:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:lodash:20180130':
+    - babel > babel-core > babel-plugin-proto-to-assign > lodash:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:mime:20170907':
+    - debowerify > bower > request > form-data > mime:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:minimatch:20160620':
+    - gulp > vinyl-fs > glob-stream > minimatch:
+        patched: '2021-01-02T15:17:17.649Z'
+    - debowerify > bower > glob > minimatch:
+        patched: '2021-01-02T15:17:17.649Z'
+    - gulp > vinyl-fs > glob-watcher > gaze > globule > minimatch:
+        patched: '2021-01-02T15:17:17.649Z'
+    - gulp > vinyl-fs > glob-watcher > gaze > globule > glob > minimatch:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:request:20160119':
+    - debowerify > bower > bower-registry-client > request:
+        patched: '2021-01-02T15:17:17.649Z'
+    - debowerify > bower > request:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:semver:20150403':
+    - debowerify > bower > semver:
+        patched: '2021-01-02T15:17:17.649Z'
+    - debowerify > bower > update-notifier > semver-diff > semver:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:shell-quote:20160621':
+    - debowerify > bower > shell-quote:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:tunnel-agent:20170305':
+    - debowerify > bower > request > tunnel-agent:
+        patched: '2021-01-02T15:17:17.649Z'
+    - debowerify > bower > bower-registry-client > request > tunnel-agent:
+        patched: '2021-01-02T15:17:17.649Z'
+  'npm:uglify-js:20151024':
+    - debowerify > bower > handlebars > uglify-js:
+        patched: '2021-01-02T15:17:17.649Z'
+    - mocha > jade > transformers > uglify-js:
+        patched: '2021-01-02T15:17:17.649Z'
