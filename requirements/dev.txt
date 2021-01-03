@@ -45,7 +45,7 @@ pre_commit==0.7.0 \
 pyflakes==1.0.0 \
     --hash=sha256:071d121e9e7b33058aa1ba5de7bce9b97bfa3149cfe1acbb6587c21fc1c8eda1 \
     --hash=sha256:f39e33a4c03beead8774f005bd3ecf0c3f2f264fa0201de965fce0aff1d34263
-PyYAML==4.2b1 \
+PyYAML==5.3.1 \
     --hash=sha256:ef3a0d5a5e950747f4a39ed7b204e036b37f9bddc7551c1a813b8727515a832e
 q==2.6 \
     --hash=sha256:8687008a5b50ddc1c114392a37591cb4fbe082dcc8b02bdc6692689c69d08314 \
