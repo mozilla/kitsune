@@ -363,7 +363,7 @@ redis==2.10.6 \
     --hash=sha256:a22ca993cea2962dbb588f9f30d0015ac4afcc45bee27d3978c0dbe9e97c6c0f
 newrelic==4.18.0.118 \
     --hash=sha256:3cd496022c6906ee3cdbf27c67ec3e03922830bfebbca4549ef6f2e58cf719e2
-meinheld==0.6.1 \
+meinheld==1.0.2 \
     --hash=sha256:40d9dbce0165b2d9142f364d26fd6d59d3682f89d0dfe2117717a8ddad1f4133 \
     --hash=sha256:293eff4983b7fcbd9134b47706b22189883fe354993bd10163c65869d141e565
 greenlet==0.4.12 \
