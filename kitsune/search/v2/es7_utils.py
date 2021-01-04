@@ -1,5 +1,7 @@
 import importlib
 import inspect
+from hashlib import shake_128
+import json
 
 from celery import task
 from django.conf import settings
@@ -19,7 +21,11 @@ def _insert_custom_filters(locale, filter_list, char=False):
 
     def mapping_func(filter):
         if type(filter) is dict:
-            name = f'{locale}_{filter["type"]}'
+            # sort filter dict by keys, so reordering doesn't change hash
+            sorted_filter = {key: filter[key] for key in sorted(filter)}
+            # hash to prevent collisions between filters of the same type in a locale
+            hashed_filter = shake_128(json.dumps(sorted_filter).encode("utf-8")).hexdigest(2)
+            name = f'{locale}_{filter["type"]}_{hashed_filter}'
             if char:
                 return char_filter(name, **filter)
             return token_filter(name, **filter)
