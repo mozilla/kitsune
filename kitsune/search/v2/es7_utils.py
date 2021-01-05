@@ -17,15 +17,16 @@ def _insert_custom_filters(locale, filter_list, char=False):
     on the value of the `char` argument.
     """
 
-    def mapping_func(filter):
+    def mapping_func(position_filter_tuple):
+        position, filter = position_filter_tuple
         if type(filter) is dict:
-            name = f'{locale}_{filter["type"]}'
+            name = f'{locale}_{position}_{filter["type"]}'
             if char:
                 return char_filter(name, **filter)
             return token_filter(name, **filter)
         return filter
 
-    return list(map(mapping_func, filter_list))
+    return list(map(mapping_func, enumerate(filter_list)))
 
 
 def _get_locale_specific_analyzer(locale):
