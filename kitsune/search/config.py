@@ -24,6 +24,8 @@ ES_DEFAULT_ANALYZER = {
 
 # by and large copied from
 # https://www.elastic.co/guide/en/elasticsearch/reference/7.10/analysis-lang-analyzer.html
+# NB: boolean filter arguments should be specified as a string, i.e. `"true"` rather than `True`,
+# explained here: https://github.com/mozilla/sumo-project/issues/719#issuecomment-754677048
 ES_LOCALE_ANALYZERS = {
     "ar": {
         "filter": [
@@ -53,7 +55,11 @@ ES_LOCALE_ANALYZERS = {
     },
     "ca": {
         "filter": [
-            {"type": "elision", "articles": ["d", "l", "m", "n", "s", "t"], "articles_case": True},
+            {
+                "type": "elision",
+                "articles": ["d", "l", "m", "n", "s", "t"],
+                "articles_case": "true",
+            },
             "lowercase",
             {"type": "stop", "stopwords": "_catalan_"},
             {"type": "stemmer", "language": "catalan"},
@@ -141,7 +147,7 @@ ES_LOCALE_ANALYZERS = {
         "filter": [
             {
                 "type": "elision",
-                "articles_case": True,
+                "articles_case": "true",
                 "articles": [
                     "l",
                     "m",
@@ -165,8 +171,8 @@ ES_LOCALE_ANALYZERS = {
     },
     "ga-IE": {
         "filter": [
-            {"type": "stop", "stopwords": ["h", "n", "t"], "ignore_case": True},
-            {"type": "elision", "articles": ["d", "m", "b"], "articles_case": True},
+            {"type": "stop", "stopwords": ["h", "n", "t"], "ignore_case": "true"},
+            {"type": "elision", "articles": ["d", "m", "b"], "articles_case": "true"},
             {"type": "lowercase", "language": "irish"},
             {"type": "stop", "stopwords": "_irish_"},
             {"type": "stemmer", "language": "irish"},
@@ -230,7 +236,7 @@ ES_LOCALE_ANALYZERS = {
                     "v",
                     "d",
                 ],
-                "articles_case": True,
+                "articles_case": "true",
             },
             "lowercase",
             {"type": "stop", "stopwords": "_italian_"},
