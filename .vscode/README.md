@@ -42,3 +42,25 @@ In order to stop the server so you can start debugging again run the vscode comm
 ```
 >Remote-Containers: Rebuild Container
 ```
+
+## Debugging a python script executed through the terminal (e.g. a django management command)
+
+There's a helper script which will wrap any execution of a python script with vscode's debugger.
+
+To use it, run:
+
+```
+.vscode/debug-python <script and arguments here>
+```
+
+e.g.
+
+```
+./vscode/debug-python ./manage.py help
+```
+
+The script's execution is paused until the debugger attaches to it.
+So to start it,
+open the run sidebar in vscode,
+select "Attach to .vscode/debug-python" from the dropdown,
+and click run.
