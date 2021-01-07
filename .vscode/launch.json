@@ -29,6 +29,16 @@
                 "--config",
                 "wsgi/config.py"
             ]
+        },
+
+        {
+            "name": "Attach to .vscode/debug-python",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            }
         }
 
     ]
