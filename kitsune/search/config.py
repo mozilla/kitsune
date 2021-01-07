@@ -16,6 +16,9 @@ QUESTION_INDEX_NAME = get_index_name("question")
 USER_INDEX_NAME = get_index_name("user")
 FORUM_INDEX_NAME = get_index_name("forum_document")
 
+# number of times to retry updates if a conflict happens before raising
+UPDATE_RETRY_ON_CONFLICT = 2
+
 ES_DEFAULT_ANALYZER = {
     "tokenizer": "standard",
     "filter": ["lowercase", "stop"],
