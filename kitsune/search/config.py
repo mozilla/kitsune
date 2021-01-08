@@ -1,4 +1,6 @@
+from datetime import timedelta
 from django.conf import settings
+from django.utils import timezone
 
 
 def get_index_name(index_name):
@@ -15,6 +17,12 @@ WIKI_DOCUMENT_INDEX_NAME = get_index_name("wiki_document")
 QUESTION_INDEX_NAME = get_index_name("question")
 USER_INDEX_NAME = get_index_name("user")
 FORUM_INDEX_NAME = get_index_name("forum_document")
+
+# default value for the ./manage.py es7_reindex --updated-after argument, per doctype
+DEFAULT_REINDEX_UPDATED_AFTER = {
+    "QuestionDocument": timezone.now() - timedelta(days=365 * 2),
+    "AnswerDocument": timezone.now() - timedelta(days=365 * 2),
+}
 
 ES_DEFAULT_ANALYZER = {
     "tokenizer": "standard",

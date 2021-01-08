@@ -6,6 +6,7 @@ from django.db import connection, reset_queries
 from dateutil.parser import parse as dateutil_parse
 
 from kitsune.search.v2.es7_utils import get_doc_types, index_objects_bulk
+from kitsune.search import config
 
 
 class Command(BaseCommand):
@@ -78,12 +79,20 @@ class Command(BaseCommand):
 
             before = kwargs["updated_before"]
             after = kwargs["updated_after"]
+            if not before and not after:
+                after = config.DEFAULT_REINDEX_UPDATED_AFTER.get(dt.__name__)
             if before or after:
                 try:
                     qs = model.objects_range(before=before, after=after)
+                    if before and after:
+                        print(f"Indexing objects updated between {after} and {before}")
+                    elif before:
+                        print(f"Indexing objects updated before {before}")
+                    else:
+                        print(f"Indexing objects updated after {after}")
                 except NotImplementedError:
                     print(
-                        f"{model} hasn't implemeneted an `updated_column_name` property."
+                        f"{model} hasn't implemeneted an `updated_column_name` property. "
                         "No documents will be indexed of this type."
                     )
                     continue
