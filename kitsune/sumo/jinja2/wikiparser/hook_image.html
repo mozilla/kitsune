@@ -1,14 +1,14 @@
-{% set classes = 'img' %}
-{% if params['align'] %}
-  {% set classes = classes + ' align-' + params['align'] %}
-{% endif %}
-{% if params['align'] %}
-  {% set has_frame = True %}
-{% elif not params['frame'] or params['valign'] %}
-  {% set has_frame = False %}
-{% else %}
-  {% set has_frame = True %}
-{% endif %}
+{% set classes = 'img' -%}
+{% if params['align'] -%}
+  {% set classes = classes + ' align-' + params['align'] -%}
+{% endif -%}
+{% if params['align'] -%}
+  {% set has_frame = True -%}
+{% elif not params['frame'] or params['valign'] -%}
+  {% set has_frame = False -%}
+{% else -%}
+  {% set has_frame = True -%}
+{% endif -%}
 
 {% macro render_image(lazy=False) -%}
   <img class="wiki-image{% if not has_frame %} frameless{% endif %}{% if lazy %} lazy{% endif %}"
@@ -28,29 +28,29 @@
       style="vertical-align:{{ params['valign'] }}"
     {% endif %}
     />
-{%- endmacro %}
+{%- endmacro -%}
 
-{% if has_frame %}
+{% if has_frame -%}
   <div class="{{ classes }}">
     <div class="img-inner">
-{% endif %}
+{% endif -%}
 
-{% if params['link'] %}
+{% if params['link'] -%}
   <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
-{% endif %}
+{% endif -%}
 {{ render_image(lazy=lazy_enabled) }}
-{% if params['link'] %}
+{%- if params['link'] -%}
   </a>
-{% endif %}
+{% endif -%}
 
-{% if has_frame %}
-  {% if params['caption'] %}
+{% if has_frame -%}
+  {% if params['caption'] -%}
     <div class="caption"
-      {% if params['width'] %}
+      {% if params['width'] -%}
         style="width:{{ params['width']|int('') }}px"
-      {% endif %}
+      {% endif -%}
     >{{ params['caption'] }}</div>
-  {% endif %}
+  {% endif -%}
   </div>
   </div>{# /classes #}
-{% endif %}
+{% endif -%}
