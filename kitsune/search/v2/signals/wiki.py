@@ -1,19 +1,17 @@
-from django.db.models.signals import post_save, m2m_changed, post_delete
-from kitsune.search.v2.es7_utils import (
-    index_object,
-    delete_object,
-    remove_from_field,
-)
-from kitsune.search.v2.decorators import search_receiver
-from kitsune.wiki.models import Document
+from django.db.models.signals import m2m_changed, post_delete, post_save
+
 from kitsune.products.models import Product, Topic
+from kitsune.search.v2.decorators import search_receiver
+from kitsune.search.v2.es7_utils import delete_object, index_object, remove_from_field
+from kitsune.wiki.models import Document
 
 
 @search_receiver(post_save, Document)
 @search_receiver(m2m_changed, Document.products.through)
 @search_receiver(m2m_changed, Document.topics.through)
 def handle_document_save(instance, **kwargs):
-    index_object.delay("WikiDocument", instance.pk)
+    if instance.current_revision:
+        index_object.delay("WikiDocument", instance.pk)
 
 
 @search_receiver(post_delete, Document)
