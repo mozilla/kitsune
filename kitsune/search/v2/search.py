@@ -54,7 +54,10 @@ class QuestionSearch(SumoSearch):
         ]
 
     def get_filter(self):
-        filters = [DSLQ("term", _index=self.get_index())]
+        filters = [
+            DSLQ("term", _index=self.get_index()),
+            DSLQ("term", question_is_spam=False),
+        ]
         if self.product:
             filters.append(DSLQ("term", question_product_id=self.product.id))
         return DSLQ(
