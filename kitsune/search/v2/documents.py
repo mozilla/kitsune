@@ -13,6 +13,7 @@ from kitsune.search.v2.fields import (
 )
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
+from kitsune.wiki.config import REDIRECT_HTML
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
@@ -33,6 +34,7 @@ class WikiDocument(SumoDocument):
     slug = SumoLocaleAwareKeywordField(store=True)
     doc_id = SumoLocaleAwareKeywordField(store=True)
     is_archived = SumoLocaleAwareBooleanField()
+    is_redirect = SumoLocaleAwareBooleanField()
 
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
@@ -73,8 +75,8 @@ class WikiDocument(SumoDocument):
     def prepare_product_ids(self, instance):
         return [product.id for product in instance.products.all()]
 
-    def prepare_display_order(self, instance):
-        return instance.original.display_order
+    def prepare_is_redirect(self, instance):
+        return instance.html.startswith(REDIRECT_HTML)
 
     @classmethod
     def get_model(cls):

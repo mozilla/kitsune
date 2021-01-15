@@ -124,6 +124,8 @@ class WikiSearch(SumoSearch):
             DSLQ("term", _index=self.get_index()),
             # exclude archived articles
             DSLQ("term", **{f"is_archived.{self.locale}": False}),
+            # exclude articles which are redirects
+            DSLQ("term", **{f"is_redirect.{self.locale}": False}),
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
