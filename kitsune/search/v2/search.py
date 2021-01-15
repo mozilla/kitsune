@@ -1,12 +1,13 @@
-import bleach
 from datetime import datetime
 
+import bleach
 from elasticsearch_dsl import Q as DSLQ
+
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
-from kitsune.search.config import WIKI_DOCUMENT_INDEX_NAME, QUESTION_INDEX_NAME
+from kitsune.search.config import QUESTION_INDEX_NAME, WIKI_DOCUMENT_INDEX_NAME
 from kitsune.search.v2.base import SumoSearch
-from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY
 
 
 def first_highlight(hit):
@@ -117,7 +118,13 @@ class WikiSearch(SumoSearch):
         ]
 
     def get_filter(self):
-        filters = [DSLQ("term", _index=self.get_index())]
+        # Add default filters:
+        filters = [
+            # limit scope to the Wiki index
+            DSLQ("term", _index=self.get_index()),
+            # exclude archived articles
+            DSLQ("term", **{f"is_archived.{self.locale}": False}),
+        ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
         return DSLQ(
