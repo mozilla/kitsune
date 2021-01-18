@@ -1,7 +1,7 @@
 from functools import partial
 
 from django.conf import settings
-from elasticsearch_dsl.field import Boolean, Keyword
+from elasticsearch_dsl.field import Keyword
 from elasticsearch_dsl.field import Object as DSLObject
 from elasticsearch_dsl.field import Text
 
@@ -35,9 +35,7 @@ def construct_locale_field(field, locales, **params):
 
 SumoTextField = partial(construct_locale_field, field=Text)
 SumoKeywordField = partial(construct_locale_field, field=Keyword)
-SumoBooleanField = partial(construct_locale_field, field=Boolean)
 # This is an object in the form of
 # {'en-US': Text(analyzer_for_the_specific_locale)}
 SumoLocaleAwareTextField = partial(SumoTextField, locales=SUPPORTED_LANGUAGES)
 SumoLocaleAwareKeywordField = partial(SumoKeywordField, locales=SUPPORTED_LANGUAGES)
-SumoLocaleAwareBooleanField = partial(SumoBooleanField, locales=SUPPORTED_LANGUAGES)

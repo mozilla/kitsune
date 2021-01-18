@@ -1,10 +1,13 @@
-from datetime import datetime
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from django.conf import settings
 from django.utils import timezone
-from elasticsearch_dsl import Document as DSLDocument, Search as DSLSearch
-from elasticsearch_dsl import InnerDoc, MetaField, field
+from elasticsearch_dsl import Document as DSLDocument
+from elasticsearch_dsl import InnerDoc, MetaField
+from elasticsearch_dsl import Search as DSLSearch
+from elasticsearch_dsl import field
+
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.v2.es7_utils import es7_client
 
@@ -37,42 +40,50 @@ class SumoDocument(DSLDocument):
         """
 
         obj = cls()
+
         doc_mapping = obj._doc_type.mapping
         fields = [f for f in doc_mapping]
         fields.remove("indexed_on")
-
         # Loop through the fields of each object and set the right values
-        for f in fields:
 
-            # This will allow child classes to have their own methods in the form of prepare_field
-            prepare_method = getattr(obj, "prepare_{}".format(f), None)
-            value = obj.get_field_value(f, instance, prepare_method)
+        # check if the instance is suitable for indexing
+        # the prepare method of each Document Type can mark an object
+        # not suitable for indexing based on criteria defined on each said method
+        if not hasattr(instance, "es_discard_doc"):
+            for f in fields:
 
-            # Assign values to each field.
-            field_type = doc_mapping.resolve_field(f)
-            if isinstance(field_type, field.Object) and not (
-                isinstance(value, InnerDoc)
-                or (isinstance(value, list) and isinstance((value or [None])[0], InnerDoc))
-            ):
-                # if the field is an Object but the value isn't an InnerDoc
-                # or a list containing an InnerDoc then we're dealing with locales
-                locale = obj.prepare_locale(instance)
-                # Check specifically against None, False is a valid value
-                if locale and (value is not None):
-                    obj[f] = {locale: value}
+                # This will allow child classes to have their own methods
+                # in the form of prepare_field
+                prepare_method = getattr(obj, "prepare_{}".format(f), None)
+                value = obj.get_field_value(f, instance, prepare_method)
 
-            else:
-                if (
-                    isinstance(field_type, field.Date)
-                    and isinstance(value, datetime)
-                    and timezone.is_naive(value)
+                # Assign values to each field.
+                field_type = doc_mapping.resolve_field(f)
+                if isinstance(field_type, field.Object) and not (
+                    isinstance(value, InnerDoc)
+                    or (isinstance(value, list) and isinstance((value or [None])[0], InnerDoc))
                 ):
-                    # set is_dst=False to avoid errors when an ambiguous time is sent:
-                    # https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.make_aware
-                    value = timezone.make_aware(value, is_dst=False).astimezone(timezone.utc)
+                    # if the field is an Object but the value isn't an InnerDoc
+                    # or a list containing an InnerDoc then we're dealing with locales
+                    locale = obj.prepare_locale(instance)
+                    # Check specifically against None, False is a valid value
+                    if locale and (value is not None):
+                        obj[f] = {locale: value}
 
-                if not parent_id:
-                    setattr(obj, f, value)
+                else:
+                    if (
+                        isinstance(field_type, field.Date)
+                        and isinstance(value, datetime)
+                        and timezone.is_naive(value)
+                    ):
+                        # set is_dst=False to avoid errors when an ambiguous time is sent:
+                        # https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.make_aware
+                        value = timezone.make_aware(value, is_dst=False).astimezone(timezone.utc)
+
+                    if not parent_id:
+                        setattr(obj, f, value)
+        else:
+            obj.es_discard_doc = "unindex_me"
 
         obj.indexed_on = datetime.now(timezone.utc)
         obj.meta.id = instance.pk
@@ -86,6 +97,14 @@ class SumoDocument(DSLDocument):
 
         Useful for bulk operations.
         """
+
+        # If an object has a discard field then mark it for deletion if exists
+        # This is the only case where this method ignores the passed arg action and
+        # overrides it with a deletion. This can happen if the `prpare` method of each
+        # document type has marked a document as not suitable for indexing
+        if hasattr(self, "es_discard_doc"):
+            # Let's try to delete anything that might exist in ES
+            action = "delete"
 
         # Default to index if no action is defined or if it's `save`
         # if we have a bulk update, we need to include the meta info
@@ -108,7 +127,13 @@ class SumoDocument(DSLDocument):
                 return payload
             return self.update(**payload)
         elif action == "delete":
-            return self.delete()
+            # if we have a bulk operation, drop the _source and mark the operation as deletion
+            if is_bulk:
+                payload.update({"_op_type": "delete"})
+                del payload["_source"]
+                return payload
+            # This is a single document op, delete it
+            return self.delete(**{"ignore": [400, 404]})
 
     @classmethod
     def get_queryset(cls):

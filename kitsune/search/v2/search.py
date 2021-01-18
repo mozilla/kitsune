@@ -1,11 +1,11 @@
-import bleach
 from datetime import datetime
 
+import bleach
 from elasticsearch_dsl import Q as DSLQ
+
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
-from kitsune.search.config import WIKI_DOCUMENT_INDEX_NAME, QUESTION_INDEX_NAME
+from kitsune.search.config import QUESTION_INDEX_NAME, WIKI_DOCUMENT_INDEX_NAME
 from kitsune.search.v2.base import SumoSearch
-from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -120,11 +120,7 @@ class WikiSearch(SumoSearch):
         filters = [DSLQ("term", _index=self.get_index())]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
-        return DSLQ(
-            "bool",
-            filter=filters,
-            must_not=DSLQ("terms", category=[TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]),
-        )
+        return DSLQ("bool", filter=filters)
 
     def make_result(self, hit):
         # generate a summary for search:

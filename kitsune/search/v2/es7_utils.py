@@ -4,7 +4,8 @@ import inspect
 from celery import task
 from django.conf import settings
 from elasticsearch7.helpers import bulk as es7_bulk
-from elasticsearch_dsl import Document, UpdateByQuery, analyzer, token_filter, char_filter
+from elasticsearch7.helpers.errors import BulkIndexError
+from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 
 from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
@@ -134,9 +135,10 @@ def index_objects_bulk(doc_type_name, obj_ids, timeout=settings.ES_BULK_DEFAULT_
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
 
-    objects = doc_type.get_queryset().filter(pk__in=obj_ids)
+    db_objects = doc_type.get_queryset().filter(pk__in=obj_ids)
     # prepare the docs for indexing
-    docs = [doc_type.prepare(obj) for obj in objects]
+    docs = [doc_type.prepare(obj) for obj in db_objects]
+
     # set the appropriate action per document type
     action = "index"
     kwargs = {}
@@ -148,15 +150,25 @@ def index_objects_bulk(doc_type_name, obj_ids, timeout=settings.ES_BULK_DEFAULT_
     # if the request doesn't resolve within `timeout`,
     # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
     # before raising an exception:
-    es7_bulk(
-        es7_client(
-            timeout=timeout,
-            retry_on_timeout=True,
-            initial_backoff=timeout,
-            max_retries=settings.ES_BULK_MAX_RETRIES,
-        ),
-        (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
-    )
+    try:
+        es7_bulk(
+            es7_client(
+                timeout=timeout,
+                retry_on_timeout=True,
+                initial_backoff=timeout,
+                max_retries=settings.ES_BULK_MAX_RETRIES,
+            ),
+            (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
+        )
+    except BulkIndexError as exc:
+        # the [:] syntax updates the list in place
+        exc.errors[:] = [
+            error
+            for error in exc.errors
+            if not (error.get("delete") and error["delete"]["status"] in [400, 404])
+        ]
+        if exc.errors:
+            raise exc
 
 
 @task
