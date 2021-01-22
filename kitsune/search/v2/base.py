@@ -10,6 +10,7 @@ from elasticsearch_dsl import field
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.v2.es7_utils import es7_client
+from kitsune.search.config import UPDATE_RETRY_ON_CONFLICT
 
 
 class SumoDocument(DSLDocument):
@@ -122,7 +123,12 @@ class SumoDocument(DSLDocument):
                 # we need to return the payload and let elasticsearch-py bulk method deal with
                 # the update
                 payload["doc"] = payload["_source"]
-                payload.update({"_op_type": "update"})
+                payload.update(
+                    {
+                        "_op_type": "update",
+                        "retry_on_conflict": UPDATE_RETRY_ON_CONFLICT,
+                    }
+                )
                 del payload["_source"]
                 return payload
             return self.update(**payload)
