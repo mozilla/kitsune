@@ -20,7 +20,6 @@ class WikiDocument(SumoDocument):
     product_ids = field.Keyword(multi=True)
     topic_ids = field.Keyword(multi=True)
     category = field.Keyword()
-    is_archived = field.Boolean()
 
     # Document specific fields (locale aware)
     title = SumoLocaleAwareTextField()
