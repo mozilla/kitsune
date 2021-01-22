@@ -6,13 +6,10 @@ from kitsune.questions.models import Answer, Question
 from kitsune.search import config
 from kitsune.search.v2.base import SumoDocument
 from kitsune.search.v2.es7_utils import es7_client
-from kitsune.search.v2.fields import (
-    SumoLocaleAwareBooleanField,
-    SumoLocaleAwareKeywordField,
-    SumoLocaleAwareTextField,
-)
+from kitsune.search.v2.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, REDIRECT_HTML, TEMPLATES_CATEGORY
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
@@ -23,6 +20,7 @@ class WikiDocument(SumoDocument):
     product_ids = field.Keyword(multi=True)
     topic_ids = field.Keyword(multi=True)
     category = field.Keyword()
+    is_archived = field.Boolean()
 
     # Document specific fields (locale aware)
     title = SumoLocaleAwareTextField()
@@ -32,7 +30,6 @@ class WikiDocument(SumoDocument):
     keywords = SumoLocaleAwareTextField()
     slug = SumoLocaleAwareKeywordField(store=True)
     doc_id = SumoLocaleAwareKeywordField(store=True)
-    is_archived = SumoLocaleAwareBooleanField()
 
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
@@ -47,6 +44,19 @@ class WikiDocument(SumoDocument):
     @classmethod
     def prepare(cls, instance):
         """Override super method to merge docs for KB."""
+        # Add a discard field in the document if the following conditions are met
+        # Wiki document is a redirect
+        # Wiki document is archived
+        # Wiki document is a template
+        if any(
+            [
+                instance.html.startswith(REDIRECT_HTML),
+                instance.is_archived,
+                instance.category in [TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY],
+            ]
+        ):
+            instance.es_discard_doc = "unindex_me"
+
         return super(WikiDocument, cls).prepare(instance, parent_id=instance.parent_id)
 
     def prepare_updated(self, instance):
@@ -119,10 +129,6 @@ class QuestionDocument(SumoDocument):
     question_is_locked = field.Boolean()
     question_is_archived = field.Boolean()
 
-    question_is_spam = field.Boolean()
-    question_marked_as_spam = field.Date()
-    question_marked_as_spam_by_id = field.Keyword()
-
     question_product_id = field.Keyword()
     question_topic_id = field.Keyword()
 
@@ -140,6 +146,16 @@ class QuestionDocument(SumoDocument):
     class Index:
         name = config.QUESTION_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
+
+    @classmethod
+    def prepare(cls, instance):
+        """Override super method to exclude certain docs."""
+        # Add a discard field in the document if the following conditions are met
+        # Question document is spam
+        if instance.is_spam:
+            instance.es_discard_doc = "unindex_me"
+
+        return super(QuestionDocument, cls).prepare(instance)
 
     def prepare_question_tag_ids(self, instance):
         return [tag.id for tag in instance.tags.all()]
@@ -197,14 +213,23 @@ class AnswerDocument(QuestionDocument):
     updated = field.Date()
     updated_by_id = field.Keyword()
 
-    is_spam = field.Boolean()
-    marked_as_spam = field.Date()
-    marked_as_spam_by_id = field.Keyword()
-
     num_helpful_votes = field.Integer()
     num_unhelpful_votes = field.Integer()
 
     is_solution = field.Boolean()
+
+    @classmethod
+    def prepare(cls, instance, **kwargs):
+        """Override super method to exclude certain docs."""
+        # Add a discard field in the document if the following conditions are met
+        # Answer document is spam
+        if instance.is_spam or instance.question.is_spam:
+            instance.es_discard_doc = "unindex_me"
+
+        obj = super().prepare(instance, **kwargs)
+        # add a prefix to the id so we don't clash with QuestionDocuments
+        obj.meta.id = "a_{}".format(obj.meta.id)
+        return obj
 
     def prepare_is_solution(self, instance):
         solution_id = instance.question.solution_id
@@ -232,13 +257,6 @@ class AnswerDocument(QuestionDocument):
         if field.startswith("question_"):
             instance = instance.question
         return super().get_field_value(field, instance, *args)
-
-    @classmethod
-    def prepare(cls, instance, **kwargs):
-        obj = super().prepare(instance, **kwargs)
-        # add a prefix to the id so we don't clash with QuestionDocuments
-        obj.meta.id = "a_{}".format(obj.meta.id)
-        return obj
 
     def to_action(self, *args, **kwargs):
         # if the id is un-prefixed, add it
@@ -292,6 +310,16 @@ class ProfileDocument(SumoDocument):
     class Index:
         name = config.USER_INDEX_NAME
         using = config.DEFAULT_ES7_CONNECTION
+
+    @classmethod
+    def prepare(cls, instance):
+        """Override super method to exclude docs from indexing."""
+        # Add a discard field in the document if the following conditions are met
+        # User is not active
+        if not instance.user.is_active:
+            instance.es_discard_doc = "unindex_me"
+
+        return super(ProfileDocument, cls).prepare(instance)
 
     def prepare_username(self, instance):
         return instance.user.username

@@ -127,11 +127,7 @@ class WikiSearch(SumoSearch):
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
-        return DSLQ(
-            "bool",
-            filter=filters,
-            must_not=DSLQ("terms", category=[TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY]),
-        )
+        return DSLQ("bool", filter=filters)
 
     def make_result(self, hit):
         # generate a summary for search:
