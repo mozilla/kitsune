@@ -4,6 +4,7 @@ GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 SLACK_CHANNEL=sumodev
 DOCKER_HUB="https://hub.docker.com/r/itsre/sumo-kitsune/tags/"
+PYENV_FILE='.python-version'
 
 
 function whatsdeployed {
@@ -87,7 +88,9 @@ function compare-client-server-versions {
     fi
 }
 
-source venv/bin/activate
+if ![ -f "$PYENV_FILE" ]; then
+	source venv/bin/activate
+fi
 initialize "$@"
 
 $1 $@

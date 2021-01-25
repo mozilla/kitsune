@@ -1,3 +1,4 @@
 invoke
 jinja2
 pyyaml
+slack-cli
