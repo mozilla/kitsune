@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 import bleach
 from elasticsearch_dsl import Q as DSLQ
@@ -7,6 +7,8 @@ from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.config import QUESTION_INDEX_NAME, WIKI_DOCUMENT_INDEX_NAME
 from kitsune.search.v2.base import SumoSearch
 from kitsune.sumo.urlresolvers import reverse
+
+QUESTION_DAYS_DELTA = 365 * 2
 
 
 def first_highlight(hit):
@@ -55,7 +57,15 @@ class QuestionSearch(SumoSearch):
 
     def get_filter(self):
         filters = [
+            # restrict to the question index
             DSLQ("term", _index=self.get_index()),
+            # only return questions created within QUESTION_DAYS_DELTA
+            DSLQ(
+                "range",
+                question_created={
+                    "gte": datetime.now(timezone.utc) - timedelta(days=QUESTION_DAYS_DELTA)
+                },
+            ),
         ]
         if self.product:
             filters.append(DSLQ("term", question_product_id=self.product.id))
