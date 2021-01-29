@@ -130,7 +130,9 @@ def index_object(doc_type_name, obj_id):
 
 
 @task
-def index_objects_bulk(doc_type_name, obj_ids, timeout=settings.ES_BULK_DEFAULT_TIMEOUT):
+def index_objects_bulk(
+    doc_type_name, obj_ids, timeout=settings.ES_BULK_DEFAULT_TIMEOUT, chunk_size=500
+):
     """Bulk index ORM objects given a list of object ids and a document type name."""
 
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
@@ -150,25 +152,24 @@ def index_objects_bulk(doc_type_name, obj_ids, timeout=settings.ES_BULK_DEFAULT_
     # if the request doesn't resolve within `timeout`,
     # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
     # before raising an exception:
-    try:
-        es7_bulk(
-            es7_client(
-                timeout=timeout,
-                retry_on_timeout=True,
-                initial_backoff=timeout,
-                max_retries=settings.ES_BULK_MAX_RETRIES,
-            ),
-            (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
-        )
-    except BulkIndexError as exc:
-        # the [:] syntax updates the list in place
-        exc.errors[:] = [
-            error
-            for error in exc.errors
-            if not (error.get("delete") and error["delete"]["status"] in [400, 404])
-        ]
-        if exc.errors:
-            raise exc
+    success, errors = es7_bulk(
+        es7_client(
+            timeout=timeout,
+            retry_on_timeout=True,
+            initial_backoff=timeout,
+            max_retries=settings.ES_BULK_MAX_RETRIES,
+        ),
+        (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
+        chunk_size=chunk_size,
+        raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
+    )
+    errors = [
+        error
+        for error in errors
+        if not (error.get("delete") and error["delete"]["status"] in [400, 404])
+    ]
+    if errors:
+        raise BulkIndexError(f"{len(errors)} document(s) failed to index.", errors)
 
 
 @task
