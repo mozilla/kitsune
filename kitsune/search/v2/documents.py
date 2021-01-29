@@ -168,7 +168,17 @@ class QuestionDocument(SumoDocument):
         return instance.num_votes
 
     def prepare_answer_content(self, instance):
-        return [answer.content for answer in instance.answers.all()]
+        return [
+            answer.content
+            for answer in (
+                # when bulk indexing use answer queryset prefetched in `get_queryset` method
+                # this is to avoid running an extra query for each question in the chunk
+                instance.es_question_answers_not_spam
+                if hasattr(instance, "es_question_answers_not_spam")
+                # fallback if non-spam answers haven't been prefetched
+                else instance.answers.filter(is_spam=False)
+            )
+        ]
 
     def get_field_value(self, field, *args):
         if field.startswith("question_"):
@@ -182,7 +192,15 @@ class QuestionDocument(SumoDocument):
     @classmethod
     def get_queryset(cls):
         return (
-            Question.objects.prefetch_related("answers")
+            Question.objects
+            # prefetch answers which aren't spam to avoid extra queries when iterating over them
+            .prefetch_related(
+                Prefetch(
+                    "answers",
+                    queryset=Answer.objects.filter(is_spam=False),
+                    to_attr="es_question_answers_not_spam",
+                )
+            )
             # prefetch tags to avoid extra queries when iterating over them
             .prefetch_related("tags")
             # count votes in db to improve performance
