@@ -792,6 +792,7 @@ ES7_URLS = config("ES7_URLS", cast=Csv(), default="elasticsearch7:9200")
 ES7_CLOUD_ID = config("ES7_CLOUD_ID", default="")
 ES7_USE_SSL = config("ES7_USE_SSL", default=False, cast=bool)
 ES7_HTTP_AUTH = config("ES7_HTTP_AUTH", default="", cast=Csv())
+ES7_ENABLE_CONSOLE_LOGGING = config("ES7_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
 
 # Indexes for reading
 ES_INDEXES = {
@@ -1223,3 +1224,9 @@ ALLOW_LINKS_FROM = [
 TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")
 REGEX_TIMEOUT = config("REGEX_TIMEOUT", default=5, cast=int)
 NANP_REGEX = re.compile(r"[0-9]{3}-?[a-zA-Z2-9][a-zA-Z0-9]{2}-?[a-zA-Z0-9]{4}")
+
+if ES7_ENABLE_CONSOLE_LOGGING and DEV:
+    es_trace_logger = logging.getLogger("elasticsearch.trace")
+    es_trace_logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    es_trace_logger.addHandler(handler)
