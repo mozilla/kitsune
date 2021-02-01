@@ -9,8 +9,8 @@ from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
-from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.config import UPDATE_RETRY_ON_CONFLICT
+from kitsune.search.v2.es7_utils import es7_client
 
 
 class SumoDocument(DSLDocument):
@@ -207,7 +207,10 @@ class SumoSearch(ABC):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
-        search = DSLSearch(using=es7_client(), index=self.get_index())
+        # Default to a dfs query
+        search = DSLSearch(using=es7_client(), index=self.get_index()).params(
+            search_type="dfs_query_then_fetch"
+        )
 
         # add the search class' filter
         search = search.query("bool", filter=self.get_filter())
