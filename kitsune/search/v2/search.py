@@ -44,9 +44,9 @@ class QuestionSearch(SumoSearch):
     def get_fields(self):
         return [
             # ^x boosts the score from that field by x amount
-            f"question_title.{self.locale}^4",
-            f"question_content.{self.locale}^3",
-            f"answer_content.{self.locale}^3",
+            f"question_title.{self.locale}^2",
+            f"question_content.{self.locale}",
+            f"answer_content.{self.locale}",
         ]
 
     def get_highlight_fields(self):
@@ -115,8 +115,8 @@ class WikiSearch(SumoSearch):
             # ^x boosts the score from that field by x amount
             f"keywords.{self.locale}^8",
             f"title.{self.locale}^6",
-            f"summary.{self.locale}^2",
-            f"content.{self.locale}^1",
+            f"summary.{self.locale}^4",
+            f"content.{self.locale}^2",
         ]
 
     def get_highlight_fields(self):
