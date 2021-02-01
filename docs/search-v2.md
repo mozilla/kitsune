@@ -123,3 +123,11 @@ datetime.now(timezone.utc)
 This should be used instead of
 [`django.utils.timezone.now()`](https://docs.djangoproject.com/en/2.2/ref/utils/#django.utils.timezone.now)
 as that returns a naive or aware datetime depending on the value of `USE_TZ`, whereas we want datetimes in Elastic to always be timezone-aware.
+
+### Print ElasticSearch queries in your development console
+
+You can set the following variable in your .env file to enable the logging of the queries that are sent to your local ElasticSearch instance.
+
+```
+ES7_ENABLE_LOGGING=True
+```
