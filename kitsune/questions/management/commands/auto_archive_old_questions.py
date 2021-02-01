@@ -6,10 +6,12 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-from kitsune.questions.models import Question, QuestionMappingType
+from kitsune.questions.models import Question, QuestionMappingType, Answer
 from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
 from kitsune.search.tasks import index_task
 from kitsune.search.utils import to_class_path
+
+from kitsune.search.v2.es7_utils import index_objects_bulk
 
 log = logging.getLogger("k.cron")
 
@@ -48,6 +50,14 @@ class Command(BaseCommand):
                 transaction.commit()
 
             if settings.ES_LIVE_INDEXING:
+                # elastic v7 code:
+                answer_ids = list(
+                    Answer.objects.filter(question_id__in=q_ids).values_list("id", flat=True)
+                )
+                index_objects_bulk.delay("QuestionDocument", q_ids)
+                index_objects_bulk.delay("AnswerDocument", answer_ids)
+
+                # elastic v2 code:
                 try:
                     # So... the first time this runs, it'll handle 160K
                     # questions or so which stresses everything. Thus we
