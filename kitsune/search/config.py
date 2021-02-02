@@ -19,10 +19,19 @@ FORUM_INDEX_NAME = get_index_name("forum_document")
 # number of times to retry updates if a conflict happens before raising
 UPDATE_RETRY_ON_CONFLICT = 2
 
+ES_MAPPINGS = [
+    "add-on => addon",
+    "add on => addon",
+]
+
+ES_DEFAULT_ANALYZER_NAME = "default_sumo"
 ES_DEFAULT_ANALYZER = {
     "tokenizer": "standard",
     "filter": ["lowercase", "stop"],
-    "char_filter": ["html_strip"],
+    "char_filter": [
+        "html_strip",
+        {"type": "mapping", "mappings": ES_MAPPINGS},
+    ],
 }
 
 # by and large copied from
@@ -137,6 +146,7 @@ ES_LOCALE_ANALYZERS = {
         "char_filter": [
             {"type": "mapping", "mappings": ["\\u200C=>\\u0020"]},
             "html_strip",
+            {"type": "mapping", "mappings": ES_MAPPINGS},
         ],
     },
     "fi": {

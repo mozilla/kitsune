@@ -221,6 +221,9 @@ class SumoSearch(ABC):
             query=query,
             default_operator=default_operator,
             fields=self.get_fields(),
+            # everything apart from WHITESPACE as that interferes with mappings
+            # and synonyms with whitespace in them:
+            flags="AND|ESCAPE|FUZZY|NEAR|NOT|OR|PHRASE|PRECEDENCE|PREFIX|SLOP",
         )
 
         # add highlights for the search class' highlight_fields

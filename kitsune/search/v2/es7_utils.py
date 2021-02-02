@@ -21,7 +21,15 @@ def _insert_custom_filters(locale, filter_list, char=False):
     def mapping_func(position_filter_tuple):
         position, filter = position_filter_tuple
         if type(filter) is dict:
-            name = f'{locale}_{position}_{filter["type"]}'
+            prefix = locale
+            default_filters = config.ES_DEFAULT_ANALYZER["char_filter" if char else "filter"]
+            if filter in default_filters:
+                # detect if this filter exists in the default analyzer
+                # if it does use the same name as the default
+                # to avoid defining the same filter for each locale
+                prefix = config.ES_DEFAULT_ANALYZER_NAME
+                position = default_filters.index(filter)
+            name = f'{prefix}_{position}_{filter["type"]}'
             if char:
                 return char_filter(name, **filter)
             return token_filter(name, **filter)
@@ -72,10 +80,14 @@ def es_analyzer_for_locale(locale):
     # No specific analyzer found for the locale
     # So use the standard analyzer as default
     return analyzer(
-        "default_sumo",
+        config.ES_DEFAULT_ANALYZER_NAME,
         tokenizer=config.ES_DEFAULT_ANALYZER["tokenizer"],
-        filter=config.ES_DEFAULT_ANALYZER["filter"],
-        char_filter=config.ES_DEFAULT_ANALYZER["char_filter"],
+        filter=_insert_custom_filters(
+            config.ES_DEFAULT_ANALYZER_NAME, config.ES_DEFAULT_ANALYZER["filter"]
+        ),
+        char_filter=_insert_custom_filters(
+            config.ES_DEFAULT_ANALYZER_NAME, config.ES_DEFAULT_ANALYZER["char_filter"], char=True
+        ),
     )
 
 
