@@ -87,7 +87,7 @@ you might want to add the `--print-sql-count` argument when testing out your cha
 to see how many SQL queries are being executed:
 
 ```sh
-CELERY_TASK_ALWAYS_EAGER=True ./manage.py es7_reindex --print-sql-count --bulk-count=100 --count=100
+CELERY_TASK_ALWAYS_EAGER=True ./manage.py es7_reindex --print-sql-count --sql-chunk-size=100 --count=100
 ```
 
 If the result is much less than 100,

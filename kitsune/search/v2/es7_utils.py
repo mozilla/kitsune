@@ -131,7 +131,10 @@ def index_object(doc_type_name, obj_id):
 
 @task
 def index_objects_bulk(
-    doc_type_name, obj_ids, timeout=settings.ES_BULK_DEFAULT_TIMEOUT, chunk_size=500
+    doc_type_name,
+    obj_ids,
+    timeout=settings.ES_BULK_DEFAULT_TIMEOUT,
+    elastic_chunk_size=settings.ES_DEFAULT_ELASTIC_CHUNK_SIZE,
 ):
     """Bulk index ORM objects given a list of object ids and a document type name."""
 
@@ -160,7 +163,7 @@ def index_objects_bulk(
             max_retries=settings.ES_BULK_MAX_RETRIES,
         ),
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
-        chunk_size=chunk_size,
+        chunk_size=elastic_chunk_size,
         raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
     )
     errors = [

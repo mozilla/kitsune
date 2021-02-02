@@ -43,7 +43,7 @@ class IndexObjectsBulkTestCase(Elastic7TestCase):
         ids = [QuestionFactory().id for _ in range(2)]
 
         with self.assertRaises(BulkIndexError):
-            index_objects_bulk("QuestionDocument", ids, chunk_size=1)
+            index_objects_bulk("QuestionDocument", ids, elastic_chunk_size=1)
 
         try:
             QuestionDocument.get(id_without_exception)

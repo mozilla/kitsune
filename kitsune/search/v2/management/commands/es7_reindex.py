@@ -33,10 +33,16 @@ class Command(BaseCommand):
             help="Index a set number of documents per type (overrides --percentage)",
         )
         parser.add_argument(
-            "--bulk-count",
+            "--sql-chunk-size",
             type=int,
-            default=100,
-            help="Index this number of documents at once",
+            default=settings.ES_DEFAULT_SQL_CHUNK_SIZE,
+            help="Retrieve this number of documents from SQL in each Celery job",
+        )
+        parser.add_argument(
+            "--elastic-chunk-size",
+            type=int,
+            default=settings.ES_DEFAULT_ELASTIC_CHUNK_SIZE,
+            help="Send this number of documents to ElasticSearch in each bulk request",
         )
         parser.add_argument(
             "--timeout",
@@ -105,15 +111,22 @@ class Command(BaseCommand):
                 print("Indexing {}%, so {} documents out of {}".format(percentage, count, total))
 
             id_list = list(qs.values_list("pk", flat=True))
-            bulk_count = kwargs["bulk_count"]
+            sql_chunk_size = kwargs["sql_chunk_size"]
 
-            for x in range(ceil(count / bulk_count)):
-                start = x * bulk_count
-                end = start + bulk_count
+            # slice the list of ids into chunks of `sql_chunk_size` and send a task to celery
+            # to process each chunk. we do this so as to not OOM on celery when processing
+            # tens of thousands of documents
+            for x in range(ceil(count / sql_chunk_size)):
+                start = x * sql_chunk_size
+                end = start + sql_chunk_size
                 index_objects_bulk.delay(
                     dt.__name__,
                     id_list[start:end],
                     timeout=kwargs["timeout"],
+                    # elastic_chunk_size determines how many documents get sent to elastic
+                    # in each bulk request, the limiting factor here is the performance of
+                    # our elastic cluster
+                    elastic_chunk_size=kwargs["elastic_chunk_size"],
                 )
                 if kwargs["print_sql_count"]:
                     print("{} SQL queries executed".format(len(connection.queries)))
