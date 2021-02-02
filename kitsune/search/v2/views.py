@@ -1,4 +1,5 @@
 import json
+from math import ceil
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -87,7 +88,7 @@ def simple_search(request):
 
 
 def _make_pagination(request, page, total):
-    num_pages = int(total / 10)
+    num_pages = ceil(total / 10)
 
     # logic copied from kitsune.sumo.templatetags.jinja_helper.Paginator
     maximum = 10
