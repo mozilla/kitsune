@@ -36,7 +36,7 @@ class Command(BaseCommand):
             "--sql-chunk-size",
             type=int,
             default=settings.ES_DEFAULT_SQL_CHUNK_SIZE,
-            help="Retrieve this number of documents from SQL in each job",
+            help="Retrieve this number of documents from SQL in each Celery job",
         )
         parser.add_argument(
             "--elastic-chunk-size",
@@ -113,6 +113,9 @@ class Command(BaseCommand):
             id_list = list(qs.values_list("pk", flat=True))
             sql_chunk_size = kwargs["sql_chunk_size"]
 
+            # slice the list of ids into chunks of `sql_chunk_size` and send a task to celery
+            # to process each chunk. we do this so as to not OOM on celery when processing
+            # tens of thousands of documents
             for x in range(ceil(count / sql_chunk_size)):
                 start = x * sql_chunk_size
                 end = start + sql_chunk_size
@@ -120,7 +123,10 @@ class Command(BaseCommand):
                     dt.__name__,
                     id_list[start:end],
                     timeout=kwargs["timeout"],
-                    chunk_size=kwargs["elastic_chunk_size"],
+                    # elastic_chunk_size determines how many documents get sent to elastic
+                    # in each bulk request, the limiting factor here is the performance of
+                    # our elastic cluster
+                    elastic_chunk_size=kwargs["elastic_chunk_size"],
                 )
                 if kwargs["print_sql_count"]:
                     print("{} SQL queries executed".format(len(connection.queries)))
