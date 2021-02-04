@@ -1,15 +1,30 @@
-ES_SYNONYM_LOCALES = [
-    "en-US",
-]
-
 # number of times to retry updates if a conflict happens before raising
 UPDATE_RETRY_ON_CONFLICT = 2
 
+ES_MAPPINGS = [
+    "add-on => addon",
+    "add on => addon",
+    "plug-in => plugin",
+    "plug in => plugin",
+    "sign-in => signin",
+    "sign in => signin",
+    "signed in => signin",
+    "log-in => login",
+    "log in => login",
+    "logged in => login",
+]
+
+ES_DEFAULT_ANALYZER_NAME = "default_sumo"
 ES_DEFAULT_ANALYZER = {
     "tokenizer": "standard",
     "filter": ["lowercase", "stop"],
-    "char_filter": ["html_strip"],
+    "char_filter": [
+        "html_strip",
+        {"type": "mapping", "mappings": ES_MAPPINGS},
+    ],
 }
+
+ES_ALL_SYNONYMS_NAME = "_all"
 
 # by and large copied from
 # https://www.elastic.co/guide/en/elasticsearch/reference/7.10/analysis-lang-analyzer.html
@@ -123,6 +138,7 @@ ES_LOCALE_ANALYZERS = {
         "char_filter": [
             {"type": "mapping", "mappings": ["\\u200C=>\\u0020"]},
             "html_strip",
+            {"type": "mapping", "mappings": ES_MAPPINGS},
         ],
     },
     "fi": {

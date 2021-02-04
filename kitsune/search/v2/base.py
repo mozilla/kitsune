@@ -301,6 +301,10 @@ class SumoSearch(ABC):
             query=query,
             default_operator=default_operator,
             fields=self.get_fields(),
+            # everything apart from WHITESPACE as that interferes with char mappings
+            # and synonyms with whitespace in them by breaking up the phrase into tokens,
+            # before they have a chance to go through the filter:
+            flags="AND|ESCAPE|FUZZY|NEAR|NOT|OR|PHRASE|PRECEDENCE|PREFIX|SLOP",
         )
 
         # add highlights for the search class' highlight_fields

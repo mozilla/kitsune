@@ -147,15 +147,17 @@ services:
       - "9301:9300"
 
   elasticsearch7:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
     environment:
       - discovery.type=single-node
     ports:
       - "9200:9200"
       - "9300:9300"
+    volumes:
+      - ./elasticsearch/dictionaries/synonyms:/usr/share/elasticsearch/config/synonyms
 
   kibana:
-    image: docker.elastic.co/kibana/kibana-oss:7.10.0
+    image: docker.elastic.co/kibana/kibana:7.10.0
     ports:
       - 5601:5601
     environment:

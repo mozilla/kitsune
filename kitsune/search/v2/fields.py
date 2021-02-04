@@ -19,7 +19,8 @@ def _get_fields(field, locales, **params):
     for locale in locales:
         if field is Text:
             analyzer = es_analyzer_for_locale(locale)
-            field_obj = field(analyzer=analyzer, **params)
+            search_analyzer = es_analyzer_for_locale(locale, search_analyzer=True)
+            field_obj = field(analyzer=analyzer, search_analyzer=search_analyzer, **params)
         else:
             field_obj = field(**params)
         data[locale] = field_obj

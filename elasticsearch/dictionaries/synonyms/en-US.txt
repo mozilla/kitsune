@@ -1,0 +1,47 @@
+# english dialects
+favorite, favourite
+
+# media
+multimedia, media, audio, sound, voice
+multimedia, media, audio, sound, music, mp3, song
+multimedia, media, picture, photo, image, graphic
+multimedia, media, video, movie, film
+
+# technical terms
+site, website, web site, page, web page, webpage
+url, link, hyperlink, web address, address
+cache, cash, cookies
+popup, pop up
+virus, malware
+mouse, cursor
+vpn, virtual private network
+mobile, phone, smartphone, smart phone
+
+# actions
+delete, clear, remove
+start, open, run
+change, set
+reset, refresh
+disable, block, turn off, block, deactivate, de activate
+enable, activate, allow, turn on
+update, upgrade
+signin, signup, sign up, login
+
+# brands
+browser, firefox
+social, facebook, face book
+social, twitter
+social, myspace
+social, reddit
+social, instagram
+
+# product features
+addon, extension, theme
+awesome bar, address bar, url bar, location bar, location field, url field
+home page, homepage, home screen, homescreen, awesome screen, firefox hub, start screen
+search bar, search field, search strip, search box
+search engine, search provider
+e10s, multiprocess, multi process
+two step, two factor, 2fa, authentication
+private, inprivate, incognito
+etp, tracking protection, content blocking

@@ -143,3 +143,206 @@ sleep(randint(1, 10))
 ```
 
 to `kitsune.search.v2.views.simple_search`.
+
+### Synonyms
+
+The `elasticsearch/dictionaries/synonyms` path contains a text file for each of our search-enabled locales,
+where synonyms are in the
+[Solr format](https://www.elastic.co/guide/en/elasticsearch/reference/7.10/analysis-synonym-graph-tokenfilter.html#_solr_synonyms_2).
+
+`expand` defaults to `True`,
+so synonyms with no explicit mapping resolve to all elements in the list.
+That is to say:
+
+```
+start, open, run
+```
+
+is equivalent to:
+
+```
+start, open, run => start, open, run
+```
+
+It's also worth noting that these synonyms are applied at *query* time,
+not index time.
+
+That is to say,
+if a document contained the phrase:
+
+> Firefox won't play music.
+
+and we had a synonym set up as:
+
+```
+music => music, audio
+```
+
+Then the search query:
+
+> firefox won't play audio
+
+would **not** match that document.
+
+#### Hyponyms and hypernyms (subtypes and supertypes)
+
+The synonym files can also be used to define relations between
+[hyponyms and hypernyms (subtypes and supertypes)](https://en.wikipedia.org/wiki/Hyponymy_and_hypernymy).
+
+For example,
+a user searching for or posting about a problem with Facebook could use the phrase "Facebook isn't working",
+or "social media isn't working".
+Another user searching for or posting about a problem with Twitter could use the phrase "Twitter isn't working",
+or "social media isn't working".
+
+A simple synonym definition like:
+
+```
+social, facebook, face book, twitter
+```
+
+isn't sufficient here,
+as a user querying about a problem with Facebook clearly doesn't have one with Twitter.
+
+Similarly a rule like:
+
+```
+social => social, facebook, face book, twitter
+```
+
+only captures the case where a user has posted about Facebook not working and searched for social media not working,
+not the reverse.
+
+So in this case a set of synonyms should be defined,
+like so:
+
+```
+social, facebook, face book
+social, twitter
+```
+
+With the hypernyms (supertypes) defined across all lines,
+and the hyponyms (subtypes) defined on one line.
+
+This way,
+a search for "social" would also become one for "facebook", "face book" and "twitter".
+Whereas a search for "twitter" would also become one for "social",
+but *not* "facebook" or "face book".
+
+
+#### Interaction with the rest of the analysis chain
+
+All the analyzers which we apply to a document are also applied to the synonyms,
+such as tokenizers, stemmers and stop word filters.
+
+This means it's not necessary to specify the plural or conjugated forms of words,
+as post-analysis they *should* end up as the same token.
+
+Hyphen-separated and space separated words will analyze to the same set of tokens.
+
+For instance in en-US,
+all these synonyms would do nothing at all:
+
+```
+de activate, de-activate
+load, loading, loaded
+bug, bugs
+```
+
+##### Stop words
+
+Synonyms containing stop words (such as "in" or "on") must be treated with care,
+as the stop words will also be filtered out of the synonyms.
+
+For example,
+these two rules produce the same result in the en-US analysis chain:
+
+```
+addon, add on
+addon, add
+```
+
+So a [character mapping](#character-mappings) should be used to turn phrases containing those stop words into ones which don't.
+Those resulting phrases can then be used in the synonyms definition.
+
+#### Applying to all locales
+
+There's also an `_all.txt` file,
+which specifies synonyms which should be applied across *all* locales.
+Suitable synonyms here include brand names or specific technical terms which won't tend to be localized.
+
+#### Updating
+
+In development synonyms can be updated very easily.
+Save your changes in the text file and run:
+
+```
+./manage.py es7_init --reload-search-analyzers
+```
+
+If no other changes were made to the index configurations,
+then this should apply successfully,
+and your already-indexed data will persist within the index and not require any indexing
+(because these synonyms are applied at query time).
+
+##### On production
+
+The synonym files need to be put in a bundle and uploaded to the Elastic Cloud.
+
+`cd` into the `elasticsearch` directory,
+and run the `create_bundle.sh` script to create a zip file with the appropriate directory structure.
+(You'll need to have `zip` installed for this command to work.)
+
+Then,
+either [create](https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-add-your-plugin) an extension,
+or [update](https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-update-bundles-and-plugins) the previously created extension.
+
+And in either case,
+[update the deployment configuration](https://www.elastic.co/guide/en/cloud/current/ec-custom-bundles.html#ec-update-bundles)
+with the custom extension.
+
+```eval_rst
+.. Note::
+  When updating the deployment after updating an already-existing extension,
+  Elastic Cloud may say that no changes are being applied.
+  That isn't true,
+  and through testing it seems like the extension is being updated,
+  and the search analyzers are being reloaded automatically.
+
+  From testing,
+  this seems to be the only approach to update and reload synonyms on the Elastic Cloud.
+  Updating the extension,
+  restarting the cluster and using the reload-search-analyzers command *won't* work.
+
+  Thankfully there's an open issue upstream to make managing synonyms easier with an API:
+  https://github.com/elastic/elasticsearch/issues/38523
+```
+
+### Character mappings
+
+Character mappings *cannot* be dynamically updated,
+this is because they're applied at index time.
+So any changes to a character mapping requires a re-index.
+
+Taking the addon example from above,
+we'd want to create character mappings like:
+
+```
+[
+  "add on => addon",
+  "add-on => addon",
+]
+```
+
+Post-tokenization `addon` doesn't contain an `on` token,
+so this is a suitable phrase to replace with.
+
+Unlike synonyms,
+character mappings are applied before any other part of the analysis chain,
+so space separated and hyphen-separated phrases need to both be added.
+
+In theory plural and conjugated forms of words also need to be specified,
+however in practice plural words tend to be covered by the singular replacement as well
+(e.g. "add on" is a substring in "add ons",
+so "add ons" is replaced by "addons")
+and there is marginal benefit to defining *every single* conjugation of a verb.
