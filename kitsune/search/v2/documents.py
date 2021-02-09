@@ -31,8 +31,7 @@ class WikiDocument(SumoDocument):
     doc_id = SumoLocaleAwareKeywordField(store=True)
 
     class Index:
-        name = config.WIKI_DOCUMENT_INDEX_NAME
-        using = config.DEFAULT_ES7_CONNECTION
+        pass
 
     @classmethod
     @property
@@ -143,8 +142,7 @@ class QuestionDocument(SumoDocument):
     locale = field.Keyword()
 
     class Index:
-        name = config.QUESTION_INDEX_NAME
-        using = config.DEFAULT_ES7_CONNECTION
+        pass
 
     @classmethod
     def prepare(cls, instance):
@@ -325,8 +323,7 @@ class ProfileDocument(SumoDocument):
     group_ids = field.Keyword(multi=True)
 
     class Index:
-        name = config.USER_INDEX_NAME
-        using = config.DEFAULT_ES7_CONNECTION
+        pass
 
     @classmethod
     def prepare(cls, instance):
@@ -386,8 +383,7 @@ class ForumDocument(SumoDocument):
     updated_by_id = field.Keyword()
 
     class Index:
-        name = config.FORUM_INDEX_NAME
-        using = config.DEFAULT_ES7_CONNECTION
+        pass
 
     def get_field_value(self, field, instance, *args):
         if field.startswith("thread_"):

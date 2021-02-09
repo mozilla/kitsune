@@ -1,20 +1,6 @@
-from django.conf import settings
-
-
-def get_index_name(index_name):
-    name_format = "{prefix}_{suffix}"
-    name = name_format.format(prefix=settings.ES_INDEX_PREFIX, suffix=index_name)
-    return name
-
-
 ES_SYNONYM_LOCALES = [
     "en-US",
 ]
-
-WIKI_DOCUMENT_INDEX_NAME = get_index_name("wiki_document")
-QUESTION_INDEX_NAME = get_index_name("question")
-USER_INDEX_NAME = get_index_name("user")
-FORUM_INDEX_NAME = get_index_name("forum_document")
 
 # number of times to retry updates if a conflict happens before raising
 UPDATE_RETRY_ON_CONFLICT = 2
