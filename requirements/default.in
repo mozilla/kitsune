@@ -47,7 +47,7 @@ httplib2~=0.18.1
 django-pipeline~=2.0.4
 idna~=2.9
 kombu==4.6.9
-lxml~=4.5.1
+lxml~=4.6.2
 meinheld~=1.0.2
 mozilla-django-oidc~=1.2.3
 mysqlclient~=1.4.6
