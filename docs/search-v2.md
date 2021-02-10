@@ -1,10 +1,10 @@
 # Search v2
 
-## Testing on Staging
+## Testing
 
 ### Enabling in Instant Search
 
-Open [support.allizom.org](https://support.allizom.org) and then open Firefox's [Web Console](https://developer.mozilla.org/en-US/docs/Tools/Web_Console).
+Open [support.mozilla.org](https://support.mozilla.org) and then open Firefox's [Web Console](https://developer.mozilla.org/en-US/docs/Tools/Web_Console).
 
 Paste the following JS in, and hit return on your keyboard:
 
@@ -28,7 +28,7 @@ whereas in search v2 it should return at least as many as a search for `firefox`
 
 ### Disabling in Instant Search
 
-You can disable search v2 in instant search by opening Firefox's Web Console on support.allizom.org again,
+You can disable search v2 in instant search by opening Firefox's Web Console on support.mozilla.org again,
 but running this snippet instead:
 
 ```
