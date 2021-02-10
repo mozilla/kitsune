@@ -3,7 +3,7 @@ Django~=2.2.12
 Pillow~=8.0.1
 Werkzeug~=1.0.1
 babis~=0.2.4
-bleach~=3.2.1
+bleach~=3.3.0
 boto3>=1.2.3  # pip-compile does not handle extras properly (django-storages)
 celery==4.4.3
 commonware~=0.6.0
