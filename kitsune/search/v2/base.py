@@ -7,9 +7,10 @@ from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
+from elasticsearch7.exceptions import NotFoundError
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
-from kitsune.search.config import UPDATE_RETRY_ON_CONFLICT
+from kitsune.search.config import UPDATE_RETRY_ON_CONFLICT, DEFAULT_ES7_CONNECTION
 from kitsune.search.v2.es7_utils import es7_client
 
 
@@ -21,6 +22,85 @@ class SumoDocument(DSLDocument):
     class Meta:
         # ignore fields if they don't exist in the mapping
         dynamic = MetaField("false")
+
+    def __init_subclass__(cls, **kwargs):
+        """Automatically set up each subclass' Index attribute."""
+        super().__init_subclass__(**kwargs)
+
+        cls.Index.using = DEFAULT_ES7_CONNECTION
+
+        # this is here to ensure subclasses of subclasses of SumoDocument (e.g. AnswerDocument)
+        # use the same name in their index as their parent class (e.g. QuestionDocument) since
+        # they share an index with that parent
+        immediate_parent = cls.__mro__[1]
+        if immediate_parent is SumoDocument:
+            name = cls.__name__
+        else:
+            name = immediate_parent.__name__
+
+        cls.Index.base_name = f"{settings.ES_INDEX_PREFIX}_{name.lower()}"
+        cls.Index.read_alias = f"{cls.Index.base_name}_read"
+        cls.Index.write_alias = f"{cls.Index.base_name}_write"
+
+        # this is the attribute elastic-dsl actually uses to determine which index
+        # to query. we override the .search() method to get that to use the read
+        # alias:
+        cls.Index.name = cls.Index.write_alias
+
+    @classmethod
+    def search(cls, **kwargs):
+        """
+        Create an `elasticsearch_dsl.Search` instance that will search over this `Document`.
+
+        If no `index` kwarg is supplied, use the Document's Index's `read_alias`.
+        """
+        if "index" not in kwargs:
+            kwargs["index"] = cls.Index.read_alias
+        return super().search(**kwargs)
+
+    @classmethod
+    def migrate_writes(cls, timestamp=None):
+        """Create a new index for this document, and point the write alias at it."""
+        timestamp = timestamp or datetime.now(tz=timezone.utc)
+        name = f'{cls.Index.base_name}_{timestamp.strftime("%Y%m%d%H%M%S")}'
+        cls.init(index=name)
+        cls._update_alias(cls.Index.write_alias, name)
+
+    @classmethod
+    def migrate_reads(cls):
+        """Point the read alias at the same index as the write alias."""
+        cls._update_alias(cls.Index.read_alias, cls.alias_points_at(cls.Index.write_alias))
+
+    @classmethod
+    def _update_alias(cls, alias, new_index):
+        client = es7_client()
+        old_index = cls.alias_points_at(alias)
+        if not old_index:
+            client.indices.put_alias(new_index, alias)
+        else:
+            client.indices.update_aliases(
+                {
+                    "actions": [
+                        {"remove": {"index": old_index, "alias": alias}},
+                        {"add": {"index": new_index, "alias": alias}},
+                    ]
+                }
+            )
+
+    @classmethod
+    def alias_points_at(cls, alias):
+        """Returns the index `alias` points at."""
+        try:
+            aliased_indices = list(es7_client().indices.get_alias(name=alias))
+        except NotFoundError:
+            aliased_indices = []
+
+        if len(aliased_indices) > 1:
+            raise RuntimeError(
+                f"{alias} points at more than one index, something has gone very wrong"
+            )
+
+        return aliased_indices[0] if aliased_indices else None
 
     @classmethod
     @property

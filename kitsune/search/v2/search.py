@@ -4,8 +4,8 @@ import bleach
 from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
-from kitsune.search.config import QUESTION_INDEX_NAME, WIKI_DOCUMENT_INDEX_NAME
 from kitsune.search.v2.base import SumoSearch
+from kitsune.search.v2.documents import WikiDocument, QuestionDocument
 from kitsune.sumo.urlresolvers import reverse
 
 QUESTION_DAYS_DELTA = 365 * 2
@@ -30,6 +30,11 @@ def strip_html(summary):
     )
 
 
+def same_base_index(a, b):
+    """Check if the base parts of two index names are the same."""
+    return a.split("_")[:-1] == b.split("_")[:-1]
+
+
 class QuestionSearch(SumoSearch):
     """Search over questions."""
 
@@ -39,7 +44,7 @@ class QuestionSearch(SumoSearch):
         super().__init__(**kwargs)
 
     def get_index(self):
-        return QUESTION_INDEX_NAME
+        return QuestionDocument.Index.read_alias
 
     def get_fields(self):
         return [
@@ -108,7 +113,7 @@ class WikiSearch(SumoSearch):
         super().__init__(**kwargs)
 
     def get_index(self):
-        return WIKI_DOCUMENT_INDEX_NAME
+        return WikiDocument.Index.read_alias
 
     def get_fields(self):
         return [
@@ -198,5 +203,5 @@ class CompoundSearch(SumoSearch):
     def make_result(self, hit):
         index = hit.meta.index
         for child in self._children:
-            if index == child.get_index():
+            if same_base_index(index, child.get_index()):
                 return child.make_result(hit)
