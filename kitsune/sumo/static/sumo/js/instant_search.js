@@ -12,6 +12,9 @@
   var cxhr = new k.CachedXHR();
   var aaq_explore_step = $("#question-search-masthead").length > 0;
 
+  const queries = [];
+  let renderedQuery;
+
   function hideContent() {
     $('#main-content').hide();
     $('#main-content').siblings('aside').hide();
@@ -40,6 +43,14 @@
 
   function render(data) {
     var context = $.extend({}, data);
+
+    let query = context.q;
+    if (queries.lastIndexOf(query) < queries.lastIndexOf(renderedQuery)) {
+      // this query was sent before the query already rendered, don't render it
+      return;
+    }
+    renderedQuery = query;
+
     var base_url = search.lastQueryUrl();
     var $searchContent;
     context.base_url = base_url;
@@ -164,7 +175,9 @@
           trackEvent('Instant Search', 'Exit Search', search.lastQueryUrl());
         }
         search.setParams(params);
-        search.query($this.val(), k.InstantSearchSettings.render);
+        let query = $this.val();
+        queries.push(query);
+        search.query(query, k.InstantSearchSettings.render);
         trackEvent('Instant Search', 'Search', search.lastQueryUrl());
       }, 200);
 
