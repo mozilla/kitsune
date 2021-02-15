@@ -102,11 +102,11 @@
       <a href="#" class="{% if x == pagination.number %}btn-page{% endif %}" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: x}) }}">{{ x }}</a>
     </li>
   {% endfor %}
-  {% if page.dotted_upper %}
-    {% if pagination.page_range[-1] != num_pages-1 %}
+  {% if pagination.dotted_upper %}
+    {% if pagination.page_range[-1] != pagination.num_pages-1 %}
       <li class="skip">&hellip;</li>
     {% endif %}
-    <li><a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: num_pages}) }}">{{ num_pages }}</a></li>
+    <li><a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.num_pages}) }}">{{ pagination.num_pages }}</a></li>
   {% endif %}
   {% if pagination.has_next %}
     <li class="next">
