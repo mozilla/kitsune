@@ -129,5 +129,17 @@ as that returns a naive or aware datetime depending on the value of `USE_TZ`, wh
 You can set the following variable in your .env file to enable the logging of the queries that are sent to your local ElasticSearch instance.
 
 ```
-ES7_ENABLE_LOGGING=True
+ES7_ENABLE_CONSOLE_LOGGING=True
 ```
+
+### Simulate slow and out of order query responses
+
+To test how Instant Search behaves with slow and out of order responses you can add a snippet like this:
+
+```
+from time import sleep
+from random import randint
+sleep(randint(1, 10))
+```
+
+to `kitsune.search.v2.views.simple_search`.
