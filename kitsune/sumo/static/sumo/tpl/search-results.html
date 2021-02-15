@@ -5,25 +5,17 @@
     {% if num_results > 0 %}
     <aside class="sumo-l-two-col--sidebar">
       <h3 class="sidebar-subheading">{{ _('Filter by product') }}</h3>
-      {% set base_doctype_url = base_url %}
-      {% if product %}
-        {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
-      {% endif %}
-      {% set base_product_url = base_url %}
-      {% if w != 3 %}
-        {% set base_product_url = base_product_url|urlparams(w=w) %}
-      {% endif %}
       <nav class="sidebar-nav">
       <a class="details-heading">Menu Title</a>
       <ul id="product-filter" class="search-filter sidebar-nav--list">
         <li {{ product|class_selected(null) }}>
-          <a href="#" data-instant-search-unset-params="product" data-instant-search-set-params="all_products=1" data-instant-search="link" data-href="{{ base_product_url|urlparams(all_products=1)|encodeURI }}">
+          <a href="#" data-instant-search-unset-params="product" data-instant-search-set-params="all_products=1" data-instant-search="link">
             {{ _('All Products') }}
           </a>
         </li>
         {% for p in products %}
           <li {{ product|class_selected(p.slug) }}>
-            <a href="#" data-instant-search-set-params="product={{ p.slug }}" data-instant-search-unset-params="all_products" data-instant-search="link" data-href="{{ base_product_url|urlparams(product=p.slug)|encodeURI }}">
+            <a href="#" data-instant-search-set-params="product={{ p.slug }}" data-instant-search-unset-params="all_products" data-instant-search="link">
               {{ p.title }}
             </a>
           </li>

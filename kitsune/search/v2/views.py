@@ -8,7 +8,6 @@ from django.utils.translation import ugettext as _, pgettext
 from kitsune import search as constants
 from kitsune.search.forms import SimpleSearchForm
 from kitsune.sumo.api_utils import JSONRenderer
-from kitsune.sumo.utils import build_paged_url
 from kitsune.products.models import Product
 from kitsune.search.views import _fallback_results
 from kitsune.search.utils import locale_or_default
@@ -108,7 +107,6 @@ def _make_pagination(request, page, total):
         "num_pages": num_pages,
         "has_next": page < num_pages,
         "has_previous": page > num_pages,
-        "url": build_paged_url(request),
         "page_range": page_range,
         "dotted_upper": num_pages not in page_range,
         "dotted_lower": 1 not in page_range,

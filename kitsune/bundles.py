@@ -16,7 +16,7 @@ PIPELINE_JS = {
             "nunjucks/browser/nunjucks-slim.js",
             "sumo/js/nunjucks.js",
             "sumo/js/cached_xhr.js",
-            "sumo/js/search_utils.js",
+            "sumo/js/search_utils.es6",
             "sumo/js/browserdetect.js",
             "sumo/js/libs/uitour.js",
             "sumo/js/kbox.js",
