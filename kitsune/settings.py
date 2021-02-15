@@ -832,6 +832,7 @@ SEARCH_DEFAULT_MAX_QUESTION_AGE = 180 * 24 * 60 * 60  # seconds
 IA_DEFAULT_CATEGORIES = (
     10,
     20,
+    30,
 )
 
 # The length for which we would like the user to cache search forms
