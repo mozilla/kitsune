@@ -752,7 +752,11 @@ STATICI18N_ROOT = path("jsi18n")
 #
 # Django Pipline
 PIPELINE = {
-    "COMPILERS": ("kitsune.lib.pipeline_compilers.BrowserifyCompiler",),
+    "PIPELINE_ENABLED": config("PIPELINE_ENABLED", default=False, cast=bool),
+    "COMPILERS": (
+        "kitsune.lib.pipeline_compilers.BrowserifyCompiler",
+        "pipeline.compilers.es6.ES6Compiler",
+    ),
     "JAVASCRIPT": PIPELINE_JS,
     "DISABLE_WRAPPER": True,
     "JS_COMPRESSOR": "pipeline.compressors.uglifyjs.UglifyJSCompressor",
@@ -760,11 +764,7 @@ PIPELINE = {
     "UGLIFYJS_ARGUMENTS": "",
     "BROWSERIFY_BINARY": path("node_modules/.bin/browserify"),
     "BROWSERIFY_ARGUMENTS": "-t babelify",
-    "PIPELINE_COLLECTOR_ENABLED": config(
-        "PIPELINE_COLLECTOR_ENABLED",
-        default=not DEBUG,
-        cast=bool,
-    ),
+    "BABEL_BINARY": "node_modules/.bin/babel",
 }
 
 if DEBUG:
@@ -1143,9 +1143,6 @@ if config("SENTRY_DSN", None):
         environment=config("SENTRY_ENVIRONMENT", default=""),
         before_send=filter_exceptions,
     )
-
-
-PIPELINE_ENABLED = config("PIPELINE_ENABLED", default=False, cast=bool)
 
 # Dead Man Snitches
 DMS_ENQUEUE_LAG_MONITOR_TASK = config("DMS_ENQUEUE_LAG_MONITOR_TASK", default=None)
