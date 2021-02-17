@@ -47,10 +47,8 @@ def get_mobile_product_from_ua(user_agent):
     # android
     try:
         # We are using firefox instead of Firefox as lower() has been applied to the UA
-        mobile_client = re.search(r"firefox/(?P<version>\d+)\.\d+", ua).groupdict()
+        re.search(r"firefox/(?P<version>\d+)\.\d+", ua).groupdict()
     except AttributeError:
         return None
     else:
-        if int(mobile_client["version"]) >= 69:
-            return "firefox-preview"
         return "mobile"
