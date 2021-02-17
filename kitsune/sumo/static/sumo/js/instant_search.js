@@ -3,7 +3,7 @@
   var searchTimeout;
   var locale = $('html').attr('lang');
 
-  if (window.localStorage.getItem("enable_search_v2") === "true") {
+  if (window.localStorage.getItem("enable_search_v2") === "true" || $("body").data("readonly")) {
     var search = new k.Search("/" + locale + "/search/v2/");
   } else {
     var search = new k.Search("/" + locale + "/search");
