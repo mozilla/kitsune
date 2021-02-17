@@ -141,8 +141,7 @@
     },
     isMobileFF: function() {
       // Is the question for FF on mobile?
-      return document.location.pathname.indexOf("mobile") >= 0 ||
-        document.location.pathname.indexOf("firefox-preview") >= 0;
+      return document.location.pathname.indexOf("mobile") >= 0
     },
     isFirefoxForIOS: function() {
       // Is the question for Firefox for iOS?

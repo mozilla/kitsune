@@ -1,3 +1,6 @@
+from nose.tools import eq_
+from parameterized import parameterized
+
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.utils import (
@@ -9,8 +12,6 @@ from kitsune.questions.utils import (
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from nose.tools import eq_
-from parameterized import parameterized
 
 
 class ContributionCountTestCase(TestCase):
@@ -109,7 +110,7 @@ class GetMobileProductFromUATests(TestCase):
             ),
             (
                 "Mozilla/5.0 (Android 10; Mobile; rv:76.0) Gecko/76.0 Firefox/76.0",
-                "firefox-preview",
+                "mobile",
             ),
             (
                 "Mozilla/5.0 (Linux; Android 8.1.0; Redmi 6A Build/O11019; rv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Rocket/1.9.2(13715) Chrome/76.0.3809.132 Mobile Safari/537.36",  # noqa: E501
