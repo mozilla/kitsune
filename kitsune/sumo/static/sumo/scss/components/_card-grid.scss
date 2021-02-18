@@ -35,7 +35,7 @@
   scroll-snap-type: x proximity;
   // width: calc(100vw - #{c.$gutter-width * .5});
 
-  &.is-four-wide {
+  &.is-four-wide, &.extra-padding {
     margin-top: p.$spacing-md;
     padding-top: p.$spacing-md;
   }
@@ -127,9 +127,11 @@
       @include c.col(1, 3); // This should be an 8 col grid, and it should use a 10-col grid at XL
     }
 
-    &.is-four-wide {
-      margin-bottom: -24px;
+    &.is-four-wide, &.extra-padding {
+      margin-bottom: -1 * p.$spacing-lg;
+    }
 
+    &.is-four-wide {
       .card,
       .card:first-child,
       .card:last-child {
