@@ -49,7 +49,7 @@
     return this._buildQueryUrl(this.lastQuery, this.lastParams);
   };
 
-  Search.prototype.queryUrl = function(query) {
+  Search.prototype.queryUrl = function() {
     return this._buildQueryUrl(this.lastQuery, this.serializeParams());
   };
 
@@ -64,6 +64,7 @@
   };
 
   Search.prototype.query = function(string, callback) {
+    string ||= this.lastQuery;
     var data = $.extend({}, this.params, {q: string});
 
     this.lastQuery = string;

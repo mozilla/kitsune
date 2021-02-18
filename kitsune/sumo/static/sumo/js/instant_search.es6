@@ -191,7 +191,7 @@
     var $this = $(this);
 
     if (search.hasLastQuery) {
-      trackEvent('Instant Search', 'Exit Search', search.queryUrl(search.lastQuery));
+      trackEvent('Instant Search', 'Exit Search', search.queryUrl());
     }
 
     var setParams = $this.data('instant-search-set-params');
@@ -211,13 +211,8 @@
       });
     }
 
-    trackEvent('Instant Search', 'Search', $this.data('href'));
-
-    cxhr.request($this.data('href'), {
-      data: {format: 'json'},
-      dataType: 'json',
-      success: k.InstantSearchSettings.render
-    });
+    search.query(null, k.InstantSearchSettings.render);
+    trackEvent("Instant Search", "Search", search.lastQueryUrl());
   });
 
   // 'Popular searches' feature

@@ -15,17 +15,17 @@
   <nav class="tabs">
   <ul id="doctype-filter" class="tabs--list search-filter cf">
     <li class="tabs--item">
-      <a {{ w|class_selected(3) }} href="#" data-instant-search-set-params="w=3" data-instant-search="link" data-href="{{ base_doctype_url|encodeURI }}">
+      <a {{ w|class_selected(3) }} href="#" data-instant-search-set-params="w=3" data-instant-search="link">
         <span>{{ _('View All') }}</span>
       </a>
     </li>
     <li class="tabs--item">
-      <a {{ w|class_selected(1) }} href="#" data-instant-search-set-params="w=1" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=1)|encodeURI }}">
+      <a {{ w|class_selected(1) }} href="#" data-instant-search-set-params="w=1" data-instant-search="link">
         <span>{{ _('Help Articles Only') }}</span>
       </a>
     </li>
     <li class="tabs--item">
-      <a {{ w|class_selected(2) }} href="#" data-instant-search-set-params="w=2" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=2)|encodeURI }}">
+      <a {{ w|class_selected(2) }} href="#" data-instant-search-set-params="w=2" data-instant-search="link">
         <span>{{ _('Community Discussion Only') }}</span>
       </a>
     </li>
@@ -81,7 +81,7 @@
   <ol class="pagination">
   {% if pagination.has_previous %}
     <li class="prev">
-      <a class="btn-page btn-page-prev" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number - 1}) }}">
+      <a class="btn-page btn-page-prev" href="#" data-instant-search="link" data-instant-search-set-params="page={{ pagination.number - 1 }}">
         <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
                 <polyline stroke="currentColor" stroke-width="2" points="15 5 8 12 15 19"></polyline>
@@ -92,25 +92,25 @@
     </li>
   {% endif %}
   {% if pagination.dotted_lower %}
-    <li><a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: 1}) }}">{{ 1 }}</a></li>
+    <li><a href="#" data-instant-search="link" data-instant-search-set-params="page=1">{{ 1 }}</a></li>
     {% if pagination.page_range[0] != 2 %}
       <li class="skip">&hellip;</li>
     {% endif %}
   {% endif %}
   {% for x in pagination.page_range %}
     <li {{ x|class_selected(pagination.number) }}>
-      <a href="#" class="{% if x == pagination.number %}btn-page{% endif %}" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: x}) }}">{{ x }}</a>
+      <a href="#" class="{% if x == pagination.number %}btn-page{% endif %}" data-instant-search="link" data-instant-search-set-params="page={{ x }}">{{ x }}</a>
     </li>
   {% endfor %}
   {% if pagination.dotted_upper %}
     {% if pagination.page_range[-1] != pagination.num_pages-1 %}
       <li class="skip">&hellip;</li>
     {% endif %}
-    <li><a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.num_pages}) }}">{{ pagination.num_pages }}</a></li>
+    <li><a href="#" data-instant-search="link" data-instant-search-set-params="page={{ pagination.num_pages }}">{{ pagination.num_pages }}</a></li>
   {% endif %}
   {% if pagination.has_next %}
     <li class="next">
-      <a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number + 1}) }}">
+      <a href="#" data-instant-search="link" data-instant-search-set-params="page={{ pagination.number + 1 }}">
         <span class="sr-only">{{ _('Next') }}</span>
         <svg width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
