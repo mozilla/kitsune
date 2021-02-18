@@ -68,8 +68,21 @@ def user_auth(request, notification=None):
     FXA sign-up/login and the legacy login form
     """
     next_url = get_next_url(request) or reverse("home")
-
-    return render(request, "users/auth.html", {"next_url": next_url, "notification": notification})
+    help_text = _(
+        "Continuing with Firefox Accounts means you have agreed with the "
+        + "{terms_open}Terms and Conditions{terms_close} and "
+        + "{privacy_open}Privacy Policy{privacy_close}."
+    ).format(
+        terms_open="<a href='https://www.mozilla.org/about/legal/terms/services/'>",
+        terms_close="</a>",
+        privacy_open="<a href='https://www.mozilla.org/privacy/firefox/'>",
+        privacy_close="</a>",
+    )
+    return render(
+        request,
+        "users/auth.html",
+        {"next_url": next_url, "notification": notification, "auth_page_help_text": help_text},
+    )
 
 
 @ssl_required
