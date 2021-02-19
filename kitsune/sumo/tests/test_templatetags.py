@@ -210,8 +210,8 @@ class TestUrlHelper(TestCase):
 
     def test_with_locale(self):
         """Passing a locale to url creates a URL for that locale."""
-        u = url("jsi18n", locale="es")
-        eq_("/es/jsi18n/", u)
+        u = url("home", locale="es")
+        eq_("/es/", u)
 
 
 class TimesinceTests(TestCase):
