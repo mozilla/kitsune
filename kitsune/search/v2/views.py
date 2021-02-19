@@ -73,7 +73,8 @@ def simple_search(request):
         "w": cleaned["w"],
         "lang_name": lang_name,
         "products": [
-            {"slug": p.slug, "title": p.title} for p in Product.objects.filter(visible=True)
+            {"slug": p.slug, "title": pgettext("DB: products.Product.title", p.title)}
+            for p in Product.objects.filter(visible=True)
         ],
         "pagination": _make_pagination(request, page, total),
     }
