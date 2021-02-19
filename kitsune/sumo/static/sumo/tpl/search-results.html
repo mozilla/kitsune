@@ -2,7 +2,6 @@
 
 <section class="mzp-l-content sumo-page-section--inner">
   <div id="search-results" class="sumo-l-two-col">
-    {% if num_results > 0 %}
     <aside class="sumo-l-two-col--sidebar">
       <h3 class="sidebar-subheading">{{ _('Filter by product') }}</h3>
       <nav class="sidebar-nav">
@@ -23,9 +22,8 @@
       </ul>
       </nav>
     </aside>
-    {% endif %}
 
-    <main class="{% if num_results > 0 %}sumo-l-two-col--main{% else %}sumo-l-two-col--full{% endif %}" id="search-results-list">
+    <main class="sumo-l-two-col--main" id="search-results-list">
       {% include 'search-results-list.html' %}
     </main>
   </div>

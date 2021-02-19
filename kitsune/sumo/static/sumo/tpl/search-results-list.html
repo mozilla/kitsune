@@ -3,16 +3,21 @@
 {# This is required to get the icons to link properly with nunjucks_precompile #}
 {% set STATIC_URL = "/static/" %}
 
-{% if num_results > 0 %}
-  <h2 class="sumo-card-heading search-results-heading mb-0">
-    {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
+<h2 class="sumo-card-heading search-results-heading mb-0">
+  {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
+  {% if num_results > 0 %}
     {{ ngettext('Found %(n)s result for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
                 'Found %(n)s results for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’',
                 num_results)
-       | f({n: num_results, q: q, product: product_titles}, true)
-       | safe }}
-  </h2>
-  <nav class="tabs">
+        | f({n: num_results, q: q, product: product_titles}, true)
+        | safe }}
+  {% else %}
+    {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ for ‘<span>%(product)s</span>’")
+        | f({q: q, product: product_titles}, true)
+        | safe }}
+  {% endif %}
+</h2>
+<nav class="tabs">
   <ul id="doctype-filter" class="tabs--list search-filter cf">
     <li class="tabs--item">
       <a {{ w|class_selected(3) }} href="#" data-instant-search-set-params="w=3" data-instant-search="link">
@@ -30,42 +35,34 @@
       </a>
     </li>
   </ul>
-  </nav>
+</nav>
 
+{% if num_results > 0 %}
   <section class="topic-list content-box">
     {% for doc in results %}
       {{ search_result(doc) }}
     {% endfor %}
   </section>
 {% else %}
-  <h2 class="sumo-card-heading search-results-heading mb-0">
-    {# L10n: {q} is the search query, {l} is the language searched. #}
-    {{ _("Sorry! 0 results found for ‘<span>%(q)s</span>’ in ‘<span>%(l)s</span>’")
-        | f({q: q, l: lang_name}, true)
-        | safe }}
-  </h2>
-  <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
+  <p>{{ _("Try searching again with a different keyword, or browse our featured articles below instead.") }}</p>
 
-  <section class="sumo-card-grid is-four-wide content-box" style="--cg-count: {{ fallback_results|length }};">
+  <section class="sumo-card-grid extra-padding content-box" style="--cg-count: {{ fallback_results|length }};">
     <div class="scroll-wrap">
       {% for doc in fallback_results %}
-      <div class="card card--article result document">
-          <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/reader-mode.svg" alt="todo: title" />
+        <div class="card card--article result document">
+          <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/reader-mode.svg" alt="" aria-hidden="true" />
           <div class="card--details">
             <h3 class="card--title">
               <a
-                tabindex="-1"
                 class="expand-this-link title"
                 href="{{ doc.url }}"
-              >
-                {{ doc.document_title }}
-              </a>
+              >{{ doc.document_title }}</a>
             </h3>
             <p class="card--desc">
               {{ doc.document_summary }}
             </p>
           </div>
-      </div>
+        </div>
       {% endfor %}
     </div>
   </section>
