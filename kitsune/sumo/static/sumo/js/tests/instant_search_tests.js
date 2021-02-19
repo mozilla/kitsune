@@ -39,7 +39,6 @@ describe('instant search', () => {
 
       global.matchMedia = window.matchMedia;
       window.Mzp = {};
-      window.localStorage = { getItem: () => undefined }
 
       // These functions are pulled from the global scope. They're not
       // actually tested below, but are required to get the rest of the
