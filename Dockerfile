@@ -56,23 +56,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs 
 
 
 ################################
-# Staticfiles builder
-#
-FROM base-dev AS staticfiles
-
-COPY --from=frontend-base --chown=kitsune:kitsune /app/assets /app/assets
-COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
-
-COPY . .
-
-RUN cp .env-build .env && \
-    ./manage.py nunjucks_precompile && \
-    ./manage.py compilejsi18n && \
-    ./manage.py collectstatic --noinput && \
-    npx svgo -r -f static
-
-
-################################
 # Fetch locales
 #
 FROM python:3.9-buster AS locales
@@ -96,6 +79,26 @@ RUN ./scripts/compile-linted-mo.sh && \
 
 ARG GIT_SHA=head
 ENV GIT_SHA ${GIT_SHA}
+
+
+################################
+# Staticfiles builder
+#
+FROM base-dev AS staticfiles
+
+COPY --from=frontend-base --chown=kitsune:kitsune /app/assets /app/assets
+COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
+COPY --from=locales /app/locale /app/locale
+
+COPY . .
+
+RUN cp .env-build .env && \
+    ./manage.py nunjucks_precompile && \
+    ./manage.py compilejsi18n && \
+    # minify jsi18n files:
+    find jsi18n/ -name "*.js" -exec sh -c 'npx uglifyjs "$1" -o "${1%.js}-min.js"' sh {} \; && \
+    ./manage.py collectstatic --noinput && \
+    npx svgo -r -f static
 
 
 ################################
@@ -123,7 +126,6 @@ RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sb
 COPY --from=base --chown=kitsune:kitsune /venv /venv
 COPY --from=base --chown=kitsune:kitsune /vendor /vendor
 COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
-COPY --from=staticfiles --chown=kitsune:kitsune /app/jsi18n /app/jsi18n
 
 COPY --chown=kitsune:kitsune . .
 

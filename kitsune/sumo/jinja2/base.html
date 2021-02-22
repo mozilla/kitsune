@@ -319,12 +319,12 @@
     </nav>
   </div>
 </footer>
-{# TODO: The JS url changes whenever our js code changes.
-   But this should get cached busted whenever a locale is updated.
-   It's complicatred to fix. But for now it isn't more broken than
-   before. #}
 {% if request.LANGUAGE_CODE %}
-  <script src="{{ static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
+  {% if settings.DEV %}
+    <script src="{{ static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
+  {% else %}
+    <script src="{{ static('jsi18n/{lang}/djangojs-min.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
+  {% endif %}
 {% endif %}
 
 {% javascript 'common' %}

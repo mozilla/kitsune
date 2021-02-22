@@ -740,7 +740,6 @@ PUENTE = {
 STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
     "djangojs",
-    "yaocho",
 ]
 
 STATICI18N_DOMAIN = "djangojs"
