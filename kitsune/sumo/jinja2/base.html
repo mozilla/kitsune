@@ -327,6 +327,8 @@
   <script src="{{ static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
 {% endif %}
 
+<script src="{{ url("wafflejs") }}"></script>
+
 {% javascript 'common' %}
 {% for script in scripts %}
   {% javascript script %}
