@@ -47,7 +47,6 @@ describe('instant search', () => {
       // build process in place.
       global.tabsInit = require('../sumo-tabs.es6').tabsInit;
       global.detailsInit = require('../protocol-details-init.js').detailsInit;
-      global.waffle = { flag_is_active: () => undefined };
 
 
       rerequire('../i18n.js');
