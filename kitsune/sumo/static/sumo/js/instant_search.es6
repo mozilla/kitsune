@@ -12,7 +12,7 @@
   // the local storage flag overrides everything else:
   if (
     localStorageUseV2 ??
-    ($("body").data("readonly") || waffle.flag_is_active("instant_search_v2"))
+    ($("body").data("readonly") || window.waffle?.flag_is_active("instant_search_v2"))
   ) {
     var search = new k.Search("/" + locale + "/search/v2/");
   } else {
