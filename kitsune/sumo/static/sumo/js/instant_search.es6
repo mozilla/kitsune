@@ -4,7 +4,16 @@
   var locale = $('html').attr('lang');
   const searchTitle = "Search | Mozilla Support";
 
-  if (window.localStorage.getItem("enable_search_v2") === "true" || $("body").data("readonly")) {
+  const localStorageUseV2 = {
+    "true": true,
+    "false": false,
+  }[window.localStorage.getItem("enable_search_v2")];
+
+  // the local storage flag overrides everything else:
+  if (
+    localStorageUseV2 ??
+    ($("body").data("readonly") || waffle.flag_is_active("instant_search_v2"))
+  ) {
     var search = new k.Search("/" + locale + "/search/v2/");
   } else {
     var search = new k.Search("/" + locale + "/search");

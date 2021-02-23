@@ -95,7 +95,7 @@ CACHE_MIDDLEWARE_SECONDS = config(
 )
 
 # Setting this to the Waffle version.
-WAFFLE_CACHE_PREFIX = "w0.11:"
+WAFFLE_CACHE_PREFIX = "w2.1:"
 # User agent cache settings
 USER_AGENTS_CACHE = "default"
 
