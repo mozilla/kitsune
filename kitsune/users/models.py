@@ -28,7 +28,7 @@ log = logging.getLogger("k.users")
 
 
 SHA1_RE = re.compile("^[a-f0-9]{40}$")
-CONTRIBUTOR_GROUP = _("Registered as contributor")
+CONTRIBUTOR_GROUP = "Registered as contributor"
 SET_ID_PREFIX = "https://schemas.accounts.firefox.com/event/"
 
 
