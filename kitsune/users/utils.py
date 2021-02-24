@@ -1,10 +1,11 @@
 import bisect
 import logging
+from re import compile, escape
 from uuid import uuid4
-from re import escape
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import ugettext as _
 
 from kitsune.sumo import email_utils
@@ -34,8 +35,20 @@ def add_to_contributors(user, language_code):
     email_utils.send_messages([_make_mail(language_code)])
 
 
+def normalize_username(username):
+    """Removes any invalid characters from the username"""
+
+    regex = compile(UnicodeUsernameValidator.regex)
+    normalized_username = ""
+    for char in username:
+        if not regex.match(char):
+            continue
+        normalized_username += char
+    return normalized_username
+
+
 def suggest_username(email):
-    username = email.split("@", 1)[0]
+    username = normalize_username(email.split("@", 1)[0])
 
     username_regex = r"^{0}[0-9]*$".format(escape(username))
     users = User.objects.filter(username__iregex=username_regex)
