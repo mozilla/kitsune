@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
@@ -36,3 +35,14 @@ class UtilsTestCase(TestCase):
         User.objects.create(username="testuser+11")
         suggested = suggest_username("testuser+1@example.com")
         eq_("testuser+12", suggested)
+
+    def test_suggest_username_invalid_characters(self):
+        """Test some invalid to Django usernames."""
+
+        eq_("foobar", suggest_username("foo bar"))
+        User.objects.create(username="foobar")
+        eq_("foobar1", suggest_username("foo bar"))
+
+        eq_("foobar1", suggest_username("foobar /1"))
+        User.objects.create(username="foobar1")
+        eq_("foobar11", suggest_username("foobar /1"))
