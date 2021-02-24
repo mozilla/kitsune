@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 
@@ -14,9 +15,11 @@ from kitsune.forums.models import Thread
 from kitsune.products.models import Product
 from kitsune.questions.models import QuestionLocale
 from kitsune.sumo.parser import get_object_fallback
+from kitsune.users.models import CONTRIBUTOR_GROUP
 from kitsune.wiki.models import Document
 
 from kitsune.search.v2.documents import ProfileDocument
+from elasticsearch_dsl import Q
 
 
 log = logging.getLogger("k.community")
@@ -84,18 +87,31 @@ def search(request):
     q = request.GET.get("q")
 
     if q:
-        search = ProfileDocument.search().query(
-            "simple_query_string",
-            query=q,
-            fields=["username", "name"],
-            default_operator="AND",
+        contributor_group_ids = list(
+            Group.objects.filter(
+                name__in=[
+                    "Contributors",
+                    CONTRIBUTOR_GROUP,
+                ]
+            ).values_list("id", flat=True)
         )
+        search = ProfileDocument.search().query(
+            "boosting",
+            positive=Q(
+                "simple_query_string",
+                query=q,
+                fields=["username", "name"],
+                default_operator="AND",
+            ),
+            # reduce the scores of users not in the contributor groups:
+            negative=Q(
+                "bool",
+                must_not=Q("terms", group_ids=contributor_group_ids),
+            ),
+            negative_boost=0.5,
+        )[:30]
 
         results = search.execute().hits
-
-    # For now, we're just truncating results at 30 and not doing any
-    # pagination. If somebody complains, we can add pagination or something.
-    results = list(results[:30])
 
     data = {"q": q, "results": results}
 
