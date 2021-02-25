@@ -1,3 +1,7 @@
+ES_SYNONYM_LOCALES = [
+    "en-US",
+]
+
 # number of times to retry updates if a conflict happens before raising
 UPDATE_RETRY_ON_CONFLICT = 2
 
