@@ -13,3 +13,6 @@ Dockerfile
 /jsi18n
 docker/dockerfiles/
 __pycache__
+.npm
+.vscode-server
+.cache
