@@ -51,7 +51,7 @@ ENV GIT_SHA=${GIT_SHA}
 FROM base AS base-dev
 RUN apt-get update && apt-get install apt-transport-https && \
     curl -sL https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs && \
+RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs zip && \
     rm -rf /var/lib/apt/lists/*
 
 

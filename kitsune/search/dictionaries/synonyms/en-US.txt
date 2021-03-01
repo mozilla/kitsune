@@ -9,7 +9,7 @@ multimedia, media, video, movie, film
 
 # technical terms
 site, website, web site, page, web page, webpage
-url, link, hyperlink, web address, address
+url, uri, link, hyperlink, web address, address
 cache, cash, cookies
 popup, pop up
 virus, malware

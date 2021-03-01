@@ -146,7 +146,7 @@ to `kitsune.search.v2.views.simple_search`.
 
 ### Synonyms
 
-The `elasticsearch/dictionaries/synonyms` path contains a text file for each of our search-enabled locales,
+The `kitsune/search/dictionaries/synonyms` path contains a text file for each of our search-enabled locales,
 where synonyms are in the
 [Solr format](https://www.elastic.co/guide/en/elasticsearch/reference/7.10/analysis-synonym-graph-tokenfilter.html#_solr_synonyms_2).
 
@@ -232,8 +232,8 @@ but *not* "facebook" or "face book".
 
 #### Interaction with the rest of the analysis chain
 
-All the analyzers which we apply to a document are also applied to the synonyms,
-such as tokenizers, stemmers and stop word filters.
+All the analyzers above the synonym token filter in the analyzer chain are also applied to the synonyms,
+such as our tokenizers, stemmers and stop word filters.
 
 This means it's not necessary to specify the plural or conjugated forms of words,
 as post-analysis they *should* end up as the same token.
@@ -289,8 +289,7 @@ and your already-indexed data will persist within the index and not require any 
 
 The synonym files need to be put in a bundle and uploaded to the Elastic Cloud.
 
-`cd` into the `elasticsearch` directory,
-and run the `create_bundle.sh` script to create a zip file with the appropriate directory structure.
+Run the `bin/create_elastic_bundle.sh` script to create a zip file with the appropriate directory structure.
 (You'll need to have `zip` installed for this command to work.)
 
 Then,

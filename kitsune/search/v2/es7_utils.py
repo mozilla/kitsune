@@ -45,6 +45,7 @@ def _create_synonym_graph_filter(synonym_file_name):
         type="synonym_graph",
         synonyms_path=f"synonyms/{synonym_file_name}.txt",
         # we must use "true" instead of True to work around an elastic-dsl bug
+        expand="true",
         lenient="true",
         updateable="true",
     )
@@ -56,7 +57,7 @@ def es_analyzer_for_locale(locale, search_analyzer=False):
     but using plugin is turned off from settings, return an analyzer named "default_sumo".
     """
 
-    name = locale
+    name = ""
     analyzer_config = config.ES_LOCALE_ANALYZERS.get(locale)
 
     if not analyzer_config or (analyzer_config.get("plugin") and not settings.ES_USE_PLUGINS):
@@ -64,11 +65,14 @@ def es_analyzer_for_locale(locale, search_analyzer=False):
         analyzer_config = {}
 
     # use default values from ES_DEFAULT_ANALYZER if not overridden
+    # using python 3.9's dict union operator
     analyzer_config = config.ES_DEFAULT_ANALYZER | analyzer_config
 
     # turn dictionaries into `char_filter` and `token_filter` instances
-    filters = _insert_custom_filters(name, analyzer_config["filter"])
-    char_filters = _insert_custom_filters(name, analyzer_config["char_filter"], char=True)
+    filters = _insert_custom_filters(name or locale, analyzer_config["filter"])
+    char_filters = _insert_custom_filters(
+        name or locale, analyzer_config["char_filter"], char=True
+    )
 
     if search_analyzer:
         # create a locale-specific search analyzer, even if the index-time analyzer is
@@ -79,7 +83,7 @@ def es_analyzer_for_locale(locale, search_analyzer=False):
         filters.append(_create_synonym_graph_filter(locale))
 
     return analyzer(
-        name,
+        name or locale,
         tokenizer=analyzer_config["tokenizer"],
         filter=filters,
         char_filter=char_filters,

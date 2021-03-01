@@ -5,6 +5,7 @@ ES_SYNONYM_LOCALES = [
 # number of times to retry updates if a conflict happens before raising
 UPDATE_RETRY_ON_CONFLICT = 2
 
+# these are "synonyms" we need to define as mappings because they contain stop words
 ES_MAPPINGS = [
     "add-on => addon",
     "add on => addon",
