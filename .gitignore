@@ -55,3 +55,4 @@ celerybeat-schedule
 celerybeat.pid
 .python_history
 .ssh
+*.zip

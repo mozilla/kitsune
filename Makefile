@@ -127,6 +127,9 @@ build-ci: .docker-build-pull
 	touch .docker-build-ci
 
 test-ci: .docker-build-ci
+	# copy synonym files to elasticsearch7 container, since circleci doesn't support volume mounts:
+	# https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
+	docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
 	${DC_CI} run test-image
 
 test-js-ci: .docker-build-ci

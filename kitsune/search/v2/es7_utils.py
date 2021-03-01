@@ -11,7 +11,7 @@ from kitsune.search import config
 from kitsune.search.v2 import elasticsearch7
 
 
-def _insert_custom_filters(locale, filter_list, char=False):
+def _insert_custom_filters(analyzer_name, filter_list, char=False):
     """
     Takes a list containing in-built filters (as strings), and the settings for custom filters
     (as dicts). Turns the dicts into instances of `token_filter` or `char_filter` depending
@@ -21,7 +21,15 @@ def _insert_custom_filters(locale, filter_list, char=False):
     def mapping_func(position_filter_tuple):
         position, filter = position_filter_tuple
         if type(filter) is dict:
-            name = f'{locale}_{position}_{filter["type"]}'
+            prefix = analyzer_name
+            default_filters = config.ES_DEFAULT_ANALYZER["char_filter" if char else "filter"]
+            if filter in default_filters:
+                # detect if this filter exists in the default analyzer
+                # if it does use the same name as the default
+                # to avoid defining the same filter for each locale
+                prefix = config.ES_DEFAULT_ANALYZER_NAME
+                position = default_filters.index(filter)
+            name = f'{prefix}_{position}_{filter["type"]}'
             if char:
                 return char_filter(name, **filter)
             return token_filter(name, **filter)
@@ -30,52 +38,55 @@ def _insert_custom_filters(locale, filter_list, char=False):
     return list(map(mapping_func, enumerate(filter_list)))
 
 
-def _get_locale_specific_analyzer(locale):
-    """Get an analyzer for locales specified in config otherwise return `None`"""
-
-    locale_analyzer = config.ES_LOCALE_ANALYZERS.get(locale)
-
-    if not locale_analyzer:
-        return None
-
-    if locale_analyzer.get("plugin") and not settings.ES_USE_PLUGINS:
-        return None
-
-    # use default values from ES_DEFAULT_ANALYZER if not overridden
-    locale_analyzer = config.ES_DEFAULT_ANALYZER | locale_analyzer
-
-    # turn dictionaries into `char_filter` and `token_filter` instances
-    locale_analyzer["filter"] = _insert_custom_filters(locale, locale_analyzer["filter"])
-    locale_analyzer["char_filter"] = _insert_custom_filters(
-        locale, locale_analyzer["char_filter"], char=True
-    )
-
-    return analyzer(
-        locale,
-        tokenizer=locale_analyzer["tokenizer"],
-        filter=locale_analyzer["filter"],
-        char_filter=locale_analyzer["char_filter"],
+def _create_synonym_graph_filter(synonym_file_name):
+    filter_name = f"{synonym_file_name}_synonym_graph"
+    return token_filter(
+        filter_name,
+        type="synonym_graph",
+        synonyms_path=f"synonyms/{synonym_file_name}.txt",
+        # we must use "true" instead of True to work around an elastic-dsl bug
+        expand="true",
+        lenient="true",
+        updateable="true",
     )
 
 
-def es_analyzer_for_locale(locale):
+def es_analyzer_for_locale(locale, search_analyzer=False):
     """Pick an appropriate analyzer for a given locale.
     If no analyzer is defined for `locale` or the locale analyzer uses a plugin
-    but using plugin is turned off from settings, return ES analyzer named "standard".
+    but using plugin is turned off from settings, return an analyzer named "default_sumo".
     """
 
-    local_specific_analyzer = _get_locale_specific_analyzer(locale=locale)
+    name = ""
+    analyzer_config = config.ES_LOCALE_ANALYZERS.get(locale)
 
-    if local_specific_analyzer:
-        return local_specific_analyzer
+    if not analyzer_config or (analyzer_config.get("plugin") and not settings.ES_USE_PLUGINS):
+        name = config.ES_DEFAULT_ANALYZER_NAME
+        analyzer_config = {}
 
-    # No specific analyzer found for the locale
-    # So use the standard analyzer as default
+    # use default values from ES_DEFAULT_ANALYZER if not overridden
+    # using python 3.9's dict union operator
+    analyzer_config = config.ES_DEFAULT_ANALYZER | analyzer_config
+
+    # turn dictionaries into `char_filter` and `token_filter` instances
+    filters = _insert_custom_filters(name or locale, analyzer_config["filter"])
+    char_filters = _insert_custom_filters(
+        name or locale, analyzer_config["char_filter"], char=True
+    )
+
+    if search_analyzer:
+        # create a locale-specific search analyzer, even if the index-time analyzer is
+        # `sumo_default`. we do this so that we can adjust the synonyms used in any locale,
+        # even if it doesn't have a custom analysis chain set up, without having to re-index
+        name = locale + "_search_analyzer"
+        filters.append(_create_synonym_graph_filter(config.ES_ALL_SYNONYMS_NAME))
+        filters.append(_create_synonym_graph_filter(locale))
+
     return analyzer(
-        "default_sumo",
-        tokenizer=config.ES_DEFAULT_ANALYZER["tokenizer"],
-        filter=config.ES_DEFAULT_ANALYZER["filter"],
-        char_filter=config.ES_DEFAULT_ANALYZER["char_filter"],
+        name or locale,
+        tokenizer=analyzer_config["tokenizer"],
+        filter=filters,
+        char_filter=char_filters,
     )
 
 

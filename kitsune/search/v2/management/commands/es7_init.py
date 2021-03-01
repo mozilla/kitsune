@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from elasticsearch_dsl.exceptions import IllegalOperation
 from datetime import datetime, timezone
 
-from kitsune.search.v2.es7_utils import get_doc_types
+from kitsune.search.v2.es7_utils import get_doc_types, es7_client
 
 
 class Command(BaseCommand):
@@ -27,8 +27,14 @@ class Command(BaseCommand):
             action="store_true",
             help="Update the _read alias to point at the latest index",
         )
+        parser.add_argument(
+            "--reload-search-analyzers",
+            action="store_true",
+            help="Reload the search analyzers (used when changing synonyms)",
+        )
 
     def handle(self, *args, **kwargs):
+        client = es7_client()
         doc_types = get_doc_types()
 
         limit = kwargs["limit"]
@@ -66,5 +72,10 @@ class Command(BaseCommand):
                     dt.migrate_reads()
                 except IllegalOperation as e:
                     print(e)
+
+            index = dt.alias_points_at(dt.Index.write_alias)
+            if kwargs["reload_search_analyzers"]:
+                print(f"Reloading search analyzers on {index}")
+                client.indices.reload_search_analyzers(index)
 
             print("")  # print blank line to make console output easier to read
