@@ -9,9 +9,6 @@ Object.keys(packageJson.dependencies).forEach(function (packageName) {
   cpx.copy(
     util.format("node_modules/%s/**", packageName),
     util.format("assets/%s", packageName),
-    {
-      "update": true
-    },
     function(err){
       if(err) {
         console.log(util.format("cpx error for %s: %s", packageName, err));
