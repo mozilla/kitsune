@@ -323,7 +323,7 @@ def has_blocked_link(data):
     return False
 
 
-@timeout(seconds=settings.REGEX_TIMEOUT)
+@timeout(seconds=settings.REGEX_TIMEOUT, use_signals=False)
 def match_regex_with_timeout(compiled_regex, data):
     """Matches the specified regex.
 
