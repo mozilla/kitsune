@@ -1,4 +1,6 @@
 import json
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.questions.models import Answer
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -69,6 +71,13 @@ def update(request, flagged_object_id):
     flagged = get_object_or_404(FlaggedObject, pk=flagged_object_id)
     new_status = request.POST.get("status")
     if new_status:
+        ct = flagged.content_type
+        # If the object is an Answer let's fire a notification
+        # if the flag is invalid
+        if str(new_status) == str(FlaggedObject.FLAG_REJECTED) and ct.model_class() == Answer:
+            answer = flagged.content_object
+            QuestionReplyEvent(answer).fire(exclude=answer.creator)
+
         flagged.status = new_status
         flagged.save()
 

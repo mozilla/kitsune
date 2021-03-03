@@ -26,10 +26,13 @@ class FlaggedObject(ModelBase):
         ("other", _lazy("Other (please specify)")),
     )
 
+    FLAG_PENDING = 0
+    FLAG_ACCEPTED = 1
+    FLAG_REJECTED = 2
     STATUSES = (
-        (0, _lazy("Pending")),
-        (1, _lazy("Accepted and Fixed")),
-        (2, _lazy("Rejected")),
+        (FLAG_PENDING, _lazy("Pending")),
+        (FLAG_ACCEPTED, _lazy("Accepted and Fixed")),
+        (FLAG_REJECTED, _lazy("Rejected")),
     )
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
