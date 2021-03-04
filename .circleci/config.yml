@@ -20,5 +20,10 @@ jobs:
           name: Run mocha tests
           command: make test-js-ci
       - run:
+          # copy synonym files to elasticsearch7 container, since circleci doesn't support volume mounts:
+          # https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
+          name: Copy synonym files to elasticsearch7
+          command: docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
+      - run:
           name: Run unit tests
           command: make test-ci
