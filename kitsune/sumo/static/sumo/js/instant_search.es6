@@ -265,6 +265,7 @@
         $(this).val(state.query);
       });
       search.params = state.params;
+      queries.push(state.query);
       search.query(state.query, k.InstantSearchSettings.render);
     } else {
       window.k.InstantSearchSettings.showContent();
