@@ -12,6 +12,7 @@ class KitsuneBaseForumForm(forms.Form):
     def __init__(self, *args, **kwargs):
         """Override init method to get the user if possible."""
         self.user = kwargs.pop("user", None)
+        self.question = kwargs.pop("question", None)
         super(KitsuneBaseForumForm, self).__init__(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
