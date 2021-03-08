@@ -20,17 +20,17 @@
 <nav class="tabs">
   <ul id="doctype-filter" class="tabs--list search-filter cf">
     <li class="tabs--item">
-      <a {{ w|class_selected(3) }} href="#" data-instant-search-set-params="w=3" data-instant-search="link">
+      <a {{ w|class_selected(3) }} href="#" data-instant-search-set-params="w=3" data-instant-search-unset-params="page" data-instant-search="link">
         <span>{{ _('View All') }}</span>
       </a>
     </li>
     <li class="tabs--item">
-      <a {{ w|class_selected(1) }} href="#" data-instant-search-set-params="w=1" data-instant-search="link">
+      <a {{ w|class_selected(1) }} href="#" data-instant-search-set-params="w=1" data-instant-search-unset-params="page" data-instant-search="link">
         <span>{{ _('Help Articles Only') }}</span>
       </a>
     </li>
     <li class="tabs--item">
-      <a {{ w|class_selected(2) }} href="#" data-instant-search-set-params="w=2" data-instant-search="link">
+      <a {{ w|class_selected(2) }} href="#" data-instant-search-set-params="w=2" data-instant-search-unset-params="page" data-instant-search="link">
         <span>{{ _('Community Discussion Only') }}</span>
       </a>
     </li>

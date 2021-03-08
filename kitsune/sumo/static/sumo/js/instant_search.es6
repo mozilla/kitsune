@@ -175,6 +175,7 @@
         if (search.hasLastQuery) {
           trackEvent('Instant Search', 'Exit Search', search.lastQueryUrl());
         }
+        search.unsetParam("page");
         search.setParams(params);
         let query = $this.val();
         queries.push(query);
