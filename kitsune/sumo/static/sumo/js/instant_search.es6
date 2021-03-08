@@ -78,9 +78,9 @@
     if (history.state?.query) {
       // if a search is already the latest point in history, replace it
       // to avoid filling history with partial searches
-      history.replaceState(historyState, searchTitle);
+      history.replaceState(historyState, searchTitle, "#search");
     } else {
-      history.pushState(historyState, searchTitle);
+      history.pushState(historyState, searchTitle, "#search");
     }
 
     var base_url = search.lastQueryUrl();
@@ -144,7 +144,7 @@
       window.k.InstantSearchSettings.showContent();
 
       if (history.state?.query) {
-        history.pushState({}, searchTitle);
+        history.pushState({}, searchTitle, location.href.replace("#search", ""));
       }
     } else if ($this.val() !== search.lastQuery) {
       if (searchTimeout) {
