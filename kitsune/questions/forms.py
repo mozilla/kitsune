@@ -289,6 +289,15 @@ class AnswerForm(KitsuneBaseForumForm):
         model = Answer
         fields = ("content",)
 
+    def clean(self, *args, **kwargs):
+        """Override clean method to exempt question owner from spam filtering."""
+        cdata = super(AnswerForm, self).clean(*args, **kwargs)
+        # if there is a reply from the owner, remove the spam flag
+        if self.user and self.question and self.user == self.question.creator:
+            cdata.pop("is_spam", None)
+
+        return cdata
+
 
 class WatchQuestionForm(forms.Form):
     """Form to subscribe to question updates."""

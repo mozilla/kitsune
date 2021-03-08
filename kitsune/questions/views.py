@@ -704,7 +704,7 @@ def reply(request, question_id):
     if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
-    form = AnswerForm(request.POST, **{"user": request.user})
+    form = AnswerForm(request.POST, **{"user": request.user, "question": question})
 
     # NOJS: delete images
     if "delete_images" in request.POST:
