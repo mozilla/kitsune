@@ -15,6 +15,12 @@ from elasticsearch_dsl import A
 from kitsune.search.v2.documents import AnswerDocument, ProfileDocument
 
 
+CONTRIBUTOR_GROUPS = [
+    "Contributors",
+    CONTRIBUTOR_GROUP,
+]
+
+
 def top_contributors_questions(start=None, end=None, locale=None, product=None, count=10, page=1):
     """Get the top Support Forum contributors."""
 
@@ -25,12 +31,13 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
             # filter out answers by the question author
             "script",
             script="doc['creator_id'].value != doc['question_creator_id'].value",
-        )
-        .filter(
+        ).filter(
             # filter answers created between `start` and `end`, or within the last 90 days
             "range",
             created={"gte": start or datetime.now() - timedelta(days=90), "lte": end},
         )
+        # set the query size to 0 because we don't care about the results
+        # we're just filtering for the aggregations defined below
         .extra(size=0)
     )
     if locale:
@@ -63,12 +70,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
 
     user_ids = [bucket.key for bucket in contribution_buckets]
     contributor_group_ids = list(
-        Group.objects.filter(
-            name__in=[
-                "Contributors",
-                CONTRIBUTOR_GROUP,
-            ]
-        ).values_list("id", flat=True)
+        Group.objects.filter(name__in=CONTRIBUTOR_GROUPS).values_list("id", flat=True)
     )
 
     # fetch all the users returned by the aggregation which are in the contributor groups
