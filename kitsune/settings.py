@@ -795,6 +795,9 @@ ES7_CLOUD_ID = config("ES7_CLOUD_ID", default="")
 ES7_USE_SSL = config("ES7_USE_SSL", default=False, cast=bool)
 ES7_HTTP_AUTH = config("ES7_HTTP_AUTH", default="", cast=Csv())
 ES7_ENABLE_CONSOLE_LOGGING = config("ES7_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
+# Pass parameters to the ES7 client
+# like "search_type": "dfs_query_then_fetch"
+ES7_SEARCH_PARAMS = {}
 
 # Indexes for reading
 ES_INDEXES = {
