@@ -3,40 +3,55 @@ from datetime import date, datetime, timedelta, timezone
 from operator import itemgetter
 
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.db.models import Count
 
 from kitsune.products.models import Product
-from kitsune.users.models import User, UserMappingType
+from kitsune.users.models import CONTRIBUTOR_GROUP, User, UserMappingType
 from kitsune.wiki.models import Revision
 
 from elasticsearch_dsl import A
 from kitsune.search.v2.documents import AnswerDocument, ProfileDocument
 
 
-def top_contributors_questions(start=None, end=None, locale=None, product=None, count=10):
+CONTRIBUTOR_GROUPS = [
+    "Contributors",
+    CONTRIBUTOR_GROUP,
+]
+
+
+def top_contributors_questions(start=None, end=None, locale=None, product=None, count=10, page=1):
     """Get the top Support Forum contributors."""
 
     search = AnswerDocument.search()
 
-    search = search.filter(
-        # filter out answers by the question author
-        "script",
-        script="doc['creator_id'].value != doc['question_creator_id'].value",
-    ).filter(
-        # filter answers created between `start` and `end`, or within the last 90 days
-        "range",
-        created={"gte": start or datetime.now() - timedelta(days=90), "lte": end},
+    search = (
+        search.filter(
+            # filter out answers by the question author
+            "script",
+            script="doc['creator_id'].value != doc['question_creator_id'].value",
+        ).filter(
+            # filter answers created between `start` and `end`, or within the last 90 days
+            "range",
+            created={"gte": start or datetime.now() - timedelta(days=90), "lte": end},
+        )
+        # set the query size to 0 because we don't care about the results
+        # we're just filtering for the aggregations defined below
+        .extra(size=0)
     )
     if locale:
         search = search.filter("term", locale=locale)
     if product:
         search = search.filter("term", question_product_id=product.id)
 
+    # our filters above aren't perfect, and don't only return answers from contributors
+    # so we need to collect more buckets than `count`, so we can hopefully find `count`
+    # number of contributors within
     search.aggs.bucket(
-        # create buckets for the `count + 1` most active contributors
+        # create buckets for the `count * 10` most active users
         "contributions",
-        A("terms", field="creator_id", size=count + 1),
+        A("terms", field="creator_id", size=count * 10),
     ).bucket(
         # within each of those, create a bucket for the most recent answer, and extract its date
         "latest",
@@ -49,21 +64,35 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
     )
 
     contribution_buckets = search.execute().aggregations.contributions.buckets
-    total_contributors = len(contribution_buckets)
 
-    if not total_contributors:
+    if not contribution_buckets:
         return [], 0
 
-    user_ids = [bucket.key for bucket in contribution_buckets[:count]]
-    users = ProfileDocument.mget(user_ids, missing="none")
+    user_ids = [bucket.key for bucket in contribution_buckets]
+    contributor_group_ids = list(
+        Group.objects.filter(name__in=CONTRIBUTOR_GROUPS).values_list("id", flat=True)
+    )
 
+    # fetch all the users returned by the aggregation which are in the contributor groups
+    user_hits = (
+        ProfileDocument.search()
+        .query("terms", **{"_id": user_ids})
+        .query("terms", group_ids=contributor_group_ids)
+        .extra(size=len(user_ids))
+        .execute()
+        .hits
+    )
+    users = {hit.meta.id: hit for hit in user_hits}
+
+    total_contributors = len(user_hits)
     top_contributors = []
-    for loop_index, bucket in enumerate(contribution_buckets[:count]):
-        user = users[loop_index]
+    for bucket in contribution_buckets:
+        if len(top_contributors) == page * count:
+            # stop once we've collected enough contributors
+            break
+        user = users.get(bucket.key)
         if user is None:
             continue
-        if bucket.key != user.meta.id:
-            raise RuntimeError("ES returned profiles out of order")
         last_activity = datetime.fromisoformat(bucket.latest.hits.hits[0]._source.created)
         days_since_last_activity = (datetime.now(tz=timezone.utc) - last_activity).days
         top_contributors.append(
@@ -74,13 +103,13 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
                     "id": user.meta.id,
                     "username": user.username,
                     "display_name": user.name,
-                    "avatar": getattr(user.avatar, "url", None),
+                    "avatar": getattr(getattr(user, "avatar", None), "url", None),
                     "days_since_last_activity": days_since_last_activity,
                 },
             }
         )
 
-    return top_contributors, total_contributors
+    return top_contributors[count * (page - 1) :], total_contributors
 
 
 def top_contributors_kb(start=None, end=None, product=None, count=10, page=1, use_cache=True):

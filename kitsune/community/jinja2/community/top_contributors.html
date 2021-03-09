@@ -97,11 +97,7 @@
       </div>
 
       <p class="sumo-page-intro">
-        {% if exceeds_page_size %}
-          {{ _('There are more than {total} users with at least one contribution in the last 90 days.')|f(total=total) }}
-        {% else %}
-          {{ _('There are {total} users with at least one contribution in the last 90 days.')|f(total=total) }}
-        {% endif %}
+        {{ _('There are {total} users with at least one contribution in the last 90 days.')|f(total=total) }}
       </p>
 
     </section>
@@ -145,7 +141,7 @@
       {% endif %}
       <section class="pagination">
         <ol class="pagination cf">
-          {% for i in range((total/page_size)|int) %}
+          {% for i in range((total/page_size)|round(method='ceil')|int) %}
             <li{% if i + 1 == page %} class="selected"{% endif %}>
               <a href="{{ base_url|urlparams(page=i + 1) }}"{% if i + 1 == page %} class="btn-page"{% endif %}>
                 {{ i + 1 }}
