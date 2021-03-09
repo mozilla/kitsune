@@ -287,9 +287,8 @@ class SumoSearch(ABC):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
-        # Default to a dfs query
         search = DSLSearch(using=es7_client(), index=self.get_index()).params(
-            search_type="dfs_query_then_fetch"
+            **settings.ES7_SEARCH_PARAMS
         )
 
         # add the search class' filter
