@@ -4,9 +4,9 @@ import io
 from django.conf import settings
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _lazy
 
-import bleach
 from PIL import Image
 
 from kitsune.upload.forms import ImageAttachmentUploadForm
@@ -53,7 +53,7 @@ def create_imageattachment(files, user, obj):
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
 
     # The filename may contain html in it. Escape it.
-    name = bleach.clean(up_file.name)
+    name = escape(up_file.name)
 
     return {
         "name": name,

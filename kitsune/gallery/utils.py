@@ -3,6 +3,7 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
+from django.utils.html import escape
 
 from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image
@@ -34,10 +35,11 @@ def create_image(files, user):
     # Finally save the image along with uploading the file.
     image.file.save(up_file.name, File(up_file), save=True)
 
+    name = escape(up_file.name)
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
     delete_url = reverse("gallery.delete_media", args=["image", image.id])
     return {
-        "name": up_file.name,
+        "name": name,
         "url": image.get_absolute_url(),
         "thumbnail_url": image.thumbnail_url_if_set(),
         "width": width,
