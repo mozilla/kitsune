@@ -605,6 +605,10 @@ else:
 
 ADMIN_REDIRECT_URL = config("ADMIN_REDIRECT_URL", default=None)
 
+# this allows logging in as any user, no password necessary
+# never, ever, ever enable this on anything other than your local, firewalled, dev machine
+ENABLE_DEV_LOGIN = config("ENABLE_DEV_LOGIN", default=False)
+
 AUTH_PROFILE_MODULE = "users.Profile"
 USER_AVATAR_PATH = "uploads/avatars/"
 DEFAULT_AVATAR = "sumo/img/avatar.png"

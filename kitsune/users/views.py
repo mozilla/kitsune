@@ -325,6 +325,20 @@ def make_contributor(request):
         return HttpResponseRedirect(reverse("landings.get_involved"))
 
 
+def become(request, username=None):
+    """
+    Log in with only a username, for use in local development.
+    Set ENABLE_DEV_LOGIN=True to enable.
+    """
+    if not settings.ENABLE_DEV_LOGIN:
+        return None
+
+    user = User.objects.get(username=username)
+    auth.login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+
+    return HttpResponseRedirect(reverse("home"))
+
+
 class FXAAuthenticateView(OIDCAuthenticationRequestView):
     @staticmethod
     def get_settings(attr, *args):

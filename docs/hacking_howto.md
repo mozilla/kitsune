@@ -93,6 +93,22 @@ After the above you can do some optional steps if you want to use the admin:
 
 * Log in to the admin panel: http://localhost:8000/admin
 
+### Enable development login
+
+If you need to log in as a normal user,
+add `ENABLE_DEV_LOGIN=True` to your `.env` file.
+
+You can create a normal user like so:
+
+```
+docker-compose exec web ./manage.py shell_plus
+In [1]: u = User(username="foobar")
+In [2]: u.save()
+In [3]: Profile(user=u).save()
+```
+
+You can then log in as that user by visiting: `http://localhost:8000/user/foobar/become`
+
 ### Install Sample Data
 
 ```eval_rst

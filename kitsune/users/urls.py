@@ -20,6 +20,11 @@ detail_patterns = [
     # url('^abuse', views.report_abuse, name='users.abuse'),
 ]
 
+if settings.ENABLE_DEV_LOGIN:
+    detail_patterns += [
+        url(r"^/become$", views.become, name="users.become"),
+    ]
+
 users_patterns = [
     url(r"^/auth$", views.user_auth, name="users.auth"),
     url(r"^/login$", views.login, name="users.login"),
