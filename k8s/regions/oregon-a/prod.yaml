@@ -72,6 +72,7 @@ app:
     dms_process_exit_surveys: SECRET
     dms_rebuild_kb: SECRET
     dms_reindex: SECRET
+    dms_reindex_es7: SECRET
     dms_reindex_users_that_contributed_yesterday: SECRET
     dms_reload_question_traffic_stats: SECRET
     dms_reload_wiki_traffic_stats: SECRET
