@@ -299,7 +299,24 @@ class SumoSearch(ABC):
         """Takes a hit and returns a result dictionary."""
         pass
 
-    def run(self, query, page=1, default_operator="AND"):
+    def get_highlight_options(self):
+        """Return options for the highlighter"""
+        return {
+            "type": "fvh",
+            # order highlighted fragments by their relevance:
+            "order": "score",
+            # only get one fragment per field:
+            "number_of_fragments": 1,
+            # split fragments at the end of sentences:
+            "boundary_scanner": "sentence",
+            # return fragments roughly this size:
+            "fragment_size": SNIPPET_LENGTH,
+            # add these tags before/after the highlighted sections:
+            "pre_tags": [f"<{HIGHLIGHT_TAG}>"],
+            "post_tags": [f"</{HIGHLIGHT_TAG}>"],
+        }
+
+    def run(self, query, page=1, default_operator="AND", **kwargs):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
@@ -308,24 +325,11 @@ class SumoSearch(ABC):
         )
 
         # add the search class' filter
-        search = search.query(self.get_filter(query=query, default_operator=default_operator))
-
-        # add highlights for the search class' highlight_fields
-        search = search.highlight(
-            *self.get_highlight_fields(),
-            type="fvh",
-            # order highlighted fragments by their relevance:
-            order="score",
-            # only get one fragment per field:
-            number_of_fragments=1,
-            # split fragments at the end of sentences:
-            boundary_scanner="sentence",
-            # return fragments roughly this size:
-            fragment_size=SNIPPET_LENGTH,
-            # add these tags before/after the highlighted sections:
-            pre_tags=[f"<{HIGHLIGHT_TAG}>"],
-            post_tags=[f"</{HIGHLIGHT_TAG}>"],
+        search = search.query(
+            self.get_filter(query=query, default_operator=default_operator, **kwargs)
         )
+        # add highlights for the search class' highlight_fields
+        search = search.highlight(*self.get_highlight_fields(), **self.get_highlight_options())
 
         # do pagination
         start = (page - 1) * self.results_per_page
