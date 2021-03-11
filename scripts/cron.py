@@ -6,6 +6,7 @@ from subprocess import check_call
 import babis
 from apscheduler.schedulers.blocking import BlockingScheduler
 from django.conf import settings
+from django.utils import timezone
 
 MANAGE = os.path.join(settings.ROOT, "manage.py")
 schedule = BlockingScheduler()
@@ -94,6 +95,24 @@ def job_process_exit_surveys():
 def job_reindex():
     # Index items newer than 90 minutes old in ES2
     call_command("esreindex --minutes-ago 90")
+
+
+@scheduled_job(
+    "cron",
+    month="*",
+    day="*",
+    hour="*",
+    minute="45",
+    max_instances=1,
+    coalesce=True,
+    # only run on readonly clusters, where no signals will be triggered:
+    skip=(not settings.READ_ONLY),
+)
+@babis.decorator(ping_after=settings.DMS_REINDEX_ES7)
+def job_reindex_es7():
+    # Index items newer than 90 minutes old in ES7
+    after = (timezone.now() - datetime.timedelta(minutes=90)).isoformat()
+    call_command("es7_reindex --updated-after {}".format(after))
 
 
 # Every 6 hours.
