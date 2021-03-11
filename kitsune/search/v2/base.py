@@ -3,14 +3,15 @@ from datetime import datetime
 
 from django.conf import settings
 from django.utils import timezone
+from elasticsearch7.exceptions import NotFoundError
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
+from elasticsearch_dsl import Q as DSLQ
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
-from elasticsearch7.exceptions import NotFoundError
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
-from kitsune.search.config import UPDATE_RETRY_ON_CONFLICT, DEFAULT_ES7_CONNECTION
+from kitsune.search.config import DEFAULT_ES7_CONNECTION, UPDATE_RETRY_ON_CONFLICT
 from kitsune.search.v2.es7_utils import es7_client
 
 
@@ -274,9 +275,24 @@ class SumoSearch(ABC):
         pass
 
     @abstractmethod
-    def get_filter(self):
+    def get_filter(self, **kwargs):
         """A query which filters for all documents to be searched over."""
         pass
+
+    def build_query(self, **kwargs):
+        """Build a query to search over a specific set of documents."""
+        query = kwargs.get("query", "")
+        operator = kwargs.get("default_operator", "AND")
+        return DSLQ(
+            "simple_query_string",
+            query=query,
+            default_operator=operator,
+            fields=self.get_fields(),
+            # everything apart from WHITESPACE as that interferes with char mappings
+            # and synonyms with whitespace in them by breaking up the phrase into tokens,
+            # before they have a chance to go through the filter:
+            flags="AND|ESCAPE|FUZZY|NEAR|NOT|OR|PHRASE|PRECEDENCE|PREFIX|SLOP",
+        )
 
     @abstractmethod
     def make_result(self, hit):
@@ -292,19 +308,7 @@ class SumoSearch(ABC):
         )
 
         # add the search class' filter
-        search = search.query("bool", filter=self.get_filter())
-
-        # add query, search over the search class' fields
-        search = search.query(
-            "simple_query_string",
-            query=query,
-            default_operator=default_operator,
-            fields=self.get_fields(),
-            # everything apart from WHITESPACE as that interferes with char mappings
-            # and synonyms with whitespace in them by breaking up the phrase into tokens,
-            # before they have a chance to go through the filter:
-            flags="AND|ESCAPE|FUZZY|NEAR|NOT|OR|PHRASE|PRECEDENCE|PREFIX|SLOP",
-        )
+        search = search.query(self.get_filter(query=query, default_operator=default_operator))
 
         # add highlights for the search class' highlight_fields
         search = search.highlight(

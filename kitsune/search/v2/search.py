@@ -1,11 +1,11 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import bleach
 from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.v2.base import SumoSearch
-from kitsune.search.v2.documents import WikiDocument, QuestionDocument
+from kitsune.search.v2.documents import QuestionDocument, WikiDocument
 from kitsune.sumo.urlresolvers import reverse
 
 QUESTION_DAYS_DELTA = 365 * 2
@@ -60,7 +60,7 @@ class QuestionSearch(SumoSearch):
             f"answer_content.{self.locale}",
         ]
 
-    def get_filter(self):
+    def get_filter(self, **kwargs):
         filters = [
             # restrict to the question index
             DSLQ("term", _index=self.get_index()),
@@ -79,6 +79,7 @@ class QuestionSearch(SumoSearch):
             filter=filters,
             # exclude AnswerDocuments from the search:
             must_not=DSLQ("exists", field="updated"),
+            must=self.build_query(**kwargs),
         )
 
     def make_result(self, hit):
@@ -130,7 +131,7 @@ class WikiSearch(SumoSearch):
             f"content.{self.locale}",
         ]
 
-    def get_filter(self):
+    def get_filter(self, **kwargs):
         # Add default filters:
         filters = [
             # limit scope to the Wiki index
@@ -138,7 +139,7 @@ class WikiSearch(SumoSearch):
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
-        return DSLQ("bool", filter=filters)
+        return DSLQ("bool", filter=filters, must=self.build_query(**kwargs))
 
     def make_result(self, hit):
         # generate a summary for search:
@@ -169,17 +170,17 @@ class CompoundSearch(SumoSearch):
     def add(self, child):
         """Add a SumoSearch to search over. Chainable."""
         self._children.append(child(**self._kwargs))
-        return self
 
-    def _from_children(self, name, *args, **kwargs):
+    def _from_children(self, name, **kwargs):
         """
         Get an attribute from all children.
 
         Will flatten lists.
         """
         value = []
+
         for child in self._children:
-            attr = getattr(child, name)()
+            attr = getattr(child, name)(**kwargs)
             if isinstance(attr, list):
                 # if the attribute's value is itself a list, unpack it
                 value = [*value, *attr]
@@ -196,9 +197,11 @@ class CompoundSearch(SumoSearch):
     def get_highlight_fields(self):
         return self._from_children("get_highlight_fields")
 
-    def get_filter(self):
+    def get_filter(self, **kwargs):
         # `should` with `minimum_should_match=1` acts like an OR filter
-        return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
+        return DSLQ(
+            "bool", should=self._from_children("get_filter", **kwargs), minimum_should_match=1
+        )
 
     def make_result(self, hit):
         index = hit.meta.index
