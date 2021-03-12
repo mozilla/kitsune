@@ -4,10 +4,8 @@ from datetime import date, datetime, timedelta
 from django.core.management.base import BaseCommand
 from django.db.models import Count, F
 
-from kitsune.customercare.models import Reply
 from kitsune.kpi.management import utils
 from kitsune.kpi.models import (
-    AOA_CONTRIBUTORS_METRIC_CODE,
     KB_ENUS_CONTRIBUTORS_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_METRIC_CODE,
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
@@ -35,7 +33,6 @@ class Command(BaseCommand):
     def handle(self, day=None, **options):
         update_support_forum_contributors_metric(day)
         update_kb_contributors_metric(day)
-        update_aoa_contributors_metric(day)
 
 
 def update_support_forum_contributors_metric(day=None):
@@ -134,48 +131,5 @@ def update_kb_contributors_metric(day=None):
 
         metric_kind = MetricKind.objects.get_or_create(code=KB_L10N_CONTRIBUTORS_METRIC_CODE)[0]
         Metric.objects.create(kind=metric_kind, start=thirty_days_back, end=day, value=l10n_count)
-
-        day = day + timedelta(days=1)
-
-
-def update_aoa_contributors_metric(day=None):
-    """Calculate and save the AoA contributor counts.
-
-    An AoA contributor is a user that has replied in the last 30 days.
-    """
-    if day:
-        start = end = day
-    else:
-        latest_metric = utils._get_latest_metric(AOA_CONTRIBUTORS_METRIC_CODE)
-        if latest_metric is not None:
-            # Start updating the day after the last updated.
-            start = latest_metric.end + timedelta(days=1)
-        else:
-            # Start updating 30 days after the first reply we have.
-            try:
-                first_reply = Reply.objects.order_by("created")[0]
-                start = first_reply.created.date() + timedelta(days=30)
-            except IndexError:
-                # If there is no data, there is nothing to do here.
-                return
-
-        # Update until yesterday.
-        end = date.today() - timedelta(days=1)
-
-    # Loop through all the days from start to end, calculating and saving.
-    day = start
-    while day <= end:
-        # Figure out the number of contributors from the last 30 days.
-        thirty_days_back = day - timedelta(days=30)
-        contributors = (
-            Reply.objects.filter(created__gte=thirty_days_back, created__lt=day)
-            .values_list("twitter_username")
-            .distinct()
-        )
-        count = contributors.count()
-
-        # Save the value to Metric table.
-        metric_kind = MetricKind.objects.get_or_create(code=AOA_CONTRIBUTORS_METRIC_CODE)[0]
-        Metric.objects.create(kind=metric_kind, start=thirty_days_back, end=day, value=count)
 
         day = day + timedelta(days=1)

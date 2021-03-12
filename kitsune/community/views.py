@@ -6,7 +6,6 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, render
 
 from kitsune.community.utils import (
-    top_contributors_aoa,
     top_contributors_kb,
     top_contributors_l10n,
     top_contributors_questions,
@@ -47,8 +46,6 @@ def home(request):
     }
 
     if locale:
-        data["top_contributors_aoa"], _ = top_contributors_aoa(locale=locale)
-
         # If the locale is en-US we should top KB contributors, else we show
         # top l10n contributors for that locale
         if locale == settings.WIKI_DEFAULT_LANGUAGE:
@@ -67,7 +64,6 @@ def home(request):
     else:
         # If no locale is specified, we show overall top contributors
         # across locales.
-        data["top_contributors_aoa"], _ = top_contributors_aoa()
         data["top_contributors_kb"], _ = top_contributors_kb(product=product)
         data["top_contributors_l10n"], _ = top_contributors_l10n(product=product)
         data["top_contributors_questions"], _ = top_contributors_questions(product=product)
@@ -116,10 +112,7 @@ def top_contributors(request, area):
     if product:
         product = get_object_or_404(Product, slug=product)
 
-    if area == "army-of-awesome":
-        results, total = top_contributors_aoa(locale=locale, count=page_size, page=page)
-        locales = settings.SUMO_LANGUAGES
-    elif area == "questions":
+    if area == "questions":
         results, total = top_contributors_questions(
             locale=locale, product=product, count=page_size, page=page
         )

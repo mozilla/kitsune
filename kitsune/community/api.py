@@ -134,10 +134,8 @@ class TopContributorsBase(views.APIView):
     def filter_username(self, value):
         username_lower = value.lower()
 
-        username_filter = (
-            F(iusername__prefix=username_lower)
-            | F(idisplay_name__prefix=username_lower)
-            | F(itwitter_usernames__prefix=username_lower)
+        username_filter = F(iusername__prefix=username_lower) | F(
+            idisplay_name__prefix=username_lower
         )
 
         return self._filter_by_users(username_filter)

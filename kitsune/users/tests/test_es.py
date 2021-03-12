@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from django.core.management import call_command
 from nose.tools import eq_
 
-from kitsune.customercare.tests import ReplyFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.users.models import UserMappingType
@@ -29,8 +28,6 @@ class UserSearchTests(ElasticTestCase):
     def test_data_in_index(self):
         """Verify the data we are indexing."""
         u = UserFactory(username="r1cky", email="r@r.com", profile__name="Rick Róss")
-        r1 = ReplyFactory(user=u, twitter_username="r1cardo")
-        r2 = ReplyFactory(user=u, twitter_username="r1cky")
 
         self.refresh()
 
@@ -38,8 +35,6 @@ class UserSearchTests(ElasticTestCase):
         data = UserMappingType.search()[0]
         eq_(data["username"], u.username)
         eq_(data["display_name"], u.profile.name)
-        assert r1.twitter_username in data["twitter_usernames"]
-        assert r2.twitter_username in data["twitter_usernames"]
 
         u = UserFactory(username="willkg", email="w@w.com", profile__name="Will Cage")
         self.refresh()
@@ -111,20 +106,6 @@ class UserSearchTests(ElasticTestCase):
         eq_(UserMappingType.search().count(), 2)
         eq_(UserMappingType.search().query(idisplay_name__match_whitespace="elite").count(), 1)
 
-    def test_query_twitter_usernames(self):
-        u1 = UserFactory(username="1337miKE", profile__name="Elite Mike")
-        u2 = UserFactory(username="mike", profile__name="NotElite Mike")
-        r1 = ReplyFactory(user=u1, twitter_username="l33tmIkE")
-        ReplyFactory(user=u2, twitter_username="mikey")
-
-        self.refresh()
-
-        eq_(UserMappingType.search().query(itwitter_usernames__match="l33tmike").count(), 1)
-        data = UserMappingType.search().query(itwitter_usernames__match="l33tmike")[0]
-        eq_(data["username"], u1.username)
-        eq_(data["display_name"], u1.profile.name)
-        assert r1.twitter_username in data["twitter_usernames"]
-
     def test_last_contribution_date(self):
         """Verify the last_contribution_date field works properly."""
         u = UserFactory(username="satdav")
@@ -132,14 +113,6 @@ class UserSearchTests(ElasticTestCase):
 
         data = UserMappingType.search().query(username__match="satdav")[0]
         assert not data["last_contribution_date"]
-
-        # Add a AoA reply. It should be the last contribution.
-        d = datetime(2014, 1, 1)
-        ReplyFactory(user=u, created=d)
-        self.refresh()
-
-        data = UserMappingType.search().query(username__match="satdav")[0]
-        eq_(data["last_contribution_date"], d)
 
         # Add a Support Forum answer. It should be the last contribution.
         d = datetime(2014, 1, 2)

@@ -2,10 +2,8 @@ from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
 
-from kitsune.customercare.models import Reply
 from kitsune.kpi.management import utils
 from kitsune.kpi.models import (
-    AOA_CONTRIBUTOR_COHORT_CODE,
     CONTRIBUTOR_COHORT_CODE,
     KB_ENUS_CONTRIBUTOR_COHORT_CODE,
     KB_L10N_CONTRIBUTOR_COHORT_CODE,
@@ -34,7 +32,6 @@ class Command(BaseCommand):
                 [
                     (Revision.objects.all(), ("creator", "reviewer")),
                     (Answer.objects.not_by_asker(), ("creator",)),
-                    (Reply.objects.all(), ("user",)),
                 ],
             ),
             (
@@ -49,7 +46,6 @@ class Command(BaseCommand):
                 SUPPORT_FORUM_HELPER_COHORT_CODE,
                 [(Answer.objects.not_by_asker(), ("creator",))],
             ),
-            (AOA_CONTRIBUTOR_COHORT_CODE, [(Reply.objects.all(), ("user",))]),
         ]
 
         for kind, querysets in reports:

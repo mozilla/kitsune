@@ -4,9 +4,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from kitsune.customercare import badges as aoa_badges
-from kitsune.customercare.models import Reply
-from kitsune.customercare.tasks import maybe_award_badge as maybe_award_aoa_badge
 from kitsune.questions import badges as questions_badges
 from kitsune.questions.models import Answer
 from kitsune.questions.tasks import maybe_award_badge as maybe_award_questions_badge
@@ -76,21 +73,4 @@ class Command(BaseCommand):
                         "{year} Support Forum Badge awarded to {user}".format(
                             year=year, user=user.username
                         )
-                    )
-
-            # Army of Awesome Badge
-            # Figure out who the Army of Awesome contributors are for the year
-            # and try to award them a badge.
-            user_ids = (
-                Reply.objects.filter(
-                    created__gte=date(year, 1, 1), created__lt=date(year + 1, 1, 1)
-                )
-                .values_list("user_id", flat=True)
-                .distinct()
-            )
-
-            for user in User.objects.filter(id__in=user_ids):
-                if maybe_award_aoa_badge(aoa_badges.AOA_BADGE, year, user.id):
-                    print(
-                        "{year} AoA Badge awarded to {user}".format(year=year, user=user.username)
                     )

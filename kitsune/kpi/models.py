@@ -5,7 +5,6 @@ from kitsune.sumo.models import ModelBase
 
 VISITORS_METRIC_CODE = "general keymetrics:visitors"
 L10N_METRIC_CODE = "general l10n:coverage"
-AOA_CONTRIBUTORS_METRIC_CODE = "general aoa:contributors"
 SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE = "general supportforum:contributors"
 KB_ENUS_CONTRIBUTORS_METRIC_CODE = "general kb:en-US:contributors"
 KB_L10N_CONTRIBUTORS_METRIC_CODE = "general kb:l10n:contributors"
@@ -16,7 +15,6 @@ EXIT_SURVEY_NO_CODE = "exit-survey:no"
 EXIT_SURVEY_DONT_KNOW_CODE = "exit-survey:dont-know"
 
 CONTRIBUTORS_CSAT_METRIC_CODE = "csat contributors"
-AOA_CONTRIBUTORS_CSAT_METRIC_CODE = "csat contributors:aoa"
 SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE = "csat contributors:supportforum"
 KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE = "csat contributors:kb:en-US"
 KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE = "csat contributors:kb-l10n"
@@ -25,7 +23,6 @@ CONTRIBUTOR_COHORT_CODE = "contributor"
 KB_ENUS_CONTRIBUTOR_COHORT_CODE = "contributor:kb:en-US"
 KB_L10N_CONTRIBUTOR_COHORT_CODE = "contributor:kb:l10n"
 SUPPORT_FORUM_HELPER_COHORT_CODE = "contributor:supportforum:helper"
-AOA_CONTRIBUTOR_COHORT_CODE = "contributor:aoa"
 
 
 class MetricKind(ModelBase):

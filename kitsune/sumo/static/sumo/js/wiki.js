@@ -5,7 +5,7 @@
  * Scripts for the wiki app.
  */
 
-(function ($) {
+(function($) {
   function init() {
     var $body = $('body');
 
@@ -17,7 +17,7 @@
     if ($body.is('.document')) {  // Document page
       // Put last search query into search box
       $('#support-search input[name=q]')
-          .val(k.unquote($.cookie('last_search')));
+        .val(k.unquote($.cookie('last_search')));
       new ShowFor(); // eslint-disable-line
       addReferrerAndQueryToVoteForm();
       new k.AjaxVote('.document-vote form', { // eslint-disable-line
@@ -25,7 +25,6 @@
         replaceFormWithMessage: true,
         removeForm: true
       });
-      initAOABanner();
     } else if ($body.is('.review')) { // Review pages
       new ShowFor(); // eslint-disable-line
       initNeedsChange();
@@ -173,8 +172,8 @@
           $details.toggleClass('open');
         }).keyup(function(event) {
           if (event.keyCode === 13 || event.keyCode === 32) {
-                // Enter or Space is pressed -- trigger the `click` event on the `summary` element
-                // Opera already seems to trigger the `click` event when Enter is pressed
+            // Enter or Space is pressed -- trigger the `click` event on the `summary` element
+            // Opera already seems to trigger the `click` event when Enter is pressed
             if (!($.browser.opera && event.keyCode === 13)) {
               event.preventDefault();
               $detailsSummary.click();
@@ -216,8 +215,8 @@
     $.each(fields, function(i, field) {
       $(field.id).addClass('prepopulated_field');
       $(field.id).data('dependency_list', field.dependency_list)
-          .prepopulate($(field.dependency_ids.join(',')),
-              field.maxLength);
+        .prepopulate($(field.dependency_ids.join(',')),
+          field.maxLength);
     });
   }
 
@@ -326,8 +325,8 @@
             // Collision !!
             $field.addClass('error');
             $field.before(
-                $('<ul class="errorlist"><li/></ul>')
-                    .find('li').text(errorMsg).end()
+              $('<ul class="errorlist"><li/></ul>')
+                .find('li').text(errorMsg).end()
             );
           }
         },
@@ -340,27 +339,6 @@
           }
         }
       });
-    }
-  }
-
-  // If the Customer Care banner is present, animate it and handle closing.
-  function initAOABanner() {
-    var $banner = $('#banner'),
-      cssFrom = { top: -100 },
-      cssTo = { top: -10 };
-    if ($banner.length > 0) {
-      setTimeout(function() {
-        $banner
-            .css({ display: 'block' })
-            .css(cssFrom)
-            .animate(cssTo, 500)
-            .find('a.close').click(function(e) {
-              e.preventDefault();
-              $banner.animate(cssFrom, 500, 'swing', function() {
-                $banner.css({ display: 'none' });
-              });
-            });
-      }, 500);
     }
   }
 
@@ -460,7 +438,7 @@
         $.ajax({
           type: 'POST',
           url: post_url,
-          data: {csrfmiddlewaretoken: csrf},
+          data: { csrfmiddlewaretoken: csrf },
           success: function(response) {
             $('#' + checkbox_id).removeClass('markasready').addClass('yes');
             $('#' + checkbox_id).unbind('click');
@@ -480,10 +458,10 @@
       referrer = k.getReferrer(urlParams),
       query = k.getSearchQuery(urlParams, referrer);
     $('.document-vote form')
-        .append($('<input type="hidden" name="referrer"/>')
-            .attr('value', referrer))
-        .append($('<input type="hidden" name="query"/>')
-            .attr('value', query));
+      .append($('<input type="hidden" name="referrer"/>')
+        .attr('value', referrer))
+      .append($('<input type="hidden" name="query"/>')
+        .attr('value', query));
   }
 
   function initNeedsChange() {
@@ -531,9 +509,9 @@
       });
 
       if ($(this).is('.show')) {
-        $.cookie('show-editing-tools', 1, {path: '/'});
+        $.cookie('show-editing-tools', 1, { path: '/' });
       } else {
-        $.cookie('show-editing-tools', null, {path: '/'});
+        $.cookie('show-editing-tools', null, { path: '/' });
       }
     });
   }
@@ -557,18 +535,18 @@
     window.highlighting.updateEditor = updateHighlightingEditor;
 
     var switch_link = $('<a></a>')
-        .text(gettext('Toggle syntax highlighting'))
-        .css({textAlign: 'right', cursor: 'pointer', display: 'block'})
-        .click(function() {
-          if (editor_wrapper.css('display') === 'block') {
-            editor_wrapper.css('display', 'none');
-            $('#id_content').css('display', 'block');
-          } else {
-            updateHighlightingEditor();
-            editor_wrapper.css('display', 'block');
-            $('#id_content').css('display', 'none');
-          }
-        })
+      .text(gettext('Toggle syntax highlighting'))
+      .css({ textAlign: 'right', cursor: 'pointer', display: 'block' })
+      .click(function() {
+        if (editor_wrapper.css('display') === 'block') {
+          editor_wrapper.css('display', 'none');
+          $('#id_content').css('display', 'block');
+        } else {
+          updateHighlightingEditor();
+          editor_wrapper.css('display', 'block');
+          $('#id_content').css('display', 'none');
+        }
+      })
 
     var highlightingEnabled = function() {
       return editor_wrapper.css('display') === 'block';
@@ -580,11 +558,11 @@
 
     window.addEventListener('load', function() {
       var cm_editor = CodeMirror(document.getElementById('editor'), {
-        mode: {'name': 'sumo'},
+        mode: { 'name': 'sumo' },
         value: $('#id_content').val(),
         lineNumbers: true,
         lineWrapping: true,
-        extraKeys: {'Ctrl-Space': 'autocomplete'}
+        extraKeys: { 'Ctrl-Space': 'autocomplete' }
       });
       window.highlighting.editor = cm_editor;
 
@@ -607,9 +585,9 @@
     }
     if ($doc.is('.locked')) {
       var $inputs = $doc.find('input:enabled, textarea:enabled')
-          .prop('disabled', true);
+        .prop('disabled', true);
     }
-    $('#unlock-button').on('click', function () {
+    $('#unlock-button').on('click', function() {
       $inputs.prop('disabled', false);
       $doc.removeClass('locked');
       $('#locked-warning').slideUp(500);
@@ -631,14 +609,14 @@
 
     if ($diff.length > 0) {
       $contentOrDiff
-          .append($diff.clone())
-          .append(
-              $('<a/>')
-                  .text(gettext('Toggle Diff'))
-                  .click(function(e) {
-                    e.preventDefault();
-                    $contentOrDiff.toggleClass('content diff');
-                  }));
+        .append($diff.clone())
+        .append(
+          $('<a/>')
+            .text(gettext('Toggle Diff'))
+            .click(function(e) {
+              e.preventDefault();
+              $contentOrDiff.toggleClass('content diff');
+            }));
     }
   }
 
@@ -647,9 +625,9 @@
       url = $('.btn-draft').data('draft-url'),
       $draftMessage = $('#draft-message');
 
-    $draftButton.click( function() {
+    $draftButton.click(function() {
       var message = gettext('<strong>Draft is saving...</strong>'),
-        image = '<img src="/static/sumo/img/customercare/spinner.gif">',
+        image = '<img src="/static/sumo/img/spinner.gif">',
         bothData = $('#both_form').serializeArray(),
         docData = $('#doc_form').serializeArray(),
         revData = $('#rev_form').serializeArray(),
@@ -688,7 +666,7 @@
 
       // scroll to the top.
       var scrollPos = Math.min($(document).scrollTop(),
-          $('#revision-list').offset().top);
+        $('#revision-list').offset().top);
       $(document).scrollTop(scrollPos);
       history.replaceState({}, '', url);
       $('#revisions-fragment').css('opacity', 0);
@@ -764,7 +742,7 @@
       }
     });
 
-    $form.find('input[type=date]').attr('type','text').datepicker();
+    $form.find('input[type=date]').attr('type', 'text').datepicker();
   }
 
   $(document).ready(init);

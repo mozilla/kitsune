@@ -255,7 +255,6 @@ def document(request, document_slug, document=None):
         "redirected_from": redirected_from,
         "contributors": contributors,
         "fallback_reason": fallback_reason,
-        "is_aoa_referral": request.GET.get("ref") == "aoa",
         "product_topics": product_topics,
         "product": product,
         "products": products,
