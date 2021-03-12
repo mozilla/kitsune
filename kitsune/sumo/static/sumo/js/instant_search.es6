@@ -177,7 +177,7 @@
         }
         search.unsetParam("page");
         search.setParams(params);
-        let query = $this.val();
+        let query = $this.val().trim();
         queries.push(query);
         search.query(query, k.InstantSearchSettings.render);
         trackEvent('Instant Search', 'Search', search.lastQueryUrl());
