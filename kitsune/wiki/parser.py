@@ -4,6 +4,7 @@ from xml.sax.saxutils import quoteattr
 
 from django.conf import settings
 
+import bleach
 from html5lib import HTMLParser
 from html5lib.filters.alphabeticalattributes import Filter as sortAttributes
 from html5lib.serializer import HTMLSerializer
@@ -11,10 +12,11 @@ from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
+from wikimarkup.parser import ALLOWED_TAGS
 
 from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
-from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, get_object_fallback
+from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, get_object_fallback, ALLOWED_STYLES
 from kitsune.sumo.utils import uselocale
 from kitsune.wiki.models import Document
 
@@ -199,12 +201,23 @@ class ForParser(object):
 
     def __str__(self):
         """Return the unicode serialization of myself."""
+        return self.serialize()
+
+    def serialize(self, **kwargs):
+        """Return the unicode serialization of myself, with optional sanitization arguments."""
         container_len = len(self.CONTAINER_TAG) + 2  # 2 for the <>
         walker = getTreeWalker(self.TREEBUILDER)
         stream = walker(self._root)
         stream = sortAttributes(stream)
         serializer = HTMLSerializer(quote_attr_values="always", omit_optional_tags=False)
-        return serializer.render(stream)[container_len : -container_len - 1]
+        html = serializer.render(stream)[container_len : -container_len - 1]
+        return bleach.clean(
+            html,
+            tags=kwargs.get("tags") or (ALLOWED_TAGS + ["for"]),
+            attributes=kwargs.get("attributes") or ALLOWED_ATTRIBUTES,
+            styles=kwargs.get("styles") or ALLOWED_STYLES,
+            strip_comments=True,
+        )
 
     @staticmethod
     def _on_own_line(match, postspace):
@@ -408,7 +421,7 @@ class WikiParser(sumo_parser.WikiParser):
         # Convert them to spans and divs:
         for_parser.expand_fors()
 
-        html = str(for_parser)
+        html = for_parser.serialize(**kwargs)
 
         html = self.add_youtube_embeds(html)
 

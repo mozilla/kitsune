@@ -717,7 +717,7 @@ class ForParserTests(TestCase):
 
     def test_well_formed(self):
         """Make sure the expander works on well-formed fragments."""
-        html = '<ul><li type="1"><br><for>One</for></li></ul>'
+        html = '<ul><li class="1"><br><for>One</for></li></ul>'
         balanced_eq(html, html)
 
     def test_document_mode(self):
