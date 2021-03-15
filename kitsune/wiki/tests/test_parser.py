@@ -342,8 +342,8 @@ class TestWikiTemplate(TestCase):
         content = p.parse(text)
         eq_(
             '<p><span class="button">start '
-            '<span data-for="mac" class="for">mac</span>'
-            '<span data-for="win" class="for">win</span> '
+            '<span class="for" data-for="mac">mac</span>'
+            '<span class="for" data-for="win">win</span> '
             "rest</span>\n</p>",
             content,
         )
@@ -762,7 +762,7 @@ class ForParserTests(TestCase):
     def test_data_attrs(self):
         """Make sure the data- attributes look good."""
         expanded_eq(
-            '<span data-for="mac,linux" class="for">One</span>',
+            '<span class="for" data-for="mac,linux">One</span>',
             '<for data-for="mac,linux">One</for>',
         )
 

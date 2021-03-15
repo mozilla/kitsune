@@ -5,6 +5,7 @@ from xml.sax.saxutils import quoteattr
 from django.conf import settings
 
 from html5lib import HTMLParser
+from html5lib.filters.alphabeticalattributes import Filter as sortAttributes
 from html5lib.serializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
@@ -201,6 +202,7 @@ class ForParser(object):
         container_len = len(self.CONTAINER_TAG) + 2  # 2 for the <>
         walker = getTreeWalker(self.TREEBUILDER)
         stream = walker(self._root)
+        stream = sortAttributes(stream)
         serializer = HTMLSerializer(quote_attr_values="always", omit_optional_tags=False)
         return serializer.render(stream)[container_len : -container_len - 1]
 
