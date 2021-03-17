@@ -163,7 +163,7 @@
             {% if num_documents %}
               <li>
                 <a href="{{ url('users.documents', profile.user.username) }}">
-                  {{ ngettext('{0} documents', '{0} documents', num_documents)|f(num_documents) }}
+                  {{ ngettext('{0} document', '{0} documents', num_documents)|f(num_documents) }}
                 </a>
               </li>
             {% endif %}
