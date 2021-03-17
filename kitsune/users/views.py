@@ -1,6 +1,5 @@
 import json
 from ast import literal_eval
-from urllib import parse
 
 import requests
 from django.conf import settings
@@ -123,7 +122,7 @@ def profile(request, username):
     # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
     # We do this to deal with legacy usernames that have a '+' in them.
 
-    username = parse.quote_plus(username)
+    username = username.replace(" ", "+")
 
     user = User.objects.filter(username=username).first()
 
@@ -191,7 +190,7 @@ def deactivation_log(request):
 @require_GET
 def documents_contributed(request, username):
     # plus sign (+) is converted to space
-    username = parse.quote_plus(username)
+    username = username.replace(" ", "+")
     user_profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
 
     return render(
