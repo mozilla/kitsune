@@ -42,9 +42,11 @@ class KitsuneBaseForumForm(forms.Form):
             raise forms.ValidationError("Something went terribly wrong. Please try again")
 
         # Exclude moderators and trusted contributors
-        if not self.user.groups.filter(
-            name__in=TRUSTED_GROUPS
-        ).exists() and check_for_spam_content(cdata):
+        if not (
+            self.user.groups.filter(name__in=TRUSTED_GROUPS).exists()
+            or self.user.has_perm("flagit.can_moderate")
+            or self.user.has_perm("sumo.bypass_ratelimit")
+        ) and check_for_spam_content(cdata):
             self.cleaned_data.update({"is_spam": True})
 
         return self.cleaned_data
