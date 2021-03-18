@@ -440,6 +440,7 @@ _CONTEXT_PROCESSORS = [
     "kitsune.sumo.context_processors.global_settings",
     "kitsune.sumo.context_processors.i18n",
     "kitsune.sumo.context_processors.aaq_languages",
+    "kitsune.sumo.context_processors.current_year",
     "kitsune.messages.context_processors.unread_message_count",
 ]
 
