@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.utils import translation
 
@@ -21,3 +23,7 @@ def i18n(request):
 def aaq_languages(request):
     """Adds the list of AAQ languages to the context."""
     return {"AAQ_LANGUAGES": QuestionLocale.objects.locales_list()}
+
+
+def current_year(request):
+    return {"CURRENT_YEAR": datetime.now().year}

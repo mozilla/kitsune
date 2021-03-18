@@ -304,15 +304,23 @@
       </div>
       <div class="mzp-c-footer-legal-col">
         <p>
-          {% trans %}
-            Visit <a href="https://www.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Corporation">Mozilla Corporation’s</a>
-            not-for-profit parent, the <a href="https://foundation.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Foundation">Mozilla Foundation</a>.
+          {% trans
+            moco_link_open='<a href="https://www.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Corporation">'|safe,
+            mofo_link_open='<a href="https://foundation.mozilla.org" rel="external noopener" data-link-type="footer" data-link-name="Mozilla Foundation">'|safe,
+            link_close='</a>'|safe
+          %}
+            Visit {{ moco_link_open }}Mozilla Corporation’s{{ link_close }}
+            not-for-profit parent, the {{ mofo_link_open }}Mozilla Foundation{{ link_close }}.
           {% endtrans %}
         </p>
         <p>
-          {% trans %}
-            Portions of this content are ©1998–2020 by individual mozilla.org contributors. Content available under a
-            <a rel="external noopener" href="https://www.mozilla.org/foundation/licensing/website-content/">Creative Commons license</a>.
+          {% trans
+            year=CURRENT_YEAR,
+            link_open='<a rel="external noopener" href="https://www.mozilla.org/foundation/licensing/website-content/">'|safe,
+            link_close='</a>'|safe
+          %}
+            Portions of this content are ©1998–{{ year }} by individual mozilla.org contributors. Content available under a
+            {{ link_open }}Creative Commons license{{ link_close }}.
           {% endtrans %}
         </p>
       </div>
