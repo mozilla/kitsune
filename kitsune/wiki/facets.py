@@ -1,13 +1,12 @@
 import hashlib
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.cache import cache
-from django.db.models import Count
-
-from elasticsearch.exceptions import TransportError
+from django.db.models import Count, Q
 
 from kitsune.products.models import Topic
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.models import Document, HelpfulVote
 
 
 def topics_for(product, parent=False):
@@ -73,64 +72,49 @@ def documents_for(locale, topics=None, products=None):
 def _documents_for(locale, topics=None, products=None):
     """Returns a list of articles that apply to passed in topics and products."""
     # First try to get the results from the cache
-    documents = cache.get(_documents_for_cache_key(locale, topics, products))
-    if documents:
+    cache_key = _cache_key(locale, topics, products)
+    documents_cache_key = f"documents_for:{cache_key}"
+    documents = cache.get(documents_cache_key)
+    if documents is not None:
         return documents
 
-    try:
-        # Then try ES
-        documents = _es_documents_for(locale, topics, products)
-        cache.add(_documents_for_cache_key(locale, topics, products), documents)
-    except TransportError:
-        # Finally, hit the database (through cache machine)
-        # NOTE: The documents will be the same ones returned by ES
-        # but they won't be in the correct sort (by votes in the last
-        # 30 days). It is better to return them in the wrong order
-        # than not to return them at all.
-        documents = _db_documents_for(locale, topics, products)
-        cache.add(_documents_for_cache_key(locale, topics, products), documents)
-
-    return documents
-
-
-def _es_documents_for(locale, topics=None, products=None):
-    """ES implementation of documents_for."""
-    s = (
-        DocumentMappingType.search()
-        .values_dict("id", "document_title", "url", "document_parent_id", "document_summary")
-        .filter(
-            document_locale=locale,
-            document_is_archived=False,
-            document_category__in=settings.IA_DEFAULT_CATEGORIES,
-        )
+    qs = (
+        Document.objects.filter(
+            locale=locale,
+            is_archived=False,
+            current_revision__isnull=False,
+            category__in=settings.IA_DEFAULT_CATEGORIES,
+        ).select_related("current_revision", "parent")
+        # speed up query by removing any ordering, since we're doing it in python:
+        .order_by()
     )
-
     for topic in topics or []:
-        s = s.filter(topic=topic.slug)
+        # we need to filter against parent topics for localized articles
+        qs = qs.filter(Q(topics=topic) | Q(parent__topics=topic))
     for product in products or []:
-        s = s.filter(product=product.slug)
+        # we need to filter against parent products for localized articles
+        qs = qs.filter(Q(products=product) | Q(parent__products=product))
 
-    results = s.order_by("document_display_order", "-document_recent_helpful_votes")[:100]
-    results = DocumentMappingType.reshape(results)
-    return results
+    votes_cache_key = f"votes_for:{cache_key}"
+    votes_dict = cache.get(votes_cache_key)
+    if votes_dict is None:
+        votes_query = (
+            HelpfulVote.objects.filter(
+                revision_id__in=qs.values_list("current_revision_id", flat=True),
+                created__gt=datetime.now() - timedelta(days=30),
+                helpful=True,
+            )
+            .values("revision_id")
+            .annotate(count=Count("*"))
+            .values("revision_id", "count")
+        )
+        votes_dict = {row["revision_id"]: row["count"] for row in votes_query}
+        # the votes query is rather expensive, and only used for ordering,
+        # so we can cache it rather aggressively
+        cache.set(votes_cache_key, votes_dict, timeout=settings.CACHE_LONG_TIMEOUT)
 
-
-def _db_documents_for(locale, topics=None, products=None):
-    """DB implementation of documents_for."""
-    qs = Document.objects.filter(
-        locale=locale,
-        is_archived=False,
-        current_revision__isnull=False,
-        category__in=settings.IA_DEFAULT_CATEGORIES,
-    ).prefetch_related("current_revision")
-    for topic in topics or []:
-        qs = qs.filter(topics=topic)
-    for product in products or []:
-        qs = qs.filter(products=product)
-
-    # Convert the results to a dicts to look like the ES results.
     doc_dicts = []
-    for d in qs.distinct():
+    for d in qs:
         doc_dicts.append(
             dict(
                 id=d.id,
@@ -138,13 +122,19 @@ def _db_documents_for(locale, topics=None, products=None):
                 url=d.get_absolute_url(),
                 document_parent_id=d.parent_id,
                 document_summary=d.current_revision.summary,
+                display_order=d.original.display_order,
+                helpful_votes=votes_dict.get(d.current_revision_id, 0),
             )
         )
 
+    # sort the results by ascending display_order and descending votes
+    doc_dicts.sort(key=lambda x: (x["display_order"], -x["helpful_votes"]))
+
+    cache.set(documents_cache_key, doc_dicts)
     return doc_dicts
 
 
-def _documents_for_cache_key(locale, topics, products):
+def _cache_key(locale, topics, products):
     m = hashlib.md5()
     key = "{locale}:{topics}:{products}:new".format(
         locale=locale,
@@ -153,4 +143,4 @@ def _documents_for_cache_key(locale, topics, products):
     )
 
     m.update(key.encode())
-    return "documents_for:%s" % m.hexdigest()
+    return m.hexdigest()

@@ -134,9 +134,11 @@ class Document(
     contributors = models.ManyToManyField(User)
 
     # List of products this document applies to.
+    # Children should query their parents for this.
     products = models.ManyToManyField(Product)
 
     # List of product-specific topics this document applies to.
+    # Children should query their parents for this.
     topics = models.ManyToManyField(Topic)
 
     # Needs change fields.
@@ -149,6 +151,7 @@ class Document(
     share_link = models.CharField(max_length=24, default="")
 
     # Dictates the order in which articles are displayed.
+    # Children should query their parents for this.
     display_order = models.IntegerField(default=1, db_index=True)
 
     # List of related documents
