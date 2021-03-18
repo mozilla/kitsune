@@ -5,7 +5,7 @@ from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.v2.base import SumoSearch
-from kitsune.search.v2.documents import QuestionDocument, WikiDocument
+from kitsune.search.v2.documents import ProfileDocument, QuestionDocument, WikiDocument
 from kitsune.sumo.urlresolvers import reverse
 
 QUESTION_DAYS_DELTA = 365 * 2
@@ -156,6 +156,42 @@ class WikiSearch(SumoSearch):
             "score": hit.meta.score,
             "title": hit.title[self.locale],
             "search_summary": summary,
+        }
+
+
+class ProfileSearch(SumoSearch):
+    """Search over User Profiles."""
+
+    def get_index(self):
+        return ProfileDocument.Index.read_alias
+
+    def get_fields(self):
+        return ["username", "name"]
+
+    def get_highlight_fields(self):
+        return []
+
+    def get_filter(self, **kwargs):
+        return DSLQ(
+            "boosting",
+            positive=self.build_query(**kwargs),
+            negative=DSLQ(
+                "bool",
+                must_not=DSLQ("terms", group_ids=kwargs.get("group_ids", [])),
+            ),
+            negative_boost=0.5,
+        )
+
+    def get_highlight_options(self):
+        return {}
+
+    def make_result(self, hit):
+        return {
+            "type": "user",
+            "avatar": getattr(hit, "avatar", None),
+            "username": hit.username,
+            "name": getattr(hit, "name", ""),
+            "user_id": hit.meta.id,
         }
 
 
