@@ -176,7 +176,7 @@ tag::
     {% trans user=request.user.username %}
         Thanks for registering, {{ user }}! We're so...
         hope that you'll...
-    {% trans %}
+    {% endtrans %}
 
 
 You can also provide comments::
@@ -185,8 +185,16 @@ You can also provide comments::
     {% trans user=request.user.username %}
         Thanks for registering, {{ user }}! We're so...
         hope that you'll...
-    {% trans %}
+    {% endtrans %}
 
+
+When a block contains HTML with attributes,
+those which don't need to be localized should be passed as arguments.
+This ensures strings won't need to be re-localized if those attributes change::
+
+    {% trans url="http://example.com" %}
+        Please visit <a href="{{ url }}" title="External Site">our FAQ</a> for more information.
+    {% endtrans %}
 
 Strings in Python
 -----------------
