@@ -179,16 +179,6 @@ PIPELINE_JS = {
         "source_filenames": ("sumo/js/wiki.dashboard.js",),
         "output_filename": "build/wiki.dashboard-min.js",
     },
-    "customercare": {
-        "source_filenames": (
-            "sumo/js/libs/jquery.cookie.js",
-            "sumo/js/libs/jquery.bullseye-1.0.min.js",
-            "sumo/js/libs/twitter-text.js",
-            "sumo/js/customercare.js",
-            "sumo/js/users.js",
-        ),
-        "output_filename": "build/customercare-min.js",
-    },
     "users": {
         "source_filenames": (
             "sumo/js/users.js",

@@ -963,29 +963,6 @@ THUMBNAIL_PROGRESS_WIDTH = 32  # width of the above image
 THUMBNAIL_PROGRESS_HEIGHT = 32  # height of the above image
 VIDEO_MAX_FILESIZE = 52428800  # 50 megabytes, in bytes
 
-# Customer Care settings
-CC_MAX_TWEETS = 500  # Max. no. of tweets in DB
-CC_TWEETS_PERPAGE = 100  # How many tweets to collect in one go. Max: 100.
-CC_SHOW_REPLIES = True  # Show replies to tweets?
-CC_ALLOW_REMOVE = True  # Allow users to hide tweets?
-
-CC_TOP_CONTRIB_CACHE_KEY = "sumo-cc-top-contrib-stats"
-CC_TOP_CONTRIB_SORT = "1w"
-CC_TOP_CONTRIB_LIMIT = 10
-CC_STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
-CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
-CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
-CC_TWEETS_DAYS = 7  # Limit tweets to those from the last 7 days.
-
-# If any of these words show up in a tweet, it probably isn't
-# actionable, so don't add it to the AoA.
-CC_WORD_BLACKLIST = [
-    "#UninstallFirefox",
-    "pocket",  # bug 1164008
-    "vagina",
-    "slut",
-]
-
 BITLY_API_URL = config("BITLY_API_URL", default="http://api.bitly.com/v3/shorten?callback=?")
 BITLY_LOGIN = config("BITLY_LOGIN", default=None)
 BITLY_API_KEY = config("BITLY_API_KEY", default=None)
@@ -1199,7 +1176,6 @@ IMAGE_ATTACHMENT_USER_LIMIT = config("IMAGE_ATTACHMENT_USER_LIMIT", default=50, 
 # list of strings to match against user agent to block
 USER_AGENT_FILTERS = config("USER_AGENT_FILTERS", default="", cast=Csv())
 
-BADGE_LIMIT_ARMY_OF_AWESOME = config("BADGE_LIMIT_ARMY_OF_AWESOME", default=50, cast=int)
 BADGE_LIMIT_L10N_KB = config("BADGE_LIMIT_L10N_KB", default=10, cast=int)
 BADGE_LIMIT_SUPPORT_FORUM = config("BADGE_LIMIT_SUPPORT_FORUM", default=30, cast=int)
 BADGE_MAX_RECENT = config("BADGE_MAX_RECENT", default=15, cast=int)

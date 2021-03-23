@@ -5,9 +5,7 @@ from django.core.cache import cache
 from django.core.management import call_command
 from nose.tools import eq_
 
-from kitsune.customercare.tests import ReplyFactory
 from kitsune.kpi.models import (
-    AOA_CONTRIBUTORS_METRIC_CODE,
     EXIT_SURVEY_DONT_KNOW_CODE,
     EXIT_SURVEY_NO_CODE,
     EXIT_SURVEY_YES_CODE,
@@ -35,7 +33,6 @@ class KpiApiTests(TestCase):
         return click_kind, search_kind
 
     def _make_contributor_metric_kinds(self):
-        MetricKindFactory(code=AOA_CONTRIBUTORS_METRIC_CODE)
         MetricKindFactory(code=KB_ENUS_CONTRIBUTORS_METRIC_CODE)
         MetricKindFactory(code=KB_L10N_CONTRIBUTORS_METRIC_CODE)
         MetricKindFactory(code=SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE)
@@ -257,9 +254,6 @@ class KpiApiTests(TestCase):
         u3 = UserFactory()
         AnswerFactory(creator=u3)
 
-        # An AoA reply (1 contributor):
-        ReplyFactory()
-
         # Create metric kinds and update metrics for tomorrow (today's
         # activity shows up tomorrow).
         self._make_contributor_metric_kinds()
@@ -270,7 +264,6 @@ class KpiApiTests(TestCase):
         eq_(r["objects"][0]["en_us"], 2)
         eq_(r["objects"][0]["non_en_us"], 2)
         eq_(r["objects"][0]["support_forum"], 1)
-        eq_(r["objects"][0]["aoa"], 1)
 
     def test_asker_replies_arent_a_contribution(self):
         """Verify that replies posted by the question creator aren't counted.

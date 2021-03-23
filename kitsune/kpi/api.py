@@ -17,7 +17,6 @@ from kitsune.kpi.models import (
     Metric,
     MetricKind,
     RetentionMetric,
-    AOA_CONTRIBUTORS_METRIC_CODE,
     KB_ENUS_CONTRIBUTORS_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_METRIC_CODE,
     L10N_METRIC_CODE,
@@ -218,7 +217,6 @@ class ContributorsMetricList(CachedAPIView):
     * en-US KB contributors
     * non-en-US contributors
     * Support Forum contributors
-    * Army of Awesome contributors
     """
 
     def get_objects(self, request):
@@ -232,9 +230,6 @@ class ContributorsMetricList(CachedAPIView):
         kind = MetricKind.objects.get(code=SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE)
         answers = Metric.objects.filter(kind=kind).order_by("-start")
 
-        kind = MetricKind.objects.get(code=AOA_CONTRIBUTORS_METRIC_CODE)
-        aoa = Metric.objects.filter(kind=kind).order_by("-start")
-
         # Put all the results in a dict with the date as the key.
         results_dict = {}
 
@@ -245,7 +240,6 @@ class ContributorsMetricList(CachedAPIView):
         merge_results(en_us, "en_us")
         merge_results(l10n, "non_en_us")
         merge_results(answers, "support_forum")
-        merge_results(aoa, "aoa")
 
         # Convert that to a list of dicts.
         results_list = [dict(date=k, **v) for k, v in list(results_dict.items())]
