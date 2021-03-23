@@ -41,7 +41,7 @@ from kitsune.questions.utils import mark_content_as_spam, num_answers, num_quest
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, simple_paginate
+from kitsune.sumo.utils import get_next_url, simple_paginate, paginate
 from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
@@ -187,15 +187,51 @@ def deactivation_log(request):
     return render(request, "users/deactivation_log.html", {"deactivations": deactivations})
 
 
+def questions(request, username):
+    # plus sign (+) is converted to space
+    username = username.replace(" ", "+")
+    profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
+
+    questions = paginate(request, profile.user.questions.order_by("-created"))
+
+    return render(
+        request,
+        "users/questions.html",
+        {
+            "profile": profile,
+            "questions": questions,
+        },
+    )
+
+
+def answers(request, username):
+    # plus sign (+) is converted to space
+    username = username.replace(" ", "+")
+    profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
+
+    # don't paginate this, we have contributors with an incredible number of questions answered
+    # which means the later pages would create queries taking > 10 seconds to run
+    answers = profile.user.answers.order_by("-created").select_related("question")[:100]
+
+    return render(
+        request,
+        "users/answers.html",
+        {
+            "profile": profile,
+            "answers": answers,
+        },
+    )
+
+
 @require_GET
-def documents_contributed(request, username):
+def documents(request, username):
     # plus sign (+) is converted to space
     username = username.replace(" ", "+")
     user_profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
 
     return render(
         request,
-        "users/documents_contributed.html",
+        "users/documents.html",
         {
             "profile": user_profile,
             "documents": user_documents(user_profile.user),

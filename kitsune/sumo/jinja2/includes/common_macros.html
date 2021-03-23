@@ -178,7 +178,7 @@
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
                 <li><a href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
-                <li><a href="{{ url('search.advanced')|urlparams(a=1, asked_by=user, w=2) }}">{{ _('My Questions') }}</a></li>
+                <li><a href="{{ url('users.questions', user.username) }}">{{ _('My Questions') }}</a></li>
               </ul>
             </section>
           </div>

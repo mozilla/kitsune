@@ -574,9 +574,7 @@ def aaq(request, product_key=None, category_key=None, step=1):
             # Submitting the question counts as a vote
             question_vote(request, question.id)
 
-            my_questions_url = urlparams(
-                reverse("search.advanced"), a=1, asked_by=request.user, w=2
-            )
+            my_questions_url = reverse("users.questions", args=[request.user.username])
             messages.add_message(
                 request,
                 messages.SUCCESS,

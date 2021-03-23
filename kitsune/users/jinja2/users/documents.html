@@ -1,0 +1,46 @@
+{% extends "users/base_contributions.html" %}
+{% set title = _("{user} | Documents")|f(user=display_name(profile.user)) %}
+{% set canonical_url = canonicalize(viewname="users.documents", username=profile.user.username) %}
+
+{% block contributions %}
+  <h2 class="sumo-page-subheading">{{ _("Documents edited or translated") }}</h2>
+  {% for group in documents|groupby("locale") %}
+    {% if loop.first %}
+    <ul class="mzp-u-list-styled">
+    {% endif %}
+      <li>[{{ group.grouper }}] {{ settings.LANGUAGES_DICT[group.grouper.lower()] }} ({{ group.list|length }})
+        <ul>
+        {% for d in group.list %}
+          <li>
+            <a href="{{ d.get_absolute_url() }}">
+              {{ d.title }}
+            </a>
+          </li>
+        {% endfor %}
+        </ul>
+      </li>
+    {% if loop.last %}
+    </ul>
+    {% endif %}
+  {% endfor %}
+  {% for group in redirects|groupby("locale") %}
+    {% if loop.first %}
+    <h2 class="sumo-page-subheading">{{ _("Redirects") }}</h2>
+    <ul class="mzp-u-list-styled">
+    {% endif %}
+      <li>[{{ group.grouper }}] {{ settings.LANGUAGES_DICT[group.grouper.lower()] }} ({{ group.list|length }})
+        <ul class="mzp-u-list-styled">
+        {% for d in group.list %}
+          <li>
+            <a href="{{ d.get_absolute_url() }}">
+              {{ d.title }}
+            </a>
+          </li>
+        {% endfor %}
+        </ul>
+      </li>
+    {% if loop.last %}
+    </ul>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
