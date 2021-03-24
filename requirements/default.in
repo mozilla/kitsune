@@ -1,5 +1,5 @@
 APScheduler~=3.6.3
-Django~=2.2.12
+Django~=2.2.19
 Pillow~=8.1.2
 Werkzeug~=1.0.1
 babis~=0.2.4
@@ -7,7 +7,7 @@ bleach~=3.3.0
 boto3>=1.2.3  # pip-compile does not handle extras properly (django-storages)
 celery==4.4.3
 commonware~=0.6.0
-cryptography~=3.3.2  # pip-compile does not handle extras properly (requests)
+cryptography~=3.4.6
 denniS~=0.9
 dj-database-url~=0.5.0
 django-activity-stream[jsonfield]~=0.8.0
@@ -47,7 +47,7 @@ httplib2~=0.19.0
 django-pipeline~=2.0.4
 idna~=2.9
 kombu==4.6.9
-lxml~=4.6.2
+lxml~=4.6.3
 meinheld~=1.0.2
 mozilla-django-oidc~=1.2.3
 mysqlclient~=1.4.6
@@ -57,14 +57,14 @@ parameterized~=0.7.4
 premailer~=3.7.0
 puente~=0.5.0
 py-wikimarkup~=2.0.1
-pyOpenSSL~=19.1.0
+pyOpenSSL~=20.0.0
 pyquery~=1.2.9
 python-dateutil~=2.8.1
 python-decouple~=3.3
 python-memcached~=1.59
 pytz~=2020.1
 redis~=3.5.2
-requests[security]~=2.23.0
+requests~=2.23.0
 sentry-sdk~=0.14.4
 simplejson~=3.17.0
 timeout-decorator
