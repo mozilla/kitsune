@@ -14,9 +14,9 @@ api_patterns = [
 # These will all start with /user/<user_id>/
 detail_patterns = [
     url(r"^$", views.profile, name="users.profile"),
-    url(r"^/questions$", views.questions, name="users.questions"),
-    url(r"^/answers$", views.answers, name="users.answers"),
-    url(r"^/documents$", views.documents, name="users.documents"),
+    url(r"^/questions$", views.questions_contributed, name="users.questions"),
+    url(r"^/answers$", views.answers_contributed, name="users.answers"),
+    url(r"^/documents$", views.documents_contributed, name="users.documents"),
     url(r"^/edit$", views.edit_profile, name="users.edit_profile"),
     # TODO:
     # url('^abuse', views.report_abuse, name='users.abuse'),

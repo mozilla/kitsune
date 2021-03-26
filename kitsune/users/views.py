@@ -13,7 +13,7 @@ from django.http import (
     HttpResponsePermanentRedirect,
     HttpResponseRedirect,
 )
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.translation import ugettext as _
@@ -42,6 +42,7 @@ from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate, paginate
+from kitsune.users.decorators import get_profile_from_url
 from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
@@ -116,28 +117,9 @@ def logout(request):
     return FXALogoutView.as_view()(request)
 
 
+@get_profile_from_url
 @require_GET
-def profile(request, username):
-    # The browser replaces '+' in URL's with ' ' but since we never have ' ' in
-    # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
-    # We do this to deal with legacy usernames that have a '+' in them.
-
-    username = username.replace(" ", "+")
-
-    user = User.objects.filter(username=username).first()
-
-    if not user:
-        try:
-            user = get_object_or_404(User, id=username)
-        except ValueError:
-            raise Http404("No Profile matches the given query.")
-        return redirect(reverse("users.profile", args=(user.username,)))
-
-    user_profile = get_object_or_404(Profile, user__id=user.id)
-
-    if not (request.user.has_perm("users.deactivate_users") or user_profile.user.is_active):
-        raise Http404("No Profile matches the given query.")
-
+def profile(request, user_profile):
     groups = user_profile.user.groups.all()
     return render(
         request,
@@ -187,51 +169,41 @@ def deactivation_log(request):
     return render(request, "users/deactivation_log.html", {"deactivations": deactivations})
 
 
-def questions(request, username):
-    # plus sign (+) is converted to space
-    username = username.replace(" ", "+")
-    profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
-
-    questions = paginate(request, profile.user.questions.order_by("-created"))
+@get_profile_from_url
+def questions_contributed(request, user_profile):
+    questions = paginate(request, user_profile.user.questions.order_by("-created"))
 
     return render(
         request,
-        "users/questions.html",
+        "users/questions_contributed.html",
         {
-            "profile": profile,
+            "profile": user_profile,
             "questions": questions,
         },
     )
 
 
-def answers(request, username):
-    # plus sign (+) is converted to space
-    username = username.replace(" ", "+")
-    profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
-
+@get_profile_from_url
+def answers_contributed(request, user_profile):
     # don't paginate this, we have contributors with an incredible number of questions answered
     # which means the later pages would create queries taking > 10 seconds to run
-    answers = profile.user.answers.order_by("-created").select_related("question")[:100]
+    answers = user_profile.user.answers.order_by("-created").select_related("question")[:100]
 
     return render(
         request,
-        "users/answers.html",
+        "users/answers_contributed.html",
         {
-            "profile": profile,
+            "profile": user_profile,
             "answers": answers,
         },
     )
 
 
-@require_GET
-def documents(request, username):
-    # plus sign (+) is converted to space
-    username = username.replace(" ", "+")
-    user_profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
-
+@get_profile_from_url
+def documents_contributed(request, user_profile):
     return render(
         request,
-        "users/documents.html",
+        "users/documents_contributed.html",
         {
             "profile": user_profile,
             "documents": user_documents(user_profile.user),
