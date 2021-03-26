@@ -44,10 +44,11 @@
                   {% if request.session.get('in-aaq') %}
                     {{ _('Never miss an answer. A free Firefox Account lets you view your question history and track or post responses.')}}
                   {% else %}
-                    {{ _('We upgraded our log-in system to replace Mozilla Support accounts with Firefox Accounts. Firefox Accounts
-                    offers one log-in for convenient and secure access to Mozilla services.') }}
-                    <a href="{{ url('wiki.document', 'firefox-accounts-mozilla-support-faq') }}"> {{ _('See our FAQ') }}</a>
-                    {{ _('for more information') }}.
+                    {% trans url=url('wiki.document', 'firefox-accounts-mozilla-support-faq') %}
+                      We've upgraded our log-in system to replace Mozilla Support accounts with Firefox Accounts.
+                      Firefox Accounts offers one log-in for convenient and secure access to Mozilla services.
+                      <a href="{{ url }}">See our FAQ</a> for more information.
+                    {% endtrans %}
                   {% endif %}
                 </p>
 
@@ -57,7 +58,14 @@
                   </p>
 
                   <p class="help-text">
-                    {{ auth_page_help_text|safe  }}
+                    {% trans
+                      terms_url="https://www.mozilla.org/about/legal/terms/services/",
+                      privacy_url="https://www.mozilla.org/privacy/firefox/"
+                    %}
+                      Continuing with Firefox Accounts means you have agreed with the
+                      <a href="{{ terms_url }}">Terms and Conditions</a> and
+                      <a href="{{ privacy_url }}">Privacy Policy</a>.
+                    {% endtrans %}
                   </p>
                 </div>
               </div>
