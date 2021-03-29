@@ -1,7 +1,6 @@
 import json
 import logging
 import random
-import time
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
@@ -41,7 +40,6 @@ from kitsune.questions.forms import (
     AnswerForm,
     EditQuestionForm,
     NewQuestionForm,
-    StatsForm,
     WatchQuestionForm,
 )
 from kitsune.questions.models import (
@@ -49,11 +47,9 @@ from kitsune.questions.models import (
     AnswerVote,
     Question,
     QuestionLocale,
-    QuestionMappingType,
     QuestionVote,
 )
 from kitsune.questions.utils import get_mobile_product_from_ua
-from kitsune.search.es_utils import ES_EXCEPTIONS, F, Sphilastic
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -1283,103 +1279,6 @@ def answer_preview_async(request):
     return render(request, template, {"answer_preview": answer})
 
 
-def stats_topic_data(bucket_days, start, end, locale=None, product=None):
-    """Gets a zero filled histogram for each question topic.
-
-    Uses elastic search.
-    """
-    search = Sphilastic(QuestionMappingType)
-
-    bucket = 24 * 60 * 60 * bucket_days
-
-    # datetime is a subclass of date.
-    if isinstance(start, date):
-        start = int(time.mktime(start.timetuple()))
-    if isinstance(end, date):
-        end = int(time.mktime(end.timetuple()))
-
-    f = F(model="questions_question")
-    f &= F(created__gt=start)
-    f &= F(created__lt=end)
-
-    if locale:
-        f &= F(question_locale=locale)
-
-    if product:
-        f &= F(product=product.slug)
-
-    topics = Topic.objects.values("slug", "title")
-    facets = {}
-    # TODO: If we change to using datetimes in ES, 'histogram' below
-    # should change to 'date_histogram'.
-    for topic in topics:
-        filters = search._process_filters([f & F(topic=topic["slug"])])
-        facets[topic["title"]] = {
-            "histogram": {"interval": bucket, "field": "created"},
-            "facet_filter": filters,
-        }
-
-    # Get some sweet histogram data.
-    search = search.facet_raw(**facets).values_dict()
-    try:
-        histograms_data = search.facet_counts()
-    except ES_EXCEPTIONS:
-        return []
-
-    # The data looks like this right now:
-    # {
-    #   'topic-1': [{'key': 1362774285, 'count': 100}, ...],
-    #   'topic-2': [{'key': 1362774285, 'count': 100}, ...],
-    # }
-
-    # Massage the data to achieve 2 things:
-    # - All points between the earliest and the latest values have data,
-    #   at a resolution of 1 day.
-    # - It is in a format usable by k.Graph.
-    #   - ie: [{"created": 1362774285, 'topic-1': 10, 'topic-2': 20}, ...]
-
-    for series in histograms_data.values():
-        if series["entries"]:
-            earliest_point = series["entries"][0]["key"]
-            break
-    else:
-        return []
-
-    latest_point = earliest_point
-    interim_data = {}
-
-    for key, data in histograms_data.items():
-        if not data:
-            continue
-        for point in data:
-            timestamp = point["key"]
-            value = point["count"]
-
-            earliest_point = min(earliest_point, timestamp)
-            latest_point = max(latest_point, timestamp)
-
-            datum = interim_data.get(timestamp, {"date": timestamp})
-            datum[key] = value
-            interim_data[timestamp] = datum
-
-    # Interim data is now like
-    # {
-    #   1362774285: {'date': 1362774285, 'topic-1': 100, 'topic-2': 200},
-    # }
-
-    # Zero fill the interim data.
-    timestamp = earliest_point
-    while timestamp <= latest_point:
-        datum = interim_data.get(timestamp, {"date": timestamp})
-        for key in histograms_data.keys():
-            if key not in datum:
-                datum[key] = 0
-        timestamp += bucket
-
-    # The keys are irrelevant, and the values are exactly what we want.
-    return list(interim_data.values())
-
-
 def metrics(request, locale_code=None):
     """The Support Forum metrics dashboard."""
     template = "questions/metrics.html"
@@ -1388,26 +1287,7 @@ def metrics(request, locale_code=None):
     if product:
         product = get_object_or_404(Product, slug=product)
 
-    form = StatsForm(request.GET)
-    if form.is_valid():
-        bucket_days = form.cleaned_data["bucket"]
-        start = form.cleaned_data["start"]
-        end = form.cleaned_data["end"]
-    else:
-        bucket_days = 1
-        start = date.today() - timedelta(days=30)
-        end = date.today()
-
-    graph_data = stats_topic_data(bucket_days, start, end, locale_code, product)
-
-    for group in graph_data:
-        for name, count in list(group.items()):
-            if count == 0:
-                del group[name]
-
     data = {
-        "graph": graph_data,
-        "form": form,
         "current_locale": locale_code,
         "product": product,
         "products": Product.objects.filter(visible=True),

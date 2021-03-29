@@ -55,42 +55,6 @@
       </div>
     </div>
   </section>
-
-  <section class="sumo-page-section">
-    <h2 class="sumo-page-subheading">{{ _('Topics') }}</h2>
-  {% if graph %}
-    <div id="topic-stats" data-graph="{{ graph|json }}">
-      <div class="sumo-l-two-col">
-        <div class="sumo-l-two-col--main alpha">
-          <div class="graph-container">
-            <div class="graph"></div>
-          </div>
-        </div>
-
-        <div class="controls sumo-l-two-col--sidebar omega">
-          <div class="legend"></div>
-          <div class="search">
-            <form>
-              <ul>
-                {{ form.as_ul() }}
-                <li><input type="submit" /></li>
-              </ul>
-              {% if product %}
-                <input type="hidden" name="product" value="{{ product.slug }}" />
-              {% endif %}
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  {% else %}
-  <div class="mzp-c-notification-bar">
-    <p>
-      {{ _('There is no topic data available for the current selections.') }}
-    </p>
-  </div>
-  {% endif %}
-</section>
 {% endblock %}
 
 {% block side %}
