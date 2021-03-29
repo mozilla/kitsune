@@ -13,9 +13,6 @@ from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
-from kitsune.search.es_utils import ES_EXCEPTIONS
-from kitsune.search.tasks import index_task
-from kitsune.search.utils import to_class_path
 
 log = logging.getLogger("k.task")
 
@@ -64,47 +61,6 @@ def update_question_vote_chunk(data):
     cursor.execute(sql)
     if not transaction.get_connection().in_atomic_block:
         transaction.commit()
-
-    # Next we update our index with the changes we made directly in
-    # the db.
-    if data and settings.ES_LIVE_INDEXING:
-        # Get the data we just updated from the database.
-        sql = (
-            """
-            SELECT id, num_votes_past_week
-            FROM questions_question
-            WHERE id in (%s);
-            """
-            % ids
-        )
-        cursor = connection.cursor()
-        cursor.execute(sql)
-
-        # Since this returns (id, num_votes_past_week) tuples, we can
-        # convert that directly to a dict.
-        id_to_num = dict(cursor.fetchall())
-
-        try:
-            # Fetch all the documents we need to update.
-            from kitsune.questions.models import QuestionMappingType
-            from kitsune.search import es_utils
-
-            es_docs = es_utils.get_documents(QuestionMappingType, data)
-
-            # For each document, update the data and stick it back in the
-            # index.
-            for doc in es_docs:
-                # Note: Need to keep this in sync with
-                # Question.extract_document.
-                num = id_to_num[int(doc["id"])]
-                doc["question_num_votes_past_week"] = num
-
-                QuestionMappingType.index(doc, id_=doc["id"])
-        except ES_EXCEPTIONS:
-            # Something happened with ES, so let's push index updating
-            # into an index_task which retries when it fails because
-            # of ES issues.
-            index_task.delay(to_class_path(QuestionMappingType), list(id_to_num.keys()))
 
 
 @task(rate_limit="4/m")
