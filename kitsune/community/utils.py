@@ -1,6 +1,5 @@
 import hashlib
 from datetime import date, datetime, timedelta, timezone
-from operator import itemgetter
 
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -8,7 +7,7 @@ from django.core.cache import cache
 from django.db.models import Count
 
 from kitsune.products.models import Product
-from kitsune.users.models import CONTRIBUTOR_GROUP, User, UserMappingType
+from kitsune.users.models import CONTRIBUTOR_GROUP, User
 from kitsune.wiki.models import Revision
 
 from elasticsearch_dsl import A
@@ -112,11 +111,10 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
     return top_contributors[count * (page - 1) :], total_contributors
 
 
-def top_contributors_kb(start=None, end=None, product=None, count=10, page=1, use_cache=True):
+def top_contributors_kb(**kwargs):
     """Get the top KB editors (locale='en-US')."""
-    return top_contributors_l10n(
-        start, end, settings.WIKI_DEFAULT_LANGUAGE, product, count, use_cache
-    )
+    kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
+    return top_contributors_l10n(**kwargs)
 
 
 def top_contributors_l10n(
@@ -155,54 +153,24 @@ def top_contributors_l10n(
         User.objects.filter(created_revisions__in=revisions)
         .annotate(query_count=Count("created_revisions"))
         .order_by("-query_count")
+        .select_related("profile")
     )
-    counts = _get_creator_counts(users, count, page)
+    total = users.count()
+
+    results = [
+        {
+            "term": user.pk,
+            "count": user.query_count,
+            "user": {
+                "id": user.pk,
+                "username": user.username,
+                "display_name": user.profile.display_name,
+                "avatar": user.profile.fxa_avatar,
+            },
+        }
+        for user in users[(page - 1) * count : page * count]
+    ]
 
     if use_cache:
-        cache.set(cache_key, counts, settings.CACHE_MEDIUM_TIMEOUT)
-    return counts
-
-
-def _get_creator_counts(query, count, page):
-    total = query.count()
-
-    start = (page - 1) * count
-    end = page * count
-    query_data = query.values("id", "query_count")[start:end]
-
-    query_data = {obj["id"]: obj["query_count"] for obj in query_data}
-
-    users_data = (
-        UserMappingType.search()
-        .filter(id__in=list(query_data.keys()))
-        .values_dict(
-            "id",
-            "username",
-            "display_name",
-            "avatar",
-            "last_contribution_date",
-        )[:count]
-    )
-
-    users_data = UserMappingType.reshape(users_data)
-
-    results = []
-    now = datetime.now()
-
-    for u_data in users_data:
-        user_id = u_data.get("id")
-        last_contribution_date = u_data.get("last_contribution_date", None)
-
-        u_data["days_since_last_activity"] = (
-            (now - last_contribution_date).days if last_contribution_date else None
-        )
-
-        data = {"count": query_data.get(user_id), "term": user_id, "user": u_data}
-
-        results.append(data)
-
-    # Descending Order the list according to count.
-    # As the top number of contributor should be at first
-    results = sorted(results, key=itemgetter("count"), reverse=True)
-
+        cache.set(cache_key, (results, total), settings.CACHE_MEDIUM_TIMEOUT)
     return results, total
