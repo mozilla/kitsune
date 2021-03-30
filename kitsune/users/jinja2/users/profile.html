@@ -6,7 +6,6 @@
 {% set classes = 'profile' %}
 {% set canonical_url = canonicalize(viewname='users.profile', username=profile.user.username) %}
 {% set active = 'my-profile' %}
-{% set crumbs = [(None, profile.user.username)] %}
 {% set is_owner = profile and request.user == profile.user %}
 
 {% block breadcrumbs %}{% endblock %}
@@ -143,14 +142,14 @@
             {% endif %}
             {% if num_questions %}
               <li>
-                <a href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                <a href="{{ url('users.questions', profile.user.username) }}">
                   {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
                 </a>
               </li>
             {% endif %}
             {% if num_answers %}
               <li>
-                <a href="{{ url('search')|urlparams(answered_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                <a href="{{ url('users.answers', profile.user.username) }}">
                   {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
                 </a>
               </li>

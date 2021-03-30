@@ -1,0 +1,31 @@
+{% extends "users/base.html" %}
+{% set title = _("{user} | Questions")|f(user=display_name(profile.user)) %}
+{% set canonical_url = canonicalize(viewname="users.questions", username=profile.user.username) %}
+{% set active = "user-questions" %}
+
+{% block content %}
+  <article id="profile">
+    <h2 class="sumo-page-subheading">
+      {% if is_owner %}
+        {{ _("My Questions") }}
+      {% else %}
+        {{ _("Questions Asked") }}
+      {% endif %}
+    </h2>
+    {% if not questions %}
+      {% if is_owner %}
+        <p>{{ _("You haven't posted any questions yet.") }}</p>
+      {% else %}
+        <p>{{ _("{user} hasn't posted any questions yet.")|f(user=display_name(profile.user)) }}
+      {% endif %}
+    {% endif %}
+    <ul class="mzp-u-list-styled">
+      {% for question in questions %}
+        <a href="{{ url('questions.details', question.id) }}">
+          <li>{{ question.title }}</li>
+        </a>
+      {% endfor %}
+    </ul>
+    {{ questions|paginator }}
+  </article>
+{% endblock %}

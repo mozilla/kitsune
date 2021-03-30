@@ -1,0 +1,23 @@
+{% extends "users/base.html" %}
+{% set title = _("{user} | Latest Answers")|f(user=display_name(profile.user)) %}
+{% set canonical_url = canonicalize(viewname="users.answers", username=profile.user.username) %}
+
+{% block content %}
+  <article id="profile">
+    <h2 class="sumo-page-subheading">{{ _("Latest Answers") }}</h2>
+    {% if not answers %}
+      {% if is_owner %}
+        <p>{{ _("You haven't answered any questions yet.") }}</p>
+      {% else %}
+        <p>{{ _("{user} hasn't answered any questions yet.")|f(user=display_name(profile.user)) }}
+      {% endif %}
+    {% endif %}
+    <ul class="mzp-u-list-styled">
+      {% for answer in answers %}
+        <a href="{{ answer.get_absolute_url() }}">
+          <li>{{ answer.question.title }}</li>
+        </a>
+      {% endfor %}
+    </ul>
+  </article>
+{% endblock %}

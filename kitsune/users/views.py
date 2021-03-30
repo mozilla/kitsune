@@ -41,7 +41,7 @@ from kitsune.questions.utils import mark_content_as_spam, num_answers, num_quest
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, simple_paginate
+from kitsune.sumo.utils import get_next_url, simple_paginate, paginate
 from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
@@ -175,6 +175,42 @@ def deactivation_log(request):
         request, deactivations_qs, per_page=constants.DEACTIVATIONS_PER_PAGE
     )
     return render(request, "users/deactivation_log.html", {"deactivations": deactivations})
+
+
+def questions_contributed(request, username):
+    # plus sign (+) is converted to space
+    username = username.replace(" ", "+")
+    profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
+
+    questions = paginate(request, profile.user.questions.order_by("-created"))
+
+    return render(
+        request,
+        "users/questions_contributed.html",
+        {
+            "profile": profile,
+            "questions": questions,
+        },
+    )
+
+
+def answers_contributed(request, username):
+    # plus sign (+) is converted to space
+    username = username.replace(" ", "+")
+    profile = get_object_or_404(Profile, user__username=username, user__is_active=True)
+
+    # don't paginate this, we have contributors with an incredible number of questions answered
+    # which means the later pages would create queries taking > 10 seconds to run
+    answers = profile.user.answers.order_by("-created").select_related("question")[:100]
+
+    return render(
+        request,
+        "users/answers_contributed.html",
+        {
+            "profile": profile,
+            "answers": answers,
+        },
+    )
 
 
 @require_GET

@@ -70,7 +70,7 @@ def profile_avatar(user, size=200):
 def display_name(user):
     """Return a display name if set, else the username."""
     try:  # Also mostly for tests.
-        profile = Profile.objects.get(user_id=user.id)
+        profile = user.profile
     except (Profile.DoesNotExist, AttributeError):
         return user.username
     return profile.display_name if profile else user.username
