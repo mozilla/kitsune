@@ -2,6 +2,7 @@ from nose.tools import eq_
 
 from pyquery import PyQuery as pq
 
+from kitsune.customercare.tests import ReplyFactory
 from kitsune.forums.tests import ThreadFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests.test_es import ElasticTestCase
@@ -60,6 +61,10 @@ class LandingTests(ElasticTestCase):
         AnswerFactory()
         AnswerFactory()
         AnswerFactory()
+        ReplyFactory()
+        ReplyFactory()
+        ReplyFactory()
+        ReplyFactory()
 
         self.refresh()
 
@@ -69,6 +74,7 @@ class LandingTests(ElasticTestCase):
         eq_(1, len(doc("ul.kb > li")))
         eq_(2, len(doc("ul.l10n > li")))
         eq_(3, len(doc("ul.questions > li")))
+        eq_(4, len(doc("ul.army-of-awesome > li")))
 
     def test_wiki_section(self):
         """Verify the wiki doc appears on the landing page."""
@@ -114,6 +120,21 @@ class TopContributorsTests(ElasticTestCase):
             urlparams(reverse("community.top_contributors", args=["foobar"]))
         )
         eq_(404, response.status_code)
+
+    def test_top_army_of_awesome(self):
+        r1 = ReplyFactory()
+        r2 = ReplyFactory()
+
+        self.refresh()
+
+        response = self.client.get(
+            urlparams(reverse("community.top_contributors", args=["army-of-awesome"]))
+        )
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(2, len(doc("li.results-user")))
+        assert str(r1.user.username) in response.content
+        assert str(r2.user.username) in response.content
 
     def test_top_questions(self):
         a1 = AnswerFactory()

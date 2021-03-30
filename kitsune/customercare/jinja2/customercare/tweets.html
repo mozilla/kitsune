@@ -1,0 +1,44 @@
+{% for tweet in tweets -%}
+  <div class="tweet{% if tweet.reply_to %} reply{% endif %}{% if tweet.hidden %} hidden-reply{% endif %} cf" data-tweet-id="{{ tweet.id }}" id="tweet-{{ tweet.id }}">
+    <a href="https://twitter.com/{{ tweet.user }}" class="avatar" target="_blank">
+      <img src="{{ tweet.profile_img }}" alt="{{ tweet.user }}" />
+    </a>
+    <div class="tweet-contents">
+      <a href="https://twitter.com/{{ tweet.user }}/status/{{ tweet.id }}" class="tweet-time" target="_blank">
+        <time datetime="{{ tweet.date|isotime }}">{{ tweet.date|utctimesince }}</time>
+      </a>
+
+      <a href="https://twitter.com/{{ tweet.user }}" class="user-meta" target="_blank">
+        <span class="twittername">@{{ tweet.user }}</span>
+      </a>
+
+      <p class="text">{{ tweet.text|safe }}</p>
+
+      {% if settings.CC_SHOW_REPLIES %}
+        <span class="reply-button">{{ _('Reply') }}</span>
+      {% endif %}
+
+      {% if tweet.replies %}
+        <span class="reply-count">
+          {% if tweet.reply_count > 1 %}
+            {{ ngettext('{0} and {1} other replied', '{0} and {1} others replied',
+                    tweet.reply_count - 1)|f(tweet.replies[-1].user, tweet.reply_count - 1) }}
+          {% else %}
+            {{ _('{0} replied')|f(tweet.replies[0].user) }}
+          {% endif %}
+        </span>
+      {% endif %}
+
+      {% if authed and settings.CC_ALLOW_REMOVE and not (tweet.reply_to or tweet.replies) and not tweet.hidden %}
+        <a class="remove-tweet btn" href="{{ url('customercare.hide_tweet') }}" title="{{ _("This tweet doesn't need a response") }}">{{ _('Remove') }}</a>
+      {% endif %}
+    </div>
+  </div>
+  <div id="replies_{{ tweet.id }}" class="replies" data-tweet-id="{{ tweet.id }}" style="display: none;">
+    {% if tweet.replies %}
+      {% with tweets = tweet.replies %}
+        {% include 'customercare/tweets.html' %}
+      {% endwith %}
+    {% endif %}
+  </div>
+{% endfor %}

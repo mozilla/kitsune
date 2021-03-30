@@ -4,6 +4,7 @@ from rest_framework import routers
 from kitsune.kpi import api
 from kitsune.kpi.models import (
     CONTRIBUTORS_CSAT_METRIC_CODE,
+    AOA_CONTRIBUTORS_CSAT_METRIC_CODE,
     SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE,
     KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE,
@@ -17,6 +18,11 @@ urlpatterns = [
         r"^api/v1/kpi/csat-contributors/?$",
         api.CSATMetricList.as_view(code=CONTRIBUTORS_CSAT_METRIC_CODE),
         name="api.kpi.csat-contributors",
+    ),
+    url(
+        r"^api/v1/kpi/csat-contributors/aoa/?$",
+        api.CSATMetricList.as_view(code=AOA_CONTRIBUTORS_CSAT_METRIC_CODE),
+        name="api.kpi.csat-contributors-aoa",
     ),
     url(
         r"^api/v1/kpi/csat-contributors/support-forum/?$",

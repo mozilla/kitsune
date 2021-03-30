@@ -1,0 +1,41 @@
+{% if user.is_authenticated %}
+  {% set title = _('Connect to your Twitter account') %}
+{% else %}
+  {% set title = _('Sign in to Mozilla Support') %}
+{% endif %}
+<div id="twitter-modal" class="kbox" title="{{ title }}" data-modal="true" data-authed="{{ authed }}" data-twitter-user="{{ twitter_user }}">
+  <div class="inner-container">
+    {% if user.is_authenticated %}
+      <p>{% trans %}
+        Before you join, you need to give Army of Awesome the permission to post
+        tweets on your behalf.{% endtrans %}
+      </p>
+      <p>{% trans %}
+        You will always control every tweet you post. {% endtrans %}
+        <strong>{% trans %}
+          Army of Awesome will never tweet without your permission.{% endtrans %}
+        </strong>
+      </p>
+      <a href="?twitter_auth_request=1" class="btn btn-submit btn-modal signin-twitter">
+        {{ _('Sign in') }}
+      </a>
+    {% else %}
+      <p>
+        {{ _('Before you connect to Twitter, you must sign in to Mozilla Support.') }}
+      </p>
+      <p>
+        {{ _('Are you registered with Mozilla Support?') }}
+      </p>
+      <div>
+        <a href="{{ url('users.login') }}" class="btn btn-submit btn-modal signin-sumo">
+          <span class="highlight">{{ _('Yes, I am.') }}</span>
+          {{ _('Click to sign in.') }}
+        </a>
+        <a href="{{ url('users.fxa_authentication_init') }}?is_contributor=True" class="btn btn-submit btn-modal register">
+          <span class="highlight">{{ _("No, I'm not.") }}</span>
+          {{ _('Click to register.') }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>

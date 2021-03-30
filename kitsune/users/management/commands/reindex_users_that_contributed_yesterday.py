@@ -40,4 +40,7 @@ class Command(BaseCommand):
             )
         )
 
+        # Note:
+        # Army of Awesome replies are live indexed. No need to do anything here.
+
         index_task.delay(to_class_path(UserMappingType), list(set(user_ids)))

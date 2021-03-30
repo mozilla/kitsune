@@ -137,6 +137,11 @@ let chartSetups = {
         name: gettext('Support Forums'),
         slug: 'support_forum',
         func: k.Graph.identity('support_forum')
+      },
+      {
+        name: gettext('Army of Awesome'),
+        slug: 'aoa',
+        func: k.Graph.identity('aoa')
       }
     ]
   },

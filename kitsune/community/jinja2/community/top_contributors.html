@@ -6,6 +6,8 @@
   {% set title = _('Top Contributors - Knowledge Base') %}
 {% elif area == 'l10n' %}
   {% set title = _('Top Contributors - Localization') %}
+{% elif area == 'army-of-awesome' %}
+  {% set title = _('Top Contributors - Army of Awesome') %}
 {% endif %}
 {% set crumbs = [(url('community.home'), _('Community Hub')),
                  (None, title)] %}
@@ -55,8 +57,8 @@
         </div>
       {% endif %}
 
-      {# Product Filter #}
-      {% if products %}
+      {# Product Filter - Not included in Army of Awesome leaderboard. #}
+      {% if products and area != 'army-of-awesome' %}
         <div class="selector">
           <button type="button" class="ts-select-trigger">
             <!-- arrow icon using icon font -->

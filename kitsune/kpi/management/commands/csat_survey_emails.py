@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from kitsune.customercare.models import Reply
 from kitsune.kpi.management import utils
 from kitsune.kpi.surveygizmo_utils import SURVEYS
 from kitsune.questions.models import Answer
@@ -15,6 +16,7 @@ class Command(BaseCommand):
         querysets = [
             (Revision.objects.all(), ("creator", "reviewer")),
             (Answer.objects.not_by_asker(), ("creator",)),
+            (Reply.objects.all(), ("user",)),
         ]
 
         end = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)

@@ -51,6 +51,7 @@ urlpatterns = [
     # v1 APIs
     url(r"^api/1/kb/", include("kitsune.wiki.urls_api")),
     url(r"^api/1/products/", include("kitsune.products.urls_api")),
+    url(r"^api/1/customercare/", include("kitsune.customercare.urls_api")),
     url(r"^api/1/gallery/", include("kitsune.gallery.urls_api")),
     url(r"^api/1/users/", include("kitsune.users.urls_api")),
     # v2 APIs

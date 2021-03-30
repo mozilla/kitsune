@@ -163,6 +163,12 @@ def top_contributors_l10n(
     return counts
 
 
+def top_contributors_aoa(start=None, end=None, locale=None, count=10, page=1, use_cache=True):
+    """Get the top Army of Awesome contributors."""
+    # AoA is deprecated, return 0 until we remove all related code.
+    return ([], 0)
+
+
 def _get_creator_counts(query, count, page):
     total = query.count()
 
@@ -180,6 +186,7 @@ def _get_creator_counts(query, count, page):
             "username",
             "display_name",
             "avatar",
+            "twitter_usernames",
             "last_contribution_date",
         )[:count]
     )

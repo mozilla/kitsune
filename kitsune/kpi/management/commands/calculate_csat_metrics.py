@@ -5,6 +5,7 @@ import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from kitsune.kpi.models import (
+    AOA_CONTRIBUTORS_CSAT_METRIC_CODE,
     CONTRIBUTORS_CSAT_METRIC_CODE,
     KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE,
@@ -28,6 +29,7 @@ class Command(BaseCommand):
         csat = {
             CONTRIBUTORS_CSAT_METRIC_CODE: 0,
             SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+            AOA_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
             KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
             KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
         }
@@ -35,6 +37,7 @@ class Command(BaseCommand):
         counts = {
             CONTRIBUTORS_CSAT_METRIC_CODE: 0,
             SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+            AOA_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
             KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
             KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
         }
@@ -76,6 +79,10 @@ class Command(BaseCommand):
                     else:
                         csat[CONTRIBUTORS_CSAT_METRIC_CODE] += rating
                         counts[CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+
+                        if len(r["[question(4), option(10010)]"]):  # Army of Awesome
+                            csat[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                            counts[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
 
                         if len(r["[question(4), option(10011)]"]):  # Support Forum
                             csat[SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
