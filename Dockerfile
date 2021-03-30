@@ -24,7 +24,7 @@ ENV PATH="/venv/bin:$PATH"
 
 RUN python -m venv /venv
 RUN mkdir /vendor
-RUN pip install --upgrade "pip==21.0.1"
+RUN pip install --upgrade "pip==20.2.4"
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && \
