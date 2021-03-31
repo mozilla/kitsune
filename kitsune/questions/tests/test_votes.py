@@ -1,9 +1,8 @@
 from django.core.management import call_command
 from nose.tools import eq_
 
-from kitsune.questions.models import Question, QuestionMappingType
+from kitsune.questions.models import Question
 from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory, TestCaseBase
-from kitsune.search.tests.test_es import ElasticTestCase
 
 
 class TestVotes(TestCaseBase):
@@ -31,31 +30,3 @@ class TestVotes(TestCaseBase):
 
         q = Question.objects.get(pk=q.pk)
         eq_(1, q.num_votes_past_week)
-
-
-class TestVotesWithElasticSearch(ElasticTestCase):
-    def test_cron_updates_counts(self):
-        q = QuestionFactory()
-        self.refresh()
-
-        eq_(q.num_votes_past_week, 0)
-        # NB: Need to call .values_dict() here and later otherwise we
-        # get a Question object which has data from the database and
-        # not the index.
-        document = (QuestionMappingType.search().filter(id=q.id))[0]
-
-        eq_(document["question_num_votes_past_week"], 0)
-
-        QuestionVoteFactory(question=q, anonymous_id="abc123")
-        q.num_votes_past_week = 0
-        q.save()
-
-        call_command("update_weekly_votes")
-        self.refresh()
-
-        q = Question.objects.get(pk=q.pk)
-        eq_(1, q.num_votes_past_week)
-
-        document = (QuestionMappingType.search().filter(id=q.id))[0]
-
-        eq_(document["question_num_votes_past_week"], 1)
