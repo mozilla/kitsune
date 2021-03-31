@@ -58,7 +58,6 @@ urlpatterns = [
     url(r"^api/2/", include("kitsune.notifications.urls_api")),
     url(r"^api/2/", include("kitsune.questions.urls_api")),
     url(r"^api/2/", include("kitsune.search.urls_api")),
-    url(r"^api/2/", include("kitsune.community.urls_api")),
     url(r"^api/2/", include("kitsune.sumo.urls_api")),
     # These API urls include both v1 and v2 urls.
     url(r"^api/", include("kitsune.users.urls_api")),
