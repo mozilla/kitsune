@@ -18,6 +18,7 @@ from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
 from django.urls import resolve
+from django.utils.translation import pgettext, override as translation_override
 from elasticsearch7 import ElasticsearchException
 from product_details import product_details
 from taggit.models import Tag, TaggedItem
@@ -491,6 +492,17 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         )
 
     @property
+    def _content_for_related(self):
+        """Text to use in elastic more_like_this query."""
+        content = [self.title, self.content]
+        if self.topic:
+            with translation_override(self.locale):
+                # use the question's locale, rather than the user's
+                content += [pgettext("DB: products.Topic.title", self.topic.title)]
+
+        return content
+
+    @property
     def related_documents(self):
         """Return documents that are 'morelikethis' one"""
         if not self.product:
@@ -514,8 +526,14 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 .filter("term", product_ids=self.product.id)
                 .query(
                     "more_like_this",
-                    fields=[f"title.{self.locale}", f"content.{self.locale}"],
-                    like=[self.title, self.content],
+                    fields=[
+                        f"title.{self.locale}",
+                        f"content.{self.locale}",
+                        f"summary.{self.locale}",
+                        f"keywords.{self.locale}",
+                    ],
+                    like=self._content_for_related,
+                    max_query_terms=15,
                 )
                 .source([f"slug.{self.locale}", f"title.{self.locale}"])
             )
@@ -562,7 +580,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 .query(
                     "more_like_this",
                     fields=[f"question_title.{self.locale}", f"question_content.{self.locale}"],
-                    like=[self.title, self.content],
+                    like=self._content_for_related,
+                    max_query_terms=15,
                 )
                 .source(["question_id", "question_title"])
             )
