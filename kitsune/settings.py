@@ -89,6 +89,9 @@ CACHES = {
         },
     },
 }
+CACHE_SHORT_TIMEOUT = config("CACHE_SHORT_TIMEOUT", cast=int, default=60 * 60)  # 1 hour
+CACHE_MEDIUM_TIMEOUT = config("CACHE_MEDIUM_TIMEOUT", cast=int, default=60 * 60 * 3)  # 3 hours
+CACHE_LONG_TIMEOUT = config("CACHE_LONG_TIMEOUT", cast=int, default=60 * 60 * 24)  # 24 hours
 
 CACHE_MIDDLEWARE_SECONDS = config(
     "CACHE_MIDDLEWARE_SECONDS", default=(2 * 60 * 60) if READ_ONLY else 0, cast=int
