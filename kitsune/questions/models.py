@@ -18,6 +18,7 @@ from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
 from django.urls import resolve
+from elasticsearch7 import ElasticsearchException
 from product_details import product_details
 from taggit.models import Tag, TaggedItem
 
@@ -26,7 +27,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
 from kitsune.questions.tasks import update_answer_pages, update_question_votes
-from kitsune.search.es_utils import ES_EXCEPTIONS, UnindexMeBro
+from kitsune.search.es_utils import UnindexMeBro
 from kitsune.search.models import (
     SearchMappingType,
     SearchMixin,
@@ -41,12 +42,12 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
-from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.questions")
 
 
 CACHE_TIMEOUT = 10800  # 3 hours
+RELATED_CACHE_TIMEOUT = 60 * 60 * 24  # 24 hours
 VOTE_METADATA_MAX_LENGTH = 1000
 
 
@@ -504,32 +505,31 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             )
             return documents
 
+        # avoid circular import issue
+        from kitsune.search.v2.documents import WikiDocument
+
         try:
-            s = Document.get_mapping_type().search()
-            documents = (
-                s.values_dict("id", "document_title", "url")
-                .filter(
-                    document_locale=self.locale,
-                    document_is_archived=False,
-                    document_category__in=settings.IA_DEFAULT_CATEGORIES,
-                    product__in=[self.product.slug],
-                )
+            search = (
+                WikiDocument.search()
+                .filter("term", product_ids=self.product.id)
                 .query(
-                    __mlt={
-                        "fields": [
-                            "document_title",
-                            "document_summary",
-                            "document_content",
-                        ],
-                        "like_text": self.title,
-                        "min_term_freq": 1,
-                        "min_doc_freq": 1,
-                    }
-                )[:3]
+                    "more_like_this",
+                    fields=[f"title.{self.locale}", f"content.{self.locale}"],
+                    like=[self.title, self.content],
+                )
+                .source([f"slug.{self.locale}", f"title.{self.locale}"])
             )
-            documents = list(documents)
-            cache.add(key, documents)
-        except ES_EXCEPTIONS:
+            documents = [
+                {
+                    "url": reverse(
+                        "wiki.document", args=[hit.slug[self.locale]], locale=self.locale
+                    ),
+                    "title": hit.title[self.locale],
+                }
+                for hit in search[:3].execute().hits
+            ]
+            cache.set(key, documents, RELATED_CACHE_TIMEOUT)
+        except ElasticsearchException:
             log.exception("ES MLT related_documents")
             documents = []
 
@@ -550,31 +550,31 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             )
             return questions
 
-        try:
-            max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
-            start_date = int(time.time()) - max_age
+        # avoid circular import issue
+        from kitsune.search.v2.documents import QuestionDocument
 
-            s = self.get_mapping_type().search()
-            questions = (
-                s.values_dict("id", "question_title", "url")
-                .filter(
-                    question_locale=self.locale,
-                    product__in=[self.product.slug],
-                    question_has_helpful=True,
-                    created__gte=start_date,
-                )
+        try:
+            search = (
+                QuestionDocument.search()
+                .filter("term", question_product_id=self.product.id)
+                .exclude("exists", field="updated")
+                .exclude("term", _id=self.id)
                 .query(
-                    __mlt={
-                        "fields": ["question_title", "question_content"],
-                        "like_text": self.title,
-                        "min_term_freq": 1,
-                        "min_doc_freq": 1,
-                    }
-                )[:3]
+                    "more_like_this",
+                    fields=[f"question_title.{self.locale}", f"question_content.{self.locale}"],
+                    like=[self.title, self.content],
+                )
+                .source(["question_id", "question_title"])
             )
-            questions = list(questions)
-            cache.add(key, questions)
-        except ES_EXCEPTIONS:
+            questions = [
+                {
+                    "url": reverse("questions.details", kwargs={"question_id": hit.question_id}),
+                    "title": hit.question_title[self.locale],
+                }
+                for hit in search[:3].execute().hits
+            ]
+            cache.set(key, questions, RELATED_CACHE_TIMEOUT)
+        except ElasticsearchException:
             log.exception("ES MLT related_questions")
             questions = []
 

@@ -541,12 +541,12 @@
         <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('See also') }}</li>
         {% for q in related_questions %}
         <li class="related-question">
-          <a href="{{ q.url[0] }}">{{ q.question_title[0] }}</a>
+          <a href="{{ q.url }}">{{ q.title }}</a>
         </li>
         {% endfor %}
         {% for d in related_documents %}
         <li class="related-document">
-          <a href="{{ d.url[0] }}">{{ d.document_title[0] }}</a>
+          <a href="{{ d.url}}">{{ d.title }}</a>
         </li>
         {% endfor %}
         {% endif %}
