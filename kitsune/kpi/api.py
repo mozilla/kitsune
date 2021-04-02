@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 from operator import itemgetter
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import connections, router
 from django.db.models import Count, F
@@ -51,7 +52,7 @@ class CachedAPIView(APIView):
         objs = cache.get(cache_key)
         if objs is None:
             objs = self.get_objects(request)
-            cache.add(cache_key, objs, 60 * 60 * 3)
+            cache.add(cache_key, objs, settings.CACHE_MEDIUM_TIMEOUT)
 
         return Response({"objects": objs})
 

@@ -46,9 +46,6 @@ from kitsune.upload.models import ImageAttachment
 
 log = logging.getLogger("k.questions")
 
-
-CACHE_TIMEOUT = 10800  # 3 hours
-RELATED_CACHE_TIMEOUT = 60 * 60 * 24  # 24 hours
 VOTE_METADATA_MAX_LENGTH = 1000
 
 
@@ -351,7 +348,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             contributors = self.answers.all().values_list("creator_id", flat=True)
             contributors = list(contributors)
             contributors.append(self.creator_id)
-            cache.add(cache_key, contributors, CACHE_TIMEOUT)
+            cache.add(cache_key, contributors, settings.CACHE_MEDIUM_TIMEOUT)
         return contributors
 
     @property
@@ -369,7 +366,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         tags = cache.get(cache_key)
         if tags is None:
             tags = list(self.tags.all().order_by("name"))
-            cache.add(cache_key, tags, CACHE_TIMEOUT)
+            cache.add(cache_key, tags, settings.CACHE_MEDIUM_TIMEOUT)
         return tags
 
     @classmethod
@@ -546,7 +543,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 }
                 for hit in search[:3].execute().hits
             ]
-            cache.set(key, documents, RELATED_CACHE_TIMEOUT)
+            cache.set(key, documents, settings.CACHE_LONG_TIMEOUT)
         except ElasticsearchException:
             log.exception("ES MLT related_documents")
             documents = []
@@ -592,7 +589,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 }
                 for hit in search[:3].execute().hits
             ]
-            cache.set(key, questions, RELATED_CACHE_TIMEOUT)
+            cache.set(key, questions, settings.CACHE_LONG_TIMEOUT)
         except ElasticsearchException:
             log.exception("ES MLT related_questions")
             questions = []
@@ -697,7 +694,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         images = cache.get(cache_key)
         if images is None:
             images = list(self.images.all())
-            cache.add(cache_key, images, CACHE_TIMEOUT)
+            cache.add(cache_key, images, settings.CACHE_MEDIUM_TIMEOUT)
         return images
 
 
@@ -1153,7 +1150,7 @@ class Answer(ModelBase, SearchMixin):
         images = cache.get(cache_key)
         if images is None:
             images = list(self.images.all())
-            cache.add(cache_key, images, CACHE_TIMEOUT)
+            cache.add(cache_key, images, settings.CACHE_MEDIUM_TIMEOUT)
         return images
 
     @classmethod
@@ -1401,7 +1398,7 @@ def _content_parsed(obj, locale):
     html = cache.get(cache_key)
     if html is None:
         html = wiki_to_html(obj.content, locale)
-        cache.add(cache_key, html, CACHE_TIMEOUT)
+        cache.add(cache_key, html, settings.CACHE_MEDIUM_TIMEOUT)
     return html
 
 

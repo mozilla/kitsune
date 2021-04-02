@@ -86,10 +86,6 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None, p
     return render(request, "dashboards/" + template, data)
 
 
-# Cache it all day to avoid calling Google Analytics over and over.
-CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
-
-
 def get_locales_by_visit(start_date, end_date):
     """Get a list of (locale, visits) tuples sorted descending by visits."""
 
@@ -101,7 +97,7 @@ def get_locales_by_visit(start_date, end_date):
             results = visitors_by_locale(start_date, end_date)
             locales_and_visits = list(results.items())
             sorted_locales = list(reversed(sorted(locales_and_visits, key=lambda x: x[1])))
-            cache.add(cache_key, sorted_locales, CACHE_TIMEOUT)
+            cache.add(cache_key, sorted_locales, settings.CACHE_LONG_TIMEOUT)
         except (GoogleAPIError, Oauth2Error, OpenSSLError):
             # Just return all locales with 0s for visits.
             log.exception(

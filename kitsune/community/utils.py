@@ -159,7 +159,7 @@ def top_contributors_l10n(
     counts = _get_creator_counts(users, count, page)
 
     if use_cache:
-        cache.set(cache_key, counts, 60 * 180)  # 3 hours
+        cache.set(cache_key, counts, settings.CACHE_MEDIUM_TIMEOUT)
     return counts
 
 
