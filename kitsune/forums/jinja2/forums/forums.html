@@ -4,14 +4,14 @@
 {% set crumbs = [(None, title)] %}
 {% set canonical_url = canonicalize(viewname='forums.forums') %}
 {% if forums.number > 1 %}
-  {% set canonical_url = canonical_url|urlparams(page=forums.number) %}
+{% set canonical_url = canonical_url|urlparams(page=forums.number) %}
 {% endif %}
 
 {% block content %}
-  <article class="sumo-page-section">
-    <div id="forums" class="content-box">
-      <h1 class="sumo-page-heading">{{ title }}</h1>
-      <div class="table-scroll">
+<article class="sumo-page-section">
+  <div id="forums" class="content-box">
+    <h1 class="sumo-page-heading">{{ title }}</h1>
+    <div class="table-scroll">
       <table>
         <thead>
           <tr class="forums-columns">
@@ -23,38 +23,38 @@
         {% if forums.object_list %}
         <tbody class="forums">
           {% for forum in forums.object_list %}
-            <tr>
-              <td class="name">
-                <h5 class="sumo-card-heading"><a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ forum.name }}</a></h5>
-                {{ forum.description|safe }}
-              </td>
-              <td class="threads">{{ forum.thread_count }}</td>
-              <td class="last-post">
-                {% if forum.last_post %}
-                  <a href="{{ forum.last_post.get_absolute_url() }}">
-                    {{ datetimeformat(forum.last_post.created) }}
-                  </a><br/>
-                  {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(forum.last_post.author), username=display_name(forum.last_post.author)) }}
-                {% else %}
-                  {# Not localized because it's not worth localizers time. #}
-                  No posts.
-                {% endif %}
-              </td>
-            </tr>
+          <tr>
+            <td class="name">
+              <h5 class="sumo-card-heading"><a
+                  href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ forum.name }}</a></h5>
+              {{ forum.description|safe }}
+            </td>
+            <td class="threads">{{ forum.thread_count }}</td>
+            <td class="last-post">
+              {% if forum.last_post %}
+              <a href="{{ forum.last_post.get_absolute_url() }}">
+                {{ datetimeformat(forum.last_post.created) }}
+              </a><br />
+              {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(forum.last_post.author), username=display_name(forum.last_post.author)) }}
+              {% else %}
+              {# Not localized because it's not worth localizers time. #}
+              No posts.
+              {% endif %}
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
-      </div>
-
-        {{ forums|paginator }}
-        {% else %}{# if forums #}
-        {# Not localized because it's not worth localizers time. #}
-        <p>There are no forums. You should create some!</p>
-      {% endif %}
     </div>
-  </article>
+    {{ forums|paginator }}
+    {% else %}{# if forums #}
+    {# Not localized because it's not worth localizers time. #}
+    <p>There are no forums. You should create some!</p>
+    {% endif %}
+  </div>
+</article>
 {% endblock %}
 
 {% block side %}
-  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
+{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
 {% endblock %}

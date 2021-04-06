@@ -1,0 +1,38 @@
+{% extends "search/base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% from "search/includes/result.html" import search_result with context %}
+{% set crumbs = [(url('forums.search', forum_slug=forum.slug), forum.name), (None, _('Results'))] %}
+
+{% block content %}
+<div id="search-results" class="sumo-page-section--inner">
+  {% if num_results > 0 %}
+  <p class="sumo-page-intro">
+    {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
+    {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong>',
+                      'Found <strong>{n}</strong> results for <strong>{q}</strong>',
+                      num_results)|fe(n=num_results, q=q) }}
+  </p>
+
+  <div class="content-box">
+    {% for doc in results %}
+    {{ search_result(doc) }}
+    {% endfor %}
+  </div>
+
+  {#  {{ pages|paginator }} #}
+  {% else %}
+  <p class="sumo-page-intro">
+    {{ _("Sorry! 0 results found for <strong>‘{q}’</strong>.")|fe(q=q) }}
+  </p>
+
+  <p>{{ _("Try searching again with different keywords.") }}</p>
+
+  {% endif %}
+</div>
+</div>
+{% endblock %}
+
+
+{% block side %}
+{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+{% endblock %}

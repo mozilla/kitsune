@@ -19,6 +19,7 @@ else:
 forum_patterns = [
     path("", views.threads, name="forums.threads"),
     path("new", views.new_thread, name="forums.new_thread"),
+    path("search", views.search, name="forums.search"),
     path("<int:thread_id>", views.posts, name="forums.posts"),
     path("<int:thread_id>/reply", views.reply, name="forums.reply"),
     path("feed", threads_feed_view, name="forums.threads.feed"),

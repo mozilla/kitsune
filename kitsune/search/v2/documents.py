@@ -371,6 +371,8 @@ class ForumDocument(SumoDocument):
 
     thread_title = field.Text()
     thread_forum_id = field.Keyword()
+    forum_slug = field.Keyword()
+    thread_id = field.Keyword()
     thread_created = field.Date()
     thread_creator_id = field.Keyword()
     thread_is_locked = field.Boolean()
@@ -385,6 +387,9 @@ class ForumDocument(SumoDocument):
     class Index:
         pass
 
+    def prepare_forum_slug(self, instance):
+        return instance.thread.forum.slug
+
     def get_field_value(self, field, instance, *args):
         if field.startswith("thread_"):
             instance = instance.thread
@@ -397,4 +402,4 @@ class ForumDocument(SumoDocument):
 
     @classmethod
     def get_queryset(cls):
-        return Post.objects.select_related("thread")
+        return Post.objects.prefetch_related("thread", "thread__forum")
