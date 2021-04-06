@@ -23,20 +23,22 @@
 
     // Add the IDs of extensions you want installed when the container is created.
     "extensions": [
-        "visualstudioexptteam.vscodeintellicode",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "esbenp.prettier-vscode",
-        "eamodio.gitlens",
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml",
-        "ms-vscode.vscode-typescript-next",
-        "donjayamanne.python-extension-pack",
-        "wholroyd.jinja",
-        "ms-vscode.js-debug-nightly",
-        "vscode-icons-team.vscode-icons",
-        "syler.sass-indented"
-    ],
+		"visualstudioexptteam.vscodeintellicode",
+		"ms-python.python",
+		"ms-python.vscode-pylance",
+		"esbenp.prettier-vscode",
+		"eamodio.gitlens",
+		"ms-azuretools.vscode-docker",
+		"redhat.vscode-yaml",
+		"ms-vscode.vscode-typescript-next",
+		"donjayamanne.python-extension-pack",
+		"wholroyd.jinja",
+		"ms-vscode.js-debug-nightly",
+		"vscode-icons-team.vscode-icons",
+		"syler.sass-indented",
+		"hookyqr.beautify",
+		"samuelcolvin.jinjahtml"
+	],
 
     // Uncomment the next line if you want start specific services in your Docker Compose config.
     "runServices": ["web"],
