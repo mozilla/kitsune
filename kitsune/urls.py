@@ -1,9 +1,9 @@
-from django.conf.urls import include, url
+import authority
 from django.conf import settings
+from django.conf.urls import include, url
+from django.urls import path
 from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
-
-import authority
 from waffle.views import wafflejs
 
 from kitsune.sumo import views as sumo_views
@@ -22,7 +22,7 @@ authority.autodiscover()
 
 urlpatterns = [
     url(r"^search", include("kitsune.search.urls")),
-    url(r"^forums", include("kitsune.forums.urls")),
+    path("forums/", include("kitsune.forums.urls")),
     url(r"^questions", include("kitsune.questions.urls")),
     url(r"^flagged", include("kitsune.flagit.urls")),
     url(r"^upload", include("kitsune.upload.urls")),

@@ -1,12 +1,12 @@
 from django.conf import settings
-from django.conf.urls import url, include
+from django.conf.urls import include
+from django.urls import path
 
-from kitsune.forums import views
-from kitsune.forums.feeds import ThreadsFeed, PostsFeed
-from kitsune.forums.models import Post
 from kitsune.flagit import views as flagit_views
+from kitsune.forums import views
+from kitsune.forums.feeds import PostsFeed, ThreadsFeed
+from kitsune.forums.models import Post
 from kitsune.sumo.views import handle404
-
 
 if settings.DISABLE_FEEDS:
     threads_feed_view = handle404
@@ -17,28 +17,28 @@ else:
 
 # These patterns inherit (?P<forum_slug>\d+).
 forum_patterns = [
-    url(r"^$", views.threads, name="forums.threads"),
-    url(r"^/new$", views.new_thread, name="forums.new_thread"),
-    url(r"^/(?P<thread_id>\d+)$", views.posts, name="forums.posts"),
-    url(r"^/(?P<thread_id>\d+)/reply$", views.reply, name="forums.reply"),
-    url(r"^/feed$", threads_feed_view, name="forums.threads.feed"),
-    url(r"^/(?P<thread_id>\d+)/feed$", posts_feed_view, name="forums.posts.feed"),
-    url(r"^/(?P<thread_id>\d+)/lock$", views.lock_thread, name="forums.lock_thread"),
-    url(r"^/(?P<thread_id>\d+)/sticky$", views.sticky_thread, name="forums.sticky_thread"),
-    url(r"^/(?P<thread_id>\d+)/edit$", views.edit_thread, name="forums.edit_thread"),
-    url(r"^/(?P<thread_id>\d+)/delete$", views.delete_thread, name="forums.delete_thread"),
-    url(r"^/(?P<thread_id>\d+)/move$", views.move_thread, name="forums.move_thread"),
-    url(r"^/(?P<thread_id>\d+)/(?P<post_id>\d+)/edit$", views.edit_post, name="forums.edit_post"),
-    url(
-        r"^/(?P<thread_id>\d+)/(?P<post_id>\d+)/delete$",
+    path("", views.threads, name="forums.threads"),
+    path("new/", views.new_thread, name="forums.new_thread"),
+    path("<int:thread_id>/", views.posts, name="forums.posts"),
+    path("<int:thread_id>/reply/", views.reply, name="forums.reply"),
+    path("feed/", threads_feed_view, name="forums.threads.feed"),
+    path("<int:thread_id>/feed/", posts_feed_view, name="forums.posts.feed"),
+    path("<int:thread_id>/lock/", views.lock_thread, name="forums.lock_thread"),
+    path("<int:thread_id>/sticky/", views.sticky_thread, name="forums.sticky_thread"),
+    path("<int:thread_id>/edit/", views.edit_thread, name="forums.edit_thread"),
+    path("<int:thread_id>/delete/", views.delete_thread, name="forums.delete_thread"),
+    path("<int:thread_id>/move/", views.move_thread, name="forums.move_thread"),
+    path("<int:thread_id>/<int:post_id>/edit/", views.edit_post, name="forums.edit_post"),
+    path(
+        "<int:thread_id>/<int:post_id>/delete/",
         views.delete_post,
         name="forums.delete_post",
     ),
-    url(r"^/(?P<thread_id>\d+)/watch", views.watch_thread, name="forums.watch_thread"),
-    url(r"^/watch", views.watch_forum, name="forums.watch_forum"),
+    path("<int:thread_id>/watch/", views.watch_thread, name="forums.watch_thread"),
+    path("watch/", views.watch_forum, name="forums.watch_forum"),
     # Flag posts
-    url(
-        r"^/(?P<thread_id>\d+)/(?P<object_id>\d+)/flag$",
+    path(
+        "<int:thread_id>/<int:object_id>/flag/",
         flagit_views.flag,
         {"model": Post},
         name="forums.flag_post",
@@ -46,7 +46,7 @@ forum_patterns = [
 ]
 
 urlpatterns = [
-    url(r"^$", views.forums, name="forums.forums"),
-    url(r"^/post-preview-async$", views.post_preview_async, name="forums.post_preview_async"),
-    url(r"^/(?P<forum_slug>[\w\-]+)", include(forum_patterns)),
+    path("", views.forums, name="forums.forums"),
+    path("post-preview-async/", views.post_preview_async, name="forums.post_preview_async"),
+    path("<slug:forum_slug>/", include(forum_patterns)),
 ]
