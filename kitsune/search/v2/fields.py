@@ -20,7 +20,12 @@ def _get_fields(field, locales, **params):
         if field is Text:
             analyzer = es_analyzer_for_locale(locale)
             search_analyzer = es_analyzer_for_locale(locale, search_analyzer=True)
-            field_obj = field(analyzer=analyzer, search_analyzer=search_analyzer, **params)
+            field_obj = field(
+                analyzer=analyzer,
+                search_analyzer=search_analyzer,
+                search_quote_analyzer=analyzer,
+                **params,
+            )
         else:
             field_obj = field(**params)
         data[locale] = field_obj
