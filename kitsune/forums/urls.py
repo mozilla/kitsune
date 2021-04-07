@@ -18,27 +18,27 @@ else:
 # These patterns inherit (?P<forum_slug>\d+).
 forum_patterns = [
     path("", views.threads, name="forums.threads"),
-    path("new/", views.new_thread, name="forums.new_thread"),
-    path("<int:thread_id>/", views.posts, name="forums.posts"),
-    path("<int:thread_id>/reply/", views.reply, name="forums.reply"),
-    path("feed/", threads_feed_view, name="forums.threads.feed"),
-    path("<int:thread_id>/feed/", posts_feed_view, name="forums.posts.feed"),
-    path("<int:thread_id>/lock/", views.lock_thread, name="forums.lock_thread"),
-    path("<int:thread_id>/sticky/", views.sticky_thread, name="forums.sticky_thread"),
-    path("<int:thread_id>/edit/", views.edit_thread, name="forums.edit_thread"),
-    path("<int:thread_id>/delete/", views.delete_thread, name="forums.delete_thread"),
-    path("<int:thread_id>/move/", views.move_thread, name="forums.move_thread"),
-    path("<int:thread_id>/<int:post_id>/edit/", views.edit_post, name="forums.edit_post"),
+    path("new", views.new_thread, name="forums.new_thread"),
+    path("<int:thread_id>", views.posts, name="forums.posts"),
+    path("<int:thread_id>/reply", views.reply, name="forums.reply"),
+    path("feed", threads_feed_view, name="forums.threads.feed"),
+    path("<int:thread_id>/feed", posts_feed_view, name="forums.posts.feed"),
+    path("<int:thread_id>/lock", views.lock_thread, name="forums.lock_thread"),
+    path("<int:thread_id>/sticky", views.sticky_thread, name="forums.sticky_thread"),
+    path("<int:thread_id>/edit", views.edit_thread, name="forums.edit_thread"),
+    path("<int:thread_id>/delete", views.delete_thread, name="forums.delete_thread"),
+    path("<int:thread_id>/move", views.move_thread, name="forums.move_thread"),
+    path("<int:thread_id>/<int:post_id>/edit", views.edit_post, name="forums.edit_post"),
     path(
-        "<int:thread_id>/<int:post_id>/delete/",
+        "<int:thread_id>/<int:post_id>/delete",
         views.delete_post,
         name="forums.delete_post",
     ),
-    path("<int:thread_id>/watch/", views.watch_thread, name="forums.watch_thread"),
-    path("watch/", views.watch_forum, name="forums.watch_forum"),
+    path("<int:thread_id>/watch", views.watch_thread, name="forums.watch_thread"),
+    path("watch", views.watch_forum, name="forums.watch_forum"),
     # Flag posts
     path(
-        "<int:thread_id>/<int:object_id>/flag/",
+        "<int:thread_id>/<int:object_id>/flag",
         flagit_views.flag,
         {"model": Post},
         name="forums.flag_post",
@@ -47,6 +47,6 @@ forum_patterns = [
 
 urlpatterns = [
     path("", views.forums, name="forums.forums"),
-    path("post-preview-async/", views.post_preview_async, name="forums.post_preview_async"),
+    path("post-preview-async", views.post_preview_async, name="forums.post_preview_async"),
     path("<slug:forum_slug>/", include(forum_patterns)),
 ]

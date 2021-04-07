@@ -1,19 +1,17 @@
 from datetime import datetime, timedelta
 
 from django.contrib.contenttypes.models import ContentType
-
 from nose.tools import eq_
 
 from kitsune.access.tests import PermissionFactory
 from kitsune.flagit.models import FlaggedObject
 from kitsune.forums import POSTS_PER_PAGE
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
-from kitsune.forums.models import Forum, Thread, Post
-from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
+from kitsune.forums.models import Forum, Post, Thread
+from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
-
 
 YESTERDAY = datetime.now() - timedelta(days=1)
 
@@ -22,7 +20,7 @@ class ForumModelTestCase(ForumTestCase):
     def test_forum_absolute_url(self):
         f = ForumFactory()
 
-        eq_("/forums/%s" % f.slug, f.get_absolute_url())
+        eq_("/forums/%s/" % f.slug, f.get_absolute_url())
 
     def test_thread_absolute_url(self):
         t = ThreadFactory()
