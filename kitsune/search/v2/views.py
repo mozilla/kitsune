@@ -3,15 +3,25 @@ from math import ceil
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.utils.translation import ugettext as _, pgettext
+from django.utils.translation import pgettext
+from django.utils.translation import ugettext as _
 
 from kitsune import search as constants
-from kitsune.search.forms import SimpleSearchForm
-from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.products.models import Product
-from kitsune.search.views import _fallback_results
+from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.utils import locale_or_default
 from kitsune.search.v2.search import CompoundSearch, QuestionSearch, WikiSearch
+from kitsune.search.views import _fallback_results
+from kitsune.sumo.api_utils import JSONRenderer
+
+
+def _get_product_title(product_title):
+    product = Product.objects.filter(slug__in=product_title).first()
+    if product:
+        product_titles = [pgettext("DB: products.Product.title", product.title)]
+    else:
+        product_titles = [_("All Products")]
+    return product, product_titles
 
 
 def simple_search(request):
@@ -30,12 +40,8 @@ def simple_search(request):
     language = locale_or_default(cleaned["language"] or request.LANGUAGE_CODE)
     lang_name = settings.LANGUAGES_DICT.get(language.lower()) or ""
 
-    # get product
-    product = Product.objects.filter(slug__in=cleaned["product"]).first()
-    if product:
-        product_titles = [pgettext("DB: products.Product.title", product.title)]
-    else:
-        product_titles = [_("All Products")]
+    # get product and product titles
+    product, product_titles = _get_product_title(cleaned["product"])
 
     # get page
     try:
@@ -76,7 +82,7 @@ def simple_search(request):
             {"slug": p.slug, "title": pgettext("DB: products.Product.title", p.title)}
             for p in Product.objects.filter(visible=True)
         ],
-        "pagination": _make_pagination(request, page, total),
+        "pagination": _make_pagination(page, total),
     }
     if product:
         data["product"] = product.slug
@@ -87,7 +93,7 @@ def simple_search(request):
     return HttpResponse(json_data, content_type="application/json")
 
 
-def _make_pagination(request, page, total):
+def _make_pagination(page, total):
     num_pages = ceil(total / 10)
 
     # logic copied from kitsune.sumo.templatetags.jinja_helper.Paginator

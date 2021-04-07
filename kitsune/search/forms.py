@@ -11,14 +11,11 @@ from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import TypedMultipleChoiceField
 from kitsune.wiki.config import CATEGORIES
 
-
 MAX_QUERY_LENGTH = 200
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for k in settings.SUMO_LANGUAGES]
 
 
-class SimpleSearchForm(forms.Form):
-    """Django form to handle the simple search case."""
-
+class BaseSearchForm(forms.Form):
     q = forms.CharField(required=True, max_length=MAX_QUERY_LENGTH)
 
     w = forms.TypedChoiceField(
@@ -33,6 +30,10 @@ class SimpleSearchForm(forms.Form):
             (constants.WHERE_DISCUSSION, None),
         ),
     )
+
+
+class SimpleSearchForm(BaseSearchForm):
+    """Django form to handle the simple search case."""
 
     explain = forms.BooleanField(required=False)
     all_products = forms.BooleanField(required=False)
@@ -70,32 +71,15 @@ class SimpleSearchForm(forms.Form):
             or "iphone" in lowered_q
         ):
             products.append("ios")
-        elif "firefox os" in lowered_q:
-            products.append("firefox-os")
         elif "firefox" in lowered_q:
             products.append("firefox")
         return products
 
 
-class AdvancedSearchForm(forms.Form):
+class AdvancedSearchForm(BaseSearchForm):
     """Django form for handling display and validation"""
 
     # Common fields
-    q = forms.CharField(required=False, max_length=MAX_QUERY_LENGTH)
-
-    w = forms.TypedChoiceField(
-        required=False,
-        coerce=int,
-        widget=forms.HiddenInput,
-        empty_value=constants.WHERE_BASIC,
-        choices=(
-            (constants.WHERE_SUPPORT, None),
-            (constants.WHERE_WIKI, None),
-            (constants.WHERE_BASIC, None),
-            (constants.WHERE_DISCUSSION, None),
-        ),
-    )
-
     # TODO: get rid of this.
     a = forms.IntegerField(required=False, widget=forms.HiddenInput)
 

@@ -329,8 +329,9 @@ class SumoSearch(ABC):
             self.get_filter(query=query, default_operator=default_operator, **kwargs)
         )
         # add highlights for the search class' highlight_fields
-        search = search.highlight(*self.get_highlight_fields(), **self.get_highlight_options())
-
+        if highlight_options := self.get_highlight_options():
+            highlight_options = highlight_options[0]
+        search = search.highlight(*self.get_highlight_fields(), **highlight_options)
         # do pagination
         start = (page - 1) * self.results_per_page
         search = search[start : start + self.results_per_page]

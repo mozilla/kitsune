@@ -1,12 +1,19 @@
 from datetime import datetime, timedelta, timezone
 
 import bleach
+from dateutil import parser
 from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.v2.base import SumoSearch
-from kitsune.search.v2.documents import ProfileDocument, QuestionDocument, WikiDocument
+from kitsune.search.v2.documents import (
+    ForumDocument,
+    ProfileDocument,
+    QuestionDocument,
+    WikiDocument,
+)
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.parser import wiki_to_html
 
 QUESTION_DAYS_DELTA = 365 * 2
 
@@ -195,6 +202,46 @@ class ProfileSearch(SumoSearch):
         }
 
 
+class ForumSearch(SumoSearch):
+    """Search over User Profiles."""
+
+    def get_index(self):
+        return ForumDocument.Index.read_alias
+
+    def get_fields(self):
+        return ["thread_title", "content"]
+
+    def get_highlight_fields(self):
+        return ["thread_title", "content"]
+
+    def get_filter(self, **kwargs):
+        # Add default filters:
+        filters = [
+            # limit scope to the Forum index
+            DSLQ("term", _index=self.get_index())
+        ]
+
+        if thread_forum_id := kwargs.get("thread_forum_id"):
+            filters.append(DSLQ("term", thread_forum_id=thread_forum_id))
+        return DSLQ("bool", filter=filters, must=self.build_query(**kwargs))
+
+    def get_highlight_options(self):
+        return {}
+
+    def make_result(self, hit):
+        return {
+            "type": "thread",
+            "title": hit.thread_title,
+            "search_summary": strip_html(wiki_to_html(hit.content))[:1000],
+            "last_updated": parser.parse(hit.updated),
+            "url": reverse(
+                "forums.posts",
+                kwargs={"forum_slug": hit.forum_slug, "thread_id": hit.thread_id},
+            )
+            + f"#post-{hit.meta.id}",
+        }
+
+
 class CompoundSearch(SumoSearch):
     """Combine a number of SumoSearch classes into one search."""
 
@@ -232,6 +279,9 @@ class CompoundSearch(SumoSearch):
 
     def get_highlight_fields(self):
         return self._from_children("get_highlight_fields")
+
+    def get_highlight_options(self):
+        return self._from_children("get_highlight_options")
 
     def get_filter(self, **kwargs):
         # `should` with `minimum_should_match=1` acts like an OR filter
