@@ -1,14 +1,13 @@
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-
 from nose.tools import eq_
 
 from kitsune.access.tests import PermissionFactory
 from kitsune.forums.models import Post
-from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
-from kitsune.sumo.tests import get, post
+from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.tests import SumoPyQuery as pq
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.sumo.tests import get, post
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class PostsTemplateTests(ForumTestCase):
@@ -340,7 +339,7 @@ class ThreadsTemplateTests(ForumTestCase):
 
         response = get(self.client, "forums.threads", args=[f.slug])
         eq_(
-            "%s/en-US/forums/%s" % (settings.CANONICAL_URL, f.slug),
+            "%s/en-US/forums/%s/" % (settings.CANONICAL_URL, f.slug),
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
 
@@ -395,7 +394,7 @@ class ForumsTemplateTests(ForumTestCase):
     def test_canonical_url(self):
         response = get(self.client, "forums.forums")
         eq_(
-            "{}/en-US/forums".format(settings.CANONICAL_URL),
+            "{}/en-US/forums/".format(settings.CANONICAL_URL),
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
 
