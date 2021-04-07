@@ -8,6 +8,7 @@ from django.db.models import Count
 
 from kitsune.products.models import Product
 from kitsune.users.models import CONTRIBUTOR_GROUP, User
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.wiki.models import Revision
 
 from elasticsearch_dsl import A
@@ -165,7 +166,7 @@ def top_contributors_l10n(
                 "id": user.pk,
                 "username": user.username,
                 "display_name": user.profile.display_name,
-                "avatar": user.profile.fxa_avatar,
+                "avatar": profile_avatar(user),
             },
         }
         for user in users[(page - 1) * count : page * count]
