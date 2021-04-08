@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block hidden_search_masthead %}
+{% endblock %}
+
+{% block masthead %}
+<section class="home-search-section sumo-page-section--lg extra-pad-bottom shade-bg">
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="sumo-page-heading-xl">{{ _('Search Support') }}</h1>
+      {{ search_box(settings, id='support-search-masthead', query=query) }}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+{% endblock %}

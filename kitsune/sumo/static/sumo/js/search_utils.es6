@@ -65,7 +65,7 @@
 
   Search.prototype.query = function(string, callback) {
     string ||= this.lastQuery;
-    var data = $.extend({}, this.params, {q: string});
+    var data = $.extend({}, this.params, {q: string, format: "json"});
 
     this.lastQuery = string;
     this.lastParams = this.serializeParams({q: string});

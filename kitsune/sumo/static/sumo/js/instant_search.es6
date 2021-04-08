@@ -3,17 +3,17 @@
   var searchTimeout;
   var locale = $('html').attr('lang');
   const searchTitle = "Search | Mozilla Support";
+  const originalURL = window.location.href;
 
   const localStorageUseV2 = {
     "true": true,
     "false": false,
   }[window.localStorage.getItem("enable_search_v2")];
+  const useV2 = localStorageUseV2 ??
+    ($("body").data("readonly") || window.waffle?.flag_is_active("instant_search_v2"));
 
   // the local storage flag overrides everything else:
-  if (
-    localStorageUseV2 ??
-    ($("body").data("readonly") || window.waffle?.flag_is_active("instant_search_v2"))
-  ) {
+  if (useV2) {
     var search = new k.Search("/" + locale + "/search/v2/");
   } else {
     var search = new k.Search("/" + locale + "/search");
@@ -75,17 +75,16 @@
       query,
       params: search.params
     }
+    let historyURL = useV2 ? search.queryUrl() : "#search";
     if (history.state?.query) {
       // if a search is already the latest point in history, replace it
       // to avoid filling history with partial searches
-      history.replaceState(historyState, searchTitle, "#search");
+      history.replaceState(historyState, searchTitle, historyURL);
     } else {
-      history.pushState(historyState, searchTitle, "#search");
+      history.pushState(historyState, searchTitle, historyURL);
     }
 
-    var base_url = search.lastQueryUrl();
     var $searchContent;
-    context.base_url = base_url;
 
     if ($('#instant-search-content').length) {
       $searchContent = $('#instant-search-content');
@@ -132,9 +131,7 @@
     var $this = $(this);
     var $form = $this.closest('form');
     var formId = $form.attr('id');
-    var params = {
-      format: 'json'
-    };
+    var params = {};
 
     if ($this.val().length === 0) {
       if (searchTimeout) {
@@ -144,7 +141,7 @@
       window.k.InstantSearchSettings.showContent();
 
       if (history.state?.query) {
-        history.pushState({}, searchTitle, location.href.replace("#search", ""));
+        history.pushState({}, searchTitle, originalURL);
       }
     } else if ($this.val() !== search.lastQuery) {
       if (searchTimeout) {
@@ -258,7 +255,7 @@
     ev.preventDefault();
   });
 
-  function loadFromHistory(e) {
+  function loadFromHistoryOrURL(e) {
     let state = e.type == "popstate" ? e.state : history.state;
     if (state?.query) {
       window.k.InstantSearchSettings.hideContent();
@@ -269,10 +266,31 @@
       queries.push(state.query);
       search.query(state.query, k.InstantSearchSettings.render);
     } else {
-      window.k.InstantSearchSettings.showContent();
+      if (window.location.pathname.match(/\/search(\/v2)?\/?$/)) {
+        // we have a search url, open instant search with the parameters
+        let urlParams = new URLSearchParams(window.location.search);
+        let query = urlParams.get("q");
+        let params = {};
+
+        for (let [k, v] of urlParams.entries()) {
+          if (k == "q") continue;
+          params[k] = v;
+        }
+
+        state = {
+          query: query,
+          params: params,
+        };
+      } else {
+        // user has used history to navigate out of search
+        if (window.location.href == originalURL) {
+          return window.k.InstantSearchSettings.showContent();
+        }
+        return window.location.reload();
+      }
     }
   }
 
-  window.addEventListener("popstate", loadFromHistory);
-  window.addEventListener("DOMContentLoaded", loadFromHistory);
+  window.addEventListener("popstate", loadFromHistoryOrURL);
+  window.addEventListener("DOMContentLoaded", loadFromHistoryOrURL);
 })(jQuery);

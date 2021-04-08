@@ -1,13 +1,24 @@
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     placeholder=_('Find help...'),
-                    params=None) %}
+                    params=None, query=None) %}
   <form data-instant-search="form" {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %} class="simple-search-form">
     {% if params %}
       {% for k, v in params.items() %}
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input type="search" autocomplete="off" name="q" aria-required="true" placeholder="{{ placeholder }}" class="searchbox" id="search-q" />
+    <input
+      type="search"
+      autocomplete="off"
+      name="q"
+      aria-required="true"
+      placeholder="{{ placeholder }}"
+      class="searchbox"
+      id="search-q"
+      {% if query %}
+        value="{{ query }}"
+      {% endif %}
+    />
     <button type="submit" title="{{ _('Search') }}" class="search-button">{{ _('Search') }}</button>
   </form>
 {% endmacro %}
