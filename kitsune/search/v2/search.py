@@ -16,6 +16,20 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.parser import wiki_to_html
 
 QUESTION_DAYS_DELTA = 365 * 2
+FVH_HIGHLIGHT_OPTIONS = {
+    "type": "fvh",
+    # order highlighted fragments by their relevance:
+    "order": "score",
+    # only get one fragment per field:
+    "number_of_fragments": 1,
+    # split fragments at the end of sentences:
+    "boundary_scanner": "sentence",
+    # return fragments roughly this size:
+    "fragment_size": SNIPPET_LENGTH,
+    # add these tags before/after the highlighted sections:
+    "pre_tags": [f"<{HIGHLIGHT_TAG}>"],
+    "post_tags": [f"</{HIGHLIGHT_TAG}>"],
+}
 
 
 def first_highlight(hit):
@@ -61,11 +75,12 @@ class QuestionSearch(SumoSearch):
             f"answer_content.{self.locale}",
         ]
 
-    def get_highlight_fields(self):
-        return [
+    def get_highlight_fields_options(self):
+        fields = [
             f"question_content.{self.locale}",
             f"answer_content.{self.locale}",
         ]
+        return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
     def get_filter(self, **kwargs):
         filters = [
@@ -132,11 +147,12 @@ class WikiSearch(SumoSearch):
             f"content.{self.locale}^2",
         ]
 
-    def get_highlight_fields(self):
-        return [
+    def get_highlight_fields_options(self):
+        fields = [
             f"summary.{self.locale}",
             f"content.{self.locale}",
         ]
+        return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
     def get_filter(self, **kwargs):
         # Add default filters:
@@ -175,7 +191,7 @@ class ProfileSearch(SumoSearch):
     def get_fields(self):
         return ["username", "name"]
 
-    def get_highlight_fields(self):
+    def get_highlight_fields_options(self):
         return []
 
     def get_filter(self, **kwargs):
@@ -188,9 +204,6 @@ class ProfileSearch(SumoSearch):
             ),
             negative_boost=0.5,
         )
-
-    def get_highlight_options(self):
-        return {}
 
     def make_result(self, hit):
         return {
@@ -211,8 +224,8 @@ class ForumSearch(SumoSearch):
     def get_fields(self):
         return ["thread_title", "content"]
 
-    def get_highlight_fields(self):
-        return ["thread_title", "content"]
+    def get_highlight_fields_options(self):
+        return []
 
     def get_filter(self, **kwargs):
         # Add default filters:
@@ -224,9 +237,6 @@ class ForumSearch(SumoSearch):
         if thread_forum_id := kwargs.get("thread_forum_id"):
             filters.append(DSLQ("term", thread_forum_id=thread_forum_id))
         return DSLQ("bool", filter=filters, must=self.build_query(**kwargs))
-
-    def get_highlight_options(self):
-        return {}
 
     def make_result(self, hit):
         return {
@@ -277,11 +287,8 @@ class CompoundSearch(SumoSearch):
     def get_fields(self):
         return self._from_children("get_fields")
 
-    def get_highlight_fields(self):
-        return self._from_children("get_highlight_fields")
-
-    def get_highlight_options(self):
-        return self._from_children("get_highlight_options")
+    def get_highlight_fields_options(self):
+        return self._from_children("get_highlight_fields_options")
 
     def get_filter(self, **kwargs):
         # `should` with `minimum_should_match=1` acts like an OR filter

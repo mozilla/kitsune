@@ -10,7 +10,6 @@ from elasticsearch_dsl import Q as DSLQ
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
 
-from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.config import DEFAULT_ES7_CONNECTION, UPDATE_RETRY_ON_CONFLICT
 from kitsune.search.v2.es7_utils import es7_client
 
@@ -270,8 +269,8 @@ class SumoSearch(ABC):
         pass
 
     @abstractmethod
-    def get_highlight_fields(self):
-        """An array of fields to highlight."""
+    def get_highlight_fields_options(self):
+        """An array of tuples of fields to highlight and their options."""
         pass
 
     @abstractmethod
@@ -299,23 +298,6 @@ class SumoSearch(ABC):
         """Takes a hit and returns a result dictionary."""
         pass
 
-    def get_highlight_options(self):
-        """Return options for the highlighter"""
-        return {
-            "type": "fvh",
-            # order highlighted fragments by their relevance:
-            "order": "score",
-            # only get one fragment per field:
-            "number_of_fragments": 1,
-            # split fragments at the end of sentences:
-            "boundary_scanner": "sentence",
-            # return fragments roughly this size:
-            "fragment_size": SNIPPET_LENGTH,
-            # add these tags before/after the highlighted sections:
-            "pre_tags": [f"<{HIGHLIGHT_TAG}>"],
-            "post_tags": [f"</{HIGHLIGHT_TAG}>"],
-        }
-
     def run(self, query, page=1, default_operator="AND", **kwargs):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
@@ -329,9 +311,8 @@ class SumoSearch(ABC):
             self.get_filter(query=query, default_operator=default_operator, **kwargs)
         )
         # add highlights for the search class' highlight_fields
-        if highlight_options := self.get_highlight_options():
-            highlight_options = highlight_options[0]
-        search = search.highlight(*self.get_highlight_fields(), **highlight_options)
+        for highlight_field, options in self.get_highlight_fields_options():
+            search = search.highlight(highlight_field, **options)
         # do pagination
         start = (page - 1) * self.results_per_page
         search = search[start : start + self.results_per_page]
