@@ -9,7 +9,12 @@ from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
-from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY, REDIRECT_HTML, TEMPLATES_CATEGORY
+from kitsune.wiki.config import (
+    ADMINISTRATION_CATEGORY,
+    CANNED_RESPONSES_CATEGORY,
+    REDIRECT_HTML,
+    TEMPLATES_CATEGORY,
+)
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
@@ -50,7 +55,8 @@ class WikiDocument(SumoDocument):
             [
                 instance.html.startswith(REDIRECT_HTML),
                 instance.is_archived,
-                instance.category in [TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY],
+                instance.category
+                in [TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY],
             ]
         ):
             instance.es_discard_doc = "unindex_me"
