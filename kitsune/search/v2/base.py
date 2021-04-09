@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from dataclasses import field as dfield
 from datetime import datetime
 
 from django.conf import settings
@@ -9,6 +11,7 @@ from elasticsearch_dsl import InnerDoc, MetaField
 from elasticsearch_dsl import Q as DSLQ
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
+from elasticsearch_dsl.utils import AttrDict
 
 from kitsune.search.config import DEFAULT_ES7_CONNECTION, UPDATE_RETRY_ON_CONFLICT
 from kitsune.search.v2.es7_utils import es7_client
@@ -243,40 +246,64 @@ class SumoDocument(DSLDocument):
         return ""
 
 
-class SumoSearch(ABC):
-    """Base class for search classes.
-
-    Implements the run() function, which will perform the search.
+class SumoSearchInterface(ABC):
+    """Base interface class for search classes.
 
     Child classes should define values for the various abstract properties this
     class has, relevant to the documents the child class is searching over.
     """
 
-    def __init__(self, **kwargs):
-        self.results_per_page = settings.SEARCH_RESULTS_PER_PAGE
-        self.hits = []
-        self.total = 0
-        self.results = []
-
     @abstractmethod
     def get_index(self):
         """The index or comma-seperated indices to search over."""
-        pass
+        ...
 
     @abstractmethod
     def get_fields(self):
         """An array of fields to search over."""
-        pass
+        ...
 
     @abstractmethod
     def get_highlight_fields_options(self):
         """An array of tuples of fields to highlight and their options."""
-        pass
+        ...
 
     @abstractmethod
     def get_filter(self, **kwargs):
         """A query which filters for all documents to be searched over."""
-        pass
+        ...
+
+    @abstractmethod
+    def build_query(self, **kwargs):
+        """Build a query to search over a specific set of documents."""
+        ...
+
+    @abstractmethod
+    def make_result(self, hit):
+        """Takes a hit and returns a result dictionary."""
+        ...
+
+    @abstractmethod
+    def run(self, **kwargs):
+        """Perform search, placing the results in `self.results`, and the total
+        number of results (across all pages) in `self.total`. Chainable."""
+        ...
+
+
+@dataclass
+class SumoSearch(SumoSearchInterface):
+    """Base class for search classes.
+
+    Implements the run() function, which will perform the search.
+
+    Child classes should define values for the various abstract properties this
+    class inherits, relevant to the documents the child class is searching over.
+    """
+
+    results_per_page: int = settings.SEARCH_RESULTS_PER_PAGE
+    total: int = 0
+    hits: list[AttrDict] = dfield(default_factory=list)
+    results: list[dict] = dfield(default_factory=list)
 
     def build_query(self, **kwargs):
         """Build a query to search over a specific set of documents."""
@@ -292,11 +319,6 @@ class SumoSearch(ABC):
             # before they have a chance to go through the filter:
             flags="AND|ESCAPE|FUZZY|NEAR|NOT|OR|PHRASE|PRECEDENCE|PREFIX|SLOP",
         )
-
-    @abstractmethod
-    def make_result(self, hit):
-        """Takes a hit and returns a result dictionary."""
-        pass
 
     def run(self, query, page=1, default_operator="AND", **kwargs):
         """Perform search, placing the results in `self.results`, and the total

@@ -62,7 +62,6 @@ class QuestionSearch(SumoSearch):
     def __init__(self, locale="en-US", product=None, **kwargs):
         self.locale = locale
         self.product = product
-        super().__init__(**kwargs)
 
     def get_index(self):
         return QuestionDocument.Index.read_alias
@@ -86,6 +85,8 @@ class QuestionSearch(SumoSearch):
         filters = [
             # restrict to the question index
             DSLQ("term", _index=self.get_index()),
+            # ensure that there is a title for the passed locale
+            DSLQ("exists", field=f"question_title.{self.locale}"),
             # only return questions created within QUESTION_DAYS_DELTA
             DSLQ(
                 "range",
@@ -94,6 +95,7 @@ class QuestionSearch(SumoSearch):
                 },
             ),
         ]
+
         if self.product:
             filters.append(DSLQ("term", question_product_id=self.product.id))
         return DSLQ(
@@ -159,6 +161,7 @@ class WikiSearch(SumoSearch):
         filters = [
             # limit scope to the Wiki index
             DSLQ("term", _index=self.get_index()),
+            DSLQ("exists", field=f"title.{self.locale}"),
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
@@ -258,7 +261,6 @@ class CompoundSearch(SumoSearch):
     def __init__(self, **kwargs):
         self._children = []
         self._kwargs = kwargs
-        super().__init__(**kwargs)
 
     def add(self, child):
         """Add a SumoSearch to search over. Chainable."""
