@@ -19,7 +19,7 @@
     {% endfor %}
   </div>
 
-  {#  {{ pages|paginator }} #}
+  {{ pages|paginator }}
   {% else %}
   <p class="sumo-page-intro">
     {{ _("Sorry! 0 results found for <strong>‘{q}’</strong>.")|fe(q=q) }}

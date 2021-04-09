@@ -2,9 +2,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import datetime
+from typing import Union, overload
 
 from django.conf import settings
+from django.core.paginator import Paginator as DjPaginator, PageNotAnInteger, EmptyPage
 from django.utils import timezone
+from django.utils.translation import ugettext as _
+
 from elasticsearch7.exceptions import NotFoundError
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
@@ -275,12 +279,12 @@ class SumoSearchInterface(ABC):
         ...
 
     @abstractmethod
-    def get_filter(self, **kwargs):
+    def get_filter(self):
         """A query which filters for all documents to be searched over."""
         ...
 
     @abstractmethod
-    def build_query(self, **kwargs):
+    def build_query(self):
         """Build a query to search over a specific set of documents."""
         ...
 
@@ -306,19 +310,38 @@ class SumoSearch(SumoSearchInterface):
     class inherits, relevant to the documents the child class is searching over.
     """
 
-    results_per_page: int = settings.SEARCH_RESULTS_PER_PAGE
-    total: int = 0
-    hits: list[AttrDict] = dfield(default_factory=list)
-    results: list[dict] = dfield(default_factory=list)
+    total: int = dfield(default=0, init=False)
+    hits: list[AttrDict] = dfield(default_factory=list, init=False)
+    results: list[dict] = dfield(default_factory=list, init=False)
+    last_key: Union[int, slice, None] = dfield(default=None, init=False)
 
-    def build_query(self, **kwargs):
+    query: str = ""
+    default_operator: str = "AND"
+
+    def __len__(self):
+        return self.total
+
+    @overload
+    def __getitem__(self, key: int) -> dict:
+        ...
+
+    @overload
+    def __getitem__(self, key: slice) -> list[dict]:
+        ...
+
+    def __getitem__(self, key):
+        if self.last_key is None or self.last_key != key:
+            self.run(key=key)
+        if isinstance(key, int):
+            return self.results[0]
+        return self.results
+
+    def build_query(self):
         """Build a query to search over a specific set of documents."""
-        query = kwargs.get("query", "")
-        operator = kwargs.get("default_operator", "AND")
         return DSLQ(
             "simple_query_string",
-            query=query,
-            default_operator=operator,
+            query=self.query,
+            default_operator=self.default_operator,
             fields=self.get_fields(),
             # everything apart from WHITESPACE as that interferes with char mappings
             # and synonyms with whitespace in them by breaking up the phrase into tokens,
@@ -326,7 +349,7 @@ class SumoSearch(SumoSearchInterface):
             flags="AND|ESCAPE|FUZZY|NEAR|NOT|OR|PHRASE|PRECEDENCE|PREFIX|SLOP",
         )
 
-    def run(self, query, page=1, default_operator="AND", **kwargs):
+    def run(self, key: Union[int, slice] = slice(0, settings.SEARCH_RESULTS_PER_PAGE)):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
@@ -335,20 +358,61 @@ class SumoSearch(SumoSearchInterface):
         )
 
         # add the search class' filter
-        search = search.query(
-            self.get_filter(query=query, default_operator=default_operator, **kwargs)
-        )
+        search = search.query(self.get_filter())
         # add highlights for the search class' highlight_fields
         for highlight_field, options in self.get_highlight_fields_options():
             search = search.highlight(highlight_field, **options)
-        # do pagination
-        start = (page - 1) * self.results_per_page
-        search = search[start : start + self.results_per_page]
+        # slice search
+        search = search[key]
 
         # perform search
         self.hits = search.execute().hits
+        self.last_key = key
 
-        self.total = self.hits.total.value if self.hits else 0
+        self.total = self.hits.total.value
         self.results = [self.make_result(hit) for hit in self.hits]
 
         return self
+
+
+class SumoSearchPaginator(DjPaginator):
+    """
+    Paginator for `SumoSearch` classes.
+
+    Inherits from the default django paginator with a few adjustments. The default paginator
+    attempts to call len() on the `object_list` first, and then query for an individual page.
+
+    However, since elasticsearch returns the total number of results at the same time as querying
+    for a single page, we can remove an extra query by only doing len() based operations after
+    querying for a page.
+
+    Because of this, the `orphans` argument won't work.
+    """
+
+    def pre_validate_number(self, number):
+        """
+        Validate the given 1-based page number, without checking if the number is greater than
+        the total number of pages.
+        """
+        try:
+            if isinstance(number, float) and not number.is_integer():
+                raise ValueError
+            number = int(number)
+        except (TypeError, ValueError):
+            raise PageNotAnInteger(_("That page number is not an integer"))
+        if number < 1:
+            raise EmptyPage(_("That page number is less than 1"))
+        return number
+
+    def page(self, number):
+        """Return a Page object for the given 1-based page number."""
+        # first validate the number is an integer >= 1
+        number = self.pre_validate_number(number)
+
+        bottom = (number - 1) * self.per_page
+        top = bottom + self.per_page
+        page = self._get_page(self.object_list[bottom:top], number, self)
+
+        # now we have the total, do the full validation of the number
+        self.validate_number(number)
+        return page

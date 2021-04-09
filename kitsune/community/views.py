@@ -13,8 +13,10 @@ from kitsune.community.utils import (
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
 from kitsune.questions.models import QuestionLocale
+from kitsune.search.v2.base import SumoSearchPaginator
 from kitsune.search.v2.search import ProfileSearch
 from kitsune.sumo.parser import get_object_fallback
+from kitsune.sumo.utils import paginate
 from kitsune.users.models import CONTRIBUTOR_GROUP
 from kitsune.wiki.models import Document
 
@@ -77,7 +79,8 @@ def search(request):
     Uses the ES user's index.
     """
 
-    search = ProfileSearch()
+    data = {}
+
     if q := request.GET.get("q"):
         contributor_group_ids = list(
             Group.objects.filter(
@@ -87,9 +90,9 @@ def search(request):
                 ]
             ).values_list("id", flat=True)
         )
-
-        search = search.run(query=q, group_ids=contributor_group_ids)
-    data = {"q": q, "results": search.results}
+        search = ProfileSearch(query=q, group_ids=contributor_group_ids)
+        pages = paginate(request, search, paginator_cls=SumoSearchPaginator)
+        data = {"q": q, "results": search.results, "pages": pages}
 
     return render(request, "community/search.html", data)
 
