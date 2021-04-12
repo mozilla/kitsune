@@ -10,7 +10,11 @@ from elasticsearch_dsl import Q as DSLQ
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
 
-from kitsune.search.config import DEFAULT_ES7_CONNECTION, UPDATE_RETRY_ON_CONFLICT
+from kitsune.search.config import (
+    DEFAULT_ES7_CONNECTION,
+    DEFAULT_ES7_REFRESH_INTERVAL,
+    UPDATE_RETRY_ON_CONFLICT,
+)
 from kitsune.search.v2.es7_utils import es7_client
 
 
@@ -41,6 +45,8 @@ class SumoDocument(DSLDocument):
         cls.Index.base_name = f"{settings.ES_INDEX_PREFIX}_{name.lower()}"
         cls.Index.read_alias = f"{cls.Index.base_name}_read"
         cls.Index.write_alias = f"{cls.Index.base_name}_write"
+        # Bump the refresh interval to 1 minute
+        cls.Index.settings = {"refresh_interval": DEFAULT_ES7_REFRESH_INTERVAL}
 
         # this is the attribute elastic-dsl actually uses to determine which index
         # to query. we override the .search() method to get that to use the read
