@@ -372,3 +372,6 @@ ES_LOCALE_ANALYZERS = {
 }
 
 DEFAULT_ES7_CONNECTION = "es7_default"
+
+# default refresh_interval for all indices
+DEFAULT_ES7_REFRESH_INTERVAL = "60s"
