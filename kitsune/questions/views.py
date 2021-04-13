@@ -42,13 +42,7 @@ from kitsune.questions.forms import (
     NewQuestionForm,
     WatchQuestionForm,
 )
-from kitsune.questions.models import (
-    Answer,
-    AnswerVote,
-    Question,
-    QuestionLocale,
-    QuestionVote,
-)
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
 from kitsune.questions.utils import get_mobile_product_from_ua
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -651,7 +645,7 @@ def edit_question(request, question_id):
             question.content = form.cleaned_data["content"]
             question.updated_by = user
 
-            question.save()
+            question.save(update=True)
 
             if form.cleaned_data.get("is_spam"):
                 _add_to_moderation_queue(request, question)
