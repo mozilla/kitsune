@@ -17,6 +17,7 @@ from kitsune.forums.feeds import PostsFeed, ThreadsFeed
 from kitsune.forums.forms import EditPostForm, EditThreadForm, NewThreadForm, ReplyForm
 from kitsune.forums.models import Forum, Post, Thread
 from kitsune.search.forms import BaseSearchForm
+from kitsune.search.v2.base import SumoSearchPaginator
 from kitsune.search.v2.search import ForumSearch
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -532,10 +533,10 @@ def search(request, forum_slug=None):
 
     cdata = search_form.cleaned_data
 
-    search = ForumSearch()
+    search = ForumSearch(query=cdata["q"], thread_forum_id=forum.pk)
 
     # execute search
-    search.run(cdata["q"], thread_forum_id=forum.pk)
+    pages = paginate(request, search, paginator_cls=SumoSearchPaginator)
     total = search.total
     results = search.results
     data = {
@@ -544,5 +545,6 @@ def search(request, forum_slug=None):
         "search_form": search_form,
         "num_results": total,
         "forum": forum,
+        "pages": pages,
     }
     return render(request, "search/search-results.html", data)

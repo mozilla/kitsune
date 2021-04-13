@@ -1,5 +1,4 @@
 import json
-from math import ceil
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -10,9 +9,12 @@ from kitsune import search as constants
 from kitsune.products.models import Product
 from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.utils import locale_or_default
+from kitsune.search.v2.base import SumoSearchPaginator
 from kitsune.search.v2.search import CompoundSearch, QuestionSearch, WikiSearch
 from kitsune.search.views import _fallback_results
 from kitsune.sumo.api_utils import JSONRenderer
+from kitsune.sumo.templatetags.jinja_helpers import Paginator as PaginatorRenderer
+from kitsune.sumo.utils import paginate
 
 
 def _get_product_title(product_title):
@@ -43,23 +45,22 @@ def simple_search(request):
     # get product and product titles
     product, product_titles = _get_product_title(cleaned["product"])
 
-    # get page
-    try:
-        page = int(request.GET.get("page", 1))
-    except ValueError:
-        page = 1
-
     # create search object
-    search = CompoundSearch(locale=language, product=product)
+    search = CompoundSearch()
 
     # apply aaq/kb configs
     if cleaned["w"] & constants.WHERE_WIKI:
-        search.add(WikiSearch)
+        search.add(WikiSearch(query=cleaned["q"], locale=language, product=product))
     if cleaned["w"] & constants.WHERE_SUPPORT:
-        search.add(QuestionSearch)
+        search.add(QuestionSearch(query=cleaned["q"], locale=language, product=product))
 
     # execute search
-    search.run(cleaned["q"], page=page)
+    page = paginate(
+        request,
+        search,
+        per_page=settings.SEARCH_RESULTS_PER_PAGE,
+        paginator_cls=SumoSearchPaginator,
+    )
     total = search.total
     results = search.results
 
@@ -82,7 +83,7 @@ def simple_search(request):
             {"slug": p.slug, "title": pgettext("DB: products.Product.title", p.title)}
             for p in Product.objects.filter(visible=True)
         ],
-        "pagination": _make_pagination(page, total),
+        "pagination": _make_pagination(page),
     }
     if product:
         data["product"] = product.slug
@@ -93,28 +94,14 @@ def simple_search(request):
     return HttpResponse(json_data, content_type="application/json")
 
 
-def _make_pagination(page, total):
-    num_pages = ceil(total / 10)
-
-    # logic copied from kitsune.sumo.templatetags.jinja_helper.Paginator
-    maximum = 10
-    span = (maximum - 1) // 2
-    if num_pages < maximum:
-        lower, upper = 0, num_pages
-    elif page < span + 1:
-        lower, upper = 0, span * 2
-    elif page > num_pages - span:
-        lower, upper = num_pages - span * 2, num_pages
-    else:
-        lower, upper = page - span, page + span - 1
-    page_range = list(range(max(lower + 1, 1), min(total, upper) + 1))
-
+def _make_pagination(page):
+    jinja_paginator = PaginatorRenderer(page)
     return {
-        "number": page,
-        "num_pages": num_pages,
-        "has_next": page < num_pages,
-        "has_previous": page > num_pages,
-        "page_range": page_range,
-        "dotted_upper": num_pages not in page_range,
-        "dotted_lower": 1 not in page_range,
+        "number": page.number,
+        "num_pages": page.paginator.num_pages,
+        "has_next": page.has_next(),
+        "has_previous": page.has_previous(),
+        "page_range": jinja_paginator.pager.page_range,
+        "dotted_upper": jinja_paginator.pager.dotted_upper,
+        "dotted_lower": jinja_paginator.pager.dotted_lower,
     }

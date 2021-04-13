@@ -1,9 +1,13 @@
 from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass
+from dataclasses import field as dfield
+from typing import Optional
 
 import bleach
 from dateutil import parser
 from elasticsearch_dsl import Q as DSLQ
 
+from kitsune.products.models import Product
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
 from kitsune.search.v2.base import SumoSearch
 from kitsune.search.v2.documents import (
@@ -56,12 +60,12 @@ def same_base_index(a, b):
     return a.split("_")[:-1] == b.split("_")[:-1]
 
 
+@dataclass
 class QuestionSearch(SumoSearch):
     """Search over questions."""
 
-    def __init__(self, locale="en-US", product=None, **kwargs):
-        self.locale = locale
-        self.product = product
+    locale: str = "en-US"
+    product: Optional[Product] = None
 
     def get_index(self):
         return QuestionDocument.Index.read_alias
@@ -81,7 +85,7 @@ class QuestionSearch(SumoSearch):
         ]
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
-    def get_filter(self, **kwargs):
+    def get_filter(self):
         filters = [
             # restrict to the question index
             DSLQ("term", _index=self.get_index()),
@@ -103,7 +107,7 @@ class QuestionSearch(SumoSearch):
             filter=filters,
             # exclude AnswerDocuments from the search:
             must_not=DSLQ("exists", field="updated"),
-            must=self.build_query(**kwargs),
+            must=self.build_query(),
         )
 
     def make_result(self, hit):
@@ -129,13 +133,12 @@ class QuestionSearch(SumoSearch):
         }
 
 
+@dataclass
 class WikiSearch(SumoSearch):
     """Search over Knowledge Base articles."""
 
-    def __init__(self, locale="en-US", product=None, **kwargs):
-        self.locale = locale
-        self.product = product
-        super().__init__(**kwargs)
+    locale: str = "en-US"
+    product: Optional[Product] = None
 
     def get_index(self):
         return WikiDocument.Index.read_alias
@@ -156,7 +159,7 @@ class WikiSearch(SumoSearch):
         ]
         return [(field, FVH_HIGHLIGHT_OPTIONS) for field in fields]
 
-    def get_filter(self, **kwargs):
+    def get_filter(self):
         # Add default filters:
         filters = [
             # limit scope to the Wiki index
@@ -165,7 +168,7 @@ class WikiSearch(SumoSearch):
         ]
         if self.product:
             filters.append(DSLQ("term", product_ids=self.product.id))
-        return DSLQ("bool", filter=filters, must=self.build_query(**kwargs))
+        return DSLQ("bool", filter=filters, must=self.build_query())
 
     def make_result(self, hit):
         # generate a summary for search:
@@ -185,8 +188,11 @@ class WikiSearch(SumoSearch):
         }
 
 
+@dataclass
 class ProfileSearch(SumoSearch):
     """Search over User Profiles."""
+
+    group_ids: list[int] = dfield(default_factory=list)
 
     def get_index(self):
         return ProfileDocument.Index.read_alias
@@ -197,13 +203,13 @@ class ProfileSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return []
 
-    def get_filter(self, **kwargs):
+    def get_filter(self):
         return DSLQ(
             "boosting",
-            positive=self.build_query(**kwargs),
+            positive=self.build_query(),
             negative=DSLQ(
                 "bool",
-                must_not=DSLQ("terms", group_ids=kwargs.get("group_ids", [])),
+                must_not=DSLQ("terms", group_ids=self.group_ids),
             ),
             negative_boost=0.5,
         )
@@ -218,8 +224,11 @@ class ProfileSearch(SumoSearch):
         }
 
 
+@dataclass
 class ForumSearch(SumoSearch):
     """Search over User Profiles."""
+
+    thread_forum_id: Optional[int] = None
 
     def get_index(self):
         return ForumDocument.Index.read_alias
@@ -230,16 +239,16 @@ class ForumSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return []
 
-    def get_filter(self, **kwargs):
+    def get_filter(self):
         # Add default filters:
         filters = [
             # limit scope to the Forum index
             DSLQ("term", _index=self.get_index())
         ]
 
-        if thread_forum_id := kwargs.get("thread_forum_id"):
-            filters.append(DSLQ("term", thread_forum_id=thread_forum_id))
-        return DSLQ("bool", filter=filters, must=self.build_query(**kwargs))
+        if self.thread_forum_id:
+            filters.append(DSLQ("term", thread_forum_id=self.thread_forum_id))
+        return DSLQ("bool", filter=filters, must=self.build_query())
 
     def make_result(self, hit):
         return {
@@ -255,18 +264,17 @@ class ForumSearch(SumoSearch):
         }
 
 
+@dataclass
 class CompoundSearch(SumoSearch):
     """Combine a number of SumoSearch classes into one search."""
 
-    def __init__(self, **kwargs):
-        self._children = []
-        self._kwargs = kwargs
+    _children: list[SumoSearch] = dfield(default_factory=list, init=False)
 
     def add(self, child):
-        """Add a SumoSearch to search over. Chainable."""
-        self._children.append(child(**self._kwargs))
+        """Add a SumoSearch instance to search over. Chainable."""
+        self._children.append(child)
 
-    def _from_children(self, name, **kwargs):
+    def _from_children(self, name):
         """
         Get an attribute from all children.
 
@@ -275,7 +283,7 @@ class CompoundSearch(SumoSearch):
         value = []
 
         for child in self._children:
-            attr = getattr(child, name)(**kwargs)
+            attr = getattr(child, name)()
             if isinstance(attr, list):
                 # if the attribute's value is itself a list, unpack it
                 value = [*value, *attr]
@@ -292,11 +300,9 @@ class CompoundSearch(SumoSearch):
     def get_highlight_fields_options(self):
         return self._from_children("get_highlight_fields_options")
 
-    def get_filter(self, **kwargs):
+    def get_filter(self):
         # `should` with `minimum_should_match=1` acts like an OR filter
-        return DSLQ(
-            "bool", should=self._from_children("get_filter", **kwargs), minimum_should_match=1
-        )
+        return DSLQ("bool", should=self._from_children("get_filter"), minimum_should_match=1)
 
     def make_result(self, hit):
         index = hit.meta.index

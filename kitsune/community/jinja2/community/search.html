@@ -48,5 +48,9 @@
       {% endif %}
     </section>
 
+    {% if pages %}
+      {{ pages|paginator }}
+    {% endif %}
+
   </article>
 {% endblock %}

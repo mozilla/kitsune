@@ -21,9 +21,9 @@ POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
 POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 
 
-def paginate(request, queryset, per_page=20, count=None):
+def paginate(request, queryset, per_page=20, paginator_cls=paginator.Paginator, **kwargs):
     """Get a Paginator, abstracting some common paging actions."""
-    p = paginator.Paginator(queryset, per_page, count=count)
+    p = paginator_cls(queryset, per_page, **kwargs)
 
     # Get the page from the request, make sure it's an int.
     try:
