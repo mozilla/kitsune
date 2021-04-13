@@ -13,7 +13,7 @@ from kitsune.search.v2.base import SumoSearchPaginator
 from kitsune.search.v2.search import CompoundSearch, QuestionSearch, WikiSearch
 from kitsune.search.views import _fallback_results
 from kitsune.sumo.api_utils import JSONRenderer
-from kitsune.sumo.templatetags.jinja_helpers import Paginator as JinjaPaginator
+from kitsune.sumo.templatetags.jinja_helpers import Paginator as PaginatorRenderer
 from kitsune.sumo.utils import paginate
 
 
@@ -95,7 +95,7 @@ def simple_search(request):
 
 
 def _make_pagination(page):
-    jinja_paginator = JinjaPaginator(page)
+    jinja_paginator = PaginatorRenderer(page)
     return {
         "number": page.number,
         "num_pages": page.paginator.num_pages,

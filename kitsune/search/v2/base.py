@@ -333,6 +333,8 @@ class SumoSearch(SumoSearchInterface):
         if self.last_key is None or self.last_key != key:
             self.run(key=key)
         if isinstance(key, int):
+            # if key is an int, then self.results will be a list containing a single result
+            # return the result, rather than a 1-length list
             return self.results[0]
         return self.results
 
