@@ -61,7 +61,7 @@
         }
       }
 
-      $('#id_content').on('keyup', _.throttle(takeQuestion, 1000));
+      $('#id_content').on('keyup', _.throttle(takeQuestion, 60000));
 
       $(document).on('click', '#details-edit', function(ev) {
         ev.preventDefault();
