@@ -45,12 +45,7 @@
     </ul>{# .thread-meta #}
     {% endif %}
 
-    {% if result.type == "thread" %}
     <p>{{ result.search_summary|safe }}</p>
-    {% else %}
-    <p>{{ result.search_summary }}</p>
-    {% endif %}
-
 
     {% if 'explain' in request.GET and request.GET['explain'] == '1' %}
     <div class="explain">

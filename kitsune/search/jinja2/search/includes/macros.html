@@ -1,7 +1,7 @@
 {% macro basic_search_form(primary=False) -%}
   {# Must be imported with context #}
   <div {% if primary %}id="basic-search"{% endif %} class="search-refine">
-    <form class="simple-search-form cf" role="search" method="get" action="search">
+    <form class="simple-search-form cf" role="search" method="get" action="">
       {% for name, field in search_form.fields.items() if not name in ('q',) %}
         {% set list = request.GET.getlist(name) %}
         {% for value in list %}

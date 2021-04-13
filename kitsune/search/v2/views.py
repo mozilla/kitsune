@@ -2,6 +2,7 @@ import json
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils.translation import pgettext
 from django.utils.translation import ugettext as _
 
@@ -27,9 +28,12 @@ def _get_product_title(product_title):
 
 
 def simple_search(request):
+    is_json = request.GET.get("format") == "json"
     search_form = SimpleSearchForm(request.GET, auto_id=False)
 
     if not search_form.is_valid():
+        if not is_json:
+            return render(request, "search/form.html", {"search_form": search_form})
         return HttpResponse(
             json.dumps({"error": _("Invalid search data.")}),
             content_type="application/json",
@@ -69,22 +73,38 @@ def simple_search(request):
     if total == 0:
         fallback_results = _fallback_results(language, cleaned["product"])
 
-    # create results dictionary for instant search
     data = {
         "num_results": total,
-        "total": total,
         "results": results,
         "fallback_results": fallback_results,
-        "product_titles": product_titles,
+        "product_titles": ", ".join(product_titles),
         "q": cleaned["q"],
         "w": cleaned["w"],
         "lang_name": lang_name,
-        "products": [
-            {"slug": p.slug, "title": pgettext("DB: products.Product.title", p.title)}
-            for p in Product.objects.filter(visible=True)
-        ],
-        "pagination": _make_pagination(page),
+        "products": Product.objects.filter(visible=True),
     }
+
+    if not is_json:
+        data.update(
+            {
+                "product": product,
+                "pages": page,
+                "search_form": search_form,
+            }
+        )
+        return render(request, "search/results.html", data)
+
+    # create results dictionary for instant search
+    data.update(
+        {
+            "total": total,
+            "products": [
+                {"slug": p.slug, "title": pgettext("DB: products.Product.title", p.title)}
+                for p in data["products"]
+            ],
+            "pagination": _make_pagination(page),
+        }
+    )
     if product:
         data["product"] = product.slug
     if not results:
