@@ -14,9 +14,10 @@
     {% endif %}
     <ul class="mzp-u-list-styled">
       {% for answer in answers %}
-        <a href="{{ answer.get_absolute_url() }}">
-          <li>{{ answer.question.title }}</li>
-        </a>
+        <li>
+          <a href="{{ answer.get_absolute_url() }}">{{ answer.question.title }}</a>
+          <blockquote>{{ answer.content|striptags|truncatechars(180) }}</blockquote>
+        </li>
       {% endfor %}
     </ul>
   </article>
