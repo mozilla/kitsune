@@ -1,10 +1,10 @@
 import importlib
 import inspect
+from collections import deque
 
 from celery import task
 from django.conf import settings
-from elasticsearch7.helpers import bulk as es7_bulk
-from elasticsearch7.helpers.errors import BulkIndexError
+from elasticsearch7.helpers import parallel_bulk as es7_parallel_bulk
 from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 
 from kitsune.search import config
@@ -166,24 +166,19 @@ def index_objects_bulk(
     # if the request doesn't resolve within `timeout`,
     # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
     # before raising an exception:
-    success, errors = es7_bulk(
-        es7_client(
-            timeout=timeout,
-            retry_on_timeout=True,
-            initial_backoff=timeout,
-            max_retries=settings.ES_BULK_MAX_RETRIES,
+    deque(
+        es7_parallel_bulk(
+            es7_client(
+                timeout=timeout,
+                retry_on_timeout=True,
+                initial_backoff=timeout,
+                max_retries=settings.ES_BULK_MAX_RETRIES,
+            ),
+            (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
+            raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
         ),
-        (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
-        chunk_size=elastic_chunk_size,
-        raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
+        maxlen=0,
     )
-    errors = [
-        error
-        for error in errors
-        if not (error.get("delete") and error["delete"]["status"] in [400, 404])
-    ]
-    if errors:
-        raise BulkIndexError(f"{len(errors)} document(s) failed to index.", errors)
 
 
 @task
