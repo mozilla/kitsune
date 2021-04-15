@@ -518,7 +518,6 @@ MIDDLEWARE = (
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "kitsune.sumo.anonymous.AnonymousIdentityMiddleware",
     "kitsune.sumo.middleware.ReadOnlyMiddleware",
-    "kitsune.twitter.middleware.SessionMiddleware",
     "kitsune.sumo.middleware.PlusToSpaceMiddleware",
     "commonware.middleware.ScrubRequestOnException",
     "waffle.middleware.WaffleMiddleware",
@@ -666,7 +665,6 @@ INSTALLED_APPS = (
     "kitsune.dashboards",
     "kitsune.gallery",
     "kitsune.customercare",
-    "kitsune.twitter",
     "kitsune.inproduct",
     "kitsune.postcrash",
     "kitsune.landings",
@@ -969,12 +967,6 @@ VIDEO_MAX_FILESIZE = 52428800  # 50 megabytes, in bytes
 BITLY_API_URL = config("BITLY_API_URL", default="http://api.bitly.com/v3/shorten?callback=?")
 BITLY_LOGIN = config("BITLY_LOGIN", default=None)
 BITLY_API_KEY = config("BITLY_API_KEY", default=None)
-
-TWITTER_COOKIE_SECURE = config("TWITTER_COOKIE_SECURE", default=True, cast=bool)
-TWITTER_CONSUMER_KEY = config("TWITTER_CONSUMER_KEY", default="")
-TWITTER_CONSUMER_SECRET = config("TWITTER_CONSUMER_SECRET", default="")
-TWITTER_ACCESS_TOKEN = config("TWITTER_ACCESS_TOKEN", default="")
-TWITTER_ACCESS_TOKEN_SECRET = config("TWITTER_ACCESS_TOKEN_SECRET", default="")
 
 TIDINGS_FROM_ADDRESS = config("TIDINGS_FROM_ADDRESS", default="notifications@support.mozilla.org")
 # Anonymous watches must be confirmed.
