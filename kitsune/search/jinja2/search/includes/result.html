@@ -37,10 +37,12 @@
         {{ ngettext('1 person has this problem', '{n} people have this problem',
                     result.num_votes)|f(n=result.num_votes) }}
       </li>
-      <li>
-        {{ ngettext('1 new this week', '{n} new this week',
-                    result.num_votes_past_week)|f(n=result.num_votes_past_week) }}
-      </li>
+      {% if result.num_votes_past_week %}
+        <li>
+          {{ ngettext('1 new this week', '{n} new this week',
+                      result.num_votes_past_week)|f(n=result.num_votes_past_week) }}
+        </li>
+      {% endif %}
       {% endif %}
     </ul>{# .thread-meta #}
     {% endif %}
