@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.cache import cache
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from kitsune.products.models import Product
 from kitsune.users.models import CONTRIBUTOR_GROUP, User
@@ -148,7 +148,9 @@ def top_contributors_l10n(
     if product:
         if isinstance(product, Product):
             product = product.slug
-        revisions = revisions.filter(document__products__slug=product)
+        revisions = revisions.filter(
+            Q(document__products__slug=product) | Q(document__parent__products__slug=product)
+        )
 
     users = (
         User.objects.filter(created_revisions__in=revisions)
