@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.test.utils import override_settings
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -299,14 +298,6 @@ class TestQuestionUpdates(TestCaseBase):
         eq_(
             updated.strftime(self.date_format),
             self.q.updated.strftime(self.date_format),
-        )
-
-    def test_no_update_edit(self):
-        url = urlparams(reverse("questions.edit_question", args=[self.q.id]))
-        self._request_and_no_update(
-            url,
-            req_type="POST",
-            data={"title": "A new title.", "content": "Some new content."},
         )
 
     def test_no_update_solve(self):
