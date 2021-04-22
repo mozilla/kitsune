@@ -153,7 +153,7 @@ def top_contributors_l10n(
         )
 
     users = (
-        User.objects.filter(created_revisions__in=revisions)
+        User.objects.filter(created_revisions__in=revisions, is_active=True)
         .annotate(query_count=Count("created_revisions"))
         .order_by("-query_count")
         .select_related("profile")
