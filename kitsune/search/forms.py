@@ -79,7 +79,8 @@ class SimpleSearchForm(BaseSearchForm):
 class AdvancedSearchForm(BaseSearchForm):
     """Django form for handling display and validation"""
 
-    # Common fields
+    q = forms.CharField(required=False, max_length=MAX_QUERY_LENGTH)
+
     # TODO: get rid of this.
     a = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
