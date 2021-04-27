@@ -31,15 +31,15 @@ bleach==3.3.0 \
     # via
     #   -r requirements/default.in
     #   py-wikimarkup
-boto3==1.17.48 \
-    --hash=sha256:df5912350e092e795f72d8047a44d3f5af9690317acfe48147b9853a2f89b304 \
-    --hash=sha256:e86c15049dc07cb67e8b466795f004f1f23c1acf078d47283cd5e4a692a5aa37
+boto3==1.17.58 \
+    --hash=sha256:4caf01511a07e229855b964d43ddbc6b3db1fd88a3747a4a7ca6d398ce04f3d3 \
+    --hash=sha256:fcd1a0318919bddf4efd0a8858214ed07d08a870d79d20f9b2d6df5d3092b8d8
     # via
     #   -r requirements/default.in
     #   django-storages
-botocore==1.20.48 \
-    --hash=sha256:99c4f96bffae406f6dec1fa94e0886993e5bcd8657604d950abb43a49121fa7c \
-    --hash=sha256:af27a8133f5b8f6a55738ccd5efd35689f1822cfd447625a839ef7a991eab64f
+botocore==1.20.58 \
+    --hash=sha256:0de54af6af58d59237377f1bbe43edc4395d88848cddbe00f546703d4026c638 \
+    --hash=sha256:2830596e0d92d82abaf78a7926e49a3b7a80c93cdc75e95717a1dd4ea9027283
     # via
     #   boto3
     #   s3transfer
@@ -315,9 +315,9 @@ google-auth-httplib2==0.1.0 \
     --hash=sha256:31e49c36c6b5643b57e82617cb3e021e3e1d2df9da63af67252c02fa9c1f4a10 \
     --hash=sha256:a07c39fd632becacd3f07718dfd6021bf396978f03ad3ce4321d060015cc30ac
     # via google-api-python-client
-google-auth==1.28.1 \
-    --hash=sha256:186fe2564634d67fbbb64f3daf8bc8c9cecbb2a7f535ed1a8a71795e50db8d87 \
-    --hash=sha256:70b39558712826e41f65e5f05a8d879361deaf84df8883e5dd0ec3d0da6ab66e
+google-auth==1.30.0 \
+    --hash=sha256:588bdb03a41ecb4978472b847881e5518b5d9ec6153d3d679aa127a55e13b39f \
+    --hash=sha256:9ad25fba07f46a628ad4d0ca09f38dcb262830df2ac95b217f9b0129c9e42206
     # via
     #   google-api-core
     #   google-api-python-client
@@ -697,9 +697,9 @@ rsa==4.7.2 \
     # via
     #   google-auth
     #   oauth2client
-s3transfer==0.3.6 \
-    --hash=sha256:5d48b1fd2232141a9d5fb279709117aaba506cacea7f86f11bc392f06bfa8fc2 \
-    --hash=sha256:c5dadf598762899d8cfaecf68eba649cd25b0ce93b6c954b156aaa3eed160547
+s3transfer==0.4.2 \
+    --hash=sha256:9b3752887a2880690ce628bc263d6d13a3864083aeacff4890c1c9839a5eb0bc \
+    --hash=sha256:cb022f4b16551edebbb31a377d3f09600dbada7363d8c5db7976e7f47732e1b2
     # via boto3
 sentry-sdk==0.14.4 \
     --hash=sha256:0e5e947d0f7a969314aa23669a94a9712be5a688ff069ff7b9fc36c66adc160c \
