@@ -4,19 +4,17 @@ import pprint
 import time
 from functools import wraps
 
+import requests
 from django.conf import settings
 from django.db import reset_queries
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
-
-import requests
 from elasticutils import S as UntypedS
-from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
+from elasticutils.contrib.django import ES_EXCEPTIONS, F, S, get_es  # noqa
 
 from kitsune.search import config
 from kitsune.search.utils import chunked
-
 
 # These used to be constants, but that was problematic. Things like
 # tests want to be able to dynamically change settings at run time,
@@ -349,7 +347,6 @@ def es_get_synonym_filter(locale):
     # The synonym filter doesn't like it if the synonyms list is empty.
     # If there are no synyonms, just make a no-op filter by making a
     # synonym from one word to itself.
-
     # TODO: Someday this should be something like .filter(locale=locale)
     synonyms = list(Synonym.objects.all()) or ["firefox => firefox"]
     name = "synonyms-" + locale
@@ -718,14 +715,7 @@ def es_status_cmd(checkindex=False, log=log):
 
 
 def es_search_cmd(query, pages=1, log=log):
-    """Simulates a front page search
-
-    .. Note::
-
-       This **doesn't** simulate an advanced search---just a front
-       page search.
-
-    """
+    """Simulates a front page search"""
     from kitsune.sumo.tests import LocalizingClient
     from kitsune.sumo.urlresolvers import reverse
 

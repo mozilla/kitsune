@@ -328,9 +328,6 @@ We cannot apply weights to filtered fields.
 Regular search
 --------------
 
-A `regular` search is any search that doesn't start from the `Advanced
-Search` form.
-
 You could start a `regular` search from the front page or from the
 search form on any article page.
 
@@ -355,25 +352,3 @@ Ask A Question search
 An `Ask a question` or `AAQ` search is any search that is performed within
 the AAQ workflow. The only difference to `regular` search is that `AAQ`
 search shows forum posts that have no answer marked as helpful.
-
-
-Advanced search
----------------
-
-The `advanced` search is any search that starts from the `Advanced
-Search` form.
-
-The advanced search is defined by whatever you specify in the
-`Advanced Search` form.
-
-For example, if you search for knowledge base articles in the
-Troubleshooting category, then we add a filter where the result has to
-be in the Troubleshooting category.
-
-
-Link to the Elasticsearch code
-------------------------------
-
-Here's a link to the search view in the master branch:
-
-https://github.com/mozilla/kitsune/blob/master/kitsune/search/views.py

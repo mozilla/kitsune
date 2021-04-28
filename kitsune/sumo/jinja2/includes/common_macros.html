@@ -284,7 +284,6 @@
 {% macro _tools_nav_links(user, default_language, active=None) -%}
   <li><a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}</a></li>
   <li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Hub') }}</a></li>
-  <li><a href="{{ url('search.advanced') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Advanced Search">{{ _('Advanced Search') }}</a></li>
   <li><a href="/kb/category/60" data-event-category="navigation" data-event-action="main navigation" data-event-label="Templates">{{ _('Templates') }}</a></li>
   <li><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Dashboards">{{ _('Dashboards') }}</a></li>
   <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>

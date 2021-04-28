@@ -4,25 +4,17 @@
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q), ('WT.oss_r', num_results), ('robots', 'noindex')) %}
 
-{% if advanced %}
-  {% set title = _('Advanced Search Results') %}
-  {% set crumbs = [(url('search.advanced'), _('Advanced Search')), (None, _('Results'))] %}
-{% endif %}
-
 {% block masthead %}
-{% if not advanced %}
 <div class="search-results-visible">
   <section class="home-search-section sumo-page-section--lg shade-bg">
     <div class="mzp-l-content">
       <div class="home-search-section--content">
         <h1 class="sumo-page-heading">{{ _('Search Support') }}</h1>
         {{ basic_search_form(True) }}
-        <p><a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a></p>
       </div>
     </div>
   </section>
 </div>
-{% endif %}
 {% endblock %}
 
 
@@ -86,27 +78,24 @@
 
 
 {% block side %}
-  {% if not advanced %}
-    {# Don't show filtering to advanced search users #}
-    {% set base_url = url('search')|urlparams(q=q) %}
-    {% set base_product_url = base_url %}
-    {% if w != 3 %}
-      {% set base_product_url = base_product_url|urlparams(w=w) %}
-    {% endif %}
-    <ul id="product-filter" class="search-filter sidebar-nav">
-      <li {{ product|class_selected(None) }}>
-        <a href="{{ base_product_url|urlparams(all_products=1) }}">
-          {{ _('All Products') }}
+  {% set base_url = url('search')|urlparams(q=q) %}
+  {% set base_product_url = base_url %}
+  {% if w != 3 %}
+    {% set base_product_url = base_product_url|urlparams(w=w) %}
+  {% endif %}
+  <ul id="product-filter" class="search-filter sidebar-nav">
+    <li {{ product|class_selected(None) }}>
+      <a href="{{ base_product_url|urlparams(all_products=1) }}">
+        {{ _('All Products') }}
+      </a>
+    </li>
+    {% for p in products %}
+      <li {{ product|class_selected(p) }}>
+        <a href="{{ base_product_url|urlparams(product=p.slug) }}">
+          {{ pgettext('DB: products.Product.title', p.title) }}
         </a>
       </li>
-      {% for p in products %}
-        <li {{ product|class_selected(p) }}>
-          <a href="{{ base_product_url|urlparams(product=p.slug) }}">
-            {{ pgettext('DB: products.Product.title', p.title) }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+    {% endfor %}
+  </ul>
   {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}
