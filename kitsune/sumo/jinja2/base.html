@@ -1,12 +1,5 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, download_firefox, field, checkbox, favicon with context %}
 
-{% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
-  {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
-  {% set SURVEY_GIZMOS = ['beacon'] %}
-{% else %}
-  {% set SURVEY_GIZMOS = [] %}
-{% endif %}
-
 {% if request.LANGUAGE_CODE == 'xx' %}
   {% set meta = [('robots', 'noindex')] %}
 {% endif %}
@@ -64,15 +57,9 @@
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
       data-media-url="{{ MEDIA_URL }}"
-      {% if SURVEY_GIZMOS %}
-        data-survey-gizmos="{{ SURVEY_GIZMOS|json }}"
-      {% else %}
-        data-survey-gizmos="[]"
-      {% endif %}
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
       {% endif %}
-      data-waffle-refresh-survey="{{ waffle.sample('refresh-survey')|json }}"
 {% if extra_body_attrs -%}
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
