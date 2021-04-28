@@ -1,24 +1,15 @@
 import logging
 import re
-import time
 from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 from timezone_field import TimeZoneField
 
 from kitsune.lib.countries import COUNTRIES
 from kitsune.products.models import Product
-from kitsune.search.es_utils import UnindexMeBro
-from kitsune.search.models import (
-    SearchMappingType,
-    SearchMixin,
-    register_for_indexing,
-    register_mapping_type,
-)
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
@@ -33,7 +24,7 @@ SET_ID_PREFIX = "https://schemas.accounts.firefox.com/event/"
 
 
 @auto_delete_files
-class Profile(ModelBase, SearchMixin):
+class Profile(ModelBase):
     """Profile model for django users."""
 
     user = models.OneToOneField(
@@ -148,10 +139,6 @@ class Profile(ModelBase, SearchMixin):
         return self.name if self.name else self.user.username
 
     @classmethod
-    def get_mapping_type(cls):
-        return UserMappingType
-
-    @classmethod
     def get_serializer(cls, serializer_type="full"):
         # Avoid circular import
         from kitsune.users import api
@@ -208,112 +195,6 @@ class Profile(ModelBase, SearchMixin):
         from kitsune.questions.models import AnswerVote
 
         return AnswerVote.objects.filter(answer__creator=self.user, helpful=True).count()
-
-
-@register_mapping_type
-class UserMappingType(SearchMappingType):
-    list_keys = [
-        "twitter_usernames",
-        "itwitter_usernames",
-    ]
-
-    @classmethod
-    def get_model(cls):
-        return Profile
-
-    @classmethod
-    def get_index_group(cls):
-        return "non-critical"
-
-    @classmethod
-    def get_mapping(cls):
-        return {
-            "properties": {
-                "id": {"type": "long"},
-                "model": {"type": "string", "index": "not_analyzed"},
-                "url": {"type": "string", "index": "not_analyzed"},
-                "indexed_on": {"type": "integer"},
-                "username": {"type": "string", "index": "not_analyzed"},
-                "display_name": {"type": "string", "index": "not_analyzed"},
-                "twitter_usernames": {"type": "string", "index": "not_analyzed"},
-                "last_contribution_date": {"type": "date"},
-                # lower-cased versions for querying:
-                "iusername": {"type": "string", "index": "not_analyzed"},
-                "idisplay_name": {"type": "string", "analyzer": "whitespace"},
-                "itwitter_usernames": {"type": "string", "index": "not_analyzed"},
-                "avatar": {"type": "string", "index": "not_analyzed"},
-                "suggest": {"type": "completion", "analyzer": "whitespace", "payloads": True},
-            }
-        }
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        """Extracts interesting thing from a Thread and its Posts"""
-        if obj is None:
-            model = cls.get_model()
-            obj = model.objects.select_related("user").get(pk=obj_id)
-
-        if not obj.user.is_active:
-            raise UnindexMeBro()
-
-        d = {}
-        d["id"] = obj.pk
-        d["model"] = cls.get_mapping_type_name()
-        d["url"] = obj.get_absolute_url()
-        d["indexed_on"] = int(time.time())
-
-        d["username"] = obj.user.username
-        d["display_name"] = obj.display_name
-        d["twitter_usernames"] = []
-
-        d["last_contribution_date"] = obj.last_contribution_date
-
-        d["iusername"] = obj.user.username.lower()
-        d["idisplay_name"] = obj.display_name.lower()
-        d["itwitter_usernames"] = []
-
-        from kitsune.users.templatetags.jinja_helpers import profile_avatar
-
-        d["avatar"] = profile_avatar(obj.user, size=120)
-
-        d["suggest"] = {
-            "input": [d["iusername"], d["idisplay_name"]],
-            "output": _("{displayname} ({username})").format(
-                displayname=d["display_name"], username=d["username"]
-            ),
-            "payload": {"user_id": d["id"]},
-        }
-
-        return d
-
-    @classmethod
-    def suggest_completions(cls, text):
-        """Suggest completions for the text provided."""
-        USER_SUGGEST = "user-suggest"
-        es = UserMappingType.search().get_es()
-
-        results = es.suggest(
-            index=cls.get_index(),
-            body={USER_SUGGEST: {"text": text.lower(), "completion": {"field": "suggest"}}},
-        )
-
-        if results[USER_SUGGEST][0]["length"] > 0:
-            return results[USER_SUGGEST][0]["options"]
-
-        return []
-
-
-register_for_indexing("users", Profile)
-
-
-def get_profile(u):
-    try:
-        return Profile.objects.get(user=u)
-    except Profile.DoesNotExist:
-        return None
-
-
-register_for_indexing("users", User, instance_to_indexee=get_profile)
 
 
 class Setting(ModelBase):
