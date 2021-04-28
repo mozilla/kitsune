@@ -4,20 +4,7 @@
   var locale = $('html').attr('lang');
   const searchTitle = "Search | Mozilla Support";
 
-  const localStorageUseV2 = {
-    "true": true,
-    "false": false,
-  }[window.localStorage.getItem("enable_search_v2")];
-
-  // the local storage flag overrides everything else:
-  if (
-    localStorageUseV2 ??
-    ($("body").data("readonly") || window.waffle?.flag_is_active("instant_search_v2"))
-  ) {
-    var search = new k.Search("/" + locale + "/search/v2/");
-  } else {
-    var search = new k.Search("/" + locale + "/search");
-  }
+  var search = new k.Search("/" + locale + "/search/");
 
   var cxhr = new k.CachedXHR();
   var aaq_explore_step = $("#question-search-masthead").length > 0;
@@ -52,7 +39,7 @@
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
     $('#instant-search-content').remove();
-    $('[data-instant-search="form"] input[name="q"]').each(function () {
+    $('[data-instant-search="form"] input[name="q"]').each(function() {
       $(this).val("");
     });
     $(".page-heading--intro-text").show();
@@ -153,7 +140,7 @@
 
       k.InstantSearchSettings.hideContent();
 
-      $form.find('input').each(function () {
+      $form.find('input').each(function() {
         if ($(this).attr('type') === 'submit') {
           return true;
         }
@@ -163,7 +150,7 @@
         if ($(this).attr('name') === 'q') {
           var value = $(this).val();
           // update the values in all search forms which aren't the one the user is typing into
-          $('[data-instant-search="form"]').not($form).each(function () {
+          $('[data-instant-search="form"]').not($form).each(function() {
             $(this).find('input[name="q"]').val(value);
           });
           return true;
@@ -171,7 +158,7 @@
         params[$(this).attr('name')] = $(this).val();
       });
 
-      searchTimeout = setTimeout(function () {
+      searchTimeout = setTimeout(function() {
         if (search.hasLastQuery) {
           trackEvent('Instant Search', 'Exit Search', search.lastQueryUrl());
         }
@@ -232,7 +219,7 @@
     var $mainInput = $('#support-search-masthead input[name=q]');
     var thisLink = $(this).text();
     $('#support-search-masthead input[name=q]').focus().val(thisLink);
-    $mainInput.trigger( "keyup" );
+    $mainInput.trigger("keyup");
     ev.preventDefault();
   });
 
@@ -262,7 +249,7 @@
     let state = e.type == "popstate" ? e.state : history.state;
     if (state?.query) {
       window.k.InstantSearchSettings.hideContent();
-      $('[data-instant-search="form"] input[name="q"]').each(function () {
+      $('[data-instant-search="form"] input[name="q"]').each(function() {
         $(this).val(state.query);
       });
       search.params = state.params;

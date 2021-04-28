@@ -5,12 +5,10 @@ from itertools import chain
 
 import bleach
 import jinja2
-from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render_to_response
 from django.utils.html import escape
-from django.utils.http import urlquote
-from django.utils.translation import pgettext, pgettext_lazy
+from django.utils.translation import pgettext_lazy
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import cache_page
 from elasticutils.contrib.django import ES_EXCEPTIONS
@@ -18,14 +16,9 @@ from elasticutils.utils import format_explanation
 
 from kitsune import search as constants
 from kitsune.products.models import Product
-from kitsune.search.es_utils import handle_es_errors
 from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.search_utils import generate_simple_search
 from kitsune.search.utils import clean_excerpt, locale_or_default
-from kitsune.sumo.api_utils import JSONRenderer
-from kitsune.sumo.json_utils import markup_json
-from kitsune.sumo.templatetags.jinja_helpers import Paginator
-from kitsune.sumo.utils import paginate
 from kitsune.wiki.facets import documents_for
 
 log = logging.getLogger("k.search")
@@ -110,120 +103,6 @@ def build_results_list(pages, is_json):
         results.append(result)
 
     return results
-
-
-@markup_json
-@handle_es_errors(_es_down_template)
-def simple_search(request):
-    """Elasticsearch-specific simple search view.
-
-    This view is for end user searching of the Knowledge Base and
-    Support Forum. Filtering options are limited to:
-
-    * product (`product=firefox`, for example, for only Firefox results)
-    * document type (`w=2`, for example, for Support Forum questions only)
-
-    """
-
-    to_json = JSONRenderer().render
-    template = "search/results.html"
-
-    # Build form.
-    search_form = SimpleSearchForm(request.GET, auto_id=False)
-
-    # Validate request.
-    if not search_form.is_valid():
-        if request.IS_JSON:
-            return HttpResponse(
-                json.dumps({"error": _("Invalid search data.")}),
-                content_type=request.CONTENT_TYPE,
-                status=400,
-            )
-
-        t = "search/form.html"
-        return cache_control(
-            render(request, t, {"request": request, "search_form": search_form}),
-            settings.SEARCH_CACHE_PERIOD,
-        )
-
-    # Generate search.
-    cleaned = search_form.cleaned_data
-
-    language = locale_or_default(cleaned["language"] or request.LANGUAGE_CODE)
-    lang_name = settings.LANGUAGES_DICT.get(language.lower()) or ""
-
-    searcher = generate_simple_search(search_form, language, with_highlights=True)
-    searcher = searcher[: settings.SEARCH_MAX_RESULTS]
-
-    # Generate output.
-    pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
-
-    if pages.paginator.count == 0:
-        fallback_results = _fallback_results(language, cleaned["product"])
-        results = []
-
-    else:
-        fallback_results = None
-        results = build_results_list(pages, request.IS_JSON)
-
-    product = Product.objects.filter(slug__in=cleaned["product"])
-    if product:
-        product_titles = [pgettext("DB: products.Product.title", p.title) for p in product]
-    else:
-        product_titles = [_("All Products")]
-
-    # FIXME: This is probably bad l10n.
-    product_titles = ", ".join(product_titles)
-
-    data = {
-        "num_results": pages.paginator.count,
-        "results": results,
-        "fallback_results": fallback_results,
-        "product_titles": product_titles,
-        "q": cleaned["q"],
-        "w": cleaned["w"],
-        "lang_name": lang_name,
-        "products": Product.objects.filter(visible=True),
-    }
-
-    if request.IS_JSON:
-        data["total"] = len(data["results"])
-        data["products"] = [{"slug": p.slug, "title": p.title} for p in data["products"]]
-
-        if product:
-            data["product"] = product[0].slug
-
-        pages = Paginator(pages)
-        data["pagination"] = dict(
-            number=pages.pager.number,
-            num_pages=pages.pager.paginator.num_pages,
-            has_next=pages.pager.has_next(),
-            has_previous=pages.pager.has_previous(),
-            max=pages.max,
-            span=pages.span,
-            dotted_upper=pages.pager.dotted_upper,
-            dotted_lower=pages.pager.dotted_lower,
-            page_range=pages.pager.page_range,
-            url=pages.pager.url,
-        )
-        if not results:
-            data["message"] = constants.NO_MATCH
-
-        json_data = to_json(data)
-        if request.JSON_CALLBACK:
-            json_data = request.JSON_CALLBACK + "(" + json_data + ");"
-        return HttpResponse(json_data, content_type=request.CONTENT_TYPE)
-
-    data.update({"product": product, "pages": pages, "search_form": search_form})
-    resp = cache_control(render(request, template, data), settings.SEARCH_CACHE_PERIOD)
-    resp.set_cookie(
-        settings.LAST_SEARCH_COOKIE,
-        urlquote(cleaned["q"]),
-        max_age=3600,
-        secure=False,
-        httponly=False,
-    )
-    return resp
 
 
 @cache_page(60 * 15)  # 15 minutes.
