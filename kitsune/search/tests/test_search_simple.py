@@ -2,17 +2,16 @@ import json
 
 from django.conf import settings
 from django.utils.http import urlquote
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.forums.tests import PostFactory, ThreadFactory
 from kitsune.products.tests import ProductFactory
-from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
+from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory, QuestionFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory, RevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
 
 class SimpleSearchTests(ElasticTestCase):
@@ -63,20 +62,6 @@ class SimpleSearchTests(ElasticTestCase):
         )
         eq_(response["Content-Type"], "application/x-javascript")
         eq_(response.status_code, 200)
-
-    def test_json_empty_query(self):
-        """Empty query returns JSON format"""
-        # NOTE: We need to follow redirects here because advanced search
-        # is at a different URL and gets redirected.
-        response = self.client.get(
-            reverse("search"),
-            {
-                "format": "json",
-                "a": 0,
-            },
-            follow=True,
-        )
-        eq_(response["Content-Type"], "application/json")
 
     def test_page_invalid(self):
         """Ensure non-integer param doesn't throw exception."""
