@@ -7,7 +7,6 @@ from elasticsearch import RequestsHttpConnection
 from kitsune import search as constants
 from kitsune.questions.models import QuestionMappingType
 from kitsune.search import es_utils
-from kitsune.wiki.models import DocumentMappingType
 
 
 def apply_boosts(searcher):
@@ -59,21 +58,6 @@ def generate_simple_search(search_form, language, with_highlights=False):
     cleaned_q = cleaned["q"]
     products = cleaned["product"]
 
-    # Handle wiki filters
-    if cleaned["w"] & constants.WHERE_WIKI:
-        wiki_f = es_utils.F(
-            model="wiki_document",
-            document_category__in=settings.SEARCH_DEFAULT_CATEGORIES,
-            document_locale=language,
-            document_is_archived=False,
-        )
-
-        for p in products:
-            wiki_f &= es_utils.F(product=p)
-
-        doctypes.append(DocumentMappingType.get_mapping_type_name())
-        final_filter |= wiki_f
-
     # Handle question filters
     if cleaned["w"] & constants.WHERE_SUPPORT:
         question_f = es_utils.F(
@@ -98,7 +82,6 @@ def generate_simple_search(search_form, language, with_highlights=False):
         # Set up the highlights. Show the entire field highlighted.
         searcher = searcher.highlight(
             "question_content",  # support forum
-            "document_summary",  # kb
             pre_tags=["<b>"],
             post_tags=["</b>"],
             number_of_fragments=0,
@@ -107,9 +90,7 @@ def generate_simple_search(search_form, language, with_highlights=False):
     searcher = apply_boosts(searcher)
 
     # Build the query
-    query_fields = chain(
-        *[cls.get_query_fields() for cls in [DocumentMappingType, QuestionMappingType]]
-    )
+    query_fields = chain(*[cls.get_query_fields() for cls in [QuestionMappingType]])
     query = {}
     # Create match and match_phrase queries for every field
     # we want to search.

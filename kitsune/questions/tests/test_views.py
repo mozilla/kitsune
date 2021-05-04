@@ -21,7 +21,6 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient, eq_msg, get, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
 # Note:
@@ -66,11 +65,6 @@ class AAQSearchTests(ElasticTestCase):
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
         q = QuestionFactory(product=p, title="CupcakesQuestion cupcakes")
 
-        d = DocumentFactory(title="CupcakesKB cupcakes", category=10)
-        d.products.add(p)
-
-        RevisionFactory(document=d, is_approved=True)
-
         self.refresh()
 
         url = urlparams(
@@ -82,22 +76,17 @@ class AAQSearchTests(ElasticTestCase):
         eq_(200, response.status_code)
 
         assert b"CupcakesQuestion" in response.content
-        assert b"CupcakesKB" in response.content
 
         # Verify that archived articles and questions aren't shown...
         # Archive both and they shouldn't appear anymore.
         q.is_archived = True
         q.save()
-        d.is_archived = True
-        d.save()
-
         self.refresh()
 
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
         assert b"CupcakesQuestion" not in response.content
-        assert b"CupcakesKB" not in response.content
 
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""

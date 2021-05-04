@@ -10,8 +10,6 @@ from kitsune.questions.models import Question, QuestionMappingType
 from kitsune.questions.api import QuestionSerializer
 from kitsune.search import es_utils
 from kitsune.sumo.api_utils import GenericAPIException
-from kitsune.wiki.api import DocumentDetailSerializer
-from kitsune.wiki.models import Document, DocumentMappingType
 
 
 def positive_integer(value):
@@ -84,10 +82,7 @@ def suggest(request):
         {
             "questions": _question_suggestions(
                 searcher, data["q"], data["locale"], data["product"], data["max_questions"]
-            ),
-            "documents": _document_suggestions(
-                searcher, data["q"], data["locale"], data["product"], data["max_documents"]
-            ),
+            )
         }
     )
 
@@ -116,33 +111,6 @@ def _question_suggestions(searcher, text, locale, product, max_results):
     ]
 
     return questions
-
-
-def _document_suggestions(searcher, text, locale, product, max_results):
-    if max_results <= 0:
-        return []
-
-    search_filter = es_utils.F(
-        model="wiki_document",
-        document_category__in=settings.SEARCH_DEFAULT_CATEGORIES,
-        document_locale=locale,
-        document_is_archived=False,
-    )
-
-    if product:
-        search_filter &= es_utils.F(product=product)
-
-    documents = []
-    searcher = _query(searcher, DocumentMappingType, search_filter, text, locale)
-
-    doc_ids = [result["id"] for result in searcher[:max_results]]
-
-    documents = [
-        DocumentDetailSerializer(instance=doc).data
-        for doc in Document.objects.filter(id__in=doc_ids)
-    ]
-
-    return documents
 
 
 def _query(searcher, mapping_type, search_filter, query_text, locale):
