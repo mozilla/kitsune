@@ -75,19 +75,19 @@ def job_send_welcome_emails():
 
 
 # Every hour.
-@scheduled_job(
-    "cron",
-    month="*",
-    day="*",
-    hour="*",
-    minute="00",
-    max_instances=1,
-    coalesce=True,
-    skip=(settings.READ_ONLY or settings.STAGE),
-)
-@babis.decorator(ping_after=settings.DMS_PROCESS_EXIT_SURVEYS)
-def job_process_exit_surveys():
-    call_command("process_exit_surveys")
+# @scheduled_job(
+#     "cron",
+#     month="*",
+#     day="*",
+#     hour="*",
+#     minute="00",
+#     max_instances=1,
+#     coalesce=True,
+#     skip=(settings.READ_ONLY or settings.STAGE),
+# )
+# @babis.decorator(ping_after=settings.DMS_PROCESS_EXIT_SURVEYS)
+# def job_process_exit_surveys():
+#     call_command("process_exit_surveys")
 
 
 @scheduled_job("cron", month="*", day="*", hour="*", minute="45", max_instances=1, coalesce=True)
@@ -192,19 +192,19 @@ def job_update_l10n_coverage_metrics():
     call_command("update_l10n_coverage_metrics")
 
 
-@scheduled_job(
-    "cron",
-    month="*",
-    day="*",
-    hour="01",
-    minute="00",
-    max_instances=1,
-    coalesce=True,
-    skip=(settings.READ_ONLY or settings.STAGE),
-)
-@babis.decorator(ping_after=settings.DMS_CALCULATE_CSAT_METRICS)
-def job_calculate_csat_metrics():
-    call_command("calculate_csat_metrics")
+# @scheduled_job(
+#     "cron",
+#     month="*",
+#     day="*",
+#     hour="01",
+#     minute="00",
+#     max_instances=1,
+#     coalesce=True,
+#     skip=(settings.READ_ONLY or settings.STAGE),
+# )
+# @babis.decorator(ping_after=settings.DMS_CALCULATE_CSAT_METRICS)
+# def job_calculate_csat_metrics():
+#     call_command("calculate_csat_metrics")
 
 
 @scheduled_job(
@@ -273,19 +273,19 @@ def job_auto_archive_old_questions():
     call_command("auto_archive_old_questions")
 
 
-@scheduled_job(
-    "cron",
-    month="*",
-    day="*",
-    hour="07",
-    minute="00",
-    max_instances=1,
-    coalesce=True,
-    skip=(settings.READ_ONLY or settings.STAGE),
-)
-@babis.decorator(ping_after=settings.DMS_SURVEY_RECENT_ASKERS)
-def job_survey_recent_askers():
-    call_command("survey_recent_askers")
+# @scheduled_job(
+#     "cron",
+#     month="*",
+#     day="*",
+#     hour="07",
+#     minute="00",
+#     max_instances=1,
+#     coalesce=True,
+#     skip=(settings.READ_ONLY or settings.STAGE),
+# )
+# @babis.decorator(ping_after=settings.DMS_SURVEY_RECENT_ASKERS)
+# def job_survey_recent_askers():
+#     call_command("survey_recent_askers")
 
 
 # @scheduled_job('cron', month='*', day='*', hour='09', minute='00', max_instances=1, coalesce=True)

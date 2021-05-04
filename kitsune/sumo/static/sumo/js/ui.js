@@ -26,7 +26,7 @@
     }, 100));
 
     if ($.datepicker) {
-      $('input[type="date"]').attr('type','text').datepicker();
+      $('input[type="date"]').attr('type', 'text').datepicker();
     }
 
     $('.ui-truncatable .show-more-link').click(function(ev) {
@@ -79,7 +79,7 @@
       }
     });
 
-    $('[data-close-memory="session"]').each(function () {
+    $('[data-close-memory="session"]').each(function() {
       var $this = $(this);
       var id = $this.data("close-id");
       if (id) {
@@ -223,7 +223,7 @@
       });
 
       $this.css('height', height + 'px');
-      $container.css({'width': width + 'px', 'height': height + 'px'});
+      $container.css({ 'width': width + 'px', 'height': height + 'px' });
       $container.children().css('height', height + 'px');
 
       var $left = $('#' + $this.data('left'));
@@ -390,10 +390,6 @@
     if (Mozilla && Mozilla.UITour) {
       // Send event to GA for metrics/reporting purposes.
       trackEvent('Refresh Firefox', 'click refresh button');
-
-      if (JSON.parse($('body').data('waffle-refresh-survey'))) {
-        $.cookie('showFirefoxResetSurvey', '1', {expires: 365});
-      }
 
       Mozilla.UITour.resetFirefox();
     }

@@ -27,7 +27,6 @@ PIPELINE_JS = {
             "mailcheck/src/mailcheck.js",
             "sumo/js/ui.js",
             "sumo/js/analytics.js",
-            "sumo/js/surveygizmo.js",
             "sumo/js/instant_search.es6",
             "sumo/js/responsive-nav-toggle.js",
             "sumo/js/profile-avatars.js",
