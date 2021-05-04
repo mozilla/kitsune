@@ -227,21 +227,6 @@ def job_report_employee_answers():
     month="*",
     day="*",
     hour="01",
-    minute="30",
-    max_instances=1,
-    coalesce=True,
-    skip=settings.STAGE,
-)
-@babis.decorator(ping_after=settings.DMS_REINDEX_USERS_THAT_CONTRIBUTED_YESTERDAY)
-def job_reindex_users_that_contributed_yesterday():
-    call_command("reindex_users_that_contributed_yesterday")
-
-
-@scheduled_job(
-    "cron",
-    month="*",
-    day="*",
-    hour="01",
     minute="40",
     max_instances=1,
     coalesce=True,
