@@ -11,6 +11,10 @@ class BaseToken(ABC):
     def __str__(self):
         return str("".join(self.tokens))
 
+    def __repr__(self):
+        args = ", ".join([f"{repr(x)}" for x in self.tokens])
+        return f"{type(self).__name__}({args})"
+
     @abstractmethod
     def elastic_query(self, context):
         """Create an elastic query out of this token."""
@@ -18,6 +22,9 @@ class BaseToken(ABC):
 
 
 class TermToken(BaseToken):
+    def __repr__(self):
+        return f"t{repr(self.tokens.term)}"
+
     def __iadd__(self, other):
         if type(other) is not type(self):
             raise TypeError
@@ -35,11 +42,21 @@ class TermToken(BaseToken):
 
 
 class RangeToken(BaseToken):
+    def __repr__(self):
+        return "RangeToken(field={}, operator={}, value={})".format(
+            repr(self.tokens.field), repr(self.tokens.operator), repr(self.tokens.value)
+        )
+
     def elastic_query(self, context):
         return Q("range", **{self.tokens.field: {self.tokens.operator: self.tokens.value}})
 
 
 class ExactToken(BaseToken):
+    def __repr__(self):
+        return "ExactToken(field={}, value={})".format(
+            repr(self.tokens.field), repr(self.tokens.value)
+        )
+
     def elastic_query(self, context):
         field = self.tokens.field
         value = self.tokens.value
