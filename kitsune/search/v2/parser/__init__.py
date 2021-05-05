@@ -18,7 +18,7 @@ from .tokens import TermToken, RangeToken, ExactToken
 # DRY things up
 _colon = Literal(":")
 _token = Regex(r"[^\(\)\s]+")  # everything but chars which conflict with the below operators
-_arg = Word(alphas + "_")
+_arg = Word(alphas + "_.")
 _value = (Regex(r"\"[^\"]+\"") | Regex(r"\([^\(\)]+\)")).setParseAction(removeQuotes) | _token
 
 # operators:
@@ -63,6 +63,6 @@ class Parser(object):
     def __repr__(self):
         return repr(self.parsed)
 
-    def elastic_query(self, search):
-        context = {"fields": search.get_fields(), "settings": search.get_advanced_settings()}
+    def elastic_query(self, **context):
+        context = {"fields": context.get("fields", {}), "settings": context.get("settings", {})}
         return self.parsed.elastic_query(context)

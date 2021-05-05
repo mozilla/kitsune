@@ -348,7 +348,9 @@ class SumoSearch(SumoSearchInterface):
 
     def build_query(self):
         """Build a query to search over a specific set of documents."""
-        return Parser(self.query).elastic_query(self)
+        return Parser(self.query).elastic_query(
+            fields=self.get_fields(), settings=self.get_advanced_settings()
+        )
 
     def run(self, key: Union[int, slice] = slice(0, settings.SEARCH_RESULTS_PER_PAGE)):
         """Perform search, placing the results in `self.results`, and the total
