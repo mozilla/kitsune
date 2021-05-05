@@ -78,6 +78,30 @@ class QuestionSearch(SumoSearch):
             f"answer_content.{self.locale}",
         ]
 
+    def get_advanced_settings(self):
+        return {
+            "field_mappings": {
+                "title": f"question_title.{self.locale}",
+                "content": f"question_content.{self.locale}",
+            },
+            "exact_mappings": {
+                "product": {
+                    "model": "products.Product",
+                    "column": "slug__iexact",
+                    "attribute": "id",
+                    "field": "question_product_id",
+                    "help": "a product's slug (found in the url of its page)",
+                },
+                "creator": {
+                    "model": "auth.User",
+                    "column": "username__iexact",
+                    "attribute": "id",
+                    "field": "question_creator_id",
+                    "help": "a user's username",
+                },
+            },
+        }
+
     def get_highlight_fields_options(self):
         fields = [
             f"question_content.{self.locale}",
@@ -151,6 +175,23 @@ class WikiSearch(SumoSearch):
             f"summary.{self.locale}^4",
             f"content.{self.locale}^2",
         ]
+
+    def get_advanced_settings(self):
+        return {
+            "field_mappings": {
+                "title": f"title.{self.locale}",
+                "content": f"content.{self.locale}",
+            },
+            "exact_mappings": {
+                "product": {
+                    "model": "products.Product",
+                    "column": "slug__iexact",
+                    "attribute": "id",
+                    "field": "product_ids",
+                    "help": "a product's slug (found in the url of its page)",
+                },
+            },
+        }
 
     def get_highlight_fields_options(self):
         fields = [
@@ -235,6 +276,22 @@ class ForumSearch(SumoSearch):
 
     def get_fields(self):
         return ["thread_title", "content"]
+
+    def get_advanced_settings(self):
+        return {
+            "field_mappings": {
+                "title": "thread_title",
+            },
+            "exact_mappings": {
+                "creator": {
+                    "model": "auth.User",
+                    "column": "username__iexact",
+                    "attribute": "id",
+                    "field": "author_id",
+                    "help": "a user's username",
+                },
+            },
+        }
 
     def get_highlight_fields_options(self):
         return []

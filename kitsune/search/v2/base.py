@@ -12,7 +12,6 @@ from django.utils.translation import ugettext as _
 from elasticsearch7.exceptions import NotFoundError
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
-from elasticsearch_dsl import Q as DSLQ
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
 from elasticsearch_dsl.utils import AttrDict
@@ -23,6 +22,7 @@ from kitsune.search.config import (
     UPDATE_RETRY_ON_CONFLICT,
 )
 from kitsune.search.v2.es7_utils import es7_client
+from kitsune.search.v2.parser import Parser
 
 
 class SumoDocument(DSLDocument):
@@ -274,6 +274,11 @@ class SumoSearchInterface(ABC):
         ...
 
     @abstractmethod
+    def get_advanced_settings(self):
+        """Configuration for advanced search."""
+        ...
+
+    @abstractmethod
     def get_highlight_fields_options(self):
         """An array of tuples of fields to highlight and their options."""
         ...
@@ -338,18 +343,12 @@ class SumoSearch(SumoSearchInterface):
             return self.results[0]
         return self.results
 
+    def get_advanced_settings(self):
+        return {}
+
     def build_query(self):
         """Build a query to search over a specific set of documents."""
-        return DSLQ(
-            "simple_query_string",
-            query=self.query,
-            default_operator=self.default_operator,
-            fields=self.get_fields(),
-            # everything apart from WHITESPACE as that interferes with char mappings
-            # and synonyms with whitespace in them by breaking up the phrase into tokens,
-            # before they have a chance to go through the filter:
-            flags="AND|ESCAPE|FUZZY|NEAR|NOT|OR|PHRASE|PRECEDENCE|PREFIX|SLOP",
-        )
+        return Parser(self).elastic_query()
 
     def run(self, key: Union[int, slice] = slice(0, settings.SEARCH_RESULTS_PER_PAGE)):
         """Perform search, placing the results in `self.results`, and the total
