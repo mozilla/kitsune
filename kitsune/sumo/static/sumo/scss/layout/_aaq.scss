@@ -1,0 +1,41 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+.aaq {
+    .sumo-l-two-col--sidebar {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .field,
+    .form-as-ul > li {
+        margin-bottom: p.$spacing-2xl;
+    }
+
+    .add-attachment {
+        margin-bottom: 0;
+    }
+
+    #id_content {
+        resize: vertical;
+    }
+
+    #troubleshooting-field {
+        margin: p.$spacing-md 0;
+    }
+
+    .aaq-form-buttons {
+        border-top: 1px solid var(--color-marketing-gray-03);
+        padding-top: p.$spacing-2xl;
+    }
+}
+
+.aaq-widget {
+    background-color: var(--card-bg);
+}
+
+aside .aaq-widget {
+    margin-bottom: p.$spacing-lg;
+}

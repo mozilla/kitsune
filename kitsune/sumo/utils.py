@@ -9,21 +9,25 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.utils import translation
-from django.utils.http import urlencode, is_safe_url
+from django.utils.http import is_safe_url, urlencode
+from ratelimit.utils import is_ratelimited as rl_is_ratelimited
+from timeout_decorator import timeout
 
-import ratelimit.helpers
-
-from kitsune.sumo import paginator
+from kitsune.lib.tlds import VALID_TLDS
 from kitsune.journal.models import Record
+from kitsune.sumo import paginator
+
+POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
+POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 
 
-def paginate(request, queryset, per_page=20, count=None):
+def paginate(request, queryset, per_page=20, paginator_cls=paginator.Paginator, **kwargs):
     """Get a Paginator, abstracting some common paging actions."""
-    p = paginator.Paginator(queryset, per_page, count=count)
+    p = paginator_cls(queryset, per_page, **kwargs)
 
     # Get the page from the request, make sure it's an int.
     try:
-        page = int(request.GET.get('page', 1))
+        page = int(request.GET.get("page", 1))
     except ValueError:
         page = 1
 
@@ -43,7 +47,7 @@ def simple_paginate(request, queryset, per_page=20):
     p = paginator.SimplePaginator(queryset, per_page)
 
     # Let the view the handle exceptions.
-    page = p.page(request.GET.get('page', 1))
+    page = p.page(request.GET.get("page", 1))
     page.url = build_paged_url(request)
 
     return page
@@ -53,12 +57,11 @@ def build_paged_url(request):
     """Build the url for the paginator."""
     base = request.build_absolute_uri(request.path)
 
-    items = [(k, v) for k in request.GET if k != 'page'
-             for v in request.GET.getlist(k) if v]
+    items = [(k, v) for k in request.GET if k != "page" for v in request.GET.getlist(k) if v]
 
     qsa = urlencode(items)
 
-    return u'%s?%s' % (base, qsa)
+    return "%s?%s" % (base, qsa)
 
 
 # By Ned Batchelder.
@@ -76,8 +79,8 @@ def chunked(seq, n, length=None):
     """
     if not length:
         length = len(seq)
-    for i in xrange(0, length, n):
-        yield seq[i:i + n]
+    for i in range(0, length, n):
+        yield seq[i : i + n]
 
 
 def smart_int(string, fallback=0):
@@ -88,23 +91,14 @@ def smart_int(string, fallback=0):
         return fallback
 
 
-def delete_files_for_obj(sender, **kwargs):
+def delete_files_for_obj(sender, instance, **kwargs):
     """Signal receiver of a model class and instance. Deletes its files."""
-    obj = kwargs.pop('instance')
-    for field_name in sender._meta.get_all_field_names():
-        # Skip related models' attrs.
-        if not hasattr(obj, field_name):
-            continue
-        # Get the class and value of the field.
-        try:
-            field_class = sender._meta.get_field(field_name)
-        except models.FieldDoesNotExist:
-            # This works around a weird issue in Django 1.7.
-            continue
-        field_value = getattr(obj, field_name)
+    for field in sender._meta.get_fields():
         # Check if it's a FileField instance and the field is set.
-        if isinstance(field_class, models.FileField) and field_value:
-            field_value.delete()
+        if isinstance(field, models.FileField):
+            field_file = getattr(instance, field.name)
+            if field_file:
+                field_file.delete()
 
 
 def auto_delete_files(cls):
@@ -125,14 +119,16 @@ def get_next_url(request):
     Useful for e.g. redirects back to original page after a POST request.
 
     """
-    if 'next' in request.POST:
-        url = request.POST.get('next')
-    elif 'next' in request.GET:
-        url = request.GET.get('next')
+    if "next" in request.POST:
+        url = request.POST.get("next")
+    elif "next" in request.GET:
+        url = request.GET.get("next")
     else:
-        url = request.META.get('HTTP_REFERER')
+        url = request.META.get("HTTP_REFERER")
 
-    if not settings.DEBUG and not is_safe_url(url, Site.objects.get_current().domain):
+    if not settings.DEBUG and not is_safe_url(
+        url, allowed_hosts={Site.objects.get_current().domain}
+    ):
         return None
 
     return url
@@ -162,31 +158,9 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
     # Make a copy, so that we don't modify the original
     dupe = json.loads(orig)
     if len(dupe[key]) < diff:
-        raise TruncationException("Can't truncate enough to satisfy "
-                                  "`max_length`.")
+        raise TruncationException("Can't truncate enough to satisfy " "`max_length`.")
     dupe[key] = dupe[key][:-diff]
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
-
-
-def user_or_ip(key_prefix):
-    """Used for generating rate limiting keys. Returns a function to pass on
-    to rate limit. The function return returns a key with IP address for
-    anonymous users, and pks for authenticated users.
-
-    Examples
-        Anonymous: 'uip:<key_prefix>:127.0.0.1'
-        Authenticated: 'uip:<key_prefix>:17859'
-    """
-
-    def _user_or_ip(request):
-        if hasattr(request, 'user') and request.user.is_authenticated():
-            key = str(request.user.pk)
-        else:
-            key = request.META.get('HTTP_X_CLUSTER_CLIENT_IP',
-                                   request.META['REMOTE_ADDR'])
-        return 'uip:%s:%s' % (key_prefix, key)
-
-    return _user_or_ip
 
 
 @contextmanager
@@ -213,34 +187,6 @@ def uselocale(locale):
     translation.activate(locale)
     yield
     translation.activate(currlocale)
-
-
-def rabbitmq_queue_size():
-    """Returns the rabbitmq queue size.
-
-    Two things to know about the queue size:
-
-    1. It's not 100% accurate, but the size is generally near that
-       number
-
-    2. I can't think of a second thing, but that first thing is
-       pretty important.
-
-    """
-    # FIXME: 2015-04-23: This is busted.
-
-    from celery import current_app
-
-    # FIXME: This uses a private method, but I'm not sure how else to
-    # figure this out, either.
-    app = current_app._get_current_object()
-    conn = app.connection()
-    chan = conn.default_channel
-
-    # FIXME: This hard-codes the exchange, but I'm not sure how else
-    # to figure it out.
-    queue = chan.queue_declare('celery', passive=True)
-    return queue.message_count
 
 
 class Progress(object):
@@ -277,7 +223,7 @@ class Progress(object):
         self.total = total
         self.milestone_stride = milestone_stride
         self.milestone_time = datetime.now()
-        self.estimated = '?'
+        self.estimated = "?"
 
     def tick(self, incr=1):
         """Advance the current progress, and redraw the screen.
@@ -289,25 +235,24 @@ class Progress(object):
         if self.current and self.current % self.milestone_stride == 0:
             now = datetime.now()
             duration = now - self.milestone_time
-            duration = duration.seconds + duration.microseconds / 1e6
-            rate = self.milestone_stride / duration
+            duration = duration.seconds + duration.microseconds // 1e6
+            rate = self.milestone_stride // duration
             remaining = self.total - self.current
-            self.estimated = int(remaining / rate / 60)
+            self.estimated = int(remaining // rate // 60)
             self.milestone_time = now
 
         self.draw()
 
     def draw(self):
         """Just redraw the screen."""
-        self._wr('{0.current}/{0.total} (Est. {0.estimated} min. remaining)\r'
-                 .format(self))
+        self._wr("{0.current}/{0.total} (Est. {0.estimated} min. remaining)\r".format(self))
 
     def _wr(self, s):
         sys.stdout.write(s)
         sys.stdout.flush()
 
 
-def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False):
+def is_ratelimited(request, name, rate, method=["POST"], skip_if=lambda r: False):
     """
     Reimplement ``ratelimit.helpers.is_ratelimited``, with sumo-specific details:
 
@@ -315,28 +260,93 @@ def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False
     * Log times when users are rate limited.
     * Always uses ``user_or_ip`` for the rate limit key.
     """
-    if skip_if(request) or request.user.has_perm('sumo.bypass_ratelimit'):
+    if skip_if(request) or request.user.has_perm("sumo.bypass_ratelimit"):
         request.limited = False
     else:
-        ratelimit.helpers.is_ratelimited(
-            request, increment=True, ip=False, rate=rate, keys=user_or_ip(name))
+        # TODO: make sure 'group' value below is sufficient
+        # TODO: make sure 'user_or_ip' is a valid replacement for
+        # old/deleted custom user_or_ip method
+        rl_is_ratelimited(
+            request, increment=True, group="sumo.utils.is_ratelimited", rate=rate, key="user_or_ip"
+        )
         if request.limited:
-            if hasattr(request, 'user') and request.user.is_authenticated():
+            if hasattr(request, "user") and request.user.is_authenticated:
                 key = 'user "{}"'.format(request.user.username)
             else:
-                ip = request.META.get('HTTP_X_CLUSTER_CLIENT_IP', request.META['REMOTE_ADDR'])
-                key = 'anonymous user ({})'.format(ip)
-            Record.objects.info('sumo.ratelimit', '{key} hit the rate limit for {name}',
-                                key=key, name=name)
+                ip = request.META.get("HTTP_X_CLUSTER_CLIENT_IP", request.META["REMOTE_ADDR"])
+                key = "anonymous user ({})".format(ip)
+            Record.objects.info(
+                "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
+            )
     return request.limited
 
 
 def get_browser(user_agent):
     """Get Browser Name from User Agent"""
 
-    match = re.search(r'(?i)(firefox|msie|chrome|safari|trident)', user_agent, re.IGNORECASE)
+    match = re.search(r"(?i)(firefox|msie|chrome|safari|trident)", user_agent, re.IGNORECASE)
     if match:
         browser = match.group(1)
     else:
         browser = None
     return browser
+
+
+def has_blocked_link(data):
+    # TODO: deal with punycode when presented in non-ascii form
+    for match in POTENTIAL_LINK_REGEX.finditer(data):
+        tld = match.group(1).upper()
+        if tld in VALID_TLDS:
+            full_domain = match.group(0).lower()
+            in_allowlist = False
+            for allowed_domain in settings.ALLOW_LINKS_FROM:
+                split = full_domain.rsplit(allowed_domain, 1)
+                if len(split) != 2 or split[-1]:
+                    # allowed_domain isn't in full_domain, or something went wrong
+                    # or allowed_domain isn't at the end of full_domain
+                    continue
+                if not split[0] or split[0][-1] == ".":
+                    # allowed_domain equals full_domain
+                    # or allowed_domain is a subdomain of full_domain
+                    in_allowlist = True
+                    break
+            if not in_allowlist:
+                return True
+    for match in POTENTIAL_IP_REGEX.findall(data):
+        valid_ip = True
+        for part in match.split("."):
+            if int(part) > 255:
+                valid_ip = False
+                break
+        if valid_ip:
+            return True
+    return False
+
+
+@timeout(seconds=settings.REGEX_TIMEOUT, use_signals=False)
+def match_regex_with_timeout(compiled_regex, data):
+    """Matches the specified regex.
+
+    Adds a timeout to avoid catastrophic backtracking.
+    """
+    return any(compiled_regex.findall(data))
+
+
+def check_for_spam_content(data):
+    """Check for spam content in a given text.
+
+    Currently checks for:
+    - Toll free numbers
+    - Vanity toll free numbers
+    - Links in the text.
+    """
+
+    # keep only the digits in text
+    digits = "".join(filter(type(data).isdigit, data))
+    is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
+
+    is_nanp_number = match_regex_with_timeout(settings.NANP_REGEX, data)
+
+    has_links = has_blocked_link(data)
+
+    return is_toll_free or is_nanp_number or has_links

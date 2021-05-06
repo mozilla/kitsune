@@ -1,0 +1,13 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sumo-dev-web
+  namespace: sumo-dev
+spec:
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: sumo-dev-web
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80

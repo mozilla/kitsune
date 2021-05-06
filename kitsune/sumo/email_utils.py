@@ -6,15 +6,13 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.utils import translation
-
-from premailer import transform
 from django.test.client import RequestFactory
+from django.utils import translation
+from premailer import transform
 
 from kitsune.sumo.utils import uselocale
 
-
-log = logging.getLogger('k.email')
+log = logging.getLogger("k.email")
 
 
 def send_messages(messages):
@@ -39,6 +37,7 @@ def safe_translation(f):
 
     NB: This means `f` will be called up to two times!
     """
+
     @wraps(f)
     def wrapper(locale, *args, **kwargs):
         try:
@@ -68,6 +67,7 @@ def render_email(template, context):
 
     Falls back to WIKI_DEFAULT_LANGUAGE in case of error.
     """
+    context["STATIC_URL"] = settings.STATIC_URL
 
     @safe_translation
     def _render(locale):
@@ -85,47 +85,54 @@ def render_email(template, context):
     return _render(translation.get_language())
 
 
-def make_mail(subject,
-              text_template,
-              html_template,
-              context_vars,
-              from_email,
-              to_email,
-              headers=None,
-              **extra_kwargs):
+def make_mail(
+    subject,
+    text_template,
+    html_template,
+    context_vars,
+    from_email,
+    to_email,
+    headers=None,
+    **extra_kwargs,
+):
     """Return an instance of EmailMultiAlternative with both plaintext and
     html versions."""
     default_headers = {
-        'Reply-To': settings.DEFAULT_REPLY_TO_EMAIL,
+        "Reply-To": settings.DEFAULT_REPLY_TO_EMAIL,
     }
     if headers is not None:
         default_headers.update(headers)
     headers = default_headers
 
-    mail = EmailMultiAlternatives(subject,
-                                  render_email(text_template, context_vars),
-                                  from_email,
-                                  [to_email],
-                                  headers=headers,
-                                  **extra_kwargs)
+    mail = EmailMultiAlternatives(
+        subject,
+        render_email(text_template, context_vars),
+        from_email,
+        [to_email],
+        headers=headers,
+        **extra_kwargs,
+    )
 
     if html_template:
-        html = transform(render_email(html_template, context_vars),
-                         'https://' + Site.objects.get_current().domain)
-        mail.attach_alternative(html, 'text/html')
+        html = transform(
+            render_email(html_template, context_vars),
+            base_url="https://" + Site.objects.get_current().domain,
+        )
+        mail.attach_alternative(html, "text/html")
 
     return mail
 
 
 def emails_with_users_and_watches(
-        subject,
-        text_template,
-        html_template,
-        context_vars,
-        users_and_watches,
-        from_email=settings.TIDINGS_FROM_ADDRESS,
-        default_locale=settings.WIKI_DEFAULT_LANGUAGE,
-        **extra_kwargs):
+    subject,
+    text_template,
+    html_template,
+    context_vars,
+    users_and_watches,
+    from_email=settings.TIDINGS_FROM_ADDRESS,
+    default_locale=settings.WIKI_DEFAULT_LANGUAGE,
+    **extra_kwargs,
+):
     """Return iterable of EmailMessages with user and watch values substituted.
 
     A convenience function for generating emails by repeatedly
@@ -150,20 +157,27 @@ def emails_with_users_and_watches(
     :returns: generator of EmailMessage objects
 
     """
+
     @safe_translation
     def _make_mail(locale, user, watch):
-        context_vars['user'] = user
-        context_vars['watch'] = watch[0]
-        context_vars['watches'] = watch
+        context_vars["user"] = user
+        context_vars["watch"] = watch[0]
+        context_vars["watches"] = watch
 
-        mail = make_mail(subject.format(**context_vars), text_template,
-                         html_template, context_vars, from_email, user.email,
-                         **extra_kwargs)
+        mail = make_mail(
+            subject.format(**context_vars),
+            text_template,
+            html_template,
+            context_vars,
+            from_email,
+            user.email,
+            **extra_kwargs,
+        )
 
         return mail
 
     for u, w in users_and_watches:
-        if hasattr(u, 'profile'):
+        if hasattr(u, "profile"):
             locale = u.profile.locale
         else:
             locale = default_locale

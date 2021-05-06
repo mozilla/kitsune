@@ -1,0 +1,13 @@
+{
+  "name": "kss-node-nunjucks-builder",
+  "version": "3.0.0",
+  "description": "The Nunjucks.js builder for kss-node.",
+  "main": "builder.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sass": "./node_modules/.bin/sass kss-assets/scss/kss.scss kss-assets/kss.css --source-map --style=compressed"
+  },
+  "devDependencies": {
+    "sass": "^1.17.3"
+  }
+}

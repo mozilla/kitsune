@@ -1,0 +1,3 @@
+# brands
+mozilla, modzilla, mozzila, mozzilla, mozila
+ios, ipad, iphone, ipod

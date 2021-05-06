@@ -4,9 +4,29 @@
 {% set crumbs = [(None, title)] %}
 {% set styles = ('products',) %}
 
-{% block content %}
-  <section id="products-and-services" class="grid_12">
-    <h1>{{ title }}</h1>
+{% set canonical_url = canonicalize(viewname='products') %}
+
+{% block hidden_search_masthead %}{% endblock %}
+
+{% block masthead %}
+<section class="home-search-section sumo-page-section shade-bg" id="products-and-services" >
+  <div class="mzp-l-content">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
+  </div>
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="sumo-page-heading-xl">{{ title }}</h1>
+      {{ search_box(settings, id='support-search-masthead', params=search_params) }}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+
+{% block contentwrap %}
+  <section class="mzp-l-content sumo-page-section" id="main-content">
     {{ product_cards(products) }}
   </section>
 {% endblock %}

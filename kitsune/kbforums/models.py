@@ -20,7 +20,7 @@ def _last_post_from(posts, exclude_post=None):
     """
     if exclude_post:
         posts = posts.exclude(id=exclude_post.id)
-    posts = posts.order_by('-created')
+    posts = posts.order_by("-created")
     try:
         return posts[0]
     except IndexError:
@@ -33,29 +33,29 @@ class ThreadLockedError(Exception):
 
 class Thread(NotificationsMixin, ModelBase):
     title = models.CharField(max_length=255)
-    document = models.ForeignKey(Document)
-    created = models.DateTimeField(default=datetime.datetime.now,
-                                   db_index=True)
-    creator = models.ForeignKey(User, related_name='wiki_thread_set')
-    last_post = models.ForeignKey('Post', related_name='last_post_in',
-                                  null=True)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_thread_set")
+    last_post = models.ForeignKey(
+        "Post", on_delete=models.CASCADE, related_name="last_post_in", null=True
+    )
     replies = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
     is_sticky = models.BooleanField(default=False, db_index=True)
 
     class Meta:
-        ordering = ['-is_sticky', '-last_post__created']
+        ordering = ["-is_sticky", "-last_post__created"]
         permissions = (
-            ('lock_thread', 'Can lock KB threads'),
-            ('sticky_thread', 'Can sticky KB threads'),
+            ("lock_thread", "Can lock KB threads"),
+            ("sticky_thread", "Can sticky KB threads"),
         )
 
     @property
     def last_page(self):
         """Returns the page number for the last post."""
-        return self.replies / kbforums.POSTS_PER_PAGE + 1
+        return self.replies // kbforums.POSTS_PER_PAGE + 1
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def new_post(self, creator, content):
@@ -66,10 +66,11 @@ class Thread(NotificationsMixin, ModelBase):
         return self.post_set.create(creator=creator, content=content)
 
     def get_absolute_url(self):
-        return reverse('wiki.discuss.posts',
-                       locale=self.document.locale,
-                       kwargs={'document_slug': self.document.slug,
-                               'thread_id': self.id})
+        return reverse(
+            "wiki.discuss.posts",
+            locale=self.document.locale,
+            kwargs={"document_slug": self.document.slug, "thread_id": self.id},
+        )
 
     def update_last_post(self, exclude_post=None):
         """Set my last post to the newest, excluding the given post."""
@@ -80,21 +81,19 @@ class Thread(NotificationsMixin, ModelBase):
 
 
 class Post(ModelBase):
-    thread = models.ForeignKey(Thread)
+    thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
     content = models.TextField()
-    creator = models.ForeignKey(User, related_name='wiki_post_set')
-    created = models.DateTimeField(default=datetime.datetime.now,
-                                   db_index=True)
-    updated = models.DateTimeField(default=datetime.datetime.now,
-                                   db_index=True)
-    updated_by = models.ForeignKey(User,
-                                   related_name='wiki_post_last_updated_by',
-                                   null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_post_set")
+    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    updated_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="wiki_post_last_updated_by", null=True
+    )
 
     class Meta:
-        ordering = ['created']
+        ordering = ["created"]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.content[:50]
 
     def save(self, *args, **kwargs):
@@ -136,18 +135,22 @@ class Post(ModelBase):
         earlier = t.post_set.filter(created__lte=self.created).count() - 1
         if earlier < 1:
             return 1
-        return earlier / kbforums.POSTS_PER_PAGE + 1
+        return earlier // kbforums.POSTS_PER_PAGE + 1
 
     def get_absolute_url(self):
         query = {}
         if self.page > 1:
-            query['page'] = self.page
+            query["page"] = self.page
 
-        url_ = reverse('wiki.discuss.posts',
-                       locale=self.thread.document.locale,
-                       kwargs={'document_slug': self.thread.document.slug,
-                               'thread_id': self.thread.id})
-        return urlparams(url_, hash='post-%s' % self.id, **query)
+        url_ = reverse(
+            "wiki.discuss.posts",
+            locale=self.thread.document.locale,
+            kwargs={
+                "document_slug": self.thread.document.slug,
+                "thread_id": self.thread.id,
+            },
+        )
+        return urlparams(url_, hash="post-%s" % self.id, **query)
 
     @property
     def content_parsed(self):

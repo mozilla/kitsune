@@ -25,6 +25,13 @@
 {% endblock %}
 
 {% block prefooter %}
+  <div class="gi-box">
+    {% trans url="https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams" %}
+      <strong>Avoid support scams.</strong>
+      We will never ask you to call or text a phone number or share personal information.
+      <a href="{{ url }}">Learn more here.</a>
+    {% endtrans %}
+  </div>
   <p>
     <a class="button" href="https://{{ host }}{{ solution_url }}">{{ _('Mark it as solved') }}</a>
     <a href="https://{{ host }}{{ answer_url }}">{{ _('This doesn\'t solve my problem') }}</a>

@@ -5,36 +5,35 @@
 {# L10n: {t} is the title of the question. #}
 {% set title = _('Editing an answer | {t} | Firefox Support Forum')|f(t=answer.question.title) %}
 {% set classes = 'answers' %}
-{% set crumbs = [(url('questions.home'), _('Support Forum')),
+{% set crumbs = [(url('questions.home'), _('Support Forums')),
                  (url('questions.details', answer.question.id), answer.question.title),
                  (None, _('Edit an answer'))] %}
 
 {% block content %}
-  <div class="grid_12">
-    <article class="main">
+    <article class="main sumo-page-section">
       <div class="edit-answer highlight-box">
-        <h2>{{ _('Edit an answer') }}</h2>
+        <h2 class="sumo-page-heading">{{ _('Edit an answer') }}</h2>
         <ul class="info">
           <li>
-            <label>{{ _('Created by:') }}</label>
+            {{ _('Created by:') }}
             {{ answer.creator }}
           </li>
           <li>
-            <label>{{ _('Created:') }}</label>
+            {{ _('Created:') }}
             {{ datetimeformat(answer.created, format='longdatetime') }}
           </li>
           {% if answer.updated_by %}
             <li>
-              <label>{{ _('Last updated by:') }}</label>
+              {{ _('Last updated by:') }}
               {{ answer.updated_by }}
             </li>
             <li>
-              <label>{{ _('Last updated:') }}</label>
+              {{ _('Last updated:') }}
               {{ datetimeformat(answer.updated, format='longdatetime') }}
             </li>
           {% endif %}
           <li>
-            <label>{{ _('Question:') }}</label>
+            {{ _('Question:') }}
             {{ answer.question.title }}
           </li>
         </ul>
@@ -47,14 +46,15 @@
           </div>
 
           {{ attachments_form('questions.Answer', answer.pk, answer.images.all(), settings, request.user) }}
+          <p>{{ _('When editing an answer, uploading new images or deleting existing ones will happen instantly.') }}</p>
 
-          <div class="form-widget submit">
-            <button type="submit" class="btn btn-important">{{ _('Update answer') }}</button>
-            <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
+          <div class="form-widget submit sumo-button-wrap reverse-on-desktop">
+            <button type="submit" class="sumo-button primary-button">{{ _('Update answer') }}</button>
+            <input type="submit" class="sumo-button secondary-button" id="preview" name="preview" value="{{ _('Preview Reply') }}"
               data-preview-url="{{ url('questions.answer_preview_async') }}"
               data-preview-container-id="answer-preview"
               data-preview-content-id="id_content" />
-            <a href="{{ url('questions.details', answer.question.id) }}">{{ _('Cancel') }}</a>
+            <a class="sumo-button push-left" href="{{ url('questions.details', answer.question.id) }}">{{ _('Cancel') }}</a>
           </div>
         </form>
 
@@ -65,7 +65,6 @@
         </section>
       </div>
     </article>
-  </div>
 {% endblock %}
 
 {% block side %}

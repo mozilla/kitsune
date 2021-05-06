@@ -1,0 +1,87 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// This component should be replaced with Protocol's modal system, because
+// it doesn't make sense to include two of them. However, this plugin is doing
+// some things with ajax in questions.js that I'm unclear on how to replace.
+// So for now, I'm included the old CSS here so the site is still functional
+// without replacing all of the JS. -kasey@lincolnloop.com.
+
+.kbox {
+  display: none;
+}
+
+.kbox-container {
+  background: #fff;
+  display: none;
+  font-size: 14px;
+  position: absolute;
+  width: 500px;
+  z-index: 99;
+}
+
+.kbox-open {
+  display: block;
+
+  .kbox {
+    display: block;
+  }
+}
+
+.kbox-close {
+  font-size: 22px !important;
+  position: absolute;
+  right: p.$spacing-sm;
+  top: 5px;
+
+  &:link,
+  &:visited,
+  &:active,
+  &:hover {
+    color: var(--color-heading);
+    text-decoration: none;
+  }
+}
+
+.html-rtl {
+  .kbox-close {
+    left: p.$spacing-sm;
+    right: auto;
+  }
+}
+
+.kbox-title {
+  @include c.text-display-sm;
+  font-weight: bold;
+  color: var(--color-heading);
+  display: block;
+  margin: 0;
+  padding: p.$spacing-xl p.$spacing-xl 0;
+}
+
+.kbox-wrap {
+  padding: p.$spacing-xl;
+
+  .hide-until-expanded {
+    display: block;
+  }
+}
+
+#kbox-overlay {
+  background: rgba(0, 0, 0, 0.85);
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 98;
+}
+
+#upload-kbox {
+  left: 50%;
+  margin: 0 10px;
+  top: 10vh;
+  max-width: 580px;
+  width: calc(100% - 20px);
+  transform: translate(-50%);
+}

@@ -1,17 +1,16 @@
 {% extends "base.html" %}
 
-{% set crumbs = [(url('badger.badges_list'), _('Badges')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
+{% set crumbs = [(url('kbadge.badges_list'), _('Badges')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
 {% set styles=('badges',) %}
 
 {% block content %}
-<div class="grid_6">
-  <h2>
+  <h1 class="sumo-page-heading">
     {% trans badge_name=pgettext('DB: badger.Badge.title', badge.title) %}
       Badge: {{ badge_name }}
     {% endtrans %}
-  </h2>
+  </h1>
 
-  <dl class="badge-details" data-slug="{{ badge.slug }}">
+  <dl class="sumo-dl badge-details" data-slug="{{ badge.slug }}">
     {% if badge.image %}
       <dt>{{ _('Image:') }}</dt>
       <dd class="image"><a href="{{ badge.get_absolute_url() }}" class="image"><img src="{{ badge.image.url }}" width="256" height="256" /></a></dd>
@@ -24,7 +23,7 @@
 
     {% if badge.creator %}
       <dt>{{ _('Creator:') }}</dt>
-      <dd><a href="{{ profile_url(badge.creator) }}">{{ badge.creator }}</a></dd>
+      <dd><a href="{{ profile_url(badge.creator) }}">{{ display_name(badge.creator) }}</a></dd>
     {% endif %}
 
     <dt>{{ _('Created:') }}</dt>
@@ -36,16 +35,14 @@
 </div>
 
 {% if award_list %}
-  <div class="grid_6">
-    <h2>{{ _('Recent awardees') }}</h2>
-    <ul class="awardees">
-      {% for award in award_list %}
-        <li>
-          <a href="{{ award.get_absolute_url() }}"><img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}"></a>
-        </li>
-      {% endfor %}
-    </ul>
-  </div>
+<h2 class="sumo-page-subheading">{{ _('Recent awardees') }}</h2>
+<ul class="awardees">
+  {% for award in award_list %}
+    <li>
+      <a href="{{ award.get_absolute_url() }}"><img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}"></a>
+    </li>
+  {% endfor %}
+</ul>
 {% endif %}
 
 {% endblock %}

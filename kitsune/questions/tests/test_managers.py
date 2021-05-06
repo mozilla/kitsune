@@ -1,14 +1,11 @@
 from nose.tools import eq_
 
-from kitsune.questions import config
-from kitsune.questions.models import Question, Answer
+from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.tags.tests import TagFactory
 
 
 class QuestionManagerTestCase(TestCase):
-
     def test_done(self):
         """Verify the done queryset."""
         # Create a question, there shouldn't be any done yet.
@@ -97,21 +94,8 @@ class QuestionManagerTestCase(TestCase):
         q.unset_needs_info()
         eq_(0, Question.objects.needs_info().count())
 
-    def test_escalated(self):
-        """Verify the escalated queryset."""
-        t = TagFactory(name=config.ESCALATE_TAG_NAME, slug=config.ESCALATE_TAG_NAME)
-        q = QuestionFactory()
-
-        # There should be no escalated questions yet.
-        eq_(0, Question.objects.escalated().count())
-
-        # Tag a question and there should be one escalated question.
-        q.tags.add(t)
-        eq_(1, Question.objects.escalated().count())
-
 
 class AnswerManagerTestCase(TestCase):
-
     def test_not_by_asker(self):
         """Verify that only answers by users other than the original asker are returned"""
         q = QuestionFactory()

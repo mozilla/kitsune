@@ -12,7 +12,7 @@
       var self = this;
 
       var defaults = {
-        bindTo: 'input[type="submit"], .btn[data-type="submit"]',
+        bindTo: '[type="submit"], [data-type="submit"],',
         disableButtons: true,
         errorText: gettext('An error occured.'),
         removeForm: false

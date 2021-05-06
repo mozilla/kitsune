@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('start', models.DateField()),
                 ('end', models.DateField()),
                 ('size', models.PositiveIntegerField(default=0)),
-                ('cohort', models.ForeignKey(related_name='retention_metrics', to='kpi.Cohort')),
+                ('cohort', models.ForeignKey(on_delete=models.CASCADE, related_name='retention_metrics', to='kpi.Cohort')),
             ],
             options={
             },
@@ -49,16 +49,16 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='retentionmetric',
-            unique_together=set([('cohort', 'start', 'end')]),
+            unique_together={('cohort', 'start', 'end')},
         ),
         migrations.AddField(
             model_name='cohort',
             name='kind',
-            field=models.ForeignKey(to='kpi.CohortKind'),
+            field=models.ForeignKey(on_delete=models.CASCADE, to='kpi.CohortKind'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
             name='cohort',
-            unique_together=set([('kind', 'start', 'end')]),
+            unique_together={('kind', 'start', 'end')},
         ),
     ]

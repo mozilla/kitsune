@@ -4,49 +4,78 @@
 {# L10n: {f} is the name of the forum. #}
 {% set title = _('{f} | Forums')|f(f=forum.name) %}
 {% set crumbs = [(url('forums.forums'), _('Contributor Forums')), (None, forum.name)] %}
-{% set canonical_url = unlocalized_url('forums.threads', forum.slug) %}
+{% set canonical_url = canonicalize(viewname='forums.threads', forum_slug=forum.slug) %}
 {% if threads.number > 1 %}
-  {% set canonical_url = canonical_url|urlparams(page=threads.number) %}
+{% set canonical_url = canonical_url|urlparams(page=threads.number) %}
 {% endif %}
 
 {% block content %}
-  <div class="grid_3">
-    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
-    <br />
-  </div>
-  <div class="grid_9">
-    <article id="threads" class="content-box">
-      <h1>{{ forum.name }}</h1>
-      <div class="forum-actions">
-        {% if not user.is_authenticated() or forum.allows_posting_by(user) %}
-          <a id="new-thread" class="btn btn-submit" href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
-        {% endif %}
-        {% if user.is_authenticated() %}
-          <form action="{{ url('forums.watch_forum', forum_slug=forum.slug) }}" method="post">
-            {% csrf_token %}
-            {% if is_watching_forum %}
-              {% set watch = _('Stop watching this forum') %}
-              <input type="hidden" name="watch" value="no" />
-            {% else %}
-              {% set watch = _('Watch this forum') %}
-              <input type="hidden" name="watch" value="yes" />
-            {% endif %}
-            <button type="submit" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
-          </form>
-        {% endif %}
-      </div>
-      <ol class="threads-columns cf {% if not desc_toggle %}desc{% endif %}">
-        <li class="type"><a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ _('Type') }}</a></li>
-        <li class="title">{{ _('Title') }}</li>
-        <li class="author{% if sort == 3 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></li>
-        <li class="replies{% if sort == 4 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></li>
-        <li class="last-post{% if sort == 5 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></li>
-      </ol>
-      {% if threads.object_list %}
-        {{ thread_list(threads, forum) }}
+<article id="threads" class="content-box sumo-page-section">
+  <h1 class="sumo-page-heading">{{ forum.name }}</h1>
+  {{ forum.description|safe }}
+  <div class="forum-actions sumo-button-wrap">
+    {% if not user.is_authenticated or forum.allows_posting_by(user) %}
+    <a id="new-thread" class="sumo-button primary-button"
+      href="{{ url('forums.new_thread', forum_slug=forum.slug) }}">{{ _('Post a new thread') }}</a>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <form action="{{ url('forums.watch_forum', forum_slug=forum.slug) }}" method="post">
+      {% csrf_token %}
+      {% if is_watching_forum %}
+      {% set watch = _('Stop watching this forum') %}
+      <input type="hidden" name="watch" value="no" />
       {% else %}
-        <p>{{ _('There are no threads. Maybe you should create some!') }}</p>
+      {% set watch = _('Watch this forum') %}
+      <input type="hidden" name="watch" value="yes" />
       {% endif %}
-    </article>
+      <button type="submit" title="{{ watch }}" class="sumo-button secondary-button"
+        id="watch-forum-toggle">{{ watch }}</button>
+    </form>
+    {% endif %}
   </div>
+
+  {% if threads.object_list %}
+  <div class="sumo-page-section--sm">
+    <form name="find-thread" id="find-thread" class="simple-search-form"
+      action="{{ url('forums.search', forum_slug=forum.slug) }}" method="get">
+      <input type="search" name="q" id="search-q" class="searchbox" value="{{ q or '' }}"
+        placeholder="{{ _('Search this forum') }}" />
+      <input type="submit" value="{{ _('Search') }}" class="search-button" />
+    </form>
+  </div>
+  {% endif %}
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr class="threads-columns {% if not desc_toggle %}desc{% endif %}">
+          <th class="type"><a href="{{ url('forums.threads', forum_slug=forum.slug) }}">{{ _('Type') }}</a></th>
+          <th class="title">{{ _('Title') }}</th>
+          <th class="author{% if sort == 3 %} sort{% endif %}"><a
+              href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
+          <th class="replies{% if sort == 4 %} sort{% endif %}"><a
+              href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
+          <th class="last-post{% if sort == 5 %} sort{% endif %}"><a
+              href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
+        </tr>
+      </thead>
+      <tbody class="threads">
+        {% if threads.object_list %}
+        {{ thread_list(threads, forum) }}
+        {% else %}
+        <tr>
+          <td colspan="5">
+            <p>{{ _('There are no threads. Maybe you should create some!') }}</p>
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+  {{ threads|paginator }}
+</article>
+{% endblock %}
+
+{% block side %}
+{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
 {% endblock %}

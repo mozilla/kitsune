@@ -1,0 +1,43 @@
+{
+    "python.pythonPath": "/venv/bin/python",
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "/venv/bin/black",
+    "python.formatting.blackArgs": [
+        "--config=/app/pyproject.toml"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": false,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--disable=C0111",
+        "--enable=W0614",
+        "--load-plugins=pylint_django"
+    ],
+    "python.autoComplete.extraPaths": [
+        "/vendor"
+    ],
+    "python.analysis.extraPaths": [
+        "/vendor"
+    ],
+    "files.associations": {
+        "*.html": "jinja-html"
+    },
+    "emmet.includeLanguages": {
+        "jinja-html": "html"
+    },
+    "prettier.disableLanguages": [
+        "jinja-html"
+    ],
+    "beautify.language": {
+        "html": [
+            "jinja-html"
+        ]
+    },
+    "[jinja-html]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "HookyQR.beautify"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    }
+}

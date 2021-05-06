@@ -4,6 +4,9 @@
 All about testing
 =================
 
+.. warning::
+    This section of documentation may be outdated.
+
 Kitsune has a fairly comprehensive Python test suite. Changes should
 not break tests---only change a test if there is a good reason to
 change the expected behavior---and new code should come with tests.
@@ -12,8 +15,8 @@ change the expected behavior---and new code should come with tests.
 Running the Test Suite
 ======================
 
-If you followed the steps in :ref:`the installation docs
-<hacking-howto-chapter>`, then you should be all set setup-wise.
+If you followed the steps in :any:`the installation docs
+<hacking_howto>`, then you should be all set setup-wise.
 
 To run the tests, you need to do::
 
@@ -165,93 +168,3 @@ Here are a few tips for writing tests:
   set up and tear down the simulated environment.
 
 .. _Mocha: https://mochajs.org/
-
-
-Functional UI Tests
-===================
-
-We can do more comprehensive front-end testing with the functional UI tests.
-They're located in the ``tests/functional`` directory.
-
-Installing dependencies
------------------------
-
-Follow the steps in :ref:`the installation docs <hacking-howto-chapter>`,
-including the test dependencies to make sure you have everything you need to
-run the tests. If you're running the tests against a deployed environment then
-there's no need to install anything other than the test dependencies.
-
-Create test users
------------------
-
-Some of the tests require logging in as a administrator, and others require
-logging in as a user. To run these tests you will need to create accounts in
-the target environment. If you're running against a local instance of the
-application you can create these users by running the following script::
-
-  $ ./manage.py shell < ./scripts/create_user_and_superuser.py
-
-If you want to run the tests that require administrator access against a
-deployed instance, then you will need to ask someone on IRC to upgrade one of
-your test accounts.
-
-The credentials associated with the test users are stored in a JSON file, which
-we then pass to the tests via the command line. If you used the above mentioned
-script, then these users are stored in ``/scripts/travis/variables.json``. The
-variable file needs to be referenced on the command line when running the
-tests.
-
-The following is an example JSON file with the values missing. You can use this
-as a template:
-
-.. code:: json
-
-   {
-     "users": {
-       "default": {
-         "username": "",
-         "password": "",
-         "email": ""},
-       "admin": {
-         "username": "",
-         "password": "",
-         "email": ""}
-     }
-   }
-
-For the purposes of the examples below, assume you named your copy of the file
-``my_variables.json``.
-
-Running the tests
------------------
-
-Tests are run using the command line. Below are a couple of examples of running
-the tests:
-
-To run all of the desktop tests against the default environment::
-
-  $ py.test --driver Firefox --variables my_variables.json tests/functional/desktop
-
-To run against a different environment, pass in a value for ``--base-url``,
-like so::
-
-  $ py.test --base-url https://support.allizom.org --driver Firefox --variables my_variables.json tests/functional/desktop
-
-To run the mobile tests you will need to target a mobile device or emulator
-using a tool like `Appium <http://appium.io/>`_::
-
-  $ py.test --driver Remote --port 4723 \
-  --capability platformName iOS \
-  --capability platformVersion 9.2 \
-  --capability deviceName "iPhone 6" \
-  --capability browserName Safari \
-  --variables my_variables.json \
-  tests/functional/mobile
-
-Alternatively, if you run the mobile tests in Firefox the user agent will be
-changed to masquerade as a mobile browser.
-
-The pytest plugin that we use for running tests has a number of advanced
-command line options available. To see the options available, run
-``py.test --help``. The full documentation for the plugin can be found
-`here <https://pytest-selenium.readthedocs.io/>`_.

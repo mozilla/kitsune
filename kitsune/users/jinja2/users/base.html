@@ -2,9 +2,17 @@
 {% from 'users/includes/macros.html' import personal_tabs %}
 {% set styles = ('users',) %}
 {% set scripts = ('users',) %}
+{% set classes = "profile" %}
+{% set is_owner = profile and profile.user == request.user %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block above_main %}
+{% endblock %}
 
 {% block side_top %}
-  {% if not profile and user.is_authenticated() %}
+  {% if not profile and user.is_authenticated %}
     {% set profile = get_profile(user) %}
   {% endif %}
   {% if profile %}
@@ -12,13 +20,12 @@
       {{ personal_tabs(request.user, active) }}
     {% else %}
       {# If we are viewing another user's profile, don't show the personal tabs #}
-      <ul class="sidebar-nav">
-        <li class="selected">
-          <a href="{{ profile_url(profile.user) }}">
-            {{ display_name(profile.user) }}
-          </a>
-        </li>
-      </ul>
+      <nav class="sidebar-nav">
+        <span class="details-heading">{{ display_name(profile.user) }}</span>
+        <ul id="user-nav" class="sidebar-nav--list">
+          <li class="sidebar-nav--item"><a href="{{ profile_url(profile.user) }}" class="sidebar-nav--link selected">{{ display_name(profile.user) }}</a></li>
+        </ul>
+      </nav>
     {% endif %}
   {% endif %}
 {% endblock %}

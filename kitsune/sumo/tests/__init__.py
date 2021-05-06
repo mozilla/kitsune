@@ -16,18 +16,25 @@ from django.utils.translation import trans_real
 
 import django_nose
 import factory.fuzzy
+from elasticutils.contrib.django import get_es
 from nose.tools import eq_
 from pyquery import PyQuery
 from waffle.models import Flag
 
+from kitsune.search import es_utils
+from kitsune.search.models import generate_tasks
 from kitsune.sumo.urlresolvers import reverse, split_path
 
 
 # We do this gooftastic thing because nose uses unittest.SkipTest in
 # Python 2.7 which doesn't work with the whole --no-skip thing.
-if '--no-skip' in sys.argv or 'NOSE_WITHOUT_SKIP' in os.environ:
+# TODO: CHeck this after the upgrade
+if "--no-skip" in sys.argv or "NOSE_WITHOUT_SKIP" in os.environ:
+
     class SkipTest(Exception):
         pass
+
+
 else:
     from nose import SkipTest  # noqa
 
@@ -42,31 +49,26 @@ def post(client, url, data={}, **kwargs):
 
 class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
     """This is a test runner that pulls in settings_test.py."""
-    def setup_test_environment(self, **kwargs):
-        # If we have a settings_test.py let's roll it into our settings.
-        try:
-            from kitsune import settings_test
-            # Use setattr to update Django's proxies:
-            for k in dir(settings_test):
-                setattr(settings, k, getattr(settings_test, k))
-        except ImportError:
-            pass
 
-        if not getenv('REUSE_STATIC', 'false').lower() in ('true', '1', ''):
+    def setup_test_environment(self, **kwargs):
+        if not getenv("REUSE_STATIC", "false").lower() in ("true", "1", ""):
             # Collect static files for pipeline to work correctly--do this with
             # subprocess instead of directly calling the admin command,
             # because collectstatic somehow retains emotional baggage
             # which causes all the tests to take FOREVER to run.
-            cmdline = [sys.executable, 'manage.py', 'collectstatic', '--noinput']
-            print 'Running %r' % cmdline
+            cmdline = [sys.executable, "manage.py", "collectstatic", "--noinput"]
+            print("Running %r" % cmdline)
             subprocess.call(cmdline)
 
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
 
-@override_settings(ES_LIVE_INDEX=False)
+@override_settings(ES_LIVE_INDEXING=False)
 class TestCase(OriginalTestCase):
     """TestCase that skips live indexing."""
+
+    skipme = False
+
     def _pre_setup(self):
         cache.clear()
         trans_real.deactivate()
@@ -74,17 +76,74 @@ class TestCase(OriginalTestCase):
         trans_real.activate(settings.LANGUAGE_CODE)
         super(TestCase, self)._pre_setup()
 
+    def reindex_and_refresh(self):
+        """Reindexes anything in the db"""
+        from kitsune.search.es_utils import es_reindex_cmd
+
+        es_reindex_cmd()
+        self.refresh(run_tasks=False)
+
+    def setup_indexes(self, empty=False, wait=True):
+        """(Re-)create write index"""
+        from kitsune.search.es_utils import recreate_indexes
+
+        recreate_indexes()
+        get_es().cluster.health(wait_for_status="yellow")
+
+    def teardown_indexes(self):
+        """Tear down write index"""
+        for index in es_utils.all_write_indexes():
+            es_utils.delete_index(index)
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestCase, cls).setUpClass()
+
+        if not getattr(settings, "ES_URLS"):
+            cls.skipme = True
+            return
+
+        # try to connect to ES and if it fails, skip ElasticTestCases.
+        if not get_es().ping():
+            cls.skipme = True
+            return
+
+    def setUp(self):
+        if self.skipme:
+            raise SkipTest
+
+        super(TestCase, self).setUp()
+        self.setup_indexes()
+
+    def tearDown(self):
+        super(TestCase, self).tearDown()
+        self.teardown_indexes()
+
+    def refresh(self, run_tasks=True):
+        es = get_es()
+
+        if run_tasks:
+            # Any time we're doing a refresh, we're making sure that
+            # the index is ready to be queried. Given that, it's
+            # almost always the case that we want to run all the
+            # generated tasks, then refresh.
+            generate_tasks()
+
+        for index in es_utils.all_write_indexes():
+            es.indices.refresh(index=index)
+
+        es.cluster.health(wait_for_status="yellow")
+
 
 def attrs_eq(received, **expected):
     """Compares received's attributes with expected's kwargs."""
-    for k, v in expected.iteritems():
+    for k, v in expected.items():
         eq_(v, getattr(received, k))
 
 
 def starts_with(text, substring):
     """Assert `text` starts with `substring`."""
-    assert text.startswith(substring), "%r doesn't start with %r" % (text,
-                                                                     substring)
+    assert text.startswith(substring), "%r doesn't start with %r" % (text, substring)
 
 
 def send_mail_raise_smtp(messages):
@@ -105,14 +164,14 @@ class LocalizingClient(Client):
     {mock out reverse() and make LocaleURLMiddleware not fire}.
 
     """
+
     def request(self, **request):
         """Make a request, but prepend a locale if there isn't one already."""
         # Fall back to defaults as in the superclass's implementation:
-        path = request.get('PATH_INFO', self.defaults.get('PATH_INFO', '/'))
+        path = request.get("PATH_INFO", self.defaults.get("PATH_INFO", "/"))
         locale, shortened = split_path(path)
         if not locale:
-            request['PATH_INFO'] = '/%s/%s' % (settings.LANGUAGE_CODE,
-                                               shortened)
+            request["PATH_INFO"] = "/%s/%s" % (settings.LANGUAGE_CODE, shortened)
         return super(LocalizingClient, self).request(**request)
 
     # If you use this, you might also find the force_locale=True argument to
@@ -120,32 +179,16 @@ class LocalizingClient(Client):
     # prepending in a one-off case or do it outside a mock request.
 
 
-class MobileTestCase(TestCase):
-    def setUp(self):
-        super(MobileTestCase, self).setUp()
-        self.client.cookies[settings.MOBILE_COOKIE] = 'on'
-
-
-class MinimalViewTestCase(TestCase):
-    def setUp(self):
-        super(MinimalViewTestCase, self).setUp()
-
-    def get_minimal_url(self, document):
-        minimalurl = '?minimal=1&mobile=1'
-        return document.get_absolute_url() + minimalurl
-
-
 def eq_msg(a, b, msg=None):
-    """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
-    """
-    assert a == b, (str(msg) or '') + ' (%r != %r)' % (a, b)
+    """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'"""
+    assert a == b, (str(msg) or "") + " (%r != %r)" % (a, b)
 
 
 class FuzzyUnicode(factory.fuzzy.FuzzyText):
     """A FuzzyText factory that contains at least one non-ASCII character."""
 
-    def __init__(self, prefix=u'', **kwargs):
-        prefix = u'%sđ' % prefix
+    def __init__(self, prefix="", **kwargs):
+        prefix = "%sđ" % prefix
         super(FuzzyUnicode, self).__init__(prefix=prefix, **kwargs)
 
 
@@ -180,7 +223,7 @@ class set_waffle_flag(object):
 
     def __init__(self, flagname, **kwargs):
         self.flagname = flagname
-        self.kwargs = kwargs or {'everyone': True}
+        self.kwargs = kwargs or {"everyone": True}
 
         try:
             self.origflag = Flag.objects.get(name=self.flagname)
@@ -194,9 +237,9 @@ class set_waffle_flag(object):
         if inspect.isclass(func_or_class):
             # If func_or_class is a class, decorate all of its methods
             # that start with 'test'.
-            for attr in func_or_class.__dict__.keys():
+            for attr in list(func_or_class.__dict__.keys()):
                 prop = getattr(func_or_class, attr)
-                if attr.startswith('test') and callable(prop):
+                if attr.startswith("test") and callable(prop):
                     setattr(func_or_class, attr, self.decorate(prop))
             return func_or_class
         else:
@@ -213,6 +256,7 @@ class set_waffle_flag(object):
 
     def decorate(self, func):
         """Decorates a function to enable the waffle flag."""
+
         @wraps(func)
         def _give_me_waffles(*args, **kwargs):
             self.make_flag()
@@ -220,6 +264,7 @@ class set_waffle_flag(object):
                 func(*args, **kwargs)
             finally:
                 self.restore_flag()
+
         return _give_me_waffles
 
     def make_flag(self):
@@ -236,9 +281,10 @@ class set_waffle_flag(object):
 
 class SumoPyQuery(PyQuery):
     """Extends PyQuery with some niceties to alleviate its bugs"""
+
     def first(self):
         """:first doesn't work, so this is a meh substitute"""
-        return self.items().next()
+        return next(self.items())
 
 
 def template_used(response, template_name):
@@ -269,7 +315,7 @@ def template_used(response, template_name):
     """
     templates = []
     # templates is an array of TemplateObjects
-    templates += [t.name for t in getattr(response, 'templates', [])]
+    templates += [t.name for t in getattr(response, "templates", [])]
     # jinja_templates is a list of strings
-    templates += getattr(response, 'jinja_templates', [])
+    templates += getattr(response, "jinja_templates", [])
     return template_name in templates

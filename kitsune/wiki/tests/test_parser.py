@@ -13,10 +13,20 @@ from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import (
-    WikiParser, ForParser, PATTERNS, RECURSION_MESSAGE, _key_split,
-    _build_template_params as _btp, _format_template_content as _ftc)
+    WikiParser,
+    ForParser,
+    PATTERNS,
+    RECURSION_MESSAGE,
+    _key_split,
+    _build_template_params as _btp,
+    _format_template_content as _ftc,
+)
 from kitsune.wiki.tests import (
-    DocumentFactory, TemplateDocumentFactory, RevisionFactory, ApprovedRevisionFactory)
+    DocumentFactory,
+    TemplateDocumentFactory,
+    RevisionFactory,
+    ApprovedRevisionFactory,
+)
 
 
 def doc_rev_parser(*args, **kwargs):
@@ -25,393 +35,413 @@ def doc_rev_parser(*args, **kwargs):
 
 def doc_parse_markup(content, markup):
     """Create a doc with given content and parse given markup."""
-    _, _, p = doc_rev_parser(content, TEMPLATE_TITLE_PREFIX + 'test', category=TEMPLATES_CATEGORY)
+    _, _, p = doc_rev_parser(content, TEMPLATE_TITLE_PREFIX + "test", category=TEMPLATES_CATEGORY)
     doc = pq(p.parse(markup))
     return (doc, p)
 
 
 class SimpleSyntaxTestCase(TestCase):
     """Simple syntax regexing, like {note}...{/note}, {key Ctrl+K}"""
+
     def test_note_simple(self):
         """Simple note syntax"""
         p = WikiParser()
-        doc = pq(p.parse('{note}this is a note{/note}'))
-        eq_('this is a note', doc('div.note').text())
+        doc = pq(p.parse("{note}this is a note{/note}"))
+        eq_("this is a note", doc("div.note").text())
 
     def test_warning_simple(self):
         """Simple warning syntax"""
         p = WikiParser()
-        doc = pq(p.parse('{warning}this is a warning{/warning}'))
-        eq_('this is a warning', doc('div.warning').text())
+        doc = pq(p.parse("{warning}this is a warning{/warning}"))
+        eq_("this is a warning", doc("div.warning").text())
 
     def test_warning_multiline(self):
         """Multiline warning syntax"""
         p = WikiParser()
-        doc = pq(p.parse('{warning}\nthis is a warning\n{/warning}'))
-        eq_('this is a warning', doc('div.warning').text())
+        doc = pq(p.parse("{warning}\nthis is a warning\n{/warning}"))
+        eq_("this is a warning", doc("div.warning").text())
 
     def test_warning_multiline_breaks(self):
         """Multiline breaks warning syntax"""
         p = WikiParser()
-        doc = pq(p.parse('\n\n{warning}\n\nthis is a warning\n\n'
-                         '{/warning}\n\n'))
-        eq_('this is a warning', doc('div.warning').text())
+        doc = pq(p.parse("\n\n{warning}\n\nthis is a warning\n\n{/warning}\n\n"))
+        eq_("this is a warning", doc("div.warning").text())
 
     def test_general_warning_note(self):
         """A bunch of wiki text with {warning} and {note}"""
         p = WikiParser()
-        doc = pq(p.parse('\n\n{warning}\n\nthis is a warning\n\n{note}'
-                         'this is a note{warning}!{/warning}{/note}'
-                         "[[Installing Firefox]] '''internal''' ''link''"
-                         '{/warning}\n\n'))
-        eq_('!', doc('div.warning div.warning').text())
-        eq_('this is a note !', doc('div.note').text())
-        eq_('Installing Firefox', doc('a').text())
-        eq_('internal', doc('strong').text())
-        eq_('link', doc('em').text())
+        doc = pq(
+            p.parse(
+                "\n\n{warning}\n\nthis is a warning\n\n{note}"
+                "this is a note{warning}!{/warning}{/note}"
+                "[[Installing Firefox]] '''internal''' ''link''"
+                "{/warning}\n\n"
+            )
+        )
+        eq_("!", doc("div.warning div.warning").text())
+        eq_("this is a note !", doc("div.note").text())
+        eq_("Installing Firefox", doc("a").text())
+        eq_("internal", doc("strong").text())
+        eq_("link", doc("em").text())
 
     def test_key_inline(self):
         """{key} stays inline"""
         p = WikiParser()
-        doc = pq(p.parse('{key Cmd+Shift+Q}'))
-        eq_(1, len(doc('p')))
-        eq_(u'<span class="key">Cmd</span> + <span class="key">Shift</span>'
-            u' + <span class="key">Q</span>', doc.html().replace('\n', ''))
+        doc = pq(p.parse("{key Cmd+Shift+Q}"))
+        eq_(1, len(doc("p")))
+        eq_(
+            '<span class="key">Cmd</span> + <span class="key">Shift</span>'
+            ' + <span class="key">Q</span>',
+            doc.html().replace("\n", ""),
+        )
 
     def test_template_inline(self):
         """Inline templates are not wrapped in <p>s"""
-        doc, p = doc_parse_markup('<span class="key">{{{1}}}</span>',
-                                  '[[T:test|Cmd]] + [[T:test|Shift]]')
-        eq_(1, len(doc('p')))
+        doc, p = doc_parse_markup(
+            '<span class="key">{{{1}}}</span>', "[[T:test|Cmd]] + [[T:test|Shift]]"
+        )
+        eq_(1, len(doc("p")))
 
     def test_template_multiline(self):
         """Multiline templates are wrapped in <p>s"""
-        doc, p = doc_parse_markup('<span class="key">\n{{{1}}}</span>',
-                                  '[[T:test|Cmd]]')
-        eq_(3, len(doc('p')))
+        doc, p = doc_parse_markup('<span class="key">\n{{{1}}}</span>', "[[T:test|Cmd]]")
+        eq_(3, len(doc("p")))
 
     def test_key_split_callback(self):
         """The _key_split regex callback does what it claims"""
         key_p = PATTERNS[2][0]
         # Multiple keys, with spaces
-        eq_('<span class="key">ctrl</span> + <span class="key">alt</span> + '
+        eq_(
+            '<span class="key">ctrl</span> + <span class="key">alt</span> + '
             '<span class="key">del</span>',
-            key_p.sub(_key_split, '{key ctrl + alt +   del}'))
+            key_p.sub(_key_split, "{key ctrl + alt +   del}"),
+        )
         # Single key with spaces in it
-        eq_('<span class="key">a key</span>',
-            key_p.sub(_key_split, '{key a key}'))
+        eq_('<span class="key">a key</span>', key_p.sub(_key_split, "{key a key}"))
         # Multiple keys with quotes and spaces
-        eq_('<span class="key">"Param-One" and</span> + <span class="key">'
+        eq_(
+            '<span class="key">"Param-One" and</span> + <span class="key">'
             'param</span> + <span class="key">two</span>',
-            key_p.sub(_key_split, '{key  "Param-One" and + param+two}'))
-        eq_('<span class="key">multi\nline</span> + '
-            '<span class="key">me</span>',
-            key_p.sub(_key_split, '{key multi\nline\n+me}'))
+            key_p.sub(_key_split, '{key  "Param-One" and + param+two}'),
+        )
+        eq_(
+            '<span class="key">multi\nline</span> + <span class="key">me</span>',
+            key_p.sub(_key_split, "{key multi\nline\n+me}"),
+        )
 
     def test_key_split_brace_callback(self):
         """Adding brace inside {key ...}"""
         key_p = PATTERNS[2][0]
-        eq_('<span class="key">ctrl</span> + <span class="key">and</span> '
-            'Here is }',
-            key_p.sub(_key_split, '{key ctrl + and} Here is }'))
-        eq_('<span class="key">ctrl</span> + <span class="key">and</span> + '
+        eq_(
+            '<span class="key">ctrl</span> + <span class="key">and</span> Here is }',
+            key_p.sub(_key_split, "{key ctrl + and} Here is }"),
+        )
+        eq_(
+            '<span class="key">ctrl</span> + <span class="key">and</span> + '
             '<span class="key">{</span>',
-            key_p.sub(_key_split, '{key ctrl + and + {}'))
+            key_p.sub(_key_split, "{key ctrl + and + {}"),
+        )
 
     def test_simple_inline_custom(self):
         """Simple custom inline syntax: menu, button, filepath, pref"""
         p = WikiParser()
-        tags = ['menu', 'button', 'filepath', 'pref']
+        tags = ["menu", "button", "filepath", "pref"]
         for tag in tags:
-            doc = pq(p.parse('{%s this is a %s}' % (tag, tag)))
-            eq_('this is a ' + tag, doc('span.' + tag).text())
+            doc = pq(p.parse("{%s this is a %s}" % (tag, tag)))
+            eq_("this is a " + tag, doc("span." + tag).text())
 
     def test_general_warning_note_inline_custom(self):
         """A mix of custom inline syntax with warnings and notes"""
         p = WikiParser()
-        doc = pq(p.parse('\n\n{warning}\n\nthis is a {button warning}\n{note}'
-                         'this is a {menu note}{warning}!{/warning}{/note}'
-                         "'''{filepath internal}''' ''{menu hi!}''{/warning}"))
-        eq_('warning', doc('div.warning span.button').text())
-        eq_('this is a note !', doc('div.note').text())
-        eq_('note', doc('div.warning div.note span.menu').text())
-        eq_('internal', doc('strong span.filepath').text())
-        eq_('hi!', doc('em span.menu').text())
+        doc = pq(
+            p.parse(
+                "\n\n{warning}\n\nthis is a {button warning}\n{note}"
+                "this is a {menu note}{warning}!{/warning}{/note}"
+                "'''{filepath internal}''' ''{menu hi!}''{/warning}"
+            )
+        )
+        eq_("warning", doc("div.warning span.button").text())
+        eq_("this is a note !", doc("div.note").text())
+        eq_("note", doc("div.warning div.note span.menu").text())
+        eq_("internal", doc("strong span.filepath").text())
+        eq_("hi!", doc("em span.menu").text())
 
     def test_comments(self):
         """Markup containing taggy comments shouldn't truncate afterward."""
         p = WikiParser()
 
         # This used to truncate after the comment when rendered:
-        eq_(p.parse('Start <!-- <foo --> End'),
-            '<p>Start  End\n</p>')
+        eq_(p.parse("Start <!-- <foo --> End"), "<p>Start  End\n</p>")
 
         # Just make sure these don't go awry either:
-        eq_(p.parse('Start <!-- <foo> --> End'),
-            '<p>Start  End\n</p>')
-        eq_(p.parse('Start <!-- foo> --> End'),
-            '<p>Start  End\n</p>')
+        eq_(p.parse("Start <!-- <foo> --> End"), "<p>Start  End\n</p>")
+        eq_(p.parse("Start <!-- foo> --> End"), "<p>Start  End\n</p>")
 
     def test_internal_links(self):
         """Make sure internal links work correctly when not to redirected
-           articles and when to redirected articles"""
+        articles and when to redirected articles"""
         p = WikiParser()
 
         # Create a new article
         rev = ApprovedRevisionFactory()
         doc = rev.document
         doc.current_revision = rev
-        doc.title = 'Real article'
+        doc.title = "Real article"
         doc.save()
 
         # Change the slug of the article to create a redirected article
         old_slug = doc.slug
-        doc.slug = 'real-article'
+        doc.slug = "real-article"
         doc.save()
         redirect = Document.objects.get(slug=old_slug)
 
         # Both internal links should link to the same article
-        eq_(p.parse('[[%s]]' % doc.title),
-            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title))
-        eq_(p.parse('[[%s]]' % redirect.title),
-            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title))
+        eq_(
+            p.parse("[[%s]]" % doc.title),
+            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title),
+        )
+        eq_(
+            p.parse("[[%s]]" % redirect.title),
+            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title),
+        )
 
 
 class TestWikiTemplate(TestCase):
     def test_template(self):
         """Simple template markup."""
-        doc, _ = doc_parse_markup('Test content', '[[Template:test]]')
-        eq_('Test content', doc.text())
+        doc, _ = doc_parse_markup("Test content", "[[Template:test]]")
+        eq_("Test content", doc.text())
 
     def test_template_does_not_exist(self):
         """Return a message if template does not exist"""
         p = WikiParser()
-        doc = pq(p.parse('[[Template:test]]'))
-        eq_('The template "test" does not exist or has no approved revision.',
-            doc.text())
+        doc = pq(p.parse("[[Template:test]]"))
+        eq_('The template "test" does not exist or has no approved revision.', doc.text())
 
     def test_template_locale(self):
         """Localized template is returned."""
-        py_doc, p = doc_parse_markup('English content', '[[Template:test]]')
+        py_doc, p = doc_parse_markup("English content", "[[Template:test]]")
         parent = TemplateDocumentFactory()
         d = TemplateDocumentFactory(
-            parent=parent, title=TEMPLATE_TITLE_PREFIX + 'test', locale='fr')
-        ApprovedRevisionFactory(content='French Content', document=d)
-        eq_(py_doc.text(), 'English content')
-        py_doc = pq(p.parse('[[T:test]]', locale='fr'))
-        eq_(py_doc.text(), 'French Content')
+            parent=parent, title=TEMPLATE_TITLE_PREFIX + "test", locale="fr"
+        )
+        ApprovedRevisionFactory(content="French Content", document=d)
+        eq_(py_doc.text(), "English content")
+        py_doc = pq(p.parse("[[T:test]]", locale="fr"))
+        eq_(py_doc.text(), "French Content")
 
     def test_template_not_exist(self):
         """If template does not exist in set locale or English."""
         p = WikiParser()
-        doc = pq(p.parse('[[T:test]]', locale='fr'))
-        eq_('The template "test" does not exist or has no approved revision.',
-            doc.text())
+        doc = pq(p.parse("[[T:test]]", locale="fr"))
+        eq_('The template "test" does not exist or has no approved revision.', doc.text())
 
     def test_template_locale_fallback(self):
         """If localized template does not exist, fall back to English."""
-        _, p = doc_parse_markup('English content', '[[Template:test]]')
-        doc = pq(p.parse('[[T:test]]', locale='fr'))
-        eq_('English content', doc.text())
+        _, p = doc_parse_markup("English content", "[[Template:test]]")
+        doc = pq(p.parse("[[T:test]]", locale="fr"))
+        eq_("English content", doc.text())
 
     def test_template_anonymous_params(self):
         """Template markup with anonymous parameters."""
-        doc, p = doc_parse_markup('{{{1}}}:{{{2}}}',
-                                  '[[Template:test|one|two]]')
-        eq_('one:two', doc.text())
-        doc = pq(p.parse('[[T:test|two|one]]'))
-        eq_('two:one', doc.text())
+        doc, p = doc_parse_markup("{{{1}}}:{{{2}}}", "[[Template:test|one|two]]")
+        eq_("one:two", doc.text())
+        doc = pq(p.parse("[[T:test|two|one]]"))
+        eq_("two:one", doc.text())
 
     def test_template_named_params(self):
         """Template markup with named parameters."""
-        doc, p = doc_parse_markup('{{{a}}}:{{{b}}}',
-                                  '[[Template:test|a=one|b=two]]')
-        eq_('one:two', doc.text())
-        doc = pq(p.parse('[[T:test|a=two|b=one]]'))
-        eq_('two:one', doc.text())
+        doc, p = doc_parse_markup("{{{a}}}:{{{b}}}", "[[Template:test|a=one|b=two]]")
+        eq_("one:two", doc.text())
+        doc = pq(p.parse("[[T:test|a=two|b=one]]"))
+        eq_("two:one", doc.text())
 
     def test_template_numbered_params(self):
         """Template markup with numbered parameters."""
-        doc, p = doc_parse_markup('{{{1}}}:{{{2}}}',
-                                  '[[Template:test|2=one|1=two]]')
-        eq_('two:one', doc.text())
-        doc = pq(p.parse('[[T:test|2=two|1=one]]'))
-        eq_('one:two', doc.text())
+        doc, p = doc_parse_markup("{{{1}}}:{{{2}}}", "[[Template:test|2=one|1=two]]")
+        eq_("two:one", doc.text())
+        doc = pq(p.parse("[[T:test|2=two|1=one]]"))
+        eq_("one:two", doc.text())
 
     def test_template_wiki_markup(self):
         """A template with wiki markup"""
-        doc, _ = doc_parse_markup("{{{1}}}:{{{2}}}\n''wiki''\n'''markup'''",
-                                  '[[Template:test|2=one|1=two]]')
+        doc, _ = doc_parse_markup(
+            "{{{1}}}:{{{2}}}\n''wiki''\n'''markup'''", "[[Template:test|2=one|1=two]]"
+        )
 
-        eq_('two:one', doc('p')[1].text.replace('\n', ''))
-        eq_('wiki', doc('em')[0].text)
-        eq_('markup', doc('strong')[0].text)
+        eq_("two:one", doc("p")[1].text.replace("\n", ""))
+        eq_("wiki", doc("em")[0].text)
+        eq_("markup", doc("strong")[0].text)
 
     def test_template_args_inline_wiki_markup(self):
         """Args that contain inline wiki markup are parsed"""
-        doc, _ = doc_parse_markup('{{{1}}}\n\n{{{2}}}',
-                                  "[[Template:test|'''one'''|''two'']]")
+        doc, _ = doc_parse_markup("{{{1}}}\n\n{{{2}}}", "[[Template:test|'''one'''|''two'']]")
 
-        eq_("<p/><p><strong>one</strong></p><p><em>two</em></p><p/>",
-            doc.html().replace('\n', ''))
+        eq_("<p/><p><strong>one</strong></p><p><em>two</em></p><p/>", doc.html().replace("\n", ""))
 
     def test_template_args_block_wiki_markup(self):
         """Args that contain block level wiki markup aren't parsed"""
-        doc, _ = doc_parse_markup('{{{1}}}\n\n{{{2}}}',
-                                  "[[Template:test|* ordered|# list]]")
+        doc, _ = doc_parse_markup("{{{1}}}\n\n{{{2}}}", "[[Template:test|* ordered|# list]]")
 
-        eq_("<p/><p>* ordered</p><p># list</p><p/>",
-            doc.html().replace('\n', ''))
+        eq_("<p/><p>* ordered</p><p># list</p><p/>", doc.html().replace("\n", ""))
 
     def test_format_template_content_named(self):
         """_ftc handles named arguments"""
-        eq_('ab', _ftc('{{{some}}}{{{content}}}',
-                       {'some': 'a', 'content': 'b'}))
+        eq_("ab", _ftc("{{{some}}}{{{content}}}", {"some": "a", "content": "b"}))
 
     def test_format_template_content_numbered(self):
         """_ftc handles numbered arguments"""
-        eq_('a:b', _ftc('{{{1}}}:{{{2}}}', {'1': 'a', '2': 'b'}))
+        eq_("a:b", _ftc("{{{1}}}:{{{2}}}", {"1": "a", "2": "b"}))
 
     def test_build_template_params_anonymous(self):
         """_btp handles anonymous arguments"""
-        eq_({'1': '<span>a</span>', '2': 'test'},
-            _btp(['<span>a</span>', 'test']))
+        eq_({"1": "<span>a</span>", "2": "test"}, _btp(["<span>a</span>", "test"]))
 
     def test_build_template_params_numbered(self):
         """_btp handles numbered arguments"""
-        eq_({'20': 'a', '10': 'test'}, _btp(['20=a', '10=test']))
+        eq_({"20": "a", "10": "test"}, _btp(["20=a", "10=test"]))
 
     def test_build_template_params_named(self):
         """_btp handles only named-arguments"""
-        eq_({'a': 'b', 'hi': 'test'}, _btp(['hi=test', 'a=b']))
+        eq_({"a": "b", "hi": "test"}, _btp(["hi=test", "a=b"]))
 
     def test_build_template_params_named_anonymous(self):
         """_btp handles mixed named and anonymous arguments"""
-        eq_({'1': 'a', 'hi': 'test'}, _btp(['hi=test', 'a']))
+        eq_({"1": "a", "hi": "test"}, _btp(["hi=test", "a"]))
 
     def test_build_template_params_named_numbered(self):
         """_btp handles mixed named and numbered arguments"""
-        eq_({'10': 'a', 'hi': 'test'}, _btp(['hi=test', '10=a']))
+        eq_({"10": "a", "hi": "test"}, _btp(["hi=test", "10=a"]))
 
     def test_build_template_params_named_anonymous_numbered(self):
         """_btp handles mixed named, anonymous and numbered arguments"""
-        eq_({'1': 'a', 'hi': 'test', '3': 'z'}, _btp(['hi=test', 'a', '3=z']))
+        eq_({"1": "a", "hi": "test", "3": "z"}, _btp(["hi=test", "a", "3=z"]))
 
     def test_unapproved_template(self):
-        TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'new')
+        TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + "new")
         p = WikiParser()
-        doc = pq(p.parse('[[T:new]]'))
-        eq_('The template "new" does not exist or has no approved revision.',
-            doc.text())
+        doc = pq(p.parse("[[T:new]]"))
+        eq_('The template "new" does not exist or has no approved revision.', doc.text())
 
     def test_for_in_template(self):
         """Verify that {for}'s render correctly in template."""
-        d = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'for')
-        ApprovedRevisionFactory(document=d, content='{for win}windows{/for}{for mac}mac{/for}')
+        d = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + "for")
+        ApprovedRevisionFactory(document=d, content="{for win}windows{/for}{for mac}mac{/for}")
         p = WikiParser()
-        content = p.parse('[[{}for]]'.format(TEMPLATE_TITLE_PREFIX))
-        eq_('<p><span class="for" data-for="win">windows</span>'
+        content = p.parse("[[{}for]]".format(TEMPLATE_TITLE_PREFIX))
+        eq_(
+            '<p><span class="for" data-for="win">windows</span>'
             '<span class="for" data-for="mac">mac</span>\n\n</p>',
-            content)
+            content,
+        )
 
     def test_button_for_nesting(self):
         """You can nest {for}s inside {button}."""
-        text = '{button start {for mac}mac{/for}{for win}win{/for} rest}'
+        text = "{button start {for mac}mac{/for}{for win}win{/for} rest}"
         p = WikiParser()
         content = p.parse(text)
-        eq_(u'<p><span class="button">start '
-            u'<span class="for" data-for="mac">mac</span>'
-            u'<span class="for" data-for="win">win</span> '
-            u'rest</span>\n</p>', content)
+        eq_(
+            '<p><span class="button">start '
+            '<span class="for" data-for="mac">mac</span>'
+            '<span class="for" data-for="win">win</span> '
+            "rest</span>\n</p>",
+            content,
+        )
 
     def test_button_image_for_nesting(self):
         """You can nest [[Image:]] inside {for} inside {button}."""
-        ImageFactory(title='image-file.png')
-        text = '{button {for mac}[[Image:image-file.png]]{/for} text}'
+        ImageFactory(title="image-file.png")
+        text = "{button {for mac}[[Image:image-file.png]]{/for} text}"
         p = WikiParser()
         doc = pq(p.parse(text))
-        assert 'frameless' in doc('img').attr('class')
-        eq_(0, doc('div.caption').length)
-        eq_(0, doc('div.img').length)
+        assert "frameless" in doc("img").attr("class")
+        eq_(0, doc("div.caption").length)
+        eq_(0, doc("div.img").length)
 
     def test_direct_recursion(self):
         """Make sure direct recursion is caught on the very first nesting."""
-        d = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'Boo')
+        d = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + "Boo")
 
         # Twice so the second revision sees content identical to itself:
         ApprovedRevisionFactory.create_batch(
-            2, document=d, content='Fine [[{}Boo]] Fellows'.format(TEMPLATE_TITLE_PREFIX))
+            2, document=d, content="Fine [[{}Boo]] Fellows".format(TEMPLATE_TITLE_PREFIX)
+        )
 
-        recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + 'Boo')
-        expected = '<p>Fine %s Fellows\n</p>' % recursion_message
+        recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + "Boo")
+        expected = "<p>Fine %s Fellows\n</p>" % recursion_message
         eq_(expected, d.content_parsed)
 
     def test_indirect_recursion(self):
         """Make sure indirect recursion is caught."""
-        boo = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'Boo')
-        yah = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'Yah')
+        boo = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + "Boo")
+        yah = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + "Yah")
         ApprovedRevisionFactory(
-            document=boo, content='Paper [[{}Yah]] Cups'.format(TEMPLATE_TITLE_PREFIX))
+            document=boo, content="Paper [[{}Yah]] Cups".format(TEMPLATE_TITLE_PREFIX)
+        )
         ApprovedRevisionFactory(
-            document=yah, content='Wooden [[{}Boo]] Bats'.format(TEMPLATE_TITLE_PREFIX))
-        recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + 'Boo')
-        eq_('<p>Paper Wooden %s Bats\n Cups\n</p>' % recursion_message, boo.content_parsed)
+            document=yah, content="Wooden [[{}Boo]] Bats".format(TEMPLATE_TITLE_PREFIX)
+        )
+        recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + "Boo")
+        eq_("<p>Paper Wooden %s Bats\n Cups\n</p>" % recursion_message, boo.content_parsed)
 
 
 class TestWikiInclude(TestCase):
     def test_revision_include(self):
         """Simple include markup."""
         p = WikiParser()
-        _, _, p = doc_rev_parser('Test content', 'Test title')
+        _, _, p = doc_rev_parser("Test content", "Test title")
 
         # Existing title returns document's content
-        doc = pq(p.parse('[[I:Test title]]'))
-        eq_('Test content', doc.text())
+        doc = pq(p.parse("[[I:Test title]]"))
+        eq_("Test content", doc.text())
 
         # Nonexisting title returns 'Document not found'
-        doc = pq(p.parse('[[Include:Another title]]'))
+        doc = pq(p.parse("[[Include:Another title]]"))
         eq_('The document "Another title" does not exist.', doc.text())
 
     def test_revision_include_locale(self):
         """Include finds document in the correct locale."""
-        _, _, p = doc_rev_parser('English content', 'Test title')
+        _, _, p = doc_rev_parser("English content", "Test title")
         # Parsing in English should find the French article
-        doc = pq(p.parse('[[Include:Test title]]', locale='en-US'))
-        eq_('English content', doc.text())
+        doc = pq(p.parse("[[Include:Test title]]", locale="en-US"))
+        eq_("English content", doc.text())
         # The French article will include the English content as fallback.
-        doc = pq(p.parse('[[I:Test title]]', locale='fr'))
-        eq_('English content', doc.text())
+        doc = pq(p.parse("[[I:Test title]]", locale="fr"))
+        eq_("English content", doc.text())
         # Create the French article, and test again
         parent_rev = RevisionFactory()
-        d = DocumentFactory(parent=parent_rev.document, title='Test title', locale='fr')
-        ApprovedRevisionFactory(document=d, content='French content')
+        d = DocumentFactory(parent=parent_rev.document, title="Test title", locale="fr")
+        ApprovedRevisionFactory(document=d, content="French content")
         # Parsing in French should find the French article
-        doc = pq(p.parse('[[Include:Test title]]', locale='fr'))
-        eq_('French content', doc.text())
+        doc = pq(p.parse("[[Include:Test title]]", locale="fr"))
+        eq_("French content", doc.text())
 
     def test_direct_recursion(self):
         """Make sure direct recursion is caught on the very first nesting."""
-        d = DocumentFactory(title='Boo')
+        d = DocumentFactory(title="Boo")
         # Twice so the second revision sees content identical to itself:
-        ApprovedRevisionFactory.create_batch(2, document=d, content='Fine [[Include:Boo]] Fellows')
-        eq_('<p>Fine %s Fellows\n</p>' % (RECURSION_MESSAGE % 'Boo'), d.content_parsed)
+        ApprovedRevisionFactory.create_batch(2, document=d, content="Fine [[Include:Boo]] Fellows")
+        eq_("<p>Fine %s Fellows\n</p>" % (RECURSION_MESSAGE % "Boo"), d.content_parsed)
 
     def test_indirect_recursion(self):
         """Make sure indirect recursion is caught."""
-        boo = DocumentFactory(title='Boo')
-        yah = DocumentFactory(title='Yah')
-        ApprovedRevisionFactory(document=boo, content='Paper [[Include:Yah]] Cups')
-        ApprovedRevisionFactory(document=yah, content='Wooden [[Include:Boo]] Bats')
-        recursion_message = RECURSION_MESSAGE % 'Boo'
+        boo = DocumentFactory(title="Boo")
+        yah = DocumentFactory(title="Yah")
+        ApprovedRevisionFactory(document=boo, content="Paper [[Include:Yah]] Cups")
+        ApprovedRevisionFactory(document=yah, content="Wooden [[Include:Boo]] Bats")
+        recursion_message = RECURSION_MESSAGE % "Boo"
 
         # boo.content_parsed is something like <p>Paper </p><p>Wooden
         # [Recursive inclusion of "Boo"] Bats\n</p> Cups\n<p></p>.
-        eq_('Paper Wooden %s Bats Cups' % recursion_message,
-            re.sub(r'</?p>|\n', '', boo.content_parsed))
+        eq_(
+            "Paper Wooden %s Bats Cups" % recursion_message,
+            re.sub(r"</?p>|\n", "", boo.content_parsed),
+        )
 
 
 class TestWikiVideo(TestCase):
     """Video hook."""
+
     def tearDown(self):
         Video.objects.all().delete()
         super(TestWikiVideo, self).tearDown()
@@ -419,9 +449,9 @@ class TestWikiVideo(TestCase):
     def test_video_english(self):
         """Video is created and found in English."""
         v = VideoFactory()
-        d = ApprovedRevisionFactory(content='[[V:%s]]' % v.title).document
+        d = ApprovedRevisionFactory(content="[[V:%s]]" % v.title).document
         doc = pq(d.html)
-        eq_('video', doc('div.video').attr('class'))
+        eq_("video", doc("div.video").attr("class"))
 
         # This test and the code it tests hasn't changed in
         # months. However, this test started failing for Mike and I
@@ -432,87 +462,88 @@ class TestWikiVideo(TestCase):
         # worse. Ergo, I have changed the test to accept either output
         # because I got stuff to do. Having said that, this is kind of
         # ridiculous and should be fixed. See bug #892610.
-        assert doc('video').html() in [
+        assert doc("video").html() in [
             # This was the original expected test output.
-            (u'<source src="{0}" '
-             u'type="video/webm"><source src="{1}" type="video/ogg"/>'
-             u'</source>'.format(v.webm.url, v.ogv.url)),
-
+            (
+                '<source src="{0}" '
+                'type="video/webm"><source src="{1}" type="video/ogg"/>'
+                "</source>".format(v.webm.url, v.ogv.url)
+            ),
             # This is the version that Mike and I get.
-            (u'\n          <source src="{0}" type="video/webm">'
-             u'\n          <source src="{1}" type="video/ogg">'
-             u'\n      </source></source>'.format(v.webm.url, v.ogv.url))]
+            (
+                '\n          <source src="{0}" type="video/webm">'
+                '\n          <source src="{1}" type="video/ogg">'
+                "\n      </source></source>".format(v.webm.url, v.ogv.url)
+            ),
+        ]
 
-        eq_(1, len(doc('video')))
-        eq_(2, len(doc('source')))
-        data_fallback = doc('video').attr('data-fallback')
+        eq_(1, len(doc("video")))
+        eq_(2, len(doc("source")))
+        data_fallback = doc("video").attr("data-fallback")
         eq_(v.flv.url, data_fallback)
 
     def test_video_fallback_french(self):
         """English video is found in French."""
         p = WikiParser()
         v = VideoFactory()
-        doc = pq(p.parse('[[V:%s]]' % v.title, locale='fr'))
-        eq_('video', doc('div.video').attr('class'))
-        eq_(1, len(doc('video')))
-        eq_(2, len(doc('source')))
-        data_fallback = doc('video').attr('data-fallback')
+        doc = pq(p.parse("[[V:%s]]" % v.title, locale="fr"))
+        eq_("video", doc("div.video").attr("class"))
+        eq_(1, len(doc("video")))
+        eq_(2, len(doc("source")))
+        data_fallback = doc("video").attr("data-fallback")
         eq_(Video.objects.all()[0].flv.url, data_fallback)
 
     def test_video_not_exist(self):
         """Video does not exist."""
         p = WikiParser()
-        doc = pq(p.parse('[[V:404]]', locale='fr'))
+        doc = pq(p.parse("[[V:404]]", locale="fr"))
         eq_('The video "404" does not exist.', doc.text())
 
     def test_video_modal(self):
         """Video modal defaults for plcaeholder and text."""
         v = VideoFactory()
-        replacement = ('<img class="video-thumbnail" src="%s"/>' % v.thumbnail_url_if_set())
-        d = ApprovedRevisionFactory(content='[[V:%s|modal]]' % v.title).document
+        replacement = '<img class="video-thumbnail" src="%s"/>' % v.thumbnail_url_if_set()
+        d = ApprovedRevisionFactory(content="[[V:%s|modal]]" % v.title).document
         doc = pq(d.html)
-        eq_(v.title, doc('.video-modal')[0].attrib['title'])
-        eq_(1, doc('.video video').length)
-        eq_(replacement, doc('.video-placeholder').html().strip())
-        eq_('video modal-trigger', doc('div.video').attr('class'))
+        eq_(v.title, doc(".video-modal")[0].attrib["title"])
+        eq_(1, doc(".video video").length)
+        eq_(replacement, doc(".video-placeholder").html().strip())
+        eq_("video modal-trigger", doc("div.video").attr("class"))
 
     def test_video_modal_caption_text(self):
         """Video modal can change title and placeholder text."""
         v = VideoFactory()
         r = ApprovedRevisionFactory(
-            content='[[V:%s|modal|placeholder=Place<b>holder</b>|title=WOOT]]' % v.title)
+            content="[[V:%s|modal|placeholder=Place<b>holder</b>|title=WOOT]]" % v.title
+        )
         d = r.document
         doc = pq(d.html)
-        eq_('WOOT', doc('.video-modal')[0].attrib['title'])
-        eq_('Place<b>holder</b>', doc('.video-placeholder').html().strip())
+        eq_("WOOT", doc(".video-modal")[0].attrib["title"])
+        eq_("Place<b>holder</b>", doc(".video-placeholder").html().strip())
 
-    @override_settings(GALLERY_VIDEO_URL='http://videos.mozilla.org/serv/sumo/')
+    @override_settings(GALLERY_VIDEO_URL="http://videos.mozilla.org/serv/sumo/")
     def test_video_cdn(self):
         """Video URLs can link to the CDN if a CDN setting is set."""
         v = VideoFactory()
-        d = ApprovedRevisionFactory(content='[[V:%s]]' % v.title).document
+        d = ApprovedRevisionFactory(content="[[V:%s]]" % v.title).document
         doc = pq(d.html)
-        assert settings.GALLERY_VIDEO_URL in doc('source').eq(1).attr('src')
-        assert settings.GALLERY_VIDEO_URL in doc('video').attr('data-fallback')
-        assert settings.GALLERY_VIDEO_URL in doc('source').eq(0).attr('src')
+        assert settings.GALLERY_VIDEO_URL in doc("source").eq(1).attr("src")
+        assert settings.GALLERY_VIDEO_URL in doc("video").attr("data-fallback")
+        assert settings.GALLERY_VIDEO_URL in doc("source").eq(0).attr("src")
 
     def test_youtube_video(self):
         """Verify youtube embeds."""
-        urls = ['http://www.youtube.com/watch?v=oHg5SJYRHA0',
-                'https://youtube.com/watch?v=oHg5SJYRHA0'
-                'http://youtu.be/oHg5SJYRHA0'
-                'https://youtu.be/oHg5SJYRHA0']
+        urls = [
+            "http://www.youtube.com/watch?v=oHg5SJYRHA0",
+            "https://youtube.com/watch?v=oHg5SJYRHA0"
+            "http://youtu.be/oHg5SJYRHA0"
+            "https://youtu.be/oHg5SJYRHA0",
+        ]
         parser = WikiParser()
 
         for url in urls:
-            doc = pq(parser.parse('[[V:%s]]' % url))
-            assert doc('iframe')[0].attrib['src'].startswith(
-                '//www.youtube.com/embed/oHg5SJYRHA0')
-
-
-def parsed_eq(want, to_parse):
-    p = WikiParser()
-    eq_(want, p.parse(to_parse).strip().replace('\n', ''))
+            doc = pq(parser.parse("[[V:%s]]" % url))
+            assert doc("iframe")[0].attrib["src"].startswith("//www.youtube.com/embed/oHg5SJYRHA0")
 
 
 class ForWikiTests(TestCase):
@@ -520,137 +551,148 @@ class ForWikiTests(TestCase):
     arranges for certain parts of the page to show only when viewed on certain
     OSes or browser versions"""
 
+    def assertWikiHtmlEqual(self, wiki, html, msg=None):
+        self.assertHTMLEqual(WikiParser().parse(wiki), html, msg=msg)
+
     def test_block(self):
         """A {for} set off by itself or wrapping a block-level element should
         be a paragraph or other kind of block-level thing."""
-        parsed_eq('<p>Joe</p><p><span class="for">Red</span></p>'
-                  '<p>Blow</p>',
-                  'Joe\n\n{for}Red{/for}\n\nBlow')
-        parsed_eq('<p>Joe</p><div class="for"><ul><li> Red</li></ul></div>'
-                  '<p>Blow</p>',
-                  'Joe\n\n{for}\n* Red\n{/for}\n\nBlow')
+        self.assertWikiHtmlEqual(
+            "Joe\n\n{for}Red{/for}\n\nBlow",
+            '<p>Joe</p><p><span class="for">Red</span></p><p>Blow</p>',
+        )
+        self.assertWikiHtmlEqual(
+            "Joe\n\n{for}\n* Red\n{/for}\n\nBlow",
+            '<p>Joe</p><div class="for"><ul><li> Red</li></ul></div><p>Blow</p>',
+        )
 
     def test_inline(self):
-        """A for not meeting the conditions in test_block should be inline.
-        """
-        parsed_eq('<p>Joe</p>'
-                  '<p>Red <span class="for">riding</span> hood</p>'
-                  '<p>Blow</p>',
-
-                  'Joe\n\nRed {for}riding{/for} hood\n\nBlow')
+        """A for not meeting the conditions in test_block should be inline."""
+        self.assertWikiHtmlEqual(
+            "Joe\n\nRed {for}riding{/for} hood\n\nBlow",
+            '<p>Joe</p><p>Red <span class="for">riding</span> hood</p><p>Blow</p>',
+        )
 
     def test_nested(self):
         """{for} tags should be nestable."""
-        parsed_eq('<div class="for" data-for="mac">'
-                  '<p>Joe</p>'
-                  '<p>Red <span class="for"><span class="for">riding'
-                  '</span> hood</span></p>'
-                  '<p>Blow</p>'
-                  '</div>',
-
-                  '{for mac}\n'
-                  'Joe\n'
-                  '\n'
-                  'Red {for}{for}riding\n'
-                  '{/for} hood{/for}\n'
-                  '\n'
-                  'Blow\n'
-                  '{/for}')
+        self.assertWikiHtmlEqual(
+            "{for mac}\n"
+            "Joe\n"
+            "\n"
+            "Red {for}{for}riding\n"
+            "{/for} hood{/for}\n"
+            "\n"
+            "Blow\n"
+            "{/for}",
+            '<div data-for="mac" class="for">'
+            "<p>Joe</p>"
+            '<p>Red <span class="for"><span class="for">riding'
+            "</span> hood</span></p>"
+            "<p>Blow</p>"
+            "</div>",
+        )
 
     def test_data_attrs(self):
         """Make sure the correct attributes are set on the for element."""
-        parsed_eq('<p><span class="for" data-for="mac,linux,3.6">'
-                  'One</span></p>',
-                  '{for mac,linux,3.6}One{/for}')
+        self.assertWikiHtmlEqual(
+            "{for mac,linux,3.6}One{/for}",
+            '<p><span class="for" data-for="mac,linux,3.6">One</span></p>',
+        )
 
     def test_early_close(self):
         """Make sure the parser closes the for tag at the right place when
         its closer is early."""
-        parsed_eq('<div class="for"><p>One</p>'
-                  '<ul><li>Fish</li></ul></div>',
-                  '{for}\nOne\n\n*Fish{/for}')
+        self.assertWikiHtmlEqual(
+            "{for}\nOne\n\n*Fish{/for}", '<div class="for"><p>One</p><ul><li>Fish</li></ul></div>'
+        )
 
     def test_late_close(self):
         """If the closing for tag is not closed by the time the enclosing
         element of the opening for tag is closed, close the for tag
         just before the enclosing element."""
-        parsed_eq(
-            '<ul><li><span class="for">One</span></li>'
-            '<li>Fish</li></ul><p>Two</p>',
-            '*{for}One\n*Fish\n\nTwo\n{/for}')
+        self.assertWikiHtmlEqual(
+            "*{for}One\n*Fish\n\nTwo\n{/for}",
+            '<ul><li><span class="for">One</span></li><li>Fish</li></ul><p>Two</p>',
+        )
 
     def test_missing_close(self):
         """If the closing for tag is missing, close the for tag just
         before the enclosing element."""
-        parsed_eq(
-            '<p><span class="for">One fish</span></p><p>Two fish</p>',
-            '{for}One fish\n\nTwo fish')
+        self.assertWikiHtmlEqual(
+            "{for}One fish\n\nTwo fish", '<p><span class="for">One fish</span></p><p>Two fish</p>'
+        )
 
     def test_unicode(self):
         """Make sure non-ASCII chars survive being wrapped in a for."""
-        french = u'Vous parl\u00e9 Fran\u00e7ais'
-        parsed_eq('<p><span class="for">' + french + '</span></p>',
-                  '{for}' + french + '{/for}')
+        french = "Vous parl\u00e9 Fran\u00e7ais"
+        self.assertWikiHtmlEqual(
+            "{for}" + french + "{/for}", '<p><span class="for">' + french + "</span></p>"
+        )
 
     def test_boolean_attr(self):
         """Make sure empty attributes don't raise exceptions."""
-        parsed_eq('<p><video controls height="120">'
-                  '  <source src="/some/path/file.ogv" type="video/ogv">'
-                  '</video></p>',
-                  '<p><video controls="" height="120">'
-                  '  <source src="/some/path/file.ogv" type="video/ogv">'
-                  '</video></p>')
+        self.assertWikiHtmlEqual(
+            '<p><video controls="" height="120">'
+            '  <source src="/some/path/file.ogv" type="video/ogv">'
+            "</video></p>",
+            '<p><video controls height="120">'
+            '  <source src="/some/path/file.ogv" type="video/ogv">'
+            "</video></p>",
+        )
 
     def test_adjacent_blocks(self):
         """Make sure one block-level {for} doesn't absorb an adjacent one."""
         p = WikiParser()
-        html = p.parse('{for fx4}\n'
-                       '{for mac}Fx4{/for}\n'
-                       '{/for}\n'
-                       '{for fx3}\n'
-                       '{for mac}Fx3{/for}\n'
-                       '{/for}')
+        html = p.parse(
+            "{for fx4}\n"
+            "{for mac}Fx4{/for}\n"
+            "{/for}\n"
+            "{for fx3}\n"
+            "{for mac}Fx3{/for}\n"
+            "{/for}"
+        )
         # The two div.fors should be siblings, not nested:
-        eq_([], pq(html)('div.for div.for'))
+        eq_([], pq(html)("div.for div.for"))
 
     def test_leading_newlines(self):
         """Make sure leading newlines don't cause a block-level {for} to be
         sucked into the leading blank paragraph, causing the actual text to
         always be shown."""
-        doc = pq(WikiParser().parse('\n\n{for linux}\nunixify\n{/for}'))
-        eq_('unixify', doc('.for').text().strip())
+        doc = pq(WikiParser().parse("\n\n{for linux}\nunixify\n{/for}"))
+        eq_("unixify", doc(".for").text().strip())
 
     def test_big_swath(self):
         """Enclose a big section containing many tags."""
-        parsed_eq('<div class="for"><h1 id="w_h1">H1</h1>'
-                  '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
-                  '<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>'
-                  '<p>They have high melting points.</p></div>',
-
-                  '{for}\n'
-                  '=H1=\n'
-                  '==H2==\n'
-                  'Llamas are fun:\n'
-                  '\n'
-                  '*Jumping\n'
-                  '*Rolling\n'
-                  '*Grazing\n'
-                  '\n'
-                  'They have high melting points.\n'
-                  '{/for}')
+        self.assertWikiHtmlEqual(
+            "{for}\n"
+            "=H1=\n"
+            "==H2==\n"
+            "Llamas are fun:\n"
+            "\n"
+            "*Jumping\n"
+            "*Rolling\n"
+            "*Grazing\n"
+            "\n"
+            "They have high melting points.\n"
+            "{/for}",
+            '<div class="for"><h1 id="w_h1">H1</h1>'
+            '<h2 id="w_h2">H2</h2><p>Llamas are fun:</p>'
+            "<ul><li>Jumping</li><li>Rolling</li><li>Grazing</li></ul>"
+            "<p>They have high melting points.</p></div>",
+        )
 
     def test_block_level_section(self):
         """Make sure we recognize <section> as a block element."""
         p = WikiParser()
-        html = p.parse('{for}<section>hi</section>{/for}')
-        assert '<div' in html, "Didn't detect <section> tag as block level"
+        html = p.parse("{for}<section>hi</section>{/for}")
+        assert "<div" in html, "Didn't detect <section> tag as block level"
 
 
 def balanced_eq(want, to_balance):
     """Run `to_balance` through the expander to get its tags balanced, and
     assert the result is `want`."""
     expander = ForParser(to_balance)
-    eq_(want, expander.to_unicode())
+    eq_(want, str(expander))
 
 
 def expanded_eq(want, to_expand):
@@ -658,7 +700,7 @@ def expanded_eq(want, to_expand):
     `want`."""
     expander = ForParser(to_expand)
     expander.expand_fors()
-    eq_(want, expander.to_unicode())
+    eq_(want, str(expander))
 
 
 def strip_eq(want, text):
@@ -675,27 +717,26 @@ class ForParserTests(TestCase):
 
     def test_well_formed(self):
         """Make sure the expander works on well-formed fragments."""
-        html = '<ul><li type="1"><br><for>One</for></li></ul>'
+        html = '<ul><li class="1"><br><for>One</for></li></ul>'
         balanced_eq(html, html)
 
     def test_document_mode(self):
         """Make sure text chunks interspersed with tags are parsed right."""
-        html = '<p>Hello<br>there, <br>you.</p>'
+        html = "<p>Hello<br>there, <br>you.</p>"
         balanced_eq(html, html)
 
     def test_early_close(self):
         """Make sure the parser closes the for tag at the right place when
         its closer is early."""
-        balanced_eq('<div><for><p>One</p></for></div>',
-                    '<div><for><p>One</for></for></p></div>')
+        balanced_eq("<div><for><p>One</p></for></div>", "<div><for><p>One</for></for></p></div>")
 
     def test_late_close(self):
         """If the closing for tag is not closed by the time the enclosing
         element of the opening for tag is closed, close the for tag
         just before the enclosing element."""
         balanced_eq(
-            '<ul><li><for><for>One</for></for></li></ul>',
-            '<ul><li><for><for>One</li></ul></for>')
+            "<ul><li><for><for>One</for></for></li></ul>", "<ul><li><for><for>One</li></ul></for>"
+        )
 
     def test_close_absent_at_end(self):
         """Make sure the parser closes for tags left open at the EOF.
@@ -703,28 +744,27 @@ class ForParserTests(TestCase):
         This mattered more when we weren't building a parse tree.
 
         """
-        balanced_eq('<for><p>One</p></for>',
-                    '<for><p>One</for></for></p>')
+        balanced_eq("<for><p>One</p></for>", "<for><p>One</for></for></p>")
 
     def test_unicode(self):
         """Make sure this all works with non-ASCII chars."""
-        html = u'<for>Vous parl\u00e9 Fran\u00e7ais</for>'
+        html = "<for>Vous parl\u00e9 Fran\u00e7ais</for>"
         balanced_eq(html, html)
 
     def test_div(self):
         """Make sure we use divs for fors containing block elements."""
-        expanded_eq('<div class="for"><p>One</p></div>',
-                    '<for><p>One</p></for>')
+        expanded_eq('<div class="for"><p>One</p></div>', "<for><p>One</p></for>")
 
     def test_span(self):
         """Make sure we use spans for fors containing no block elements."""
-        expanded_eq('<span class="for"><em>One</em></span>',
-                    '<for><em>One</em></for>')
+        expanded_eq('<span class="for"><em>One</em></span>', "<for><em>One</em></for>")
 
     def test_data_attrs(self):
         """Make sure the data- attributes look good."""
-        expanded_eq('<span class="for" data-for="mac,linux">One</span>',
-                    '<for data-for="mac,linux">One</for>')
+        expanded_eq(
+            '<span class="for" data-for="mac,linux">One</span>',
+            '<for data-for="mac,linux">One</for>',
+        )
 
     def test_on_own_line(self):
         def on_own_line_eq(want, text):
@@ -732,20 +772,19 @@ class ForParserTests(TestCase):
             in `text`."""
             match = ForParser._FOR_OR_CLOSER.search(text)
             eq_(want, ForParser._on_own_line(match, match.groups(3)))
-        on_own_line_eq((True, True, True), '{for}')
-        on_own_line_eq((True, True, True), '{for} ')
-        on_own_line_eq((False, False, True), ' {for}')
-        on_own_line_eq((True, False, True), 'q\n{for}')
-        on_own_line_eq((False, True, False), '{for}q')
-        on_own_line_eq((True, False, False), '\n{for} \nq')
+
+        on_own_line_eq((True, True, True), "{for}")
+        on_own_line_eq((True, True, True), "{for} ")
+        on_own_line_eq((False, False, True), " {for}")
+        on_own_line_eq((True, False, True), "q\n{for}")
+        on_own_line_eq((False, True, False), "{for}q")
+        on_own_line_eq((True, False, False), "\n{for} \nq")
 
     def test_strip(self):
-        strip_eq('\x070\x07inline\x07/sf\x07', '{for}inline{/for}')
-        strip_eq('\x070\x07\n\nblock\n\n\x07/sf\x07',
-                 '{for}\nblock\n{/for}')
-        strip_eq('\x070\x07inline\n\n\x07/sf\x07',
-                 '{for}inline\n{/for}')
-        strip_eq('\x070\x07\n\nblock\x07/sf\x07', '{for}\nblock{/for}')
+        strip_eq("\x910\x91inline\x91/sf\x91", "{for}inline{/for}")
+        strip_eq("\x910\x91\n\nblock\n\n\x91/sf\x91", "{for}\nblock\n{/for}")
+        strip_eq("\x910\x91inline\n\n\x91/sf\x91", "{for}inline\n{/for}")
+        strip_eq("\x910\x91\n\nblock\x91/sf\x91", "{for}\nblock{/for}")
 
     def test_whitespace_lookbehind(self):
         """Assert strip_fors is aware of newlines preceding the current match.
@@ -756,8 +795,10 @@ class ForParserTests(TestCase):
         and take preceding newlines into account.
 
         """
-        strip_eq('\x070\x07\n\n\x071\x07inline\x07/sf\x07\n\n\x07/sf\x07',
-                 '{for}\n{for}inline{/for}\n{/for}')
+        strip_eq(
+            "\x910\x91\n\n\x911\x91inline\x91/sf\x91\n\n\x91/sf\x91",
+            "{for}\n{for}inline{/for}\n{/for}",
+        )
 
     def test_matches_see_replacements(self):
         """Make sure each whitespace lookbehind takes into account the effect
@@ -769,21 +810,21 @@ class ForParserTests(TestCase):
         original string, without the replacements applied.
 
         """
-        strip_eq('\x070\x07\n\n\x071\x07Fx4\x07/sf\x07\n\n\x07/sf\x07\n\n'
-                 '\x072\x07\n\n\x073\x07Fx3\x07/sf\x07\n\n\x07/sf\x07',
-                 '{for fx4}\n'
-                 '{for mac}Fx4{/for}\n'
-                 '{/for}\n'
-                 '{for fx3}\n'
-                 '{for mac}Fx3{/for}\n'
-                 '{/for}')
+        strip_eq(
+            "\x910\x91\n\n\x911\x91Fx4\x91/sf\x91\n\n\x91/sf\x91\n\n"
+            "\x912\x91\n\n\x913\x91Fx3\x91/sf\x91\n\n\x91/sf\x91",
+            "{for fx4}\n"
+            "{for mac}Fx4{/for}\n"
+            "{/for}\n"
+            "{for fx3}\n"
+            "{for mac}Fx3{/for}\n"
+            "{/for}",
+        )
 
     def test_self_closers(self):
         """Make sure self-closing tags aren't balanced as paired ones."""
-        balanced_eq('<img src="smoo"><span>g</span>',
-                    '<img src="smoo"><span>g</span>')
-        balanced_eq('<img src="smoo"><span>g</span>',
-                    '<img src="smoo"/><span>g</span>')
+        balanced_eq('<img src="smoo"><span>g</span>', '<img src="smoo"><span>g</span>')
+        balanced_eq('<img src="smoo"><span>g</span>', '<img src="smoo"/><span>g</span>')
 
     def test_leading_text_nodes(self):
         """Make sure the parser handles a leading naked run of text.
@@ -791,17 +832,16 @@ class ForParserTests(TestCase):
         Test inner runs of text while we're at it.
 
         """
-        html = 'A<i>hi</i>B<i>there</i>C'
+        html = "A<i>hi</i>B<i>there</i>C"
         p = ForParser(html)
-        eq_(html, p.to_unicode())
+        eq_(html, str(p))
 
 
 class WhatLinksHereTests(TestCase):
-
     def test_links(self):
-        d1, _, _ = doc_rev_parser('', title='D1')
-        d2, _, _ = doc_rev_parser('[[D1]]', title='D2')
-        d3, _, _ = doc_rev_parser('[[D1]] [[D2]]', title='D3')
+        d1, _, _ = doc_rev_parser("", title="D1")
+        d2, _, _ = doc_rev_parser("[[D1]]", title="D2")
+        d3, _, _ = doc_rev_parser("[[D1]] [[D2]]", title="D3")
 
         eq_(len(d1.links_to()), 2)
         eq_(len(d1.links_from()), 0)
@@ -810,55 +850,56 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d3.links_to()), 0)
         eq_(len(d3.links_from()), 2)
 
-        eq_([d.linked_from.title for d in d1.links_to()], ['D2', 'D3'])
-        eq_([d.kind for d in d1.links_to()], ['link', 'link'])
-        eq_([d.linked_from.title for d in d2.links_to()], ['D3'])
+        eq_([d.linked_from.title for d in d1.links_to()], ["D2", "D3"])
+        eq_([d.kind for d in d1.links_to()], ["link", "link"])
+        eq_([d.linked_from.title for d in d2.links_to()], ["D3"])
 
     def test_templates(self):
         d1, _, _ = doc_rev_parser(
-            'Oh hai', title=TEMPLATE_TITLE_PREFIX + 'D1', category=TEMPLATES_CATEGORY)
-        d2, _, _ = doc_rev_parser('[[Template:D1]]', title='D2')
+            "Oh hai", title=TEMPLATE_TITLE_PREFIX + "D1", category=TEMPLATES_CATEGORY
+        )
+        d2, _, _ = doc_rev_parser("[[Template:D1]]", title="D2")
 
         eq_(len(d1.links_to()), 1)
         eq_(len(d1.links_from()), 0)
         eq_(len(d2.links_to()), 0)
         eq_(len(d2.links_from()), 1)
 
-        eq_(d1.links_to()[0].kind, 'template')
+        eq_(d1.links_to()[0].kind, "template")
 
     def test_includes(self):
-        d1, _, _ = doc_rev_parser('Oh hai', title='D1')
-        d2, _, _ = doc_rev_parser('[[Include:D1]]', title='D2')
+        d1, _, _ = doc_rev_parser("Oh hai", title="D1")
+        d2, _, _ = doc_rev_parser("[[Include:D1]]", title="D2")
 
         eq_(len(d1.links_to()), 1)
         eq_(len(d1.links_from()), 0)
         eq_(len(d2.links_to()), 0)
         eq_(len(d2.links_from()), 1)
 
-        eq_(d1.links_to()[0].kind, 'include')
+        eq_(d1.links_to()[0].kind, "include")
 
     def test_duplicates(self):
         """Document.links_to and Document.links_from should only count
         documents that link, not every instance of a link on a page.
         Make sure that things work that way."""
-        d1, _, _ = doc_rev_parser('', title='D1')
-        d2, _, _ = doc_rev_parser('[[D1]] [[D1]] [[D1]]', title='D2')
+        d1, _, _ = doc_rev_parser("", title="D1")
+        d2, _, _ = doc_rev_parser("[[D1]] [[D1]] [[D1]]", title="D2")
 
         eq_(len(d1.links_to()), 1)
         eq_(len(d1.links_from()), 0)
         eq_(len(d2.links_to()), 0)
         eq_(len(d2.links_from()), 1)
 
-        eq_(d1.links_to()[0].kind, 'link')
+        eq_(d1.links_to()[0].kind, "link")
 
     def test_locales_exists(self):
         """Links should use the correct locale."""
-        d1 = DocumentFactory(title='Foo', locale='en-US')
-        RevisionFactory(document=d1, content='', is_approved=True)
-        d2 = DocumentFactory(title='Foo', locale='de')
-        RevisionFactory(document=d2, content='', is_approved=True)
-        d3 = DocumentFactory(title='Bar', locale='de')
-        RevisionFactory(document=d3, content='[[Foo]]', is_approved=True)
+        d1 = DocumentFactory(title="Foo", locale="en-US")
+        RevisionFactory(document=d1, content="", is_approved=True)
+        d2 = DocumentFactory(title="Foo", locale="de")
+        RevisionFactory(document=d2, content="", is_approved=True)
+        d3 = DocumentFactory(title="Bar", locale="de")
+        RevisionFactory(document=d3, content="[[Foo]]", is_approved=True)
 
         eq_(len(d1.links_to()), 0)
         eq_(len(d1.links_from()), 0)
@@ -867,17 +908,17 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d3.links_to()), 0)
         eq_(len(d3.links_from()), 1)
 
-        eq_(d2.links_to()[0].kind, 'link')
+        eq_(d2.links_to()[0].kind, "link")
 
     def test_locales_renames(self):
         """Links should use the correct locale, even if the title has
         been translated."""
-        d1 = DocumentFactory(title='Foo', locale='en-US')
-        RevisionFactory(document=d1, content='', is_approved=True)
-        d2 = DocumentFactory(title='German Foo', locale='de', parent=d1)
-        RevisionFactory(document=d2, content='', is_approved=True)
-        d3 = DocumentFactory(title='German Bar', locale='de')
-        RevisionFactory(document=d3, content='[[Foo]]', is_approved=True)
+        d1 = DocumentFactory(title="Foo", locale="en-US")
+        RevisionFactory(document=d1, content="", is_approved=True)
+        d2 = DocumentFactory(title="German Foo", locale="de", parent=d1)
+        RevisionFactory(document=d2, content="", is_approved=True)
+        d3 = DocumentFactory(title="German Bar", locale="de")
+        RevisionFactory(document=d3, content="[[Foo]]", is_approved=True)
 
         eq_(len(d1.links_to()), 0)
         eq_(len(d1.links_from()), 0)
@@ -886,35 +927,35 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d3.links_to()), 0)
         eq_(len(d3.links_from()), 1)
 
-        eq_(d2.links_to()[0].kind, 'link')
+        eq_(d2.links_to()[0].kind, "link")
 
     def test_unicode(self):
         """Unicode is hard. Test that."""
         # \u03C0 is pi and \u2764 is a heart symbol.
-        d1 = DocumentFactory(title=u'\u03C0', slug='pi')
-        ApprovedRevisionFactory(document=d1, content=u'I \u2764 \u03C0')
-        d2 = DocumentFactory(title=u'\u2764', slug='heart')
-        ApprovedRevisionFactory(document=d2, content=u'What do you think about [[\u03C0]]?')
+        d1 = DocumentFactory(title="\u03C0", slug="pi")
+        ApprovedRevisionFactory(document=d1, content="I \u2764 \u03C0")
+        d2 = DocumentFactory(title="\u2764", slug="heart")
+        ApprovedRevisionFactory(document=d2, content="What do you think about [[\u03C0]]?")
 
         eq_(len(d1.links_to()), 1)
         eq_(len(d1.links_from()), 0)
         eq_(len(d2.links_to()), 0)
         eq_(len(d2.links_from()), 1)
 
-        eq_(d1.links_to()[0].kind, 'link')
+        eq_(d1.links_to()[0].kind, "link")
 
     def test_old_revisions(self):
         """Bug 862436. Updating old revisions could cause bad WLH data."""
-        d1 = DocumentFactory(title='D1')
-        RevisionFactory(document=d1, content='', is_approved=True)
-        d2 = DocumentFactory(title='D2')
-        RevisionFactory(document=d2, content='', is_approved=True)
+        d1 = DocumentFactory(title="D1")
+        RevisionFactory(document=d1, content="", is_approved=True)
+        d2 = DocumentFactory(title="D2")
+        RevisionFactory(document=d2, content="", is_approved=True)
 
         # Make D3, then make a revision that links to D1, then a
         # revision that links to D2. Only the link to D2 should count.
-        d3 = DocumentFactory(title='D3')
-        r3_old = ApprovedRevisionFactory(document=d3, content='[[D1]]')
-        ApprovedRevisionFactory(document=d3, content='[[D2]]')
+        d3 = DocumentFactory(title="D3")
+        r3_old = ApprovedRevisionFactory(document=d3, content="[[D1]]")
+        ApprovedRevisionFactory(document=d3, content="[[D2]]")
 
         # This could cause stale data
         r3_old.content_parsed
@@ -928,8 +969,8 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d3.links_from()), 1)
 
     def test_images(self):
-        img = ImageFactory(title='image-file.png')
-        d1, _, _ = doc_rev_parser('[[Image:image-file.png]]', title='D1')
+        img = ImageFactory(title="image-file.png")
+        d1, _, _ = doc_rev_parser("[[Image:image-file.png]]", title="D1")
 
         eq_(len(d1.images), 1)
         eq_(d1.images[0], img)
@@ -939,18 +980,16 @@ class WhatLinksHereTests(TestCase):
 
 class TestLazyWikiImageTags(TestCase):
     def setUp(self):
-        self.d, self.r, self.p = doc_rev_parser(
-            'Test content', 'Installing Firefox')
-        self.img = ImageFactory(title='test.jpg')
+        self.d, self.r, self.p = doc_rev_parser("Test content", "Installing Firefox")
+        self.img = ImageFactory(title="test.jpg")
 
     def tearDown(self):
         self.img.delete()
 
     def test_simple(self):
         """Simple image tag markup."""
-        doc = pq(self.p.parse('[[Image:test.jpg]]',
-                 locale=settings.WIKI_DEFAULT_LANGUAGE))
-        img = doc('img')
-        eq_('test.jpg', img.attr('alt'))
-        eq_(self.img.file.url, img.attr('data-original-src'))
-        assert 'placeholder.gif' in img.attr('src')
+        doc = pq(self.p.parse("[[Image:test.jpg]]", locale=settings.WIKI_DEFAULT_LANGUAGE))
+        img = doc("img")
+        eq_("test.jpg", img.attr("alt"))
+        eq_(self.img.file.url, img.attr("data-original-src"))
+        assert "placeholder.gif" in img.attr("src")

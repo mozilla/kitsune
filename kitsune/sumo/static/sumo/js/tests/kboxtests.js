@@ -11,7 +11,7 @@ import mochaMarky from './fixtures/mochaMarky.js';
 chai.use(chaiLint);
 
 describe('kbox', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   mochaK();
   mochaGettext();
@@ -48,17 +48,17 @@ describe('kbox', () => {
 
     it('should open when the target is clicked', () => {
       $('.kbox-target').click();
-      expect($kbox.is(':visible')).to.beTrue();
+      expect($('.kbox-container').hasClass('kbox-open')).to.beTrue();
     });
 
     it('should open programmatically', () => {
       kbox.open();
-      expect($kbox.is(':visible')).to.beTrue();
+      expect($('.kbox-container').hasClass('kbox-open')).to.beTrue();
     });
 
     it('should close programmatically', () => {
       kbox.close();
-      expect($kbox.is(':visible')).to.beTrue();
+      expect($('.kbox-container').hasClass('kbox-open')).to.beFalse();
     });
 
     it('should have the right title', () => {

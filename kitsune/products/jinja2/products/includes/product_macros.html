@@ -1,18 +1,25 @@
 {% macro product_cards(products, topic=None) -%}
-  <ul id="product-cards" class="card-grid cf">
+<div class="sumo-card-grid is-product-wrap" style="--cg-count: {{ products|length }};">
+  <div class="scroll-wrap">
     {% for product in products %}
-      <li>
+      <div class="card card--product zoom-on-hover">
         {% if topic %}
           {% set prod_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
         {% else %}
           {% set prod_url = url('products.product', slug=product.slug) %}
         {% endif %}
-        <a class="cf" href="{{ prod_url }}">
-          <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite" style="{% if product.image and product.image_offset %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" alt="" />
-          <span class="title">{{ pgettext('DB: products.Product.title', product.title) }}</span>
-          <span class="description">{{ pgettext('DB: products.Product.description', product.description) }}</span>
-        </a>
-      </li>
+
+          <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
+          <div class="card--details">
+            <h3 class="card--title">
+              <a class="expand-this-link" href="{{ prod_url }}" data-event-category="link click" data-event-action="product" data-event-label="{{ product.title }}">
+                {{ pgettext('DB: products.Product.title', product.title) }}
+              </a>
+            </h3>
+            <p class="card--desc">{{ pgettext('DB: products.Product.description', product.description) }}</p>
+          </div>
+      </div>
     {% endfor %}
-  </ul>
+  </div>
+</div>
 {%- endmacro %}

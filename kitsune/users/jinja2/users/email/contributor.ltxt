@@ -21,7 +21,7 @@ your skills, we will try to find the right use for them :)
 {#- L10n: This is an email.  Whitespace matters! -#}
 {{ _('To help you find out where to help check this site:') }}
 
-{{ add_utm('https://support.mozilla.org/en-US/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {{ _('There are several ways in which you can get involved:') }}
@@ -32,27 +32,16 @@ Forum Contributor - Answer user support questions that are
 most-requested but have no replies:
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-As you get started answering questions that look easy you
-might run into a few questions. Like, what happens when an
-angry user does not want a work around or what happens next?
-The Contributor Quality Training may have these answered. It
-is possible to get started here:
+Social Support Helper - Respond to tweets about Firefox and as the Firefox brand account:
 {% endtrans %}
 
-https://goo.gl/pKis5g
+{{ add_utm('https://support.mozilla.org/kb/social-support-guidelines', 'get-involved', source='new-contributor') }}
 
-{#- L10n: This is an email.  Whitespace matters! -#}
-{% trans %}
-Twitter Contributor - Respond to tweets about Firefox:
-{% endtrans %}
-
-{{ add_utm('https://support.mozilla.org/army-of-awesome', 'get-involved', source='new-contributor') }}
-
-{#- L10n: This is an email.  Whitespace matters! -#}
+{# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
 KB Editor - Help to update knowledge base articles that
 need changes or write new articles:
@@ -66,7 +55,7 @@ L10N Contributor - Help to translate Firefox Help content
 to your language:
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/kb/localize-firefox-help', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/kb/localize-firefox-help', 'get-involved', source='new-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
@@ -77,17 +66,23 @@ and we’ll help you get started. It’s great to have you onboard!
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-You can also apply to our Buddy Program and get guidance from our more
-experienced contributors. Just introduce yourself in the forum for New
+Just introduce yourself in the forum for New
 Contributors by starting a new thread. Put your name on the thread title and
 tell us a bit about yourself:
 {% endtrans %}
 
 http://mzl.la/1CGbET4
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
+Lastly, find others in the community just like you on the #sumo IRC channel. That is right Mozilla has a live chat channel for contributors.
+irc.mozilla.org #sumo - web-based IRC:
+{% endtrans %}
+
+{{ add_utm('https://kiwiirc.com/client/irc.mozilla.org/sumo', 'get-involved', source='new-contributor') }}
+
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
 
-Madalina
-mana@mozilla.com
+Giulia and Kiki
 SUMO Community Manager{% endautoescape %}

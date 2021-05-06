@@ -1,4 +1,4 @@
-/* globals gettext:false, _gaq:false, jQuery */
+/* globals gettext:false, trackEvent:false, jQuery */
 /*
  * users.js
  * Make public emails clickable.
@@ -31,7 +31,7 @@
     confirmUserDeactivation();
 
     if ($('body').is('.register') && window.location.search.indexOf('reg=aaq') > -1) {
-      _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirmed page']);
+      trackEvent('Ask A Question Flow', 'step 3 confirmed page');
     }
   });
 })(jQuery);

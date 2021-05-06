@@ -1,134 +1,179 @@
-from datetime import datetime, date, timedelta
+import hashlib
+from datetime import date, datetime, timedelta, timezone
+
 from django.conf import settings
+from django.contrib.auth.models import Group
+from django.core.cache import cache
+from django.db.models import Count, Q
 
-from kitsune.customercare.models import ReplyMetricsMappingType
 from kitsune.products.models import Product
-from kitsune.questions.models import AnswerMetricsMappingType
-from kitsune.search.es_utils import F
-from kitsune.users.models import UserMappingType
-from kitsune.wiki.models import RevisionMetricsMappingType
+from kitsune.users.models import CONTRIBUTOR_GROUP, User
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
+from kitsune.wiki.models import Revision
+
+from elasticsearch_dsl import A
+from kitsune.search.v2.documents import AnswerDocument, ProfileDocument
 
 
-# This should be the higher than the max number of contributors for a
-# section.  There isn't a way to tell ES to just return everything.
-BIG_NUMBER = 3000
+CONTRIBUTOR_GROUPS = [
+    "Contributors",
+    CONTRIBUTOR_GROUP,
+]
 
 
-def top_contributors_questions(start=None, end=None, locale=None, product=None,
-                               count=10, page=1):
+def top_contributors_questions(start=None, end=None, locale=None, product=None, count=10, page=1):
     """Get the top Support Forum contributors."""
-    # Get the user ids and contribution count of the top contributors.
-    query = (
-        AnswerMetricsMappingType
-        .search()
-        .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
-    # Adding answer to your own question, isn't a contribution.
-    query = query.filter(by_asker=False)
+    search = AnswerDocument.search()
 
-    query = _apply_filters(query, start, end, locale, product)
+    search = (
+        search.filter(
+            # filter out answers by the question author
+            "script",
+            script="doc['creator_id'].value != doc['question_creator_id'].value",
+        ).filter(
+            # filter answers created between `start` and `end`, or within the last 90 days
+            "range",
+            created={"gte": start or datetime.now() - timedelta(days=90), "lte": end},
+        )
+        # set the query size to 0 because we don't care about the results
+        # we're just filtering for the aggregations defined below
+        .extra(size=0)
+    )
+    if locale:
+        search = search.filter("term", locale=locale)
+    if product:
+        search = search.filter("term", question_product_id=product.id)
 
-    return _get_creator_counts(query, count, page)
+    # our filters above aren't perfect, and don't only return answers from contributors
+    # so we need to collect more buckets than `count`, so we can hopefully find `count`
+    # number of contributors within
+    search.aggs.bucket(
+        # create buckets for the `count * 10` most active users
+        "contributions",
+        A("terms", field="creator_id", size=count * 10),
+    ).bucket(
+        # within each of those, create a bucket for the most recent answer, and extract its date
+        "latest",
+        A(
+            "top_hits",
+            sort={"created": {"order": "desc"}},
+            _source={"includes": "created"},
+            size=1,
+        ),
+    )
+
+    contribution_buckets = search.execute().aggregations.contributions.buckets
+
+    if not contribution_buckets:
+        return [], 0
+
+    user_ids = [bucket.key for bucket in contribution_buckets]
+    contributor_group_ids = list(
+        Group.objects.filter(name__in=CONTRIBUTOR_GROUPS).values_list("id", flat=True)
+    )
+
+    # fetch all the users returned by the aggregation which are in the contributor groups
+    user_hits = (
+        ProfileDocument.search()
+        .query("terms", **{"_id": user_ids})
+        .query("terms", group_ids=contributor_group_ids)
+        .extra(size=len(user_ids))
+        .execute()
+        .hits
+    )
+    users = {hit.meta.id: hit for hit in user_hits}
+
+    total_contributors = len(user_hits)
+    top_contributors = []
+    for bucket in contribution_buckets:
+        if len(top_contributors) == page * count:
+            # stop once we've collected enough contributors
+            break
+        user = users.get(bucket.key)
+        if user is None:
+            continue
+        last_activity = datetime.fromisoformat(bucket.latest.hits.hits[0]._source.created)
+        days_since_last_activity = (datetime.now(tz=timezone.utc) - last_activity).days
+        top_contributors.append(
+            {
+                "count": bucket.doc_count,
+                "term": bucket.key,
+                "user": {
+                    "id": user.meta.id,
+                    "username": user.username,
+                    "display_name": user.name,
+                    "avatar": getattr(getattr(user, "avatar", None), "url", None),
+                    "days_since_last_activity": days_since_last_activity,
+                },
+            }
+        )
+
+    return top_contributors[count * (page - 1) :], total_contributors
 
 
-def top_contributors_kb(start=None, end=None, product=None, count=10, page=1):
+def top_contributors_kb(**kwargs):
     """Get the top KB editors (locale='en-US')."""
-    return top_contributors_l10n(
-        start, end, settings.WIKI_DEFAULT_LANGUAGE, product, count)
+    kwargs["locale"] = settings.WIKI_DEFAULT_LANGUAGE
+    return top_contributors_l10n(**kwargs)
 
 
-def top_contributors_l10n(start=None, end=None, locale=None, product=None,
-                          count=10, page=1):
+def top_contributors_l10n(
+    start=None, end=None, locale=None, product=None, count=10, page=1, use_cache=True
+):
     """Get the top l10n contributors for the KB."""
-    # Get the user ids and contribution count of the top contributors.
-    query = (
-        RevisionMetricsMappingType
-        .search()
-        .facet('creator_id', filtered=True, size=BIG_NUMBER))
+    if use_cache:
+        cache_key = "{}_{}_{}_{}_{}_{}".format(start, end, locale, product, count, page)
+        cache_key = hashlib.sha1(cache_key.encode("utf-8")).hexdigest()
+        cache_key = "top_contributors_l10n_{}".format(cache_key)
+        cached = cache.get(cache_key, None)
+        if cached:
+            return cached
 
+    # Get the user ids and contribution count of the top contributors.
+    revisions = Revision.objects.all()
     if locale is None:
         # If there is no locale specified, exclude en-US only. The rest are
         # l10n.
-        query = query.filter(~F(locale=settings.WIKI_DEFAULT_LANGUAGE))
-
-    query = _apply_filters(query, start, end, locale, product)
-
-    return _get_creator_counts(query, count, page)
-
-
-def top_contributors_aoa(start=None, end=None, locale=None, count=10, page=1):
-    """Get the top Army of Awesome contributors."""
-    # Get the user ids and contribution count of the top contributors.
-    query = (
-        ReplyMetricsMappingType
-        .search()
-        .facet('creator_id', filtered=True, size=BIG_NUMBER))
-
-    # twitter only does language
-    locale = locale.split('-')[0] if locale else None
-
-    query = _apply_filters(query, start, end, locale)
-
-    return _get_creator_counts(query, count, page)
-
-
-def _apply_filters(query, start, end, locale=None, product=None):
-    """Apply the date and locale filters to the EU query."""
+        revisions = revisions.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
     if start is None:
         # By default we go back 90 days.
         start = date.today() - timedelta(days=90)
-    query = query.filter(created__gte=start)
-
+        revisions = revisions.filter(created__gte=start)
     if end:
         # If no end is specified, we don't need to filter by it.
-        query = query.filter(created__lt=end)
-
+        revisions = revisions.filter(created__lt=end)
     if locale:
-        query = query.filter(locale=locale)
-
+        revisions = revisions.filter(document__locale=locale)
     if product:
         if isinstance(product, Product):
             product = product.slug
-        query = query.filter(product=product)
+        revisions = revisions.filter(
+            Q(document__products__slug=product) | Q(document__parent__products__slug=product)
+        )
 
-    return query
+    users = (
+        User.objects.filter(created_revisions__in=revisions, is_active=True)
+        .annotate(query_count=Count("created_revisions"))
+        .order_by("-query_count")
+        .select_related("profile")
+    )
+    total = users.count()
 
+    results = [
+        {
+            "term": user.pk,
+            "count": user.query_count,
+            "user": {
+                "id": user.pk,
+                "username": user.username,
+                "display_name": user.profile.display_name,
+                "avatar": profile_avatar(user),
+            },
+        }
+        for user in users[(page - 1) * count : page * count]
+    ]
 
-def _get_creator_counts(query, count, page):
-    """Get the list of top contributors with the contribution count."""
-    creator_counts = query.facet_counts()['creator_id']['terms']
-
-    total = len(creator_counts)
-
-    # Pagination
-    creator_counts = creator_counts[((page - 1) * count):(page * count)]
-
-    # Grab all the users from the user index in ES.
-    user_ids = [x['term'] for x in creator_counts]
-    results = (
-        UserMappingType
-        .search()
-        .filter(id__in=user_ids)
-        .values_dict('id', 'username', 'display_name', 'avatar',
-                     'twitter_usernames', 'last_contribution_date'))[:count]
-    results = UserMappingType.reshape(results)
-
-    # Calculate days since last activity and
-    # create a {<user_id>: <user>,...} dict for convenience.
-    user_lookup = {}
-    for r in results:
-        lcd = r.get('last_contribution_date', None)
-        if lcd:
-            delta = datetime.now() - lcd
-            r['days_since_last_activity'] = delta.days
-        else:
-            r['days_since_last_activity'] = None
-
-        user_lookup[r['id']] = r
-
-    # Add the user to each dict in the creator_counts array.
-    for item in creator_counts:
-        item['user'] = user_lookup.get(item['term'], None)
-
-    return ([item for item in creator_counts if item['user'] is not None],
-            total)
+    if use_cache:
+        cache.set(cache_key, (results, total), settings.CACHE_MEDIUM_TIMEOUT)
+    return results, total

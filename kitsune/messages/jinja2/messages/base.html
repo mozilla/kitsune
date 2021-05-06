@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 {% from "messages/includes/macros.html" import message_tabs %}
+{% from "includes/common_macros.html" import scam_banner %}
 {% set styles = ('jqueryui', 'messages') %}
 {% set scripts = ('messages', 'jqueryui') %}
 
+{% block above_main %}
+  {{ scam_banner() }}
+{% endblock %}
 {% block side_top %}
   {{ message_tabs(active_tab) }}
 {% endblock %}

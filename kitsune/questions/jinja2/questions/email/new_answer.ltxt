@@ -18,6 +18,10 @@ https://{{ host }}{{ answer_url }}
 "{{ answer }}"
 
 {# L10n: This is in an email. -#}
+{{ _('Avoid support scams. We will never ask you to call or text a phone number or share personal information. Learn more:') }}
+https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams
+
+{# L10n: This is in an email. -#}
 {{ _('See the comment:') }}
 https://{{ host }}{{ answer_url }}
 

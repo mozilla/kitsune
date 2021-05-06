@@ -1,0 +1,16 @@
+{% macro notification_fxa_updated(static_url) -%}
+<div id="fxa-notification-updated"  class="mzp-c-notification-bar mzp-t-success">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <p><strong>{{ _('Good news!') }}</strong> {{ _('You can now log in to Mozilla Support using Firefox Accounts.') }}
+  <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq" class="button dark">{{ _('Read More') }}</a></p>
+</div>
+{%- endmacro %}
+
+{% macro notification_already_migrated(static_url) -%}
+<div id="fxa-notification-already-migrated" class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <p><strong>{{ _('Sorry!') }}</strong>
+  {{ _('You already have a Firefox Account. Please use your Firefox Account instead of your Mozilla Support
+  account.') }}</p>
+</div>
+{%- endmacro %}

@@ -1,0 +1,72 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.sumo-dl {
+  display: flex;
+  flex-wrap: wrap;
+
+  dt,
+  dd {
+    margin-bottom: p.$spacing-sm;
+  }
+
+  dt {
+    flex: 1 1 calc(20% - #{p.$spacing-sm});
+    margin-right: p.$spacing-sm;
+    min-width: 100px;
+    @include c.text-body-xs;
+  }
+
+  dd {
+    flex: 1 1 80%;
+  }
+}
+
+.sumo-dl-inline {
+  display: flex;
+  @include c.text-body-sm;
+  color: var(--color-heading);
+  margin: p.$spacing-md 0;
+
+  dt {
+    padding: 0 p.$spacing-sm;
+    border-left: 1px solid var(--color-border);
+    font-weight: bold;
+
+
+    &.no-border,
+    &:first-child {
+      border-left: 0 none;
+    }
+
+    &:first-child {
+      @include p.bidi((
+        (padding-left, 0, p.$spacing-sm),
+        (padding-right, p.$spacing-sm, 0),
+      ));
+    }
+  }
+
+  dd {
+    @include p.bidi((
+      (padding, 0 p.$spacing-sm 0 0, 0 0 0 p.$spacing-sm),
+    ));
+
+    &.has-border {
+      border-left: 1px solid var(--color-border);
+      @include p.bidi((
+        (padding-right, 0, p.$spacing-sm),
+        (padding-left, p.$spacing-sm, 0),
+      ));
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+
+  @media #{p.$mq-md} {
+    margin: 0;
+  }
+
+}

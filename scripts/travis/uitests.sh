@@ -12,17 +12,11 @@ echo 'Starting a server'
 ./manage.py runserver &
 sleep 3
 
-CMD="py.test"
-CMD="${CMD} -r a"
-CMD="${CMD} --verbose"
-CMD="${CMD} --base-url http://localhost:8000"
-CMD="${CMD} --html results.html"
-CMD="${CMD} --driver Firefox"
-CMD="${CMD} --variables scripts/travis/variables.json"
-if [ -n "${MARK_EXPRESSION}" ]; then CMD="${CMD} -m \"${MARK_EXPRESSION}\""; fi
-CMD="${CMD} tests/functional"
+PYTEST_ADDOPTS="--base-url=http://localhost:8000"
+PYTEST_ADDOPTS="${PYTEST_ADDOPTS} --variables=scripts/travis/variables.json"
+if [ -n "${MARK_EXPRESSION}" ]; then PYTEST_ADDOPTS="${PYTEST_ADDOPTS} -m=\"${MARK_EXPRESSION}\""; fi
 
 echo 'Running UI tests'
-eval ${CMD}
+tox
 
 echo 'Booyahkasha!'

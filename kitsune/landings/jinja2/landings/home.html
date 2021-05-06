@@ -1,18 +1,52 @@
 {% extends "base.html" %}
 {% from 'products/includes/product_macros.html' import product_cards with context %}
+{% from 'includes/common_macros.html' import featured_articles %}
 {% set styles = ('home',) %}
+{% set canonical_url = canonicalize(viewname='home') %}
 
-{% block content %}
-  <div class="grid_12">
-    <section id="products-and-services">
-      {{ product_cards(products) }}
-    </section>
+{% block hidden_search_masthead %}
+{% endblock %}
+
+{% block masthead %}
+<section class="home-search-section sumo-page-section--lg extra-pad-bottom shade-bg">
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="sumo-page-heading-xl">{{ _('Search Support') }}</h1>
+      {{ search_box(settings, id='support-search-masthead', params=search_params) }}
+
+      <p class="popular-searches">
+        <span>{{ _('Popular Searches:') }}</span>
+        <a href="#popular_search_1" data-featured-search>{{ _('Firefox Accounts') }}</a>
+        <a href="#popular_search_2" data-featured-search>{{ _('VPN') }}</a>
+        <a href="#popular_search_3" data-featured-search>{{ _('Tracking Protection') }}</a>
+      </p>
+    </div>
   </div>
-  <section id="get-involved-box" class="grid_12">
-    <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">
-      {{ _('Volunteer for Mozilla Support') }}
-    </a>
+</section>
+{% endblock %}
+
+
+{% block contentwrap %}
+<div id="main-content">
+  <section class="mzp-l-content sumo-page-section--inner">
+    <div class="text-center-to-left-on-large">
+      <h2 class="sumo-page-subheading">{{ _('Get Help') }}</h2>
+      <p class="sumo-page-intro">{{ _('Pick your product') }}</p>
+    </div>
+    {{ product_cards(products) }}
   </section>
+  {% if featured %}
+    <section class="mzp-l-content sumo-page-section--inner">
+      <div class="text-center-to-left-on-large">
+        <h2 class="sumo-page-subheading">{{ _('Featured Articles') }}</h2>
+      </div>
+      {{ featured_articles(featured) }}
+    </section>
+  {% endif %}
+  <section class="mzp-l-content sumo-page-section--inner">
+    {% include "landings/includes/join-our-community-callout.html" %}
+  </section>
+</div>
 {% endblock %}
 
 {% block outer_side %}

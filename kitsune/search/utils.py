@@ -25,18 +25,17 @@ class FakeLogger(object):
 
     def _out(self, level, msg, *args):
         msg = msg % args
-        self.stdout.write('%s %-8s: %s\n' % (
-                          time.strftime('%H:%M:%S'), level, msg))
+        self.stdout.write("%s %-8s: %s\n" % (time.strftime("%H:%M:%S"), level, msg))
 
     def info(self, msg, *args):
-        self._out('INFO', msg, *args)
+        self._out("INFO", msg, *args)
 
     def error(self, msg, *args):
-        self._out('ERROR', msg, *args)
+        self._out("ERROR", msg, *args)
 
 
 def clean_excerpt(excerpt):
-    return bleach.clean(excerpt, tags=['b', 'i'])
+    return bleach.clean(excerpt, tags=["b", "i"])
 
 
 def locale_or_default(locale):
@@ -63,7 +62,7 @@ def chunked(iterable, n):
 
     """
     iterable = iter(iterable)
-    while 1:
+    while True:
         t = tuple(islice(iterable, n))
         if t:
             yield t
@@ -85,7 +84,7 @@ def to_class_path(cls):
     'kitsune.search.models:Record'
 
     """
-    return ':'.join([cls.__module__, cls.__name__])
+    return ":".join([cls.__module__, cls.__name__])
 
 
 def from_class_path(cls_path):
@@ -99,6 +98,6 @@ def from_class_path(cls_path):
     <Record ...>
 
     """
-    module_path, cls_name = cls_path.split(':')
+    module_path, cls_name = cls_path.split(":")
     module = __import__(module_path, fromlist=[cls_name])
     return getattr(module, cls_name)

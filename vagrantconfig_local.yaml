@@ -1,8 +1,0 @@
-# Overwritable config for Vagrant
-
-# Don't change this; copy this to vagrantconfig_local.yaml, and change that instead.
-
-#memory: 1024
-
-# set this to "gui" if vagrant cannot connect
-#boot_mode: gui

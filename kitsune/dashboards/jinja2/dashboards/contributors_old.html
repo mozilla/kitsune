@@ -29,7 +29,7 @@
         </div>
       {% endif %}
 
-      {% if not user.is_anonymous() %}
+      {% if not user.is_anonymous %}
         {{ print_subscription_menu(default_locale_name,
                                    request_locale_name,
                                    on_default_locale,
@@ -41,7 +41,7 @@
                                    product=product) }}
       {% endif %}
 
-      {% for readout in readouts.itervalues() %}
+      {% for readout in readouts.values() %}
         {{ print_readout(readout, locale=default_locale, product=product) }}
       {% endfor %}
     </article>

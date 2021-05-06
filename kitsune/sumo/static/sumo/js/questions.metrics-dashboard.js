@@ -9,7 +9,7 @@
   function makeTopicsGraph() {
     var $topics, datums, seriesSpec, key;
 
-    $('input[type=date]').datepicker({
+    $('input[type=date]').attr('type','text').datepicker({
       dateFormat: 'yy-mm-dd'
     });
 

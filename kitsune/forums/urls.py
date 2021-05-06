@@ -1,48 +1,53 @@
-from django.conf.urls import patterns, url, include
-from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
+from django.conf.urls import include
+from django.urls import path
 
-from kitsune.forums.feeds import ThreadsFeed, PostsFeed
-from kitsune.forums.models import Post
 from kitsune.flagit import views as flagit_views
+from kitsune.forums import views
+from kitsune.forums.feeds import PostsFeed, ThreadsFeed
+from kitsune.forums.models import Post
+from kitsune.sumo.views import handle404
 
+if settings.DISABLE_FEEDS:
+    threads_feed_view = handle404
+    posts_feed_view = handle404
+else:
+    threads_feed_view = ThreadsFeed()
+    posts_feed_view = PostsFeed()
 
 # These patterns inherit (?P<forum_slug>\d+).
-forum_patterns = patterns(
-    'kitsune.forums.views',
-    url(r'^$', 'threads', name='forums.threads'),
-    url(r'^/new$', 'new_thread', name='forums.new_thread'),
-    url(r'^/(?P<thread_id>\d+)$', 'posts', name='forums.posts'),
-    url(r'^/(?P<thread_id>\d+)/reply$', 'reply', name='forums.reply'),
-    url(r'^/feed$', ThreadsFeed(), name="forums.threads.feed"),
-    url(r'^/(?P<thread_id>\d+)/feed$', PostsFeed(), name="forums.posts.feed"),
-    url(r'^/(?P<thread_id>\d+)/lock$', 'lock_thread',
-        name='forums.lock_thread'),
-    url(r'^/(?P<thread_id>\d+)/sticky$', 'sticky_thread',
-        name='forums.sticky_thread'),
-    url(r'^/(?P<thread_id>\d+)/edit$', 'edit_thread',
-        name='forums.edit_thread'),
-    url(r'^/(?P<thread_id>\d+)/delete$', 'delete_thread',
-        name='forums.delete_thread'),
-    url(r'^/(?P<thread_id>\d+)/move$', 'move_thread',
-        name='forums.move_thread'),
-    url(r'^/(?P<thread_id>\d+)/(?P<post_id>\d+)/edit$', 'edit_post',
-        name='forums.edit_post'),
-    url(r'^/(?P<thread_id>\d+)/(?P<post_id>\d+)/delete$', 'delete_post',
-        name='forums.delete_post'),
-    url(r'^/(?P<thread_id>\d+)/watch', 'watch_thread',
-        name='forums.watch_thread'),
-    url(r'^/watch', 'watch_forum', name='forums.watch_forum'),
-
+forum_patterns = [
+    path("", views.threads, name="forums.threads"),
+    path("new", views.new_thread, name="forums.new_thread"),
+    path("search", views.search, name="forums.search"),
+    path("<int:thread_id>", views.posts, name="forums.posts"),
+    path("<int:thread_id>/reply", views.reply, name="forums.reply"),
+    path("feed", threads_feed_view, name="forums.threads.feed"),
+    path("<int:thread_id>/feed", posts_feed_view, name="forums.posts.feed"),
+    path("<int:thread_id>/lock", views.lock_thread, name="forums.lock_thread"),
+    path("<int:thread_id>/sticky", views.sticky_thread, name="forums.sticky_thread"),
+    path("<int:thread_id>/edit", views.edit_thread, name="forums.edit_thread"),
+    path("<int:thread_id>/delete", views.delete_thread, name="forums.delete_thread"),
+    path("<int:thread_id>/move", views.move_thread, name="forums.move_thread"),
+    path("<int:thread_id>/<int:post_id>/edit", views.edit_post, name="forums.edit_post"),
+    path(
+        "<int:thread_id>/<int:post_id>/delete",
+        views.delete_post,
+        name="forums.delete_post",
+    ),
+    path("<int:thread_id>/watch", views.watch_thread, name="forums.watch_thread"),
+    path("watch", views.watch_forum, name="forums.watch_forum"),
     # Flag posts
-    url(r'^/(?P<thread_id>\d+)/(?P<object_id>\d+)/flag$', flagit_views.flag,
-        {'content_type': ContentType.objects.get_for_model(Post).id},
-        name='forums.flag_post'),
-)
+    path(
+        "<int:thread_id>/<int:object_id>/flag",
+        flagit_views.flag,
+        {"model": Post},
+        name="forums.flag_post",
+    ),
+]
 
-urlpatterns = patterns(
-    'kitsune.forums.views',
-    url(r'^$', 'forums', name='forums.forums'),
-    url(r'^/post-preview-async$', 'post_preview_async',
-        name='forums.post_preview_async'),
-    (r'^/(?P<forum_slug>[\w\-]+)', include(forum_patterns)),
-)
+urlpatterns = [
+    path("", views.forums, name="forums.forums"),
+    path("post-preview-async", views.post_preview_async, name="forums.post_preview_async"),
+    path("<slug:forum_slug>/", include(forum_patterns)),
+]

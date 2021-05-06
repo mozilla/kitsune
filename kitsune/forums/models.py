@@ -1,23 +1,27 @@
 import datetime
 import time
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.auth.models import User
 
 from tidings.models import NotificationsMixin
 
 from kitsune import forums
-from kitsune.access import has_perm, perm_is_defined_on
+from kitsune.access.utils import has_perm, perm_is_defined_on
 from kitsune.flagit.models import FlaggedObject
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.models import ModelBase
 from kitsune.search.models import (
-    SearchMappingType, SearchMixin, register_for_indexing,
-    register_mapping_type)
+    SearchMappingType,
+    SearchMixin,
+    register_for_indexing,
+    register_mapping_type,
+)
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -28,7 +32,7 @@ def _last_post_from(posts, exclude_post=None):
     """
     if exclude_post:
         posts = posts.exclude(id=exclude_post.id)
-    posts = posts.order_by('-created')
+    posts = posts.order_by("-created")
     try:
         return posts[0]
     except IndexError:
@@ -43,8 +47,9 @@ class Forum(NotificationsMixin, ModelBase):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True)
     description = models.TextField(null=True)
-    last_post = models.ForeignKey('Post', related_name='last_post_in_forum',
-                                  null=True, on_delete=models.SET_NULL)
+    last_post = models.ForeignKey(
+        "Post", related_name="last_post_in_forum", null=True, on_delete=models.SET_NULL
+    )
 
     # Dictates the order in which forums are displayed in the forum list.
     display_order = models.IntegerField(default=1, db_index=True)
@@ -53,21 +58,21 @@ class Forum(NotificationsMixin, ModelBase):
     is_listed = models.BooleanField(default=True, db_index=True)
 
     class Meta(object):
-        ordering = ['display_order', 'id']
+        ordering = ["display_order", "id"]
         permissions = (
-            ('view_in_forum', 'Can view restricted forums'),
-            ('post_in_forum', 'Can post in restricted forums'))
+            ("view_in_forum", "Can view restricted forums"),
+            ("post_in_forum", "Can post in restricted forums"),
+        )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('forums.threads', kwargs={'forum_slug': self.slug})
+        return reverse("forums.threads", kwargs={"forum_slug": self.slug})
 
     def allows_viewing_by(self, user):
         """Return whether a user can view me, my threads, and their posts."""
-        return (self._allows_public_viewing() or
-                has_perm(user, 'forums_forum.view_in_forum', self))
+        return self._allows_public_viewing() or has_perm(user, "forums_forum.view_in_forum", self)
 
     def _allows_public_viewing(self):
         """Return whether I am a world-readable forum.
@@ -80,16 +85,15 @@ class Forum(NotificationsMixin, ModelBase):
         privileged enough to do so.
 
         """
-        return not perm_is_defined_on('forums_forum.view_in_forum', self)
+        return not perm_is_defined_on("forums_forum.view_in_forum", self)
 
     def allows_posting_by(self, user):
         """Return whether a user can make threads and posts in me."""
-        return (self._allows_public_posting() or
-                has_perm(user, 'forums_forum.post_in_forum', self))
+        return self._allows_public_posting() or has_perm(user, "forums_forum.post_in_forum", self)
 
     def _allows_public_posting(self):
         """Return whether I am a world-writable forum."""
-        return not perm_is_defined_on('forums_forum.post_in_forum', self)
+        return not perm_is_defined_on("forums_forum.post_in_forum", self)
 
     def update_last_post(self, exclude_thread=None, exclude_post=None):
         """Set my last post to the newest, excluding given thread and post."""
@@ -106,18 +110,18 @@ class Forum(NotificationsMixin, ModelBase):
 
 class Thread(NotificationsMixin, ModelBase, SearchMixin):
     title = models.CharField(max_length=255)
-    forum = models.ForeignKey('Forum')
-    created = models.DateTimeField(default=datetime.datetime.now,
-                                   db_index=True)
-    creator = models.ForeignKey(User)
-    last_post = models.ForeignKey('Post', related_name='last_post_in',
-                                  null=True, on_delete=models.SET_NULL)
+    forum = models.ForeignKey("Forum", on_delete=models.CASCADE)
+    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_post = models.ForeignKey(
+        "Post", related_name="last_post_in", null=True, on_delete=models.SET_NULL
+    )
     replies = models.IntegerField(default=0)
     is_locked = models.BooleanField(default=False)
     is_sticky = models.BooleanField(default=False, db_index=True)
 
     class Meta:
-        ordering = ['-is_sticky', '-last_post__created']
+        ordering = ["-is_sticky", "-last_post__created"]
 
     def __setattr__(self, attr, val):
         """Notice when the forum field changes.
@@ -126,23 +130,19 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         prevents us from using lookups like Thread.objects.filter(forum=f).
 
         """
-        # When http://code.djangoproject.com/ticket/3148 adds nice getter and
-        # setter hooks, use those instead.
-        if attr == 'forum' and not hasattr(self, '_old_forum'):
+        if attr == "forum" and not hasattr(self, "_old_forum"):
             try:
-                old = self.forum
-            except AttributeError:  # When making a new Thread(forum=3), the
-                pass                # forum attr doesn't exist yet.
-            else:
-                self._old_forum = old
+                self._old_forum = self.forum
+            except ObjectDoesNotExist:
+                pass
         super(Thread, self).__setattr__(attr, val)
 
     @property
     def last_page(self):
         """Returns the page number for the last post."""
-        return self.replies / forums.POSTS_PER_PAGE + 1
+        return self.replies // forums.POSTS_PER_PAGE + 1
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def delete(self, *args, **kwargs):
@@ -162,19 +162,19 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         return self.post_set.create(author=author, content=content)
 
     def get_absolute_url(self):
-        return reverse('forums.posts', args=[self.forum.slug, self.id])
+        return reverse("forums.posts", args=[self.forum.slug, self.id])
 
     def get_last_post_url(self):
-        query = {'last': self.last_post_id}
+        query = {"last": self.last_post_id}
         page = self.last_page
         if page > 1:
-            query['page'] = page
-        url = reverse('forums.posts', args=[self.forum.slug, self.id])
-        return urlparams(url, hash='post-%s' % self.last_post_id, **query)
+            query["page"] = page
+        url = reverse("forums.posts", args=[self.forum.slug, self.id])
+        return urlparams(url, hash="post-%s" % self.last_post_id, **query)
 
     def save(self, *args, **kwargs):
         super(Thread, self).save(*args, **kwargs)
-        old_forum = getattr(self, '_old_forum', None)
+        old_forum = getattr(self, "_old_forum", None)
         new_forum = self.forum
         if old_forum and old_forum != new_forum:
             old_forum.update_last_post(exclude_thread=self)
@@ -197,9 +197,11 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
 @register_mapping_type
 class ThreadMappingType(SearchMappingType):
+    seconds_ago_filter = "last_post__created__gte"
+
     @classmethod
     def search(cls):
-        return super(ThreadMappingType, cls).search().order_by('created')
+        return super(ThreadMappingType, cls).search().order_by("created")
 
     @classmethod
     def get_model(cls):
@@ -207,29 +209,31 @@ class ThreadMappingType(SearchMappingType):
 
     @classmethod
     def get_query_fields(cls):
-        return ['post_title', 'post_content']
+        return ["post_title", "post_content"]
 
     @classmethod
     def get_mapping(cls):
         return {
-            'properties': {
-                'id': {'type': 'long'},
-                'model': {'type': 'string', 'index': 'not_analyzed'},
-                'url': {'type': 'string', 'index': 'not_analyzed'},
-                'indexed_on': {'type': 'integer'},
-                'created': {'type': 'integer'},
-                'updated': {'type': 'integer'},
-
-                'post_forum_id': {'type': 'integer'},
-                'post_title': {'type': 'string', 'analyzer': 'snowball'},
-                'post_is_sticky': {'type': 'boolean'},
-                'post_is_locked': {'type': 'boolean'},
-                'post_author_id': {'type': 'integer'},
-                'post_author_ord': {'type': 'string', 'index': 'not_analyzed'},
-                'post_content': {'type': 'string', 'analyzer': 'snowball',
-                                 'store': 'yes',
-                                 'term_vector': 'with_positions_offsets'},
-                'post_replies': {'type': 'integer'}
+            "properties": {
+                "id": {"type": "long"},
+                "model": {"type": "string", "index": "not_analyzed"},
+                "url": {"type": "string", "index": "not_analyzed"},
+                "indexed_on": {"type": "integer"},
+                "created": {"type": "integer"},
+                "updated": {"type": "integer"},
+                "post_forum_id": {"type": "integer"},
+                "post_title": {"type": "string", "analyzer": "snowball"},
+                "post_is_sticky": {"type": "boolean"},
+                "post_is_locked": {"type": "boolean"},
+                "post_author_id": {"type": "integer"},
+                "post_author_ord": {"type": "string", "index": "not_analyzed"},
+                "post_content": {
+                    "type": "string",
+                    "analyzer": "snowball",
+                    "store": "yes",
+                    "term_vector": "with_positions_offsets",
+                },
+                "post_replies": {"type": "integer"},
             }
         }
 
@@ -238,71 +242,70 @@ class ThreadMappingType(SearchMappingType):
         """Extracts interesting thing from a Thread and its Posts"""
         if obj is None:
             model = cls.get_model()
-            obj = model.objects.select_related('last_post').get(pk=obj_id)
+            obj = model.objects.select_related("last_post").get(pk=obj_id)
 
         d = {}
-        d['id'] = obj.id
-        d['model'] = cls.get_mapping_type_name()
-        d['url'] = obj.get_absolute_url()
-        d['indexed_on'] = int(time.time())
+        d["id"] = obj.id
+        d["model"] = cls.get_mapping_type_name()
+        d["url"] = obj.get_absolute_url()
+        d["indexed_on"] = int(time.time())
 
         # TODO: Sphinx stores created and updated as seconds since the
         # epoch, so we convert them to that format here so that the
         # search view works correctly. When we ditch Sphinx, we should
         # see if it's faster to filter on ints or whether we should
         # switch them to dates.
-        d['created'] = int(time.mktime(obj.created.timetuple()))
+        d["created"] = int(time.mktime(obj.created.timetuple()))
 
         if obj.last_post is not None:
-            d['updated'] = int(time.mktime(obj.last_post.created.timetuple()))
+            d["updated"] = int(time.mktime(obj.last_post.created.timetuple()))
         else:
-            d['updated'] = None
+            d["updated"] = None
 
-        d['post_forum_id'] = obj.forum.id
-        d['post_title'] = obj.title
-        d['post_is_sticky'] = obj.is_sticky
-        d['post_is_locked'] = obj.is_locked
+        d["post_forum_id"] = obj.forum.id
+        d["post_title"] = obj.title
+        d["post_is_sticky"] = obj.is_sticky
+        d["post_is_locked"] = obj.is_locked
 
-        d['post_replies'] = obj.replies
+        d["post_replies"] = obj.replies
 
         author_ids = set()
         author_ords = set()
         content = []
 
-        posts = Post.objects.filter(
-            thread_id=obj.id).select_related('author')
+        posts = Post.objects.filter(thread_id=obj.id).select_related("author")
         for post in posts:
             author_ids.add(post.author.id)
             author_ords.add(post.author.username)
             content.append(post.content)
 
-        d['post_author_id'] = list(author_ids)
-        d['post_author_ord'] = list(author_ords)
-        d['post_content'] = content
+        d["post_author_id"] = list(author_ids)
+        d["post_author_ord"] = list(author_ords)
+        d["post_content"] = content
 
         return d
 
 
-register_for_indexing('forums', Thread)
+register_for_indexing("forums", Thread)
 
 
 class Post(ModelBase):
-    thread = models.ForeignKey('Thread')
+    thread = models.ForeignKey("Thread", on_delete=models.CASCADE)
     content = models.TextField()
-    author = models.ForeignKey(User)
-    created = models.DateTimeField(default=datetime.datetime.now,
-                                   db_index=True)
-    updated = models.DateTimeField(default=datetime.datetime.now,
-                                   db_index=True)
-    updated_by = models.ForeignKey(User,
-                                   related_name='post_last_updated_by',
-                                   null=True)
-    flags = generic.GenericRelation(FlaggedObject)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)
+    updated_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="post_last_updated_by", null=True
+    )
+    flags = GenericRelation(FlaggedObject)
+
+    updated_column_name = "updated"
 
     class Meta:
-        ordering = ['created']
+        ordering = ["created"]
 
-    def __unicode__(self):
+    def __str__(self):
         return self.content[:50]
 
     def save(self, *args, **kwargs):
@@ -350,22 +353,22 @@ class Post(ModelBase):
         earlier = t.post_set.filter(created__lte=self.created).count() - 1
         if earlier < 1:
             return 1
-        return earlier / forums.POSTS_PER_PAGE + 1
+        return earlier // forums.POSTS_PER_PAGE + 1
 
     def get_absolute_url(self):
         query = {}
         if self.page > 1:
-            query = {'page': self.page}
+            query = {"page": self.page}
 
         url_ = self.thread.get_absolute_url()
-        return urlparams(url_, hash='post-%s' % self.id, **query)
+        return urlparams(url_, hash="post-%s" % self.id, **query)
 
     @property
     def content_parsed(self):
         return wiki_to_html(self.content)
 
 
-register_for_indexing('forums', Post, instance_to_indexee=lambda p: p.thread)
+register_for_indexing("forums", Post, instance_to_indexee=lambda p: p.thread)
 
 
 def user_pre_save(sender, instance, **kw):
@@ -376,15 +379,13 @@ def user_pre_save(sender, instance, **kw):
         user = User.objects.get(id=instance.id)
         if user.username != instance.username:
             threads = (
-                Thread.objects
-                .filter(
-                    Q(creator=instance) |
-                    Q(post__author=instance))
-                .only('id')
-                .distinct())
+                Thread.objects.filter(Q(creator=instance) | Q(post__author=instance))
+                .only("id")
+                .distinct()
+            )
 
             for t in threads:
                 t.index_later()
 
-pre_save.connect(
-    user_pre_save, sender=User, dispatch_uid='forums_user_pre_save')
+
+pre_save.connect(user_pre_save, sender=User, dispatch_uid="forums_user_pre_save")

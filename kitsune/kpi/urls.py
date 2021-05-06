@@ -1,7 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
+
+from kitsune.kpi import views
 
 
-urlpatterns = patterns(
-    'kitsune.kpi.views',
-    url(r'^dashboard$', 'dashboard', name='kpi.dashboard'),
-)
+urlpatterns = [
+    url(r"^dashboard$", views.dashboard, name="kpi.dashboard"),
+]

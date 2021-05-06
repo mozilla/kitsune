@@ -36,11 +36,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='metric',
             name='kind',
-            field=models.ForeignKey(to='kpi.MetricKind'),
+            field=models.ForeignKey(on_delete=models.CASCADE, to='kpi.MetricKind'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(
             name='metric',
-            unique_together=set([('kind', 'start', 'end')]),
+            unique_together={('kind', 'start', 'end')},
         ),
     ]

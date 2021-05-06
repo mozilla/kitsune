@@ -1,4 +1,0 @@
-# These requirements are only used on server environments.
-
-# sha256: F9WY_MyghFwDN-UnbUDWX5Ua_qat-b2Rcs_zqH8u8pQ
-newrelic==2.60.0.46

@@ -4,6 +4,10 @@
 Search
 ======
 
+.. warning::
+    This section of documentation may be outdated.
+    See :any:`search-v2` for up-to-date (but partial) documentation.
+
 Kitsune uses `Elasticsearch <https://www.elastic.co/>`_ to
 power its on-site search facility.
 
@@ -189,9 +193,22 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
-You can also specify which models to index::
+Another way of specifying a smaller number of things to index is by
+indicating how recently updated things should be to be included::
 
-    $ ./manage.py esreindex --models questions_question,wiki_document
+    $ ./manage.py esreindex --hours-ago 2
+    $ ./manage.py esreindex --minutes-ago 20
+    $ ./manage.py esreindex --seconds-ago 90
+
+Those options can be combined as well if you wish. Different indexes have
+different ways of determining how long ago something was updated, but as
+a whole this should reindex everything in every index (or those specified
+in the --mapping_types option) that was updated less than or equal to how
+long ago you say.
+
+You can also specify which mapping_types to index::
+
+    $ ./manage.py esreindex --mapping_types questions_question,wiki_document
 
 See ``--help`` for more details::
 
@@ -212,7 +229,7 @@ See ``--help`` for more details::
    chunks by celery tasks. If you need to halt indexing, you can purge
    the tasks with::
 
-       $ ./manage.py celeryctl purge
+       $ celery -A kitsune purge
 
    If you do this often, it helps to write a shell script for it.
 
@@ -311,9 +328,6 @@ We cannot apply weights to filtered fields.
 Regular search
 --------------
 
-A `regular` search is any search that doesn't start from the `Advanced
-Search` form.
-
 You could start a `regular` search from the front page or from the
 search form on any article page.
 
@@ -338,25 +352,3 @@ Ask A Question search
 An `Ask a question` or `AAQ` search is any search that is performed within
 the AAQ workflow. The only difference to `regular` search is that `AAQ`
 search shows forum posts that have no answer marked as helpful.
-
-
-Advanced search
----------------
-
-The `advanced` search is any search that starts from the `Advanced
-Search` form.
-
-The advanced search is defined by whatever you specify in the
-`Advanced Search` form.
-
-For example, if you search for knowledge base articles in the
-Troubleshooting category, then we add a filter where the result has to
-be in the Troubleshooting category.
-
-
-Link to the Elasticsearch code
-------------------------------
-
-Here's a link to the search view in the master branch:
-
-https://github.com/mozilla/kitsune/blob/master/kitsune/search/views.py

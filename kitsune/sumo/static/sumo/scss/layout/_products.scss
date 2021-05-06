@@ -1,0 +1,38 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+.sumo-page-subheader {
+  display: flex;
+  flex-direction: column-reverse;
+
+  @media #{p.$mq-lg} {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.download-buttons {
+  text-align: center;
+  margin-bottom: p.$spacing-lg;
+
+  @media #{p.$mq-lg} {
+    margin-bottom: 0;
+  }
+}
+
+.download-info {
+  display: flex;
+  justify-content: center;
+  margin: p.$spacing-sm 0 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    margin: 0 p.$spacing-xs;
+  }
+}
+
+.refresh-firefox {
+  display: none;
+}

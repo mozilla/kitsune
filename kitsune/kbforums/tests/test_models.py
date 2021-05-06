@@ -11,20 +11,22 @@ from kitsune.wiki.tests import DocumentFactory
 
 
 class KBForumModelTestCase(KBForumTestCase):
-
     def test_thread_absolute_url(self):
         t = ThreadFactory()
-        exp_ = reverse('wiki.discuss.posts', locale=t.document.locale,
-                       args=[t.document.slug, t.id])
+        exp_ = reverse(
+            "wiki.discuss.posts", locale=t.document.locale, args=[t.document.slug, t.id]
+        )
         eq_(exp_, t.get_absolute_url())
 
     def test_post_absolute_url(self):
         t = ThreadFactory()
-        p = t.new_post(creator=t.creator, content='foo')
-        url_ = reverse('wiki.discuss.posts',
-                       locale=p.thread.document.locale,
-                       args=[p.thread.document.slug, p.thread.id])
-        exp_ = urlparams(url_, hash='post-%s' % p.id)
+        p = t.new_post(creator=t.creator, content="foo")
+        url_ = reverse(
+            "wiki.discuss.posts",
+            locale=p.thread.document.locale,
+            args=[p.thread.document.slug, p.thread.id],
+        )
+        exp_ = urlparams(url_, hash="post-%s" % p.id)
         eq_(exp_, p.get_absolute_url())
 
     def test_last_post_updated(self):
@@ -44,7 +46,6 @@ class KBForumModelTestCase(KBForumTestCase):
 
 
 class KBThreadModelTestCase(KBForumTestCase):
-
     def test_delete_last_and_only_post_in_thread(self):
         """Deleting the only post in a thread should delete the thread"""
         t = ThreadFactory(title="test")
@@ -74,11 +75,11 @@ class KBSaveDateTestCase(KBForumTestCase):
         Assert that two datetime objects are within `range` (a timedelta).
         """
         diff = abs(a - b)
-        assert diff < abs(delta), msg or '%s ~= %s' % (a, b)
+        assert diff < abs(delta), msg or "%s ~= %s" % (a, b)
 
     def test_save_thread_no_created(self):
         """Saving a new thread should behave as if auto_add_now was set."""
-        t = self.doc.thread_set.create(title='foo', creator=self.user)
+        t = self.doc.thread_set.create(title="foo", creator=self.user)
         t.save()
         now = datetime.datetime.now()
         self.assertDateTimeAlmostEqual(now, t.created, self.delta)
@@ -89,8 +90,7 @@ class KBSaveDateTestCase(KBForumTestCase):
         that created date.
         """
         created = datetime.datetime(1992, 1, 12, 9, 48, 23)
-        t = self.doc.thread_set.create(title='foo', creator=self.user,
-                                       created=created)
+        t = self.doc.thread_set.create(title="foo", creator=self.user, created=created)
         t.save()
         eq_(created, t.created)
 
@@ -106,7 +106,7 @@ class KBSaveDateTestCase(KBForumTestCase):
         Saving a new post should behave as if auto_add_now was set on
         created and auto_now set on updated.
         """
-        p = self.thread.new_post(creator=self.user, content='bar')
+        p = self.thread.new_post(creator=self.user, content="bar")
         now = datetime.datetime.now()
         self.assertDateTimeAlmostEqual(now, p.created, self.delta)
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
@@ -117,10 +117,10 @@ class KBSaveDateTestCase(KBForumTestCase):
         """
         now = datetime.datetime.now()
 
-        p = self.thread.new_post(creator=self.user, content='bar')
+        p = self.thread.new_post(creator=self.user, content="bar")
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
 
-        p.content = 'baz'
+        p.content = "baz"
         p.updated_by = self.user
         p.save()
 
@@ -140,5 +140,5 @@ class KBSaveDateTestCase(KBForumTestCase):
 
     def test_content_parsed_sanity(self):
         """The content_parsed field is populated."""
-        p = PostFactory(content='yet another post')
-        eq_('<p>yet another post\n</p>', p.content_parsed)
+        p = PostFactory(content="yet another post")
+        eq_("<p>yet another post\n</p>", p.content_parsed)

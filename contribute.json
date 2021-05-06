@@ -4,13 +4,15 @@
     "repository": {
         "url": "https://github.com/mozilla/kitsune/",
         "license": "BSD 3-Clause",
-        "tests": "https://travis-ci.org/mozilla/kitsune"
+        "tests": "https://app.circleci.com/pipelines/github/mozilla/kitsune"
     },
     "participate": {
         "home": "https://kitsune.readthedocs.io/en/latest/contributors.html",
-        "docs": "https://kitsune.readthedocs.io/en/latest/hacking_howto.html#hacking-howto-chapter",
-        "irc": "irc://irc.mozilla.org/#sumodev",
-        "irc-contacts": ["mythmon", "r1cky", "willkg", "rdalal"]
+        "docs": "https://kitsune.readthedocs.io/en/latest/hacking_howto.html",
+        "matrix": "https://chat.mozilla.org/#/room/#support-platform:mozilla.org",
+        "matrix-contacts": ["tasos", "leo"],
+        "slack": "https://mozilla.slack.com/messages/support-platform",
+        "slack-contacts": ["tasos", "leo"]
     },
     "bugs": {
         "list": "https://bugzilla.mozilla.org/buglist.cgi?quicksearch=OPEN%20product%3Asupport.mozilla.org",
@@ -19,8 +21,7 @@
     },
     "urls": {
         "prod": "https://support.mozilla.org/",
-        "stage": "https://support.allizom.org/",
-        "dev": "https://support-dev.allizom.org/"
+        "stage": "https://support.allizom.org/"
     },
     "keywords": [
         "django",

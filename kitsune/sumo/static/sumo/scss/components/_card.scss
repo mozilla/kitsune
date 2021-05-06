@@ -1,0 +1,439 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Cards
+//
+// This component is used throughout the system to group elements. Combine
+// elevation and padding classes to achieve different hierarchies of content.
+//
+// .elevation-00 - Small border, no shadow
+// .elevation-01 - small shadow
+// .elevation-02 - medium shadow
+// .elevation-03 - large shadow
+// .lg-pad.elevation-01 - Increase the amount of padding, for use with larger cards
+// .sm-pad - decrease the amount of padding, for use with smaller cards.
+// .radius-md - p.$spacing-lg border-radius
+// .radius-lg - 36px border-radius
+// .is-inverse - dark background with light text
+// .is-shaded - card has slightly darker background with normal text
+// .is-callout-bg - slightly darker background, intended to be used with no elevation classes.
+// .is-shaded.highlight - border radius is removed and blue border is added to the left side
+// .zoom-on-hover - card is eleveated slightly on hover. To be used with `.expand-on-hover` to denote full-card links.
+//
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/card.njk
+//
+// Weight: 5
+//
+// Style guide: card
+
+.card {
+  @include c.card;
+
+  &.lg-pad {
+    padding: p.$spacing-xl;
+  }
+
+  &.sm-pad {
+    padding: p.$spacing-md p.$spacing-lg;
+  }
+
+  &.radius-md {
+    border-radius: p.$spacing-lg;
+  }
+
+  &.radius-lg {
+    border-radius: 36px;
+  }
+
+  &.zoom-on-hover {
+    will-change: transform;
+    transition: transform .1s ease-in-out;
+    transform: translateZ(0);
+    -webkit-font-smoothing: subpixel-antialiased;
+
+    &:hover {
+      transform: translateZ(0) scale(1.02);
+
+      @media (prefers-reduced-motion: reduce) {
+        transform: none;
+      }
+    }
+  }
+
+  &.is-shaded {
+    background: var(--color-shade-bg);
+  }
+
+  &.is-callout-bg {
+    background: var(--color-callout-bg);
+  }
+
+  &.highlight {
+    border-left: 2px solid var(--color-link);
+    border-radius: 0;
+  }
+
+  &.mb {
+    margin-bottom: p.$spacing-xl;
+  }
+
+  &.is-in-sidebar {
+    .card--title {
+      @include c.sumo-callout-heading('no-fam');
+      margin-bottom: p.$spacing-lg;
+    }
+
+    .card--desc {
+      margin-bottom: p.$spacing-lg;
+    }
+
+    .card--img {
+      width: 160px;
+      height: auto;
+      margin: -64px auto p.$spacing-md;
+    }
+  }
+
+  &--title {
+    &.has-bottom-margin {
+      margin-bottom: p.$spacing-sm;
+    }
+  }
+
+  &.is-inverse {
+    background: var(--color-inverse-bg);
+
+    &, p, li, h1, h2, h3, h4, h5, h6, a, a:hover {
+      color: var(--color-inverse);
+    }
+  }
+
+  &--img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin-bottom: p.$spacing-md;
+  }
+
+  &--horizontal {
+    display: flex;
+    align-items: center;
+
+    .card--img {
+      @include p.bidi((
+        (margin-right, 20px, 0),
+        (margin-left, 0, 20px),
+      ));
+      margin-bottom: 0;
+    }
+  }
+
+  &--article {
+    @include c.elevation-01;
+    display: flex;
+    flex-direction: column;
+
+    .card--title {
+      margin-bottom: auto;
+      padding-bottom: p.$spacing-xl;
+
+      a {
+      	white-space: pre-line;
+      	word-wrap: break-word;
+      }
+    }
+
+    .card--desc {
+      display: -webkit-box;
+      margin-top: p.$spacing-lg;
+      margin-bottom: p.$spacing-md;
+      padding-top: p.$spacing-lg;
+      min-height: 88px;
+      overflow: hidden;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      border-top: 1px solid var(--color-heading);
+    }
+
+    .card--details {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  }
+
+  &--product {
+    @include c.elevation-01;
+    display: flex;
+    flex-direction: column;
+    min-height: 144px;
+  }
+
+  &--topic {
+    @include c.elevation-01;
+    display: flex;
+    align-items: center;
+
+    .card-title {
+      margin: 0;
+    }
+
+    .card--icon {
+      width: p.$spacing-lg;
+      height: p.$spacing-lg;
+      object-fit: contain;
+      font-size: 9px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+  }
+
+  &--ribbon {
+    text-align: center;
+
+    .card--title {
+      @include c.sumo-callout-heading;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0 p.$spacing-md 0;
+
+      @media #{p.$mq-lg} {
+        margin-bottom: 0;
+      }
+    }
+
+    &.has-moz-headings .card--title {
+      font-family: var(--heading-font-family-moz);
+      color: var(--color-moz-heading);
+    }
+
+    .card--icon-sm {
+      margin-bottom: p.$spacing-sm;
+      width: p.$spacing-xl;
+      height: auto;
+    }
+
+    .card--desc {
+      @include c.text-body-xs;
+      margin: 20px 0;
+    }
+
+    &.heading-is-one-line {
+      .card--title {
+        white-space: nowrap;
+      }
+    }
+
+    &.no-body-text {
+      .card--details {
+        justify-content: space-between;
+      }
+    }
+  }
+
+  &--callout {
+    padding: 40px;
+    border-radius: 0;
+    background-color: var(--color-callout-bg);
+
+    &-wrap-narrow {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card--details {
+      flex: 1 1 100%;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .card--title {
+      @include c.sumo-callout-heading-feature('no-fam');
+    }
+
+    .card--desc {
+      @include c.text-body-md;
+      margin: p.$spacing-md 0;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      a,
+      a:hover,
+      a:visited,
+      a:active {
+        color: var(--color-link);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &--feature-img {
+    margin: -80px 0 0 0;
+    width: 70%;
+    flex: 0 0 auto;
+  }
+
+  &--icon {
+    @include p.bidi((
+      (margin-right, 20px, 0),
+      (margin-left, 0, 20px),
+    ));
+    margin-bottom: 10px;
+    width: p.$spacing-2xl;
+    flex: 0 0 auto;
+  }
+
+  &--icon-sm {
+    margin-bottom: p.$spacing-lg;
+    width: p.$spacing-lg;
+
+    @at-root .sumo-card-heading & {
+      @include p.bidi((
+        (margin,  0 8px -4px 0,  0 0 -4px 8px),
+      ));
+    }
+  }
+
+  &--title {
+    @include c.sumo-card-heading();
+    font-family: var(--base-font-family);
+    margin-bottom: 0;
+
+    > a {
+      text-decoration: none;
+      color: var(--color-heading);
+
+      &:hover {
+        text-decoration: underline;
+        color: var(--color-heading);
+      }
+    }
+  }
+
+  &--desc {
+    @include c.text-body-sm();
+    margin-bottom: 0;
+    color: var(--color-text);
+  }
+
+  &--centered-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media #{p.$mq-md} {
+    &--callout {
+      &-wrap-narrow {
+        flex-direction: row;
+      }
+
+      .card--details {
+        margin: 0 40px;
+      }
+
+      .card--desc {
+        margin: p.$spacing-md auto;
+        max-width: 300px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      &.is-full-width {
+        .card--desc {
+          margin-top: p.$spacing-lg;
+          margin-bottom: p.$spacing-lg;
+          max-width: none;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+
+        .card--feature-img {
+          max-width: 320px;
+        }
+      }
+    }
+
+    &--ribbon {
+      .card--title {
+        flex-direction: row;
+      }
+
+      .card--icon-sm {
+        margin-right: 10px;
+        margin-bottom: 0;
+        @include p.bidi((
+          (margin-right, 10px, 0),
+          (margin-left, 0, 10px),
+        ));
+      }
+
+      .card--desc {
+        @include c.text-body-sm;
+        margin: p.$spacing-sm 0 p.$spacing-lg 0;
+      }
+    }
+
+    &--feature-img {
+      @include p.bidi(((margin, -90px 0 -90px, -90px 0 -90px),));
+      width: 50%;
+      max-width: 320px;
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    &--product {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    &--icon {
+      margin-bottom: 0;
+      width: 72px;
+    }
+
+    &--ribbon {
+      text-align: left;
+
+      .card--details {
+        display: flex;
+        align-items: center;
+        max-width: 940px;
+        margin: 0 auto;
+      }
+
+      .card--title {
+        margin-right: 40px;
+        line-height: 1.2;
+      }
+
+      .sumo-button {
+        flex: 0 0 auto;
+        word-wrap: nowrap;
+      }
+
+      .card--desc {
+        flex: 1 1 auto;
+        @include p.bidi((
+          (margin, 0 40px 0 0, 0 0 0 40px),
+        ));
+      }
+    }
+  }
+}
+
+.elevation-00 { @include c.elevation-00;}
+.elevation-01 { @include c.elevation-01;}
+.elevation-02 { @include c.elevation-02;}
+.elevation-03 { @include c.elevation-03;}

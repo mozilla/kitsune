@@ -1,32 +1,36 @@
 {% macro kbforums_warning(document, user) -%}
-  <section class="warning-box">
-    {% if not document.parent %}
-      <p>
-        {% if user.is_authenticated() %}
-          {% trans title=document.title %}
-            This forum is a discussion about improving the "{{ title }}" article.
-          {% endtrans %}
-        {% else %}
-          {% trans title=document.title, register_url=url('users.register') %}
-            This forum is a discussion about improving the "{{ title }}" article. If
-            you'd like to participate, please <a href="{{ register_url }}">register</a>.
-          {% endtrans %}
-        {% endif %}
-      </p>
-    {% else %}
-      <p>
-        {% trans title=document.title,
-                 url=url('wiki.discuss.threads', document.parent.slug, locale='en-US') %}
-          This forum is a discussion about improving the localization of the
-          "{{ title }}" article. If you want to improve the article content,
-          go to the <a href="{{ url }}">English article discussion</a>.
-        {% endtrans %}
-      </p>
-    {% endif %}
+
+<div class="mzp-c-notification-bar mzp-t-warning warning-box">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <div>
+  {% if not document.parent %}
     <p>
-      {% trans aaq_url=url('questions.aaq_step1') %}
-        If you need help with Firefox, please <a href="{{ aaq_url }}">ask a question</a>.
+      {% if user.is_authenticated %}
+        {% trans title=document.title %}
+          This forum is a discussion about improving the "{{ title }}" article.
+        {% endtrans %}
+      {% else %}
+        {% trans title=document.title, register_url=url('users.fxa_authentication_init') %}
+          This forum is a discussion about improving the "{{ title }}" article. If
+          you'd like to participate, please <a href="{{ register_url }}">register</a>.
+        {% endtrans %}
+      {% endif %}
+    </p>
+  {% else %}
+    <p>
+      {% trans title=document.title,
+               url=url('wiki.discuss.threads', document.parent.slug, locale='en-US') %}
+        This forum is a discussion about improving the localization of the
+        "{{ title }}" article. If you want to improve the article content,
+        go to the <a href="{{ url }}">English article discussion</a>.
       {% endtrans %}
     </p>
-  </section>
+  {% endif %}
+  <p>
+    {% trans aaq_url=url('questions.aaq_step1') %}
+      If you need help with Firefox, please <a href="{{ aaq_url }}">ask a question</a>.
+    {% endtrans %}
+  </p>
+  </div>
+</div>
 {%- endmacro %}

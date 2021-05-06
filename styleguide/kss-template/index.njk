@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ options.title }}</title>
+
+  <meta name="description" content="">
+  <meta name="generator" content="kss-node">
+  <meta name="viewport" content="width=device-width">
+
+  <link rel="stylesheet" href="css/kss.css">
+
+  {{ styles|safe }}
+</head>
+<body class="kss-bodyclass {% if template.isItem %}kss-fullscreen-mode{% endif %}">
+  {% if not template.isItem %}
+  <header class="kss-navbar">
+    <button class="kss-toggle-nav" data-toggle-sidebar>
+      <svg class="hamburger" viewBox="0 0 613 478.29" fill="currentColor" id="hamburger" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 0h612v70.64H1V0zM1 407.65h612v70.64H1v-70.64zM0 203h612v70.64H0V203z"/>
+      </svg>
+      <svg class="close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 482.7 482.7">
+        <path fill="currentColor" d="M-.057 432.762L432.688.016l49.921 49.922L49.864 482.683z"/>
+        <path fill="currentColor" d="M-.057 49.938L49.864.016 482.61 432.762l-49.92 49.92z"/>
+      </svg>
+    </button>
+    <span class="kss-navbar-title">{{ options.title }}</span>
+  </header>
+  <!-- This is the off-canvas -->
+
+  <nav class="kss-off-canvas-sidebar" data-off-canvas-wrap>
+    <ul class="kss-nav">
+      <li class="kss-nav__menu-item" id="id_nav_overview">
+        <a class="kss-nav__menu-link" href="./">
+          <span class="kss-nav__ref">0</span
+          ><span class="kss-nav__name">Overview</span>
+        </a>
+      </li>
+    {% for menu_item in menu %}
+      <li class="kss-nav__menu-item" id="id_nav_{{menu_item.referenceURI}}">
+        <a class="kss-nav__menu-link" href="section-{{ menu_item.referenceURI }}.html">
+          <span class="kss-nav__ref">{{ menu_item.referenceNumber }}</span><span class="kss-nav__name">{{ menu_item.header }}</span>
+        </a>
+        {% if menu_item.isActive != "" and menu_item.children != "" %}
+          <ul class="kss-nav__menu-child">
+          {% for menu_child in menu_item.children %}
+            <li class="kss-nav__menu-item">
+              <a class="kss-nav__menu-link" href="section-{{ menu_item.referenceURI }}.html#kssref-{{ menu_child.referenceURI }}">
+                <span class="kss-nav__ref {% if menu_child.isGrandChild %}kss-nav__ref-child{% endif %}">{{ menu_child.referenceNumber }}</span
+                ><span class="kss-nav__name">{{ menu_child.header }}</span>
+              </a>
+            </li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+  </nav>
+{% endif %}
+
+{% if not template.isItem %}
+<article class="kss-container" role="main">
+  {% endif %}
+  {% if template.isHomepage %}
+    {% if homepage %}
+      <div id="kssref-0" class="kss-section kss-section--depth-0 kss-overview kss-style">
+        {{ homepage|safe }}
+      </div>
+    {% endif %}
+  {% else %}
+
+    {#
+      Display each section, in order.
+
+      The "root" element comes first in this loop, and can be detected using the
+      "loop.first" variable as seen below.
+    #}
+    {% for section in sections %}
+      {% set sectionElement = 'div' if loop.first else 'section'  %}
+      <{{ sectionElement }} id="kssref-{{ section.referenceURI }}" class="kss-section kss-section--depth-{{ section.depth }} {% if template.isItem %}is-fullscreen{% endif %}">
+        {% if not template.isItem %}
+        <div class="kss-style">
+          {% set headerElement = 'h6' if (section.depth > 6) else 'h' ~ section.depth %}
+          <{{ headerElement }} class="kss-title kss-title--level-{{ section.depth }}">
+            <a class="kss-title__permalink" href="#kssref-{{ section.referenceURI }}">
+              <span class="kss-title__ref">
+                {{ section.referenceNumber }}
+                <span class="kss-title__permalink-hash">
+                  {{ '#permalink' if hasNumericReferences else section.reference }}
+                </span>
+              </span>
+              {{ section.header }}
+            </a>
+          </{{ headerElement }}>
+
+          {% if section.example %}
+            <p class="kss-toolbar">
+              {% if not template.isItem %}
+                <a href="item-{{section.referenceURI}}.html" target="_blank">
+                  <span class="kss-toolbar__tooltip">Open in new window</span>
+                  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 64 64">
+                    <rect x="0" y="20" width="40" height="44" fill="#fff"/>
+                    <path class="kss-toolbar__icon-fill" d="M40,64l-40,0l0,-44l40,0l0,44Zm-36,-40l0,36l32,0l0,-36l-32,0Z"/>
+                    <rect class="kss-toolbar__icon-fill" x="0" y="20" width="40" height="10"/>
+                    <rect x="24" y="0" width="40" height="44" fill="#fff"/>
+                    <path class="kss-toolbar__icon-fill" d="M64,44l-40,0l0,-44l40,0l0,44Zm-36,-40l0,36l32,0l0,-36l-32,0Z"/>
+                    <rect class="kss-toolbar__icon-fill" x="24" y="0" width="40" height="10"/>
+                  </svg>
+                </a>
+              {% endif %}
+            </p>
+          {% endif %}
+
+          {% if section.description %}
+            <div class="kss-description">
+              {{ section.description|safe }}
+            </div>
+          {% endif %}
+
+          {% if section.colors %}
+            <ul class="kss-colors">
+              {% for color in section.colors %}
+                <li>
+                  <figure class="kss-color">
+                    <div class="kss-color-figure" style="background-color:{{ color.color }}"></div>
+                    <figcaption class="kss-color-caption">
+                      {% if color.name %}
+                        <div class="kss-color-name" data-copy-this>var({{ color.name }})</div>
+                      {% endif %}
+                      <div class="kss-color-code" data-copy-this>{{ color.color }}</div>
+                      {% if color.description %}
+                        <div class="kss-color-desc" data-copy-this>{{ color.description }}</div>
+                      {% endif %}
+                    </figcaption>
+                  </figure>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          {% for parameter in section.parameters %}
+            {% if loop.first %}
+              <div class="kss-parameters__title">Parameters:</div>
+              <ul class="kss-parameters">
+            {% endif %}
+              <li class="kss-parameters__item">
+                <div class="kss-parameters__name"><code>{{ parameter.name }}</code></div>
+                <div class="kss-parameters__description">
+                  {{ parameter.description|safe }}
+                  {% if parameter.defaultValue %}
+                    <div class="kss-parameters__default-value">
+                      Defaults to: <code>{{ parameter.defaultValue }}</code>
+                    </div>
+                  {% endif %}
+                </div>
+              </li>
+            {% if loop.last %}
+              </ul>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if section.example %}
+          <div class="kss-modifier__wrapper {% if full %}kss-chromeless kss-fullwidth{% endif %}">
+            {% if not template.isItem %}
+            <div class="kss-modifier__heading kss-style">
+              Example{% if section.modifiers %}s{% endif %}
+            </div>
+
+
+            {% if section.modifiers %}
+              <div class="kss-modifier__default-name kss-style">
+                Default styling
+              </div>
+            {% endif %}
+            {% endif %}
+
+            <div class="kss-modifier__example">
+              {{ section.example|safe }}
+              <div class="kss-modifier__example-footer"></div>
+            </div>
+
+            {% for modifier in section.modifiers %}
+              <div class="kss-modifier__name kss-style">
+                {{ modifier.name }}
+              </div>
+              <div class="kss-modifier__description kss-style">
+                {{ modifier.description|safe }}
+              </div>
+              <div class="kss-modifier__example">
+                {{ modifier.markup|safe }}
+                <div class="kss-modifier__example-footer"></div>
+              </div>
+            {% endfor %}
+          </div>
+
+          {% if section.markup %}
+          {% if not template.isItem %}
+            <details class="kss-markup kss-style">
+              <summary>
+                {% if section.markupFile %}
+                  Markup: <code>{{ section.markupFile }}</code>
+                {% else %}
+                  Markup
+                {% endif %}
+              </summary>
+              {# <pre class=""><code >{{example}}</code></pre> #}
+              <pre class="prettyprint linenums lang-html"><code data-language="html">{{ section.example | escape }}</code></pre>
+
+
+            </details>
+          {% endif %}
+          {% endif %}
+        {% endif %}
+
+        {% if section.source.filename %}
+        {% if not template.isItem %}
+          <div class="kss-source kss-style">
+            Source: <code>{{ section.source.filename }}</code>, line {{ section.source.line }}
+          </div>
+        {% endif %}
+        {% endif %}
+      </{{ sectionElement }}>
+    {% endfor %}
+  {% endif %}
+  {% if not template.isItem %}
+  </article>
+  {% endif %}
+
+<!-- SCRIPTS -->
+<script src="kss-assets/kss.js"></script>
+<script src="kss-assets/prettify.js"></script>
+
+<script>
+prettyPrint();
+// Inject subheads in styleguide nav.
+var navItems = document.querySelectorAll('.kss-nav__menu-item');
+
+navItems.forEach(function(elm) {
+
+  if (elm.id == 'id_nav_overview') {
+    var subhead = document.createElement('li');
+    subhead.innerHTML = 'Base Styles';
+    subhead.className = 'kss-nav-header';
+    elm.parentNode.insertBefore(subhead, elm);
+  };
+
+  if (elm.id == 'id_nav_card-list') {
+    var subhead = document.createElement('li');
+    subhead.innerHTML = 'Components';
+    subhead.className = 'kss-nav-header';
+    elm.parentNode.insertBefore(subhead, elm);
+  };
+
+  if (elm.id == 'id_nav_home') {
+    var subhead = document.createElement('li');
+    subhead.innerHTML = 'Layouts';
+    subhead.className = 'kss-nav-header';
+    elm.parentNode.insertBefore(subhead, elm);
+  };
+});
+
+// toggle sidebar nav
+var nav = document.querySelector('[data-off-canvas-wrap]');
+var navToggle = document.querySelector('[data-toggle-sidebar]');
+
+function mobileNav(e){
+  e.target.classList.toggle('nav-open');
+  document.body.classList.toggle('nav-is-open');
+};
+
+if (navToggle) {
+  navToggle.addEventListener("click", mobileNav);
+}
+
+
+
+// copy colors to clipboard
+// https://alligator.io/js/copying-to-clipboard/
+const aioColors = document.querySelectorAll('[data-copy-this]');
+
+aioColors.forEach(color => {
+  color.addEventListener('click', () => {
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(color);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    try {
+      document.execCommand('copy');
+      selection.removeAllRanges();
+
+      const original = color.textContent;
+      color.textContent = 'Copied!';
+      color.classList.add('success');
+
+      setTimeout(() => {
+        color.textContent = original;
+        color.classList.remove('success');
+      }, 1200);
+    } catch(e) {
+      const errorMsg = document.querySelector('.error-msg');
+      errorMsg.classList.add('show');
+
+      setTimeout(() => {
+        errorMsg.classList.remove('show');
+      }, 1200);
+    }
+  });
+});
+</script>
+
+{{ scripts|safe }}
+
+
+<!-- Automatically built using <a href="https://github.com/kss-node/kss-node">kss-node</a>. -->
+</body>
+</html>

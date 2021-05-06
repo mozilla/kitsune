@@ -1,4 +1,4 @@
-/* globals $:false, interpolate:false, _gaq:false */
+/* globals $:false, interpolate:false, trackEvent:false */
 /* Please do not directly use this code or SUMO key. */
 /* Contact MLS team for your own credentials. */
 /* https://location.services.mozilla.com/contact */
@@ -13,15 +13,17 @@
   if (!countryData.country_name) {
     $.ajax({
       method: 'GET',
-      url: GeoIPUrl
+      url: GeoIPUrl,
+      beforeSend: function() {} // don't send X-CSRFToken header
     })
     .done(function(data) {
-      $.cookie('geoip_country_name', data.country_name);
-      $.cookie('geoip_country_code', data.country_code);
+      $.cookie('geoip_country_name', data.country_name, { path: '/' });
+      $.cookie('geoip_country_code', data.country_code, { path: '/' });
       countryData = data;
     })
     .fail(function(error) {
-      throw new Error('Error retrieving geoip data');
+      console.warn('Error retrieving geoip data');
+      $('#announce-geoip-suggestion').remove();
     })
     .always(function() {
       handleLocale(countryData.country_name);
@@ -36,7 +38,7 @@ function handleLocale(countryName) {
   var languageSuggestions = {
     'en-US': {
       Indonesia: 'id',
-      Bangladesh: 'bn-BD',
+      Bangladesh: 'bn',
     },
   };
 
@@ -77,27 +79,27 @@ function handleLocale(countryName) {
         {language: languageInNativeLocale},
         true);
 
-      var $container = $announceBar.find('.container_12');
-      var $message = $container.find('.grid_12');
+      $announceBar.show();
+      var $message = $announceBar.find('p');
 
-      $message.append($('<span/>').text(currentLocaleSuggestion));
-      $message.append($('<button class="btn confirm" />').text(data[currentLocale].confirm));
-      $message.append($('<button class="btn cancel" />').text(data[currentLocale].cancel));
+      $message.text(currentLocaleSuggestion);
+      $message.append($('<button class="sumo-button button-sm confirm" />').text(data[currentLocale].confirm));
+      $message.append($('<button class="sumo-button button-sm cancel" />').text(data[currentLocale].cancel));
 
       if (data[currentLocale].suggestion !== data[suggestedLocale].suggestion) {
-        $message = $('<div class="grid_12" />').appendTo($container);
-        $message.append($('<span/>').text(suggestedLocaleSuggestion));
-        $message.append($('<button class="btn confirm" />').text(data[suggestedLocale].confirm));
-        $message.append($('<button class="btn cancel" />').text(data[suggestedLocale].cancel));
+        var $localisedMessage = $('<p />').appendTo($announceBar);
+        $localisedMessage.text(suggestedLocaleSuggestion);
+        $localisedMessage.append($('<button class="sumo-button button-sm confirm" />').text(data[suggestedLocale].confirm));
+        $localisedMessage.append($('<button class="sumo-button button-sm cancel" />').text(data[suggestedLocale].cancel));
       }
 
-      _gaq.push(['_trackEvent', 'Geo IP Targeting', 'show banner']);
+      trackEvent('Geo IP Targeting', 'show banner');
     })
     .error(function(err) {
       console.error('GeoIP suggestion error', err);
     });
 
-    $announceBar.on('click', '.btn', function(ev) {
+    $announceBar.on('click', 'p button', function(ev) {
       /* If the user clicks "yes", close the bar (so it remembers) and navigate
       * to the new locale. If the user clicks "no", just close the bar.
       * Either way, the announce bar UI code (in ui.js) will remember this action
@@ -106,7 +108,7 @@ function handleLocale(countryName) {
       var $this = $(this);
       $announceBar.find('.close-button').click();
       if ($this.hasClass('confirm')) {
-        _gaq.push(['_trackEvent', 'Geo IP Targeting', 'click yes']);
+        trackEvent('Geo IP Targeting', 'click yes');
         // Delay the click navigation by 250ms to ensure the event is tracked.
         setTimeout(function() {
           var newQsVar = 'lang=' + suggestedLocale;
@@ -118,7 +120,7 @@ function handleLocale(countryName) {
           window.location.search += newQsVar;
         }, 250);
       } else {
-        _gaq.push(['_trackEvent', 'Geo IP Targeting', 'click no']);
+        trackEvent('Geo IP Targeting', 'click no');
       }
     });
 

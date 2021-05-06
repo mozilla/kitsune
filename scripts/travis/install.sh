@@ -3,18 +3,22 @@
 set -e
 
 echo "Fix path issues"
-ln -sf /usr/lib/`uname -i`-linux-gnu/libfreetype.so ~/virtualenv/python2.6/lib/
-ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
-ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libfreetype.so ~/virtualenv/python3.7/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python3.7/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python3.7/lib/
 
 echo "Install Python dependencies"
-./peep.sh install -r requirements/dev.txt
-./peep.sh install -r requirements/default.txt
+pip install -r requirements/dev.txt
+pip install -r requirements/default.txt
 echo
 
 # Installing dependencies for UI tests
 if [[ $TEST_SUITE == "ui" ]]; then
-  ./peep.sh install -r requirements/test.txt
+  pip install tox
+fi
+
+if [[ $TEST_SUITE == "docker" ]]; then
+  sudo pip install docker-compose
 fi
 
 # Optimization: None of the rest is needed for lint tests.
@@ -25,11 +29,6 @@ fi
 echo "Installing Node.js dependencies"
 npm install
 echo
-
-echo "Installing front end dependencies"
-./node_modules/.bin/bower install
-echo
-
 
 echo "Installing ElasticSearch"
 # Default to ES version 1.2.4, but allow overrides from the environment

@@ -22,7 +22,7 @@
     init: function(form, options) {
       var self = this,
         $ajaxForm = $(form),
-        $btns = $ajaxForm.find('input[type="submit"], .btn[data-type="submit"]');
+        $btns = $ajaxForm.find('[type="submit"], [data-type="submit"]');
 
       options = $.extend({
         positionMessage: false,
@@ -89,9 +89,10 @@
     showMessage: function(message, $showAbove, $form) {
       // TODO: Tweak KBox to handle this case.
       var self = this,
-        $html = $('<div class="ajax-vote-box"><p class="msg"></p></div>'),
+        $html = $('<div class="ajax-vote-box"><p class="msg document-vote--heading"></p></div>'),
         offset = $showAbove.offset();
       $html.find('p').html(message);
+      console.log('options', self.options)
 
       if (self.options.positionMessage) {
         // on desktop browsers we use absolute positioning
@@ -130,16 +131,14 @@
       var $commentBox = $survey.find('textarea');
       var maxCount = parseInt($commentCount.text(), 10);
       var $radios = $survey.find('input[type=radio][name=unhelpful-reason]');
-      var $submit = $survey.find('input[type=submit], .btn[data-type=submit]');
+      var $submit = $survey.find('[type=submit], [data-type=submit]');
       var $reason = $survey.find('.disabled-reason');
       var $textbox = $survey.find('textarea');
 
       $container.after($survey);
 
-      // If we are in the sidebar, remove the vote form container.
-      if ($container.closest('aside').length) {
-        $container.remove();
-      }
+      // remove the extra message when the survey opens.
+      $container.remove();
 
       $submit.prop('disabled', true);
 

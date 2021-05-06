@@ -1,0 +1,62 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+// These are general styles for elements/components that occur on every page.
+// Individual pages may include additional component styles as needed.
+
+// These are the default values from protocol, but they are overriden in the
+// @use Default media paths can be overwritten globally.
+$font-path: '../../protocol/fonts' !default;
+$image-path: '../../protocol/img' !default;
+// Note: --load-path for these files is set to node_modules/@mozilla-protocol/core
+// (and not deeper) to avoid conflicts
+
+
+// Fonts
+@import 'protocol/css/includes/fonts/inter';
+@import 'protocol/css/includes/fonts/metropolis';
+@import 'protocol/css/includes/fonts/zilla-slab';
+
+
+// Base elements - general HTML elements
+@import 'protocol/css/base/elements/reset';
+@import 'protocol/css/base/elements/details';
+@import 'protocol/css/base/elements/document';
+// @import 'protocol/css/base/elements/forms';
+@import 'protocol/css/base/elements/links';
+@import 'protocol/css/base/elements/lists';
+@import 'protocol/css/base/elements/quotes';
+@import 'protocol/css/base/elements/sections';
+@import 'protocol/css/base/elements/tables';
+@import 'protocol/css/base/elements/typography';
+
+// Base includes - animations
+@import 'protocol/css/base/includes';
+
+// Global components
+@import 'protocol/css/components/card';
+@import 'protocol/css/components/footer';
+@import 'protocol/css/components/language-switcher';
+@import 'protocol/css/components/menu';
+@import 'protocol/css/components/menu-item';
+@import 'protocol/css/components/navigation';
+
+// all components from protocol-extra.scss
+@import 'protocol/css/components/article';
+@import 'protocol/css/components/billboard';
+// @import 'components/button';
+@import 'protocol/css/components/call-out';
+@import 'protocol/css/components/emphasis-box';
+@import 'protocol/css/components/feature-card';
+@import 'protocol/css/components/hero';
+@import 'protocol/css/components/inline-list';
+@import 'protocol/css/components/modal';
+@import 'protocol/css/components/menu-list';
+@import 'protocol/css/components/newsletter-form';
+@import 'protocol/css/components/notification-bar';
+@import 'protocol/css/components/picto-card';
+@import 'protocol/css/components/sidebar-menu';
+@import 'protocol/css/components/zap';
+@import 'protocol/css/templates/card-layout';
+@import 'protocol/css/templates/main-with-sidebar';

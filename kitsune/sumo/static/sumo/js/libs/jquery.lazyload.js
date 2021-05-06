@@ -10,7 +10,7 @@
         var opts = $.extend($.fn.lazyload.defaults, options);
         var elements = this;
         var didScroll = false;
-        loaded = elements.length;
+        var loaded = elements.length;
 
         $(window).bind('scroll', function(e){
             didScroll = true;

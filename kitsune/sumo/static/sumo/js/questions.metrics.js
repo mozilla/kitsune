@@ -1,4 +1,4 @@
-/* globals _gaq:false, jQuery:false */
+/* globals _gaq:false, trackEvent:false, jQuery:false */
 // Collect questions metrics.
 
 (function ($) {
@@ -39,10 +39,10 @@
           return;
         }
 
-        _gaq.push(['_trackEvent',
-        'Support Forum Vote',
-        value,
-        questionPart + answerPart]);
+        trackEvent(
+          'Support Forum Vote',
+          value,
+          questionPart + answerPart);
       }
     });
   }

@@ -4,7 +4,8 @@
 {% set styles = ('users',) %}
 
 {% block content %}
-  <h1>{{ title }}</h1>
+<section class="sumo-page-section">
+  <h1 class="sumo-page-heading">{{ title }}</h1>
   <table id="deactivations-log">
     <thead>
       <tr>
@@ -18,13 +19,14 @@
         <tr>
           <td>{{ deactivation.date }}</td>
           <td><a href="{{ profile_url(deactivation.user) }}">
-              {{ deactivation.user }}</a></td>
+              {{ display_name(deactivation.user) }}</a></td>
           <td><a href="{{ profile_url(deactivation.moderator) }}">
-              {{ deactivation.moderator }}</a></td>
+              {{ display_name(deactivation.moderator) }}</a></td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
 
   {{ deactivations|quick_paginator }}
+</section>
 {% endblock %}

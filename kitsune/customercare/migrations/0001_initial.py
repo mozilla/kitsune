@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('locale', models.CharField(max_length=20)),
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
                 ('reply_to_tweet_id', models.BigIntegerField()),
-                ('user', models.ForeignKey(related_name='tweet_replies', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('user', models.ForeignKey(on_delete=models.CASCADE, related_name='tweet_replies', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'abstract': False,
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 ('locale', models.CharField(max_length=20, db_index=True)),
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
                 ('hidden', models.BooleanField(default=False, db_index=True)),
-                ('reply_to', models.ForeignKey(related_name='replies', to='customercare.Tweet', null=True)),
+                ('reply_to', models.ForeignKey(on_delete=models.CASCADE, related_name='replies', to='customercare.Tweet', null=True)),
             ],
             options={
                 'ordering': ('-tweet_id',),

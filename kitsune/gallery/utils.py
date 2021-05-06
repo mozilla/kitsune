@@ -3,6 +3,7 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
+from django.utils.html import escape
 
 from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image
@@ -13,7 +14,7 @@ from kitsune.upload.tasks import _scale_dimensions
 
 def create_image(files, user):
     """Given an uploaded file, a user, and other data, it creates an Image"""
-    up_file = files.values()[0]
+    up_file = list(files.values())[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     try:
@@ -26,21 +27,25 @@ def create_image(files, user):
 
     # Async uploads fallback to these defaults.
     image.title = get_draft_title(user)
-    image.description = u'Autosaved draft.'
+    image.description = "Autosaved draft."
     image.locale = settings.WIKI_DEFAULT_LANGUAGE
 
     (up_file, is_animated) = _image_to_png(up_file)
 
     # Finally save the image along with uploading the file.
-    image.file.save(up_file.name,
-                    File(up_file), save=True)
+    image.file.save(up_file.name, File(up_file), save=True)
 
+    name = escape(up_file.name)
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
-    delete_url = reverse('gallery.delete_media', args=['image', image.id])
-    return {'name': up_file.name, 'url': image.get_absolute_url(),
-            'thumbnail_url': image.thumbnail_url_if_set(),
-            'width': width, 'height': height,
-            'delete_url': delete_url}
+    delete_url = reverse("gallery.delete_media", args=["image", image.id])
+    return {
+        "name": name,
+        "url": image.get_absolute_url(),
+        "thumbnail_url": image.thumbnail_url_if_set(),
+        "width": width,
+        "height": height,
+        "delete_url": delete_url,
+    }
 
 
 def upload_image(request):
@@ -58,11 +63,10 @@ def check_media_permissions(media, user, perm_type):
 
     """
     media_type = media.__class__.__name__.lower()
-    perm_name = 'gallery.%s_%s' % (perm_type, media_type)
+    perm_name = "gallery.%s_%s" % (perm_type, media_type)
     if user != media.creator and not user.has_perm(perm_name):
         raise PermissionDenied
 
 
 def get_draft_title(user):
-    return u'Draft for user %s. Created at: %s' % (user.username,
-                                                   datetime.now())
+    return "Draft for user %s. Created at: %s" % (user.username, datetime.now())

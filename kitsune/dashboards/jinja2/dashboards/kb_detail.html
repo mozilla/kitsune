@@ -8,12 +8,13 @@
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
 
 {% block content %}
-  {{ product_selector(products, product) }}
+    <article class="main dashboards dashboards-detail sumo-page-section">
 
-  <div class="grid_9">
-    <article class="main dashboards dashboards-detail">
-      <h1>{{ readout.title }}</h1>
-      <ul class="readout-modes" data-slug="{{ readout.slug }}">
+      <h1 class="sumo-page-heading">{{ readout.title }}</h1>
+
+      {{ product_selector(products, product) }}
+
+      <ul class="tag-list readout-modes" data-slug="{{ readout.slug }}">
         {% for key, name in readout.modes %}
           <li class="mode{% if key == readout.default_mode %} active
           {% endif %}" data-url="{{ url('dashboards.wiki_rows',
@@ -27,7 +28,6 @@
         {{ readout.render()|safe }}
       </table>
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

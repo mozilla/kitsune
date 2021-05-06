@@ -1,6 +1,6 @@
-=========
-Questions
-=========
+==============
+Ask A Question
+==============
 
 This document explains what kinds of question states exist in Kitsune,
 how they are set and their implications.
@@ -11,7 +11,7 @@ Configuring new products
 
 To configure a new product for AAQ you must edit ``config.py`` within the questions app.
 
-First, ensure the ``Product`` object exists for this product in the products app.If not create a new
+First, ensure the ``Product`` object exists for this product in the products app. If not create a new
 ``Product``.
 
 Next, Add a new item to the ``products`` dictionary using something like::
@@ -33,24 +33,9 @@ Next, Add a new item to the ``products`` dictionary using something like::
 
 ``'product-slug'`` should be the slug of the ``Product`` object for this product.
 
-You will also need to add a new 96x96 icon to the ``img/logos.large.sprite.png`` and
-will need to update the ``.logo-sprite`` class in ``questions.less`` to account for the new logo.
-
-The same changes will need to be made to ``img/mobile/logos-sprite-2x.png`` and a
-non-retina (half size) version ``img/mobile/logos-sprite.png``. Finally update the
-``.logo-sprite`` class in ``mobile/main.less``.
-
 
 Question States
 ===============
-
-Not yet posted
---------------
-Questions are created within the `Ask a question` workflow,
-but they are not shown in question listings until the user is confirmed.
-With Persona for authentication this status is impossible,
-since email addresses are confirmed right away.
-
 
 Default
 -------

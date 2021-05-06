@@ -1,0 +1,47 @@
+{% extends "styleguide/styleguide-examples/base.njk" %}
+
+{% block content %}
+<div class="sumo-page-section mzp-l-content">
+    <div class="sumo-l-two-col">
+      <aside class="sumo-l-two-col--sidebar">
+        <nav class="sidebar-nav">
+          <span class="details-heading">My Profile</span>
+          <ul id="user-nav" class="sidebar-nav--list">
+            <li class="sidebar-nav--item"><a href="/en-US/user/#TODO" class="sidebar-nav--link is-active">My profile</a></li>
+            <li class="sidebar-nav--item"><a class="sidebar-nav--link" href="/en-US/users/edit">Edit my profile</a></li>
+            <li class="sidebar-nav--item"><a class="sidebar-nav--link" href="/en-US/users/settings">Edit settings</a></li>
+            <li class="sidebar-nav--item"><a class="sidebar-nav--link" href="/en-US/users/watches">Manage watch list</a></li>
+          </ul>
+        </nav>
+      </aside>
+      <article id="profile" class="sumo-l-two-col--main">
+      <h1 class="text-display-lg">Account</h1>
+      <p class="mb-0"><strong>kasey.kelly@gmail.com</strong></p>
+      <p class="helptext">
+        You can change your email address on Firefox Accounts.
+        <a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">Need help?</a>
+      </p>
+      <hr class="section-break">
+      <h1 class="text-display-lg">user.name</h1>
+
+      <h2 class="location"></h2>
+
+      <section class="avatar-group">
+        <figure class="avatar-group--figure">
+          <img class="avatar" src="https://stable.dev.lcip.org/profile/a/00000000000000000000000000000000" alt="">
+        </figure>
+        <div class="avatar-group--details">
+        </div>
+      </section>
+      <div class="pm-or-signout sumo-button-wrap extra-pad-top">
+          <form id="sign-out" action="/en-US/users/logout" method="post">
+            <input type="hidden" name="csrfmiddlewaretoken" value="kL2USfYkjqh8leyyoA9oOTx7koGX4VRUlCi20iIHaARUFAgRrCAO6jzoZ4qwvoEL">
+          </form>
+          <a class="sumo-button primary-button button-lg" data-type="submit" data-form="sign-out" href="#sign-out" data-event-label="Sign Out">
+            Sign Out
+          </a>
+      </div>
+      </article>
+    </div>
+</div>
+{% endblock %}

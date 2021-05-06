@@ -1,0 +1,31 @@
+<div class="field radio {{modifier_class}}">
+  <input
+    type="radio"
+    id="id_example_radio_1_{{modifier_class}}"
+    name="radio group example {{modifier_class}}"
+    value="Apples"
+    {% if modifier_class === "has-disabled" %}disabled{% endif %}
+  />
+  <label for="id_example_radio_1_{{modifier_class}}">Apples</label>
+</div>
+<div class="field radio {{modifier_class}}">
+  <input
+    type="radio"
+    id="id_example_radio_2_{{modifier_class}}"
+    name="radio group example {{modifier_class}}"
+    value="Oranges"
+    checked="checked"
+    {% if modifier_class === "has-disabled" %}disabled{% endif %}
+  />
+  <label for="id_example_radio_2_{{modifier_class}}">Oranges</label>
+</div>
+<div class="field radio {{modifier_class}}">
+  <input
+    type="radio"
+    id="id_example_radio_3_{{modifier_class}}"
+    name="radio group example {{modifier_class}}"
+    value="Peaches"
+    {% if modifier_class === "has-disabled" %}disabled{% endif %}
+  />
+  <label for="id_example_radio_3_{{modifier_class}}">Peaches</label>
+</div>

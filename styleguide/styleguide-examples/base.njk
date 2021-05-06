@@ -1,0 +1,18 @@
+<script src="static/protocol/js/protocol-base.js"></script>
+<script src="static/protocol/js/protocol-utils.js"></script>
+<script src="static/protocol/js/protocol-supports.js"></script>
+
+{% block nav %}
+{% import 'styleguide/styleguide-examples/nav.njk' as nav %}
+{{ nav.nav(is_logged_in=true) }}
+{% endblock %}
+
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+
+{% block footer %}
+  {% include "styleguide/styleguide-examples/footer.njk" %}
+{% endblock %}

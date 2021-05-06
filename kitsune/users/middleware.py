@@ -1,47 +1,43 @@
-from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from datetime import datetime
+
+from django.contrib.auth import logout
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.deprecation import MiddlewareMixin
 
 from kitsune.sumo.urlresolvers import reverse
 
 
-class TokenLoginMiddleware(object):
-    """Allows users to be logged in via one time tokens."""
-
-    def process_request(self, request):
-        try:
-            auth = request.GET.get('auth')
-        except IOError:
-            # Django can throw an IOError when trying to read the GET
-            # data.
-            return
-
-        if auth is None or (request.user and request.user.is_authenticated()):
-            return
-        user = authenticate(auth=auth)
-        if user and user.is_active:
-            login(request, user)
-            msg = _lazy(u'You have been automatically logged in.')
-            messages.success(request, msg)
-
-
-class LogoutDeactivatedUsersMiddleware(object):
+class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
     """Verifies that user.is_active == True.
 
     If a user has been deactivated, we log them out.
-
-    If a user isn't active but is in the AAQ process, we let them be.
     """
+
     def process_request(self, request):
+
         user = request.user
 
-        if (user.is_authenticated() and not user.is_active and
-                not request.session.get('in-aaq', False)):
+        if user.is_authenticated and not user.is_active:
 
-            # The user is auth'd, not active and not in AAQ. /KICK
             logout(request)
-            res = HttpResponseRedirect(reverse('home'))
-            res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
-            return res
+            return HttpResponseRedirect(reverse("home"))
+
+
+class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
+    """Logs out any sessions started before a user changed their
+    Firefox Accounts password.
+    """
+
+    def process_request(self, request):
+
+        user = request.user
+
+        if user.is_authenticated:
+            first_seen = request.session.get("first_seen")
+            if first_seen:
+                change_time = user.profile.fxa_password_change
+                if change_time and change_time > first_seen:
+                    logout(request)
+                    return HttpResponseRedirect(reverse("home"))
+            else:
+                request.session["first_seen"] = datetime.utcnow()

@@ -11,26 +11,26 @@ INTERVAL_BEFORE = 1
 INTERVAL_AFTER = 2
 
 DATE_LIST = (
-    (INTERVAL_NONE, _lazy(u"Don't filter")),
-    (INTERVAL_BEFORE, _lazy(u'Before')),
-    (INTERVAL_AFTER, _lazy(u'After')),
+    (INTERVAL_NONE, _lazy("Don't filter")),
+    (INTERVAL_BEFORE, _lazy("Before")),
+    (INTERVAL_AFTER, _lazy("After")),
 )
 
 # For discussion forums
 # Integer values here map to tuples from SORT defined above
 SORTBY_FORUMS = (
-    (0, _lazy(u'Relevance')),
-    (1, _lazy(u'Last post date')),
-    (2, _lazy(u'Original post date')),
-    (3, _lazy(u'Number of replies')),
+    (0, _lazy("Relevance")),
+    (1, _lazy("Last post date")),
+    (2, _lazy("Original post date")),
+    (3, _lazy("Number of replies")),
 )
 
 DISCUSSION_STICKY = 1
 DISCUSSION_LOCKED = 2
 
 DISCUSSION_STATUS_LIST = (
-    (DISCUSSION_STICKY, _lazy(u'Sticky')),
-    (DISCUSSION_LOCKED, _lazy(u'Locked')),
+    (DISCUSSION_STICKY, _lazy("Sticky")),
+    (DISCUSSION_LOCKED, _lazy("Locked")),
 )
 
 # For support questions
@@ -39,38 +39,43 @@ TERNARY_YES = 1
 TERNARY_NO = -1
 
 TERNARY_LIST = (
-    (TERNARY_OFF, _lazy(u"Don't filter")),
-    (TERNARY_YES, _lazy(u'Yes')),
-    (TERNARY_NO, _lazy(u'No')),
+    (TERNARY_OFF, _lazy("Don't filter")),
+    (TERNARY_YES, _lazy("Yes")),
+    (TERNARY_NO, _lazy("No")),
 )
 
 NUMBER_LIST = (
-    (INTERVAL_NONE, _lazy(u"Don't filter")),
-    (INTERVAL_BEFORE, _lazy(u'Less than')),
-    (INTERVAL_AFTER, _lazy(u'More than')),
+    (INTERVAL_NONE, _lazy("Don't filter")),
+    (INTERVAL_BEFORE, _lazy("Less than")),
+    (INTERVAL_AFTER, _lazy("More than")),
 )
 
 SORT_QUESTIONS = (
-    ('-_score', '-updated'),  # default
-    ('-updated',),
-    ('-created',),
-    ('-question_num_answers',)
+    ("-_score", "-updated"),  # default
+    ("-updated",),
+    ("-created",),
+    ("-question_num_answers",),
 )
 
 SORTBY_QUESTIONS = (
-    (0, _lazy(u'Relevance')),
-    (1, _lazy(u'Last answer date')),
-    (2, _lazy(u'Question date')),
-    (3, _lazy(u'Number of answers')),
+    (0, _lazy("Relevance")),
+    (1, _lazy("Last answer date")),
+    (2, _lazy("Question date")),
+    (3, _lazy("Number of answers")),
 )
 
 
 SORT_DOCUMENTS = {
-    'relevance': ('-_score',),
-    'helpful': ('-document_recent_helpful_votes',),
+    "relevance": ("-_score",),
+    "helpful": ("-document_recent_helpful_votes",),
 }
 
 SORTBY_DOCUMENTS_CHOICES = (
-    ('relevance', _lazy(u'Relevance')),
-    ('helpful', _lazy(u'Helpful votes')),
+    ("relevance", _lazy("Relevance")),
+    ("helpful", _lazy("Helpful votes")),
 )
+
+HIGHLIGHT_TAG = "strong"
+SNIPPET_LENGTH = 500
+
+NO_MATCH = _lazy("No pages matched the search criteria")

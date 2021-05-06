@@ -23,19 +23,6 @@ def remove_ratelimit_bypass_perm(apps, schema_editor):
     perm = Permission.objects.filter(codename='bypass_ratelimit').delete()
 
 
-def create_treejack_switch(apps, schema_editor):
-    Switch = apps.get_model('waffle', 'Switch')
-    Switch.objects.create(
-        name='treejack',
-        note='Enables/disables the Treejack snippet.',
-        active=False)
-
-
-def remove_treejack_switch(apps, schema_editor):
-    Switch = apps.get_model('waffle', 'Switch')
-    Switch.objects.filter(name='treejack').delete()
-
-
 def create_refresh_survey_flag(apps, schema_editor):
     Sample = apps.get_model('waffle', 'Sample')
     Sample.objects.get_or_create(
@@ -60,6 +47,5 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(create_ratelimit_bypass_perm, remove_ratelimit_bypass_perm),
-        migrations.RunPython(create_treejack_switch, remove_treejack_switch),
         migrations.RunPython(create_refresh_survey_flag, remove_refresh_survey_flag),
     ]
