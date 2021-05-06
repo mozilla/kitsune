@@ -1,35 +1,147 @@
-FROM python:2-stretch
+################################
+# Frontend dependencies builder
+#
+FROM node:12 AS frontend-base
+
+WORKDIR /app
+COPY ["./package.json", "./package-lock.json", "prepare_django_assets.js", "/app/"]
+COPY ./kitsune/sumo/static/sumo /app/kitsune/sumo/static/sumo
+RUN npm run production
+
+################################
+# Python dependencies builder
+#
+FROM python:3.9-buster AS base
+
+WORKDIR /app
+EXPOSE 8000
+
+ARG PIP_DEFAULT_TIMEOUT=60
+ENV LANG=C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/venv/bin:$PATH"
+
+RUN python -m venv /venv
+RUN mkdir /vendor
+RUN pip install --upgrade "pip==21.0.1"
+RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gettext build-essential \
+    libxml2-dev libxslt1-dev zlib1g-dev git \
+    libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
+    libmariadb3 mariadb-client && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY ./requirements/*.txt /app/requirements/
+
+RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt && \
+    pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
+    pip install --no-cache-dir --require-hashes --no-deps -t /vendor -r requirements/es7.txt
+
+ARG GIT_SHA=head
+ENV GIT_SHA=${GIT_SHA}
+
+
+################################
+# Developer image
+#
+FROM base AS base-dev
+RUN apt-get update && apt-get install apt-transport-https && \
+    curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs zip && \
+    rm -rf /var/lib/apt/lists/*
+
+
+################################
+# Fetch locales
+#
+FROM python:3.9-buster AS locales
+
 WORKDIR /app
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends  gettext
+
+ENV PATH="/venv/bin:$PATH"
+
+COPY --from=base /venv /venv
+
+COPY . .
+
+ARG LOCALE_ENV=master
+ENV LOCALE_ENV=${LOCALE_ENV}
+RUN ./docker/bin/fetch-l10n-files.sh
+RUN ./scripts/compile-linted-mo.sh && \
+    find ./locale ! -name '*.mo' -type f -delete
+
+ARG GIT_SHA=head
+ENV GIT_SHA ${GIT_SHA}
+
+
+################################
+# Staticfiles builder
+#
+FROM base-dev AS staticfiles
+
+COPY --from=frontend-base --chown=kitsune:kitsune /app/assets /app/assets
+COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
+COPY --from=locales /app/locale /app/locale
+
+COPY . .
+
+RUN cp .env-build .env && \
+    ./manage.py nunjucks_precompile && \
+    ./manage.py compilejsi18n && \
+    # minify jsi18n files:
+    find jsi18n/ -name "*.js" -exec sh -c 'npx uglifyjs "$1" -o "${1%.js}-min.js"' sh {} \; && \
+    ./manage.py collectstatic --noinput && \
+    npx svgo -r -f static
+
+
+################################
+# Full prod image sans locales
+#
+FROM python:3.9-slim-buster AS full-no-locales
+
+WORKDIR /app
+
+EXPOSE 8000
+
+ENV PATH="/venv/bin:$PATH"
 ENV LANG=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
-
-RUN apt-get update && apt-get install apt-transport-https && \
-    echo "deb https://deb.nodesource.com/node_0.10 jessie main" >> /etc/apt/sources.list && \
-    curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-            gettext build-essential \
-            libxml2-dev libxslt1-dev zlib1g-dev git \
-            libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
-            libmariadbclient-dev mariadb-client optipng \
-            nodejs=0.10.48-1nodesource1~jessie1 && \
+    libmariadb3 optipng mariadb-client \
+    libxslt1.1 && \
     rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements /app/requirements
+RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
-RUN pip install --no-cache-dir -r requirements/default.txt --require-hashes
-RUN pip install --no-cache-dir -r requirements/dev.txt --require-hashes
-RUN pip install --no-cache-dir -r requirements/test.txt --require-hashes
+COPY --from=base --chown=kitsune:kitsune /venv /venv
+COPY --from=base --chown=kitsune:kitsune /vendor /vendor
+COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
 
-COPY ./package.json /app/package.json
-COPY ./bower.json /app/bower.json
+COPY --chown=kitsune:kitsune . .
 
-RUN npm install
+RUN mkdir /app/media && chown kitsune:kitsune /app/media
 
-RUN ./node_modules/.bin/bower install --allow-root
-RUN chown -R kitsune /app
+USER kitsune
+
+ARG GIT_SHA=head
+ENV GIT_SHA ${GIT_SHA}
+
+
+################################
+# Full final prod image
+#
+FROM full-no-locales AS full
+
+USER root
+COPY --from=locales --chown=kitsune:kitsune /app/locale /app/locale
 USER kitsune

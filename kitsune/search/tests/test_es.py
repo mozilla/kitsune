@@ -4,7 +4,7 @@ import unittest
 
 from django.contrib.sites.models import Site
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 from kitsune.questions.models import QuestionMappingType
@@ -18,38 +18,35 @@ from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
 
 
 class ElasticSearchSuggestionsTests(ElasticTestCase):
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_invalid_suggestions(self, get_current):
         """The suggestions API needs a query term."""
-        get_current.return_value.domain = 'testserver'
-        response = self.client.get(reverse('search.suggestions',
-                                           locale='en-US'))
+        get_current.return_value.domain = "testserver"
+        response = self.client.get(reverse("search.suggestions", locale="en-US"))
         eq_(400, response.status_code)
         assert not response.content
 
-    @mock.patch.object(Site.objects, 'get_current')
+    @mock.patch.object(Site.objects, "get_current")
     def test_suggestions(self, get_current):
         """Suggestions API is well-formatted."""
-        get_current.return_value.domain = 'testserver'
+        get_current.return_value.domain = "testserver"
 
-        doc = DocumentFactory(title=u'doc1 audio', locale=u'en-US', is_archived=False)
-        ApprovedRevisionFactory(document=doc, summary=u'audio', content=u'audio')
+        doc = DocumentFactory(title="doc1 audio", locale="en-US", is_archived=False)
+        ApprovedRevisionFactory(document=doc, summary="audio", content="audio")
 
-        ques = QuestionFactory(title=u'q1 audio', tags=[u'desktop'])
+        ques = QuestionFactory(title="q1 audio", tags=["desktop"])
         # ques.tags.add(u'desktop')
         ans = AnswerFactory(question=ques)
         AnswerVoteFactory(answer=ans, helpful=True)
 
         self.refresh()
 
-        response = self.client.get(reverse('search.suggestions',
-                                           locale='en-US'),
-                                   {'q': 'audio'})
+        response = self.client.get(reverse("search.suggestions", locale="en-US"), {"q": "audio"})
         eq_(200, response.status_code)
-        eq_('application/x-suggestions+json', response['content-type'])
+        eq_("application/x-suggestions+json", response["content-type"])
         results = json.loads(response.content)
 
-        eq_('audio', results[0])
+        eq_("audio", results[0])
         eq_(2, len(results[1]))
         eq_(0, len(results[2]))
         eq_(2, len(results[3]))
@@ -61,11 +58,11 @@ class TestUtils(ElasticTestCase):
         self.refresh()
 
         docs = es_utils.get_documents(QuestionMappingType, [q.id])
-        eq_(docs[0]['id'], q.id)
+        eq_(docs[0]["id"], q.id)
 
 
 class TestTasks(ElasticTestCase):
-    @mock.patch.object(QuestionMappingType, 'index')
+    @mock.patch.object(QuestionMappingType, "index")
     def test_tasks(self, index_fun):
         """Tests to make sure tasks are added and run"""
         q = QuestionFactory()
@@ -78,7 +75,7 @@ class TestTasks(ElasticTestCase):
 
         eq_(index_fun.call_count, 1)
 
-    @mock.patch.object(QuestionMappingType, 'index')
+    @mock.patch.object(QuestionMappingType, "index")
     def test_tasks_squashed(self, index_fun):
         """Tests to make sure tasks are squashed"""
         q = QuestionFactory()
@@ -114,10 +111,10 @@ class TestMappings(unittest.TestCase):
         for index in es_utils.all_read_indexes():
             merged_mapping = {}
 
-            for cls_name, mapping in es_utils.get_mappings(index).items():
-                mapping = mapping['properties']
+            for cls_name, mapping in list(es_utils.get_mappings(index).items()):
+                mapping = mapping["properties"]
 
-                for key, val in mapping.items():
+                for key, val in list(mapping.items()):
                     if key not in merged_mapping:
                         merged_mapping[key] = (val, [cls_name])
                         continue
@@ -126,8 +123,9 @@ class TestMappings(unittest.TestCase):
                     # not work for non-trivial dicts.
                     if merged_mapping[key][0] != val:
                         raise es_utils.MappingMergeError(
-                            '%s key different for %s and %s' %
-                            (key, cls_name, merged_mapping[key][1]))
+                            "%s key different for %s and %s"
+                            % (key, cls_name, merged_mapping[key][1])
+                        )
 
                     merged_mapping[key][1].append(cls_name)
 
@@ -135,61 +133,60 @@ class TestMappings(unittest.TestCase):
 
 
 class TestAnalyzers(ElasticTestCase):
-
     def setUp(self):
         super(TestAnalyzers, self).setUp()
 
         self.locale_data = {
-            'en-US': {
-                'analyzer': 'snowball-english',
-                'content': 'I have a cat.',
+            "en-US": {
+                "analyzer": "snowball-english",
+                "content": "I have a cat.",
             },
-            'es': {
-                'analyzer': 'snowball-spanish',
-                'content': 'Tieno un gato.',
+            "es": {
+                "analyzer": "snowball-spanish",
+                "content": "Tieno un gato.",
             },
-            'ar': {
-                'analyzer': 'arabic',
-                'content': u'لدي اثنين من القطط',
+            "ar": {
+                "analyzer": "arabic",
+                "content": "لدي اثنين من القطط",
             },
-            'he': {
-                'analyzer': 'standard',
-                'content': u'גאולוגיה היא אחד',
-            }
+            "he": {
+                "analyzer": "standard",
+                "content": "גאולוגיה היא אחד",
+            },
         }
 
         self.docs = {}
-        for locale, data in self.locale_data.items():
+        for locale, data in list(self.locale_data.items()):
             d = DocumentFactory(locale=locale)
-            ApprovedRevisionFactory(document=d, content=data['content'])
-            self.locale_data[locale]['doc'] = d
+            ApprovedRevisionFactory(document=d, content=data["content"])
+            self.locale_data[locale]["doc"] = d
 
         self.refresh()
 
     def test_analyzer_choices(self):
         """Check that the indexer picked the right analyzer."""
 
-        ids = [d.id for d in self.docs.values()]
+        ids = [d.id for d in list(self.docs.values())]
         docs = es_utils.get_documents(DocumentMappingType, ids)
         for doc in docs:
-            locale = doc['locale']
-            eq_(doc['_analyzer'], self.locale_data[locale]['analyzer'])
+            locale = doc["locale"]
+            eq_(doc["_analyzer"], self.locale_data[locale]["analyzer"])
 
     def test_query_analyzer_upgrader(self):
-        analyzer = 'snowball-english-synonyms'
+        analyzer = "snowball-english-synonyms"
         before = {
-            'document_title__match': 'foo',
-            'document_locale__match': 'bar',
-            'document_title__match_phrase': 'baz',
-            'document_locale__match_phrase': 'qux'
+            "document_title__match": "foo",
+            "document_locale__match": "bar",
+            "document_title__match_phrase": "baz",
+            "document_locale__match_phrase": "qux",
         }
         expected = {
-            'document_title__match_analyzer': ('foo', analyzer),
-            'document_locale__match': 'bar',
-            'document_title__match_phrase_analyzer': ('baz', analyzer),
-            'document_locale__match_phrase': 'qux',
+            "document_title__match_analyzer": ("foo", analyzer),
+            "document_locale__match": "bar",
+            "document_title__match_phrase_analyzer": ("baz", analyzer),
+            "document_locale__match_phrase": "qux",
         }
-        actual = es_utils.es_query_with_analyzer(before, 'en-US')
+        actual = es_utils.es_query_with_analyzer(before, "en-US")
         eq_(actual, expected)
 
     def _check_locale_tokenization(self, locale, expected_tokens, p_tag=True):
@@ -227,18 +224,18 @@ class TestAnalyzers(ElasticTestCase):
 
         search = es_utils.Sphilastic(DocumentMappingType)
         search = search.filter(document_locale=locale)
-        facet_filter = search._process_filters([('document_locale', locale)])
-        search = search.facet_raw(tokens={
-            'terms': {'field': 'document_content'},
-            'facet_filter': facet_filter})
+        facet_filter = search._process_filters([("document_locale", locale)])
+        search = search.facet_raw(
+            tokens={"terms": {"field": "document_content"}, "facet_filter": facet_filter}
+        )
         facets = search.facet_counts()
 
         expected = set(expected_tokens)
         if p_tag:
             # Since `expected` is a set, there is no problem adding this
             # twice, since duplicates will be ignored.
-            expected.add(u'p')
-        actual = set(t['term'] for t in facets['tokens'])
+            expected.add("p")
+        actual = set(t["term"] for t in facets["tokens"])
         eq_(actual, expected)
 
     # These 4 languages were chosen for tokenization testing because
@@ -250,11 +247,11 @@ class TestAnalyzers(ElasticTestCase):
 
     def test_english_tokenization(self):
         """Test that English stemming and stop words work."""
-        self._check_locale_tokenization('en-US', ['i', 'have', 'cat'])
+        self._check_locale_tokenization("en-US", ["i", "have", "cat"])
 
     def test_spanish_tokenization(self):
         """Test that Spanish stemming and stop words work."""
-        self._check_locale_tokenization('es', ['tien', 'un', 'gat'])
+        self._check_locale_tokenization("es", ["tien", "un", "gat"])
 
     def test_arabic_tokenization(self):
         """Test that Arabic stemming works.
@@ -263,28 +260,27 @@ class TestAnalyzers(ElasticTestCase):
         it to analyze an Arabic text as Arabic. If someone who reads
         Arabic can improve this test, go for it!
         """
-        self._check_locale_tokenization('ar', [u'لد', u'اثن', u'قطط'])
+        self._check_locale_tokenization("ar", ["لد", "اثن", "قطط"])
 
     def test_herbrew_tokenization(self):
         """Test that Hebrew uses the standard analyzer."""
-        tokens = [u'גאולוגיה', u'היא', u'אחד']
-        self._check_locale_tokenization('he', tokens)
+        tokens = ["גאולוגיה", "היא", "אחד"]
+        self._check_locale_tokenization("he", tokens)
 
 
 class TestGetAnalyzerForLocale(ElasticTestCase):
-
     def test_default(self):
-        actual = es_utils.es_analyzer_for_locale('en-US')
-        eq_('snowball-english', actual)
+        actual = es_utils.es_analyzer_for_locale("en-US")
+        eq_("snowball-english", actual)
 
     def test_without_synonyms(self):
-        actual = es_utils.es_analyzer_for_locale('en-US', synonyms=False)
-        eq_('snowball-english', actual)
+        actual = es_utils.es_analyzer_for_locale("en-US", synonyms=False)
+        eq_("snowball-english", actual)
 
     def test_with_synonyms_right_locale(self):
-        actual = es_utils.es_analyzer_for_locale('en-US', synonyms=True)
-        eq_('snowball-english-synonyms', actual)
+        actual = es_utils.es_analyzer_for_locale("en-US", synonyms=True)
+        eq_("snowball-english-synonyms", actual)
 
     def test_with_synonyms_wrong_locale(self):
-        actual = es_utils.es_analyzer_for_locale('es', synonyms=True)
-        eq_('snowball-spanish', actual)
+        actual = es_utils.es_analyzer_for_locale("es", synonyms=True)
+        eq_("snowball-spanish", actual)

@@ -1,0 +1,119 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.topic-article {
+  display: flex;
+  margin-bottom: p.$spacing-xl;
+
+  &--icon-wrap {
+    flex: 0 0 auto;
+    @include p.bidi((
+      (margin, 0 p.$spacing-md 0 0, 0 0 0 p.$spacing-md),
+    ));
+  }
+
+  &--icon {
+    width: p.$spacing-lg;
+    height: p.$spacing-lg;
+  }
+
+  &--text {
+    flex: 1 1 100%;
+
+    p {
+      margin-bottom: 0;
+    }
+  }
+
+  &--meta-list {
+    display: flex;
+    @include c.text-body-sm;
+    line-height: 1;
+
+    li {
+      padding-right: p.$spacing-sm;
+      margin-right: p.$spacing-sm;
+      border-right: 1px solid var(--color-text);
+
+      &:last-child {
+        padding-right: 0;
+        margin-right: 0;
+        border-right: 0 none;
+      }
+    }
+  }
+
+  @media #{p.$mq-md} {
+    margin-bottom: p.$spacing-xl;
+  }
+}
+
+.sumo-article-header {
+  display: flex;
+  flex-direction: column-reverse;
+  margin: 0 0 p.$spacing-md;
+
+  &.has-border-bottom {
+    border-bottom: 1px solid var(--color-text);
+  }
+
+  &--text {
+    flex: 1 1 auto;
+
+    .documents-product-title {
+      display: flex;
+      flex-direction: column-reverse;
+      margin-bottom: p.$spacing-md;
+
+      img {
+        width: p.$spacing-xl;
+      }
+
+      @media #{p.$mq-md} {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+
+        img {
+          width: p.$spacing-2xl;
+        }
+
+        .download-buttons {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  &--meta {
+    flex: 0 0 auto;
+  }
+
+  @media #{p.$mq-md} {
+    flex-direction: row;
+    align-items: center;
+    margin: p.$spacing-md 0 p.$spacing-xl;
+  }
+
+  @media #{p.$mq-lg} {
+    margin: 40px 0 56px;
+  }
+}
+
+// disabling visited color on subtopic page bheadings
+.is-subtopic {
+  margin-bottom: 20px;
+
+  a:visited {
+    color: var(--color-heading);
+  }
+}
+
+// pull search up inline with breadcrumbs on large
+@media #{p.$mq-md} {
+  .breadcrumbs + .sumo-l-two-col {
+    .search-form-sidebar {
+      margin: -48px 0 40px 0;
+    }
+  }
+}

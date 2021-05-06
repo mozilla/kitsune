@@ -24,22 +24,21 @@ For more information on this, see the `quickstart guide
 <https://support.mozilla.org/en-US/get-involved>`_ on the SUMO site.
 
 
+Help reporting bugs
+===================
+
+Please report any bugs you find with Kitsune on Bugzilla:
+https://bugzilla.mozilla.org/enter_bug.cgi?product=support.mozilla.org
+
+
 Help with hacking!
 ==================
 
 First step is to set up Kitsune so you can run it and hack on it. For
-that, see the :ref:`hacking-howto-chapter`.
+that, see :any:`hacking_howto`.
 
 If you have problems, please let us know! See
 :ref:`contact-us-chapter`.
-
-After you've got it up and running, check out the list of bugs that
-are marked for mentoring:
-
-https://wiki.mozilla.org/Webdev/GetInvolved#support.mozilla.org_.28SUMO.29
-
-If you want to work on one of these bugs, contact the mentor listed in
-the whiteboard section.
 
 
 Help with making Kitsune easier for hacking on!

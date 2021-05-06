@@ -10,19 +10,19 @@ from kitsune.wiki.tests import LocaleFactory
 
 
 class AnnouncementModelTests(TestCase):
-
     def setUp(self):
         super(AnnouncementModelTests, self).setUp()
         self.creator = UserFactory()
         self.group = GroupFactory()
-        self.locale = LocaleFactory(locale='es')
+        self.locale = LocaleFactory(locale="es")
         self.creator.groups.add(self.group)
 
     def test_active(self):
         """Active announcement shows."""
         AnnouncementFactory(
             show_after=datetime.now() - timedelta(days=2),
-            show_until=datetime.now() + timedelta(days=2))
+            show_until=datetime.now() + timedelta(days=2),
+        )
         eq_(1, Announcement.get_site_wide().count())
 
     def test_always_visible(self):
@@ -30,12 +30,12 @@ class AnnouncementModelTests(TestCase):
         # This one doesn't show
         AnnouncementFactory(show_after=datetime.now() + timedelta(days=2))
         AnnouncementFactory(
-            show_after=datetime.now() - timedelta(days=2),
-            content='stardate 43125')
+            show_after=datetime.now() - timedelta(days=2), content="stardate 43125"
+        )
 
         site_wide = Announcement.get_site_wide()
         eq_(1, site_wide.count())
-        eq_('stardate 43125', site_wide[0].content)
+        eq_("stardate 43125", site_wide[0].content)
 
     def test_group_excluded(self):
         """Announcements in a group are not shown."""

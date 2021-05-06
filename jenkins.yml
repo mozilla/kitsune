@@ -1,0 +1,3 @@
+project:
+  name: kitsune
+  docker_name: itsre/sumo-kitsune

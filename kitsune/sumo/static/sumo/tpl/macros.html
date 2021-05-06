@@ -1,9 +1,19 @@
 {% macro search_result(result) %}
-  <div class="result {{ result.type }}">
-    <h3><a class="title" href="{{ result.url }}" data-ga-click="_trackEvent | Instant Search | Result Clicked">{{ result.title }}</a></h3>
-    <a tabindex="-1" href="{{ result.url }}" data-ga-click="_trackEvent | Instant Search | Result Clicked">{{ result.search_summary | safe }}</a>
+<article class="topic-article {{ result.type }}">
+  <div class="topic-article--icon-wrap">
+    {% if result.type == 'document' %}
+    <img class="topic-article--icon" src="/static/protocol/img/icons/reader-mode.svg" alt="">
+    {% elif result.type == 'question' %}
+    <img class="topic-article--icon" src="/static/protocol/img/icons/blog.svg" alt="">
+    {% endif %}
+  </div>
+  <div class="topic-article--text">
+    <h3 class="sumo-card-heading">
+      <a class="title" href="{{ result.url }}" data-event-category="Instant Search" data-event-action="Result Clicked">{{ result.title }}</a>
+    </h3>
+
     {% if result.type == 'question' %}
-      <ul class="thread-meta cf">
+      <ul class="topic-article--meta-list thread-meta">
         {% if result.is_solved %}
           <li>{{ _('Solved') }}</li>
         {% endif %}
@@ -17,10 +27,14 @@
         <li>
           {{ ngettext('1 person has this problem', '%s people have this problem', result.num_votes)|f([result.num_votes]) }}
         </li>
-        <li>
-          {{ ngettext('1 new this week', '%s new this week', result.num_votes_past_week)|f([result.num_votes_past_week]) }}
-        </li>
+        {% if result.num_votes_past_week %}
+          <li>
+            {{ ngettext('1 new this week', '%s new this week', result.num_votes_past_week)|f([result.num_votes_past_week]) }}
+          </li>
+        {% endif %}
       </ul>
     {% endif %}
+    <p>{{ result.search_summary | safe }}</p>
   </div>
+</article>
 {% endmacro %}

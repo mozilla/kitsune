@@ -1,0 +1,124 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+.message-list {
+  border-top: 1px solid var(--color-border);
+
+  &--item {
+
+    display: grid;
+    grid-gap: p.$spacing-xs 10px;
+    grid-template-columns: 36px 1fr 30px;
+    grid-template-areas:
+      "checkbox avatar  delete"
+      "checkbox details delete";
+    padding: p.$spacing-sm 0;
+    border-bottom: 1px solid var(--color-border);
+
+    .field {
+      margin-right: 20px;
+      grid-area: checkbox;
+      align-self: center;
+    }
+
+    .avatar-details {
+      grid-area: avatar;
+    }
+
+    .read {
+      color: var(--color-text);
+      text-decoration: none;
+      grid-area: details;
+
+      &:hover {
+        color: var(--color-link);
+      }
+    }
+
+    .delete {
+      font-size: 20px;
+      color: var(--color-text);
+      text-decoration: none;
+      padding: p.$spacing-md;
+      grid-area: delete;
+      align-self: center;
+
+      &:hover {
+        color: var(--color-error);
+        text-decoration: none;
+      }
+    }
+
+    @media #{p.$mq-md} {
+      display: flex;
+      align-items: center;
+      padding: p.$spacing-md 0;
+
+      .delete {
+        opacity: 0;
+      }
+
+      &:hover {
+        .delete {
+          opacity: 1;
+        }
+      }
+
+      .avatar-details {
+        width: 190px;
+        flex: 0 0 auto;
+      }
+    }
+  }
+}
+
+.avatar-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.avatar-details {
+  display: flex;
+  align-items: center;
+
+  .avatar {
+    display: block;
+    @include p.bidi(((margin, 0 12px 0 0, 0 0 0 12px),));
+    flex: 0 0 auto;
+    width: 44px;
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .user {
+    flex: 1 1 auto;
+
+    a {
+      font-weight: bold;
+      color: var(--color-heading);
+      text-decoration: none;
+
+      &:hover,
+      &:hover time {
+        color: var(--color-link);
+      }
+    }
+
+    time {
+      display: block;
+      @include c.text-body-xs;
+      font-weight: normal;
+      color: var(--color-text);
+    }
+  }
+}
+
+.message-view {
+  .message {
+    @include c.ulol;
+  }
+}

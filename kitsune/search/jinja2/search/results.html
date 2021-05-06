@@ -4,88 +4,29 @@
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q), ('WT.oss_r', num_results), ('robots', 'noindex')) %}
 
-{% if num_results == 0 %}
-  {% set ga_push = [['_trackEvent', 'Zero Search Results', q]] %}
-{% endif %}
-
-{% if advanced %}
-  {% set title = _('Advanced Search Results') %}
-  {% set crumbs = [(url('search.advanced'), _('Advanced Search')), (None, _('Results'))] %}
-{% endif %}
-
-{% block content %}
-  <div id="search-results">
-    {% if not advanced %}
-      <div class="grid_12">
+{% block masthead %}
+<div class="search-results-visible">
+  <section class="home-search-section sumo-page-section--lg shade-bg">
+    <div class="mzp-l-content">
+      <div class="home-search-section--content">
+        <h1 class="sumo-page-heading">{{ _('Search Support') }}</h1>
         {{ basic_search_form(True) }}
       </div>
-    {% endif %}
-    <div class="grid_3">
-      {% if not advanced %}
-        {# Don't show filtering to advanced search users #}
-
-        {% set base_url = url('search')|urlparams(q=q) %}
-
-        {% if product %}
-          {# In basic search, you can only filter one product at a time. #}
-          {% set product = product[0] %}
-        {% else %}
-          {% set product = None %}
-        {% endif %}
-
-        {% set base_doctype_url = base_url %}
-        {% if product %}
-          {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
-        {% endif %}
-        <ul id="doctype-filter" class="search-filter sidebar-nav">
-          <li {{ w|class_selected(3) }}>
-            <a href="{{ base_doctype_url }}">
-              {{ _('Show Everything') }}
-            </a>
-          </li>
-          <li {{ w|class_selected(1) }}>
-            <a href="{{ base_doctype_url|urlparams(w=1) }}">
-              {{ _('Help Articles Only') }}
-            </a>
-          </li>
-          <li {{ w|class_selected(2) }}>
-            <a href="{{ base_doctype_url|urlparams(w=2) }}">
-              {{ _('Community Discussion Only') }}
-            </a>
-          </li>
-        </ul>
-
-        {% set base_product_url = base_url %}
-        {% if w != 3 %}
-          {% set base_product_url = base_product_url|urlparams(w=w) %}
-        {% endif %}
-        <ul id="product-filter" class="search-filter sidebar-nav">
-          <li {{ product|class_selected(None) }}>
-            <a href="{{ base_product_url|urlparams(all_products=1) }}">
-              {{ _('All Products') }}
-            </a>
-          </li>
-          {% for p in products %}
-            <li {{ product|class_selected(p) }}>
-              <a href="{{ base_product_url|urlparams(product=p.slug) }}">
-                {{ pgettext('DB: products.Product.title', p.title) }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
-      <br />
     </div>
+  </section>
+</div>
+{% endblock %}
 
-    <div class="grid_9">
+
+{% block content %}
+  <div id="search-results" class="sumo-page-section--inner">
       {% if num_results > 0 %}
-        <h2>
+        <p class="sumo-page-intro">
           {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
           {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
                       'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
                       num_results)|fe(n=num_results, q=q, product=product_titles) }}
-        </h2>
+        </p>
 
         <div class="content-box">
           {% for doc in results %}
@@ -95,25 +36,66 @@
 
         {{ pages|paginator }}
       {% else %}
-        <h2>
+        <p class="sumo-page-intro">
           {# L10n: {q} is the search query, {l} is the language searched. #}
-          {{ _("We couldn't find any results for <strong>{q}</strong> in <strong>{l}</strong>. Maybe one of these articles will be helpful?")|fe(q=q, l=lang_name) }}
-        </h2>
+          {{ _("Sorry! 0 results found for ‘{q}’ in ‘{l}’")|fe(q=q, l=lang_name) }}
+        </p>
 
-        <div class="content-box">
-          {% for doc in fallback_results %}
-            <div class="result document">
-              <h3><a class="title" href="{{ doc.url }}">{{ doc.document_title }}</a></h3>
-              <a tabindex="-1" href="{{ doc.url }}">{{ doc.document_summary }}</a>
+        <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
+
+        <section class="sumo-card-grid content-box" style="--cg-count: {{ fallback_results|length }};">
+          <div class="scroll-wrap">
+            {% for doc in fallback_results %}
+            <div class="card card--article result document">
+                <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/reader-mode.svg" alt="todo: title" />
+                <div class="card--details">
+                  <h3 class="card--title">
+                    <a
+                      tabindex="-1"
+                      class="expand-this-link title"
+                      href="{{ doc.url }}"
+                    >
+                      {{ doc.document_title }}
+                    </a>
+                  </h3>
+                  <p class="card--desc">
+                    {{ doc.document_summary }}
+                  </p>
+                </div>
             </div>
-          {% endfor %}
-        </div>
+            {% endfor %}
+          </div>
+        </section>
       {% endif %}
     </div>
-    <div class="grid_12">
+    <div class="clear-floats">
       {% if num_results > 3 or num_results == 0 %}
         {{ basic_search_form() }}
       {% endif %}
     </div>
   </div>
+{% endblock %}
+
+
+{% block side %}
+  {% set base_url = url('search')|urlparams(q=q) %}
+  {% set base_product_url = base_url %}
+  {% if w != 3 %}
+    {% set base_product_url = base_product_url|urlparams(w=w) %}
+  {% endif %}
+  <ul id="product-filter" class="search-filter sidebar-nav">
+    <li {{ product|class_selected(None) }}>
+      <a href="{{ base_product_url|urlparams(all_products=1) }}">
+        {{ _('All Products') }}
+      </a>
+    </li>
+    {% for p in products %}
+      <li {{ product|class_selected(p) }}>
+        <a href="{{ base_product_url|urlparams(product=p.slug) }}">
+          {{ pgettext('DB: products.Product.title', p.title) }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}

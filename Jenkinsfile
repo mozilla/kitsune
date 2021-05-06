@@ -1,175 +1,115 @@
-import groovy.json.JsonOutput
+@Library('github.com/mozilla-it/jenkins-pipeline@20171123.1')
+def config
+def docker_image
+def dc_name
 
-/** Map of Tox environments and associated capabilities */
-def environments = [
-  desktop: [
-    browserName: 'Firefox',
-    version: '47.0',
-    platform: 'Windows 7'
-  ],
-  mobile: [
-    browserName: 'Browser',
-    platformName: 'Android',
-    platformVersion: '5.1',
-    deviceName: 'Android Emulator',
-    appiumVersion: '1.5.3'
-  ]
-]
-
-/** Transform a map into a list of maps
- *
- * @param aMap map to transform
- * @return a list of maps
-*/
-@NonCPS
-def entrySet(aMap) {
-  aMap.collect {
-    k, v -> [key: k, value: v]
-  }
-}
-
-/** Write capabilities to JSON file
- *
- * @param desiredCapabilities capabilities to include in the file
-*/
-def writeCapabilities(desiredCapabilities) {
-    def defaultCapabilities = [
-        build: env.BUILD_TAG,
-        public: 'public restricted'
-    ]
-    def capabilities = defaultCapabilities.clone()
-    capabilities.putAll(desiredCapabilities)
-    def json = JsonOutput.toJson([capabilities: capabilities])
-    writeFile file: 'capabilities.json', text: json
-}
-
-/** Run Tox
- *
- * @param environment test environment to run
-*/
-def runTox(environment) {
-  def processes = env.PYTEST_PROCESSES ?: 'auto'
-  try {
-    wrap([$class: 'AnsiColorBuildWrapper']) {
-      withCredentials([[
-        $class: 'StringBinding',
-        credentialsId: 'SAUCELABS_API_KEY',
-        variable: 'SAUCELABS_API_KEY']]) {
-        withEnv(["PYTEST_ADDOPTS=${PYTEST_ADDOPTS} " +
-          "-n=${processes} " +
-          "--base-url=${PYTEST_BASE_URL} " +
-          "--driver=SauceLabs " +
-          "--variables=capabilities.json " +
-          "--color=yes"]) {
-          sh "tox -e ${environment}"
-        }
-      }
-    }
-  } catch(err) {
-    currentBuild.result = 'FAILURE'
-    throw err
-  } finally {
-    dir('results') {
-      stash environment
-    }
-  }
-}
-
-/** Send a notice to #fxtest-alerts on irc.mozilla.org with the build result
- *
- * @param result outcome of build
-*/
-def ircNotification(result) {
-  def nick = "fxtest${BUILD_NUMBER}"
-  def channel = '#fx-test-alerts'
-  result = result.toUpperCase()
-  def message = "Project ${JOB_NAME} build #${BUILD_NUMBER}: ${result}: ${BUILD_URL}"
-  node {
-    sh """
-        (
-        echo NICK ${nick}
-        echo USER ${nick} 8 * : ${nick}
-        sleep 5
-        echo "JOIN ${channel}"
-        echo "NOTICE ${channel} :${message}"
-        echo QUIT
-        ) | openssl s_client -connect irc.mozilla.org:6697
-    """
-  }
-}
-
-stage('Checkout') {
-  node {
-    timestamps {
-      deleteDir()
-      checkout scm
-      stash 'workspace'
-    }
-  }
-}
-
-def builders = [:]
-for (entry in entrySet(environments)) {
-  def environment = entry.key
-  def capabilities = entry.value
-  builders[(environment)] = {
+conduit {
     node {
-      timeout(time: 1, unit: 'HOURS') {
-        timestamps {
-          deleteDir()
-          unstash 'workspace'
-          writeCapabilities(capabilities)
-          withCredentials([[
-            $class: 'FileBinding',
-            credentialsId: 'SUMO_VARIABLES',
-            variable: 'VARIABLES']]) {
-            withEnv(["PYTEST_ADDOPTS=--variables=${VARIABLES}"]) {
-              runTox(environment)
+        stage("Prepare") {
+            checkout scm
+            setGitEnvironmentVariables()
+
+            try {
+                config = readYaml file: "jenkins.yml"
             }
-          }
+            catch (e) {
+                config = []
+            }
+            println "config ==> ${config}"
+
+            if (!config || (config && config.pipeline && config.pipeline.enabled == false)) {
+                println "Pipeline disabled."
+            }
         }
-      }
+
+        docker_image = "${config.project.docker_name}:full-${GIT_COMMIT_SHORT}"
+        sh "bin/slack-notify.sh --status starting --stage 'Build & Test'"
+
+        stage("Build Docker Images") {
+            if (!dockerImageExists(docker_image)) {
+                try {
+                    if (env.GIT_BRANCH == "master") {
+                        // lint and push l10n files to prod repo if clean
+                        sh "scripts/lint-l10n-repo.sh --push"
+                    }
+                    sh "make build-ci"
+                } catch(err) {
+                    sh "bin/slack-notify.sh --status failure --stage 'Docker Build'"
+                    throw err
+                }
+            }
+            else {
+                echo "Image ${docker_image} already exists."
+            }
+        }
+
+        stage("Upload Docker Images") {
+            try {
+                dockerImagePush("${config.project.docker_name}:full-${GIT_COMMIT_SHORT}", "mozjenkins-docker-hub")
+                dockerImagePush("${config.project.docker_name}:full-no-locales-${GIT_COMMIT_SHORT}", "mozjenkins-docker-hub")
+                dockerImagePush("${config.project.docker_name}:locales-${GIT_COMMIT_SHORT}", "mozjenkins-docker-hub")
+                dockerImagePush("${config.project.docker_name}:staticfiles-${GIT_COMMIT_SHORT}", "mozjenkins-docker-hub")
+                dockerImagePush("${config.project.docker_name}:base-dev-${GIT_COMMIT_SHORT}", "mozjenkins-docker-hub")
+                dockerImagePush("${config.project.docker_name}:base-${GIT_COMMIT_SHORT}", "mozjenkins-docker-hub")
+            } catch(err) {
+                sh "bin/slack-notify.sh --status failure --stage 'Upload Docker Images'"
+                throw err
+            }
+        }
+
+        stage("Run Tests") {
+            try {
+                env.COMPOSE_PROJECT_NAME = "${config.project.name}-${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
+                try {
+                    // flake8
+                    sh "make lint-ci"
+                    // mocha
+                    sh "make test-js-ci"
+                    // unittests
+                    sh "make test-ci"
+                } finally {
+                    sh "docker-compose kill"
+                }
+            } catch(err) {
+                sh "bin/slack-notify.sh --status failure --stage 'Run Tests'"
+                throw err
+            }
+        }
+        stage("Upload Latest Images") {
+            // When on master branch tag and push push the latest tag
+            onBranch("master") {
+                try {
+                    dockerImageTag("${config.project.docker_name}:full-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:full-latest")
+                    dockerImagePush("${config.project.docker_name}:full-latest", "mozjenkins-docker-hub")
+
+                    dockerImageTag("${config.project.docker_name}:full-no-locales-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:full-no-locales-latest")
+                    dockerImagePush("${config.project.docker_name}:full-no-locales-latest", "mozjenkins-docker-hub")
+
+                    dockerImageTag("${config.project.docker_name}:locales-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:locales-latest")
+                    dockerImagePush("${config.project.docker_name}:locales-latest", "mozjenkins-docker-hub")
+
+                    dockerImageTag("${config.project.docker_name}:staticfiles-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:staticfiles-latest")
+                    dockerImagePush("${config.project.docker_name}:staticfiles-latest", "mozjenkins-docker-hub")
+
+                    dockerImageTag("${config.project.docker_name}:base-dev-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:base-dev-latest")
+                    dockerImagePush("${config.project.docker_name}:base-dev-latest", "mozjenkins-docker-hub")
+
+                    dockerImageTag("${config.project.docker_name}:base-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:base-latest")
+                    dockerImagePush("${config.project.docker_name}:base-latest", "mozjenkins-docker-hub")
+                } catch(err) {
+                    sh "bin/slack-notify.sh --status failure --stage 'Upload Latest Docker Images'"
+                    throw err
+                }
+
+                try {
+                    sh "docker/bin/upload-staticfiles.sh"
+                } catch(err) {
+                    sh "bin/slack-notify.sh --status failure --stage 'Upload Static Files'"
+                    throw err
+                }
+            }
+        }
+        sh "bin/slack-notify.sh --status success --stage 'Docker image ready to deploy: ${docker_image}'"
     }
-  }
 }
 
-try {
-  stage('Test') {
-    parallel builders
-  }
-} catch(err) {
-  currentBuild.result = 'FAILURE'
-  ircNotification(currentBuild.result)
-  mail(
-    body: "${BUILD_URL}",
-    from: "firefox-test-engineering@mozilla.com",
-    replyTo: "firefox-test-engineering@mozilla.com",
-    subject: "Build failed in Jenkins: ${JOB_NAME} #${BUILD_NUMBER}",
-    to: "fte-ci@mozilla.com")
-  throw err
-} finally {
-  stage('Results') {
-    def keys = environments.keySet() as String[]
-    def htmlFiles = []
-    node {
-      deleteDir()
-      sh 'mkdir results'
-      dir('results') {
-        for (int i = 0; i < keys.size(); i++) {
-          // Unstash results from each environment
-          unstash keys[i]
-          htmlFiles.add("${keys[i]}.html")
-        }
-      }
-      publishHTML(target: [
-        allowMissing: false,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: 'results',
-        reportFiles: htmlFiles.join(','),
-        reportName: 'HTML Report'])
-      junit 'results/*.xml'
-      archiveArtifacts 'results/*'
-    }
-  }
-}

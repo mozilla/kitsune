@@ -6,24 +6,23 @@
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
-  <div class="grid_9">
     <article id="select-locale">
-      <h1>{{ _('Select a language to translate to:') }}</h1>
-      <ul class="locales">
+      <h1 class="sumo-page-heading">{{ _('Select a language to translate to:') }}</h1>
+
+      <ul class="columns-list locales">
         {% for locale in untranslated_locales %}
           {% if locale[0] != settings.WIKI_DEFAULT_LANGUAGE %}
             <li><a href="{{ url('wiki.translate', locale=locale[0], document_slug=document.slug) }}">{{ locale[1] }} ({{ locale[0] }})</a></li>
           {% endif %}
         {% endfor %}
       </ul>
-      <h3>{{ _('This document has already been translated to the following locales:') }}</h3>
-      <ul class="locales">
+      <h3 class="sumo-page-subheading">{{ _('This document has already been translated to the following locales:') }}</h3>
+      <ul class="columns-list  locales">
         {% for locale in translated_locales %}
           <li><a href="{{ url('wiki.document_revisions', locale=locale[0], document_slug=document.slug) }}">{{ locale[1] }} ({{ locale[0] }})</a></li>
         {% endfor %}
       </ul>
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

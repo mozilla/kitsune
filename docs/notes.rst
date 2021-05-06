@@ -4,35 +4,11 @@
 Other Notes
 ===========
 
+.. warning::
+    This section of documentation may be outdated.
+
 Questions
 =========
-
-Troubleshooter Add-on
----------------------
-
-When asking a question, users are prompted to install an addon that will return
-extra information to SUMO from about:support. This is opt-in, and considered
-generally non-sensitive data, but is not revelaed to all sites because of
-fingerprinting concerns.
-
-This add-on only provides data to white listed domains. The built in whitelist
-is:
-
-- https://support.mozilla.org/
-- https://support.allizom.org/
-- https://support-dev.allizom.org/
-- http://localhost:8000/
-
-Note that the protocol and port are significant. If you try and run the site on
-http://localhost:8900/, the add-on will not provide any data.
-
-The source of the addon is `on GitHub`_, and it is hosted `on
-AMO`_. The add-on is hosted on AMO instead of SUMO so that AMO will do
-the heavy lifting of providing automatic updates.
-
-.. _on Github: https://github.com/0c0w3/troubleshooter
-.. _on AMO: https://addons.mozilla.org/en-US/firefox/addon/troubleshooter/
-
 
 about:support API
 -----------------
@@ -50,7 +26,7 @@ Run the ssl server::
 
     $ ./manage.py runsslserver
 
-Then you need to run the following in the Browser Console:
+Then you need to run the following in the Browser Console::
 
     Services.perms.add(Services.io.newURI("https://localhost:8000", null, null), "remote-troubleshooting", Services.perms.ALLOW_ACTION);
 
@@ -61,3 +37,16 @@ Then you need to run the following in the Browser Console:
 	so that you can access the browser console.
 
 	See also https://developer.mozilla.org/en-US/docs/Tools/Browser_Console
+
+memcached
+---------
+
+.. Note::
+
+   This should probably be somewhere else, but the easy way to flush
+   your cache is something like this::
+
+       echo "flush_all" | nc localhost 11211
+
+
+   Assuming you have memcache configured to listen to 11211.

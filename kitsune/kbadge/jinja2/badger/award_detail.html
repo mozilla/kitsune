@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% set crumbs = [(url('badger.badges_list'), _('Badges')), (url('badger.awards_list'), _('Recently Awarded')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
+{% set crumbs = [(url('kbadge.badges_list'), _('Badges')), (url('kbadge.awards_list'), _('Recently Awarded')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
 {% set styles=('badges',) %}
 
 {% block content %}

@@ -11,7 +11,7 @@ import mochaUnderscore from './fixtures/mochaUnderscore.js';
 describe('k', () => {
   let form;
 
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   mochaK();
   mochaUnderscore();

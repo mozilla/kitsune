@@ -1,0 +1,189 @@
+@use '../protocol' as p;
+@use './mixins' as c;
+
+
+$text-body-line-height: 1.5 !default;
+$text-display-line-height: 1.1 !default;
+
+// display copy: headings, blockquotes, other fancy stuff
+@mixin text-display-xxl($family: false) { // Use this one sparingly.
+  @include p.font-size(64px);
+  @include c.line-height(72px);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+    font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
+}
+
+@mixin text-display-xl($family: false) {
+  @include p.font-size(56px);
+  @include c.line-height(64px);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+    font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
+}
+
+@mixin text-display-lg($family: false) {
+  @include p.font-size(48px);
+  @include c.line-height(56px);
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+    font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
+}
+
+@mixin text-display-md($family: false) {
+  @include p.font-size(40px);
+  @include c.line-height(44px);
+
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
+}
+
+@mixin text-display-sm($family: false) {
+  @include p.font-size(32px);
+  @include c.line-height(36px);
+
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+  } @else {
+    font-family: var(--heading-font-family);
+  }
+}
+
+@mixin text-display-xs($family: false) {
+  @include p.font-size(24px);
+  @include c.line-height(28px);
+  font-weight: bold;
+  @if $family == 'no-fam' {}
+  @else if $family == 'moz' {
+      font-family: var(--heading-font-family-moz);
+      color: var(--color-moz-heading);
+  } @else {
+    font-family: var(--heading-font-family);
+    color: var(--color-heading);
+  }
+}
+
+@mixin text-display-xxs() {
+  @include p.font-size(18px);
+  @include c.line-height(24px);
+  font-family: var(--base-font-family);
+  color: var(--color-heading);
+  font-weight: bold;
+}
+
+@mixin text-display-xxxs() {
+  @include p.font-size(16px);
+  line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
+  color: var(--color-heading);
+  font-weight: bold;
+}
+
+// body copy
+@mixin text-body-lg {
+  @include p.font-size(18px);
+  line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
+}
+
+@mixin text-body-md {
+  @include p.font-size(16px);
+  line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
+}
+
+@mixin text-body-sm {
+  @include p.font-size(14px);
+  line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
+}
+
+@mixin text-body-xs {
+  @include p.font-size(12px);
+  line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
+}
+
+@mixin text-body-cta {
+  @include p.font-size(16px);
+  line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
+}
+
+
+// The following mixins contain breakpoints, so most of the time, these are what
+// should be used throughout the system to maintain the visual hierarchy as
+// originally designed.
+
+@mixin sumo-page-heading-xl($family: false) {
+  @include text-display-sm($family); //32px
+
+  @media #{p.$mq-md} {
+    @include text-display-lg($family); //48px
+  }
+  @media #{p.$mq-lg} {
+    @include text-display-xl($family); //56px
+  }
+}
+
+@mixin sumo-page-heading($family: false) {
+  @include text-display-sm($family); //32px
+
+  @media #{p.$mq-md} {
+    @include text-display-md($family); //40px
+  }
+  @media #{p.$mq-lg} {
+    @include text-display-lg($family); //48px
+  }
+}
+
+// Unnecessary duplicate mixin, but keeping it for the sake of naming conventions
+@mixin sumo-page-subheading($family: false) {
+  @include text-display-xs($family); //24px
+}
+
+@mixin sumo-page-intro {
+  @include text-body-md; //16px
+
+  @media #{p.$mq-lg} {
+    @include text-body-lg; //18px
+  }
+}
+
+@mixin sumo-card-heading {
+  @include text-display-xxxs; //16px
+
+  @media #{p.$mq-md} {
+    @include text-display-xxs; //18px
+  }
+}
+
+@mixin sumo-callout-heading($family: false) {
+  @include text-display-xs($family); //24px
+
+  @media #{p.$mq-md} {
+    @include text-display-sm($family); //32px
+  }
+}
+
+@mixin sumo-callout-heading-feature($family: false) {
+  @include text-display-sm($family); //32px
+
+  @media #{p.$mq-md} {
+    @include text-display-md($family); //40px
+  }
+}

@@ -1,20 +1,131 @@
-version: '3.1'
+version: "3.4"
 services:
   web:
-    build:
-        context: .
-    command: ./manage.py runserver 0.0.0.0:8000
-    user: ${UID:-kitsune}
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-dev.sh
+    env_file: .env
     volumes:
-      - ./:/app
-      - node_modules:/app/node_modules
-      - bower_components:/app/bower_components
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    stdin_open: true
+    tty: true
     depends_on:
       - mariadb
       - elasticsearch
+      - elasticsearch7
+      - kibana
       - redis
+      - celery
+      - celery-flower
+      - mailcatcher
     ports:
       - "8000:8000"
+
+  test:
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-unit-tests.sh
+    env_file: .env-test
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - mariadb
+      - elasticsearch
+      - elasticsearch7
+      - redis
+
+  test-js:
+    image: itsre/sumo-kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-mocha-tests.sh
+    env_file: .env-test
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+
+  test-image:
+    image: itsre/sumo-kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-unit-tests.sh
+    env_file: .env-test
+    depends_on:
+      - mariadb
+      - elasticsearch
+      - elasticsearch7
+      - redis
+
+  test-image-js:
+    image: itsre/sumo-kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-mocha-tests.sh
+    env_file: .env-test
+
+  lint-l10n:
+    image: itsre/sumo-kitsune:base-${GIT_COMMIT_SHORT:-latest}
+    command: dennis-cmd lint --errorsonly locale
+    env_file: .env-test
+    volumes:
+      - ./locale:/app/locale:delegated
+
+  # images
+  base:
+    build:
+      context: .
+      target: base
+      args:
+        - PIP_DEFAULT_TIMEOUT
+        - GIT_SHA
+    image: itsre/sumo-kitsune:base-${GIT_COMMIT_SHORT:-latest}
+
+  base-dev:
+    build:
+      context: .
+      target: base-dev
+      args:
+        - GIT_SHA
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+
+  node-dev:
+    build:
+      context: .
+      target: frontend-base
+      args:
+        - GIT_SHA
+    image: itsre/sumo-kitsune:node-dev-${GIT_COMMIT_SHORT:-latest}
+
+  staticfiles:
+    build:
+      context: .
+      target: staticfiles
+      args:
+        - GIT_SHA
+    image: itsre/sumo-kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+
+  locales:
+    build:
+      context: .
+      target: locales
+      args:
+        - GIT_SHA
+        - LOCALE_ENV
+    image: itsre/sumo-kitsune:locales-${GIT_COMMIT_SHORT:-latest}
+
+  full-no-locales:
+    build:
+      context: .
+      target: full-no-locales
+      args:
+        - GIT_SHA
+        - LOCALE_ENV
+    image: itsre/sumo-kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
+
+  full:
+    build:
+      context: .
+      target: full
+      args:
+        - GIT_SHA
+        - LOCALE_ENV
+    image: itsre/sumo-kitsune:full-${GIT_COMMIT_SHORT:-latest}
+
+  # EXTERNAL SERVICES
   mariadb:
     image: mariadb:10.0
     environment:
@@ -31,11 +142,59 @@ services:
 
   elasticsearch:
     image: elasticsearch:2.4
+    ports:
+      - "9201:9200"
+      - "9301:9300"
+
+  elasticsearch7:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./kitsune/search/dictionaries/synonyms:/usr/share/elasticsearch/config/synonyms
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch7:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch7:9200
 
   redis:
     image: redis:3
 
+  celery:
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: celery -A kitsune worker -l info -n default@%h
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - mariadb
+      - redis
+
+  celery-flower:
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: celery -A kitsune flower -l info --address=0.0.0.0 --port=5555
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - mariadb
+      - redis
+    ports:
+      - "5555:5555"
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - "1080:1080"
+
 volumes:
-    mysqlvolume:
-    node_modules:
-    bower_components:
+  mysqlvolume:

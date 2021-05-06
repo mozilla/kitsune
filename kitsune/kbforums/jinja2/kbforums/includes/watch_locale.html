@@ -1,4 +1,4 @@
-{% if user.is_authenticated() %}
+{% if user.is_authenticated %}
   <form action="{{ url('wiki.discuss.watch_locale') }}" method="post">
     {% csrf_token %}
     {% if is_watching_discussion_locale(user, request.LANGUAGE_CODE) %}
@@ -9,6 +9,6 @@
       <input type="hidden" name="watch" value="yes" />
     {% endif %}
     <input type="hidden" name="next" value="{{ request.get_full_path() }}">
-    <input type="submit" class="link-btn" value="{{ watch }}" />
+    <button type="submit" class="sumo-button link-button">{{ watch }}</button>
   </form>
 {% endif %}

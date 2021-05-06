@@ -1,9 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from kitsune.postcrash import views
 
 
-urlpatterns = patterns(
-    '',
-    url('^$', views.api, name='postcrash.api'),
-)
+urlpatterns = [
+    url("^$", views.api, name="postcrash.api"),
+]

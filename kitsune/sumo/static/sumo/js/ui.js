@@ -26,7 +26,7 @@
     }, 100));
 
     if ($.datepicker) {
-      $('input[type="date"]').datepicker();
+      $('input[type="date"]').attr('type', 'text').datepicker();
     }
 
     $('.ui-truncatable .show-more-link').click(function(ev) {
@@ -39,10 +39,12 @@
       var $target;
       if ($this.data('close-id')) {
         $target = $('#' + $this.data('close-id'));
-        if ($this.data('close-memory') === 'remember') {
+        if ($this.data("close-memory") === "remember") {
           if (Modernizr.localstorage) {
-            localStorage.setItem($this.data('close-id') + '.closed', true);
+            localStorage.setItem($this.data("close-id") + ".closed", true);
           }
+        } else if ($this.data("close-memory") === "session") {
+          sessionStorage.setItem($this.data("close-id") + ".closed", true);
         }
       } else {
         $target = $this.parent();
@@ -72,6 +74,19 @@
             } else {
               $('#' + id).hide();
             }
+          }
+        }
+      }
+    });
+
+    $('[data-close-memory="session"]').each(function() {
+      var $this = $(this);
+      var id = $this.data("close-id");
+      if (id) {
+        if ($this.data("close-initial") === "hidden") {
+          if (sessionStorage.getItem(id + ".closed") != "true") {
+            var $target = $("#" + id);
+            $target.show();
           }
         }
       }
@@ -132,7 +147,7 @@
       $tabs.first().trigger('click');
     });
 
-    $('.btn, a').each(function() {
+    $('.btn, .button, a').each(function() {
       var $this = $(this);
       var $form = $this.closest('form');
       var type = $this.attr('data-type');
@@ -208,7 +223,7 @@
       });
 
       $this.css('height', height + 'px');
-      $container.css({'width': width + 'px', 'height': height + 'px'});
+      $container.css({ 'width': width + 'px', 'height': height + 'px' });
       $container.children().css('height', height + 'px');
 
       var $left = $('#' + $this.data('left'));
@@ -375,10 +390,6 @@
     if (Mozilla && Mozilla.UITour) {
       // Send event to GA for metrics/reporting purposes.
       trackEvent('Refresh Firefox', 'click refresh button');
-
-      if (JSON.parse($('body').data('waffle-refresh-survey'))) {
-        $.cookie('showFirefoxResetSurvey', '1', {expires: 365});
-      }
 
       Mozilla.UITour.resetFirefox();
     }

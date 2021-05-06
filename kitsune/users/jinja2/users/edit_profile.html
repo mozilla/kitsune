@@ -1,69 +1,94 @@
 {% extends "users/base.html" %}
+{% from "users/includes/notification_macros.html" import notification_fxa_updated %}
+
 {% set title = _('Edit Profile') %}
 {% set classes = 'profile' %}
 {% set active = 'edit-profile' %}
-{% set crumbs = [(profile_url(profile.user), profile.user.username),
-                 (None, title)] %}
+{% if not user_form.errors %}
+ {% set crumbs = [(profile_url(user=profile.user), profile.user.username), (None, title)] %}
+{% endif %}
+
+{% block above_main %}
+{% if fxa_messages %}
+  {% for message in fxa_messages %}
+    {% if message == 'fxa_notification_updated' %}
+      {{ notification_fxa_updated(STATIC_URL) }}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% endblock %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="edit-profile" class="main">
-      <h1>{{ title }}</h1>
-      <form method="post" action="">
-        {% csrf_token %}
-        <ul>
-          <li>
-            <label>{{ _('Username:') }}</label>
-            {{ profile.user.username }}
-          </li>
-          {% if request.user == profile.user %}
-            <li id="edit-profile-avatar">
-              <label>{{ _('Avatar:') }}</label>
-              <img src="{{ profile_avatar(profile.user) }}">
-              <ul>
-                <li>
-                  <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
-                    {{ pgettext('avatar', 'Change') }}
-                    <span class="tip">
-                      {% trans %}
-                        <p>
-                          SUMO is now using Gravatars as avatars. You must change
-                          your Gravatar on gravatar.com.
-                        </p>
-                        <p>
-                          It can take a few minutes for the avatar change to take
-                          effect. You may need to wait a few minutes and reload
-                          the page to see your new Gravatar.
-                        </p>
-                      {% endtrans %}
-                    </span>
-                  </a>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <label>{{ _('Password:') }}</label>
-              <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
-            </li>
-            <li>
-              <label>{{ _('Email:') }}</label>
-              {{ user.email }}
-              <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
-            </li>
-          {% endif %}
-          {{ form.as_ul()|safe }}
-        </ul>
-        <div class="submit">
-          <input type="submit" value="{{ _('Update') }}" />
-        </div>
-      </form>
-    </article>
-    {% if request.user == profile.user %}
+<article id="edit-profile">
+  {% if profile and profile.is_fxa_migrated and request.user == profile.user %}
+    <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
+    <p class="mb-0"><strong>{{ user.email }}</strong></p>
     <p>
-      <a id="delete-profile" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</a>
+      {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
+        To change your email or avatar, visit the Firefox Accounts page, {{ a_open }} learn more. {{ a_close }}
+      {% endtrans %}
     </p>
 
-    <div class="kbox" title="{{ _('Are you sure') }}" data-target="#delete-profile" data-modal="true">
+    <div>
+      <section class="avatar-group">
+        <figure class="avatar-group--figure">
+          <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+        </figure>
+      </section>
+    </div>
+
+    <div class="sumo-button-wrap align-end">
+      <a href="https://accounts.firefox.com/settings" target="_blank"
+        class="sumo-button primary-button button-lg">{{ _('Manage Firefox Account') }}</a>
+    </div>
+
+    <hr class="section-break" />
+  {% endif %}
+
+  <h2 class="sumo-callout-heading">{{ title }}</h2>
+  <p>
+    {% trans %}
+    Share some things about yourself. Most fields are
+    optional, but they help the community to get to know you better.
+    {% endtrans %}
+  </p>
+  <form method="post" action="">
+    {% csrf_token %}
+
+    {{ field(user_form.username) }}
+    {{ field(profile_form.name) }}
+    {{ field(profile_form.bio) }}
+    {% if profile_form.public_email %}
+      {{ checkbox(profile_form.public_email) }}
+    {% endif %}
+    {{ field(profile_form.website) }}
+    {{ field(profile_form.twitter) }}
+    {{ field(profile_form.community_mozilla_org) }}
+    {{ field(profile_form.people_mozilla_org) }}
+    {{ field(profile_form.matrix_handle) }}
+    {{ field(profile_form.country) }}
+    {{ field(profile_form.city) }}
+    {{ field(profile_form.timezone) }}
+    {{ field(profile_form.locale) }}
+    {{ field(profile_form.involved_from) }}
+
+    <div class="sumo-button-wrap reverse-on-desktop">
+      <button class="sumo-button primary-button" type="submit">{{ _('Update My Profile') }}</button>
+      <button class="sumo-button secondary-button push-right" type="reset">Cancel</button>
+    </div>
+  </form>
+  {% if request.user == profile.user %}
+    <p class="delete-account-link">
+      <a href="javascript:;" data-sumo-modal="delete-profile"
+        class="warning-link mt-0">{{ _('Close account and delete all profile information') }}</a>
+    </p>
+  {% endif %}
+
+  {% if request.user == profile.user %}
+    <div class="mzp-u-modal-content kbox" title="{{ _('Are you sure') }}" id="delete-profile">
       <form method="post" action="{{ url('users.close_account') }}">
         {% csrf_token %}
         <p>
@@ -72,15 +97,17 @@
         <p>
           {{ _('Please type in your username to confirm') }}
         </p>
-        <p>
+        <div class="field">
           <input id="delete-profile-username-input" name="entered_username" type="text">
           <input id="delete-profile-username" name="account_username" type="hidden" value="{{ profile.user.username }}">
-        </p>
+        </div>
         <p>
-          <button type="submit" id="delete-profile-button" class="btn btn-warning" disabled>{{ _('Delete My Account') }}</button>
+          <button type="submit" id="delete-profile-button" class="sumo-button secondary-button button-lg warning-button"
+            disabled>{{ _('Delete My Account') }}</button>
         </p>
       </form>
     </div>
-    {% endif %}
-  </div>
+  {% endif %}
+
+</article>
 {% endblock %}

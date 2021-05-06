@@ -1,23 +1,21 @@
-from optparse import make_option
-
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import LabelCommand
 
 from kitsune.search.es_utils import es_delete_cmd
 from kitsune.search.utils import FakeLogger
 
 
-class Command(BaseCommand):
-    help = 'Delete an index from elastic search.'
-    option_list = BaseCommand.option_list + (
-        make_option('--noinput', action='store_true', dest='noinput',
-                    help='Do not ask for input--just do it'),
-    )
+class Command(LabelCommand):
+    label = "index"
+    help = "Delete an index from elastic search."
 
-    def handle(self, *args, **options):
-        if not args:
-            raise CommandError('You must specify which index to delete.')
+    def add_arguments(self, parser):
+        super().add_arguments(parser)
+        parser.add_argument(
+            "--noinput",
+            action="store_true",
+            dest="noinput",
+            help="Do not ask for input--just do it",
+        )
 
-        es_delete_cmd(
-            args[0],
-            noinput=options['noinput'],
-            log=FakeLogger(self.stdout))
+    def handle_label(self, label, **options):
+        es_delete_cmd(label, noinput=options["noinput"], log=FakeLogger(self.stdout))

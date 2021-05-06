@@ -15,13 +15,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='profile',
             name='first_l10n_email_sent',
-            field=models.BooleanField(default=False, help_text=u'Has been sent a first revision contribution email.'),
+            field=models.BooleanField(default=False, help_text='Has been sent a first revision contribution email.'),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='profile',
             name='first_answer_email_sent',
-            field=models.BooleanField(default=False, help_text=u'Has been sent a first answer contribution email.'),
+            field=models.BooleanField(default=False, help_text='Has been sent a first answer contribution email.'),
             preserve_default=True,
         ),
     ]

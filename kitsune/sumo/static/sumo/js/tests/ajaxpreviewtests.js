@@ -8,7 +8,7 @@ import mochaK from './fixtures/mochaK.js';
 import mochaJquery from './fixtures/mochaJquery.js';
 
 describe('ajax preview', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   mochaK();
   mochaGettext();

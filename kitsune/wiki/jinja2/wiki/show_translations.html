@@ -6,22 +6,20 @@
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
-  <div class="grid_9">
     <article id="select-locale">
-      <h3>{{ _('This document has been translated to the following locales:') }}</h3>
+      <h1 class="sumo-page-subheading">{{ _('This document has been translated to the following locales:') }}</h1>
       <ul class="locales">
         {% for locale in translated_locales %}
           <li><a class="translated_locale" href="{{ url("wiki.document", locale=locale[0], document_slug=document.slug) }}">{{ locale[1] }} ({{ locale[0] }})</a></li>
         {% endfor %}
       </ul>
-      <h3>{{ _('This document is missing translations for the following locales:') }}</h3>
+      <h3 class="sumo-page-subheading">{{ _('This document is missing translations for the following locales:') }}</h3>
       <ul class="locales">
         {% for locale in untranslated_locales %}
           <li>{{ locale[1] }} ({{ locale[0] }})</li>
         {% endfor %}
       </ul>
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

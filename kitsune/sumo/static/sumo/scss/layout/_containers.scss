@@ -1,0 +1,137 @@
+@use '../protocol' as p;
+@use '../config' as c;
+
+// Containers
+//
+// This container provides default horizontal margins for the page and a max-width of 1400px.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/containers.njk
+//
+// Weight: 20
+//
+// Style guide: containers
+
+.mzp-l-content {
+  @include c.container;
+
+  &.narrow {
+    max-width: 1000px;
+  }
+
+  & & {
+    padding-right: c.$gutter-width /2;
+    padding-left: c.$gutter-width /2;
+  }
+}
+
+.sumo-page-section {
+  padding-top: p.$spacing-xl;
+  padding-bottom: p.$spacing-xl;
+
+  &--lg {
+    padding-top: 40px;
+    padding-bottom: p.$spacing-xl;
+
+    &.extra-pad-bottom {
+      padding-bottom: 40px;
+    }
+
+    @media #{p.$mq-md} {
+      padding-top: p.$spacing-2xl;
+
+      &.extra-pad-bottom {
+        padding-bottom: p.$spacing-2xl;
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: 72px;
+
+      &.extra-pad-bottom {
+        padding-bottom: 72px;
+      }
+    }
+  }
+
+  &--md {
+    padding-top: p.$spacing-xl;
+    padding-bottom: p.$spacing-xl;
+
+    @media #{p.$mq-md} {
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: p.$spacing-2xl;
+      padding-bottom: p.$spacing-2xl;
+    }
+  }
+
+  &--sm {
+    padding-top: p.$spacing-sm;
+    padding-bottom: p.$spacing-sm;
+
+    @media #{p.$mq-md} {
+      padding-top: p.$spacing-md;
+      padding-bottom: p.$spacing-md;
+    }
+  }
+
+  &.extra-pad-bottom {
+    @media #{p.$mq-lg} {
+      padding-bottom: p.$spacing-2xl;
+    }
+  }
+
+
+  &--inner {
+    padding-top: p.$spacing-lg;
+    padding-bottom: p.$spacing-lg;
+
+    &:first-child {
+      padding-top: p.$spacing-xl;
+    }
+
+    &:last-child {
+      padding-bottom: 72px;
+    }
+
+    @media #{p.$mq-md} {
+      padding-top: 28px;
+      padding-bottom: 28px;
+
+      &:first-child {
+        padding-top: 40px;
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      padding-top: 36px;
+      padding-bottom: 36px;
+
+      &:first-child {
+        padding-top: p.$spacing-2xl;
+      }
+
+      &:last-child {
+        padding-bottom: 96px;
+      }
+    }
+  }
+}
+
+.section-break {
+  border: 2px solid var(--color-heading);
+  border-width: 1px 0 0 0;
+  margin: p.$spacing-xl 0;
+
+  @media #{p.$mq-md} {
+    margin: p.$spacing-2xl 0;
+  }
+}
+
+
+.support-callouts {
+
+}

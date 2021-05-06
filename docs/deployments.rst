@@ -2,13 +2,7 @@
 Kitsune Deployments
 ===================
 
-
-This documents the current development (dev), staging, production (prod), and
-Continuous Integration (CI) servers for the ``support.mozilla.com`` instance of
-`Kitsune <https://github.com/mozilla/kitsune>`_.
-
-This document will not detail *how* Kitsune is deployed, only why, when, and
-where.
+This documents the current development (dev), staging and production (prod) servers for the ``support.mozilla.com`` instance of `Kitsune <https://github.com/mozilla/kitsune>`_.
 
 
 The Source
@@ -40,23 +34,36 @@ such as changes that require re-indexing. See
 We deploy to production from ``master``.
 
 
-Dev
-===
+Deploying
+=========
 
-Dev is a small environment that is updated manually. We use it primarily to
-develop infrastructure changes, like upgrading to Python 2.7.
+We currently use Kubernetes for our infrastructure,
+see the instructions here for how to do deployments:
+
+https://github.com/mozilla/kitsune/blob/master/k8s/README.md
 
 
-Stage
-=====
+Servers
+=======
+
+
+Development
+===========
+
+https://support-dev.allizom.org/
+
+We use dev primarily to develop infrastructure changes.
+
+
+Staging
+=======
+
+https://support.allizom.org/
 
 We deploy to stage anything we want to test including deployments themselves.
-We deploy using the big red button. Typically we deploy to stage from master,
-but we can deploy from any rev-ish thing.
 
 
 Production
 ==========
 
-We deploy to production from master by specified revisions. We deploy when
-things are ready to go using the big red button.
+https://support.mozilla.org/

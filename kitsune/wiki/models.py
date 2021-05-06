@@ -1,44 +1,56 @@
 import hashlib
-import itertools
 import logging
 import time
 from datetime import datetime, timedelta
-from urlparse import urlparse
+from urllib.parse import urlparse
 
+import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.core.urlresolvers import resolve
-from django.db import models, IntegrityError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import IntegrityError, models
 from django.db.models import Q
 from django.http import Http404
-from django.utils.encoding import smart_str
-
-import waffle
+from django.urls import resolve
+from django.utils.encoding import smart_bytes
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
 from kitsune.search.es_utils import UnindexMeBro, es_analyzer_for_locale
 from kitsune.search.models import (
-    SearchMappingType, SearchMixin, register_for_indexing,
-    register_mapping_type)
-from kitsune.sumo import ProgrammingError
-from kitsune.sumo.models import ModelBase, LocaleField
+    SearchMappingType,
+    SearchMixin,
+    register_for_indexing,
+    register_mapping_type,
+)
+from kitsune.sumo.apps import ProgrammingError
+from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.wiki.config import (
-    CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
-    MAJOR_SIGNIFICANCE, REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
-    REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY,
-    TEMPLATES_CATEGORY, DOC_HTML_CACHE_KEY, TEMPLATE_TITLE_PREFIX)
+    ADMINISTRATION_CATEGORY,
+    CANNED_RESPONSES_CATEGORY,
+    CATEGORIES,
+    DOC_HTML_CACHE_KEY,
+    MAJOR_SIGNIFICANCE,
+    MEDIUM_SIGNIFICANCE,
+    REDIRECT_CONTENT,
+    REDIRECT_HTML,
+    REDIRECT_SLUG,
+    REDIRECT_TITLE,
+    SIGNIFICANCES,
+    TEMPLATE_TITLE_PREFIX,
+    TEMPLATES_CATEGORY,
+    TYPO_SIGNIFICANCE,
+)
 from kitsune.wiki.permissions import DocumentPermissionMixin
 
-
-log = logging.getLogger('k.wiki')
+log = logging.getLogger("k.wiki")
 
 
 class TitleCollision(Exception):
@@ -53,15 +65,16 @@ class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
 
 
-class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
-               SearchMixin, DocumentPermissionMixin):
+class Document(
+    NotificationsMixin, ModelBase, BigVocabTaggableMixin, SearchMixin, DocumentPermissionMixin
+):
     """A localized knowledgebase document, not revision-specific."""
+
     title = models.CharField(max_length=255, db_index=True)
     slug = models.CharField(max_length=255, db_index=True)
 
     # Is this document a template or not?
-    is_template = models.BooleanField(default=False, editable=False,
-                                      db_index=True)
+    is_template = models.BooleanField(default=False, editable=False, db_index=True)
     # Is this document localizable or not?
     is_localizable = models.BooleanField(default=True, db_index=True)
 
@@ -71,19 +84,22 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # Latest approved revision. L10n dashboard depends on this being so (rather
     # than being able to set it to earlier approved revisions). (Remove "+" to
     # enable reverse link.)
-    current_revision = models.ForeignKey('Revision', null=True,
-                                         related_name='current_for+')
+    current_revision = models.ForeignKey(
+        "Revision", on_delete=models.CASCADE, null=True, related_name="current_for+"
+    )
 
     # Latest revision which both is_approved and is_ready_for_localization,
     # This may remain non-NULL even if is_localizable is changed to false.
     latest_localizable_revision = models.ForeignKey(
-        'Revision', null=True, related_name='localizable_for+')
+        "Revision", on_delete=models.CASCADE, null=True, related_name="localizable_for+"
+    )
 
     # The Document I was translated from. NULL iff this doc is in the default
     # locale or it is nonlocalizable. TODO: validate against
     # settings.WIKI_DEFAULT_LANGUAGE.
-    parent = models.ForeignKey('self', related_name='translations',
-                               null=True, blank=True)
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, related_name="translations", null=True, blank=True
+    )
 
     # Cached HTML rendering of approved revision's wiki markup:
     html = models.TextField(editable=False)
@@ -95,40 +111,53 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # A document's is_archived flag must match that of its parent. If it has no
     # parent, it can do what it wants. This invariant is enforced in save().
     is_archived = models.BooleanField(
-        default=False, db_index=True, verbose_name='is obsolete',
+        default=False,
+        db_index=True,
+        verbose_name="is obsolete",
         help_text=_lazy(
-            u'If checked, this wiki page will be hidden from basic searches '
-            u'and dashboards. When viewed, the page will warn that it is no '
-            u'longer maintained.'))
+            "If checked, this wiki page will be hidden from basic searches "
+            "and dashboards. When viewed, the page will warn that it is no "
+            "longer maintained."
+        ),
+    )
 
     # Enable discussion (kbforum) on this document.
     allow_discussion = models.BooleanField(
-        default=True, help_text=_lazy(
-            u'If checked, this document allows discussion in an associated '
-            u'forum. Uncheck to hide/disable the forum.'))
+        default=True,
+        help_text=_lazy(
+            "If checked, this document allows discussion in an associated "
+            "forum. Uncheck to hide/disable the forum."
+        ),
+    )
 
     # List of users that have contributed to this document.
     contributors = models.ManyToManyField(User)
 
     # List of products this document applies to.
+    # Children should query their parents for this.
     products = models.ManyToManyField(Product)
 
     # List of product-specific topics this document applies to.
+    # Children should query their parents for this.
     topics = models.ManyToManyField(Topic)
 
     # Needs change fields.
-    needs_change = models.BooleanField(default=False, help_text=_lazy(
-        u'If checked, this document needs updates.'), db_index=True)
+    needs_change = models.BooleanField(
+        default=False, help_text=_lazy("If checked, this document needs updates."), db_index=True
+    )
     needs_change_comment = models.CharField(max_length=500, blank=True)
 
     # A 24 character length gives years before having to alter max_length.
-    share_link = models.CharField(max_length=24, default='')
+    share_link = models.CharField(max_length=24, default="")
 
     # Dictates the order in which articles are displayed.
+    # Children should query their parents for this.
     display_order = models.IntegerField(default=1, db_index=True)
 
     # List of related documents
-    related_documents = models.ManyToManyField('self', blank=True)
+    related_documents = models.ManyToManyField("self", blank=True)
+
+    updated_column_name = "current_revision__created"
 
     # firefox_versions,
     # operating_systems:
@@ -139,21 +168,25 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # how MySQL uses indexes, we probably don't need individual indexes on
     # title and locale as well as a combined (title, locale) one.
     class Meta(object):
-        ordering = ['display_order', 'id']
-        unique_together = (('parent', 'locale'), ('title', 'locale'),
-                           ('slug', 'locale'))
-        permissions = [('archive_document', 'Can archive document'),
-                       ('edit_needs_change', 'Can edit needs_change')]
+        ordering = ["display_order", "id"]
+        unique_together = (("parent", "locale"), ("title", "locale"), ("slug", "locale"))
+        permissions = [
+            ("archive_document", "Can archive document"),
+            ("edit_needs_change", "Can edit needs_change"),
+        ]
 
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr
         is equal to mine."""
-        return Document.objects.filter(
-            locale=self.locale, **{attr: value}).exclude(id=self.id).exists()
+        return (
+            Document.objects.filter(locale=self.locale, **{attr: value})
+            .exclude(id=self.id)
+            .exists()
+        )
 
     def _raise_if_collides(self, attr, exception):
         """Raise an exception if a page of this title/slug already exists."""
-        if self.id is None or hasattr(self, 'old_' + attr):
+        if self.id is None or hasattr(self, "old_" + attr):
             # If I am new or my title/slug changed...
             if self._collides(attr, getattr(self, attr)):
                 raise exception
@@ -163,7 +196,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         self._clean_is_localizable()
         self._clean_category()
         self._clean_template_status()
-        self._ensure_inherited_attr('is_archived')
+        self._ensure_inherited_attr("is_archived")
 
     def _clean_is_localizable(self):
         """is_localizable == allowed to have translations. Make sure that isn't
@@ -182,15 +215,18 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         # Can't save this translation if parent not localizable
         if self.parent and not self.parent.is_localizable:
-            raise ValidationError('"%s": parent "%s" is not localizable.' % (
-                                  unicode(self), unicode(self.parent)))
+            raise ValidationError(
+                '"%s": parent "%s" is not localizable.' % (str(self), str(self.parent))
+            )
 
         # Can't make not localizable if it has translations
         # This only applies to documents that already exist, hence self.pk
         if self.pk and not self.is_localizable and self.translations.exists():
             raise ValidationError(
-                u'"{0}": document has {1} translations but is not localizable.'
-                .format(unicode(self), self.translations.count()))
+                '"{0}": document has {1} translations but is not localizable.'.format(
+                    str(self), self.translations.count()
+                )
+            )
 
     def _ensure_inherited_attr(self, attr):
         """Make sure my `attr` attr is the same as my parent's if I have one.
@@ -211,29 +247,37 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     def _clean_category(self):
         """Make sure a doc's category is valid."""
-        if (not self.parent and
-                self.category not in (id for id, name in CATEGORIES)):
+        if not self.parent and self.category not in (id for id, name in CATEGORIES):
             # All we really need to do here is make sure category != '' (which
             # is what it is when it's missing from the DocumentForm). The extra
             # validation is just a nicety.
-            raise ValidationError(_('Please choose a category.'))
+            raise ValidationError(_("Please choose a category."))
 
-        self._ensure_inherited_attr('category')
+        self._ensure_inherited_attr("category")
 
     def _clean_template_status(self):
-        if (self.category == TEMPLATES_CATEGORY and
-                not self.title.startswith(TEMPLATE_TITLE_PREFIX)):
-            raise ValidationError(_(u'Documents in the Template category must have titles that '
-                                    u'start with "{prefix}". (Current title is "{title}")')
-                                  .format(prefix=TEMPLATE_TITLE_PREFIX, title=self.title))
+        if self.category == TEMPLATES_CATEGORY and not self.title.startswith(
+            TEMPLATE_TITLE_PREFIX
+        ):
+            raise ValidationError(
+                _(
+                    "Documents in the Template category must have titles that "
+                    'start with "{prefix}". (Current title is "{title}")'
+                ).format(prefix=TEMPLATE_TITLE_PREFIX, title=self.title)
+            )
 
         if self.title.startswith(TEMPLATE_TITLE_PREFIX) and self.category != TEMPLATES_CATEGORY:
-            raise ValidationError(_(u'Documents with titles that start with "{prefix}" must be in '
-                                    u'the templates category. (Current category is "{category}". '
-                                    u'Current title is "{title}".)')
-                                  .format(prefix=TEMPLATE_TITLE_PREFIX,
-                                          category=self.get_category_display(),
-                                          title=self.title))
+            raise ValidationError(
+                _(
+                    'Documents with titles that start with "{prefix}" must be in '
+                    'the templates category. (Current category is "{category}". '
+                    'Current title is "{title}".)'
+                ).format(
+                    prefix=TEMPLATE_TITLE_PREFIX,
+                    category=self.get_category_display(),
+                    title=self.title,
+                )
+            )
 
     def _attr_for_redirect(self, attr, template):
         """Return the slug or title for a new redirect.
@@ -242,6 +286,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         used to create the variant.
 
         """
+
         def unique_attr():
             """Return a variant of getattr(self, attr) such that there is no
             Document of my locale with string attribute `attr` equal to it.
@@ -257,7 +302,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                     return new_value
                 i += 1
 
-        old_attr = 'old_' + attr
+        old_attr = "old_" + attr
         if hasattr(self, old_attr):
             # My slug (or title) is changing; we can reuse it for the redirect.
             return getattr(self, old_attr)
@@ -266,24 +311,25 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return unique_attr()
 
     def save(self, *args, **kwargs):
-        slug_changed = hasattr(self, 'old_slug')
-        title_changed = hasattr(self, 'old_title')
+        slug_changed = hasattr(self, "old_slug")
+        title_changed = hasattr(self, "old_title")
 
         self.is_template = (
-            self.title.startswith(TEMPLATE_TITLE_PREFIX) or
-            self.category == TEMPLATES_CATEGORY or
-            (self.parent.category if self.parent else None) == TEMPLATES_CATEGORY)
-        treat_as_template = (
-            self.is_template or
-            (self.old_title if title_changed else '').startswith(TEMPLATE_TITLE_PREFIX))
+            self.title.startswith(TEMPLATE_TITLE_PREFIX)
+            or self.category == TEMPLATES_CATEGORY
+            or (self.parent.category if self.parent else None) == TEMPLATES_CATEGORY
+        )
+        treat_as_template = self.is_template or (
+            self.old_title if title_changed else ""
+        ).startswith(TEMPLATE_TITLE_PREFIX)
 
-        self._raise_if_collides('slug', SlugCollision)
-        self._raise_if_collides('title', TitleCollision)
+        self._raise_if_collides("slug", SlugCollision)
+        self._raise_if_collides("title", TitleCollision)
 
         # These are too important to leave to a (possibly omitted) is_valid
         # call:
         self._clean_is_localizable()
-        self._ensure_inherited_attr('is_archived')
+        self._ensure_inherited_attr("is_archived")
         # Everything is validated before save() is called, so the only thing
         # that could cause save() to exit prematurely would be an exception,
         # which would cause a rollback, which would negate any category changes
@@ -293,7 +339,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         if slug_changed:
             # Clear out the share link so it gets regenerated.
-            self.share_link = ''
+            self.share_link = ""
 
         super(Document, self).save(*args, **kwargs)
 
@@ -307,16 +353,18 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             try:
                 doc = Document.objects.create(
                     locale=self.locale,
-                    title=self._attr_for_redirect('title', REDIRECT_TITLE),
-                    slug=self._attr_for_redirect('slug', REDIRECT_SLUG),
+                    title=self._attr_for_redirect("title", REDIRECT_TITLE),
+                    slug=self._attr_for_redirect("slug", REDIRECT_SLUG),
                     category=self.category,
-                    is_localizable=False)
+                    is_localizable=False,
+                )
                 Revision.objects.create(
                     document=doc,
                     content=REDIRECT_CONTENT % self.title,
                     is_approved=True,
                     reviewer=self.current_revision.creator,
-                    creator=self.current_revision.creator)
+                    creator=self.current_revision.creator,
+                )
             except TitleCollision:
                 pass
 
@@ -332,19 +380,25 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """Trap setting slug and title, recording initial value."""
         # Public API: delete the old_title or old_slug attrs after changing
         # title or slug (respectively) to suppress redirect generation.
-        if getattr(self, 'id', None):
+        if name != "_state" and not self._state.adding:
             # I have been saved and so am worthy of a redirect.
-            if name in ('slug', 'title') and hasattr(self, name):
-                old_name = 'old_' + name
+            if name in ("slug", "title"):
+                old_name = "old_" + name
                 if not hasattr(self, old_name):
+                    # Avoid recursive call to __setattr__ when
+                    # ``getattr(self, name)`` needs to refresh the
+                    # database.
+                    setattr(self, old_name, None)
                     # Normal articles are compared case-insensitively
                     if getattr(self, name).lower() != value.lower():
                         setattr(self, old_name, getattr(self, name))
+                    else:
+                        delattr(self, old_name)
 
                     # Articles that have a changed title are checked
                     # case-sensitively for the title prefix changing.
                     ttp = TEMPLATE_TITLE_PREFIX
-                    if name == 'title' and self.title.startswith(ttp) != value.startswith(ttp):
+                    if name == "title" and self.title.startswith(ttp) != value.startswith(ttp):
                         # Save original value:
                         setattr(self, old_name, getattr(self, name))
 
@@ -356,13 +410,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     @property
     def content_parsed(self):
         if not self.current_revision:
-            return ''
+            return ""
         return self.current_revision.content_parsed
 
     @property
     def summary(self):
         if not self.current_revision:
-            return ''
+            return ""
         return self.current_revision.summary
 
     @property
@@ -377,16 +431,17 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     @property
     def is_hidden_from_search_engines(self):
-        return (self.is_template or self.is_archived or
-                self.category in (ADMINISTRATION_CATEGORY,
-                                  CANNED_RESPONSES_CATEGORY))
+        return (
+            self.is_template
+            or self.is_archived
+            or self.category in (ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY)
+        )
 
     def get_absolute_url(self):
-        return reverse('wiki.document', locale=self.locale, args=[self.slug])
+        return reverse("wiki.document", locale=self.locale, args=[self.slug])
 
     @classmethod
-    def from_url(cls, url, required_locale=None, id_only=False,
-                 check_host=True):
+    def from_url(cls, url, required_locale=None, id_only=False, check_host=True):
         """Return the approved Document the URL represents, None if there isn't
         one.
 
@@ -407,7 +462,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """
         try:
             components = _doc_components_from_url(
-                url, required_locale=required_locale, check_host=check_host)
+                url, required_locale=required_locale, check_host=check_host
+            )
         except _NotDocumentView:
             return None
         if not components:
@@ -416,7 +472,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         doc = cls.objects
         if id_only:
-            doc = doc.only('id')
+            doc = doc.only("id")
         try:
             doc = doc.get(locale=locale, slug=slug)
         except cls.DoesNotExist:
@@ -440,7 +496,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # with hrefs, return the href of the first one. This trick saves us
         # from having to parse the HTML every time.
         if self.html.startswith(REDIRECT_HTML):
-            anchors = PyQuery(self.html)('a[href]')
+            anchors = PyQuery(self.html)("a[href]")
             if anchors:
                 # Articles with a redirect have a link that has the locale
                 # hardcoded into it, and so by simply redirecting to the given
@@ -451,11 +507,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 # This only applies when it's a non-default locale because we
                 # don't want to override the redirects that are forcibly
                 # changing to (or staying within) a specific locale.
-                full_url = anchors[0].get('href')
+                full_url = anchors[0].get("href")
                 (dest_locale, url) = split_path(full_url)
-                if (source_locale != dest_locale and
-                        dest_locale == settings.LANGUAGE_CODE):
-                    return '/' + source_locale + '/' + url
+                if source_locale != dest_locale and dest_locale == settings.LANGUAGE_CODE:
+                    return "/" + source_locale + "/" + url
                 return full_url
 
     def redirect_document(self):
@@ -468,8 +523,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if url:
             return self.from_url(url)
 
-    def __unicode__(self):
-        return '[%s] %s' % (self.locale, self.title)
+    def __str__(self):
+        return "[%s] %s" % (self.locale, self.title)
 
     def allows_vote(self, request):
         """Return whether we should render the vote form for the document."""
@@ -480,16 +535,19 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # voted will see a "You already voted on this Article." message
         # if they try voting again.
         authed_and_voted = (
-            request.user.is_authenticated() and
-            self.current_revision and
-            self.current_revision.has_voted(request))
+            request.user.is_authenticated
+            and self.current_revision
+            and self.current_revision.has_voted(request)
+        )
 
-        return (not self.is_archived and
-                self.current_revision and
-                not authed_and_voted and
-                not self.redirect_document() and
-                self.category != TEMPLATES_CATEGORY and
-                not waffle.switch_is_active('hide-voting'))
+        return (
+            not self.is_archived
+            and self.current_revision
+            and not authed_and_voted
+            and not self.redirect_document()
+            and self.category != TEMPLATES_CATEGORY
+            and not waffle.switch_is_active("hide-voting")
+        )
 
     def translated_to(self, locale):
         """Return the translation of me to the given locale.
@@ -498,9 +556,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         """
         if self.locale != settings.WIKI_DEFAULT_LANGUAGE:
-            raise NotImplementedError('translated_to() is implemented only on'
-                                      'Documents in the default language so'
-                                      'far.')
+            raise NotImplementedError(
+                "translated_to() is implemented only on"
+                "Documents in the default language so"
+                "far."
+            )
         try:
             return Document.objects.get(locale=locale, parent=self)
         except Document.DoesNotExist:
@@ -521,6 +581,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             revision if all else fails.
 
         """
+
         def latest(queryset):
             """Return the latest item from a queryset (by ID).
 
@@ -528,7 +589,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
             """
             try:
-                return queryset.order_by('-id')[0:1].get()
+                return queryset.order_by("-id")[0:1].get()
             except ObjectDoesNotExist:  # Catching IndexError seems overbroad.
                 return None
 
@@ -536,12 +597,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if not rev or not self.is_localizable:
             rejected = Q(is_approved=False, reviewed__isnull=False)
 
-            # Try latest approved revision:
-            rev = (latest(self.revisions.filter(is_approved=True)) or
-                   # No approved revs. Try unrejected:
-                   latest(self.revisions.exclude(rejected)) or
-                   # No unrejected revs. Maybe fall back to rejected:
-                   (latest(self.revisions) if include_rejected else None))
+            # Try latest approved revision
+            # or not approved revs. Try unrejected
+            # or not unrejected revs. Maybe fall back to rejected
+            rev = (
+                latest(self.revisions.filter(is_approved=True))
+                or latest(self.revisions.exclude(rejected))
+                or (latest(self.revisions) if include_rejected else None)
+            )
         return rev
 
     def is_outdated(self, level=MEDIUM_SIGNIFICANCE):
@@ -560,11 +623,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return False
 
         based_on_id = self.current_revision.based_on_id
-        more_filters = {'id__gt': based_on_id} if based_on_id else {}
+        more_filters = {"id__gt": based_on_id} if based_on_id else {}
 
         return self.parent.revisions.filter(
-            is_approved=True, is_ready_for_localization=True,
-            significance__gte=level, **more_filters).exists()
+            is_approved=True,
+            is_ready_for_localization=True,
+            significance__gte=level,
+            **more_filters,
+        ).exists()
 
     def is_majorly_outdated(self):
         """Return whether a MAJOR_SIGNIFICANCE-level update has occurred to the
@@ -579,6 +645,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def is_watched_by(self, user):
         """Return whether `user` is notified of edits to me."""
         from kitsune.wiki.events import EditDocumentEvent
+
         return EditDocumentEvent.is_notifying(user, self)
 
     def get_topics(self):
@@ -606,7 +673,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """Return the number of helpful votes in the last 30 days."""
         start = datetime.now() - timedelta(days=30)
         return HelpfulVote.objects.filter(
-            revision__document=self, created__gt=start, helpful=True).count()
+            revision__document=self, created__gt=start, helpful=True
+        ).count()
 
     @classmethod
     def get_mapping_type(cls):
@@ -619,7 +687,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         is a byproduct of the process, and is useful.
         """
         if not self.current_revision:
-            return ''
+            return ""
 
         # Remove "what links here" reverse links, because they might be
         # stale and re-rendering will re-add them. This cannot be done
@@ -631,10 +699,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         DocumentImage.objects.filter(document=self).delete()
 
         from kitsune.wiki.parser import wiki_to_html, WhatLinksHereParser
-        return wiki_to_html(self.current_revision.content,
-                            locale=self.locale,
-                            doc_id=self.id,
-                            parser_cls=WhatLinksHereParser)
+
+        return wiki_to_html(
+            self.current_revision.content,
+            locale=self.locale,
+            doc_id=self.id,
+            parser_cls=WhatLinksHereParser,
+        )
 
     def links_from(self):
         """Get a query set of links that are from this document to another."""
@@ -646,9 +717,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     def add_link_to(self, linked_to, kind):
         """Create a DocumentLink to another Document."""
-        DocumentLink.objects.get_or_create(linked_from=self,
-                                           linked_to=linked_to,
-                                           kind=kind)
+        DocumentLink.objects.get_or_create(linked_from=self, linked_to=linked_to, kind=kind)
 
     @property
     def images(self):
@@ -664,16 +733,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     def clear_cached_html(self):
         # Clear out both mobile and desktop templates.
-        for mobile, minimal in itertools.product([True, False], repeat=2):
-            cache.delete(doc_html_cache_key(self.locale, self.slug, mobile, minimal))
+        cache.delete(doc_html_cache_key(self.locale, self.slug))
 
 
 @register_mapping_type
 class DocumentMappingType(SearchMappingType):
-    list_keys = [
-        'topic',
-        'product'
-    ]
+    seconds_ago_filter = "current_revision__created__gte"
+    list_keys = ["topic", "product"]
 
     @classmethod
     def get_model(cls):
@@ -681,53 +747,50 @@ class DocumentMappingType(SearchMappingType):
 
     @classmethod
     def get_query_fields(cls):
-        return ['document_title',
-                'document_content',
-                'document_summary',
-                'document_keywords']
+        return ["document_title", "document_content", "document_summary", "document_keywords"]
 
     @classmethod
     def get_localized_fields(cls):
         # This is the same list as `get_query_fields`, but it doesn't
         # have to be, which is why it is typed twice.
-        return ['document_title',
-                'document_content',
-                'document_summary',
-                'document_keywords']
+        return ["document_title", "document_content", "document_summary", "document_keywords"]
 
     @classmethod
     def get_mapping(cls):
         return {
-            'properties': {
+            "properties": {
                 # General fields
-                'id': {'type': 'long'},
-                'model': {'type': 'string', 'index': 'not_analyzed'},
-                'url': {'type': 'string', 'index': 'not_analyzed'},
-                'indexed_on': {'type': 'integer'},
-                'updated': {'type': 'integer'},
-
-                'product': {'type': 'string', 'index': 'not_analyzed'},
-                'topic': {'type': 'string', 'index': 'not_analyzed'},
-
+                "id": {"type": "long"},
+                "model": {"type": "string", "index": "not_analyzed"},
+                "url": {"type": "string", "index": "not_analyzed"},
+                "indexed_on": {"type": "integer"},
+                "updated": {"type": "integer"},
+                "product": {"type": "string", "index": "not_analyzed"},
+                "topic": {"type": "string", "index": "not_analyzed"},
                 # Document specific fields (locale aware)
-                'document_title': {'type': 'string', 'analyzer': 'snowball'},
-                'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
-                'document_content': {'type': 'string', 'store': 'yes',
-                                     'analyzer': 'snowball',
-                                     'term_vector': 'with_positions_offsets'},
-                'document_summary': {'type': 'string', 'store': 'yes',
-                                     'analyzer': 'snowball',
-                                     'term_vector': 'with_positions_offsets'},
-
+                "document_title": {"type": "string", "analyzer": "snowball"},
+                "document_keywords": {"type": "string", "analyzer": "snowball"},
+                "document_content": {
+                    "type": "string",
+                    "store": "yes",
+                    "analyzer": "snowball",
+                    "term_vector": "with_positions_offsets",
+                },
+                "document_summary": {
+                    "type": "string",
+                    "store": "yes",
+                    "analyzer": "snowball",
+                    "term_vector": "with_positions_offsets",
+                },
                 # Document specific fields (locale naive)
-                'document_locale': {'type': 'string', 'index': 'not_analyzed'},
-                'document_current_id': {'type': 'integer'},
-                'document_parent_id': {'type': 'integer'},
-                'document_category': {'type': 'integer'},
-                'document_slug': {'type': 'string', 'index': 'not_analyzed'},
-                'document_is_archived': {'type': 'boolean'},
-                'document_recent_helpful_votes': {'type': 'integer'},
-                'document_display_order': {'type': 'integer'}
+                "document_locale": {"type": "string", "index": "not_analyzed"},
+                "document_current_id": {"type": "integer"},
+                "document_parent_id": {"type": "integer"},
+                "document_category": {"type": "integer"},
+                "document_slug": {"type": "string", "index": "not_analyzed"},
+                "document_is_archived": {"type": "boolean"},
+                "document_recent_helpful_votes": {"type": "integer"},
+                "document_display_order": {"type": "integer"},
             }
         }
 
@@ -735,8 +798,7 @@ class DocumentMappingType(SearchMappingType):
     def extract_document(cls, obj_id, obj=None):
         if obj is None:
             model = cls.get_model()
-            obj = model.objects.select_related(
-                'current_revision', 'parent').get(pk=obj_id)
+            obj = model.objects.select_related("current_revision", "parent").get(pk=obj_id)
 
         if obj.html.startswith(REDIRECT_HTML):
             # It's possible this document is indexed and was turned
@@ -746,60 +808,61 @@ class DocumentMappingType(SearchMappingType):
             raise UnindexMeBro()
 
         d = {}
-        d['id'] = obj.id
-        d['model'] = cls.get_mapping_type_name()
-        d['url'] = obj.get_absolute_url()
-        d['indexed_on'] = int(time.time())
+        d["id"] = obj.id
+        d["model"] = cls.get_mapping_type_name()
+        d["url"] = obj.get_absolute_url()
+        d["indexed_on"] = int(time.time())
 
-        d['topic'] = [t.slug for t in obj.get_topics()]
-        d['product'] = [p.slug for p in obj.get_products()]
+        d["topic"] = [t.slug for t in obj.get_topics()]
+        d["product"] = [p.slug for p in obj.get_products()]
 
-        d['document_title'] = obj.title
-        d['document_locale'] = obj.locale
-        d['document_parent_id'] = obj.parent.id if obj.parent else None
-        d['document_content'] = obj.html
-        d['document_category'] = obj.category
-        d['document_slug'] = obj.slug
-        d['document_is_archived'] = obj.is_archived
-        d['document_display_order'] = obj.original.display_order
+        d["document_title"] = obj.title
+        d["document_locale"] = obj.locale
+        d["document_parent_id"] = obj.parent.id if obj.parent else None
+        d["document_content"] = obj.html
+        d["document_category"] = obj.category
+        d["document_slug"] = obj.slug
+        d["document_is_archived"] = obj.is_archived
+        d["document_display_order"] = obj.original.display_order
 
-        d['document_summary'] = obj.summary
+        d["document_summary"] = obj.summary
         if obj.current_revision is not None:
-            d['document_keywords'] = obj.current_revision.keywords
-            d['updated'] = int(time.mktime(
-                obj.current_revision.created.timetuple()))
-            d['document_current_id'] = obj.current_revision.id
-            d['document_recent_helpful_votes'] = obj.recent_helpful_votes
+            d["document_keywords"] = obj.current_revision.keywords
+            d["updated"] = int(time.mktime(obj.current_revision.created.timetuple()))
+            d["document_current_id"] = obj.current_revision.id
+            d["document_recent_helpful_votes"] = obj.recent_helpful_votes
         else:
-            d['document_summary'] = None
-            d['document_keywords'] = None
-            d['updated'] = None
-            d['document_current_id'] = None
-            d['document_recent_helpful_votes'] = 0
+            d["document_summary"] = None
+            d["document_keywords"] = None
+            d["updated"] = None
+            d["document_current_id"] = None
+            d["document_recent_helpful_votes"] = 0
 
         # Don't query for helpful votes if the document doesn't have a current
         # revision, or is a template, or is a redirect, or is in Navigation
         # category (50).
-        if (obj.current_revision and
-                not obj.is_template and
-                not obj.html.startswith(REDIRECT_HTML) and
-                not obj.category == 50):
-            d['document_recent_helpful_votes'] = obj.recent_helpful_votes
+        if (
+            obj.current_revision
+            and not obj.is_template
+            and not obj.html.startswith(REDIRECT_HTML)
+            and not obj.category == 50
+        ):
+            d["document_recent_helpful_votes"] = obj.recent_helpful_votes
         else:
-            d['document_recent_helpful_votes'] = 0
+            d["document_recent_helpful_votes"] = 0
 
         # Select a locale-appropriate default analyzer for all strings.
-        d['_analyzer'] = es_analyzer_for_locale(obj.locale)
+        d["_analyzer"] = es_analyzer_for_locale(obj.locale)
 
         return d
 
     @classmethod
-    def get_indexable(cls):
+    def get_indexable(cls, seconds_ago=0):
         # This function returns all the indexable things, but we
         # really need to handle the case where something was indexable
         # and isn't anymore. Given that, this returns everything that
         # has a revision.
-        indexable = super(cls, cls).get_indexable()
+        indexable = super(cls, cls).get_indexable(seconds_ago=seconds_ago)
         indexable = indexable.filter(current_revision__isnull=False)
         return indexable
 
@@ -807,24 +870,19 @@ class DocumentMappingType(SearchMappingType):
     def index(cls, document, **kwargs):
         # If there are no revisions or the current revision is a
         # redirect, we want to remove it from the index.
-        if (document['document_current_id'] is None or
-                document['document_content'].startswith(REDIRECT_HTML)):
+        if document["document_current_id"] is None or document["document_content"].startswith(
+            REDIRECT_HTML
+        ):
 
-            cls.unindex(document['id'], es=kwargs.get('es', None))
+            cls.unindex(document["id"], es=kwargs.get("es", None))
             return
 
         super(cls, cls).index(document, **kwargs)
 
 
-register_for_indexing('wiki', Document)
-register_for_indexing(
-    'wiki',
-    Document.topics.through,
-    m2m=True)
-register_for_indexing(
-    'wiki',
-    Document.products.through,
-    m2m=True)
+register_for_indexing("wiki", Document)
+register_for_indexing("wiki", Document.topics.through, m2m=True)
+register_for_indexing("wiki", Document.products.through, m2m=True)
 
 
 MAX_REVISION_COMMENT_LENGTH = 255
@@ -833,10 +891,10 @@ MAX_REVISION_COMMENT_LENGTH = 255
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
     # like created_revisions and created_draftrevisions
-    creator = models.ForeignKey(User, related_name='created_%(class)ss')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_%(class)ss")
     created = models.DateTimeField(default=datetime.now)
     # The reverse name should be revisions and draftrevisions
-    document = models.ForeignKey(Document, related_name='%(class)ss')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="%(class)ss")
     # Keywords are used mostly to affect search rankings. Moderators may not
     # have the language expertise to translate keywords, so we put them in the
     # Revision so the translators can handle them:
@@ -848,6 +906,7 @@ class AbstractRevision(models.Model):
 
 class Revision(ModelBase, SearchMixin, AbstractRevision):
     """A revision of a localized knowledgebase document"""
+
     summary = models.TextField()  # wiki markup
     content = models.TextField()  # wiki markup
 
@@ -858,15 +917,16 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
 
     comment = models.CharField(max_length=MAX_REVISION_COMMENT_LENGTH)
-    reviewer = models.ForeignKey(User, related_name='reviewed_revisions',
-                                 null=True)
+    reviewer = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reviewed_revisions", null=True
+    )
     is_approved = models.BooleanField(default=False, db_index=True)
 
     # The default locale's rev that was the latest ready-for-l10n one when the
     # Edit button was hit to begin creating this revision. If there was none,
     # this is simply the latest of the default locale's revs as of that time.
     # Used to determine whether localizations are out of date.
-    based_on = models.ForeignKey('self', null=True, blank=True)
+    based_on = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True)
     # TODO: limit_choices_to={'document__locale':
     # settings.WIKI_DEFAULT_LANGUAGE} is a start but not sufficient.
 
@@ -877,13 +937,15 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     is_ready_for_localization = models.BooleanField(default=False)
     readied_for_localization = models.DateTimeField(null=True)
     readied_for_localization_by = models.ForeignKey(
-        User, related_name='readied_for_l10n_revisions', null=True)
+        User, on_delete=models.CASCADE, related_name="readied_for_l10n_revisions", null=True
+    )
 
     class Meta(object):
-        permissions = [('review_revision', 'Can review a revision'),
-                       ('mark_ready_for_l10n',
-                        'Can mark revision as ready for localization'),
-                       ('edit_keywords', 'Can edit keywords')]
+        permissions = [
+            ("review_revision", "Can review a revision"),
+            ("mark_ready_for_l10n", "Can mark revision as ready for localization"),
+            ("edit_keywords", "Can edit keywords"),
+        ]
 
     def _based_on_is_clean(self):
         """Return a tuple: (the correct value of based_on, whether the old
@@ -919,9 +981,12 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
                 self.based_on = based_on  # Be nice and guess a correct value.
                 # TODO(erik): This error message ignores non-translations.
                 raise ValidationError(
-                    _('A revision must be based on the English article. '
-                      'Revision ID %(id)s does not fit this criterion.') %
-                    dict(id=old.id))
+                    _(
+                        "A revision must be based on the English article. "
+                        "Revision ID %(id)s does not fit this criterion."
+                    )
+                    % dict(id=old.id)
+                )
 
         if not self.can_be_readied_for_localization():
             self.is_ready_for_localization = False
@@ -930,27 +995,26 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
         _, is_clean = self._based_on_is_clean()
         if not is_clean:  # No more Mister Nice Guy
             # TODO(erik): This error message ignores non-translations.
-            raise ProgrammingError('Revision.based_on must be None or refer '
-                                   'to a revision of the default-'
-                                   'language document.')
+            raise ProgrammingError(
+                "Revision.based_on must be None or refer "
+                "to a revision of the default-"
+                "language document."
+            )
 
         super(Revision, self).save(*args, **kwargs)
 
         # When a revision is approved, re-cache the document's html content
         # and update document contributors
         if self.is_approved and (
-                not self.document.current_revision or
-                self.document.current_revision.id < self.id):
+            not self.document.current_revision or self.document.current_revision.id < self.id
+        ):
             # Determine if there are new contributors and add them to the list
             contributors = self.document.contributors.all()
             # Exclude all explicitly rejected revisions
-            new_revs = self.document.revisions.exclude(
-                reviewed__isnull=False, is_approved=False)
+            new_revs = self.document.revisions.exclude(reviewed__isnull=False, is_approved=False)
             if self.document.current_revision:
-                new_revs = new_revs.filter(
-                    id__gt=self.document.current_revision.id)
-            new_contributors = set(
-                [r.creator for r in new_revs.select_related('creator')])
+                new_revs = new_revs.filter(id__gt=self.document.current_revision.id)
+            new_contributors = {r.creator for r in new_revs.select_related("creator")}
             for user in new_contributors:
                 if user not in contributors:
                     self.document.contributors.add(user)
@@ -961,9 +1025,10 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
             self.document.html = self.content_parsed
             self.document.current_revision = self
             self.document.save()
-        elif (self.is_ready_for_localization and
-              (not self.document.latest_localizable_revision or
-               self.id > self.document.latest_localizable_revision.id)):
+        elif self.is_ready_for_localization and (
+            not self.document.latest_localizable_revision
+            or self.id > self.document.latest_localizable_revision.id
+        ):
             # We are marking a newer revision as ready for l10n.
             # Update the denormalized field on the document.
             self.document.latest_localizable_revision = self
@@ -971,11 +1036,15 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
     def delete(self, *args, **kwargs):
         """Dodge cascading delete of documents and other revisions."""
+
         def latest_revision(excluded_rev, constraint):
             """Return the largest-ID'd revision meeting the given constraint
             and excluding the given revision, or None if there is none."""
-            revs = document.revisions.filter(constraint).exclude(
-                pk=excluded_rev.pk).order_by('-id')[:1]
+            revs = (
+                document.revisions.filter(constraint)
+                .exclude(pk=excluded_rev.pk)
+                .order_by("-id")[:1]
+            )
             try:
                 # Academic TODO: There's probably a way to keep the QuerySet
                 # lazy all the way through the update() call.
@@ -992,47 +1061,50 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
             new_current = latest_revision(self, Q(is_approved=True))
             document.update(
                 current_revision=new_current,
-                html=new_current.content_parsed if new_current else '')
+                html=new_current.content_parsed if new_current else "",
+            )
 
         # Likewise, step the latest_localizable_revision field backward if
         # we're deleting that revision:
         if document.latest_localizable_revision == self:
-            document.update(latest_localizable_revision=latest_revision(
-                self, Q(is_approved=True, is_ready_for_localization=True)))
+            document.update(
+                latest_localizable_revision=latest_revision(
+                    self, Q(is_approved=True, is_ready_for_localization=True)
+                )
+            )
 
         super(Revision, self).delete(*args, **kwargs)
 
     def has_voted(self, request):
         """Did the user already vote for this revision?"""
-        if request.user.is_authenticated():
-            qs = HelpfulVote.objects.filter(revision=self,
-                                            creator=request.user)
+        if request.user.is_authenticated:
+            qs = HelpfulVote.objects.filter(revision=self, creator=request.user)
         elif request.anonymous.has_id:
             anon_id = request.anonymous.anonymous_id
-            qs = HelpfulVote.objects.filter(revision=self,
-                                            anonymous_id=anon_id)
+            qs = HelpfulVote.objects.filter(revision=self, anonymous_id=anon_id)
         else:
             return False
 
         return qs.exists()
 
-    def __unicode__(self):
-        return u'[%s] %s #%s: %s' % (self.document.locale,
-                                     self.document.title,
-                                     self.id, self.content[:50])
-
-    def __repr__(self):
-        return '<Revision [{!r}] {!r} #{!r}: {!r:.50}>'.format(
+    def __str__(self):
+        return "[%s] %s #%s: %s" % (
             self.document.locale,
             self.document.title,
             self.id,
-            self.content)
+            self.content[:50],
+        )
+
+    def __repr__(self):
+        return "<Revision [{!r}] {!r} #{!r}: {!r:.50}>".format(
+            self.document.locale, self.document.title, self.id, self.content
+        )
 
     @property
     def content_parsed(self):
         from kitsune.wiki.parser import wiki_to_html
-        return wiki_to_html(self.content, locale=self.document.locale,
-                            doc_id=self.document.id)
+
+        return wiki_to_html(self.content, locale=self.document.locale, doc_id=self.document.id)
 
     def can_be_readied_for_localization(self):
         """Return whether this revision has the prerequisites necessary for the
@@ -1040,21 +1112,24 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
         # If not is_approved, can't be is_ready. TODO: think about using a
         # single field with more states.
         # Also, if significance is trivial, it shouldn't be translated.
-        return (self.is_approved and
-                self.significance > TYPO_SIGNIFICANCE and
-                self.document.locale == settings.WIKI_DEFAULT_LANGUAGE)
+        return (
+            self.is_approved
+            and (self.significance or 0) > TYPO_SIGNIFICANCE
+            and self.document.locale == settings.WIKI_DEFAULT_LANGUAGE
+        )
 
     def get_absolute_url(self):
-        return reverse('wiki.revision', locale=self.document.locale,
-                       args=[self.document.slug, self.id])
+        return reverse(
+            "wiki.revision", locale=self.document.locale, args=[self.document.slug, self.id]
+        )
 
     @property
     def previous(self):
         """Get the revision that came before this in the document's history."""
-        older_revs = Revision.objects.filter(document=self.document,
-                                             id__lt=self.id,
-                                             is_approved=True)
-        older_revs = older_revs.order_by('-created')
+        older_revs = Revision.objects.filter(
+            document=self.document, id__lt=self.id, is_approved=True
+        )
+        older_revs = older_revs.order_by("-created")
         try:
             return older_revs[0]
         except IndexError:
@@ -1066,7 +1141,7 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
 
 
 class DraftRevision(ModelBase, SearchMixin, AbstractRevision):
-    based_on = models.ForeignKey(Revision)
+    based_on = models.ForeignKey(Revision, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
     locale = LocaleField(blank=False, db_index=True)
     slug = models.CharField(max_length=255, blank=True)
@@ -1076,87 +1151,98 @@ class DraftRevision(ModelBase, SearchMixin, AbstractRevision):
 
 @register_mapping_type
 class RevisionMetricsMappingType(SearchMappingType):
+    seconds_ago_filter = "created__gte"
+
     @classmethod
     def get_model(cls):
         return Revision
 
     @classmethod
     def get_index_group(cls):
-        return 'metrics'
+        return "metrics"
 
     @classmethod
     def get_mapping(cls):
         return {
-            'properties': {
-                'id': {'type': 'long'},
-                'model': {'type': 'string', 'index': 'not_analyzed'},
-                'url': {'type': 'string', 'index': 'not_analyzed'},
-                'indexed_on': {'type': 'integer'},
-                'created': {'type': 'date'},
-                'reviewed': {'type': 'date'},
-
-                'locale': {'type': 'string', 'index': 'not_analyzed'},
-                'product': {'type': 'string', 'index': 'not_analyzed'},
-                'is_approved': {'type': 'boolean'},
-                'creator_id': {'type': 'long'},
-                'reviewer_id': {'type': 'long'},
+            "properties": {
+                "id": {"type": "long"},
+                "model": {"type": "string", "index": "not_analyzed"},
+                "url": {"type": "string", "index": "not_analyzed"},
+                "indexed_on": {"type": "integer"},
+                "created": {"type": "date"},
+                "reviewed": {"type": "date"},
+                "locale": {"type": "string", "index": "not_analyzed"},
+                "product": {"type": "string", "index": "not_analyzed"},
+                "is_approved": {"type": "boolean"},
+                "creator_id": {"type": "long"},
+                "reviewer_id": {"type": "long"},
             }
         }
 
     @classmethod
     def extract_document(cls, obj_id, obj=None):
         """Extracts indexable attributes from an Answer."""
-        fields = ['id', 'created', 'creator_id', 'reviewed', 'reviewer_id',
-                  'is_approved', 'document_id']
-        composed_fields = ['document__locale', 'document__slug']
+        fields = [
+            "id",
+            "created",
+            "creator_id",
+            "reviewed",
+            "reviewer_id",
+            "is_approved",
+            "document_id",
+        ]
+        composed_fields = ["document__locale", "document__slug"]
         all_fields = fields + composed_fields
 
         if obj is None:
             model = cls.get_model()
             obj_dict = model.objects.values(*all_fields).get(pk=obj_id)
         else:
-            obj_dict = dict([(field, getattr(obj, field))
-                             for field in fields])
-            obj_dict['document__locale'] = obj.document.locale
-            obj_dict['document__slug'] = obj.document.slug
+            obj_dict = dict([(field, getattr(obj, field)) for field in fields])
+            obj_dict["document__locale"] = obj.document.locale
+            obj_dict["document__slug"] = obj.document.slug
 
         d = {}
-        d['id'] = obj_dict['id']
-        d['model'] = cls.get_mapping_type_name()
+        d["id"] = obj_dict["id"]
+        d["model"] = cls.get_mapping_type_name()
 
         # We do this because get_absolute_url is an instance method
         # and we don't want to create an instance because it's a DB
         # hit and expensive. So we do it by hand. get_absolute_url
         # doesn't change much, so this is probably ok.
-        d['url'] = reverse('wiki.revision', kwargs={
-            'revision_id': obj_dict['id'],
-            'document_slug': obj_dict['document__slug']})
+        d["url"] = reverse(
+            "wiki.revision",
+            kwargs={"revision_id": obj_dict["id"], "document_slug": obj_dict["document__slug"]},
+        )
 
-        d['indexed_on'] = int(time.time())
+        d["indexed_on"] = int(time.time())
 
-        d['created'] = obj_dict['created']
-        d['reviewed'] = obj_dict['reviewed']
+        d["created"] = obj_dict["created"]
+        d["reviewed"] = obj_dict["reviewed"]
 
-        d['locale'] = obj_dict['document__locale']
-        d['is_approved'] = obj_dict['is_approved']
-        d['creator_id'] = obj_dict['creator_id']
-        d['reviewer_id'] = obj_dict['reviewer_id']
+        d["locale"] = obj_dict["document__locale"]
+        d["is_approved"] = obj_dict["is_approved"]
+        d["creator_id"] = obj_dict["creator_id"]
+        d["reviewer_id"] = obj_dict["reviewer_id"]
 
-        doc = Document.objects.get(id=obj_dict['document_id'])
-        d['product'] = [p.slug for p in doc.get_products()]
+        doc = Document.objects.get(id=obj_dict["document_id"])
+        d["product"] = [p.slug for p in doc.get_products()]
 
         return d
 
 
-register_for_indexing('revisions', Revision)
+register_for_indexing("revisions", Revision)
 
 
 class HelpfulVote(ModelBase):
     """Helpful or Not Helpful vote on Revision."""
-    revision = models.ForeignKey(Revision, related_name='poll_votes')
+
+    revision = models.ForeignKey(Revision, on_delete=models.CASCADE, related_name="poll_votes")
     helpful = models.BooleanField(default=False)
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    creator = models.ForeignKey(User, related_name='poll_votes', null=True)
+    creator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="poll_votes", null=True
+    )
     anonymous_id = models.CharField(max_length=40, db_index=True)
     user_agent = models.CharField(max_length=1000)
 
@@ -1166,13 +1252,15 @@ class HelpfulVote(ModelBase):
 
 class HelpfulVoteMetadata(ModelBase):
     """Metadata for article votes."""
-    vote = models.ForeignKey(HelpfulVote, related_name='metadata')
+
+    vote = models.ForeignKey(HelpfulVote, on_delete=models.CASCADE, related_name="metadata")
     key = models.CharField(max_length=40, db_index=True)
     value = models.CharField(max_length=1000)
 
 
 class ImportantDate(ModelBase):
     """Important date that shows up globally on metrics graphs."""
+
     text = models.CharField(max_length=100)
     date = models.DateField(db_index=True)
 
@@ -1182,21 +1270,19 @@ class ImportantDate(ModelBase):
 # the M2M tables, etc.
 class Locale(ModelBase):
     """A localization team."""
-    locale = LocaleField(db_index=True)
-    leaders = models.ManyToManyField(
-        User, blank=True, related_name='locales_leader')
-    reviewers = models.ManyToManyField(
-        User, blank=True, related_name='locales_reviewer')
-    editors = models.ManyToManyField(
-        User, blank=True, related_name='locales_editor')
+
+    locale = LocaleField(unique=True)
+    leaders = models.ManyToManyField(User, blank=True, related_name="locales_leader")
+    reviewers = models.ManyToManyField(User, blank=True, related_name="locales_reviewer")
+    editors = models.ManyToManyField(User, blank=True, related_name="locales_editor")
 
     class Meta:
-        ordering = ['locale']
+        ordering = ["locale"]
 
     def get_absolute_url(self):
-        return reverse('wiki.locale_details', args=[self.locale])
+        return reverse("wiki.locale_details", args=[self.locale])
 
-    def __unicode__(self):
+    def __str__(self):
         return self.locale
 
 
@@ -1206,31 +1292,33 @@ class DocumentLink(ModelBase):
     If article A contains [[Link:B]], then `linked_to` is B,
     `linked_from` is A, and kind is 'link'.
     """
-    linked_to = models.ForeignKey(Document,
-                                  related_name='documentlink_from_set')
-    linked_from = models.ForeignKey(Document,
-                                    related_name='documentlink_to_set')
+
+    linked_to = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="documentlink_from_set"
+    )
+    linked_from = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="documentlink_to_set"
+    )
     kind = models.CharField(max_length=16)
 
     class Meta:
-        unique_together = ('linked_from', 'linked_to', 'kind')
+        unique_together = ("linked_from", "linked_to", "kind")
 
-    def __unicode__(self):
-        return (u'<DocumentLink: %s from %s to %s>' %
-                (self.kind, self.linked_from, self.linked_to))
+    def __str__(self):
+        return "<DocumentLink: %s from %s to %s>" % (self.kind, self.linked_from, self.linked_to)
 
 
 class DocumentImage(ModelBase):
     """Model to keep track of what documents include what images."""
-    document = models.ForeignKey(Document)
-    image = models.ForeignKey(Image)
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('document', 'image')
+        unique_together = ("document", "image")
 
-    def __unicode__(self):
-        return u'<DocumentImage: {doc} includes {img}>'.format(
-            doc=self.document, img=self.image)
+    def __str__(self):
+        return "<DocumentImage: {doc} includes {img}>".format(doc=self.document, img=self.image)
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):
@@ -1246,7 +1334,7 @@ def _doc_components_from_url(url, required_locale=None, check_host=True):
     locale, path = split_path(parsed.path)
     if required_locale and locale != required_locale:
         return False
-    path = '/' + path
+    path = "/" + path
 
     try:
         view, view_args, view_kwargs = resolve(path)
@@ -1254,9 +1342,10 @@ def _doc_components_from_url(url, required_locale=None, check_host=True):
         return False
 
     import kitsune.wiki.views  # Views import models; models import views.
+
     if view != kitsune.wiki.views.document:
         raise _NotDocumentView
-    return locale, path, view_kwargs['document_slug']
+    return locale, path, view_kwargs["document_slug"]
 
 
 def points_to_document_view(url, required_locale=None):
@@ -1267,35 +1356,40 @@ def points_to_document_view(url, required_locale=None):
 
     """
     try:
-        return not not _doc_components_from_url(
-            url, required_locale=required_locale)
+        return not not _doc_components_from_url(url, required_locale=required_locale)
     except _NotDocumentView:
         return False
 
 
 def user_num_documents(user):
     """Count the number of documents a user has contributed to. """
-    return (Document.objects
-            .filter(revisions__creator=user)
-            .exclude(html__startswith='<p>REDIRECT <a').distinct().count())
+    return (
+        Document.objects.filter(revisions__creator=user)
+        .exclude(html__startswith="<p>REDIRECT <a")
+        .distinct()
+        .count()
+    )
 
 
 def user_documents(user):
     """Return the documents a user has contributed to."""
-    return (Document.objects
-            .filter(revisions__creator=user)
-            .exclude(html__startswith='<p>REDIRECT <a').distinct())
+    return (
+        Document.objects.filter(revisions__creator=user)
+        .exclude(html__startswith="<p>REDIRECT <a")
+        .distinct()
+    )
 
 
 def user_redirects(user):
     """Return the redirects a user has contributed to."""
-    return (Document.objects
-            .filter(revisions__creator=user)
-            .filter(html__startswith='<p>REDIRECT <a').distinct())
+    return (
+        Document.objects.filter(revisions__creator=user)
+        .filter(html__startswith="<p>REDIRECT <a")
+        .distinct()
+    )
 
 
-def doc_html_cache_key(locale, slug, mobile, minimal):
+def doc_html_cache_key(locale, slug):
     """Returns the cache key for the document html."""
-    cache_key = DOC_HTML_CACHE_KEY.format(
-        locale=locale, slug=slug, mobile=str(mobile), minimal=str(minimal))
-    return hashlib.sha1(smart_str(cache_key)).hexdigest()
+    cache_key = DOC_HTML_CACHE_KEY.format(locale=locale, slug=slug)
+    return hashlib.sha1(smart_bytes(cache_key)).hexdigest()

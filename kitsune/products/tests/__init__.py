@@ -45,8 +45,8 @@ class VersionFactory(factory.DjangoModelFactory):
 
     min_version = factory.fuzzy.FuzzyDecimal(100)
     max_version = factory.LazyAttribute(lambda obj: obj.min_version + 1)
-    name = factory.LazyAttribute(lambda obj: 'Version %d' % obj.min_version)
-    slug = factory.LazyAttribute(lambda obj: 'v%d' % obj.min_version)
+    name = factory.LazyAttribute(lambda obj: "Version %d" % obj.min_version)
+    slug = factory.LazyAttribute(lambda obj: "v%d" % obj.min_version)
     visible = True
     default = factory.fuzzy.FuzzyChoice([False, True])
     product = factory.SubFactory(ProductFactory)

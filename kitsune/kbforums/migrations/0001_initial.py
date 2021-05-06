@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('content', models.TextField()),
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
                 ('updated', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
-                ('creator', models.ForeignKey(related_name='wiki_post_set', to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='wiki_post_set', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['created'],
@@ -37,9 +37,9 @@ class Migration(migrations.Migration):
                 ('replies', models.IntegerField(default=0)),
                 ('is_locked', models.BooleanField(default=False)),
                 ('is_sticky', models.BooleanField(default=False, db_index=True)),
-                ('creator', models.ForeignKey(related_name='wiki_thread_set', to=settings.AUTH_USER_MODEL)),
-                ('document', models.ForeignKey(to='wiki.Document')),
-                ('last_post', models.ForeignKey(related_name='last_post_in', to='kbforums.Post', null=True)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='wiki_thread_set', to=settings.AUTH_USER_MODEL)),
+                ('document', models.ForeignKey(on_delete=models.CASCADE, to='wiki.Document')),
+                ('last_post', models.ForeignKey(on_delete=models.CASCADE, related_name='last_post_in', to='kbforums.Post', null=True)),
             ],
             options={
                 'ordering': ['-is_sticky', '-last_post__created'],
@@ -50,13 +50,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='post',
             name='thread',
-            field=models.ForeignKey(to='kbforums.Thread'),
+            field=models.ForeignKey(on_delete=models.CASCADE, to='kbforums.Thread'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='post',
             name='updated_by',
-            field=models.ForeignKey(related_name='wiki_post_last_updated_by', to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(on_delete=models.CASCADE, related_name='wiki_post_last_updated_by', to=settings.AUTH_USER_MODEL, null=True),
             preserve_default=True,
         ),
     ]

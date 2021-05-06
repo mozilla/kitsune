@@ -12,14 +12,21 @@
   function init() {
     var $body = $('body');
 
+    // if there's an error on page load, focus the field.
+    $('.has-error input, .has-error textarea').first().focus();
+
     if ($body.is('.new-question')) {
-      initNewQuestion();
+      initQuestion();
 
       if (window.location.search.indexOf('step=aaq-register') > -1) {
         trackEvent('Ask A Question Flow', 'step 1 page');
       } else if (window.location.search.indexOf('step=aaq-question') > -1) {
         trackEvent('Ask A Question Flow', 'step 2 page');
       }
+    }
+
+    if ($body.is('.edit-question')) {
+      initQuestion("editing");
     }
 
     if ($body.is('.questions')) {
@@ -54,7 +61,7 @@
         }
       }
 
-      $('#id_content').on('keyup', _.throttle(takeQuestion, 1000));
+      $('#id_content').on('keyup', _.throttle(takeQuestion, 60000));
 
       $(document).on('click', '#details-edit', function(ev) {
         ev.preventDefault();
@@ -85,28 +92,24 @@
       document.location = document.location.pathname + '?' + $.param(queryParams);
     });
 
-    // topic selector page reloading
-    $('#topic-selector select').on('change', function() {
-      var val = $(this).val();
-      var queryParams = k.getQueryParamsAsDict(document.location.toString());
-
-      if (val === '') {
-        delete queryParams.topic;
-      } else {
-        queryParams.topic = val;
-      }
-      document.location = document.location.pathname + '?' + $.param(queryParams);
+    // sort questions page reloading
+    $('[data-sort-questions]').on('change', function() {
+      document.location = $(this).val()
     });
 
   }
 
   /*
-  * Initialize the new question page/form
+  * Initialize the new/edit question page/form
   */
-  function initNewQuestion() {
+  function initQuestion(action) {
     var $questionForm = $('#question-form');
     var aaq = new AAQSystemInfo($questionForm);
-    hideDetails($questionForm, aaq);
+    if (action === "editing") {
+      $("#troubleshooting-field").show();
+    } else {
+      hideDetails($questionForm, aaq);
+    }
   }
 
   function isLoggedIn() {
@@ -157,21 +160,26 @@
       .closest('ul')
       .toggleClass('show-details');
     });
-
-    if (!aaq.isDesktopFF() && !aaq.isMobileFF() && !aaq.isFirefoxOS()) {
-      $form.find('li.system-details-info').hide();
-    }
   }
 
   /*
-  * Ajaxify the "I have this problem too" form
+  * Ajaxify any "I have this problem too" forms (may be multiple per page)
   */
   function initHaveThisProblemTooAjax() {
     var $container = $('#question div.me-too, .question-tools div.me-too');
-    initAjaxForm($container, 'form', '#vote-thanks');
+
+    // ajaxify each form individually so the resulting kbox attaches to
+    // the correct DOM element
+    $container.each(function() {
+      initAjaxForm($(this), 'form', '#vote-thanks');
+    });
+
     $container.find('input').click(function() {
       $(this).attr('disabled', 'disabled');
     });
+
+    // closing or cancelling the kbox on any of the forms should remove
+    // all of them
     $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev) {
       ev.preventDefault();
       $container.unbind().remove();
@@ -194,9 +202,9 @@
   * Ajaxify the Helpful/Not Helpful form
   */
   function initHelpfulVote() {
-    $('li.answer div.side-section, .answer-tools').each(function() {
+    $('.sumo-l-two-col--sidebar, #document-list, .answer-tools').each(function() {
       new k.AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
-        positionMessage: true,
+        replaceFormWithMessage: true,
         removeForm: true
       });
     });
@@ -295,8 +303,8 @@
       var contentId = $(this).data('content-id'),
         $content = $('#' + contentId),
         text = $content.find('.content-raw').text(),
-        user = $content.find('.author-name').text(),
-        reply = template("''{user} [[#{contentId}|{said}]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+        user = $content.find('.display-name').text(),
+        reply = template("''<p>{user} [[#{contentId}|{said}]]</p>''\n<blockquote>{text}\n</blockquote>\n\n"),
         reply_text,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();

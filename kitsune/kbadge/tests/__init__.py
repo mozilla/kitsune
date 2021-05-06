@@ -1,7 +1,6 @@
-from badger.models import Award, Badge
-
 import factory
 
+from kitsune.kbadge.models import Award, Badge
 from kitsune.sumo.tests import FuzzyUnicode
 from kitsune.users.tests import UserFactory
 

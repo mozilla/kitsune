@@ -7,9 +7,8 @@
 {% set scripts = ('wiki', 'wiki.diff') %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="review-revision">
-      <h1>{{ _('Review Translation of {title}')|f(title=document.parent.title) }}</h1>
+<article id="review-revision" class="sumo-page-section--inner">
+  <h1 class="sumo-page-heading">{{ _('Review Translation of {title}')|f(title=document.parent.title) }}</h1>
       <p>{{ _('Reviewing Translation {id} in {language} by {user}')|f(id=revision.id, user=revision.creator, language=settings.LANGUAGES_DICT[document.locale.lower()]) }}.
         <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a>
         <br>
@@ -23,7 +22,7 @@
           <ul class="revision-comment">
             {% for revision in unreviewed_revisions %}
               <li>
-                {{ _('Revision {id} by {user}')|f(id=revision.id, user=revision.creator) }}.
+                {{ _('Revision {id} by {user}.')|f(id=revision.id, user=revision.creator) }}
                 <br>
                 {{ _('<label>Revision Comment:</label> {comment}')|fe(comment=revision.comment) }}
                 <br>
@@ -38,9 +37,9 @@
         <p>
           {{ _('This translation was already reviewed by {user} on {date}.')|fe(user=revision.reviewer, date=datetimeformat(revision.reviewed, format='longdatetime')) }}
         </p>
-      {% elif current_revision_id > revision.id %}
+      {% elif current_revision_id and current_revision_id > revision.id %}
         <p>
-          {% if latest_unapproved_revision_id > current_revision_id %}
+          {% if latest_unapproved_revision_id and latest_unapproved_revision_id > current_revision_id %}
             {{ _('This version is outdated, but there is a new version available.') }}
             <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest version.') }}</a>
           {% else %}
@@ -51,19 +50,19 @@
         {# If there is a parent revision to diff, and this translation is not already based on it. #}
         {% if parent_revision and document.current_revision.based_on and
               document.current_revision.based_on != parent_revision %}
-          <details class="h2" open="open">
-            <summary>{{ _('Recent English Changes') }}</summary>
+          <details open="open">
+            <summary class="sumo-card-heading">{{ _('Recent English Changes') }}</summary>
             {# Default locale diff #}
             {{ revision_diff(document.current_revision.based_on, parent_revision, show_picker=True) }}
           </details>
         {% endif %}
-        <details class="h2" open="open">
-          <summary>{{ _('Submitted Translation Changes') }}</summary>
+        <details open="open">
+          <summary class="sumo-card-heading">{{ _('Submitted Translation Changes') }}</summary>
           {# Current locale diff #}
           {{ revision_diff(document.current_revision, revision, _('Current public translation:'), _('Submitted translation:')) }}
         </details>
-        <details class="h2"{% if not parent_revision %} open="open"{% endif %}>
-          <summary>{{ _('Full Article Sources') }}</summary>
+        <details {% if not parent_revision %} open="open"{% endif %}>
+          <summary class="sumo-card-heading">{{ _('Full Article Sources') }}</summary>
           {% if not parent_revision %}
             <div class="warning-box">
               {{ _('The {default_locale} version has no approved content to show.')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}
@@ -72,28 +71,28 @@
             {# Default vs. current locale #}
             <div id="content-fields" class="revision-diff">
               <div class="approved">
-                <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
+                <h3 class="sumo-page-subheading">{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
                 <p>{{ _('Revision {id} by {user} on {date}')|fe(id=parent_revision.id, user=parent_revision.creator, date=datetimeformat(parent_revision.created, format='longdatetime')) }}</p>
               </div>
               <div class="localized">
-                <h3>{{ _('Submitted {locale} translation:')|f(locale=settings.LANGUAGES_DICT[document.locale.lower()]) }}</h3>
+                <h3 class="sumo-page-subheading">{{ _('Submitted {locale} translation:')|f(locale=settings.LANGUAGES_DICT[document.locale.lower()]) }}</h3>
                 <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision.id, user=revision.creator, date=datetimeformat(revision.created, format='longdatetime')) }}</p>
               </div>
-              <h4>{{ _('Keywords:') }}</h4>
+              <h4 class="sumo-card-heading">{{ _('Keywords:') }}</h4>
               <div class="approved">
                 <p>{{ parent_revision.keywords }}</p>
               </div>
               <div class="localized">
                 <p>{{ revision.keywords }}</p>
               </div>
-              <h4>{{ _('Search results summary:') }}</h4>
+              <h4 class="sumo-card-heading">{{ _('Search results summary:') }}</h4>
               <div class="approved">
                 <p>{{ parent_revision.summary }}</p>
               </div>
               <div class="localized">
                 <p>{{ revision.summary }}</p>
               </div>
-              <h4>{{ _('Content:') }}</h4>
+              <h4 class="sumo-card-heading">{{ _('Content:') }}</h4>
               <div class="approved">
                 <textarea readonly="readonly">{{ parent_revision.content }}</textarea>
               </div>
@@ -112,19 +111,19 @@
         </details>
       {% else %}
         <p>{{ _('This document does not have a current translation.') }}</p>
-        <h3>{{ _('Translation keywords:') }}</h3>
+        <h3 class="sumo-page-subheading">{{ _('Translation keywords:') }}</h3>
         <div id="revision-keywords">
           {{ revision.keywords }}
         </div>
-        <h3>{{ _('Translation search results summary:') }}</h3>
+        <h3 class="sumo-page-subheading">{{ _('Translation search results summary:') }}</h3>
         <div id="revision-summary">
           {{ revision.summary }}
         </div>
-        <h3>{{ _('Translation source:') }}</h3>
+        <h3 class="sumo-page-subheading">{{ _('Translation source:') }}</h3>
         <div id="revision-content">
           <pre>{{ revision.content }}</pre>
         </div>
-        <h3>{{ _('Translation rendered html:') }}</h3>
+        <h3 class="sumo-page-subheading">{{ _('Translation rendered html:') }}</h3>
         <div id="revision-html">
           <div id="doc-content">
             {{ revision.content_parsed|safe }}
@@ -134,7 +133,6 @@
 
       {% include 'wiki/includes/review_form.html' %}
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

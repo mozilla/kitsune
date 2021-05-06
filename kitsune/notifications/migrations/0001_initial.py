@@ -20,8 +20,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('read_at', models.DateTimeField(null=True, blank=True)),
-                ('action', models.ForeignKey(to='actstream.Action')),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('action', models.ForeignKey(on_delete=models.CASCADE, to='actstream.Action')),
+                ('owner', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created', models.DateTimeField(default=datetime.datetime.now)),
                 ('push_url', models.CharField(max_length=256)),
-                ('creator', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,
@@ -48,8 +48,8 @@ class Migration(migrations.Migration):
                 ('created', models.DateTimeField(default=datetime.datetime.now)),
                 ('endpoint', models.CharField(max_length=256)),
                 ('object_id', models.PositiveIntegerField()),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('creator', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('content_type', models.ForeignKey(on_delete=models.CASCADE, to='contenttypes.ContentType')),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'abstract': False,

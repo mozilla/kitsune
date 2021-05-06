@@ -1,0 +1,13 @@
+@use '../config'as c;
+@use '../protocol'as p;
+
+.badges-list {
+  display: flex;
+  flex-wrap: wrap;
+
+  li {
+    flex: 1 1 100%;
+    max-width: 150px;
+    margin: 0 20px 20px 0;
+  }
+}

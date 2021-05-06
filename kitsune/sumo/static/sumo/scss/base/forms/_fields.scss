@@ -1,0 +1,416 @@
+@use '../../config'as c;
+@use '../../protocol'as p;
+
+:root {
+  --field-border-color-default: var(--color-marketing-gray-05);
+  --field-border-color-hover: var(--color-blue-07);
+  --checkbox-checked-color: var(--color-blue-06);
+  --field-border-color-disabled: var(--color-marketing-gray-03);
+  --field-background-color-disabled: var(--color-marketing-gray-01);
+  --field-color-disabled: var(--color-marketing-gray-03);
+}
+
+// Forms
+//
+// Forms are used throughout the system and can be arranged in several ways. The
+// following is an example of how various components are combined.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/form.njk
+//
+// Weight: 3
+//
+// Style guide: forms
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+legend {
+  margin: 0;
+  padding: 1em 0 0.5em; // margin was collapsing strangely here.
+  font-size: p.remify(24px);
+  font-weight: var(--global-weight-semibold);
+  color: var(--primary-heading-color);
+}
+
+// Input fields
+//
+// Help text can be added under the field with `<p class="help-text">` Help text
+// should be be tied to the form field using the aria-describedby attribute and
+// an ID. This will ensure that screen readers—will announce the help text when
+// the user focuses the field.
+//
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/field.njk
+//
+// Weight: 1
+//
+// Style guide: forms.field
+label {
+  display: block;
+  margin-bottom: p.$spacing-sm;
+  @include c.text-body-md;
+  color: var(--color-marketing-gray-07);
+  font-weight: bold;
+
+  .required {
+    color: var(--color-red-08);
+  }
+}
+
+.field,
+.form-as-ul>li {
+  position: relative;
+  margin-bottom: p.$spacing-lg;
+  max-width: p.remify(480px);
+
+  .error-text {
+    display: none;
+  }
+
+  &.is-condensed {
+    margin-bottom: p.$spacing-sm;
+  }
+
+  &.has-large-textarea {
+    max-width: 100%;
+
+    textarea {
+      min-height: 340px;
+    }
+  }
+
+  &.inline-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    label {
+      width: 175px;
+      margin-right: 12px;
+    }
+
+    input,
+    select {
+      flex: 1 1 auto;
+      width: auto;
+      margin-right: 12px;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+
+  &.has-md-textarea {
+    max-width: 100%;
+
+    textarea {
+      min-height: 200px;
+    }
+  }
+
+  &.full-width {
+    max-width: 100%;
+
+    select {
+      max-width: 100%;
+    }
+  }
+
+  &.has-error,
+  &.has-success {
+    .field-wrap {
+      position: relative;
+
+      &:after {
+        position: absolute;
+        top: 9px;
+        right: 9px;
+        width: 21px;
+        height: 21px;
+        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10" fill="none" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-width="2" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11 7v5"/><circle cx="11" cy="15" r="1" fill="#C50043"/></svg>');
+        background-repeat: no-repeat;
+        content: "";
+      }
+    }
+  }
+
+  &.has-success .field-wrap:after {
+    top: 12px;
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#2ac3a2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1L6 12 1 7"/></svg>');
+  }
+
+  &.has-error {
+    .error-text {
+      display: block;
+    }
+
+    .errorlist {
+      background: transparent;
+      margin: 0;
+      padding: 0;
+
+      li {
+        display: block;
+        margin: p.$spacing-sm 0 0 0;
+        color: var(--color-red-08);
+        @include c.text-body-sm;
+      }
+    }
+
+
+  }
+}
+
+.character-counter {
+  margin: p.$spacing-sm 0 0 0;
+  @include c.text-body-sm;
+}
+
+.error-text {
+  display: block;
+  margin: p.$spacing-sm 0 0 0;
+  color: var(--color-red-08);
+  @include c.text-body-sm;
+}
+
+.form-as-ul.full-width>li {
+  max-width: 100%;
+}
+
+input[type='email'],
+input[type='url'],
+input[type='tel'],
+input[type='password'],
+input[type='search'],
+input[type='text'],
+input[type='number'],
+input[type='date'],
+input[type='time'],
+select,
+textarea,
+.ts-select-trigger {
+  appearance: none;
+  position: relative;
+  padding: 0 p.$spacing-sm;
+  width: 100%;
+  height: 40px;
+  border: 2px solid var(--field-border-color-default);
+  border-radius: var(--global-radius);
+  background-color: var(--color-white);
+  color: #0c0c0d;
+  outline: 0;
+  transition-duration: 150ms;
+  transition-property: border-color;
+  @include c.text-body-sm;
+
+  &:hover {
+    border-color: var(--field-border-color-hover);
+  }
+
+  &:focus,
+  .has-warning &,
+  .has-error &,
+  .has-success & {
+    border-color: transparent;
+  }
+
+  &:focus {
+    box-shadow: var(--focus-shadow);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:focus {
+      border-color: var(--field-border-color-hover);
+      box-shadow: none;
+    }
+  }
+
+  .has-warning & {
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('yellow', '04'), 0.3), 0 0 0 2px c.color('yellow', '04'); // compliant colors
+    // box-shadow: 0 0 0 p.$spacing-xs rgba(215, 182, 0, 0.3), 0 0 0 2px rgb(215, 182, 0); // noncompliant colors
+  }
+
+  .has-success & {
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('green', '07'), 0.3), 0 0 0 2px c.color('green', '07'); // compliant colors
+    // box-shadow: 0 0 0 p.$spacing-xs rgba(63, 225, 176, 0.3), 0 0 0 2px var(--green-60); // noncompliant colors
+  }
+
+  .has-error & {
+    box-shadow: 0 0 0 p.$spacing-xs rgba(c.color('red', '08'), 0.4), 0 0 0 2px var(--color-red-08);
+    // box-shadow: 0 0 0 p.$spacing-xs rgba(255, 79, 94, 0.4), 0 0 0 2px var(--red-60);
+  }
+
+  .has-disabled &,
+  &:disabled,
+  &:disabled:hover,
+  &:disabled:active {
+    border-color: var(--field-border-color-disabled);
+    background-color: var(--field-background-color-disabled);
+    color: var(--field-color-disabled);
+    cursor: default;
+  }
+
+  @media #{p.$mq-md} {
+    @include c.text-body-md;
+  }
+}
+
+// Select
+//
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/field_select.njk
+//
+// Weight: 2
+//
+// Style guide: forms.select
+select,
+.mzp-c-language-switcher select,
+.ts-select-trigger {
+  position: relative;
+  background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  background-color: var(--color-white);
+  @include p.bidi(((background-position, top 14px right 14px, top 14px left 14px),
+      (padding-right, 40px, p.$spacing-sm),
+      (padding-left, p.$spacing-sm, 40px),
+      (text-align, left, right),
+    ));
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+  max-width: p.remify(360px);
+
+  :not([class*="has-"])>&:hover,
+  :not([class*="has-"])>&:focus {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#0250BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  }
+
+  &:disabled,
+  .has-disabled & {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#CDCDD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  }
+
+  &[multiple] {
+    height: 200px;
+    background-image: none;
+
+    &:hover,
+    &:focus {
+      background-image: none;
+    }
+  }
+}
+
+#id_involved_from_month {
+  display: inline-block;
+  width: calc(60% - #{p.$spacing-sm + 5});
+  margin-right: p.$spacing-sm;
+}
+
+#id_involved_from_year {
+  display: inline-block;
+  width: 40%;
+}
+
+// Textarea
+//
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/field_textarea.njk
+//
+// Weight: 3
+//
+// Style guide: forms.textarea
+textarea {
+  display: block;
+  padding: p.$spacing-sm;
+  min-height: 80px;
+}
+
+// Help Text
+//
+// Help text can be added under the field with `<p class="help-text">` Help text
+// should be be tied to the form field using the aria-describedby attribute and
+// an ID. This will ensure that screen readers—will announce the help text when
+// the user focuses the field.
+//
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/field_help_text.njk
+//
+// Weight: 22
+//
+// Style guide: forms.help-text
+.help-text,
+.helptext {
+  display: block;
+  margin: p.$spacing-sm 0 0 0;
+  @include c.text-body-xs;
+}
+
+.delete-account-link {
+  margin-top: p.$spacing-lg;
+  padding-top: p.$spacing-md;
+  @include p.bidi(((text-align, right, left), ));
+  border-top: 1px solid var(--color-marketing-gray-03);
+
+  @media #{p.$mq-md} {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+.search-form-large {
+  margin-top: 10px;
+  margin-bottom: 20px;
+
+  @media #{p.$mq-md} {
+    margin-bottom: 40px;
+  }
+}
+
+
+.checkbox-list,
+.columns-list {
+  margin: 0 0 p.$spacing-xl 0;
+  padding: 0;
+  list-style: none;
+  columns: 2;
+  column-width: 200px;
+  column-gap: 60px;
+
+  label {
+    padding-top: 4px; // prevents focus state from bleeding
+  }
+
+  &--sublist {
+    margin-left: 32px;
+
+    @include p.bidi(((margin-left, 32px, 0),
+        (margin-right, 0, 32px),
+      ));
+
+  }
+}
+
+.products.mzp-c-details .is-summary button {
+  @include p.bidi(((padding-left, 0, 48px),
+      (padding-right, 48px, 0),
+    ));
+}
+
+.mzp-c-details.has-border-bottom {
+  margin-top: 52px;
+  border-bottom: 1px solid var(--color-heading);
+}

@@ -1,86 +1,20 @@
 import bisect
 import logging
-from smtplib import SMTPException
+from re import compile, escape
+from uuid import uuid4
 
 from django.conf import settings
-from django.contrib import auth
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import ugettext as _
 
-from django_statsd.clients import statsd
-
 from kitsune.sumo import email_utils
-from kitsune.users import ERROR_SEND_EMAIL
-from kitsune.users.forms import RegisterForm, AuthenticationForm
-from kitsune.users.models import (RegistrationProfile, Group,
-                                  CONTRIBUTOR_GROUP, Deactivation)
+from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
+
+log = logging.getLogger("k.users")
 
 
-log = logging.getLogger('k.users')
-
-
-def handle_login(request, only_active=True):
-    auth.logout(request)
-
-    if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST, only_active=only_active)
-        if form.is_valid():
-            auth.login(request, form.get_user())
-            statsd.incr('user.login')
-
-            if request.session.test_cookie_worked():
-                request.session.delete_test_cookie()
-
-        return form
-
-    request.session.set_test_cookie()
-    return AuthenticationForm()
-
-
-def handle_register(request, text_template=None, html_template=None,
-                    subject=None, email_data=None, *args, **kwargs):
-    """Handle to help registration."""
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            form = try_send_email_with_form(
-                RegistrationProfile.objects.create_inactive_user,
-                form, 'email',
-                form.cleaned_data['username'],
-                form.cleaned_data['password'],
-                form.cleaned_data['email'],
-                locale=request.LANGUAGE_CODE,
-                text_template=text_template,
-                html_template=html_template,
-                subject=subject,
-                email_data=email_data,
-                volunteer_interest=form.cleaned_data['interested'],
-                *args, **kwargs)
-            if not form.is_valid():
-                # Delete user if form is not valid, i.e. email was not sent.
-                # This is in a POST request and so always pinned to master,
-                # so there is no race condition.
-                User.objects.filter(email=form.instance.email).delete()
-            else:
-                statsd.incr('user.register')
-        return form
-    return RegisterForm()
-
-
-def try_send_email_with_form(func, form, field_name, *args, **kwargs):
-    """Send an email by calling func, catch SMTPException and place errors in
-    form."""
-    try:
-        func(*args, **kwargs)
-    except SMTPException as e:
-        log.warning(u'Failed to send email: %s' % e)
-        if 'email' not in form.errors:
-            form.errors[field_name] = []
-        form.errors[field_name].append(unicode(ERROR_SEND_EMAIL))
-    return form
-
-
-def add_to_contributors(request, user):
+def add_to_contributors(user, language_code):
     group = Group.objects.get(name=CONTRIBUTOR_GROUP)
     user.groups.add(group)
     user.save()
@@ -88,31 +22,44 @@ def add_to_contributors(request, user):
     @email_utils.safe_translation
     def _make_mail(locale):
         mail = email_utils.make_mail(
-            subject=_('Welcome to SUMO!'),
-            text_template='users/email/contributor.ltxt',
-            html_template='users/email/contributor.html',
-            context_vars={'contributor': user},
+            subject=_("Welcome to SUMO!"),
+            text_template="users/email/contributor.ltxt",
+            html_template="users/email/contributor.html",
+            context_vars={"contributor": user},
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to_email=user.email)
+            to_email=user.email,
+        )
 
         return mail
 
-    email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
+    email_utils.send_messages([_make_mail(language_code)])
+
+
+def normalize_username(username):
+    """Removes any invalid characters from the username"""
+
+    regex = compile(UnicodeUsernameValidator.regex)
+    normalized_username = ""
+    for char in username:
+        if not regex.match(char):
+            continue
+        normalized_username += char
+    return normalized_username
 
 
 def suggest_username(email):
-    username = email.split('@', 1)[0]
+    username = normalize_username(email.split("@", 1)[0])
 
-    username_regex = r'^{0}[0-9]*$'.format(username)
+    username_regex = r"^{0}[0-9]*$".format(escape(username))
     users = User.objects.filter(username__iregex=username_regex)
 
     if users.count() > 0:
         ids = []
-        for u in users:
+        for user in users:
             # get the number at the end
-            i = u.username[len(username):]
+            i = user.username[len(username) :]
 
-            # incase there's no number in the case where just the base is taken
+            # in case there's no number in the case where just the base is taken
             if i:
                 i = int(i)
                 bisect.insort(ids, i)
@@ -121,10 +68,14 @@ def suggest_username(email):
 
         for index, i in enumerate(ids):
             if index + 1 < len(ids):
-                if i + 1 != ids[index + 1]:
+                suggested_number = i + 1
+                # let's check if the number exists. Username can have leading zeroes
+                # which translates to an array [0, 1, 1, 2]. Without the membership
+                # check this snippet will return 2 which is wrong
+                if suggested_number != ids[index + 1] and suggested_number not in ids:
                     break
 
-        username = '{0}{1}'.format(username, i + 1)
+        username = "{0}{1}".format(username, i + 1)
 
     return username
 
@@ -132,5 +83,49 @@ def suggest_username(email):
 def deactivate_user(user, moderator):
     user.is_active = False
     user.save()
+    # Clear user settings to remove incoming notifications
+    Setting.objects.filter(user=user).delete()
+
     deactivation = Deactivation(user=user, moderator=moderator)
     deactivation.save()
+
+
+def anonymize_user(user):
+    # Clear the profile
+    profile = user.profile
+    profile.clear()
+    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uuid4()))
+    profile.save()
+
+    # Deactivate the user and change key information
+    user.username = "user%s" % user.id
+    user.email = "%s@example.com" % user.id
+    deactivate_user(user, user)
+
+    # Remove from all groups
+    user.groups.clear()
+
+    user.save()
+
+
+def get_oidc_fxa_setting(attr):
+    """Helper method to return the appropriate setting for Firefox Accounts authentication."""
+    FXA_CONFIGURATION = {
+        "OIDC_OP_TOKEN_ENDPOINT": settings.FXA_OP_TOKEN_ENDPOINT,
+        "OIDC_OP_AUTHORIZATION_ENDPOINT": settings.FXA_OP_AUTHORIZATION_ENDPOINT,
+        "OIDC_OP_USER_ENDPOINT": settings.FXA_OP_USER_ENDPOINT,
+        "OIDC_OP_JWKS_ENDPOINT": settings.FXA_OP_JWKS_ENDPOINT,
+        "OIDC_RP_CLIENT_ID": settings.FXA_RP_CLIENT_ID,
+        "OIDC_RP_CLIENT_SECRET": settings.FXA_RP_CLIENT_SECRET,
+        "OIDC_AUTHENTICATION_CALLBACK_URL": "users.fxa_authentication_callback",
+        "OIDC_CREATE_USER": settings.FXA_CREATE_USER,
+        "OIDC_RP_SIGN_ALGO": settings.FXA_RP_SIGN_ALGO,
+        "OIDC_USE_NONCE": settings.FXA_USE_NONCE,
+        "OIDC_RP_SCOPES": settings.FXA_RP_SCOPES,
+        "LOGOUT_REDIRECT_URL": settings.FXA_LOGOUT_REDIRECT_URL,
+        "OIDC_USERNAME_ALGO": settings.FXA_USERNAME_ALGO,
+        "OIDC_STORE_ACCESS_TOKEN": settings.FXA_STORE_ACCESS_TOKEN,
+        "OIDC_STORE_ID_TOKEN": settings.FXA_STORE_ID_TOKEN,
+    }
+
+    return FXA_CONFIGURATION.get(attr, None)

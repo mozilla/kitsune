@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Kitsune",
+            "type": "python",
+            "request": "launch",
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8000"
+            ]
+        },
+
+        {
+            "name": "Kitsune (Gunicorn)",
+            "type": "python",
+            "request": "launch",
+            "django": true,
+            "program": "/venv/bin/gunicorn",
+            "args": [
+                "wsgi.app",
+                "--config",
+                "wsgi/config.py"
+            ]
+        },
+
+        {
+            "name": "Attach to .vscode/debug-python",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "127.0.0.1",
+                "port": 5678
+            }
+        }
+
+    ]
+}

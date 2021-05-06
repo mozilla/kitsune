@@ -5,9 +5,8 @@
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
-  <div class="grid_9">
     <article id="locale-listing">
-      <h1>{{ _('Locales') }}</h1>
+      <h1 class="sumo-page-heading">{{ _('Locales') }}</h1>
       <ul>
         {% for locale in locales %}
           <li>
@@ -18,7 +17,6 @@
         {% endfor %}
       </ul>
     </article>
-  </div>
 {% endblock %}
 
 {% block side_top %}

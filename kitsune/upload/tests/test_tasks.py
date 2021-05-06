@@ -3,8 +3,9 @@ import os
 from django.conf import settings
 from django.core.files import File
 from django.core.files.images import ImageFile
+from django.test import override_settings
 
-import mock
+from unittest import mock
 from nose.tools import eq_
 
 import kitsune.upload.tasks
@@ -12,13 +13,15 @@ from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import (
-    _scale_dimensions, _create_image_thumbnail, compress_image,
-    generate_thumbnail)
+    _scale_dimensions,
+    _create_image_thumbnail,
+    compress_image,
+    generate_thumbnail,
+)
 from kitsune.users.tests import UserFactory
 
 
 class ScaleDimensionsTestCase(TestCase):
-
     def test_scale_dimensions_default(self):
         """A square image of exact size is not scaled."""
         ts = settings.THUMBNAIL_SIZE
@@ -28,7 +31,7 @@ class ScaleDimensionsTestCase(TestCase):
 
     def test_small(self):
         """A small image is not scaled."""
-        ts = settings.THUMBNAIL_SIZE / 2
+        ts = settings.THUMBNAIL_SIZE // 2
         (width, height) = _scale_dimensions(ts, ts)
         eq_(ts, width)
         eq_(ts, height)
@@ -63,13 +66,11 @@ class ScaleDimensionsTestCase(TestCase):
 
 
 class CreateThumbnailTestCase(TestCase):
-
     def test_create_image_thumbnail_default(self):
         """A thumbnail is created from an image file."""
-        thumb_content = _create_image_thumbnail(
-            'kitsune/upload/tests/media/test.jpg')
+        thumb_content = _create_image_thumbnail("kitsune/upload/tests/media/test.jpg")
         actual_thumb = ImageFile(thumb_content)
-        with open('kitsune/upload/tests/media/test_thumb.jpg') as f:
+        with open("kitsune/upload/tests/media/test_thumb.jpg", "rb") as f:
             expected_thumb = ImageFile(f)
 
         eq_(expected_thumb.width, actual_thumb.width)
@@ -78,8 +79,8 @@ class CreateThumbnailTestCase(TestCase):
     def test_create_image_thumbnail_avatar(self):
         """An avatar is created from an image file."""
         thumb_content = _create_image_thumbnail(
-            'kitsune/upload/tests/media/test.jpg',
-            settings.AVATAR_SIZE, pad=True)
+            "kitsune/upload/tests/media/test.jpg", settings.AVATAR_SIZE, pad=True
+        )
         actual_thumb = ImageFile(thumb_content)
 
         eq_(settings.AVATAR_SIZE, actual_thumb.width)
@@ -87,7 +88,6 @@ class CreateThumbnailTestCase(TestCase):
 
 
 class GenerateThumbnail(TestCase):
-
     def setUp(self):
         super(GenerateThumbnail, self).setUp()
         self.user = UserFactory()
@@ -98,10 +98,10 @@ class GenerateThumbnail(TestCase):
 
     def _image_with_thumbnail(self):
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
-        generate_thumbnail(image, 'file', 'thumbnail')
+        generate_thumbnail(image, "file", "thumbnail")
         return image
 
     def test_generate_thumbnail_default(self):
@@ -114,17 +114,17 @@ class GenerateThumbnail(TestCase):
     def test_generate_no_file(self):
         """generate_thumbnail does not fail when no file is provided."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        generate_thumbnail(image, 'file', 'thumbnail')
+        generate_thumbnail(image, "file", "thumbnail")
 
     def test_generate_deleted_file(self):
         """generate_thumbnail does not fail if file doesn't actually exist."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('kitsune/upload/tests/media/test.jpg') as f:
+        with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
         # The field will be set but the file isn't there.
         os.remove(image.file.path)
-        generate_thumbnail(image, 'file', 'thumbnail')
+        generate_thumbnail(image, "file", "thumbnail")
 
     def test_generate_thumbnail_twice(self):
         """generate_thumbnail replaces old thumbnail."""
@@ -134,7 +134,7 @@ class GenerateThumbnail(TestCase):
         # The thumbnail exists.
         assert os.path.isfile(old_path)
 
-        generate_thumbnail(image, 'file', 'thumbnail')
+        generate_thumbnail(image, "file", "thumbnail")
         new_path = image.thumbnail.path
 
         # The thumbnail was replaced.
@@ -146,7 +146,6 @@ class GenerateThumbnail(TestCase):
 
 
 class CompressImageTestCase(TestCase):
-
     def setUp(self):
         super(CompressImageTestCase, self).setUp()
         self.user = UserFactory()
@@ -157,39 +156,39 @@ class CompressImageTestCase(TestCase):
 
     def _uploaded_image(self, testfile="test.png"):
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        with open('kitsune/upload/tests/media/' + testfile) as f:
+        with open("kitsune/upload/tests/media/" + testfile, "rb") as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
         return image
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
-    @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
+    @override_settings(OPTIPNG_PATH="/dude")
+    @mock.patch.object(kitsune.upload.tasks.subprocess, "call")
     def test_compressed_image_default(self, call):
         """uploaded image is compressed."""
         image = self._uploaded_image()
-        compress_image(image, 'file')
+        compress_image(image, "file")
         assert call.called
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
-    @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
+    @override_settings(OPTIPNG_PATH="/dude")
+    @mock.patch.object(kitsune.upload.tasks.subprocess, "call")
     def test_compress_no_file(self, call):
         """compress_image does not fail when no file is provided."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        compress_image(image, 'file')
+        compress_image(image, "file")
         assert not call.called
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', None)
-    @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
+    @override_settings(OPTIPNG_PATH="")
+    @mock.patch.object(kitsune.upload.tasks.subprocess, "call")
     def test_compress_no_compression_software(self, call):
         """compress_image does not fail when no compression software."""
         image = self._uploaded_image()
-        compress_image(image, 'file')
+        compress_image(image, "file")
         assert not call.called
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
-    @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
+    @override_settings(OPTIPNG_PATH="/dude")
+    @mock.patch.object(kitsune.upload.tasks.subprocess, "call")
     def test_compressed_image_animated(self, call):
         """uploaded animated gif image is not compressed."""
         image = self._uploaded_image(testfile="animated.gif")
-        compress_image(image, 'file')
+        compress_image(image, "file")
         assert not call.called

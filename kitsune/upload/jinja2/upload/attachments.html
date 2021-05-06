@@ -1,6 +1,6 @@
 {% macro attachment(image, user=None, has_form=True) -%}
   <div class="attachment">
-    {% if user and (user == image.creator or
+    {% if user and (user.id == image.creator_id or
                     user.has_perm('upload.delete_imageattachment')) %}
       {% if has_form %}
         <form class="delete" method="post"
@@ -8,12 +8,12 @@
           {% csrf_token %}
           <input type="submit" name="delete" class="delete"
                  data-url="{{ url('upload.del_image_async', image.pk) }}"
-                 title="{{ _('Delete this image') }}" value="✖"/>
+                 title="{{ _('Delete this image') }}" value="&times;"/>
         </form>
       {% else %}
         <input type="submit" class="delete" name="delete"
                data-url="{{ url('upload.del_image_async', image.pk) }}"
-               title="{{ _('Delete this image') }}" value="✖"/>
+               title="{{ _('Delete this image') }}" value="&times;"/>
         <noscript>
           <label>{{ _('Delete this image') }}
             <input type="checkbox" name="delete_image" value="{{ image.pk }}"/>
@@ -31,6 +31,7 @@
 {% macro attachments_form(model_name, object_id, images, settings, user=None) -%}
   <div class="attachments-upload"
        data-post-url={{ url('upload.up_image_async', model_name, object_id)}}>
+
     <div class="uploaded{% if not images %} empty{% endif %}">
       <div>{{ _('Uploaded images:') }}</div>
       <div class="attachments attachments-list">
@@ -45,13 +46,16 @@
                value="{{ _('Delete selected images') }}"/>
       </noscript>
     </div>
-    <div class="add-attachment">
-      <label for="id_image">{{ _('Add images:') }}</label>
-      <input type="file" id="id_image" name="image" size="30"
-             accept="{{ settings.IMAGE_ALLOWED_MIMETYPES }}"
-             title="{{ _('Browse for an image to upload.') }}"/>
+    <div class="field add-attachment">
+      <label for="id_image">{{ _('Add images (optional):') }}</label>
+      <label for="id_image" class="sumo-button sumo-file-button">
+        <span aria-hidden="true">Browse...</span>
+        <input type="file" id="id_image" name="image" size="30"
+              accept="{{ settings.IMAGE_ALLOWED_MIMETYPES }}"
+              title="{{ _('Browse for an image to upload.') }}"/>
+      </label>
       <noscript>
-        <input type="submit" name="upload_image" class="btn"
+        <input type="submit" name="upload_image" class="sumo-button"
                value="{{ _('Upload') }}"/>
       </noscript>
     </div>

@@ -3,9 +3,9 @@
 set -e
 
 echo "Fix path issues"
-ln -sf /usr/lib/`uname -i`-linux-gnu/libfreetype.so ~/virtualenv/python2.6/lib/
-ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
-ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libfreetype.so ~/virtualenv/python3.7/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python3.7/lib/
+ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python3.7/lib/
 
 echo "Install Python dependencies"
 pip install -r requirements/dev.txt
@@ -29,11 +29,6 @@ fi
 echo "Installing Node.js dependencies"
 npm install
 echo
-
-echo "Installing front end dependencies"
-./node_modules/.bin/bower install
-echo
-
 
 echo "Installing ElasticSearch"
 # Default to ES version 1.2.4, but allow overrides from the environment

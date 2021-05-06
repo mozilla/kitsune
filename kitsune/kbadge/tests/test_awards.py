@@ -11,7 +11,7 @@ class AwardNotificationTests(TestCase):
         # Note: Need to do this import here so the
         # notify_award_recipient function handles the
         # badge_was_awarded signal. This works fine in production
-        # because badges gets loaded by django-badger in startup.
+        # because badges gets loaded by kitsune.kbadge in startup.
         from kitsune.kbadge import badges  # noqa
 
         new_badge = BadgeFactory()
@@ -20,7 +20,7 @@ class AwardNotificationTests(TestCase):
         eq_(0, len(mail.outbox))
 
         # Create an award and save it. This triggers the notification.
-        AwardFactory(description=u'yay!', badge=new_badge)
+        AwardFactory(description="yay!", badge=new_badge)
 
         eq_(1, len(mail.outbox))
 

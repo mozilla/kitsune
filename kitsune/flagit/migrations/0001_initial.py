@@ -24,9 +24,9 @@ class Migration(migrations.Migration):
                 ('notes', models.TextField(default=b'', blank=True)),
                 ('created', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
                 ('handled', models.DateTimeField(default=datetime.datetime.now, db_index=True)),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
-                ('creator', models.ForeignKey(related_name='flags', to=settings.AUTH_USER_MODEL)),
-                ('handled_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, null=True)),
+                ('content_type', models.ForeignKey(on_delete=models.CASCADE, to='contenttypes.ContentType')),
+                ('creator', models.ForeignKey(on_delete=models.CASCADE, related_name='flags', to=settings.AUTH_USER_MODEL)),
+                ('handled_by', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL, null=True)),
             ],
             options={
                 'ordering': ['created'],
@@ -36,6 +36,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='flaggedobject',
-            unique_together=set([('content_type', 'object_id', 'creator')]),
+            unique_together={('content_type', 'object_id', 'creator')},
         ),
     ]

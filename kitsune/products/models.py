@@ -1,33 +1,39 @@
-import io
 import os
 
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _lazy
-from PIL import Image
-from uuid import uuid4
 
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 
 
-HOT_TOPIC_SLUG = 'hot'
+HOT_TOPIC_SLUG = "hot"
 
 
 class Product(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
+    codename = models.CharField(max_length=255, blank=True, default="")
     slug = models.SlugField()
     description = models.TextField()
-    image = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
-                              blank=True,
-                              max_length=settings.MAX_FILEPATH_LENGTH,
-                              # no l10n in admin
-                              help_text=u'The image must be 96x96.')
+    image = models.ImageField(
+        upload_to=settings.PRODUCT_IMAGE_PATH,
+        null=True,
+        blank=True,
+        max_length=settings.MAX_FILEPATH_LENGTH,
+        # no l10n in admin
+        help_text="Used on the the home page. Must be 484x244.",
+    )
+    image_alternate = models.ImageField(
+        upload_to=settings.PRODUCT_IMAGE_PATH,
+        null=True,
+        blank=True,
+        max_length=settings.MAX_FILEPATH_LENGTH,
+        help_text=("Used everywhere except the home " "page. Must be 96x96."),
+    )
     image_offset = models.IntegerField(default=None, null=True, editable=False)
-    image_cachebuster = models.CharField(max_length=32, default=None,
-                                         null=True, editable=False)
-    sprite_height = models.IntegerField(default=None, null=True,
-                                        editable=False)
+    image_cachebuster = models.CharField(max_length=32, default=None, null=True, editable=False)
+    sprite_height = models.IntegerField(default=None, null=True, editable=False)
 
     # Dictates the order in which products are displayed in product
     # lists.
@@ -37,80 +43,33 @@ class Product(ModelBase):
     visible = models.BooleanField(default=False)
 
     # Platforms this Product runs on.
-    platforms = models.ManyToManyField('Platform')
+    platforms = models.ManyToManyField("Platform")
 
     class Meta(object):
-        ordering = ['display_order']
+        ordering = ["display_order"]
 
-    def __unicode__(self):
-        return u'%s' % self.title
+    def __str__(self):
+        return "%s" % self.title
 
     @property
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(settings.STATIC_URL, 'products', 'img', 'product_placeholder.png')
+        return os.path.join(settings.STATIC_URL, "products", "img", "product_placeholder.png")
 
-    def sprite_url(self, retina=True):
-        fn = 'logo-sprite-2x.png' if retina else 'logo-sprite.png'
-        url = os.path.join(settings.MEDIA_URL, settings.PRODUCT_IMAGE_PATH, fn)
-        return '%s?%s' % (url, self.image_cachebuster)
+    @property
+    def image_alternate_url(self):
+        if self.image_alternate:
+            return self.image_alternate.url
+        return os.path.join(
+            settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
+        )
 
     def questions_enabled(self, locale):
         return self.questions_locales.filter(locale=locale).exists()
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None, regenerate_sprite=True):
-        super(Product, self).save(force_insert=force_insert,
-                                  force_update=force_update, using=using,
-                                  update_fields=update_fields)
-
-        if regenerate_sprite:
-            cachebust = uuid4().hex
-            logos = []
-            offset = 0
-            products = Product.objects.order_by('id').all()
-
-            for product in products:
-                if product.image:
-                    product.image_offset = offset
-                    offset += 1
-                    logo_file = io.BytesIO(product.image.file.read())
-                    logos.append(Image.open(logo_file))
-                else:
-                    product.image_offset = None
-
-                product.image_cachebuster = cachebust
-
-            for product in products:
-                product.sprite_height = 148 * len(logos)
-                product.save(regenerate_sprite=False)
-
-            if len(logos):
-                large_sprite = Image.new(mode='RGBA',
-                                         size=(296, 296 * len(logos)),
-                                         color=(0, 0, 0, 0))
-
-                small_sprite = Image.new(mode='RGBA',
-                                         size=(148, 148 * len(logos)),
-                                         color=(0, 0, 0, 0))
-
-                for offset, logo in enumerate(logos):
-                    large_sprite.paste(logo, (100, 100 + (296 * offset)))
-
-                    small_logo = logo.resize((48, 48), Image.ANTIALIAS)
-                    small_sprite.paste(small_logo, (50, 50 + (148 * offset)))
-
-                large_sprite.save(os.path.join(
-                    settings.MEDIA_ROOT, settings.PRODUCT_IMAGE_PATH,
-                    'logo-sprite-2x.png'))
-
-                small_sprite.save(os.path.join(
-                    settings.MEDIA_ROOT, settings.PRODUCT_IMAGE_PATH,
-                    'logo-sprite.png'))
-
     def get_absolute_url(self):
-        return reverse('products.product', kwargs={'slug': self.slug})
+        return reverse("products.product", kwargs={"slug": self.slug})
 
 
 # Note: This is the "new" Topic class
@@ -119,16 +78,20 @@ class Topic(ModelBase):
     # We don't use a SlugField here because it isn't unique by itself.
     slug = models.CharField(max_length=255, db_index=True)
     description = models.TextField()
-    image = models.ImageField(upload_to=settings.TOPIC_IMAGE_PATH, null=True,
-                              blank=True,
-                              max_length=settings.MAX_FILEPATH_LENGTH)
+    image = models.ImageField(
+        upload_to=settings.TOPIC_IMAGE_PATH,
+        null=True,
+        blank=True,
+        max_length=settings.MAX_FILEPATH_LENGTH,
+    )
 
     # Topics are product-specific
-    product = models.ForeignKey(Product, related_name='topics')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="topics")
 
     # Topics can optionally have a parent.
-    parent = models.ForeignKey('self', related_name='subtopics',
-                               null=True, blank=True)
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, related_name="subtopics", null=True, blank=True
+    )
 
     # Dictates the order in which topics are displayed in topic lists.
     display_order = models.IntegerField()
@@ -137,20 +100,21 @@ class Topic(ModelBase):
     visible = models.BooleanField(default=False)
     # Whether or not this topic is used in the AAQ.
     in_aaq = models.BooleanField(
-        default=False, help_text=_lazy(u'Whether this topic is shown to users in the AAQ or not.'))
+        default=False, help_text=_lazy("Whether this topic is shown to users in the AAQ or not.")
+    )
 
     class Meta(object):
-        ordering = ['product', 'display_order']
-        unique_together = ('slug', 'product')
+        ordering = ["product", "display_order"]
+        unique_together = ("slug", "product")
 
-    def __unicode__(self):
-        return u'[%s] %s' % (self.product.title, self.title)
+    def __str__(self):
+        return "[%s] %s" % (self.product.title, self.title)
 
     @property
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(settings.STATIC_URL, 'products', 'img', 'topic_placeholder.png')
+        return os.path.join(settings.STATIC_URL, "products", "img", "topic_placeholder.png")
 
     @property
     def path(self):
@@ -164,29 +128,36 @@ class Topic(ModelBase):
     def documents(self, **kwargs):
         # Avoid circular imports
         from kitsune.wiki.models import Document
+
         query = {
-            'topics': self,
-            'products': self.product,
-            'is_archived': False,
-            'current_revision__isnull': False,
-            'category__in': settings.IA_DEFAULT_CATEGORIES,
+            "topics": self,
+            "products": self.product,
+            "is_archived": False,
+            "current_revision__isnull": False,
+            "category__in": settings.IA_DEFAULT_CATEGORIES,
         }
         query.update(kwargs)
         return Document.objects.filter(**query)
 
     def get_absolute_url(self):
         if self.parent is None:
-            return reverse('products.documents', kwargs={
-                'product_slug': self.product.slug,
-                'topic_slug': self.slug,
-            })
+            return reverse(
+                "products.documents",
+                kwargs={
+                    "product_slug": self.product.slug,
+                    "topic_slug": self.slug,
+                },
+            )
         else:
             assert self.parent.parent is None
-            return reverse('products.subtopics', kwargs={
-                'product_slug': self.product.slug,
-                'topic_slug': self.parent.slug,
-                'subtopic_slug': self.slug,
-            })
+            return reverse(
+                "products.subtopics",
+                kwargs={
+                    "product_slug": self.product.slug,
+                    "topic_slug": self.parent.slug,
+                    "subtopic_slug": self.slug,
+                },
+            )
 
 
 class Version(ModelBase):
@@ -195,12 +166,12 @@ class Version(ModelBase):
     slug = models.CharField(max_length=255, db_index=True)
     min_version = models.FloatField()
     max_version = models.FloatField()
-    product = models.ForeignKey('Product', related_name='versions')
+    product = models.ForeignKey("Product", on_delete=models.CASCADE, related_name="versions")
     visible = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
 
     class Meta(object):
-        ordering = ['-max_version']
+        ordering = ["-max_version"]
 
 
 class Platform(ModelBase):
@@ -211,5 +182,5 @@ class Platform(ModelBase):
     # lists.
     display_order = models.IntegerField()
 
-    def __unicode__(self):
-        return u'%s' % self.name
+    def __str__(self):
+        return "%s" % self.name

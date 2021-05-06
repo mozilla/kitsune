@@ -1,0 +1,55 @@
+@use '../config' as c;
+
+// Social Links
+//
+// This component is designed to display HTML content over an image, typically
+// at the beginning of a document. This component can be used on its own, or
+// as an item within a carousel.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/social-links.njk
+//
+// Weight: 6
+//
+// Style guide: social-links
+
+
+
+.social-links {
+  margin: 2em 0 0 0;
+  padding: 0;
+
+  li {
+    display: inline-block;
+    margin-right: 20px;
+
+    a {
+      @include c.image-replaced();
+      display: block;
+      background-image: url('/static/sumo/img/social-icon-sprite.svg');
+
+      &.twitter {
+        width: 18px;
+        height: 15px;
+        background-position: 0 0;
+      }
+
+      &.instagram {
+        width: 19px;
+        height: 19px;
+        background-position: 0 -25px;
+      }
+
+      &.youtube {
+        width: 19px;
+        height: 13px;
+        background-position: 0 -54px;
+      }
+
+      &.facebook {
+        width: 10px;
+        height: 19px;
+        background-position: 0 -77px;
+      }
+    }
+  }
+}

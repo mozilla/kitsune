@@ -14,9 +14,9 @@
       <h1>{{ title }}</h1>
       <h2>{{ _('Locale:') }} {{ current_locale_name }}</h2>
 
-      {% if user.is_anonymous() %}
+      {% if user.is_anonymous %}
         <section id="get-involved-box">
-          <a class="btn btn-submit" href="{{ url('landings.get_involved_l10n') }}">
+          <a class="button" href="{{ url('landings.get_involved_l10n') }}">
             {{ _('Volunteer for Mozilla Support') }}
           </a>
         </section>
@@ -66,7 +66,7 @@
 
       {{ product_choice_list(products, product, url('dashboards.localization')) }}
 
-      {% if not user.is_anonymous() %}
+      {% if not user.is_anonymous %}
         {{ print_subscription_menu(default_locale_name,
                                    current_locale_name,
                                    on_default_locale,

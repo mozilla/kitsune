@@ -13,18 +13,22 @@
 
 {% set meta = [('robots', 'noindex')] %}
 
-{% block above_main %}
-  {% if user.is_authenticated() %}
-    <a id="btn-upload" class="btn btn-submit" href="{{ url('gallery.gallery', media_type)|urlparams(hash='upload') }}">{{ _('Upload a New Media File') }}</a>
-  {% endif %}
-  <h1>{{ media.title|truncate(length=55, killwords=True) }}</h1>
-{% endblock %}
-
 {% block content %}
-  <div id="media-object" class="main grid_12">
+  <div id="media-object" class="sumo-page-content main">
+    {% if user.is_authenticated %}
+    <p>
+      <a id="btn-upload" class="sumo-button primary-button btn btn-submit" href="{{ url('gallery.gallery', media_type)|urlparams(hash='upload') }}">{{ _('Upload a New Media File') }}</a>
+      <br>
+    </p>
+    {% endif %}
+
+    <h1 class="sumo-page-heading">{{ media.title|truncate(length=55, killwords=True) }}</h1>
+
+
     <div class="content-box">
       <div id="media-metainfo">
-        <ul id="media-info" class="cf">
+
+        <ul id="media-info" class="topic-article--meta-list">
           {% if media_type =='image' %}
             <li class="dimensions">
               {{ media.file.width }} x {{ media.file.height }} px
@@ -53,7 +57,7 @@
             <li class="format">{{ media_format|upper }}</li>
           {% endif %}
         </ul>
-        <ul id="media-meta" class="cf">
+        <ul id="media-meta" class="topic-article--meta-list">
           <li class="creator">
               {{ _('by <a href="{profile_url}">{user}</a>')|fe
                       (profile_url=profile_url(media.creator),
@@ -71,11 +75,11 @@
         {% endif %}
       </div>
 
-      <h2>{{ _('Description') }}</h2>
+      <h2 class="sumo-page-subheading">{{ _('Description') }}</h2>
       <div class="description">{{ media.description|wiki_to_html }}</div>
 
       {% if media_type == 'image' %}
-        <h2>{{ _('Articles') }}</h2>
+        <h2 class="sumo-page-subheading">{{ _('Articles') }}</h2>
         {% set documents = media.documents %}
         <div class="documents">
           {% if documents %}
@@ -93,14 +97,16 @@
     </div>
     <div class="submit">
       <form id="media-actions" action="{{ url('gallery.delete_media', media_type, media.pk) }}" method="GET">
+        <div class="sumo-button-wrap">
         {% if user == media.creator or
           (media_type == 'image' and user.has_perm('gallery.delete_image')) or
           (media_type == 'video' and user.has_perm('gallery.delete_video')) %}
-          <button type="submit" class="btn btn-submit big">{{ delete_this }}</button>
+          <button type="submit" class="sumo-button secondary-button btn btn-submit big">{{ delete_this }}</button>
         {% endif %}
         {% if media_type == 'image' and (user == media.creator or user.has_perm('gallery.change_image')) %}
-          <a class="btn" href="{{ url('gallery.edit_media', media_type, media.id) }}">{{ edit_this }}</a>
+          <a class="btn sumo-button secondary-button" href="{{ url('gallery.edit_media', media_type, media.id) }}">{{ edit_this }}</a>
         {% endif %}
+        </div>
       </form>
     </div>
   </div>

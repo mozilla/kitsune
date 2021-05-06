@@ -1,26 +1,33 @@
 {% if not user_is_contributor %}
-  <div class="row cf">
-    <div class="grid_12">
-      <div class="content-box button-wrapper cf">
-        {% if user.is_authenticated() %}
-          <form method="post" action="{{ url('users.make_contributor') }}">
-            <input type="hidden" name="return_to" value="{{ request.get_full_path() }}">
-            {% csrf_token %}
-            <button id="sign-up-contributor" class="btn btn-submit" data-ga-click="_trackEvent | Sign Me Up Click | Logged In">{{ _('Sign me up') }} &raquo;</button>
-          </form>
-        {% else %}
-          <a id="sign-up-contributor" class="btn btn-submit" href="{{ url('users.auth_contributor') }}" data-ga-click="_trackEvent | Sign Me Up Click | Logged Out">
-            {{ _('Sign me up') }} &raquo;
-          </a>
-        {% endif %}
-        <h3>
-          {% if signup_headline %}
-            {{ signup_headline }}
-          {% else %}
-            {{ _('Sign up as a volunteer') }}
-          {% endif %}
-        </h3>
-      </div>
-    </div>
+<div class="card card--ribbon is-callout-bg has-moz-headings heading-is-one-line no-body-text">
+  <div class="card--details">
+    <h3 class="card--title">
+      <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+          <g transform="translate(2.000000, 1.878680)" stroke="#000000" stroke-width="2">
+            <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+            <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+          </g>
+        </g>
+      </svg>
+      {% if signup_headline %}
+        {{ signup_headline }}
+      {% else %}
+        {{ _('Sign up as a volunteer') }}
+      {% endif %}
+    </h3>
+
+    {% if user.is_authenticated %}
+      <form method="post" action="{{ url('users.make_contributor') }}">
+        <input type="hidden" name="return_to" value="{{ request.get_full_path() }}">
+        {% csrf_token %}
+        <button id="sign-up-contributor" class="sumo-button primary-button button-lg" data-event-category="Sign Me Up Click" data-event-action="Logged In">{{ _('Sign me up') }} &raquo;</button>
+      </form>
+    {% else %}
+      <a id="sign-up-contributor" class="sumo-button primary-button" href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}&is_contributor=True" data-event-category="Sign Me Up Click" data-event-action="Logged In">
+        {{ _('Sign me up') }} &raquo;
+      </a>
+    {% endif %}
   </div>
+</div>
 {% endif %}

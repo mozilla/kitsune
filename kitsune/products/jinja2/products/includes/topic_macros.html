@@ -1,48 +1,145 @@
-{% macro help_topics(topics, show_community_support=False) -%}
-  {% for topic in topics %}
-    {% if loop.first %}<ul class="card-grid cf">{% endif %}
-    <li>
-      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-      <a href="{{ topic_url }}" class="cf">
-        <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
-        <span class="title">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
+{% macro help_topics(topics, show_community_support=False, product_slug=None, new_tab=False) -%}
+
+  <div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
+    <div class="scroll-wrap">
+      {% for topic in topics %}
+      {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
+      <div class="card card--topic">
+        <img
+          class="card--icon"
+          src="{{ topic.image_url }}"
+          alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
+        />
+        <div class="card--details">
+          <h3 class="card--title">
+            <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
+               data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
+              {{ pgettext('DB: products.Topic.title', topic.title) }}
+            </a>
+          </h3>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro topic_metadata(topics, show_community_support=False) %}
+<section class="support-callouts mzp-l-content sumo-page-section--inner">
+  {% if show_community_support %}
+  <div class="card card--ribbon is-inverse heading-is-one-line">
+    <div class="card--details">
+      <h3 class="card--title">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
+              <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+              <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+            </g>
+          </g>
+        </svg>
+
+        {{ _('Still need help?') }}
+      </h3>
+      <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
+      <a
+        class="sumo-button primary-button button-lg"
+        href="{{ url('questions.aaq_step1') }}"
+        data-event-category="link click"
+        data-event-action="topic"
+        data-event-label="Get community support">
+        {{ _('Ask the Community') }}
       </a>
-    </li>
-    {% if loop.last %}
-      {% if show_community_support %}
-        <li class="community-support">
-          <a href="{{ url('wiki.document', 'get-community-support') }}" class="cf">
-            <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-icon" alt="" />
-            <span class="title">{{ _('Get community support') }}</span>
-          </a>
-        </li>
-      {% endif %}
-      </ul>
-    {% endif %}
-  {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+{% if settings.OIDC_ENABLE and product.id in subscribed_products_ids %}
+  <div class="mzp-l-content sumo-page-section--inner text-center">
+    <h2 class="sumo-page-subheading">
+      <svg width="24px" height="24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.44 19.5">
+        <path d="M18.88,0H19c.5.1.6.5.3,1.1L11.67,18.8c-.2.4-.39.7-.8.7-.2,0-.3,0-.4-.1s-.3-.2-.39-.4l-3-4.9c-.1-.2-.3-.4-.4-.6l-.6-.6c-.2-.2-.4-.3-.6-.5l-5-3.1a1.6,1.6,0,0,1-.4-.5.58.58,0,0,1,0-.6,1,1,0,0,1,.59-.5L18.38.2a1.59,1.59,0,0,1,.5-.2ZM6.47,10.9a2.65,2.65,0,0,1,.6.5l7.71-7.9-12,5.2,3.69,2.2ZM16,4.8l-7.7,7.8.1.1c.1.1.1.2.2.3s.1.2.2.3L11,16.8C10.88,16.7,16,4.8,16,4.8Z"/>
+      </svg>
+
+      {{ _('Contact Us') }}
+    </h2>
+    <p class="sumo-page-intro">{{ _('Contact the Support Team for help.') }}</p>
+    <a
+      class="sumo-button primary-button button-lg"
+      href="{{ settings.FXA_SUPPORT_FORM }}"
+      data-event-category="link click"
+      data-event-action="topic"
+      data-event-label="Contact Support">
+      {{ _('Ask a Question') }}
+    </a>
+  </div>
+  <div class="mzp-l-content">
+    <hr />
+  </div>
+{% endif %}
 {%- endmacro %}
 
 {% macro topic_sidebar(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}
-  <ul class="sidebar-nav topics">
+<h3 class="sidebar-subheading large-only">{{ _('All') }} {{ product }} {{ _('Topics') }}</h3>
+<nav class="sidebar-nav topics">
+  <span class="details-heading"></span>
+  <ul class="sidebar-nav--list">
     {% for topic in topics %}
       {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-      <li {% if selected_topic == topic %}class="selected {% if selected_subtopic != None %}subtopic-selected{% endif %}"{% endif %}>
-        <a href="{{ topic_url }}">
+      <li class="sidebar-nav--item {% if subtopics %}has-subtopics {% endif %}{% if selected_subtopic != None %} subtopic-selected{% endif %}">
+        <a class="
+          sidebar-nav--link
+          {% if selected_topic == topic and selected_subtopic == None %}selected{% endif %}
+          {% if selected_topic == topic and selected_subtopic != None %}show-selected-on-lg{% endif %}
+          "
+          href="{{ topic_url }}"
+          data-event-category="link click"
+          data-event-action="topic sidebar"
+          data-event-label="{{topic.title}}">
           {{ pgettext('DB: products.Topic.title', topic.title) }}
         </a>
+
         {% if selected_topic == topic %}
-          <ul class="subtopics">
-            {% for subtopic in subtopics %}
-              {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
-              <li {{ selected_subtopic|class_selected(subtopic) }}>
-                <a href="{{ subtopic_url }}">
-                {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
+        <ul class="sidebar-nav--sublist">
+        {% for subtopic in subtopics %}
+          {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
+          <li class="sidebar-nav--subitem">
+            <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+              {{ pgettext('DB: products.Topic.title', subtopic.title) }}
+            </a>
+          </li>
+        {% endfor %}
+        </ul>
         {% endif %}
+
+
+
       </li>
     {% endfor %}
   </ul>
+</nav>
+{%- endmacro %}
+
+
+{% macro topic_tabs(topics, subtopics, product, topic, selected_subtopic=None) -%}
+<nav class="tabs">
+  <ul class="tabs--list subtopics">
+    {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+    <li class="tabs--item">
+      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}">
+        <span class="mobile-only">{{ _('All') }}</span>
+        <span class="hide-on-mobile">{{ _('All articles and threads') }}</span>
+      </a>
+    </li>
+    {% for subtopic in subtopics %}
+      {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
+      <li class="tabs--item">
+        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+          <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</nav>
 {%- endmacro %}

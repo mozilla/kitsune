@@ -1,10 +1,17 @@
 from nose.tools import eq_
+from parameterized import parameterized
 
 from datetime import datetime, timedelta
-from kitsune.questions.models import Question, Answer
-from kitsune.questions.tests import QuestionFactory, AnswerFactory
+from kitsune.questions.models import Answer, Question
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.utils import (
-    days_since, num_questions, num_answers, num_solutions, mark_content_as_spam)
+    days_since,
+    get_mobile_product_from_ua,
+    mark_content_as_spam,
+    num_answers,
+    num_questions,
+    num_solutions,
+)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
@@ -86,7 +93,6 @@ class ContributionCountTestCase(TestCase):
 
 
 class FlagUserContentAsSpamTestCase(TestCase):
-
     def test_flag_content_as_spam(self):
         # Create some questions and answers by the user.
         u = UserFactory()
@@ -108,3 +114,32 @@ class FlagUserContentAsSpamTestCase(TestCase):
         eq_(2, Question.objects.filter(is_spam=True, creator=u).count())
         eq_(0, Answer.objects.filter(is_spam=False, creator=u).count())
         eq_(3, Answer.objects.filter(is_spam=True, creator=u).count())
+
+
+class GetMobileProductFromUATests(TestCase):
+    @parameterized.expand(
+        [
+            ("Mozilla/5.0 (Android; Mobile; rv:40.0) Gecko/40.0 Firefox/40.0", "mobile"),
+            ("Mozilla/5.0 (Android; Tablet; rv:40.0) Gecko/40.0 Firefox/40.0", "mobile"),
+            ("Mozilla/5.0 (Android 4.4; Mobile; rv:41.0) Gecko/41.0 Firefox/41.0", "mobile"),
+            ("Mozilla/5.0 (Android 4.4; Tablet; rv:41.0) Gecko/41.0 Firefox/41.0", "mobile"),
+            (
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/7.0.4 Mobile/16B91 Safari/605.1.15",  # noqa: E501
+                "ios",
+            ),
+            (
+                "Mozilla/5.0 (Android 10; Mobile; rv:76.0) Gecko/76.0 Firefox/76.0",
+                "mobile",
+            ),
+            (
+                "Mozilla/5.0 (Linux; Android 8.1.0; Redmi 6A Build/O11019; rv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Rocket/1.9.2(13715) Chrome/76.0.3809.132 Mobile Safari/537.36",  # noqa: E501
+                "firefox-lite",
+            ),
+            (  # Chrome on Android:
+                "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Mobile Safari/537.36",  # noqa: E501
+                None,
+            ),
+        ]
+    )
+    def test_user_agents(self, ua, expected):
+        eq_(expected, get_mobile_product_from_ua(ua))

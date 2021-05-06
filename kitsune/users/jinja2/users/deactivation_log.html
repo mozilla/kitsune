@@ -4,7 +4,8 @@
 {% set styles = ('users',) %}
 
 {% block content %}
-  <h1>{{ title }}</h1>
+<section class="sumo-page-section">
+  <h1 class="sumo-page-heading">{{ title }}</h1>
   <table id="deactivations-log">
     <thead>
       <tr>
@@ -27,4 +28,5 @@
   </table>
 
   {{ deactivations|quick_paginator }}
+</section>
 {% endblock %}

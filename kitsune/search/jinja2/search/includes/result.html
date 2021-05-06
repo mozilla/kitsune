@@ -1,38 +1,59 @@
 {% macro search_result(result) %}
-  <div class="result {{ result.type }}">
-    {% set url =  result.url %}
-    <h3><a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.title }}</a></h3>
-    <a tabindex="-1" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.search_summary }}</a>
-    {% if result.type == 'question' %}
-      <p class="question-status cf">
-        {% if result.is_solved %}
-          <span class="solved">{{ _('Solved') }}</span> &mdash;
+<article class="topic-article result {{ result.type }}">
+  <div class="topic-article--icon-wrap">
+    {% if result.type == 'document' %}
+    <img class="topic-article--icon" src="/static/protocol/img/icons/reader-mode.svg" alt="">
+    {% elif result.type == 'question' %}
+    <img class="topic-article--icon" src="/static/protocol/img/icons/blog.svg" alt="">
+    {% elif result.type == 'thread' %}
+    <img class="topic-article--icon" src="/static/protocol/img/icons/get-involved.svg" alt="">
+    {% endif %}
+  </div>
+
+  {% set url =  result.url %}
+  <div class="topic-article--text">
+    <h3 class="sumo-card-heading">
+      <a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank" {% endif %}>{{ result.title }}</a>
+    </h3>
+
+    {% if result.type == 'question' or result.type == "thread" %}
+    <ul class="thread-meta topic-article--meta-list">
+      <li class="question-status text-body-sm">
+        {% if result.type == "question" and result.is_solved %}
+        <span class="is-solution">{{ _('Solved') }}</span>
         {% endif %}
         Last updated {{ result.last_updated|timesince }}
-      </p>
-      <ul class="thread-meta cf">
-        <li>
-          {% if result.num_answers > 0 %}
-            {{ ngettext('1 reply', '{n} replies',
-                    result.num_answers)|f(n=result.num_answers) }}
-          {% else %}
-            {{ _('No replies') }}
-          {% endif %}
-        </li>
-        <li>
-          {{ ngettext('1 person has this problem', '{n} people have this problem',
-                  result.num_votes)|f(n=result.num_votes) }}
-        </li>
+      </li>
+      {% if result.type == "question" %}
+      <li>
+        {% if result.num_answers > 0 %}
+        {{ ngettext('1 reply', '{n} replies',
+                      result.num_answers)|f(n=result.num_answers) }}
+        {% else %}
+        {{ _('No replies') }}
+        {% endif %}
+      </li>
+      <li>
+        {{ ngettext('1 person has this problem', '{n} people have this problem',
+                    result.num_votes)|f(n=result.num_votes) }}
+      </li>
+      {% if result.num_votes_past_week %}
         <li>
           {{ ngettext('1 new this week', '{n} new this week',
-                  result.num_votes_past_week)|f(n=result.num_votes_past_week) }}
+                      result.num_votes_past_week)|f(n=result.num_votes_past_week) }}
         </li>
-      </ul>{# .thread-meta #}
+      {% endif %}
+      {% endif %}
+    </ul>{# .thread-meta #}
     {% endif %}
+
+    <p>{{ result.search_summary|safe }}</p>
+
     {% if 'explain' in request.GET and request.GET['explain'] == '1' %}
-      <div class="explain">
-        Explanation:<br>{{ result.explanation|replace('\n', '<br>')|replace(' ', '&nbsp;')|safe }}
-      </div>
+    <div class="explain">
+      Explanation:<br>{{ result.explanation|replace('\n', '<br>')|replace(' ', '&nbsp;')|safe }}
+    </div>
     {% endif %}
-  </div>{# .result #}
+  </div>
+</article>{# .result #}
 {% endmacro %}

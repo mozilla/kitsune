@@ -1,0 +1,243 @@
+.rickshaw {
+  position: relative;
+}
+
+.graph {
+  font-size: 10px;
+}
+
+#kpi-dash {
+  > section {
+    margin-bottom: 60px;
+  }
+}
+
+.multi-y-axis {
+  display: inline-block;
+  margin-top: 40px;
+  position: relative;
+  top: -10px;
+  vertical-align: top;
+  width: 40px;
+}
+
+.graph-container {
+  box-sizing: border-box;
+  display: inline-block;
+  margin-top: 40px;
+}
+
+.graph-container {
+  box-sizing: border-box;
+  display: inline-block;
+  margin-top: 40px;
+  position: relative;
+
+  .graph {
+    padding-bottom: 20px;
+  }
+
+  .slider {
+    position: absolute;
+    top: -30px;
+    width: 90%;
+  }
+}
+
+.timeline {
+  margin: 10px 0;
+}
+
+.slider {
+  margin: 10px 0;
+}
+
+.controls {
+  > div {
+    border-radius: 2px;
+    background: #444;
+    color: #fff;
+    margin-bottom: 10px;
+    overflow: hidden;
+    padding: 12px 5px;
+    width: 220px;
+
+    > form {
+      label {
+        display: inline-block;
+        min-width: 80px;
+        padding-left: 2px;
+        color: #FFF;
+      }
+
+      input[type=text],
+      input[type=date] {
+        // These next two styles emulate jQuery's UI, since they style
+        // the [type=text] elements.
+        box-shadow: 0px 0px 0px 1px rgb(239, 239, 239);
+        border-radius: 5px;
+        width: 110px;
+      }
+
+      > ul {
+        margin: 0;
+        padding: 0;
+
+        > li {
+          list-style: none;
+          margin-bottom: 8px;
+          color: #484848;
+        }
+      }
+    }
+
+    &.legend {
+      .line {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        .action {
+          opacity: 0.8;
+
+          &:hover {
+            opacity: 1.0;
+          }
+        }
+      }
+
+      .line.disabled {
+        opacity: 0.3;
+
+        .action {
+          opacity: 0.5;
+        }
+      }
+    }
+  }
+}
+
+.inline-controls {
+
+  div {
+    display: inline-block;
+    margin: 0 10px 10px 0;
+
+    input, label {
+      margin-right: 5px;
+    }
+  }
+
+  .legend {
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      transition: 0.5s linear all;
+
+      li {
+        cursor: pointer;
+        display: inline-block;
+
+        &:not(:last-child) {
+          margin-right: 10px;
+        }
+
+        &.disabled {
+          color: #999;
+
+          .color-square {
+            border-width: 2px;
+          }
+        }
+
+        .color-square {
+          border-style: solid;
+          border-width: 8px;
+          box-sizing: border-box;
+          display: inline-block;
+          height: 16px;
+          margin-right: 4px;
+          transform: translate(0, 3px);
+          transition: 0.2s linear all;
+          width: 16px;
+        }
+      }
+    }
+  }
+
+  .range-presets {
+    button {
+      font-size: 0.8em;
+
+      &:not(:first-child) {
+        margin-left: 5px;
+      }
+    }
+  }
+
+  .range {
+    input {
+      width: 100px;
+    }
+  }
+}
+
+.khover {
+  border-left: 1px dotted rgba(0, 0, 0, 0.7);
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+
+  &.right {
+    border-left: none;
+    border-right: 1px dotted rgba(0, 0, 0, 0.7);
+
+    .dot {
+      left: auto;
+      right: -6px;
+    }
+  }
+
+  &.inactive {
+    display: none;
+  }
+
+  ul {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius:  5px;
+    border: 1px solid black;
+    margin: 0 10px;
+    padding: 5px;
+
+    li {
+      list-style: none;
+
+      &.date {
+        font-size: 0.8em;
+      }
+
+      .color {
+        display: inline-block;
+        height: 10px;
+        margin-right: 4px;
+        width: 10px;
+      }
+    }
+  }
+
+  .dot {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    border: 2px solid #000;
+    display: inline-block;
+    height: 6px;
+    left: -6px;
+    position: absolute;
+    top: -6px;
+    width: 6px;
+  }
+}

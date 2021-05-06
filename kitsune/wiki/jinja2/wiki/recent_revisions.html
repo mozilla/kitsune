@@ -1,24 +1,36 @@
 {% extends "wiki/base.html" %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+
 {% set scripts = ('jqueryui', 'wiki', 'wiki.diff') %}
 {% set title = _('Recent Revisions') %}
 {% set crumbs = [(None, title)] %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
-{% block content %}
 
+
+{% block side_top %}
+  {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'revisions', True) }}
+{% endblock %}
+
+{% block content %}
+<section class="sumo-page-section">
+  <h1 class="sumo-page-heading">{{ title }}</h1>
+</section>
+{% endblock %}
+
+{% block below_main %}
   <article id="revision-list">
-    <form class="filter" action="{{ url('wiki.revisions') }}">
+    <form class="filter inline-label is-condensed" action="{{ url('wiki.revisions') }}">
       {% for field in form %}
         {{ field.label }}
         {{ field }}
       {% endfor %}
       <button class="btn btn-submit">{{ _('Submit') }}</button>
-      <img src="/media/img/wait-trans.gif" class="loading" alt="" />
+      <img src="{{ STATIC_URL }}sumo/img/wait-trans.gif" class="loading" alt="" />
     </form>
 
     <div id="revisions-fragment">
       {% include "wiki/includes/recent_revisions_fragment.html" %}
     </div>
   </article>
-
 {% endblock %}

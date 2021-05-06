@@ -1,39 +1,45 @@
 import datetime
 import json as jsonlib
 import logging
+import os
 import re
-import urlparse
-
-from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
-from django.core.urlresolvers import reverse as django_reverse
-from django.http import QueryDict
-from django.template.loader import render_to_string
-from django.utils.encoding import smart_str, smart_text
-from django.utils.http import urlencode
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _, ungettext
-from django.utils.tzinfo import LocalTimezone
+import urllib
 
 import bleach
 import jinja2
 from babel import localedata
-from babel.dates import format_date, format_time, format_datetime
+from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
+from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
+from django.http import QueryDict
+from django.template.loader import render_to_string
+from django.utils.encoding import smart_bytes, smart_text
+from django.utils.http import urlencode
+from django.utils.timezone import get_default_timezone
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import ungettext
 from django_jinja import library
 from jinja2.utils import Markup
 from pytz import timezone
 
+from kitsune.products.models import Product
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
-
-log = logging.getLogger('k.helpers')
+ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS + ["p"]
+ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
+# allow rel="nofollow"
+ALLOWED_BIO_ATTRIBUTES["a"].append("rel")
+log = logging.getLogger("k.helpers")
 
 
 class DateTimeFormatError(Exception):
     """Called by the datetimeformat function when receiving invalid format."""
+
     pass
 
 
@@ -45,17 +51,17 @@ def paginator(pager):
 
 @library.filter
 def simple_paginator(pager):
-    return jinja2.Markup(render_to_string('includes/simple_paginator.html', {'pager': pager}))
+    return jinja2.Markup(render_to_string("includes/simple_paginator.html", {"pager": pager}))
 
 
 @library.filter
 def quick_paginator(pager):
-    return jinja2.Markup(render_to_string('includes/quick_paginator.html', {'pager': pager}))
+    return jinja2.Markup(render_to_string("includes/quick_paginator.html", {"pager": pager}))
 
 
 @library.filter
 def mobile_paginator(pager):
-    return jinja2.Markup(render_to_string('includes/mobile/paginator.html', {'pager': pager}))
+    return jinja2.Markup(render_to_string("includes/mobile/paginator.html", {"pager": pager}))
 
 
 @library.global_function
@@ -63,16 +69,14 @@ def url(viewname, *args, **kwargs):
     """Helper for Django's ``reverse`` in templates.
 
     Uses sumo's locale-aware reverse."""
-    locale = kwargs.pop('locale', None)
+    locale = kwargs.pop("locale", None)
     return reverse(viewname, locale=locale, args=args, kwargs=kwargs)
 
 
 @library.global_function
-def unlocalized_url(viewname, *args, **kwargs):
-    """Helper for Django's ``reverse`` in templates.
-
-    Uses django's default reverse."""
-    return django_reverse(viewname, args=args, kwargs=kwargs)
+def canonicalize(viewname=None, model_url=None, *args, **kwargs):
+    suffix = model_url if model_url else reverse(viewname, args=args, kwargs=kwargs)
+    return "{}{}".format(settings.CANONICAL_URL, suffix)
 
 
 @library.filter
@@ -83,34 +87,44 @@ def urlparams(url_, hash=None, query_dict=None, **query):
     New query params will be appended to exising parameters, except duplicate
     names, which will be replaced.
     """
-    url_ = urlparse.urlparse(url_)
+    url_ = urllib.parse.urlparse(url_)
     fragment = hash if hash is not None else url_.fragment
 
     q = url_.query
-    new_query_dict = (QueryDict(smart_str(q), mutable=True) if
-                      q else QueryDict('', mutable=True))
+    new_query_dict = QueryDict(smart_bytes(q), mutable=True) if q else QueryDict("", mutable=True)
     if query_dict:
         for k, l in query_dict.lists():
             new_query_dict[k] = None  # Replace, don't append.
             for v in l:
                 new_query_dict.appendlist(k, v)
 
-    for k, v in query.items():
+    for k, v in list(query.items()):
         new_query_dict[k] = v  # Replace, don't append.
 
-    query_string = urlencode([(k, v) for k, l in new_query_dict.lists() for
-                              v in l if v is not None])
-    new = urlparse.ParseResult(url_.scheme, url_.netloc, url_.path,
-                               url_.params, query_string, fragment)
+    query_string = urlencode(
+        [(k, v) for k, l in new_query_dict.lists() for v in l if v is not None]
+    )
+    new = urllib.parse.ParseResult(
+        url_.scheme, url_.netloc, url_.path, url_.params, query_string, fragment
+    )
     return new.geturl()
 
 
 @library.filter
-def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
-                 nofollow=True):
+def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
     """Wiki Markup -> HTML jinja2.Markup object"""
-    return jinja2.Markup(parser.wiki_to_html(wiki_markup, locale=locale,
-                                             nofollow=nofollow))
+    if not wiki_markup:
+        return ""
+    return jinja2.Markup(parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow))
+
+
+@library.filter
+def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
+    """Wiki Markup -> HTML jinja2.Markup object with limited tags"""
+    html = parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
+    return jinja2.Markup(
+        bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)
+    )
 
 
 @library.filter
@@ -120,21 +134,24 @@ def truncate_question(text, length, longtext=None):
             longtext = text
         stripped_text = bleach.clean(text, tags=[], strip=True)
 
-        f = ('<p class="short-text">%s&hellip; ' +
-             '<span class="show-more-link">(' + _('read more') + ')</span>' +
-             '</p><div class="long-text">%s</div>')
+        f = (
+            '<p class="short-text">%s&hellip; '
+            + '<a href="#" class="show-more-link">('
+            + _("read more")
+            + ")</a>"
+            + '</p><div class="long-text">%s</div>'
+        )
         return f % (stripped_text[:length], longtext)
 
     return text
 
 
 class Paginator(object):
-
     def __init__(self, pager):
         self.pager = pager
 
         self.max = 10
-        self.span = (self.max - 1) / 2
+        self.span = (self.max - 1) // 2
 
         self.page = pager.number
         self.num_pages = pager.paginator.num_pages
@@ -155,12 +172,11 @@ class Paginator(object):
             lower, upper = total - span * 2, total
         else:
             lower, upper = page - span, page + span - 1
-        return range(max(lower + 1, 1), min(total, upper) + 1)
+        return list(range(max(lower + 1, 1), min(total, upper) + 1))
 
     def render(self):
-        c = {'pager': self.pager, 'num_pages': self.num_pages,
-             'count': self.count}
-        return jinja2.Markup(render_to_string('layout/paginator.html', c))
+        c = {"pager": self.pager, "num_pages": self.num_pages, "count": self.count}
+        return jinja2.Markup(render_to_string("layout/paginator.html", c))
 
 
 @jinja2.contextfunction
@@ -171,9 +187,9 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
     Accepts: [(url, label)]
     """
     if add_default:
-        first_crumb = u'Home'
+        first_crumb = "Home"
 
-        crumbs = [(reverse('home'), _lazy(first_crumb))]
+        crumbs = [(reverse("home"), _lazy(first_crumb))]
     else:
         crumbs = []
 
@@ -184,20 +200,20 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
         except TypeError:
             crumbs.append(items)
 
-    c = {'breadcrumbs': crumbs, 'id': id}
+    c = {"breadcrumbs": crumbs, "id": id}
 
-    return jinja2.Markup(render_to_string('layout/breadcrumbs.html', c))
+    return jinja2.Markup(render_to_string("layout/breadcrumbs.html", c))
 
 
 def _babel_locale(locale):
     """Return the Babel locale code, given a normal one."""
     # Babel uses underscore as separator.
-    return locale.replace('-', '_')
+    return locale.replace("-", "_")
 
 
 def _contextual_locale(context):
     """Return locale from the context, falling back to a default if invalid."""
-    request = context.get('request')
+    request = context.get("request")
     locale = request.LANGUAGE_CODE
     if not localedata.exists(locale):
         locale = settings.LANGUAGE_CODE
@@ -206,18 +222,16 @@ def _contextual_locale(context):
 
 @jinja2.contextfunction
 @library.global_function
-def datetimeformat(context, value, format='shortdatetime'):
+def datetimeformat(context, value, format="shortdatetime"):
     """
     Returns a formatted date/time using Babel's locale settings. Uses the
     timezone from settings.py, if the user has not been authenticated.
     """
     if not isinstance(value, datetime.datetime):
         # Expecting date value
-        raise ValueError(
-            'Unexpected value {value} passed to datetimeformat'.format(
-                value=value))
+        raise ValueError("Unexpected value {value} passed to datetimeformat".format(value=value))
 
-    request = context.get('request')
+    request = context.get("request")
 
     default_tzinfo = convert_tzinfo = timezone(settings.TIME_ZONE)
     if value.tzinfo is None:
@@ -226,57 +240,56 @@ def datetimeformat(context, value, format='shortdatetime'):
     else:
         new_value = value
 
-    if hasattr(request, 'session'):
-        if 'timezone' not in request.session:
-            if hasattr(request, 'user') and request.user.is_authenticated():
+    if hasattr(request, "session"):
+        if "timezone" not in request.session:
+            if hasattr(request, "user") and request.user.is_authenticated:
                 try:
-                    convert_tzinfo = (Profile.objects.get(user=request.user).timezone or
-                                      default_tzinfo)
+                    convert_tzinfo = (
+                        Profile.objects.get(user=request.user).timezone or default_tzinfo
+                    )
                 except (Profile.DoesNotExist, AttributeError):
                     pass
-            request.session['timezone'] = convert_tzinfo
+            request.session["timezone"] = convert_tzinfo
         else:
-            convert_tzinfo = request.session['timezone']
+            convert_tzinfo = request.session["timezone"] or default_tzinfo
 
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
 
     # If within a day, 24 * 60 * 60 = 86400s
-    if format == 'shortdatetime':
+    if format == "shortdatetime":
         # Check if the date is today
         today = datetime.datetime.now(tz=convert_tzinfo).toordinal()
         if convert_value.toordinal() == today:
-            formatted = _lazy(u'Today at %s') % format_time(
-                convert_value, format='short', tzinfo=convert_tzinfo,
-                locale=locale)
+            formatted = _lazy("Today at %s") % format_time(
+                convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
+            )
         else:
-            formatted = format_datetime(convert_value,
-                                        format='short',
-                                        tzinfo=convert_tzinfo,
-                                        locale=locale)
-    elif format == 'longdatetime':
-        formatted = format_datetime(convert_value, format='long',
-                                    tzinfo=convert_tzinfo, locale=locale)
-    elif format == 'date':
+            formatted = format_datetime(
+                convert_value, format="short", tzinfo=convert_tzinfo, locale=locale
+            )
+    elif format == "longdatetime":
+        formatted = format_datetime(
+            convert_value, format="long", tzinfo=convert_tzinfo, locale=locale
+        )
+    elif format == "date":
         formatted = format_date(convert_value, locale=locale)
-    elif format == 'time':
-        formatted = format_time(convert_value, tzinfo=convert_tzinfo,
-                                locale=locale)
-    elif format == 'datetime':
-        formatted = format_datetime(convert_value, tzinfo=convert_tzinfo,
-                                    locale=locale)
-    elif format == 'year':
-        formatted = format_datetime(convert_value, format='yyyy',
-                                    tzinfo=convert_tzinfo, locale=locale)
+    elif format == "time":
+        formatted = format_time(convert_value, tzinfo=convert_tzinfo, locale=locale)
+    elif format == "datetime":
+        formatted = format_datetime(convert_value, tzinfo=convert_tzinfo, locale=locale)
+    elif format == "year":
+        formatted = format_datetime(
+            convert_value, format="yyyy", tzinfo=convert_tzinfo, locale=locale
+        )
     else:
         # Unknown format
         raise DateTimeFormatError
 
-    return jinja2.Markup('<time datetime="%s">%s</time>' %
-                         (convert_value.isoformat(), formatted))
+    return jinja2.Markup('<time datetime="%s">%s</time>' % (convert_value.isoformat(), formatted))
 
 
-_whitespace_then_break = re.compile(r'[\r\n\t ]+[\r\n]+')
+_whitespace_then_break = re.compile(r"[\r\n\t ]+[\r\n]+")
 
 
 @library.filter
@@ -294,7 +307,7 @@ def collapse_linebreaks(text):
     # in half until there remained at least one lone linebreak in the text.
     # However, about:support in some versions of Firefox does yield some hard-
     # wrapped paragraphs using single linebreaks.
-    return _whitespace_then_break.sub('\r\n', text)
+    return _whitespace_then_break.sub("\r\n", text)
 
 
 @library.filter
@@ -311,7 +324,7 @@ def number(context, n):
 
     """
     if n is None:
-        return ''
+        return ""
     return format_decimal(n, locale=_babel_locale(_contextual_locale(context)))
 
 
@@ -332,25 +345,37 @@ def timesince(d, now=None):
 
     """
     if d is None:
-        return u''
+        return ""
     chunks = [
-        (60 * 60 * 24 * 365, lambda n: ungettext('%(number)d year ago',
-                                                 '%(number)d years ago', n)),
-        (60 * 60 * 24 * 30, lambda n: ungettext('%(number)d month ago',
-                                                '%(number)d months ago', n)),
-        (60 * 60 * 24 * 7, lambda n: ungettext('%(number)d week ago',
-                                               '%(number)d weeks ago', n)),
-        (60 * 60 * 24, lambda n: ungettext('%(number)d day ago',
-                                           '%(number)d days ago', n)),
-        (60 * 60, lambda n: ungettext('%(number)d hour ago',
-                                      '%(number)d hours ago', n)),
-        (60, lambda n: ungettext('%(number)d minute ago',
-                                 '%(number)d minutes ago', n)),
-        (1, lambda n: ungettext('%(number)d second ago',
-                                '%(number)d seconds ago', n))]
+        (
+            60 * 60 * 24 * 365,
+            lambda n: ungettext("%(number)d year ago", "%(number)d years ago", n),
+        ),
+        (
+            60 * 60 * 24 * 30,
+            lambda n: ungettext("%(number)d month ago", "%(number)d months ago", n),
+        ),
+        (
+            60 * 60 * 24 * 7,
+            lambda n: ungettext("%(number)d week ago", "%(number)d weeks ago", n),
+        ),
+        (
+            60 * 60 * 24,
+            lambda n: ungettext("%(number)d day ago", "%(number)d days ago", n),
+        ),
+        (
+            60 * 60,
+            lambda n: ungettext("%(number)d hour ago", "%(number)d hours ago", n),
+        ),
+        (60, lambda n: ungettext("%(number)d minute ago", "%(number)d minutes ago", n)),
+        (1, lambda n: ungettext("%(number)d second ago", "%(number)d seconds ago", n)),
+    ]
     if not now:
         if d.tzinfo:
-            now = datetime.datetime.now(LocalTimezone(d))
+            # TODO: is this correct?
+            # https://docs.djangoproject.com/en/1.8/_modules/django/utils/tzinfo/#LocalTimezone
+            # https://docs.djangoproject.com/en/1.9/_modules/django/utils/timezone/#get_default_timezone
+            now = datetime.datetime.now(get_default_timezone())
         else:
             now = datetime.datetime.now()
 
@@ -359,25 +384,25 @@ def timesince(d, now=None):
     since = delta.days * 24 * 60 * 60 + delta.seconds
     if since <= 0:
         # d is in the future compared to now, stop processing.
-        return u''
+        return ""
     for i, (seconds, name) in enumerate(chunks):
         count = since // seconds
         if count != 0:
             break
-    return name(count) % {'number': count}
+    return name(count) % {"number": count}
 
 
 @library.filter
 def label_with_help(f):
     """Print the label tag for a form field, including the help_text
     value as a title attribute."""
-    label = u'<label for="%s" title="%s">%s</label>'
+    label = '<label for="%s" title="%s">%s</label>'
     return jinja2.Markup(label % (f.auto_id, f.help_text, f.label))
 
 
 @library.filter
 def yesno(boolean_value):
-    return jinja2.Markup(_lazy(u'Yes') if boolean_value else _lazy(u'No'))
+    return jinja2.Markup(_lazy("Yes") if boolean_value else _lazy("No"))
 
 
 @library.filter
@@ -388,41 +413,10 @@ def remove(list_, item):
 
 @jinja2.contextfunction
 @library.global_function
-def ga_push_attribute(context):
-    """Return the json for the data-ga-push attribute.
-
-    This is used to defined custom variables and other special tracking with
-    Google Analytics.
-    """
-    request = context.get('request')
-    ga_push = context.get('ga_push', [])
-
-    # If the user is on the first page after logging in,
-    # we add a "User Type" custom variable.
-    if request.GET.get('fpa') == '1' and request.user.is_authenticated():
-        user = request.user
-        group_names = user.groups.values_list('name', flat=True)
-
-        # If they belong to the Administrator group:
-        if 'Administrators' in group_names:
-            ga_push.append(
-                ['_setCustomVar', 1, 'User Type', 'Contributor - Admin', 1])
-        # If they belong to the Contributors group:
-        elif 'Contributors' in group_names:
-            ga_push.append(['_setCustomVar', 1, 'User Type', 'Contributor', 1])
-        # If they don't belong to any of these groups:
-        else:
-            ga_push.append(['_setCustomVar', 1, 'User Type', 'Registered', 1])
-
-    return jsonlib.dumps(ga_push)
-
-
-@jinja2.contextfunction
-@library.global_function
 def is_secure(context):
-    request = context.get('request')
-    if request and hasattr(request, 'is_secure'):
-        return context.get('request').is_secure()
+    request = context.get("request")
+    if request and hasattr(request, "is_secure"):
+        return context.get("request").is_secure()
 
     return False
 
@@ -439,15 +433,14 @@ def showfor_data(products):
 
 
 @library.global_function
-def add_utm(url_, campaign, source='notification', medium='email'):
+def add_utm(url_, campaign, source="notification", medium="email"):
     """Add the utm_* tracking parameters to a URL."""
-    return urlparams(
-        url_, utm_campaign=campaign, utm_source=source, utm_medium=medium)
+    return urlparams(url_, utm_campaign=campaign, utm_source=source, utm_medium=medium)
 
 
 @library.global_function
-def to_unicode(str):
-    return unicode(str)
+def to_unicode(value):
+    return str(value)
 
 
 @library.global_function
@@ -456,8 +449,8 @@ def static(path):
     try:
         return django_static(path)
     except ValueError as err:
-        log.error('Static helper error: %s' % err)
-        return ''
+        log.error("Static helper error: %s" % err)
+        return ""
 
 
 @library.global_function
@@ -473,7 +466,7 @@ def class_selected(a, b):
     if a == b:
         return jinja2.Markup('class="selected"')
     else:
-        return ''
+        return ""
 
 
 @library.filter
@@ -488,7 +481,7 @@ def f(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return format_string.format(*args, **kwargs)
 
@@ -505,6 +498,51 @@ def fe(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return jinja2.Markup(format_string.format(*args, **kwargs))
+
+
+@library.global_function
+def image_for_product(product_slug):
+    """
+    Return square/alternate image for product slug
+    """
+    default_image = os.path.join(
+        settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
+    )
+
+    if not product_slug:
+        return default_image
+
+    try:
+        obj = Product.objects.get(slug=product_slug)
+    except Product.DoesNotExist:
+        return default_image
+    return obj.image_alternate_url
+
+
+@jinja2.contextfunction
+@library.global_function
+def show_header_fx_download(context):
+    """
+    Decides whether or not to render the Firefox download button in the header based on the
+    current product being displayed.
+
+    If a visitor is on a Firefox product page of any sort - help topics, KB article, etc -
+    the header download button should be hidden, because these Firefox product pages all
+    display a big download button in page. (We don't want to put multiple download buttons
+    on the page.)
+
+    This function is used in conjunction with show-fx-download.js. This function simply adds
+    markup to the template wrapped in a 'hidden' class. The JS removes the 'hidden' class if
+    the visitor is *NOT* already using Firefox.
+    """
+    product = context.get("product", None)
+
+    # product is *usually* an instance of Product, but sometimes (during AAQ process) product
+    # is a dict (see questions/config.py).
+    if product and hasattr(product, "slug"):
+        return product.slug != "firefox"
+    else:
+        return True

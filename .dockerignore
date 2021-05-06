@@ -4,3 +4,15 @@ venv
 *.poc
 /static
 .env
+/media
+*.gz
+/locale
+/node_modules
+/bower_components
+Dockerfile
+/jsi18n
+docker/dockerfiles/
+__pycache__
+.npm
+.vscode-server
+.cache

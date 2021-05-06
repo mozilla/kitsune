@@ -1,6 +1,6 @@
 {% extends "questions/includes/question_editing_frame.html" %}
 {% set title = _('Edit a Question') %}
-{% set crumbs = [(url('questions.home'), _('Support Forum')),
+{% set crumbs = [(url('questions.home'), _('Support Forums')),
                  (url('questions.details', question.id), question.title),
                  (None, _('Edit the question'))] %}
 
@@ -8,16 +8,15 @@
 
 {% block headline %}{{ _('Edit a Question') }}{% endblock %}
 
-{% block major_detail_instructions %}
-  <h2>{{ _('Edit the question.') }}</h2>
-{% endblock %}
+{% block major_detail_instructions %}{% endblock %}
 
 {% block attachments_form %}
   {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+  <p>{{ _('When editing a question, uploading new images or deleting existing ones will happen instantly.') }}</p>
 {% endblock %}
 
 {% block submit_button_value %}{{ _('Save Question') }}{% endblock %}
 
 {% block more_submit_buttons %}
-  <a href="{{ url('questions.details', question.id) }}" class="cancel">{{ _('Cancel') }}</a>
+  <a class="sumo-button secondary-button push-right" href="{{ url('questions.details', question.id) }}" class="cancel">{{ _('Cancel') }}</a>
 {% endblock %}

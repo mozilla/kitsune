@@ -7,12 +7,10 @@ import bleach
 from celery import task
 
 from kitsune.announcements.models import Announcement
-from kitsune.sumo.decorators import timeit
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
 
 
 @task()
-@timeit
 def send_group_email(announcement_id):
     """Build and send the announcement emails to a group."""
     try:
@@ -22,25 +20,27 @@ def send_group_email(announcement_id):
 
     group = announcement.group
     users = User.objects.filter(groups__in=[group])
-    plain_content = bleach.clean(announcement.content_parsed,
-                                 tags=[], strip=True).strip()
-    email_kwargs = {'content': plain_content,
-                    'content_html': announcement.content_parsed,
-                    'domain': Site.objects.get_current().domain}
-    text_template = 'announcements/email/announcement.ltxt'
-    html_template = 'announcements/email/announcement.html'
+    plain_content = bleach.clean(announcement.content_parsed, tags=[], strip=True).strip()
+    email_kwargs = {
+        "content": plain_content,
+        "content_html": announcement.content_parsed,
+        "domain": Site.objects.get_current().domain,
+    }
+    text_template = "announcements/email/announcement.ltxt"
+    html_template = "announcements/email/announcement.html"
 
     @safe_translation
     def _make_mail(locale, user):
-        subject = _('New announcement for {group}').format(
-            group=group.name)
+        subject = _("New announcement for {group}").format(group=group.name)
 
-        mail = make_mail(subject=subject,
-                         text_template=text_template,
-                         html_template=html_template,
-                         context_vars=email_kwargs,
-                         from_email=settings.TIDINGS_FROM_ADDRESS,
-                         to_email=user.email)
+        mail = make_mail(
+            subject=subject,
+            text_template=text_template,
+            html_template=html_template,
+            context_vars=email_kwargs,
+            from_email=settings.TIDINGS_FROM_ADDRESS,
+            to_email=user.email,
+        )
 
         return mail
 

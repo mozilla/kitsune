@@ -36,26 +36,12 @@ most-requested but have no replies:
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-As you’re getting started, you might be worried about facing
-situations that can scare away any new contributor:
-“What if I encounter an angry user who doesn’t want to cooperate?”,
-“What if I don’t know the answer?”) Don’t worry, we’ve all
-been there! That’s why we've put together this guide to help you
-navigate tough situations and keep the forum a positive place
-for both you and the people you help. Learn the essentials
-for new contributors here:
+Social Support Helper - Respond to tweets about Firefox and as the Firefox brand account:
 {% endtrans %}
 
-{{ add_utm('http://goo.gl/pKis5g', 'essentials for new contributors here', source='new-training') }}
+{{ add_utm('https://support.mozilla.org/kb/social-support-guidelines', 'get-involved', source='new-contributor') }}
 
-{#- L10n: This is an email.  Whitespace matters! -#}
-{% trans %}
-Twitter Contributor - Respond to tweets about Firefox:
-{% endtrans %}
-
-{{ add_utm('https://support.mozilla.org/army-of-awesome', 'get-involved', source='new-contributor') }}
-
-{#- L10n: This is an email.  Whitespace matters! -#}
+{# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
 KB Editor - Help to update knowledge base articles that
 need changes or write new articles:
@@ -80,17 +66,23 @@ and we’ll help you get started. It’s great to have you onboard!
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-You can also apply to our Buddy Program and get guidance from our more
-experienced contributors. Just introduce yourself in the forum for New
+Just introduce yourself in the forum for New
 Contributors by starting a new thread. Put your name on the thread title and
 tell us a bit about yourself:
 {% endtrans %}
 
 http://mzl.la/1CGbET4
 
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
+Lastly, find others in the community just like you on the #sumo IRC channel. That is right Mozilla has a live chat channel for contributors.
+irc.mozilla.org #sumo - web-based IRC:
+{% endtrans %}
+
+{{ add_utm('https://kiwiirc.com/client/irc.mozilla.org/sumo', 'get-involved', source='new-contributor') }}
+
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
 
-Madalina
-mana@mozilla.com
+Giulia and Kiki
 SUMO Community Manager{% endautoescape %}

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar %}
-{% from 'products/includes/topic_macros.html' import help_topics with context %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
+{% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set styles = ('products',) %}
 {% set scripts = ('products',) %}
@@ -9,78 +9,163 @@
 
 {% set extra_body_attrs = {'data-product-slug': product.slug} %}
 
+{% set canonical_url = canonicalize(model_url=product.get_absolute_url()) %}
+
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
-{% block content %}
-  <div class="grid_12">
-    <h1 class="product-title cf">
-      <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite"
-        style="{% if product.image and product.image_offset %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" />
-      {{ pgettext('DB: products.Product.title', product.title) }}
-    </h1>
+{% block base_container_classes %}container_wide{% endblock %}
 
-    {% if product.slug == 'firefox' %}
-      <div class="download-firefox">
-        <a href="https://www.mozilla.org/firefox/new/#download-fx" class="download-button"
-         data-ga-click="_trackEvent | Download Button | Panel Opening"
-         data-latest-version="{{ latest_version }}">
-          <span class="download-content">
-            <strong class="download-title">{{ _('Firefox') }}</strong>
-            <span class="download-subtitle">{{ _('Free Download') }}</span>
-            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
-          </span>
-        </a>
-        <ul class="info">
-          <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-          <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-        </ul>
-      </div>
-      <div class="refresh-firefox">
-        <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-        <a data-mozilla-ui-reset="reset" class="btn btn-submit">
-          {{ _('Refresh Firefox') }}
-        </a>
-        <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-          {{ _('How does it work?') }}
-        </a>
-        <a href="https://www.mozilla.org/firefox/new/#download-fx"
-         data-ga-click="_trackEvent | Download Button | Panel Opening"
-         data-latest-version="{{ latest_version }}">
-          {{ _('Download a fresh copy') }}
-        </a>
-      </div>
-    {% endif %}
+{% block hidden_search_masthead %}{% endblock %}
 
-    {% if product.slug == 'thunderbird' %}
-      <div class="download-thunderbird">
-        <a href="https://www.mozilla.org/thunderbird" class="download-button"
-         data-ga-click="_trackEvent | Download Button | Download Thunderbird">
-          <span class="download-content">
-            <strong class="download-title">{{ _('Thunderbird') }}</strong>
-            <span class="download-subtitle">{{ _('Free Download') }}</span>
-            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
-          </span>
-        </a>
-        <ul class="info">
-          <li><a href="https://www.mozilla.org/thunderbird/all.html">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="https://www.mozilla.org/thunderbird/releases">{{ _('Release Notes') }}</a></li>
-          <li><a href="https://www.mozilla.org/thunderbird/legal/privacy">{{ _('Privacy') }}</a></li>
-        </ul>
-      </div>
-    {% endif %}
+{% block masthead %}
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg">
+  <div class="mzp-l-content">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
+  </div>
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="sumo-page-heading-xl">
+        <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
+        <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
+      </h1>
+      {{ search_box(settings, id='support-search-masthead', params=search_params) }}
 
+      <p class="popular-searches">
+        <span>{{ _('Popular Searches:') }}</span>
+
+        {% if product.slug == "firefox" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Update Firefox') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+
+        {% elif product.slug == "mobile" or product.slug == "firefox-preview" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Firefox Sync') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Send tab') }}</a>
+
+        {% elif product.slug == "ios" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Send tab') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Night mode') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Block images') }}</a>
+
+        {% elif product.slug == "firefox-enterprise" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Policies') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Customization') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('extensions') }}</a>
+
+        {% elif product.slug == "firefox-amazon-devices" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Voice commands') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Receive tabs') }}</a>
+
+        {% elif product.slug == "firefox-private-network-vpn" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Manage devices') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Download VPN') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Limits') }}</a>
+
+        {% elif product.slug == "firefox-private-network" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Activate add-on') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Update add-on') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Manage devices') }}</a>
+
+        {% elif product.slug == "firefox-lockwise" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Lockwise iOS') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Lockwise Android') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Lockwise desktop') }}</a>
+
+        {% elif product.slug == "firefox-reality" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Voice search') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Full screen') }}</a>
+
+        {% elif product.slug == "firefox-lite" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Rewards') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Games') }}</a>
+
+        {% elif product.slug == "hubs" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Room size') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Avatars') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('VR') }}</a>
+
+        {% elif product.slug == "focus-firefox" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Autocomplete') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Default search') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Desktop view') }}</a>
+
+        {% elif product.slug == "screenshot-go" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Capture a screenshot') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Organize a screenshot') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Create a collection') }}</a>
+
+        {% elif product.slug == "thunderbird" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Thunderbird profiles') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Migrate') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Themes') }}</a>
+
+        {% else %}
+          <a href="#popular_search_1" data-debug="{{ product.title }}" data-featured-search>{{ _('Update Firefox') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+        {% endif %}
+      </p>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block contentwrap %}
+<div id="main-content">
+  <div class="mzp-l-content sumo-page-section--inner">
+    <div class="sumo-page-subheader">
+      <div class="sumo-page-subheader--text">
+        <div class="text-center-to-left-on-large">
+          <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
+          <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
+        </div>
+      </div>
+      {% if product.slug == 'firefox' %}
+      {{ download_firefox() }}
+      {% endif %}
+      {% if product.slug == 'thunderbird' %}
+      <div class="download-buttons">
+        <div class="download-thunderbird">
+          <a href="https://www.thunderbird.net/" class="download-button sumo-button primary-button button-lg"
+          data-event-category="Download Button"
+          data-event-action="Download Thunderbird">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+            </span>
+          </a>
+          <ul class="download-info text-body-xs">
+            <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
   </div>
 
-  <div class="grid_12">
-    <section id="help-topics">
-      <h1>{{ _('Help Topics') }}</h1>
-      {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
-    </section>
-    <section id="get-involved-button">
-      <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">{{ _('Volunteer for Mozilla Support') }}</a>
-    </section>
-  </div>
+  {{ topic_metadata(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+
+{% if featured %}
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+      <h2 class="sumo-page-subheading text-center-to-left-on-large">{{ _('Featured Articles') }}</h2>
+      {{ featured_articles(featured) }}
+  </section>
+{% endif %}
+
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+    {% include "landings/includes/join-our-community-callout.html" %}
+  </section>
+</div>
+
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}
@@ -89,23 +174,4 @@
 {% endblock %}
 
 {% block footer_script %}
-{# Ethnio tracking - see bug 985270 #}
-{% if product.slug == 'firefox' and request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
-  <!-- Ethnio Activation Code -->
-  <script type="text/javascript" language="javascript" src="//ethn.io/remotes/35931" async="true" charset="utf-8"> </script>
-{% endif %}
-{# End Ethnio #}
-
-{# Treejack snippets #}
-{% if request.LANGUAGE_CODE == 'en-US' and waffle.switch('treejack') %}
-  {% if product.slug == 'mobile' %}{# Android #}
-    <!-- BEGIN Optimal Workshop Intercept Snippet --><div id='owInviteSnippet' style='position:fixed;right:20px;bottom:20px;width:280px;padding:20px;margin:0;border-radius:6px;background:#333333;color:#EEEEEE;text-align:left;z-index:2200000000;opacity:0;transition:opacity 500ms;-webkit-transition:opacity 500ms;display:none;'><div id='owInviteMessage' style='padding:0;margin:0 0 20px 0;font-size:16px;'>Got a spare 5 minutes to help us improve our website?</div><a id='owInviteOk' href='https://d7771tp6.optimalworkshop.com/treejack/3dgs3a2z-1?tag=intercept&utm_medium=intercept' target='_blank' style='color:#7DB6EE;font-size:16px;font-weight:bold;text-decoration:underline;'>I'll do it</a><a id='owInviteCancel' href='javascript:void(0)' onclick='this.parentNode.style.display="none";' style='color:#EEEEEE;font-size:14px;text-decoration:underline;float:right;'>No thanks</a></div><script>var owOldOnload=window.onload;window.onload=function(){if(owOldOnload){owOldOnload();}if (document.cookie.indexOf('owInvite') == -1){document.cookie='owInvite=Done';var e = document.getElementById('owInviteSnippet');setTimeout(function(){e.style.display = 'block';e.style.opacity = 1;},2000);}};</script><!-- END Optimal Workshop snippet -->
-  {% elif product.slug == 'firefox' %}
-    <!-- BEGIN Optimal Workshop Intercept Snippet --><div id='owInviteSnippet' style='position:fixed;right:20px;bottom:20px;width:280px;padding:20px;margin:0;border-radius:6px;background:#333333;color:#EEEEEE;text-align:left;z-index:2200000000;opacity:0;transition:opacity 500ms;-webkit-transition:opacity 500ms;display:none;'><div id='owInviteMessage' style='padding:0;margin:0 0 20px 0;font-size:16px;'>Got a spare 5 minutes to help us improve our website?</div><a id='owInviteOk' href='https://d7771tp6.optimalworkshop.com/treejack/3dgs3a2z-0-0?tag=intercept&utm_medium=intercept' target='_blank' style='color:#7DB6EE;font-size:16px;font-weight:bold;text-decoration:underline;'>I'll do it</a><a id='owInviteCancel' href='javascript:void(0)' onclick='this.parentNode.style.display="none";' style='color:#EEEEEE;font-size:14px;text-decoration:underline;float:right;'>No thanks</a></div><script>var owOldOnload=window.onload;window.onload=function(){if(owOldOnload){owOldOnload();}if (document.cookie.indexOf('owInvite') == -1){document.cookie='owInvite=Done';var e = document.getElementById('owInviteSnippet');setTimeout(function(){e.style.display = 'block';e.style.opacity = 1;},2000);}};</script><!-- END Optimal Workshop snippet -->
-  {% elif product.slug == 'thunderbird' %}
-    <!-- BEGIN Optimal Workshop Intercept Snippet --><div id='owInviteSnippet' style='position:fixed;right:20px;bottom:20px;width:280px;padding:20px;margin:0;border-radius:6px;background:#333333;color:#EEEEEE;text-align:left;z-index:2200000000;opacity:0;transition:opacity 500ms;-webkit-transition:opacity 500ms;display:none;'><div id='owInviteMessage' style='padding:0;margin:0 0 20px 0;font-size:16px;'>Got a spare 5 minutes to help us improve our website?</div><a id='owInviteOk' href='https://d7771tp6.optimalworkshop.com/treejack/223270c6-0?tag=intercept&utm_medium=intercept' target='_blank' style='color:#7DB6EE;font-size:16px;font-weight:bold;text-decoration:underline;'>I'll do it</a><a id='owInviteCancel' href='javascript:void(0)' onclick='this.parentNode.style.display="none";' style='color:#EEEEEE;font-size:14px;text-decoration:underline;float:right;'>No thanks</a></div><script>var owOldOnload=window.onload;window.onload=function(){if(owOldOnload){owOldOnload();}if (document.cookie.indexOf('owInvite') == -1){document.cookie='owInvite=Done';var e = document.getElementById('owInviteSnippet');setTimeout(function(){e.style.display = 'block';e.style.opacity = 1;},2000);}};</script><!-- END Optimal Workshop snippet -->
-  {% endif %}
-{% endif %}
-{# End Treejack #}
-
 {% endblock %}

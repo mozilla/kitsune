@@ -4,11 +4,13 @@
 Running Kitsune with mod_wsgi
 =============================
 
+.. warning::
+    This section of documentation may be outdated.
 
 Requirements
 ============
 
-* See :ref:`the installation docs <hacking-howto-chapter>`.
+* See :any:`the installation docs <hacking_howto>`.
 * `Apache HTTP server <http://httpd.apache.org/>`_
 * mod_rewrite
 * mod_headers
@@ -21,8 +23,8 @@ Overview
 ========
 
 Setting up Kitsune to run as a WSGI application is fairly
-straightforward. You will need to install the requirements as described 
-in :ref:`the installation chapter <hacking-howto-chapter>`.
+straightforward. You will need to install the requirements as described
+in :any:`the installation chapter <hacking_howto>`.
 
 There are 3 steps once Kitsune is installed:
 
@@ -90,7 +92,7 @@ Configuration
 
 Most of our ``kitsune/settings.py`` is under version control, but can be
 overridden in a file called ``kitsune/settings_local.py``. You can see
-example settings in the :ref:`hacking-howto-chapter`.
+example settings in the :any:`hacking_howto`.
 
 
 
