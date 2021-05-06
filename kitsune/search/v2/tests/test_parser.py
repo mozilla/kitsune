@@ -1,13 +1,56 @@
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
 from parameterized import parameterized
 from pyparsing import ParseException
 from elasticsearch_dsl import Q
 from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
+from kitsune.users.tests import UserFactory
 
 from kitsune.search.v2.parser import Parser
 
 
-class ParserTests(SimpleTestCase):
+class ElasticQueryContainsMixin(object):
+    def assertNestedDictContains(self, superset, subset):
+        assert type(superset) is type(subset)
+        if isinstance(superset, dict):
+            for key, value in subset.items():
+                assert key in superset
+                super_value = superset[key]
+                self.assertNestedDictContains(super_value, value)
+        elif isinstance(superset, list):
+            self.assertEqual(len(superset), len(subset))
+            for super_value, value in zip(superset, subset):
+                self.assertNestedDictContains(super_value, value)
+        else:
+            self.assertEqual(superset, subset)
+
+    def assertElasticQueryContains(self, query, contains):
+        self.assertNestedDictContains(query.to_dict(), contains.to_dict())
+
+
+class TestElasticQueryContainsMixin(SimpleTestCase, ElasticQueryContainsMixin):
+    @parameterized.expand(
+        [
+            ({"g": "h"}, False),
+            ({"g": "x"}, True),
+            ({"x": "x"}, True),
+            ({"a": ["b"]}, True),
+            ({"a": ["b", {"e": "f"}]}, False),
+            ({"a": ["b", {"x": "x"}]}, True),
+        ]
+    )
+    def test_assertNestedDictContains_raises(self, subset, raises):
+        superset = {
+            "a": ["b", {"c": "d", "e": "f"}],
+            "g": "h",
+        }
+        if raises:
+            with self.assertRaises(AssertionError):
+                self.assertNestedDictContains(superset, subset)
+        else:
+            self.assertNestedDictContains(superset, subset)
+
+
+class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
     @parameterized.expand(
         [
             ("firefox crashes", "SpaceOperator(t'firefox', t'crashes')"),
@@ -53,44 +96,6 @@ class ParserTests(SimpleTestCase):
         with self.assertRaises(ParseException):
             repr(Parser(query))
 
-    def assertNestedDictContains(self, superset, subset):
-        assert type(superset) is type(subset)
-        if isinstance(superset, dict):
-            for key, value in subset.items():
-                assert key in superset
-                super_value = superset[key]
-                self.assertNestedDictContains(super_value, value)
-        elif isinstance(superset, list):
-            self.assertEqual(len(superset), len(subset))
-            for super_value, value in zip(superset, subset):
-                self.assertNestedDictContains(super_value, value)
-        else:
-            self.assertEqual(superset, subset)
-
-    @parameterized.expand(
-        [
-            ({"g": "h"}, False),
-            ({"g": "x"}, True),
-            ({"x": "x"}, True),
-            ({"a": ["b"]}, True),
-            ({"a": ["b", {"e": "f"}]}, False),
-            ({"a": ["b", {"x": "x"}]}, True),
-        ]
-    )
-    def test_assertNestedDictContains_raises(self, subset, raises):
-        superset = {
-            "a": ["b", {"c": "d", "e": "f"}],
-            "g": "h",
-        }
-        if raises:
-            with self.assertRaises(AssertionError):
-                self.assertNestedDictContains(superset, subset)
-        else:
-            self.assertNestedDictContains(superset, subset)
-
-    def assertElasticQueryContains(self, query, contains):
-        self.assertNestedDictContains(query.to_dict(), contains.to_dict())
-
     @parameterized.expand(
         [
             ("a b", S(query="a b")),
@@ -122,4 +127,25 @@ class ParserTests(SimpleTestCase):
             "mapped_y": "y",
         }
         elastic_query = Parser(query).elastic_query(settings={"field_mappings": field_mappings})
+        self.assertElasticQueryContains(elastic_query, expected)
+
+
+class ExactTokenTests(TestCase, ElasticQueryContainsMixin):
+    @parameterized.expand(
+        [
+            ("exact:a:b", Q("term", a="b")),
+            ("exact:mapped:foobar", Q("term", x="foobar@example.com")),
+        ]
+    )
+    def test_exact(self, query, expected):
+        UserFactory(username="foobar", email="foobar@example.com")
+        exact_mappings = {
+            "mapped": {
+                "model": "auth.User",
+                "column": "username__iexact",
+                "attribute": "email",
+                "field": "x",
+            },
+        }
+        elastic_query = Parser(query).elastic_query(settings={"exact_mappings": exact_mappings})
         self.assertElasticQueryContains(elastic_query, expected)
