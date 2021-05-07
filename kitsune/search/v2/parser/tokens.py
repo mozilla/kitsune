@@ -22,19 +22,28 @@ class BaseToken(ABC):
 
 
 class TermToken(BaseToken):
+    def __init__(self, tokens):
+        if isinstance(tokens, str):
+            self.term = tokens
+        else:
+            self.term = tokens.term
+
+    def __str__(self):
+        return str(self.term)
+
     def __repr__(self):
-        return f"t{repr(self.tokens.term)}"
+        return f"t{repr(self.term)}"
 
     def __iadd__(self, other):
         if type(other) is not type(self):
             raise TypeError
-        self.tokens.term += " " + other.tokens.term
+        self.term += " " + other.term
         return self
 
     def elastic_query(self, context):
         return Q(
             "simple_query_string",
-            query=self.tokens.term,
+            query=self.term,
             default_operator="AND",
             fields=context["fields"],
             flags="PHRASE",
@@ -48,7 +57,12 @@ class RangeToken(BaseToken):
         )
 
     def elastic_query(self, context):
-        return Q("range", **{self.tokens.field: {self.tokens.operator: self.tokens.value}})
+        field = self.tokens.field
+        allowed = context["settings"]["range_allowed"]
+        if field in allowed:
+            return Q("range", **{field: {self.tokens.operator: self.tokens.value}})
+        else:
+            return Q("match_none")
 
 
 class ExactToken(BaseToken):

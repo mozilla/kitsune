@@ -144,6 +144,12 @@ class QuestionSearch(SumoSearch):
                     "field": "question_tag_ids",
                 },
             },
+            "range_allowed": [
+                "question_created",
+                "question_updated",
+                "question_taken_until",
+                "question_num_votes",
+            ],
         }
 
     def get_highlight_fields_options(self):
@@ -237,6 +243,9 @@ class WikiSearch(SumoSearch):
                 },
                 "category": category_exact_mapping,
             },
+            "range_allowed": [
+                "updated",
+            ],
         }
 
     def get_highlight_fields_options(self):
@@ -349,6 +358,11 @@ class ForumSearch(SumoSearch):
                     "field": "updated_by_id",
                 },
             },
+            "range_allowed": [
+                "thread_created",
+                "created",
+                "updated",
+            ],
         }
 
     def get_highlight_fields_options(self):

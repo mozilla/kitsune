@@ -108,10 +108,9 @@ class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
             ("a b", S(query="a b")),
             ('"a b" c "d"', S(query='"a b" c "d"')),
             ("NOT a", B(must_not=S(query="a"))),
-            ("a NOT b", B(filter=[S(query="a"), B(must_not=S(query="b"))])),
-            ("a AND b AND c", B(filter=[S(query="a"), S(query="b"), S(query="c")])),
-            ("a OR b AND c", B(should=[S(query="a"), B(filter=[S(query="b"), S(query="c")])])),
-            ("range:a:b:c", Q("range", a={"b": "c"})),
+            ("a NOT b", B(must=[S(query="a"), B(must_not=S(query="b"))])),
+            ("a AND b AND c", B(must=[S(query="a"), S(query="b"), S(query="c")])),
+            ("a OR b AND c", B(should=[S(query="a"), B(must=[S(query="b"), S(query="c")])])),
         ]
     )
     def test_elastic_query(self, query, expected):
@@ -133,7 +132,20 @@ class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
             "mapped_x": "x",
             "mapped_y": "y",
         }
-        elastic_query = Parser(query).elastic_query(settings={"field_mappings": field_mappings})
+        elastic_query = Parser(query).elastic_query(
+            {"settings": {"field_mappings": field_mappings}}
+        )
+        self.assertElasticQueryContains(elastic_query, expected)
+
+    @parameterized.expand(
+        [
+            ("range:a:b:c", Q("range", a={"b": "c"})),
+            ("range:x:y:z", Q("match_none")),
+        ]
+    )
+    def test_range_token_elastic_query(self, query, expected):
+        range_allowed = ["a"]
+        elastic_query = Parser(query).elastic_query({"settings": {"range_allowed": range_allowed}})
         self.assertElasticQueryContains(elastic_query, expected)
 
 
@@ -163,5 +175,7 @@ class ExactTokenTests(TestCase, ElasticQueryContainsMixin):
                 "field": "y",
             },
         }
-        elastic_query = Parser(query).elastic_query(settings={"exact_mappings": exact_mappings})
+        elastic_query = Parser(query).elastic_query(
+            {"settings": {"exact_mappings": exact_mappings}}
+        )
         self.assertElasticQueryContains(elastic_query, expected)

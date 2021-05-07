@@ -63,6 +63,6 @@ class Parser(object):
     def __repr__(self):
         return repr(self.parsed)
 
-    def elastic_query(self, **context):
+    def elastic_query(self, context={}):
         context = {"fields": context.get("fields", {}), "settings": context.get("settings", {})}
         return self.parsed.elastic_query(context)

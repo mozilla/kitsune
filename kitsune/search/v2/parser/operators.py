@@ -57,7 +57,7 @@ class NotOperator(UnaryOperator):
 
 class AndOperator(BinaryOperator):
     def elastic_query(self, context):
-        return Q("bool", filter=self.elastic_queries(self.arguments, context))
+        return Q("bool", must=self.elastic_queries(self.arguments, context))
 
 
 class OrOperator(BinaryOperator):
@@ -81,4 +81,4 @@ class SpaceOperator(BinaryOperator):
                 query.append(argument)
         if len(query) == 1:
             return query[0].elastic_query(context)
-        return Q("bool", filter=self.elastic_queries(query, context))
+        return Q("bool", must=self.elastic_queries(query, context))

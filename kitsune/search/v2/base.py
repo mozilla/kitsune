@@ -15,6 +15,7 @@ from elasticsearch_dsl import InnerDoc, MetaField
 from elasticsearch_dsl import Search as DSLSearch
 from elasticsearch_dsl import field
 from elasticsearch_dsl.utils import AttrDict
+from pyparsing import ParseException
 
 from kitsune.search.config import (
     DEFAULT_ES7_CONNECTION,
@@ -23,6 +24,7 @@ from kitsune.search.config import (
 )
 from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.parser import Parser
+from kitsune.search.v2.parser.tokens import TermToken
 
 
 class SumoDocument(DSLDocument):
@@ -348,8 +350,15 @@ class SumoSearch(SumoSearchInterface):
 
     def build_query(self):
         """Build a query to search over a specific set of documents."""
-        return Parser(self.query).elastic_query(
-            fields=self.get_fields(), settings=self.get_advanced_settings()
+        try:
+            parsed = Parser(self.query)
+        except ParseException:
+            parsed = TermToken(self.query)
+        return parsed.elastic_query(
+            {
+                "fields": self.get_fields(),
+                "settings": self.get_advanced_settings(),
+            }
         )
 
     def run(self, key: Union[int, slice] = slice(0, settings.SEARCH_RESULTS_PER_PAGE)):
