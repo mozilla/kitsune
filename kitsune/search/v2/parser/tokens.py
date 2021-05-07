@@ -60,6 +60,7 @@ class ExactToken(BaseToken):
     def elastic_query(self, context):
         field = self.tokens.field
         value = self.tokens.value
+        values = None
 
         mappings = context["settings"]["exact_mappings"]
         if field in mappings:
@@ -67,8 +68,11 @@ class ExactToken(BaseToken):
             mapping = mappings[field]
             field = mapping["field"]
             # map value
-            model = apps.get_model(mapping["model"])
-            row = model._default_manager.get(**{mapping["column"]: value})
-            value = getattr(row, mapping["attribute"])
+            if "model" in mapping:
+                model = apps.get_model(mapping["model"])
+                results = model._default_manager.filter(**{mapping["column"]: value})
+                values = list(results.values_list(mapping["attribute"], flat=True))
+            elif "dict" in mapping:
+                value = mapping["dict"].get(value, value)
 
-        return Q("term", **{field: value})
+        return Q("terms", **{field: values or [value]})

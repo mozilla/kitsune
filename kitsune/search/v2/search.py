@@ -5,6 +5,7 @@ from typing import Optional
 
 import bleach
 from dateutil import parser
+from django.utils.text import slugify
 from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.products.models import Product
@@ -17,6 +18,7 @@ from kitsune.search.v2.documents import (
     WikiDocument,
 )
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.parser import wiki_to_html
 
 QUESTION_DAYS_DELTA = 365 * 2
@@ -33,6 +35,35 @@ FVH_HIGHLIGHT_OPTIONS = {
     # add these tags before/after the highlighted sections:
     "pre_tags": [f"<{HIGHLIGHT_TAG}>"],
     "post_tags": [f"</{HIGHLIGHT_TAG}>"],
+}
+
+
+partial_product_exact_mapping = {
+    "model": "products.Product",
+    "column": "slug__iexact",
+    "attribute": "id",
+    "help": "a product's slug",
+}
+partial_user_exact_mapping = {
+    "model": "auth.User",
+    "column": "username__iexact",
+    "attribute": "id",
+    "help": "a user's username",
+}
+partial_topic_exact_mapping = {
+    "model": "products.Topic",
+    "column": "slug__iexact",
+    "attribute": "id",
+    "help": "a topic's slug",
+}
+category_exact_mapping = {
+    "dict": {
+        # `name` is lazy, using str() to force evaluation:
+        slugify(str(name)): _id
+        for _id, name in CATEGORIES
+    },
+    "help": "a category's slug",
+    "field": "category",
 }
 
 
@@ -85,19 +116,32 @@ class QuestionSearch(SumoSearch):
                 "content": f"question_content.{self.locale}",
             },
             "exact_mappings": {
+                "author": {
+                    **partial_user_exact_mapping,
+                    "field": "question_creator_id",
+                },
+                "updated_by": {
+                    **partial_user_exact_mapping,
+                    "field": "question_updated_by_id",
+                },
                 "product": {
-                    "model": "products.Product",
+                    **partial_product_exact_mapping,
+                    "field": "question_product_id",
+                },
+                "topic": {
+                    **partial_topic_exact_mapping,
+                    "field": "question_topic_id",
+                },
+                "taken_by": {
+                    **partial_user_exact_mapping,
+                    "field": "question_taken_by_id",
+                },
+                "tag": {
+                    "model": "taggit.Tag",
                     "column": "slug__iexact",
                     "attribute": "id",
-                    "field": "question_product_id",
-                    "help": "a product's slug (found in the url of its page)",
-                },
-                "creator": {
-                    "model": "auth.User",
-                    "column": "username__iexact",
-                    "attribute": "id",
-                    "field": "question_creator_id",
-                    "help": "a user's username",
+                    "help": "a tag's slug",
+                    "field": "question_tag_ids",
                 },
             },
         }
@@ -184,12 +228,14 @@ class WikiSearch(SumoSearch):
             },
             "exact_mappings": {
                 "product": {
-                    "model": "products.Product",
-                    "column": "slug__iexact",
-                    "attribute": "id",
+                    **partial_product_exact_mapping,
                     "field": "product_ids",
-                    "help": "a product's slug (found in the url of its page)",
                 },
+                "topic": {
+                    **partial_topic_exact_mapping,
+                    "field": "topic_ids",
+                },
+                "category": category_exact_mapping,
             },
         }
 
@@ -283,12 +329,24 @@ class ForumSearch(SumoSearch):
                 "title": "thread_title",
             },
             "exact_mappings": {
-                "creator": {
-                    "model": "auth.User",
-                    "column": "username__iexact",
+                "forum": {
+                    "model": "forums.Forum",
+                    "column": "slug__iexact",
                     "attribute": "id",
+                    "help": "a forum's slug",
+                    "field": "thread_forum_id",
+                },
+                "thread_author": {
+                    **partial_user_exact_mapping,
+                    "field": "thread_creator_id",
+                },
+                "author": {
+                    **partial_user_exact_mapping,
                     "field": "author_id",
-                    "help": "a user's username",
+                },
+                "updated_by": {
+                    **partial_user_exact_mapping,
+                    "field": "updated_by_id",
                 },
             },
         }

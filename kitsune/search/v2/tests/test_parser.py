@@ -4,6 +4,7 @@ from pyparsing import ParseException
 from elasticsearch_dsl import Q
 from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
 from kitsune.users.tests import UserFactory
+from kitsune.products.tests import TopicFactory
 
 from kitsune.search.v2.parser import Parser
 
@@ -18,7 +19,13 @@ class ElasticQueryContainsMixin(object):
                 self.assertNestedDictContains(super_value, value)
         elif isinstance(superset, list):
             self.assertEqual(len(superset), len(subset))
-            for super_value, value in zip(superset, subset):
+            try:
+                sorted_superset = sorted(superset)
+                sorted_subset = sorted(subset)
+            except TypeError:
+                sorted_superset = superset
+                sorted_subset = subset
+            for super_value, value in zip(sorted_superset, sorted_subset):
                 self.assertNestedDictContains(super_value, value)
         else:
             self.assertEqual(superset, subset)
@@ -133,18 +140,27 @@ class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
 class ExactTokenTests(TestCase, ElasticQueryContainsMixin):
     @parameterized.expand(
         [
-            ("exact:a:b", Q("term", a="b")),
-            ("exact:mapped:foobar", Q("term", x="foobar@example.com")),
+            ("exact:a:b", Q("terms", a=["b"])),
+            ("exact:user:a", Q("terms", x=["a@example.com"])),
+            ("exact:topic:b", Q("terms", y=["c", "d"])),
         ]
     )
     def test_exact(self, query, expected):
-        UserFactory(username="foobar", email="foobar@example.com")
+        UserFactory(username="a", email="a@example.com")
+        TopicFactory(slug="b", description="c")
+        TopicFactory(slug="b", description="d")
         exact_mappings = {
-            "mapped": {
+            "user": {
                 "model": "auth.User",
                 "column": "username__iexact",
                 "attribute": "email",
                 "field": "x",
+            },
+            "topic": {
+                "model": "products.Topic",
+                "column": "slug__iexact",
+                "attribute": "description",
+                "field": "y",
             },
         }
         elastic_query = Parser(query).elastic_query(settings={"exact_mappings": exact_mappings})
