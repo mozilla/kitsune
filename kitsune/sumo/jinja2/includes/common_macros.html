@@ -62,18 +62,18 @@
                 </p>
               </a>
               <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                <li><a href="/questions/new/desktop">{{ _('Firefox Browser') }}</a></li>
-                <li><a href="/questions/new/firefox-private-network">{{ _('Firefox Private Network') }}</a></li>
-                <li><a href="/questions/new/ios">{{ _('Firefox for iOS') }}</a></li>
-                <li><a href="/questions/new/firefox-lockwise">{{ _('Firefox Lockwise') }}</a></li>
-                <li><a href="/questions/new/mobile">{{ _('Firefox for Android') }}</a></li>
+                <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox Browser') }}</a></li>
+                <li><a href="{{ url('questions.aaq_step2', 'firefox-private-network') }}">{{ _('Firefox Private Network') }}</a></li>
+                <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
+                <li><a href="{{ url('questions.aaq_step2', 'firefox-lockwise') }}">{{ _('Firefox Lockwise') }}</a></li>
+                <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
                 <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('Browse All Product Forums') }}</a></li>
               </ul>
             </section>
            </div>
            <div class="sumo-nav--dropdown-col">
              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-               <a class="mzp-c-menu-item-link" href="/products">
+               <a class="mzp-c-menu-item-link" href="{{ url('products') }}">
                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><rect stroke-linejoin="round" width="18" height="18" rx="2"/><path d="M4 5h10M4 9h10M4 13h4"/></g></svg>
                  <h4 class="mzp-c-menu-item-title">{{ _('Explore Our Help Articles') }}</h4>
                  <p class="mzp-c-menu-item-desc">
@@ -81,12 +81,12 @@
                  </p>
                </a>
                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                 <li><a href="/products/firefox">{{ _('Firefox Browser') }}</a></li>
-                 <li><a href="/products/firefox-private-network">{{ _('Firefox Private Network') }}</a></li>
-                 <li><a href="/products/ios">{{ _('Firefox for iOS') }}</a></li>
-                 <li><a href="/products/firefox-lockwise">{{ _('Firefox Lockwise') }}</a></li>
-                 <li><a href="/products/mobile">{{ _('Firefox for Android') }}</a></li>
-                 <li><a class="color-link" href="/products">{{ _('See All Articles') }}</a></li>
+                 <li><a href="{{ url('products.product', 'firefox') }}">{{ _('Firefox Browser') }}</a></li>
+                 <li><a href="{{ url('products.product', 'firefox-private-network') }}">{{ _('Firefox Private Network') }}</a></li>
+                 <li><a href="{{ url('products.product', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
+                 <li><a href="{{ url('products.product', 'firefox-lockwise') }}">{{ _('Firefox Lockwise') }}</a></li>
+                 <li><a href="{{ url('products.product', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
+                 <li><a class="color-link" href="{{ url('products') }}">{{ _('See All Articles') }}</a></li>
                </ul>
              </section>
             </div>
@@ -273,18 +273,18 @@
 {%- endmacro %}
 
 {% macro _discussion_nav_links(user, default_language, active=None) -%}
-  <li><a href="/forums/contributors" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Discussions">{{ _('Community Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Discussions">{{ _('Community Discussions') }}</a></li>
   <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">{{ _('Support Forums') }}</a></li>
-  <li><a href="/forums/l10n-forum" data-event-category="navigation" data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('L10N Discussions') }}</a></li>
-  <li><a href="/forums/social-media">Social Support Forum</a></li>
+  <li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('L10N Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'social-media') }}">Social Support Forum</a></li>
   <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
-  <li><a href="/forums/buddies">New Contributors</a></li>
+  <li><a href="{{ url('forums.threads', 'buddies') }}">New Contributors</a></li>
 {% endmacro %}
 
 {% macro _tools_nav_links(user, default_language, active=None) -%}
   <li><a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}</a></li>
   <li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Hub') }}</a></li>
-  <li><a href="/kb/category/60" data-event-category="navigation" data-event-action="main navigation" data-event-label="Templates">{{ _('Templates') }}</a></li>
+  <li><a href="{{ url('wiki.category', 60) }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Templates">{{ _('Templates') }}</a></li>
   <li><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Dashboards">{{ _('Dashboards') }}</a></li>
   <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
   <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
