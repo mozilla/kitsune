@@ -275,7 +275,6 @@ class SumoSearchInterface(ABC):
         """An array of fields to search over."""
         ...
 
-    @abstractmethod
     def get_settings(self):
         """Configuration for advanced search."""
         ...
