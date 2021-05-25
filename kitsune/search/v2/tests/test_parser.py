@@ -123,12 +123,14 @@ class ParserTests(SimpleTestCase, ElasticQueryContainsMixin):
                 "field:mapped_y:(a OR b)",
                 B(should=[S(query="a", fields=["y"]), S(query="b", fields=["y"])]),
             ),
+            ("field:mapped_multiple:a", S(query="a", fields=["x", "y"])),
         ]
     )
     def test_field_operator_elastic_query(self, query, expected):
         field_mappings = {
             "mapped_x": "x",
             "mapped_y": "y",
+            "mapped_multiple": ["x", "y"],
         }
         elastic_query = Parser(query).elastic_query(
             {"settings": {"field_mappings": field_mappings}}

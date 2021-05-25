@@ -33,14 +33,16 @@ class FieldOperator(UnaryOperator):
 
     def elastic_query(self, context):
         field = self.tokens.field
+        fields = [field]
         # get field from mapping if its there
         mapping = context["settings"]["field_mappings"]
         if field in mapping:
             field = mapping[field]
+            fields = field if type(field) is list else [field]
         # change the the context for child tokens
         context = {
             **context,
-            "fields": [field],
+            "fields": fields,
         }
         return self.argument.elastic_query(context)
 

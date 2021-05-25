@@ -92,7 +92,9 @@ class QuestionSearch(SumoSearch):
         return {
             "field_mappings": {
                 "title": f"question_title.{self.locale}",
-                "content": f"question_content.{self.locale}",
+                "content": [f"question_content.{self.locale}", f"answer_content.{self.locale}"],
+                "question": f"question_content.{self.locale}",
+                "answer": f"answer_content.{self.locale}",
             },
             "range_allowed": [
                 "question_created",
