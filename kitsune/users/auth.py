@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.urls import reverse as django_reverse
 from django.db import transaction
-from django.utils.translation import ugettext as _
+from django.utils.translation import activate, ugettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.products.models import Product
@@ -52,6 +52,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.fxa_avatar = claims.get("avatar", "")
         profile.name = claims.get("displayName", "")
         subscriptions = claims.get("subscriptions", [])
+
         # Let's get the first element even if it's an empty string
         # A few assertions return a locale of None so we need to default to empty string
         fxa_locale = (claims.get("locale", "") or "").split(",")[0]
@@ -59,6 +60,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             profile.locale = fxa_locale
         else:
             profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
+        activate(profile.locale)
 
         profile.save()
         # User subscription information
