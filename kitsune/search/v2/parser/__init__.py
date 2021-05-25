@@ -19,7 +19,9 @@ from .tokens import TermToken, RangeToken, ExactToken
 _colon = Literal(":")
 _token = Regex(r"[^\(\)\s]+")  # everything but chars which conflict with the below operators
 _arg = Word(alphas + "_.")
-_value = (Regex(r"\"[^\"]+\"") | Regex(r"\([^\(\)]+\)")).setParseAction(removeQuotes) | _token
+_value = (
+    Regex(r"\"[^\"]+\"") | Regex(r"\([^\(\)]+\)")  # match phrase surrounded with "" or ()
+).setParseAction(removeQuotes) | _token
 
 # operators:
 # a special kind of token which can be nested with any other token (including operators)
@@ -63,6 +65,9 @@ class Parser(object):
     def __repr__(self):
         return repr(self.parsed)
 
-    def elastic_query(self, context={}):
-        context = {"fields": context.get("fields", {}), "settings": context.get("settings", {})}
+    def elastic_query(self, context=None):
+        if not context:
+            context = {}
+        context["fields"] = context.get("fields", {})
+        context["settings"] = context.get("settings", {})
         return self.parsed.elastic_query(context)

@@ -91,7 +91,7 @@ class QuestionSearch(SumoSearch):
             f"answer_content.{self.locale}",
         ]
 
-    def get_advanced_settings(self):
+    def get_settings(self):
         return {
             "field_mappings": {
                 "title": f"question_title.{self.locale}",
@@ -179,7 +179,7 @@ class WikiSearch(SumoSearch):
             f"content.{self.locale}^2",
         ]
 
-    def get_advanced_settings(self):
+    def get_settings(self):
         return {
             "field_mappings": {
                 "title": f"title.{self.locale}",
@@ -277,7 +277,7 @@ class ForumSearch(SumoSearch):
     def get_fields(self):
         return ["thread_title", "content"]
 
-    def get_advanced_settings(self):
+    def get_settings(self):
         return {
             "field_mappings": {
                 "title": "thread_title",

@@ -1,18 +1,15 @@
 from abc import ABC, abstractmethod
 
-from elasticsearch_dsl import Q
+from elasticsearch_dsl import Q as DSLQ
 
 
 class BaseToken(ABC):
     def __init__(self, tokens):
         self.tokens = tokens
 
-    def __str__(self):
-        return str("".join(self.tokens))
-
     def __repr__(self):
-        args = ", ".join([f"{repr(x)}" for x in self.tokens])
-        return f"{type(self).__name__}({args})"
+        args = ", ".join([repr(x) for x in self.tokens])
+        return fr"{type(self).__name__}({args})"
 
     @abstractmethod
     def elastic_query(self, context):
@@ -27,11 +24,8 @@ class TermToken(BaseToken):
         else:
             self.term = tokens.term
 
-    def __str__(self):
-        return str(self.term)
-
     def __repr__(self):
-        return f"t{repr(self.term)}"
+        return fr"t{repr(self.term)}"
 
     def __iadd__(self, other):
         if type(other) is not type(self):
@@ -40,7 +34,7 @@ class TermToken(BaseToken):
         return self
 
     def elastic_query(self, context):
-        return Q(
+        return DSLQ(
             "simple_query_string",
             query=self.term,
             default_operator="AND",
@@ -51,7 +45,7 @@ class TermToken(BaseToken):
 
 class RangeToken(BaseToken):
     def __repr__(self):
-        return "RangeToken(field={}, operator={}, value={})".format(
+        return r"RangeToken(field={}, operator={}, value={})".format(
             repr(self.tokens.field), repr(self.tokens.operator), repr(self.tokens.value)
         )
 
@@ -59,14 +53,14 @@ class RangeToken(BaseToken):
         field = self.tokens.field
         allowed = context["settings"]["range_allowed"]
         if field in allowed:
-            return Q("range", **{field: {self.tokens.operator: self.tokens.value}})
+            return DSLQ("range", **{field: {self.tokens.operator: self.tokens.value}})
         else:
-            return Q("match_none")
+            return DSLQ("match_none")
 
 
 class ExactToken(BaseToken):
     def __repr__(self):
-        return "ExactToken(field={}, value={})".format(
+        return r"ExactToken(field={}, value={})".format(
             repr(self.tokens.field), repr(self.tokens.value)
         )
 
@@ -84,4 +78,4 @@ class ExactToken(BaseToken):
             if "dict" in mapping:
                 value = mapping["dict"].get(value, value)
 
-        return Q("terms", **{field: values or [value]})
+        return DSLQ("terms", **{field: values or [value]})

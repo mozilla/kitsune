@@ -276,7 +276,7 @@ class SumoSearchInterface(ABC):
         ...
 
     @abstractmethod
-    def get_advanced_settings(self):
+    def get_settings(self):
         """Configuration for advanced search."""
         ...
 
@@ -345,9 +345,6 @@ class SumoSearch(SumoSearchInterface):
             return self.results[0]
         return self.results
 
-    def get_advanced_settings(self):
-        return {}
-
     def build_query(self):
         """Build a query to search over a specific set of documents."""
         try:
@@ -357,7 +354,7 @@ class SumoSearch(SumoSearchInterface):
         return parsed.elastic_query(
             {
                 "fields": self.get_fields(),
-                "settings": self.get_advanced_settings(),
+                "settings": self.get_settings(),
             }
         )
 
