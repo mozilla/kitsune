@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from django.apps import apps
 from elasticsearch_dsl import Q
 
 
@@ -82,11 +81,7 @@ class ExactToken(BaseToken):
             mapping = mappings[field]
             field = mapping["field"]
             # map value
-            if "model" in mapping:
-                model = apps.get_model(mapping["model"])
-                results = model._default_manager.filter(**{mapping["column"]: value})
-                values = list(results.values_list(mapping["attribute"], flat=True))
-            elif "dict" in mapping:
+            if "dict" in mapping:
                 value = mapping["dict"].get(value, value)
 
         return Q("terms", **{field: values or [value]})

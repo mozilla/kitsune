@@ -3,8 +3,6 @@ from parameterized import parameterized
 from pyparsing import ParseException
 from elasticsearch_dsl import Q
 from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
-from kitsune.users.tests import UserFactory
-from kitsune.products.tests import TopicFactory
 
 from kitsune.search.v2.parser import Parser
 
@@ -153,26 +151,14 @@ class ExactTokenTests(TestCase, ElasticQueryContainsMixin):
     @parameterized.expand(
         [
             ("exact:a:b", Q("terms", a=["b"])),
-            ("exact:user:a", Q("terms", x=["a@example.com"])),
-            ("exact:topic:b", Q("terms", y=["c", "d"])),
+            ("exact:b:c", Q("terms", x=["d"])),
         ]
     )
     def test_exact(self, query, expected):
-        UserFactory(username="a", email="a@example.com")
-        TopicFactory(slug="b", description="c")
-        TopicFactory(slug="b", description="d")
         exact_mappings = {
-            "user": {
-                "model": "auth.User",
-                "column": "username__iexact",
-                "attribute": "email",
+            "b": {
+                "dict": {"c": "d"},
                 "field": "x",
-            },
-            "topic": {
-                "model": "products.Topic",
-                "column": "slug__iexact",
-                "attribute": "description",
-                "field": "y",
             },
         }
         elastic_query = Parser(query).elastic_query(

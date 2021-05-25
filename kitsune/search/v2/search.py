@@ -38,24 +38,6 @@ FVH_HIGHLIGHT_OPTIONS = {
 }
 
 
-partial_product_exact_mapping = {
-    "model": "products.Product",
-    "column": "slug__iexact",
-    "attribute": "id",
-    "help": "a product's slug",
-}
-partial_user_exact_mapping = {
-    "model": "auth.User",
-    "column": "username__iexact",
-    "attribute": "id",
-    "help": "a user's username",
-}
-partial_topic_exact_mapping = {
-    "model": "products.Topic",
-    "column": "slug__iexact",
-    "attribute": "id",
-    "help": "a topic's slug",
-}
 category_exact_mapping = {
     "dict": {
         # `name` is lazy, using str() to force evaluation:
@@ -114,35 +96,6 @@ class QuestionSearch(SumoSearch):
             "field_mappings": {
                 "title": f"question_title.{self.locale}",
                 "content": f"question_content.{self.locale}",
-            },
-            "exact_mappings": {
-                "author": {
-                    **partial_user_exact_mapping,
-                    "field": "question_creator_id",
-                },
-                "updated_by": {
-                    **partial_user_exact_mapping,
-                    "field": "question_updated_by_id",
-                },
-                "product": {
-                    **partial_product_exact_mapping,
-                    "field": "question_product_id",
-                },
-                "topic": {
-                    **partial_topic_exact_mapping,
-                    "field": "question_topic_id",
-                },
-                "taken_by": {
-                    **partial_user_exact_mapping,
-                    "field": "question_taken_by_id",
-                },
-                "tag": {
-                    "model": "taggit.Tag",
-                    "column": "slug__iexact",
-                    "attribute": "id",
-                    "help": "a tag's slug",
-                    "field": "question_tag_ids",
-                },
             },
             "range_allowed": [
                 "question_created",
@@ -233,14 +186,6 @@ class WikiSearch(SumoSearch):
                 "content": f"content.{self.locale}",
             },
             "exact_mappings": {
-                "product": {
-                    **partial_product_exact_mapping,
-                    "field": "product_ids",
-                },
-                "topic": {
-                    **partial_topic_exact_mapping,
-                    "field": "topic_ids",
-                },
                 "category": category_exact_mapping,
             },
             "range_allowed": [
@@ -336,27 +281,6 @@ class ForumSearch(SumoSearch):
         return {
             "field_mappings": {
                 "title": "thread_title",
-            },
-            "exact_mappings": {
-                "forum": {
-                    "model": "forums.Forum",
-                    "column": "slug__iexact",
-                    "attribute": "id",
-                    "help": "a forum's slug",
-                    "field": "thread_forum_id",
-                },
-                "thread_author": {
-                    **partial_user_exact_mapping,
-                    "field": "thread_creator_id",
-                },
-                "author": {
-                    **partial_user_exact_mapping,
-                    "field": "author_id",
-                },
-                "updated_by": {
-                    **partial_user_exact_mapping,
-                    "field": "updated_by_id",
-                },
             },
             "range_allowed": [
                 "thread_created",
