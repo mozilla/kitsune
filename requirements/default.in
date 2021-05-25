@@ -58,6 +58,7 @@ premailer~=3.7.0
 puente~=0.5.0
 py-wikimarkup~=2.0.1
 pyOpenSSL~=20.0.0
+pyparsing~=2.4.7
 pyquery~=1.2.9
 python-dateutil~=2.8.1
 python-decouple~=3.3

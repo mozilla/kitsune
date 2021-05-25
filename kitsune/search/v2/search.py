@@ -5,6 +5,7 @@ from typing import Optional
 
 import bleach
 from dateutil import parser
+from django.utils.text import slugify
 from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.products.models import Product
@@ -17,6 +18,7 @@ from kitsune.search.v2.documents import (
     WikiDocument,
 )
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.parser import wiki_to_html
 
 QUESTION_DAYS_DELTA = 365 * 2
@@ -33,6 +35,14 @@ FVH_HIGHLIGHT_OPTIONS = {
     # add these tags before/after the highlighted sections:
     "pre_tags": [f"<{HIGHLIGHT_TAG}>"],
     "post_tags": [f"</{HIGHLIGHT_TAG}>"],
+}
+CATEGORY_EXACT_MAPPING = {
+    "dict": {
+        # `name` is lazy, using str() to force evaluation:
+        slugify(str(name)): _id
+        for _id, name in CATEGORIES
+    },
+    "field": "category",
 }
 
 
@@ -77,6 +87,22 @@ class QuestionSearch(SumoSearch):
             f"question_content.{self.locale}",
             f"answer_content.{self.locale}",
         ]
+
+    def get_settings(self):
+        return {
+            "field_mappings": {
+                "title": f"question_title.{self.locale}",
+                "content": [f"question_content.{self.locale}", f"answer_content.{self.locale}"],
+                "question": f"question_content.{self.locale}",
+                "answer": f"answer_content.{self.locale}",
+            },
+            "range_allowed": [
+                "question_created",
+                "question_updated",
+                "question_taken_until",
+                "question_num_votes",
+            ],
+        }
 
     def get_highlight_fields_options(self):
         fields = [
@@ -151,6 +177,20 @@ class WikiSearch(SumoSearch):
             f"summary.{self.locale}^4",
             f"content.{self.locale}^2",
         ]
+
+    def get_settings(self):
+        return {
+            "field_mappings": {
+                "title": f"title.{self.locale}",
+                "content": f"content.{self.locale}",
+            },
+            "exact_mappings": {
+                "category": CATEGORY_EXACT_MAPPING,
+            },
+            "range_allowed": [
+                "updated",
+            ],
+        }
 
     def get_highlight_fields_options(self):
         fields = [
@@ -235,6 +275,18 @@ class ForumSearch(SumoSearch):
 
     def get_fields(self):
         return ["thread_title", "content"]
+
+    def get_settings(self):
+        return {
+            "field_mappings": {
+                "title": "thread_title",
+            },
+            "range_allowed": [
+                "thread_created",
+                "created",
+                "updated",
+            ],
+        }
 
     def get_highlight_fields_options(self):
         return []
