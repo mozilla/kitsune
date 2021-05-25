@@ -63,9 +63,11 @@ class Parser(object):
         self.parsed = search_expression.parseString(query)[0]
 
     def __repr__(self):
+        """Create a string representation of this parsed string suitable for debugging."""
         return repr(self.parsed)
 
     def elastic_query(self, context=None):
+        """Create an elastic query out of this parsed string."""
         if not context:
             context = {}
         context["fields"] = context.get("fields", {})

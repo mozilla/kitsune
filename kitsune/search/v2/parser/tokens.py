@@ -7,9 +7,10 @@ class BaseToken(ABC):
     def __init__(self, tokens):
         self.tokens = tokens
 
+    @abstractmethod
     def __repr__(self):
-        args = ", ".join([repr(x) for x in self.tokens])
-        return fr"{type(self).__name__}({args})"
+        """Create a string representation of this token suitable for debugging."""
+        pass
 
     @abstractmethod
     def elastic_query(self, context):

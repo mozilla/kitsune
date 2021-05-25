@@ -36,15 +36,12 @@ FVH_HIGHLIGHT_OPTIONS = {
     "pre_tags": [f"<{HIGHLIGHT_TAG}>"],
     "post_tags": [f"</{HIGHLIGHT_TAG}>"],
 }
-
-
-category_exact_mapping = {
+CATEGORY_EXACT_MAPPING = {
     "dict": {
         # `name` is lazy, using str() to force evaluation:
         slugify(str(name)): _id
         for _id, name in CATEGORIES
     },
-    "help": "a category's slug",
     "field": "category",
 }
 
@@ -186,7 +183,7 @@ class WikiSearch(SumoSearch):
                 "content": f"content.{self.locale}",
             },
             "exact_mappings": {
-                "category": category_exact_mapping,
+                "category": CATEGORY_EXACT_MAPPING,
             },
             "range_allowed": [
                 "updated",
