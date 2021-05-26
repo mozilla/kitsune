@@ -1,10 +1,6 @@
-import datetime
 import logging
 
-from django.db import models
 from elasticutils.contrib.django import Indexable, MappingType
-
-from kitsune.sumo.models import ModelBase
 
 log = logging.getLogger("k.search.es")
 
@@ -103,81 +99,81 @@ class SearchMappingType(MappingType, Indexable):
         ...
 
 
-class RecordManager(models.Manager):
-    def outstanding(self):
-        """Return outstanding records"""
-        return self.filter(status__in=Record.STATUS_OUTSTANDING)
+# class RecordManager(models.Manager):
+#     def outstanding(self):
+#         """Return outstanding records"""
+#         return self.filter(status__in=Record.STATUS_OUTSTANDING)
 
 
-class Record(ModelBase):
-    """Indexing record."""
+# class Record(ModelBase):
+#     """Indexing record."""
 
-    STATUS_NEW = 0
-    STATUS_IN_PROGRESS = 1
-    STATUS_FAIL = 2
-    STATUS_SUCCESS = 3
+#     STATUS_NEW = 0
+#     STATUS_IN_PROGRESS = 1
+#     STATUS_FAIL = 2
+#     STATUS_SUCCESS = 3
 
-    STATUS_CHOICES = (
-        (STATUS_NEW, "new"),
-        (STATUS_IN_PROGRESS, "in progress"),
-        (STATUS_FAIL, "done - fail"),
-        (STATUS_SUCCESS, "done - success"),
-    )
+#     STATUS_CHOICES = (
+#         (STATUS_NEW, "new"),
+#         (STATUS_IN_PROGRESS, "in progress"),
+#         (STATUS_FAIL, "done - fail"),
+#         (STATUS_SUCCESS, "done - success"),
+#     )
 
-    STATUS_OUTSTANDING = [STATUS_NEW, STATUS_IN_PROGRESS]
+#     STATUS_OUTSTANDING = [STATUS_NEW, STATUS_IN_PROGRESS]
 
-    batch_id = models.CharField(max_length=10)
-    name = models.CharField(max_length=255)
-    creation_time = models.DateTimeField(auto_now_add=True)
-    start_time = models.DateTimeField(null=True)
-    end_time = models.DateTimeField(null=True)
-    status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_NEW)
-    message = models.CharField(max_length=255, blank=True)
+#     batch_id = models.CharField(max_length=10)
+#     name = models.CharField(max_length=255)
+#     creation_time = models.DateTimeField(auto_now_add=True)
+#     start_time = models.DateTimeField(null=True)
+#     end_time = models.DateTimeField(null=True)
+#     status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_NEW)
+#     message = models.CharField(max_length=255, blank=True)
 
-    objects = RecordManager()
+#     objects = RecordManager()
 
-    class Meta:
-        ordering = ["-start_time"]
-        permissions = (("reindex", "Can run a full reindexing"),)
+#     class Meta:
+#         ordering = ["-start_time"]
+#         permissions = (("reindex", "Can run a full reindexing"),)
 
-    def delta(self):
-        """Return the timedelta."""
-        if self.start_time and self.end_time:
-            return self.end_time - self.start_time
-        return None
+#     def delta(self):
+#         """Return the timedelta."""
+#         if self.start_time and self.end_time:
+#             return self.end_time - self.start_time
+#         return None
 
-    def _complete(self, status, msg="Done"):
-        self.end_time = datetime.datetime.now()
-        self.status = status
-        self.message = msg
+#     def _complete(self, status, msg="Done"):
+#         self.end_time = datetime.datetime.now()
+#         self.status = status
+#         self.message = msg
 
-    def mark_fail(self, msg):
-        """Mark as failed.
+#     def mark_fail(self, msg):
+#         """Mark as failed.
 
-        :arg msg: the error message it failed with
+#         :arg msg: the error message it failed with
 
-        """
-        self._complete(self.STATUS_FAIL, msg[:255])
-        self.save()
+#         """
+#         self._complete(self.STATUS_FAIL, msg[:255])
+#         self.save()
 
-    def mark_success(self, msg="Success"):
-        """Mark as succeeded.
+#     def mark_success(self, msg="Success"):
+#         """Mark as succeeded.
 
-        :arg msg: success message if any
+#         :arg msg: success message if any
 
-        """
-        self._complete(self.STATUS_SUCCESS, msg[:255])
-        self.save()
+#         """
+#         self._complete(self.STATUS_SUCCESS, msg[:255])
+#         self.save()
 
-    def __str__(self):
-        return "%s:%s%s" % (self.batch_id, self.name, self.status)
+#     def __str__(self):
+#         return "%s:%s%s" % (self.batch_id, self.name, self.status)
 
 
-class Synonym(ModelBase):
-    """To be serialized into ES for synonyms."""
+# class Synonym(ModelBase):
+#     """To be serialized into ES for synonyms."""
 
-    from_words = models.CharField(max_length=1024)
-    to_words = models.CharField(max_length=1024)
+#     from_words = models.CharField(max_length=1024)
+#     to_words = models.CharField(max_length=1024)
 
-    def __str__(self):
-        return "{0} => {1}".format(self.from_words, self.to_words)
+#     def __str__(self):
+#         return "{0} => {1}".format(self.from_words, self.to_words)
