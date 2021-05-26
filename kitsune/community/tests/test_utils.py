@@ -1,4 +1,4 @@
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
 
 from nose.tools import eq_
 
@@ -9,13 +9,14 @@ from kitsune.community.utils import (
 )
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.tests import AnswerFactory
-from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.search.v2.tests import Elastic7TestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
-class TopContributorTests(ElasticTestCase):
+class TopContributorTests(Elastic7TestCase):
     client_class = LocalizingClient
+    search_tests = True
 
     def test_top_contributors_kb(self):
         d = DocumentFactory(locale="en-US")
@@ -23,8 +24,6 @@ class TopContributorTests(ElasticTestCase):
         RevisionFactory(document=d, creator=r1.creator)
         RevisionFactory(document=d)
         r4 = RevisionFactory(document=d, created=date.today() - timedelta(days=91))
-
-        self.refresh()
 
         # By default, we should only get 2 top contributors back.
         top, _ = top_contributors_kb()

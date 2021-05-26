@@ -3,13 +3,12 @@ import json
 import random
 from datetime import datetime, timedelta
 from string import ascii_letters
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.cache import cache
-
-from unittest import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
@@ -26,7 +25,7 @@ from kitsune.questions.tests import (
     tags_eq,
 )
 from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
-from kitsune.search.tests import ElasticTestCase
+from kitsune.search.v2.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import (
     LocalizingClient,
@@ -1454,7 +1453,9 @@ class ProductForumTemplateTestCase(TestCaseBase):
         assert openbadges.title not in product_list_html
 
 
-class RelatedThingsTestCase(ElasticTestCase):
+class RelatedThingsTestCase(Elastic7TestCase):
+    search_tests = True
+
     def setUp(self):
         super(RelatedThingsTestCase, self).setUp()
         self.question = QuestionFactory(
@@ -1484,7 +1485,6 @@ class RelatedThingsTestCase(ElasticTestCase):
         AnswerVoteFactory(answer=a3, helpful=True)
 
         cache.clear()
-        self.refresh()
 
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
@@ -1502,7 +1502,6 @@ class RelatedThingsTestCase(ElasticTestCase):
         d1.save()
 
         cache.clear()
-        self.refresh()
 
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)

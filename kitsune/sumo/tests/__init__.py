@@ -1,30 +1,25 @@
 # -*- coding: utf-8 -*-
 import inspect
 import os
+import subprocess
 import sys
 from functools import wraps
 from os import getenv
 from smtplib import SMTPRecipientsRefused
-import subprocess
 
+import django_nose
+import factory.fuzzy
 from django.conf import settings
 from django.core.cache import cache
 from django.test import TestCase as OriginalTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.translation import trans_real
-
-import django_nose
-import factory.fuzzy
-from elasticutils.contrib.django import get_es
 from nose.tools import eq_
 from pyquery import PyQuery
 from waffle.models import Flag
 
-from kitsune.search import es_utils
-from kitsune.search.models import generate_tasks
 from kitsune.sumo.urlresolvers import reverse, split_path
-
 
 # We do this gooftastic thing because nose uses unittest.SkipTest in
 # Python 2.7 which doesn't work with the whole --no-skip thing.
@@ -76,63 +71,18 @@ class TestCase(OriginalTestCase):
         trans_real.activate(settings.LANGUAGE_CODE)
         super(TestCase, self)._pre_setup()
 
-    def reindex_and_refresh(self):
-        """Reindexes anything in the db"""
-        from kitsune.search.es_utils import es_reindex_cmd
-
-        es_reindex_cmd()
-        self.refresh(run_tasks=False)
-
-    def setup_indexes(self, empty=False, wait=True):
-        """(Re-)create write index"""
-        from kitsune.search.es_utils import recreate_indexes
-
-        recreate_indexes()
-        get_es().cluster.health(wait_for_status="yellow")
-
-    def teardown_indexes(self):
-        """Tear down write index"""
-        for index in es_utils.all_write_indexes():
-            es_utils.delete_index(index)
-
     @classmethod
     def setUpClass(cls):
         super(TestCase, cls).setUpClass()
-
-        if not getattr(settings, "ES_URLS"):
-            cls.skipme = True
-            return
-
-        # try to connect to ES and if it fails, skip ElasticTestCases.
-        if not get_es().ping():
-            cls.skipme = True
-            return
 
     def setUp(self):
         if self.skipme:
             raise SkipTest
 
         super(TestCase, self).setUp()
-        self.setup_indexes()
 
     def tearDown(self):
         super(TestCase, self).tearDown()
-        self.teardown_indexes()
-
-    def refresh(self, run_tasks=True):
-        es = get_es()
-
-        if run_tasks:
-            # Any time we're doing a refresh, we're making sure that
-            # the index is ready to be queried. Given that, it's
-            # almost always the case that we want to run all the
-            # generated tasks, then refresh.
-            generate_tasks()
-
-        for index in es_utils.all_write_indexes():
-            es.indices.refresh(index=index)
-
-        es.cluster.health(wait_for_status="yellow")
 
 
 def attrs_eq(received, **expected):

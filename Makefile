@@ -54,7 +54,7 @@ build-full: .docker-build-pull
 	touch .docker-build-full
 
 pull: .env
-	-GIT_COMMIT_SHORT= ${DC} pull base base-dev staticfiles locales full-no-locales full mariadb elasticsearch redis
+	-GIT_COMMIT_SHORT= ${DC} pull base base-dev staticfiles locales full-no-locales full mariadb redis
 	touch .docker-build-pull
 
 rebuild: clean build

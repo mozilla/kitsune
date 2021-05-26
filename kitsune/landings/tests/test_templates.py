@@ -2,11 +2,13 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
-from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.search.v2.tests import Elastic7TestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
-class HomeTestCase(ElasticTestCase):
+class HomeTestCase(Elastic7TestCase):
+    search_tests = True
+
     def test_home(self):
         """Verify that home page renders products."""
 
