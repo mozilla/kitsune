@@ -4,9 +4,6 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
-from kitsune.search.models import (
-    SearchMixin,
-)
 from kitsune.sumo.models import ModelBase
 
 
@@ -58,7 +55,7 @@ class Tweet(ModelBase):
         return tweet["text"]
 
 
-class Reply(ModelBase, SearchMixin):
+class Reply(ModelBase):
     """A reply from an AoA contributor.
 
     The Tweet table gets truncated regularly so we can't use it for metrics.

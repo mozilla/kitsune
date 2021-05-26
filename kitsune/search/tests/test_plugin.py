@@ -13,7 +13,6 @@ class OpenSearchTestCase(TestCase):
         # FIXME: This is silly. The better test would be to parse out
         # the content and then go through and make sure all the urls
         # were correct.
-        assert b"http://testserver/fr/search/suggestions" in response.content
         assert b"en-US" not in response.content
 
     def test_plugin_expires_and_mimetype(self):

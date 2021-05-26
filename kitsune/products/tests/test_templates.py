@@ -1,22 +1,19 @@
 from django.conf import settings
 from django.core.cache import cache
-
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.models import HOT_TOPIC_SLUG
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
-from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.search.v2.tests import Elastic7TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import (
-    DocumentFactory,
-    ApprovedRevisionFactory,
-    HelpfulVoteFactory,
-)
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
 
 
-class ProductViewsTestCase(ElasticTestCase):
+class ProductViewsTestCase(Elastic7TestCase):
+    search_tests = True
+
     def test_products(self):
         """Verify that /products page renders products."""
         # Create some products.

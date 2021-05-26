@@ -1,27 +1,19 @@
 import datetime
-import time
 
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.auth.models import User
-
 from tidings.models import NotificationsMixin
 
 from kitsune import forums
 from kitsune.access.utils import has_perm, perm_is_defined_on
 from kitsune.flagit.models import FlaggedObject
+from kitsune.sumo.models import ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.models import ModelBase
-from kitsune.search.models import (
-    SearchMappingType,
-    SearchMixin,
-    register_for_indexing,
-    register_mapping_type,
-)
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -108,7 +100,7 @@ class Forum(NotificationsMixin, ModelBase):
         return [f for f in Forum.objects.all() if f.allows_viewing_by(user)]
 
 
-class Thread(NotificationsMixin, ModelBase, SearchMixin):
+class Thread(NotificationsMixin, ModelBase):
     title = models.CharField(max_length=255)
     forum = models.ForeignKey("Forum", on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
@@ -190,104 +182,6 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         # If self.last_post is None, and this was called from Post.delete,
         # then Post.delete will erase the thread, as well.
 
-    @classmethod
-    def get_mapping_type(cls):
-        return ThreadMappingType
-
-
-@register_mapping_type
-class ThreadMappingType(SearchMappingType):
-    seconds_ago_filter = "last_post__created__gte"
-
-    @classmethod
-    def search(cls):
-        return super(ThreadMappingType, cls).search().order_by("created")
-
-    @classmethod
-    def get_model(cls):
-        return Thread
-
-    @classmethod
-    def get_query_fields(cls):
-        return ["post_title", "post_content"]
-
-    @classmethod
-    def get_mapping(cls):
-        return {
-            "properties": {
-                "id": {"type": "long"},
-                "model": {"type": "string", "index": "not_analyzed"},
-                "url": {"type": "string", "index": "not_analyzed"},
-                "indexed_on": {"type": "integer"},
-                "created": {"type": "integer"},
-                "updated": {"type": "integer"},
-                "post_forum_id": {"type": "integer"},
-                "post_title": {"type": "string", "analyzer": "snowball"},
-                "post_is_sticky": {"type": "boolean"},
-                "post_is_locked": {"type": "boolean"},
-                "post_author_id": {"type": "integer"},
-                "post_author_ord": {"type": "string", "index": "not_analyzed"},
-                "post_content": {
-                    "type": "string",
-                    "analyzer": "snowball",
-                    "store": "yes",
-                    "term_vector": "with_positions_offsets",
-                },
-                "post_replies": {"type": "integer"},
-            }
-        }
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        """Extracts interesting thing from a Thread and its Posts"""
-        if obj is None:
-            model = cls.get_model()
-            obj = model.objects.select_related("last_post").get(pk=obj_id)
-
-        d = {}
-        d["id"] = obj.id
-        d["model"] = cls.get_mapping_type_name()
-        d["url"] = obj.get_absolute_url()
-        d["indexed_on"] = int(time.time())
-
-        # TODO: Sphinx stores created and updated as seconds since the
-        # epoch, so we convert them to that format here so that the
-        # search view works correctly. When we ditch Sphinx, we should
-        # see if it's faster to filter on ints or whether we should
-        # switch them to dates.
-        d["created"] = int(time.mktime(obj.created.timetuple()))
-
-        if obj.last_post is not None:
-            d["updated"] = int(time.mktime(obj.last_post.created.timetuple()))
-        else:
-            d["updated"] = None
-
-        d["post_forum_id"] = obj.forum.id
-        d["post_title"] = obj.title
-        d["post_is_sticky"] = obj.is_sticky
-        d["post_is_locked"] = obj.is_locked
-
-        d["post_replies"] = obj.replies
-
-        author_ids = set()
-        author_ords = set()
-        content = []
-
-        posts = Post.objects.filter(thread_id=obj.id).select_related("author")
-        for post in posts:
-            author_ids.add(post.author.id)
-            author_ords.add(post.author.username)
-            content.append(post.content)
-
-        d["post_author_id"] = list(author_ids)
-        d["post_author_ord"] = list(author_ords)
-        d["post_content"] = content
-
-        return d
-
-
-register_for_indexing("forums", Thread)
-
 
 class Post(ModelBase):
     thread = models.ForeignKey("Thread", on_delete=models.CASCADE)
@@ -366,9 +260,6 @@ class Post(ModelBase):
     @property
     def content_parsed(self):
         return wiki_to_html(self.content)
-
-
-register_for_indexing("forums", Post, instance_to_indexee=lambda p: p.thread)
 
 
 def user_pre_save(sender, instance, **kw):

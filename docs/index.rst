@@ -27,8 +27,7 @@ Part 2: Developer's Guide
    wsgi
    email
    localization
-   searchchapter
-   search-v2
+   search
    frontend
    notes
 

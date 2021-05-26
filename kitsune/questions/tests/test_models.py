@@ -30,7 +30,7 @@ from kitsune.questions.tests import (
     TestCaseBase,
     tags_eq,
 )
-from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.search.v2.tests import Elastic7TestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.tags.tests import TagFactory
@@ -506,7 +506,9 @@ class AddExistingTagTests(TestCaseBase):
         add_existing_tag("nonexistent tag", self.untagged_question.tags)
 
 
-class OldQuestionsArchiveTest(ElasticTestCase):
+class OldQuestionsArchiveTest(Elastic7TestCase):
+    search_tests = True
+
     def test_archive_old_questions(self):
         last_updated = datetime.now() - timedelta(days=100)
 

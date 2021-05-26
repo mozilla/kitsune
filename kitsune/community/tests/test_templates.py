@@ -1,21 +1,21 @@
 from nose.tools import eq_
-
 from pyquery import PyQuery as pq
 
 from kitsune.forums.tests import ThreadFactory
 from kitsune.questions.tests import AnswerFactory
-from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.search.v2.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
 
-class UserSearchTests(ElasticTestCase):
+class UserSearchTests(Elastic7TestCase):
     """Tests for the Community Hub user search page."""
 
     client_class = LocalizingClient
+    search_tests = True
 
     def test_no_results(self):
         UserFactory(username="foo", profile__name="Foo Bar")
@@ -45,10 +45,11 @@ class UserSearchTests(ElasticTestCase):
         eq_(len(doc(".results-user")), 2)
 
 
-class LandingTests(ElasticTestCase):
+class LandingTests(Elastic7TestCase):
     """Tests for the Community Hub landing page."""
 
     client_class = LocalizingClient
+    search_tests = True
 
     def test_top_contributors(self):
         """Verify the top contributors appear."""
@@ -104,8 +105,10 @@ class LandingTests(ElasticTestCase):
         assert "we are SUMO!" in doc("#recent-threads td").html()
 
 
-class TopContributorsTests(ElasticTestCase):
+class TopContributorsTests(Elastic7TestCase):
     """Tests for the Community Hub top contributors page."""
+
+    search_tests = True
 
     client_class = LocalizingClient
 

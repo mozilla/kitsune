@@ -11,7 +11,6 @@ services:
     tty: true
     depends_on:
       - mariadb
-      - elasticsearch
       - elasticsearch7
       - kibana
       - redis
@@ -30,7 +29,6 @@ services:
     user: ${UID:-kitsune}
     depends_on:
       - mariadb
-      - elasticsearch
       - elasticsearch7
       - redis
 
@@ -48,7 +46,6 @@ services:
     env_file: .env-test
     depends_on:
       - mariadb
-      - elasticsearch
       - elasticsearch7
       - redis
 
@@ -139,12 +136,6 @@ services:
       - --collation-server=utf8_unicode_ci
     volumes:
       - mysqlvolume:/var/lib/mysql
-
-  elasticsearch:
-    image: elasticsearch:2.4
-    ports:
-      - "9201:9200"
-      - "9301:9300"
 
   elasticsearch7:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2

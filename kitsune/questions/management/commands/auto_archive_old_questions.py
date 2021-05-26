@@ -1,15 +1,11 @@
 import logging
-import time
 from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-from kitsune.questions.models import Question, QuestionMappingType, Answer
-from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
-from kitsune.search.tasks import index_task
-from kitsune.search.utils import to_class_path
+from kitsune.questions.models import Question, Answer
 
 from kitsune.search.v2.es7_utils import index_objects_bulk
 
@@ -56,38 +52,3 @@ class Command(BaseCommand):
                 )
                 index_objects_bulk.delay("QuestionDocument", q_ids)
                 index_objects_bulk.delay("AnswerDocument", answer_ids)
-
-                # elastic v2 code:
-                try:
-                    # So... the first time this runs, it'll handle 160K
-                    # questions or so which stresses everything. Thus we
-                    # do it in chunks because otherwise this won't work.
-                    #
-                    # After we've done this for the first time, we can nix
-                    # the chunking code.
-
-                    from kitsune.search.utils import chunked
-
-                    for chunk in chunked(q_ids, 100):
-
-                        # Fetch all the documents we need to update.
-                        es_docs = get_documents(QuestionMappingType, chunk)
-
-                        log.info("Updating %d index documents", len(es_docs))
-
-                        documents = []
-
-                        # For each document, update the data and stick it
-                        # back in the index.
-                        for doc in es_docs:
-                            doc["question_is_archived"] = True
-                            doc["indexed_on"] = int(time.time())
-                            documents.append(doc)
-
-                        QuestionMappingType.bulk_index(documents)
-
-                except ES_EXCEPTIONS:
-                    # Something happened with ES, so let's push index
-                    # updating into an index_task which retries when it
-                    # fails because of ES issues.
-                    index_task.delay(to_class_path(QuestionMappingType), q_ids)

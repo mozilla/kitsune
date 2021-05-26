@@ -1,6 +1,5 @@
 import logging
 import re
-import time
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse
 
@@ -21,22 +20,13 @@ from django.urls import resolve
 from django.utils.translation import pgettext, override as translation_override
 from elasticsearch7 import ElasticsearchException
 from product_details import product_details
-from taggit.models import Tag, TaggedItem
+from taggit.models import Tag
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
 from kitsune.questions.tasks import update_answer_pages, update_question_votes
-from kitsune.search.es_utils import UnindexMeBro
-from kitsune.search.models import (
-    SearchMappingType,
-    SearchMixin,
-    register_for_indexing,
-    register_mapping_type,
-)
-from kitsune.search.tasks import index_task
-from kitsune.search.utils import to_class_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -57,7 +47,7 @@ class AlreadyTakenException(Exception):
     pass
 
 
-class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
+class Question(ModelBase, BigVocabTaggableMixin):
     """A support question."""
 
     title = models.CharField(max_length=255)
@@ -368,10 +358,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             tags = list(self.tags.all().order_by("name"))
             cache.add(cache_key, tags, settings.CACHE_MEDIUM_TIMEOUT)
         return tags
-
-    @classmethod
-    def get_mapping_type(cls):
-        return QuestionMappingType
 
     @classmethod
     def get_serializer(cls, serializer_type="full"):
@@ -698,171 +684,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return images
 
 
-@register_mapping_type
-class QuestionMappingType(SearchMappingType):
-    seconds_ago_filter = "updated__gte"
-    list_keys = [
-        "topic",
-        "product",
-        "question_tag",
-        "question_answer_content",
-        "question_answer_creator",
-    ]
-
-    @classmethod
-    def get_model(cls):
-        return Question
-
-    @classmethod
-    def get_query_fields(cls):
-        return ["question_title", "question_content", "question_answer_content"]
-
-    @classmethod
-    def get_localized_fields(cls):
-        # This is the same list as `get_query_fields`, but it doesn't
-        # have to be, which is why it is typed twice.
-        return ["question_title", "question_content", "question_answer_content"]
-
-    @classmethod
-    def get_mapping(cls):
-        return {
-            "properties": {
-                "id": {"type": "long"},
-                "model": {"type": "string", "index": "not_analyzed"},
-                "url": {"type": "string", "index": "not_analyzed"},
-                "indexed_on": {"type": "integer"},
-                "created": {"type": "integer"},
-                "updated": {"type": "integer"},
-                "product": {"type": "string", "index": "not_analyzed"},
-                "topic": {"type": "string", "index": "not_analyzed"},
-                "question_title": {"type": "string", "analyzer": "snowball"},
-                "question_content": {
-                    "type": "string",
-                    "analyzer": "snowball",
-                    # TODO: Stored because originally, this is the
-                    # only field we were excerpting on. Standardize
-                    # one way or the other.
-                    "store": "yes",
-                    "term_vector": "with_positions_offsets",
-                },
-                "question_answer_content": {"type": "string", "analyzer": "snowball"},
-                "question_num_answers": {"type": "integer"},
-                "question_is_solved": {"type": "boolean"},
-                "question_is_locked": {"type": "boolean"},
-                "question_is_archived": {"type": "boolean"},
-                "question_has_answers": {"type": "boolean"},
-                "question_has_helpful": {"type": "boolean"},
-                "question_creator": {"type": "string", "index": "not_analyzed"},
-                "question_answer_creator": {"type": "string", "index": "not_analyzed"},
-                "question_num_votes": {"type": "integer"},
-                "question_num_votes_past_week": {"type": "integer"},
-                "question_tag": {"type": "string", "index": "not_analyzed"},
-                "question_locale": {"type": "string", "index": "not_analyzed"},
-            }
-        }
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        """Extracts indexable attributes from a Question and its answers."""
-        fields = [
-            "id",
-            "title",
-            "content",
-            "num_answers",
-            "solution_id",
-            "is_locked",
-            "is_archived",
-            "created",
-            "updated",
-            "num_votes_past_week",
-            "locale",
-            "product_id",
-            "topic_id",
-            "is_spam",
-        ]
-        composed_fields = ["creator__username"]
-        all_fields = fields + composed_fields
-
-        if obj is None:
-            # Note: Need to keep this in sync with
-            # tasks.update_question_vote_chunk.
-            model = cls.get_model()
-            obj = model.objects.values(*all_fields).get(pk=obj_id)
-        else:
-            fixed_obj = dict([(field, getattr(obj, field)) for field in fields])
-            fixed_obj["creator__username"] = obj.creator.username
-            obj = fixed_obj
-
-        if obj["is_spam"]:
-            raise UnindexMeBro()
-
-        d = {}
-        d["id"] = obj["id"]
-        d["model"] = cls.get_mapping_type_name()
-
-        # We do this because get_absolute_url is an instance method
-        # and we don't want to create an instance because it's a DB
-        # hit and expensive. So we do it by hand. get_absolute_url
-        # doesn't change much, so this is probably ok.
-        d["url"] = reverse("questions.details", kwargs={"question_id": obj["id"]})
-
-        d["indexed_on"] = int(time.time())
-
-        d["created"] = int(time.mktime(obj["created"].timetuple()))
-        d["updated"] = int(time.mktime(obj["updated"].timetuple()))
-
-        topics = Topic.objects.filter(id=obj["topic_id"])
-        products = Product.objects.filter(id=obj["product_id"])
-        d["topic"] = [t.slug for t in topics]
-        d["product"] = [p.slug for p in products]
-
-        d["question_title"] = obj["title"]
-        d["question_content"] = obj["content"]
-        d["question_num_answers"] = obj["num_answers"]
-        d["question_is_solved"] = bool(obj["solution_id"])
-        d["question_is_locked"] = obj["is_locked"]
-        d["question_is_archived"] = obj["is_archived"]
-        d["question_has_answers"] = bool(obj["num_answers"])
-
-        d["question_creator"] = obj["creator__username"]
-        d["question_num_votes"] = QuestionVote.objects.filter(question=obj["id"]).count()
-        d["question_num_votes_past_week"] = obj["num_votes_past_week"]
-
-        d["question_tag"] = list(
-            TaggedItem.tags_for(Question, Question(pk=obj_id)).values_list("name", flat=True)
-        )
-
-        d["question_locale"] = obj["locale"]
-
-        answer_values = list(
-            Answer.objects.filter(question=obj_id, is_spam=False).values_list(
-                "content", "creator__username"
-            )
-        )
-
-        d["question_answer_content"] = [a[0] for a in answer_values]
-        d["question_answer_creator"] = list(set(a[1] for a in answer_values))
-
-        if not answer_values:
-            d["question_has_helpful"] = False
-        else:
-            d["question_has_helpful"] = (
-                Answer.objects.filter(question=obj_id).filter(votes__helpful=True).exists()
-            )
-
-        return d
-
-
-register_for_indexing("questions", Question)
-register_for_indexing(
-    "questions",
-    TaggedItem,
-    instance_to_indexee=(
-        lambda i: (i.content_object if isinstance(i.content_object, Question) else None)
-    ),
-)
-
-
 class QuestionMetaData(ModelBase):
     """Metadata associated with a support question."""
 
@@ -933,7 +754,7 @@ class QuestionLocale(ModelBase):
         verbose_name = "AAQ enabled locale"
 
 
-class Answer(ModelBase, SearchMixin):
+class Answer(ModelBase):
     """An answer to a support question."""
 
     question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="answers")
@@ -1154,10 +975,6 @@ class Answer(ModelBase, SearchMixin):
         return images
 
     @classmethod
-    def get_mapping_type(cls):
-        return AnswerMetricsMappingType
-
-    @classmethod
     def get_serializer(cls, serializer_type="full"):
         # Avoid circular import
         from kitsune.questions import api
@@ -1175,113 +992,6 @@ class Answer(ModelBase, SearchMixin):
         self.marked_as_spam = datetime.now()
         self.marked_as_spam_by = by_user
         self.save()
-
-
-@register_mapping_type
-class AnswerMetricsMappingType(SearchMappingType):
-    seconds_ago_filter = "updated__gte"
-    list_keys = ["product"]
-
-    @classmethod
-    def get_model(cls):
-        return Answer
-
-    @classmethod
-    def get_index_group(cls):
-        return "metrics"
-
-    @classmethod
-    def get_mapping(cls):
-        return {
-            "properties": {
-                "id": {"type": "long"},
-                "model": {"type": "string", "index": "not_analyzed"},
-                "url": {"type": "string", "index": "not_analyzed"},
-                "indexed_on": {"type": "integer"},
-                "created": {"type": "date"},
-                "locale": {"type": "string", "index": "not_analyzed"},
-                "product": {"type": "string", "index": "not_analyzed"},
-                "is_solution": {"type": "boolean"},
-                "creator_id": {"type": "long"},
-                "by_asker": {"type": "boolean"},
-                "helpful_count": {"type": "integer"},
-                "unhelpful_count": {"type": "integer"},
-            }
-        }
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        """Extracts indexable attributes from an Answer."""
-        fields = ["id", "created", "creator_id", "question_id"]
-        composed_fields = [
-            "question__locale",
-            "question__solution_id",
-            "question__creator_id",
-            "question__product_id",
-        ]
-        all_fields = fields + composed_fields
-
-        if obj is None:
-            model = cls.get_model()
-            obj_dict = model.objects.values(*all_fields).get(pk=obj_id)
-        else:
-            obj_dict = dict([(field, getattr(obj, field)) for field in fields])
-            obj_dict["question__locale"] = obj.question.locale
-            obj_dict["question__solution_id"] = obj.question.solution_id
-            obj_dict["question__creator_id"] = obj.question.creator_id
-            obj_dict["question__product_id"] = obj.question.product_id
-
-        d = {}
-        d["id"] = obj_dict["id"]
-        d["model"] = cls.get_mapping_type_name()
-
-        # We do this because get_absolute_url is an instance method
-        # and we don't want to create an instance because it's a DB
-        # hit and expensive. So we do it by hand. get_absolute_url
-        # doesn't change much, so this is probably ok.
-        url = reverse("questions.details", kwargs={"question_id": obj_dict["question_id"]})
-        d["url"] = urlparams(url, hash="answer-%s" % obj_dict["id"])
-
-        d["indexed_on"] = int(time.time())
-
-        d["created"] = obj_dict["created"]
-
-        d["locale"] = obj_dict["question__locale"]
-        d["is_solution"] = obj_dict["id"] == obj_dict["question__solution_id"]
-        d["creator_id"] = obj_dict["creator_id"]
-        d["by_asker"] = obj_dict["creator_id"] == obj_dict["question__creator_id"]
-
-        products = Product.objects.filter(id=obj_dict["question__product_id"])
-        d["product"] = [p.slug for p in products]
-
-        related_votes = AnswerVote.objects.filter(answer_id=obj_dict["id"])
-        d["helpful_count"] = related_votes.filter(helpful=True).count()
-        d["unhelpful_count"] = related_votes.filter(helpful=False).count()
-
-        return d
-
-
-register_for_indexing("answers", Answer)
-# This below is needed to update the is_solution field on the answer.
-register_for_indexing("answers", Question, instance_to_indexee=(lambda i: i.solution))
-
-
-register_for_indexing("questions", Answer, instance_to_indexee=lambda a: a.question)
-
-
-# This below is needed to update the is_solution field on the answer.
-def reindex_questions_answers(sender, instance, **kw):
-    """When a question is saved, we need to reindex it's answers.
-
-    This is needed because the solution may have changed."""
-    if instance.id:
-        answer_ids = instance.answers.all().values_list("id", flat=True)
-        index_task.delay(to_class_path(AnswerMetricsMappingType), list(answer_ids))
-
-
-post_save.connect(
-    reindex_questions_answers, sender=Question, dispatch_uid="questions_reindex_answers"
-)
 
 
 def user_pre_save(sender, instance, **kw):
@@ -1319,9 +1029,6 @@ class QuestionVote(ModelBase):
         VoteMetadata.objects.create(vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
-register_for_indexing("questions", QuestionVote, instance_to_indexee=lambda v: v.question)
-
-
 class AnswerVote(ModelBase):
     """Helpful or Not Helpful vote on Answer."""
 
@@ -1335,13 +1042,6 @@ class AnswerVote(ModelBase):
 
     def add_metadata(self, key, value):
         VoteMetadata.objects.create(vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
-
-
-# TODO: We only need to update the helpful bit.  It's possible
-# we could ignore all AnswerVotes that aren't helpful and if
-# they're marked as helpful, then update the index.  Look into
-# this.
-register_for_indexing("questions", AnswerVote, instance_to_indexee=lambda v: v.answer.question)
 
 
 class VoteMetadata(ModelBase):
