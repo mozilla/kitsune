@@ -16,7 +16,7 @@ from kitsune.questions.tests import (
     TestCaseBase,
 )
 from kitsune.questions.views import parse_troubleshooting
-from kitsune.search.v2.tests import Elastic7TestCase
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient, eq_msg, get, template_used
 from kitsune.sumo.urlresolvers import reverse

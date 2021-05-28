@@ -1,5 +1,5 @@
 from unittest.mock import patch, call
-from kitsune.search.v2.tests import Elastic7TestCase
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.questions.tests import (
     QuestionFactory,
     AnswerFactory,
@@ -9,8 +9,8 @@ from kitsune.questions.tests import (
 from kitsune.wiki.tests import DocumentFactory
 from kitsune.tags.tests import TagFactory
 
-from kitsune.search.v2.documents import QuestionDocument, AnswerDocument
-from elasticsearch7.exceptions import NotFoundError
+from kitsune.search.documents import QuestionDocument, AnswerDocument
+from elasticsearch.exceptions import NotFoundError
 
 
 class QuestionDocumentSignalsTests(Elastic7TestCase):
@@ -72,7 +72,7 @@ class QuestionDocumentSignalsTests(Elastic7TestCase):
 
         self.assertEqual(self.get_doc().question_tag_ids, [])
 
-    @patch("kitsune.search.v2.signals.questions.index_object.delay")
+    @patch("kitsune.search.signals.questions.index_object.delay")
     def test_kb_tag(self, mock_index_object):
         # the tag m2m relation is shared across all models which use it
         # so will trigger signals on all models which use it, but we don't

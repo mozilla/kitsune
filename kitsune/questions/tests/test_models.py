@@ -30,7 +30,7 @@ from kitsune.questions.tests import (
     TestCaseBase,
     tags_eq,
 )
-from kitsune.search.v2.tests import Elastic7TestCase
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.tags.tests import TagFactory

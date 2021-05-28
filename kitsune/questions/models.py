@@ -18,7 +18,7 @@ from django.dispatch import receiver
 from django.http import Http404
 from django.urls import resolve
 from django.utils.translation import pgettext, override as translation_override
-from elasticsearch7 import ElasticsearchException
+from elasticsearch import ElasticsearchException
 from product_details import product_details
 from taggit.models import Tag
 
@@ -501,7 +501,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
             return documents
 
         # avoid circular import issue
-        from kitsune.search.v2.documents import WikiDocument
+        from kitsune.search.documents import WikiDocument
 
         try:
             search = (
@@ -552,7 +552,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
             return questions
 
         # avoid circular import issue
-        from kitsune.search.v2.documents import QuestionDocument
+        from kitsune.search.documents import QuestionDocument
 
         try:
             search = (

@@ -4,7 +4,7 @@ from pyparsing import ParseException
 from elasticsearch_dsl import Q
 from elasticsearch_dsl.query import SimpleQueryString as S, Bool as B
 
-from kitsune.search.v2.parser import Parser
+from kitsune.search.parser import Parser
 
 
 class ElasticQueryContainsMixin(object):

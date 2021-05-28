@@ -17,8 +17,8 @@ from kitsune.forums.feeds import PostsFeed, ThreadsFeed
 from kitsune.forums.forms import EditPostForm, EditThreadForm, NewThreadForm, ReplyForm
 from kitsune.forums.models import Forum, Post, Thread
 from kitsune.search.forms import BaseSearchForm
-from kitsune.search.v2.base import SumoSearchPaginator
-from kitsune.search.v2.search import ForumSearch
+from kitsune.search.base import SumoSearchPaginator
+from kitsune.search.search import ForumSearch
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_ratelimited, paginate

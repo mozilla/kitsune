@@ -1,5 +1,5 @@
-from kitsune.search.v2.tests import Elastic7TestCase
-from kitsune.search.v2.decorators import search_receiver
+from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.decorators import search_receiver
 from django.db.models.signals import m2m_changed
 from kitsune.questions.tests import QuestionFactory
 from kitsune.questions.models import Question

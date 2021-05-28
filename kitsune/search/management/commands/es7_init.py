@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from elasticsearch_dsl.exceptions import IllegalOperation
 from datetime import datetime, timezone
 
-from kitsune.search.v2.es7_utils import get_doc_types, es7_client
+from kitsune.search.es7_utils import get_doc_types, es7_client
 
 
 class Command(BaseCommand):

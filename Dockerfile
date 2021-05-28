@@ -23,7 +23,6 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
 RUN python -m venv /venv
-RUN mkdir /vendor
 RUN pip install --upgrade "pip==21.0.1"
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
@@ -38,8 +37,7 @@ RUN apt-get update && \
 COPY ./requirements/*.txt /app/requirements/
 
 RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
-    pip install --no-cache-dir --require-hashes --no-deps -t /vendor -r requirements/es7.txt
+    pip install --no-cache-dir --require-hashes -r requirements/dev.txt
 
 ARG GIT_SHA=head
 ENV GIT_SHA=${GIT_SHA}
@@ -124,7 +122,6 @@ RUN apt-get update && \
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
 COPY --from=base --chown=kitsune:kitsune /venv /venv
-COPY --from=base --chown=kitsune:kitsune /vendor /vendor
 COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
 
 COPY --chown=kitsune:kitsune . .

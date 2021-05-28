@@ -10,8 +10,8 @@ from elasticsearch_dsl import Q as DSLQ
 
 from kitsune.products.models import Product
 from kitsune.search import HIGHLIGHT_TAG, SNIPPET_LENGTH
-from kitsune.search.v2.base import SumoSearch
-from kitsune.search.v2.documents import (
+from kitsune.search.base import SumoSearch
+from kitsune.search.documents import (
     ForumDocument,
     ProfileDocument,
     QuestionDocument,
