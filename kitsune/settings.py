@@ -793,6 +793,7 @@ SESSION_SERIALIZER = config(
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
 # Connection information for Elastic 7
+ES_TIMEOUT = 5  # Timeout for querying requests
 ES7_URLS = config("ES7_URLS", cast=Csv(), default="elasticsearch7:9200")
 ES7_CLOUD_ID = config("ES7_CLOUD_ID", default="")
 ES7_USE_SSL = config("ES7_USE_SSL", default=False, cast=bool)
@@ -800,7 +801,7 @@ ES7_HTTP_AUTH = config("ES7_HTTP_AUTH", default="", cast=Csv())
 ES7_ENABLE_CONSOLE_LOGGING = config("ES7_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
 # Pass parameters to the ES7 client
 # like "search_type": "dfs_query_then_fetch"
-ES7_SEARCH_PARAMS = {}
+ES7_SEARCH_PARAMS = {"request_timeout": ES_TIMEOUT}
 
 # This is prepended to index names to get the final read/write index
 # names used by kitsune. This is so that you can have multiple
@@ -809,8 +810,6 @@ ES7_SEARCH_PARAMS = {}
 ES_INDEX_PREFIX = config("ES_INDEX_PREFIX", default="sumo")
 # Keep indexes up to date as objects are made/deleted.
 ES_LIVE_INDEXING = config("ES_LIVE_INDEXING", default=True, cast=bool)
-# Timeout for querying requests
-ES_TIMEOUT = 5
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10
