@@ -12,7 +12,7 @@ from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.wiki.models import Revision
 
 from elasticsearch_dsl import A
-from kitsune.search.v2.documents import AnswerDocument, ProfileDocument
+from kitsune.search.documents import AnswerDocument, ProfileDocument
 
 
 CONTRIBUTOR_GROUPS = [

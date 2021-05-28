@@ -1,9 +1,9 @@
 from django.test.utils import override_settings
-from kitsune.search.v2.tests import Elastic7TestCase
-from kitsune.search.v2.documents import ProfileDocument
+from kitsune.search.tests import Elastic7TestCase
+from kitsune.search.documents import ProfileDocument
 from kitsune.users.tests import ProfileFactory, GroupFactory
-from elasticsearch7.helpers import bulk as es7_bulk
-from kitsune.search.v2.es7_utils import es7_client
+from elasticsearch.helpers import bulk as es7_bulk
+from kitsune.search.es7_utils import es7_client
 
 
 @override_settings(ES_LIVE_INDEXING=False)

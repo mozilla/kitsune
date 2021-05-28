@@ -9,7 +9,7 @@ from django.core.paginator import Paginator as DjPaginator, PageNotAnInteger, Em
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from elasticsearch7.exceptions import NotFoundError
+from elasticsearch.exceptions import NotFoundError
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
 from elasticsearch_dsl import Search as DSLSearch
@@ -22,9 +22,9 @@ from kitsune.search.config import (
     DEFAULT_ES7_REFRESH_INTERVAL,
     UPDATE_RETRY_ON_CONFLICT,
 )
-from kitsune.search.v2.es7_utils import es7_client
-from kitsune.search.v2.parser import Parser
-from kitsune.search.v2.parser.tokens import TermToken
+from kitsune.search.es7_utils import es7_client
+from kitsune.search.parser import Parser
+from kitsune.search.parser.tokens import TermToken
 
 
 class SumoDocument(DSLDocument):

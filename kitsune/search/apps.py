@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
 
-class SearchV2Config(AppConfig):
-    name = "kitsune.search.v2"
+class SearchConfig(AppConfig):
+    name = "kitsune.search"
 
     def ready(self):
-        from kitsune.search.v2 import signals  # noqa
+        from kitsune.search import signals  # noqa

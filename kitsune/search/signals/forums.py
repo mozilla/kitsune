@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save, post_delete
-from kitsune.search.v2.es7_utils import index_object, delete_object, index_objects_bulk
-from kitsune.search.v2.decorators import search_receiver
+from kitsune.search.es7_utils import index_object, delete_object, index_objects_bulk
+from kitsune.search.decorators import search_receiver
 from kitsune.forums.models import Thread, Post
 
 

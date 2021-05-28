@@ -6,7 +6,7 @@ from kitsune.questions.tests import (
     AnswerFactory,
     AnswerVoteFactory,
 )
-from kitsune.search.v2.documents import QuestionDocument, AnswerDocument
+from kitsune.search.documents import QuestionDocument, AnswerDocument
 
 
 class QuestionDocumentTests(TestCase):
@@ -48,12 +48,12 @@ class AnswerDocumentTests(TestCase):
         self.assertNotEqual(answer.id, document.meta.id)
         self.assertIn(str(answer.id), str(document.meta.id))
 
-    @patch("kitsune.search.v2.documents.SumoDocument.get")
+    @patch("kitsune.search.documents.SumoDocument.get")
     def test_get_works_with_unprefixed_ids(self, mock_get):
         AnswerDocument.get(123)
         mock_get.assert_called_with("a_123")
 
-    @patch("kitsune.search.v2.documents.SumoDocument.get")
+    @patch("kitsune.search.documents.SumoDocument.get")
     def test_get_works_with_prefixed_ids(self, mock_get):
         AnswerDocument.get("a_123")
         mock_get.assert_called_with("a_123")

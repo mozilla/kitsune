@@ -648,7 +648,6 @@ INSTALLED_APPS = (
     "kitsune.access",
     "kitsune.sumo",
     "kitsune.search",
-    "kitsune.search.v2",
     "kitsune.forums",
     "tidings",
     "rest_framework.authtoken",
@@ -793,8 +792,6 @@ SESSION_SERIALIZER = config(
 # CSRF
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
-# Connection information for Elastic
-ES_URLS = [config("ES_URLS", default="localhost:9200")]
 # Connection information for Elastic 7
 ES7_URLS = config("ES7_URLS", cast=Csv(), default="elasticsearch7:9200")
 ES7_CLOUD_ID = config("ES7_CLOUD_ID", default="")
@@ -805,15 +802,6 @@ ES7_ENABLE_CONSOLE_LOGGING = config("ES7_ENABLE_CONSOLE_LOGGING", default=False,
 # like "search_type": "dfs_query_then_fetch"
 ES7_SEARCH_PARAMS = {}
 
-# Indexes for reading
-ES_INDEXES = {
-    "default": config("ES_INDEXES_DEFAULT", default="default"),
-    "non-critical": config("ES_INDEXES_NON_CRITICAL", default="non-critical"),
-    "metrics": config("ES_INDEXES_METRICS", "metrics"),
-}
-# Indexes for indexing--set this to ES_INDEXES if you want to read to
-# and write to the same index.
-ES_WRITE_INDEXES = ES_INDEXES
 # This is prepended to index names to get the final read/write index
 # names used by kitsune. This is so that you can have multiple
 # environments pointed at the same ElasticSearch cluster and not have
@@ -823,8 +811,6 @@ ES_INDEX_PREFIX = config("ES_INDEX_PREFIX", default="sumo")
 ES_LIVE_INDEXING = config("ES_LIVE_INDEXING", default=True, cast=bool)
 # Timeout for querying requests
 ES_TIMEOUT = 5
-ES_USE_SSL = config("ES_USE_SSL", default=False, cast=bool)
-ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10

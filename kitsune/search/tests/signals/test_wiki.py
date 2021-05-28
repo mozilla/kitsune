@@ -1,8 +1,8 @@
-from elasticsearch7.exceptions import NotFoundError
+from elasticsearch.exceptions import NotFoundError
 
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.search.v2.documents import WikiDocument
-from kitsune.search.v2.tests import Elastic7TestCase
+from kitsune.search.documents import WikiDocument
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 

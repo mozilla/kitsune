@@ -2,7 +2,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
-from kitsune.search.v2.tests import Elastic7TestCase
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.urlresolvers import reverse
 
 

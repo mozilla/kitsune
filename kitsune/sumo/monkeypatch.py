@@ -3,9 +3,6 @@ from functools import wraps
 
 from django.forms import fields
 
-from elasticutils import get_es as base_get_es
-from elasticutils.contrib import django as elasticutils_django
-
 
 _has_been_patched = False
 TESTING = (len(sys.argv) > 1 and sys.argv[1] == "test") or sys.argv[0].endswith("py.test")
@@ -61,38 +58,6 @@ def patch():
     # In testing contexts, patch django.shortcuts.render
     if TESTING:
         monkeypatch_render()
-
-    # Monkey patch ES
-    def get_es(**overrides):
-        """Monkey patch elasticutils get_es to add use_ssl and http_auth settings."""
-        from django.conf import settings
-
-        from elasticsearch import RequestsHttpConnection
-
-        defaults = {
-            "urls": settings.ES_URLS,
-            "timeout": getattr(settings, "ES_TIMEOUT", 5),
-            "use_ssl": getattr(settings, "ES_USE_SSL", False),
-            "http_auth": getattr(settings, "ES_HTTP_AUTH", None),
-            "verify_certs": getattr(settings, "ES_VERIFY_CERTS", True),
-            "connection_class": RequestsHttpConnection,
-        }
-
-        defaults.update(overrides)
-        return base_get_es(**defaults)
-
-    elasticutils_django.get_es = get_es
-
-    def S_get_es(self, default_builder=get_es):
-        """Returns the elasticsearch Elasticsearch object to use.
-
-        This uses the django get_es builder by default which takes
-        into account settings in ``settings.py``.
-
-        """
-        return super(elasticutils_django.S, self).get_es(default_builder=default_builder)
-
-    elasticutils_django.S.get_es = S_get_es
 
     _has_been_patched = True
 

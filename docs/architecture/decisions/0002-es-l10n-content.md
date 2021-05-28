@@ -1,4 +1,4 @@
-# 2. Storing localized content in Search v2
+# 2. Storing localized content in Search
 
 Date: 2020-10-27
 
@@ -27,7 +27,7 @@ and `doc_2.content` could be analyzed using a german analyzer.
 
 Well before version 7 ES removed this feature,
 and now all fields of the same name across an index must be analyzed the same,
-so we must take a different approach with Search v2.
+so we must take a different approach with the current Search implementation.
 
 We can either place separate locales in their own index,
 and set up locale-specific analyzers for the same field name across indices.
@@ -54,7 +54,7 @@ and `doc_2.content.de` is analyzed using a german analyzer.
 
 ## Consequences
 
-We won't need to manage many indexes of wildly different sizes,
+We won't need to manage many indeces of wildly different sizes,
 as we would if we used one index per locale.
 
 Documents within a specific locale can be searched for by searching on the `field.locale-name` field,

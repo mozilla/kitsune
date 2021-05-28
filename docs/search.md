@@ -1,46 +1,4 @@
-# Search v2
-
-## Testing
-
-### Enabling in Instant Search
-
-Open [support.mozilla.org](https://support.mozilla.org) and then open Firefox's [Web Console](https://developer.mozilla.org/en-US/docs/Tools/Web_Console).
-
-Paste the following JS in, and hit return on your keyboard:
-
-```
-window.localStorage.setItem("enable_search_v2", "true")
-```
-
-Pasting JS into your Web Console without understanding what it does is a *very bad idea*,
-so to explain this:
-
-* `window.localStorage` uses the [Local Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) to get access to a small store which sites can use to store small pieces of information in your browser.
-* `setItem()` is the function which allows us to write a piece of information to the store.
-* `"enable_search_v2"` is the name of the piece of information we're storing.
-* `"true"` is its value.
-
-Now refresh the page and instant search should be using search v2.
-You can check this by using some of the syntax which search v2 supports,
-like wildcards.
-A search for `fir*` in search v1 should return next to no results,
-whereas in search v2 it should return at least as many as a search for `firefox`.
-
-### Disabling in Instant Search
-
-You can disable search v2 in instant search by opening Firefox's Web Console on support.mozilla.org again,
-but running this snippet instead:
-
-```
-window.localStorage.removeItem("enable_search_v2")
-```
-
-* `window.localStorage` is the same Local Storage API from before.
-* `removeItem()` is the function to remove a piece of information.
-* `"enable_search_v2"` is the name of the piece of information to remove.
-
-Refresh the page,
-and instant search will be using search v1 again.
+# Search
 
 ## Development tips
 
@@ -142,7 +100,7 @@ from random import randint
 sleep(randint(1, 10))
 ```
 
-to `kitsune.search.v2.views.simple_search`.
+to `kitsune.search.views.simple_search`.
 
 ### Synonyms
 
@@ -164,7 +122,7 @@ is equivalent to:
 start, open, run => start, open, run
 ```
 
-It's also worth noting that these synonyms are applied at *query* time,
+It's also worth noting that these synonyms are applied at _query_ time,
 not index time.
 
 That is to say,
@@ -227,8 +185,7 @@ and the hyponyms (subtypes) defined on one line.
 This way,
 a search for "social" would also become one for "facebook", "face book" and "twitter".
 Whereas a search for "twitter" would also become one for "social",
-but *not* "facebook" or "face book".
-
+but _not_ "facebook" or "face book".
 
 #### Interaction with the rest of the analysis chain
 
@@ -236,7 +193,7 @@ All the analyzers above the synonym token filter in the analyzer chain are also 
 such as our tokenizers, stemmers and stop word filters.
 
 This means it's not necessary to specify the plural or conjugated forms of words,
-as post-analysis they *should* end up as the same token.
+as post-analysis they _should_ end up as the same token.
 
 Hyphen-separated and space separated words will analyze to the same set of tokens.
 
@@ -268,7 +225,7 @@ Those resulting phrases can then be used in the synonyms definition.
 #### Applying to all locales
 
 There's also an `_all.txt` file,
-which specifies synonyms which should be applied across *all* locales.
+which specifies synonyms which should be applied across _all_ locales.
 Suitable synonyms here include brand names or specific technical terms which won't tend to be localized.
 
 #### Updating
@@ -319,7 +276,7 @@ with the custom extension.
 
 ### Character mappings
 
-Character mappings *cannot* be dynamically updated,
+Character mappings _cannot_ be dynamically updated,
 this is because they're applied at index time.
 So any changes to a character mapping requires a re-index.
 
@@ -344,4 +301,4 @@ In theory plural and conjugated forms of words also need to be specified,
 however in practice plural words tend to be covered by the singular replacement as well
 (e.g. "add on" is a substring in "add ons",
 so "add ons" is replaced by "addons")
-and there is marginal benefit to defining *every single* conjugation of a verb.
+and there is marginal benefit to defining _every single_ conjugation of a verb.

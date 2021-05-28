@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection, reset_queries
 from dateutil.parser import parse as dateutil_parse
 
-from kitsune.search.v2.es7_utils import get_doc_types, index_objects_bulk
+from kitsune.search.es7_utils import get_doc_types, index_objects_bulk
 
 
 class Command(BaseCommand):

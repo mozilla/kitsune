@@ -1,6 +1,6 @@
 from nose.tools import eq_
 
-from kitsune.search.v2.tests import Elastic7TestCase
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 

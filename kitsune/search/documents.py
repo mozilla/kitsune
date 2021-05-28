@@ -4,9 +4,9 @@ from elasticsearch_dsl import InnerDoc, connections, field
 from kitsune.forums.models import Post
 from kitsune.questions.models import Answer, Question
 from kitsune.search import config
-from kitsune.search.v2.base import SumoDocument
-from kitsune.search.v2.es7_utils import es7_client
-from kitsune.search.v2.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
+from kitsune.search.base import SumoDocument
+from kitsune.search.es7_utils import es7_client
+from kitsune.search.fields import SumoLocaleAwareKeywordField, SumoLocaleAwareTextField
 from kitsune.users.models import Profile
 from kitsune.wiki import models as wiki_models
 from kitsune.wiki.config import (

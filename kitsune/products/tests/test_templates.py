@@ -6,7 +6,7 @@ from pyquery import PyQuery as pq
 from kitsune.products.models import HOT_TOPIC_SLUG
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
-from kitsune.search.v2.tests import Elastic7TestCase
+from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory
 

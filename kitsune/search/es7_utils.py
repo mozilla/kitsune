@@ -3,12 +3,12 @@ import inspect
 
 from celery import task
 from django.conf import settings
-from elasticsearch7.helpers import bulk as es7_bulk
-from elasticsearch7.helpers.errors import BulkIndexError
+from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk as es7_bulk
+from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 
 from kitsune.search import config
-from kitsune.search.v2 import elasticsearch7
 
 
 def _insert_custom_filters(analyzer_name, filter_list, char=False):
@@ -97,10 +97,10 @@ def es7_client(**kwargs):
         kwargs.update({"cloud_id": es7_cloud_id, "http_auth": settings.ES7_HTTP_AUTH})
     else:
         kwargs.update({"hosts": settings.ES7_URLS})
-    return elasticsearch7.Elasticsearch(**kwargs)
+    return Elasticsearch(**kwargs)
 
 
-def get_doc_types(paths=["kitsune.search.v2.documents"]):
+def get_doc_types(paths=["kitsune.search.documents"]):
     """Return all registered document types"""
 
     doc_types = []

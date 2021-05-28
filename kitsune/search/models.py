@@ -1,6 +1,6 @@
 import logging
 
-from elasticutils.contrib.django import Indexable, MappingType
+# from elasticutils.contrib.django import Indexable, MappingType
 
 log = logging.getLogger("k.search.es")
 
@@ -35,7 +35,7 @@ class SearchMixin(object):
         return
 
 
-class SearchMappingType(MappingType, Indexable):
+class SearchMappingType(object):
     """Contains helpers on top of what ElasticUtils provides
 
     Subclasses should implement the following:
