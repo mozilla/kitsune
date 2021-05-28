@@ -52,7 +52,7 @@ class RangeToken(BaseToken):
 
     def elastic_query(self, context):
         field = self.tokens.field
-        allowed = context["settings"]["range_allowed"]
+        allowed = context["settings"].get("range_allowed", [])
         if field in allowed:
             return DSLQ("range", **{field: {self.tokens.operator: self.tokens.value}})
         else:
@@ -70,7 +70,7 @@ class ExactToken(BaseToken):
         value = self.tokens.value
         values = None
 
-        mappings = context["settings"]["exact_mappings"]
+        mappings = context["settings"].get("exact_mappings", [])
         if field in mappings:
             # map field
             mapping = mappings[field]

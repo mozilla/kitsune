@@ -35,7 +35,7 @@ class FieldOperator(UnaryOperator):
         field = self.tokens.field
         fields = [field]
         # get field from mapping if its there
-        mapping = context["settings"]["field_mappings"]
+        mapping = context["settings"].get("field_mappings", [])
         if field in mapping:
             field = mapping[field]
             fields = field if type(field) is list else [field]

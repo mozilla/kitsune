@@ -18,7 +18,7 @@ from .tokens import TermToken, RangeToken, ExactToken
 # DRY things up
 _colon = Literal(":")
 _token = Regex(r"[^\(\)\s]+")  # everything but chars which conflict with the below operators
-_arg = Word(alphas + "_.")
+_arg = Word(alphas + "_.-")
 _value = (
     Regex(r"\"[^\"]+\"") | Regex(r"\([^\(\)]+\)")  # match phrase surrounded with "" or ()
 ).setParseAction(removeQuotes) | _token
