@@ -4,7 +4,7 @@ from django_jinja import library
 from kitsune.access import utils as access
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def has_perm(context, perm, obj):
     """
@@ -15,7 +15,7 @@ def has_perm(context, perm, obj):
     return access.has_perm(context["request"].user, perm, obj)
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def has_perm_or_owns(context, perm, obj, perm_obj, field_name="creator"):
     """

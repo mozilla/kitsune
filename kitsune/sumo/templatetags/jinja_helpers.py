@@ -179,7 +179,7 @@ class Paginator(object):
         return jinja2.Markup(render_to_string("layout/paginator.html", c))
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def breadcrumbs(context, items=list(), add_default=True, id=None):
     """
@@ -220,7 +220,7 @@ def _contextual_locale(context):
     return locale
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def datetimeformat(context, value, format="shortdatetime"):
     """
@@ -315,7 +315,7 @@ def json(s):
     return jsonlib.dumps(s)
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def number(context, n):
     """Return the localized representation of an integer or decimal.
@@ -411,7 +411,7 @@ def remove(list_, item):
     return [i for i in list_ if i != item]
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def is_secure(context):
     request = context.get("request")
@@ -522,7 +522,7 @@ def image_for_product(product_slug):
     return obj.image_alternate_url
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def show_header_fx_download(context):
     """
