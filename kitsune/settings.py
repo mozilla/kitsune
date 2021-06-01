@@ -204,6 +204,15 @@ SUMO_LANGUAGES = (
     "zu",
 )
 
+# Modifies the locale to fallback to, for these locales.
+# By default all locales (including the fallback locale)
+# will fallback to en (unless it is also a key in this dict).
+FALLBACK_LANGUAGES = {
+    "fy-NL": "fy",
+    "zh-CN": "zh-Hans",
+    "zh-TW": "zh-Hant",
+}
+
 # These languages won't show a warning about FxOS when contributors try
 # to add content.
 FXOS_LANGUAGES = [
