@@ -36,6 +36,7 @@ from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE,
     TEMPLATES_CATEGORY,
 )
+from kitsune.wiki.decorators import edit_routing_behavior
 from kitsune.wiki.events import (
     ApprovedOrReadyUnion,
     ApproveRevisionInLocaleEvent,
@@ -106,6 +107,7 @@ def doc_page_cache(view):
     return _doc_page_cache_view
 
 
+@edit_routing_behavior(raise_404=False)
 @require_GET
 @doc_page_cache
 def document(request, document_slug, document=None):
@@ -116,9 +118,10 @@ def document(request, document_slug, document=None):
 
     fallback_reason = None
     full_locale_name = None
-    # If a slug isn't available in the requested locale, fall back to en-US:
-    try:
-        doc = Document.objects.get(locale=request.LANGUAGE_CODE, slug=document_slug)
+
+    doc = request.wiki_routing["doc"]
+    doc_matches_locale = request.wiki_routing["doc_matches_locale"]
+    if doc_matches_locale:
         if not doc.current_revision and doc.parent and doc.parent.current_revision:
             # This is a translation but its current_revision is None
             # and OK to fall back to parent (parent is approved).
@@ -127,21 +130,10 @@ def document(request, document_slug, document=None):
             # No current_revision, no parent with current revision, so
             # nothing to show.
             fallback_reason = "no_content"
-    except Document.DoesNotExist:
-        # Look in default language:
-        doc = get_object_or_404(
-            Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-        )
-        # If there's a translation to the requested locale, take it:
-        translation = doc.translated_to(request.LANGUAGE_CODE)
-        if translation:
-            url = translation.get_absolute_url()
-            url = urlparams(url, query_dict=request.GET)
-            return HttpResponseRedirect(url)
-        elif doc.current_revision:
-            # There is no translation
-            # and OK to fall back to parent (parent is approved).
-            fallback_reason = "no_translation"
+    elif doc.current_revision:
+        # There is no translation
+        # and OK to fall back to parent (parent is approved).
+        fallback_reason = "no_translation"
 
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
@@ -421,29 +413,16 @@ def steal_lock(request, document_slug, revision_id=None):
     return HttpResponse("", status=200 if ok else 400)
 
 
+@edit_routing_behavior(raise_404=False)
 @require_http_methods(["GET", "POST"])
 @login_required
 def edit_document(request, document_slug, revision_id=None):
     """Create a new revision of a wiki document, or edit document metadata."""
-    try:
-        doc = Document.objects.get(locale=request.LANGUAGE_CODE, slug=document_slug)
-    except Document.DoesNotExist:
-        # Check if the document slug is available in default language.
-        parent_doc = get_object_or_404(
-            Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-        )
-        # If the document is available in default language, show the user the translation page
-        # of the requested locale
-        translation = parent_doc.translated_to(request.LANGUAGE_CODE)
-        # If the document is translated into the requested locale, show them the edit article
-        # page of that translated document
-        if translation:
-            doc = translation
-        # If the document is not translated into the requested locale, redirect them to translate
-        # the article page.
-        else:
-            url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
-            return HttpResponseRedirect(url)
+    doc = request.wiki_routing["doc"]
+    doc_matches_locale = request.wiki_routing["doc_matches_locale"]
+    if not doc_matches_locale:
+        url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
+        return HttpResponseRedirect(url)
 
     user = request.user
 
@@ -592,23 +571,7 @@ def preview_revision(request):
 @require_GET
 def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
-    locale = request.GET.get("locale", request.LANGUAGE_CODE)
-    try:
-        doc = Document.objects.get(locale=locale, slug=document_slug)
-    except Document.DoesNotExist:
-        # Check if the document slug is available in default language.
-        parent_doc = get_object_or_404(
-            Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-        )
-        # If the document is available in default language, show the user the history page
-        # of the requested locale
-        translation = parent_doc.translated_to(locale)
-        if translation:
-            url = reverse("wiki.document_revisions", args=[translation.slug], locale=locale)
-            return HttpResponseRedirect(url)
-        else:
-            raise Http404
-
+    doc = request.wiki_routing["doc"]
     revs = Revision.objects.filter(document=doc).order_by("-created", "-id")
 
     if request.is_ajax():
@@ -771,8 +734,7 @@ def compare_revisions(request, document_slug):
     The ids are passed as query string parameters (to and from).
 
     """
-    locale = request.GET.get("locale", request.LANGUAGE_CODE)
-    doc = get_object_or_404(Document, locale=locale, slug=document_slug)
+    doc = request.wiki_routing["doc"]
     if "from" not in request.GET or "to" not in request.GET:
         raise Http404
 
@@ -793,6 +755,7 @@ def compare_revisions(request, document_slug):
     )
 
 
+@edit_routing_behavior(skip=True)
 @login_required
 def select_locale(request, document_slug):
     """Select a locale to translate the document to."""
@@ -822,6 +785,7 @@ def select_locale(request, document_slug):
     )
 
 
+@edit_routing_behavior(skip=True)
 @require_http_methods(["GET", "POST"])
 @login_required
 def translate(request, document_slug, revision_id=None):
@@ -1031,7 +995,7 @@ def translate(request, document_slug, revision_id=None):
 @login_required
 def watch_document(request, document_slug):
     """Start watching a document for edits."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = request.wiki_routing["doc"]
     EditDocumentEvent.notify(request.user, document)
     return HttpResponseRedirect(document.get_absolute_url())
 
@@ -1040,7 +1004,7 @@ def watch_document(request, document_slug):
 @login_required
 def unwatch_document(request, document_slug):
     """Stop watching a document for edits."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = request.wiki_routing["doc"]
     EditDocumentEvent.stop_notifying(request.user, document)
     return HttpResponseRedirect(document.get_absolute_url())
 
@@ -1236,7 +1200,7 @@ def unhelpful_survey(request):
 
 @require_GET
 def get_helpful_votes_async(request, document_slug):
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = request.wiki_routing["doc"]
 
     datums = []
     flag_data = []
@@ -1391,9 +1355,10 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     return HttpResponseBadRequest()
 
 
+@edit_routing_behavior(skip=True)
 @login_required
 def delete_document(request, document_slug):
-    """Delete a revision."""
+    """Delete a document."""
     document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
 
     # Check permission
@@ -1421,7 +1386,7 @@ def delete_document(request, document_slug):
 @require_POST
 def add_contributor(request, document_slug):
     """Add a contributor to a document."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = request.wiki_routing["doc"]
 
     if not document.allows(request.user, "edit"):
         raise PermissionDenied
@@ -1446,7 +1411,7 @@ def add_contributor(request, document_slug):
 @require_http_methods(["GET", "POST"])
 def remove_contributor(request, document_slug, user_id):
     """Remove a contributor from a document."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = request.wiki_routing["doc"]
 
     if not document.allows(request.user, "edit"):
         raise PermissionDenied
@@ -1466,6 +1431,7 @@ def remove_contributor(request, document_slug, user_id):
     )
 
 
+@edit_routing_behavior(skip=True)
 def show_translations(request, document_slug):
     document = get_object_or_404(
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
@@ -1595,9 +1561,7 @@ def recent_revisions(request):
 @require_GET
 def what_links_here(request, document_slug):
     """List all documents that link to a document."""
-    locale = request.GET.get("locale", request.LANGUAGE_CODE)
-    doc = get_object_or_404(Document, locale=locale, slug=document_slug)
-
+    doc = request.wiki_routing["doc"]
     links = {}
     for link_to in doc.links_to():
         if doc.locale == link_to.linked_from.locale:

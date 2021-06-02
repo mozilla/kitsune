@@ -518,6 +518,7 @@ MIDDLEWARE = (
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
     "kitsune.sumo.middleware.LocaleURLMiddleware",
+    "kitsune.wiki.middleware.WikiRoutingMiddleware",
     "kitsune.sumo.middleware.Forbidden403Middleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
