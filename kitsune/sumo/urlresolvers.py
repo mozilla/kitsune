@@ -76,7 +76,10 @@ def get_non_supported(lang):
 
 
 def get_best_language(accept_lang):
-    """Given an Accept-Language header, return the best-matching language."""
+    """
+    Given an Accept-Language header, return the best-matching language.
+    This mostly follows the RFCs but read bug 439568 for details.
+    """
 
     LUM = settings.LANGUAGE_URL_MAP
     NSL = settings.NON_SUPPORTED_LOCALES
@@ -128,42 +131,46 @@ def split_path(path):
 class Prefixer(object):
     def __init__(self, request=None, locale=None):
         """If request is omitted, fall back to a default locale."""
-        # to avoid circular imports
-        from kitsune.users.models import Profile
-
         self.request = request or WSGIRequest({"REQUEST_METHOD": "bogus", "wsgi.input": None})
         self.locale, self.shortened_path = split_path(self.request.path_info)
-
-        # We also need to check to see if locale is already given in the url,
-        # as that serves as an override.
-        if not self.locale and request:
-            if request.user.is_anonymous:
-                language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
-                if language:
-                    self.locale = language
-            else:
-                try:
-                    self.locale = Profile.objects.get(user=request.user).locale
-                except Profile.DoesNotExist:
-                    pass
 
         if locale:
             self.locale = locale
 
+        if not self.locale:
+            if request:
+                self.locale = self.get_language()
+            else:
+                self.locale = settings.LANGUAGE_CODE
+
     def get_language(self):
         """
-        Return a locale code we support on the site using the
-        user's Accept-Language header to determine which is best. This
-        mostly follows the RFCs but read bug 439568 for details.
+        Return a locale code we support on the site trying:
+        1. the lang query param,
+        2. the user's profile,
+        3. the language cookie,
+        4. the Accept-Language header,
+        before defaulting to the site default if none is found.
         """
+        # to avoid circular imports
+        from kitsune.users.models import Profile
+
         if "lang" in self.request.GET:
             lang = self.request.GET["lang"].lower()
             if lang in settings.LANGUAGE_URL_MAP:
                 return settings.LANGUAGE_URL_MAP[lang]
 
-        if self.request.META.get("HTTP_ACCEPT_LANGUAGE"):
-            best = get_best_language(self.request.META["HTTP_ACCEPT_LANGUAGE"])
-            if best:
+        if self.request.user.is_authenticated:
+            try:
+                return Profile.objects.get(user=self.request.user).locale
+            except Profile.DoesNotExist:
+                pass
+
+        if lang := self.request.session.get(settings.LANGUAGE_COOKIE_NAME):
+            return lang
+
+        if accept_lang := self.request.META.get("HTTP_ACCEPT_LANGUAGE"):
+            if best := get_best_language(accept_lang):
                 return best
 
         return settings.LANGUAGE_CODE
@@ -177,7 +184,7 @@ class Prefixer(object):
             first_part not in settings.SUPPORTED_NONLOCALES
             and first_part not in settings.LANGUAGE_URL_MAP
         ):
-            locale = self.locale if self.locale else self.get_language()
+            locale = self.locale
             url_parts.append(locale)
 
         url_parts.append(path)
