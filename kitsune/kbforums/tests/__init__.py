@@ -134,6 +134,7 @@ class PostTestCase(KBForumTestCase):
             locked.new_post(creator=locked.creator, content="foo")
 
     def test_post_no_session(self):
+        DocumentFactory(slug="article-title")
         r = get(self.client, "wiki.discuss.new_thread", kwargs={"document_slug": "article-title"})
         assert settings.LOGIN_URL in r.redirect_chain[0][0]
         eq_(302, r.redirect_chain[0][1])
@@ -142,6 +143,7 @@ class PostTestCase(KBForumTestCase):
 class ThreadTestCase(KBForumTestCase):
     def test_delete_no_session(self):
         """Delete a thread while logged out redirects."""
+        DocumentFactory(slug="article-title")
         r = get(
             self.client,
             "wiki.discuss.delete_thread",

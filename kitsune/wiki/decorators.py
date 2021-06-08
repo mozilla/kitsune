@@ -21,7 +21,7 @@ def check_simple_wiki_locale(view_func):
     return _check_simple_wiki_locale
 
 
-def edit_routing_behavior(skip=False, raise_404=True):
+def edit_routing_behavior(skip=False, raise_404=True, redirect=True):
     """Edit the behavior of WikiRoutingMiddleware for the decorated view."""
 
     def decorator(view_func):
@@ -31,6 +31,7 @@ def edit_routing_behavior(skip=False, raise_404=True):
 
         wrapped_view.wiki_routing_skip = skip
         wrapped_view.wiki_routing_raise_404 = raise_404
+        wrapped_view.wiki_routing_redirect = redirect
         return wrapped_view
 
     return decorator

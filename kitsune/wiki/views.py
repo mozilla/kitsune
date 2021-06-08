@@ -261,6 +261,7 @@ def document(request, document_slug, document=None):
     return render(request, "wiki/document.html", data)
 
 
+@edit_routing_behavior(skip=True)
 def revision(request, document_slug, revision_id):
     """View a wiki document revision."""
     rev = get_object_or_404(Revision, pk=revision_id, document__slug=document_slug)
@@ -413,7 +414,7 @@ def steal_lock(request, document_slug, revision_id=None):
     return HttpResponse("", status=200 if ok else 400)
 
 
-@edit_routing_behavior(raise_404=False)
+@edit_routing_behavior(raise_404=False, redirect=False)
 @require_http_methods(["GET", "POST"])
 @login_required
 def edit_document(request, document_slug, revision_id=None):
@@ -585,6 +586,7 @@ def document_revisions(request, document_slug, contributor_form=None):
     )
 
 
+@edit_routing_behavior(skip=True)
 @login_required
 def review_revision(request, document_slug, revision_id):
     """Review a revision of a wiki document."""
@@ -1118,6 +1120,7 @@ def json_view(request):
     return HttpResponse(data, content_type="application/json")
 
 
+@edit_routing_behavior(skip=True)
 @require_POST
 @csrf_exempt
 @ratelimit("document-vote", "10/d")
@@ -1296,6 +1299,7 @@ def get_helpful_votes_async(request, document_slug):
     return HttpResponse(json.dumps(send), content_type="application/json")
 
 
+@edit_routing_behavior(skip=True)
 @login_required
 def delete_revision(request, document_slug, revision_id):
     """Delete a revision."""
@@ -1331,6 +1335,7 @@ def delete_revision(request, document_slug, revision_id):
     return HttpResponseRedirect(reverse("wiki.document_revisions", args=[document.slug]))
 
 
+@edit_routing_behavior(skip=True)
 @login_required
 @require_POST
 def mark_ready_for_l10n_revision(request, document_slug, revision_id):

@@ -2,6 +2,7 @@ from django import http
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document
 
@@ -42,18 +43,19 @@ class WikiRoutingMiddleware:
                     Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
                 )
                 request.wiki_routing["doc"] = parent_doc
-                # If the document is available in default language, show the user the page
-                # in the requested locale
-                translation = parent_doc.translated_to(locale)
-                if translation:
-                    url_name = request.resolver_match.url_name
-                    url = reverse(url_name, args=[translation.slug], locale=locale)
-                    return http.HttpResponseRedirect(url)
+                request.wiki_routing["doc_matches_locale"] = False
+                # If the document is available in the default language,
+                # try fetching the localized version
+                if translation := parent_doc.translated_to(locale):
+                    request.wiki_routing["doc"] = translation
+                    request.wiki_routing["doc_matches_locale"] = True
+                    redirect = getattr(view_func, "wiki_routing_redirect", True)
+                    if redirect:
+                        url_name = request.resolver_match.url_name
+                        url = reverse(url_name, args=[translation.slug], locale=locale)
+                        url = urlparams(url, query_dict=request.GET)
+                        return http.HttpResponseRedirect(url)
                 else:
                     raise_404 = getattr(view_func, "wiki_routing_raise_404", True)
                     if raise_404:
                         raise http.Http404
-                    else:
-                        request.wiki_routing["doc_matches_locale"] = False
-
-        return None
