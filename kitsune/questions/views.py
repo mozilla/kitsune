@@ -1294,7 +1294,8 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
     answers_ = question.answers.all()
 
     # Remove spam flag if an answer passed the moderation queue
-    answers_.filter(flags__status=2).update(is_spam=False)
+    if not settings.READ_ONLY:
+        answers_.filter(flags__status=2).update(is_spam=False)
 
     if not request.user.has_perm("flagit.can_moderate"):
         answers_ = answers_.filter(is_spam=False)
