@@ -184,24 +184,6 @@
     }
   }
 
-  // Return the browser and version that appears to be running. Possible
-  // values resemble {fx4, fx35, m1, m11}. Return undefined if the currently
-  // running browser can't be identified.
-  function detectBrowser() {
-    function getVersionGroup(browser, version) {
-      if ((browser === undefined) || (version === undefined) || !VERSIONS[browser]) {
-        return undefined;
-      }
-
-      for (var i = 0; i < VERSIONS[browser].length; i++) {
-        if (version < VERSIONS[browser][i][0]) {
-          return browser + VERSIONS[browser][i][1];
-        }
-      }
-    }
-    return getVersionGroup(BrowserDetect.browser, BrowserDetect.version);
-  }
-
   function initPrepopulatedSlugs() {
     var fields = {
       title: {
@@ -260,7 +242,6 @@
         new ShowFor(); // eslint-disable-line
         $preview.find('select.enable-if-js').removeAttr('disabled');
         $preview.find('.kbox').kbox();
-        // k.initVideo();
         $('#preview-diff .output').empty();
       }
     });
