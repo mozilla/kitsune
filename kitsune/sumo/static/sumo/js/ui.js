@@ -328,61 +328,6 @@
     $pw.attr('type', (this.checked) ? 'text' : 'password');
   });
 
-  var validate_field_cb = function() {
-    var $this = $(this);
-    var $v = $this.closest('[data-validate-url]');
-    var url = $v.data('validate-url');
-    var $label = $v.find('.validation-label');
-
-    var extras = $v.data('validate-extras');
-
-    if (_.contains(extras, 'email')) {
-      var domain = $this.val().split('@').pop();
-      var corrected = Mailcheck.findClosestDomain(domain, ['gmail.com', 'yahoo.com', 'hotmail.com']);
-
-      var ignoreList = $this.data('mailcheck-ignore') || [];
-
-      if (corrected && corrected !== domain && !_.contains(ignoreList, $this.val())) {
-        var $ignore = $('<a />').attr('href', '#').addClass('ignore-email').text(gettext('No, ignore'));
-        $ignore.on('click', function(ev) {
-          ev.preventDefault();
-          ignoreList.push($this.val());
-          $this.data('mailcheck-ignore', ignoreList);
-          $this.trigger('change');
-        });
-
-        $label.removeClass('valid');
-        $label.text(interpolate(gettext('Did you mean %s?'), [corrected]));
-        $label.append($ignore);
-        $label.show();
-
-        return false;
-      } else {
-        $label.hide();
-      }
-    }
-
-    $.getJSON(url, {
-      field: $this.attr('name'),
-      value: $this.val()
-    }, function(data) {
-      if ($this.val().length) {
-        if (data.valid) {
-          $label.addClass('valid');
-          $label.text($v.data('valid-label'));
-        } else {
-          $label.removeClass('valid');
-          $label.text(data.error);
-        }
-        $label.show();
-      } else {
-        $label.hide();
-      }
-    });
-  };
-
-  $(document).on('keyup', '[data-validate-url] input', _.throttle(validate_field_cb, 200));
-  $(document).on('change', '[data-validate-url] input', _.throttle(validate_field_cb, 200));
   $(window).on('hashchange', correctFixedHeader);
 
   $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
