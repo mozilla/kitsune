@@ -1,4 +1,3 @@
-/* globals BrowserDetect:false, gettext:false, remoteTroubleshooting:false, jQuery:false */
 /*
  * Prepopulate system info in AAQ form
  */

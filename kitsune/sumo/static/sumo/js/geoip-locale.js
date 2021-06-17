@@ -1,4 +1,3 @@
-/* globals $:false, interpolate:false, trackEvent:false */
 /* Please do not directly use this code or SUMO key. */
 /* Contact MLS team for your own credentials. */
 /* https://location.services.mozilla.com/contact */

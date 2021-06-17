@@ -1,4 +1,3 @@
-/* globals $:false, Marky:false, k:false, gettext:false, interpolate:false */
 /*
  * Make textarea in replies auto expanding.
  * Private messaging.

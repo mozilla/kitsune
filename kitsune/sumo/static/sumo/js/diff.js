@@ -1,5 +1,3 @@
-/* globals diff_match_patch:false, _:false, DIFF_EQUAL:false,
-* DIFF_INSERT:false, DIFF_DELETE:false, gettext:false, jQuery:false */
 /*
  * Wrapper around diff_match_patch. or something like that.
  */

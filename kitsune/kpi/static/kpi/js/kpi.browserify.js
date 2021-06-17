@@ -1,4 +1,3 @@
-/* globals $:false, gettext: false, k: false, _: false, d3: false, moment: false */
 import Chart from './components/Chart.es6.js';
 
 let chartSetups = {

@@ -1,4 +1,3 @@
-/* globals $:false, k:false, gettext:false */
 (function() {
 
   function init() {

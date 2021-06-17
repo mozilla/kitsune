@@ -1,4 +1,3 @@
-/* globals Mozilla:false, jQuery:false, BrowserDetect:false */
 (function($, BD) {
   'use strict';
 

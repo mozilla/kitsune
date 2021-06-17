@@ -1,4 +1,3 @@
-/* global gettext:false, k:false, jQuery:false */
 /*
 * Voting form ajaxified.
 */

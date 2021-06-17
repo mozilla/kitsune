@@ -1,4 +1,3 @@
-/* globals _gaq:false, trackEvent:false, jQuery:false */
 // Collect wiki metrics.
 
 (function ($) {

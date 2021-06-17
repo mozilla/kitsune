@@ -1,5 +1,3 @@
-/* global gettext:false, Modernizr:false, _:false, jQuery:false, Mailcheck:false,
-          interpolate:false, Mozilla:false, trackEvent:false */
 (function($) {
   'use strict';
 

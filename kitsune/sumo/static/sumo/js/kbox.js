@@ -1,4 +1,3 @@
-/* globals jQuery:false */
 /**
  * A KBox type and a corresponding jQuery plugin.
  *

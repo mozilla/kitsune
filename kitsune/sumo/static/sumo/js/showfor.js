@@ -1,4 +1,3 @@
-/* global BrowserDetect:false, jQuery:false */
 /*
  * ShowFor is a system to customize an article for an individual. It
  * will show or hide parts of an article based on spans with the class

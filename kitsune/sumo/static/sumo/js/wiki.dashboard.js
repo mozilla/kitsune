@@ -1,4 +1,3 @@
-/* globals k:false, gettext:false, _:false, jQuery:false */
 /*
  * kb dashboard chart
  */

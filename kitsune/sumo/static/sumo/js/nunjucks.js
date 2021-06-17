@@ -1,4 +1,3 @@
-/* global nunjucks:false, gettext:false, ngettext:false, interpolate:false, k:false, jQuery:false */
 (function($) {
   window.k = window.k || {};
 
