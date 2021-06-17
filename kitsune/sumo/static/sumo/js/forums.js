@@ -19,12 +19,9 @@
         $post = $('#post-' + post),
         text = $post.find('div.content-raw').text(),
         user = $post.find('.display-name').text(),
-        reply = template("''{user} [[#post-{post}|{said}]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
-        reply_text,
+        reply_text = `''${user} [[#post-${post}|${gettext('said')}]]''\n<blockquote>\n${text}\n</blockquote>\n\n`,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();
-
-      reply_text = reply({'user': user, 'post': post, 'text': text, 'said': gettext('said')});
 
       $textarea.val(oldtext + reply_text);
       return true;
