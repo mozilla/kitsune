@@ -1,4 +1,3 @@
-/* globals k:false, jQuery:false */
 (function($, _) {
   window.k = k || {};
 

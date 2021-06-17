@@ -1,4 +1,3 @@
-/* global Marky:false, jQuery:false, template:false, gettext:false, KBox:false */
 /*
  * forums.js
  * Scripts for the forums app.

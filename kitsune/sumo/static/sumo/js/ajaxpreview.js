@@ -1,4 +1,3 @@
-/* globals gettext:false, jQuery:false */
 /*
  * Wiki content previews - ajaxified.
  */

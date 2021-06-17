@@ -1,4 +1,3 @@
-/* globals $:false, gettext:false, KBox:false, interpolate:false */
 $(document).ready(function () {
   var UPLOAD = {
     max_filename_length: 80,  // max filename length in characters

@@ -1,4 +1,3 @@
-/* globals trackEvent:false, k:false, _:false, Marky:false, AAQSystemInfo:false, KBox:false, gettext:false, template:false, jQuery:false */
 /*
 * questions.js
 * Scripts for the questions app.

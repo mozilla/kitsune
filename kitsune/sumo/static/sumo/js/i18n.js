@@ -1,4 +1,3 @@
-/* globals gettext:true, ngettext:true, interpolate:true */
 /*
 * JavaScript localization fallback for when, say, our messages.[po/mo] are
 * broken.

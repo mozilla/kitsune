@@ -1,4 +1,3 @@
-/* global jQuery:false, gettext:false, trackEvent:false, KBox:false */
 /*
   Marky, the markup toolbar builder
 

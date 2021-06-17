@@ -1,4 +1,3 @@
-/* globals $:false, _dntEnabled:false */
 
 (function($) {
   'use strict';

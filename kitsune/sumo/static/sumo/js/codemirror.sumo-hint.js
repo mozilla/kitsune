@@ -1,4 +1,3 @@
-/* global CodeMirror, jQuery */
 
 (function($) {
   'use strict';

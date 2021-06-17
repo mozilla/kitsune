@@ -1,4 +1,3 @@
-/* global CodeMirror */
 
 (function() {
   'use strict';

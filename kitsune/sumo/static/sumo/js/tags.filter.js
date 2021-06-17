@@ -1,4 +1,3 @@
-/* globals _:false, k:false, jQuery:false */
 /*
  * A tag filtering form.
  */

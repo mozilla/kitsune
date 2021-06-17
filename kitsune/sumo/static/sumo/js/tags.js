@@ -1,4 +1,3 @@
-/* globals jQuery:false, _:false */
 /*
 * tags.js
 * Scripts to support tagging.

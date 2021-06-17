@@ -1,4 +1,3 @@
-/* globals Marky:false, jQuery:false */
 /*
  * JS for Groups app
  */

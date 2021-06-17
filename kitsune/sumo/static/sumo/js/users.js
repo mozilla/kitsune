@@ -1,4 +1,3 @@
-/* globals gettext:false, trackEvent:false, jQuery */
 /*
  * users.js
  * Make public emails clickable.

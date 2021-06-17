@@ -1,4 +1,3 @@
-/* globals interpolate:false, jQuery:false, gettext:false */
 (function ($) {
   function init() {
     initReadoutModes();

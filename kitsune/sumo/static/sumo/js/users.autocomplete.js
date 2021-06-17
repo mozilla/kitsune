@@ -1,4 +1,3 @@
-/* globals k:false, gettext:false, jQuery:false */
 /*
  * users.autocomplete.js
  * A username autocomplete widget.

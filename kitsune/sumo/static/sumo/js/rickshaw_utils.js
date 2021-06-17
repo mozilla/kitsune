@@ -1,4 +1,3 @@
-/* globals Rickshaw:false, k:false, $:false, _:false, interpolate:false, gettext:false, d3:false */
 (function () {
   'use strict';
 

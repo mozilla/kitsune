@@ -1,4 +1,3 @@
-/* globals gettext:false, jQuery:false, Modernizr:false, interpolate:false */
 (function($) {
   'use strict';
 

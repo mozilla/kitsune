@@ -1,4 +1,3 @@
-/* globals $:false, k:false, _:false, interpolate:false, Modernizr:false */
 // Use a global k to share data accross JS files
 window.k = window.k || {};
 

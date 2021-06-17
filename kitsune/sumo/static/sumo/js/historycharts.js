@@ -1,4 +1,3 @@
-/* globals gettext:false, k:false, jQuery:false */
 /*
 * Scripts to support Graphs on wiki article history.
 */

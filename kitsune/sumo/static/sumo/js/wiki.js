@@ -1,5 +1,3 @@
-/* globals k:false, jQuery:false, ShowFor:false, Marky:false, VERSIONS:false,
-           BrowserDetect:false, gettext:false, KBox:false, CodeMirror:false, interpolate:false */
 /*
  * wiki.js
  * Scripts for the wiki app.

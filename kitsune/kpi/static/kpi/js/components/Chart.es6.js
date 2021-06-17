@@ -1,4 +1,3 @@
-/* globals d3:false, $:false, _:false */
 /* jshint esnext: true */
 
 export default class Chart {

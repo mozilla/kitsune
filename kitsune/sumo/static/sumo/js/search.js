@@ -1,4 +1,3 @@
-/* globals $:false */
 $(document).ready(function() {
   // initiate tabs
   var tabs = $('#search-tabs').tabs(),

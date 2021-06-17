@@ -1,4 +1,3 @@
-/* globals moment:false, k:false, jQuery:false */
 (function($) {
   window.k = window.k || {};
 
