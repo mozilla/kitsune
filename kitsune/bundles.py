@@ -50,7 +50,9 @@ PIPELINE_JS = {
         "output_filename": "build/common-min.js",
     },
     "common.fx.download": {
-        "source_filenames": ("sumo/js/show-fx-download.js",),
+        "source_filenames": [
+            "sumo/js/show-fx-download.js",
+        ],
         "output_filename": "build/show-fx-download.js",
     },
     "community": {
@@ -63,11 +65,15 @@ PIPELINE_JS = {
         "output_filename": "build/community-min.js",
     },
     "community.metrics": {
-        "source_filenames": ("kpi/js/kpi.browserify.js",),
+        "source_filenames": [
+            "kpi/js/kpi.browserify.js",
+        ],
         "output_filename": "build/kpi.dashboard-min.js",
     },
     "jqueryui": {
-        "source_filenames": ("sumo/js/jquery-ui-custom.js",),
+        "source_filenames": [
+            "sumo/js/jquery-ui-custom.js",
+        ],
         "output_filename": "build/jqueryui-min.js",
     },
     "questions": {
@@ -89,7 +95,9 @@ PIPELINE_JS = {
         "output_filename": "build/questions-min.js",
     },
     "questions.metrics": {
-        "source_filenames": ("sumo/js/questions.metrics-dashboard.js",),
+        "source_filenames": [
+            "sumo/js/questions.metrics-dashboard.js",
+        ],
         "output_filename": "build/questions.metrics-min.js",
     },
     "products": {
@@ -100,7 +108,9 @@ PIPELINE_JS = {
         "output_filename": "build/products-min.js",
     },
     "search": {
-        "source_filenames": ("sumo/js/search.js",),
+        "source_filenames": [
+            "sumo/js/search.js",
+        ],
         "output_filename": "build/search-min.js",
     },
     "forums": {
@@ -151,7 +161,9 @@ PIPELINE_JS = {
         "output_filename": "build/rickshaw-min.js",
     },
     "wiki.history": {
-        "source_filenames": ("sumo/js/historycharts.js",),
+        "source_filenames": [
+            "sumo/js/historycharts.js",
+        ],
         "output_filename": "build/wiki.history-min.js",
     },
     "wiki.diff": {
@@ -172,7 +184,9 @@ PIPELINE_JS = {
         "output_filename": "build/wiki.editor-min.js",
     },
     "wiki.dashboard": {
-        "source_filenames": ("sumo/js/wiki.dashboard.js",),
+        "source_filenames": [
+            "sumo/js/wiki.dashboard.js",
+        ],
         "output_filename": "build/wiki.dashboard-min.js",
     },
     "users": {
