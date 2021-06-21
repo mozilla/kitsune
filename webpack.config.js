@@ -2,6 +2,7 @@ const path = require("path");
 
 const entrypoints = require("./webpack/entrypoints");
 const entrypointsHtml = require("./webpack/entrypoints-html");
+const globalExposeRules = require("./webpack/global-expose-rules");
 
 module.exports = (env, argv) => {
   const config = {
@@ -25,6 +26,7 @@ module.exports = (env, argv) => {
             loader: "babel-loader",
           },
         },
+        ...globalExposeRules,
       ],
     },
     entry: entrypoints,

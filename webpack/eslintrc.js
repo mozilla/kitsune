@@ -10,7 +10,7 @@ module.exports = {
         "no-undef": 2
     },
     "globals": {
-        // globals we need to expose in webpack
+        // globals exposed in webpack/global-expose-rules.js
         "_": "readonly",
         "moment": "readonly",
         "nunjucks": "readonly",

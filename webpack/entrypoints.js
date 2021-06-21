@@ -25,6 +25,7 @@ module.exports = {
     "sumo/js/instant_search.es6",
     "sumo/js/responsive-nav-toggle.js",
     "sumo/js/profile-avatars.js",
+    "./webpack/protocol-compat.js",
     "protocol/js/protocol-base.js",
     "protocol/js/protocol-utils.js",
     "protocol/js/protocol-supports.js",
