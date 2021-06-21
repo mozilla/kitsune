@@ -21,6 +21,14 @@
 
   <link href="{{ static('sumo/css/screen.css') }}" rel="stylesheet" type="text/css" />
 
+  {# include javascript from webpack #}
+  {# these html files won't be found in the source tree, as they're output by webpack #}
+  {% include "entrypoints/common.html" %}
+  {% for script in scripts %}
+    {% include "entrypoints/" + script + ".html" %}
+  {% endfor %}
+  {% include "entrypoints/common.fx.download.html" %}
+
   {% if meta %}
     {% for tag in meta %}
       <meta name="{{ tag[0] }}" content="{{ tag[1] }}"/>
@@ -321,13 +329,6 @@
     <script src="{{ static('jsi18n/{lang}/djangojs-min.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
   {% endif %}
 {% endif %}
-
-{% javascript 'common' %}
-{% for script in scripts %}
-  {% javascript script %}
-{% endfor %}
-
-{% javascript 'common.fx.download' %}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}
