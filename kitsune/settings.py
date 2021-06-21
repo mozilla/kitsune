@@ -411,6 +411,7 @@ STATIC_URL = config("STATIC_URL", default="/static/")
 STATICFILES_DIRS = (
     path("assets"),  # emulate bower and css cache busting
     path("jsi18n"),  # Collect jsi18n so that it is cache-busted
+    path("dist"),
 )
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -459,7 +460,9 @@ _CONTEXT_PROCESSORS = [
 TEMPLATES = [
     {
         "BACKEND": "django_jinja.backend.Jinja2",
-        "DIRS": [],
+        "DIRS": [
+            path("dist"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             # Use jinja2/ for jinja templates
