@@ -34,6 +34,7 @@
     "browser-sync:docs": "browser-sync start --no-open --serveStatic \"styleguide/build\" --files \"styleguide/build/**/*\" --port 4000 --reload-delay=300",
     "start": "concurrently --raw --kill-others \"make run\" \"npm run watch\" \"npm run browser-sync\"",
     "start-in-container": "concurrently --raw --kill-others \"npm run watch\" \"npm run browser-sync\"",
+    "lint:webpack": "npx eslint --no-eslintrc -c webpack/eslintrc.js --ignore-pattern '**/tests/**' kitsune",
     "production": "npm run install-prod && npm run copy:protocol && npm run postinstall && npm run build:scss && npm run build:postcss"
   },
   "license": "MPL-2.0",
