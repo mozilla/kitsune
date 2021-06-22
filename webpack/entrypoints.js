@@ -1,4 +1,5 @@
 module.exports = {
+  screen: ["sumo/scss/screen.scss"],
   common: [
     "sumo/js/i18n.js",
     "underscore/underscore.js",

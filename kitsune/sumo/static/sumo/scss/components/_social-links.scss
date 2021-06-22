@@ -25,7 +25,7 @@
     a {
       @include c.image-replaced();
       display: block;
-      background-image: url('/static/sumo/img/social-icon-sprite.svg');
+      background-image: url('sumo/img/social-icon-sprite.svg');
 
       &.twitter {
         width: 18px;

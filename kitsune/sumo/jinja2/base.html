@@ -19,7 +19,9 @@
     {% endfor %}
   {% endif %}
 
-  <link href="{{ static('sumo/css/screen.css') }}" rel="stylesheet" type="text/css" />
+  {# include css from webpack #}
+  {# this html file won't be found in the source tree, as it's output by webpack #}
+  {% include "entrypoints/screen.html" %}
 
   {# include javascript from webpack #}
   {# these html files won't be found in the source tree, as they're output by webpack #}
