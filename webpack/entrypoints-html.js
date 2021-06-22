@@ -9,6 +9,11 @@ module.exports = Object.keys(entrypoints).map(entry =>
     chunks: [entry],
     inject: false,
     scriptLoading: "defer",
-    templateContent: ({htmlWebpackPlugin}) => htmlWebpackPlugin.tags.headTags.join("")
+    templateContent: ({htmlWebpackPlugin}) => {
+      if (entry == "screen") {
+        return `<link href="${htmlWebpackPlugin.files.css[0]}" rel="stylesheet">`;
+      }
+      return htmlWebpackPlugin.tags.headTags.join("");
+    }
   }),
 );

@@ -1,10 +1,12 @@
 const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const entrypoints = require("./webpack/entrypoints");
 const entrypointsHtml = require("./webpack/entrypoints-html");
 const globalExposeRules = require("./webpack/global-expose-rules");
 
 module.exports = (env, argv) => {
+  const dev = argv.mode === "development";
   const config = {
     resolve: {
       alias: {
@@ -26,18 +28,33 @@ module.exports = (env, argv) => {
             loader: "babel-loader",
           },
         },
+        {
+          test: /\.scss$/,
+          use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
+        },
+        {
+          test: /\.(svg|png|gif|woff2?)$/,
+          type: "asset/resource",
+        },
         ...globalExposeRules,
       ],
     },
     entry: entrypoints,
     plugins: [
+      new MiniCssExtractPlugin({
+        filename: dev ? "[name].css" : "[name].[contenthash].css",
+      }),
       ...entrypointsHtml,
     ],
     output: {
-      filename:
-        argv.mode === "development" ? "[name].js" : "[name].[contenthash].js",
+      filename: dev ? "[name].js" : "[name].[contenthash].js",
     },
   };
+
+  if (dev) {
+    // eval source maps don't work with our css loaders
+    config.devtool = "cheap-module-source-map";
+  }
 
   return config;
 };

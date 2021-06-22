@@ -7,8 +7,8 @@
 
 // These are the default values from protocol, but they are overriden in the
 // @use Default media paths can be overwritten globally.
-$font-path: '../../protocol/fonts' !default;
-$image-path: '../../protocol/img' !default;
+$font-path: 'protocol/fonts' !default;
+$image-path: 'protocol/img' !default;
 // Note: --load-path for these files is set to node_modules/@mozilla-protocol/core
 // (and not deeper) to avoid conflicts
 
