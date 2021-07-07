@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+data:
+  allowed_hosts: ".sumo.mozit.cloud,support.mozilla.com,support.mozilla.org"
+  cache_middleware_seconds: 0
+  celery_task_always_eager: False
+  csrf_cookie_secure: True
+  db_conn_max_age: 60
+  debug: False
+  k8s_domain: "oregon-a.mozit.cloud"
+  email_logging_real_backend: "django.core.mail.backends.smtp.EmailBackend"
+  email_port: 25
+  email_use_tls: True
+  enable_admin: True
+  enable_whitenoise: True
+  enforce_host: "support.mozilla.org,prod-oregon-a.sumo.mozit.cloud"
+  engage_robots: True
+  es_index_prefix: "sumo_prod"
+  es_live_indexing: True
+  es_use_ssl: True
+  es7_use_ssl: True
+  gtm_container_id: "UA-36116321-2"
+  media_url: "https://user-media-prod-cdn.itsre-sumo.mozilla.net/"
+  new_relic_app_name: "sumo-prod-oregon-a;sumo-prod-oregon"
+  oidc_enable: True
+  pipeline_enabled: True
+  port: 8000
+  read_only: False
+  run_migrate: "true"
+  session_cookie_secure: True
+  stage: False
+  static_url: "https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/"
+  secure_hsts_seconds: 31536000
+  secure_browser_xss_filter: True
+  secure_content_type_nosniff: True
+  secure_ssl_redirect: True
+  user_agent_filters: "360spider,semrushbot,coccobot,dotbot"
+  wsgi_keep_alive: 60
+  wsgi_num_workers: 4
+  disable_questions_list_global: False
+  disable_questions_list_all: False
+  disable_feeds: False
+  sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
