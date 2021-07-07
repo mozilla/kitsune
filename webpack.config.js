@@ -1,9 +1,13 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
+const AssetJsonPlugin = require("./webpack/asset-json-plugin");
 
 const entrypoints = require("./webpack/entrypoints");
 const entrypointsHtml = require("./webpack/entrypoints-html");
 const globalExposeRules = require("./webpack/global-expose-rules");
+
+const assetModuleFilename = "[name].[contenthash][ext]";
 
 module.exports = (env, argv) => {
   const dev = argv.mode === "development";
@@ -50,9 +54,17 @@ module.exports = (env, argv) => {
         filename: dev ? "[name].css" : "[name].[contenthash].css",
       }),
       ...entrypointsHtml,
+      new CopyPlugin({
+        patterns: [
+          { from: "node_modules/@mozilla-protocol/core/protocol/img/icons/**", to: assetModuleFilename },
+          { from: "kitsune/*/static/**/img/**", to: assetModuleFilename },
+        ],
+      }),
+      new AssetJsonPlugin(),
     ],
     output: {
       filename: dev ? "[name].js" : "[name].[contenthash].js",
+      assetModuleFilename: assetModuleFilename,
     },
   };
 

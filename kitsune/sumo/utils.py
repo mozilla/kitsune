@@ -6,6 +6,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.templatetags.static import static
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.utils import translation
@@ -350,3 +351,21 @@ def check_for_spam_content(data):
     has_links = has_blocked_link(data)
 
     return is_toll_free or is_nanp_number or has_links
+
+
+def webpack_static(source_path):
+    """
+    Get the URL for an asset processed by webpack.
+    Takes a shortened path to the source, like "sumo/img/mozilla-support.svg"
+    """
+
+    with open("./dist/source-to-asset.json") as f:
+        source_to_asset = json.load(f)
+        try:
+            asset = source_to_asset[source_path]
+        except KeyError:
+            if settings.DEBUG:
+                raise RuntimeError(f"{source_path} doesn't exist in webpack bundle")
+            return ""
+        url = static(asset)
+        return url

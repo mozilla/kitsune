@@ -26,6 +26,7 @@ from pytz import timezone
 
 from kitsune.products.models import Product
 from kitsune.sumo import parser
+from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
@@ -451,6 +452,11 @@ def static(path):
     except ValueError as err:
         log.error("Static helper error: %s" % err)
         return ""
+
+
+@library.global_function
+def webpack_static(source_path):
+    return webpack_static_func(source_path)
 
 
 @library.global_function
