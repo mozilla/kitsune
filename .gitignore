@@ -32,6 +32,7 @@ venv/
 k8s/regions/*/kubeconfig
 k8s/regions/*/kubectl
 k8s/regions/*/*-secrets.yaml
+k8s/sumo/charts
 *.db
 *.sqlite3
 .bash_history
