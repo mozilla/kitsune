@@ -6,7 +6,6 @@
 {% set crumbs = [(url('forums.forums'), _('Forums')),
 (url('forums.threads', forum.slug), forum.name),
 (None, _('Create a new thread'))] %}
-{% set styles = ('forums', 'jqueryui') %}
 {% set scripts = ('forums', 'jqueryui') %}
 
 {% block content %}

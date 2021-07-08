@@ -3,7 +3,6 @@
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
 {% set title = _('[{locale}][{product}] Localization Dashboard')|fe(locale=current_locale, product=pgettext('DB: products.Product.title', product.title) if product else _('All Products')) %}
 {% set scripts = ('wiki', 'jqueryui', 'wiki.dashboard') %}
-{% set styles = ('kbdashboards', 'jqueryui') %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'localization-dashboard' %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own or refactor up? #}
