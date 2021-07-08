@@ -1,15 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "sumo.fullname" . }}
+  name: {{ include "sumo.fullname" . }}-svc
+  namespace: {{ .Values.namespace }}
   labels:
     {{- include "sumo.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: {{ .Values.config.web.port }}
       protocol: TCP
-      name: http
+      name: https
   selector:
+    app.kubernetes.io/name: {{ include "sumo.name" . }}-web
     {{- include "sumo.selectorLabels" . | nindent 4 }}
