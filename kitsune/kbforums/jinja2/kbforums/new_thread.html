@@ -7,7 +7,6 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (url('wiki.discuss.threads', document.slug), _('Discuss')),
                  (None, _('Create a new thread'))] %}
-{% set styles = ('forums', 'jqueryui') %}
 {% set scripts = ('forums', 'jqueryui') %}
 
 {% block content %}

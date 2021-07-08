@@ -1,7 +1,6 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
 {% from "layout/errorlist.html" import errorlist %}
-{% set styles = ('wiki', 'rickshaw') %}
 {% set scripts = ('wiki', 'jqueryui', 'rickshaw', 'wiki.history') %}
 {% set meta = (('robots', 'noindex'),) %}
 {% set title = _('Revision History | {document}')|fe(document=document.title) %}

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% from 'users/includes/macros.html' import personal_tabs %}
-{% set styles = ('users',) %}
 {% set scripts = ('users',) %}
 {% set classes = "profile" %}
 {% set is_owner = profile and profile.user == request.user %}

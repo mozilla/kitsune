@@ -11,7 +11,6 @@
   {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title))] %}
   {% set canonical_url = canonicalize(model_url=topic.get_absolute_url()) %}
 {% endif %}
-{% set styles = ('products',) %}
 {% set search_params = {'product': product.slug} %}
 
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
