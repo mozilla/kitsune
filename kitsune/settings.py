@@ -409,7 +409,6 @@ MEDIA_URL = config("MEDIA_URL", default="/media/")
 STATIC_ROOT = path("static")
 STATIC_URL = config("STATIC_URL", default="/static/")
 STATICFILES_DIRS = (
-    path("assets"),  # emulate bower and css cache busting
     path("jsi18n"),  # Collect jsi18n so that it is cache-busted
     path("dist"),
 )
@@ -454,6 +453,7 @@ _CONTEXT_PROCESSORS = [
     "kitsune.sumo.context_processors.i18n",
     "kitsune.sumo.context_processors.aaq_languages",
     "kitsune.sumo.context_processors.current_year",
+    "kitsune.sumo.context_processors.static_url_webpack",
     "kitsune.messages.context_processors.unread_message_count",
 ]
 

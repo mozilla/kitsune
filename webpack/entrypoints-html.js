@@ -5,7 +5,8 @@ const entrypoints = require("./entrypoints");
 module.exports = Object.keys(entrypoints).map(entry =>
   new HtmlWebpackPlugin({
     filename: `entrypoints/${entry}.html`,
-    publicPath: process.env.STATIC_URL || "/static/",
+    // use a jinja tag so the static url can be resolved at runtime:
+    publicPath: "{{ STATIC_URL_WEBPACK }}",
     chunks: [entry],
     inject: false,
     scriptLoading: "defer",
