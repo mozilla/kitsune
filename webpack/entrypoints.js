@@ -5,7 +5,6 @@ module.exports = {
     "underscore/underscore.js",
     "moment/moment.js",
     "jquery",
-    // "jquery/jquery-migrate.js",
     "sumo/js/libs/jquery.cookie.js",
     "sumo/js/libs/jquery.placeholder.js",
     "sumo/js/templates/macros.js",
@@ -51,7 +50,6 @@ module.exports = {
   ],
   community: [
     "jquery",
-    // "jquery/jquery-migrate.js",
     "community/js/community.js",
     "community/js/select.js",
   ],
