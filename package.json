@@ -36,8 +36,8 @@
     "start-in-container": "concurrently --raw --kill-others \"npm run watch\" \"npm run browser-sync\"",
     "lint:webpack": "npx eslint --no-eslintrc -c webpack/eslintrc.js --ignore-pattern '**/tests/**' kitsune",
     "webpack:build": "npx webpack build --mode development",
-    "webpack:watch": "npx webpack watch --mode development",
-    "production": "npm run install-prod && npm run copy:protocol && npm run postinstall && npm run build:scss && npm run build:postcss"
+    "webpack:build:prod": "npx webpack build --mode production",
+    "webpack:watch": "npx webpack watch --mode development"
   },
   "license": "MPL-2.0",
   "dependencies": {

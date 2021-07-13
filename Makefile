@@ -44,7 +44,7 @@ help:
 	${MAKE} build-full
 
 build: .docker-build-pull
-	${DC} build node-dev base-dev
+	${DC} build base-dev
 	touch .docker-build
 
 build-full: .docker-build-pull

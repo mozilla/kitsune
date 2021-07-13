@@ -1,14 +1,4 @@
 ################################
-# Frontend dependencies builder
-#
-FROM node:12 AS frontend-base
-
-WORKDIR /app
-COPY ["./package.json", "./package-lock.json", "prepare_django_assets.js", "/app/"]
-COPY ./kitsune/sumo/static/sumo /app/kitsune/sumo/static/sumo
-RUN npm run production
-
-################################
 # Python dependencies builder
 #
 FROM python:3.9-buster AS base
@@ -84,19 +74,17 @@ ENV GIT_SHA ${GIT_SHA}
 #
 FROM base-dev AS staticfiles
 
-COPY --from=frontend-base --chown=kitsune:kitsune /app/assets /app/assets
-COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
+COPY . .
 COPY --from=locales /app/locale /app/locale
 
-COPY . .
-
 RUN cp .env-build .env && \
+    npm run install-prod && \
     ./manage.py nunjucks_precompile && \
+    npm run webpack:build:prod && \
     ./manage.py compilejsi18n && \
     # minify jsi18n files:
     find jsi18n/ -name "*.js" -exec sh -c 'npx uglifyjs "$1" -o "${1%.js}-min.js"' sh {} \; && \
-    ./manage.py collectstatic --noinput && \
-    npx svgo -r -f static
+    ./manage.py collectstatic --noinput
 
 
 ################################
@@ -123,6 +111,7 @@ RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sb
 
 COPY --from=base --chown=kitsune:kitsune /venv /venv
 COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
+COPY --from=staticfiles --chown=kitsune:kitsune /app/dist /app/dist
 
 COPY --chown=kitsune:kitsune . .
 
