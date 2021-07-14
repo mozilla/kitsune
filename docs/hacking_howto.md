@@ -14,15 +14,18 @@ To get Kitsune running locally all you really need is to have [Docker](https://w
 and follow the following steps.
 
 1. Fork this repository & clone it to your local machine.
+
     ```
     git clone https://github.com/mozilla/kitsune.git
     ```
 
 2. Pull base Kitsune Docker images, run `collectstatic`, create your database, and install node packages.
+
     ```
     make init
     make build
     ```
+
     If you have low bandwidth, you may get a **timeout** error, see [issue#4511](https://github.com/mozilla/kitsune/issues/4511) for more information. You can change default pip's timeout value (which is 60 seconds) by running:
 
     ```
@@ -32,10 +35,13 @@ and follow the following steps.
     In above command, we are setting default value of [PIP_DEFAULT_TIMEOUT](https://pip.pypa.io/en/stable/user_guide/#environment-variables) to 5 minutes, change it according to your need.
 
 3. Run Kitsune.
+
     ```
     make run
     ```
+
     This will produce a lot of output (mostly warnings at present). When you see the following the server will be ready:
+
     ```
     web_1              | Starting development server at http://0.0.0.0:8000/
     web_1              | Quit the server with CONTROL-C.
@@ -74,24 +80,27 @@ The running instance in this case will be located at http://localhost:3000/.
 
 After the above you can do some optional steps if you want to use the admin:
 
-* Enable the admin control panel
-  ```
-  echo "ENABLE_ADMIN=True" >> .env
-  ```
+-   Enable the admin control panel
 
-* Create a superuser
-  ```
-  docker-compose exec web ./manage.py createsuperuser
-  ```
+    ```
+    echo "ENABLE_ADMIN=True" >> .env
+    ```
 
-* Create a profile for this user
-  ```
-  $ ./manage.py shell_plus
-  In [1]: u = User.objects.get(username="superuser")
-  In [2]: Profile(user=u).save()
-  ```
+-   Create a superuser
 
-* Log in to the admin panel: http://localhost:8000/admin
+    ```
+    docker-compose exec web ./manage.py createsuperuser
+    ```
+
+-   Create a profile for this user
+
+    ```
+    $ ./manage.py shell_plus
+    In [1]: u = User.objects.get(username="superuser")
+    In [2]: Profile(user=u).save()
+    ```
+
+-   Log in to the admin panel: http://localhost:8000/admin
 
 ### Enable development login
 
@@ -120,37 +129,36 @@ running this command::
 
 ### Get AAQ working
 
-1. Add a product with a slug matching one of the product values in `kitsune/questions/config.py`.
-You can do this through the admin interface at `/admin/products/product/add/`.
+1.  Add a product with a slug matching one of the product values in `kitsune/questions/config.py`.
+    You can do this through the admin interface at `/admin/products/product/add/`.
 
-    For instance, with a `config.py` value like:
+        For instance, with a `config.py` value like:
 
-    ```python
-    ...
-    "name": _lazy("Firefox"),
-    "product": "firefox",
-    ...
-    ```
+        ```python
+        ...
+        "name": _lazy("Firefox"),
+        "product": "firefox",
+        ...
+        ```
 
-    Create a product in the admin interface with its `slug` set to `firefox`.
+        Create a product in the admin interface with its `slug` set to `firefox`.
 
-2. Add a topic matching a category from that product config,
-and associate it with the product you just created.
-You can do this through the admin interface at `/admin/products/topic/add/`.
+2.  Add a topic matching a category from that product config,
+    and associate it with the product you just created.
+    You can do this through the admin interface at `/admin/products/topic/add/`.
 
-    For instance, with a category with a `config.py` value like:
+        For instance, with a category with a `config.py` value like:
 
-    ```python
-    ...
-    "topic": "download-and-install",
-    ...
-    ```
+        ```python
+        ...
+        "topic": "download-and-install",
+        ...
+        ```
 
-    Create a topic in the admin interface with its `slug` set to `download-and-install` and its product set to the product you just created.
+        Create a topic in the admin interface with its `slug` set to `download-and-install` and its product set to the product you just created.
 
-3. Finally add an AAQ locale for that product.
-You can do this through the admin interface at `/admin/questions/questionlocale/add/`.
-
+3.  Finally add an AAQ locale for that product.
+    You can do this through the admin interface at `/admin/questions/questionlocale/add/`.
 
 ### Get search working
 
@@ -158,17 +166,19 @@ First, make sure you have run the "Install Sample Data" step above,
 or have entered data yourself through the admin interface.
 
 1. Enter into the web container
+
     ```
     docker-compose exec web bash
     ```
 
 2. Build the indicies
+
     ```
-    $ ./manage.py esreindex
+    $ ./manage.py es7_init && es7_reindex
     ```
-    (You may need to pass the `--delete` flag.)
 
 3. Precompile the nunjucks templates
+
     ```
     $ ./manage.py nunjucks_precompile
     ```
@@ -273,6 +283,7 @@ docker-compose restart mariadb
 ## Running the tests
 
 Running the test suite is easy:
+
 ```
 ./bin/run-unit-tests.sh
 ```
