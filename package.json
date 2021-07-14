@@ -5,6 +5,9 @@
     "type": "git",
     "url": "git://github.com/mozilla/kitsune.git"
   },
+  "engines": {
+    "node": ">12.0.0 <13"
+  },
   "scripts": {
     "install-dev": "npm install",
     "install-prod": "npm ci",
@@ -66,7 +69,6 @@
     "chai": "3.2.0",
     "chai-lint": "0.1.1",
     "concurrently": "^5.0.0",
-    "cpx": "~1.5.0",
     "css-loader": "^5.2.6",
     "cssnano": "^4.1.11",
     "eslint": "1.10.3",
