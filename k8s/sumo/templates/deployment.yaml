@@ -40,6 +40,9 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
           {{- if .Values.config.web.readiness.enabled }}
           readinessProbe:
             httpGet:
@@ -125,6 +128,9 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           args:
@@ -185,6 +191,9 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           args:
