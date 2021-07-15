@@ -39,18 +39,18 @@ dependencies:
     - name: mariadb
       version: 9.3.16
       repository: https://charts.bitnami.com/bitnami
-      condition: development-mode.enabled
+      condition: mariadb.enabled
       tags:
           - local
     - name: redis
       version: 14.6.6
       repository: https://charts.bitnami.com/bitnami
-      condition: development-mode.enabled
+      condition: redis.enabled
       tags:
           - local
     - name: elasticsearch
       version: 7.10.1
       repository: https://helm.elastic.co
-      condition: development-mode.enabled
+      condition: elasticsearch.enabled
       tags:
           - local
