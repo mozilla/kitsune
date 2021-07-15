@@ -11,7 +11,7 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.config.web.port }}
       protocol: TCP
-      name: https
+      name: {{ .Values.service.name | default "https" | quote }}
   selector:
     app.kubernetes.io/name: {{ include "sumo.name" . }}-web
     {{- include "sumo.selectorLabels" . | nindent 4 }}

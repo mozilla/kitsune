@@ -1,0 +1,59 @@
+# Enable DB, Redis and ES for local development
+development_mode:
+  enabled: true
+tags:
+  local: true
+# Default values for sumo production
+
+replicaCount: 1
+
+nameOverride: "sumo-local-dev"
+fullnameOverride: "sumo-local-dev"
+namespace: "sumo-local-dev"
+config:
+  k8s_domain: "localhost"
+  web:
+    command: "./bin/run-prod.sh"
+    debug: true
+    dev: true
+    secure_ssl_redirect: false
+    enforce_host: " "
+  celery:
+    replicaCount: 1
+  cron:
+    replicaCount: 1
+
+mariadb:
+  enabled: true
+  architecture: "standalone"
+  primary:
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false
+  auth:
+    rootPassword: "kitsune"
+    database: "kitsune"
+  image:
+    tag: 10.1
+
+redis:
+  enabled: true
+  architecture: "standalone"
+  auth:
+    enabled: false
+  master:
+    livenessProbe:
+      enabled: false
+    readinessProbe:
+      enabled: false
+  image:
+    tag: 5.0.5
+
+elasticsearch:
+  enabled: true
+
+service:
+  type: ClusterIP
+  port: 80
+  name: http

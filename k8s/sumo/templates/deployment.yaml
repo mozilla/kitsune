@@ -43,6 +43,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+            {{- if .Values.development_mode.enabled }}
+            - secretRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-secrets-local
+            {{- end }}
           {{- if .Values.config.web.readiness.enabled }}
           readinessProbe:
             httpGet:
@@ -131,6 +135,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+            {{- if .Values.development_mode.enabled }}
+            - secretRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-secrets-local
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           args:
@@ -194,6 +202,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+            {{- if .Values.development_mode.enabled }}
+            - secretRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-secrets-local
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           args:
