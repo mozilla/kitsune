@@ -11,7 +11,6 @@
   "scripts": {
     "install-dev": "npm install",
     "install-prod": "npm ci",
-    "postinstall": "node prepare_django_assets.js",
     "development": "npm run install-dev",
     "stylelint": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run stylelint",
     "copy:protocol": "mkdir -p assets/protocol assets/sumo/css && cp -r node_modules/@mozilla-protocol/core/protocol/* assets/protocol",
