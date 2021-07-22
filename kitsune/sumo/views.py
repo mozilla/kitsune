@@ -12,7 +12,7 @@ from django.views.decorators.cache import never_cache
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.decorators import cors_enabled
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, uselocale
+from kitsune.sumo.utils import get_next_url, uselocale, webpack_static
 
 log = logging.getLogger("k.services")
 
@@ -93,6 +93,23 @@ def robots(request):
     else:
         template = render(request, "sumo/robots.html")
     return HttpResponse(template, content_type="text/plain")
+
+
+def manifest(request):
+    """PWA manifest.json"""
+    data = {
+        "name": "Mozilla Support",
+        "icons": [
+            {
+                "src": webpack_static("sumo/img/android-chrome-512x512.png"),
+                "sizes": "512x512",
+                "type": "image/png",
+            }
+        ],
+        "theme_color": "#ffffff",
+        "background_color": "#ffffff",
+    }
+    return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 def test_memcached(host, port):
