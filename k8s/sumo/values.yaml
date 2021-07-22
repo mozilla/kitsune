@@ -1,0 +1,73 @@
+# Default values for sumo production
+
+replicaCount: 25
+
+image:
+  repository: itsre/sumo-kitsune
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "full-latest"
+
+nameOverride: "sumo-prod"
+fullnameOverride: "sumo-prod"
+namespace: "sumo-prod"
+config:
+  web:
+    readiness:
+      enabled: false
+    liveness:
+      enabled: false
+    revision-history: 3
+    command: "./bin/run-prod.sh"
+    failure_threshold: 2
+    initial_delay_seconds: 5
+    period_seconds: 5
+    success_threshold: 1
+    timeout_seconds: 5
+    port: 8000
+  celery:
+    revision-history: 3
+    command: "./bin/run-celery-worker.sh"
+    replicaCount: 3
+  cron:
+    revision-history: 3
+    command: "./bin/run-cron.sh"
+    replicaCount: 1
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 443
+
+resources: 
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 384Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

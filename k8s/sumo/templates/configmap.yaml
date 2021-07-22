@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+  namespace: {{ .Values.namespace }}
+data:
+  ALLOWED_HOSTS: {{ .Values.config.web.allowed_hosts | default "1270.0.0,localhost" | quote }}
+  DEBUG: {{ .Values.config.web.debug | default "false" | quote }}
+  DEV: {{ .Values.config.web.dev | default "false" | quote }}
+  CACHE_MIDDLEWARE_SECONDS: {{ .Values.config.web.cache_middleware_seconds | default "0" | quote }}
+  CELERY_TASK_ALWAYS_EAGER: {{ .Values.config.celery.celery_always_eager | default "false" | quote }}
+  CSRF_COOKIE_SECURE: {{ .Values.config.web.csrf_cookie_secure | default "true" | quote }}
+  DB_CONN_MAX_AGE: {{ .Values.config.web.db_conn_max_age | default "60" | quote }}
+  K8S_DOMAIN: {{ .Values.config.k8s_domain | default "oregon-a.mozit.cloud" | quote }}
+  EMAIL_LOGGING_REAL_BACKEND: {{ .Values.config.web.email_logging_real_backend | default "django.core.mail.backends.console.EmailBackend" | quote }}
+  EMAIL_PORT: {{ .Values.config.web.email_port | default "25" | quote }}
+  EMAIL_USE_TLS: {{ .Values.config.web.email_use_tls | default "true" | quote }}
+  ENABLE_ADMIN: {{ .Values.config.web.enable_admin | default "true" | quote }}
+  ENABLE_WHITENOISE: {{ .Values.config.web.enable_whitenoice | default "true" | quote }}
+  ENFORCE_HOST: {{ .Values.config.web.enforce_host | default "support.mozilla.org,prod-oregon-a.sumo.mozil.cloud" | quote }}
+  ENGAGE_ROBOTS: {{ .Values.config.web.engage_robots | default "true" | quote }}
+  ES_INDEX_PREFIX: {{ .Values.config.web.es_index_prefix | default "sumo_prod" | quote }}
+  ES_LIVE_INDEXING: {{ .Values.config.web.es_live_indexing | default "true" | quote }}
+  ES7_USE_SSL: {{ .Values.config.web.es7_use_ssl | default "true" | quote }}
+  GTM_CONTAINER_ID: "UA-36116321-2"
+  MEDIA_URL: {{ .Values.config.web.media_url | default "https://user-media-prod-cdn.itsre-sumo.mozilla.net/" | quote }}
+  NEW_RELIC_APP_NAME: {{ .Values.config.web.new_relic_app_name | default "sumo-prod-oregon-a;sumo-prod-oregon" | quote }}
+  OIDC_ENABLE: {{ .Values.config.web.oidc_enable | default "true" | quote }}
+  PIPELINE_ENABLED: {{ .Values.config.web.pipeline_enabled | default "true" | quote }}
+  PORT: {{ .Values.config.web.port | default "8000" | quote }}
+  READ_ONLY: {{ .Values.config.web.read_only | default "false" | quote }}
+  RUN_MIGRATE: {{ .Values.config.web.run_migrate | default "true" | quote }}
+  SESSION_COOKIE_SECURE: {{ .Values.config.web.session_cookie_secure | default "true" | quote }}
+  STAGE: {{ .Values.config.stage | default "false" | quote }}
+  STATIC_URL: {{ .Values.config.web.static_url | default "https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/" | quote }}
+  SECURE_HSTS_SECONDS: {{.Values.config.web.secure_hsts_seconds | default "31536000" | quote }}
+  SECURE_BROWSER_XSS_FILTER: {{ .Values.config.web.secure_browser_xss_filter | default "true" | quote }}
+  SECURE_CONTENT_TYPE_NOSNIFF: {{ .Values.config.web.secure_content_type_nosniff | default "true" | quote }}
+  SECURE_SSL_REDIRECT: {{ .Values.config.web.secure_ssl_redirect | default "true" | quote }}
+  USER_AGENT_FILTERS: {{ .Values.config.web.user_agent_filters | default "360spider,semrushbot,coccobot,dotbot" | quote }}
+  WSGI_KEEP_ALIVE: {{ .Values.config.web.wsgi_keep_alive | default "60" | quote }}
+  WSGI_NUM_WORKERS: {{ .Values.config.web.wsgi_num_workers | default "4" | quote }}
+  DISABLE_QUESTIONS_LIST_GLOBAL: {{ .Values.config.web.disable_questions_list_global | default "false" | quote }}
+  DISABLE_QUESTIONS_LIST_ALL: {{ .Values.config.web.disable_questions_list_all | default "false" | quote }}
+  DISABLE_FEEDS: {{ .Values.config.web.disable_feeds | default "false" | quote }}
+  SUMO_BANNER_STRING: {{ .Values.config.web.sumo_banner_string | default "firefox-account,firefox-monitor,account-data,firefox-private-network" | quote }}

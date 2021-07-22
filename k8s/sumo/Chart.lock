@@ -1,0 +1,12 @@
+dependencies:
+- name: mariadb
+  repository: https://charts.bitnami.com/bitnami
+  version: 9.3.16
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 14.6.6
+- name: elasticsearch
+  repository: https://helm.elastic.co
+  version: 7.10.1
+digest: sha256:ffd2acbfa9f04cfbc008642ece763c23b82f2695a9d66bdb3be39cfeacdef3fa
+generated: "2021-07-19T18:41:45.266353762+03:00"

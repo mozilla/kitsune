@@ -1,0 +1,227 @@
+---
+# Web deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sumo.fullname" . }}-web
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "sumo.name" . }}-web
+    {{- include "sumo.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.config.web.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "sumo.name" . }}-web
+      {{- include "sumo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "sumo.name" . }}-web
+        {{- include "sumo.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "sumo.name" . }}-web
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+            {{- if .Values.development_mode.enabled }}
+            - secretRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-secrets-local
+            {{- end }}
+          {{- if .Values.config.web.readiness.enabled }}
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.config.web.port }}
+              path: /readiness/
+              httpHeaders:
+                - name: Host
+                  # replace this with config entry when configmap is mounted
+                  value: ".sumo.mozit.cloud"
+            failureThreshold: {{ .Values.config.web.failure_threshold }}
+            initialDelaySeconds: {{ .Values.config.web.initial_delay_seconds }}
+            periodSeconds: {{ .Values.config.web.period_seconds }}
+            successThreshold: {{ .Values.config.web.success_threshold }}
+            timeoutSeconds: {{ .Values.config.web.timeout_seconds }}
+          {{- end }}
+          {{- if .Values.config.web.liveness.enabled }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.config.web.port }}
+            failureThreshold: {{ .Values.config.web.failure_threshold }}
+            initialDelaySeconds: {{ .Values.config.web.initial_delay_seconds }}
+            periodSeconds: {{ .Values.config.web.period_seconds }}
+            successThreshold: {{ .Values.config.web.success_threshold }}
+            timeoutSeconds: {{ .Values.config.web.timeout_seconds }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          args:
+            - /bin/bash
+            - -c
+            - {{ .Values.config.web.command }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+# celery deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sumo.fullname" . }}-celery
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "sumo.name" . }}-celery
+    {{- include "sumo.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.config.celery.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.config.celery.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "sumo.name" . }}-celery
+      {{- include "sumo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "sumo.name" . }}-celery
+        {{- include "sumo.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "sumo.name" . }}-celery
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+            {{- if .Values.development_mode.enabled }}
+            - secretRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-secrets-local
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          args:
+            - /bin/bash
+            - -c
+            - {{ .Values.config.celery.command }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+# cron deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sumo.fullname" . }}-cron
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "sumo.name" . }}-cron
+    {{- include "sumo.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.config.cron.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.config.cron.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "sumo.name" . }}-cron
+      {{- include "sumo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "sumo.name" . }}-cron
+        {{- include "sumo.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "sumo.name" . }}-cron
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-configmap
+            {{- if .Values.development_mode.enabled }}
+            - secretRef:
+                name: {{ .Chart.Name }}-{{ .Release.Name }}-secrets-local
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          args:
+            - /bin/bash
+            - -c
+            - {{ .Values.config.cron.command }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
