@@ -265,3 +265,32 @@ This must then be parsed and de-pickled:
 import pickle, base64, json
 pickle.loads(base64.decodestring(json.loads(l[0])['body']))
 ```
+
+# SUMO local development in Kubernetes
+
+## Setting up a local Kubernetes cluster:
+
+This was tested with K3d. Other local Kubernetes clusters should work in a similar way.
+
+To bring up a HA k3d cluster:
+
+```sh
+
+> k3d cluster create sumo-dev-cluster --port "8080:80@loadbalancer" --servers 3 --agents 3 -v path_to_your_project_git_repo:/kitsune --registry-create
+```
+
+Get the [kubeconfig](https://k3d.io/usage/kubeconfig/) for the newly created cluster.
+
+Copy the values for the local deployment.
+
+```sh
+> cp path_to_your_git_kitsune_repo/k8s/sumo/values.local.yaml-dist path_to_your_git_kitsune_repo/k8s/sumo/values.local.yaml
+```
+
+Finally deploy the application
+
+```sh
+> cd path_to_your_git_kitsune_repo/k8s/sumo
+
+> helm install -n sumo-local-dev --create-namespace kitsune  -f values.yaml -f values.local.yaml .
+```
