@@ -283,6 +283,8 @@ pickle.loads(base64.decodestring(json.loads(l[0])['body']))
 
 This was tested with K3d. Other local Kubernetes clusters should work in a similar way.
 
+First install [k3d](https://k3d.io) and [helm](https://helm.sh).
+
 To bring up a HA k3d cluster:
 
 ```sh
@@ -296,6 +298,14 @@ Copy the values for the local deployment.
 
 ```sh
 > cp path_to_your_git_kitsune_repo/k8s/sumo/values.local.yaml-dist path_to_your_git_kitsune_repo/k8s/sumo/values.local.yaml
+```
+
+Update helm dependencies
+
+```sh
+> helm repo add bitnami https://charts.bitnami.com/bitnami
+> helm repo add elastic https://helm.elastic.co
+> helm dependency update
 ```
 
 Finally deploy the application
