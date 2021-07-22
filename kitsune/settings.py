@@ -426,6 +426,7 @@ SUPPORTED_NONLOCALES = (
     "media",
     "postcrash",
     "robots.txt",
+    "manifest.json",
     "services",
     "wafflejs",
     "geoip-suggestion",
