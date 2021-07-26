@@ -1,17 +1,14 @@
 import logging
 from datetime import date, timedelta
 
-from django.conf import settings
-from django.db import connection, close_old_connections
-from django.db import models
+from django.db import close_old_connections, connection, models
 from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, ALL_TIME, PERIODS
+from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, LAST_YEAR, PERIODS
 from kitsune.products.models import Product
-from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo import googleanalytics
+from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.wiki.models import Document
-
 
 log = logging.getLogger("k.dashboards")
 
@@ -26,8 +23,8 @@ def period_dates(period):
         start = end - timedelta(days=30)
     elif period == LAST_90_DAYS:
         start = end - timedelta(days=90)
-    elif ALL_TIME:
-        start = settings.GA_START_DATE
+    elif LAST_YEAR:
+        start = end - timedelta(days=365)
 
     return start, end
 

@@ -16,7 +16,8 @@ from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
 from django.urls import resolve
-from django.utils.translation import pgettext, override as translation_override
+from django.utils.translation import override as translation_override
+from django.utils.translation import pgettext
 from elasticsearch import ElasticsearchException
 from product_details import product_details
 from taggit.models import Tag
@@ -708,9 +709,9 @@ class QuestionVisits(ModelBase):
         """Update the stats from Google Analytics."""
         from kitsune.sumo import googleanalytics
 
-        counts = googleanalytics.pageviews_by_question(
-            settings.GA_START_DATE, date.today(), verbose=verbose
-        )
+        today = date.today()
+        one_year_ago = today - timedelta(days=365)
+        counts = googleanalytics.pageviews_by_question(one_year_ago, today, verbose=verbose)
         if counts:
             # Close any existing connections because our load balancer times
             # them out at 5 minutes and the GA calls take forever.
