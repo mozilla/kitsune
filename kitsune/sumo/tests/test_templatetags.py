@@ -103,7 +103,7 @@ class TestHelpers(TestCase):
 
     def test_static_failure(self):
         """Should not raise an error if the static file is missing."""
-        assert static("does/not/exist.js") == ""
+        static("does/not/exist.js")
 
 
 class TestDateTimeFormat(TestCase):

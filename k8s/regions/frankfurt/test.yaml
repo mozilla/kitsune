@@ -108,7 +108,6 @@ app:
     media_url: "https://user-media-stage-cdn.itsre-sumo.mozilla.net/"
     new_relic_app_name: "sumo-test-frankfurt"
     new_relic_license_key: SECRET
-    pipeline_enabled: True
     port: 8000
     read_only: False
     redis_default_url: SECRET

@@ -13,8 +13,6 @@ from decouple import Csv, config
 
 from kitsune.lib.sumo_locales import LOCALES
 
-from .bundles import PIPELINE_JS
-
 DEBUG = config("DEBUG", default=False, cast=bool)
 DEV = config("DEV", default=False, cast=bool)
 STAGE = config("STAGE", default=False, cast=bool)
@@ -415,10 +413,9 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "pipeline.finders.PipelineFinder",
 )
 
-STATICFILES_STORAGE = "pipeline.storage.PipelineManifestStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
@@ -479,7 +476,6 @@ TEMPLATES = [
                 "jinja2.ext.autoescape",
                 "jinja2.ext.with_",
                 "jinja2.ext.do",
-                "pipeline.jinja2.PipelineExtension",
                 "django_jinja.builtins.extensions.CsrfExtension",
                 "django_jinja.builtins.extensions.StaticFilesExtension",
                 "django_jinja.builtins.extensions.DjangoFiltersExtension",
@@ -653,7 +649,6 @@ INSTALLED_APPS = (
     "kitsune.users",
     "dennis.django_dennis",
     "puente",
-    "pipeline",
     "authority",
     "waffle",
     "storages",
@@ -764,27 +759,6 @@ STATICI18N_PACKAGES = ["kitsune.sumo"]
 # Save jsi18n files outside of static so that collectstatic will pick
 # them up and save it with hashed filenames in the static directory.
 STATICI18N_ROOT = path("jsi18n")
-
-#
-# Django Pipline
-PIPELINE = {
-    "PIPELINE_ENABLED": config("PIPELINE_ENABLED", default=False, cast=bool),
-    "COMPILERS": (
-        "kitsune.lib.pipeline_compilers.BrowserifyCompiler",
-        "pipeline.compilers.es6.ES6Compiler",
-    ),
-    "JAVASCRIPT": PIPELINE_JS,
-    "DISABLE_WRAPPER": True,
-    "JS_COMPRESSOR": "pipeline.compressors.uglifyjs.UglifyJSCompressor",
-    "UGLIFYJS_BINARY": path("node_modules/.bin/uglifyjs"),
-    "UGLIFYJS_ARGUMENTS": "",
-    "BROWSERIFY_BINARY": path("node_modules/.bin/browserify"),
-    "BROWSERIFY_ARGUMENTS": "-t babelify",
-    "BABEL_BINARY": "node_modules/.bin/babel",
-}
-
-if DEBUG:
-    PIPELINE["BROWSERIFY_ARGUMENTS"] += " -d"
 
 NUNJUCKS_PRECOMPILE_BIN = path("node_modules/.bin/nunjucks-precompile")
 
