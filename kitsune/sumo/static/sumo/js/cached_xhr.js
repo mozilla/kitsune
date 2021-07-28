@@ -29,7 +29,7 @@
       key += '::' + cacheKey;
     }
     cache[key] = {
-      'expires': moment().add(lifetime[0], lifetime[1]),
+      'expires': Date.now() + lifetime,
       'data': data,
       'textStatus': textStatus,
       'jqXHR': jqXHR
@@ -41,7 +41,7 @@
     var self = this;
 
     options = $.extend({
-      'lifetime': [5, 'minutes']
+      'lifetime': 5 * 60 * 1000
     }, options);
 
     var success = options.success;
@@ -56,7 +56,7 @@
     options.success = callback;
 
     var cached = self.fetch(url, options.cacheKey);
-    if (cached && cached.expires > moment() && !options.forceReload) {
+    if (cached && cached.expires > Date.now() && !options.forceReload) {
       if (success) {
         success(cached.data, cached.textStatus, cached.jqXHR);
       }

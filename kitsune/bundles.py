@@ -5,7 +5,6 @@ PIPELINE_JS = {
         "source_filenames": (
             "sumo/js/i18n.js",
             "underscore/underscore.js",
-            "moment/moment.js",
             "jquery/dist/jquery.min.js",
             "jquery/jquery-migrate.js",
             "sumo/js/libs/jquery.cookie.js",

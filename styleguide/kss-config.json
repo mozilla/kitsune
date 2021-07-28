@@ -13,7 +13,6 @@
   "js": [
     "static/sumo/js/i18n.js",
     "static/underscore/underscore.js",
-    "static/moment/moment.js",
     "static/jquery/dist/jquery.min.js",
     "static/sumo/js/libs/jquery.cookie.js",
     "static/sumo/js/libs/jquery.placeholder.js",
