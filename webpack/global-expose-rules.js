@@ -22,10 +22,6 @@ module.exports = [
     "../kitsune/sumo/static/sumo/js/dnt-helper.js",
     "_dntEnabled"
   ),
-  exportAndExpose(
-    "../kitsune/sumo/static/sumo/js/libs/django/urlify.js",
-    "URLify"
-  ),
   exportAndExpose("../kitsune/sumo/static/sumo/js/upload.js", "dialogSet"),
   // this library attempts to expose a bunch of stuff globally by adding them to `this`, imports-loader makes that work:
   {
