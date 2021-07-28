@@ -3,7 +3,6 @@ module.exports = {
   common: [
     "sumo/js/i18n.js",
     "underscore/underscore.js",
-    "moment/moment.js",
     "jquery",
     "sumo/js/libs/jquery.cookie.js",
     "sumo/js/libs/jquery.placeholder.js",
