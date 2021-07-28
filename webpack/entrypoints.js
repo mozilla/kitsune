@@ -87,7 +87,6 @@ const entrypoints = {
   ],
   wiki: [
     "sumo/js/markup.js",
-    "sumo/js/libs/django/urlify.js",
     "sumo/js/users.autocomplete.js",
     "sumo/js/showfor.js",
     "sumo/js/ajaxvote.js",

@@ -33,7 +33,6 @@ module.exports = {
         "Mozilla": "readonly",
         "trackEvent": "readonly",
         "_dntEnabled": "readonly",
-        "URLify": "readonly",
         "dialogSet": "readonly",
         "$": "readonly",
         "jQuery": "readonly",

@@ -125,7 +125,7 @@ var downcode= function( slug )
 }
 
 
-function URLify(s, num_chars) {
+export function URLify(s, num_chars) {
     // changes, e.g., "Petty theft" to "petty_theft"
     // remove all these words from the string before urlifying
     s = downcode(s);
