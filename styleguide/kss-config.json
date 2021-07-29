@@ -21,7 +21,6 @@
     "static/sumo/js/cached_xhr.js",
     "static/sumo/js/search_utils.js",
     "static/sumo/js/browserdetect.js",
-    "static/sumo/js/libs/uitour.js",
     "static/sumo/js/kbox.js",
     "static/sumo/js/main.js",
     "static/sumo/js/format.js",

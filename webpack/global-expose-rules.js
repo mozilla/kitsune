@@ -13,10 +13,6 @@ module.exports = [
   ),
   expose("../kitsune/sumo/static/sumo/js/sumo-tabs.js", "tabsInit tabsInit"),
   // wrap these files to make them behave like an es6 module, exporting the named variable, and expose that globally:
-  exportAndExpose(
-    "../kitsune/sumo/static/sumo/js/libs/uitour.js",
-    "Mozilla.UITour"
-  ),
   exportAndExpose("../kitsune/sumo/static/sumo/js/analytics.js", "trackEvent"),
   exportAndExpose("../kitsune/sumo/static/sumo/js/upload.js", "dialogSet"),
   // we copy these libraries from external sources, so define their exports here,
@@ -24,6 +20,10 @@ module.exports = [
   exports(
     "../kitsune/sumo/static/sumo/js/libs/dnt-helper.js",
     "default Mozilla.dntEnabled"
+  ),
+  exports(
+    "../kitsune/sumo/static/sumo/js/libs/uitour.js",
+    "default Mozilla.UITour"
   ),
   // this library attempts to expose a bunch of stuff globally by adding them to `this`, imports-loader makes that work:
   {

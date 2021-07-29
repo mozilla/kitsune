@@ -30,7 +30,6 @@ module.exports = {
         "Rickshaw": "readonly",
         "detailsInit": "readonly",
         "tabsInit": "readonly",
-        "Mozilla": "readonly",
         "trackEvent": "readonly",
         "dialogSet": "readonly",
         "$": "readonly",
@@ -54,6 +53,7 @@ module.exports = {
         "abs_y": "readonly",
         "ShowFor": "readonly",
         // global references, not exposed by anything, mostly here to keep eslint quiet
+        "Mozilla": "readonly",
         "_gaq": "readonly",
         "RICKSHAW_NO_COMPAT": "readonly",
         "module": "readonly",
