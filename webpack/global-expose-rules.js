@@ -6,7 +6,6 @@ module.exports = [
   // expose these library exports globally:
   expose("nunjucks/browser/nunjucks-slim.js", "nunjucks"),
   expose("codemirror/lib/codemirror.js", "CodeMirror"),
-  expose("../kitsune/sumo/static/sumo/js/libs/rickshaw.js", "Rickshaw"),
   expose(
     "../kitsune/sumo/static/sumo/js/protocol-details-init.js",
     "detailsInit detailsInit"

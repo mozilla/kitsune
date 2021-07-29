@@ -3,6 +3,7 @@ import "jquery-ui/ui/widgets/slider";
 import _filter from "underscore/modules/filter";
 import _map from "underscore/modules/map";
 import _each from "underscore/modules/each";
+import Rickshaw from "./libs/rickshaw";
 
 (function () {
   'use strict';
