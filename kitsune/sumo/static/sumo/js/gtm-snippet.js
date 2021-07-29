@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import dntEnabled from "./libs/dnt-helper";
+
 (function(w) {
   'use strict';
 
@@ -17,7 +19,7 @@
   }
   // If doNotTrack is not enabled, it is ok to add GTM
   // @see https://bugzilla.mozilla.org/show_bug.cgi?id=1217896 for more details
-  if (typeof _dntEnabled === 'function' && !_dntEnabled() && GTM_CONTAINER_ID) {
+  if (typeof dntEnabled === 'function' && !dntEnabled() && GTM_CONTAINER_ID) {
     (function(w,d,s,l,i,j,f,dl,k,q){
       w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});f=d.getElementsByTagName(s)[0];
       k=i.length;q='//www.googletagmanager.com/gtag/js?id=@&l='+(l||'dataLayer');
