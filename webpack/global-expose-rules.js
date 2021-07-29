@@ -18,11 +18,13 @@ module.exports = [
     "Mozilla.UITour"
   ),
   exportAndExpose("../kitsune/sumo/static/sumo/js/analytics.js", "trackEvent"),
-  exportAndExpose(
-    "../kitsune/sumo/static/sumo/js/dnt-helper.js",
-    "_dntEnabled"
-  ),
   exportAndExpose("../kitsune/sumo/static/sumo/js/upload.js", "dialogSet"),
+  // we copy these libraries from external sources, so define their exports here,
+  // rather than having to modify them, making updating them more difficult:
+  exports(
+    "../kitsune/sumo/static/sumo/js/libs/dnt-helper.js",
+    "default Mozilla.dntEnabled"
+  ),
   // this library attempts to expose a bunch of stuff globally by adding them to `this`, imports-loader makes that work:
   {
     test: require.resolve(
@@ -34,6 +36,18 @@ module.exports = [
     },
   },
 ];
+
+function exports(path, exports) {
+  // export the named variable
+  return {
+    test: require.resolve(path),
+    loader: "exports-loader",
+    options: {
+      type: "module",
+      exports,
+    },
+  };
+}
 
 function expose(path, exposes) {
   // expose a module's export globally

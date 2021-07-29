@@ -32,7 +32,6 @@ module.exports = {
         "tabsInit": "readonly",
         "Mozilla": "readonly",
         "trackEvent": "readonly",
-        "_dntEnabled": "readonly",
         "dialogSet": "readonly",
         "$": "readonly",
         "jQuery": "readonly",

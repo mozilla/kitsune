@@ -146,7 +146,6 @@ const entrypoints = {
     "kpi/js/kpi.browserify.js",
   ],
   "gtm-snippet": [
-    "sumo/js/dnt-helper.js",
     "sumo/js/gtm-snippet.js",
   ],
 }
