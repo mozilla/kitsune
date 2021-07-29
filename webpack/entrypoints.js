@@ -10,7 +10,6 @@ const entrypoints = {
     "sumo/js/cached_xhr.js",
     "sumo/js/search_utils.js",
     "sumo/js/browserdetect.js",
-    "sumo/js/libs/uitour.js",
     "sumo/js/kbox.js",
     "sumo/js/main.js",
     "sumo/js/libs/modernizr-custom-build.js",

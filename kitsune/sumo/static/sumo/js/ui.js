@@ -1,5 +1,6 @@
 import "jquery-ui/ui/widgets/datepicker";
 import _throttle from "underscore/modules/throttle";
+import UITour from "./libs/uitour";
 
 (function($) {
   'use strict';
@@ -333,21 +334,17 @@ import _throttle from "underscore/modules/throttle";
 
   $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
     ev.preventDefault();
-    if (Mozilla && Mozilla.UITour) {
-      // Send event to GA for metrics/reporting purposes.
-      trackEvent('Refresh Firefox', 'click refresh button');
+    // Send event to GA for metrics/reporting purposes.
+    trackEvent('Refresh Firefox', 'click refresh button');
 
-      Mozilla.UITour.resetFirefox();
-    }
+    UITour.resetFirefox();
     return false;
   });
 
   $(document).on("click", "[data-mozilla-ui-preferences]", function (ev) {
     ev.preventDefault();
     var pane = ev.target.dataset.mozillaUiPreferences;
-    if (Mozilla && Mozilla.UITour) {
-      Mozilla.UITour.openPreferences(pane);
-    }
+    UITour.openPreferences(pane);
     return false;
   });
 
