@@ -1,7 +1,7 @@
+from deploy_utils import k8s_apply, k8s_delete_resource, render_template
+from env import SUMO_APP_TEMPLATE, SUMO_CRONJOB_TEMPLATE, SUMO_NODEPORT_TEMPLATE
 from invoke import task
 from invoke.exceptions import Exit
-from env import SUMO_APP_TEMPLATE, SUMO_NODEPORT_TEMPLATE
-from deploy_utils import render_template, k8s_apply, k8s_delete_resource
 
 
 @task()
@@ -43,6 +43,17 @@ def create_cron(ctx, tag=None, apply=False):
     Create or update a SUMO cron deployment
     """
     _create("cron", ctx, tag, apply, record=True)
+
+
+@task(check_environment)
+def create_cronjob(ctx, tag=None, apply=False):
+    """
+    Create or update a k8s cronjob
+    """
+    if tag:
+        ctx.config["kubernetes"]["image"]["tag"] = tag
+    t = render_template(config=ctx.config, template_name=SUMO_CRONJOB_TEMPLATE)
+    k8s_apply(ctx, t, apply)
 
 
 def _delete(app, ctx, apply):

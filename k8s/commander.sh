@@ -36,6 +36,26 @@ function deploy {
 	printf "${GREEN}OK${NC}\n"
 }
 
+function deploy_cronjob {
+	REGION=${2}
+	REGION_ENV=${3}
+	COMMIT_HASH=${4}
+	DEPLOY_SECRETS=${5:-NO}
+	K8S_NAMESPACE="sumo-${REGION_ENV}"
+
+	if [[ "${DEPLOY_SECRETS}" == "secrets" ]]; then
+		echo "Applying secrets"
+		${KUBECTL_BIN} -n "${K8S_NAMESPACE}" apply -f "regions/${REGION}/${REGION_ENV}-secrets.yaml"
+	else
+		echo "Secrets will *NOT* be applied"
+	fi
+
+	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag "full-${COMMIT_HASH}"
+
+	echo ":tada: Successfully deployed cronjob <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
+	printf "${GREEN}OK${NC}\n"
+}
+
 function post-deploy {
 	REGION=${2}
 	REGION_ENV=${3}

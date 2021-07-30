@@ -1,8 +1,8 @@
-from env import TEMPLATE_DIR
-import jinja2
 import os
 import tempfile
 
+import jinja2
+from env import TEMPLATE_DIR
 from invoke.config import DataProxy
 
 

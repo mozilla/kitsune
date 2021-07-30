@@ -1,0 +1,20 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ kubernetes.namespace }}-export-data-cronjob
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sumo-export-to-json
+            image: {{ kubernetes.image.repo }}:{{ kubernetes.image.tag }}
+            imagePullPolicy: {{ kubernetes.image.pull_policy }}
+            name: sumo-{{ kubernetes.target_environment }}-{{ kubernetes.labels.type }}
+            command:
+            - /bin/sh
+            - -c
+            - python -m manage.py export_db_to_json
+          restartPolicy: OnFailure
