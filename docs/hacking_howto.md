@@ -18,7 +18,7 @@ and follow the following steps.
     git clone https://github.com/mozilla/kitsune.git
     ```
 
-2. Pull base Kitsune Docker images, run `collectstatic`, create your database, and install node packages.
+2. Pull base Kitsune Docker images, install node packages and build the Webpack bundle, and create your database.
     ```
     make init
     make build
@@ -59,8 +59,7 @@ instead of `make shell` as the latter does not bind port 8000 which you need to 
 
 Run `make help` to see other helpful commands.
 
-Finally you can run the development server with instance reloading through
-browser-sync.
+Then you can run the Webpack build with instant reloading through browser-sync:
 
 ```
 npm start
