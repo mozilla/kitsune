@@ -12,6 +12,7 @@ spec:
     matchLabels:
       app: {{ kubernetes.app_name }}
       type: {{ kubernetes.labels.type }}
+  revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:

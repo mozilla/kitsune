@@ -64,21 +64,16 @@ app:
     debug: False
     dms_auto_archive_old_questions: SECRET
     dms_cache_most_unhelpful_kb_articles: SECRET
-    dms_calculate_csat_metrics: SECRET
     dms_cohort_analysis: SECRET
     dms_enqueue_lag_monitor_task: SECRET
     dms_fix_current_revisions: SECRET
     dms_generate_missing_share_links: SECRET
-    dms_process_exit_surveys: SECRET
-    dms_rebuild_kb: SECRET
-    dms_reindex: SECRET
     dms_reindex_es7: SECRET
     dms_reload_question_traffic_stats: SECRET
     dms_reload_wiki_traffic_stats: SECRET
     dms_report_employee_answers: SECRET
     dms_send_weekly_ready_for_review_digest: SECRET
     dms_send_welcome_emails: SECRET
-    dms_survey_recent_askers: SECRET
     dms_update_contributor_metrics: SECRET
     dms_update_l10n_contributor_metrics: SECRET
     dms_update_l10n_coverage_metrics: SECRET
@@ -98,10 +93,7 @@ app:
     enforce_host: "support.mozilla.org,prod-oregon-a.sumo.mozit.cloud"
     engage_robots: True
     es_index_prefix: "sumo_prod"
-    es_http_auth: SECRET
     es_live_indexing: True
-    es_use_ssl: True
-    es_urls: SECRET
     es7_use_ssl: True
     es7_http_auth: SECRET
     es7_cloud_id: SECRET

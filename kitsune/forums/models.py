@@ -4,8 +4,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q
-from django.db.models.signals import pre_save
 from tidings.models import NotificationsMixin
 
 from kitsune import forums
@@ -260,23 +258,3 @@ class Post(ModelBase):
     @property
     def content_parsed(self):
         return wiki_to_html(self.content)
-
-
-def user_pre_save(sender, instance, **kw):
-    """When a user's username is changed, we must reindex the threads
-    they participated in.
-    """
-    if instance.id:
-        user = User.objects.get(id=instance.id)
-        if user.username != instance.username:
-            threads = (
-                Thread.objects.filter(Q(creator=instance) | Q(post__author=instance))
-                .only("id")
-                .distinct()
-            )
-
-            for t in threads:
-                t.index_later()
-
-
-pre_save.connect(user_pre_save, sender=User, dispatch_uid="forums_user_pre_save")

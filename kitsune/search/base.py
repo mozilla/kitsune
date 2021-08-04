@@ -9,7 +9,7 @@ from django.core.paginator import Paginator as DjPaginator, PageNotAnInteger, Em
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from elasticsearch.exceptions import NotFoundError
+from elasticsearch.exceptions import NotFoundError, RequestError
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
 from elasticsearch_dsl import Search as DSLSearch
@@ -323,6 +323,7 @@ class SumoSearch(SumoSearchInterface):
 
     query: str = ""
     default_operator: str = "AND"
+    parse_query: bool = True
 
     def __len__(self):
         return self.total
@@ -346,10 +347,17 @@ class SumoSearch(SumoSearchInterface):
 
     def build_query(self):
         """Build a query to search over a specific set of documents."""
-        try:
-            parsed = Parser(self.query)
-        except ParseException:
+        parsed = None
+
+        if self.parse_query:
+            try:
+                parsed = Parser(self.query)
+            except ParseException:
+                pass
+
+        if not parsed:
             parsed = TermToken(self.query)
+
         return parsed.elastic_query(
             {
                 "fields": self.get_fields(),
@@ -374,7 +382,14 @@ class SumoSearch(SumoSearchInterface):
         search = search[key]
 
         # perform search
-        self.hits = search.execute().hits
+        try:
+            result = search.execute()
+        except RequestError:
+            # try search again, but without parsing any advanced syntax
+            self.parse_query = False
+            return self.run(key)
+
+        self.hits = result.hits
         self.last_key = key
 
         self.total = self.hits.total.value

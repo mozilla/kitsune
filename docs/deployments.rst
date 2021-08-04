@@ -48,7 +48,7 @@ Servers
 
 
 Development
-===========
+-----------
 
 https://support-dev.allizom.org/
 
@@ -56,7 +56,7 @@ We use dev primarily to develop infrastructure changes.
 
 
 Staging
-=======
+-------
 
 https://support.allizom.org/
 
@@ -64,6 +64,6 @@ We deploy to stage anything we want to test including deployments themselves.
 
 
 Production
-==========
+----------
 
 https://support.mozilla.org/

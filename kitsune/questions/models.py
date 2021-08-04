@@ -11,13 +11,13 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import close_old_connections, connection, models
-from django.db.models import Q
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.http import Http404
 from django.urls import resolve
-from django.utils.translation import pgettext, override as translation_override
+from django.utils.translation import override as translation_override
+from django.utils.translation import pgettext
 from elasticsearch import ElasticsearchException
 from product_details import product_details
 from taggit.models import Tag
@@ -709,9 +709,9 @@ class QuestionVisits(ModelBase):
         """Update the stats from Google Analytics."""
         from kitsune.sumo import googleanalytics
 
-        counts = googleanalytics.pageviews_by_question(
-            settings.GA_START_DATE, date.today(), verbose=verbose
-        )
+        today = date.today()
+        one_year_ago = today - timedelta(days=365)
+        counts = googleanalytics.pageviews_by_question(one_year_ago, today, verbose=verbose)
         if counts:
             # Close any existing connections because our load balancer times
             # them out at 5 minutes and the GA calls take forever.
@@ -992,26 +992,6 @@ class Answer(ModelBase):
         self.marked_as_spam = datetime.now()
         self.marked_as_spam_by = by_user
         self.save()
-
-
-def user_pre_save(sender, instance, **kw):
-    """When a user's username is changed, we must reindex the questions
-    they participated in.
-    """
-    if instance.id:
-        user = User.objects.get(id=instance.id)
-        if user.username != instance.username:
-            questions = (
-                Question.objects.filter(Q(creator=instance) | Q(answers__creator=instance))
-                .only("id")
-                .distinct()
-            )
-
-            for q in questions:
-                q.index_later()
-
-
-pre_save.connect(user_pre_save, sender=User, dispatch_uid="questions_user_pre_save")
 
 
 class QuestionVote(ModelBase):
