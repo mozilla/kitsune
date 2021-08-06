@@ -21,7 +21,7 @@ from tidings.models import NotificationsMixin
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.apps import ProgrammingError
-from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.models import LocaleField, ModelBase, utf8mb3CharField, utf8mb3TextField
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.wiki.config import (
@@ -61,8 +61,8 @@ class _NotDocumentView(Exception):
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):
     """A localized knowledgebase document, not revision-specific."""
 
-    title = models.CharField(max_length=255, db_index=True)
-    slug = models.CharField(max_length=255, db_index=True)
+    title = utf8mb3CharField(max_length=255, db_index=True)
+    slug = utf8mb3CharField(max_length=255, db_index=True)
 
     # Is this document a template or not?
     is_template = models.BooleanField(default=False, editable=False, db_index=True)
@@ -93,7 +93,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     )
 
     # Cached HTML rendering of approved revision's wiki markup:
-    html = models.TextField(editable=False)
+    html = utf8mb3TextField(editable=False, html=True)
 
     # A document's category must always be that of its parent. If it has no
     # parent, it can do what it wants. This invariant is enforced in save().
@@ -136,7 +136,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     needs_change = models.BooleanField(
         default=False, help_text=_lazy("If checked, this document needs updates."), db_index=True
     )
-    needs_change_comment = models.CharField(max_length=500, blank=True)
+    needs_change_comment = utf8mb3CharField(max_length=500, blank=True)
 
     # A 24 character length gives years before having to alter max_length.
     share_link = models.CharField(max_length=24, default="")
@@ -733,7 +733,7 @@ class AbstractRevision(models.Model):
     # Keywords are used mostly to affect search rankings. Moderators may not
     # have the language expertise to translate keywords, so we put them in the
     # Revision so the translators can handle them:
-    keywords = models.CharField(max_length=255, blank=True)
+    keywords = utf8mb3CharField(max_length=255, blank=True)
 
     class Meta:
         abstract = True
@@ -742,8 +742,8 @@ class AbstractRevision(models.Model):
 class Revision(ModelBase, AbstractRevision):
     """A revision of a localized knowledgebase document"""
 
-    summary = models.TextField()  # wiki markup
-    content = models.TextField()  # wiki markup
+    summary = utf8mb3TextField(html=True)  # wiki markup
+    content = utf8mb3TextField(html=True)  # wiki markup
 
     reviewed = models.DateTimeField(null=True)
     expires = models.DateTimeField(null=True, blank=True)
@@ -751,7 +751,7 @@ class Revision(ModelBase, AbstractRevision):
     # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
 
-    comment = models.CharField(max_length=MAX_REVISION_COMMENT_LENGTH)
+    comment = utf8mb3CharField(max_length=MAX_REVISION_COMMENT_LENGTH)
     reviewer = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="reviewed_revisions", null=True
     )
@@ -973,11 +973,11 @@ class Revision(ModelBase, AbstractRevision):
 
 class DraftRevision(ModelBase, AbstractRevision):
     based_on = models.ForeignKey(Revision, on_delete=models.CASCADE)
-    content = models.TextField(blank=True)
+    content = utf8mb3TextField(blank=True, html=True)
     locale = LocaleField(blank=False, db_index=True)
-    slug = models.CharField(max_length=255, blank=True)
-    summary = models.TextField(blank=True)
-    title = models.CharField(max_length=255, blank=True)
+    slug = utf8mb3CharField(max_length=255, blank=True)
+    summary = utf8mb3TextField(blank=True, html=True)
+    title = utf8mb3CharField(max_length=255, blank=True)
 
 
 class HelpfulVote(ModelBase):

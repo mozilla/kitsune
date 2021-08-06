@@ -350,3 +350,17 @@ def check_for_spam_content(data):
     has_links = has_blocked_link(data)
 
     return is_toll_free or is_nanp_number or has_links
+
+
+def to_utf8mb3_str(string, html=False):
+    """
+    By default, strip 4-byte UTF-8 characters out of a string,
+    to allow saving in a MySQL table using the utf8mb3 character set.
+
+    If html=True, then insert a numeric character reference for all 4-byte characters instead.
+    """
+
+    return "".join(
+        char if (code := ord(char)) < 0x10000 else (f"&#{code};" if html else "")
+        for char in string
+    )

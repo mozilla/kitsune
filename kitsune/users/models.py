@@ -10,7 +10,7 @@ from timezone_field import TimeZoneField
 
 from kitsune.lib.countries import COUNTRIES
 from kitsune.products.models import Product
-from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.models import LocaleField, ModelBase, utf8mb3CharField, utf8mb3TextField
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 from kitsune.users.validators import TwitterValidator
@@ -30,7 +30,7 @@ class Profile(ModelBase):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, primary_key=True, verbose_name=_lazy("User")
     )
-    name = models.CharField(
+    name = utf8mb3CharField(
         max_length=255, null=True, blank=True, verbose_name=_lazy("Display name")
     )
     public_email = models.BooleanField(  # show/hide email
@@ -43,7 +43,7 @@ class Profile(ModelBase):
         verbose_name=_lazy("Avatar"),
         max_length=settings.MAX_FILEPATH_LENGTH,
     )
-    bio = models.TextField(
+    bio = utf8mb3TextField(
         null=True,
         blank=True,
         verbose_name=_lazy("Biography"),
@@ -55,22 +55,23 @@ class Profile(ModelBase):
             + "&#x3C;ol&#x3E; &#x3C;strong&#x3E; &#x3C;ul&#x3E;. "
             + "Links are forbidden."
         ),
+        html=True,
     )
     website = models.URLField(max_length=255, null=True, blank=True, verbose_name=_lazy("Website"))
-    twitter = models.CharField(
+    twitter = utf8mb3CharField(
         max_length=15,
         null=True,
         blank=True,
         validators=[TwitterValidator],
         verbose_name=_lazy("Twitter Username"),
     )
-    community_mozilla_org = models.CharField(
+    community_mozilla_org = utf8mb3CharField(
         max_length=255, default="", blank=True, verbose_name=_lazy("Community Portal Username")
     )
-    people_mozilla_org = models.CharField(
+    people_mozilla_org = utf8mb3CharField(
         max_length=255, blank=True, default="", verbose_name=_lazy("People Directory Username")
     )
-    matrix_handle = models.CharField(
+    matrix_handle = utf8mb3CharField(
         max_length=255, default="", blank=True, verbose_name=_lazy("Matrix Nickname")
     )
     timezone = TimeZoneField(
@@ -80,7 +81,7 @@ class Profile(ModelBase):
         max_length=2, choices=COUNTRIES, null=True, blank=True, verbose_name=_lazy("Country")
     )
     # No city validation
-    city = models.CharField(max_length=255, null=True, blank=True, verbose_name=_lazy("City"))
+    city = utf8mb3CharField(max_length=255, null=True, blank=True, verbose_name=_lazy("City"))
     locale = LocaleField(default=settings.LANGUAGE_CODE, verbose_name=_lazy("Preferred language"))
     first_answer_email_sent = models.BooleanField(
         default=False, help_text=_lazy("Has been sent a first answer contribution email.")

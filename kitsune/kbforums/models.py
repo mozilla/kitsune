@@ -7,7 +7,7 @@ from tidings.models import NotificationsMixin
 
 from kitsune import kbforums
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
-from kitsune.sumo.models import ModelBase
+from kitsune.sumo.models import ModelBase, utf8mb3CharField, utf8mb3TextField
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document
 
@@ -32,7 +32,7 @@ class ThreadLockedError(Exception):
 
 
 class Thread(NotificationsMixin, ModelBase):
-    title = models.CharField(max_length=255)
+    title = utf8mb3CharField(max_length=255)
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_thread_set")
@@ -82,7 +82,7 @@ class Thread(NotificationsMixin, ModelBase):
 
 class Post(ModelBase):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE)
-    content = models.TextField()
+    content = utf8mb3TextField(html=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wiki_post_set")
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)

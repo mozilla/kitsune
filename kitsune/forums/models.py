@@ -9,7 +9,7 @@ from tidings.models import NotificationsMixin
 from kitsune import forums
 from kitsune.access.utils import has_perm, perm_is_defined_on
 from kitsune.flagit.models import FlaggedObject
-from kitsune.sumo.models import ModelBase
+from kitsune.sumo.models import ModelBase, utf8mb3CharField, utf8mb3TextField
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 
@@ -99,7 +99,7 @@ class Forum(NotificationsMixin, ModelBase):
 
 
 class Thread(NotificationsMixin, ModelBase):
-    title = models.CharField(max_length=255)
+    title = utf8mb3CharField(max_length=255)
     forum = models.ForeignKey("Forum", on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -183,7 +183,7 @@ class Thread(NotificationsMixin, ModelBase):
 
 class Post(ModelBase):
     thread = models.ForeignKey("Thread", on_delete=models.CASCADE)
-    content = models.TextField()
+    content = utf8mb3TextField(html=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     created = models.DateTimeField(default=datetime.datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.datetime.now, db_index=True)

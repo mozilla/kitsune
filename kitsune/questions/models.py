@@ -27,7 +27,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
 from kitsune.questions.tasks import update_answer_pages, update_question_votes
-from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.models import LocaleField, ModelBase, utf8mb3CharField, utf8mb3TextField
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
@@ -50,9 +50,9 @@ class AlreadyTakenException(Exception):
 class Question(ModelBase, BigVocabTaggableMixin):
     """A support question."""
 
-    title = models.CharField(max_length=255)
+    title = utf8mb3CharField(max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions")
-    content = models.TextField()
+    content = utf8mb3TextField(html=True)
 
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
@@ -689,7 +689,7 @@ class QuestionMetaData(ModelBase):
 
     question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="metadata_set")
     name = models.SlugField(db_index=True)
-    value = models.TextField()
+    value = utf8mb3TextField()
 
     class Meta:
         unique_together = ("question", "name")
@@ -760,7 +760,7 @@ class Answer(ModelBase):
     question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="answers")
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="answers")
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    content = models.TextField()
+    content = utf8mb3TextField(html=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True, related_name="answers_updated"

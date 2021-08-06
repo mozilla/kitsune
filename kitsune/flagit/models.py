@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.sumo.models import ModelBase
+from kitsune.sumo.models import ModelBase, utf8mb3TextField
 
 
 class FlaggedObjectManager(models.Manager):
@@ -41,7 +41,7 @@ class FlaggedObject(ModelBase):
 
     status = models.IntegerField(default=0, db_index=True, choices=STATUSES)
     reason = models.CharField(max_length=64, choices=REASONS)
-    notes = models.TextField(default="", blank=True)
+    notes = utf8mb3TextField(default="", blank=True)
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="flags")
     created = models.DateTimeField(default=datetime.now, db_index=True)

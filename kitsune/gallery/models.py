@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
-from kitsune.sumo.models import ModelBase, LocaleField
+from kitsune.sumo.models import ModelBase, LocaleField, utf8mb3CharField, utf8mb3TextField
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 
@@ -12,11 +12,11 @@ from kitsune.sumo.utils import auto_delete_files
 class Media(ModelBase):
     """Generic model for media"""
 
-    title = models.CharField(max_length=255, db_index=True)
+    title = utf8mb3CharField(max_length=255, db_index=True)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    description = models.TextField(max_length=10000)
+    description = utf8mb3TextField(max_length=10000)
     locale = LocaleField(default=settings.GALLERY_DEFAULT_LANGUAGE, db_index=True)
     is_draft = models.NullBooleanField(default=None, null=True, editable=False)
 
