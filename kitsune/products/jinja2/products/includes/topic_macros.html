@@ -24,7 +24,7 @@
   </div>
 {%- endmacro %}
 
-{% macro topic_metadata(topics, show_community_support=False) %}
+{% macro topic_metadata(topics, show_community_support=False, product_key=None) %}
 <section class="support-callouts mzp-l-content sumo-page-section--inner">
   {% if show_community_support %}
   <div class="card card--ribbon is-inverse heading-is-one-line">
@@ -42,12 +42,13 @@
         {{ _('Still need help?') }}
       </h3>
       <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
-      <a
-        class="sumo-button primary-button button-lg"
-        href="{{ url('questions.aaq_step1') }}"
-        data-event-category="link click"
-        data-event-action="topic"
-        data-event-label="Get community support">
+      {% if product_key %}
+        {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
+      {% else %}
+        {% set aaq_url=url('questions.aaq_step1') %}
+      {% endif %}
+      <a class="sumo-button primary-button button-lg" 
+        href={{ aaq_url }} data-event-label="Get community support">
         {{ _('Ask the Community') }}
       </a>
     </div>
