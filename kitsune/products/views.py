@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
+from kitsune.questions import config as aaq_config
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.utils import get_featured_articles
@@ -18,12 +19,20 @@ def product_list(request):
     return render(request, template, {"products": products})
 
 
+def _get_aaq_product_key(slug):
+    product_key = ""
+    for k, v in aaq_config.products.items():
+        if isinstance(v, dict):
+            if v.get("product") == slug:
+                product_key = k
+    return product_key or None
+
+
 @check_simple_wiki_locale
 def product_landing(request, slug):
     """The product landing page."""
     product = get_object_or_404(Product, slug=slug)
     user = request.user
-    template = "products/product.html"
 
     if request.is_ajax():
         # Return a list of topics/subtopics for the product
@@ -43,8 +52,9 @@ def product_landing(request, slug):
 
     return render(
         request,
-        template,
+        "products/product.html",
         {
+            "product_key": _get_aaq_product_key(product.slug),
             "product": product,
             "products": Product.objects.filter(visible=True),
             "topics": topics_for(product=product, parent=None),
