@@ -49,7 +49,7 @@ idna~=2.9
 kombu==4.6.9
 lxml~=4.6.3
 meinheld~=1.0.2
-mozilla-django-oidc~=1.2.3
+mozilla-django-oidc~=2.0.0
 mysqlclient~=1.4.6
 newrelic~=6.0.1.155
 oauth2client~=1.5.2
