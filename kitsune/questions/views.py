@@ -462,25 +462,6 @@ def aaq(request, product_key=None, category_key=None, step=1):
 
     template = "questions/new_question.html"
 
-    # Check if any product forum has a locale in the user's current locale
-    if (
-        request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list()
-        and request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE
-    ):
-
-        locale, path = split_path(request.path)
-        path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
-
-        old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-        msg = _(
-            "The questions forum isn't available in {old_lang}, we "
-            "have redirected you to the {new_lang} questions forum."
-        ).format(old_lang=old_lang, new_lang=new_lang)
-        messages.add_message(request, messages.WARNING, msg)
-
-        return HttpResponseRedirect(path)
-
     # Check if the user is using a mobile device,
     # render step 2 if they are
     product_key = product_key or request.GET.get("product")
@@ -511,21 +492,6 @@ def aaq(request, product_key=None, category_key=None, step=1):
             product = Product.objects.get(slug=product_config["product"])
         except Product.DoesNotExist:
             raise Http404
-        else:
-            # Check if the selected product has a forum in the user's locale
-            if not product.questions_locales.filter(locale=request.LANGUAGE_CODE).count():
-                locale, path = split_path(request.path)
-                path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
-
-                old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-                new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-                msg = _(
-                    "The questions forum isn't available for {product} in {old_lang}, we "
-                    "have redirected you to the {new_lang} questions forum."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
-                messages.add_message(request, messages.WARNING, msg)
-
-                return HttpResponseRedirect(path)
 
     context = {
         "products": config.products,
@@ -538,6 +504,21 @@ def aaq(request, product_key=None, category_key=None, step=1):
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
         context["topics"] = topics_for(product, parent=None)
     elif step == 3:
+        # Check if the selected product has a forum in the user's locale
+        if not product.questions_locales.filter(locale=request.LANGUAGE_CODE).count():
+            locale, path = split_path(request.path)
+            path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
+
+            old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
+            new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+            msg = _(
+                "The questions forum isn't available for {product} in {old_lang}, we "
+                "have redirected you to the {new_lang} questions forum."
+            ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+            messages.add_message(request, messages.WARNING, msg)
+
+            return HttpResponseRedirect(path)
+
         form = NewQuestionForm(
             product=product_config,
             data=request.POST or None,
