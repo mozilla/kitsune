@@ -72,3 +72,4 @@ timeout-decorator
 translate-toolkit~=2.5.1
 twython~=3.8.0
 whitenoise~=3.3.1
+zenpy
