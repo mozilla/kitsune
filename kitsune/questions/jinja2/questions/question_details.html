@@ -304,10 +304,7 @@
   {{ search_box(settings, id='support-search-sidebar', params=search_params, placeholder=_('Search Support')) }}
 </div>
 
-{% set aaq_product = request.session.get('product_key') %}
-{% if aaq_product %}
-  {{ aaq_widget(aaq_product, user, "question") }}
-{% endif %}
+{{ aaq_widget(request, "question") }}
 
 <div class="questions-sidebar">
   <nav class="sidebar-nav is-action-list" id="question-tools">

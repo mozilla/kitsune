@@ -492,6 +492,12 @@ def aaq(request, product_key=None, category_key=None, step=1):
             product = Product.objects.get(slug=product_config["product"])
         except Product.DoesNotExist:
             raise Http404
+        has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
+        request.session["aaq_context"] = {
+            "key": product_key,
+            "has_public_forum": has_public_forum,
+            "has_subscriptions": product.has_subscriptions,
+        }
 
     context = {
         "products": config.products,
@@ -503,9 +509,10 @@ def aaq(request, product_key=None, category_key=None, step=1):
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
         context["topics"] = topics_for(product, parent=None)
+
     elif step == 3:
         # Check if the selected product has a forum in the user's locale
-        if not product.questions_locales.filter(locale=request.LANGUAGE_CODE).count():
+        if not has_public_forum:
             locale, path = split_path(request.path)
             path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
 
