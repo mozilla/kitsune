@@ -1,4 +1,4 @@
-{% macro help_topics(topics, show_community_support=False, product_slug=None, new_tab=False) -%}
+{% macro help_topics(topics, product_slug=None, new_tab=False) -%}
 
   <div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
     <div class="scroll-wrap">
@@ -24,9 +24,8 @@
   </div>
 {%- endmacro %}
 
-{% macro topic_metadata(topics, show_community_support=False, product_key=None) %}
+{% macro topic_metadata(topics, product_key=None) %}
 <section class="support-callouts mzp-l-content sumo-page-section--inner">
-  {% if show_community_support %}
   <div class="card card--ribbon is-inverse heading-is-one-line">
     <div class="card--details">
       <h3 class="card--title">
@@ -47,13 +46,12 @@
       {% else %}
         {% set aaq_url=url('questions.aaq_step1') %}
       {% endif %}
-      <a class="sumo-button primary-button button-lg" 
+      <a class="sumo-button primary-button button-lg"
         href={{ aaq_url }} data-event-label="Get community support">
         {{ _('Ask the Community') }}
       </a>
     </div>
   </div>
-  {% endif %}
 </section>
 
 {% if settings.OIDC_ENABLE and product.id in subscribed_products_ids %}
