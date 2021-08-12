@@ -43,10 +43,7 @@
     {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
   </div>
 
-  {% set aaq_product = request.session.get('product_key') %}
-  {% if aaq_product %}
-    {{ aaq_widget(aaq_product, user, "document") }}
-  {% endif %}
+  {{ aaq_widget(request, "document") }}
 
   {% if fallback_reason == 'no_translation' %}
     {# If there is no translation, there is no document and the (future) parent is document. #}

@@ -322,9 +322,10 @@ class InAAQMiddleware(MiddlewareMixin):
             return None
         if "aaq" in view_name:
             request.session["in-aaq"] = True
-            request.session["product_key"] = callback_kwargs.get("product_key")
         else:
             request.session["in-aaq"] = False
-            if "/questions/new" not in request.META.get("HTTP_REFERER", ""):
-                request.session["product_key"] = ""
+            if ("/questions/new" not in request.META.get("HTTP_REFERER", "")) or (
+                "exit_aaq" in request.GET
+            ):
+                request.session["aaq_context"] = {}
         return None
