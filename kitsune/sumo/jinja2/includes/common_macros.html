@@ -45,13 +45,6 @@
 {% endmacro %}
 
 {% macro aux_nav(user, hide_aaq_link=False) %}
-{% if not settings.READ_ONLY %}
-{% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
-{% set ask_url = url('questions.aaq_step1') %}
-{% else %}
-{% set ask_url = url('wiki.document', 'get-community-support') %}
-{% endif %}
-{% endif %}
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
   <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true"
     aria-controls="mzp-c-menu-panel-help">{{ _('Get Help') }}</a>
@@ -62,7 +55,7 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ ask_url }}">
+            <a class="mzp-c-menu-item-link" href="{{ url('questions.aaq_step1') }}">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
