@@ -149,10 +149,10 @@
       </div>
       {% endif %}
     </div>
-    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+    {{ help_topics(topics) }}
   </div>
 
-  {{ topic_metadata(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE), product_key=product_key) }}
+  {{ topic_metadata(topics, product_key=product_key) }}
 
 {% if featured %}
   <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
