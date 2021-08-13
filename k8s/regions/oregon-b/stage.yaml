@@ -131,3 +131,6 @@ app:
     disable_feeds: False
     user_agent_filters: "360spider,semrushbot,coccobot,dotbot"
     sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
+    zendesk_api_token: SECRET
+    zendesk_user_email: SECRET
+    zendesk_subdomain: SECRET

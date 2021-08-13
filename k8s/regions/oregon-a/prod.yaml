@@ -143,3 +143,6 @@ app:
     fxa_rp_client_id: SECRET
     fxa_rp_client_secret: SECRET
     sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
+    zendesk_api_token: SECRET
+    zendesk_user_email: SECRET
+    zendesk_subdomain: SECRET
