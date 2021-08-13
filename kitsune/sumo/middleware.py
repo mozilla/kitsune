@@ -8,7 +8,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
-from django.urls import is_valid_path, resolve, Resolver404
 from django.core.validators import ValidationError, validate_ipv4_address
 from django.db.utils import DatabaseError
 from django.http import (
@@ -19,12 +18,13 @@ from django.http import (
 )
 from django.http.request import split_domain_port
 from django.shortcuts import render
+from django.urls import Resolver404, is_valid_path, resolve
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.encoding import iri_to_uri, smart_text
-from mozilla_django_oidc.middleware import SessionRefresh
 from enforce_host import EnforceHostMiddleware
+from mozilla_django_oidc.middleware import SessionRefresh
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
@@ -53,9 +53,9 @@ class HttpResponseRateLimited(HttpResponse):
 
 class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
     def __init__(self, get_response=None):
-        super(SUMORefreshIDTokenAdminMiddleware, self).__init__(get_response=get_response)
         if not settings.OIDC_ENABLE or settings.DEV:
             raise MiddlewareNotUsed
+        super(SUMORefreshIDTokenAdminMiddleware, self).__init__(get_response=get_response)
 
     def process_request(self, request):
         """Only allow refresh and enforce OIDC auth on admin URLs"""
