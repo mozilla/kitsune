@@ -1200,3 +1200,8 @@ if ES7_ENABLE_CONSOLE_LOGGING and DEV:
     es_trace_logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     es_trace_logger.addHandler(handler)
+
+# Zendesk Section
+ZENDESK_SUBDOMAIN = config("ZENDESK_SUBDOMAIN", default="")
+ZENDESK_API_TOKEN = config("ZENDESK_API_TOKEN", default="")
+ZENDESK_USER_EMAIL = config("ZENDESK_USER_EMAIL", default="")
