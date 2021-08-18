@@ -189,6 +189,10 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if not profile.name:
             profile.name = claims.get("displayName", "")
 
+        refresh_token = claims.get("token_info", {}).get("refresh_token")
+        if refresh_token:
+            profile.fxa_refresh_token = refresh_token
+
         with transaction.atomic():
             if user_attr_changed:
                 user.save()

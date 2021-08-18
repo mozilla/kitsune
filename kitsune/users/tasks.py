@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from celery import task
+from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import AccountEvent
 from kitsune.users.utils import anonymize_user
 from kitsune.products.models import Product
@@ -56,5 +57,33 @@ def process_event_password_change(event_id):
 
     event.profile.fxa_password_change = change_time
     event.profile.save()
+    event.status = AccountEvent.PROCESSED
+    event.save()
+
+
+@task
+def process_event_profile_change(event_id):
+    event = AccountEvent.objects.get(id=event_id)
+    refresh_token = event.profile.fxa_refresh_token
+
+    if not refresh_token:
+        event.status = AccountEvent.IGNORED
+        event.save()
+        return
+
+    fxa = FXAAuthBackend()
+    token_info = fxa.get_token(
+        {
+            "client_id": fxa.OIDC_RP_CLIENT_ID,
+            "client_secret": fxa.OIDC_RP_CLIENT_SECRET,
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "ttl": 60 * 5,
+        }
+    )
+    access_token = token_info.get("access_token")
+    user_info = fxa.get_userinfo(access_token, None, None)
+    fxa.update_user(event.profile.user, user_info)
+
     event.status = AccountEvent.PROCESSED
     event.save()

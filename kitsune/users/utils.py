@@ -126,6 +126,10 @@ def get_oidc_fxa_setting(attr):
         "OIDC_USERNAME_ALGO": settings.FXA_USERNAME_ALGO,
         "OIDC_STORE_ACCESS_TOKEN": settings.FXA_STORE_ACCESS_TOKEN,
         "OIDC_STORE_ID_TOKEN": settings.FXA_STORE_ID_TOKEN,
+        "OIDC_AUTH_REQUEST_EXTRA_PARAMS": {
+            "access_type": "offline",
+        },
+        "OIDC_ADD_TOKEN_INFO_TO_USER_CLAIMS": True,
     }
 
     return FXA_CONFIGURATION.get(attr, None)
