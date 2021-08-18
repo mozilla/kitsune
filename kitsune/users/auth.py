@@ -5,9 +5,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.urls import reverse as django_reverse
 from django.db import transaction
-from django.utils.translation import activate, ugettext as _
+from django.urls import reverse as django_reverse
+from django.utils.translation import activate
+from django.utils.translation import ugettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.products.models import Product
@@ -32,6 +33,10 @@ class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
 
 
 class FXAAuthBackend(OIDCAuthenticationBackend):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.refresh_token = None
+
     @staticmethod
     def get_settings(attr, *args):
         """Override settings for Firefox Accounts Provider."""
@@ -39,6 +44,11 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if val is not None:
             return val
         return super(FXAAuthBackend, FXAAuthBackend).get_settings(attr, *args)
+
+    def get_token(self, payload):
+        token_info = super().get_token(payload)
+        self.refresh_token = token_info.get("refresh_token")
+        return token_info
 
     def create_user(self, claims):
         """Override create user method to mark the profile as migrated."""
@@ -62,6 +72,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
         activate(profile.locale)
 
+        # If there is a refresh token, store it
+        if self.refresh_token:
+            profile.fxa_refresh_token = self.refresh_token
         profile.save()
         # User subscription information
         products = Product.objects.filter(codename__in=subscriptions)
@@ -188,6 +201,10 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # Users can select their own display name.
         if not profile.name:
             profile.name = claims.get("displayName", "")
+
+        # If there is a refresh token, store it
+        if self.refresh_token:
+            profile.fxa_refresh_token = self.refresh_token
 
         with transaction.atomic():
             if user_attr_changed:
