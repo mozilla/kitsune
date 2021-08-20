@@ -30,6 +30,7 @@ Part 2: Developer's Guide
    search
    frontend
    browser_permissions
+   zendesk
    notes
 
 
