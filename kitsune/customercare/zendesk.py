@@ -41,10 +41,11 @@ class ZendeskClient(object):
         }
         self.client = Zenpy(**creds)
 
-    def create_or_update_user(self, user):
-        """Given a Django user, get or create a user in Zendesk."""
+    def _user_to_zendesk_user(self, user):
         fxa_uid = user.profile.fxa_uid
-        zendesk_user = ZendeskUser(
+        id_str = user.profile.zendesk_id
+        return ZendeskUser(
+            id=int(id_str) if id_str else None,
             verified=True,
             email=user.email,
             name=user.profile.display_name,
@@ -52,12 +53,26 @@ class ZendeskClient(object):
             user_fields={"user_id": fxa_uid},
             external_id=fxa_uid,
         )
+
+    def create_user(self, user):
+        """Given a Django user, create a user in Zendesk."""
+        zendesk_user = self._user_to_zendesk_user(user)
+        # call create_or_update to avoid duplicating users FxA previously created
         zendesk_user = self.client.users.create_or_update(zendesk_user)
 
         user.profile.zendesk_id = str(zendesk_user.id)
-        user.profile.save()
+        user.profile.save(update_fields=["zendesk_id"])
 
-        return zendesk_user.id
+        return zendesk_user
+
+    def update_user(self, user):
+        """Given a Django user, update a user in Zendesk."""
+        zendesk_user = self._user_to_zendesk_user(user)
+        zendesk_user = self.client.users.update(zendesk_user)
+        # TODO: if we're updating a user's email, zendesk will add it as a secondary identity
+        # we need to call a separate api (not implemented by zenpy) to update it to primary:
+        # https://developer.zendesk.com/api-reference/ticketing/users/user_identities/#make-identity-primary
+        return zendesk_user
 
     def create_ticket(
         self, user, subject="", description="", product="", category="", os="", **kwargs
@@ -73,5 +88,9 @@ class ZendeskClient(object):
                 {"id": OS_FIELD_ID, "value": os},
             ],
         )
-        ticket.requester_id = self.create_or_update_user(user)
+        if user.profile.zendesk_id:
+            # TODO: is this necessary if we're updating users as soon as they're updated locally?
+            ticket.requester_id = self.update_user(user).id
+        else:
+            ticket.requester_id = self.create_user(user).id
         return self.client.tickets.create(ticket)
