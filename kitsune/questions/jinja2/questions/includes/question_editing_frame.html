@@ -100,19 +100,21 @@ we can compute the edit-title URL.
                 {% set li_class='' %}
                 {% for field in form.visible_fields() if not field.name == 'notifications' %}
 
-                  {% if field.name == 'ff_version' or field.name == 'device' %}
-                    <li class="system-details-info show">
-                      <p>
-                        {{ _("We've made some educated guesses about your current browser and operating system.") }}
-                        <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
-                        <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
-                      </p>
-                    </li>
-                  {% endif %}
-
-                  {% if field.name == 'ff_version' or field.name == 'device' or field.name == 'os' or field.name == 'plugins' %}
-                    {% set li_class='details' %}
+                  {% if not has_subscriptions %}
+                    {% if field.name == 'ff_version' or field.name == 'device' %}
+                      <li class="system-details-info show">
+                        <p>
+                          {{ _("We've made some educated guesses about your current browser and operating system.") }}
+                          <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
+                          <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
+                        </p>
+                      </li>
                     {% endif %}
+
+                    {% if field.name == 'ff_version' or field.name == 'device' or field.name == 'os' or field.name == 'plugins' %}
+                      {% set li_class='details' %}
+                    {% endif %}
+                  {% endif %}
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
                     {{ field.label_tag()|safe }}

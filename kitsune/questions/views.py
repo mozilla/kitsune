@@ -25,11 +25,14 @@ from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
+from sentry_sdk import capture_exception
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
+from zenpy.lib.exception import APIException
 
 from kitsune.access.decorators import login_required, permission_required
+from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -493,10 +496,11 @@ def aaq(request, product_key=None, category_key=None, step=1):
         except Product.DoesNotExist:
             raise Http404
         has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
+        has_subscriptions = product.has_subscriptions
         request.session["aaq_context"] = {
             "key": product_key,
             "has_public_forum": has_public_forum,
-            "has_subscriptions": product.has_subscriptions,
+            "has_subscriptions": has_subscriptions,
         }
 
     context = {
@@ -505,6 +509,9 @@ def aaq(request, product_key=None, category_key=None, step=1):
         "current_step": step,
         "host": Site.objects.get_current().domain,
     }
+
+    if step > 1:
+        context["has_subscriptions"] = has_subscriptions
 
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
@@ -525,6 +532,35 @@ def aaq(request, product_key=None, category_key=None, step=1):
             messages.add_message(request, messages.WARNING, msg)
 
             return HttpResponseRedirect(path)
+
+        if has_subscriptions:
+            zendesk_form = ZendeskForm(data=request.POST or None, product=product)
+            context["form"] = zendesk_form
+
+            if zendesk_form.is_valid():
+                try:
+                    zendesk_form.send(request.user)
+
+                    messages.add_message(
+                        request,
+                        messages.SUCCESS,
+                        _(
+                            "Done! Your message was sent to Mozilla Support, "
+                            "thank you for reaching out. "
+                            "We'll contact you via email as soon as possible."
+                        ),
+                    )
+
+                    url = reverse("products.product", args=[product.slug])
+                    return HttpResponseRedirect(url)
+
+                except APIException as err:
+                    messages.add_message(
+                        request, messages.ERROR, _("That didn't work. Please try again.")
+                    )
+                    capture_exception(err)
+
+            return render(request, template, context)
 
         form = NewQuestionForm(
             product=product_config,
