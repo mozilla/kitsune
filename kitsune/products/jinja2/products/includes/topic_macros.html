@@ -24,34 +24,41 @@
   </div>
 {%- endmacro %}
 
-{% macro topic_metadata(topics, product_key=None) %}
-{% if not settings.READ_ONLY %}
-  <section class="support-callouts mzp-l-content sumo-page-section--inner">
-    <div class="card card--ribbon is-inverse">
-      <div class="card--details">
-        <h3 class="card--title">
-          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
-              <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
-                <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
-                <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
-              </g>
+{% macro topic_metadata(topics, product=None, product_key=None) %}
+<section class="support-callouts mzp-l-content sumo-page-section--inner">
+  <div class="card card--ribbon is-inverse heading-is-one-line">
+    <div class="card--details">
+      <h3 class="card--title">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
+              <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+              <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
             </g>
           </svg>
 
-          {{ _('Still need help?') }}
-        </h3>
-        <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
-        {% if product_key %}
-          {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
+        {{ _('Still need help?') }}
+      </h3>
+      <p class="card--desc">
+        {% if product and product.has_subscriptions %}
+          {{ _('We’re here for you. Send a message to our support team and we\'ll be glad to help.') }}
         {% else %}
-          {% set aaq_url=url('questions.aaq_step1') %}
+          {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
         {% endif %}
-        <a class="sumo-button primary-button button-lg"
-          href={{ aaq_url }} data-event-label="Get community support">
+      </p>
+      {% if product_key %}
+        {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
+      {% else %}
+        {% set aaq_url=url('questions.aaq_step1') %}
+      {% endif %}
+      <a class="sumo-button primary-button button-lg"
+        href={{ aaq_url }} data-event-label="Contact support">
+        {% if product and product.has_subscriptions %}
+          {{ _('Contact Support') }}
+        {% else %}
           {{ _('Ask the Community') }}
-        </a>
-      </div>
+        {% endif %}
+      </a>
     </div>
   </section>
 
