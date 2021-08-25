@@ -24,7 +24,7 @@
   </div>
 {%- endmacro %}
 
-{% macro topic_metadata(topics, product_key=None) %}
+{% macro topic_metadata(topics, product=None, product_key=None) %}
 <section class="support-callouts mzp-l-content sumo-page-section--inner">
   <div class="card card--ribbon is-inverse heading-is-one-line">
     <div class="card--details">
@@ -40,15 +40,25 @@
 
         {{ _('Still need help?') }}
       </h3>
-      <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
+      <p class="card--desc">
+        {% if product and product.has_subscriptions %}
+          {{ _('We’re here for you. Send a message to our support team and we\'ll be glad to help.') }}
+        {% else %}
+          {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
+        {% endif %}
+      </p>
       {% if product_key %}
         {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
       {% else %}
         {% set aaq_url=url('questions.aaq_step1') %}
       {% endif %}
       <a class="sumo-button primary-button button-lg"
-        href={{ aaq_url }} data-event-label="Get community support">
-        {{ _('Ask the Community') }}
+        href={{ aaq_url }} data-event-label="Contact support">
+        {% if product and product.has_subscriptions %}
+          {{ _('Contact Support') }}
+        {% else %}
+          {{ _('Ask the Community') }}
+        {% endif %}
       </a>
     </div>
   </div>
