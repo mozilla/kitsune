@@ -321,6 +321,18 @@ class CompoundSearch(SumoSearch):
     """Combine a number of SumoSearch classes into one search."""
 
     _children: list[SumoSearch] = dfield(default_factory=list, init=False)
+    _parse_query: bool = True
+
+    @property
+    def parse_query(self):
+        return self._parse_query
+
+    @parse_query.setter
+    def parse_query(self, value):
+        """Set value of parse_query across all children."""
+        self._parse_query = value
+        for child in self._children:
+            child.parse_query = value
 
     def add(self, child):
         """Add a SumoSearch instance to search over. Chainable."""
