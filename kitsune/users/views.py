@@ -48,6 +48,7 @@ from kitsune.users.tasks import (
     process_event_delete_user,
     process_event_password_change,
     process_event_subscription_state_change,
+    process_event_profile_change,
 )
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (
@@ -527,6 +528,8 @@ class WebhookView(View):
                     process_event_subscription_state_change.delay(account_event.id)
                 elif short_id == AccountEvent.PASSWORD_CHANGE:
                     process_event_password_change.delay(account_event.id)
+                elif short_id == AccountEvent.PROFILE_CHANGE:
+                    process_event_profile_change.delay(account_event.id)
                 else:
                     account_event.status = AccountEvent.NOT_IMPLEMENTED
                     account_event.save()

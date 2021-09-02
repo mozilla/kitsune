@@ -260,9 +260,12 @@ class WebhookViewTests(TestCase):
         eq_(account_event.issued_at, "1565720808")
         eq_(account_event.profile, profile)
 
+    @mock.patch("kitsune.users.views.process_event_profile_change")
     @mock.patch("kitsune.users.views.process_event_subscription_state_change")
     @setup_key
-    def test_adds_multiple_events_to_db(self, key, process_mock):
+    def test_adds_multiple_events_to_db(
+        self, key, process_subscription_mock, process_profile_mock
+    ):
         profile = ProfileFactory(fxa_uid="54321")
         events = {
             "https://schemas.accounts.firefox.com/event/profile-change": {},
@@ -279,7 +282,8 @@ class WebhookViewTests(TestCase):
 
         eq_(202, response.status_code)
         eq_(2, AccountEvent.objects.count())
-        eq_(1, process_mock.delay.call_count)
+        eq_(1, process_subscription_mock.delay.call_count)
+        eq_(1, process_profile_mock.delay.call_count)
 
         account_event_1 = AccountEvent.objects.get(event_type=AccountEvent.PROFILE_CHANGE)
         account_event_2 = AccountEvent.objects.get(
@@ -289,7 +293,7 @@ class WebhookViewTests(TestCase):
         self.assertEqual(json.loads(account_event_1.body), {})
         self.assertEqual(json.loads(account_event_2.body), list(events.values())[1])
 
-        eq_(account_event_1.status, AccountEvent.NOT_IMPLEMENTED)
+        eq_(account_event_1.status, AccountEvent.UNPROCESSED)
         eq_(account_event_2.status, AccountEvent.UNPROCESSED)
         eq_(account_event_1.fxa_uid, "54321")
         eq_(account_event_2.fxa_uid, "54321")

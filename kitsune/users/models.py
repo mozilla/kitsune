@@ -101,6 +101,7 @@ class Profile(ModelBase):
     fxa_avatar = models.URLField(max_length=512, blank=True, default="")
     products = models.ManyToManyField(Product, related_name="subscribed_users")
     fxa_password_change = models.DateTimeField(blank=True, null=True)
+    fxa_refresh_token = models.CharField(blank=True, default="", max_length=128)
 
     updated_column_name = "user__date_joined"
 

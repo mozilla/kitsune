@@ -29,6 +29,7 @@ class ProfileAdmin(admin.ModelAdmin):
                     "bio",
                     "is_fxa_migrated",
                     "fxa_uid",
+                    "fxa_refresh_token",
                 ],
             },
         ),
@@ -59,6 +60,7 @@ class ProfileAdmin(admin.ModelAdmin):
     list_filter = ["is_fxa_migrated", "country"]
     search_fields = ["user__username", "user__email", "name", "fxa_uid"]
     autocomplete_fields = ["user"]
+    readonly_fields = ["fxa_refresh_token"]
 
     def get_products(self, obj):
         """Get a list of products that a user is subscribed to."""
