@@ -159,6 +159,31 @@ dj-database-url==0.5.0 \
     --hash=sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163 \
     --hash=sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9
     # via -r requirements/default.in
+django==2.2.24 \
+    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
+    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
+    # via
+    #   -r requirements/default.in
+    #   django-allow-cidr
+    #   django-appconf
+    #   django-authority
+    #   django-cors-headers
+    #   django-filter
+    #   django-jinja
+    #   django-jsonfield
+    #   django-mozilla-product-details
+    #   django-multidb-router
+    #   django-redis
+    #   django-statici18n
+    #   django-storages
+    #   django-taggit
+    #   django-tidings
+    #   django-timezone-field
+    #   django-user-agents
+    #   django-watchman
+    #   djangorestframework
+    #   mozilla-django-oidc
+    #   puente
 django-activity-stream[jsonfield]==0.8.0 \
     --hash=sha256:ef07f7242f25dbf6e198b377632a72fdd0c06ce3cd1097c394d9b7052c943b4e
     # via -r requirements/default.in
@@ -201,13 +226,13 @@ django-jinja==2.6.0 \
     --hash=sha256:4e3e97d7b40669926a9517eb4522cd98dce2e32dcba908aad156810b74744148 \
     --hash=sha256:7459985c25ddb6584c6bab345761c8c5557713448e6fbb322af1b6dd7f5512bd
     # via -r requirements/default.in
-django-jsonfield-compat==0.4.4 \
-    --hash=sha256:0182d2e9db886abc2bf30958e4953f72b6f0e20336524755641bc3968899cd5b \
-    --hash=sha256:e2b1cd7dfef7633c8befb9c85fa764d344377512c8fdaf65ded4827392410a1d
-    # via -r requirements/default.in
 django-jsonfield==1.4.1 \
     --hash=sha256:ccb2fe623e1bf7799e49c593b0a89a85084ef8d3debbf26d92a54e27b5305d72 \
     --hash=sha256:f789a0ea1f80b48aff7d6c36dd356ce125dbf1b7cd97a82d315607ac758f50ff
+    # via -r requirements/default.in
+django-jsonfield-compat==0.4.4 \
+    --hash=sha256:0182d2e9db886abc2bf30958e4953f72b6f0e20336524755641bc3968899cd5b \
+    --hash=sha256:e2b1cd7dfef7633c8befb9c85fa764d344377512c8fdaf65ded4827392410a1d
     # via -r requirements/default.in
 django-mozilla-product-details==0.14.1 \
     --hash=sha256:5fa2a8c3f2b9489aeb39b42c3612a43b0be5e778ffab07a5a2cf23b1eced4d64 \
@@ -265,38 +290,9 @@ django-watchman==1.1.1 \
     --hash=sha256:63ed14c13a535ff53540dfea504448588274f96bbd872db67379609274cdf837 \
     --hash=sha256:809097717254534ef4fb251787b35dd4f00e3da68ae8b9361d340062ef966e5e
     # via -r requirements/default.in
-django==2.2.24 \
-    --hash=sha256:3339ff0e03dee13045aef6ae7b523edff75b6d726adf7a7a48f53d5a501f7db7 \
-    --hash=sha256:f2084ceecff86b1e631c2cd4107d435daf4e12f1efcdf11061a73bf0b5e95f92
-    # via
-    #   -r requirements/default.in
-    #   django-allow-cidr
-    #   django-appconf
-    #   django-authority
-    #   django-cors-headers
-    #   django-filter
-    #   django-jinja
-    #   django-jsonfield
-    #   django-mozilla-product-details
-    #   django-multidb-router
-    #   django-redis
-    #   django-statici18n
-    #   django-storages
-    #   django-taggit
-    #   django-tidings
-    #   django-timezone-field
-    #   django-user-agents
-    #   django-watchman
-    #   djangorestframework
-    #   mozilla-django-oidc
-    #   puente
 djangorestframework==3.11.2 \
     --hash=sha256:5cc724dc4b076463497837269107e1995b1fbc917468d1b92d188fd1af9ea789 \
     --hash=sha256:a5967b68a04e0d97d10f4df228e30f5a2d82ba63b9d03e1759f84993b7bf1b53
-    # via -r requirements/default.in
-elasticsearch-dsl==7.3.0 \
-    --hash=sha256:0ed75f6ff037e36b2397a8e92cae0ddde79b83adc70a154b8946064cb62f7301 \
-    --hash=sha256:9390d8e5cf82ebad3505e7f656e407259cf703f5a4035f211cef454127672572
     # via -r requirements/default.in
 elasticsearch==7.10.1 \
     --hash=sha256:4ebd34fd223b31c99d9f3b6b6236d3ac18b3046191a37231e8235b06ae7db955 \
@@ -304,6 +300,10 @@ elasticsearch==7.10.1 \
     # via
     #   -r requirements/default.in
     #   elasticsearch-dsl
+elasticsearch-dsl==7.3.0 \
+    --hash=sha256:0ed75f6ff037e36b2397a8e92cae0ddde79b83adc70a154b8946064cb62f7301 \
+    --hash=sha256:9390d8e5cf82ebad3505e7f656e407259cf703f5a4035f211cef454127672572
+    # via -r requirements/default.in
 factory-boy==2.12.0 \
     --hash=sha256:728df59b372c9588b83153facf26d3d28947fc750e8e3c95cefa9bed0e6394ee \
     --hash=sha256:faf48d608a1735f0d0a3c9cbf536d64f9132b547dae7ba452c4d99a79e84a370
@@ -322,10 +322,6 @@ google-api-python-client==1.8.4 \
     --hash=sha256:bbe212611fdc05364f3d20271cae53971bf4d485056e6c0d40748eddeeda9a19 \
     --hash=sha256:e7980ba66288f815b41f10c4561b37f45cd568d302b0d801709e51f75b21f61b
     # via -r requirements/default.in
-google-auth-httplib2==0.1.0 \
-    --hash=sha256:31e49c36c6b5643b57e82617cb3e021e3e1d2df9da63af67252c02fa9c1f4a10 \
-    --hash=sha256:a07c39fd632becacd3f07718dfd6021bf396978f03ad3ce4321d060015cc30ac
-    # via google-api-python-client
 google-auth==1.34.0 \
     --hash=sha256:bd6aa5916970a823e76ffb3d5c3ad3f0bedafca0a7fa53bc15149ab21cb71e05 \
     --hash=sha256:f1094088bae046fb06f3d1a3d7df14717e8d959e9105b79c57725bd4e17597a2
@@ -333,6 +329,10 @@ google-auth==1.34.0 \
     #   google-api-core
     #   google-api-python-client
     #   google-auth-httplib2
+google-auth-httplib2==0.1.0 \
+    --hash=sha256:31e49c36c6b5643b57e82617cb3e021e3e1d2df9da63af67252c02fa9c1f4a10 \
+    --hash=sha256:a07c39fd632becacd3f07718dfd6021bf396978f03ad3ce4321d060015cc30ac
+    # via google-api-python-client
 googleapis-common-protos==1.53.0 \
     --hash=sha256:a88ee8903aa0a81f6c3cec2d5cf62d3c8aa67c06439b0496b49048fb1854ebf4 \
     --hash=sha256:f6d561ab8fb16b30020b940e2dd01cd80082f4762fa9f3ee670f4419b4b8dbd0
@@ -620,12 +620,6 @@ py-wikimarkup==2.0.2 \
     --hash=sha256:96bab086ce514338d36d9af3c0453e8844e90bf328d45a56e31fd861fa5c3b85 \
     --hash=sha256:ad0dac2e76449d12a96cbd5df74fdc0c7d8d765002fe37a20ee85f3b79caa275
     # via -r requirements/default.in
-pyasn1-modules==0.2.8 \
-    --hash=sha256:905f84c712230b2c592c19470d3ca8d552de726050d1d1716282a1f6146be65e \
-    --hash=sha256:a50b808ffeb97cb3601dd25981f6b016cbb3d31fbf57a8b8a87428e6158d0c74
-    # via
-    #   google-auth
-    #   oauth2client
 pyasn1==0.4.8 \
     --hash=sha256:39c7e2ec30515947ff4e87fb6f456dfc6e84857d34be479c9d4a4ba4bf46aa5d \
     --hash=sha256:aef77c9fb94a3ac588e87841208bdec464471d9871bd5050a287cc9a475cd0ba
@@ -633,6 +627,12 @@ pyasn1==0.4.8 \
     #   oauth2client
     #   pyasn1-modules
     #   rsa
+pyasn1-modules==0.2.8 \
+    --hash=sha256:905f84c712230b2c592c19470d3ca8d552de726050d1d1716282a1f6146be65e \
+    --hash=sha256:a50b808ffeb97cb3601dd25981f6b016cbb3d31fbf57a8b8a87428e6158d0c74
+    # via
+    #   google-auth
+    #   oauth2client
 pycparser==2.20 \
     --hash=sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0 \
     --hash=sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705
@@ -688,10 +688,6 @@ redis==3.5.3 \
     # via
     #   -r requirements/default.in
     #   django-redis
-requests-oauthlib==1.3.0 \
-    --hash=sha256:7f71572defaecd16372f9006f33c2ec8c077c3cfa6f5911a9a90202beb513f3d \
-    --hash=sha256:b4261601a71fd721a8bd6d7aa1cc1d6a8a93b4a9f5e96626f8e4d91e8beeaa6a
-    # via twython
 requests==2.23.0 \
     --hash=sha256:43999036bfa82904b6af1d99e4882b560e5e2c68e5c4b0aa03b655f3d7d73fee \
     --hash=sha256:b3f43d496c6daba4493e7c431722aeb7dbc6288f52a6e04e7b6023b0247817e6
@@ -703,6 +699,10 @@ requests==2.23.0 \
     #   premailer
     #   requests-oauthlib
     #   twython
+requests-oauthlib==1.3.0 \
+    --hash=sha256:7f71572defaecd16372f9006f33c2ec8c077c3cfa6f5911a9a90202beb513f3d \
+    --hash=sha256:b4261601a71fd721a8bd6d7aa1cc1d6a8a93b4a9f5e96626f8e4d91e8beeaa6a
+    # via twython
 rsa==4.7.2 \
     --hash=sha256:78f9a9bf4e7be0c5ded4583326e7461e3a3c5aae24073648b4bdfa797d78c9d2 \
     --hash=sha256:9d689e6ca1b3038bc82bf8d23e944b6b6037bc02301a574935b2dd946e0353b9
