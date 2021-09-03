@@ -1,5 +1,6 @@
 import json
 import re
+import threading
 import sys
 from contextlib import contextmanager
 from datetime import datetime
@@ -10,6 +11,7 @@ from django.db import models
 from django.db.models.signals import pre_delete
 from django.utils import translation
 from django.utils.http import is_safe_url, urlencode
+from django.utils.module_loading import import_string
 from ratelimit.utils import is_ratelimited as rl_is_ratelimited
 from timeout_decorator import timeout
 
@@ -19,6 +21,7 @@ from kitsune.sumo import paginator
 
 POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
 POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
+_dedupe_tasks_local = threading.local()
 
 
 def paginate(request, queryset, per_page=20, paginator_cls=paginator.Paginator, **kwargs):
@@ -350,3 +353,21 @@ def check_for_spam_content(data):
     has_links = has_blocked_link(data)
 
     return is_toll_free or is_nanp_number or has_links
+
+
+def dedupe_task(name, args):
+    """
+    If we're in a request, defer sending this task to Celery until the request has finished.
+    If the same task, with the same args, is deferred multiple times in the same request,
+    it'll only be sent to Celery once.
+    If we're not in a request, the task will be sent to Celery immediately.
+    """
+    try:
+        tasks = _dedupe_tasks_local.tasks
+    except AttributeError:
+        # if tasks doesn't exist, we're not in a request,
+        # so send the task to celery immediately
+        task = import_string(name)
+        task.delay(*args)
+        return
+    tasks.add((name, args))

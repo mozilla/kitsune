@@ -23,11 +23,13 @@ from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.encoding import iri_to_uri, smart_text
+from django.utils.module_loading import import_string
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
+from kitsune.sumo.utils import _dedupe_tasks_local
 from kitsune.sumo.views import handle403
 
 
@@ -329,3 +331,20 @@ class InAAQMiddleware(MiddlewareMixin):
             ):
                 request.session["aaq_context"] = {}
         return None
+
+
+class DedupeTasksMiddleware(MiddlewareMixin):
+    """
+    Middleware to deduplicate tasks sent to Celery in a single request.
+    See `kitsune.sumo.utils.dedupe_task`.
+    """
+
+    def process_request(self, request):
+        _dedupe_tasks_local.tasks = set()
+
+    def process_response(self, request, response):
+        for (name, args) in _dedupe_tasks_local.tasks:
+            task = import_string(name)
+            task.delay(*args)
+        del _dedupe_tasks_local.tasks
+        return response

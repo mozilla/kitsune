@@ -535,6 +535,7 @@ MIDDLEWARE = (
     "kitsune.sumo.middleware.InAAQMiddleware",
     "kitsune.users.middleware.LogoutDeactivatedUsersMiddleware",
     "kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware",
+    "kitsune.sumo.middleware.DedupeTasksMiddleware",
 )
 
 # SecurityMiddleware settings
