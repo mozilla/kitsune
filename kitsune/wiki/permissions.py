@@ -70,7 +70,7 @@ class DocumentPermissionMixin(object):
         )
 
     def _allows_mark_ready_for_l10n(self, user):
-        """"Can the user mark the document as ready for localization?"""
+        """Can the user mark the document as ready for localization?"""
         # If the document is localizable and the user has the django
         # permission, then the user can mark as ready for l10n.
         return self.is_localizable and user.has_perm("wiki.mark_ready_for_l10n")
