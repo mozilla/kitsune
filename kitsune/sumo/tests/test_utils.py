@@ -2,6 +2,7 @@
 import json
 
 from django.contrib.auth.models import Permission
+from django.http.response import HttpResponse
 from django.test.client import RequestFactory
 
 from unittest.mock import patch, Mock
@@ -9,6 +10,7 @@ from nose.tools import eq_
 from parameterized import parameterized
 
 from kitsune.journal.models import Record
+from kitsune.sumo.middleware import DedupeTasksMiddleware
 from kitsune.sumo.utils import (
     chunked,
     get_next_url,
@@ -17,6 +19,7 @@ from kitsune.sumo.utils import (
     truncated_json_dumps,
     get_browser,
     has_blocked_link,
+    dedupe_task,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -247,3 +250,46 @@ class HasLinkTests(TestCase):
     def test_urls(self, data, expected_result):
         result = has_blocked_link(data)
         self.assertEqual(result, expected_result)
+
+
+def mock_task():
+    pass
+
+
+mock_task.delay = Mock()
+
+
+class DedupeTaskTests(TestCase):
+    def tearDown(self):
+        mock_task.delay.reset_mock()
+        return super().tearDown()
+
+    def test_outside_request(self):
+        dedupe_task("kitsune.sumo.tests.test_utils.mock_task", (1, 2, 3))
+        mock_task.delay.assert_called_once_with(1, 2, 3)
+        dedupe_task(
+            "kitsune.sumo.tests.test_utils.mock_task",
+            (1, 2, 3),
+        )
+        mock_task.delay.assert_called_with(1, 2, 3)
+        self.assertEqual(mock_task.delay.call_count, 2)
+
+    def test_within_request(self):
+        request = RequestFactory().get("/")
+        middleware = DedupeTasksMiddleware()
+        middleware.process_request(request)
+
+        dedupe_task(
+            "kitsune.sumo.tests.test_utils.mock_task",
+            (1, 2, 3),
+        )
+        dedupe_task(
+            "kitsune.sumo.tests.test_utils.mock_task",
+            (1, 2, 3),
+        )
+        self.assertEqual(mock_task.delay.call_count, 0)
+
+        response = HttpResponse("OK")
+        middleware.process_response(request, response)
+
+        mock_task.delay.assert_called_once_with(1, 2, 3)
