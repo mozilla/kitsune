@@ -13,11 +13,11 @@
 
 {% block contentwrap %}
 
-{% set aaq_product = request.session.get('product_key') %}
-{% if aaq_product %}
+{% set aaq_context = request.session.get('aaq_context') %}
+{% if aaq_context and aaq_context.key %}
   <section class="sumo-page-section question-masthead shade-bg">
     <div class="mzp-l-content">
-      {{ progress_bar(3, product_key=aaq_product) }}
+      {{ progress_bar(3, product_key=aaq_context.key) }}
     </div>
   </section>
 {% endif %}
@@ -41,7 +41,7 @@
               <div class="sumo-page-section">
                 <h1 class="sumo-page-heading">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
                 <p>
-                  {% if request.session.get('in-aaq') %}
+                  {% if aaq_context and not aaq_context.has_subscriptions %}
                     {{ _('Never miss an answer. A free Firefox Account lets you view your question history and track or post responses.')}}
                   {% else %}
                     {% trans url=url('wiki.document', 'firefox-accounts-mozilla-support-faq') %}

@@ -301,15 +301,10 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
 
 class InAAQMiddleware(MiddlewareMixin):
     """
-    Middleware that updates session's keys based on the view used.
-
-    aaq_* views -> in-aaq = True
+    Middleware that clears AAQ data from the session under certain conditions.
     """
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
-        # This key is used both in templates and the
-        # LogoutDeactivateUsersMiddleware
-
         if not request.session or not callback:
             return None
         try:
@@ -320,10 +315,7 @@ class InAAQMiddleware(MiddlewareMixin):
         # If we are authenticating or there is no session, do nothing
         if view_name in ["user_auth", "login", "serve_cors"]:
             return None
-        if "aaq" in view_name:
-            request.session["in-aaq"] = True
-        else:
-            request.session["in-aaq"] = False
+        if "aaq" not in view_name:
             if ("/questions/new" not in request.META.get("HTTP_REFERER", "")) or (
                 "exit_aaq" in request.GET
             ):
