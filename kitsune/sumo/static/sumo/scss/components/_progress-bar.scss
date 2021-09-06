@@ -39,7 +39,10 @@
         &:after {
           position: absolute;
           top: 12px;
-          left: 0;
+          @include p.bidi((
+            (left, 0, auto),
+            (right, auto, 0),
+          ));
           z-index: 2;
           width: 50%;
           height: 3px;
@@ -60,8 +63,10 @@
 
       .progress--link-inner {
         &:after {
-          left: auto;
-          right: 0;
+          @include p.bidi((
+            (left, auto, 0),
+            (right, 0, auto),
+          ));
         }
       }
     }
@@ -123,8 +128,10 @@
     &.is-current {
       &:before {
         width: 50%;
-        right: 0;
-        left: auto;
+        @include p.bidi((
+          (right, 0, auto),
+          (left, auto, 0),
+        ));
         background: var(--color-marketing-gray-03);
         z-index: 2;
       }
