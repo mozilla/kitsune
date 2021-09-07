@@ -29,6 +29,7 @@
   display:inline-flex;
   justify-content:center;
   align-items:center;
+  text-align: center;
   padding: 0 p.$spacing-lg;
   height: p.$spacing-xl;
   border: 2px solid var(--color-marketing-gray-03);
@@ -85,8 +86,9 @@
   }
 
   &.button-lg {
-    height: 40px;
-
+    height: auto;
+    padding-top: 9.5px;
+    padding-bottom: 9.5px;
   }
 
   &.button-xl {
