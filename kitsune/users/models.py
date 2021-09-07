@@ -198,6 +198,10 @@ class Profile(ModelBase):
 
         return AnswerVote.objects.filter(answer__creator=self.user, helpful=True).count()
 
+    @property
+    def is_subscriber(self):
+        return self.products.exists()
+
 
 class Setting(ModelBase):
     """User specific value per setting"""

@@ -61,6 +61,11 @@
     }
   }
 
+  &.subscriptions {
+    margin: p.$spacing-lg 0;
+    min-height: initial;
+  }
+
   &.is-shaded {
     background: var(--color-shade-bg);
   }
@@ -99,6 +104,10 @@
     &.has-bottom-margin {
       margin-bottom: p.$spacing-sm;
     }
+  }
+
+  &--subscriptions {
+    padding-top: p.$spacing-sm;
   }
 
   &.is-inverse {
@@ -161,6 +170,7 @@
       flex-direction: column;
       height: 100%;
     }
+
   }
 
   &--product {
