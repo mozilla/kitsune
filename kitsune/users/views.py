@@ -41,14 +41,14 @@ from kitsune.questions.utils import mark_content_as_spam, num_answers, num_quest
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, simple_paginate, paginate
+from kitsune.sumo.utils import get_next_url, paginate, simple_paginate
 from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
     process_event_delete_user,
     process_event_password_change,
-    process_event_subscription_state_change,
     process_event_profile_change,
+    process_event_subscription_state_change,
 )
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (
@@ -212,6 +212,19 @@ def answers_contributed(request, username):
             "answers": answers,
         },
     )
+
+
+@login_required
+@require_GET
+def subscribed_products(request, username):
+    # plus sign (+) is converted to space
+    username = username.replace(" ", "+")
+    user = get_object_or_404(User, username=username, is_active=True)
+    if user != request.user:
+        raise Http404
+
+    context = {"user": user, "products": user.profile.products.all()}
+    return render(request, "users/user_subscriptions.html", context)
 
 
 @require_GET

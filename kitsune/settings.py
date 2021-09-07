@@ -613,6 +613,9 @@ else:
         FXA_SUPPORT_FORM = config(
             "FXA_SUPPORT_FORM", default="https://accounts.firefox.com/support"
         )
+        FXA_SUBSCRIPTIONS = config(
+            "FXA_SUBSCRIPTIONS", default="https://accounts.firefox.com/subscriptions"
+        )
         FXA_SET_ISSUER = config("FXA_SET_ISSUER", default="https://accounts.firefox.com")
 
 ADMIN_REDIRECT_URL = config("ADMIN_REDIRECT_URL", default=None)

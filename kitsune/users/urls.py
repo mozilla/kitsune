@@ -18,8 +18,7 @@ detail_patterns = [
     url(r"^/answers$", views.answers_contributed, name="users.answers"),
     url(r"^/documents$", views.documents_contributed, name="users.documents"),
     url(r"^/edit$", views.edit_profile, name="users.edit_profile"),
-    # TODO:
-    # url('^abuse', views.report_abuse, name='users.abuse'),
+    url(r"^/subscriptions$", views.subscribed_products, name="users.subscriptions"),
 ]
 
 if settings.DEV and settings.ENABLE_DEV_LOGIN:
