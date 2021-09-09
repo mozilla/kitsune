@@ -1,11 +1,22 @@
 from django import forms
 from django.contrib import admin
+from django.db.models import Q
 
+from kitsune.products.models import Product
 from kitsune.users import monkeypatch
 from kitsune.users.models import AccountEvent, Profile
 
 
 class ProfileAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # limit the subscriptions choices to the appropriate products
+        associated_products = [product.id for product in self.initial.get("products", [])]
+        products = Product.objects.filter(Q(pk__in=associated_products) | ~Q(codename__exact=""))
+
+        self.fields["products"].queryset = products
+        self.fields["products"].required = False
+
     delete_avatar = forms.BooleanField(
         required=False, help_text=("Check to remove the user's avatar.")
     )
@@ -50,6 +61,13 @@ class ProfileAdmin(admin.ModelAdmin):
             "Location",
             {
                 "fields": ["timezone", ("country", "city"), "locale"],
+                "classes": ["collapse"],
+            },
+        ),
+        (
+            "Subscriptions",
+            {
+                "fields": ["products"],
                 "classes": ["collapse"],
             },
         ),
