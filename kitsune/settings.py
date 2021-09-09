@@ -610,9 +610,6 @@ else:
         FXA_USERNAME_ALGO = config("FXA_USERNAME_ALGO", default=_username_algo)
         FXA_STORE_ACCESS_TOKEN = config("FXA_STORE_ACCESS_TOKEN", default=False, cast=bool)
         FXA_STORE_ID_TOKEN = config("FXA_STORE_ID_TOKEN", default=False, cast=bool)
-        FXA_SUPPORT_FORM = config(
-            "FXA_SUPPORT_FORM", default="https://accounts.firefox.com/support"
-        )
         FXA_SUBSCRIPTIONS = config(
             "FXA_SUBSCRIPTIONS", default="https://accounts.firefox.com/subscriptions"
         )
