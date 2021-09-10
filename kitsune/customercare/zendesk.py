@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _lazy
 from zenpy import Zenpy
-from zenpy.lib.api_objects import User as ZendeskUser, Ticket
+from zenpy.lib.api_objects import Ticket
+from zenpy.lib.api_objects import User as ZendeskUser
 
 TICKET_FORM_ID = 360000417171
 
@@ -11,6 +12,7 @@ PRODUCT_FIELD_ID = 360047198211
 
 CATEGORY_FIELD_ID = 360047206172
 CATEGORY_CHOICES = [
+    (None, _lazy("Select a topic")),
     ("technical", _lazy("Technical")),
     ("accounts", _lazy("Accounts & Login")),
     ("payments", _lazy("Payment & Billing")),
@@ -19,11 +21,10 @@ CATEGORY_CHOICES = [
 
 OS_FIELD_ID = 360018604871
 OS_CHOICES = [
-    (None, ""),
+    (None, _lazy("Select platform")),
     ("win10", _lazy("Windows")),
     ("android", _lazy("Android")),
     ("linux", _lazy("Linux")),
-    ("web", _lazy("Web")),
     ("mac", _lazy("Mac OS")),
     ("win8", _lazy("Windows 8")),
 ]
