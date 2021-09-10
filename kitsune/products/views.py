@@ -32,7 +32,6 @@ def _get_aaq_product_key(slug):
 def product_landing(request, slug):
     """The product landing page."""
     product = get_object_or_404(Product, slug=slug)
-    user = request.user
 
     if request.is_ajax():
         # Return a list of topics/subtopics for the product
@@ -60,11 +59,6 @@ def product_landing(request, slug):
             "topics": topics_for(product=product, parent=None),
             "search_params": {"product": slug},
             "latest_version": latest_version,
-            "subscribed_products_ids": (
-                user.profile.products.all().values_list("id", flat=True)
-                if user.is_authenticated
-                else []
-            ),
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
         },
     )
