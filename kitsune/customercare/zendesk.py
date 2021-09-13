@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _lazy
 from zenpy import Zenpy
+from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
 
@@ -42,13 +43,13 @@ class ZendeskClient(object):
         }
         self.client = Zenpy(**creds)
 
-    def _user_to_zendesk_user(self, user):
+    def _user_to_zendesk_user(self, user, include_email=True):
         fxa_uid = user.profile.fxa_uid
         id_str = user.profile.zendesk_id
         return ZendeskUser(
             id=int(id_str) if id_str else None,
             verified=True,
-            email=user.email,
+            email=user.email if include_email else "",
             name=user.profile.display_name,
             locale=user.profile.locale,
             user_fields={"user_id": fxa_uid},
@@ -68,12 +69,23 @@ class ZendeskClient(object):
 
     def update_user(self, user):
         """Given a Django user, update a user in Zendesk."""
-        zendesk_user = self._user_to_zendesk_user(user)
+        zendesk_user = self._user_to_zendesk_user(user, include_email=False)
         zendesk_user = self.client.users.update(zendesk_user)
-        # TODO: if we're updating a user's email, zendesk will add it as a secondary identity
-        # we need to call a separate api (not implemented by zenpy) to update it to primary:
-        # https://developer.zendesk.com/api-reference/ticketing/users/user_identities/#make-identity-primary
         return zendesk_user
+
+    def get_primary_email_identity(self, zendesk_user_id):
+        """Fetch the identity with the primary email from Zendesk"""
+
+        for identity in self.client.users.identities(id=zendesk_user_id):
+            if identity.primary and identity.type == "email":
+                return identity.id
+
+    def update_primary_email(self, zendesk_user_id, email):
+        """Update the primary email of the user."""
+        identity_id = self.get_primary_email_identity(zendesk_user_id)
+        self.client.users.identities.update(
+            user=zendesk_user_id, identity=ZendeskIdentity(id=identity_id, value=email)
+        )
 
     def create_ticket(
         self, user, subject="", description="", product="", category="", os="", **kwargs
