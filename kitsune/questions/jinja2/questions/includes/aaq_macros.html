@@ -2,7 +2,7 @@
 {% from 'includes/common_macros.html' import featured_articles, scam_banner %}
 
 {% macro select_product(products) -%}
-  <h1 class="sumo-page-heading">{{ _('Ask the Community') }}</h1>
+  <h1 class="sumo-page-heading">{{ _('Contact Support') }}</h1>
   <h2 class="sumo-page-subheading">{{ _('Which product do you need help with?') }}</h2>
   <div class="sumo-page-section--inner">
     <div id="product-picker" class="sumo-card-grid stack-on-mobile" style="--cg-count: {{ products|length }};">
@@ -77,7 +77,7 @@
       <a class="progress--link" href="#" disabled>
         <span class="progress--link-inner">
           <span class="progress--dot"></span>
-          <span class="progress--label">{{ _('Ask Question') }}</span>
+          <span class="progress--label">{{ _('Get Support') }}</span>
         </span>
       </a>
     </li>
@@ -87,9 +87,22 @@
 {% macro aaq_widget(request, location="aaq") %}
   {% set aaq_context = request.session.get("aaq_context") %}
   {% if aaq_context %}
-    <div class="aaq-widget card elevation-01 text-center radius-md">
-      <h2 class="card--title has-bottom-margin">{{ _('Ask the Community') }}</h2>
-      {% if request.user.is_authenticated %}
+    <div class="aaq-widget card is-inverse elevation-01 text-center radius-md">
+      <h2 class="card--title has-bottom-margin">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
+              <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
+              <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
+            </g>
+          </g>
+        </svg>
+
+        {{ _('Still need help?') }}
+      </h2>
+      {% if aaq_context.has_subscriptions %}
+        <p>{{ _('Send a message to our support team.') }}</p>
+      {% elif request.user.is_authenticated %}
         <p>{{ _('Continue to post your question and get help.') }}</p>
       {% else %}
         <p>{{ _('Sign in/up to post your question and get help.') }}</p>
@@ -103,19 +116,27 @@
         href="{{ next_step }}"
         data-event-category="link click"
         data-event-action="{{ location }}"
-        data-event-label="aaq widget">{{ _('Ask Now') }}</a>
+        data-event-label="aaq widget">
+        {% if aaq_context.has_subscriptions %}
+          {{ _('Contact Support') }}
+        {% else %}
+          {{ _('Ask Now') }}
+        {% endif %}
+      </a>
     </div>
   {% endif %}
 {%- endmacro %}
 
-{% macro explore_solutions(product, search_box, featured, topics, request) -%}
+{% macro explore_solutions(product, search_box, featured, topics, request, has_subscriptions=True) -%}
 {% set search_params = {'product': product.product} %}
 <section class="sumo-page-section question-masthead shade-bg">
   <div class="mzp-l-content">
 
     {{ progress_bar(2) }}
 
-    {{ scam_banner() }}
+    {% if not has_subscriptions %}
+      {{ scam_banner() }}
+    {% endif %}
 
     <div class="sumo-l-two-col sidebar-on-right align-center cols-on-medium">
       <div class="sumo-l-two-col--main home-search-section--content">

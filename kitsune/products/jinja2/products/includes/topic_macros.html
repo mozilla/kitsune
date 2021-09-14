@@ -24,10 +24,10 @@
   </div>
 {%- endmacro %}
 
-{% macro topic_metadata(topics, product_key=None) %}
+{% macro topic_metadata(topics, product=None, product_key=None) %}
 {% if not settings.READ_ONLY %}
   <section class="support-callouts mzp-l-content sumo-page-section--inner">
-    <div class="card card--ribbon is-inverse">
+    <div class="card card--ribbon is-inverse heading-is-one-line">
       <div class="card--details">
         <h3 class="card--title">
           <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -41,43 +41,29 @@
 
           {{ _('Still need help?') }}
         </h3>
-        <p class="card--desc">{{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}</p>
+        <p class="card--desc">
+          {% if product and product.has_subscriptions %}
+            {{ _('We’re here for you. Send a message to our support team and we\'ll be glad to help.') }}
+          {% else %}
+            {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
+          {% endif %}
+        </p>
         {% if product_key %}
           {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
         {% else %}
           {% set aaq_url=url('questions.aaq_step1') %}
         {% endif %}
         <a class="sumo-button primary-button button-lg"
-          href={{ aaq_url }} data-event-label="Get community support">
-          {{ _('Ask the Community') }}
+          href={{ aaq_url }} data-event-label="Contact support">
+          {% if product and product.has_subscriptions %}
+            {{ _('Contact Support') }}
+          {% else %}
+            {{ _('Ask the Community') }}
+          {% endif %}
         </a>
       </div>
     </div>
   </section>
-
-  {% if product.id in subscribed_products_ids %}
-    <div class="mzp-l-content sumo-page-section--inner text-center">
-      <h2 class="sumo-page-subheading">
-        <svg width="24px" height="24px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.44 19.5">
-          <path d="M18.88,0H19c.5.1.6.5.3,1.1L11.67,18.8c-.2.4-.39.7-.8.7-.2,0-.3,0-.4-.1s-.3-.2-.39-.4l-3-4.9c-.1-.2-.3-.4-.4-.6l-.6-.6c-.2-.2-.4-.3-.6-.5l-5-3.1a1.6,1.6,0,0,1-.4-.5.58.58,0,0,1,0-.6,1,1,0,0,1,.59-.5L18.38.2a1.59,1.59,0,0,1,.5-.2ZM6.47,10.9a2.65,2.65,0,0,1,.6.5l7.71-7.9-12,5.2,3.69,2.2ZM16,4.8l-7.7,7.8.1.1c.1.1.1.2.2.3s.1.2.2.3L11,16.8C10.88,16.7,16,4.8,16,4.8Z"/>
-        </svg>
-
-        {{ _('Contact Us') }}
-      </h2>
-      <p class="sumo-page-intro">{{ _('Contact the Support Team for help.') }}</p>
-      <a
-        class="sumo-button primary-button button-lg"
-        href="{{ settings.FXA_SUPPORT_FORM }}"
-        data-event-category="link click"
-        data-event-action="topic"
-        data-event-label="Contact Support">
-        {{ _('Ask a Question') }}
-      </a>
-    </div>
-    <div class="mzp-l-content">
-      <hr />
-    </div>
-  {% endif %}
 {% endif %}
 {%- endmacro %}
 

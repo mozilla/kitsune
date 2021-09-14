@@ -610,8 +610,8 @@ else:
         FXA_USERNAME_ALGO = config("FXA_USERNAME_ALGO", default=_username_algo)
         FXA_STORE_ACCESS_TOKEN = config("FXA_STORE_ACCESS_TOKEN", default=False, cast=bool)
         FXA_STORE_ID_TOKEN = config("FXA_STORE_ID_TOKEN", default=False, cast=bool)
-        FXA_SUPPORT_FORM = config(
-            "FXA_SUPPORT_FORM", default="https://accounts.firefox.com/support"
+        FXA_SUBSCRIPTIONS = config(
+            "FXA_SUBSCRIPTIONS", default="https://accounts.firefox.com/subscriptions"
         )
         FXA_SET_ISSUER = config("FXA_SET_ISSUER", default="https://accounts.firefox.com")
 
@@ -1200,3 +1200,8 @@ if ES7_ENABLE_CONSOLE_LOGGING and DEV:
     es_trace_logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
     es_trace_logger.addHandler(handler)
+
+# Zendesk Section
+ZENDESK_SUBDOMAIN = config("ZENDESK_SUBDOMAIN", default="")
+ZENDESK_API_TOKEN = config("ZENDESK_API_TOKEN", default="")
+ZENDESK_USER_EMAIL = config("ZENDESK_USER_EMAIL", default="")

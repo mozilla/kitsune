@@ -102,6 +102,7 @@ class Profile(ModelBase):
     products = models.ManyToManyField(Product, related_name="subscribed_users")
     fxa_password_change = models.DateTimeField(blank=True, null=True)
     fxa_refresh_token = models.CharField(blank=True, default="", max_length=128)
+    zendesk_id = models.CharField(blank=True, default="", max_length=1024)
 
     updated_column_name = "user__date_joined"
 
@@ -196,6 +197,10 @@ class Profile(ModelBase):
         from kitsune.questions.models import AnswerVote
 
         return AnswerVote.objects.filter(answer__creator=self.user, helpful=True).count()
+
+    @property
+    def is_subscriber(self):
+        return self.products.exists()
 
 
 class Setting(ModelBase):

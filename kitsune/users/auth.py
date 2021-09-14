@@ -11,6 +11,7 @@ from django.utils.translation import activate
 from django.utils.translation import ugettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
+from kitsune.customercare.tasks import update_zendesk_identity
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
@@ -210,6 +211,13 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             if user_attr_changed:
                 user.save()
             profile.save()
+
+        # If we have an updated email, let's update Zendesk too
+        # the check is repeated for now but it will save a few
+        # API calls if we trigger the task only when we know that we have new emails
+        if user_attr_changed:
+            update_zendesk_identity.delay(user.id, email)
+
         return user
 
     def authenticate(self, request, **kwargs):
