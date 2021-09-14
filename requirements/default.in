@@ -1,6 +1,6 @@
 APScheduler~=3.6.3,<4.0
 Django~=2.2.20
-Pillow~=8.1.2
+Pillow~=8.3.2
 Werkzeug~=1.0.1
 babis~=0.2.4
 bleach~=3.3.0
