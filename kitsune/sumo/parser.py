@@ -13,7 +13,7 @@ from kitsune.sumo.urlresolvers import reverse
 
 
 ALLOWED_ATTRIBUTES = {
-    "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset"],
+    "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset", "data-mozilla-ui-preferences"],
     "div": ["id", "class", "style", "data-for", "title", "data-target", "data-modal"],
     "h1": ["id"],
     "h2": ["id"],
@@ -358,10 +358,14 @@ class WikiParser(Parser):
         return generate_video(v, params)
 
     def _hook_button(self, parser, space, btn_type):
-        btn_type, params = build_hook_params(btn_type, self.locale)
+        btn_type, params = build_hook_params(
+            btn_type, self.locale, allowed_params=["pane", "text"]
+        )
 
         if btn_type == "refresh":
             template = "wikiparser/hook_refresh_button.html"
+        elif btn_type == "preferences":
+            template = "wikiparser/hook_preferences_button.html"
         else:
             return _lazy('Button of type "%s" does not exist.') % btn_type
 

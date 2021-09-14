@@ -396,4 +396,13 @@
     return false;
   });
 
+  $(document).on("click", "[data-mozilla-ui-preferences]", function (ev) {
+    ev.preventDefault();
+    var pane = ev.target.dataset.mozillaUiPreferences;
+    if (Mozilla && Mozilla.UITour) {
+      Mozilla.UITour.openPreferences(pane);
+    }
+    return false;
+  });
+
 })(jQuery);
