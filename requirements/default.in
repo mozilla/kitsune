@@ -1,4 +1,4 @@
-APScheduler~=3.6.3
+APScheduler~=3.6.3,<4.0
 Django~=2.2.20
 Pillow~=8.1.2
 Werkzeug~=1.0.1
@@ -71,5 +71,6 @@ simplejson~=3.17.0
 timeout-decorator
 translate-toolkit~=2.5.1
 twython~=3.8.0
+tzlocal~=2.1
 whitenoise~=3.3.1
 zenpy
