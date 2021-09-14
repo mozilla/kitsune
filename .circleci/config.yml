@@ -2,9 +2,14 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.8-buster
+      - image: circleci/python:3.9-buster
     steps:
       - checkout
+      - run:
+          name: Lint with pre-commit
+          command: |
+            sudo pip install --upgrade pre-commit==2.15.0
+            pre-commit run --all-files
       - setup_remote_docker:
           version: 17.10.0-ce
       - run:
@@ -14,16 +19,15 @@ jobs:
           name: Build docker images
           command: make build-ci
       - run:
-          name: Run flake8
-          command: make lint-ci
-      - run:
           name: Run mocha tests
           command: make test-js-ci
       - run:
           # copy synonym files to elasticsearch7 container, since circleci doesn't support volume mounts:
           # https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
           name: Copy synonym files to elasticsearch7
-          command: docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
+          command: |
+            ./bin/dc.sh up -d elasticsearch7
+            docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
       - run:
           name: Run unit tests
           command: make test-ci

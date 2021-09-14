@@ -323,7 +323,7 @@ class SumoSearch(SumoSearchInterface):
 
     query: str = ""
     default_operator: str = "AND"
-    parse_query: bool = True
+    parse_query: bool = dfield(default=True, init=False)
 
     def __len__(self):
         return self.total
@@ -384,10 +384,12 @@ class SumoSearch(SumoSearchInterface):
         # perform search
         try:
             result = search.execute()
-        except RequestError:
-            # try search again, but without parsing any advanced syntax
-            self.parse_query = False
-            return self.run(key)
+        except RequestError as e:
+            if self.parse_query:
+                # try search again, but without parsing any advanced syntax
+                self.parse_query = False
+                return self.run(key)
+            raise e
 
         self.hits = result.hits
         self.last_key = key

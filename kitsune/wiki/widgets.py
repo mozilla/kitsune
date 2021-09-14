@@ -1,4 +1,3 @@
-
 from django import forms
 from django.template.loader import render_to_string
 
@@ -37,11 +36,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     def process_topic(self, value, topic):
         if isinstance(value, int) and topic.id == value:
             topic.checked = True
-        elif (
-            not isinstance(value, str)
-            and isinstance(value, Iterable)
-            and topic.id in value
-        ):
+        elif not isinstance(value, str) and isinstance(value, Iterable) and topic.id in value:
             topic.checked = True
         else:
             topic.checked = False
