@@ -17,7 +17,7 @@ class ZendeskForm(forms.Form):
         required=False,
     )
     subject = forms.CharField(label=_lazy("Subject"), required=False)
-    description = forms.CharField(label=_lazy("Description of issue"), widget=forms.Textarea())
+    description = forms.CharField(label=_lazy("Your message"), widget=forms.Textarea())
 
     def __init__(self, *args, product, **kwargs):
         kwargs.update({"initial": {"product": product.slug}})
