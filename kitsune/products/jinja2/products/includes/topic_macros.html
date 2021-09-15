@@ -43,7 +43,7 @@
         </h3>
         <p class="card--desc">
           {% if product and product.has_subscriptions %}
-            {{ _('We’re here for you. Send a message to our support team and we\'ll be glad to help.') }}
+            {{ _('We’re here for you! If you haven’t found a solution after exploring our help articles, you can get in touch with our support team.') }}
           {% else %}
             {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
           {% endif %}
@@ -54,9 +54,9 @@
           {% set aaq_url=url('questions.aaq_step1') %}
         {% endif %}
         <a class="sumo-button primary-button button-lg"
-          href={{ aaq_url }} data-event-label="Contact support">
+          href={{ aaq_url }} data-event-label="Get support">
           {% if product and product.has_subscriptions %}
-            {{ _('Contact Support') }}
+            {{ _('Get Support') }}
           {% else %}
             {{ _('Ask the Community') }}
           {% endif %}

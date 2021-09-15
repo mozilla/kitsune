@@ -86,15 +86,16 @@ we can compute the edit-title URL.
                     who take the time out of their day to help.
                   {% endtrans %}
                 </p>
-                <div class="info card shade-bg highlight mb">
-                  {% trans %}
-                    Be descriptive. Saying &quot;Playing video on YouTube is
-                    always choppy&quot; will help our volunteers identify
-                    your problem better than saying &quot;Something is
-                    wrong&quot; or &quot;Firefox is broken&quot;.
-                  {% endtrans %}
-                </div>
               {% endif %}
+
+              <div class="info card shade-bg highlight mb">
+                {% trans %}
+                  Be descriptive.
+                  Saying “playing video on YouTube is always choppy”
+                  will help us understand the issue better than saying
+                  “something is wrong” or “the app is broken”.
+                {% endtrans %}
+              </div>
 
               {% for field in form.hidden_fields() %}
                 {{ field|safe }}
