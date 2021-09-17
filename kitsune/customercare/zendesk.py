@@ -27,7 +27,6 @@ OS_CHOICES = [
     ("android", _lazy("Android")),
     ("linux", _lazy("Linux")),
     ("mac", _lazy("Mac OS")),
-    ("win8", _lazy("Windows 8")),
 ]
 
 
