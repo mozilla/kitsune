@@ -32,6 +32,7 @@ from mozilla_django_oidc.views import (
     OIDCAuthenticationRequestView,
     OIDCLogoutView,
 )
+from sentry_sdk import capture_exception, capture_message
 from tidings.models import Watch
 
 from kitsune import users as constants
@@ -431,6 +432,14 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
                 "Please contact an administrator if you believe this is an error"
             ),
         )
+        if settings.STAGE:
+            # sentry will attempt to find an exception being handled
+            # or if none is (I think by this point it will have been handled)
+            # just send a stack trace
+            capture_exception()
+            # I might be completely wrong about the above so, for now, also send a message
+            capture_message("This account is not active error.", level="error")
+
         return HttpResponseRedirect(reverse("home"))
 
 
