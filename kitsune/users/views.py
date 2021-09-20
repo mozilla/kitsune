@@ -1,4 +1,5 @@
 import json
+import waffle
 from ast import literal_eval
 
 import requests
@@ -432,7 +433,7 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
                 "Please contact an administrator if you believe this is an error"
             ),
         )
-        if settings.STAGE:
+        if waffle.switch_is_active("log-login-failure"):
             # sentry will attempt to find an exception being handled
             # or if none is (I think by this point it will have been handled)
             # just send a stack trace
