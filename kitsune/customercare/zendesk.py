@@ -5,13 +5,7 @@ from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
 
-TICKET_FORM_ID = 360000417171
-
 # See docs/zendesk.md for details about getting the valid choice values for each field:
-
-PRODUCT_FIELD_ID = 360047198211
-
-CATEGORY_FIELD_ID = 360047206172
 CATEGORY_CHOICES = [
     (None, _lazy("Select a topic")),
     ("technical", _lazy("Technical")),
@@ -20,7 +14,6 @@ CATEGORY_CHOICES = [
     ("troubleshooting", _lazy("Troubleshooting")),
 ]
 
-OS_FIELD_ID = 360018604871
 OS_CHOICES = [
     (None, _lazy("Select platform")),
     ("win10", _lazy("Windows")),
@@ -93,11 +86,11 @@ class ZendeskClient(object):
         ticket = Ticket(
             subject=subject,
             comment={"body": description},
-            ticket_form_id=TICKET_FORM_ID,
+            ticket_form_id=settings.ZENDESK_TICKET_FORM_ID,
             custom_fields=[
-                {"id": PRODUCT_FIELD_ID, "value": product},
-                {"id": CATEGORY_FIELD_ID, "value": category},
-                {"id": OS_FIELD_ID, "value": os},
+                {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": product},
+                {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": category},
+                {"id": settings.ZENDESK_OS_FIELD_ID, "value": os},
             ],
         )
         if user.profile.zendesk_id:
