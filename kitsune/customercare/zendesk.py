@@ -8,18 +8,21 @@ from zenpy.lib.api_objects import User as ZendeskUser
 # See docs/zendesk.md for details about getting the valid choice values for each field:
 CATEGORY_CHOICES = [
     (None, _lazy("Select a topic")),
-    ("technical", _lazy("Technical")),
+    ("payment", _lazy("Payments & Billing")),
     ("accounts", _lazy("Accounts & Login")),
-    ("payments", _lazy("Payment & Billing")),
-    ("troubleshooting", _lazy("Troubleshooting")),
+    ("technical", _lazy("Technical")),
+    ("feedback", _lazy("Provide Feedback/Request Features")),
+    ("not_listed", _lazy("Not listed")),
 ]
 
 OS_CHOICES = [
     (None, _lazy("Select platform")),
     ("win10", _lazy("Windows")),
-    ("android", _lazy("Android")),
-    ("linux", _lazy("Linux")),
     ("mac", _lazy("Mac OS")),
+    ("linux", _lazy("Linux")),
+    ("android", _lazy("Android")),
+    ("ios", _lazy("iOS")),
+    ("other", _lazy("Other")),
 ]
 
 
