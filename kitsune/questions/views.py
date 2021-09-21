@@ -46,7 +46,7 @@ from kitsune.questions.forms import (
     WatchQuestionForm,
 )
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.utils import get_mobile_product_from_ua
+from kitsune.questions.utils import get_mobile_product_from_ua, get_featured_articles
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -56,7 +56,6 @@ from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
-from kitsune.wiki.utils import get_featured_articles
 
 log = logging.getLogger("k.questions")
 
