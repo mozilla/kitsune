@@ -12,9 +12,7 @@ jobs:
             pre-commit run --all-files
       - setup_remote_docker:
           version: 17.10.0-ce
-      - run:
-          name: Download docker images for cache
-          command: make pull
+          docker_layer_caching: true
       - run:
           name: Build docker images
           command: make build-ci
