@@ -1,5 +1,10 @@
 DC_CI = "bin/dc.sh"
+DC := $(shell command -v docker-compose 2> /dev/null)
+ifeq (DC,)
 DC = $(shell which docker-compose)
+else
+DC = $(shell which docker) compose
+endif
 PIP_TIMEOUT=60
 
 default: help
