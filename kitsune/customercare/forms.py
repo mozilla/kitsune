@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _lazy
 
-from kitsune.customercare.zendesk import ZendeskClient, CATEGORY_CHOICES, OS_CHOICES
+from kitsune.customercare.zendesk import CATEGORY_CHOICES, OS_CHOICES, ZendeskClient
 
 
 class ZendeskForm(forms.Form):
@@ -18,6 +18,7 @@ class ZendeskForm(forms.Form):
     )
     subject = forms.CharField(label=_lazy("Subject"), required=False)
     description = forms.CharField(label=_lazy("Your message"), widget=forms.Textarea())
+    country = forms.CharField(widget=forms.HiddenInput)
 
     def __init__(self, *args, product, **kwargs):
         kwargs.update({"initial": {"product": product.slug}})
@@ -25,4 +26,4 @@ class ZendeskForm(forms.Form):
 
     def send(self, user):
         client = ZendeskClient()
-        return client.create_ticket(user, **self.cleaned_data)
+        return client.create_ticket(user, self.cleaned_data)

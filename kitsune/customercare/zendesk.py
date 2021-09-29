@@ -82,18 +82,17 @@ class ZendeskClient(object):
             user=zendesk_user_id, identity=ZendeskIdentity(id=identity_id, value=email)
         )
 
-    def create_ticket(
-        self, user, subject="", description="", product="", category="", os="", **kwargs
-    ):
+    def create_ticket(self, user, ticket_fields):
         """Create a ticket in Zendesk."""
         ticket = Ticket(
-            subject=subject,
-            comment={"body": description},
+            subject=ticket_fields.get("subject"),
+            comment={"body": ticket_fields.get("description")},
             ticket_form_id=settings.ZENDESK_TICKET_FORM_ID,
             custom_fields=[
-                {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": product},
-                {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": category},
-                {"id": settings.ZENDESK_OS_FIELD_ID, "value": os},
+                {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": ticket_fields.get("product")},
+                {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": ticket_fields.get("category")},
+                {"id": settings.ZENDESK_OS_FIELD_ID, "value": ticket_fields.get("os")},
+                {"id": settings.ZENDESK_COUNTRY_FIELD_ID, "value": ticket_fields.get("country")},
             ],
         )
         if user.profile.zendesk_id:
