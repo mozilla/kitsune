@@ -2,6 +2,7 @@ import logging
 import re
 
 from django.conf import settings
+
 from kitsune.questions.models import Answer, Question
 from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles
 
@@ -65,7 +66,6 @@ def get_featured_articles(product, locale):
     For pinned articles in WIKI_DEFAULT_LANGUAGE, return a localized version if it exists.
     For pinned articles in other locales, return them only if `locale` matches.
     """
-
     if config := product.aaq_configs.first():
         pinned_articles = [
             localized_article
@@ -84,4 +84,4 @@ def get_featured_articles(product, locale):
     if len(pinned_articles) < 4:
         return (pinned_articles + kb_get_featured_articles(product=product, locale=locale))[:4]
 
-    return pinned_articles
+    return pinned_articles[-4:]
