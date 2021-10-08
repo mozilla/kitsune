@@ -18,6 +18,7 @@ from .bundles import PIPELINE_JS
 DEBUG = config("DEBUG", default=False, cast=bool)
 DEV = config("DEV", default=False, cast=bool)
 STAGE = config("STAGE", default=False, cast=bool)
+GEVENT_SUPPORT = config("GEVENT_SUPPORT", default=False, cast=bool)
 
 # TODO
 # LOG_LEVEL = config('LOG_LEVEL', default='INFO', cast=labmda x: getattr(logging, x))
