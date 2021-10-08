@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import path
 
 from kitsune.flagit import views as flagit_views
 from kitsune.questions import views
@@ -17,106 +17,77 @@ else:
     tagged_feed_view = TaggedQuestionsFeed()
 
 urlpatterns = [
-    url(r"^$", views.product_list, name="questions.home"),
-    url(
-        r"^/answer-preview-async$",
-        views.answer_preview_async,
-        name="questions.answer_preview_async",
+    path("", views.product_list, name="questions.home"),
+    path(
+        "answer-preview-async$", views.answer_preview_async, name="questions.answer_preview_async"
     ),
-    url(r"^/dashboard/metrics$", views.metrics, name="questions.metrics"),
-    url(
-        r"^/dashboard/metrics/(?P<locale_code>[^/]+)$",
-        views.metrics,
-        name="questions.locale_metrics",
-    ),
+    path("dashboard/metrics$", views.metrics, name="questions.metrics"),
+    path("dashboard/metrics/<str:locale_code>", views.metrics, name="questions.locale_metrics"),
     # AAQ
-    url(r"^/new$", views.aaq, name="questions.aaq_step1"),
-    url(r"^/new/(?P<product_key>[\w\-]+)$", views.aaq_step2, name="questions.aaq_step2"),
-    url(r"^/new/(?P<product_key>[\w\-]+)/form$", views.aaq_step3, name="questions.aaq_step3"),
+    path("new", views.aaq, name="questions.aaq_step1"),
+    path("new/<str:product_key>", views.aaq_step2, name="questions.aaq_step2"),
+    path("new/<str:product_key>/form", views.aaq_step3, name="questions.aaq_step3"),
     # maintain backwards compatibility with old aaq urls:
-    url(
-        r"^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)",
-        views.aaq_step3,
-        name="questions.aaq_step3",
-    ),
+    path("new/<str:product_key>/<str:category_key>", views.aaq_step3, name="questions.aaq_step3"),
     # TODO: Factor out `/(?P<question_id>\d+)` below
-    url(r"^/(?P<question_id>\d+)$", views.question_details, name="questions.details"),
-    url(r"^/(?P<question_id>\d+)/edit$", views.edit_question, name="questions.edit_question"),
-    url(
-        r"^/(?P<question_id>\d+)/edit-details$", views.edit_details, name="questions.edit_details"
-    ),
-    url(r"^/(?P<question_id>\d+)/reply$", views.reply, name="questions.reply"),
-    url(r"^/(?P<question_id>\d+)/delete$", views.delete_question, name="questions.delete"),
-    url(r"^/(?P<question_id>\d+)/lock$", views.lock_question, name="questions.lock"),
-    url(r"^/(?P<question_id>\d+)/archive$", views.archive_question, name="questions.archive"),
-    url(
-        r"^/(?P<question_id>\d+)/delete/(?P<answer_id>\d+)$",
+    path("<int:question_id>", views.question_details, name="questions.details"),
+    path("<int:question_id>/edit", views.edit_question, name="questions.edit_question"),
+    path("<int:question_id>/edit-details", views.edit_details, name="questions.edit_details"),
+    path("<int:question_id>/reply", views.reply, name="questions.reply"),
+    path("<int:question_id>/delete", views.delete_question, name="questions.delete"),
+    path("<int:question_id>/lock", views.lock_question, name="questions.lock"),
+    path("<int:question_id>/archive", views.archive_question, name="questions.archive"),
+    path(
+        "<int:question_id>/delete/<int:answer_id>",
         views.delete_answer,
         name="questions.delete_answer",
     ),
-    url(
-        r"^/(?P<question_id>\d+)/edit/(?P<answer_id>\d+)$",
-        views.edit_answer,
-        name="questions.edit_answer",
+    path(
+        "<int:question_id>/edit/<int:answer_id>", views.edit_answer, name="questions.edit_answer"
     ),
-    url(r"^/(?P<question_id>\d+)/solve/(?P<answer_id>\d+)$", views.solve, name="questions.solve"),
-    url(
-        r"^/(?P<question_id>\d+)/unsolve/(?P<answer_id>\d+)$",
-        views.unsolve,
-        name="questions.unsolve",
+    path("<int:question_id>/solve/<int:answer_id>", views.solve, name="questions.solve"),
+    path("<int:question_id>/unsolve/<int:answer_id>", views.unsolve, name="questions.unsolve"),
+    path("<int:question_id>/vote", views.question_vote, name="questions.vote"),
+    path(
+        "<int:question_id>/vote/<int:answer_id>", views.answer_vote, name="questions.answer_vote"
     ),
-    url(r"^/(?P<question_id>\d+)/vote$", views.question_vote, name="questions.vote"),
-    url(
-        r"^/(?P<question_id>\d+)/vote/(?P<answer_id>\d+)$",
-        views.answer_vote,
-        name="questions.answer_vote",
-    ),
-    url(r"^/(?P<question_id>\d+)/add-tag$", views.add_tag, name="questions.add_tag"),
-    url(r"^/(?P<question_id>\d+)/remove-tag$", views.remove_tag, name="questions.remove_tag"),
-    url(
-        r"^/(?P<question_id>\d+)/add-tag-async$",
-        views.add_tag_async,
-        name="questions.add_tag_async",
-    ),
-    url(
-        r"^/(?P<question_id>\d+)/remove-tag-async$",
+    path("<int:question_id>/add-tag", views.add_tag, name="questions.add_tag"),
+    path("<int:question_id>/remove-tag", views.remove_tag, name="questions.remove_tag"),
+    path("<int:question_id>/add-tag-async", views.add_tag_async, name="questions.add_tag_async"),
+    path(
+        "<int:question_id>/remove-tag-async",
         views.remove_tag_async,
         name="questions.remove_tag_async",
     ),
     # Feeds
     # Note: this needs to be above questions.list because "feed"
     # matches the product slug regex.
-    url(r"^/feed$", questions_feed_view, name="questions.feed"),
-    url(r"^/(?P<question_id>\d+)/feed$", answers_feed_view, name="questions.answers.feed"),
-    url(r"^/tagged/(?P<tag_slug>[\w\-]+)/feed$", tagged_feed_view, name="questions.tagged_feed"),
+    path("feed", questions_feed_view, name="questions.feed"),
+    path("<int:question_id>/feed", answers_feed_view, name="questions.answers.feed"),
+    path("tagged/<str:tag_slug>/feed", tagged_feed_view, name="questions.tagged_feed"),
     # Mark as spam
-    url(r"^/mark_spam$", views.mark_spam, name="questions.mark_spam"),
-    url(r"^/unmark_spam$", views.unmark_spam, name="questions.unmark_spam"),
+    path("mark_spam", views.mark_spam, name="questions.mark_spam"),
+    path("unmark_spam", views.unmark_spam, name="questions.unmark_spam"),
     # Question lists
-    url(r"^/(?P<product_slug>[\w+\-\,]+)$", views.question_list, name="questions.list"),
+    path("<str:product_slug>", views.question_list, name="questions.list"),
     # Flag content ("Report this post")
-    url(
-        r"^/(?P<object_id>\d+)/flag$",
-        flagit_views.flag,
-        {"model": Question},
-        name="questions.flag",
-    ),
-    url(
-        r"^/(?P<question_id>\d+)/flag/(?P<object_id>\d+)$",
+    path("<int:object_id>/flag", flagit_views.flag, {"model": Question}, name="questions.flag"),
+    path(
+        "<int:question_id>/flag/<int:object_id>",
         flagit_views.flag,
         {"model": Answer},
         name="questions.answer_flag",
     ),
     # Subcribe by email
-    url(r"^/(?P<question_id>\d+)/watch$", views.watch_question, name="questions.watch"),
-    url(r"^/(?P<question_id>\d+)/unwatch$", views.unwatch_question, name="questions.unwatch"),
-    url(
-        r"^/confirm/(?P<watch_id>\d+)/(?P<secret>\w+)$",
+    path("<int:question_id>/watch", views.watch_question, name="questions.watch"),
+    path("<int:question_id>/unwatch", views.unwatch_question, name="questions.unwatch"),
+    path(
+        "confirm/<int:watch_id>/<str:secret>",
         views.activate_watch,
         name="questions.activate_watch",
     ),
-    url(
-        r"^/unsubscribe/(?P<watch_id>\d+)/(?P<secret>\w+)$",
+    path(
+        "unsubscribe/<int:watch_id>/<str:secret>",
         views.unsubscribe_watch,
         name="questions.unsubscribe",
     ),

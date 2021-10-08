@@ -23,9 +23,9 @@ authority.autodiscover()
 urlpatterns = [
     path("search/", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
+    path("questions/", include("kitsune.questions.urls")),
     path("flagged/", include("kitsune.flagit.urls")),
-    url(r"^questions", include("kitsune.questions.urls")),
-    url(r"^upload", include("kitsune.upload.urls")),
+    path("upload/", include("kitsune.upload.urls")),
     url(r"^kb", include("kitsune.wiki.urls")),
     url(r"^gallery", include("kitsune.gallery.urls")),
     url(r"^chat", RedirectView.as_view(url="questions/new")),
