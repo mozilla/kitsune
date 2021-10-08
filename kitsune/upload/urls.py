@@ -1,15 +1,12 @@
-from django.conf.urls import url
+from django.urls import path
 
 from kitsune.upload import views
 
-
 urlpatterns = [
-    url(
-        r"^/image/(?P<model_name>\w+\.\w+)/(?P<object_pk>\d+)$",
+    path(
+        "image/<str:model_name>/<int:object_pk>",
         views.up_image_async,
         name="upload.up_image_async",
     ),
-    url(
-        r"^/image/delete/(?P<image_id>\d+)$", views.del_image_async, name="upload.del_image_async"
-    ),
+    path("image/delete/<int:image_id>", views.del_image_async, name="upload.del_image_async"),
 ]

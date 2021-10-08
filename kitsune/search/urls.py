@@ -1,8 +1,8 @@
-from django.conf.urls import url
+from django.urls import path
 
 from kitsune.search import views
 
 urlpatterns = [
-    url(r"^$", views.simple_search, name="search"),
-    url(r"^/xml$", views.opensearch_plugin, name="search.plugin"),
+    path("", views.simple_search, name="search"),
+    path("xml", views.opensearch_plugin, name="search.plugin"),
 ]

@@ -1,9 +1,9 @@
-from django.conf.urls import url
+from django.urls import path
 
 from kitsune.flagit import views
 
 urlpatterns = [
-    url(r"^$", views.queue, name="flagit.queue"),
-    url(r"^/flag$", views.flag, name="flagit.flag"),
-    url(r"^/update/(?P<flagged_object_id>\d+)$", views.update, name="flagit.update"),
+    path("", views.queue, name="flagit.queue"),
+    path("flag", views.flag, name="flagit.flag"),
+    path("update/<int:flagged_object_id>", views.update, name="flagit.update"),
 ]
