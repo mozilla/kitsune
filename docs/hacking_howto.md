@@ -56,7 +56,7 @@ faster and easier if you need to do that:
 
 ```
 make runshell
-bin/run-dev.sh
+bin/run-prod.sh
 ```
 
 The end result of this method should be the same as using `make run`, but will potentially aid in debugging

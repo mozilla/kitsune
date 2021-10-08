@@ -5,17 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Kitsune",
-            "type": "python",
-            "request": "launch",
-            "django": true,
-            "program": "${workspaceFolder}/manage.py",
-            "args": [
-                "runserver",
-                "0.0.0.0:8000"
-            ]
-        },
-        {
             "name": "Kitsune (Gunicorn)",
             "type": "python",
             "request": "launch",
@@ -25,6 +14,17 @@
                 "wsgi.app",
                 "--config",
                 "wsgi/config.py"
+            ]
+        },
+        {
+            "name": "Kitsune",
+            "type": "python",
+            "request": "launch",
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "runserver",
+                "0.0.0.0:8000"
             ]
         },
         {

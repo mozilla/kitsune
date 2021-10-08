@@ -2,7 +2,7 @@ version: "3.4"
 services:
   web:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
-    command: ./bin/run-dev.sh
+    command: ./bin/run-prod.sh
     env_file: .env
     volumes:
       - ./:/app:delegated
