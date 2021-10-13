@@ -64,6 +64,7 @@ app:
     dms_enqueue_lag_monitor_task: SECRET
     dms_fix_current_revisions: SECRET
     dms_generate_missing_share_links: SECRET
+    dms_rebuild_kb: SECRET
     dms_reindex_es7: SECRET
     dms_reload_question_traffic_stats: SECRET
     dms_reload_wiki_traffic_stats: SECRET
