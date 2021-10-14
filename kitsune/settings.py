@@ -17,6 +17,7 @@ from .bundles import PIPELINE_JS
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DEV = config("DEV", default=False, cast=bool)
+TEST = config("TEST", default=False, cast=bool)
 STAGE = config("STAGE", default=False, cast=bool)
 
 # TODO
