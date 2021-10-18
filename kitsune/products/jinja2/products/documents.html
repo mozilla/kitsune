@@ -77,7 +77,7 @@
         {% for document in documents %}
           <article class="topic-article">
             <div class="topic-article--icon-wrap">
-              <img class="topic-article--icon" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="" />
+              <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
             </div>
             <div class="topic-article--text">
               <h2 class="sumo-card-heading">

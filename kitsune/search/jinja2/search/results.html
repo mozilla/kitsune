@@ -47,7 +47,7 @@
           <div class="scroll-wrap">
             {% for doc in fallback_results %}
             <div class="card card--article result document">
-                <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/reader-mode.svg" alt="todo: title" />
+                <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
                 <div class="card--details">
                   <h3 class="card--title">
                     <a

@@ -1,3 +1,6 @@
+import readerModeIcon from "protocol/img/icons/reader-mode.svg";
+import blogIcon from "protocol/img/icons/blog.svg";
+
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
@@ -48,7 +51,12 @@
   }
 
   function render(data) {
-    var context = $.extend({}, data);
+    var context = $.extend({
+      icons: {
+        reader_mode: readerModeIcon,
+        blog: blogIcon,
+      },
+    }, data);
 
     let query = context.q;
     if (queries.lastIndexOf(query) < queries.lastIndexOf(renderedQuery)) {

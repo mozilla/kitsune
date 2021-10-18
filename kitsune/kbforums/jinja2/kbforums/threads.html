@@ -41,10 +41,10 @@
           <tr class="threads">
             <td class="type">
               {% if thread.is_locked %}
-                <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="{{ pgettext('thread_type', 'Locked') }}" title="{{ pgettext('thread_type', 'Locked') }}" class="icon-locked" />
+                <img src="{{ webpack_static('sumo/img/blank.png') }}" alt="{{ pgettext('thread_type', 'Locked') }}" title="{{ pgettext('thread_type', 'Locked') }}" class="icon-locked" />
               {% endif %}
               {% if thread.is_sticky %}
-                <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="{{ pgettext('thread_type', 'Sticky') }}" title="{{ pgettext('thread_type', 'Sticky') }}" class="icon-sticky" />
+                <img src="{{ webpack_static('sumo/img/blank.png') }}" alt="{{ pgettext('thread_type', 'Sticky') }}" title="{{ pgettext('thread_type', 'Sticky') }}" class="icon-sticky" />
               {% endif %}
             </td>
             <td class="title"><a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ thread.title }}</a></td>

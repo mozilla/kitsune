@@ -25,14 +25,14 @@
   <div class="mzp-l-content">
 
     {% if notification == 'already_migrated' %}
-      {{ notification_already_migrated(STATIC_URL) }}
+      {{ notification_already_migrated() }}
     {% endif %}
 
 
     <div class="card feature-padding elevation-03">
       <div class="sumo-auth">
         <figure class="sumo-auth--logo">
-          <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/FF_Master__icon.svg" alt="{{ _('Firefox logo') }}"/>
+          <img class="ff-logo" src="{{ webpack_static('sumo/img/FF_Master__icon.svg') }}" alt="{{ _('Firefox logo') }}"/>
         </figure>
         <div class="sumo-auth--form">
           <div id="login-fxa">

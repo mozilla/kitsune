@@ -992,4 +992,4 @@ class TestLazyWikiImageTags(TestCase):
         img = doc("img")
         eq_("test.jpg", img.attr("alt"))
         eq_(self.img.file.url, img.attr("data-original-src"))
-        assert "placeholder.gif" in img.attr("src")
+        self.assertRegex(img.attr("src"), r"placeholder\.[0-9a-z]+\.gif")

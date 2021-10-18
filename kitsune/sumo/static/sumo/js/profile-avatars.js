@@ -1,3 +1,5 @@
+import avatar from "sumo/img/avatar.png";
+
 var imgs = document.querySelectorAll('img.avatar');
 
 if (imgs) {
@@ -8,5 +10,5 @@ if (imgs) {
 
 function defaultAvatar() {
   this.onerror = null;
-  this.src = k.STATIC_URL + 'sumo/img/avatar.png';
+  this.src = avatar;
 }

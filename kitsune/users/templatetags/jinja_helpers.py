@@ -11,6 +11,7 @@ from jinja2 import Markup, escape
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import webpack_static
 from kitsune.users.models import Profile
 
 
@@ -36,7 +37,7 @@ def profile_avatar(user, size=200):
     try:  # This is mostly for tests.
         profile = user.profile
     except (Profile.DoesNotExist, AttributeError):
-        avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
+        avatar = webpack_static(settings.DEFAULT_AVATAR)
         profile = None
     else:
         if profile.is_fxa_migrated:
@@ -44,7 +45,7 @@ def profile_avatar(user, size=200):
         elif profile.avatar:
             avatar = profile.avatar.url
         else:
-            avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
+            avatar = webpack_static(settings.DEFAULT_AVATAR)
 
     if avatar.startswith("//"):
         avatar = "https:%s" % avatar

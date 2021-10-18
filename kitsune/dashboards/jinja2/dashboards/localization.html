@@ -42,7 +42,7 @@
       {% if user_can_announce %}
         <div id="create-announcement">
           <button class="btn">
-            <img src="{{ STATIC_URL }}sumo/img/blank.png" />
+            <img src="{{ webpack_static('sumo/img/blank.png') }}" />
             {{ _('Create announcement') }}
           </button>
           <span class="success">{{ _('Created successfully') }}</span>
@@ -55,7 +55,7 @@
                   <button type="submit" class="btn btn-submit" value="Submit">
                     {{ _('Create') }}
                   </button>
-                  <img src="{{ STATIC_URL }}sumo/img/wait-trans.gif" class="spinner" />
+                  <img src="{{ webpack_static('sumo/img/wait-trans.gif') }}" class="spinner" />
                 </li>
               </ul>
             </form>

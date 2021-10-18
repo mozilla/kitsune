@@ -8,7 +8,7 @@
 <section class="sumo-page-section has-moz-headings">
   <div class="hero-bar secondary l10n sumo-l-two-col">
     <div class="sumo-l-two-col--one-half">
-      <img class="hero-butler questions" src="{{ STATIC_URL }}sumo/img/gi-hero-l10n.png" alt="">
+      <img class="hero-butler questions" src="{{ webpack_static('sumo/img/gi-hero-l10n.png') }}" alt="">
     </div>
     <div class="sumo-l-two-col--one-half">
       <h1 class="sumo-page-heading">{{ _('Translate help articles!') }}</h1>
@@ -32,7 +32,7 @@
 
     <div class="sumo-l-two-col align-center">
       <div class="sumo-l-two-col--one-half gi-visual text-center">
-        <img src="{{ STATIC_URL }}sumo/img/gi-visual-l10n.png?v=1" alt="">
+        <img src="{{ webpack_static('sumo/img/gi-visual-l10n.png') }}" alt="">
         <p class="sumo-page-subheading legacy-blue-text"><em>{{ _("Translating 1 article can help 1,000's of users in your language") }}</em></p>
       </div>
       <div class="sumo-l-two-col--one-half">
