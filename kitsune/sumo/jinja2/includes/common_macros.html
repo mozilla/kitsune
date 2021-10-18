@@ -17,11 +17,11 @@
 {% macro sumo_cta_banner(text, modifier_class, id="id_ff_alert") %}
 <div class="sumo-ff-alert {{ modifier_class }}" {% if id %}id="{{ id }}" {% endif %}>
   <div class="sumo-ff-alert--content">
-    <img class="sumo-ff-alert--icon" src="{{ static('sumo/img/FF_Master__icon.svg') }}" />
+    <img class="sumo-ff-alert--icon" src="{{ webpack_static('sumo/img/FF_Master__icon.svg') }}" />
     <p class="sumo-ff-alert--heading">{{ text }}</p>
     <a href="https://accounts.firefox.com" class="sumo-button primary-button button-lg">Start Now</a>
     <button class="sumo-close-button" data-close-button="#{{ id }}">
-      <img src="{{ static('protocol/img/icons/close-white.svg') }}" />
+      <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" />
     </button>
   </div>
 </div>
@@ -38,7 +38,7 @@
       class="sumo-button primary-button button-lg">Learn More</a>
     <button class="sumo-close-button close-button" data-close-id="id_scam_alert" data-close-memory="session"
       data-close-initial="hidden">
-      <img src="{{ static('protocol/img/icons/close.svg') }}" />
+      <img src="{{ webpack_static('protocol/img/icons/close.svg') }}" />
     </button>
   </div>
 </div>
@@ -374,11 +374,11 @@
 {% endmacro %}
 
 {% macro favicon() %}
-<link rel="apple-touch-icon" sizes="180x180" href="{{ STATIC_URL }}sumo/img/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="{{ STATIC_URL }}sumo/img/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="{{ STATIC_URL }}sumo/img/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ webpack_static('sumo/img/apple-touch-icon.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ webpack_static('sumo/img/favicon-32x32.png') }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ webpack_static('sumo/img/favicon-16x16.png') }}">
 <link rel="manifest" href="{{ STATIC_URL }}sumo/manifest.json">
-<link rel="shortcut icon" href="{{ STATIC_URL }}sumo/img/favicon.ico">
+<link rel="shortcut icon" href="{{ webpack_static('sumo/img/favicon.ico') }}">
 <meta name="theme-color" content="#ffffff">
 {% endmacro %}
 
@@ -472,7 +472,7 @@
   <div class="scroll-wrap">
     {% for doc in articles %}
     <div class="card card--article zoom-on-hover">
-      <img class="card--icon-sm" src="{{ static('protocol/img/icons/reader-mode.svg') }}" alt="{{ doc.title }}" />
+      <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="{{ doc.title }}" />
       <div class="card--details">
         <h3 class="card--title">
           <a class="expand-this-link" href="{{ url('wiki.document', doc.slug)  }}" {% if new_tab %} target="_blank"

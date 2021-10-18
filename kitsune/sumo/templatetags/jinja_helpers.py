@@ -1,7 +1,6 @@
 import datetime
 import json as jsonlib
 import logging
-import os
 import re
 import urllib
 
@@ -514,9 +513,7 @@ def image_for_product(product_slug):
     """
     Return square/alternate image for product slug
     """
-    default_image = os.path.join(
-        settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
-    )
+    default_image = webpack_static("products/img/product_placeholder_alternate.png")
 
     if not product_slug:
         return default_image

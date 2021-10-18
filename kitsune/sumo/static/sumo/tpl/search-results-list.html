@@ -1,8 +1,5 @@
 {% from 'macros.html' import search_result %}
 
-{# This is required to get the icons to link properly with nunjucks_precompile #}
-{% set STATIC_URL = "/static/" %}
-
 <h2 class="sumo-card-heading search-results-heading mb-0">
   {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
   {% if num_results > 0 %}
@@ -40,7 +37,7 @@
 {% if num_results > 0 %}
   <section class="topic-list content-box">
     {% for doc in results %}
-      {{ search_result(doc) }}
+      {{ search_result(doc, icons) }}
     {% endfor %}
   </section>
 {% else %}
@@ -50,7 +47,7 @@
     <div class="scroll-wrap">
       {% for doc in fallback_results %}
         <div class="card card--article result document">
-          <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/reader-mode.svg" alt="" aria-hidden="true" />
+          <img class="card--icon-sm" src="{{ icons.reader_mode }}" alt="" aria-hidden="true" />
           <div class="card--details">
             <h3 class="card--title">
               <a

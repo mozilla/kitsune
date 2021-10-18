@@ -1,3 +1,4 @@
+import re
 from django.conf import settings
 
 from unittest.mock import Mock
@@ -45,7 +46,7 @@ class GroupHelperTests(TestCase):
         g.save()
         p = GroupProfile.objects.create(group=g, slug="foo")
         url = group_avatar(p)
-        eq_(settings.STATIC_URL + settings.DEFAULT_AVATAR, url)
+        self.assertRegex(url, fr"{re.escape(settings.STATIC_URL)}avatar\.[0-9a-f]+\.png")
         p.avatar = Mock()
         p.avatar.url = "/foo/bar"
         url = group_avatar(p)

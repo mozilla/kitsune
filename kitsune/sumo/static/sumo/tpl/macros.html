@@ -1,10 +1,10 @@
-{% macro search_result(result) %}
+{% macro search_result(result, icons) %}
 <article class="topic-article {{ result.type }}">
   <div class="topic-article--icon-wrap">
     {% if result.type == 'document' %}
-    <img class="topic-article--icon" src="/static/protocol/img/icons/reader-mode.svg" alt="">
+    <img class="topic-article--icon" src="{{ icons.reader_mode }}" alt="">
     {% elif result.type == 'question' %}
-    <img class="topic-article--icon" src="/static/protocol/img/icons/blog.svg" alt="">
+    <img class="topic-article--icon" src="{{ icons.blog }}" alt="">
     {% endif %}
   </div>
   <div class="topic-article--text">

@@ -1,3 +1,4 @@
+import spinnerImg from "sumo/img/spinner.gif";
 /*
  * wiki.js
  * Scripts for the wiki app.
@@ -606,7 +607,7 @@
 
     $draftButton.click(function() {
       var message = gettext('<strong>Draft is saving...</strong>'),
-        image = '<img src="/static/sumo/img/spinner.gif">',
+        image = `<img src="${spinnerImg}">`,
         bothData = $('#both_form').serializeArray(),
         docData = $('#doc_form').serializeArray(),
         revData = $('#rev_form').serializeArray(),

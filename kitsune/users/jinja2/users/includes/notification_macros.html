@@ -1,4 +1,4 @@
-{% macro notification_fxa_updated(static_url) -%}
+{% macro notification_fxa_updated() -%}
 <div id="fxa-notification-updated"  class="mzp-c-notification-bar mzp-t-success">
   <button class="mzp-c-notification-bar-button" type="button"></button>
   <p><strong>{{ _('Good news!') }}</strong> {{ _('You can now log in to Mozilla Support using Firefox Accounts.') }}
@@ -6,7 +6,7 @@
 </div>
 {%- endmacro %}
 
-{% macro notification_already_migrated(static_url) -%}
+{% macro notification_already_migrated() -%}
 <div id="fxa-notification-already-migrated" class="mzp-c-notification-bar mzp-t-warning">
   <button class="mzp-c-notification-bar-button" type="button"></button>
   <p><strong>{{ _('Sorry!') }}</strong>

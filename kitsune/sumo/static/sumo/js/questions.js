@@ -1,3 +1,4 @@
+import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
 /*
 * questions.js
 * Scripts for the questions app.
@@ -274,12 +275,11 @@
     var crashIDRegex = new RegExp('(bp-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})', 'g');
     var crashStatsBase = 'https://crash-stats.mozilla.com/report/index/';
     var helpingWithCrashesArticle = '/kb/helping-crashes';
-    var iconPath = $('body').data('static-url') + 'sumo/img/questions/icon.questionmark.png';
     var crashReportContainer =
     "<span class='crash-report'>" +
     "<a href='" + crashStatsBase + "$1' target='_blank'>$1</a>" +
     "<a href='" + helpingWithCrashesArticle + "' target='_blank'>" +
-    "<img src='" + iconPath + "'></img></a></span>";
+    "<img src='" + questionmarkIcon + "'></img></a></span>";
 
     container.html(container.html().replace(crashIDRegex, crashReportContainer));
   }

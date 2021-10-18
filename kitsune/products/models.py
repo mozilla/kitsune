@@ -1,11 +1,10 @@
-import os
-
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import webpack_static
 
 HOT_TOPIC_SLUG = "hot"
 
@@ -54,15 +53,13 @@ class Product(ModelBase):
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(settings.STATIC_URL, "products", "img", "product_placeholder.png")
+        return webpack_static("products/img/product_placeholder.png")
 
     @property
     def image_alternate_url(self):
         if self.image_alternate:
             return self.image_alternate.url
-        return os.path.join(
-            settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
-        )
+        return webpack_static("products/img/product_placeholder_alternate.png")
 
     @property
     def has_subscriptions(self):
@@ -118,7 +115,7 @@ class Topic(ModelBase):
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(settings.STATIC_URL, "products", "img", "topic_placeholder.png")
+        return webpack_static("products/img/topic_placeholder.png")
 
     @property
     def path(self):

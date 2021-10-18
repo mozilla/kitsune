@@ -2,11 +2,11 @@
 <article class="topic-article result {{ result.type }}">
   <div class="topic-article--icon-wrap">
     {% if result.type == 'document' %}
-    <img class="topic-article--icon" src="/static/protocol/img/icons/reader-mode.svg" alt="">
+    <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="">
     {% elif result.type == 'question' %}
-    <img class="topic-article--icon" src="/static/protocol/img/icons/blog.svg" alt="">
+    <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/blog.svg') }}" alt="">
     {% elif result.type == 'thread' %}
-    <img class="topic-article--icon" src="/static/protocol/img/icons/get-involved.svg" alt="">
+    <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/get-involved.svg') }}" alt="">
     {% endif %}
   </div>
 

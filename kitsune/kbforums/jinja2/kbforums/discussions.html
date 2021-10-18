@@ -18,7 +18,7 @@
             <input type="hidden" name="watch" value="yes">
           {% endif %}
           <div class="sumo-button-wrap">
-            <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="sumo-button primary-button" id="watch-forum-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+            <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="sumo-button primary-button" id="watch-forum-toggle"><img src="{{ webpack_static('sumo/img/blank.png') }}" alt="" /> {{ watch }}</button>
           </div>
         </form>
       {% endif %}

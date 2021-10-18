@@ -8,11 +8,11 @@
 <tr>
   <td class="type">
     {% if thread.is_locked %}
-    <img src="{{ STATIC_URL }}protocol/img/icons/lockbox.svg" alt="{{ pgettext('thread_type', 'Locked') }}"
+    <img src="{{ webpack_static('protocol/img/icons/lockbox.svg') }}" alt="{{ pgettext('thread_type', 'Locked') }}"
       title="{{ pgettext('thread_type', 'Locked') }}" />
     {% endif %}
     {% if thread.is_sticky %}
-    <img src="{{ STATIC_URL }}protocol/img/icons/pin.svg" alt="{{ pgettext('thread_type', 'Sticky') }}"
+    <img src="{{ webpack_static('protocol/img/icons/pin.svg') }}" alt="{{ pgettext('thread_type', 'Sticky') }}"
       title="{{ pgettext('thread_type', 'Sticky') }}" />
     {% endif %}
   </td>

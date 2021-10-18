@@ -97,7 +97,7 @@
         <li>
           <a href="{{ url('products.product', product.slug) }}">
             <span>
-              <img src="{{ STATIC_URL }}sumo/img/blank.png" style="background-image: url('{% if product.image %}{{ product.image.url }}{% else %}{{ STATIC_URL }}products/img/product_placeholder.png{% endif %}');" >
+              <img src="{{ webpack_static('sumo/img/blank.png') }}" style="background-image: url('{% if product.image %}{{ product.image.url }}{% else %}{{ webpack_static('products/img/product_placeholder.png') }}{% endif %}');" >
               {{ product.title }}
             </span>
           </a>
