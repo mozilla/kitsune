@@ -1,6 +1,7 @@
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const AssetJsonPlugin = require("./webpack/asset-json-plugin");
 
 const entrypoints = require("./webpack/entrypoints");
@@ -60,12 +61,21 @@ module.exports = (env, argv) => {
           { from: "kitsune/*/static/**/img/**", to: assetModuleFilename },
         ],
       }),
+      new ImageMinimizerPlugin({
+        minimizerOptions: {
+          plugins: [
+            "optipng",
+            "svgo",
+          ]
+        }
+      }),
       new AssetJsonPlugin(),
     ],
     output: {
       filename: dev ? "[name].js" : "[name].[contenthash].js",
       assetModuleFilename: assetModuleFilename,
     },
+    cache: dev ? { type: "filesystem" } : false,
   };
 
   if (dev) {
