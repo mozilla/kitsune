@@ -1,4 +1,4 @@
-APScheduler~=3.6.3
+APScheduler~=3.6.3,<4.0
 Django~=2.2.20
 Pillow~=8.1.2
 Werkzeug~=1.0.1
@@ -48,7 +48,7 @@ idna~=2.9
 kombu==4.6.9
 lxml~=4.6.3
 meinheld~=1.0.2
-mozilla-django-oidc~=1.2.3
+mozilla-django-oidc~=2.0.0
 mysqlclient~=1.4.6
 newrelic~=6.0.1.155
 oauth2client~=1.5.2
@@ -70,4 +70,6 @@ simplejson~=3.17.0
 timeout-decorator
 translate-toolkit~=2.5.1
 twython~=3.8.0
+tzlocal~=2.1
 whitenoise~=3.3.1
+zenpy

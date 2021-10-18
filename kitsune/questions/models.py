@@ -33,6 +33,7 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
+from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.questions")
 
@@ -752,6 +753,14 @@ class QuestionLocale(ModelBase):
 
     class Meta:
         verbose_name = "AAQ enabled locale"
+
+
+class AAQConfig(ModelBase):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="aaq_configs")
+    pinned_articles = models.ManyToManyField(Document)
+
+    class Meta:
+        verbose_name = "AAQ configuration"
 
 
 class Answer(ModelBase):

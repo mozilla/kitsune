@@ -8,7 +8,6 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
-from django.urls import is_valid_path, resolve, Resolver404
 from django.core.validators import ValidationError, validate_ipv4_address
 from django.db.utils import DatabaseError
 from django.http import (
@@ -19,12 +18,13 @@ from django.http import (
 )
 from django.http.request import split_domain_port
 from django.shortcuts import render
+from django.urls import Resolver404, is_valid_path, resolve
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.encoding import iri_to_uri, smart_text
-from mozilla_django_oidc.middleware import SessionRefresh
 from enforce_host import EnforceHostMiddleware
+from mozilla_django_oidc.middleware import SessionRefresh
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
@@ -53,9 +53,9 @@ class HttpResponseRateLimited(HttpResponse):
 
 class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
     def __init__(self, get_response=None):
-        super(SUMORefreshIDTokenAdminMiddleware, self).__init__(get_response=get_response)
         if not settings.OIDC_ENABLE or settings.DEV:
             raise MiddlewareNotUsed
+        super(SUMORefreshIDTokenAdminMiddleware, self).__init__(get_response=get_response)
 
     def process_request(self, request):
         """Only allow refresh and enforce OIDC auth on admin URLs"""
@@ -301,15 +301,10 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
 
 class InAAQMiddleware(MiddlewareMixin):
     """
-    Middleware that updates session's keys based on the view used.
-
-    aaq_* views -> in-aaq = True
+    Middleware that clears AAQ data from the session under certain conditions.
     """
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
-        # This key is used both in templates and the
-        # LogoutDeactivateUsersMiddleware
-
         if not request.session or not callback:
             return None
         try:
@@ -320,11 +315,9 @@ class InAAQMiddleware(MiddlewareMixin):
         # If we are authenticating or there is no session, do nothing
         if view_name in ["user_auth", "login", "serve_cors"]:
             return None
-        if "aaq" in view_name:
-            request.session["in-aaq"] = True
-            request.session["product_key"] = callback_kwargs.get("product_key")
-        else:
-            request.session["in-aaq"] = False
-            if "/questions/new" not in request.META.get("HTTP_REFERER", ""):
-                request.session["product_key"] = ""
+        if "aaq" not in view_name:
+            if ("/questions/new" not in request.META.get("HTTP_REFERER", "")) or (
+                "exit_aaq" in request.GET
+            ):
+                request.session["aaq_context"] = {}
         return None

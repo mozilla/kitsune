@@ -1,0 +1,27 @@
+{% extends "users/base.html" %}
+{% set title = _("{user} | Subscriptions")|f(user=display_name(user)) %}
+{% set canonical_url = canonicalize(viewname="users.subscriptions", username=user.username) %}
+{% set active = "user-subscriptions" %}
+
+{% block content %}
+  <article id="profile">
+    <h2 class="sumo-page-subheading">
+      {{ _("My Subscriptions") }}
+    </h2>
+    {% for product in products %}
+      <div class="card card--product subscriptions">
+        <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
+        <div class="card--details">
+          <h3 class="card--title">
+            <a class="title" href="{{ url('products.product', product.slug) }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+              {{ _('<strong>{product}</strong>')|fe(product=pgettext('DB: products.Product.title', product.title)) }}
+            </a>
+          </h3>
+          <div class="card--subscriptions">
+            <a href="{{ settings.FXA_SUBSCRIPTIONS }}">{{ _('Manage Subscriptions') }}</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </article>
+{% endblock %}

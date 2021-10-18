@@ -76,6 +76,9 @@ module.exports = {
   "questions.metrics": [
     "sumo/js/questions.metrics-dashboard.js",
   ],
+  "questions.geo": [
+    "sumo/js/location.js",
+  ],
   products: [
     "sumo/js/compare_versions.js",
     "sumo/js/products.js",

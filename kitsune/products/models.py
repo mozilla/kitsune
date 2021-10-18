@@ -7,7 +7,6 @@ from django.utils.translation import ugettext_lazy as _lazy
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 
-
 HOT_TOPIC_SLUG = "hot"
 
 
@@ -64,6 +63,11 @@ class Product(ModelBase):
         return os.path.join(
             settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
         )
+
+    @property
+    def has_subscriptions(self):
+        """Return boolean if a product has subscriptions"""
+        return bool(self.codename)
 
     def questions_enabled(self, locale):
         return self.questions_locales.filter(locale=locale).exists()

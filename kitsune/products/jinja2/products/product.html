@@ -148,10 +148,10 @@
       </div>
       {% endif %}
     </div>
-    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+    {{ help_topics(topics) }}
   </div>
 
-  {{ topic_metadata(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+  {{ topic_metadata(topics, product=product, product_key=product_key) }}
 
 {% if featured %}
   <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
@@ -170,7 +170,4 @@
 {% block for_contributors %}{% endblock %}
 
 {% block outer_side %}
-{% endblock %}
-
-{% block footer_script %}
 {% endblock %}

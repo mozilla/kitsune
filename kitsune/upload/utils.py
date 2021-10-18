@@ -1,17 +1,16 @@
-import os
 import io
+import os
 
 from django.conf import settings
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _lazy
-
 from PIL import Image
 
 from kitsune.upload.forms import ImageAttachmentUploadForm
 from kitsune.upload.models import ImageAttachment
-from kitsune.upload.tasks import compress_image, generate_thumbnail, _scale_dimensions
+from kitsune.upload.tasks import _scale_dimensions, compress_image, generate_thumbnail
 
 
 def check_file_size(f, max_allowed_size):
@@ -66,7 +65,11 @@ def create_imageattachment(files, user, obj):
 
 
 def _image_to_png(up_file):
-    pil_image = Image.open(up_file)
+    # Extract exif data
+    original_image = Image.open(up_file)
+    original_image_data = list(original_image.getdata())
+    pil_image = Image.new(original_image.mode, original_image.size)
+    pil_image.putdata(original_image_data)
 
     # Detect animated GIFS since we don't convert them.
     try:
@@ -75,9 +78,6 @@ def _image_to_png(up_file):
         image_animation_check.seek(1)
     except EOFError:
         is_animated = False
-        # Reopen the file since Image.seek() messes with unanimated GIFs.
-        up_file.seek(0)
-        pil_image = Image.open(up_file)
     else:
         is_animated = True
 

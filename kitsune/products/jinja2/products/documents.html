@@ -23,10 +23,7 @@
   {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
 </div>
 
-{% set aaq_product = request.session.get('product_key') %}
-{% if aaq_product %}
-  {{ aaq_widget(aaq_product, user, "topic") }}
-{% endif %}
+{{ aaq_widget(request, "topic") }}
 
 {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endblock %}

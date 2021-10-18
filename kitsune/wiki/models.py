@@ -1,7 +1,7 @@
 import hashlib
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 import waffle
 from django.conf import settings
@@ -1080,7 +1080,7 @@ def _doc_components_from_url(url, required_locale=None, check_host=True):
     locale, path = split_path(parsed.path)
     if required_locale and locale != required_locale:
         return False
-    path = "/" + path
+    path = "/" + unquote(path)
 
     try:
         view, view_args, view_kwargs = resolve(path)
@@ -1108,7 +1108,7 @@ def points_to_document_view(url, required_locale=None):
 
 
 def user_num_documents(user):
-    """Count the number of documents a user has contributed to. """
+    """Count the number of documents a user has contributed to."""
     return (
         Document.objects.filter(revisions__creator=user)
         .exclude(html__startswith="<p>REDIRECT <a")

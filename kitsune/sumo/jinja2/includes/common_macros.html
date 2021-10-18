@@ -45,13 +45,6 @@
 {% endmacro %}
 
 {% macro aux_nav(user, hide_aaq_link=False) %}
-{% if not settings.READ_ONLY %}
-{% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
-{% set ask_url = url('questions.aaq_step1') %}
-{% else %}
-{% set ask_url = url('wiki.document', 'get-community-support') %}
-{% endif %}
-{% endif %}
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
   <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true"
     aria-controls="mzp-c-menu-panel-help">{{ _('Get Help') }}</a>
@@ -62,7 +55,7 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ ask_url }}">
+            <a class="mzp-c-menu-item-link" href="{{ url('questions.aaq_step1') }}">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -71,20 +64,20 @@
                   <path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z" />
                 </g>
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Ask the Community') }}</h4>
+              <h4 class="mzp-c-menu-item-title">{{ _('Ask a Question') }}</h4>
               <p class="mzp-c-menu-item-desc">
-                {{ _('Create a thread and find answers by posting a question to any of our product support forums.') }}
+                {{ _('Get support from our contributors or staff members.') }}
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox Browser') }}</a></li>
               <li><a
-                  href="{{ url('questions.aaq_step2', 'firefox-private-network') }}">{{ _('Firefox Private Network') }}</a>
+                  href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
               </li>
               <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'firefox-lockwise') }}">{{ _('Firefox Lockwise') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox Focus') }}</a></li>
               <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('Browse All Product Forums') }}</a></li>
+              <li><a class="color-link" href="{{ url('questions.aaq_step1') }}">{{ _('Browse All Products') }}</a></li>
             </ul>
           </section>
         </div>
@@ -107,12 +100,12 @@
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               <li><a href="{{ url('products.product', 'firefox') }}">{{ _('Firefox Browser') }}</a></li>
               <li><a
-                  href="{{ url('products.product', 'firefox-private-network') }}">{{ _('Firefox Private Network') }}</a>
+                  href="{{ url('products.product', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
               </li>
               <li><a href="{{ url('products.product', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('products.product', 'firefox-lockwise') }}">{{ _('Firefox Lockwise') }}</a></li>
+              <li><a href="{{ url('products.product', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
               <li><a href="{{ url('products.product', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a class="color-link" href="{{ url('products') }}">{{ _('See All Articles') }}</a></li>
+              <li><a class="color-link" href="{{ url('products') }}">{{ _('Browse All Articles') }}</a></li>
             </ul>
           </section>
         </div>
