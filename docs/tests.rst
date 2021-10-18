@@ -144,7 +144,7 @@ Running JavaScript Tests
 To run tests, make sure you have have the NPM dependencies installed, and
 then run::
 
-  $ scripts/mocha.sh
+  $ bin/run-mocha-tests.sh
 
 Writing JavaScript Tests
 ------------------------

@@ -1,9 +1,9 @@
-const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const AssetJsonPlugin = require("./webpack/asset-json-plugin");
 
+const aliases = require("./webpack/aliases");
 const entrypoints = require("./webpack/entrypoints");
 const entrypointsHtml = require("./webpack/entrypoints-html");
 const globalExposeRules = require("./webpack/global-expose-rules");
@@ -14,15 +14,7 @@ module.exports = (env, argv) => {
   const dev = argv.mode === "development";
   const config = {
     resolve: {
-      alias: {
-        protocol: "@mozilla-protocol/core/protocol",
-        sumo: path.resolve(__dirname, "kitsune/sumo/static/sumo"),
-        community: path.resolve(
-          __dirname,
-          "kitsune/community/static/community"
-        ),
-        kpi: path.resolve(__dirname, "kitsune/kpi/static/kpi"),
-      },
+      alias: aliases,
     },
     module: {
       rules: [
