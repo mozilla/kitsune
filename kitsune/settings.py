@@ -70,7 +70,7 @@ DATABASES = {
 
 if DATABASES["default"]["ENGINE"] == "django.db.backends.mysql":
     DATABASES["default"]["CONN_MAX_AGE"] = DB_CONN_MAX_AGE
-    DATABASES["default"]["OPTIONS"] = {"init_command": "SET storage_engine=InnoDB"}
+    DATABASES["default"]["OPTIONS"] = {"init_command": "SET default_storage_engine=InnoDB"}
     DATABASE_ROUTERS = ("multidb.PinningMasterSlaveRouter",)
 
 # Add read-only databases here. The database can be the same as the `default`
