@@ -413,6 +413,10 @@ STATICFILES_FINDERS = (
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
+WEBPACK_LRU_CACHE = 128
+if DEV or TEST:
+    WEBPACK_LRU_CACHE = 0
+
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
     "1",
