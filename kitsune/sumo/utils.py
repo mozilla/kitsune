@@ -3,6 +3,7 @@ import re
 import sys
 from contextlib import contextmanager
 from datetime import datetime
+from functools import lru_cache
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -353,6 +354,7 @@ def check_for_spam_content(data):
     return is_toll_free or is_nanp_number or has_links
 
 
+@lru_cache(maxsize=settings.WEBPACK_LRU_CACHE)
 def webpack_static(source_path):
     """
     Get the URL for an asset processed by webpack.
