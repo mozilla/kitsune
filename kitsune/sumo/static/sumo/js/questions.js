@@ -1,4 +1,6 @@
 import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
+import "sumo/js/libs/jquery.cookie";
+
 /*
 * questions.js
 * Scripts for the questions app.

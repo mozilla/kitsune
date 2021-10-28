@@ -1,3 +1,5 @@
+import "jquery-ui/ui/widgets/autocomplete";
+
 /*
 * tags.js
 * Scripts to support tagging.

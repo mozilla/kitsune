@@ -1,3 +1,5 @@
+import "jquery-ui/ui/widgets/autocomplete";
+
 /*
   Marky, the markup toolbar builder
 

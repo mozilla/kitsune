@@ -28,23 +28,6 @@ module.exports = [
     "URLify"
   ),
   exportAndExpose("../kitsune/sumo/static/sumo/js/upload.js", "dialogSet"),
-  // making jquery and jquery-ui play nice, and exposed globally is a bit difficult, but this works:
-  {
-    test: require.resolve("jquery"),
-    loader: "exports-loader",
-    options: {
-      type: "module",
-      exports: "default $",
-    },
-  },
-  {
-    test: require.resolve("../kitsune/sumo/static/sumo/js/jquery-ui-custom.js"),
-    loader: "exports-loader",
-    options: {
-      type: "module",
-      exports: "default $",
-    },
-  },
   // this library attempts to expose a bunch of stuff globally by adding them to `this`, imports-loader makes that work:
   {
     test: require.resolve(

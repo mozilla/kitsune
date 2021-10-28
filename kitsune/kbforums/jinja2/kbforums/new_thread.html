@@ -7,7 +7,7 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (url('wiki.discuss.threads', document.slug), _('Discuss')),
                  (None, _('Create a new thread'))] %}
-{% set scripts = ('forums', 'jqueryui') %}
+{% set scripts = ('forums',) %}
 
 {% block content %}
   <article id="new-thread" class="sumo-page-section">

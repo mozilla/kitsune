@@ -11,7 +11,7 @@
 {% if posts.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=posts.number) %}
 {% endif %}
-{% set scripts = ('forums', 'jqueryui') %}
+{% set scripts = ('forums',) %}
 
 
 {% block content %}

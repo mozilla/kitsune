@@ -1,3 +1,6 @@
+import "sumo/js/libs/jquery.cookie";
+import "sumo/js/libs/jquery.placeholder";
+
 // Use a global k to share data accross JS files
 window.k = window.k || {};
 

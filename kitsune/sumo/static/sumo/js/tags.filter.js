@@ -1,3 +1,5 @@
+import "jquery-ui/ui/widgets/autocomplete";
+
 /*
  * A tag filtering form.
  */

@@ -1,3 +1,5 @@
+import "sumo/js/libs/jquery.tokeninput";
+
 /*
  * users.autocomplete.js
  * A username autocomplete widget.
