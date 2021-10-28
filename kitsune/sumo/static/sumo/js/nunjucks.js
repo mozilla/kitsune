@@ -1,3 +1,5 @@
+import nunjucks from "nunjucks/browser/nunjucks-slim";
+
 (function($) {
   window.k = window.k || {};
 

@@ -5,7 +5,6 @@ const entrypoints = {
     "sumo/js/templates/macros.js",
     "sumo/js/templates/search-results-list.js",
     "sumo/js/templates/search-results.js",
-    "nunjucks/browser/nunjucks-slim.js",
     "sumo/js/nunjucks.js",
     "sumo/js/cached_xhr.js",
     "sumo/js/search_utils.js",
