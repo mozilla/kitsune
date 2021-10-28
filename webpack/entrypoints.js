@@ -2,7 +2,6 @@ const entrypoints = {
   screen: ["sumo/scss/screen.scss"],
   common: [
     "sumo/js/i18n.js",
-    "underscore/underscore.js",
     "sumo/js/templates/macros.js",
     "sumo/js/templates/search-results-list.js",
     "sumo/js/templates/search-results.js",

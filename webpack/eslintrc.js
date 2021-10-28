@@ -25,7 +25,6 @@ module.exports = {
     ],
     "globals": {
         // globals exposed in webpack/global-expose-rules.js
-        "_": "readonly",
         "nunjucks": "readonly",
         "CodeMirror": "readonly",
         "Rickshaw": "readonly",

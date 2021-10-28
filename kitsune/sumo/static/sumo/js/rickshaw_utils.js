@@ -1,5 +1,8 @@
 import "jquery-ui/ui/widgets/datepicker";
 import "jquery-ui/ui/widgets/slider";
+import _filter from "underscore/modules/filter";
+import _map from "underscore/modules/map";
+import _each from "underscore/modules/each";
 
 (function () {
   'use strict';
@@ -165,7 +168,7 @@ import "jquery-ui/ui/widgets/slider";
       // Get midnight of today (ie, the boundary between today and yesterday)
       chopLimit = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
-    bucketed = _.filter(bucketed, function (datum) {
+    bucketed = _filter(bucketed, function (datum) {
       return datum.date < chopLimit / 1000;
     });
 
@@ -198,7 +201,7 @@ import "jquery-ui/ui/widgets/slider";
     for (i = 0; i < this.data.series.length; i += 1) {
       series = this.data.series[i];
       axisGroup = this.axisGroups[series.axisGroup];
-      series.data = _.map(series.data, mapHandler);
+      series.data = _map(series.data, mapHandler);
       series.scale = axisGroup.max;
       axis = this.d3.axises[series.axisGroup];
       if (axis) {
@@ -268,7 +271,7 @@ import "jquery-ui/ui/widgets/slider";
       max = -Infinity;
       desc = descriptors[i];
 
-      data = _.map(objects, mapHandler);
+      data = _map(objects, mapHandler);
 
       if (max <= 0 || isNaN(max) || !isFinite(max)) {
         max = 1;
@@ -815,7 +818,7 @@ import "jquery-ui/ui/widgets/slider";
     var allKeys = Array.prototype.slice.call(arguments);
     return function (d) {
       var sum = 0;
-      _.each(allKeys, function (key) {
+      _each(allKeys, function (key) {
         sum += d[key];
       });
       return d[partKey] / sum;
