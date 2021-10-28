@@ -1,3 +1,6 @@
+import "jquery-ui/ui/widgets/datepicker";
+import "jquery-ui/ui/widgets/slider";
+
 (function () {
   'use strict';
 

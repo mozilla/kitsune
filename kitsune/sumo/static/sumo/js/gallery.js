@@ -1,3 +1,6 @@
+import "sumo/js/libs/jquery.ajaxupload";
+import "sumo/js/kbox";
+
 (function($) {
   'use strict';
 

@@ -3,9 +3,6 @@ const entrypoints = {
   common: [
     "sumo/js/i18n.js",
     "underscore/underscore.js",
-    "jquery",
-    "sumo/js/libs/jquery.cookie.js",
-    "sumo/js/libs/jquery.placeholder.js",
     "sumo/js/templates/macros.js",
     "sumo/js/templates/search-results-list.js",
     "sumo/js/templates/search-results.js",
@@ -48,15 +45,11 @@ const entrypoints = {
     "sumo/js/show-fx-download.js",
   ],
   community: [
-    "jquery",
     "community/js/community.js",
     "community/js/select.js",
   ],
   "community.metrics": [
     "kpi/js/kpi.browserify.js",
-  ],
-  jqueryui: [
-    "sumo/js/jquery-ui-custom.js",
   ],
   questions: [
     "sumo/js/markup.js",
@@ -65,12 +58,10 @@ const entrypoints = {
     "sumo/js/remote.js",
     "sumo/js/aaq.js",
     "sumo/js/questions.js",
-    "sumo/js/libs/jquery.tokeninput.js",
     "sumo/js/tags.filter.js",
     "sumo/js/tags.js",
     "sumo/js/reportabuse.js",
     "sumo/js/questions.metrics.js",
-    "sumo/js/libs/jquery.ajaxupload.js",
     "sumo/js/upload.js",
   ],
   "questions.metrics": [
@@ -93,15 +84,11 @@ const entrypoints = {
     "sumo/js/reportabuse.js",
   ],
   gallery: [
-    "sumo/js/libs/jquery.ajaxupload.js",
     "sumo/js/gallery.js",
   ],
   wiki: [
     "sumo/js/markup.js",
     "sumo/js/libs/django/urlify.js",
-    "sumo/js/libs/django/prepopulate.js",
-    "sumo/js/libs/jquery.lazyload.js",
-    "sumo/js/libs/jquery.tokeninput.js",
     "sumo/js/users.autocomplete.js",
     "sumo/js/showfor.js",
     "sumo/js/ajaxvote.js",
@@ -118,6 +105,8 @@ const entrypoints = {
   rickshaw: [
     "d3/d3.js",
     "sumo/js/libs/d3.layout.min.js",
+    "jquery-ui/ui/widgets/sortable",
+    "jquery-ui/ui/widgets/slider",
     "sumo/js/libs/rickshaw.js",
     "sumo/js/rickshaw_utils.js",
   ],
@@ -144,14 +133,11 @@ const entrypoints = {
   ],
   messages: [
     "sumo/js/markup.js",
-    "sumo/js/libs/jquery.autoresize.js",
-    "sumo/js/libs/jquery.tokeninput.js",
     "sumo/js/users.autocomplete.js",
     "sumo/js/ajaxpreview.js",
     "sumo/js/messages.js",
   ],
   groups: [
-    "sumo/js/libs/jquery.tokeninput.js",
     "sumo/js/users.autocomplete.js",
     "sumo/js/markup.js",
     "sumo/js/groups.js",

@@ -1,3 +1,5 @@
+import "sumo/js/libs/jquery.lazyload";
+
 /*
  * Wiki content previews - ajaxified.
  */

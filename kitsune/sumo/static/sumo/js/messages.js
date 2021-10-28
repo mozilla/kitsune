@@ -1,3 +1,5 @@
+import "sumo/js/libs/jquery.autoresize";
+
 /*
  * Make textarea in replies auto expanding.
  * Private messaging.

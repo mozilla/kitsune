@@ -1,3 +1,5 @@
+import "sumo/js/libs/jquery.cookie";
+
 /* Please do not directly use this code or SUMO key. */
 /* Contact MLS team for your own credentials. */
 /* https://location.services.mozilla.com/contact */

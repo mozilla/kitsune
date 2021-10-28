@@ -6,7 +6,7 @@
 {% set crumbs = [(url('forums.forums'), _('Forums')),
 (url('forums.threads', forum.slug), forum.name),
 (None, _('Create a new thread'))] %}
-{% set scripts = ('forums', 'jqueryui') %}
+{% set scripts = ('forums',) %}
 
 {% block content %}
   <div id="new-thread" class="sumo-page-section">

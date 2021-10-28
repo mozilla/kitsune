@@ -1,3 +1,5 @@
+import "jquery-ui/ui/widgets/datepicker";
+
 (function($) {
   'use strict';
 

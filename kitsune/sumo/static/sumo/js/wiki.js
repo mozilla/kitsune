@@ -1,4 +1,10 @@
 import spinnerImg from "sumo/img/spinner.gif";
+import "sumo/js/libs/jquery.cookie";
+import "sumo/js/libs/jquery.lazyload";
+import "sumo/js/kbox";
+import "sumo/js/libs/django/prepopulate";
+import "jquery-ui/ui/widgets/datepicker";
+
 /*
  * wiki.js
  * Scripts for the wiki app.
@@ -57,18 +63,6 @@ import spinnerImg from "sumo/img/spinner.gif";
 
       // We can enable the buttons now.
       $('.submit input').removeAttr('disabled');
-    }
-
-    if ($body.is('.edit, .new')) {
-      // collapse the topics listing per product and show only one topic list
-      // // at at a time
-      // $(function () {
-      //   $('#accordion').accordion({
-      //     collapsible: true,
-      //     heightStyle: 'content',
-      //     active: false
-      //   });
-      // });
     }
 
     if ($body.is('.translate')) {  // Translate page

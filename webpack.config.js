@@ -1,3 +1,4 @@
+const webpack = require("webpack");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
@@ -43,6 +44,11 @@ module.exports = (env, argv) => {
     },
     entry: entrypoints,
     plugins: [
+      new webpack.ProvidePlugin({
+        $: "jquery",
+        jQuery: "jquery",
+        "window.jQuery": "jquery",
+      }),
       new MiniCssExtractPlugin({
         filename: dev ? "[name].css" : "[name].[contenthash].css",
       }),
