@@ -68,6 +68,11 @@ module.exports = (env, argv) => {
       assetModuleFilename: assetModuleFilename,
     },
     cache: dev ? { type: "filesystem" } : false,
+    optimization: {
+      splitChunks: {
+        chunks: 'all',
+      },
+    },
   };
 
   if (dev) {
