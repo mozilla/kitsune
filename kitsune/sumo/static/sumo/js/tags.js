@@ -1,4 +1,5 @@
 import "jquery-ui/ui/widgets/autocomplete";
+import _keys from "underscore/modules/keys";
 
 /*
 * tags.js
@@ -22,7 +23,7 @@ import "jquery-ui/ui/widgets/autocomplete";
       function() {
         var $tagContainer = $(this);
         var parsedVocab = $tagContainer.data('tag-vocab-json');
-        $tagContainer.data('tagVocab', _.keys(parsedVocab));
+        $tagContainer.data('tagVocab', _keys(parsedVocab));
       }
     );
   }

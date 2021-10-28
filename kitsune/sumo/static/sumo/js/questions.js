@@ -1,5 +1,6 @@
 import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
 import "sumo/js/libs/jquery.cookie";
+import _throttle from "underscore/modules/throttle";
 
 /*
 * questions.js
@@ -63,7 +64,7 @@ import "sumo/js/libs/jquery.cookie";
         }
       }
 
-      $('#id_content').on('keyup', _.throttle(takeQuestion, 60000));
+      $('#id_content').on('keyup', _throttle(takeQuestion, 60000));
 
       $(document).on('click', '#details-edit', function(ev) {
         ev.preventDefault();

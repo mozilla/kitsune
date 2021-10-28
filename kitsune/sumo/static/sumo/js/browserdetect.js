@@ -1,3 +1,5 @@
+import _reduce from "underscore/modules/reduce";
+
 /* Detect the set of OSes and browsers we care about in the wiki and AAQ.
  * Adapted from http://www.quirksmode.org/js/detect.html with these changes:
  *
@@ -44,7 +46,7 @@ var BrowserDetect = window.BrowserDetect = {
       this.versionSearchString = data[i].versionSearch || data[i].identity;
 
       // Check if all subStrings are in the dataString.
-      matchedAll = _.reduce(data[i].subStrings, function(memo, sub) {
+      matchedAll = _reduce(data[i].subStrings, function(memo, sub) {
         if (sub instanceof RegExp) {
           return memo && sub.exec(dataString);
         } else {

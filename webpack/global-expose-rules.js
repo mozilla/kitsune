@@ -4,7 +4,6 @@
 // we have to expose each of these variables manually:
 module.exports = [
   // expose these library exports globally:
-  expose("underscore/underscore.js", "_"),
   expose("nunjucks/browser/nunjucks-slim.js", "nunjucks"),
   expose("codemirror/lib/codemirror.js", "CodeMirror"),
   expose("../kitsune/sumo/static/sumo/js/libs/rickshaw.js", "Rickshaw"),

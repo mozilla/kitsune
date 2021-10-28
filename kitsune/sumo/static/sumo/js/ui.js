@@ -1,4 +1,5 @@
 import "jquery-ui/ui/widgets/datepicker";
+import _throttle from "underscore/modules/throttle";
 
 (function($) {
   'use strict';
@@ -17,7 +18,7 @@ import "jquery-ui/ui/widgets/datepicker";
       }
     });
 
-    $(window).scroll(_.throttle(function() {
+    $(window).scroll(_throttle(function() {
       if ($(window).scrollTop() > $('body > header').outerHeight()) {
         $('body').addClass('scroll-header');
       } else {

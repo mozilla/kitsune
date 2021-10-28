@@ -1,4 +1,7 @@
 import "jquery-ui/ui/widgets/datepicker";
+import _values from "underscore/modules/values";
+import _each from "underscore/modules/each";
+import _map from "underscore/modules/map";
 
 /*
  * kb dashboard chart
@@ -125,7 +128,7 @@ import "jquery-ui/ui/widgets/datepicker";
           ],
           'mini',
           true,
-          _.values(l10nByDate)
+          _values(l10nByDate)
         );
       }
 
@@ -140,7 +143,7 @@ import "jquery-ui/ui/widgets/datepicker";
         ],
         false,
         false,
-        _.values(contributorsByDate)
+        _values(contributorsByDate)
       );
 
     });
@@ -226,10 +229,10 @@ import "jquery-ui/ui/widgets/datepicker";
         }
 
         // Create the graphs.
-        _.each(graphConfigs, function (config) {
+        _each(graphConfigs, function (config) {
           graphs.push(makeWikiMetricGraph(
             $(config.selector),
-            _.map(locales, function (locale) {
+            _map(locales, function (locale) {
               return {
                 name: locale,
                 slug: locale,
@@ -238,20 +241,20 @@ import "jquery-ui/ui/widgets/datepicker";
             }),
             false,
             false,
-            _.values(resultsByCode[config.code])
+            _values(resultsByCode[config.code])
           ));
         });
 
         var updateGraphLocales = function() {
           // Update the locale series based on the selected locales.
-          var selectedLocales = _.map($('#locale-picker :checked'), function (el) {
+          var selectedLocales = _map($('#locale-picker :checked'), function (el) {
             return $(el).val();
           });
 
           // Loop through all the graphs...
-          _.each(graphs, function (graph) {
+          _each(graphs, function (graph) {
             // And all the series (locales) in each graph...
-            _.each(graph.data.series, function (series, index) {
+            _each(graph.data.series, function (series, index) {
               if (selectedLocales.indexOf(locales[index]) >= 0) {
                 // The locale is selected, show it.
                 series.disabled = false;

@@ -1,4 +1,8 @@
 import Chart from './components/Chart.es6';
+import _each from "underscore/modules/each";
+import _range from "underscore/modules/range";
+import _uniq from "underscore/modules/uniq";
+import _pluck from "underscore/modules/pluck";
 
 let chartSetups = {
   'retention': {
@@ -7,7 +11,7 @@ let chartSetups = {
         xAxis: {
           labels() {
             let labelsArray = [];
-            _.each(_.range(1, 13), function(val) {
+            _each(_range(1, 13), function(val) {
               labelsArray.push(gettext('Week') + ' ' + val);
             });
             return labelsArray;
@@ -254,7 +258,7 @@ function makeRetentionChart(settings) {
 
   fetchDataset.done(data => {
     retentionChart.data = data;
-    retentionChart.axes.yAxis.labels = _.uniq(_.pluck(data, 'start'));
+    retentionChart.axes.yAxis.labels = _uniq(_pluck(data, 'start'));
     retentionChart.setupAxis('yAxis');
     retentionChart.populateData(defaultContributorType);
 

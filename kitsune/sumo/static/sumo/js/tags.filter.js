@@ -1,4 +1,6 @@
 import "jquery-ui/ui/widgets/autocomplete";
+import _each from "underscore/modules/each";
+import _keys from "underscore/modules/keys";
 
 /*
  * A tag filtering form.
@@ -18,7 +20,7 @@ import "jquery-ui/ui/widgets/autocomplete";
     }
 
     // Create a lower case vocab for case insensitive match.
-    _.each(_.keys(vocab), function(name) {
+    _each(_keys(vocab), function(name) {
       lowerVocab[name.toLowerCase()] = vocab[name];
     });
 
@@ -41,7 +43,7 @@ import "jquery-ui/ui/widgets/autocomplete";
     // Skip if the autocomplete plugin isn't available (unit tests).
     if ($tags.autocomplete) {
       $tags.autocomplete({
-        source: _.keys(vocab),
+        source: _keys(vocab),
         delay: 0,
         minLength: 1
       });
@@ -56,7 +58,7 @@ import "jquery-ui/ui/widgets/autocomplete";
         invalid = false;
 
       // For each tag name, find the slug.
-      _.each(tagNames.split(','), function(tag) {
+      _each(tagNames.split(','), function(tag) {
         var trimmed = $.trim(tag),
           slug = lowerVocab[trimmed.toLowerCase()];
         if (slug) {

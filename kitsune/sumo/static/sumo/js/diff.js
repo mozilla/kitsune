@@ -1,3 +1,6 @@
+import _each from "underscore/modules/each";
+import _reduce from "underscore/modules/reduce";
+
 /*
  * Wrapper around diff_match_patch. or something like that.
  */
@@ -53,7 +56,7 @@
       var toContinued = false;
       var line, fromLine, toLine, sectionLines, i, l, op, data, text;
 
-      _.each(self.rawDiffs, function(diff) {
+      _each(self.rawDiffs, function(diff) {
         op = diff[0];    // Operation (insert, delete, equal)
         data = diff[1];  // Text of change.
         text = data
@@ -184,9 +187,9 @@
 
       html.push('<table><tbody>');
 
-      _.each(self.lineDiffs, function(line) {
+      _each(self.lineDiffs, function(line) {
         // Check if the line has non-whitespace changes.
-        line.changes = _.reduce(line.parts, function(memo, part) {
+        line.changes = _reduce(line.parts, function(memo, part) {
           return memo || (((part[0] === DIFF_DELETE) || (part[0] === DIFF_INSERT)) && part[1].length > 0);
         }, false);
 
@@ -227,7 +230,7 @@
       html.push('<td class="num">', line.toLineNum, '</td>');
       html.push('<td class="mark"></td>');
       html.push('<td>');
-      _.each(line.parts, function(part) {
+      _each(line.parts, function(part) {
         op = part[0];
         if (op === DIFF_INSERT) {
           html.push('<ins>' + part[1] + '</ins>');
@@ -248,7 +251,7 @@
       html.push('<td class="num"></td>');
       html.push('<td class="mark">-</td>');
       html.push('<td>');
-      _.each(line.parts, function(part) {
+      _each(line.parts, function(part) {
         op = part[0];
         if (op === DIFF_DELETE) {
           html.push('<del>' + part[1] + '</del>');
@@ -267,7 +270,7 @@
       html.push('<td class="num">', line.toLineNum, '</td>');
       html.push('<td class="mark">+</td>');
       html.push('<td>');
-      _.each(line.parts, function(part) {
+      _each(line.parts, function(part) {
         op = part[0];
         if (op === DIFF_INSERT) {
           html.push('<ins>' + part[1] + '</ins>');

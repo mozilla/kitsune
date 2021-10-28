@@ -1,5 +1,6 @@
 import "sumo/js/libs/jquery.cookie";
 import "sumo/js/libs/jquery.placeholder";
+import _each from "underscore/modules/each";
 
 // Use a global k to share data accross JS files
 window.k = window.k || {};
@@ -36,7 +37,7 @@ window.k = window.k || {};
 
   k.queryParamStringFromDict = function(obj) {
     var qs = '';
-    _.forEach(obj, function(value, key) {
+    _each(obj, function(value, key) {
       if (value === undefined || value === null) {
         return;
       }
