@@ -1,5 +1,7 @@
 import readerModeIcon from "protocol/img/icons/reader-mode.svg";
 import blogIcon from "protocol/img/icons/blog.svg";
+import detailsInit from "./protocol-details-init";
+import tabsInit from "./sumo-tabs";
 
 (function($) {
   var searchTimeout;
@@ -94,8 +96,6 @@ import blogIcon from "protocol/img/icons/blog.svg";
     }
     $searchContent.html($searchResults);
 
-    // These two functions are coming from the global scope, but should be proper
-    // modules when we replace django-compressor with a FE build process.
     detailsInit(); // fold up sidebar on mobile.
     tabsInit();
 
