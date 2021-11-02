@@ -5,11 +5,6 @@
 module.exports = [
   // expose these library exports globally:
   expose("codemirror/lib/codemirror.js", "CodeMirror"),
-  expose(
-    "../kitsune/sumo/static/sumo/js/protocol-details-init.js",
-    "detailsInit detailsInit"
-  ),
-  expose("../kitsune/sumo/static/sumo/js/sumo-tabs.js", "tabsInit tabsInit"),
   // wrap these files to make them behave like an es6 module, exporting the named variable, and expose that globally:
   exportAndExpose("../kitsune/sumo/static/sumo/js/analytics.js", "trackEvent"),
   exportAndExpose("../kitsune/sumo/static/sumo/js/upload.js", "dialogSet"),
