@@ -3,12 +3,16 @@ module.exports = {
         "es6": true,
         "browser": true
     },
-    "ecmaFeatures": {
-        "modules": true
+    "parserOptions": {
+        "ecmaVersion": 2021,
+        "sourceType": "module",
     },
     "rules": {
         "no-undef": 2
     },
+    "ignorePatterns": [
+        "**/tests/**",
+    ],
     "globals": {
         // globals exposed in webpack/global-expose-rules.js
         "_": "readonly",
