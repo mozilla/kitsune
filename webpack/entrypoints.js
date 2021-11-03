@@ -113,11 +113,7 @@ const entrypoints = {
     "sumo/js/diff.js",
   ],
   "wiki.editor": [
-    "codemirror/lib/codemirror.js",
-    "codemirror/addon/mode/simple.js",
-    "codemirror/addon/hint/show-hint.js",
-    "sumo/js/codemirror.sumo-hint.js",
-    "sumo/js/codemirror.sumo-mode.js",
+    "sumo/js/wiki.editor.js",
   ],
   "wiki.dashboard": [
     "sumo/js/wiki.dashboard.js",
