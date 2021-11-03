@@ -13,16 +13,6 @@ module.exports = [
     "../kitsune/sumo/static/sumo/js/libs/uitour.js",
     "default Mozilla.UITour"
   ),
-  // this library attempts to expose a bunch of stuff globally by adding them to `this`, imports-loader makes that work:
-  {
-    test: require.resolve(
-      "../kitsune/sumo/static/sumo/js/libs/diff_match_patch_uncompressed.js"
-    ),
-    loader: "imports-loader",
-    options: {
-      wrapper: "window",
-    },
-  },
 ];
 
 function exports(path, exports) {

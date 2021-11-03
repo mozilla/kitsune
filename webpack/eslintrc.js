@@ -32,7 +32,6 @@ module.exports = {
         "trackEvent": "readonly",
         "$": "readonly",
         "jQuery": "readonly",
-        "diff_match_patch": "readonly",
         "DIFF_DELETE": "readonly",
         "DIFF_INSERT": "readonly",
         "DIFF_EQUAL": "readonly",
