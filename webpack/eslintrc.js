@@ -40,7 +40,6 @@ module.exports = {
         "gettext": "readonly",
         "interpolate": "readonly",
         "Mzp": "readonly",
-        "KBox": "readonly",
         "BrowserDetect": "readonly",
         "Modernizr": "readonly",
         "Marky": "readonly",

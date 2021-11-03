@@ -1,5 +1,6 @@
 import "jquery-ui/ui/widgets/autocomplete";
 import trackEvent from "sumo/js/analytics";
+import KBox from "sumo/js/kbox";
 
 /*
   Marky, the markup toolbar builder

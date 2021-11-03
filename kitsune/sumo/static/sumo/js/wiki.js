@@ -1,7 +1,7 @@
 import spinnerImg from "sumo/img/spinner.gif";
 import "sumo/js/libs/jquery.cookie";
 import "sumo/js/libs/jquery.lazyload";
-import "sumo/js/kbox";
+import KBox from "sumo/js/kbox";
 import "sumo/js/libs/django/prepopulate";
 import "jquery-ui/ui/widgets/datepicker";
 import CodeMirror from "codemirror";
