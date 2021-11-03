@@ -1,5 +1,6 @@
 import "sumo/js/libs/jquery.ajaxupload";
 import dialogSet from "sumo/js/upload-dialog";
+import KBox from "sumo/js/kbox";
 
 $(document).ready(function () {
   var UPLOAD = {

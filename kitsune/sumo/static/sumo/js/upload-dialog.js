@@ -1,3 +1,5 @@
+import KBox from "sumo/js/kbox";
+
 export default function dialogSet(inner, title) {
   var kbox = new KBox($('<p/>').text(inner), {
     title: title,

@@ -1,3 +1,5 @@
+import KBox from "sumo/js/kbox";
+
 /*
  * forums.js
  * Scripts for the forums app.

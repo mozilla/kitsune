@@ -8,6 +8,8 @@ import mochaJquery from './fixtures/mochaJquery.js';
 import mochaGettext from './fixtures/mochaGettext.js';
 import mochaMarky from './fixtures/mochaMarky.js';
 
+import KBox from "sumo/js/kbox.js";
+
 chai.use(chaiLint);
 
 describe('kbox', () => {
@@ -39,7 +41,7 @@ describe('kbox', () => {
       React.render(sandbox, document.body);
 
       $kbox = $('.kbox');
-      kbox = new window.KBox($kbox);
+      kbox = new KBox($kbox);
     });
 
     afterEach(() => {
