@@ -2,6 +2,7 @@ import readerModeIcon from "protocol/img/icons/reader-mode.svg";
 import blogIcon from "protocol/img/icons/blog.svg";
 import detailsInit from "./protocol-details-init";
 import tabsInit from "./sumo-tabs";
+import trackEvent from "sumo/js/analytics";
 
 (function($) {
   var searchTimeout;
