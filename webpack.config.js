@@ -7,7 +7,7 @@ const AssetJsonPlugin = require("./webpack/asset-json-plugin");
 const aliases = require("./webpack/aliases");
 const entrypoints = require("./webpack/entrypoints");
 const entrypointsHtml = require("./webpack/entrypoints-html");
-const globalExposeRules = require("./webpack/global-expose-rules");
+const exportRules = require("./webpack/export-rules");
 
 const assetModuleFilename = "[name].[contenthash][ext]";
 
@@ -39,7 +39,7 @@ module.exports = (env, argv) => {
           test: /\.(svg|png|gif|woff2?)$/,
           type: "asset/resource",
         },
-        ...globalExposeRules,
+        ...exportRules,
       ],
     },
     entry: entrypoints,
