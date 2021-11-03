@@ -1,3 +1,5 @@
+import trackEvent from "sumo/js/analytics";
+
 /*
  * users.js
  * Make public emails clickable.

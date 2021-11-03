@@ -1,3 +1,5 @@
+import trackEvent from "sumo/js/analytics";
+
 // Collect questions metrics.
 
 (function ($) {

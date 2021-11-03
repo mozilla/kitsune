@@ -1,6 +1,7 @@
 import "jquery-ui/ui/widgets/datepicker";
 import _throttle from "underscore/modules/throttle";
 import UITour from "./libs/uitour";
+import trackEvent from "sumo/js/analytics";
 
 (function($) {
   'use strict';

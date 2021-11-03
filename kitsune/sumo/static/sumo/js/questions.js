@@ -1,6 +1,7 @@
 import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
 import "sumo/js/libs/jquery.cookie";
 import _throttle from "underscore/modules/throttle";
+import trackEvent from "sumo/js/analytics";
 
 /*
 * questions.js
