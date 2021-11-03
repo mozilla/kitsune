@@ -30,7 +30,6 @@ module.exports = {
         "detailsInit": "readonly",
         "tabsInit": "readonly",
         "trackEvent": "readonly",
-        "dialogSet": "readonly",
         "$": "readonly",
         "jQuery": "readonly",
         "diff_match_patch": "readonly",
