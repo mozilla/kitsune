@@ -109,7 +109,6 @@ const entrypoints = {
     "sumo/js/historycharts.js",
   ],
   "wiki.diff": [
-    "sumo/js/libs/diff_match_patch_uncompressed.js",
     "sumo/js/diff.js",
   ],
   "wiki.editor": [

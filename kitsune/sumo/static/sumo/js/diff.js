@@ -1,5 +1,11 @@
 import _each from "underscore/modules/each";
 import _reduce from "underscore/modules/reduce";
+import {
+  diff_match_patch,
+  DIFF_DELETE,
+  DIFF_INSERT,
+  DIFF_EQUAL,
+} from "sumo/js/libs/diff_match_patch_uncompressed";
 
 /*
  * Wrapper around diff_match_patch. or something like that.
