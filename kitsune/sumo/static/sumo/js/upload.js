@@ -1,16 +1,5 @@
 import "sumo/js/libs/jquery.ajaxupload";
-
-function dialogSet(inner, title) {
-  var kbox = new KBox($('<p/>').text(inner), {
-    title: title,
-    destroy: true,
-    closeOnOutClick: true,
-    modal: true,
-    id: 'upload-dialog',
-    container: $('body')
-  });
-  kbox.open();
-}
+import dialogSet from "sumo/js/upload-dialog";
 
 $(document).ready(function () {
   var UPLOAD = {
