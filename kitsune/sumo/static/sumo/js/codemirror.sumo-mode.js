@@ -1,3 +1,4 @@
+import CodeMirror from "codemirror";
 
 (function() {
   'use strict';

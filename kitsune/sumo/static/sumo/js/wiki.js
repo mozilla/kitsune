@@ -4,6 +4,11 @@ import "sumo/js/libs/jquery.lazyload";
 import "sumo/js/kbox";
 import "sumo/js/libs/django/prepopulate";
 import "jquery-ui/ui/widgets/datepicker";
+import CodeMirror from "codemirror";
+import "codemirror/addon/mode/simple";
+import "codemirror/addon/hint/show-hint";
+import "sumo/js/codemirror.sumo-hint";
+import "sumo/js/codemirror.sumo-mode";
 
 /*
  * wiki.js

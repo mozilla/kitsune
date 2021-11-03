@@ -3,8 +3,6 @@
 // in webpack, unless a file explicitly places a variable under `window.`,
 // we have to expose each of these variables manually:
 module.exports = [
-  // expose these library exports globally:
-  expose("codemirror/lib/codemirror.js", "CodeMirror"),
   // wrap these files to make them behave like an es6 module, exporting the named variable, and expose that globally:
   exportAndExpose("../kitsune/sumo/static/sumo/js/analytics.js", "trackEvent"),
   exportAndExpose("../kitsune/sumo/static/sumo/js/upload.js", "dialogSet"),
