@@ -9,6 +9,7 @@ import "codemirror/addon/mode/simple";
 import "codemirror/addon/hint/show-hint";
 import "sumo/js/codemirror.sumo-hint";
 import "sumo/js/codemirror.sumo-mode";
+import "sumo/js/protocol";
 
 /*
  * wiki.js

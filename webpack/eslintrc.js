@@ -35,11 +35,12 @@ module.exports = {
         "DIFF_DELETE": "readonly",
         "DIFF_INSERT": "readonly",
         "DIFF_EQUAL": "readonly",
+        // unavoidable globals, due to library constraints or ubiquity
+        "Mzp": "readonly",
         // globals exposed through explicit definition under `window.`
         "k": "readonly",
         "gettext": "readonly",
         "interpolate": "readonly",
-        "Mzp": "readonly",
         "BrowserDetect": "readonly",
         "Modernizr": "readonly",
         "Marky": "readonly",
