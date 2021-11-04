@@ -1,3 +1,5 @@
+import "sumo/js/protocol";
+
 export default function detailsInit() {
   'use strict';
   var _mqWide = matchMedia('(max-width: 1055px)');
