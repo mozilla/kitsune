@@ -507,7 +507,9 @@ MIDDLEWARE = (
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # This has to come after NoVarySessionMiddleware.
     "django.contrib.messages.middleware.MessageMiddleware",
-    # This should come after MessageMiddleware
+    # refresh middleware for Firefox Accounts
+    "kitsune.sumo.middleware.ValidateAccessTokenMiddleware",
+    # refresh middleware for the Admin interface - uses IAM
     "kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware",
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
@@ -602,12 +604,19 @@ else:
         FXA_USE_NONCE = config("FXA_USE_NONCE", False)
         FXA_LOGOUT_REDIRECT_URL = config("FXA_LOGOUT_REDIRECT_URL", "/")
         FXA_USERNAME_ALGO = config("FXA_USERNAME_ALGO", default=_username_algo)
-        FXA_STORE_ACCESS_TOKEN = config("FXA_STORE_ACCESS_TOKEN", default=False, cast=bool)
+        FXA_STORE_ACCESS_TOKEN = config("FXA_STORE_ACCESS_TOKEN", default=True, cast=bool)
         FXA_STORE_ID_TOKEN = config("FXA_STORE_ID_TOKEN", default=False, cast=bool)
         FXA_SUBSCRIPTIONS = config(
             "FXA_SUBSCRIPTIONS", default="https://accounts.firefox.com/subscriptions"
         )
         FXA_SET_ISSUER = config("FXA_SET_ISSUER", default="https://accounts.firefox.com")
+        FXA_VERIFY_URL = config(
+            "FXA_VERIFY_URL", default="https://oauth.accounts.firefox.com/v1/verify"
+        )
+        # Defaults to an hour
+        FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS = config(
+            "FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS", default=3600, cast=int
+        )
 
 ADMIN_REDIRECT_URL = config("ADMIN_REDIRECT_URL", default=None)
 
