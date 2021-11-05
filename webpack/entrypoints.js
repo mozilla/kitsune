@@ -1,4 +1,4 @@
-module.exports = {
+const entrypoints = {
   screen: ["sumo/scss/screen.scss"],
   common: [
     "sumo/js/i18n.js",
@@ -166,3 +166,17 @@ module.exports = {
     "sumo/js/gtm-snippet.js",
   ],
 }
+
+for (let key in entrypoints) {
+  if (key !== "common") {
+    // mark all entrypoints as dependent on "common" (other than itself)
+    // this ensures we don't duplicate chunks across "common" and other bundles
+    // and ensures "common" contains the only webpack runtime
+    entrypoints[key] = {
+      import: entrypoints[key],
+      dependOn: "common",
+    }
+  }
+}
+
+module.exports = entrypoints
