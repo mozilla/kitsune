@@ -1,4 +1,5 @@
 import "jquery-ui/ui/widgets/datepicker";
+import { Graph } from "sumo/js/rickshaw_utils";
 
 (function() {
 
@@ -30,11 +31,11 @@ import "jquery-ui/ui/widgets/datepicker";
       seriesSpec.push({
         name: key,
         slug: key,
-        func: k.Graph.identity(key)
+        func: Graph.identity(key)
       });
     }
 
-    new k.Graph($topics, {
+    new Graph($topics, {
       data: {
         datums: datums,
         seriesSpec: seriesSpec
@@ -62,14 +63,14 @@ import "jquery-ui/ui/widgets/datepicker";
         object.responded_72 = object.responded_72 || 0;
       });
 
-      new k.Graph($container, {
+      new Graph($container, {
         data: {
           datums: objects,
           seriesSpec: [
             {
               name: gettext('Questions'),
               slug: 'questions',
-              func: k.Graph.identity('questions'),
+              func: Graph.identity('questions'),
               color: '#5d84b2',
               axisGroup: 'questions',
               area: true
@@ -77,7 +78,7 @@ import "jquery-ui/ui/widgets/datepicker";
             {
               name: gettext('Solved'),
               slug: 'num_solved',
-              func: k.Graph.identity('solved'),
+              func: Graph.identity('solved'),
               color: '#aa4643',
               axisGroup: 'questions',
               area: true
@@ -85,7 +86,7 @@ import "jquery-ui/ui/widgets/datepicker";
             {
               name: gettext('% Solved'),
               slug: 'solved',
-              func: k.Graph.fraction('solved', 'questions'),
+              func: Graph.fraction('solved', 'questions'),
               color: '#aa4643',
               axisGroup: 'percent',
               type: 'percent'
@@ -93,7 +94,7 @@ import "jquery-ui/ui/widgets/datepicker";
             {
               name: gettext('Responded in 24 hours'),
               slug: 'num_responded_24',
-              func: k.Graph.identity('responded_24'),
+              func: Graph.identity('responded_24'),
               color: '#89a54e',
               axisGroup: 'questions',
               area: true
@@ -101,7 +102,7 @@ import "jquery-ui/ui/widgets/datepicker";
             {
               name: gettext('% Responded in 24 hours'),
               slug: 'responded_24',
-              func: k.Graph.fraction('responded_24', 'questions'),
+              func: Graph.fraction('responded_24', 'questions'),
               color: '#89a54e',
               axisGroup: 'percent',
               type: 'percent'
@@ -109,7 +110,7 @@ import "jquery-ui/ui/widgets/datepicker";
             {
               name: gettext('Responded in 72 hours'),
               slug: 'num_responded_72',
-              func: k.Graph.identity('responded_72'),
+              func: Graph.identity('responded_72'),
               color: '#80699b',
               axisGroup: 'questions',
               area: true
@@ -117,7 +118,7 @@ import "jquery-ui/ui/widgets/datepicker";
             {
               name: gettext('% Responded in 72 hours'),
               slug: 'responded_72',
-              func: k.Graph.fraction('responded_72', 'questions'),
+              func: Graph.fraction('responded_72', 'questions'),
               color: '#80699b',
               axisGroup: 'percent',
               type: 'percent'

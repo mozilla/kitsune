@@ -1,12 +1,13 @@
-(function($, _) {
-  window.k = k || {};
+import CachedXHR from "sumo/js/cached_xhr";
 
-  var cxhr = new k.CachedXHR();
+export default function Search(baseUrl, params) {
+  this.baseUrl = baseUrl;
+  this.params = $.extend({}, params);
+}
 
-  function Search(baseUrl, params) {
-    this.baseUrl = baseUrl;
-    this.params = $.extend({}, params);
-  }
+(function($) {
+
+  var cxhr = new CachedXHR();
 
   Search.prototype._buildQueryUrl = function(query, params) {
     var url = this.baseUrl + '?q=' + query;
@@ -79,5 +80,4 @@
     return this;
   };
 
-  k.Search = Search;
-})(jQuery, k.nunjucksEnv);
+})(jQuery);

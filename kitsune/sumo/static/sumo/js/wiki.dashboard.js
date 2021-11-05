@@ -2,6 +2,8 @@ import "jquery-ui/ui/widgets/datepicker";
 import _values from "underscore/modules/values";
 import _each from "underscore/modules/each";
 import _map from "underscore/modules/map";
+import { Graph } from "sumo/js/rickshaw_utils";
+import { getQueryParamsAsDict } from "sumo/js/main";
 
 /*
  * kb dashboard chart
@@ -21,7 +23,7 @@ import _map from "underscore/modules/map";
         {
           name: gettext('Article Votes: % Helpful'),
           slug: 'wiki_percent',
-          func: k.Graph.fraction('kb_helpful', 'kb_votes'),
+          func: Graph.fraction('kb_helpful', 'kb_votes'),
           type: 'percent'
         }
       ]);
@@ -41,7 +43,7 @@ import _map from "underscore/modules/map";
     // product selector page reloading
     $('#product-selector select').change(function() {
       var val = $(this).val();
-      var queryParams = k.getQueryParamsAsDict(document.location.toString());
+      var queryParams = getQueryParamsAsDict(document.location.toString());
 
       if (val === '') {
         delete queryParams.product;
@@ -58,7 +60,7 @@ import _map from "underscore/modules/map";
 
   function makeVoteGraph($container, descriptors) {
     $.getJSON($container.data('url'), function(data) {
-      new k.Graph($container, {
+      new Graph($container, {
         data: {
           datums: data.objects,
           seriesSpec: descriptors
@@ -113,17 +115,17 @@ import _map from "underscore/modules/map";
             {
               name: gettext('All Articles: % Localized'),
               slug: 'percent_localized_all',
-              func: k.Graph.identity('percent_localized_all')
+              func: Graph.identity('percent_localized_all')
             },
             {
               name: gettext('Top 20 Articles: % Localized'),
               slug: 'percent_localized_top20',
-              func: k.Graph.identity('percent_localized_top20')
+              func: Graph.identity('percent_localized_top20')
             },
             {
               name: gettext('Top 100 Articles: % Localized'),
               slug: 'percent_localized_top100',
-              func: k.Graph.identity('percent_localized_top100')
+              func: Graph.identity('percent_localized_top100')
             }
           ],
           'mini',
@@ -138,7 +140,7 @@ import _map from "underscore/modules/map";
           {
             name: gettext('Active Contributors'),
             slug: 'active_contributors',
-            func: k.Graph.identity('active_contributors')
+            func: Graph.identity('active_contributors')
           }
         ],
         false,
@@ -152,7 +154,7 @@ import _map from "underscore/modules/map";
 
 
   function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
-    var graph = new k.Graph($container, {
+    var graph = new Graph($container, {
       data: {
         datums: results,
         seriesSpec: descriptors
@@ -236,7 +238,7 @@ import _map from "underscore/modules/map";
               return {
                 name: locale,
                 slug: locale,
-                func: k.Graph.identity(locale)
+                func: Graph.identity(locale)
               };
             }),
             false,

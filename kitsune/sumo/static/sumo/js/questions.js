@@ -3,6 +3,9 @@ import "sumo/js/libs/jquery.cookie";
 import _throttle from "underscore/modules/throttle";
 import trackEvent from "sumo/js/analytics";
 import KBox from "sumo/js/kbox";
+import AjaxPreview from "sumo/js/ajaxpreview";
+import AjaxVote from "sumo/js/ajaxvote";
+import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
 
 /*
 * questions.js
@@ -49,7 +52,7 @@ import KBox from "sumo/js/kbox";
     if ($body.is('.answers')) {
       // Put last search query into search box
       $('#support-search input[name=q]')
-      .val(k.unquote($.cookie('last_search')));
+      .val(unquote($.cookie('last_search')));
 
       function takeQuestion() {
         if ($(this).val().length > 0) {
@@ -79,7 +82,7 @@ import KBox from "sumo/js/kbox";
       initEditDetails();
       addReferrerAndQueryToVoteForm();
       initReplyToAnswer();
-      new k.AjaxPreview($('#preview'));
+      new AjaxPreview($('#preview'));
     }
 
     Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question')});
@@ -87,7 +90,7 @@ import KBox from "sumo/js/kbox";
     // product selector page reloading
     $('#product-selector select').on('change', function() {
       var val = $(this).val();
-      var queryParams = k.getQueryParamsAsDict(document.location.toString());
+      var queryParams = getQueryParamsAsDict(document.location.toString());
 
       if (val === '') {
         delete queryParams.product;
@@ -193,9 +196,9 @@ import KBox from "sumo/js/kbox";
 
   function addReferrerAndQueryToVoteForm() {
     // Add the source/referrer and query terms to the helpful vote form
-    var urlParams = k.getQueryParamsAsDict(),
-      referrer = k.getReferrer(urlParams),
-      query = k.getSearchQuery(urlParams, referrer);
+    var urlParams = getQueryParamsAsDict(),
+      referrer = getReferrer(urlParams),
+      query = getSearchQuery(urlParams, referrer);
     $('form.helpful, .me-too form')
     .append($('<input type="hidden" name="referrer"/>')
     .attr('value', referrer))
@@ -208,7 +211,7 @@ import KBox from "sumo/js/kbox";
   */
   function initHelpfulVote() {
     $('.sumo-l-two-col--sidebar, #document-list, .answer-tools').each(function() {
-      new k.AjaxVote($(this).find('form.helpful'), {
+      new AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
         replaceFormWithMessage: true,
         removeForm: true
       });
@@ -288,9 +291,6 @@ import KBox from "sumo/js/kbox";
 
     container.html(container.html().replace(crashIDRegex, crashReportContainer));
   }
-
-  // For testing purposes only:
-  k.linkCrashIds = linkCrashIds;
 
   /*
   * Initialize the automatic linking of crash IDs

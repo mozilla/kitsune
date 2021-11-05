@@ -6,6 +6,8 @@ import sinon from 'sinon';
 import mochaK from './fixtures/mochaK.js';
 import mochaJquery from './fixtures/mochaJquery.js';
 
+import AjaxVote from "sumo/js/ajaxvote";
+
 describe('ajaxvote', () => {
   mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
@@ -35,7 +37,7 @@ describe('ajaxvote', () => {
     });
 
     it('should fire an event on a helpful vote', done => {
-      let ajaxVote = new k.AjaxVote($('form.vote'), {
+      let ajaxVote = new AjaxVote($('form.vote'), {
         positionMessage: true,
         removeForm: true,
       });
@@ -48,7 +50,7 @@ describe('ajaxvote', () => {
     });
 
     it('should fire an event on an unhelpful vote', done => {
-      let ajaxVote = new k.AjaxVote($('form.vote'), {
+      let ajaxVote = new AjaxVote($('form.vote'), {
         positionMessage: true,
         removeForm: true,
       });
@@ -61,7 +63,7 @@ describe('ajaxvote', () => {
     });
 
     it('should include the right data in the request', done => {
-      let ajaxVote = new k.AjaxVote($('form.vote'), {
+      let ajaxVote = new AjaxVote($('form.vote'), {
         positionMessage: true,
         removeForm: true,
       });
@@ -74,7 +76,7 @@ describe('ajaxvote', () => {
     });
 
     it('should update the UI with the response', done => {
-      let ajaxVote = new k.AjaxVote($('form.vote'), {
+      let ajaxVote = new AjaxVote($('form.vote'), {
         positionMessage: true,
         removeForm: true,
       });

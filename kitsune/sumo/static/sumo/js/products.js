@@ -1,4 +1,5 @@
 import UITour from "./libs/uitour";
+import compareVersions from "./compare_versions";
 
 (function($, BD) {
   'use strict';
@@ -7,7 +8,7 @@ import UITour from "./libs/uitour";
     var latestVersion = $('.download-firefox .download-button').data('latest-version');
 
     UITour.getConfiguration('appinfo', function(info) {
-      if (window.k.compareVersions(info.version, latestVersion) === 0) {
+      if (compareVersions(info.version, latestVersion) === 0) {
         $('.refresh-firefox').show();
         $('.download-firefox').hide();
       }

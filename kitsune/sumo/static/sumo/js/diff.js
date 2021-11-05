@@ -11,17 +11,27 @@ import {
  * Wrapper around diff_match_patch. or something like that.
  */
 
+export default function Diff(from, to, outputContainer) {
+  /* Args:
+   * from, to - the text to create a diff of
+   * outputContainer - container element for the diff html output
+   */
+  Diff.prototype.init.call(this, from, to, outputContainer);
+}
+
+// Apply diffs automatically to '.diff-this' elements using children
+// '.from', '.to' and '.output' as the parameters.
+export function initDiff($container) {
+  $container = $container || $('body');
+  $container.find('.diff-this').each(function() {
+    var $this = $(this);
+    var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
+  });
+}
+
 (function($) {
 
   'use strict';
-
-  function Diff(from, to, outputContainer) {
-    /* Args:
-     * from, to - the text to create a diff of
-     * outputContainer - container element for the diff html output
-     */
-    Diff.prototype.init.call(this, from, to, outputContainer);
-  }
 
   Diff.prototype = {
     init: function(from, to, outputContainer) {
@@ -287,20 +297,6 @@ import {
       html.push('</td></tr>');
     }
   };
-
-  // Apply diffs automatically to '.diff-this' elements using children
-  // '.from', '.to' and '.output' as the parameters.
-  function initDiff($container) {
-    $container = $container || $('body');
-    $container.find('.diff-this').each(function() {
-      var $this = $(this);
-      var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
-    });
-  }
-
-  window.k = window.k || {};
-  window.k.Diff = Diff;
-  window.k.initDiff = initDiff;
 
   initDiff();
 

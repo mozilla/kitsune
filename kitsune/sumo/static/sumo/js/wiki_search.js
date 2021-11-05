@@ -1,3 +1,6 @@
+import nunjucksEnv from "sumo/js/nunjucks";
+import Search from "sumo/js/search_utils";
+
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
@@ -7,7 +10,7 @@
   var $resultsList;
 
   // To search for only wiki articles we pass w=1
-  var search = new k.Search('/' + locale + '/search', {w: 1, format: 'json'});
+  var search = new Search('/' + locale + '/search', {w: 1, format: 'json'});
 
   function createResultsList() {
     $resultsList = $('<div />').addClass('input-dropdown');
@@ -29,7 +32,7 @@
           }
         };
 
-        $relatedDocsList.append(k.nunjucksEnv.render('wiki-related-doc.html', context));
+        $relatedDocsList.append(nunjucksEnv.render('wiki-related-doc.html', context));
       }
     });
   }
@@ -38,7 +41,7 @@
     if (!$resultsList) {
       createResultsList();
     }
-    $resultsList.html(k.nunjucksEnv.render('wiki-search-results.html', data));
+    $resultsList.html(nunjucksEnv.render('wiki-search-results.html', data));
   }
 
   function handleSearch() {
