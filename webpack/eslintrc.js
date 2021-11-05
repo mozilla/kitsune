@@ -1,4 +1,10 @@
 module.exports = {
+    "extends": [
+        "plugin:import/recommended",
+    ],
+    "settings": {
+        "import/resolver": "webpack",
+    },
     "env": {
         "es6": true,
         "browser": true
@@ -8,7 +14,11 @@ module.exports = {
         "sourceType": "module",
     },
     "rules": {
-        "no-undef": 2
+        "no-undef": 2,
+        "import/extensions": 2,
+        "import/first": 2,
+        "import/no-self-import": 2,
+        "import/no-cycle": 2,
     },
     "ignorePatterns": [
         "**/tests/**",
