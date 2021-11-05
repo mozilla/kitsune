@@ -1,4 +1,4 @@
-import Chart from './components/Chart.es6.js';
+import Chart from './components/Chart.es6';
 
 let chartSetups = {
   'retention': {
