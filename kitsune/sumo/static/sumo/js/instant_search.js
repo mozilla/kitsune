@@ -3,15 +3,18 @@ import blogIcon from "protocol/img/icons/blog.svg";
 import detailsInit from "./protocol-details-init";
 import tabsInit from "./sumo-tabs";
 import trackEvent from "sumo/js/analytics";
+import CachedXHR from "sumo/js/cached_xhr";
+import nunjucksEnv from "sumo/js/nunjucks";
+import Search from "sumo/js/search_utils";
 
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
   const searchTitle = "Search | Mozilla Support";
 
-  var search = new k.Search("/" + locale + "/search/");
+  var search = new Search("/" + locale + "/search/");
 
-  var cxhr = new k.CachedXHR();
+  var cxhr = new CachedXHR();
   var aaq_explore_step = $("#question-search-masthead").length > 0;
 
   const queries = [];
@@ -91,7 +94,7 @@ import trackEvent from "sumo/js/analytics";
       $('#main-content').after($searchContent);
     }
 
-    var $searchResults = $(k.nunjucksEnv.render("search-results.html", context));
+    var $searchResults = $(nunjucksEnv.render("search-results.html", context));
     if (aaq_explore_step) {
       $searchResults.find('section a').attr('target', '_blank');
     }
@@ -111,7 +114,7 @@ import trackEvent from "sumo/js/analytics";
     }
   }
 
-  window.k.InstantSearchSettings = {
+  const InstantSearchSettings = {
     hideContent: hideContent,
     showContent: showContent,
     render: render,
@@ -136,7 +139,7 @@ import trackEvent from "sumo/js/analytics";
         window.clearTimeout(searchTimeout);
       }
 
-      window.k.InstantSearchSettings.showContent();
+      InstantSearchSettings.showContent();
 
       if (history.state?.query) {
         history.pushState({}, searchTitle, location.href.replace("#search", ""));
@@ -146,7 +149,7 @@ import trackEvent from "sumo/js/analytics";
         window.clearTimeout(searchTimeout);
       }
 
-      k.InstantSearchSettings.hideContent();
+      InstantSearchSettings.hideContent();
 
       $form.find('input').each(function() {
         if ($(this).attr('type') === 'submit') {
@@ -174,7 +177,7 @@ import trackEvent from "sumo/js/analytics";
         search.setParams(params);
         let query = $this.val().trim();
         queries.push(query);
-        search.query(query, k.InstantSearchSettings.render);
+        search.query(query, InstantSearchSettings.render);
         trackEvent('Instant Search', 'Search', search.lastQueryUrl());
       }, 200);
     }
@@ -218,7 +221,7 @@ import trackEvent from "sumo/js/analytics";
       });
     }
 
-    search.query(null, k.InstantSearchSettings.render);
+    search.query(null, InstantSearchSettings.render);
     trackEvent("Instant Search", "Search", search.lastQueryUrl());
   });
 
@@ -235,7 +238,7 @@ import trackEvent from "sumo/js/analytics";
     // If we hijack the layout of the page and the user clicks the button again.
     // assume they want to get rid of the search.
     if ($('.hidden-search-masthead').is(':visible')) {
-      window.k.InstantSearchSettings.showContent();
+      InstantSearchSettings.showContent();
     } else if (aaq_explore_step) {
       // in aaq explore step, we don't want to show the default masthead
       $('#question-search-masthead').find('input[name=q]').focus();
@@ -256,15 +259,15 @@ import trackEvent from "sumo/js/analytics";
   function loadFromHistory(e) {
     let state = e.type == "popstate" ? e.state : history.state;
     if (state?.query) {
-      window.k.InstantSearchSettings.hideContent();
+      InstantSearchSettings.hideContent();
       $('[data-instant-search="form"] input[name="q"]').each(function() {
         $(this).val(state.query);
       });
       search.params = state.params;
       queries.push(state.query);
-      search.query(state.query, k.InstantSearchSettings.render);
+      search.query(state.query, InstantSearchSettings.render);
     } else {
-      window.k.InstantSearchSettings.showContent();
+      InstantSearchSettings.showContent();
     }
   }
 

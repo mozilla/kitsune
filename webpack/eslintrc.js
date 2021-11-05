@@ -38,7 +38,6 @@ module.exports = {
         // unavoidable globals, due to library constraints or ubiquity
         "Mzp": "readonly",
         // globals exposed through explicit definition under `window.`
-        "k": "readonly",
         "gettext": "readonly",
         "interpolate": "readonly",
         "BrowserDetect": "readonly",

@@ -1,4 +1,5 @@
 import "sumo/js/libs/jquery.autoresize";
+import AjaxPreview from "sumo/js/ajaxpreview";
 
 /*
  * Make textarea in replies auto expanding.
@@ -8,7 +9,7 @@ import "sumo/js/libs/jquery.autoresize";
 $(document).ready(function() {
   // Show the ajax preview on the new message page.
   Marky.createSimpleToolbar('#new-message .editor-tools', '#id_message');
-  new k.AjaxPreview($('#preview-btn'), {
+  new AjaxPreview($('#preview-btn'), {
     changeHash: false
   });
 
@@ -24,7 +25,7 @@ $(document).ready(function() {
     $('#read-message .editor-tools').show();
     $('#read-message input[type=submit]').show();
     Marky.createSimpleToolbar('#read-message .editor-tools', '#id_message', {privateMessaging: true});
-    new k.AjaxPreview($('#preview-btn'), {
+    new AjaxPreview($('#preview-btn'), {
       changeHash: false
     });
   });

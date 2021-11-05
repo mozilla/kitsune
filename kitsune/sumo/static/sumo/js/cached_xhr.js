@@ -1,9 +1,7 @@
+export default function CachedXHR() {};
+
 (function($) {
-  window.k = window.k || {};
-
   var cache = {};
-
-  function CachedXHR() {}
 
   CachedXHR.prototype.dumpCache = function() {
     return cache;
@@ -65,6 +63,4 @@
 
     return self;
   };
-
-  k.CachedXHR = CachedXHR;
 })(jQuery);

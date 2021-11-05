@@ -87,12 +87,12 @@ import _keys from "underscore/modules/keys";
     });
   }
 
-  k.TagsFilter = {
+  const TagsFilter = {
     init: init
   };
 
   $(document).ready(function() {
-    k.TagsFilter.init();
+    TagsFilter.init();
   });
 
 })(jQuery);

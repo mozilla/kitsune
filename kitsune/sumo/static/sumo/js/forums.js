@@ -1,4 +1,5 @@
 import KBox from "sumo/js/kbox";
+import AjaxPreview from "sumo/js/ajaxpreview";
 
 /*
  * forums.js
@@ -13,7 +14,7 @@ import KBox from "sumo/js/kbox";
       '#reply-content, #id_content',
       {mediaButton: true});
 
-    new k.AjaxPreview($('#preview'));
+    new AjaxPreview($('#preview'));
 
     $('.post-action a.reply').click(function() {
       var post = $(this).data('post'),

@@ -24,12 +24,9 @@ describe('instant search', () => {
   describe('', () => {
     let $sandbox;
     let clock;
-    let cxhrMock;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers();
-      cxhrMock = sinon.mock({request: () => {}});
-      window.k.CachedXHR = () => cxhrMock.object;
       window.matchMedia = () => {
         return {
           matches: false,

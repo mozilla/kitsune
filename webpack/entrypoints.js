@@ -5,9 +5,6 @@ const entrypoints = {
     "sumo/js/templates/macros.js",
     "sumo/js/templates/search-results-list.js",
     "sumo/js/templates/search-results.js",
-    "sumo/js/nunjucks.js",
-    "sumo/js/cached_xhr.js",
-    "sumo/js/search_utils.js",
     "sumo/js/browserdetect.js",
     "sumo/js/kbox.js",
     "sumo/js/main.js",
@@ -39,8 +36,6 @@ const entrypoints = {
   ],
   questions: [
     "sumo/js/markup.js",
-    "sumo/js/ajaxvote.js",
-    "sumo/js/ajaxpreview.js",
     "sumo/js/remote.js",
     "sumo/js/aaq.js",
     "sumo/js/questions.js",
@@ -57,7 +52,6 @@ const entrypoints = {
     "sumo/js/location.js",
   ],
   products: [
-    "sumo/js/compare_versions.js",
     "sumo/js/products.js",
   ],
   search: [
@@ -65,7 +59,6 @@ const entrypoints = {
   ],
   forums: [
     "sumo/js/markup.js",
-    "sumo/js/ajaxpreview.js",
     "sumo/js/forums.js",
     "sumo/js/reportabuse.js",
   ],
@@ -76,8 +69,6 @@ const entrypoints = {
     "sumo/js/markup.js",
     "sumo/js/users.autocomplete.js",
     "sumo/js/showfor.js",
-    "sumo/js/ajaxvote.js",
-    "sumo/js/ajaxpreview.js",
     "sumo/js/wiki.js",
     "sumo/js/tags.js",
     "sumo/js/dashboards.js",
@@ -113,7 +104,6 @@ const entrypoints = {
   messages: [
     "sumo/js/markup.js",
     "sumo/js/users.autocomplete.js",
-    "sumo/js/ajaxpreview.js",
     "sumo/js/messages.js",
   ],
   groups: [

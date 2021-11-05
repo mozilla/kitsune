@@ -1,9 +1,9 @@
 import nunjucks from "nunjucks/browser/nunjucks-slim";
 
-(function($) {
-  window.k = window.k || {};
+var env = nunjucks.configure({autoescape: true});
+export default env;
 
-  var env = nunjucks.configure({autoescape: true});
+(function($) {
 
   env.addGlobal('_', gettext);
   env.addGlobal('ngettext', window.ngettext);
@@ -64,5 +64,4 @@ import nunjucks from "nunjucks/browser/nunjucks-slim";
     return encodeURI(uri);
   });
 
-  k.nunjucksEnv = env;
 })(jQuery);

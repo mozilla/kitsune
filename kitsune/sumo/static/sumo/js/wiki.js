@@ -10,6 +10,10 @@ import "codemirror/addon/hint/show-hint";
 import "sumo/js/codemirror.sumo-hint";
 import "sumo/js/codemirror.sumo-mode";
 import "sumo/js/protocol";
+import AjaxPreview from "sumo/js/ajaxpreview";
+import AjaxVote from "sumo/js/ajaxvote";
+import { initDiff } from "sumo/js/diff";
+import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
 
 /*
  * wiki.js
@@ -28,10 +32,10 @@ import "sumo/js/protocol";
     if ($body.is('.document')) {  // Document page
       // Put last search query into search box
       $('#support-search input[name=q]')
-        .val(k.unquote($.cookie('last_search')));
+        .val(unquote($.cookie('last_search')));
       new ShowFor();
       addReferrerAndQueryToVoteForm();
-      new k.AjaxVote('.document-vote form', {
+      new AjaxVote('.document-vote form', {
         positionMessage: false,
         replaceFormWithMessage: true,
         removeForm: true
@@ -231,7 +235,7 @@ import "sumo/js/protocol";
   function initArticlePreview() {
     var $preview = $('#preview'),
       $previewBottom = $('#preview-bottom'),
-      preview = new k.AjaxPreview($('.btn-preview'), {
+      preview = new AjaxPreview($('.btn-preview'), {
         contentElement: $('#id_content'),
         previewElement: $preview
       });
@@ -254,7 +258,7 @@ import "sumo/js/protocol";
     $diff.addClass('diff-this');
     $diffButton.click(function() {
       $diff.find('.to').text($('#id_content').val());
-      k.initDiff($diff.parent());
+      initDiff($diff.parent());
       $previewBottom.show();
       $('#preview').empty();
     });
@@ -395,7 +399,7 @@ import "sumo/js/protocol";
           kbox.close();
           $diff.replaceWith(html);
           initDiffPicker();
-          k.initDiff();
+          initDiff();
         }
       });
     });
@@ -434,9 +438,9 @@ import "sumo/js/protocol";
 
   function addReferrerAndQueryToVoteForm() {
     // Add the source/referrer and query terms to the helpful vote form
-    var urlParams = k.getQueryParamsAsDict(),
-      referrer = k.getReferrer(urlParams),
-      query = k.getSearchQuery(urlParams, referrer);
+    var urlParams = getQueryParamsAsDict(),
+      referrer = getReferrer(urlParams),
+      query = getSearchQuery(urlParams, referrer);
     $('.document-vote form')
       .append($('<input type="hidden" name="referrer"/>')
         .attr('value', referrer))
@@ -695,7 +699,7 @@ import "sumo/js/protocol";
         $this.parent().find('.close-diff').show();
         $this.parent().find('.loading').hide();
 
-        k.initDiff();
+        initDiff();
       });
 
       return false;
@@ -727,7 +731,7 @@ import "sumo/js/protocol";
 
   $(document).ready(init);
 
-  window.k.makeWikiCollapsable = function() {
+  function makeWikiCollapsable() {
     // Hide the TOC
     $('#toc').hide();
 
@@ -767,7 +771,7 @@ import "sumo/js/protocol";
   };
 
   if ($('#doc-content').is('.collapsible')) {
-    k.makeWikiCollapsable();
+    makeWikiCollapsable();
   }
 
   function initExitSupportFor() {
