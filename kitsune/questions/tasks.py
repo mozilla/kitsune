@@ -8,7 +8,6 @@ from celery import task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection, transaction
-from multidb.pinning import pin_this_thread, unpin_this_thread
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -23,17 +22,12 @@ def update_question_votes(question_id):
 
     log.debug("Got a new QuestionVote for question_id=%s." % question_id)
 
-    # Pin to master db to avoid lag delay issues.
-    pin_this_thread()
-
     try:
         q = Question.objects.get(id=question_id)
         q.sync_num_votes_past_week()
         q.save(force_update=True)
     except Question.DoesNotExist:
         log.info("Question id=%s deleted before task." % question_id)
-
-    unpin_this_thread()
 
 
 @task(rate_limit="4/s")

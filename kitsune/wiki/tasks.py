@@ -13,7 +13,6 @@ from django.core.mail import mail_admins
 from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _
-from multidb.pinning import pin_this_thread, unpin_this_thread
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -179,7 +178,6 @@ def add_short_links(doc_ids):
     base_url = "https://{0}%s".format(Site.objects.get_current().domain)
     docs = Document.objects.filter(id__in=doc_ids)
     try:
-        pin_this_thread()  # Stick to master.
         for doc in docs:
             # Use django's reverse so the locale isn't included.
             endpoint = django_reverse("wiki.document", args=[doc.slug])
@@ -188,8 +186,6 @@ def add_short_links(doc_ids):
         # The next run of the `generate_missing_share_links` cron job will
         # catch all documents that were unable to be processed.
         pass
-    finally:
-        unpin_this_thread()
 
 
 @task(rate_limit="3/h")
@@ -216,8 +212,6 @@ def _rebuild_kb_chunk(data):
 
     """
     log.info("Rebuilding %s documents." % len(data))
-
-    pin_this_thread()  # Stick to master.
 
     messages = []
     for pk in data:
@@ -258,8 +252,6 @@ def _rebuild_kb_chunk(data):
         mail_admins(subject=subject, message="\n".join(messages))
     if not transaction.get_connection().in_atomic_block:
         transaction.commit()
-
-    unpin_this_thread()  # Not all tasks need to do use the master.
 
 
 @task()
@@ -313,26 +305,18 @@ def render_document_cascade(base_doc_id):
     except Document.DoesNotExist as err:
         capture_exception(err)
         return
-    # In case any thing goes wrong, this guarantees we unpin the DB
-    try:
-        # Sends all writes to the master DB. Slaves are readonly.
-        pin_this_thread()
+    todo = {base_doc}
+    done = set()
 
-        todo = {base_doc}
-        done = set()
-
-        while todo:
-            d = todo.pop()
-            if d in done:
-                # Don't process a node twice.
-                continue
-            d.html = d.parse_and_calculate_links()
-            d.save()
-            done.add(d)
-            todo.update(
-                link_to.linked_from
-                for link_to in d.links_to().filter(kind__in=["template", "include"])
-            )
-
-    finally:
-        unpin_this_thread()
+    while todo:
+        d = todo.pop()
+        if d in done:
+            # Don't process a node twice.
+            continue
+        d.html = d.parse_and_calculate_links()
+        d.save()
+        done.add(d)
+        todo.update(
+            link_to.linked_from
+            for link_to in d.links_to().filter(kind__in=["template", "include"])
+        )
