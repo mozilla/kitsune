@@ -1,7 +1,4 @@
 -r default.in
 flake8~=3.8.4
 nose-exclude~=0.4.1
-nosenicedots~=0.5
-pytest-selenium~=1.5.0
-pytest-xdist~=1.15.0
 testfixtures~=4.5.0

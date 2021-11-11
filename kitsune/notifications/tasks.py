@@ -7,7 +7,6 @@ from actstream.models import Action, Follow
 from celery import task
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from multidb.pinning import use_master
 from requests.exceptions import RequestException
 
 from kitsune.notifications.decorators import notification_handler, notification_handlers
@@ -83,7 +82,6 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
 
 
 @task(ignore_result=True)
-@use_master
 def add_notification_for_action(action_id: int):
     action = Action.objects.get(id=action_id)
 
@@ -101,7 +99,6 @@ def add_notification_for_action(action_id: int):
 
 
 @task(ignore_result=True)
-@use_master
 def send_realtimes_for_action(action_id: int):
     action = Action.objects.get(id=action_id)
     query = _full_ct_query(action)

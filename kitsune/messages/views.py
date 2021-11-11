@@ -2,13 +2,11 @@ import json
 
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import ugettext as _, ungettext
+from django.utils.translation import ugettext as _
+from django.utils.translation import ungettext
 from django.views.decorators.http import require_POST
-
-from multidb.pinning import mark_as_write
-from kitsune.sumo.utils import is_ratelimited
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE
@@ -16,7 +14,7 @@ from kitsune.messages.forms import MessageForm, ReplyForm
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.utils import send_message
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import is_ratelimited, paginate
 
 
 @login_required
@@ -39,8 +37,6 @@ def read(request, msgid):
     initial = {"to": message.sender, "in_reply_to": message.pk}
     form = ReplyForm(initial=initial)
     response = render(request, "messages/read.html", {"message": message, "form": form})
-    if was_new:
-        response = mark_as_write(response)
     return response
 
 

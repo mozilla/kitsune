@@ -1,8 +1,7 @@
-from multidb.middleware import PINNING_COOKIE
 from nose.tools import eq_
 
 from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 
@@ -37,7 +36,6 @@ class ReadMessageTests(TestCase):
         resp = self.client.get(reverse("messages.read", args=[i.pk]), follow=True)
         eq_(200, resp.status_code)
         assert InboxMessage.objects.get(pk=i.pk).read
-        assert PINNING_COOKIE in resp.cookies
 
     def test_unread_does_not_pin(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1, message="foo", read=True)
@@ -45,7 +43,6 @@ class ReadMessageTests(TestCase):
         resp = self.client.get(reverse("messages.read", args=[i.pk]), follow=True)
         eq_(200, resp.status_code)
         assert InboxMessage.objects.get(pk=i.pk).read
-        assert PINNING_COOKIE not in resp.cookies
 
     def test_mark_message_replied(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1, message="foo")
