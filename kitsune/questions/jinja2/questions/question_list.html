@@ -130,11 +130,13 @@
 
 <nav id="owner-tabs" class="tabs">
     <ul class="tabs--list subtopics">
-      <li class="tabs--item">
-        <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>
-          <span>{{ _('All') }}</span>
-        </a>
-      </li>
+      {% if request.user.is_authenticated %}
+        <li class="tabs--item">
+          <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>
+            <span>{{ _('All') }}</span>
+          </a>
+        </li>
+      {% endif %}
       <li class="tabs--item">
         <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>
           <span>{{ _('Attention needed') }}</span>
@@ -145,11 +147,13 @@
           <span>{{ _('Responded') }}</span>
         </a>
       </li>
-      <li class="tabs--item">
-        <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>
-          <span>{{ _('Done') }}</span>
-        </a>
-      </li>
+      {% if request.user.is_authenticated %}
+        <li class="tabs--item">
+          <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>
+            <span>{{ _('Done') }}</span>
+          </a>
+        </li>
+      {% endif %}
     </ul>
   </nav>
 
