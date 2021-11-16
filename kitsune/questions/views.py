@@ -227,6 +227,9 @@ def question_list(request, product_slug):
     oldest_date = date.today() - timedelta(days=90)
     question_qs = question_qs.exclude(created__lt=oldest_date, num_answers=0)
 
+    # Exclude questions updated over 1 year ago to avoid sorting the entire table.
+    question_qs = question_qs.filter(updated__gt=date.today() - timedelta(days=365))
+
     # Filter by products.
     if products:
         # This filter will match if any of the products on a question have the
