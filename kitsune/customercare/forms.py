@@ -3,6 +3,8 @@ from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.customercare.zendesk import CATEGORY_CHOICES, OS_CHOICES, ZendeskClient
 
+PRODUCTS_WITH_OS = ["firefox-private-network-vpn"]
+
 
 class ZendeskForm(forms.Form):
     """Form for submitting a ticket to Zendesk."""
@@ -23,6 +25,8 @@ class ZendeskForm(forms.Form):
     def __init__(self, *args, product, **kwargs):
         kwargs.update({"initial": {"product": product.slug}})
         super().__init__(*args, **kwargs)
+        if product.slug not in PRODUCTS_WITH_OS:
+            del self.fields["os"]
 
     def send(self, user):
         client = ZendeskClient()
