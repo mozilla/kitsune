@@ -773,6 +773,17 @@ products = OrderedDict(
                 ),
             },
         ),
+        (
+            "relay",
+            {
+                "name": _lazy("Firefox Relay"),
+                "subtitle": _lazy("Service that lets you create aliases to hide your real email"),
+                "extra_fields": [],
+                "tags": ["relay"],
+                "product": "relay",
+                "categories": OrderedDict([]),
+            },
+        ),
     ]
 )
 
