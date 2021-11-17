@@ -46,7 +46,7 @@ from kitsune.questions.forms import (
     WatchQuestionForm,
 )
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.utils import get_mobile_product_from_ua, get_featured_articles
+from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -128,7 +128,7 @@ def question_list(request, product_slug):
 
     order = request.GET.get("order", "updated")
     if order not in ORDER_BY:
-        order == "updated"
+        order = "updated"
     sort = request.GET.get("sort", "desc")
 
     product_slugs = product_slug.split(",")
