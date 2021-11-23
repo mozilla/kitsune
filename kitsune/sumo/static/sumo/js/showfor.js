@@ -464,7 +464,7 @@
 
         /* Loop through each of the possible slugs for windows. If
          * any of them match, then this name matches. */
-        var windowsTypes = ['winxp', 'win7', 'win8', 'win10'];
+        var windowsTypes = ['winxp', 'win7', 'win8', 'win10', 'win11'];
         var winMatches = false;
 
         windowsTypes.forEach(function(fakeName) {
