@@ -28,7 +28,7 @@ conduit {
         stage("Build Docker Images") {
             if (!dockerImageExists(docker_image)) {
                 try {
-                    if (env.GIT_BRANCH == "master") {
+                    if (env.GIT_BRANCH == "main") {
                         // lint and push l10n files to prod repo if clean
                         sh "scripts/lint-l10n-repo.sh --push"
                     }
@@ -76,8 +76,8 @@ conduit {
             }
         }
         stage("Upload Latest Images") {
-            // When on master branch tag and push push the latest tag
-            onBranch("master") {
+            // When on main branch tag and push push the latest tag
+            onBranch("main") {
                 try {
                     dockerImageTag("${config.project.docker_name}:full-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:full-latest")
                     dockerImagePush("${config.project.docker_name}:full-latest", "mozjenkins-docker-hub")

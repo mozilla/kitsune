@@ -69,7 +69,7 @@ COPY --from=base /venv /venv
 
 COPY . .
 
-ARG LOCALE_ENV=master
+ARG LOCALE_ENV=main
 ENV LOCALE_ENV=${LOCALE_ENV}
 RUN ./docker/bin/fetch-l10n-files.sh
 RUN ./scripts/compile-linted-mo.sh && \

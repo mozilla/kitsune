@@ -4,7 +4,7 @@ set -e
 DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune}
 GIT_SHA=${GIT_SHA:-auto}
 GIT_SHA_SHORT=${GIT_SHA_SHORT:-$GIT_SHA}
-LOCALE_ENV=${LOCALE_ENV:-master}
+LOCALE_ENV=${LOCALE_ENV:-main}
 
 if [ $GIT_SHA == "auto" ];
 then
