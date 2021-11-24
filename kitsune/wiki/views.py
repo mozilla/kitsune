@@ -83,6 +83,7 @@ def doc_page_cache(view):
             request.user.is_authenticated
             or request.GET.get("redirect") == "no"
             or request.session.get("product_key")
+            or settings.DEV
         ):
             return view(request, document_slug, *args, **kwargs)
 
