@@ -1,0 +1,110 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Banners
+//
+// A flexible banner module, supporting all breakpoints and very long text strings.
+// Image, button and close button are optional.
+//
+// .hide-on-mobile - use this modifier to hide the banner on smaller breakpoints
+// .sumo-banner-warning - use this modifier to show a warning banner
+// .sumo-banner-no-close - use this modifier to hide the close button
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/banner.njk
+//
+// Weight: 6
+//
+// Style guide: banner
+
+.sumo-banner {
+  background: var(--color-moz-inverse-bg);
+  color: var(--color-inverse);
+
+  border-radius: var(--global-radius);
+  margin: p.$spacing-2xl 0;
+  position: relative;
+
+  .content {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding-top: p.$spacing-lg;
+    padding-bottom: p.$spacing-lg;
+  }
+
+  svg, .icon {
+    width: 36px;
+    height: 36px;
+    color: inherit;
+    flex-shrink: 0;
+    margin-bottom: p.$spacing-lg;
+  }
+
+  .heading {
+    @include c.text-body-cta;
+    text-align: center;
+    color: inherit;
+    flex-grow: 1;
+    margin: 0 p.$spacing-xl;
+    a {
+      color: inherit;
+    }
+  }
+
+  .sumo-button {
+    flex: 0 0 auto;
+    margin: 0 p.$spacing-xl;
+    margin-top: p.$spacing-lg;
+    word-break: break-word;
+  }
+
+  .sumo-close-button {
+    flex: 0 0 auto;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+  }
+
+  @media #{p.$mq-md} {
+    .content {
+      flex-direction: row;
+      padding: 0;
+    }
+
+    svg, .icon {
+      margin-left: p.$spacing-xl;
+      margin-bottom: 0;
+    }
+
+    .heading {
+      text-align: left;
+      margin: p.$spacing-xl;
+    }
+
+    .sumo-button {
+      margin-bottom: p.$spacing-lg;
+      margin-left: 0;
+      max-width: 20%;
+    }
+
+    .sumo-close-button {
+      position: static;
+      margin-right: p.$spacing-xl;
+    }
+  }
+}
+
+.sumo-banner-warning {
+  background: var(--color-warning);
+  color: var(--color-heading);
+}
+
+.sumo-banner-no-close {
+  .sumo-close-button {
+    display: none;
+  }
+}
+
+[data-close-initial=hidden] {
+  display: none;
+}

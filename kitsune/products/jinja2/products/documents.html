@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
-{% from 'includes/common_macros.html' import download_firefox %}
+{% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
@@ -69,6 +69,18 @@
         {% endif %}
         </div>
       </header>
+
+      {% if topic.slug == "Focus-ios" %}
+        {{ sumo_banner(
+          id="focus-ios-beta-banner",
+          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for iOS. <a href="https://testflight.apple.com/join/dH8lkFZi">Follow these steps to get started.</a>'),
+        ) }}
+      {% elif topic.slug == "firefox-focus-android" %}
+        {{ sumo_banner(
+          id="focus-android-beta-banner",
+          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for Android. <a href="">Learn how to get started.</a>'),
+        ) }}
+      {% endif %}
 
       {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
 
