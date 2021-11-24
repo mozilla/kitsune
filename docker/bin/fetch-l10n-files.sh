@@ -2,9 +2,9 @@
 
 set -exo pipefail
 
-LOCALE_ENV="${LOCALE_ENV:-master}"
+LOCALE_ENV="${LOCALE_ENV:-main}"
 
-if [[ "$LOCALE_ENV" == "master" ]]; then
+if [[ "$LOCALE_ENV" == "main" ]]; then
     LOCALE_URL="https://github.com/mozilla-l10n/sumo-l10n/archive/master.tar.gz"
 elif [[ "$LOCALE_ENV" == "production" ]]; then
     LOCALE_URL="https://github.com/mozilla-it/sumo-l10n-prod/archive/master.tar.gz"

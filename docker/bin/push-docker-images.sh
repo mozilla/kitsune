@@ -19,7 +19,7 @@ for image in base base-dev staticfiles locales full-no-locales full;
 do
 	docker push ${DOCKER_REPO}:${image}-${GIT_SHA}
 
-    if [ $GIT_BRANCH == "master" ];
+    if [ $GIT_BRANCH == "main" ];
     then
 	    docker push ${DOCKER_REPO}:${image}-latest
     fi

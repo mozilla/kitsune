@@ -34,7 +34,7 @@ The Quick and Dirty
 Very quick, very little explanation. Those with strong git fu may already see
 some shortcuts. Use them!
 
-First, clone your fork, and then point the master branch to Mozilla's fork.
+First, clone your fork, and then point the main branch to Mozilla's fork.
 Assuming your Github account is ``foobar`` and you've already forked
 Kitsune::
 
@@ -42,7 +42,7 @@ Kitsune::
     cd kitsune
     git remote add mozilla https://github.com/mozilla/kitsune.git
     git fetch mozilla
-    git checkout -t mozilla/master -B master
+    git checkout -t mozilla/main -B main
 
 If you haven't set up your local git user, please do before committing any code
 for Kitsune. This way you can take credit for your work::
@@ -52,8 +52,8 @@ for Kitsune. This way you can take credit for your work::
 
 You should only need to do that once. Here's the bit to do every time::
 
-    git checkout master
-    git reset --hard mozilla/master
+    git checkout main
+    git reset --hard mozilla/main
     git checkout -b my-feature-123456
 
     # Make a change and commit it.
@@ -79,12 +79,12 @@ that says "Merge pull Request". If you would prefer to do it manually (or
 if there are merge conflicts, you can do this::
 
     # r+! Merge
-    git checkout master
+    git checkout main
     git fetch mozilla
-    git reset --hard mozilla/master
+    git reset --hard mozilla/main
     git merge --no-ff my-feature-123456
-    git push mozilla master  # Bots will alert everyone!
-    git push origin master  # Optional but nice.
+    git push mozilla main  # Bots will alert everyone!
+    git push origin main  # Optional but nice.
 
 After the pull request is closed::
 
@@ -113,12 +113,12 @@ To help keep up to date, you should add ``mozilla/kitsune`` as a remote::
     cd kitsune
     git remote add mozilla https://github.com/mozilla/kitsune.git
 
-You should avoid changing your ``master`` branch, it should track
-``mozilla/master``. This can help::
+You should avoid changing your ``main`` branch, it should track
+``mozilla/main``. This can help::
 
     git fetch mozilla
-    # Update your master branch to track Mozilla's master branch instead.
-    git checkout -B master -t mozilla/master # Update your master branch to
+    # Update your main branch to track Mozilla's main branch instead.
+    git checkout -B main -t mozilla/main # Update your main branch to
 
 If you haven't set up your local git user, please do before committing any code
 for Kitsune. This way you can take credit for your work::
@@ -126,15 +126,15 @@ for Kitsune. This way you can take credit for your work::
     git config user.email your@github.email
     git config user.name "Your Name"
 
-The correct way to keep your local master up to date is::
+The correct way to keep your local main up to date is::
 
-    git checkout master
+    git checkout main
     git fetch mozilla
-    git reset --hard mozilla/master
+    git reset --hard mozilla/main
 
-This will forcibly move your local master branch to whatever is on the Mozilla
-master branch, destroying anything you have committed that wasn't pushed.
-Remember to always work on a branch that is not master!
+This will forcibly move your local main branch to whatever is on the Mozilla
+main branch, destroying anything you have committed that wasn't pushed.
+Remember to always work on a branch that is not main!
 
 
 Find a Bug
@@ -173,16 +173,16 @@ Fix the Bug on a Branch
    single-commit. Large features may differ.
 
 All bug fixes, changes, new features, etc, should be done on a "feature
-branch", which just means "any branch besides ``master``." You should make sure
-your local ``master`` branch is up to date (see above) before starting a new
+branch", which just means "any branch besides ``main``." You should make sure
+your local ``main`` branch is up to date (see above) before starting a new
 feature branch. Your feature branch should include the bug number in the branch
 name, if applicable.
 
 ::
 
-    git checkout master
+    git checkout main
     git fetch mozilla
-    git reset --hard upstream/master  # Update local master.
+    git reset --hard upstream/main  # Update local main.
     git checkout -b my-feature-branch-123456  # Some logical name.
 
 Now you're on a feature branch, go ahead and make your changes. Assuming you
@@ -271,8 +271,8 @@ preferred way to merge PRs when there are no complications.
 
 ::
 
-    git checkout master
-    git reset --hard mozilla/master
+    git checkout main
+    git reset --hard mozilla/main
     git merge --no-ff my-feature-branch-123456
     # Make sure tests pass.
     python manage.py test
@@ -282,22 +282,22 @@ preferred way to merge PRs when there are no complications.
 You're done! Congratulations, soon you'll have code running on one of the
 biggest sites in the world!
 
-Before pushing to ``mozilla/master``, I like to verify that the merge went fine
+Before pushing to ``mozilla/main``, I like to verify that the merge went fine
 in the logs. For the vast majority of merges, *there should not be a merge
 commit*.
 
 ::
 
     git log --graph --decorate
-    git push mozilla master             # !!! Pushing code to the primary repo/branch!
+    git push mozilla main             # !!! Pushing code to the primary repo/branch!
 
-    # Optionally, you can keep your Github master in sync.
-    git push origin master              # Not strictly necessary but kinda nice.
+    # Optionally, you can keep your Github main in sync.
+    git push origin main              # Not strictly necessary but kinda nice.
     git push origin :my-feature-branch  # Nice to clean up.
 
 This should automatically close the PR, as GitHub will notice the merge commit.
 
-Once the commit is on ``mozilla/master``, copy the commit url to the bug.
+Once the commit is on ``mozilla/main``, copy the commit url to the bug.
 
 Once the commit has been deployed to stage and prod, set the bug to
 ``RESOLVED FIXED``. This tells everyone that the fix is in production.
