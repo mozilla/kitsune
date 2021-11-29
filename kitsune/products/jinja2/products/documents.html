@@ -73,12 +73,16 @@
       {% if topic.slug == "Focus-ios" %}
         {{ sumo_banner(
           id="focus-ios-beta-banner",
-          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for iOS. <a href="https://testflight.apple.com/join/dH8lkFZi">Follow these steps to get started.</a>'),
+          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for iOS.'),
+          button_text=_('Get started'),
+          button_link="https://testflight.apple.com/join/dH8lkFZi",
         ) }}
       {% elif topic.slug == "firefox-focus-android" %}
         {{ sumo_banner(
           id="focus-android-beta-banner",
-          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for Android. <a href="">Learn how to get started.</a>'),
+          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for Android.'),
+          button_text=_('Get started'),
+          button_link=url('wiki.document', 'download-beta-and-nightly-focus-android'),
         ) }}
       {% endif %}
 
