@@ -1,9 +1,11 @@
 import contextlib
 import re
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
 
+import requests
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
@@ -29,6 +31,7 @@ from mozilla_django_oidc.middleware import SessionRefresh
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
 from kitsune.sumo.views import handle403
+from kitsune.users.utils import get_oidc_fxa_setting
 
 
 class EnforceHostIPMiddleware(EnforceHostMiddleware):
@@ -68,6 +71,61 @@ class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
                 return HttpResponseRedirect("/admin/login/")
 
             return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
+
+
+class ValidateAccessTokenMiddleware(SessionRefresh):
+    """Validate the ID Token from FxA every hour."""
+
+    def __init__(self, get_response=None):
+        if not settings.OIDC_ENABLE or settings.DEV:
+            raise MiddlewareNotUsed
+        super(ValidateAccessTokenMiddleware, self).__init__(get_response=get_response)
+
+    @staticmethod
+    def get_settings(attr, *args):
+        """Override settings for Firefox Accounts."""
+        val = get_oidc_fxa_setting(attr)
+        if val is not None:
+            return val
+        return super(ValidateAccessTokenMiddleware, ValidateAccessTokenMiddleware).get_settings(
+            attr, *args
+        )
+
+    def process_request(self, request):
+        """Check the validity of the access_token.
+
+        Check is performed at FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS intervals.
+        """
+        if not self.is_refreshable_url(request):
+            return
+
+        # the oidc_id_token_expiration key is set by the mozilla-django-oidc library
+        expiration = request.session.get("oidc_id_token_expiration", 0)
+        now = time.time()
+        access_token = request.session.get("oidc_access_token")
+
+        if access_token and expiration < now:
+
+            response_token_info = (
+                requests.post(settings.FXA_VERIFY_URL, data={"token": access_token})
+            ).json()
+
+            # if the token is not verified, log the user out
+            if (
+                response_token_info.get("code") == 400
+                and response_token_info.get("message") == "Invalid token"
+            ):
+                profile = request.user.profile
+                profile.fxa_refresh_token = ""
+                profile.save()
+                logout(request)
+            else:
+                # we don't need to refresh the token,
+                # an expired token is valid if the FxA session is not
+                # revoked from the FxA settings
+                request.session["oidc_id_token_expiration"] = (
+                    now + settings.FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS
+                )
 
 
 class LocaleURLMiddleware(MiddlewareMixin):

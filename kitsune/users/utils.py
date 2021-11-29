@@ -130,6 +130,7 @@ def get_oidc_fxa_setting(attr):
             "access_type": "offline",
         },
         "OIDC_ADD_TOKEN_INFO_TO_USER_CLAIMS": True,
+        "OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS": settings.FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS,
     }
 
     return FXA_CONFIGURATION.get(attr, None)
