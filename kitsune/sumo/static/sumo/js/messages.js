@@ -1,5 +1,6 @@
 import "sumo/js/libs/jquery.autoresize";
 import AjaxPreview from "sumo/js/ajaxpreview";
+import Marky from "sumo/js/markup";
 
 /*
  * Make textarea in replies auto expanding.
