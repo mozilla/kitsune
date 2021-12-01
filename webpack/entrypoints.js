@@ -34,7 +34,6 @@ const entrypoints = {
     "kpi/js/kpi.browserify.js",
   ],
   questions: [
-    "sumo/js/remote.js",
     "sumo/js/questions.js",
     "sumo/js/tags.filter.js",
     "sumo/js/tags.js",

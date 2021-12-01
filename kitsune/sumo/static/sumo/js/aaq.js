@@ -1,4 +1,5 @@
 import BrowserDetect from "./browserdetect";
+import remoteTroubleshooting from "./remote";
 
 /*
  * Prepopulate system info in AAQ form
