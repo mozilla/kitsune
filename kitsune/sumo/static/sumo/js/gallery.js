@@ -194,13 +194,6 @@ import "sumo/js/kbox";
           $form.find('.on input[type="file"]').length) {
         return false;
       }
-      // Metadata must be filled out
-      if (!Modernizr.input.required &&
-          (!$form.find('input[name="title"]').val() ||
-          !$form.find('textarea[name="description"]').val() ||
-          !$form.find('select[name="locale"]').val())) {
-        return false;
-      }
 
       return true;
     },

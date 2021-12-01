@@ -214,19 +214,15 @@ function userMessageUI() {
 
   // Some messages can be dismissed permanently.
   $('.user-messages .dismissible').each(function() {
-    if (Modernizr.localstorage) {
-      var $msg = $(this);
-      if (!localStorage.getItem(key($msg))) {
-        $msg.show();
-      }
+    var $msg = $(this);
+    if (!localStorage.getItem(key($msg))) {
+      $msg.show();
     }
   });
   $('.user-messages').on('click', '.dismissible .dismiss', function(e) {
-    if (Modernizr.localstorage) {
-      var $msg = $(this).parent();
-      localStorage.setItem(key($msg), true);
-      $msg.hide();
-    }
+    var $msg = $(this).parent();
+    localStorage.setItem(key($msg), true);
+    $msg.hide();
   });
 }
 
