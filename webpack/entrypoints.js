@@ -72,13 +72,6 @@ const entrypoints = {
     "sumo/js/templates/wiki-search-results.js",
     "sumo/js/wiki_search.js",
   ],
-  rickshaw: [
-    "d3/d3.js",
-    "sumo/js/libs/d3.layout.min.js",
-    "jquery-ui/ui/widgets/sortable",
-    "jquery-ui/ui/widgets/slider",
-    "sumo/js/rickshaw_utils.js",
-  ],
   "wiki.history": [
     "sumo/js/historycharts.js",
   ],
@@ -105,7 +98,6 @@ const entrypoints = {
     "sumo/js/editable.js",
   ],
   "kpi.dashboard": [
-    "d3/d3.js",
     "kpi/js/kpi.browserify.js",
   ],
   "gtm-snippet": [

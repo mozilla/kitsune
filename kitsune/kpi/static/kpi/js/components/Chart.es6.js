@@ -1,4 +1,5 @@
 import _filter from "underscore/modules/filter";
+import d3 from "d3";
 
 /* jshint esnext: true */
 
