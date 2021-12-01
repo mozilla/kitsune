@@ -34,7 +34,6 @@ const entrypoints = {
     "kpi/js/kpi.browserify.js",
   ],
   questions: [
-    "sumo/js/markup.js",
     "sumo/js/remote.js",
     "sumo/js/aaq.js",
     "sumo/js/questions.js",
@@ -57,7 +56,6 @@ const entrypoints = {
     "sumo/js/search.js",
   ],
   forums: [
-    "sumo/js/markup.js",
     "sumo/js/forums.js",
     "sumo/js/reportabuse.js",
   ],
@@ -65,7 +63,6 @@ const entrypoints = {
     "sumo/js/gallery.js",
   ],
   wiki: [
-    "sumo/js/markup.js",
     "sumo/js/users.autocomplete.js",
     "sumo/js/showfor.js",
     "sumo/js/wiki.js",
@@ -101,13 +98,11 @@ const entrypoints = {
     "sumo/js/reportabuse.js",
   ],
   messages: [
-    "sumo/js/markup.js",
     "sumo/js/users.autocomplete.js",
     "sumo/js/messages.js",
   ],
   groups: [
     "sumo/js/users.autocomplete.js",
-    "sumo/js/markup.js",
     "sumo/js/groups.js",
     "sumo/js/editable.js",
   ],

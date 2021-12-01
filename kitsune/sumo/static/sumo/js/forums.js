@@ -1,5 +1,6 @@
 import KBox from "sumo/js/kbox";
 import AjaxPreview from "sumo/js/ajaxpreview";
+import Marky from "sumo/js/markup";
 
 /*
  * forums.js

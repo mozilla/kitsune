@@ -41,7 +41,6 @@ module.exports = {
         "gettext": "readonly",
         "interpolate": "readonly",
         "Modernizr": "readonly",
-        "Marky": "readonly",
         "AAQSystemInfo": "readonly",
         "remoteTroubleshooting": "readonly",
         "d3": "readonly",

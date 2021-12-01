@@ -1,3 +1,5 @@
+import Marky from "sumo/js/markup";
+
 /*
  * JS for Groups app
  */

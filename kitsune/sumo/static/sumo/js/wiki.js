@@ -14,6 +14,7 @@ import AjaxPreview from "sumo/js/ajaxpreview";
 import AjaxVote from "sumo/js/ajaxvote";
 import { initDiff } from "sumo/js/diff";
 import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
+import Marky from "sumo/js/markup";
 
 /*
  * wiki.js
