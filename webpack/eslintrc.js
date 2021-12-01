@@ -41,16 +41,11 @@ module.exports = {
         "gettext": "readonly",
         "interpolate": "readonly",
         "Modernizr": "readonly",
-        "d3": "readonly",
-        "abs_y": "readonly",
         "ShowFor": "readonly",
         // global references, not exposed by anything, mostly here to keep eslint quiet
         "Mozilla": "readonly",
         "_gaq": "readonly",
         "RICKSHAW_NO_COMPAT": "readonly",
-        "module": "readonly",
-        "require": "readonly",
-        "define": "readonly",
         "d": "readonly",
     }
 }

@@ -5,6 +5,7 @@ import _map from "underscore/modules/map";
 import _each from "underscore/modules/each";
 import Rickshaw from "./libs/rickshaw";
 import { dateFormat } from "sumo/js/main";
+import d3 from "d3";
 
 /* class Graph */
 export function Graph($elem, extra) {
