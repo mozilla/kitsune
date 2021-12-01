@@ -7,6 +7,7 @@ import AjaxPreview from "sumo/js/ajaxpreview";
 import AjaxVote from "sumo/js/ajaxvote";
 import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
 import Marky from "sumo/js/markup";
+import AAQSystemInfo from "sumo/js/aaq";
 
 /*
 * questions.js

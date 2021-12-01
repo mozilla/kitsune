@@ -35,7 +35,6 @@ const entrypoints = {
   ],
   questions: [
     "sumo/js/remote.js",
-    "sumo/js/aaq.js",
     "sumo/js/questions.js",
     "sumo/js/tags.filter.js",
     "sumo/js/tags.js",
