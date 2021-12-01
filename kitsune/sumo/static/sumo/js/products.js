@@ -1,7 +1,7 @@
 import UITour from "./libs/uitour";
 import compareVersions from "./compare_versions";
 
-(function($, BD) {
+(function($) {
   'use strict';
 
   $(function() {
@@ -14,4 +14,4 @@ import compareVersions from "./compare_versions";
       }
     });
   });
-})(jQuery, BrowserDetect);
+})(jQuery);

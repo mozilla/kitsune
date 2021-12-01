@@ -13,7 +13,7 @@ import _reduce from "underscore/modules/reduce";
  *   returning undefined.
  * - Deleted the browsers we don't care about.
  */
-var BrowserDetect = window.BrowserDetect = {
+const BrowserDetect = {
   init: function () {
     var detected = this.detect();
     this.browser = detected[0];
@@ -180,3 +180,4 @@ var BrowserDetect = window.BrowserDetect = {
   }
 };
 BrowserDetect.init();  // TODO: Do this lazily.
+export default BrowserDetect;

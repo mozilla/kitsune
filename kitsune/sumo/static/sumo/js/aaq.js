@@ -1,3 +1,5 @@
+import BrowserDetect from "./browserdetect";
+
 /*
  * Prepopulate system info in AAQ form
  */
