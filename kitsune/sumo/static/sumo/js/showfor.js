@@ -1,10 +1,10 @@
+import BrowserDetect from "./browserdetect";
+
 /*
  * ShowFor is a system to customize an article for an individual. It
  * will show or hide parts of an article based on spans with the class
  * "for" and a data attribute "data-for" which contains the show/hide
  * criteria.
- *
- * Depends on: browserdetect.js
  */
 
 (function($) {

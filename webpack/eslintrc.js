@@ -40,7 +40,6 @@ module.exports = {
         // globals exposed through explicit definition under `window.`
         "gettext": "readonly",
         "interpolate": "readonly",
-        "BrowserDetect": "readonly",
         "Modernizr": "readonly",
         "Marky": "readonly",
         "AAQSystemInfo": "readonly",
