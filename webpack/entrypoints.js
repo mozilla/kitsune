@@ -7,7 +7,6 @@ const entrypoints = {
     "sumo/js/templates/search-results.js",
     "sumo/js/kbox.js",
     "sumo/js/main.js",
-    "sumo/js/libs/modernizr-custom-build.js",
     "sumo/js/geoip-locale.js",
     "sumo/js/ui.js",
     "sumo/js/analytics.js",

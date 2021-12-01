@@ -43,9 +43,7 @@ import trackEvent from "sumo/js/analytics";
       if ($this.data('close-id')) {
         $target = $('#' + $this.data('close-id'));
         if ($this.data("close-memory") === "remember") {
-          if (Modernizr.localstorage) {
-            localStorage.setItem($this.data("close-id") + ".closed", true);
-          }
+          localStorage.setItem($this.data("close-id") + ".closed", true);
         } else if ($this.data("close-memory") === "session") {
           sessionStorage.setItem($this.data("close-id") + ".closed", true);
         }
@@ -69,14 +67,12 @@ import trackEvent from "sumo/js/analytics";
       var $this = $(this);
       var id = $this.data('close-id');
       if (id) {
-        if (Modernizr.localstorage) {
-          if (localStorage.getItem(id + '.closed') === 'true') {
-            var $target = $('#' + id);
-            if ($this.data('close-type') === 'remove') {
-              $target.remove();
-            } else {
-              $('#' + id).hide();
-            }
+        if (localStorage.getItem(id + '.closed') === 'true') {
+          var $target = $('#' + id);
+          if ($this.data('close-type') === 'remove') {
+            $target.remove();
+          } else {
+            $('#' + id).hide();
           }
         }
       }
@@ -102,11 +98,9 @@ import trackEvent from "sumo/js/analytics";
       var targetId = $target.attr('id');
 
       if ($this.data('toggle-sticky') && targetId) {
-        if (Modernizr.localstorage) {
-          var targetClasses = localStorage.getItem(targetId + '.classes') || '[]';
-          targetClasses = JSON.parse(targetClasses);
-          $target.addClass(targetClasses.join(' '));
-        }
+        var targetClasses = localStorage.getItem(targetId + '.classes') || '[]';
+        targetClasses = JSON.parse(targetClasses);
+        $target.addClass(targetClasses.join(' '));
       }
 
       $this.on(trigger, function(ev) {
@@ -115,19 +109,17 @@ import trackEvent from "sumo/js/analytics";
         $target.toggleClass(classname);
 
         if ($this.data('toggle-sticky') && targetId) {
-          if (Modernizr.localstorage) {
-            var classes = localStorage.getItem(targetId + '.classes') || '[]';
-            classes = JSON.parse(classes);
-            var i = classes.indexOf(classname);
+          var classes = localStorage.getItem(targetId + '.classes') || '[]';
+          classes = JSON.parse(classes);
+          var i = classes.indexOf(classname);
 
-            if ($target.hasClass(classname) && i === -1) {
-              classes.push(classname);
-            } else if (!$target.hasClass(classname) && i > -1) {
-              classes.splice(i, 1);
-            }
-
-            localStorage.setItem(targetId + '.classes', JSON.stringify(classes));
+          if ($target.hasClass(classname) && i === -1) {
+            classes.push(classname);
+          } else if (!$target.hasClass(classname) && i > -1) {
+            classes.splice(i, 1);
           }
+
+          localStorage.setItem(targetId + '.classes', JSON.stringify(classes));
         }
         return false;
       });
@@ -262,36 +254,32 @@ import trackEvent from "sumo/js/analytics";
     $folders.children('a, span').click(function() {
       var $parent = $(this).parent();
       $parent.toggleClass('selected');
-      // If local storage is available, store this for future page loads.
-      if (Modernizr.localstorage) {
-        var id = $parent.attr('id');
-        var folded = $parent.hasClass('selected');
-        if (id) {
-          localStorage.setItem(id + '.folded', folded);
-        }
+      // Store this for future page loads.
+      var id = $parent.attr('id');
+      var folded = $parent.hasClass('selected');
+      if (id) {
+        localStorage.setItem(id + '.folded', folded);
       }
       // prevent default
       return false;
     });
 
-    // If local storage is available, load the folded/unfolded state of the
+    // Load the folded/unfolded state of the
     // menus from local storage and apply it.
-    if (Modernizr.localstorage) {
-      $folders.each(function() {
-        var $this = $(this);
-        var id = $this.attr('id');
+    $folders.each(function() {
+      var $this = $(this);
+      var id = $this.attr('id');
 
-        if (id) {
-          var folded = localStorage.getItem(id + '.folded');
+      if (id) {
+        var folded = localStorage.getItem(id + '.folded');
 
-          if (folded === 'true') {
-            $this.addClass('selected');
-          } else if (folded === 'false') {
-            $this.removeClass('selected');
-          }
+        if (folded === 'true') {
+          $this.addClass('selected');
+        } else if (folded === 'false') {
+          $this.removeClass('selected');
         }
-      });
-    }
+      }
+    });
   }
 
   function correctFixedHeader() {
@@ -305,24 +293,20 @@ import trackEvent from "sumo/js/analytics";
   function initAnnouncements() {
     var $announcements = $('#announcements');
 
-    if (Modernizr.localstorage) {
-      // When an announcement is closed, remember it.
-      $announcements.on('click', '.close-button', function() {
-        var id = $(this).closest('.announce-bar').attr('id');
-        localStorage.setItem(id + '.closed', true);
-      });
+    // When an announcement is closed, remember it.
+    $announcements.on('click', '.close-button', function() {
+      var id = $(this).closest('.announce-bar').attr('id');
+      localStorage.setItem(id + '.closed', true);
+    });
 
-      // If an announcement has not been hidden before, show it.
-      $announcements.find('.announce-bar').each(function() {
-        var $this = $(this);
-        var id = $this.attr('id');
-        if (localStorage.getItem(id + '.closed') !== 'true') {
-          $this.show();
-        }
-      });
-    } else {
-      $announcements.find('.announce-bar').show();
-    }
+    // If an announcement has not been hidden before, show it.
+    $announcements.find('.announce-bar').each(function() {
+      var $this = $(this);
+      var id = $this.attr('id');
+      if (localStorage.getItem(id + '.closed') !== 'true') {
+        $this.show();
+      }
+    });
   }
 
   $(document).on('click', '#show-password', function() {
