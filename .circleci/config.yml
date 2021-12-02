@@ -26,27 +26,29 @@ jobs:
           name: Build test image
           command: |
             cp .env-build .env
-            DOCKER_BUILDKIT=1 ./bin/dc.sh build --progress=plain test
+            ./bin/dc_ci.sh build --progress=plain test
       - run:
           # copy synonym files to elasticsearch7 container, since circleci doesn't support volume mounts:
           # https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
           name: Copy synonym files to elasticsearch7
           command: |
-            ./bin/dc.sh up -d elasticsearch7
+            ./bin/dc_ci.sh up -d elasticsearch7
             docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
       - run:
           name: Run unit tests
-          command: ./bin/dc.sh run test ./bin/run-unit-tests.sh
+          command: ./bin/dc_ci.sh run test ./bin/run-unit-tests.sh
       - run:
           name: Run js tests
-          command: ./bin/dc.sh run test ./bin/run-mocha-tests.sh
+          command: ./bin/dc_ci.sh run test ./bin/run-mocha-tests.sh
       - when:
           condition:
-            equal: [ main, << pipeline.git.branch >> ]
+            or:
+              - equal: [ main, << pipeline.git.branch >> ]
+              - matches: { pattern: "^prod-.+$", value: << pipeline.git.branch >> }
           steps:
             - run:
                 name: Build prod image
-                command: DOCKER_BUILDKIT=1 ./bin/dc.sh build --progress=plain prod
+                command: ./bin/dc_ci.sh build --progress=plain prod
             - run:
                 name: Push prod image
                 command: |

@@ -4,6 +4,7 @@ DC = $(shell which docker-compose)
 else
 DC = $(shell which docker) compose
 endif
+PIP_TIMEOUT=60
 
 default: help
 	@echo ""
@@ -37,8 +38,8 @@ help:
 .docker-build:
 	${MAKE} build
 
-build: .docker-build
-	${DC} build web
+build:
+	${DC} build --build-arg PIP_DEFAULT_TIMEOUT=${PIP_TIMEOUT} web
 	touch .docker-build
 
 rebuild: clean build

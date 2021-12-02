@@ -1,7 +1,7 @@
 #######################
 # Common dependencies #
 #######################
-FROM python:3.9-buster AS base
+FROM python:3.9-bullseye AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -93,7 +93,7 @@ RUN ./scripts/l10n-fetch-lint-compile.sh && \
 ##########################
 # Clean production image #
 ##########################
-FROM python:3.9-slim-buster AS prod
+FROM python:3.9-slim-bullseye AS prod
 
 WORKDIR /app
 
