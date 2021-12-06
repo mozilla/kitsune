@@ -54,7 +54,8 @@ jobs:
                 command: |
                   docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
                   source docker/bin/set_git_env_vars.sh
-                  docker push mozilla/kitsune:prod-${GIT_COMMIT_SHORT}
+                  docker image tag mozilla/kitsune:prod-${GIT_COMMIT_SHORT} mozilla/kitsune:prod-latest
+                  docker image push --all-tags mozilla/kitsune:prod-latest
                   docker logout
             - aws-cli/setup
             - run:

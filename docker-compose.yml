@@ -58,7 +58,9 @@ services:
     image: redis:3
 
   celery:
-    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    build:
+      context: .
+      target: dev
     command: celery -A kitsune worker -l info -n default@%h
     env_file: .env
     volumes:
@@ -69,7 +71,9 @@ services:
       - redis
 
   celery-flower:
-    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    build:
+      context: .
+      target: dev
     command: celery -A kitsune flower -l info --address=0.0.0.0 --port=5555
     env_file: .env
     volumes:
