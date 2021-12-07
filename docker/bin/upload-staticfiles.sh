@@ -20,8 +20,7 @@ docker rm -f "${CONTAINER_NAME}"
 # separate the hashed files into another directory
 docker/bin/move_hashed_staticfiles.py "${TMP_DIR}" "${TMP_DIR_HASHED}"
 
-# for BUCKET in stage prod; do
-BUCKET=stage
+for BUCKET in stage prod; do
     # hashed filenames
     aws s3 sync \
         --only-show-errors \
@@ -34,7 +33,7 @@ BUCKET=stage
         --acl public-read \
         --cache-control "max-age=21600, public" \
         "./${TMP_DIR}" "s3://mozit-sumo-${BUCKET}-media/static/"
-# done
+done
 
 rm -rf "${TMP_DIR}"
 rm -rf "${TMP_DIR_HASHED}"
