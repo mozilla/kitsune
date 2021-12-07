@@ -537,7 +537,7 @@
     this.d3.axises = {};
 
     if (this.options.xAxis) {
-      new Rickshaw.Graph.Axis.Time({ // eslint-disable-line
+      new Rickshaw.Graph.Axis.Time({
         graph: this.rickshaw.graph
       });
     }
@@ -625,12 +625,12 @@
         element: this.dom.legend[0] // legend can't handle jQuery objects
       });
 
-      new Rickshaw.Graph.Behavior.Series.Toggle({ // eslint-disable-line
+      new Rickshaw.Graph.Behavior.Series.Toggle({
         graph: this.rickshaw.graph,
         legend: this.rickshaw.legend
       });
 
-      new Rickshaw.Graph.Behavior.Series.Order({ // eslint-disable-line
+      new Rickshaw.Graph.Behavior.Series.Order({
         graph: this.rickshaw.graph,
         legend: this.rickshaw.legend
       });

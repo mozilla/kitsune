@@ -169,7 +169,7 @@
 
       $radios.bind('change', validate);
 
-      new k.AjaxVote($survey.find('form'), { // eslint-disable-line
+      new k.AjaxVote($survey.find('form'), {
         replaceFormWithMessage: true
       });
     }

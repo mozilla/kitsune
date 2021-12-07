@@ -17,15 +17,15 @@ import spinnerImg from "sumo/img/spinner.gif";
       // Put last search query into search box
       $('#support-search input[name=q]')
         .val(k.unquote($.cookie('last_search')));
-      new ShowFor(); // eslint-disable-line
+      new ShowFor();
       addReferrerAndQueryToVoteForm();
-      new k.AjaxVote('.document-vote form', { // eslint-disable-line
+      new k.AjaxVote('.document-vote form', {
         positionMessage: false,
         replaceFormWithMessage: true,
         removeForm: true
       });
     } else if ($body.is('.review')) { // Review pages
-      new ShowFor(); // eslint-disable-line
+      new ShowFor();
       initNeedsChange();
 
       $('img.lazy').loadnow();
@@ -238,7 +238,7 @@ import spinnerImg from "sumo/img/spinner.gif";
     $(preview).bind('done', function(e, success) {
       if (success) {
         $previewBottom.show();
-        new ShowFor(); // eslint-disable-line
+        new ShowFor();
         $preview.find('select.enable-if-js').removeAttr('disabled');
         $preview.find('.kbox').kbox();
         $('#preview-diff .output').empty();
@@ -375,7 +375,7 @@ import spinnerImg from "sumo/img/spinner.gif";
           },
           error: function() {
             var message = gettext('There was an error.');
-            alert(message); // eslint-disable-line
+            alert(message);
           }
         });
       });

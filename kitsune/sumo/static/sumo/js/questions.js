@@ -74,7 +74,7 @@ import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
       initEditDetails();
       addReferrerAndQueryToVoteForm();
       initReplyToAnswer();
-      new k.AjaxPreview($('#preview')); // eslint-disable-line
+      new k.AjaxPreview($('#preview'));
     }
 
     Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question')});
@@ -203,7 +203,7 @@ import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
   */
   function initHelpfulVote() {
     $('.sumo-l-two-col--sidebar, #document-list, .answer-tools').each(function() {
-      new k.AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
+      new k.AjaxVote($(this).find('form.helpful'), {
         replaceFormWithMessage: true,
         removeForm: true
       });
@@ -249,7 +249,7 @@ import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
         },
         error: function() {
           var message = gettext('There was an error.');
-          alert(message); // eslint-disable-line
+          alert(message);
         }
       });
 

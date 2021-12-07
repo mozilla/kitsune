@@ -298,7 +298,7 @@
   // Create the jQuery plugin.
   $.fn.kbox = function(options) {
     return this.each(function() {
-      new KBox(this, options); // eslint-disable-line
+      new KBox(this, options);
     });
   };
 
