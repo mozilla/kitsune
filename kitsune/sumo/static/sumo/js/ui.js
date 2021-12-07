@@ -200,7 +200,7 @@
     });
 
     $('form[data-confirm]').on('submit', function() {
-      return confirm($(this).data('confirm-text')); // eslint-disable-line
+      return confirm($(this).data('confirm-text'));
     });
   });
 

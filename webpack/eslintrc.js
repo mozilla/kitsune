@@ -55,6 +55,7 @@ module.exports = {
         "remoteTroubleshooting": "readonly",
         "d3": "readonly",
         "abs_y": "readonly",
+        "ShowFor": "readonly",
         // global references, not exposed by anything, mostly here to keep eslint quiet
         "_gaq": "readonly",
         "RICKSHAW_NO_COMPAT": "readonly",

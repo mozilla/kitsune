@@ -61,7 +61,7 @@
           slugNames.push(slug);
         } else if (trimmed) {
           invalid = true;
-          alert(interpolate(gettext('Invalid tag entered: %s'), [tag])); // eslint-disable-line
+          alert(interpolate(gettext('Invalid tag entered: %s'), [tag]));
         }
       });
 
@@ -69,7 +69,7 @@
       if (invalid || slugNames.length === 0) {
         $form.trigger('ajaxComplete');
         if (!invalid) {
-          alert(gettext('No tags entered.')); // eslint-disable-line
+          alert(gettext('No tags entered.'));
         }
         return false;
       }

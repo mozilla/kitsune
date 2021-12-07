@@ -11,7 +11,7 @@
       '#reply-content, #id_content',
       {mediaButton: true});
 
-    new k.AjaxPreview($('#preview')); // eslint-disable-line
+    new k.AjaxPreview($('#preview'));
 
     $('.post-action a.reply').click(function() {
       var post = $(this).data('post'),

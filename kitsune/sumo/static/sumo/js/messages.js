@@ -6,7 +6,7 @@
 $(document).ready(function() {
   // Show the ajax preview on the new message page.
   Marky.createSimpleToolbar('#new-message .editor-tools', '#id_message');
-  new k.AjaxPreview($('#preview-btn'), { // eslint-disable-line
+  new k.AjaxPreview($('#preview-btn'), {
     changeHash: false
   });
 
@@ -22,7 +22,7 @@ $(document).ready(function() {
     $('#read-message .editor-tools').show();
     $('#read-message input[type=submit]').show();
     Marky.createSimpleToolbar('#read-message .editor-tools', '#id_message', {privateMessaging: true});
-    new k.AjaxPreview($('#preview-btn'), { // eslint-disable-line
+    new k.AjaxPreview($('#preview-btn'), {
       changeHash: false
     });
   });

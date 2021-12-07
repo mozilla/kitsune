@@ -622,7 +622,7 @@
 
         var $selected = $html.find('#media-list > li.selected');
         if ($selected.length < 1) {
-          alert(gettext('Please select an image or video to insert.')); // eslint-disable-line
+          alert(gettext('Please select an image or video to insert.'));
           return false;
         }
 
