@@ -4,7 +4,7 @@ orbs:
 jobs:
   lint:
     docker:
-      - image: circleci/python:3.9-buster
+      - image: circleci/python:3.9-bullseye
     steps:
       - checkout
       - run:
@@ -14,7 +14,7 @@ jobs:
             pre-commit run --all-files
   test-and-build:
     docker:
-      - image: circleci/python:3.9-buster
+      - image: circleci/python:3.9-bullseye
     environment:
       AWS_DEFAULT_REGION: us-west-2
     steps:
@@ -44,6 +44,7 @@ jobs:
           condition:
             or:
               - equal: [ main, << pipeline.git.branch >> ]
+              - equal: [ production, << pipeline.git.branch >> ]
               - matches: { pattern: "^prod-.+$", value: << pipeline.git.branch >> }
           steps:
             - run:
@@ -52,10 +53,11 @@ jobs:
             - run:
                 name: Push prod image
                 command: |
-                  docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
+                  echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
                   source docker/bin/set_git_env_vars.sh
                   docker image tag mozilla/kitsune:prod-${GIT_COMMIT_SHORT} mozilla/kitsune:prod-latest
-                  docker image push --all-tags mozilla/kitsune:prod-latest
+                  docker image push mozilla/kitsune:prod-${GIT_COMMIT_SHORT}
+                  docker image push mozilla/kitsune:prod-latest
                   docker logout
             - aws-cli/setup
             - run:
