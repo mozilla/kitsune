@@ -40,7 +40,6 @@ module.exports = {
         // globals exposed through explicit definition under `window.`
         "gettext": "readonly",
         "interpolate": "readonly",
-        "ShowFor": "readonly",
         // global references, not exposed by anything, mostly here to keep eslint quiet
         "Mozilla": "readonly",
         "_gaq": "readonly",
