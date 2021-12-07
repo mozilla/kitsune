@@ -61,7 +61,6 @@ const entrypoints = {
   ],
   wiki: [
     "sumo/js/users.autocomplete.js",
-    "sumo/js/showfor.js",
     "sumo/js/wiki.js",
     "sumo/js/tags.js",
     "sumo/js/dashboards.js",
