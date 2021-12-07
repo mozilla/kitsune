@@ -17,7 +17,6 @@ python-language-server
 q~=2.6
 rope
 tabulate~=0.7
-urlwait~=0.4
 debugpy
 pylint
 black==21.8b0  # .pre-commit-config.yaml must be updated as well

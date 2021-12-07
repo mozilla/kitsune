@@ -2,3 +2,4 @@
 flake8~=3.8.4
 nose-exclude~=0.4.1
 testfixtures~=4.5.0
+urlwait~=0.4
