@@ -46,7 +46,7 @@ from kitsune.questions.forms import (
     WatchQuestionForm,
 )
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.utils import get_mobile_product_from_ua, get_featured_articles
+from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -128,7 +128,7 @@ def question_list(request, product_slug):
 
     order = request.GET.get("order", "updated")
     if order not in ORDER_BY:
-        order == "updated"
+        order = "updated"
     sort = request.GET.get("sort", "desc")
 
     product_slugs = product_slug.split(",")
@@ -187,9 +187,17 @@ def question_list(request, product_slug):
             question_qs = question_qs.done()
 
     question_qs = question_qs.select_related("creator", "last_answer", "last_answer__creator")
-    question_qs = question_qs.prefetch_related("topic", "topic__product")
+    # Exclude questions over 90 days old without an answer or
+    # older than 2 years or
+    # created by deactivated users
+    today = date.today()
+    question_qs = (
+        question_qs.exclude(created__lt=today - timedelta(days=90), num_answers=0)
+        .filter(creator__is_active=True)
+        .filter(updated__gt=today - timedelta(days=365 * 2))
+    )
 
-    question_qs = question_qs.filter(creator__is_active=1)
+    question_qs = question_qs.prefetch_related("topic", "product")
 
     if not request.user.has_perm("flagit.can_moderate"):
         question_qs = question_qs.filter(is_spam=False)
@@ -223,18 +231,11 @@ def question_list(request, product_slug):
         else:
             question_qs = Question.objects.none()
 
-    # Exclude questions over 90 days old without an answer.
-    oldest_date = date.today() - timedelta(days=90)
-    question_qs = question_qs.exclude(created__lt=oldest_date, num_answers=0)
-
-    # Exclude questions updated over 1 year ago to avoid sorting the entire table.
-    question_qs = question_qs.filter(updated__gt=date.today() - timedelta(days=365))
-
     # Filter by products.
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
-        question_qs = question_qs.filter(product__in=products).distinct()
+        question_qs = question_qs.filter(product__in=products)
 
     # Filter by topic.
     if topic:
