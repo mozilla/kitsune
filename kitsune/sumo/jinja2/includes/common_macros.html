@@ -339,10 +339,10 @@
     data-event-label="Support Forum Home">{{ _('Support Forums') }}</a></li>
 <li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
     data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('L10N Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'social-media') }}">Social Support Forum</a></li>
+<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Forum') }}</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
     data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'buddies') }}">New Contributors</a></li>
+<li><a href="{{ url('forums.threads', 'buddies') }}">{{ _('New Contributors') }}</a></li>
 {% endmacro %}
 
 {% macro _tools_nav_links(user, default_language, active=None) -%}
