@@ -271,7 +271,7 @@ products = OrderedDict(
                             "sync",
                             {
                                 "name": _lazy("Sync"),
-                                "topic": "sync-and-share-firefox-ios",
+                                "topic": "save-and-share-firefox-ios",
                                 "tags": ["sync"],
                             },
                         ),
