@@ -1,8 +1,10 @@
-version: 2
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.0
 jobs:
-  build:
+  lint:
     docker:
-      - image: circleci/python:3.9-buster
+      - image: circleci/python:3.9-bullseye
     steps:
       - checkout
       - run:
@@ -10,22 +12,62 @@ jobs:
           command: |
             sudo pip install --upgrade pre-commit==2.15.0
             pre-commit run --all-files
+  test-and-build:
+    docker:
+      - image: circleci/python:3.9-bullseye
+    environment:
+      AWS_DEFAULT_REGION: us-west-2
+    steps:
+      - checkout
       - setup_remote_docker:
-          version: 17.10.0-ce
+          version: 20.10.7
           docker_layer_caching: true
       - run:
-          name: Build docker images
-          command: make build-ci
-      - run:
-          name: Run mocha tests
-          command: make test-js-ci
+          name: Build test image
+          command: |
+            cp .env-build .env
+            ./bin/dc_ci.sh build --progress=plain test
       - run:
           # copy synonym files to elasticsearch7 container, since circleci doesn't support volume mounts:
           # https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
           name: Copy synonym files to elasticsearch7
           command: |
-            ./bin/dc.sh up -d elasticsearch7
+            ./bin/dc_ci.sh up -d elasticsearch7
             docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
       - run:
           name: Run unit tests
-          command: make test-ci
+          command: ./bin/dc_ci.sh run test ./bin/run-unit-tests.sh
+      - run:
+          name: Run js tests
+          command: ./bin/dc_ci.sh run test ./bin/run-mocha-tests.sh
+      - when:
+          condition:
+            or:
+              - equal: [ main, << pipeline.git.branch >> ]
+              - equal: [ production, << pipeline.git.branch >> ]
+              - matches: { pattern: "^prod-.+$", value: << pipeline.git.branch >> }
+          steps:
+            - run:
+                name: Build prod image
+                command: ./bin/dc_ci.sh build --progress=plain prod
+            - run:
+                name: Push prod image
+                command: |
+                  echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
+                  source docker/bin/set_git_env_vars.sh
+                  docker image tag mozilla/kitsune:prod-${GIT_COMMIT_SHORT} mozilla/kitsune:prod-latest
+                  docker image push mozilla/kitsune:prod-${GIT_COMMIT_SHORT}
+                  docker image push mozilla/kitsune:prod-latest
+                  docker logout
+            - aws-cli/setup
+            - run:
+                name: Upload staticfiles
+                command: |
+                  source docker/bin/set_git_env_vars.sh
+                  ./docker/bin/upload-staticfiles.sh
+workflows:
+  version: 2
+  lint-test-build:
+    jobs:
+      - lint
+      - test-and-build

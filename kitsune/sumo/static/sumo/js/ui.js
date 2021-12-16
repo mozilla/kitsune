@@ -81,9 +81,9 @@
       var $this = $(this);
       var id = $this.data("close-id");
       if (id) {
-        if ($this.data("close-initial") === "hidden") {
+        var $target = $("#" + id);
+        if ($target.data("close-initial") === "hidden") {
           if (sessionStorage.getItem(id + ".closed") != "true") {
-            var $target = $("#" + id);
             $target.show();
           }
         }

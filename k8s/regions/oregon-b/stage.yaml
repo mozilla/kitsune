@@ -5,8 +5,8 @@ kubernetes:
     nodeport_name: "sumo-nodeport"
     secrets_name: "sumo-secrets-stage"
     image:
-        repo: "itsre/sumo-kitsune"
-        tag: "full-latest"
+        repo: "mozilla/kitsune"
+        tag: "prod-latest"
         pull_policy: "Always"
     # default values
     limits:
@@ -101,6 +101,7 @@ app:
     fxa_op_jwks_endpoint: SECRET
     fxa_rp_client_id: SECRET
     fxa_rp_client_secret: SECRET
+    fxa_verify_url: SECRET
     ga_account: SECRET
     ga_key: SECRET
     ga_profile_id: SECRET

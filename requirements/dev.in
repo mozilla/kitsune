@@ -10,15 +10,15 @@ ipdb
 isort
 jsonschema~=2.5
 pep8
-pip==21.0.1
+pip==21.3.1
 pip-compile-multi~=2.4.0
 pre-commit==2.15.0  # .circleci/config.yml must be updated as well
 python-language-server
 q~=2.6
 rope
 tabulate~=0.7
-urlwait~=0.4
 debugpy
 pylint
 black==21.8b0  # .pre-commit-config.yaml must be updated as well
 flower==0.9.7
+pip-tools~=6.4.0

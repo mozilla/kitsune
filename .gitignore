@@ -58,3 +58,4 @@ celerybeat.pid
 .ssh
 *.zip
 dist/
+.mysql_history

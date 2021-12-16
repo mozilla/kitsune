@@ -3,7 +3,7 @@
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
-{% from "includes/common_macros.html" import download_firefox, sumo_cta_banner %}
+{% from "includes/common_macros.html" import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
@@ -74,8 +74,14 @@
     </header>
 
     {% if show_cta_banner %}
-      {{ sumo_cta_banner(text=_('Unlock more from the Firefox suite: Sync, Monitor, Lockwise and <a href="https://www.mozilla.org/firefox/accounts/">more.</a>'),
-                         modifier_class="hide-on-mobile") }}
+      {{ sumo_banner(
+        id="id_ff_alert",
+        text=_('Unlock more from the Firefox suite: Sync, Monitor, Lockwise and <a href="https://www.mozilla.org/firefox/accounts/">more.</a>'),
+        image=webpack_static('sumo/img/FF_Master__icon.svg'),
+        button_text=_('Start Now'),
+        button_link="https://accounts.firefox.com",
+        modifier_class="hide-on-mobile",
+      ) }}
     {% endif %}
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}

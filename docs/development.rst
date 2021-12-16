@@ -167,10 +167,10 @@ Workflow for making the changes
 5. push those changes to the same pull request
 6. get those two changes reviewed
 
-Once that's ok, then that branch should get updated from master, then
+Once that's ok, then that branch should get updated from main, then
 pushed to stage to get tested.
 
-That branch should **not** land in master, yet.
+That branch should **not** land in main, yet.
 
 
 Workflow for reviewing changes
@@ -193,9 +193,9 @@ At that point:
 Workflow for pushing changes to stage
 -------------------------------------
 
-Don't land the changes in master, yet!
+Don't land the changes in main, yet!
 
-If you hit problems, deploy the master branch back to the stage server
+If you hit problems, deploy the main branch back to the stage server
 and go back to coding/fixing.
 
 1. Push the branch you have your changes in to the official
@@ -218,9 +218,9 @@ Workflow for pushing those changes to production
 If we're also doing a production push, first push next to production and
 verify that everything is fine. Then continue.
 
-1. Tell the other sumo devs to hold off on pushing to master branch
+1. Tell the other sumo devs to hold off on pushing to main branch
    and deploying. Preferably by email and IRC.
-2. Once you've told everyone, land the changes in master.
+2. Once you've told everyone, land the changes in main.
 3. Deploy the stage 1 commit to production.
 4. Verify that search works.
 5. Destructively reindex to the new write index.
@@ -235,7 +235,7 @@ minimal downtime.
 On the next day
 ---------------
 
-If everything is still fine, then merge the special branch into master
+If everything is still fine, then merge the special branch into main
 and delete the old read index.
 
 Announce "STUCK THE LANDING!" after a successful mapping change

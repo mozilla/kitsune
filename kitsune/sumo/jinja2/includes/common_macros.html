@@ -14,30 +14,37 @@
 </form>
 {% endmacro %}
 
-{% macro sumo_cta_banner(text, modifier_class, id="id_ff_alert") %}
-<div class="sumo-ff-alert {{ modifier_class }}" {% if id %}id="{{ id }}" {% endif %}>
-  <div class="sumo-ff-alert--content">
-    <img class="sumo-ff-alert--icon" src="{{ webpack_static('sumo/img/FF_Master__icon.svg') }}" />
-    <p class="sumo-ff-alert--heading">{{ text }}</p>
-    <a href="https://accounts.firefox.com" class="sumo-button primary-button button-lg">Start Now</a>
-    <button class="sumo-close-button" data-close-button="#{{ id }}">
-      <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" />
-    </button>
+{% macro sumo_banner(id, text, modifier_class=None, image=None, button_text=None, button_link=None) %}
+  <div class="sumo-banner {{ modifer_class or '' }}" id="{{ id }}" data-close-initial="hidden">
+    <div class="content">
+      {% if image %}
+        <img class="icon" src="{{ image }}" alt="" role="presentation" />
+      {% endif %}
+      <p class="heading">
+        {{ text }}
+      </p>
+      {% if button_text %}
+        <a href="{{ button_link }}" class="sumo-button primary-button button-lg">
+          {{ button_text }}
+        </a>
+      {% endif %}
+      <button class="sumo-close-button close-button" data-close-id="{{ id }}" data-close-memory="session">
+        <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" />
+      </button>
+    </div>
   </div>
-</div>
 {% endmacro %}
 
 {% macro scam_banner() %}
-<div class="sumo-scam-alert" id="id_scam_alert">
-  <div class="sumo-scam-alert--content">
+<div class="sumo-banner sumo-banner-warning" id="id_scam_alert" data-close-initial="hidden">
+  <div class="content">
     {% include 'includes/icons/alert-icon.svg'%}
-    <p class="sumo-scam-alert--heading">
+    <p class="heading">
       {{ _('<strong>Avoid support scams.</strong> We will never ask you to call or text a phone number or share personal information. Please report suspicious activity using the “Report Abuse” option.') }}
     </p>
     <a href="https://support.mozilla.org/kb/avoid-and-report-mozilla-tech-support-scams"
       class="sumo-button primary-button button-lg">Learn More</a>
-    <button class="sumo-close-button close-button" data-close-id="id_scam_alert" data-close-memory="session"
-      data-close-initial="hidden">
+    <button class="sumo-close-button close-button" data-close-id="id_scam_alert" data-close-memory="session">
       <img src="{{ webpack_static('protocol/img/icons/close.svg') }}" />
     </button>
   </div>
@@ -332,10 +339,10 @@
     data-event-label="Support Forum Home">{{ _('Support Forums') }}</a></li>
 <li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
     data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('L10N Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'social-media') }}">Social Support Forum</a></li>
+<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Forum') }}</a></li>
 <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
     data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'buddies') }}">New Contributors</a></li>
+<li><a href="{{ url('forums.threads', 'buddies') }}">{{ _('New Contributors') }}</a></li>
 {% endmacro %}
 
 {% macro _tools_nav_links(user, default_language, active=None) -%}

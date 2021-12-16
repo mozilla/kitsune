@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  test:
+    build:
+      context: .
+      target: test
+    env_file: .env-test
+    depends_on:
+      - mariadb
+      - elasticsearch7
+      - redis
+
+  prod:
+    build:
+      context: .
+      target: prod
+      args:
+        - GIT_SHA
+    image: mozilla/kitsune:prod-${GIT_COMMIT_SHORT:-latest}

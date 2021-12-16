@@ -15,6 +15,7 @@ from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config("DEBUG", default=False, cast=bool)
 DEV = config("DEV", default=False, cast=bool)
+TEST = config("TEST", default=False, cast=bool)
 STAGE = config("STAGE", default=False, cast=bool)
 
 # TODO
@@ -68,12 +69,7 @@ DATABASES = {
 
 if DATABASES["default"]["ENGINE"] == "django.db.backends.mysql":
     DATABASES["default"]["CONN_MAX_AGE"] = DB_CONN_MAX_AGE
-    DATABASES["default"]["OPTIONS"] = {"init_command": "SET storage_engine=InnoDB"}
-    DATABASE_ROUTERS = ("multidb.PinningMasterSlaveRouter",)
-
-# Add read-only databases here. The database can be the same as the `default`
-# database but with a user with read permissions only.
-SLAVE_DATABASES = []
+    DATABASES["default"]["OPTIONS"] = {"init_command": "SET default_storage_engine=InnoDB"}
 
 # Cache Settings
 CACHES = {
@@ -501,7 +497,6 @@ MIDDLEWARE = (
     "kitsune.sumo.middleware.FilterByUserAgentMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "multidb.middleware.PinningRouterMiddleware",
     "commonware.request.middleware.SetRemoteAddrFromForwardedFor",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
     # VaryNoCacheMiddleware must be above LocaleURLMiddleware
@@ -513,7 +508,9 @@ MIDDLEWARE = (
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # This has to come after NoVarySessionMiddleware.
     "django.contrib.messages.middleware.MessageMiddleware",
-    # This should come after MessageMiddleware
+    # refresh middleware for Firefox Accounts
+    "kitsune.sumo.middleware.ValidateAccessTokenMiddleware",
+    # refresh middleware for the Admin interface - uses IAM
     "kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware",
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
@@ -608,12 +605,19 @@ else:
         FXA_USE_NONCE = config("FXA_USE_NONCE", False)
         FXA_LOGOUT_REDIRECT_URL = config("FXA_LOGOUT_REDIRECT_URL", "/")
         FXA_USERNAME_ALGO = config("FXA_USERNAME_ALGO", default=_username_algo)
-        FXA_STORE_ACCESS_TOKEN = config("FXA_STORE_ACCESS_TOKEN", default=False, cast=bool)
+        FXA_STORE_ACCESS_TOKEN = config("FXA_STORE_ACCESS_TOKEN", default=True, cast=bool)
         FXA_STORE_ID_TOKEN = config("FXA_STORE_ID_TOKEN", default=False, cast=bool)
         FXA_SUBSCRIPTIONS = config(
             "FXA_SUBSCRIPTIONS", default="https://accounts.firefox.com/subscriptions"
         )
         FXA_SET_ISSUER = config("FXA_SET_ISSUER", default="https://accounts.firefox.com")
+        FXA_VERIFY_URL = config(
+            "FXA_VERIFY_URL", default="https://oauth.accounts.firefox.com/v1/verify"
+        )
+        # Defaults to an hour
+        FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS = config(
+            "FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS", default=3600, cast=int
+        )
 
 ADMIN_REDIRECT_URL = config("ADMIN_REDIRECT_URL", default=None)
 

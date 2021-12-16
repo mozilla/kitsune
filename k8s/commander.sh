@@ -2,7 +2,7 @@
 set -exo pipefail
 GREEN='\033[1;32m'
 NC='\033[0m' # No Color
-DOCKER_HUB="https://hub.docker.com/r/itsre/sumo-kitsune/tags/"
+DOCKER_HUB="https://hub.docker.com/r/mozilla/kitsune/tags/"
 PYENV_FILE='.python-version'
 
 function whatsdeployed {
@@ -23,16 +23,16 @@ function deploy {
 		echo "Secrets will *NOT* be applied"
 	fi
 
-	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag "full-${COMMIT_HASH}"
+	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag "prod-${COMMIT_HASH}"
 	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-celery
-	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag "full-${COMMIT_HASH}"
+	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag "prod-${COMMIT_HASH}"
 	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-cron
-	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag "full-${COMMIT_HASH}"
+	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag "prod-${COMMIT_HASH}"
 	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-web
 
 	post-deploy "$@"
 
-	echo ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
+	echo ":tada: Successfully deployed <${DOCKER_HUB}|prod-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
 	printf "${GREEN}OK${NC}\n"
 }
 

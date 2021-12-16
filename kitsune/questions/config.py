@@ -260,11 +260,43 @@ products = OrderedDict(
                             },
                         ),
                         (
-                            "firefox-ios-not-working-expected",
+                            "crash",
                             {
-                                "name": _lazy("Firefox for iOS is not working as expected"),
-                                "topic": "firefox-ios-not-working-expected",
-                                "tags": ["firefox-ios-not-working-expected"],
+                                "name": _lazy("Crash"),
+                                "topic": "crashes-errors-and-other-issues",
+                                "tags": ["crash"],
+                            },
+                        ),
+                        (
+                            "sync",
+                            {
+                                "name": _lazy("Sync"),
+                                "topic": "save-and-share-firefox-ios",
+                                "tags": ["sync"],
+                            },
+                        ),
+                        (
+                            "bookmarks",
+                            {
+                                "name": _lazy("Bookmarks"),
+                                "topic": "bookmarks-and-tabs-firefox-ios",
+                                "tags": ["bookmarks"],
+                            },
+                        ),
+                        (
+                            "tabs",
+                            {
+                                "name": _lazy("Tabs"),
+                                "topic": "bookmarks-and-tabs-firefox-ios",
+                                "tags": ["tabs"],
+                            },
+                        ),
+                        (
+                            "private-browsing-mode",
+                            {
+                                "name": _lazy("Private Browsing mode"),
+                                "topic": "privacy-settings-firefox-ios",
+                                "tags": ["privacy"],
                             },
                         ),
                     ]
@@ -771,6 +803,17 @@ products = OrderedDict(
                         ),
                     ]
                 ),
+            },
+        ),
+        (
+            "relay",
+            {
+                "name": _lazy("Firefox Relay"),
+                "subtitle": _lazy("Service that lets you create aliases to hide your real email"),
+                "extra_fields": [],
+                "tags": ["relay"],
+                "product": "relay",
+                "categories": OrderedDict([]),
             },
         ),
     ]

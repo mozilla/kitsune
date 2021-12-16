@@ -23,7 +23,6 @@ django-jinja~=2.6.0
 django-jsonfield-compat~=0.4.4  # pip-compile does not handle extras properly (django-activity-stream)
 django-jsonfield~=1.4.0  # pip-compile does not handle extras properly (django-activity-stream)
 django-mozilla-product-details~=0.14.1
-django-multidb-router~=0.9
 django-nose~=1.4.6
 django-ratelimit~=2.0.0
 django-redis~=4.12.1
