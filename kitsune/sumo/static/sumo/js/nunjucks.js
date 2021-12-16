@@ -5,7 +5,7 @@ export default env;
 
 (function($) {
 
-  env.addGlobal('_', gettext);
+  env.addGlobal('_', window.gettext);
   env.addGlobal('ngettext', window.ngettext);
 
   env.addFilter('f', function(fmt, obj, named) {
@@ -16,7 +16,7 @@ export default env;
       obj[keys[i]] = escape(obj[keys[i]]);
     }
 
-    return interpolate(fmt, obj, named);
+    return window.interpolate(fmt, obj, named);
   });
 
   env.addFilter('urlparams', function(url, params) {

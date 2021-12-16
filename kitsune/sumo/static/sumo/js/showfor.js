@@ -345,9 +345,9 @@ ShowFor.prototype.initShowFuncs = function() {
 ShowFor.prototype.showAndHide = function() {
   this.$container.find('.for').each(function(i, elem) {
     var $elem = $(elem);
-    var showFunc = $elem.data('show-func');
-    if (showFunc) {
-      $elem.toggle(showFunc());
+    var showFuncVal = $elem.data('show-func')();
+    if (showFuncVal !== undefined) {
+      $elem.toggle(showFuncVal);
     } else {
       $elem.show();
     }

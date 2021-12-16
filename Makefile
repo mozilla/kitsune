@@ -81,7 +81,7 @@ test: .docker-build
 	${DC} run web ./bin/run-unit-tests.sh
 
 test-js: .docker-build
-	${DC} run web ./bin/run-mocha-tests.sh
+	${DC} run web npm run webpack:test
 
 docs: .docker-build
 	${DC} run web $(MAKE) -C docs/ clean

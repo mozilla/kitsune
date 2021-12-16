@@ -39,7 +39,7 @@ jobs:
           command: ./bin/dc_ci.sh run test ./bin/run-unit-tests.sh
       - run:
           name: Run js tests
-          command: ./bin/dc_ci.sh run test ./bin/run-mocha-tests.sh
+          command: ./bin/dc_ci.sh run test npm run webpack:test
       - when:
           condition:
             or:

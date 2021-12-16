@@ -1,11 +1,10 @@
 import React from 'react';
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {default as chai, expect} from 'chai';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
-import mochaJquery from './fixtures/mochaJquery.js';
-import mochaBrowserDetect from './fixtures/mochaBrowserDetect.js';
+import BrowserDetect from 'sumo/js/browserdetect';
+import ShowFor from "sumo/js/showfor";
 
 chai.use(chaiLint);
 
@@ -15,7 +14,7 @@ chai.use(chaiLint);
 * be bound to the passed $sandbox.
 */
 function showForNoInit($sandbox) {
-  let sf = Object.create(window.ShowFor.prototype);
+  let sf = Object.create(ShowFor.prototype);
   sf.$container = $sandbox;
   sf.state = {};
   return sf;
@@ -29,14 +28,9 @@ function unorderedEquals(arr1, arr2) {
 
 
 describe('ShowFor', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  /* globals window, document, $ */
   let showFor;
 
   beforeEach(() => {
-    rerequire('../showfor.js');
-
     // Wow. That's a lot of data. Can we make this smaller?
     let sandbox = (
       <div>
@@ -124,6 +118,14 @@ describe('ShowFor', () => {
 
     React.render(sandbox, document.body);
     showFor = showForNoInit($('body'));
+
+    BrowserDetect.browser = "firefox";
+    BrowserDetect.version = 25.0;
+    BrowserDetect.OS = "winxp";
+  });
+
+  afterEach(() => {
+    BrowserDetect.init();
   });
 
   describe('loadData', () => {
@@ -145,13 +147,10 @@ describe('ShowFor', () => {
 
   describe('updateUI', () => {
     describe('Firefox 26 on Windows XP', () => {
-      mochaBrowserDetect({
-        browser: 'fx',
-        version: 26.0,
-        OS: 'winxp',
-      });
-
       beforeEach(() => {
+        BrowserDetect.browser = "fx"
+        BrowserDetect.version = 26.0
+        BrowserDetect.OS = "winxp"
         showFor.loadData();
         showFor.updateUI();
       });
@@ -163,13 +162,10 @@ describe('ShowFor', () => {
     });
 
     describe('Firefox for Android 23', () => {
-      mochaBrowserDetect({
-        browser: 'm',
-        version: 23.0,
-        OS: 'android',
-      });
-
       beforeEach(() => {
+        BrowserDetect.browser = "m"
+        BrowserDetect.version = 23.0
+        BrowserDetect.OS = "android"
         showFor.loadData();
         showFor.updateUI();
       });
@@ -182,7 +178,6 @@ describe('ShowFor', () => {
   });
 
   describe('updateState', () => {
-    mochaBrowserDetect();
 
     beforeEach(() => {
       showFor.loadData();
@@ -242,7 +237,6 @@ describe('ShowFor', () => {
   });
 
   describe('initShowFuncs', () => {
-    mochaBrowserDetect();
 
     beforeEach(() => {
       sinon.stub(showFor, 'matchesCriteria');
@@ -274,7 +268,6 @@ describe('ShowFor', () => {
   });
 
   describe('showAndHide', () => {
-    mochaBrowserDetect();
 
     beforeEach(() => {
       showFor.loadData();
@@ -302,7 +295,6 @@ describe('ShowFor', () => {
   });
 
   describe('matchesCriteria', () => {
-    mochaBrowserDetect();
 
     beforeEach(() => {
       showFor.loadData();

@@ -28,7 +28,7 @@ repos:
     hooks:
       - id: eslint
         args: [--no-eslintrc, --config=webpack/eslintrc.js]
-        exclude: "webpack/.*"
+        exclude: "webpack/.*|webpack\\..*\\.js"
         additional_dependencies:
           - eslint@8.1.0
           - eslint-import-resolver-webpack@0.13.2

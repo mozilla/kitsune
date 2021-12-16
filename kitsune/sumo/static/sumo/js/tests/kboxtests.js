@@ -1,31 +1,16 @@
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {default as chai, expect} from 'chai';
 import React from 'react';
 import chaiLint from 'chai-lint';
-
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
-import mochaGettext from './fixtures/mochaGettext.js';
-import mochaMarky from './fixtures/mochaMarky.js';
 
 import KBox from "sumo/js/kbox.js";
 
 chai.use(chaiLint);
 
 describe('kbox', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  mochaK();
-  mochaGettext();
-  mochaMarky();
-  /* globals window, document, $ */
-
   describe('declarative', () => {
     let $kbox, kbox;
 
     beforeEach(() => {
-      rerequire('../kbox.js');
-
       let sandbox = (
         <div id="sandbox">
           <div className="kbox"

@@ -1,26 +1,11 @@
 import React from 'react';
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {expect} from 'chai';
-import sinon from 'sinon';
 
-import mochaGettext from './fixtures/mochaGettext.js';
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
-import mochaUnderscore from './fixtures/mochaUnderscore.js';
+import TagsFilter from "sumo/js/tags.filter";
 
 describe('k', () => {
-  let form;
-
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  mochaK();
-  mochaUnderscore();
-  /* globals window, $, k */
-
   describe('TagsFilter', () => {
     beforeEach(() => {
-      rerequire('../tags.filter.js');
-
       let sandbox = (
         <div>
           <section className="tag-filter">
@@ -41,7 +26,7 @@ describe('k', () => {
       );
       React.render(sandbox, window.document.body);
 
-      k.TagsFilter.init($('body'));
+      TagsFilter.init($('body'));
       // Don't let forms submit
       $('form').submit((e) => e.preventDefault());
     });

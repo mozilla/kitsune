@@ -1,25 +1,12 @@
 import React from 'react';
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {expect} from 'chai';
 import sinon from 'sinon';
-
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
 
 import AjaxVote from "sumo/js/ajaxvote";
 
 describe('ajaxvote', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  mochaK();
-  /* globals window, document, $, k */
-
   describe('helpful vote', () => {
-    let fakeServer;
-
     beforeEach(() => {
-      rerequire('../ajaxvote.js');
-
       sinon.stub($, 'ajax').yieldsTo('success', {message: 'Thanks for the vote!'});
 
       let sandbox = (
@@ -34,6 +21,7 @@ describe('ajaxvote', () => {
     afterEach(() => {
       $.ajax.restore();
       React.unmountComponentAtNode(document.body);
+      $(document).off('vote');
     });
 
     it('should fire an event on a helpful vote', done => {
