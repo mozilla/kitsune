@@ -144,7 +144,7 @@ Running JavaScript Tests
 To run tests, make sure you have have the NPM dependencies installed, and
 then run::
 
-  $ bin/run-mocha-tests.sh
+  $ npm run webpack:test
 
 Writing JavaScript Tests
 ------------------------
@@ -164,7 +164,6 @@ Here are a few tips for writing tests:
 * You can use `sinon` to mock out parts of libraries or functions under
   test. This is useful for testing AJAX.
 * The tests run in a Node.js environment. A browser environment can be
-  simulated using ``jsdom``. Specifically, ``mocha-jsdom`` is useful to
-  set up and tear down the simulated environment.
+  simulated using ``jsdom``.
 
 .. _Mocha: https://mochajs.org/

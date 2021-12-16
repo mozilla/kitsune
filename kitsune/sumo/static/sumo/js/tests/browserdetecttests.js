@@ -1,21 +1,8 @@
 import {expect} from 'chai';
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 
-import mochaUnderscore from './fixtures/mochaUnderscore.js';
+import BrowserDetect from "sumo/js/browserdetect";
 
 describe('BrowserDetect', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaUnderscore();
-  /* globals window */
-
-  let BrowserDetect;
-
-  beforeEach(() => {
-    rerequire('../browserdetect.js');
-
-    BrowserDetect = window.BrowserDetect;
-  });
-
   describe('Fennec versions', () => {
     it('should detect Fennec 7', () => {
       let ua = 'Mozilla/5.0 (Android; Linux armv7l; rv:7.0.1) Gecko/ Firefox/7.0.1 Fennec/7.0.1';

@@ -1,28 +1,13 @@
 import React from 'react';
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {expect} from 'chai';
 import sinon from 'sinon';
-
-import mochaGettext from './fixtures/mochaGettext.js';
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
 
 import AjaxPreview from "sumo/js/ajaxpreview";
 
 describe('ajax preview', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  mochaK();
-  mochaGettext();
-  /* globals window, $, k */
-
-  var fakeServer;
-
   describe('events', () => {
 
     beforeEach(() => {
-      rerequire('../ajaxpreview.js');
-      rerequire('../libs/jquery.lazyload.js');
 
       sinon.stub($, 'ajax').yieldsTo('success', '<p>The content to preview.</p>');
 

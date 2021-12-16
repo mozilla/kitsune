@@ -1,26 +1,10 @@
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {expect} from 'chai';
 import React from 'react';
 
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
-import mochaGettext from './fixtures/mochaGettext.js';
-import mochaMarky from './fixtures/mochaMarky.js';
+import { linkCrashIds } from "sumo/js/questions";
 
 describe('k', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  mochaK();
-  mochaGettext();
-  mochaMarky();
-  /* globals window, document, $, k */
-
   describe('linkCrashIds', () => {
-
-    beforeEach(() => {
-      rerequire('../questions.js');
-    });
-
     afterEach(() => {
       React.unmountComponentAtNode(document.body);
     });
@@ -39,7 +23,7 @@ describe('k', () => {
       );
       React.render(sandbox, document.body);
 
-      k.linkCrashIds($('body'));
+      linkCrashIds($('body'));
       expect($('.crash-report').length).to.equal(1);
     });
 
@@ -61,7 +45,7 @@ describe('k', () => {
       );
       React.render(sandbox, document.body);
 
-      k.linkCrashIds($('body'));
+      linkCrashIds($('body'));
       expect($('.crash-report').length).to.equal(5);
     });
 
@@ -73,7 +57,7 @@ describe('k', () => {
         </section>
       );
       React.render(sandbox, document.body);
-      k.linkCrashIds($('body'));
+      linkCrashIds($('body'));
 
       expect($('.crash-report').length).to.equal(0);
     });
@@ -87,7 +71,7 @@ describe('k', () => {
       );
       React.render(sandbox, document.body);
 
-      k.linkCrashIds($('body'));
+      linkCrashIds($('body'));
       expect($('.crash-report').length).to.equal(0);
     });
   });

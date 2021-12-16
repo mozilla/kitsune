@@ -1,15 +1,21 @@
-require("@babel/register")({
-  plugins: [
-    [
-      "module-resolver",
-      {
-        // make babel resolve our webpack aliases in tests
-        alias: require("./aliases"),
-      },
-    ],
-  ],
-});
+require('source-map-support').install();
 
-// make images imports return null, we don't need them in tests
-require.extensions[".svg"] = () => null;
-require.extensions[".png"] = () => null;
+const jsdom = require("jsdom");
+const { JSDOM } = jsdom;
+const dom = new JSDOM("<html></html>", {
+  url: "https://example.com",
+  referrer: "http://google.com/?q=cookies",
+});
+global.window = dom.window;
+global.document = dom.window.document;
+global.navigator = dom.window.navigator;
+global.sessionStorage = dom.window.sessionStorage;
+global.history = dom.window.history;
+global.Element = dom.window.Element;
+global.matchMedia = () => ({
+  matches : false,
+  addListener : () =>{},
+  removeListener: () =>{},
+});
+global.jQuery = global.$ = require("jquery");
+require("../kitsune/sumo/static/sumo/js/i18n");
