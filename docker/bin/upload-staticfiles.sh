@@ -18,7 +18,8 @@ docker cp "${CONTAINER_NAME}:/app/static" "${TMP_DIR}"
 docker rm -f "${CONTAINER_NAME}"
 
 # separate the hashed files into another directory
-docker/bin/move_hashed_staticfiles.py "${TMP_DIR}" "${TMP_DIR_HASHED}"
+mkdir "${TMP_DIR_HASHED}"
+find ${TMP_DIR} -maxdepth 1 -type f -regextype sed -regex ".*\.[0-9a-f]\{20\}\..*" -exec mv -t ${TMP_DIR_HASHED} {} +
 
 for BUCKET in stage prod; do
     # hashed filenames
