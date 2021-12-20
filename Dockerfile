@@ -105,6 +105,7 @@ RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sb
 COPY --from=prod-deps --chown=kitsune:kitsune /venv /venv
 COPY --from=prod-deps --chown=kitsune:kitsune /app/locale /app/locale
 COPY --from=prod-deps --chown=kitsune:kitsune /app/static /app/static
+COPY --from=prod-deps --chown=kitsune:kitsune /app/dist /app/dist
 
 COPY --chown=kitsune:kitsune . .
 
