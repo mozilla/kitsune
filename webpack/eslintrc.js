@@ -28,20 +28,10 @@ module.exports = {
         "**/tests/**",
     ],
     "globals": {
-        // globals exposed in webpack/global-expose-rules.js
-        "nunjucks": "readonly",
-        "CodeMirror": "readonly",
-        "detailsInit": "readonly",
-        "tabsInit": "readonly",
-        "trackEvent": "readonly",
-        "$": "readonly",
-        "jQuery": "readonly",
-        "DIFF_DELETE": "readonly",
-        "DIFF_INSERT": "readonly",
-        "DIFF_EQUAL": "readonly",
         // unavoidable globals, due to library constraints or ubiquity
         "Mzp": "readonly",
-        // globals exposed through explicit definition under `window.`
+        "$": "readonly",
+        "jQuery": "readonly",
         "gettext": "readonly",
         "interpolate": "readonly",
         // global references, not exposed by anything, mostly here to keep eslint quiet
