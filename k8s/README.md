@@ -48,54 +48,33 @@ The production branch maintains an image that can be released in production with
     -   ./regions/oregon-b/stage-secrets.yaml
     -   ./regions/oregon-b/prod-secrets.yaml
 
-#### Configuration for deploying into a Kops cluster
-
--   Create symbolic links to `kubectl` and `kubeconfig` to use in each region. Note that `kubectl` should match the version of the cluster, or have a version skew of 1 minor version.
-
-    e.g. `ln -s ~/bin/kubectl ./regions/frankfurt/kubectl`
-
-    Files to be created:
-
-    -   ./regions/frankfurt/kubectl
-    -   ./regions/frankfurt/kubeconfig
-    -   ./regions/oregon-a/kubectl
-    -   ./regions/oregon-a/kubeconfig
-    -   ./regions/oregon-b/kubectl
-    -   ./regions/oregon-b/kubeconfig
-
--   Establish a connection to Mozilla's VPN.
-
 #### Configuration for deploying into an EKS cluster
 
 -   Ensure that your `kubectl` binary matches the cluster version (check the cluster version in the table below).
 
 -   Authorize yourself into AWS. After making sure you are part of the right LDAP groups, run `$(maws)` to get a short lived AWS token. More on installing maws [here](https://mana.mozilla.org/wiki/display/SECURITY/How+to+login+to+AWS+with+Single+Sign+On).
 
--   Get the `kubeconfig` file running `aws eks update-kubeconfig --name <cluster-name> --region <region>` adding the cluster name and region. You can find a table with the EKS clusters and regions below.
-    This command will by default append the configuration to `~/.kube/config`. After that, you should be able to talk to the cluster and perform operations like `kubectl get namespaces`.
+- Get the `kubeconfig` file running `aws eks update-kubeconfig --name <cluster-name> --region <region>` adding the cluster name and region. You can find a table with the EKS clusters and regions below.
+This command will by default append the configuration to `~/.kube/config`. After that, you should be able to talk to the cluster and perform operations like `kubectl get namespaces`.
 
 Here there is a list with the names of the clusters per region:
 | Region | Cluster | Version |
 |---|---|---|
-| eu-central-1 | sumo-eks-eu-central-1 | 1.17 |
-| eu-central-1a | k8s.eu-central-1a.sumo.mozit.cloud | 1.11 |
-| us-west-2a | k8s.us-west-2a.sumo.mozit.cloud | 1.11 |
-| us-west-2b | k8s.us-west-2b.sumo.mozit.cloud | 1.11 |
+| eu-central-1 | sumo-eks-eu-central-1 | 1.21 |
+| us-west-2 | sumo-eks-us-west-2 | 1.21 |
 
 #### Deploy SUMO with commander (recommended)
 
 Choose a region and env:
 
-| Region    | Env   | Cluster | Version |
-| --------- | ----- | ------- | ------- |
-| frankfurt | test  | eks     | 1.17    |
-| frankfurt | dev   | eks     | 1.17    |
-| frankfurt | stage | kops    | 1.11    |
-| frankfurt | prod  | kops    | 1.11    |
-| oregon-a  | stage | kops    | 1.11    |
-| oregon-a  | prod  | kops    | 1.11    |
-| oregon-b  | stage | kops    | 1.11    |
-| oregon-b  | prod  | kops    | 1.11    |
+| Region  | Env  | Cluster | Version |
+|---|---|---|---|
+| frankfurt | stage | eks | 1.21 |
+| frankfurt | prod  | eks | 1.21 |
+| oregon    | stage | eks | 1.21 |
+| oregon    | prod  | eks | 1.21 |
+
+- Update the settings file with new image tags and settings.
 
 -   Update the settings file with new image tags and settings.
 
