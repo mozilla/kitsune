@@ -6,38 +6,35 @@ FROM python:3.10-bullseye AS base
 WORKDIR /app
 EXPOSE 8000
 
-ARG PIP_DEFAULT_TIMEOUT=60
-ENV LANG=C.UTF-8
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PATH="/venv/bin:$PATH"
+ENV LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/venv/bin:$PATH" \
+    POETRY_VERSION=1.1.12 \
+    PIP_VERSION=21.3.1
 
-RUN python -m venv /venv
-RUN pip install --upgrade "pip==21.3.1"
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
-RUN apt-get update && apt-get install apt-transport-https && \
-    curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
+RUN set -xe \
+    && apt-get update && apt-get install apt-transport-https \
+    && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
     gettext build-essential \
     libxml2-dev libxslt1-dev zlib1g-dev git \
     libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
     libmariadb3 mariadb-client \
-    optipng nodejs zip && \
-    rm -rf /var/lib/apt/lists/*
+    optipng nodejs zip \
+    # python
+    && python -m venv /venv \
+    && pip install --upgrade pip==${PIP_VERSION} \  
+    && pip install --upgrade poetry==${POETRY_VERSION} \ 
+    && poetry config virtualenvs.create false \
+    # clean up
+    && rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements/*.txt /app/requirements/
-RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt
-
-
-#####################
-# Development image #
-#####################
-FROM base AS dev
-
-RUN pip install --no-cache-dir --require-hashes -r requirements/dev.txt
-
+COPY pyproject.toml poetry.lock ./
+RUN poetry install 
 
 #########################
 # Frontend dependencies #
@@ -53,20 +50,10 @@ RUN cp .env-build .env && \
     npm run webpack:build:prod
 
 
-########################
-# Testing dependencies #
-########################
-FROM base AS test-deps
-
-RUN pip install --no-cache-dir --require-hashes -r requirements/test.txt
-
-
 #################
 # Testing image #
 #################
 FROM base-frontend AS test
-
-COPY --from=test-deps /venv /venv
 
 RUN cp .env-test .env && \
     ./manage.py compilejsi18n && \
@@ -84,6 +71,7 @@ RUN ./scripts/l10n-fetch-lint-compile.sh && \
     # minify jsi18n files:
     find jsi18n/ -name "*.js" -exec sh -c 'npx terser "$1" -o "${1%.js}-min.js"' sh {} \; && \
     ./manage.py collectstatic --noinput
+RUN poetry install --no-dev
 
 
 ##########################
@@ -95,10 +83,10 @@ WORKDIR /app
 
 EXPOSE 8000
 
-ENV PATH="/venv/bin:$PATH"
-ENV LANG=C.UTF-8
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PATH="/venv/bin:$PATH" \
+    LANG=C.UTF-8 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 
 
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
