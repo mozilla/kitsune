@@ -3,7 +3,7 @@ services:
   web:
     build:
       context: .
-      target: dev
+      target: base
     command: ./bin/run-dev.sh
     env_file: .env
     volumes:
@@ -61,7 +61,7 @@ services:
   celery:
     build:
       context: .
-      target: dev
+      target: base
     command: celery -A kitsune worker -l info -n default@%h
     env_file: .env
     volumes:
@@ -74,7 +74,7 @@ services:
   celery-flower:
     build:
       context: .
-      target: dev
+      target: base
     command: celery -A kitsune flower -l info --address=0.0.0.0 --port=5555
     env_file: .env
     volumes:
