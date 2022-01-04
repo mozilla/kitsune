@@ -37,7 +37,7 @@
     "flux": "~2.0.2",
     "fontawesome": "^4.3.0",
     "jquery": "1.11.3",
-    "jquery-ui": "1.12.1",
+    "jquery-ui": "1.13.0",
     "nunjucks": "^3.2.3",
     "react": "0.13.3",
     "underscore": "^1.13.1"
