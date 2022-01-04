@@ -7,7 +7,7 @@
       <nav class="sidebar-nav">
       <a class="details-heading">Menu Title</a>
       <ul id="product-filter" class="search-filter sidebar-nav--list">
-        <li {{ product|class_selected(null) }}>
+        <li {{ product|class_selected(undefined) }}>
           <a href="#" data-instant-search-unset-params="product&page" data-instant-search-set-params="all_products=1" data-instant-search="link">
             {{ _('All Products') }}
           </a>
