@@ -16,6 +16,9 @@ kubernetes:
         cpu_request: 250m
         cpu_limit: 1000m
     replicas: 1
+    rollouts:
+        max_surge: 25%
+        max_unavailable: 25%
     readiness: False
     liveness: False
     # app specific values
@@ -47,12 +50,13 @@ kubernetes:
 
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: "prod.sumo.mozit.cloud,prod-frankfurt.sumo.mozit.cloud,support.mozilla.com,support.mozilla.org"
+    allowed_hosts: ".sumo.mozit.cloud,support.mozilla.com,support.mozilla.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
     aws_storage_bucket_name: SECRET
     celery_broker_url: SECRET
+    cache_middleware_seconds: 0
     cache_url: SECRET
     celery_task_always_eager: False
     csrf_cookie_secure: True
@@ -79,15 +83,16 @@ app:
     dms_update_product_details: SECRET
     dms_update_top_contributors: SECRET
     dms_update_weekly_votes: SECRET
-    k8s_domain: "frankfurt.mozit.cloud"
+    k8s_domain: "oregon.mozit.cloud"
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
+    email_logging_real_backend: "django.core.mail.backends.smtp.EmailBackend"
     email_port: 25
     email_use_tls: True
-    enable_admin: False
+    enable_admin: True
     enable_whitenoise: True
-    enforce_host: "support.mozilla.org,prod-frankfurt.sumo.mozit.cloud"
+    enforce_host: "support.mozilla.org,prod-oregon.sumo.mozit.cloud"
     engage_robots: True
     es_index_prefix: "sumo_prod"
     es_live_indexing: True
@@ -99,21 +104,24 @@ app:
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
     media_url: "https://user-media-prod-cdn.itsre-sumo.mozilla.net/"
-    new_relic_app_name: "sumo-prod-frankfurt"
+    new_relic_app_name: "sumo-prod-oregon;sumo-prod-oregon"
     new_relic_license_key: SECRET
+    oidc_enable: True
     oidc_op_authorization_endpoint: SECRET
     oidc_op_token_endpoint: SECRET
     oidc_op_user_endpoint: SECRET
     oidc_rp_client_id: SECRET
     oidc_rp_client_secret: SECRET
+    pipeline_enabled: True
     port: 8000
-    read_only: True
+    read_only: False
     redis_default_url: SECRET
     redis_helpfulvotes_url: SECRET
+    run_migrate: "true"
     secret_key: SECRET
     session_cookie_secure: True
     stage: False
-    static_url: "/static/"
+    static_url: "https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/"
     secure_hsts_seconds: 31536000
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True
@@ -122,11 +130,26 @@ app:
     surveygizmo_password: SECRET
     surveygizmo_api_token: SECRET
     surveygizmo_api_token_secret: SECRET
-    use_x_forwarded_host: True
-    user_agent_filters: "360spider,semrushBot"
+    user_agent_filters: "360spider,semrushbot,coccobot,dotbot"
     wsgi_keep_alive: 60
+    wsgi_num_workers: 4
     disable_questions_list_global: False
     disable_questions_list_all: False
     disable_feeds: False
     sentry_dsn: SECRET
+    fxa_op_token_endpoint: SECRET
+    fxa_op_authorization_endpoint: SECRET
+    fxa_op_user_endpoint: SECRET
+    fxa_op_subscription_endpoint: SECRET
+    fxa_op_jwks_endpoint: SECRET
+    fxa_rp_client_id: SECRET
+    fxa_rp_client_secret: SECRET
+    fxa_verify_url: SECRET
     sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
+    zendesk_api_token: SECRET
+    zendesk_user_email: SECRET
+    zendesk_subdomain: SECRET
+    zendesk_ticket_form_id: 360003266872
+    zendesk_product_field_id: 360047198211
+    zendesk_category_field_id: 360047206172
+    zendesk_os_field_id: 360018604871
