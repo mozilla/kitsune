@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% set crumbs = [(url('landings.get_involved'), _('Help Other Users')), (none, _('Answer questions in the forum'))] %}
-{% set styles = ('landings-get-involved',) %}
 
 {% set canonical_url = canonicalize(viewname='landings.get_involved_questions') %}
 
@@ -9,7 +8,7 @@
 <section class="sumo-page-section has-moz-headings">
   <div class="hero-bar sumo-l-two-col">
     <div class="sumo-l-two-col--one-half">
-      <img class="hero-butler questions" src="{{ STATIC_URL }}sumo/img/gi-hero-questions.png" alt="">
+      <img class="hero-butler questions" src="{{ webpack_static('sumo/img/gi-hero-questions.png') }}" alt="">
     </div>
     <div class="sumo-l-two-col--one-half">
       <h1 class="sumo-page-heading">{{ _('Answer questions in the forum') }}</h1>
@@ -34,7 +33,7 @@
 <section class="sumo-page-section has-moz-headings">
   <div class="sumo-l-two-col align-center">
     <div class="sumo-l-two-col--one-half gi-visual text-center">
-      <img src="{{ STATIC_URL }}sumo/img/gi-visual-questions.png?v=1" alt="">
+      <img src="{{ webpack_static('sumo/img/gi-visual-questions.png') }}" alt="">
       <p class="sumo-page-subheading legacy-blue-text"><em>{{ _('Solving one issue helps up to 1,000 users a day') }}</em></p>
     </div>
     <div class="sumo-l-two-col--one-half">

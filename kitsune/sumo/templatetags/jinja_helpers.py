@@ -1,7 +1,6 @@
 import datetime
 import json as jsonlib
 import logging
-import os
 import re
 import urllib
 
@@ -26,6 +25,7 @@ from pytz import timezone
 
 from kitsune.products.models import Product
 from kitsune.sumo import parser
+from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
@@ -454,6 +454,11 @@ def static(path):
 
 
 @library.global_function
+def webpack_static(source_path):
+    return webpack_static_func(source_path)
+
+
+@library.global_function
 def now():
     return datetime.datetime.now()
 
@@ -508,9 +513,7 @@ def image_for_product(product_slug):
     """
     Return square/alternate image for product slug
     """
-    default_image = os.path.join(
-        settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
-    )
+    default_image = webpack_static("products/img/product_placeholder_alternate.png")
 
     if not product_slug:
         return default_image

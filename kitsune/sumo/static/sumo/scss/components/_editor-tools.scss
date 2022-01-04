@@ -59,7 +59,7 @@ div.editor-tools {
 button {
   &.markup-toolbar-button {
     border: 0;
-    background: url(/static/sumo/img/markup.svg) no-repeat 11px 6px;
+    background: url("sumo/img/markup.svg") no-repeat 11px 6px;
     background-size: 410px 22px;
     cursor: pointer;
     height: 36px;
@@ -209,7 +209,7 @@ section.marky {
 
   &.processing {
     div.placeholder {
-      background: transparent url(/static/sumo/img/spinner.gif) no-repeat center center;
+      background: transparent url("sumo/img/spinner.gif") no-repeat center center;
     }
 
     #media-list {

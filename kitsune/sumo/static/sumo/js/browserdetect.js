@@ -1,4 +1,5 @@
-/* globals _:false */
+import _reduce from "underscore/modules/reduce";
+
 /* Detect the set of OSes and browsers we care about in the wiki and AAQ.
  * Adapted from http://www.quirksmode.org/js/detect.html with these changes:
  *
@@ -12,7 +13,7 @@
  *   returning undefined.
  * - Deleted the browsers we don't care about.
  */
-var BrowserDetect = window.BrowserDetect = {
+const BrowserDetect = {
   init: function () {
     var detected = this.detect();
     this.browser = detected[0];
@@ -45,7 +46,7 @@ var BrowserDetect = window.BrowserDetect = {
       this.versionSearchString = data[i].versionSearch || data[i].identity;
 
       // Check if all subStrings are in the dataString.
-      matchedAll = _.reduce(data[i].subStrings, function(memo, sub) {
+      matchedAll = _reduce(data[i].subStrings, function(memo, sub) {
         if (sub instanceof RegExp) {
           return memo && sub.exec(dataString);
         } else {
@@ -179,3 +180,4 @@ var BrowserDetect = window.BrowserDetect = {
   }
 };
 BrowserDetect.init();  // TODO: Do this lazily.
+export default BrowserDetect;

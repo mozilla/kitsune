@@ -45,15 +45,12 @@ RUN pip install --no-cache-dir --require-hashes -r requirements/dev.txt
 FROM base AS base-frontend
 
 COPY package*.json .
-COPY prepare_django_assets.js .
-RUN npm run install-prod && npm run copy:protocol && npm run postinstall
-
-COPY kitsune/sumo/static/sumo/scss kitsune/sumo/static/sumo/scss
-RUN npm run build:scss && npm run build:postcss
+RUN npm run install-prod
 
 COPY . .
 RUN cp .env-build .env && \
-    ./manage.py nunjucks_precompile
+    ./manage.py nunjucks_precompile &&\
+    npm run webpack:build:prod
 
 
 ########################
@@ -85,9 +82,8 @@ RUN ./scripts/l10n-fetch-lint-compile.sh && \
     find ./locale ! -name '*.mo' -type f -delete && \
     ./manage.py compilejsi18n && \
     # minify jsi18n files:
-    find jsi18n/ -name "*.js" -exec sh -c 'npx uglifyjs "$1" -o "${1%.js}-min.js"' sh {} \; && \
-    ./manage.py collectstatic --noinput && \
-    npx svgo -r -f static
+    find jsi18n/ -name "*.js" -exec sh -c 'npx terser "$1" -o "${1%.js}-min.js"' sh {} \; && \
+    ./manage.py collectstatic --noinput
 
 
 ##########################
@@ -109,6 +105,7 @@ RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sb
 COPY --from=prod-deps --chown=kitsune:kitsune /venv /venv
 COPY --from=prod-deps --chown=kitsune:kitsune /app/locale /app/locale
 COPY --from=prod-deps --chown=kitsune:kitsune /app/static /app/static
+COPY --from=prod-deps --chown=kitsune:kitsune /app/dist /app/dist
 
 COPY --chown=kitsune:kitsune . .
 

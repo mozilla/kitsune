@@ -1,3 +1,5 @@
+import "sumo/js/protocol";
+
 (function() {
   'use strict';
   // a custom callback can be passed to the lang switcher for analytics purposes.

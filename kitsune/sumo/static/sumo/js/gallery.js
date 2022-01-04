@@ -1,4 +1,6 @@
-/* globals gettext:false, jQuery:false, Modernizr:false, interpolate:false */
+import "sumo/js/libs/jquery.ajaxupload";
+import "sumo/js/kbox";
+
 (function($) {
   'use strict';
 
@@ -190,13 +192,6 @@
       // An image must be uploaded
       if ($form[0] === self.forms.$image[0] &&
           $form.find('.on input[type="file"]').length) {
-        return false;
-      }
-      // Metadata must be filled out
-      if (!Modernizr.input.required &&
-          (!$form.find('input[name="title"]').val() ||
-          !$form.find('textarea[name="description"]').val() ||
-          !$form.find('select[name="locale"]').val())) {
         return false;
       }
 

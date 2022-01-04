@@ -3,6 +3,7 @@ import json
 
 from django.contrib.auth.models import Permission
 from django.test.client import RequestFactory
+from django.test.utils import override_settings
 
 from unittest.mock import patch, Mock
 from nose.tools import eq_
@@ -17,6 +18,7 @@ from kitsune.sumo.utils import (
     truncated_json_dumps,
     get_browser,
     has_blocked_link,
+    webpack_static,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -247,3 +249,14 @@ class HasLinkTests(TestCase):
     def test_urls(self, data, expected_result):
         result = has_blocked_link(data)
         self.assertEqual(result, expected_result)
+
+
+class WebpackStaticTests(TestCase):
+    @override_settings(DEBUG=False)
+    def test_no_exception(self):
+        webpack_static("this_file_does_not_exist")
+
+    @override_settings(DEBUG=True)
+    def test_exception(self):
+        with self.assertRaises(RuntimeError):
+            webpack_static("this_file_does_not_exist")

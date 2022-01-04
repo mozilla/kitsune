@@ -1,5 +1,9 @@
-/* globals $:false, gettext: false, k: false, _: false, d3: false, moment: false */
-import Chart from './components/Chart.es6.js';
+import Chart from './components/Chart.es6';
+import _each from "underscore/modules/each";
+import _range from "underscore/modules/range";
+import _uniq from "underscore/modules/uniq";
+import _pluck from "underscore/modules/pluck";
+import { Graph } from "sumo/js/rickshaw_utils";
 
 let chartSetups = {
   'retention': {
@@ -8,7 +12,7 @@ let chartSetups = {
         xAxis: {
           labels() {
             let labelsArray = [];
-            _.each(_.range(1, 13), function(val) {
+            _each(_range(1, 13), function(val) {
               labelsArray.push(gettext('Week') + ' ' + val);
             });
             return labelsArray;
@@ -34,7 +38,7 @@ let chartSetups = {
       {
         name: gettext('Questions'),
         slug: 'questions',
-        func: k.Graph.identity('questions'),
+        func: Graph.identity('questions'),
         color: '#5d84b2',
         axisGroup: 'questions',
         area: true
@@ -42,7 +46,7 @@ let chartSetups = {
       {
         name: gettext('Solved'),
         slug: 'num_solved',
-        func: k.Graph.identity('solved'),
+        func: Graph.identity('solved'),
         color: '#aa4643',
         axisGroup: 'questions',
         area: true
@@ -50,7 +54,7 @@ let chartSetups = {
       {
         name: gettext('% Solved'),
         slug: 'solved',
-        func: k.Graph.fraction('solved', 'questions'),
+        func: Graph.fraction('solved', 'questions'),
         color: '#aa4643',
         axisGroup: 'percent',
         type: 'percent'
@@ -58,7 +62,7 @@ let chartSetups = {
       {
         name: gettext('Responded in 24 hours'),
         slug: 'num_responded_24',
-        func: k.Graph.identity('responded_24'),
+        func: Graph.identity('responded_24'),
         color: '#89a54e',
         axisGroup: 'questions',
         area: true
@@ -66,7 +70,7 @@ let chartSetups = {
       {
         name: gettext('% Responded in 24 hours'),
         slug: 'responded_24',
-        func: k.Graph.fraction('responded_24', 'questions'),
+        func: Graph.fraction('responded_24', 'questions'),
         color: '#89a54e',
         axisGroup: 'percent',
         type: 'percent'
@@ -74,7 +78,7 @@ let chartSetups = {
       {
         name: gettext('Responded in 72 hours'),
         slug: 'num_responded_72',
-        func: k.Graph.identity('responded_72'),
+        func: Graph.identity('responded_72'),
         color: '#80699b',
         axisGroup: 'questions',
         area: true
@@ -82,7 +86,7 @@ let chartSetups = {
       {
         name: gettext('% Responded in 72 hours'),
         slug: 'responded_72',
-        func: k.Graph.fraction('responded_72', 'questions'),
+        func: Graph.fraction('responded_72', 'questions'),
         color: '#80699b',
         axisGroup: 'percent',
         type: 'percent'
@@ -91,14 +95,14 @@ let chartSetups = {
         name: gettext('Not responded in 24 hours'),
         slug: 'not_responded_24',
         color: '#C98531',
-        func: k.Graph.difference('questions', 'responded_24'),
+        func: Graph.difference('questions', 'responded_24'),
         area: true
       },
       {
         name: gettext('Not responded in 72 hours'),
         slug: 'not_responded_72',
         color: '#DB75C2',
-        func: k.Graph.difference('questions', 'responded_72'),
+        func: Graph.difference('questions', 'responded_72'),
         area: true
       }
     ]
@@ -109,13 +113,13 @@ let chartSetups = {
       {
         name: gettext('Article Votes: % Helpful'),
         slug: 'wiki_percent',
-        func: k.Graph.fraction('kb_helpful', 'kb_votes'),
+        func: Graph.fraction('kb_helpful', 'kb_votes'),
         type: 'percent'
       },
       {
         name: gettext('Answer Votes: % Helpful'),
         slug: 'ans_percent',
-        func: k.Graph.fraction('ans_helpful', 'ans_votes'),
+        func: Graph.fraction('ans_helpful', 'ans_votes'),
         type: 'percent'
       }
     ]
@@ -126,17 +130,17 @@ let chartSetups = {
       {
         name: gettext('en-US KB'),
         slug: 'en_us',
-        func: k.Graph.identity('en_us')
+        func: Graph.identity('en_us')
       },
       {
         name: gettext('non en-US KB'),
         slug: 'non_en_us',
-        func: k.Graph.identity('non_en_us')
+        func: Graph.identity('non_en_us')
       },
       {
         name: gettext('Support Forums'),
         slug: 'support_forum',
-        func: k.Graph.identity('support_forum')
+        func: Graph.identity('support_forum')
       }
     ]
   },
@@ -146,7 +150,7 @@ let chartSetups = {
       {
         name: gettext('Click Through Rate %'),
         slug: 'ctr',
-        func: k.Graph.fraction('clicks', 'searches'),
+        func: Graph.fraction('clicks', 'searches'),
         type: 'percent'
       }
     ]
@@ -157,7 +161,7 @@ let chartSetups = {
       {
         name: gettext('Visitors'),
         slug: 'visitors',
-        func: k.Graph.identity('visitors')
+        func: Graph.identity('visitors')
       }
     ]
   },
@@ -180,26 +184,26 @@ let chartSetups = {
       {
         name: gettext('Percent Yes'),
         slug: 'percent_yes',
-        func: k.Graph.percentage('yes', 'no', 'dont_know'),
+        func: Graph.percentage('yes', 'no', 'dont_know'),
         axisGroup: 'percent',
         type: 'percent'
       },
       {
         name: gettext('Yes'),
         slug: 'yes',
-        func: k.Graph.identity('yes'),
+        func: Graph.identity('yes'),
         axisGroup: 'response'
       },
       {
         name: gettext('No'),
         slug: 'no',
-        func: k.Graph.identity('no'),
+        func: Graph.identity('no'),
         axisGroup: 'response'
       },
       {
         name: gettext("I don't know"),
         slug: 'dont_know',
-        func: k.Graph.identity('dont_know'),
+        func: Graph.identity('dont_know'),
         axisGroup: 'response'
       }
     ]
@@ -255,7 +259,7 @@ function makeRetentionChart(settings) {
 
   fetchDataset.done(data => {
     retentionChart.data = data;
-    retentionChart.axes.yAxis.labels = _.uniq(_.pluck(data, 'start'));
+    retentionChart.axes.yAxis.labels = _uniq(_pluck(data, 'start'));
     retentionChart.setupAxis('yAxis');
     retentionChart.populateData(defaultContributorType);
 
@@ -274,7 +278,7 @@ function makeKPIGraph(settings) {
   let fetchDataset = getChartData($container.data('url'), 'objects');
   let $errorContainer = $container.children('div');
   fetchDataset.done(data => {
-    new k.Graph($container, {
+    new Graph($container, {
       data: {
         datums: data,
         seriesSpec: settings.descriptors

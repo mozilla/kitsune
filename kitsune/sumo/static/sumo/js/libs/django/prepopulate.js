@@ -1,3 +1,4 @@
+import { URLify } from "./urlify";
 /*
  * Taken from Django's contrib/admin/media/js folder, thanks Django!
  * Copyright Django and licensed under BSD, please see django/LICENSE for

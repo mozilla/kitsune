@@ -1,4 +1,4 @@
-/* global CodeMirror */
+import CodeMirror from "codemirror";
 
 (function() {
   'use strict';

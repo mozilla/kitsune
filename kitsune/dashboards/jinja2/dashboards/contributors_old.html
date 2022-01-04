@@ -3,7 +3,6 @@
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
 {% set title = _('[{product}] Knowledge Base Dashboard')|fe(product=pgettext('DB: products.Product.title', product.title) if product else _('All Products')) %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
-{% set styles = ('kbdashboards', ) %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'contributor-dashboard' %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}

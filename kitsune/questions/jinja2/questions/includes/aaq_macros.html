@@ -10,7 +10,7 @@
         {% for key, product in products.items() %}
         <div class="card card--product zoom-on-hover">
           {% if key == 'other' %}
-          <img src="{{ static('sumo/img/mozilla-icon.png') }}"
+          <img src="{{ webpack_static('sumo/img/mozilla-icon.png') }}"
               alt="{{ _(product.name) }}"
               class="card--icon">
           {% else %}

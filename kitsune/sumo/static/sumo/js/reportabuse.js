@@ -1,4 +1,3 @@
-/* global gettext:false, _:false, jQuery:false */
 /*
 * Report abuse UI.
 */

@@ -5,6 +5,7 @@ from django_jinja import library
 
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import webpack_static
 
 
 @library.global_function
@@ -13,7 +14,7 @@ def group_avatar(group_profile):
     if group_profile.avatar:
         return group_profile.avatar.url
     else:
-        return settings.STATIC_URL + settings.DEFAULT_AVATAR
+        return webpack_static(settings.DEFAULT_AVATAR)
 
 
 @library.global_function

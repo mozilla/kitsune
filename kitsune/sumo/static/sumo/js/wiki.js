@@ -1,5 +1,22 @@
-/* globals k:false, jQuery:false, ShowFor:false, Marky:false, VERSIONS:false,
-           BrowserDetect:false, gettext:false, KBox:false, CodeMirror:false, interpolate:false */
+import spinnerImg from "sumo/img/spinner.gif";
+import "sumo/js/libs/jquery.cookie";
+import "sumo/js/libs/jquery.lazyload";
+import KBox from "sumo/js/kbox";
+import "sumo/js/libs/django/prepopulate";
+import "jquery-ui/ui/widgets/datepicker";
+import CodeMirror from "codemirror";
+import "codemirror/addon/mode/simple";
+import "codemirror/addon/hint/show-hint";
+import "sumo/js/codemirror.sumo-hint";
+import "sumo/js/codemirror.sumo-mode";
+import "sumo/js/protocol";
+import AjaxPreview from "sumo/js/ajaxpreview";
+import AjaxVote from "sumo/js/ajaxvote";
+import { initDiff } from "sumo/js/diff";
+import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
+import Marky from "sumo/js/markup";
+import ShowFor from "sumo/js/showfor";
+
 /*
  * wiki.js
  * Scripts for the wiki app.
@@ -17,16 +34,16 @@
     if ($body.is('.document')) {  // Document page
       // Put last search query into search box
       $('#support-search input[name=q]')
-        .val(k.unquote($.cookie('last_search')));
-      new ShowFor(); // eslint-disable-line
+        .val(unquote($.cookie('last_search')));
+      new ShowFor();
       addReferrerAndQueryToVoteForm();
-      new k.AjaxVote('.document-vote form', { // eslint-disable-line
+      new AjaxVote('.document-vote form', {
         positionMessage: false,
         replaceFormWithMessage: true,
         removeForm: true
       });
     } else if ($body.is('.review')) { // Review pages
-      new ShowFor(); // eslint-disable-line
+      new ShowFor();
       initNeedsChange();
 
       $('img.lazy').loadnow();
@@ -58,18 +75,6 @@
 
       // We can enable the buttons now.
       $('.submit input').removeAttr('disabled');
-    }
-
-    if ($body.is('.edit, .new')) {
-      // collapse the topics listing per product and show only one topic list
-      // // at at a time
-      // $(function () {
-      //   $('#accordion').accordion({
-      //     collapsible: true,
-      //     heightStyle: 'content',
-      //     active: false
-      //   });
-      // });
     }
 
     if ($body.is('.translate')) {  // Translate page
@@ -114,7 +119,7 @@
   // Make <summary> and <details> tags work even if the browser doesn't support them.
   // From http://mathiasbynens.be/notes/html5-details-jquery
   function initDetailsTags() {
-    // Note <details> tag support. Modernizr doesn't do this properly as of 1.5; it thinks Firefox 4 can do it, even though the tag has no "open" attr.
+    // Note <details> tag support.
     if (!('open' in document.createElement('details'))) {
       document.documentElement.className += ' no-details';
     }
@@ -184,24 +189,6 @@
     }
   }
 
-  // Return the browser and version that appears to be running. Possible
-  // values resemble {fx4, fx35, m1, m11}. Return undefined if the currently
-  // running browser can't be identified.
-  function detectBrowser() {
-    function getVersionGroup(browser, version) {
-      if ((browser === undefined) || (version === undefined) || !VERSIONS[browser]) {
-        return undefined;
-      }
-
-      for (var i = 0; i < VERSIONS[browser].length; i++) {
-        if (version < VERSIONS[browser][i][0]) {
-          return browser + VERSIONS[browser][i][1];
-        }
-      }
-    }
-    return getVersionGroup(BrowserDetect.browser, BrowserDetect.version);
-  }
-
   function initPrepopulatedSlugs() {
     var fields = {
       title: {
@@ -250,17 +237,16 @@
   function initArticlePreview() {
     var $preview = $('#preview'),
       $previewBottom = $('#preview-bottom'),
-      preview = new k.AjaxPreview($('.btn-preview'), {
+      preview = new AjaxPreview($('.btn-preview'), {
         contentElement: $('#id_content'),
         previewElement: $preview
       });
     $(preview).bind('done', function(e, success) {
       if (success) {
         $previewBottom.show();
-        new ShowFor(); // eslint-disable-line
+        new ShowFor();
         $preview.find('select.enable-if-js').removeAttr('disabled');
         $preview.find('.kbox').kbox();
-        // k.initVideo();
         $('#preview-diff .output').empty();
       }
     });
@@ -274,7 +260,7 @@
     $diff.addClass('diff-this');
     $diffButton.click(function() {
       $diff.find('.to').text($('#id_content').val());
-      k.initDiff($diff.parent());
+      initDiff($diff.parent());
       $previewBottom.show();
       $('#preview').empty();
     });
@@ -395,7 +381,7 @@
           },
           error: function() {
             var message = gettext('There was an error.');
-            alert(message); // eslint-disable-line
+            alert(message);
           }
         });
       });
@@ -415,7 +401,7 @@
           kbox.close();
           $diff.replaceWith(html);
           initDiffPicker();
-          k.initDiff();
+          initDiff();
         }
       });
     });
@@ -454,9 +440,9 @@
 
   function addReferrerAndQueryToVoteForm() {
     // Add the source/referrer and query terms to the helpful vote form
-    var urlParams = k.getQueryParamsAsDict(),
-      referrer = k.getReferrer(urlParams),
-      query = k.getSearchQuery(urlParams, referrer);
+    var urlParams = getQueryParamsAsDict(),
+      referrer = getReferrer(urlParams),
+      query = getSearchQuery(urlParams, referrer);
     $('.document-vote form')
       .append($('<input type="hidden" name="referrer"/>')
         .attr('value', referrer))
@@ -627,7 +613,7 @@
 
     $draftButton.click(function() {
       var message = gettext('<strong>Draft is saving...</strong>'),
-        image = '<img src="/static/sumo/img/spinner.gif">',
+        image = `<img src="${spinnerImg}">`,
         bothData = $('#both_form').serializeArray(),
         docData = $('#doc_form').serializeArray(),
         revData = $('#rev_form').serializeArray(),
@@ -715,7 +701,7 @@
         $this.parent().find('.close-diff').show();
         $this.parent().find('.loading').hide();
 
-        k.initDiff();
+        initDiff();
       });
 
       return false;
@@ -747,7 +733,7 @@
 
   $(document).ready(init);
 
-  window.k.makeWikiCollapsable = function() {
+  function makeWikiCollapsable() {
     // Hide the TOC
     $('#toc').hide();
 
@@ -787,7 +773,7 @@
   };
 
   if ($('#doc-content').is('.collapsible')) {
-    k.makeWikiCollapsable();
+    makeWikiCollapsable();
   }
 
   function initExitSupportFor() {

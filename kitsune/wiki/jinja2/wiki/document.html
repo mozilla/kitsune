@@ -8,7 +8,7 @@
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% set scripts = ('wiki', 'questions') %}
-{% set extra_body_attrs = {'data-track-url': STATIC_URL + 'img/pixel.gif', 'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
+{% set extra_body_attrs = {'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
 {% block title %}
   {{ document.title }} | {% if not products or products|count > 1 %}{{ pgettext('site_title', 'Mozilla Support') }}{% else %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endif %}
@@ -77,7 +77,7 @@
       {{ sumo_banner(
         id="id_ff_alert",
         text=_('Unlock more from the Firefox suite: Sync, Monitor, Lockwise and <a href="https://www.mozilla.org/firefox/accounts/">more.</a>'),
-        image=static('sumo/img/FF_Master__icon.svg'),
+        image=webpack_static('sumo/img/FF_Master__icon.svg'),
         button_text=_('Start Now'),
         button_link="https://accounts.firefox.com",
         modifier_class="hide-on-mobile",
@@ -117,7 +117,7 @@
         <div class="scroll-wrap">
           {% for related in docs %}
           <div class="card card--article">
-              <img class="card--icon-sm" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="todo: title" />
+              <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
               <div class="card--details">
                 <h3 class="card--title">
                   <a

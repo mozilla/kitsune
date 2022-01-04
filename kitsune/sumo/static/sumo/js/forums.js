@@ -1,4 +1,7 @@
-/* global Marky:false, jQuery:false, template:false, gettext:false, KBox:false */
+import KBox from "sumo/js/kbox";
+import AjaxPreview from "sumo/js/ajaxpreview";
+import Marky from "sumo/js/markup";
+
 /*
  * forums.js
  * Scripts for the forums app.
@@ -12,19 +15,16 @@
       '#reply-content, #id_content',
       {mediaButton: true});
 
-    new k.AjaxPreview($('#preview')); // eslint-disable-line
+    new AjaxPreview($('#preview'));
 
     $('.post-action a.reply').click(function() {
       var post = $(this).data('post'),
         $post = $('#post-' + post),
         text = $post.find('div.content-raw').text(),
         user = $post.find('.display-name').text(),
-        reply = template("''{user} [[#post-{post}|{said}]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
-        reply_text,
+        reply_text = `''${user} [[#post-${post}|${gettext('said')}]]''\n<blockquote>\n${text}\n</blockquote>\n\n`,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();
-
-      reply_text = reply({'user': user, 'post': post, 'text': text, 'said': gettext('said')});
 
       $textarea.val(oldtext + reply_text);
       return true;

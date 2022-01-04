@@ -26,8 +26,6 @@ help:
 	@echo "test          - run python tests"
 	@echo "test-js       - run js tests"
 	@echo "docs          - generate Sphinx HTML documentation"
-	@echo "frontend      - build frontend"
-	@echo "styleguide    - build the SUMO's styleguide"
 
 .env:
 	@if [ ! -f .env ]; then \
@@ -83,28 +81,10 @@ test: .docker-build
 	${DC} run web ./bin/run-unit-tests.sh
 
 test-js: .docker-build
-	${DC} run web ./bin/run-mocha-tests.sh
+	${DC} run web npm run webpack:test
 
 docs: .docker-build
 	${DC} run web $(MAKE) -C docs/ clean
 	${DC} run web $(MAKE) -C docs/ html
 
-#####################
-# For use in frontend
-#####################
-frontend:
-	npm run build:scss
-	npm run build:postcss
-
-styleguide: frontend
-	npm run build:docs:copystyles
-	npm run build:docs:copyfonts
-	npm run build:docs:copyjs
-	npm run build:docs:copyprotocol
-	npm run build:docs:copyprotocolimgs
-	npm run build:docs:copysumoimgs
-	npm run build:docs:copyproductimgs
-	npm run build:docs:styles
-	npm run build:docs:kss
-
-.PHONY: build rebuild run init shell runshell djshell clean lint test test-js docs frontend styleguide
+.PHONY: build rebuild run init shell runshell djshell clean lint test test-js docs

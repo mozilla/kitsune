@@ -321,7 +321,6 @@ class WikiParser(Parser):
             {
                 "image": image,
                 "params": params,
-                "STATIC_URL": settings.STATIC_URL,
             },
         )
 

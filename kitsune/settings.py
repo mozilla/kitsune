@@ -13,8 +13,6 @@ from decouple import Csv, config
 
 from kitsune.lib.sumo_locales import LOCALES
 
-from .bundles import PIPELINE_JS
-
 DEBUG = config("DEBUG", default=False, cast=bool)
 DEV = config("DEV", default=False, cast=bool)
 TEST = config("TEST", default=False, cast=bool)
@@ -405,16 +403,19 @@ MEDIA_URL = config("MEDIA_URL", default="/media/")
 STATIC_ROOT = path("static")
 STATIC_URL = config("STATIC_URL", default="/static/")
 STATICFILES_DIRS = (
-    path("assets"),  # emulate bower and css cache busting
     path("jsi18n"),  # Collect jsi18n so that it is cache-busted
+    path("dist"),
 )
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "pipeline.finders.PipelineFinder",
 )
 
-STATICFILES_STORAGE = "pipeline.storage.PipelineManifestStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
+WEBPACK_LRU_CACHE = 128
+if DEV or TEST:
+    WEBPACK_LRU_CACHE = 0
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
@@ -425,6 +426,7 @@ SUPPORTED_NONLOCALES = (
     "media",
     "postcrash",
     "robots.txt",
+    "manifest.json",
     "services",
     "wafflejs",
     "geoip-suggestion",
@@ -449,13 +451,16 @@ _CONTEXT_PROCESSORS = [
     "kitsune.sumo.context_processors.i18n",
     "kitsune.sumo.context_processors.aaq_languages",
     "kitsune.sumo.context_processors.current_year",
+    "kitsune.sumo.context_processors.static_url_webpack",
     "kitsune.messages.context_processors.unread_message_count",
 ]
 
 TEMPLATES = [
     {
         "BACKEND": "django_jinja.backend.Jinja2",
-        "DIRS": [],
+        "DIRS": [
+            path("dist"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             # Use jinja2/ for jinja templates
@@ -472,7 +477,6 @@ TEMPLATES = [
                 "jinja2.ext.autoescape",
                 "jinja2.ext.with_",
                 "jinja2.ext.do",
-                "pipeline.jinja2.PipelineExtension",
                 "django_jinja.builtins.extensions.CsrfExtension",
                 "django_jinja.builtins.extensions.StaticFilesExtension",
                 "django_jinja.builtins.extensions.DjangoFiltersExtension",
@@ -654,7 +658,6 @@ INSTALLED_APPS = (
     "kitsune.users",
     "dennis.django_dennis",
     "puente",
-    "pipeline",
     "authority",
     "waffle",
     "storages",
@@ -765,27 +768,6 @@ STATICI18N_PACKAGES = ["kitsune.sumo"]
 # Save jsi18n files outside of static so that collectstatic will pick
 # them up and save it with hashed filenames in the static directory.
 STATICI18N_ROOT = path("jsi18n")
-
-#
-# Django Pipline
-PIPELINE = {
-    "PIPELINE_ENABLED": config("PIPELINE_ENABLED", default=False, cast=bool),
-    "COMPILERS": (
-        "kitsune.lib.pipeline_compilers.BrowserifyCompiler",
-        "pipeline.compilers.es6.ES6Compiler",
-    ),
-    "JAVASCRIPT": PIPELINE_JS,
-    "DISABLE_WRAPPER": True,
-    "JS_COMPRESSOR": "pipeline.compressors.uglifyjs.UglifyJSCompressor",
-    "UGLIFYJS_BINARY": path("node_modules/.bin/uglifyjs"),
-    "UGLIFYJS_ARGUMENTS": "",
-    "BROWSERIFY_BINARY": path("node_modules/.bin/browserify"),
-    "BROWSERIFY_ARGUMENTS": "-t babelify",
-    "BABEL_BINARY": "node_modules/.bin/babel",
-}
-
-if DEBUG:
-    PIPELINE["BROWSERIFY_ARGUMENTS"] += " -d"
 
 NUNJUCKS_PRECOMPILE_BIN = path("node_modules/.bin/nunjucks-precompile")
 

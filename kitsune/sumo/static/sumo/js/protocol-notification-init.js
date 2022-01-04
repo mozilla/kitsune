@@ -1,3 +1,5 @@
+import "sumo/js/protocol";
+
   (function() {
     'use strict';
     var dissmissButtons = document.querySelectorAll(

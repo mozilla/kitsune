@@ -340,7 +340,7 @@
             {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
             <button type="submit" class="btn helpful-button" name="helpful"><span class="hidden-text">{{ _('Yes') }}</span>👍</button>
             <button type="submit" class="btn not-helpful-button" name="not-helpful"><span class="hidden-text">{{ _('No') }}</span>👎</button>
-            <img class="wait" src="{{ settings.STATIC_URL }}sumo/img/spinner.gif" alt="{{ _('Please wait...') }}" />
+            <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
           </div>
       </form>
     </div>

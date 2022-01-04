@@ -1,4 +1,6 @@
-/* globals $:false */
+import "jquery-ui/ui/widgets/datepicker";
+import "jquery-ui/ui/widgets/tabs";
+
 $(document).ready(function() {
   // initiate tabs
   var tabs = $('#search-tabs').tabs(),

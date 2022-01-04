@@ -16,5 +16,7 @@ __pycache__
 .npm
 .vscode-server
 .cache
+.ssh
+/dist
 .gnupg*
 styleguide

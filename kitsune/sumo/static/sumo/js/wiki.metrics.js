@@ -1,4 +1,5 @@
-/* globals _gaq:false, trackEvent:false, jQuery:false */
+import trackEvent from "sumo/js/analytics";
+
 // Collect wiki metrics.
 
 (function ($) {

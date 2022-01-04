@@ -1,4 +1,6 @@
-/* globals d3:false, $:false, _:false */
+import _filter from "underscore/modules/filter";
+import d3 from "d3";
+
 /* jshint esnext: true */
 
 export default class Chart {
@@ -130,7 +132,7 @@ export default class Chart {
   populateData(filter) {
     let self = this;
     let kindFilter = filter;
-    let filteredData = _.filter(this.data, function(datum, index) {
+    let filteredData = _filter(this.data, function(datum, index) {
       return datum.kind === kindFilter;
     });
 

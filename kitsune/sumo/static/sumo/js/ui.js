@@ -1,5 +1,8 @@
-/* global gettext:false, Modernizr:false, _:false, jQuery:false, Mailcheck:false,
-          interpolate:false, Mozilla:false, trackEvent:false */
+import "jquery-ui/ui/widgets/datepicker";
+import _throttle from "underscore/modules/throttle";
+import UITour from "./libs/uitour";
+import trackEvent from "sumo/js/analytics";
+
 (function($) {
   'use strict';
 
@@ -17,7 +20,7 @@
       }
     });
 
-    $(window).scroll(_.throttle(function() {
+    $(window).scroll(_throttle(function() {
       if ($(window).scrollTop() > $('body > header').outerHeight()) {
         $('body').addClass('scroll-header');
       } else {
@@ -40,9 +43,7 @@
       if ($this.data('close-id')) {
         $target = $('#' + $this.data('close-id'));
         if ($this.data("close-memory") === "remember") {
-          if (Modernizr.localstorage) {
-            localStorage.setItem($this.data("close-id") + ".closed", true);
-          }
+          localStorage.setItem($this.data("close-id") + ".closed", true);
         } else if ($this.data("close-memory") === "session") {
           sessionStorage.setItem($this.data("close-id") + ".closed", true);
         }
@@ -66,14 +67,12 @@
       var $this = $(this);
       var id = $this.data('close-id');
       if (id) {
-        if (Modernizr.localstorage) {
-          if (localStorage.getItem(id + '.closed') === 'true') {
-            var $target = $('#' + id);
-            if ($this.data('close-type') === 'remove') {
-              $target.remove();
-            } else {
-              $('#' + id).hide();
-            }
+        if (localStorage.getItem(id + '.closed') === 'true') {
+          var $target = $('#' + id);
+          if ($this.data('close-type') === 'remove') {
+            $target.remove();
+          } else {
+            $('#' + id).hide();
           }
         }
       }
@@ -99,11 +98,9 @@
       var targetId = $target.attr('id');
 
       if ($this.data('toggle-sticky') && targetId) {
-        if (Modernizr.localstorage) {
-          var targetClasses = localStorage.getItem(targetId + '.classes') || '[]';
-          targetClasses = JSON.parse(targetClasses);
-          $target.addClass(targetClasses.join(' '));
-        }
+        var targetClasses = localStorage.getItem(targetId + '.classes') || '[]';
+        targetClasses = JSON.parse(targetClasses);
+        $target.addClass(targetClasses.join(' '));
       }
 
       $this.on(trigger, function(ev) {
@@ -112,19 +109,17 @@
         $target.toggleClass(classname);
 
         if ($this.data('toggle-sticky') && targetId) {
-          if (Modernizr.localstorage) {
-            var classes = localStorage.getItem(targetId + '.classes') || '[]';
-            classes = JSON.parse(classes);
-            var i = classes.indexOf(classname);
+          var classes = localStorage.getItem(targetId + '.classes') || '[]';
+          classes = JSON.parse(classes);
+          var i = classes.indexOf(classname);
 
-            if ($target.hasClass(classname) && i === -1) {
-              classes.push(classname);
-            } else if (!$target.hasClass(classname) && i > -1) {
-              classes.splice(i, 1);
-            }
-
-            localStorage.setItem(targetId + '.classes', JSON.stringify(classes));
+          if ($target.hasClass(classname) && i === -1) {
+            classes.push(classname);
+          } else if (!$target.hasClass(classname) && i > -1) {
+            classes.splice(i, 1);
           }
+
+          localStorage.setItem(targetId + '.classes', JSON.stringify(classes));
         }
         return false;
       });
@@ -202,7 +197,7 @@
     });
 
     $('form[data-confirm]').on('submit', function() {
-      return confirm($(this).data('confirm-text')); // eslint-disable-line
+      return confirm($(this).data('confirm-text'));
     });
   });
 
@@ -259,36 +254,32 @@
     $folders.children('a, span').click(function() {
       var $parent = $(this).parent();
       $parent.toggleClass('selected');
-      // If local storage is available, store this for future page loads.
-      if (Modernizr.localstorage) {
-        var id = $parent.attr('id');
-        var folded = $parent.hasClass('selected');
-        if (id) {
-          localStorage.setItem(id + '.folded', folded);
-        }
+      // Store this for future page loads.
+      var id = $parent.attr('id');
+      var folded = $parent.hasClass('selected');
+      if (id) {
+        localStorage.setItem(id + '.folded', folded);
       }
       // prevent default
       return false;
     });
 
-    // If local storage is available, load the folded/unfolded state of the
+    // Load the folded/unfolded state of the
     // menus from local storage and apply it.
-    if (Modernizr.localstorage) {
-      $folders.each(function() {
-        var $this = $(this);
-        var id = $this.attr('id');
+    $folders.each(function() {
+      var $this = $(this);
+      var id = $this.attr('id');
 
-        if (id) {
-          var folded = localStorage.getItem(id + '.folded');
+      if (id) {
+        var folded = localStorage.getItem(id + '.folded');
 
-          if (folded === 'true') {
-            $this.addClass('selected');
-          } else if (folded === 'false') {
-            $this.removeClass('selected');
-          }
+        if (folded === 'true') {
+          $this.addClass('selected');
+        } else if (folded === 'false') {
+          $this.removeClass('selected');
         }
-      });
-    }
+      }
+    });
   }
 
   function correctFixedHeader() {
@@ -302,24 +293,20 @@
   function initAnnouncements() {
     var $announcements = $('#announcements');
 
-    if (Modernizr.localstorage) {
-      // When an announcement is closed, remember it.
-      $announcements.on('click', '.close-button', function() {
-        var id = $(this).closest('.announce-bar').attr('id');
-        localStorage.setItem(id + '.closed', true);
-      });
+    // When an announcement is closed, remember it.
+    $announcements.on('click', '.close-button', function() {
+      var id = $(this).closest('.announce-bar').attr('id');
+      localStorage.setItem(id + '.closed', true);
+    });
 
-      // If an announcement has not been hidden before, show it.
-      $announcements.find('.announce-bar').each(function() {
-        var $this = $(this);
-        var id = $this.attr('id');
-        if (localStorage.getItem(id + '.closed') !== 'true') {
-          $this.show();
-        }
-      });
-    } else {
-      $announcements.find('.announce-bar').show();
-    }
+    // If an announcement has not been hidden before, show it.
+    $announcements.find('.announce-bar').each(function() {
+      var $this = $(this);
+      var id = $this.attr('id');
+      if (localStorage.getItem(id + '.closed') !== 'true') {
+        $this.show();
+      }
+    });
   }
 
   $(document).on('click', '#show-password', function() {
@@ -328,80 +315,21 @@
     $pw.attr('type', (this.checked) ? 'text' : 'password');
   });
 
-  var validate_field_cb = function() {
-    var $this = $(this);
-    var $v = $this.closest('[data-validate-url]');
-    var url = $v.data('validate-url');
-    var $label = $v.find('.validation-label');
-
-    var extras = $v.data('validate-extras');
-
-    if (_.contains(extras, 'email')) {
-      var domain = $this.val().split('@').pop();
-      var corrected = Mailcheck.findClosestDomain(domain, ['gmail.com', 'yahoo.com', 'hotmail.com']);
-
-      var ignoreList = $this.data('mailcheck-ignore') || [];
-
-      if (corrected && corrected !== domain && !_.contains(ignoreList, $this.val())) {
-        var $ignore = $('<a />').attr('href', '#').addClass('ignore-email').text(gettext('No, ignore'));
-        $ignore.on('click', function(ev) {
-          ev.preventDefault();
-          ignoreList.push($this.val());
-          $this.data('mailcheck-ignore', ignoreList);
-          $this.trigger('change');
-        });
-
-        $label.removeClass('valid');
-        $label.text(interpolate(gettext('Did you mean %s?'), [corrected]));
-        $label.append($ignore);
-        $label.show();
-
-        return false;
-      } else {
-        $label.hide();
-      }
-    }
-
-    $.getJSON(url, {
-      field: $this.attr('name'),
-      value: $this.val()
-    }, function(data) {
-      if ($this.val().length) {
-        if (data.valid) {
-          $label.addClass('valid');
-          $label.text($v.data('valid-label'));
-        } else {
-          $label.removeClass('valid');
-          $label.text(data.error);
-        }
-        $label.show();
-      } else {
-        $label.hide();
-      }
-    });
-  };
-
-  $(document).on('keyup', '[data-validate-url] input', _.throttle(validate_field_cb, 200));
-  $(document).on('change', '[data-validate-url] input', _.throttle(validate_field_cb, 200));
   $(window).on('hashchange', correctFixedHeader);
 
   $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
     ev.preventDefault();
-    if (Mozilla && Mozilla.UITour) {
-      // Send event to GA for metrics/reporting purposes.
-      trackEvent('Refresh Firefox', 'click refresh button');
+    // Send event to GA for metrics/reporting purposes.
+    trackEvent('Refresh Firefox', 'click refresh button');
 
-      Mozilla.UITour.resetFirefox();
-    }
+    UITour.resetFirefox();
     return false;
   });
 
   $(document).on("click", "[data-mozilla-ui-preferences]", function (ev) {
     ev.preventDefault();
     var pane = ev.target.dataset.mozillaUiPreferences;
-    if (Mozilla && Mozilla.UITour) {
-      Mozilla.UITour.openPreferences(pane);
-    }
+    UITour.openPreferences(pane);
     return false;
   });
 

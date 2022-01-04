@@ -9,8 +9,7 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Edit Article'))] %}
 {% set classes = 'edit' %}
-{% set styles = ('wiki', 'wiki-editor', 'jqueryui') %}
-{% set scripts = ('wiki', 'wiki.diff', 'wiki.editor', 'jqueryui') %}
+{% set scripts = ('wiki', 'wiki.diff', 'wiki.editor') %}
 
 {% block content %}
   <div class="user-messages">

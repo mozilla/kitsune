@@ -14,7 +14,7 @@ we can compute the edit-title URL.
 {% from "questions/includes/aaq_macros.html" import progress_bar %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
-{% set scripts = ('questions', 'jqueryui', 'questions.geo',) %}
+{% set scripts = ('questions', 'questions.geo',) %}
 
 {% set hide_aaq_link = True %}
 
@@ -51,7 +51,7 @@ we can compute the edit-title URL.
       <aside class="sumo-l-two-col--sidebar">
         {% if form and not has_subscriptions %}
           <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
-              <img class="card--img" src="{{ STATIC_URL }}sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png" alt="Illustration of community" />
+              <img class="card--img" src="{{ webpack_static('sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png') }}" alt="Illustration of community" />
               <div class="card--details">
                 <h3 class="card--title">{{ _('Our Community is here to help') }}</h3>
                 <p class="card--desc">{{ _('Kindness is at the heart of our community. Our volunteers are happy to share their time and Firefox knowledge with you.') }}</p>
@@ -61,7 +61,7 @@ we can compute the edit-title URL.
 
           <div class="large-only">
             <h3 class="sumo-card-heading">
-              <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
+              <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/highlight.svg') }}" alt="Helpful Tip icon" />
               {{ _('Helpful Tip!')}}
             </h3>
             <p>{{ _('Follow through. Sometimes, our volunteers would ask you for more information or to test out certain scenarios. The sooner you can do this, the sooner they would know how to fix it.')}}
@@ -159,7 +159,7 @@ we can compute the edit-title URL.
 
               <div class="hide-on-large field">
                 <h3 class="sumo-card-heading">
-                  <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
+                  <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/highlight.svg') }}" alt="Helpful Tip icon" />
                   {{ _('Helpful Tip!')}}
                 </h3>
                 <p>

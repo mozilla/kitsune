@@ -9,6 +9,7 @@
  * if you want to avoid that).
  */
 
+import dialogSet from "sumo/js/upload-dialog";
 
 /**
  * Wrap an input in its own form and bind delete handlers.

@@ -27,3 +27,8 @@ def aaq_languages(request):
 
 def current_year(request):
     return {"CURRENT_YEAR": datetime.now().year}
+
+
+def static_url_webpack(request):
+    """Adds the static url without a trailing slash, for use by webpack."""
+    return {"STATIC_URL_WEBPACK": settings.STATIC_URL.removesuffix("/")}

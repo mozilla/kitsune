@@ -67,7 +67,6 @@ def render_email(template, context):
 
     Falls back to WIKI_DEFAULT_LANGUAGE in case of error.
     """
-    context["STATIC_URL"] = settings.STATIC_URL
 
     @safe_translation
     def _render(locale):

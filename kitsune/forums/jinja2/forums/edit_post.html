@@ -7,8 +7,7 @@
 (url('forums.threads', forum.slug), forum.name),
 (url('forums.posts', forum.slug, thread.id), thread.title),
 (None, _('Edit a post'))] %}
-{% set styles = ('forums', 'jqueryui') %}
-{% set scripts = ('forums', 'jqueryui') %}
+{% set scripts = ('forums',) %}
 
 {% block content %}
   <div id="edit-post" class="grid_12">

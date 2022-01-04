@@ -2,8 +2,7 @@
 {% from "dashboards/includes/macros.html" import print_readout, overview_section, product_choice_list, print_subscription_menu with context %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
 {% set title = _('[{locale}][{product}] Localization Dashboard')|fe(locale=current_locale, product=pgettext('DB: products.Product.title', product.title) if product else _('All Products')) %}
-{% set scripts = ('wiki', 'jqueryui', 'wiki.dashboard') %}
-{% set styles = ('kbdashboards', 'jqueryui') %}
+{% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'localization-dashboard' %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own or refactor up? #}
@@ -43,7 +42,7 @@
       {% if user_can_announce %}
         <div id="create-announcement">
           <button class="btn">
-            <img src="{{ STATIC_URL }}sumo/img/blank.png" />
+            <img src="{{ webpack_static('sumo/img/blank.png') }}" />
             {{ _('Create announcement') }}
           </button>
           <span class="success">{{ _('Created successfully') }}</span>
@@ -56,7 +55,7 @@
                   <button type="submit" class="btn btn-submit" value="Submit">
                     {{ _('Create') }}
                   </button>
-                  <img src="{{ STATIC_URL }}sumo/img/wait-trans.gif" class="spinner" />
+                  <img src="{{ webpack_static('sumo/img/wait-trans.gif') }}" class="spinner" />
                 </li>
               </ul>
             </form>

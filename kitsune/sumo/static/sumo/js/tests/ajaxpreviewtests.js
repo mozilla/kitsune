@@ -1,26 +1,13 @@
 import React from 'react';
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {expect} from 'chai';
 import sinon from 'sinon';
 
-import mochaGettext from './fixtures/mochaGettext.js';
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
+import AjaxPreview from "sumo/js/ajaxpreview";
 
 describe('ajax preview', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  mochaK();
-  mochaGettext();
-  /* globals window, $, k */
-
-  var fakeServer;
-
   describe('events', () => {
 
     beforeEach(() => {
-      rerequire('../ajaxpreview.js');
-      rerequire('../libs/jquery.lazyload.js');
 
       sinon.stub($, 'ajax').yieldsTo('success', '<p>The content to preview.</p>');
 
@@ -51,7 +38,7 @@ describe('ajax preview', () => {
     });
 
     it('should fire "show-preview" event', done => {
-      let ajaxPreview = new k.AjaxPreview($('#preview'));
+      let ajaxPreview = new AjaxPreview($('#preview'));
       $(ajaxPreview).bind('show-preview', (e, success, content) => {
         expect(success).to.equal(true);
         expect(content).to.equal('<p>The content to preview.</p>');
@@ -61,7 +48,7 @@ describe('ajax preview', () => {
     });
 
     it('should fire "done" event', done => {
-      let ajaxPreview = new k.AjaxPreview($('#preview'));
+      let ajaxPreview = new AjaxPreview($('#preview'));
       $(ajaxPreview).bind('done', (e, success) => {
         expect(success).to.equal(true);
         done();
@@ -70,7 +57,7 @@ describe('ajax preview', () => {
     });
 
     it('should show the preview', done => {
-      let ajaxPreview = new k.AjaxPreview($('#preview'));
+      let ajaxPreview = new AjaxPreview($('#preview'));
       $(ajaxPreview).bind('done', (e, success) => {
         expect($('#preview-container').html())
           .to.equal('<p>The content to preview.</p>');

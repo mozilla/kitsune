@@ -1,20 +1,37 @@
-/* globals diff_match_patch:false, _:false, DIFF_EQUAL:false,
-* DIFF_INSERT:false, DIFF_DELETE:false, gettext:false, jQuery:false */
+import _each from "underscore/modules/each";
+import _reduce from "underscore/modules/reduce";
+import {
+  diff_match_patch,
+  DIFF_DELETE,
+  DIFF_INSERT,
+  DIFF_EQUAL,
+} from "sumo/js/libs/diff_match_patch_uncompressed";
+
 /*
  * Wrapper around diff_match_patch. or something like that.
  */
 
+export default function Diff(from, to, outputContainer) {
+  /* Args:
+   * from, to - the text to create a diff of
+   * outputContainer - container element for the diff html output
+   */
+  Diff.prototype.init.call(this, from, to, outputContainer);
+}
+
+// Apply diffs automatically to '.diff-this' elements using children
+// '.from', '.to' and '.output' as the parameters.
+export function initDiff($container) {
+  $container = $container || $('body');
+  $container.find('.diff-this').each(function() {
+    var $this = $(this);
+    var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
+  });
+}
+
 (function($) {
 
   'use strict';
-
-  function Diff(from, to, outputContainer) {
-    /* Args:
-     * from, to - the text to create a diff of
-     * outputContainer - container element for the diff html output
-     */
-    Diff.prototype.init.call(this, from, to, outputContainer);
-  }
 
   Diff.prototype = {
     init: function(from, to, outputContainer) {
@@ -55,7 +72,7 @@
       var toContinued = false;
       var line, fromLine, toLine, sectionLines, i, l, op, data, text;
 
-      _.each(self.rawDiffs, function(diff) {
+      _each(self.rawDiffs, function(diff) {
         op = diff[0];    // Operation (insert, delete, equal)
         data = diff[1];  // Text of change.
         text = data
@@ -186,9 +203,9 @@
 
       html.push('<table><tbody>');
 
-      _.each(self.lineDiffs, function(line) {
+      _each(self.lineDiffs, function(line) {
         // Check if the line has non-whitespace changes.
-        line.changes = _.reduce(line.parts, function(memo, part) {
+        line.changes = _reduce(line.parts, function(memo, part) {
           return memo || (((part[0] === DIFF_DELETE) || (part[0] === DIFF_INSERT)) && part[1].length > 0);
         }, false);
 
@@ -229,7 +246,7 @@
       html.push('<td class="num">', line.toLineNum, '</td>');
       html.push('<td class="mark"></td>');
       html.push('<td>');
-      _.each(line.parts, function(part) {
+      _each(line.parts, function(part) {
         op = part[0];
         if (op === DIFF_INSERT) {
           html.push('<ins>' + part[1] + '</ins>');
@@ -250,7 +267,7 @@
       html.push('<td class="num"></td>');
       html.push('<td class="mark">-</td>');
       html.push('<td>');
-      _.each(line.parts, function(part) {
+      _each(line.parts, function(part) {
         op = part[0];
         if (op === DIFF_DELETE) {
           html.push('<del>' + part[1] + '</del>');
@@ -269,7 +286,7 @@
       html.push('<td class="num">', line.toLineNum, '</td>');
       html.push('<td class="mark">+</td>');
       html.push('<td>');
-      _.each(line.parts, function(part) {
+      _each(line.parts, function(part) {
         op = part[0];
         if (op === DIFF_INSERT) {
           html.push('<ins>' + part[1] + '</ins>');
@@ -280,20 +297,6 @@
       html.push('</td></tr>');
     }
   };
-
-  // Apply diffs automatically to '.diff-this' elements using children
-  // '.from', '.to' and '.output' as the parameters.
-  function initDiff($container) {
-    $container = $container || $('body');
-    $container.find('.diff-this').each(function() {
-      var $this = $(this);
-      var diff = new Diff($this.find('.from').text(), $this.find('.to').text(), $this.find('.output'));
-    });
-  }
-
-  window.k = window.k || {};
-  window.k.Diff = Diff;
-  window.k.initDiff = initDiff;
 
   initDiff();
 

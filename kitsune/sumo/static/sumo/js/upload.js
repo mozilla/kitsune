@@ -1,4 +1,7 @@
-/* globals $:false, gettext:false, KBox:false, interpolate:false */
+import "sumo/js/libs/jquery.ajaxupload";
+import dialogSet from "sumo/js/upload-dialog";
+import KBox from "sumo/js/kbox";
+
 $(document).ready(function () {
   var UPLOAD = {
     max_filename_length: 80,  // max filename length in characters
@@ -6,18 +9,6 @@ $(document).ready(function () {
     error_title_del: gettext('Error deleting image'),
     error_login: gettext('Please check you are logged in, and try again.')
   };
-
-  function dialogSet(inner, title) {
-    var kbox = new KBox($('<p/>').text(inner), {
-      title: title,
-      destroy: true,
-      closeOnOutClick: true,
-      modal: true,
-      id: 'upload-dialog',
-      container: $('body')
-    });
-    kbox.open();
-  }
 
   $('input.delete', 'div.attachments-list').each(function () {
     var $form = $(this).closest('form');

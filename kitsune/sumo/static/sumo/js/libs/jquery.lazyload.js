@@ -34,15 +34,13 @@
             }
             if(didScroll) {
                 didScroll = false;
+                var assocAnchor = null;
                 if(prevHash != window.location.hash) {
                     // In-page anchor link was clicked, preserve it
                     assocAnchor = window.location.hash;
                     prevHash = window.location.hash;
                 }
-                else {
-                    assocAnchor = null;
-                }
-                loadedCount = loadAboveTheFoldImages(elements, opts, assocAnchor);
+                var loadedCount = loadAboveTheFoldImages(elements, opts, assocAnchor);
                 loaded -= loadedCount;
             }
         }, 250);

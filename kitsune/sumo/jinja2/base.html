@@ -19,7 +19,17 @@
     {% endfor %}
   {% endif %}
 
-  <link href="{{ static('sumo/css/screen.css') }}" rel="stylesheet" type="text/css" />
+  {# include css from webpack #}
+  {# this html file won't be found in the source tree, as it's output by webpack #}
+  {% include "entrypoints/screen.html" %}
+
+  {# include javascript from webpack #}
+  {# these html files won't be found in the source tree, as they're output by webpack #}
+  {% include "entrypoints/common.html" %}
+  {% for script in scripts %}
+    {% include "entrypoints/" + script + ".html" %}
+  {% endfor %}
+  {% include "entrypoints/common.fx.download.html" %}
 
   {% if meta %}
     {% for tag in meta %}
@@ -44,18 +54,12 @@
     <link rel="canonical" href="{{ canonical_url|safe }}" />
   {% endif %}
 
-  <!--[if lt IE 9]>
-  {# html5-shiv.js must be inside <head/> to work. #}
-  <script src="{{ STATIC_URL }}sumo/js/libs/html5-shiv.js"></script>
-  <![endif]-->
-
   {% include "includes/google-analytics.html" %}
 </head>
 
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
-      data-static-url="{{ STATIC_URL }}"
       data-media-url="{{ MEDIA_URL }}"
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
@@ -102,7 +106,7 @@
   <div class="mzp-c-navigation-l-content">
     <div class="sumo-nav--container">
       <div class="sumo-nav--logo">
-        <a href="{{ url('home') }}"><img src="{{ STATIC_URL }}sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
+        <a href="{{ url('home') }}"><img src="{{ webpack_static('sumo/img/mozilla-support.svg') }}" alt="Mozilla Support Logo"/></a>
       </div>
 
       <button data-mobile-nav-search-button class="sumo-nav--search-button" type="button">Search</button>
@@ -111,7 +115,7 @@
         {% if user.is_authenticated %}
         <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
         {% else %}
-        <img class="avatar" src="{{ STATIC_URL }}sumo/img/default-FFA-avatar.png" alt="Avatar for Username">
+        <img class="avatar" src="{{ webpack_static('sumo/img/default-FFA-avatar.png') }}" alt="Avatar for Username">
         {% endif %}
 
       </a>
@@ -321,13 +325,6 @@
     <script src="{{ static('jsi18n/{lang}/djangojs-min.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
   {% endif %}
 {% endif %}
-
-{% javascript 'common' %}
-{% for script in scripts %}
-  {% javascript script %}
-{% endfor %}
-
-{% javascript 'common.fx.download' %}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}

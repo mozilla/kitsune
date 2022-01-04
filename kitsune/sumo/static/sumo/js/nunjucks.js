@@ -1,10 +1,11 @@
-/* global nunjucks:false, gettext:false, ngettext:false, interpolate:false, k:false, jQuery:false */
+import nunjucks from "nunjucks/browser/nunjucks-slim";
+
+var env = nunjucks.configure({autoescape: true});
+export default env;
+
 (function($) {
-  window.k = window.k || {};
 
-  var env = nunjucks.configure({autoescape: true});
-
-  env.addGlobal('_', gettext);
+  env.addGlobal('_', window.gettext);
   env.addGlobal('ngettext', window.ngettext);
 
   env.addFilter('f', function(fmt, obj, named) {
@@ -15,7 +16,7 @@
       obj[keys[i]] = escape(obj[keys[i]]);
     }
 
-    return interpolate(fmt, obj, named);
+    return window.interpolate(fmt, obj, named);
   });
 
   env.addFilter('urlparams', function(url, params) {
@@ -63,5 +64,4 @@
     return encodeURI(uri);
   });
 
-  k.nunjucksEnv = env;
 })(jQuery);

@@ -1,6 +1,6 @@
 <div class="sumo-banner {{ modifier_class }}">
   <div class="content">
-    <img class="icon" src="static/sumo/img/FF_Master__icon.svg" alt="" role="presentation" />
+    <img class="icon" src="{{ webpack_static('sumo/img/FF_Master__icon.svg') }}" alt="" role="presentation" />
     <p class="heading">
       Get the account that protects you rather that profits off you.
     </p>
@@ -8,7 +8,11 @@
       Sign Up
     </a>
     <button class="sumo-close-button close-button">
-      <img src="static/protocol/img/icons/close{% if modifier_class !== "sumo-banner-warning" %}-white{% endif %}.svg" />
+    {% if modifier_class == "sumo-banner-warning" %}
+      <img src="{{ webpack_static('protocol/img/icons/close.svg') }}" />
+    {% else %}
+      <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" />
+    {% endif %}
     </button>
   </div>
 </div>

@@ -57,4 +57,5 @@ celerybeat.pid
 .python_history
 .ssh
 *.zip
+dist/
 .mysql_history
