@@ -1,35 +1,31 @@
 default_language_version:
-  python: python3.10
+    python: python3.10
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.1.0
-    hooks:
-      - id: check-added-large-files
-      - id: check-case-conflict
-      - id: check-merge-conflict
-      - id: debug-statements
-  - repo: https://github.com/psf/black
-    rev: 21.8b0
-    hooks:
-      - id: black
-        files: "^kitsune/"
-        exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
-        language_version: python3.10
-  - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.8.4
-    hooks:
-      - id: flake8
-  - repo: https://github.com/peterdemin/pip-compile-multi
-    rev: v2.3.0
-    hooks:
-      - id: pip-compile-multi-verify
-  # - repo: https://github.com/pre-commit/mirrors-eslint
-  #   rev: v8.1.0
-  #   hooks:
-  #     - id: eslint
-  #       args: [--no-eslintrc, --config=webpack/eslintrc.js]
-  #       exclude: "webpack/.*|webpack\\..*\\.js"
-  #       additional_dependencies:
-  #         - eslint@8.1.0
-  #         - eslint-import-resolver-webpack@0.13.2
-  #         - eslint-plugin-import@2.25.2
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v3.1.0
+      hooks:
+          - id: check-added-large-files
+          - id: check-case-conflict
+          - id: check-merge-conflict
+          - id: debug-statements
+    - repo: https://github.com/psf/black
+      rev: 21.8b0
+      hooks:
+          - id: black
+            files: "^kitsune/"
+            exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
+            language_version: python3.10
+    - repo: https://gitlab.com/pycqa/flake8.git
+      rev: 3.8.4
+      hooks:
+          - id: flake8
+    # - repo: https://github.com/pre-commit/mirrors-eslint
+    #   rev: v8.1.0
+    #   hooks:
+    #     - id: eslint
+    #       args: [--no-eslintrc, --config=webpack/eslintrc.js]
+    #       exclude: "webpack/.*|webpack\\..*\\.js"
+    #       additional_dependencies:
+    #         - eslint@8.1.0
+    #         - eslint-import-resolver-webpack@0.13.2
+    #         - eslint-plugin-import@2.25.2
