@@ -32,6 +32,10 @@ const entrypoints = {
   "community.metrics": [
     "kpi/js/kpi.browserify.js",
   ],
+  document: [
+    "sumo/js/document.js",
+    "sumo/js/wiki.metrics.js",
+  ],
   questions: [
     "sumo/js/questions.js",
     "sumo/js/tags.filter.js",
@@ -62,10 +66,8 @@ const entrypoints = {
   wiki: [
     "sumo/js/users.autocomplete.js",
     "sumo/js/wiki.js",
-    "sumo/js/tags.js",
     "sumo/js/dashboards.js",
     "sumo/js/editable.js",
-    "sumo/js/wiki.metrics.js",
     "sumo/js/templates/wiki-related-doc.js",
     "sumo/js/templates/wiki-search-results.js",
     "sumo/js/wiki_search.js",
