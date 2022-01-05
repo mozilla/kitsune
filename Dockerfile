@@ -49,7 +49,6 @@ RUN npm run install-prod
 
 COPY . .
 RUN cp .env-build .env && \
-    ./manage.py nunjucks_precompile &&\
     npm run webpack:build:prod
 
 

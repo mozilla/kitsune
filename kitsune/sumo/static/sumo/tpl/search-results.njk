@@ -1,4 +1,4 @@
-{% from 'macros.html' import search_result %}
+{% from 'macros.njk' import search_result %}
 
 <section class="mzp-l-content sumo-page-section--inner">
   <div id="search-results" class="sumo-l-two-col">
@@ -24,7 +24,7 @@
     </aside>
 
     <main class="sumo-l-two-col--main" id="search-results-list">
-      {% include 'search-results-list.html' %}
+      {% include 'search-results-list.njk' %}
     </main>
   </div>
 </section>

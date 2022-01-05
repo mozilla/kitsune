@@ -176,13 +176,7 @@ or have entered data yourself through the admin interface.
     $ ./manage.py es7_init && es7_reindex
     ```
 
-3. Precompile the nunjucks templates
-
-    ```
-    $ ./manage.py nunjucks_precompile
-    ```
-
-4. Now, exit from web's bash shell
+3. Now, exit from web's bash shell
     ```
     $ exit
     ```
@@ -239,16 +233,6 @@ within its package directory. To set this up, run this command to do
 the initial fetch::
 
     docker-compose exec web ./manage.py update_product_details
-```
-
-### Pre-compiling JavaScript Templates
-
-```eval_rst
-We use nunjucks to render Jinja-style templates for front-end use. These
-templates get updated from time to time and you will need to pre-compile them
-to ensure that they render correctly::
-
-      docker-compose exec web ./manage.py nunjucks_precompile
 ```
 
 ### Using Django Debug Toolbar

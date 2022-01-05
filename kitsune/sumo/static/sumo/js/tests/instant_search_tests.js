@@ -3,7 +3,6 @@ import React from 'react';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
-import "sumo/js/templates/search-results";
 import "sumo/js/instant_search";
 import CachedXHR from "sumo/js/cached_xhr";
 

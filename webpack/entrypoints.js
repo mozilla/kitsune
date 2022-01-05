@@ -2,9 +2,6 @@ const entrypoints = {
   screen: ["sumo/scss/screen.scss"],
   common: [
     "sumo/js/i18n.js",
-    "sumo/js/templates/macros.js",
-    "sumo/js/templates/search-results-list.js",
-    "sumo/js/templates/search-results.js",
     "sumo/js/kbox.js",
     "sumo/js/main.js",
     "sumo/js/geoip-locale.js",
@@ -68,8 +65,6 @@ const entrypoints = {
     "sumo/js/wiki.js",
     "sumo/js/dashboards.js",
     "sumo/js/editable.js",
-    "sumo/js/templates/wiki-related-doc.js",
-    "sumo/js/templates/wiki-search-results.js",
     "sumo/js/wiki_search.js",
   ],
   "wiki.history": [
