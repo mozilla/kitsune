@@ -17,7 +17,7 @@ RUN pip install --upgrade "pip==21.3.1"
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && apt-get install apt-transport-https && \
-    curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     gettext build-essential \

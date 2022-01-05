@@ -23,8 +23,11 @@ module.exports = merge(common, {
       ],
     }),
     new ImageMinimizerPlugin({
-      minimizerOptions: {
-        plugins: ["optipng", "svgo"],
+      minimizer: {
+        implementation: ImageMinimizerPlugin.imageminMinify,
+        options: {
+          plugins: ["optipng", "svgo"],
+        },
       },
     }),
     new AssetJsonPlugin(),
