@@ -7,7 +7,7 @@
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
-{% set scripts = ('wiki', 'questions') %}
+{% set scripts = ('document',) %}
 {% set extra_body_attrs = {'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
 {% block title %}

@@ -11,9 +11,7 @@ import "sumo/js/codemirror.sumo-hint";
 import "sumo/js/codemirror.sumo-mode";
 import "sumo/js/protocol";
 import AjaxPreview from "sumo/js/ajaxpreview";
-import AjaxVote from "sumo/js/ajaxvote";
 import { initDiff } from "sumo/js/diff";
-import { getQueryParamsAsDict, getReferrer, getSearchQuery, unquote } from "sumo/js/main";
 import Marky from "sumo/js/markup";
 import ShowFor from "sumo/js/showfor";
 
@@ -31,18 +29,7 @@ import ShowFor from "sumo/js/showfor";
     initPrepopulatedSlugs();
     initDetailsTags();
 
-    if ($body.is('.document')) {  // Document page
-      // Put last search query into search box
-      $('#support-search input[name=q]')
-        .val(unquote($.cookie('last_search')));
-      new ShowFor();
-      addReferrerAndQueryToVoteForm();
-      new AjaxVote('.document-vote form', {
-        positionMessage: false,
-        replaceFormWithMessage: true,
-        removeForm: true
-      });
-    } else if ($body.is('.review')) { // Review pages
+    if ($body.is('.review')) { // Review pages
       new ShowFor();
       initNeedsChange();
 
@@ -436,18 +423,6 @@ import ShowFor from "sumo/js/showfor";
         });
       }
     });
-  }
-
-  function addReferrerAndQueryToVoteForm() {
-    // Add the source/referrer and query terms to the helpful vote form
-    var urlParams = getQueryParamsAsDict(),
-      referrer = getReferrer(urlParams),
-      query = getSearchQuery(urlParams, referrer);
-    $('.document-vote form')
-      .append($('<input type="hidden" name="referrer"/>')
-        .attr('value', referrer))
-      .append($('<input type="hidden" name="query"/>')
-        .attr('value', query));
   }
 
   function initNeedsChange() {
