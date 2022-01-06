@@ -749,7 +749,7 @@ PUENTE = {
             ("kitsune/**/static/**/js/*-all.js", "ignore"),
             ("kitsune/**/static/**/js/*-min.js", "ignore"),
             ("kitsune/**/static/**/js/*.js", "javascript"),
-            ("kitsune/**/static/**/tpl/**.html", "jinja2"),
+            ("kitsune/**/static/**/tpl/**.njk", "jinja2"),
         ],
     },
 }
@@ -768,8 +768,6 @@ STATICI18N_PACKAGES = ["kitsune.sumo"]
 # Save jsi18n files outside of static so that collectstatic will pick
 # them up and save it with hashed filenames in the static directory.
 STATICI18N_ROOT = path("jsi18n")
-
-NUNJUCKS_PRECOMPILE_BIN = path("node_modules/.bin/nunjucks-precompile")
 
 #
 # Sessions

@@ -1,5 +1,8 @@
-import nunjucksEnv from "sumo/js/nunjucks";
 import Search from "sumo/js/search_utils";
+
+import "sumo/tpl/wiki-related-doc.njk";
+import "sumo/tpl/wiki-search-results.njk";
+import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
 (function($) {
   var searchTimeout;
@@ -32,7 +35,7 @@ import Search from "sumo/js/search_utils";
           }
         };
 
-        $relatedDocsList.append(nunjucksEnv.render('wiki-related-doc.html', context));
+        $relatedDocsList.append(nunjucksEnv.render('wiki-related-doc.njk', context));
       }
     });
   }
@@ -41,7 +44,7 @@ import Search from "sumo/js/search_utils";
     if (!$resultsList) {
       createResultsList();
     }
-    $resultsList.html(nunjucksEnv.render('wiki-search-results.html', data));
+    $resultsList.html(nunjucksEnv.render('wiki-search-results.njk', data));
   }
 
   function handleSearch() {

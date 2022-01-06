@@ -22,6 +22,12 @@ module.exports = {
         },
       },
       {
+        test: /\.njk$/,
+        use: {
+          loader: path.resolve("./webpack/nunjucks-loader"),
+        },
+      },
+      {
         test: /\.scss$/,
         use: [
           MiniCssExtractPlugin.loader,

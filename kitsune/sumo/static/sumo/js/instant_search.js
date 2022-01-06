@@ -4,8 +4,12 @@ import detailsInit from "./protocol-details-init";
 import tabsInit from "./sumo-tabs";
 import trackEvent from "sumo/js/analytics";
 import CachedXHR from "sumo/js/cached_xhr";
-import nunjucksEnv from "sumo/js/nunjucks";
 import Search from "sumo/js/search_utils";
+
+import "sumo/tpl/macros.njk";
+import "sumo/tpl/search-results-list.njk";
+import "sumo/tpl/search-results.njk";
+import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
 (function($) {
   var searchTimeout;
@@ -94,7 +98,7 @@ import Search from "sumo/js/search_utils";
       $('#main-content').after($searchContent);
     }
 
-    var $searchResults = $(nunjucksEnv.render("search-results.html", context));
+    var $searchResults = $(nunjucksEnv.render("search-results.njk", context));
     if (aaq_explore_step) {
       $searchResults.find('section a').attr('target', '_blank');
     }
