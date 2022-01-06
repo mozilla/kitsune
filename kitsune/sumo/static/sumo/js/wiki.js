@@ -3,7 +3,6 @@ import "sumo/js/libs/jquery.cookie";
 import "sumo/js/libs/jquery.lazyload";
 import KBox from "sumo/js/kbox";
 import "sumo/js/libs/django/prepopulate";
-import "jquery-ui/ui/widgets/datepicker";
 import CodeMirror from "codemirror";
 import "codemirror/addon/mode/simple";
 import "codemirror/addon/hint/show-hint";
@@ -702,8 +701,6 @@ import ShowFor from "sumo/js/showfor";
         return false;
       }
     });
-
-    $form.find('input[type=date]').attr('type', 'text').datepicker();
   }
 
   $(document).ready(init);

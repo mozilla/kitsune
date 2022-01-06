@@ -1,4 +1,3 @@
-import "jquery-ui/ui/widgets/datepicker";
 import _throttle from "underscore/modules/throttle";
 import UITour from "./libs/uitour";
 import trackEvent from "sumo/js/analytics";
@@ -27,10 +26,6 @@ import trackEvent from "sumo/js/analytics";
         $('body').removeClass('scroll-header');
       }
     }, 100));
-
-    if ($.datepicker) {
-      $('input[type="date"]').attr('type', 'text').datepicker();
-    }
 
     $('.ui-truncatable .show-more-link').click(function(ev) {
       ev.preventDefault();

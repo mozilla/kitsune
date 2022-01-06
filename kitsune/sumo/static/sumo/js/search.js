@@ -1,4 +1,3 @@
-import "jquery-ui/ui/widgets/datepicker";
 import "jquery-ui/ui/widgets/tabs";
 
 $(document).ready(function() {
@@ -13,9 +12,6 @@ $(document).ready(function() {
       }
     });
   });
-
-  $('.datepicker').attr('type','text').datepicker();
-  $('.datepicker').attr('readonly', 'readonly').css('background', '#ddd');
 
   $('select', cache_search_date).change(function () {
     if ($(this).val() === 0) {
