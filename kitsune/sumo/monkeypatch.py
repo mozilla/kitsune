@@ -11,9 +11,19 @@ TESTING = (len(sys.argv) > 1 and sys.argv[1] == "test") or sys.argv[0].endswith(
 class DateWidget(fields.DateField.widget):
     input_type = "date"
 
+    def __init__(self, *args, **kwargs):
+        # force format to be what <input type="date"> expects, regardless of locale
+        kwargs["format"] = "%Y-%m-%d"
+        super().__init__(*args, **kwargs)
+
 
 class TimeWidget(fields.TimeField.widget):
     input_type = "time"
+
+    def __init__(self, *args, **kwargs):
+        # force format to be what <input type="time"> expects, regardless of locale
+        kwargs["format"] = "%H:%M"
+        super().__init__(*args, **kwargs)
 
 
 def patch():
