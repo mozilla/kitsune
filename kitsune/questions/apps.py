@@ -3,11 +3,12 @@ from django.apps import AppConfig
 
 class QuestionsConfig(AppConfig):
     name = "kitsune.questions"
+    default_auto_field = "django.db.models.AutoField"
 
     def ready(self):
-        from kitsune.questions.badges import register_signals
-
         import actstream.registry
+
+        from kitsune.questions.badges import register_signals
 
         Question = self.get_model("Question")
         actstream.registry.register(Question)
