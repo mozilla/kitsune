@@ -6,19 +6,28 @@ import django_filters
 from django import forms
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import (filters, pagination, permissions, serializers,
-                            status, viewsets)
+from rest_framework import filters, pagination, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from taggit.models import Tag
 
 from kitsune.products.api_utils import TopicField
 from kitsune.products.models import Product, Topic
-from kitsune.questions.models import (AlreadyTakenException, Answer,
-                                      AnswerVote, InvalidUserException,
-                                      Question, QuestionMetaData, QuestionVote)
-from kitsune.sumo.api_utils import (DateTimeUTCField, GenericAPIException,
-                                    OnlyCreatorEdits, SplitSourceField)
+from kitsune.questions.models import (
+    AlreadyTakenException,
+    Answer,
+    AnswerVote,
+    InvalidUserException,
+    Question,
+    QuestionMetaData,
+    QuestionVote,
+)
+from kitsune.sumo.api_utils import (
+    DateTimeUTCField,
+    GenericAPIException,
+    OnlyCreatorEdits,
+    SplitSourceField,
+)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
 from kitsune.users.models import Profile

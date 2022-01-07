@@ -4,7 +4,7 @@ services:
     build:
       context: .
       target: base
-    command: ./bin/run-dev.sh
+    command: ./bin/run-prod.sh
     env_file: .env
     volumes:
       - ./:/app:delegated
