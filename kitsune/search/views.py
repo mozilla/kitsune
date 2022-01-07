@@ -4,22 +4,21 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render
 from django.utils.translation import pgettext
 from django.utils.translation import ugettext as _
 from django.views.decorators.cache import cache_page
 
 from kitsune import search as constants
 from kitsune.products.models import Product
-from kitsune.search.forms import SimpleSearchForm
-from kitsune.search.utils import locale_or_default
 from kitsune.search.base import SumoSearchPaginator
+from kitsune.search.forms import SimpleSearchForm
 from kitsune.search.search import CompoundSearch, QuestionSearch, WikiSearch
+from kitsune.search.utils import locale_or_default
 from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.templatetags.jinja_helpers import Paginator as PaginatorRenderer
 from kitsune.sumo.utils import paginate
 from kitsune.wiki.facets import documents_for
-
 
 log = logging.getLogger("k.search")
 
@@ -38,11 +37,8 @@ def opensearch_plugin(request):
     """Render an OpenSearch Plugin."""
     host = "%s://%s" % ("https" if request.is_secure() else "http", request.get_host())
 
-    # Use `render_to_response` here instead of `render` because `render`
-    # includes the request in the context of the response. Requests
-    # often include the session, which can include pickable things.
-    # `render_to_respones` doesn't include the request in the context.
-    return render_to_response(
+    return render(
+        request,
         "search/plugin.html",
         {"host": host, "locale": request.LANGUAGE_CODE},
         content_type="application/opensearchdescription+xml",

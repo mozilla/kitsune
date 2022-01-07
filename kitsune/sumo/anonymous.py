@@ -28,8 +28,7 @@ import time
 
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.http import cookie_date
-
+from django.utils.http import http_date
 
 # Use the system (hardware-based) random number generator if it exists.
 if hasattr(random, "SystemRandom"):
@@ -97,7 +96,7 @@ class AnonymousIdentityMiddleware(MiddlewareMixin):
             if modified:
                 max_age = settings.ANONYMOUS_COOKIE_MAX_AGE
                 expires_time = time.time() + max_age
-                expires = cookie_date(expires_time)
+                expires = http_date(expires_time)
                 response.set_cookie(
                     settings.ANONYMOUS_COOKIE_NAME,
                     request.anonymous.anonymous_id,

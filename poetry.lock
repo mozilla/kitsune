@@ -60,6 +60,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "asgiref"
+version = "3.4.1"
+description = "ASGI specs, helper code, and adapters"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.extras]
+tests = ["pytest", "pytest-asyncio", "mypy (>=0.800)"]
+
+[[package]]
 name = "astroid"
 version = "2.9.0"
 description = "An abstract syntax tree for Python with inference support."
@@ -414,18 +425,19 @@ python-versions = "*"
 
 [[package]]
 name = "django"
-version = "2.2.25"
+version = "3.2.11"
 description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
 category = "main"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [package.dependencies]
+asgiref = ">=3.3.2,<4"
 pytz = "*"
 sqlparse = ">=0.2.2"
 
 [package.extras]
-argon2 = ["argon2-cffi (>=16.1.0)"]
+argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
@@ -472,14 +484,21 @@ django = "*"
 
 [[package]]
 name = "django-authority"
-version = "0.14"
+version = "0.15.dev15+gf58bbef"
 description = "A Django app that provides generic per-object-permissions for Django's auth app."
 category = "main"
 optional = false
 python-versions = "*"
+develop = false
 
 [package.dependencies]
 django = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/jazzband/django-authority.git"
+reference = "master"
+resolved_reference = "f58bbef27eca18a818fce6f5c25e651c552386c1"
 
 [[package]]
 name = "django-cache-panel"
@@ -595,15 +614,22 @@ python-versions = "*"
 
 [[package]]
 name = "django-mozilla-product-details"
-version = "0.14.1"
+version = "1.0.0"
 description = "Product and locale details for Mozilla products."
 category = "main"
 optional = false
 python-versions = "*"
+develop = false
 
 [package.dependencies]
-Django = ">=1.8"
-requests = ">=2.0.0"
+Django = ">=2.2"
+requests = ">=2.21.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/mozilla/django-product-details.git"
+reference = "master"
+resolved_reference = "e3e663bf1bbdd28565297071249d8c464442d5bb"
 
 [[package]]
 name = "django-nose"
@@ -2311,7 +2337,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "1f6c8f27519a865817459424729e1e3f8d0397197462b4e7fdcb65d97152e694"
+content-hash = "4a5ee461b5cbdc283d03be6fdc4db3357d23f6d4b73ad8681ef2acccad75ac50"
 
 [metadata.files]
 alabaster = [
@@ -2333,6 +2359,10 @@ apscheduler = [
 argparse = [
     {file = "argparse-1.4.0-py2.py3-none-any.whl", hash = "sha256:c31647edb69fd3d465a847ea3157d37bed1f95f19760b11a47aa91c04b666314"},
     {file = "argparse-1.4.0.tar.gz", hash = "sha256:62b089a55be1d8949cd2bc7e0df0bddb9e028faefc8c32038cc84862aefdd6e4"},
+]
+asgiref = [
+    {file = "asgiref-3.4.1-py3-none-any.whl", hash = "sha256:ffc141aa908e6f175673e7b1b3b7af4fdb0ecb738fc5c8b88f69f055c2415214"},
+    {file = "asgiref-3.4.1.tar.gz", hash = "sha256:4ef1ab46b484e3c706329cedeff284a5d40824200638503f5768edb6de7d58e9"},
 ]
 astroid = [
     {file = "astroid-2.9.0-py3-none-any.whl", hash = "sha256:776ca0b748b4ad69c00bfe0fff38fa2d21c338e12c84aa9715ee0d473c422778"},
@@ -2536,8 +2566,8 @@ dj-database-url = [
     {file = "dj_database_url-0.5.0-py2.py3-none-any.whl", hash = "sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9"},
 ]
 django = [
-    {file = "Django-2.2.25-py3-none-any.whl", hash = "sha256:08bad7ef7e90286b438dbe1412c3e633fbc7b96db04735f0c7baadeed52f3fad"},
-    {file = "Django-2.2.25.tar.gz", hash = "sha256:b1e65eaf371347d4b13eb7e061b09786c973061de95390c327c85c1e2aa2349c"},
+    {file = "Django-3.2.11-py3-none-any.whl", hash = "sha256:0a0a37f0b93aef30c4bf3a839c187e1175bcdeb7e177341da0cb7b8194416891"},
+    {file = "Django-3.2.11.tar.gz", hash = "sha256:69c94abe5d6b1b088bf475e09b7b74403f943e34da107e798465d2045da27e75"},
 ]
 django-activity-stream = [
     {file = "django-activity-stream-0.10.0.tar.gz", hash = "sha256:2cec600bb5a543dd402747afeeec237e9848993385049adfedc16ec97a6d86f2"},
@@ -2555,10 +2585,7 @@ django-appconf = [
     {file = "django-appconf-1.0.5.tar.gz", hash = "sha256:be3db0be6c81fa84742000b89a81c016d70ae66a7ccb620cdef592b1f1a6aaa4"},
     {file = "django_appconf-1.0.5-py3-none-any.whl", hash = "sha256:ae9f864ee1958c815a965ed63b3fba4874eec13de10236ba063a788f9a17389d"},
 ]
-django-authority = [
-    {file = "django-authority-0.14.tar.gz", hash = "sha256:f2e0b2adfa98cc5f0b4766f35d2666c7d040452d91e93fc47401e85f85bbecbd"},
-    {file = "django_authority-0.14-py2.py3-none-any.whl", hash = "sha256:20642871d146e9f989d764db28bd6ea441157ea152c817338db574632df7cd67"},
-]
+django-authority = []
 django-cache-panel = [
     {file = "django-cache-panel-0.1.tar.gz", hash = "sha256:42619072257d859c07bf91177070dc2ac925417d4010c8e6b40c23741cb9c46a"},
 ]
@@ -2601,10 +2628,7 @@ django-jsonfield-compat = [
     {file = "django-jsonfield-compat-0.4.4.tar.gz", hash = "sha256:0182d2e9db886abc2bf30958e4953f72b6f0e20336524755641bc3968899cd5b"},
     {file = "django_jsonfield_compat-0.4.4-py2.py3-none-any.whl", hash = "sha256:e2b1cd7dfef7633c8befb9c85fa764d344377512c8fdaf65ded4827392410a1d"},
 ]
-django-mozilla-product-details = [
-    {file = "django-mozilla-product-details-0.14.1.tar.gz", hash = "sha256:b7428e2dae653c4b0e35fa15363dd26b74dba821bf384c5cd835da0f1566b841"},
-    {file = "django_mozilla_product_details-0.14.1-py2.py3-none-any.whl", hash = "sha256:5fa2a8c3f2b9489aeb39b42c3612a43b0be5e778ffab07a5a2cf23b1eced4d64"},
-]
+django-mozilla-product-details = []
 django-nose = [
     {file = "django-nose-1.4.7.tar.gz", hash = "sha256:a4885cd002d65fd2de96e2bb2563ef477c3fbe207009360c015fca5c3b5561b7"},
     {file = "django_nose-1.4.7-py2.py3-none-any.whl", hash = "sha256:304adc447ee35b889b733d7106004f98aa401d8387ddcada5d4f2239d86790a9"},
