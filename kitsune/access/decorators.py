@@ -1,12 +1,11 @@
-from functools import wraps
 import inspect
+from functools import wraps
 
 from django.apps import apps
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.db.models import Model
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import available_attrs
 from django.utils.http import urlquote
 
 from kitsune.access import utils as access
@@ -47,7 +46,7 @@ def user_access_decorator(
 
             return view_fn(request, *args, **kwargs)
 
-        return wraps(view_fn, assigned=available_attrs(view_fn))(_wrapped_view)
+        return wraps(view_fn)(_wrapped_view)
 
     return decorator
 

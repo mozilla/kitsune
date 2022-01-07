@@ -1,8 +1,8 @@
+from urllib.parse import parse_qsl
+
 from django.conf import settings
 from django.core.cache.backends.base import InvalidCacheBackendError
-from django.utils.six.moves.urllib.parse import parse_qsl
-
-from redis import Redis, ConnectionError
+from redis import ConnectionError, Redis
 
 
 class RedisError(Exception):

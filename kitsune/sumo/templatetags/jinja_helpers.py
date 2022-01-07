@@ -10,9 +10,9 @@ from babel import localedata
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
 from django.http import QueryDict
 from django.template.loader import render_to_string
+from django.templatetags.static import static as django_static
 from django.utils.encoding import smart_bytes, smart_text
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone
@@ -25,8 +25,8 @@ from pytz import timezone
 
 from kitsune.products.models import Product
 from kitsune.sumo import parser
-from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
