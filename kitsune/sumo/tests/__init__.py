@@ -29,7 +29,6 @@ if "--no-skip" in sys.argv or "NOSE_WITHOUT_SKIP" in os.environ:
     class SkipTest(Exception):
         pass
 
-
 else:
     from nose import SkipTest  # noqa
 
