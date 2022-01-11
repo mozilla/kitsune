@@ -65,6 +65,15 @@ jobs:
                 command: |
                   source docker/bin/set_git_env_vars.sh
                   ./docker/bin/upload-staticfiles.sh
+            - run:
+                name: Echo prod image hash
+                command: |
+                  source docker/bin/set_git_env_vars.sh
+                  sed s/replaceme/${GIT_COMMIT_SHORT}/ .circleci/build.html > /tmp/build-status.html
+                  echo -e 'build completed!\n'"hash: ${GIT_COMMIT_SHORT}\nimage: mozilla/kitsune:prod-${GIT_COMMIT_SHORT}"
+            - store_artifacts:
+                path: /tmp/build-status.html
+                destination: build-status.html
 workflows:
   version: 2
   lint-test-build:

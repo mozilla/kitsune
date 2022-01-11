@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>kitsune build status</title>
+    <style>
+      html {
+        font-family: "Open Sans", sans-serif;
+        font-size: min(8vh, 3vw);
+        display: flex;
+        min-height: 100vh;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    build completed!<br />
+    hash: <span class="hash"></span><br />
+    image: mozilla/kitsune:prod-<span class="hash"></span>
+    <script>
+      const GIT_COMMIT_SHORT = "replaceme";
+      const rgb = GIT_COMMIT_SHORT.match(/.{2}/g).map((x) => parseInt(x, 16));
+      // https://www.w3.org/TR/AERT/#color-contrast
+      const luminance = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
+      const text = luminance < 255 / 2 ? "#fff" : "#000";
+      const html = document.documentElement;
+      html.style.backgroundColor = "#" + GIT_COMMIT_SHORT;
+      html.style.color = text;
+      for (const el of document.querySelectorAll(".hash")) {
+        el.textContent = GIT_COMMIT_SHORT.toLowerCase();
+      }
+    </script>
+  </body>
+</html>
