@@ -102,7 +102,7 @@ function compare-client-server-versions {
 	fi
 }
 
-if [ -f "$PYENV_FILE" ]; then
+if ! [ -f "$PYENV_FILE" ]; then
 	source venv/bin/activate
 fi
 initialize "$@"
