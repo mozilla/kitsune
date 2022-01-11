@@ -89,7 +89,6 @@ app:
     email_subject_prefix: "[support-dev] "
     email_use_tls: True
     enable_admin: True
-    enable_whitenoise: True
     enforce_host: "dev.sumo.mozit.cloud,support-dev.allizom.org"
     engage_robots: False
     es_index_prefix: "sumo_dev"
