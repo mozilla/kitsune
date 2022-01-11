@@ -410,7 +410,7 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 WEBPACK_LRU_CACHE = 128
 if DEV or TEST:
@@ -499,6 +499,7 @@ MIDDLEWARE = (
     "allow_cidr.middleware.AllowCIDRMiddleware",
     "kitsune.sumo.middleware.FilterByUserAgentMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "commonware.request.middleware.SetRemoteAddrFromForwardedFor",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
