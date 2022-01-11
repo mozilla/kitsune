@@ -51,6 +51,32 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         self.refresh_token = token_info.get("refresh_token")
         return token_info
 
+    @classmethod
+    def refresh_access_token(cls, refresh_token, ttl=None):
+        """Gets a new access_token by using a refresh_token.
+
+        returns: the actual token or an empty dictionary
+        """
+
+        if not refresh_token:
+            return {}
+
+        obj = cls()
+        payload = {
+            "client_id": obj.OIDC_RP_CLIENT_ID,
+            "client_secret": obj.OIDC_RP_CLIENT_SECRET,
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+        }
+
+        if ttl:
+            payload.update({"ttl": ttl})
+
+        try:
+            return obj.get_token(payload=payload)
+        except requests.exceptions.HTTPError:
+            return {}
+
     def create_user(self, claims):
         """Override create user method to mark the profile as migrated."""
 

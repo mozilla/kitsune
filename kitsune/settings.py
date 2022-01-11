@@ -618,9 +618,9 @@ else:
         FXA_VERIFY_URL = config(
             "FXA_VERIFY_URL", default="https://oauth.accounts.firefox.com/v1/verify"
         )
-        # Defaults to an hour
+        # Defaults to 12 hours
         FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS = config(
-            "FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS", default=3600, cast=int
+            "FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS", default=43200, cast=int
         )
 
 ADMIN_REDIRECT_URL = config("ADMIN_REDIRECT_URL", default=None)
