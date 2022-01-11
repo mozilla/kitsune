@@ -19,3 +19,4 @@ global.matchMedia = () => ({
 });
 global.jQuery = global.$ = require("jquery");
 require("../kitsune/sumo/static/sumo/js/i18n");
+global.gettext = dom.window.gettext;
