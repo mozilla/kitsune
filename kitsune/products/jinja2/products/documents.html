@@ -77,12 +77,21 @@
           button_link="https://testflight.apple.com/join/dH8lkFZi",
         ) }}
       {% elif topic.slug == "firefox-focus-android" %}
-        {{ sumo_banner(
-          id="focus-android-beta-banner",
-          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for Android.'),
-          button_text=_('Get started'),
-          button_link=url('wiki.document', 'download-beta-and-nightly-focus-android'),
-        ) }}
+        {% if request.LANGUAGE_CODE == 'id' %}
+          {{ sumo_banner(
+            id="focus-android-update-banner",
+            text=_('Update to the latest version of Firefox Focus for Android to receive the latest features, enhancements and bug fixes. Firefox Focus is available for free in the Google Play store.'),
+            button_text=_('Download now'),
+            button_link="https://play.google.com/store/apps/details?id=org.mozilla.focus")
+           }}
+        {% else %}
+          {{ sumo_banner(
+            id="focus-android-beta-banner",
+            text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for Android.'),
+            button_text=_('Get started'),
+            button_link=url('wiki.document', 'download-beta-and-nightly-focus-android'))
+           }}
+        {% endif %}
       {% endif %}
 
       {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
