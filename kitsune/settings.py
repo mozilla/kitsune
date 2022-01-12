@@ -699,8 +699,6 @@ INSTALLED_APPS = (
     "statici18n",
     "watchman",
     # 'axes',
-    # Extra apps for testing.
-    "django_nose",
     # Extra app for python migrations.
     "django_extensions",
     # In Django <= 1.6, this "must be placed somewhere after all the apps that

@@ -7,7 +7,6 @@ from functools import wraps
 from os import getenv
 from smtplib import SMTPRecipientsRefused
 
-import django_nose
 import factory.fuzzy
 from django.conf import settings
 from django.core.cache import cache
@@ -15,22 +14,12 @@ from django.test import TestCase as OriginalTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.translation import trans_real
+from nose import SkipTest  # noqa
 from nose.tools import eq_
 from pyquery import PyQuery
 from waffle.models import Flag
 
 from kitsune.sumo.urlresolvers import reverse, split_path
-
-# We do this gooftastic thing because nose uses unittest.SkipTest in
-# Python 2.7 which doesn't work with the whole --no-skip thing.
-# TODO: CHeck this after the upgrade
-if "--no-skip" in sys.argv or "NOSE_WITHOUT_SKIP" in os.environ:
-
-    class SkipTest(Exception):
-        pass
-
-else:
-    from nose import SkipTest  # noqa
 
 
 def get(client, url, **kwargs):
@@ -39,22 +28,6 @@ def get(client, url, **kwargs):
 
 def post(client, url, data={}, **kwargs):
     return client.post(reverse(url, **kwargs), data, follow=True)
-
-
-class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
-    """This is a test runner that pulls in settings_test.py."""
-
-    def setup_test_environment(self, **kwargs):
-        if not getenv("REUSE_STATIC", "false").lower() in ("true", "1", ""):
-            # Collect static files for pipeline to work correctly--do this with
-            # subprocess instead of directly calling the admin command,
-            # because collectstatic somehow retains emotional baggage
-            # which causes all the tests to take FOREVER to run.
-            cmdline = [sys.executable, "manage.py", "collectstatic", "--noinput"]
-            print("Running %r" % cmdline)
-            subprocess.call(cmdline)
-
-        super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
 
 @override_settings(ES_LIVE_INDEXING=False)
