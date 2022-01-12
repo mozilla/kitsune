@@ -26,7 +26,7 @@
       <a href="{{ rev.document.get_absolute_url() }}">{{ rev.document.title }}</a>
     </div>
     <div class="comment wider">
-      {{ rev.comment|linkify|safe }}
+      {{ rev.comment }}
     </div>
     <div class="creator">
       <a href="{{ rev.creator.get_absolute_url() }}">
