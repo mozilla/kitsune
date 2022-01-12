@@ -711,8 +711,6 @@ INSTALLED_APPS = (
     "django.contrib.admin",
 )
 
-TEST_RUNNER = "kitsune.sumo.tests.TestSuiteRunner"
-
 
 def JINJA_CONFIG():
     config = {

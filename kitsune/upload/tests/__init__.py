@@ -12,7 +12,7 @@ from kitsune.upload.utils import create_imageattachment, check_file_size, FileTo
 from kitsune.users.tests import UserFactory
 
 
-class ImageAttachmentFactory(factory.DjangoModelFactory):
+class ImageAttachmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ImageAttachment
 

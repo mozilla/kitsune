@@ -11,7 +11,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 
 
-class PermissionFactory(factory.DjangoModelFactory):
+class PermissionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Permission
 
