@@ -10,7 +10,7 @@ from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 
 
-class ThreadFactory(factory.DjangoModelFactory):
+class ThreadFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Thread
 
@@ -18,7 +18,7 @@ class ThreadFactory(factory.DjangoModelFactory):
     document = factory.SubFactory(DocumentFactory)
 
 
-class PostFactory(factory.DjangoModelFactory):
+class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
 

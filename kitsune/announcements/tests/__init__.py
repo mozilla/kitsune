@@ -7,7 +7,7 @@ from kitsune.users.tests import UserFactory
 from kitsune.sumo.tests import FuzzyUnicode
 
 
-class AnnouncementFactory(factory.DjangoModelFactory):
+class AnnouncementFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Announcement
         exclude = ["visible_dates"]

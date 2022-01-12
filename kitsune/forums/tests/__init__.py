@@ -16,7 +16,7 @@ class ForumTestCase(TestCase):
     client_class = LocalizingClient
 
 
-class ForumFactory(factory.DjangoModelFactory):
+class ForumFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Forum
 
@@ -33,7 +33,7 @@ class RestrictedForumFactory(ForumFactory):
         PermissionFactory(codename=permission, content_type=ct, object_id=forum.id)
 
 
-class ThreadFactory(factory.DjangoModelFactory):
+class ThreadFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Thread
 
@@ -86,7 +86,7 @@ class ThreadFactoryTests(TestCase):
         assert all(p.thread == t for p in t.post_set.all())
 
 
-class PostFactory(factory.DjangoModelFactory):
+class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
 
