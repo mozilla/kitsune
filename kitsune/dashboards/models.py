@@ -2,7 +2,7 @@ import logging
 from datetime import date, timedelta
 
 from django.db import close_old_connections, connection, models
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.dashboards import LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS, LAST_YEAR, PERIODS
 from kitsune.products.models import Product

@@ -6,34 +6,33 @@ is_ready_for_localization=False do not exist.
 
 """
 import logging
-
 from collections import OrderedDict
 from datetime import datetime
 
 from django.conf import settings
 from django.db import connections, router
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy, pgettext_lazy
-
+from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import pgettext_lazy
+from django.utils.translation import ugettext as _
 from jinja2 import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.questions.models import QuestionLocale
+from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.models import Document
 from kitsune.wiki.config import (
-    MEDIUM_SIGNIFICANCE,
-    MAJOR_SIGNIFICANCE,
-    TYPO_SIGNIFICANCE,
-    REDIRECT_HTML,
-    HOW_TO_CONTRIBUTE_CATEGORY,
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
+    HOW_TO_CONTRIBUTE_CATEGORY,
+    MAJOR_SIGNIFICANCE,
+    MEDIUM_SIGNIFICANCE,
     NAVIGATION_CATEGORY,
+    REDIRECT_HTML,
+    TYPO_SIGNIFICANCE,
 )
-
+from kitsune.wiki.models import Document
 
 log = logging.getLogger("k.dashboards.readouts")
 

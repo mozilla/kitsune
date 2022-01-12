@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils.html import escape
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 from PIL import Image
 
 from kitsune.upload.forms import ImageAttachmentUploadForm
