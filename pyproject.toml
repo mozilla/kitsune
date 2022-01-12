@@ -54,7 +54,6 @@ django-authority = {git = "https://github.com/jazzband/django-authority.git"}
 django-extensions = "^3.1.5"
 django-adminplus = "^0.5"
 django-filter = "^21.1"
-django-jsonfield = "^1.4.1"
 django-redis = "^5.2.0"
 factory-boy = "^3.2.1"
 Faker = "^11.1.0"
