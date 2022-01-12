@@ -3,7 +3,7 @@ import json
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent

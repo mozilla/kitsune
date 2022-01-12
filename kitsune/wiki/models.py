@@ -14,7 +14,7 @@ from django.http import Http404
 from django.urls import resolve
 from django.utils.encoding import smart_bytes
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 

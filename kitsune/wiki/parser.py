@@ -2,24 +2,23 @@ import re
 from itertools import count
 from xml.sax.saxutils import quoteattr
 
-from django.conf import settings
-
 import bleach
+from django.conf import settings
+from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ugettext as _
 from html5lib import HTMLParser
 from html5lib.filters.alphabeticalattributes import Filter as sortAttributes
 from html5lib.serializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from wikimarkup.parser import ALLOWED_TAGS
 
 from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
-from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, get_object_fallback, ALLOWED_STYLES
+from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, ALLOWED_STYLES, get_object_fallback
 from kitsune.sumo.utils import uselocale
 from kitsune.wiki.models import Document
-
 
 # block elements wikimarkup knows about (and thus preserves)
 BLOCK_LEVEL_ELEMENTS = [

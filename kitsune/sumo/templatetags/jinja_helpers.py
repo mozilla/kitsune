@@ -17,7 +17,7 @@ from django.utils.encoding import smart_bytes, smart_text
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ungettext
 from django_jinja import library
 from jinja2.utils import Markup
