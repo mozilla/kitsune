@@ -582,18 +582,6 @@ django = ">=2.2"
 jinja2 = ">=3"
 
 [[package]]
-name = "django-jsonfield"
-version = "1.4.1"
-description = "JSONField for django models"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-Django = ">=1.11"
-six = "*"
-
-[[package]]
 name = "django-jsonfield-backport"
 version = "1.0.4"
 description = "Backport of the cross-DB JSONField model and form fields from Django 3.1."
@@ -2337,7 +2325,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "4a5ee461b5cbdc283d03be6fdc4db3357d23f6d4b73ad8681ef2acccad75ac50"
+content-hash = "b48a8c3247eb04fbd78685592cc6d42a8d634631cfb9351b98a8768e96863d98"
 
 [metadata.files]
 alabaster = [
@@ -2615,10 +2603,6 @@ django-filter = [
 django-jinja = [
     {file = "django-jinja-2.10.0.tar.gz", hash = "sha256:ae6a3fdf1ffa7a9ef6fd2f0a59c1a68c96b29f7f00f5166375658ef392f1ed32"},
     {file = "django_jinja-2.10.0-py3-none-any.whl", hash = "sha256:cce084eaf0be8a89f0955cde34cf33da7faaf6c68d05c076eda6fcd98481264c"},
-]
-django-jsonfield = [
-    {file = "django-jsonfield-1.4.1.tar.gz", hash = "sha256:f789a0ea1f80b48aff7d6c36dd356ce125dbf1b7cd97a82d315607ac758f50ff"},
-    {file = "django_jsonfield-1.4.1-py2.py3-none-any.whl", hash = "sha256:ccb2fe623e1bf7799e49c593b0a89a85084ef8d3debbf26d92a54e27b5305d72"},
 ]
 django-jsonfield-backport = [
     {file = "django-jsonfield-backport-1.0.4.tar.gz", hash = "sha256:73998c6aa2e0ab1a4f9da4ce62f01576e019147678c881401b02846712069786"},
