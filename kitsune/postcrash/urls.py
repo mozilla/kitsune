@@ -1,8 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from kitsune.postcrash import views
 
-
 urlpatterns = [
-    url("^$", views.api, name="postcrash.api"),
+    re_path("^$", views.api, name="postcrash.api"),
 ]
