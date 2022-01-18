@@ -1,6 +1,6 @@
 
 
-# To get Kitsune running locally all you really need is to have Docker and Docker Compose installed, and follow the following steps.
+#To get Kitsune running locally all you really need is to have Docker and Docker Compose installed, and follow the following steps.
 
 ## Fork this repository & clone it to your local machine::
 
