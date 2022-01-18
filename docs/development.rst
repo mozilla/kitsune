@@ -18,7 +18,7 @@ If you have low bandwidth, you may get a timeout error, see issue#4511 for more 
 
 In above command, we are setting default value of PIP_DEFAULT_TIMEOUT to 5 minutes, change it according to your need.
 
-Run Kitsune::
+Run Kitsune
 =============
 
   make run
