@@ -17,12 +17,12 @@ If you have low bandwidth, you may get a timeout error, see issue#4511 for more 
    make build PIP_TIMEOUT=300
 
 In above command, we are setting default value of PIP_DEFAULT_TIMEOUT to 5 minutes, change it according to your need.
-
+===========
 Run Kitsune
-=============
+===========
 
   make run
-===========
+
 
 This will produce a lot of output (mostly warnings at present). When you see the following the server will be ready::
 
