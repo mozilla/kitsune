@@ -1,12 +1,13 @@
-
-
-#To get Kitsune running locally all you really need is to have Docker and Docker Compose installed, and follow the following steps.
-
-## Fork this repository & clone it to your local machine::
+===========
+Installation
+===========
+To get Kitsune running locally all you really need is to have Docker and Docker Compose installed, and follow the following steps.
+====================================================================================================================================
+ Fork this repository & clone it to your local machine::
 
     git clone https://github.com/mozilla/kitsune.git
 
-## Pull base Kitsune Docker images, run collectstatic, create your database, and install node packages::
+ Pull base Kitsune Docker images, run collectstatic, create your database, and install node packages::
 
     make init <br />
     make build
