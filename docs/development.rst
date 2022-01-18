@@ -22,6 +22,7 @@ Run Kitsune
 =============
 
   make run
+===========
 
 This will produce a lot of output (mostly warnings at present). When you see the following the server will be ready::
 
