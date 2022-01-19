@@ -13,18 +13,32 @@ export default function ShowFor($container) {
 
   this.loadData();
   this.initEvents();
-  this.updateUI();
-  this.updateState();
   this.wrapTOCs();
   this.initShowFuncs();
-  this.showAndHide();
+  this.updateUI().then(() => {
+    this.updateState();
+    this.showAndHide();
+  });
 }
 
 ShowFor.prototype.productShortMap = {
   'fx': 'firefox',
   'm': 'mobile',
-  'fxos': 'firefox-os',
   'tb': 'thunderbird'
+};
+
+ShowFor.prototype.platformMap = {
+  "Windows": {
+    "default": "win10",
+    "XP": "winxp",
+    "Vista": "win7",
+    "7": "win7",
+    "8": "win8",
+    "8.1": "win8",
+    "10": "win10",
+    "11": "win11",
+  },
+  "Mac OS": "mac",
 };
 
 /* Get the product/platform data from the DOM, and munge it into the
@@ -130,7 +144,7 @@ ShowFor.prototype.ensureSelect = function($select, type, product, val) {
   *      * sessionStore
   *      * browser detection via useragent sniffing.
   */
-ShowFor.prototype.updateUI = function() {
+ShowFor.prototype.updateUI = async function() {
   var persisted = null;
   var hash = document.location.hash;
 
@@ -176,9 +190,10 @@ ShowFor.prototype.updateUI = function() {
   }
 
   // This will only run if sessionstorage and url hash detection both failed.
-  var browser = this.productShortMap[BrowserDetect.browser] || BrowserDetect.browser;
-  var platform = this.productShortMap[BrowserDetect.OS] || BrowserDetect.OS;
-  var version = BrowserDetect.version;
+  const detect = new BrowserDetect();
+  const browser = await detect.getBrowser();
+  const platform = await detect.getOS();
+  const version = browser.version?.toString("major");
 
   var $products = this.$container.find('.product');
   var productElems = {};
@@ -187,31 +202,27 @@ ShowFor.prototype.updateUI = function() {
     productElems[$elem.data('product')] = $elem;
   });
 
-  var verSlug, $version;
-
-  if (version) {
-    if (browser === 'firefox' && this.productSlugs.indexOf('firefox') !== -1) {
-      verSlug = 'fx' + version;
-      $version = productElems.firefox.find('select.version');
-      this.ensureSelect($version, 'version', 'firefox', verSlug);
-
-    } else if (browser === 'mobile' && this.productSlugs.indexOf('mobile') !== -1) {
-      verSlug = 'm' + version;
-      $version = productElems.mobile.find('select.version');
+  if (browser.mozilla && version) {
+    if (platform.mobile && this.productSlugs.indexOf('mobile') !== -1) {
+      const verSlug = 'm' + version;
+      const $version = productElems.mobile.find('select.version');
       this.ensureSelect($version, 'version', 'mobile', verSlug);
-
-    } else if (browser === 'firefox-os' && this.productSlugs.indexOf('firefox-os') !== -1) {
-      verSlug = 'fxos' + version.toFixed(1);
-      $version = productElems['firefox-os'].find('select.version');
-      this.ensureSelect($version, 'version', 'firefox-os', verSlug);
+    } else if (this.productSlugs.indexOf('firefox') !== -1) {
+      const verSlug = 'fx' + version;
+      const $version = productElems.firefox.find('select.version');
+      this.ensureSelect($version, 'version', 'firefox', verSlug);
     }
   }
 
-  $products.find('select.platform').each(function(i, elem) {
+  $products.find('select.platform').each((i, elem) => {
     var $elem = $(elem);
     var product = $elem.parents('.product').data('product');
-    this.ensureSelect($elem, 'platform', product, platform);
-  }.bind(this));
+    let slug = this.platformMap[platform.name] || platform.name.toLowerCase();
+    if (typeof slug != "string") {
+      slug = slug[platform.version] || slug.default;
+    }
+    this.ensureSelect($elem, 'platform', product, slug);
+  });
 };
 
 // Called when the user touches something.

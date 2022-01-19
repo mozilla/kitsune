@@ -106,7 +106,7 @@ we can compute the edit-title URL.
                 {% for field in form.visible_fields() if not field.name == 'notifications' %}
 
                   {% if not has_subscriptions %}
-                    {% if field.name == 'ff_version' or field.name == 'device' %}
+                    {% if field.name == 'ff_version' %}
                       <li class="system-details-info show">
                         <p>
                           {{ _("We've made some educated guesses about your current browser and operating system.") }}
@@ -116,7 +116,7 @@ we can compute the edit-title URL.
                       </li>
                     {% endif %}
 
-                    {% if field.name == 'ff_version' or field.name == 'device' or field.name == 'os' or field.name == 'plugins' %}
+                    {% if field.name == 'ff_version' or field.name == 'os' %}
                       {% set li_class='details' %}
                     {% endif %}
                   {% endif %}
