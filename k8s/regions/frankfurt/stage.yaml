@@ -88,7 +88,6 @@ app:
     email_port: 25
     email_use_tls: True
     enable_admin: False
-    enable_whitenoise: True
     engage_robots: False
     es_index_prefix: "sumo_stage"
     es_live_indexing: True

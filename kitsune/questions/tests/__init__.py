@@ -19,7 +19,7 @@ def tags_eq(tagged_object, tag_names):
     eq_(sorted([t.name for t in tagged_object.tags.all()]), sorted(tag_names))
 
 
-class QuestionFactory(factory.DjangoModelFactory):
+class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Question
 
@@ -47,7 +47,7 @@ class QuestionFactory(factory.DjangoModelFactory):
                 q.tags.add(tag)
 
 
-class QuestionVoteFactory(factory.DjangoModelFactory):
+class QuestionVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = QuestionVote
 
@@ -56,7 +56,7 @@ class QuestionVoteFactory(factory.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
 
 
-class QuestionLocaleFactory(factory.DjangoModelFactory):
+class QuestionLocaleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = QuestionLocale
 
@@ -71,7 +71,7 @@ class QuestionLocaleFactory(factory.DjangoModelFactory):
                 obj.products.add(product)
 
 
-class AnswerFactory(factory.DjangoModelFactory):
+class AnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Answer
 
@@ -88,7 +88,7 @@ class SolutionAnswerFactory(AnswerFactory):
         obj.save()
 
 
-class AnswerVoteFactory(factory.DjangoModelFactory):
+class AnswerVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AnswerVote
 

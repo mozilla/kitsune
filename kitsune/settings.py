@@ -95,7 +95,6 @@ CACHE_MIDDLEWARE_SECONDS = config(
 WAFFLE_CACHE_PREFIX = "w2.1:"
 # User agent cache settings
 USER_AGENTS_CACHE = "default"
-
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="notifications@support.mozilla.org")
 DEFAULT_REPLY_TO_EMAIL = config("DEFAULT_REPLY_TO_EMAIL", default="no-reply@mozilla.org")
@@ -411,7 +410,7 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 WEBPACK_LRU_CACHE = 128
 if DEV or TEST:
@@ -500,6 +499,7 @@ MIDDLEWARE = (
     "allow_cidr.middleware.AllowCIDRMiddleware",
     "kitsune.sumo.middleware.FilterByUserAgentMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "commonware.request.middleware.SetRemoteAddrFromForwardedFor",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
@@ -699,8 +699,6 @@ INSTALLED_APPS = (
     "statici18n",
     "watchman",
     # 'axes',
-    # Extra apps for testing.
-    "django_nose",
     # Extra app for python migrations.
     "django_extensions",
     # In Django <= 1.6, this "must be placed somewhere after all the apps that
@@ -710,8 +708,6 @@ INSTALLED_APPS = (
     # Last so we can override admin templates.
     "django.contrib.admin",
 )
-
-TEST_RUNNER = "kitsune.sumo.tests.TestSuiteRunner"
 
 
 def JINJA_CONFIG():

@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.core.validators import FileExtensionValidator
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 MSG_IMAGE_REQUIRED = _lazy("You have not selected an image to upload.")
 MSG_IMAGE_LONG = _lazy(

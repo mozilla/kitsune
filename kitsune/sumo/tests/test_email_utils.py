@@ -1,16 +1,15 @@
 from unittest.mock import patch
-from nose.tools import eq_
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.utils.translation import get_language
 from django.utils.functional import lazy
+from django.utils.translation import get_language
+from nose.tools import eq_
 
-from kitsune.sumo.email_utils import safe_translation, emails_with_users_and_watches
-from kitsune.sumo.utils import uselocale
+from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.utils import uselocale
 from kitsune.users.tests import UserFactory
-
 
 mock_translations = {
     "Hello": {"en-us": "Hello", "fr": "Bonjour", "es": "Hola"},
@@ -27,12 +26,12 @@ def mock_ugettext(msg_id):
     return mock_translations[msg_id][locale]
 
 
-mock_ugettext_lazy = lazy(mock_ugettext)
+mock_gettext_lazy = lazy(mock_ugettext)
 
 
 def mock_gettext(f):
     f = patch("django.utils.translation.ugettext", mock_ugettext)(f)
-    f = patch("django.utils.translation.ugettext_lazy", mock_ugettext_lazy)(f)
+    f = patch("django.utils.translation.gettext_lazy", mock_gettext_lazy)(f)
     return f
 
 

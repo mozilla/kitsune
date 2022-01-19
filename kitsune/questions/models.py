@@ -68,7 +68,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
         "Answer", on_delete=models.CASCADE, related_name="solution_for", null=True
     )
     is_locked = models.BooleanField(default=False)
-    is_archived = models.NullBooleanField(default=False, null=True)
+    is_archived = models.BooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
     is_spam = models.BooleanField(default=False)

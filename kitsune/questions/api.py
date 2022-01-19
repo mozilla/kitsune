@@ -1,12 +1,12 @@
+import json
 from datetime import datetime
 
 import actstream.actions
 import django_filters
-import json
-from django_filters.rest_framework import DjangoFilterBackend
 from django import forms
 from django.db.models import Q
-from rest_framework import serializers, viewsets, permissions, filters, status, pagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, pagination, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from taggit.models import Tag
@@ -14,18 +14,18 @@ from taggit.models import Tag
 from kitsune.products.api_utils import TopicField
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import (
-    Question,
-    Answer,
-    QuestionMetaData,
     AlreadyTakenException,
-    InvalidUserException,
-    QuestionVote,
+    Answer,
     AnswerVote,
+    InvalidUserException,
+    Question,
+    QuestionMetaData,
+    QuestionVote,
 )
 from kitsune.sumo.api_utils import (
     DateTimeUTCField,
-    OnlyCreatorEdits,
     GenericAPIException,
+    OnlyCreatorEdits,
     SplitSourceField,
 )
 from kitsune.tags.utils import add_existing_tag
@@ -159,16 +159,12 @@ class QuestionFilter(django_filters.FilterSet):
         fields = {
             "creator": ["exact"],
             "created": ["gt", "lt", "exact"],
-            "involved": ["exact"],
             "is_archived": ["exact"],
             "is_locked": ["exact"],
-            "is_solved": ["exact"],
             "is_spam": ["exact"],
-            "is_taken": ["exact"],
             "locale": ["exact"],
             "num_answers": ["exact"],
             "product": ["exact"],
-            "solved_by": ["exact"],
             "taken_by": ["exact"],
             "title": ["exact"],
             "topic": ["exact"],

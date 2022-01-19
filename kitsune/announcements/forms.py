@@ -1,7 +1,7 @@
 from datetime import date
 
 from django import forms
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 
 class AnnouncementForm(forms.Form):

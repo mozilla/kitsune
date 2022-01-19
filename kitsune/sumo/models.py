@@ -32,30 +32,6 @@ class ModelBase(models.Model):
 
         return queryset
 
-    # TODO: Remove this in django 1.6, which comes with a smarter save().
-    def update(self, **kw):
-        """
-        Shortcut for doing an UPDATE on this object.
-
-        If _signal=False is in ``kw`` the post_save signal won't be sent.
-        """
-        signal = kw.pop("_signal", True)
-        cls = self.__class__
-        for k, v in list(kw.items()):
-            setattr(self, k, v)
-        if signal:
-            # Detect any attribute changes during pre_save and add those to the
-            # update kwargs.
-            attrs = dict(self.__dict__)
-            models.signals.pre_save.send(sender=cls, instance=self)
-            for k, v in list(self.__dict__.items()):
-                if attrs[k] != v:
-                    kw[k] = v
-                    setattr(self, k, v)
-        cls.objects.filter(pk=self.pk).update(**kw)
-        if signal:
-            models.signals.post_save.send(sender=cls, instance=self, created=False)
-
 
 class LocaleField(models.CharField):
     """CharField with locale settings specific to SUMO defaults."""

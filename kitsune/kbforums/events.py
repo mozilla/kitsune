@@ -1,5 +1,5 @@
 from django.contrib.sites.models import Site
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 from tidings.events import InstanceEvent, EventUnion, Event
 

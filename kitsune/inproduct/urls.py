@@ -1,10 +1,9 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from kitsune.inproduct import views
 
-
 urlpatterns = [
-    url(
+    re_path(
         r"/(?P<product>[^/]+)/(?P<version>[^/]+)/(?P<platform>[^/]+)/"
         r"(?P<locale>[^/]+)(?:/(?P<topic>[^/]+))?/?",
         views.redirect,

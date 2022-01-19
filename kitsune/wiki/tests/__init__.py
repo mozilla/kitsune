@@ -28,7 +28,7 @@ class TestCaseBase(TestCase):
     client_class = LocalizingClient
 
 
-class DocumentFactory(factory.DjangoModelFactory):
+class DocumentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Document
 
@@ -72,7 +72,7 @@ class TemplateDocumentFactory(DocumentFactory):
     title = FuzzyUnicode(prefix=TEMPLATE_TITLE_PREFIX + ":")
 
 
-class RevisionFactory(factory.DjangoModelFactory):
+class RevisionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Revision
 
@@ -130,7 +130,7 @@ class RedirectRevisionFactory(RevisionFactory):
     is_approved = True
 
 
-class DraftRevisionFactory(factory.DjangoModelFactory):
+class DraftRevisionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DraftRevision
 
@@ -151,14 +151,14 @@ class DraftRevisionFactory(factory.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda o: slugify(o.title))
 
 
-class LocaleFactory(factory.DjangoModelFactory):
+class LocaleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Locale
 
     locale = "en-US"
 
 
-class HelpfulVoteFactory(factory.DjangoModelFactory):
+class HelpfulVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = HelpfulVote
 
