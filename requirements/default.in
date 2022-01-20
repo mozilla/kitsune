@@ -1,5 +1,5 @@
 APScheduler~=3.6.3,<4.0
-Django~=2.2.20
+Django~=2.2.26
 Pillow~=8.1.2
 Werkzeug~=1.0.1
 babis~=0.2.4
