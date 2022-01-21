@@ -6,10 +6,8 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from nose.tools import eq_
-
 from kitsune.questions.tests import QuestionFactory
-from kitsune.sumo.tests import post, LocalizingClient, TestCase
+from kitsune.sumo.tests import LocalizingClient, TestCase, post
 from kitsune.upload.forms import MSG_IMAGE_LONG
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.tests import UserFactory
@@ -32,61 +30,61 @@ class UploadImageTestCase(TestCase):
         """Specifying a model we don't allow returns 400."""
         r = self._make_post_request(image="", args=["wiki.Document", 123])
 
-        eq_(400, r.status_code)
+        self.assertEqual(400, r.status_code)
         json_r = json.loads(r.content)
-        eq_("error", json_r["status"])
-        eq_("Model not allowed.", json_r["message"])
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual("Model not allowed.", json_r["message"])
 
     def test_object_notexist(self):
         """Upload nothing returns 404 error and html content."""
         r = self._make_post_request(image="", args=["questions.Question", 123])
 
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
         json_r = json.loads(r.content)
-        eq_("error", json_r["status"])
-        eq_("Object does not exist.", json_r["message"])
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual("Object does not exist.", json_r["message"])
 
     def test_empty_image(self):
         """Upload nothing returns 400 error and json content."""
         r = self._make_post_request(image="")
 
-        eq_(400, r.status_code)
+        self.assertEqual(400, r.status_code)
         json_r = json.loads(r.content)
-        eq_("error", json_r["status"])
-        eq_("Invalid or no image received.", json_r["message"])
-        eq_("You have not selected an image to upload.", json_r["errors"]["image"][0])
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual("Invalid or no image received.", json_r["message"])
+        self.assertEqual("You have not selected an image to upload.", json_r["errors"]["image"][0])
 
     def test_upload_image(self):
         """Uploading an image works."""
         with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             r = self._make_post_request(image=f)
 
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         json_r = json.loads(r.content)
-        eq_("success", json_r["status"])
+        self.assertEqual("success", json_r["status"])
         file = json_r["file"]
-        eq_("test.png", file["name"])
-        eq_(90, file["width"])
-        eq_(120, file["height"])
+        self.assertEqual("test.png", file["name"])
+        self.assertEqual(90, file["width"])
+        self.assertEqual(120, file["height"])
         name = "098f6b.png"
         message = 'Url "%s" does not contain "%s"' % (file["url"], name)
         assert name in file["url"], message
 
-        eq_(1, ImageAttachment.objects.count())
+        self.assertEqual(1, ImageAttachment.objects.count())
         image = ImageAttachment.objects.all()[0]
-        eq_(self.user.username, image.creator.username)
-        eq_(150, image.file.width)
-        eq_(200, image.file.height)
-        eq_("question", image.content_type.model)
+        self.assertEqual(self.user.username, image.creator.username)
+        self.assertEqual(150, image.file.width)
+        self.assertEqual(200, image.file.height)
+        self.assertEqual("question", image.content_type.model)
 
     def test_upload_unicode_image(self):
         """Uploading an unicode image works."""
         with open("kitsune/upload/tests/media/123ascii\u6709\u52b9.jpg", "rb") as f:
             r = self._make_post_request(image=f)
 
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         json_r = json.loads(r.content)
-        eq_("success", json_r["status"])
+        self.assertEqual("success", json_r["status"])
 
     def test_delete_image_logged_out(self):
         """Can't delete an image logged out."""
@@ -95,7 +93,7 @@ class UploadImageTestCase(TestCase):
         im = ImageAttachment.objects.all()[0]
         self.client.logout()
         r = self._make_post_request(args=[im.id])
-        eq_(403, r.status_code)
+        self.assertEqual(403, r.status_code)
         assert ImageAttachment.objects.exists()
 
     def test_delete_image_no_permission(self):
@@ -106,7 +104,7 @@ class UploadImageTestCase(TestCase):
         im = ImageAttachment.objects.all()[0]
         self.client.login(username="tagger", password="testpass")
         r = self._make_post_request(args=[im.id])
-        eq_(403, r.status_code)
+        self.assertEqual(403, r.status_code)
         assert ImageAttachment.objects.exists()
 
     def test_delete_image_owner(self):
@@ -114,9 +112,9 @@ class UploadImageTestCase(TestCase):
         self.test_upload_image()
         im = ImageAttachment.objects.all()[0]
         r = self._make_post_request(args=[im.id])
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         json_r = json.loads(r.content)
-        eq_("success", json_r["status"])
+        self.assertEqual("success", json_r["status"])
         assert not ImageAttachment.objects.exists()
 
     def test_delete_image_with_permission(self):
@@ -129,28 +127,28 @@ class UploadImageTestCase(TestCase):
         self.test_upload_image()
         im = ImageAttachment.objects.all()[0]
         r = self._make_post_request(args=[im.id])
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         json_r = json.loads(r.content)
-        eq_("success", json_r["status"])
+        self.assertEqual("success", json_r["status"])
         assert not ImageAttachment.objects.exists()
 
     def test_delete_no_image(self):
         """Trying to delete a non-existent image 404s."""
         r = self._make_post_request(args=[123])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
         data = json.loads(r.content)
-        eq_("error", data["status"])
+        self.assertEqual("error", data["status"])
 
     def test_invalid_image(self):
         """Make sure invalid files are not accepted as images."""
         with open("kitsune/upload/__init__.py", "rb") as f:
             r = self._make_post_request(image=f)
 
-        eq_(400, r.status_code)
+        self.assertEqual(400, r.status_code)
         json_r = json.loads(r.content)
-        eq_("error", json_r["status"])
-        eq_("Invalid or no image received.", json_r["message"])
-        eq_("The submitted file is empty.", json_r["errors"]["image"][0])
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual("Invalid or no image received.", json_r["message"])
+        self.assertEqual("The submitted file is empty.", json_r["errors"]["image"][0])
 
     def test_invalid_image_extensions(self):
         """
@@ -159,10 +157,10 @@ class UploadImageTestCase(TestCase):
         with open("kitsune/upload/tests/media/test_invalid.ext", "rb") as f:
             r = self._make_post_request(image=f)
 
-        eq_(400, r.status_code)
+        self.assertEqual(400, r.status_code)
         json_r = json.loads(r.content)
-        eq_("error", json_r["status"])
-        eq_("Invalid or no image received.", json_r["message"])
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual("Invalid or no image received.", json_r["message"])
         assert (
             json_r["errors"]["image"][0]
             == "File extension 'ext' is not allowed. Allowed extensions are: 'jpg, jpeg, png, gif'."  # noqa
@@ -175,10 +173,10 @@ class UploadImageTestCase(TestCase):
         with open("kitsune/upload/tests/media/test.tiff", "rb") as f:
             r = self._make_post_request(image=f)
 
-        eq_(400, r.status_code)
+        self.assertEqual(400, r.status_code)
         json_r = json.loads(r.content)
-        eq_("error", json_r["status"])
-        eq_("Invalid or no image received.", json_r["message"])
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual("Invalid or no image received.", json_r["message"])
         assert (
             json_r["errors"]["image"][0]
             == "File extension 'tiff' is not allowed. Allowed extensions are: 'jpg, jpeg, png, gif'."  # noqa
@@ -201,11 +199,11 @@ class UploadImageTestCase(TestCase):
             )
             r = self._make_post_request(image=image)
 
-        eq_(400, r.status_code)
+        self.assertEqual(400, r.status_code)
         json_r = json.loads(r.content)
-        eq_("error", json_r["status"])
-        eq_("Invalid or no image received.", json_r["message"])
-        eq_(
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual("Invalid or no image received.", json_r["message"])
+        self.assertEqual(
             MSG_IMAGE_LONG % {"length": 242, "max": settings.MAX_FILENAME_LENGTH},
             json_r["errors"]["image"][0],
         )

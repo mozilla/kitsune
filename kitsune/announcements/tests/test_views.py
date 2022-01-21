@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from nose.tools import eq_
-
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
@@ -24,8 +22,8 @@ class TestCreateLocaleAnnouncement(TestCase):
                 "show_after": "2012-01-01",
             },
         )
-        eq_(resp.status_code, status)
-        eq_(Announcement.objects.count(), count)
+        self.assertEqual(resp.status_code, status)
+        self.assertEqual(Announcement.objects.count(), count)
 
     def test_create(self):
         u = UserFactory(is_superuser=1)
@@ -74,8 +72,8 @@ class TestDeleteAnnouncement(TestCase):
         """Login, or other setup, then call this."""
         url = reverse("announcements.delete", locale="es", args=(id,))
         resp = self.client.post(url)
-        eq_(resp.status_code, status)
-        eq_(Announcement.objects.count(), count)
+        self.assertEqual(resp.status_code, status)
+        self.assertEqual(Announcement.objects.count(), count)
 
     def test_delete(self):
         u = UserFactory(is_superuser=1)

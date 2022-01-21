@@ -1,4 +1,3 @@
-from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.messages.models import OutboxMessage
@@ -19,16 +18,16 @@ class SendMessageTestCase(TestCase):
     def test_send_message_page(self):
         # Make sure page loads.
         response = self.client.get(reverse("messages.new"), follow=True)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert len(pq(response.content)("#id_message"))
 
     def _test_send_message_to(self, to):
         # Post a new message and verify it was sent.
         data = {"to": to, "message": "hi there"}
         response = self.client.post(reverse("messages.new", locale="en-US"), data, follow=True)
-        eq_(200, response.status_code)
-        eq_("Your message was sent!", pq(response.content)("ul.user-messages").text())
-        eq_(1, OutboxMessage.objects.filter(sender=self.user1).count())
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("Your message was sent!", pq(response.content)("ul.user-messages").text())
+        self.assertEqual(1, OutboxMessage.objects.filter(sender=self.user1).count())
         return response
 
     def test_send_message_to_one(self):
@@ -47,8 +46,8 @@ class SendMessageTestCase(TestCase):
     def test_send_message_to_prefilled(self):
         url = urlparams(reverse("messages.new"), to=self.user2.username)
         response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        eq_(self.user2.username, pq(response.content)("#id_to")[0].attrib["value"])
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.user2.username, pq(response.content)("#id_to")[0].attrib["value"])
 
     def test_send_message_ratelimited(self):
         """Verify that after 50 messages, no more are sent."""
@@ -60,7 +59,7 @@ class SendMessageTestCase(TestCase):
             )
 
         # Verify only 50 are sent.
-        eq_(50, OutboxMessage.objects.filter(sender=self.user1).count())
+        self.assertEqual(50, OutboxMessage.objects.filter(sender=self.user1).count())
 
 
 class MessagePreviewTests(TestCase):
@@ -78,6 +77,6 @@ class MessagePreviewTests(TestCase):
             {"content": "=Test Content="},
             follow=True,
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_("Test Content", doc("div.message h1").text())
+        self.assertEqual("Test Content", doc("div.message h1").text())

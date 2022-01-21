@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from nose.tools import eq_
 
 from kitsune.products.tests import ProductFactory, VersionFactory
 from kitsune.sumo.tests import TestCase
@@ -17,4 +16,4 @@ class ShowforDataTests(TestCase):
 
         data = showfor_data([prod])
 
-        eq_(len(data["versions"][prod.slug]), 2)
+        self.assertEqual(len(data["versions"][prod.slug]), 2)

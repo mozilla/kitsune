@@ -1,22 +1,20 @@
 from datetime import date, timedelta
-
 from unittest import mock
-from nose.tools import eq_
+
+from django.test.utils import override_settings
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import RevisionFactory, DocumentFactory
+from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 from kitsune.wiki.utils import (
-    BitlyUnauthorizedException,
-    BitlyRateLimitException,
     BitlyException,
+    BitlyRateLimitException,
+    BitlyUnauthorizedException,
     active_contributors,
-    num_active_contributors,
     generate_short_url,
+    num_active_contributors,
 )
-
-from django.test.utils import override_settings
 
 
 class ActiveContributorsTestCase(TestCase):
@@ -60,15 +58,15 @@ class ActiveContributorsTestCase(TestCase):
         all_contributors = active_contributors(from_date=start_date)
 
         # Verify results!
-        eq_(3, len(en_us_contributors))
+        self.assertEqual(3, len(en_us_contributors))
         assert self.user in en_us_contributors
         assert self.en_us_old.creator not in en_us_contributors
 
-        eq_(4, len(es_contributors))
+        self.assertEqual(4, len(es_contributors))
         assert self.user in es_contributors
         assert self.es_old.creator not in es_contributors
 
-        eq_(6, len(all_contributors))
+        self.assertEqual(6, len(all_contributors))
         assert self.user in all_contributors
         assert self.en_us_old.creator not in all_contributors
         assert self.es_old.creator not in all_contributors
@@ -77,12 +75,16 @@ class ActiveContributorsTestCase(TestCase):
         """Test the num_active_contributors util method."""
         start_date = self.start_date
 
-        eq_(3, num_active_contributors(from_date=start_date, locale="en-US"))
-        eq_(4, num_active_contributors(from_date=start_date, locale="es"))
-        eq_(6, num_active_contributors(from_date=start_date))
-        eq_(1, num_active_contributors(from_date=start_date, product=self.product))
-        eq_(1, num_active_contributors(from_date=start_date, locale="en-US", product=self.product))
-        eq_(0, num_active_contributors(from_date=start_date, locale="es", product=self.product))
+        self.assertEqual(3, num_active_contributors(from_date=start_date, locale="en-US"))
+        self.assertEqual(4, num_active_contributors(from_date=start_date, locale="es"))
+        self.assertEqual(6, num_active_contributors(from_date=start_date))
+        self.assertEqual(1, num_active_contributors(from_date=start_date, product=self.product))
+        self.assertEqual(
+            1, num_active_contributors(from_date=start_date, locale="en-US", product=self.product)
+        )
+        self.assertEqual(
+            0, num_active_contributors(from_date=start_date, locale="es", product=self.product)
+        )
 
 
 @override_settings(BITLY_LOGIN="test", BITLY_API_KEY="test-apikey")
@@ -96,7 +98,7 @@ class GenerateShortUrlTestCase(TestCase):
         mock_json = mock.Mock()
         mock_json.json.return_value = {"status_code": 200, "data": {"url": "http://mzl.la/LFolSf"}}
         mock_requests.post.return_value = mock_json
-        eq_("http://mzl.la/LFolSf", generate_short_url(self.test_url))
+        self.assertEqual("http://mzl.la/LFolSf", generate_short_url(self.test_url))
 
     @mock.patch("kitsune.wiki.utils.requests")
     def test_generate_short_url_401(self, mock_requests):

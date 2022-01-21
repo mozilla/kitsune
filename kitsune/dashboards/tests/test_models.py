@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import patch
-from nose.tools import eq_
 
 from kitsune.dashboards import models
-from kitsune.dashboards.models import WikiDocumentVisits, LAST_7_DAYS, googleanalytics
+from kitsune.dashboards.models import LAST_7_DAYS, WikiDocumentVisits, googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.tests import ApprovedRevisionFactory
 
@@ -28,12 +27,12 @@ class DocumentVisitsTests(TestCase):
 
         WikiDocumentVisits.reload_period_from_analytics(LAST_7_DAYS)
 
-        eq_(2, WikiDocumentVisits.objects.count())
+        self.assertEqual(2, WikiDocumentVisits.objects.count())
         wdv1 = WikiDocumentVisits.objects.get(document=d1)
-        eq_(27, wdv1.visits)
-        eq_(LAST_7_DAYS, wdv1.period)
+        self.assertEqual(27, wdv1.visits)
+        self.assertEqual(LAST_7_DAYS, wdv1.period)
         wdv2 = WikiDocumentVisits.objects.get(document=d2)
-        eq_(LAST_7_DAYS, wdv2.period)
+        self.assertEqual(LAST_7_DAYS, wdv2.period)
 
 
 PAGEVIEWS_BY_DOCUMENT_RESPONSE = {

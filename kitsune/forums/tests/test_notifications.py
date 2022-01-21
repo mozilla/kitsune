@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.contrib import admin
 from django.contrib.admin.options import ModelAdmin
 from django.contrib.auth.models import User
@@ -5,17 +7,13 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.client import RequestFactory
 
-from unittest import mock
-from nose.tools import eq_
-
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
-from kitsune.forums.models import Thread, Post
-from kitsune.forums.tests import ForumTestCase, ThreadFactory, ForumFactory, PostFactory
+from kitsune.forums.models import Post, Thread
+from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
+from kitsune.sumo.tests import attrs_eq, post, starts_with
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.tests import post, attrs_eq, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
-
 
 # Some of these contain a locale prefix on included links, while
 # others don't.  This depends on whether the tests use them inside or
@@ -266,7 +264,7 @@ class NotificationsTests(ForumTestCase):
         self.client.login(username=poster.username, password="testpass")
         post(self.client, "forums.reply", {"content": "a post"}, args=[f.slug, t.id])
 
-        eq_(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
         p = Post.objects.all().order_by("-id")[0]
         attrs_eq(mail.outbox[0], to=[watcher.email], subject="Re: {f} - {t}".format(f=f, t=t))
         body = REPLY_EMAIL.format(
