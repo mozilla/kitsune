@@ -1,11 +1,9 @@
 import re
+from unittest import mock
 
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
-
-from unittest import mock
-from nose.tools import eq_
 
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question
@@ -273,7 +271,7 @@ class NotificationsTests(TestCaseBase):
 
         event.fire(exclude=q.creator)
 
-        eq_("Solution found to Firefox Help question", mail.outbox[0].subject)
+        self.assertEqual("Solution found to Firefox Help question", mail.outbox[0].subject)
 
 
 class TestAnswerNotifications(TestCaseBase):
@@ -314,11 +312,11 @@ class TestAnswerNotifications(TestCaseBase):
         self.makeAnswer()
 
         # One for the asker's email, and one for the anonymous email.
-        eq_(2, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
 
-        eq_([ANON_EMAIL], notification.to)
-        eq_("Re: {0}".format(self.question.title), notification.subject)
+        self.assertEqual([ANON_EMAIL], notification.to)
+        self.assertEqual("Re: {0}".format(self.question.title), notification.subject)
 
         body = re.sub(r"auth=[a-zA-Z0-9%_-]+", "auth=AUTH", notification.body)
         starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS.format(**self.format_args()))
@@ -330,11 +328,11 @@ class TestAnswerNotifications(TestCaseBase):
         self.makeAnswer()
 
         # One for the asker's email, and one for the watcher's email.
-        eq_(2, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
 
-        eq_([watcher.email], notification.to)
-        eq_("Re: {0}".format(self.question.title), notification.subject)
+        self.assertEqual([watcher.email], notification.to)
+        self.assertEqual("Re: {0}".format(self.question.title), notification.subject)
 
         body = re.sub(r"auth=[a-zA-Z0-9%_-]+", "auth=AUTH", notification.body)
         starts_with(body, ANSWER_EMAIL.format(to_user=display_name(watcher), **self.format_args()))
@@ -343,11 +341,11 @@ class TestAnswerNotifications(TestCaseBase):
         """Test that the answer is notified of answers, without registering."""
         self.makeAnswer()
 
-        eq_(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
         notification = mail.outbox[0]
 
-        eq_([self.question.creator.email], notification.to)
-        eq_(
+        self.assertEqual([self.question.creator.email], notification.to)
+        self.assertEqual(
             '{0} posted an answer to your question "{1}"'.format(
                 display_name(self.answer.creator), self.question.title
             ),
@@ -368,7 +366,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v) for k, v in list(notification.extra_headers.items()))
-        eq_("replyto@example.com", headers["reply-to"])
+        self.assertEqual("replyto@example.com", headers["reply-to"])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL="replyto@example.com")
     def test_notify_arbitrary_reply_to(self):
@@ -382,7 +380,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v) for k, v in list(notification.extra_headers.items()))
-        eq_("replyto@example.com", headers["reply-to"])
+        self.assertEqual("replyto@example.com", headers["reply-to"])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL="replyto@example.com")
     def test_notify_asker_reply_to(self):
@@ -392,4 +390,4 @@ class TestAnswerNotifications(TestCaseBase):
         self.makeAnswer()
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v) for k, v in list(mail.outbox[0].extra_headers.items()))
-        eq_("replyto@example.com", headers["reply-to"])
+        self.assertEqual("replyto@example.com", headers["reply-to"])

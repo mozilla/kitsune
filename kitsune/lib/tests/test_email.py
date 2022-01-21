@@ -1,10 +1,7 @@
-from nose.tools import eq_
-
-from testfixtures import LogCapture
-
-from django.test.utils import override_settings
-from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail import EmailMessage
+from django.core.mail.backends.base import BaseEmailBackend
+from django.test.utils import override_settings
+from testfixtures import LogCapture
 
 from kitsune.lib.email import LoggingEmailBackend
 from kitsune.sumo.tests import TestCase
@@ -104,7 +101,7 @@ class TestLoggingEmailBackend(TestCase):
     def test_fail_silently(self):
         # Make sure fail_silently is passed through to the real backend.
         logging_backend = LoggingEmailBackend(fail_silently=True)
-        eq_(logging_backend.real_backend.fail_silently, True)
+        self.assertEqual(logging_backend.real_backend.fail_silently, True)
 
     # The below tests validate several things in 3 cases. The 3 cases are:
     #
@@ -131,20 +128,20 @@ class TestLoggingEmailBackend(TestCase):
         # setup and make sure we have the right mock backend
         logging_backend = LoggingEmailBackend()
         batch_id = logging_backend.batch_id
-        eq_(logging_backend.real_backend.__class__, SucceedingMockEmailBackend)
-        eq_(logging_backend.real_backend._is_open, False)
-        eq_(logging_backend.real_backend._sent_messages, False)
+        self.assertEqual(logging_backend.real_backend.__class__, SucceedingMockEmailBackend)
+        self.assertEqual(logging_backend.real_backend._is_open, False)
+        self.assertEqual(logging_backend.real_backend._sent_messages, False)
 
         # Open a connection
-        eq_(logging_backend.open(), True)
+        self.assertEqual(logging_backend.open(), True)
         self.expect_log("Batch %i - Succesfully opened new connection." % (batch_id,))
-        eq_(logging_backend.real_backend._is_open, True)
+        self.assertEqual(logging_backend.real_backend._is_open, True)
 
         # Send 3 messages
         messages = [
             EmailMessage(subject="subject%i" % i, to=["%i@example.com" % i]) for i in range(3)
         ]
-        eq_(logging_backend.send_messages(messages), 3)
+        self.assertEqual(logging_backend.send_messages(messages), 3)
         log_msg = (
             "Batch %i - Attempting to send 3 emails: subject0 - '0@example.com'\n"
             "\tsubject1 - '1@example.com'\n"
@@ -152,12 +149,12 @@ class TestLoggingEmailBackend(TestCase):
         )
         self.expect_log(log_msg, check=False)
         self.expect_log("Batch %i - Succesfully sent 3 emails." % (batch_id,))
-        eq_(logging_backend.real_backend._sent_messages, True)
+        self.assertEqual(logging_backend.real_backend._sent_messages, True)
 
         # Close
-        eq_(logging_backend.close(), None)
+        self.assertEqual(logging_backend.close(), None)
         self.expect_log("Batch %i - Closed connection." % (batch_id,))
-        eq_(logging_backend.real_backend._is_open, False)
+        self.assertEqual(logging_backend.real_backend._is_open, False)
 
     @override_settings(
         EMAIL_LOGGING_REAL_BACKEND="kitsune.lib.tests.test_email.FailingMockEmailBackend"
@@ -166,22 +163,22 @@ class TestLoggingEmailBackend(TestCase):
         # Setup and make sure we have the right mock backend
         logging_backend = LoggingEmailBackend()
         batch_id = logging_backend.batch_id
-        eq_(logging_backend.real_backend.__class__, FailingMockEmailBackend)
-        eq_(logging_backend.real_backend._is_open, False)
-        eq_(logging_backend.real_backend._sent_messages, False)
+        self.assertEqual(logging_backend.real_backend.__class__, FailingMockEmailBackend)
+        self.assertEqual(logging_backend.real_backend._is_open, False)
+        self.assertEqual(logging_backend.real_backend._sent_messages, False)
 
         # Open a connection
-        eq_(logging_backend.open(), False)
+        self.assertEqual(logging_backend.open(), False)
         self.expect_log(
             "Batch %i - Did not open a new connection. (Either cached or failed)" % (batch_id,)
         )
-        eq_(logging_backend.real_backend._is_open, True)
+        self.assertEqual(logging_backend.real_backend._is_open, True)
 
         # Send 3 messages
         messages = [
             EmailMessage(subject="subject%i" % i, to=["%i@example.com" % i]) for i in range(3)
         ]
-        eq_(logging_backend.send_messages(messages), 0)
+        self.assertEqual(logging_backend.send_messages(messages), 0)
         log_msg = (
             "Batch %i - Attempting to send 3 emails: subject0 - '0@example.com'\n"
             "\tsubject1 - '1@example.com'\n"
@@ -191,12 +188,12 @@ class TestLoggingEmailBackend(TestCase):
         self.expect_log(
             "Batch %i - Failed to send all emails. Sent 0 out of 3." % (batch_id,), level="ERROR"
         )
-        eq_(logging_backend.real_backend._sent_messages, True)
+        self.assertEqual(logging_backend.real_backend._sent_messages, True)
 
         # Close
-        eq_(logging_backend.close(), None)
+        self.assertEqual(logging_backend.close(), None)
         self.expect_log("Batch %i - Closed connection." % (batch_id,))
-        eq_(logging_backend.real_backend._is_open, False)
+        self.assertEqual(logging_backend.real_backend._is_open, False)
 
     @override_settings(
         EMAIL_LOGGING_REAL_BACKEND="kitsune.lib.tests.test_email.FlakyMockEmailBackend"
@@ -205,20 +202,20 @@ class TestLoggingEmailBackend(TestCase):
         # Setup and make sure we have the right mock backend
         logging_backend = LoggingEmailBackend()
         batch_id = logging_backend.batch_id
-        eq_(logging_backend.real_backend.__class__, FlakyMockEmailBackend)
-        eq_(logging_backend.real_backend._is_open, False)
-        eq_(logging_backend.real_backend._sent_messages, False)
+        self.assertEqual(logging_backend.real_backend.__class__, FlakyMockEmailBackend)
+        self.assertEqual(logging_backend.real_backend._is_open, False)
+        self.assertEqual(logging_backend.real_backend._sent_messages, False)
 
         # Open a connection
-        eq_(logging_backend.open(), None)
+        self.assertEqual(logging_backend.open(), None)
         self.expect_log("Batch %i - Opened a new connection. (Unknown status)" % (batch_id,))
-        eq_(logging_backend.real_backend._is_open, True)
+        self.assertEqual(logging_backend.real_backend._is_open, True)
 
         # Send 3 messages
         messages = [
             EmailMessage(subject="subject%i" % i, to=["%i@example.com" % i]) for i in range(3)
         ]
-        eq_(logging_backend.send_messages(messages), 1)
+        self.assertEqual(logging_backend.send_messages(messages), 1)
         log_msg = (
             "Batch %i - Attempting to send 3 emails: subject0 - '0@example.com'\n"
             "\tsubject1 - '1@example.com'\n"
@@ -228,9 +225,9 @@ class TestLoggingEmailBackend(TestCase):
         self.expect_log(
             "Batch %i - Failed to send all emails. Sent 1 out of 3." % (batch_id,), level="ERROR"
         )
-        eq_(logging_backend.real_backend._sent_messages, True)
+        self.assertEqual(logging_backend.real_backend._sent_messages, True)
 
         # Close
-        eq_(logging_backend.close(), None)
+        self.assertEqual(logging_backend.close(), None)
         self.expect_log("Batch %i - Closed connection." % (batch_id,))
-        eq_(logging_backend.real_backend._is_open, False)
+        self.assertEqual(logging_backend.real_backend._is_open, False)

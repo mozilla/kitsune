@@ -1,8 +1,7 @@
 from datetime import date, datetime, timedelta
+from unittest.mock import patch
 
 from django.core.management import call_command
-from unittest.mock import patch
-from nose.tools import eq_
 
 import kitsune.kpi.management.utils
 from kitsune.kpi import surveygizmo_utils
@@ -76,85 +75,85 @@ class CohortAnalysisTests(TestCase):
 
     def test_contributor_cohort_analysis(self):
         c1 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week)
-        eq_(c1.size, 8)
+        self.assertEqual(c1.size, 8)
 
         c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
-        eq_(c1r1.size, 2)
+        self.assertEqual(c1r1.size, 2)
 
         c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
-        eq_(c1r2.size, 3)
+        self.assertEqual(c1r2.size, 3)
 
         c2 = Cohort.objects.get(
             kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week + timedelta(weeks=1)
         )
-        eq_(c2.size, 8)
+        self.assertEqual(c2.size, 8)
 
         c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
 
-        eq_(c2r1.size, 2)
+        self.assertEqual(c2r1.size, 2)
 
     def test_kb_enus_contributor_cohort_analysis(self):
         c1 = Cohort.objects.get(
             kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week
         )
-        eq_(c1.size, 5)
+        self.assertEqual(c1.size, 5)
 
         c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
-        eq_(c1r1.size, 2)
+        self.assertEqual(c1r1.size, 2)
 
         c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
-        eq_(c1r2.size, 0)
+        self.assertEqual(c1r2.size, 0)
 
         c2 = Cohort.objects.get(
             kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE,
             start=self.start_of_first_week + timedelta(weeks=1),
         )
-        eq_(c2.size, 1)
+        self.assertEqual(c2.size, 1)
 
         c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
 
-        eq_(c2r1.size, 0)
+        self.assertEqual(c2r1.size, 0)
 
     def test_kb_l10n_contributor_cohort_analysis(self):
         c1 = Cohort.objects.get(
             kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week
         )
-        eq_(c1.size, 3)
+        self.assertEqual(c1.size, 3)
 
         c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
-        eq_(c1r1.size, 0)
+        self.assertEqual(c1r1.size, 0)
 
         c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
-        eq_(c1r2.size, 3)
+        self.assertEqual(c1r2.size, 3)
 
         c2 = Cohort.objects.get(
             kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE,
             start=self.start_of_first_week + timedelta(weeks=1),
         )
-        eq_(c2.size, 0)
+        self.assertEqual(c2.size, 0)
 
         c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
 
-        eq_(c2r1.size, 0)
+        self.assertEqual(c2r1.size, 0)
 
     def test_support_forum_helper_cohort_analysis(self):
         c1 = Cohort.objects.get(
             kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE, start=self.start_of_first_week
         )
-        eq_(c1.size, 0)
+        self.assertEqual(c1.size, 0)
 
         c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
-        eq_(c1r1.size, 0)
+        self.assertEqual(c1r1.size, 0)
 
         c2 = Cohort.objects.get(
             kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE,
             start=self.start_of_first_week + timedelta(weeks=1),
         )
-        eq_(c2.size, 7)
+        self.assertEqual(c2.size, 7)
 
         c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
 
-        eq_(c2r1.size, 2)
+        self.assertEqual(c2r1.size, 2)
 
 
 class CronJobTests(TestCase):
@@ -167,10 +166,10 @@ class CronJobTests(TestCase):
         call_command("update_visitors_metric")
 
         metrics = Metric.objects.filter(kind=visitor_kind).order_by("start")
-        eq_(3, len(metrics))
-        eq_(42, metrics[0].value)
-        eq_(193, metrics[1].value)
-        eq_(date(2012, 1, 15), metrics[2].start)
+        self.assertEqual(3, len(metrics))
+        self.assertEqual(42, metrics[0].value)
+        self.assertEqual(193, metrics[1].value)
+        self.assertEqual(date(2012, 1, 15), metrics[2].start)
 
     @patch.object(kitsune.kpi.management.utils, "_get_top_docs")
     @patch.object(googleanalytics, "visitors_by_locale")
@@ -204,8 +203,8 @@ class CronJobTests(TestCase):
         # Value should be 75% (1/1 * 25/100 + 1/1 * 50/100)
         call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
-        eq_(1, len(metrics))
-        eq_(75, metrics[0].value)
+        self.assertEqual(1, len(metrics))
+        self.assertEqual(75, metrics[0].value)
 
         # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
         # affect the results.
@@ -215,8 +214,8 @@ class CronJobTests(TestCase):
         Metric.objects.all().delete()
         call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
-        eq_(1, len(metrics))
-        eq_(75, metrics[0].value)
+        self.assertEqual(1, len(metrics))
+        self.assertEqual(75, metrics[0].value)
 
         # Create a new revision with MEDIUM_SIGNIFICANCE. The coverage
         # should now be 62% (0.5/1 * 25/100 + 1/1 * 50/100)
@@ -226,8 +225,8 @@ class CronJobTests(TestCase):
         Metric.objects.all().delete()
         call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
-        eq_(1, len(metrics))
-        eq_(62, metrics[0].value)
+        self.assertEqual(1, len(metrics))
+        self.assertEqual(62, metrics[0].value)
 
         # And another new revision with MEDIUM_SIGNIFICANCE makes the
         # coverage 50% (1/1 * 50/100).
@@ -237,8 +236,8 @@ class CronJobTests(TestCase):
         Metric.objects.all().delete()
         call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
-        eq_(1, len(metrics))
-        eq_(50, metrics[0].value)
+        self.assertEqual(1, len(metrics))
+        self.assertEqual(50, metrics[0].value)
 
         # If we remove the two MEDIUM_SIGNIFICANCE revisions and add a
         # MAJOR_SIGNIFICANCE revision, the coverage is 50% as well.
@@ -250,8 +249,8 @@ class CronJobTests(TestCase):
         Metric.objects.all().delete()
         call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
-        eq_(1, len(metrics))
-        eq_(50, metrics[0].value)
+        self.assertEqual(1, len(metrics))
+        self.assertEqual(50, metrics[0].value)
 
     @patch.object(googleanalytics, "search_ctr")
     def test_update_search_ctr(self, search_ctr):
@@ -267,10 +266,10 @@ class CronJobTests(TestCase):
         call_command("update_search_ctr_metric")
 
         metrics = Metric.objects.filter(kind=clicks_kind).order_by("start")
-        eq_(3, len(metrics))
-        eq_(421, metrics[0].value)
-        eq_(138, metrics[1].value)
-        eq_(date(2013, 6, 8), metrics[2].start)
+        self.assertEqual(3, len(metrics))
+        self.assertEqual(421, metrics[0].value)
+        self.assertEqual(138, metrics[1].value)
+        self.assertEqual(date(2013, 6, 8), metrics[2].start)
 
     @patch.object(surveygizmo_utils, "requests")
     def test_process_exit_surveys(self, requests):
@@ -291,10 +290,10 @@ class CronJobTests(TestCase):
             kitsune.kpi.management.utils._process_exit_survey_results()
 
         # Verify.
-        eq_(4, Metric.objects.count())
-        eq_(2, Metric.objects.filter(kind=yes_kind)[1].value)
-        eq_(1, Metric.objects.get(kind=no_kind).value)
-        eq_(1, Metric.objects.get(kind=dunno_kind).value)
+        self.assertEqual(4, Metric.objects.count())
+        self.assertEqual(2, Metric.objects.filter(kind=yes_kind)[1].value)
+        self.assertEqual(1, Metric.objects.get(kind=no_kind).value)
+        self.assertEqual(1, Metric.objects.get(kind=dunno_kind).value)
 
 
 SURVEY_GIZMO_EXIT_SURVEY_RESPONSE = """

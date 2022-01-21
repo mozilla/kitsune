@@ -1,6 +1,4 @@
 from django import forms
-
-from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
@@ -25,7 +23,7 @@ class TestFields(TestCase):
 
     def _attr_eq(self, field, attr, value):
         doc = pq(str(self.f[field]))
-        eq_(value, doc.attr(attr))
+        self.assertEqual(value, doc.attr(attr))
 
     def test_date_field(self):
         self._attr_eq("date", "type", "date")

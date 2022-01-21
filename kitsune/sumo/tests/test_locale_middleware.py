@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.test import override_settings
 
-from nose.tools import eq_
-
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import get_best_language, get_non_supported
 from kitsune.users.tests import UserFactory
@@ -55,30 +53,30 @@ class TestLocaleMiddleware(TestCase):
 class BestLanguageTests(TestCase):
     def test_english_only(self):
         best = get_best_language("en-us, en;q=0.8")
-        eq_("en-US", best)
+        self.assertEqual("en-US", best)
 
     def test_en_GB(self):
         """Stick with English if you can."""
         best = get_best_language("en-gb, fr;q=0.8")
-        eq_("en-US", best)
+        self.assertEqual("en-US", best)
 
     def test_not_worst_choice(self):
         """Try not to fall back to 'es' here."""
         best = get_best_language("en-gb, en;q=0.8, fr-fr;q=0.6, es;q=0.2")
-        eq_("en-US", best)
+        self.assertEqual("en-US", best)
 
     def test_fr_FR(self):
         best = get_best_language("fr-FR, es;q=0.8")
-        eq_("fr", best)
+        self.assertEqual("fr", best)
 
     def test_non_existent(self):
         best = get_best_language("xy-YY, xy;q=0.8")
-        eq_(False, best)
+        self.assertEqual(False, best)
 
     def test_prefix_matching(self):
         """en-US is a better match for en-gb, es;q=0.2 than es."""
         best = get_best_language("en-gb, es;q=0.2")
-        eq_("en-US", best)
+        self.assertEqual("en-US", best)
 
 
 class PreferredLanguageTests(TestCase):
@@ -124,10 +122,10 @@ class PreferredLanguageTests(TestCase):
 class NonSupportedTests(TestCase):
     @override_settings(NON_SUPPORTED_LOCALES={"nn-NO": "no", "xx": None})
     def test_get_non_supported(self):
-        eq_("no", get_non_supported("nn-NO"))
-        eq_("no", get_non_supported("nn-no"))
-        eq_(settings.LANGUAGE_CODE, get_non_supported("xx"))
-        eq_(None, get_non_supported("yy"))
+        self.assertEqual("no", get_non_supported("nn-NO"))
+        self.assertEqual("no", get_non_supported("nn-no"))
+        self.assertEqual(settings.LANGUAGE_CODE, get_non_supported("xx"))
+        self.assertEqual(None, get_non_supported("yy"))
 
     @override_settings(NON_SUPPORTED_LOCALES={"nn-NO": "no", "xy": None})
     def test_middleware(self):

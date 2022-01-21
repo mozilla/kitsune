@@ -1,5 +1,3 @@
-from nose.tools import eq_
-
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
@@ -9,7 +7,7 @@ class OpenSearchTestCase(TestCase):
 
     def test_host(self):
         response = self.client.get(reverse("search.plugin", locale="fr"))
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         # FIXME: This is silly. The better test would be to parse out
         # the content and then go through and make sure all the urls
         # were correct.
@@ -17,11 +15,11 @@ class OpenSearchTestCase(TestCase):
 
     def test_plugin_expires_and_mimetype(self):
         response = self.client.get(reverse("search.plugin", locale="en-US"))
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         # Verify that it has the Expires: HTTP header
         assert "expires" in response
         # Verify the mimetype is correct
-        eq_(response["content-type"], "application/opensearchdescription+xml")
+        self.assertEqual(response["content-type"], "application/opensearchdescription+xml")
 
     def test_plugin_uses_correct_locale(self):
         response = self.client.get(reverse("search.plugin", locale="en-US"))

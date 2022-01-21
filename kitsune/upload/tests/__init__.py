@@ -1,14 +1,12 @@
+import factory
 from django.conf import settings
 from django.core.files import File
-
-import factory
-from nose.tools import eq_, raises
 
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.storage import RenameFileStorage
-from kitsune.upload.utils import create_imageattachment, check_file_size, FileTooLargeError
+from kitsune.upload.utils import FileTooLargeError, check_file_size, create_imageattachment
 from kitsune.users.tests import UserFactory
 
 
@@ -22,12 +20,13 @@ class ImageAttachmentFactory(factory.django.DjangoModelFactory):
 
 
 def check_file_info(file_info, name, width, height, delete_url, url, thumbnail_url):
-    eq_(name, file_info["name"])
-    eq_(width, file_info["width"])
-    eq_(height, file_info["height"])
-    eq_(delete_url, file_info["delete_url"])
-    eq_(url, file_info["url"])
-    eq_(thumbnail_url, file_info["thumbnail_url"])
+    tc = TestCase()
+    tc.assertEqual(name, file_info["name"])
+    tc.assertEqual(width, file_info["width"])
+    tc.assertEqual(height, file_info["height"])
+    tc.assertEqual(delete_url, file_info["delete_url"])
+    tc.assertEqual(url, file_info["url"])
+    tc.assertEqual(thumbnail_url, file_info["thumbnail_url"])
 
 
 def get_file_name(name):
@@ -44,13 +43,13 @@ class CheckFileSizeTestCase(TestCase):
             up_file = File(f)
             check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
-    @raises(FileTooLargeError)
     def test_check_file_size_over(self):
         """FileTooLargeError should be raised"""
-        with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
-            up_file = File(f)
-            # This should raise
-            check_file_size(up_file, 0)
+        with self.assertRaises(FileTooLargeError):
+            with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
+                up_file = File(f)
+                # This should raise
+                check_file_size(up_file, 0)
 
 
 class CreateImageAttachmentTestCase(TestCase):

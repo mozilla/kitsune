@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 import inspect
-import os
-import subprocess
-import sys
 from functools import wraps
-from os import getenv
 from smtplib import SMTPRecipientsRefused
+from unittest import SkipTest
 
 import factory.fuzzy
 from django.conf import settings
@@ -14,8 +11,6 @@ from django.test import TestCase as OriginalTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.translation import trans_real
-from nose import SkipTest  # noqa
-from nose.tools import eq_
 from pyquery import PyQuery
 from waffle.models import Flag
 
@@ -60,7 +55,7 @@ class TestCase(OriginalTestCase):
 def attrs_eq(received, **expected):
     """Compares received's attributes with expected's kwargs."""
     for k, v in expected.items():
-        eq_(v, getattr(received, k))
+        assert v == getattr(received, k)
 
 
 def starts_with(text, substring):
@@ -110,7 +105,7 @@ class FuzzyUnicode(factory.fuzzy.FuzzyText):
     """A FuzzyText factory that contains at least one non-ASCII character."""
 
     def __init__(self, prefix="", **kwargs):
-        prefix = "%sđ" % prefix
+        # prefix = "%sđ" % prefix
         super(FuzzyUnicode, self).__init__(prefix=prefix, **kwargs)
 
 

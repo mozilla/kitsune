@@ -3,7 +3,6 @@ from datetime import date, datetime, timedelta
 
 from django.core.cache import cache
 from django.core.management import call_command
-from nose.tools import eq_
 
 from kitsune.kpi.models import (
     EXIT_SURVEY_DONT_KNOW_CODE,
@@ -42,7 +41,7 @@ class KpiApiTests(TestCase):
         url = reverse(name)
         url = urlparams(url, format="json", **kwargs)
         response = self.client.get(url)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         return json.loads(response.content)
 
     def test_questions(self):
@@ -59,10 +58,10 @@ class KpiApiTests(TestCase):
         QuestionFactory(is_locked=True)
 
         r = self._get_api_result("api.kpi.questions")
-        eq_(r["objects"][0]["solved"], 1)
-        eq_(r["objects"][0]["responded_24"], 2)
-        eq_(r["objects"][0]["responded_72"], 2)
-        eq_(r["objects"][0]["questions"], 3)
+        self.assertEqual(r["objects"][0]["solved"], 1)
+        self.assertEqual(r["objects"][0]["responded_24"], 2)
+        self.assertEqual(r["objects"][0]["responded_72"], 2)
+        self.assertEqual(r["objects"][0]["questions"], 3)
 
     def test_questions_by_locale(self):
         """Test locale filtering of questions API call."""
@@ -82,21 +81,21 @@ class KpiApiTests(TestCase):
 
         # Verify no locale filtering:
         r = self._get_api_result("api.kpi.questions")
-        eq_(r["objects"][0]["solved"], 1)
-        eq_(r["objects"][0]["responded_24"], 2)
-        eq_(r["objects"][0]["responded_72"], 2)
-        eq_(r["objects"][0]["questions"], 4)
+        self.assertEqual(r["objects"][0]["solved"], 1)
+        self.assertEqual(r["objects"][0]["responded_24"], 2)
+        self.assertEqual(r["objects"][0]["responded_72"], 2)
+        self.assertEqual(r["objects"][0]["questions"], 4)
 
         # Verify locale=en-US
         r = self._get_api_result("api.kpi.questions", locale="en-US")
-        eq_(r["objects"][0]["solved"], 1)
-        eq_(r["objects"][0]["responded_24"], 2)
-        eq_(r["objects"][0]["responded_72"], 2)
-        eq_(r["objects"][0]["questions"], 3)
+        self.assertEqual(r["objects"][0]["solved"], 1)
+        self.assertEqual(r["objects"][0]["responded_24"], 2)
+        self.assertEqual(r["objects"][0]["responded_72"], 2)
+        self.assertEqual(r["objects"][0]["questions"], 3)
 
         # Verify locale=pt-BR
         r = self._get_api_result("api.kpi.questions", locale="pt-BR")
-        eq_(r["objects"][0]["questions"], 1)
+        self.assertEqual(r["objects"][0]["questions"], 1)
         assert "solved" not in r["objects"][0]
         assert "responded_24" not in r["objects"][0]
         assert "responded_72" not in r["objects"][0]
@@ -124,21 +123,21 @@ class KpiApiTests(TestCase):
 
         # Verify no product filtering:
         r = self._get_api_result("api.kpi.questions")
-        eq_(r["objects"][0]["solved"], 1)
-        eq_(r["objects"][0]["responded_24"], 2)
-        eq_(r["objects"][0]["responded_72"], 2)
-        eq_(r["objects"][0]["questions"], 4)
+        self.assertEqual(r["objects"][0]["solved"], 1)
+        self.assertEqual(r["objects"][0]["responded_24"], 2)
+        self.assertEqual(r["objects"][0]["responded_72"], 2)
+        self.assertEqual(r["objects"][0]["questions"], 4)
 
         # Verify product=firefox-os
         r = self._get_api_result("api.kpi.questions", product="firefox-os")
-        eq_(r["objects"][0]["solved"], 1)
-        eq_(r["objects"][0]["responded_24"], 2)
-        eq_(r["objects"][0]["responded_72"], 2)
-        eq_(r["objects"][0]["questions"], 3)
+        self.assertEqual(r["objects"][0]["solved"], 1)
+        self.assertEqual(r["objects"][0]["responded_24"], 2)
+        self.assertEqual(r["objects"][0]["responded_72"], 2)
+        self.assertEqual(r["objects"][0]["questions"], 3)
 
         # Verify product=firefox
         r = self._get_api_result("api.kpi.questions", product="firefox")
-        eq_(r["objects"][0]["questions"], 1)
+        self.assertEqual(r["objects"][0]["questions"], 1)
         assert "solved" not in r["objects"][0]
         assert "responded_24" not in r["objects"][0]
         assert "responded_72" not in r["objects"][0]
@@ -152,7 +151,7 @@ class KpiApiTests(TestCase):
         QuestionFactory(creator=u)
 
         r = self._get_api_result("api.kpi.questions")
-        eq_(len(r["objects"]), 0)
+        self.assertEqual(len(r["objects"]), 0)
 
         # Activate the user, now the questions should count.
         u.is_active = True
@@ -161,9 +160,9 @@ class KpiApiTests(TestCase):
 
         url = reverse("api.kpi.questions")
         response = self.client.get(url + "?format=json")
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         r = json.loads(response.content)
-        eq_(r["objects"][0]["questions"], 2)
+        self.assertEqual(r["objects"][0]["questions"], 2)
 
     def test_vote(self):
         """Test vote API call."""
@@ -178,10 +177,10 @@ class KpiApiTests(TestCase):
         AnswerVoteFactory(answer=a, helpful=True)
 
         r = self._get_api_result("api.kpi.votes")
-        eq_(r["objects"][0]["kb_helpful"], 1)
-        eq_(r["objects"][0]["kb_votes"], 3)
-        eq_(r["objects"][0]["ans_helpful"], 2)
-        eq_(r["objects"][0]["ans_votes"], 3)
+        self.assertEqual(r["objects"][0]["kb_helpful"], 1)
+        self.assertEqual(r["objects"][0]["kb_votes"], 3)
+        self.assertEqual(r["objects"][0]["ans_helpful"], 2)
+        self.assertEqual(r["objects"][0]["ans_votes"], 3)
 
     def test_kb_vote(self):
         """Test vote API call."""
@@ -202,33 +201,33 @@ class KpiApiTests(TestCase):
 
         # All votes should be counted if we don't specify a locale
         r = self._get_api_result("api.kpi.kb-votes")
-        eq_(r["objects"][0]["kb_helpful"], 3)
-        eq_(r["objects"][0]["kb_votes"], 9)
+        self.assertEqual(r["objects"][0]["kb_helpful"], 3)
+        self.assertEqual(r["objects"][0]["kb_votes"], 9)
 
         # Only en-US votes:
         r = self._get_api_result("api.kpi.kb-votes", locale="en-US")
-        eq_(r["objects"][0]["kb_helpful"], 1)
-        eq_(r["objects"][0]["kb_votes"], 3)
+        self.assertEqual(r["objects"][0]["kb_helpful"], 1)
+        self.assertEqual(r["objects"][0]["kb_votes"], 3)
 
         # Only es votes:
         r = self._get_api_result("api.kpi.kb-votes", locale="es")
-        eq_(r["objects"][0]["kb_helpful"], 2)
-        eq_(r["objects"][0]["kb_votes"], 6)
+        self.assertEqual(r["objects"][0]["kb_helpful"], 2)
+        self.assertEqual(r["objects"][0]["kb_votes"], 6)
 
         # Only Firefox OS votes:
         r = self._get_api_result("api.kpi.kb-votes", product="firefox-os")
-        eq_(r["objects"][0]["kb_helpful"], 2)
-        eq_(r["objects"][0]["kb_votes"], 6)
+        self.assertEqual(r["objects"][0]["kb_helpful"], 2)
+        self.assertEqual(r["objects"][0]["kb_votes"], 6)
 
         # Only Firefox votes:
         r = self._get_api_result("api.kpi.kb-votes", product="firefox")
-        eq_(r["objects"][0]["kb_helpful"], 1)
-        eq_(r["objects"][0]["kb_votes"], 3)
+        self.assertEqual(r["objects"][0]["kb_helpful"], 1)
+        self.assertEqual(r["objects"][0]["kb_votes"], 3)
 
         # Only Firefox OS + es votes:
         r = self._get_api_result("api.kpi.kb-votes", product="firefox-os", locale="es")
-        eq_(r["objects"][0]["kb_helpful"], 1)
-        eq_(r["objects"][0]["kb_votes"], 3)
+        self.assertEqual(r["objects"][0]["kb_helpful"], 1)
+        self.assertEqual(r["objects"][0]["kb_votes"], 3)
 
     def test_active_contributors(self):
         """Test active contributors API call."""
@@ -261,9 +260,9 @@ class KpiApiTests(TestCase):
 
         r = self._get_api_result("api.kpi.contributors")
 
-        eq_(r["objects"][0]["en_us"], 2)
-        eq_(r["objects"][0]["non_en_us"], 2)
-        eq_(r["objects"][0]["support_forum"], 1)
+        self.assertEqual(r["objects"][0]["en_us"], 2)
+        self.assertEqual(r["objects"][0]["non_en_us"], 2)
+        self.assertEqual(r["objects"][0]["support_forum"], 1)
 
     def test_asker_replies_arent_a_contribution(self):
         """Verify that replies posted by the question creator aren't counted.
@@ -282,7 +281,7 @@ class KpiApiTests(TestCase):
         call_command("update_contributor_metrics", str(date.today() + timedelta(days=1)))
 
         r = self._get_api_result("api.kpi.contributors")
-        eq_(r["objects"][0]["support_forum"], 0)
+        self.assertEqual(r["objects"][0]["support_forum"], 0)
 
         # Change the question creator, now we should have 1 contributor.
         q.creator = UserFactory()
@@ -293,7 +292,7 @@ class KpiApiTests(TestCase):
         call_command("update_contributor_metrics", str(date.today() + timedelta(days=1)))
 
         r = self._get_api_result("api.kpi.contributors")
-        eq_(r["objects"][0]["support_forum"], 1)
+        self.assertEqual(r["objects"][0]["support_forum"], 1)
 
     def test_elastic_clickthrough_get(self):
         """Test elastic clickthrough read API."""
@@ -306,7 +305,7 @@ class KpiApiTests(TestCase):
         url = reverse("api.kpi.search-ctr")
         response = self.client.get(url + "?format=json")
         data = json.loads(response.content)
-        eq_(
+        self.assertEqual(
             data["objects"],
             [
                 {"clicks": 2, "searches": 20, "start": "2000-01-09"},
@@ -317,7 +316,7 @@ class KpiApiTests(TestCase):
         # Test filtering by start date:
         response = self.client.get(url + "?format=json&min_start=2000-01-09")
         data = json.loads(response.content)
-        eq_(data["objects"], [{"searches": 20, "start": "2000-01-09", "clicks": 2}])
+        self.assertEqual(data["objects"], [{"searches": 20, "start": "2000-01-09", "clicks": 2}])
 
     def test_visitors(self):
         """Test unique visitors API call."""
@@ -327,7 +326,7 @@ class KpiApiTests(TestCase):
 
         # There should be 42 visitors.
         r = self._get_api_result("api.kpi.visitors")
-        eq_(r["objects"][0]["visitors"], 42)
+        self.assertEqual(r["objects"][0]["visitors"], 42)
 
     def test_l10n_coverage(self):
         """Test l10n coverage API call."""
@@ -337,7 +336,7 @@ class KpiApiTests(TestCase):
 
         # The l10n coverage should be 56%.
         r = self._get_api_result("api.kpi.l10n-coverage")
-        eq_(r["objects"][0]["coverage"], 56)
+        self.assertEqual(r["objects"][0]["coverage"], 56)
 
     def test_exit_survey_results(self):
         """Test the exist survey results API call."""
@@ -351,6 +350,6 @@ class KpiApiTests(TestCase):
 
         # Verify the results returned from the API
         r = self._get_api_result("api.kpi.exit-survey")
-        eq_(r["objects"][0]["yes"], 1337)
-        eq_(r["objects"][0]["no"], 42)
-        eq_(r["objects"][0]["dont_know"], 777)
+        self.assertEqual(r["objects"][0]["yes"], 1337)
+        self.assertEqual(r["objects"][0]["no"], 42)
+        self.assertEqual(r["objects"][0]["dont_know"], 777)

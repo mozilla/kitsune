@@ -1,5 +1,3 @@
-from nose.tools import eq_
-
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
@@ -14,4 +12,4 @@ class ContributorsMetricsTests(Elastic7TestCase):
     def test_it_works(self):
         url = reverse("community.metrics")
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)

@@ -1,13 +1,11 @@
-from nose.tools import eq_
-
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.facets import topics_for, documents_for, _documents_for
+from kitsune.wiki.facets import _documents_for, documents_for, topics_for
 from kitsune.wiki.tests import (
-    DocumentFactory,
-    TemplateDocumentFactory,
-    RevisionFactory,
     ApprovedRevisionFactory,
+    DocumentFactory,
+    RevisionFactory,
+    TemplateDocumentFactory,
 )
 
 
@@ -69,41 +67,41 @@ class TestFacetHelpers(TestCase):
     def test_topics_for_products(self):
         """Verify topics_for() returns topics for passed products."""
         desktop_topics = topics_for(product=self.desktop)
-        eq_(len(desktop_topics), 3)
+        self.assertEqual(len(desktop_topics), 3)
 
         mobile_topics = topics_for(product=self.mobile)
-        eq_(len(mobile_topics), 2)
+        self.assertEqual(len(mobile_topics), 2)
 
     def test_documents_for(self):
         """Verify documents_for() returns documents for passed topics."""
         general_documents = _documents_for(locale="en-US", topics=[self.general_d])
-        eq_(len(general_documents), 1)
+        self.assertEqual(len(general_documents), 1)
 
         bookmarks_documents = _documents_for(locale="en-US", topics=[self.bookmarks_d])
-        eq_(len(bookmarks_documents), 2)
+        self.assertEqual(len(bookmarks_documents), 2)
 
         sync_documents = _documents_for(locale="en-US", topics=[self.sync_d])
-        eq_(len(sync_documents), 1)
+        self.assertEqual(len(sync_documents), 1)
 
         general_bookmarks_documents = _documents_for(
             locale="en-US", topics=[self.general_d, self.bookmarks_d]
         )
-        eq_(len(general_bookmarks_documents), 1)
+        self.assertEqual(len(general_bookmarks_documents), 1)
 
         general_bookmarks_documents_localized = _documents_for(
             locale="de", topics=[self.general_d, self.bookmarks_d]
         )
-        eq_(len(general_bookmarks_documents_localized), 1)
+        self.assertEqual(len(general_bookmarks_documents_localized), 1)
 
         general_sync_documents = _documents_for(
             locale="en-US", topics=[self.general_d, self.sync_d]
         )
-        eq_(len(general_sync_documents), 0)
+        self.assertEqual(len(general_sync_documents), 0)
 
     def test_documents_for_fallback(self):
         """Verify the fallback in documents_for."""
         general_bookmarks_documents, fallback = documents_for(
             locale="es", topics=[self.general_d, self.bookmarks_d]
         )
-        eq_(len(general_bookmarks_documents), 0)
-        eq_(len(fallback), 1)
+        self.assertEqual(len(general_bookmarks_documents), 0)
+        self.assertEqual(len(fallback), 1)

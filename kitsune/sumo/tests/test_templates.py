@@ -3,7 +3,6 @@ from django.template.loader import render_to_string
 from django.test import override_settings
 from django.test.client import RequestFactory
 from django.utils import translation
-from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
@@ -15,7 +14,7 @@ from kitsune.sumo.tests import TestCase
 #
 #     doc = pq(response.content)
 #     href = doc('.breadcrumbs a')[0]
-#     eq_('/', href.attrib['href'][0])
+#     self.assertEqual('/', href.attrib['href'][0])
 
 
 class MockRequestTests(TestCase):
@@ -40,14 +39,14 @@ class BaseTemplateTests(MockRequestTests):
     def test_dir_ltr(self):
         """Make sure dir attr is set to 'ltr' for LTR language."""
         html = render_to_string(self.template, request=self.request)
-        eq_("ltr", pq(html)("html").attr["dir"])
+        self.assertEqual("ltr", pq(html)("html").attr["dir"])
 
     def test_dir_rtl(self):
         """Make sure dir attr is set to 'rtl' for RTL language."""
         translation.activate("he")
         self.request.LANGUAGE_CODE = "he"
         html = render_to_string(self.template, request=self.request)
-        eq_("rtl", pq(html)("html").attr["dir"])
+        self.assertEqual("rtl", pq(html)("html").attr["dir"])
         translation.deactivate()
 
     def test_multi_feeds(self):
@@ -60,21 +59,21 @@ class BaseTemplateTests(MockRequestTests):
 
         doc = pq(render_to_string(self.template, {"feeds": feed_urls}, request=self.request))
         feeds = doc('link[type="application/atom+xml"]')
-        eq_(2, len(feeds))
-        eq_("First Feed", feeds[0].attrib["title"])
-        eq_("Second Feed", feeds[1].attrib["title"])
+        self.assertEqual(2, len(feeds))
+        self.assertEqual("First Feed", feeds[0].attrib["title"])
+        self.assertEqual("Second Feed", feeds[1].attrib["title"])
 
     def test_readonly_attr(self):
         html = render_to_string(self.template, request=self.request)
         doc = pq(html)
-        eq_("false", doc("body")[0].attrib["data-readonly"])
+        self.assertEqual("false", doc("body")[0].attrib["data-readonly"])
 
     @override_settings(READ_ONLY=True)
     def test_readonly_login_link_disabled(self):
         """Ensure that login/register links are hidden in READ_ONLY."""
         html = render_to_string(self.template, request=self.request)
         doc = pq(html)
-        eq_(0, len(doc("a.sign-out, a.sign-in")))
+        self.assertEqual(0, len(doc("a.sign-out, a.sign-in")))
 
     # TODO: Enable this test after the redesign is complete.
     # @override_settings(READ_ONLY=False)
