@@ -3,41 +3,39 @@
 import urllib.parse
 from datetime import datetime
 
-from nose.tools import eq_
-from taggit.models import TaggedItem
-
 from django.core.exceptions import ValidationError
+from taggit.models import TaggedItem
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import (
+    CATEGORIES,
+    MAJOR_SIGNIFICANCE,
+    REDIRECT_CONTENT,
+    REDIRECT_HTML,
     REDIRECT_SLUG,
     REDIRECT_TITLE,
-    REDIRECT_HTML,
-    MAJOR_SIGNIFICANCE,
-    CATEGORIES,
-    TYPO_SIGNIFICANCE,
-    REDIRECT_CONTENT,
-    TEMPLATES_CATEGORY,
     TEMPLATE_TITLE_PREFIX,
+    TEMPLATES_CATEGORY,
+    TYPO_SIGNIFICANCE,
 )
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
-    RevisionFactory,
     ApprovedRevisionFactory,
-    TranslatedRevisionFactory,
     DocumentFactory,
-    TemplateDocumentFactory,
     RedirectRevisionFactory,
+    RevisionFactory,
+    TemplateDocumentFactory,
+    TranslatedRevisionFactory,
 )
 
 
 def _objects_eq(manager, list_):
     """Assert that the objects contained by `manager` are those in `list_`."""
-    eq_(set(manager.all()), set(list_))
+    TestCase().assertEqual(set(manager.all()), set(list_))
 
 
 class DocumentTests(TestCase):
@@ -67,10 +65,10 @@ class DocumentTests(TestCase):
         # This works because Django's delete() sees the `tags` many-to-many
         # field (actually a manager) and follows the reference.
         d = DocumentFactory(tags=["grape"])
-        eq_(1, TaggedItem.objects.count())
+        self.assertEqual(1, TaggedItem.objects.count())
 
         d.delete()
-        eq_(0, TaggedItem.objects.count())
+        self.assertEqual(0, TaggedItem.objects.count())
 
     def test_category_inheritance(self):
         """A document's categories must always be those of its parent."""
@@ -85,18 +83,18 @@ class DocumentTests(TestCase):
         child = DocumentFactory(parent=parent, locale="de")
 
         # Make sure child sees stuff set on parent:
-        eq_(some_category, child.category)
+        self.assertEqual(some_category, child.category)
 
         # Child'd category should revert to parent's on save:
         child.category = other_category
         child.save()
-        eq_(some_category, child.category)
+        self.assertEqual(some_category, child.category)
 
         # Changing the parent category should change the child's:
         parent.category = other_category
 
         parent.save()
-        eq_(other_category, parent.translations.get(locale=child.locale).category)
+        self.assertEqual(other_category, parent.translations.get(locale=child.locale).category)
 
     def _test_remembering_setter_unsaved(self, field):
         """A remembering setter shouldn't kick in until the doc is saved."""
@@ -118,7 +116,7 @@ class DocumentTests(TestCase):
 
         # Changing the field makes old_field spring into life:
         setattr(d, field, "Foo")
-        eq_(old, getattr(d, old_field))
+        self.assertEqual(old, getattr(d, old_field))
 
         # Changing it back makes old_field disappear:
         setattr(d, field, old)
@@ -132,7 +130,7 @@ class DocumentTests(TestCase):
 
         # And old_field should remain as it was, since it hasn't been saved
         # between the two changes:
-        eq_(old, getattr(d, old_field))
+        self.assertEqual(old, getattr(d, old_field))
 
     def test_slug_setter(self):
         """Make sure changing a slug remembers its old value."""
@@ -187,7 +185,7 @@ class DocumentTests(TestCase):
         assert not d2.pk
         d2._clean_category()
         d1prime = Document.objects.get(pk=d1.pk)
-        eq_(20, d1prime.category)
+        self.assertEqual(20, d1prime.category)
 
     def test_majorly_outdated(self):
         """Test the is_majorly_outdated method."""
@@ -248,17 +246,17 @@ class DocumentTests(TestCase):
 
     def test_redirect_document_non_redirect(self):
         """Assert redirect_document on non-redirects returns None."""
-        eq_(None, DocumentFactory().redirect_document())
+        self.assertEqual(None, DocumentFactory().redirect_document())
 
     def test_redirect_document_external_redirect(self):
         """Assert redirects to external pages return None."""
         rev = ApprovedRevisionFactory(content="REDIRECT [http://example.com")
-        eq_(rev.document.redirect_document(), None)
+        self.assertEqual(rev.document.redirect_document(), None)
 
     def test_redirect_document_nonexistent(self):
         """Assert redirects to non-existent pages return None."""
         rev = ApprovedRevisionFactory(content="REDIRECT [[kersmoo]]")
-        eq_(None, rev.document.redirect_document())
+        self.assertEqual(None, rev.document.redirect_document())
 
     def test_redirect_nondefault_locales(self):
         title1 = "title1"
@@ -277,26 +275,28 @@ class DocumentTests(TestCase):
             is_approved=True,
         )
 
-        eq_(redirect_to.document.get_absolute_url(), redirector.document.redirect_url())
+        self.assertEqual(
+            redirect_to.document.get_absolute_url(), redirector.document.redirect_url()
+        )
 
     def test_get_topics(self):
         """Test the get_topics() method."""
         en_us = DocumentFactory(topics=TopicFactory.create_batch(2))
-        eq_(2, len(en_us.get_topics()))
+        self.assertEqual(2, len(en_us.get_topics()))
 
         # Localized document inherits parent's topics.
         DocumentFactory(parent=en_us)
-        eq_(2, len(en_us.get_topics()))
+        self.assertEqual(2, len(en_us.get_topics()))
 
     def test_get_products(self):
         """Test the get_products() method."""
         en_us = DocumentFactory(products=ProductFactory.create_batch(2))
 
-        eq_(2, len(en_us.get_products()))
+        self.assertEqual(2, len(en_us.get_products()))
 
         # Localized document inherits parent's topics.
         DocumentFactory(parent=en_us)
-        eq_(2, len(en_us.get_products()))
+        self.assertEqual(2, len(en_us.get_products()))
 
     def test_template_title_and_category_to_template(self):
         d = DocumentFactory()
@@ -424,24 +424,24 @@ class LocalizableOrLatestRevisionTests(TestCase):
     def test_none(self):
         """If there are no revisions, return None."""
         d = DocumentFactory()
-        eq_(None, d.localizable_or_latest_revision())
+        self.assertEqual(None, d.localizable_or_latest_revision())
 
     def test_only_rejected(self):
         """If there are only rejected revisions, return None."""
         rejected = RevisionFactory(is_approved=False, reviewed=datetime.now())
-        eq_(None, rejected.document.localizable_or_latest_revision())
+        self.assertEqual(None, rejected.document.localizable_or_latest_revision())
 
     def test_multiple_ready(self):
         """When multiple ready revisions exist, return the most recent."""
         r1 = ApprovedRevisionFactory(is_approved=True, is_ready_for_localization=True)
         r2 = ApprovedRevisionFactory(document=r1.document, is_ready_for_localization=True)
-        eq_(r2, r2.document.localizable_or_latest_revision())
+        self.assertEqual(r2, r2.document.localizable_or_latest_revision())
 
     def test_ready_over_recent(self):
         """Favor a ready revision over a more recent unready one."""
         ready = ApprovedRevisionFactory(is_approved=True, is_ready_for_localization=True)
         ApprovedRevisionFactory(document=ready.document, is_ready_for_localization=False)
-        eq_(ready, ready.document.localizable_or_latest_revision())
+        self.assertEqual(ready, ready.document.localizable_or_latest_revision())
 
     def test_approved_over_unreviewed(self):
         """Favor an approved revision over a more recent unreviewed one."""
@@ -452,18 +452,20 @@ class LocalizableOrLatestRevisionTests(TestCase):
             is_approved=False,
             reviewed=None,
         )
-        eq_(approved, approved.document.localizable_or_latest_revision())
+        self.assertEqual(approved, approved.document.localizable_or_latest_revision())
 
     def test_latest_unreviewed_if_none_ready(self):
         """Return the latest unreviewed revision when no ready one exists."""
         unreviewed = RevisionFactory(is_approved=False, reviewed=None)
-        eq_(unreviewed, unreviewed.document.localizable_or_latest_revision())
+        self.assertEqual(unreviewed, unreviewed.document.localizable_or_latest_revision())
 
     def test_latest_rejected_if_none_unreviewed(self):
         """Return the latest rejected revision when no ready or unreviewed ones
         exist, if include_rejected=True."""
         rejected = RevisionFactory(is_approved=False, reviewed=datetime.now())
-        eq_(rejected, rejected.document.localizable_or_latest_revision(include_rejected=True))
+        self.assertEqual(
+            rejected, rejected.document.localizable_or_latest_revision(include_rejected=True)
+        )
 
     def test_non_localizable(self):
         """When document isn't localizable, ignore is_ready_for_l10n."""
@@ -471,7 +473,7 @@ class LocalizableOrLatestRevisionTests(TestCase):
         r2 = ApprovedRevisionFactory(document=r1.document, is_ready_for_localization=False)
         r1.document.is_localizable = False
         r1.document.save()
-        eq_(r2, r2.document.localizable_or_latest_revision())
+        self.assertEqual(r2, r2.document.localizable_or_latest_revision())
 
 
 class RedirectCreationTests(TestCase):
@@ -489,27 +491,27 @@ class RedirectCreationTests(TestCase):
         self.d.share_link = "https://example.com/redirect"
         self.d.save()
         redirect = Document.objects.get(slug=self.old_slug)
-        eq_(REDIRECT_CONTENT % self.d.title, redirect.current_revision.content)
-        eq_(REDIRECT_TITLE % dict(old=self.d.title, number=1), redirect.title)
+        self.assertEqual(REDIRECT_CONTENT % self.d.title, redirect.current_revision.content)
+        self.assertEqual(REDIRECT_TITLE % dict(old=self.d.title, number=1), redirect.title)
 
         # Verify the share_link got cleared out.
         doc = Document.objects.get(slug=self.d.slug)
-        eq_("", doc.share_link)
+        self.assertEqual("", doc.share_link)
 
     def test_change_title(self):
         """Test proper redirect creation on title change."""
         self.d.title = "New Title"
         self.d.save()
         redirect = Document.objects.get(title=self.old_title)
-        eq_(REDIRECT_CONTENT % self.d.title, redirect.current_revision.content)
-        eq_(REDIRECT_SLUG % dict(old=self.d.slug, number=1), redirect.slug)
+        self.assertEqual(REDIRECT_CONTENT % self.d.title, redirect.current_revision.content)
+        self.assertEqual(REDIRECT_SLUG % dict(old=self.d.slug, number=1), redirect.slug)
 
     def test_change_slug_and_title(self):
         """Assert only one redirect is made when both slug and title change."""
         self.d.title = "New Title"
         self.d.slug = "new-slug"
         self.d.save()
-        eq_(
+        self.assertEqual(
             REDIRECT_CONTENT % self.d.title,
             Document.objects.get(
                 slug=self.old_slug, title=self.old_title
@@ -537,7 +539,7 @@ class RedirectCreationTests(TestCase):
 
         # It should be called something like Whatever Redirect 2:
         redirect = Document.objects.get(**{attr: getattr(self, "old_" + attr)})
-        eq_(
+        self.assertEqual(
             template % dict(old=getattr(self.d, other_attr), number=2),
             getattr(redirect, other_attr),
         )
@@ -555,7 +557,7 @@ class RedirectCreationTests(TestCase):
         self.d.slug = "new-slug"
         self.d.save()
         redirect = Document.objects.get(slug=self.old_slug)
-        eq_(False, redirect.is_localizable)
+        self.assertEqual(False, redirect.is_localizable)
 
 
 class RevisionTests(TestCase):
@@ -585,7 +587,7 @@ class RevisionTests(TestCase):
         """Revision containing unicode characters is saved successfully."""
         str = " \r\nFirefox informa\xe7\xf5es \u30d8\u30eb"
         r = ApprovedRevisionFactory(content=str)
-        eq_(str, r.content)
+        self.assertEqual(str, r.content)
 
     def test_save_bad_based_on(self):
         """Saving a Revision with a bad based_on value raises an error."""
@@ -601,7 +603,7 @@ class RevisionTests(TestCase):
         # Revision of some other unrelated Document
         r2 = RevisionFactory.build(based_on=r1)
         self.assertRaises(ValidationError, r2.clean)
-        eq_(None, r2.based_on)
+        self.assertEqual(None, r2.based_on)
 
     def test_correct_based_on_to_current_revision(self):
         """Assure Revision.clean() changes a bad based_on value to the English
@@ -619,7 +621,7 @@ class RevisionTests(TestCase):
         # Try to recover:
         self.assertRaises(ValidationError, de_rev.clean)
 
-        eq_(en_rev.document.current_revision, de_rev.based_on)
+        self.assertEqual(en_rev.document.current_revision, de_rev.based_on)
 
     def test_correct_ready_for_localization_if_unapproved(self):
         """Revision.clean() must clear is_ready_for_l10n if not is_approved."""
@@ -638,7 +640,7 @@ class RevisionTests(TestCase):
         """Approving and marking ready a rev should update the doc's ref."""
         # Ready a rev in a new doc:
         ready_1 = ApprovedRevisionFactory(is_ready_for_localization=True)
-        eq_(ready_1, ready_1.document.latest_localizable_revision)
+        self.assertEqual(ready_1, ready_1.document.latest_localizable_revision)
 
         # Add an unready revision that we can ready later:
         unready = RevisionFactory(
@@ -649,13 +651,13 @@ class RevisionTests(TestCase):
         ready_2 = ApprovedRevisionFactory(
             document=ready_1.document, is_ready_for_localization=True
         )
-        eq_(ready_2, ready_2.document.latest_localizable_revision)
+        self.assertEqual(ready_2, ready_2.document.latest_localizable_revision)
 
         # Ready the older rev. It should not become the latest_localizable.
         unready.is_ready_for_localization = True
         unready.is_approved = True
         unready.save()
-        eq_(ready_2, ready_2.document.latest_localizable_revision)
+        self.assertEqual(ready_2, ready_2.document.latest_localizable_revision)
 
     def test_delete(self):
         """Make sure deleting the latest localizable revision doesn't delete
@@ -672,11 +674,11 @@ class RevisionTests(TestCase):
 
         # Deleting r2 should make the latest fall back to r1:
         r2.delete()
-        eq_(r1, Document.objects.get(pk=d.pk).latest_localizable_revision)
+        self.assertEqual(r1, Document.objects.get(pk=d.pk).latest_localizable_revision)
 
         # And deleting r1 should fall back to None:
         r1.delete()
-        eq_(None, Document.objects.get(pk=d.pk).latest_localizable_revision)
+        self.assertEqual(None, Document.objects.get(pk=d.pk).latest_localizable_revision)
 
     def test_delete_rendering(self):
         """Make sure the cached HTML updates when deleting the current rev."""
@@ -688,16 +690,16 @@ class RevisionTests(TestCase):
         # Delete the current rev. Since there are no other approved revs, the
         # document's HTML should fall back to "".
         approved.delete()
-        eq_("", d.content_parsed)
+        self.assertEqual("", d.content_parsed)
 
         # Now delete the final revision. It still shouldn't crash.
         unapproved.delete()
-        eq_("", d.content_parsed)
+        self.assertEqual("", d.content_parsed)
 
     def test_previous(self):
         r1 = RevisionFactory(is_approved=True)
         d = r1.document
         r2 = RevisionFactory(document=d, is_approved=True)
 
-        eq_(r1.previous, None)
-        eq_(r2.previous.id, r1.id)
+        self.assertEqual(r1.previous, None)
+        self.assertEqual(r2.previous.id, r1.id)

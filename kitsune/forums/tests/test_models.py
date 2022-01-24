@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 from django.contrib.contenttypes.models import ContentType
-from nose.tools import eq_
 
 from kitsune.access.tests import PermissionFactory
 from kitsune.flagit.models import FlaggedObject
@@ -20,12 +19,12 @@ class ForumModelTestCase(ForumTestCase):
     def test_forum_absolute_url(self):
         f = ForumFactory()
 
-        eq_("/forums/%s/" % f.slug, f.get_absolute_url())
+        self.assertEqual("/forums/%s/" % f.slug, f.get_absolute_url())
 
     def test_thread_absolute_url(self):
         t = ThreadFactory()
 
-        eq_("/forums/%s/%s" % (t.forum.slug, t.id), t.get_absolute_url())
+        self.assertEqual("/forums/%s/%s" % (t.forum.slug, t.id), t.get_absolute_url())
 
     def test_post_absolute_url(self):
         t = ThreadFactory(posts=[])
@@ -39,13 +38,13 @@ class ForumModelTestCase(ForumTestCase):
         url = reverse(
             "forums.posts", kwargs={"forum_slug": p1.thread.forum.slug, "thread_id": p1.thread.id}
         )
-        eq_(urlparams(url, hash="post-%s" % p1.id), p1.get_absolute_url())
+        self.assertEqual(urlparams(url, hash="post-%s" % p1.id), p1.get_absolute_url())
 
         url = reverse(
             "forums.posts", kwargs={"forum_slug": p2.thread.forum.slug, "thread_id": p2.thread.id}
         )
         exp_ = urlparams(url, hash="post-%s" % p2.id, page=2)
-        eq_(exp_, p2.get_absolute_url())
+        self.assertEqual(exp_, p2.get_absolute_url())
 
     def test_post_page(self):
         t = ThreadFactory()
@@ -55,8 +54,8 @@ class ForumModelTestCase(ForumTestCase):
         p2 = PostFactory(thread=t)
 
         for p in page1:
-            eq_(1, p.page)
-        eq_(2, p2.page)
+            self.assertEqual(1, p.page)
+        self.assertEqual(2, p2.page)
 
     def test_delete_post_removes_flag(self):
         """Deleting a post also removes the flags on that post."""
@@ -66,10 +65,10 @@ class ForumModelTestCase(ForumTestCase):
         FlaggedObject.objects.create(
             status=0, content_object=p, reason="language", creator_id=u.id
         )
-        eq_(1, FlaggedObject.objects.count())
+        self.assertEqual(1, FlaggedObject.objects.count())
 
         p.delete()
-        eq_(0, FlaggedObject.objects.count())
+        self.assertEqual(0, FlaggedObject.objects.count())
 
     def test_thread_last_post_url(self):
         t = ThreadFactory()
@@ -91,15 +90,15 @@ class ForumModelTestCase(ForumTestCase):
         new_post = PostFactory(thread=t, content="test")
         f = Forum.objects.get(id=t.forum_id)
         t = Thread.objects.get(id=t.id)
-        eq_(f.last_post.id, new_post.id)
-        eq_(t.last_post.id, new_post.id)
+        self.assertEqual(f.last_post.id, new_post.id)
+        self.assertEqual(t.last_post.id, new_post.id)
 
         # delete the new post, then check that last_post is updated
         new_post.delete()
         f = Forum.objects.get(id=f.id)
         t = Thread.objects.get(id=t.id)
-        eq_(f.last_post.id, orig_post.id)
-        eq_(t.last_post.id, orig_post.id)
+        self.assertEqual(f.last_post.id, orig_post.id)
+        self.assertEqual(t.last_post.id, orig_post.id)
 
     def test_public_access(self):
         # Assert Forums think they're publicly viewable and postable
@@ -144,8 +143,8 @@ class ForumModelTestCase(ForumTestCase):
         p3 = PostFactory(thread=t3, created=YESTERDAY)
 
         # Verify the last_post's are correct.
-        eq_(p2, Forum.objects.get(id=old_forum.id).last_post)
-        eq_(p3, Forum.objects.get(id=new_forum.id).last_post)
+        self.assertEqual(p2, Forum.objects.get(id=old_forum.id).last_post)
+        self.assertEqual(p3, Forum.objects.get(id=new_forum.id).last_post)
 
         # Move the t2 thread.
         t2 = Thread.objects.get(id=t2.id)
@@ -153,15 +152,15 @@ class ForumModelTestCase(ForumTestCase):
         t2.save()
 
         # Old forum's last_post updated?
-        eq_(p1.id, Forum.objects.get(id=old_forum.id).last_post_id)
+        self.assertEqual(p1.id, Forum.objects.get(id=old_forum.id).last_post_id)
 
         # New forum's last_post updated?
-        eq_(p2.id, Forum.objects.get(id=new_forum.id).last_post_id)
+        self.assertEqual(p2.id, Forum.objects.get(id=new_forum.id).last_post_id)
 
         # Delete the post, and both forums should still exist:
         p2.delete()
-        eq_(1, Forum.objects.filter(id=old_forum.id).count())
-        eq_(1, Forum.objects.filter(id=new_forum.id).count())
+        self.assertEqual(1, Forum.objects.filter(id=old_forum.id).count())
+        self.assertEqual(1, Forum.objects.filter(id=new_forum.id).count())
 
     def test_delete_removes_watches(self):
         f = ForumFactory()
@@ -175,12 +174,12 @@ class ForumModelTestCase(ForumTestCase):
         # Create a post and verify it is the last one in the forum.
         post = PostFactory(content="test")
         forum = post.thread.forum
-        eq_(forum.last_post.id, post.id)
+        self.assertEqual(forum.last_post.id, post.id)
 
         # Delete the post creator, then check the forum still exists
         post.author.delete()
         forum = Forum.objects.get(id=forum.id)
-        eq_(forum.last_post, None)
+        self.assertEqual(forum.last_post, None)
 
 
 class ThreadModelTestCase(ForumTestCase):
@@ -195,13 +194,13 @@ class ThreadModelTestCase(ForumTestCase):
         t = ThreadFactory(title="test", forum=f, posts=[])
         p = PostFactory(thread=t, content="test", author=t.creator)
         f = Forum.objects.get(id=f.id)
-        eq_(f.last_post.id, p.id)
+        self.assertEqual(f.last_post.id, p.id)
 
         # delete the post, verify last_post updated
         t.delete()
         f = Forum.objects.get(id=f.id)
-        eq_(f.last_post.id, last_post.id)
-        eq_(Thread.objects.filter(pk=t.id).count(), 0)
+        self.assertEqual(f.last_post.id, last_post.id)
+        self.assertEqual(Thread.objects.filter(pk=t.id).count(), 0)
 
     def test_delete_removes_watches(self):
         t = ThreadFactory()
@@ -213,9 +212,9 @@ class ThreadModelTestCase(ForumTestCase):
     def test_delete_last_and_only_post_in_thread(self):
         """Deleting the only post in a thread should delete the thread"""
         t = ThreadFactory()
-        eq_(1, t.post_set.count())
+        self.assertEqual(1, t.post_set.count())
         t.delete()
-        eq_(0, Thread.objects.filter(pk=t.id).count())
+        self.assertEqual(0, Thread.objects.filter(pk=t.id).count())
 
 
 class SaveDateTestCase(ForumTestCase):
@@ -249,7 +248,7 @@ class SaveDateTestCase(ForumTestCase):
         # respect that created date.
         created = datetime(1992, 1, 12, 9, 48, 23)
         t = Thread(forum=self.forum, title="foo", creator=self.user, created=created)
-        eq_(created, t.created)
+        self.assertEqual(created, t.created)
 
     def test_save_old_thread_created(self):
         """Saving an old thread should not change its created date."""
@@ -261,7 +260,7 @@ class SaveDateTestCase(ForumTestCase):
         t.title = "new title"
         t.save()
         t = Thread.objects.get(id=t.id)
-        eq_(created, t.created)
+        self.assertEqual(created, t.created)
 
     def test_save_new_post_no_timestamps(self):
         # Saving a new post should behave as if auto_add_now was set on
@@ -277,7 +276,7 @@ class SaveDateTestCase(ForumTestCase):
         updated = datetime(2010, 5, 4, 14, 4, 31)
         p = PostFactory(thread=self.thread, created=created, updated=updated)
 
-        eq_(updated, p.updated)
+        self.assertEqual(updated, p.updated)
 
         p.content = "baz"
         p.updated_by = self.user
@@ -285,7 +284,7 @@ class SaveDateTestCase(ForumTestCase):
         now = datetime.now()
 
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
-        eq_(created, p.created)
+        self.assertEqual(created, p.created)
 
     def test_save_new_post_timestamps(self):
         # Saving a new post should allow you to override auto_add_now-
@@ -295,10 +294,10 @@ class SaveDateTestCase(ForumTestCase):
             thread=self.thread, content="bar", author=self.user, created=created_, updated=created_
         )
         p.save()
-        eq_(created_, p.created)
-        eq_(created_, p.updated)
+        self.assertEqual(created_, p.created)
+        self.assertEqual(created_, p.updated)
 
     def test_content_parsed_sanity(self):
         """The content_parsed field is populated."""
         p = PostFactory(thread=self.thread, content="yet another post")
-        eq_("<p>yet another post\n</p>", p.content_parsed)
+        self.assertEqual("<p>yet another post\n</p>", p.content_parsed)

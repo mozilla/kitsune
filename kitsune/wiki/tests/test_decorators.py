@@ -2,11 +2,8 @@ from django.http import HttpResponse
 from django.test import RequestFactory
 from django.test.utils import override_settings
 
-from nose.tools import eq_
-
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.decorators import check_simple_wiki_locale
-
 
 rf = RequestFactory()
 
@@ -21,8 +18,8 @@ class SimpleWikiDecoratorTests(TestCase):
         req = rf.get("/es/products/firefox")
         req.LANGUAGE_CODE = "es"
         res = temp(req)
-        eq_(302, res.status_code)
-        eq_("/kb/frequently-asked-questions", res["location"])
+        self.assertEqual(302, res.status_code)
+        self.assertEqual("/kb/frequently-asked-questions", res["location"])
 
     def test_non_faq_locale_doesnt_redirect(self):
         @check_simple_wiki_locale
@@ -32,4 +29,4 @@ class SimpleWikiDecoratorTests(TestCase):
         req = rf.get("/de/products/firefox")
         req.LANGUAGE_CODE = "de"
         res = temp(req)
-        eq_(200, res.status_code)
+        self.assertEqual(200, res.status_code)

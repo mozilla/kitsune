@@ -1,13 +1,12 @@
+from unittest import mock
+
 from django.contrib.sites.models import Site
 from django.core import mail
-
-from unittest import mock
-from nose.tools import eq_
 
 from kitsune.announcements.tasks import send_group_email
 from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class AnnouncementSaveTests(TestCase):
@@ -29,14 +28,14 @@ class AnnouncementSaveTests(TestCase):
         a = self._setup_announcement()
 
         # Signal fired, emails sent.
-        eq_(2, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
         assert a.content in mail.outbox[0].body
         assert a.content in mail.outbox[1].body
 
         # No new emails sent when modifying.
         a.creator = self.user
         a.save()
-        eq_(2, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
 
     @mock.patch.object(Site.objects, "get_current")
     def test_create_invisible_announcement(self, get_current):
@@ -44,7 +43,7 @@ class AnnouncementSaveTests(TestCase):
         get_current.return_value.domain = "testserver"
 
         self._setup_announcement(visible_dates=False)
-        eq_(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
     @mock.patch.object(Site.objects, "get_current")
     def test_send_nonexistent(self, get_current):
@@ -52,4 +51,4 @@ class AnnouncementSaveTests(TestCase):
         get_current.return_value.domain = "testserver"
 
         send_group_email(1)
-        eq_(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))

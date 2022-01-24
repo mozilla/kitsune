@@ -1,7 +1,6 @@
 from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
-from nose.tools import eq_
 
 from kitsune.sumo.middleware import (
     CacheHeadersMiddleware,
@@ -79,15 +78,15 @@ class CacheHeadersMiddlewareTestCase(TestCase):
 class TrailingSlashMiddlewareTestCase(TestCase):
     def test_no_trailing_slash(self):
         response = self.client.get("/en-US/ohnoez")
-        eq_(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_404_trailing_slash(self):
         response = self.client.get("/en-US/ohnoez/")
-        eq_(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_remove_trailing_slash(self):
         response = self.client.get("/en-US/home/?xxx=%C3%83")
-        eq_(response.status_code, 301)
+        self.assertEqual(response.status_code, 301)
         assert response["Location"].endswith("/en-US/home?xxx=%C3%83")
 
 
@@ -103,19 +102,19 @@ class PlusToSpaceTestCase(TestCase):
         del request.META["QUERY_STRING"]
         response = self.ptsm.process_request(request)
         assert isinstance(response, HttpResponsePermanentRedirect)
-        eq_("/url%20with%20plus", response["location"])
+        self.assertEqual("/url%20with%20plus", response["location"])
 
     def test_query_string(self):
         """Query strings should be maintained."""
         request = self.rf.get("/pa+th", {"a": "b"})
         response = self.ptsm.process_request(request)
-        eq_("/pa%20th?a=b", response["location"])
+        self.assertEqual("/pa%20th?a=b", response["location"])
 
     def test_query_string_unaffected(self):
         """Pluses in query strings are not affected."""
         request = self.rf.get("/pa+th?var=a+b")
         response = self.ptsm.process_request(request)
-        eq_("/pa%20th?var=a+b", response["location"])
+        self.assertEqual("/pa%20th?var=a+b", response["location"])
 
     def test_pass_through(self):
         """URLs without a + should be left alone."""
@@ -127,7 +126,7 @@ class PlusToSpaceTestCase(TestCase):
         request = self.rf.get("/pa+th", {"a": "b"})
         request.LANGUAGE_CODE = "ru"
         response = self.ptsm.process_request(request)
-        eq_("/ru/pa%20th?a=b", response["location"])
+        self.assertEqual("/ru/pa%20th?a=b", response["location"])
 
     def test_smart_query_string(self):
         """The request QUERY_STRING might not be unicode."""
@@ -135,4 +134,4 @@ class PlusToSpaceTestCase(TestCase):
         request.LANGUAGE_CODE = "ja"
         request.META["QUERY_STRING"] = "s=%E3%82%A2"
         response = self.ptsm.process_request(request)
-        eq_("/ja/pa%20th?s=%E3%82%A2", response["location"])
+        self.assertEqual("/ja/pa%20th?s=%E3%82%A2", response["location"])

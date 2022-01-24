@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.functional import lazy
 from django.utils.translation import get_language
-from nose.tools import eq_
 
 from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation
 from kitsune.sumo.tests import TestCase
@@ -39,7 +38,7 @@ class SafeTranslationTests(TestCase):
     def setUp(self):
         # These tests assume English is the fall back language. If it
         # isn't we are gonna have a bad time.
-        eq_("en-US", settings.WIKI_DEFAULT_LANGUAGE)
+        self.assertEqual("en-US", settings.WIKI_DEFAULT_LANGUAGE)
 
     @mock_gettext
     def test_mocked_gettext(self):
@@ -48,11 +47,11 @@ class SafeTranslationTests(TestCase):
         from django.utils.translation import ugettext as _
 
         with uselocale("en-US"):
-            eq_(_("Hello"), "Hello")
+            self.assertEqual(_("Hello"), "Hello")
         with uselocale("fr"):
-            eq_(_("Hello"), "Bonjour")
+            self.assertEqual(_("Hello"), "Bonjour")
         with uselocale("es"):
-            eq_(_("Hello"), "Hola")
+            self.assertEqual(_("Hello"), "Hola")
 
     @mock_gettext
     def test_safe_translation_noop(self):
@@ -65,9 +64,9 @@ class SafeTranslationTests(TestCase):
             return _("Hello")
 
         # These should just work normally.
-        eq_(simple("en-US"), "Hello")
-        eq_(simple("fr"), "Bonjour")
-        eq_(simple("es"), "Hola")
+        self.assertEqual(simple("en-US"), "Hello")
+        self.assertEqual(simple("fr"), "Bonjour")
+        self.assertEqual(simple("es"), "Hola")
 
     @mock_gettext
     def test_safe_translation_bad_trans(self):
@@ -83,9 +82,9 @@ class SafeTranslationTests(TestCase):
 
         # French should come back as English, because it has a bad
         # translation, but Spanish should come back in Spanish.
-        eq_(bad_trans("en-US"), "Hello Mike")
-        eq_(bad_trans("fr"), "Hello Mike")
-        eq_(bad_trans("es"), "Hola Mike")
+        self.assertEqual(bad_trans("en-US"), "Hello Mike")
+        self.assertEqual(bad_trans("fr"), "Hello Mike")
+        self.assertEqual(bad_trans("es"), "Hola Mike")
 
     @mock_gettext
     @patch("kitsune.sumo.email_utils.log")
@@ -102,25 +101,25 @@ class SafeTranslationTests(TestCase):
         # English and Spanish should not log anything. French should.
         bad_trans("en-US")
         bad_trans("es")
-        eq_(len(mocked_log.method_calls), 0)
+        self.assertEqual(len(mocked_log.method_calls), 0)
         bad_trans("fr")
-        eq_(len(mocked_log.method_calls), 1)
+        self.assertEqual(len(mocked_log.method_calls), 1)
 
         method_name, method_args, method_kwargs = mocked_log.method_calls[0]
-        eq_(method_name, "exception")
+        self.assertEqual(method_name, "exception")
         assert "Bad translation" in method_args[0]
-        eq_(method_args[1], "fr")
+        self.assertEqual(method_args[1], "fr")
 
 
 class UseLocaleTests(TestCase):
     def test_uselocale(self):
         """Test that uselocale does what it says on the tin."""
         with uselocale("en-US"):
-            eq_(get_language(), "en-us")
+            self.assertEqual(get_language(), "en-us")
         with uselocale("de"):
-            eq_(get_language(), "de")
+            self.assertEqual(get_language(), "de")
         with uselocale("fr"):
-            eq_(get_language(), "fr")
+            self.assertEqual(get_language(), "fr")
 
 
 class PremailerTests(TestCase):

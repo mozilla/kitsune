@@ -1,8 +1,6 @@
-from nose.tools import eq_
-
-from kitsune.karma.templatetags.jinja_helpers import karma_titles
 from kitsune.karma.models import Title
-from kitsune.users.tests import TestCase, UserFactory, GroupFactory
+from kitsune.karma.templatetags.jinja_helpers import karma_titles
+from kitsune.users.tests import GroupFactory, TestCase, UserFactory
 
 
 class KarmaTitleHelperTests(TestCase):
@@ -18,8 +16,8 @@ class KarmaTitleHelperTests(TestCase):
         t.save()
         t.users.add(self.user)
         titles = karma_titles(self.user)
-        eq_(1, len(titles))
-        eq_(title, titles[0].name)
+        self.assertEqual(1, len(titles))
+        self.assertEqual(title, titles[0].name)
 
     def test_group_title(self):
         title = "Group Title"
@@ -27,8 +25,8 @@ class KarmaTitleHelperTests(TestCase):
         t.save()
         t.groups.add(self.group)
         titles = karma_titles(self.user)
-        eq_(1, len(titles))
-        eq_(title, titles[0].name)
+        self.assertEqual(1, len(titles))
+        self.assertEqual(title, titles[0].name)
 
     def test_user_and_group_title(self):
         u_title = "User Title"
@@ -40,6 +38,6 @@ class KarmaTitleHelperTests(TestCase):
         t.save()
         t.groups.add(self.group)
         titles = [k.name for k in karma_titles(self.user)]
-        eq_(2, len(titles))
+        self.assertEqual(2, len(titles))
         assert u_title in titles
         assert g_title in titles

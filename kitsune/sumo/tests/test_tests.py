@@ -2,10 +2,7 @@
 
 from django.core.cache import cache
 
-from nose.tools import eq_
-
 from kitsune.sumo.tests import TestCase
-
 
 CACHE_KEY = "sumo_cache_flushing_test"
 
@@ -24,4 +21,4 @@ class CacheFlushingTests(TestCase):
 
     def test_2_assert(self):
         """Assert the value stored above isn't there."""
-        eq_(None, cache.get(CACHE_KEY))
+        self.assertEqual(None, cache.get(CACHE_KEY))

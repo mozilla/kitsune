@@ -1,7 +1,5 @@
 from datetime import date
-
 from unittest.mock import patch
-from nose.tools import eq_
 
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
@@ -19,8 +17,8 @@ class GoogleAnalyticsTests(TestCase):
 
         visits = googleanalytics.visitors(date(2013, 1, 16), date(2013, 1, 16))
 
-        eq_(1, len(visits))
-        eq_(382719, visits["2013-01-16"])
+        self.assertEqual(1, len(visits))
+        self.assertEqual(382719, visits["2013-01-16"])
 
     @patch.object(googleanalytics, "_build_request")
     def test_visitors_by_locale(self, _build_request):
@@ -30,9 +28,9 @@ class GoogleAnalyticsTests(TestCase):
 
         visits = googleanalytics.visitors_by_locale(date(2013, 1, 16), date(2013, 1, 16))
 
-        eq_(58, len(visits))
-        eq_(221447, visits["en-US"])
-        eq_(24432, visits["es"])
+        self.assertEqual(58, len(visits))
+        self.assertEqual(221447, visits["en-US"])
+        self.assertEqual(24432, visits["es"])
 
     @patch.object(googleanalytics, "_build_request")
     def test_pageviews_by_document(self, _build_request):
@@ -47,12 +45,12 @@ class GoogleAnalyticsTests(TestCase):
 
         pageviews = googleanalytics.pageviews_by_document(date(2013, 1, 16), date(2013, 1, 16))
 
-        eq_(5, len(pageviews))
-        eq_(1, pageviews[documents[0].pk])
-        eq_(2, pageviews[documents[1].pk])
-        eq_(10, pageviews[documents[2].pk])
-        eq_(39, pageviews[documents[3].pk])
-        eq_(46, pageviews[documents[4].pk])
+        self.assertEqual(5, len(pageviews))
+        self.assertEqual(1, pageviews[documents[0].pk])
+        self.assertEqual(2, pageviews[documents[1].pk])
+        self.assertEqual(10, pageviews[documents[2].pk])
+        self.assertEqual(39, pageviews[documents[3].pk])
+        self.assertEqual(46, pageviews[documents[4].pk])
 
     @patch.object(googleanalytics, "_build_request")
     def test_pageviews_by_question(self, _build_request):
@@ -62,10 +60,10 @@ class GoogleAnalyticsTests(TestCase):
 
         pageviews = googleanalytics.pageviews_by_question(date(2013, 1, 16), date(2013, 1, 16))
 
-        eq_(3, len(pageviews))
-        eq_(3, pageviews[1])
-        eq_(2, pageviews[2])
-        eq_(11, pageviews[3])
+        self.assertEqual(3, len(pageviews))
+        self.assertEqual(3, pageviews[1])
+        self.assertEqual(2, pageviews[2])
+        self.assertEqual(11, pageviews[3])
 
     @patch.object(googleanalytics, "_build_request")
     def test_search_ctr(self, _build_request):
@@ -75,8 +73,8 @@ class GoogleAnalyticsTests(TestCase):
 
         ctr = googleanalytics.search_ctr(date(2013, 6, 6), date(2013, 6, 6))
 
-        eq_(1, len(ctr))
-        eq_(74.88925980111263, ctr["2013-06-06"])
+        self.assertEqual(1, len(ctr))
+        self.assertEqual(74.88925980111263, ctr["2013-06-06"])
 
 
 VISITORS_RESPONSE = {

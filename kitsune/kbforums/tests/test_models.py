@@ -1,11 +1,9 @@
 import datetime
 
-from nose.tools import eq_
-
 from kitsune.kbforums.models import Thread
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory, PostFactory
-from kitsune.sumo.urlresolvers import reverse
+from kitsune.kbforums.tests import KBForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 
@@ -16,7 +14,7 @@ class KBForumModelTestCase(KBForumTestCase):
         exp_ = reverse(
             "wiki.discuss.posts", locale=t.document.locale, args=[t.document.slug, t.id]
         )
-        eq_(exp_, t.get_absolute_url())
+        self.assertEqual(exp_, t.get_absolute_url())
 
     def test_post_absolute_url(self):
         t = ThreadFactory()
@@ -27,7 +25,7 @@ class KBForumModelTestCase(KBForumTestCase):
             args=[p.thread.document.slug, p.thread.id],
         )
         exp_ = urlparams(url_, hash="post-%s" % p.id)
-        eq_(exp_, p.get_absolute_url())
+        self.assertEqual(exp_, p.get_absolute_url())
 
     def test_last_post_updated(self):
         """Adding/Deleting the last post in a thread should
@@ -38,7 +36,7 @@ class KBForumModelTestCase(KBForumTestCase):
 
         # add a new post, then check that last_post is updated
         new_post = t.new_post(creator=u, content="test")
-        eq_(t.last_post.id, new_post.id)
+        self.assertEqual(t.last_post.id, new_post.id)
 
         # delete the new post, then check that last_post is updated
         new_post.delete()
@@ -50,9 +48,9 @@ class KBThreadModelTestCase(KBForumTestCase):
         """Deleting the only post in a thread should delete the thread"""
         t = ThreadFactory(title="test")
         p = t.new_post(creator=t.creator, content="test")
-        eq_(1, t.post_set.count())
+        self.assertEqual(1, t.post_set.count())
         p.delete()
-        eq_(0, Thread.objects.filter(pk=t.id).count())
+        self.assertEqual(0, Thread.objects.filter(pk=t.id).count())
 
 
 class KBSaveDateTestCase(KBForumTestCase):
@@ -92,14 +90,14 @@ class KBSaveDateTestCase(KBForumTestCase):
         created = datetime.datetime(1992, 1, 12, 9, 48, 23)
         t = self.doc.thread_set.create(title="foo", creator=self.user, created=created)
         t.save()
-        eq_(created, t.created)
+        self.assertEqual(created, t.created)
 
     def test_save_old_thread_created(self):
         """Saving an old thread should not change its created date."""
         t = ThreadFactory()
         created = t.created
         t.save()
-        eq_(created, t.created)
+        self.assertEqual(created, t.created)
 
     def test_save_new_post_no_timestamps(self):
         """
@@ -141,4 +139,4 @@ class KBSaveDateTestCase(KBForumTestCase):
     def test_content_parsed_sanity(self):
         """The content_parsed field is populated."""
         p = PostFactory(content="yet another post")
-        eq_("<p>yet another post\n</p>", p.content_parsed)
+        self.assertEqual("<p>yet another post\n</p>", p.content_parsed)
