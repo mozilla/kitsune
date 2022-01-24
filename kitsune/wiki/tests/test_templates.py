@@ -1063,8 +1063,8 @@ class NewRevisionTests(TestCaseBase):
         self.assertEqual(draft.title, trans_content("#id_title").val())
         self.assertEqual(draft.slug, trans_content("#id_slug").val())
         self.assertEqual(draft.keywords, trans_content("#id_keywords").val())
-        self.assertEqual(draft.summary, trans_content("#id_summary").text())
-        self.assertEqual(draft.content, trans_content("#id_content").text())
+        self.assertEqual("\n" + draft.summary, trans_content("#id_summary").text())
+        self.assertEqual("\n" + draft.content, trans_content("#id_content").text())
         self.assertEqual(draft.based_on.id, int(trans_content("#id_based_on").val()))
 
     @skip("Disable revision restore test")
@@ -1113,8 +1113,8 @@ class NewRevisionTests(TestCaseBase):
         trans_content = pq(trans_resp.content)
         # Check the data is restored
         self.assertEqual(draft.keywords, trans_content("#id_keywords").val())
-        self.assertEqual(draft.summary, trans_content("#id_summary").text())
-        self.assertEqual(draft.content, trans_content("#id_content").text())
+        self.assertEqual("\n" + draft.summary, trans_content("#id_summary").text())
+        self.assertEqual("\n" + draft.content, trans_content("#id_content").text())
         self.assertEqual(draft.based_on.id, int(trans_content("#id_based_on").val()))
 
     def test_warning_showing_while_new_revision(self):
@@ -2090,7 +2090,7 @@ class TranslateTests(TestCaseBase):
         url = reverse("wiki.translate", locale="es", args=[self.d.slug])
         response = self.client.get(url)
         doc = pq(response.content)
-        self.assertEqual(rev_es.content, doc("#id_content").text())
+        self.assertEqual("\n" + rev_es.content, doc("#id_content").text())
         self.assertEqual(rev_enUS.content, doc("#content-fields textarea[readonly]").text())
         self.assertEqual(2, len(doc(".recent-revisions li")))
 
@@ -2164,7 +2164,7 @@ class TranslateTests(TestCaseBase):
         doc = pq(response.content)
         document = Document.objects.filter(locale="es")[0]
         existing_rev = document.revisions.all()[0]
-        self.assertEqual(existing_rev.content, doc("#id_content").text())
+        self.assertEqual("\n" + existing_rev.content, doc("#id_content").text())
 
     def test_translate_based_on(self):
         """Test translating based on a non-current revision."""
