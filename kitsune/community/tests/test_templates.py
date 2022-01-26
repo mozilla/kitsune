@@ -6,7 +6,7 @@ from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import ContributorFactory, UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
 
 
@@ -54,9 +54,9 @@ class LandingTests(Elastic7TestCase):
         d = DocumentFactory(locale="es")
         RevisionFactory(document=d)
         RevisionFactory(document=d)
-        AnswerFactory()
-        AnswerFactory()
-        AnswerFactory()
+        AnswerFactory(creator=ContributorFactory())
+        AnswerFactory(creator=ContributorFactory())
+        AnswerFactory(creator=ContributorFactory())
 
         response = self.client.get(urlparams(reverse("community.home")))
         self.assertEqual(response.status_code, 200)
@@ -111,17 +111,17 @@ class TopContributorsTests(Elastic7TestCase):
         self.assertEqual(404, response.status_code)
 
     def test_top_questions(self):
-        a1 = AnswerFactory()
-        a2 = AnswerFactory()
+        a1 = AnswerFactory(creator=ContributorFactory())
+        a2 = AnswerFactory(creator=ContributorFactory())
 
         response = self.client.get(
             urlparams(reverse("community.top_contributors", args=["questions"]))
         )
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(2, len(doc("li.results-user")))
-        assert str(a1.creator.username) in response.content
-        assert str(a2.creator.username) in response.content
+        self.assertEqual(2, len(doc(".results-user")))
+        assert a1.creator.username in str(response.content)
+        assert a2.creator.username in str(response.content)
 
     def test_top_kb(self):
         d = DocumentFactory(locale="en-US")
@@ -131,9 +131,9 @@ class TopContributorsTests(Elastic7TestCase):
         response = self.client.get(urlparams(reverse("community.top_contributors", args=["kb"])))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(2, len(doc("li.results-user")))
-        assert str(r1.creator.username) in response.content
-        assert str(r2.creator.username) in response.content
+        self.assertEqual(2, len(doc(".results-user")))
+        assert r1.creator.username in str(response.content)
+        assert r2.creator.username in str(response.content)
 
     def test_top_l10n(self):
         d = DocumentFactory(locale="es")
@@ -143,6 +143,6 @@ class TopContributorsTests(Elastic7TestCase):
         response = self.client.get(urlparams(reverse("community.top_contributors", args=["l10n"])))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(2, len(doc("li.results-user")))
-        assert str(r1.creator.username) in response.content
-        assert str(r2.creator.username) in response.content
+        self.assertEqual(2, len(doc(".results-user")))
+        assert r1.creator.username in str(response.content)
+        assert r2.creator.username in str(response.content)

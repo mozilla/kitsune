@@ -176,6 +176,7 @@ def index_objects_bulk(
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
         chunk_size=elastic_chunk_size,
         raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
+        refresh=True if settings.TEST else False,  # update docs immediately when testing
     )
     errors = [
         error
