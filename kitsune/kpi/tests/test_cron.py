@@ -241,11 +241,11 @@ class CronJobTests(TestCase):
 
         # If we remove the two MEDIUM_SIGNIFICANCE revisions and add a
         # MAJOR_SIGNIFICANCE revision, the coverage is 50% as well.
-        m1.delete()
-        m2.delete()
         ApprovedRevisionFactory(
             document=doc, significance=MAJOR_SIGNIFICANCE, is_ready_for_localization=True
         )
+        m1.delete()
+        m2.delete()
         Metric.objects.all().delete()
         call_command("update_l10n_metric")
         metrics = Metric.objects.filter(kind=l10n_kind)
