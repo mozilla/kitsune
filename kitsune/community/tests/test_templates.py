@@ -18,7 +18,6 @@ class UserSearchTests(Elastic7TestCase):
 
     def test_no_results(self):
         UserFactory(username="foo", profile__name="Foo Bar")
-        self.refresh()
         response = self.client.get(urlparams(reverse("community.search"), q="baz"))
         self.assertEqual(response.status_code, 200)
         assert b"No users were found" in response.content
@@ -26,8 +25,6 @@ class UserSearchTests(Elastic7TestCase):
     def test_results(self):
         UserFactory(username="foo", profile__name="Foo Bar")
         UserFactory(username="bam", profile__name="Bar Bam")
-
-        self.refresh()
 
         # Searching for "bam" should return 1 user.
         response = self.client.get(urlparams(reverse("community.search"), q="bam"))
@@ -61,8 +58,6 @@ class LandingTests(Elastic7TestCase):
         AnswerFactory()
         AnswerFactory()
 
-        self.refresh()
-
         response = self.client.get(urlparams(reverse("community.home")))
         self.assertEqual(response.status_code, 200)
         doc = pq(response.content)
@@ -95,13 +90,11 @@ class LandingTests(Elastic7TestCase):
         """Verify the Community Discussions section."""
         ThreadFactory(forum__slug="contributors", title="we are SUMO!!!!!!")
 
-        self.refresh()
-
         response = self.client.get(urlparams(reverse("community.home")))
         self.assertEqual(response.status_code, 200)
         doc = pq(response.content)
         self.assertEqual(1, len(doc("#recent-threads")))
-        assert "we are SUMO!" in doc("#recent-threads td").html()
+        assert "we are SUMO!" in doc("#recent-threads ul").html()
 
 
 class TopContributorsTests(Elastic7TestCase):
@@ -121,8 +114,6 @@ class TopContributorsTests(Elastic7TestCase):
         a1 = AnswerFactory()
         a2 = AnswerFactory()
 
-        self.refresh()
-
         response = self.client.get(
             urlparams(reverse("community.top_contributors", args=["questions"]))
         )
@@ -137,8 +128,6 @@ class TopContributorsTests(Elastic7TestCase):
         r1 = RevisionFactory(document=d)
         r2 = RevisionFactory(document=d)
 
-        self.refresh()
-
         response = self.client.get(urlparams(reverse("community.top_contributors", args=["kb"])))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
@@ -150,8 +139,6 @@ class TopContributorsTests(Elastic7TestCase):
         d = DocumentFactory(locale="es")
         r1 = RevisionFactory(document=d)
         r2 = RevisionFactory(document=d)
-
-        self.refresh()
 
         response = self.client.get(urlparams(reverse("community.top_contributors", args=["l10n"])))
         self.assertEqual(200, response.status_code)

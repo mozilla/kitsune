@@ -42,8 +42,6 @@ class ProductViewsTestCase(Elastic7TestCase):
         d = DocumentFactory(products=[p], topics=topics[:10])
         ApprovedRevisionFactory(document=d)
 
-        self.refresh()
-
         # GET the product landing page and verify the content.
         url = reverse("products.product", args=[p.slug])
         r = self.client.get(url, follow=True)
@@ -71,8 +69,6 @@ class ProductViewsTestCase(Elastic7TestCase):
         ApprovedRevisionFactory.create_batch(3, document__products=[p], document__topics=[t1])
         ApprovedRevisionFactory()
 
-        self.refresh()
-
         # GET the page and verify the content.
         url = reverse("products.documents", args=[p.slug, t1.slug])
         r = self.client.get(url, follow=True)
@@ -97,7 +93,6 @@ class ProductViewsTestCase(Elastic7TestCase):
         # Add a lower display order to the second document. It should be first now.
         docs[1].display_order = 0
         docs[1].save()
-        self.refresh()
         url = reverse("products.documents", args=[p.slug, t.slug])
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
@@ -108,7 +103,6 @@ class ProductViewsTestCase(Elastic7TestCase):
         rev = docs[2].current_revision
         HelpfulVoteFactory(revision=rev, helpful=True)
         docs[2].save()  # Votes don't trigger a reindex.
-        self.refresh()
         cache.clear()  # documents_for() is cached
         url = reverse("products.documents", args=[p.slug, t.slug])
         r = self.client.get(url, follow=True)
@@ -121,7 +115,6 @@ class ProductViewsTestCase(Elastic7TestCase):
         HelpfulVoteFactory(revision=rev, helpful=True)
         HelpfulVoteFactory(revision=rev, helpful=True)
         docs[0].save()  # Votes don't trigger a reindex.
-        self.refresh()
         cache.clear()  # documents_for() is cached
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
@@ -137,8 +130,6 @@ class ProductViewsTestCase(Elastic7TestCase):
         # Create a documents with the topic and product
         doc = DocumentFactory(products=[p], topics=[t])
         ApprovedRevisionFactory(document=doc)
-
-        self.refresh()
 
         # GET the page and verify no subtopics yet.
         url = reverse("products.documents", args=[p.slug, t.slug])
@@ -157,7 +148,6 @@ class ProductViewsTestCase(Elastic7TestCase):
 
         # Add a document to the subtopic, now it should appear.
         doc.topics.add(subtopic)
-        self.refresh()
 
         r = self.client.get(url, follow=True)
         self.assertEqual(200, r.status_code)
