@@ -38,8 +38,6 @@ class AAQSearchTests(Elastic7TestCase):
             content="cupcakes are best with <unbleached>flour</unbleached>",
         )
 
-        self.refresh()
-
         url = urlparams(
             reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
             search="cupcakes",
@@ -63,8 +61,6 @@ class AAQSearchTests(Elastic7TestCase):
         TopicFactory(title="Fix problems", slug="fix-problems", product=p)
         q = QuestionFactory(product=p, title="CupcakesQuestion cupcakes")
 
-        self.refresh()
-
         url = urlparams(
             reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
             search="cupcakes",
@@ -79,7 +75,6 @@ class AAQSearchTests(Elastic7TestCase):
         # Archive both and they shouldn't appear anymore.
         q.is_archived = True
         q.save()
-        self.refresh()
 
         response = self.client.get(url, follow=True)
         self.assertEqual(200, response.status_code)
@@ -101,8 +96,6 @@ class AAQSearchTests(Elastic7TestCase):
         QuestionFactory(title="question donuts?", product=product, locale="en-US")
         QuestionFactory(title="question pies?", product=product, locale="pt-BR")
         QuestionFactory(title="question pastries?", product=product, locale="de")
-
-        self.refresh()
 
         def sub_test(locale, *titles):
             url = urlparams(
@@ -685,8 +678,6 @@ class TestStats(Elastic7TestCase):
             created=datetime.now() - timedelta(days=1),
             topic=t,
         )
-
-        self.refresh()
 
         response = self.client.get(reverse("questions.metrics"))
         self.assertEqual(200, response.status_code)
