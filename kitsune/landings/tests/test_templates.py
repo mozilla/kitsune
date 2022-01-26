@@ -18,4 +18,4 @@ class HomeTestCase(Elastic7TestCase):
         r = self.client.get(reverse("home"), follow=True)
         self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        self.assertEqual(4, len(doc("#products-and-services li")))
+        self.assertEqual(4, len(doc(".card--product")))
