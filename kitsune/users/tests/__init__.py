@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from tidings.models import Watch
 
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
-from kitsune.users.models import AccountEvent, Profile, Setting
+from kitsune.users.models import AccountEvent, CONTRIBUTOR_GROUP, Profile, Setting
 
 
 class TestCaseBase(TestCase):
@@ -32,6 +32,12 @@ class UserFactory(factory.django.DjangoModelFactory):
             user.groups.add(group)
 
 
+class ContributorFactory(UserFactory):
+    @factory.post_generation
+    def add_contributor_group(user, *args, **kwargs):
+        user.groups.add(GroupFactory(name=CONTRIBUTOR_GROUP))
+
+
 class ProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Profile
@@ -50,6 +56,7 @@ class ProfileFactory(factory.django.DjangoModelFactory):
 class GroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Group
+        django_get_or_create = ("name",)
 
     name = factory.fuzzy.FuzzyText()
 
