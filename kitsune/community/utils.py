@@ -5,15 +5,13 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.db.models import Count, Q
+from elasticsearch_dsl import A
 
 from kitsune.products.models import Product
+from kitsune.search.documents import AnswerDocument, ProfileDocument
 from kitsune.users.models import CONTRIBUTOR_GROUP, User
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.wiki.models import Revision
-
-from elasticsearch_dsl import A
-from kitsune.search.documents import AnswerDocument, ProfileDocument
-
 
 CONTRIBUTOR_GROUPS = [
     "Contributors",

@@ -526,8 +526,6 @@ class OldQuestionsArchiveTest(Elastic7TestCase):
             updated=last_updated,
         )
 
-        self.refresh()
-
         call_command("auto_archive_old_questions")
 
         # There are three questions.

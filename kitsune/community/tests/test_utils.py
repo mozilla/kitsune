@@ -56,8 +56,6 @@ class TopContributorTests(Elastic7TestCase):
         RevisionFactory(document=d)
         RevisionFactory(document=d)
 
-        self.refresh()
-
         # By default, we should only get 2 top contributors back for 'es'.
         top, _ = top_contributors_l10n(locale="es")
         self.assertEqual(2, len(top))
@@ -82,8 +80,6 @@ class TopContributorTests(Elastic7TestCase):
         a4 = AnswerFactory(created=datetime.now() - timedelta(days=91))
         AnswerFactory(creator=a1.creator, question__product=fxos)
         AnswerFactory(creator=a4.question.creator, question=a4.question)
-
-        self.refresh()
 
         # By default, we should only get 2 top contributors back.
         top, _ = top_contributors_questions()

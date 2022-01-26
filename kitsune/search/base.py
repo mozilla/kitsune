@@ -5,10 +5,10 @@ from datetime import datetime
 from typing import Union, overload
 
 from django.conf import settings
-from django.core.paginator import Paginator as DjPaginator, PageNotAnInteger, EmptyPage
+from django.core.paginator import EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator as DjPaginator
 from django.utils import timezone
 from django.utils.translation import ugettext as _
-
 from elasticsearch.exceptions import NotFoundError, RequestError
 from elasticsearch_dsl import Document as DSLDocument
 from elasticsearch_dsl import InnerDoc, MetaField
@@ -206,6 +206,11 @@ class SumoDocument(DSLDocument):
         # if we have a bulk update, we need to include the meta info
         # and return the data by calling the to_dict() method of DSL
         payload = self.to_dict(include_meta=is_bulk, skip_empty=False)
+
+        # If we are in a test environment, mark refresh=True so that
+        # documents will be updated/added directly in the index.
+        if settings.TEST:
+            kwargs.update({"refresh": True})
 
         if not action or action == "index":
             return payload if is_bulk else self.save(**kwargs)
