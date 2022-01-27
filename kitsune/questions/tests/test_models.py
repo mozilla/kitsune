@@ -239,7 +239,7 @@ class TestQuestionMetadata(TestCaseBase):
     def test_auto_tagging(self):
         """Make sure tags get applied based on metadata on first save."""
         Tag.objects.create(slug="green", name="green")
-        Tag.objects.create(slug="Fix problems", name="fix-problems")
+        Tag.objects.create(slug="fix-problems", name="Fix problems")
         q = self.question
         q.add_metadata(product="desktop", category="fix-problems", ff_version="3.6.8", os="GREen")
         q.save()

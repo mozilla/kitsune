@@ -8,7 +8,6 @@ from unittest import mock
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.cache import cache
 from pyquery import PyQuery as pq
 from taggit.models import Tag
 from tidings.models import Watch
@@ -16,15 +15,8 @@ from tidings.models import Watch
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Answer, Question, QuestionLocale, VoteMetadata
-from kitsune.questions.tests import (
-    AnswerFactory,
-    AnswerVoteFactory,
-    QuestionFactory,
-    TestCaseBase,
-    tags_eq,
-)
+from kitsune.questions.tests import AnswerFactory, QuestionFactory, TestCaseBase, tags_eq
 from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
-from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import (
     LocalizingClient,
@@ -38,7 +30,6 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -1450,58 +1441,3 @@ class ProductForumTemplateTestCase(TestCaseBase):
         assert android.title in product_list_html
         assert fxos.title in product_list_html
         assert openbadges.title not in product_list_html
-
-
-class RelatedThingsTestCase(Elastic7TestCase):
-    search_tests = True
-
-    def setUp(self):
-        super(RelatedThingsTestCase, self).setUp()
-        self.question = QuestionFactory(
-            title="lorem ipsum", content="lorem", product=ProductFactory()
-        )
-
-    def test_related_questions(self):
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        self.assertEqual(0, len(doc("#related-content .related-question")))
-
-        q1 = QuestionFactory(
-            title="lorem ipsum dolor", content="lorem", product=self.question.product
-        )
-        a1 = AnswerFactory(question=q1)
-        AnswerVoteFactory(answer=a1, helpful=True)
-
-        # Questions with no helpful answers should not be shown
-        q2 = QuestionFactory(
-            title="lorem ipsum dolor", content="lorem", product=self.question.product
-        )
-        AnswerFactory(question=q2)
-
-        # Questions that belong to different products should not be shown
-        q3 = QuestionFactory(title="lorem ipsum dolor", content="lorem", product=ProductFactory())
-        a3 = AnswerFactory(question=q3)
-        AnswerVoteFactory(answer=a3, helpful=True)
-
-        cache.clear()
-
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        self.assertEqual(1, len(doc("#related-content .related-question")))
-
-    def test_related_documents(self):
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        self.assertEqual(0, len(doc("#related-content .related-document")))
-
-        d1 = DocumentFactory(title="lorem ipsum")
-        d1.products.add(self.question.product)
-        r1 = ApprovedRevisionFactory(document=d1, summary="lorem", content="lorem ipsum dolor")
-        d1.current_revision = r1
-        d1.save()
-
-        cache.clear()
-
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        self.assertEqual(1, len(doc("#related-content .related-document")))
