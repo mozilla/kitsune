@@ -14,7 +14,7 @@ ENV PATH="/venv/bin:$PATH"
 
 RUN python -m venv /venv
 RUN pip install --upgrade "pip==21.3.1"
-RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
+RUN useradd -m --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && apt-get install apt-transport-https && \
     curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
