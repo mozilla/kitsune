@@ -618,17 +618,10 @@ description = "Product and locale details for Mozilla products."
 category = "main"
 optional = false
 python-versions = "*"
-develop = false
 
 [package.dependencies]
 Django = ">=2.2"
 requests = ">=2.21.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/mozilla/django-product-details.git"
-reference = "master"
-resolved_reference = "532b5ef83de955874ac958b76549c33971740e2e"
 
 [[package]]
 name = "django-pipeline"
@@ -2306,7 +2299,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "482cf2fd1b399751e619f864e4b906f8bcfa0c7f32cda4b3094b2c877987e432"
+content-hash = "84bc87c85fe5e32efb829f586e77a326ce1009428e3f4d6f2ce1cfce7ac73ed3"
 
 [metadata.files]
 alabaster = [
@@ -2593,7 +2586,10 @@ django-jsonfield-compat = [
     {file = "django-jsonfield-compat-0.4.4.tar.gz", hash = "sha256:0182d2e9db886abc2bf30958e4953f72b6f0e20336524755641bc3968899cd5b"},
     {file = "django_jsonfield_compat-0.4.4-py2.py3-none-any.whl", hash = "sha256:e2b1cd7dfef7633c8befb9c85fa764d344377512c8fdaf65ded4827392410a1d"},
 ]
-django-mozilla-product-details = []
+django-mozilla-product-details = [
+    {file = "django-mozilla-product-details-1.0.1.tar.gz", hash = "sha256:ef25e5e9bce4bfe6c7ba9c87245f5be93c0ac3fc7f1d60afd459e55e9dcc8bc7"},
+    {file = "django_mozilla_product_details-1.0.1-py2.py3-none-any.whl", hash = "sha256:484b61deb99663c131c7e386bc683c83cab612777055b12588e91844a1508a04"},
+]
 django-pipeline = [
     {file = "django-pipeline-2.0.7.tar.gz", hash = "sha256:2b3741509081013f4eb52fb9e608c72c18cf76d3295797a5a04e49edd6e8d275"},
     {file = "django_pipeline-2.0.7-py3-none-any.whl", hash = "sha256:93c156df6abaecd341adc9f3f8b5df70d839f0c9bbc6aaaa8a02fb3cfe544a3a"},
