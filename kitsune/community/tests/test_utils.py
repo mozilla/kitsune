@@ -9,6 +9,7 @@ from kitsune.products.tests import ProductFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.tests import LocalizingClient
+from kitsune.users.tests import ContributorFactory
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
@@ -74,10 +75,12 @@ class TopContributorTests(Elastic7TestCase):
     def test_top_contributors_questions(self):
         firefox = ProductFactory(slug="firefox")
         fxos = ProductFactory(slug="firefox-os")
-        a1 = AnswerFactory(question__product=firefox)
+        a1 = AnswerFactory(question__product=firefox, creator=ContributorFactory())
         AnswerFactory(creator=a1.creator)
-        AnswerFactory(question__product=fxos)
-        a4 = AnswerFactory(created=datetime.now() - timedelta(days=91))
+        AnswerFactory(question__product=fxos, creator=ContributorFactory())
+        a4 = AnswerFactory(
+            created=datetime.now() - timedelta(days=91), creator=ContributorFactory()
+        )
         AnswerFactory(creator=a1.creator, question__product=fxos)
         AnswerFactory(creator=a4.question.creator, question=a4.question)
 
@@ -85,11 +88,11 @@ class TopContributorTests(Elastic7TestCase):
         top, _ = top_contributors_questions()
         self.assertEqual(2, len(top))
         assert a4.creator_id not in [u["term"] for u in top]
-        self.assertEqual(a1.creator_id, top[0]["term"])
+        self.assertEqual(str(a1.creator_id), top[0]["term"])
 
         # Verify, filtering of Firefox questions only.
-        top, _ = top_contributors_questions(product=firefox.slug)
+        top, _ = top_contributors_questions(product=firefox)
         self.assertEqual(1, len(top))
-        self.assertEqual(a1.creator_id, top[0]["term"])
-        top, _ = top_contributors_questions(product=fxos.slug)
+        self.assertEqual(str(a1.creator_id), top[0]["term"])
+        top, _ = top_contributors_questions(product=fxos)
         self.assertEqual(2, len(top))
