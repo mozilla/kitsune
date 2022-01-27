@@ -210,7 +210,7 @@ class SumoDocument(DSLDocument):
 
         # If we are in a test environment, mark refresh=True so that
         # documents will be updated/added directly in the index.
-        if settings.TEST:
+        if settings.TEST and not is_bulk:
             kwargs.update({"refresh": True})
 
         if not action or action == "index":
