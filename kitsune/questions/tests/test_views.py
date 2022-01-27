@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.conf import settings
 from django.test.utils import override_settings
@@ -8,12 +8,7 @@ from pyquery import PyQuery as pq
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.tests import (
-    AnswerFactory,
-    QuestionFactory,
-    QuestionLocaleFactory,
-    TestCaseBase,
-)
+from kitsune.questions.tests import AnswerFactory, QuestionFactory, TestCaseBase
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -26,100 +21,6 @@ class AAQSearchTests(Elastic7TestCase):
     search_tests = True
     client_class = LocalizingClient
 
-    def test_bleaching(self):
-        """Tests whether summaries are bleached"""
-        p = ProductFactory(slug="firefox")
-        locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(locale)
-        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
-        QuestionFactory(
-            product=p,
-            title="CupcakesQuestion cupcakes",
-            content="cupcakes are best with <unbleached>flour</unbleached>",
-        )
-
-        url = urlparams(
-            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
-            search="cupcakes",
-        )
-
-        response = self.client.get(url, follow=True)
-        self.assertEqual(200, response.status_code)
-
-        assert b"CupcakesQuestion" in response.content
-        assert b"<unbleached>" not in response.content
-        assert b"cupcakes are best with" in response.content
-
-    # TODO: test whether when _search_suggetions fails with a handled
-    # error that the user can still ask a question.
-
-    def test_search_suggestions_questions(self):
-        """Verifies the view doesn't kick up an HTTP 500"""
-        p = ProductFactory(slug="firefox")
-        locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(locale)
-        TopicFactory(title="Fix problems", slug="fix-problems", product=p)
-        q = QuestionFactory(product=p, title="CupcakesQuestion cupcakes")
-
-        url = urlparams(
-            reverse("questions.aaq_step4", args=["desktop", "fix-problems"]),
-            search="cupcakes",
-        )
-
-        response = self.client.get(url, follow=True)
-        self.assertEqual(200, response.status_code)
-
-        assert b"CupcakesQuestion" in response.content
-
-        # Verify that archived articles and questions aren't shown...
-        # Archive both and they shouldn't appear anymore.
-        q.is_archived = True
-        q.save()
-
-        response = self.client.get(url, follow=True)
-        self.assertEqual(200, response.status_code)
-
-        assert b"CupcakesQuestion" not in response.content
-
-    def test_search_suggestion_questions_locale(self):
-        """Verifies the right languages show up in search suggestions."""
-        QuestionLocaleFactory(locale="de")
-
-        product = ProductFactory(slug="firefox")
-
-        for loc in QuestionLocale.objects.all():
-            product.questions_locales.add(loc)
-
-        TopicFactory(title="Fix problems", slug="fix-problems", product=product)
-
-        QuestionFactory(title="question cupcakes?", product=product, locale="en-US")
-        QuestionFactory(title="question donuts?", product=product, locale="en-US")
-        QuestionFactory(title="question pies?", product=product, locale="pt-BR")
-        QuestionFactory(title="question pastries?", product=product, locale="de")
-
-        def sub_test(locale, *titles):
-            url = urlparams(
-                reverse(
-                    "questions.aaq_step4",
-                    args=["desktop", "fix-problems"],
-                    locale=locale,
-                ),
-                search="question",
-            )
-            response = self.client.get(url, follow=True)
-            doc = pq(response.content)
-            eq_msg(
-                len(doc(".result.question")),
-                len(titles),
-                "Wrong number of results for {0}".format(locale),
-            )
-            for substr in titles:
-                assert substr in doc(".result.question h3 a").text()
-
-        sub_test("en-US", "cupcakes?", "donuts?")
-        sub_test("pt-BR", "cupcakes?", "donuts?", "pies?")
-        sub_test("de", "cupcakes?", "donuts?", "pastries?")
-
     def test_ratelimit(self):
         """Make sure posting new questions is ratelimited"""
         data = {
@@ -128,6 +29,7 @@ class AAQSearchTests(Elastic7TestCase):
             "sites_affected": "http://example.com",
             "ff_version": "3.6.6",
             "os": "Intel Mac OS X 10.6",
+            "category": "fix-problems",
             "plugins": "* Shockwave Flash 10.1 r53",
             "useragent": "Mozilla/5.0 (Macintosh; U; Intel Mac OS X "
             "10.6; en-US; rv:1.9.2.6) Gecko/20100625 "
@@ -138,7 +40,7 @@ class AAQSearchTests(Elastic7TestCase):
         p.questions_locales.add(locale)
         TopicFactory(slug="fix-problems", product=p)
         url = urlparams(
-            reverse("questions.aaq_step5", args=["desktop", "fix-problems"]),
+            reverse("questions.aaq_step3", args=["desktop", "fix-problems"]),
             search="A test question",
         )
 
@@ -160,41 +62,12 @@ class AAQSearchTests(Elastic7TestCase):
         res = self.client.get(url)
         self.assertEqual(200, res.status_code)
 
-    def test_redirect_bad_locales(self):
-        """Non-AAQ locales should redirect."""
-        url_fr = reverse("questions.aaq_step1", locale="fr")
-        url_en = reverse("questions.aaq_step1", locale="en-US")
-        res = self.client.get(url_fr)
-        self.assertEqual(302, res.status_code)
-        # This has some http://... stuff at the beginning. Ignore that.
-        assert res["location"].endswith(url_en)
-
     @override_settings(WIKI_DEFAULT_LANGUAGE="fr")
     def test_no_redirect_english(self):
         """The default language should never redirect, even if it isn't an AAQ language."""
         """Non-AAQ locales should redirect."""
         url_fr = reverse("questions.aaq_step1", locale="fr")
         res = self.client.get(url_fr)
-        self.assertEqual(200, res.status_code)
-
-    def test_redirect_locale_not_enabled(self):
-        """AAQ should redirect for products with questions disabled for the
-        current locale"""
-        url_fi = reverse("questions.aaq_step1", locale="fi")
-        res = self.client.get(url_fi)
-        self.assertEqual(200, res.status_code)
-
-        p = ProductFactory(slug="firefox")
-
-        url_fi = reverse("questions.aaq_step2", locale="fi", args=["desktop"])
-        url_en = reverse("questions.aaq_step2", locale="en-US", args=["desktop"])
-        res = self.client.get(url_fi)
-        self.assertEqual(302, res.status_code)
-        assert res["location"].endswith(url_en)
-
-        locale = QuestionLocale.objects.get(locale="fi")
-        p.questions_locales.add(locale)
-        res = self.client.get(url_fi)
         self.assertEqual(200, res.status_code)
 
 
@@ -661,30 +534,6 @@ class TestRateLimiting(TestCaseBase):
             self.client.post(url, {"content": content})
 
         self.assertEqual(4, Answer.objects.count())
-
-
-class TestStats(Elastic7TestCase):
-    search_tests = True
-    client_class = LocalizingClient
-
-    def test_stats(self):
-        """Tests questions/dashboard/metrics view"""
-        p = ProductFactory()
-        t = TopicFactory(title="Websites", slug="websites", product=p)
-
-        QuestionFactory(
-            title="cupcakes",
-            content="Cupcakes rock!",
-            created=datetime.now() - timedelta(days=1),
-            topic=t,
-        )
-
-        response = self.client.get(reverse("questions.metrics"))
-        self.assertEqual(200, response.status_code)
-
-        # If there's histogram data, this is probably good enough to
-        # denote its existence.
-        assert b' data-graph="[' in response.content
 
 
 class TestEditDetails(TestCaseBase):
