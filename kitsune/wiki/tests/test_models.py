@@ -668,17 +668,19 @@ class RevisionTests(TestCase):
         test_delete_current_revision template test.
 
         """
-        r1 = ApprovedRevisionFactory(is_ready_for_localization=True)
-        d = r1.document
-        r2 = ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
+        document = DocumentFactory()
+        r1 = ApprovedRevisionFactory(document=document, is_ready_for_localization=True)
+        r2 = ApprovedRevisionFactory(document=document, is_ready_for_localization=True)
 
         # Deleting r2 should make the latest fall back to r1:
         r2.delete()
-        self.assertEqual(r1, Document.objects.get(pk=d.pk).latest_localizable_revision)
+        document.refresh_from_db()
+        self.assertEqual(r1, Document.objects.get(pk=document.pk).latest_localizable_revision)
 
         # And deleting r1 should fall back to None:
         r1.delete()
-        self.assertEqual(None, Document.objects.get(pk=d.pk).latest_localizable_revision)
+        document.refresh_from_db()
+        self.assertEqual(None, Document.objects.get(pk=document.pk).latest_localizable_revision)
 
     def test_delete_rendering(self):
         """Make sure the cached HTML updates when deleting the current rev."""
@@ -690,10 +692,12 @@ class RevisionTests(TestCase):
         # Delete the current rev. Since there are no other approved revs, the
         # document's HTML should fall back to "".
         approved.delete()
+        d.refresh_from_db()
         self.assertEqual("", d.content_parsed)
 
         # Now delete the final revision. It still shouldn't crash.
         unapproved.delete()
+        d.refresh_from_db()
         self.assertEqual("", d.content_parsed)
 
     def test_previous(self):

@@ -339,7 +339,7 @@ class DocumentEditingTests(TestCase):
         input = doc("#id_based_on")[0]
         self.assertEqual(int(input.value), en_r.pk)
         self.assertEqual(doc("#id_keywords")[0].attrib["value"], "oui")
-        self.assertEqual(doc("#id_summary").text(), "lipsum")
+        self.assertEqual(doc("#id_summary").text(), "\nlipsum")
 
     def test_needs_change(self):
         """Test setting and unsetting the needs change flag"""
@@ -421,7 +421,7 @@ class DocumentEditingTests(TestCase):
         self.assertEqual(200, restore_draft_resp.status_code)
         # Check if the title of the translate page contains the title of draft revision
         trans_page = pq(restore_draft_resp.content)
-        self.assertEqual(draft.content, trans_page("#id_content").text())
+        self.assertEqual("\n" + draft.content, trans_page("#id_content").text())
 
     def test_discard_draft_revision(self):
         """Check Draft Revision is discarded
