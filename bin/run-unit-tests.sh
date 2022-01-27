@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set test environment variables
-source test-env.sh
+source bin/test-env.sh
 
 set -ex
 
