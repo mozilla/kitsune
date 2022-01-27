@@ -161,9 +161,9 @@ class UploadImageTestCase(TestCase):
         json_r = json.loads(r.content)
         self.assertEqual("error", json_r["status"])
         self.assertEqual("Invalid or no image received.", json_r["message"])
-        assert (
-            json_r["errors"]["image"][0]
-            == "File extension 'ext' is not allowed. Allowed extensions are: 'jpg, jpeg, png, gif'."  # noqa
+        self.assertEqual(
+            json_r["errors"]["image"][0],
+            "File extension “ext” is not allowed. Allowed extensions are: jpg, jpeg, png, gif.",
         )
 
     def test_unsupported_image_extensions(self):
@@ -177,9 +177,9 @@ class UploadImageTestCase(TestCase):
         json_r = json.loads(r.content)
         self.assertEqual("error", json_r["status"])
         self.assertEqual("Invalid or no image received.", json_r["message"])
-        assert (
-            json_r["errors"]["image"][0]
-            == "File extension 'tiff' is not allowed. Allowed extensions are: 'jpg, jpeg, png, gif'."  # noqa
+        self.assertEqual(
+            json_r["errors"]["image"][0],
+            "File extension “tiff” is not allowed. Allowed extensions are: jpg, jpeg, png, gif.",
         )
 
     def test_upload_long_filename(self):
