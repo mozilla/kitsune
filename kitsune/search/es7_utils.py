@@ -207,6 +207,11 @@ def remove_from_field(doc_type_name, field_name, field_value):
 
     update.execute()
 
+    # If we are in a test environment, refresh so that
+    # documents will be updated/added directly in the index.
+    if settings.TEST:
+        doc_type._index.refresh()
+
 
 @task
 def delete_object(doc_type_name, obj_id):

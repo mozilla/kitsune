@@ -196,11 +196,12 @@ class SumoDocument(DSLDocument):
 
         # If an object has a discard field then mark it for deletion if exists
         # This is the only case where this method ignores the passed arg action and
-        # overrides it with a deletion. This can happen if the `prpare` method of each
+        # overrides it with a deletion. This can happen if the `prepare` method of each
         # document type has marked a document as not suitable for indexing
         if hasattr(self, "es_discard_doc"):
             # Let's try to delete anything that might exist in ES
             action = "delete"
+            kwargs = {}
 
         # Default to index if no action is defined or if it's `save`
         # if we have a bulk update, we need to include the meta info
@@ -239,7 +240,8 @@ class SumoDocument(DSLDocument):
                 del payload["_source"]
                 return payload
             # This is a single document op, delete it
-            return self.delete(**{"ignore": [400, 404]})
+            kwargs.update({"ignore": [400, 404]})
+            return self.delete(**kwargs)
 
     @classmethod
     def get_queryset(cls):
