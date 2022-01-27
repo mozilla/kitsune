@@ -33,7 +33,7 @@ jobs:
           name: Copy synonym files to elasticsearch7
           command: |
             ./bin/dc_ci.sh up -d elasticsearch7
-            docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
+            docker cp ./kitsune/search/dictionaries/synonyms/. project-elasticsearch7-1:/usr/share/elasticsearch/config/synonyms
       - run:
           name: Run unit tests
           command: ./bin/dc_ci.sh run test ./bin/run-unit-tests.sh
