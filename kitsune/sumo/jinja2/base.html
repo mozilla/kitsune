@@ -320,9 +320,9 @@
 </footer>
 {% if request.LANGUAGE_CODE %}
   {% if settings.DEV or settings.TEST %}
-    <script src="{{ webpack_static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
+    <script src="{{ static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
   {% else %}
-    <script src="{{ webpack_static('jsi18n/{lang}/djangojs-min.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
+    <script src="{{ static('jsi18n/{lang}/djangojs-min.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
   {% endif %}
 {% endif %}
 
