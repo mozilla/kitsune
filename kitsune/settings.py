@@ -412,6 +412,13 @@ STATICFILES_FINDERS = (
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
+
+def immutable_file_test(path, url):
+    return re.match(r"^.+\.[0-9a-f]{16}\..+$", url)
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = immutable_file_test
+
 WEBPACK_LRU_CACHE = 128
 if DEV or TEST:
     WEBPACK_LRU_CACHE = 0
