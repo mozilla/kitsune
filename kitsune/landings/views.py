@@ -41,3 +41,7 @@ def get_involved_l10n(request):
 
 def integrity_check(request):
     return render(request, "landings/integrity-check.html")
+
+
+def contribute(request):
+    return render(request, "landings/contribute.html")
