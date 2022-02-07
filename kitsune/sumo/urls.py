@@ -14,6 +14,5 @@ urlpatterns = [
     url(r"^healthz/$", watchman_views.ping, name="sumo.liveness"),
     url(r"^readiness/$", watchman_views.status, name="sumo.readiness"),
     # Shortcuts:
-    url("^contribute/?$", RedirectView.as_view(url="/get-involved", permanent=False)),
     url(r"^windows7-support(?:\\/)?$", RedirectView.as_view(url="/home/?as=u", permanent=False)),
 ]
