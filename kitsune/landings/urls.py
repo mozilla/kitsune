@@ -29,4 +29,5 @@ urlpatterns = [
     re_path(r"^get-involved/kb$", views.get_involved_kb, name="landings.get_involved_kb"),
     re_path(r"^get-involved/l10n$", views.get_involved_l10n, name="landings.get_involved_l10n"),
     re_path(r"^get-involved$", views.get_involved, name="landings.get_involved"),
+    re_path(r"^contribute/?.*$", views.contribute, name="landings.contribute"),
 ]
