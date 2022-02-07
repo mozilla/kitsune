@@ -101,6 +101,9 @@ const entrypoints = {
   "gtm-snippet": [
     "sumo/js/gtm-snippet.js",
   ],
+  contribute: [
+    "./svelte/contribute",
+  ]
 }
 
 for (let key in entrypoints) {

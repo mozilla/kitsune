@@ -702,6 +702,8 @@ PUENTE = {
             ("kitsune/**/tests/**.py", "ignore"),
             ("kitsune/**/management/**.py", "ignore"),
             ("kitsune/forums/**.lhtml", "ignore"),
+            ("kitsune/kadmin/**", "ignore"),
+            ("kitsune/**/templates/admin/**", "ignore"),
             ("kitsune/**.py", "python"),
             ("kitsune/**/templates/**.html", "jinja2"),
             ("kitsune/**/jinja2/**.html", "jinja2"),
@@ -714,6 +716,8 @@ PUENTE = {
             ("kitsune/**/static/**/js/*-min.js", "ignore"),
             ("kitsune/**/static/**/js/*.js", "javascript"),
             ("kitsune/**/static/**/tpl/**.njk", "jinja2"),
+            # if this starts failing, switch to extracting from compiled output:
+            ("svelte/*.svelte", "javascript"),
         ],
     },
 }
