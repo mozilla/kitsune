@@ -10,12 +10,15 @@ module.exports = {
       sumo: path.resolve(__dirname, "kitsune/sumo/static/sumo"),
       community: path.resolve(__dirname, "kitsune/community/static/community"),
       kpi: path.resolve(__dirname, "kitsune/kpi/static/kpi"),
+      svelte: path.resolve('node_modules', 'svelte')
     },
+    extensions: ['.mjs', '.js', '.svelte'],
+    mainFields: ['svelte', 'browser', 'module', 'main']
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|svelte)$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
@@ -29,6 +32,17 @@ module.exports = {
         use: {
           loader: path.resolve("./webpack/nunjucks-loader"),
         },
+      },
+      {
+        test: /\.svelte$/,
+        use: "svelte-loader",
+      },
+      {
+        // required to prevent errors from Svelte on Webpack 5+
+        test: /node_modules\/svelte\/.*\.mjs$/,
+        resolve: {
+          fullySpecified: false
+        }
       },
       {
         test: /\.scss$/,

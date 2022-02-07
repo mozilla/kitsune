@@ -27,4 +27,5 @@ urlpatterns = [
     url(r"^get-involved/kb$", views.get_involved_kb, name="landings.get_involved_kb"),
     url(r"^get-involved/l10n$", views.get_involved_l10n, name="landings.get_involved_l10n"),
     url(r"^get-involved$", views.get_involved, name="landings.get_involved"),
+    url(r"^contribute/?.*$", views.contribute, name="landings.contribute"),
 ]
