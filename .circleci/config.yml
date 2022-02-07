@@ -62,6 +62,11 @@ jobs:
                   docker logout
             - aws-cli/setup
             - run:
+                name: Upload staticfiles
+                command: |
+                  source docker/bin/set_git_env_vars.sh
+                  ./docker/bin/upload-staticfiles.sh
+            - run:
                 name: Echo prod image hash
                 command: |
                   source docker/bin/set_git_env_vars.sh
