@@ -37,7 +37,8 @@
 		"vscode-icons-team.vscode-icons",
 		"syler.sass-indented",
 		"hookyqr.beautify",
-		"samuelcolvin.jinjahtml"
+		"samuelcolvin.jinjahtml",
+        "svelte.svelte-vscode",
 	],
 
     // Uncomment the next line if you want start specific services in your Docker Compose config.
