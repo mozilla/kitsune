@@ -1,5 +1,5 @@
 @use './mixins' as c;
-@use '../protocol' as p;
+@use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
 @use './color-swatches' as swatches;
 
 :root {

@@ -29,6 +29,7 @@ Part 2: Developer's Guide
    localization
    search
    frontend
+   svelte
    browser_permissions
    zendesk
    notes

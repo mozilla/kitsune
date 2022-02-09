@@ -86,6 +86,7 @@
     "stylelint-order": "^5.0.0",
     "stylelint-scss": "^4.1.0",
     "svelte-loader": "^3.1.2",
+    "svelte-preprocess": "^4.10.2",
     "webpack": "^5.65.0",
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.7.2",

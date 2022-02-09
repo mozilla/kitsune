@@ -1,5 +1,5 @@
 @use './color-swatches';
-@use '../protocol' as p;
+@use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
 @use 'sass:map';
 
 // Think in pixels, but use rems. Takes a whole number.

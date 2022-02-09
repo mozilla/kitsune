@@ -1,4 +1,4 @@
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 @use '../config' as c;
 
 .results-user {
@@ -56,7 +56,7 @@
     height: p.$spacing-md;
     border: none;
     border-radius: p.$spacing-xs;
-    background-image: url('#{p.$image-path}/icons/check.svg');
+    background-image: url('protocol/img/icons/check.svg');
     background-color: transparent;
     background-position: center center;
     background-repeat: no-repeat;
