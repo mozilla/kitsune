@@ -12,7 +12,7 @@ kubernetes:
     # default values
     limits:
         memory_request: 384Mi
-        memory_limit: 1Gi
+        memory_limit: 2Gi
         cpu_request: 250m
         cpu_limit: 1000m
     replicas: 1
@@ -38,7 +38,7 @@ kubernetes:
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
-            replicas: 40
+            replicas: 50
             labels:
                 type: "web"
             liveness:
