@@ -3,7 +3,7 @@ kubernetes:
     namespace: "sumo-prod"
     target_environment: "prod"
     service_name: "sumo-svc"
-    service_cert_arn: "arn:aws:acm:eu-central-1:095732026120:certificate/d86b2f65-b8ee-4cb7-bba8-e1fdc54a8a28"
+    service_cert_arn: "arn:aws:acm:us-west-2:095732026120:certificate/64b3e297-28bc-4de3-808e-a293f88bb9fb"
     secrets_name: "sumo-secrets-prod"
     image:
         repo: "mozilla/kitsune"
@@ -32,13 +32,13 @@ kubernetes:
         celery:
             command: "./bin/run-celery-worker.sh"
             deployment_name: "sumo-prod-celery"
-            replicas: 3
+            replicas: 5
             labels:
                 type: "celery"
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
-            replicas: 25
+            replicas: 40
             labels:
                 type: "web"
             liveness:
@@ -104,7 +104,7 @@ app:
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
     media_url: "https://user-media-prod-cdn.itsre-sumo.mozilla.net/"
-    new_relic_app_name: "sumo-prod-oregon;sumo-prod-oregon"
+    new_relic_app_name: "sumo-prod-oregon"
     new_relic_license_key: SECRET
     oidc_enable: True
     oidc_op_authorization_endpoint: SECRET
