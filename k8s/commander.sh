@@ -46,10 +46,14 @@ function post-deploy {
 	# Get the name of a running web pod on which we can run the post-deploy script
 	SUMO_POD=$(${KUBECTL_BIN} -n "${K8S_NAMESPACE}" get pods | egrep 'sumo-.*-web' | grep Running | head -1 | awk '{ print $1 }')
 	${KUBECTL_BIN} -n "${K8S_NAMESPACE}" exec "${SUMO_POD}" bin/run-post-deploy.sh
+
+	# Unset the context used in the deployment
+	${KUBECTL_BIN} config unset current-context
 }
 
 function initialize {
 	REGION=${2}
+	REGION_ENV=${3}
 
 	if [ -f "./regions/${REGION}/kubectl" ]; then
 		KUBECTL_BIN="./regions/${REGION}/kubectl"
@@ -60,6 +64,20 @@ function initialize {
 
 	if [ -f "./regions/${REGION}/kubeconfig" ]; then
 		export KUBECONFIG="./regions/${REGION}/kubeconfig"
+	fi
+
+	# set context based on region
+	if [ ! ${KUBECONFIG} ]; then
+		if [ ${REGION} == "frankfurt" ]; then
+			${KUBECTL_BIN} config use-context sumo-eks-eu-central-1
+		elif [ ${REGION} == "oregon" ]; then
+			${KUBECTL_BIN} config use-context sumo-eks-us-west-2
+		else
+			echo "Make sure you have EKS clusters configuration"
+			echo "Run: aws eks --region <region> update-kubeconfig --name sumo-eks-<region> --alias sumo-eks-<region>"
+			echo "Check README.md for the clusters regions"
+			exit 1
+		fi
 	fi
 
 	${KUBECTL_BIN} version >/dev/null
@@ -84,7 +102,7 @@ function compare-client-server-versions {
 	fi
 }
 
-if ![ -f "$PYENV_FILE" ]; then
+if ! [ -f "$PYENV_FILE" ]; then
 	source venv/bin/activate
 fi
 initialize "$@"

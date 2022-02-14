@@ -2,7 +2,8 @@ kubernetes:
     app_name: "sumo-stage"
     namespace: "sumo-stage"
     target_environment: "stage"
-    nodeport_name: "sumo-nodeport"
+    service_name: "sumo-svc"
+    service_cert_arn: "arn:aws:acm:eu-central-1:095732026120:certificate/d86b2f65-b8ee-4cb7-bba8-e1fdc54a8a28"
     secrets_name: "sumo-secrets-stage"
     image:
         repo: "mozilla/kitsune"
