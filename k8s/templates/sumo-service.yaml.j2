@@ -20,7 +20,7 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "6"
     service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "10"
     service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "environment={{ kubernetes.target_environment }},project=sumo"
-    service.beta.kubernetes.io/aws-load-balancer-attributes: load_balancing.cross_zone.enabled=true
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
 spec:
   type: LoadBalancer
   ports:
