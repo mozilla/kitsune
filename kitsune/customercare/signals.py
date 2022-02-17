@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from zenpy.lib.exception import ZenpyException
+
 from kitsune.customercare.tasks import update_zendesk_user
 from kitsune.users.models import Profile
 
@@ -31,5 +33,5 @@ def on_save_update_zendesk_user(sender, instance, update_fields=None, **kwargs):
     try:
         if user.profile.zendesk_id:
             update_zendesk_user.delay(user.pk)
-    except Profile.DoesNotExist:
+    except (Profile.DoesNotExist, ZenpyException):
         pass
