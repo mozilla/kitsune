@@ -12,4 +12,3 @@ TEMPLATE_DIR = os.path.join(
 # template names
 SUMO_APP_TEMPLATE = 'sumo-app.yaml.j2'
 SUMO_NODEPORT_TEMPLATE = 'sumo-nodeport.yaml.j2'
-SUMO_SERVICE_TEMPLATE = 'sumo-service.yaml.j2'

@@ -2,8 +2,7 @@ kubernetes:
     app_name: "sumo-prod"
     namespace: "sumo-prod"
     target_environment: "prod"
-    service_name: "sumo-svc"
-    service_cert_arn: "arn:aws:acm:eu-central-1:095732026120:certificate/d86b2f65-b8ee-4cb7-bba8-e1fdc54a8a28"
+    nodeport_name: "sumo-nodeport"
     secrets_name: "sumo-secrets-prod"
     image:
         repo: "mozilla/kitsune"

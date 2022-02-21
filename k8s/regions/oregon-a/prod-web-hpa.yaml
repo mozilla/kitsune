@@ -5,9 +5,9 @@ metadata:
   namespace: sumo-prod
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
+    apiVersion: extensions/v1beta1
     kind: Deployment
     name: sumo-prod-web
-  minReplicas: 50
-  maxReplicas: 100
+  minReplicas: 25
+  maxReplicas: 40
   targetCPUUtilizationPercentage: 80

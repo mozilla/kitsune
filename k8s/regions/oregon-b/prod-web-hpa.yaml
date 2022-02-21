@@ -9,5 +9,5 @@ spec:
     kind: Deployment
     name: sumo-prod-web
   minReplicas: 25
-  maxReplicas: 50
+  maxReplicas: 40
   targetCPUUtilizationPercentage: 80

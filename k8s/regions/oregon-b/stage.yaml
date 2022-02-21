@@ -25,13 +25,13 @@ kubernetes:
         cron:
             command: "./bin/run-cron.sh"
             deployment_name: "sumo-stage-cron"
-            replicas: 1
+            replicas: 0
             labels:
                 type: "cron"
         celery:
             command: "./bin/run-celery-worker.sh"
             deployment_name: "sumo-stage-celery"
-            replicas: 1
+            replicas: 0
             labels:
                 type: "celery"
         web:
@@ -49,7 +49,7 @@ kubernetes:
 
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: "stage.sumo.mozit.cloud,stage-frankfurt.sumo.mozit.cloud,support.allizom.org"
+    allowed_hosts: ".sumo.mozit.cloud,support.allizom.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
@@ -81,33 +81,41 @@ app:
     dms_update_product_details: SECRET
     dms_update_top_contributors: SECRET
     dms_update_weekly_votes: SECRET
-    k8s_domain: "frankfurt.mozit.cloud"
+    k8s_domain: "oregon-b.mozit.cloud"
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
     email_port: 25
     email_use_tls: True
-    enable_admin: False
+    enable_admin: True
     engage_robots: False
     es_index_prefix: "sumo_stage"
     es_live_indexing: True
     es7_use_ssl: True
     es7_http_auth: SECRET
     es7_cloud_id: SECRET
+    fxa_op_token_endpoint: SECRET
+    fxa_op_authorization_endpoint: SECRET
+    fxa_op_user_endpoint: SECRET
+    fxa_op_jwks_endpoint: SECRET
+    fxa_rp_client_id: SECRET
+    fxa_rp_client_secret: SECRET
+    fxa_verify_url: SECRET
     ga_account: SECRET
     ga_key: SECRET
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
     media_url: "https://user-media-stage-cdn.itsre-sumo.mozilla.net/"
-    new_relic_app_name: "sumo-stage-frankfurt"
+    new_relic_app_name: "sumo-stage-oregon-b;sumo-stage-oregon"
     new_relic_license_key: SECRET
+    oidc_enable: True
     oidc_op_authorization_endpoint: SECRET
     oidc_op_token_endpoint: SECRET
     oidc_op_user_endpoint: SECRET
     oidc_rp_client_id: SECRET
     oidc_rp_client_secret: SECRET
     port: 8000
-    read_only: True
+    read_only: False
     redis_default_url: SECRET
     redis_helpfulvotes_url: SECRET
     secret_key: SECRET
@@ -121,5 +129,12 @@ app:
     secure_ssl_redirect: True
     wsgi_keep_alive: 60
     disable_feeds: False
-    user_agent_filters: "360spider,semrushBot"
+    user_agent_filters: "360spider,semrushbot,coccobot,dotbot"
     sumo_banner_string: "firefox-account,firefox-monitor,account-data,firefox-private-network"
+    zendesk_api_token: SECRET
+    zendesk_user_email: SECRET
+    zendesk_subdomain: SECRET
+    zendesk_ticket_form_id: 360000417171
+    zendesk_product_field_id: 360047198211
+    zendesk_category_field_id: 360047206172
+    zendesk_os_field_id: 360018604871
