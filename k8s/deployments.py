@@ -89,8 +89,8 @@ def delete_service(ctx, apply=False, infra_apply=False):
     Delete an existing SUMO service ELB
     """
     if infra_apply:
-        deployment = "deploy/{}".format(ctx.config["kubernetes"]["service_name"])
-        k8s_delete_resource(ctx, deployment, apply)
+        t = render_template(config=ctx.config, template_name=SUMO_SERVICE_TEMPLATE)
+        k8s_apply(ctx, t, apply)
     else:
         print("Infra tasks require an additional --infra-apply confirmation")
 
