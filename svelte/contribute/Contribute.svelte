@@ -2,6 +2,7 @@
     import { Router, Route } from "svelte-navigator";
     import Picker from "./Picker";
 
+    export let url = "";
     export let locale = "";
 </script>
 
@@ -12,7 +13,7 @@
 <div class="sumo-page-section--inner">
     <h1>{gettext("Contribute Page Scaffolding")}</h1>
 
-    <Router basepath="/{locale}/contribute">
+    <Router basepath="/{locale}/contribute" {url}>
         <Route path="forum">
             <p>{gettext("This is the forum contribution area")}</p>
             <Picker />

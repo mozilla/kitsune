@@ -46,3 +46,12 @@ div {
    This is because neither `svelte-preprocess` nor the Webpack `sass-loader` are able to chunk split `@import`s and `@use`s,
    or even de-duplicate their use across Svelte components (due to the scoped nature of the CSS within).
    Not doing this will lead to unnecessarily duplicated code.
+
+## Pre-rendering
+
+To pre-render Svelte components a two-step process is required.
+
+First the components must pass through the Svelte compiler,
+with the appropriate flags enabled to compile components for server-side rendering (SSR).
+Then those compiled components must be rendered into static HTML.
+We do both these steps in Webpack using the `webpack.pre-render.js` config file.

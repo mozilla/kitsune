@@ -1,4 +1,6 @@
+from django.http import Http404
 from django.shortcuts import render
+from jinja2 import TemplateNotFound
 
 from kitsune.products.models import Product
 from kitsune.sumo.decorators import ssl_required
@@ -44,4 +46,11 @@ def integrity_check(request):
 
 
 def contribute(request):
-    return render(request, "landings/contribute.html")
+    try:
+        return render(
+            request,
+            "landings/contribute.html",
+            {"path": request.path.removesuffix("/").lower()},
+        )
+    except TemplateNotFound:
+        raise Http404
