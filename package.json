@@ -25,8 +25,11 @@
     "start": "concurrently --raw --kill-others \"npm run webpack:watch\" \"npm run browser-sync\"",
     "lint:webpack": "npx eslint --no-eslintrc -c webpack/eslintrc.js kitsune",
     "webpack:build": "npx webpack build --config webpack.dev.js",
+    "webpack:build:pre-render": "npx webpack build --config webpack.pre-render.js",
     "webpack:build:prod": "npx webpack build --config webpack.prod.js",
-    "webpack:watch": "npx webpack watch --config webpack.dev.js",
+    "webpack:watch": "npx concurrently npm:webpack:watch:*",
+    "webpack:watch:dev": "npx webpack watch --config webpack.dev.js",
+    "webpack:watch:pre-render": "npx webpack watch --config webpack.pre-render.js",
     "webpack:test": "npx webpack build --config webpack.test.js && npx mocha --require ./webpack/mocha-require dist/tests.js"
   },
   "license": "MPL-2.0",
