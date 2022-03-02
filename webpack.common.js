@@ -49,6 +49,9 @@ module.exports = {
           options: {
             emitCss: true,
             preprocess: sveltePreprocess(),
+            compilerOptions: {
+              hydratable: true,
+            }
           },
         },
       },
