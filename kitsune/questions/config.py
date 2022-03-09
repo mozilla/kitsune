@@ -816,6 +816,20 @@ products = OrderedDict(
                 "categories": OrderedDict([]),
             },
         ),
+        (
+            "mdn",
+            {
+                "name": _lazy("MDN Plus"),
+                "subtitle": _lazy(
+                    "MDN is a documentation repository and learning resource for web developers. "
+                    "MDN Plus provides a custom experience for MDN supporters."
+                ),
+                "extra_fields": [],
+                "tags": ["mdn"],
+                "product": "mdn",
+                "categories": OrderedDict([]),
+            },
+        ),
     ]
 )
 
