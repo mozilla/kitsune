@@ -848,6 +848,7 @@ AWS_S3_HOST = config("AWS_S3_HOST", default="s3-us-west-2.amazonaws.com")
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=2592000",
 }
+AWS_DEFAULT_ACL = config("AWS_DEFAULT_ACL", default=None)
 
 # Auth and permissions related constants
 LOGIN_URL = "/users/login"
