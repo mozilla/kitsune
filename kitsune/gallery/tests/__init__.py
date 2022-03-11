@@ -5,7 +5,7 @@ from kitsune.sumo.tests import FuzzyUnicode
 from kitsune.users.tests import UserFactory
 
 
-class ImageFactory(factory.DjangoModelFactory):
+class ImageFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Image
 
@@ -15,7 +15,7 @@ class ImageFactory(factory.DjangoModelFactory):
     title = FuzzyUnicode()
 
 
-class VideoFactory(factory.DjangoModelFactory):
+class VideoFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Video
 

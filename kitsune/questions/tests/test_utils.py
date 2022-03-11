@@ -1,4 +1,3 @@
-from nose.tools import eq_
 from parameterized import parameterized
 
 from kitsune.questions.models import Answer, Question
@@ -18,36 +17,36 @@ class ContributionCountTestCase(TestCase):
     def test_num_questions(self):
         """Answers are counted correctly on a user."""
         u = UserFactory()
-        eq_(num_questions(u), 0)
+        self.assertEqual(num_questions(u), 0)
 
         q1 = QuestionFactory(creator=u)
-        eq_(num_questions(u), 1)
+        self.assertEqual(num_questions(u), 1)
 
         q2 = QuestionFactory(creator=u)
-        eq_(num_questions(u), 2)
+        self.assertEqual(num_questions(u), 2)
 
         q1.delete()
-        eq_(num_questions(u), 1)
+        self.assertEqual(num_questions(u), 1)
 
         q2.delete()
-        eq_(num_questions(u), 0)
+        self.assertEqual(num_questions(u), 0)
 
     def test_num_answers(self):
         u = UserFactory()
         q = QuestionFactory()
-        eq_(num_answers(u), 0)
+        self.assertEqual(num_answers(u), 0)
 
         a1 = AnswerFactory(creator=u, question=q)
-        eq_(num_answers(u), 1)
+        self.assertEqual(num_answers(u), 1)
 
         a2 = AnswerFactory(creator=u, question=q)
-        eq_(num_answers(u), 2)
+        self.assertEqual(num_answers(u), 2)
 
         a1.delete()
-        eq_(num_answers(u), 1)
+        self.assertEqual(num_answers(u), 1)
 
         a2.delete()
-        eq_(num_answers(u), 0)
+        self.assertEqual(num_answers(u), 0)
 
     def test_num_solutions(self):
         u = UserFactory()
@@ -55,22 +54,22 @@ class ContributionCountTestCase(TestCase):
         q2 = QuestionFactory()
         a1 = AnswerFactory(creator=u, question=q1)
         a2 = AnswerFactory(creator=u, question=q2)
-        eq_(num_solutions(u), 0)
+        self.assertEqual(num_solutions(u), 0)
 
         q1.solution = a1
         q1.save()
-        eq_(num_solutions(u), 1)
+        self.assertEqual(num_solutions(u), 1)
 
         q2.solution = a2
         q2.save()
-        eq_(num_solutions(u), 2)
+        self.assertEqual(num_solutions(u), 2)
 
         q1.solution = None
         q1.save()
-        eq_(num_solutions(u), 1)
+        self.assertEqual(num_solutions(u), 1)
 
         a2.delete()
-        eq_(num_solutions(u), 0)
+        self.assertEqual(num_solutions(u), 0)
 
 
 class FlagUserContentAsSpamTestCase(TestCase):
@@ -84,17 +83,17 @@ class FlagUserContentAsSpamTestCase(TestCase):
         AnswerFactory(creator=u)
 
         # Verify they are not marked as spam yet.
-        eq_(2, Question.objects.filter(is_spam=False, creator=u).count())
-        eq_(0, Question.objects.filter(is_spam=True, creator=u).count())
-        eq_(3, Answer.objects.filter(is_spam=False, creator=u).count())
-        eq_(0, Answer.objects.filter(is_spam=True, creator=u).count())
+        self.assertEqual(2, Question.objects.filter(is_spam=False, creator=u).count())
+        self.assertEqual(0, Question.objects.filter(is_spam=True, creator=u).count())
+        self.assertEqual(3, Answer.objects.filter(is_spam=False, creator=u).count())
+        self.assertEqual(0, Answer.objects.filter(is_spam=True, creator=u).count())
 
         # Flag content as spam and verify it is updated.
         mark_content_as_spam(u, UserFactory())
-        eq_(0, Question.objects.filter(is_spam=False, creator=u).count())
-        eq_(2, Question.objects.filter(is_spam=True, creator=u).count())
-        eq_(0, Answer.objects.filter(is_spam=False, creator=u).count())
-        eq_(3, Answer.objects.filter(is_spam=True, creator=u).count())
+        self.assertEqual(0, Question.objects.filter(is_spam=False, creator=u).count())
+        self.assertEqual(2, Question.objects.filter(is_spam=True, creator=u).count())
+        self.assertEqual(0, Answer.objects.filter(is_spam=False, creator=u).count())
+        self.assertEqual(3, Answer.objects.filter(is_spam=True, creator=u).count())
 
 
 class GetMobileProductFromUATests(TestCase):
@@ -123,4 +122,4 @@ class GetMobileProductFromUATests(TestCase):
         ]
     )
     def test_user_agents(self, ua, expected):
-        eq_(expected, get_mobile_product_from_ua(ua))
+        self.assertEqual(expected, get_mobile_product_from_ua(ua))

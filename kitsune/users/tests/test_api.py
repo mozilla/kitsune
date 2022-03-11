@@ -1,8 +1,7 @@
 import json
 from datetime import datetime, timedelta
-
 from unittest import mock
-from nose.tools import eq_
+
 from rest_framework.test import APIClient
 
 from kitsune.questions.tests import (
@@ -32,29 +31,29 @@ class UsernamesTests(TestCase):
 
     def test_no_query(self):
         res = self.client.get(self.url)
-        eq_(200, res.status_code)
-        eq_(b"[]", res.content)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(b"[]", res.content)
 
     def test_query_old(self):
         res = self.client.get(urlparams(self.url, term="a"))
-        eq_(200, res.status_code)
+        self.assertEqual(200, res.status_code)
         data = json.loads(res.content)
-        eq_(0, len(data))
+        self.assertEqual(0, len(data))
 
     def test_query_current(self):
         res = self.client.get(urlparams(self.url, term=self.u.username[0]))
-        eq_(200, res.status_code)
+        self.assertEqual(200, res.status_code)
         data = json.loads(res.content)
-        eq_(1, len(data))
+        self.assertEqual(1, len(data))
 
     def test_post(self):
         res = self.client.post(self.url)
-        eq_(405, res.status_code)
+        self.assertEqual(405, res.status_code)
 
     def test_logged_out(self):
         self.client.logout()
         res = self.client.get(self.url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
-        eq_(403, res.status_code)
+        self.assertEqual(403, res.status_code)
 
 
 class TestUserSerializer(TestCase):
@@ -81,7 +80,7 @@ class TestUserSerializer(TestCase):
         AnswerVoteFactory(answer=a1, helpful=False)
 
         serializer = api.ProfileSerializer(instance=p)
-        eq_(serializer.data["helpfulness"], 3)
+        self.assertEqual(serializer.data["helpfulness"], 3)
 
     def test_counts(self):
         u = UserFactory()
@@ -92,9 +91,9 @@ class TestUserSerializer(TestCase):
         q.save()
 
         serializer = api.ProfileSerializer(instance=p)
-        eq_(serializer.data["question_count"], 1)
-        eq_(serializer.data["answer_count"], 2)
-        eq_(serializer.data["solution_count"], 1)
+        self.assertEqual(serializer.data["question_count"], 1)
+        self.assertEqual(serializer.data["answer_count"], 2)
+        self.assertEqual(serializer.data["solution_count"], 1)
 
     def test_last_answer_date(self):
         p = ProfileFactory()
@@ -102,7 +101,7 @@ class TestUserSerializer(TestCase):
         AnswerFactory(creator=u)
 
         serializer = api.ProfileSerializer(instance=p)
-        eq_(serializer.data["last_answer_date"], u.answers.last().created)
+        self.assertEqual(serializer.data["last_answer_date"], u.answers.last().created)
 
 
 class TestUserView(TestCase):
@@ -113,15 +112,15 @@ class TestUserView(TestCase):
         u = UserFactory(username="something.something")
         url = reverse("user-detail", args=[u.username])
         res = self.client.get(url)
-        eq_(res.status_code, 200)
-        eq_(res.data["username"], u.username)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["username"], u.username)
 
     def test_cant_delete(self):
         p = ProfileFactory()
         self.client.force_authenticate(user=p.user)
         url = reverse("user-detail", args=[p.user.username])
         res = self.client.delete(url)
-        eq_(res.status_code, 405)
+        self.assertEqual(res.status_code, 405)
 
     def test_weekly_solutions(self):
         eight_days_ago = datetime.now() - timedelta(days=8)
@@ -130,8 +129,8 @@ class TestUserView(TestCase):
         SolutionAnswerFactory(created=eight_days_ago)
         AnswerFactory()
         res = self.client.get(reverse("user-weekly-solutions"))
-        eq_(res.status_code, 200)
-        eq_(len(res.data), 0)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(len(res.data), 0)
 
         # Check that the data about the contributors is showing currectly
         user_info_list = []  # Info list with username and their number of solutions
@@ -143,22 +142,22 @@ class TestUserView(TestCase):
             top_answer_number -= 1
 
         res = self.client.get(reverse("user-weekly-solutions"))
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
         # Check only 10 users information is present there
-        eq_(len(res.data), 10)
+        self.assertEqual(len(res.data), 10)
         # Create a list of the data with only the ``username`` and ``weekly_solutions``
         data_list = [(data["username"], data["weekly_solutions"]) for data in res.data]
 
         # Check only top 10 contributor information is in the API
         top_ten = user_info_list[:10]
-        eq_(sorted(top_ten), sorted(data_list))
+        self.assertEqual(sorted(top_ten), sorted(data_list))
 
     def test_email_visible_when_signed_in(self):
         p = ProfileFactory()
         url = reverse("user-detail", args=[p.user.username])
         self.client.force_authenticate(user=p.user)
         res = self.client.get(url)
-        eq_(res.data["email"], p.user.email)
+        self.assertEqual(res.data["email"], p.user.email)
 
     def test_email_not_visible_when_signed_out(self):
         p = ProfileFactory()
@@ -172,7 +171,7 @@ class TestUserView(TestCase):
         url = reverse("user-detail", args=[p.user.username])
         self.client.force_authenticate(user=p.user)
         res = self.client.get(url)
-        eq_(res.data["settings"], [{"name": "foo", "value": "bar"}])
+        self.assertEqual(res.data["settings"], [{"name": "foo", "value": "bar"}])
 
     def test_settings_not_visible_when_signed_out(self):
         p = ProfileFactory()

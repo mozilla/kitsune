@@ -9,7 +9,7 @@ from kitsune.products.models import Product, Topic, Version
 from kitsune.sumo.tests import FuzzyUnicode
 
 
-class ProductFactory(factory.DjangoModelFactory):
+class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Product
 
@@ -25,7 +25,7 @@ class ProductFactory(factory.DjangoModelFactory):
     sprite_height = 100
 
 
-class TopicFactory(factory.DjangoModelFactory):
+class TopicFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Topic
 
@@ -39,7 +39,7 @@ class TopicFactory(factory.DjangoModelFactory):
     in_aaq = factory.fuzzy.FuzzyChoice([True, False])
 
 
-class VersionFactory(factory.DjangoModelFactory):
+class VersionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Version
 

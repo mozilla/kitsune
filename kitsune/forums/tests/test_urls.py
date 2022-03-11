@@ -1,11 +1,9 @@
 from django.contrib.contenttypes.models import ContentType
 
-from nose.tools import eq_
-
 from kitsune.access.tests import PermissionFactory
-from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
+from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.tests import get, post
-from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class BelongsTestCase(ForumTestCase):
@@ -19,7 +17,7 @@ class BelongsTestCase(ForumTestCase):
         t = ThreadFactory()  # Thread belongs to a different forum
 
         r = get(self.client, "forums.posts", args=[f.slug, t.id])
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         u = r.redirect_chain[0][0]
         assert u.endswith(t.get_absolute_url())
 
@@ -31,7 +29,7 @@ class BelongsTestCase(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         r = post(self.client, "forums.reply", {}, args=[f.slug, t.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
     def test_locked_thread_belongs_to_forum(self):
         """Lock action - thread belongs to forum."""
@@ -55,7 +53,7 @@ class BelongsTestCase(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         r = post(self.client, "forums.lock_thread", {}, args=[f.slug, t.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
     def test_sticky_thread_belongs_to_forum(self):
         """Sticky action - thread belongs to forum."""
@@ -79,7 +77,7 @@ class BelongsTestCase(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         r = post(self.client, "forums.sticky_thread", {}, args=[f.slug, t.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
     def test_edit_thread_belongs_to_forum(self):
         """Edit thread action - thread belongs to forum."""
@@ -89,7 +87,7 @@ class BelongsTestCase(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         r = get(self.client, "forums.edit_thread", args=[f.slug, t.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
     def test_delete_thread_belongs_to_forum(self):
         """Delete thread action - thread belongs to forum."""
@@ -113,7 +111,7 @@ class BelongsTestCase(ForumTestCase):
 
         self.client.login(username=u.username, password="testpass")
         r = get(self.client, "forums.delete_thread", args=[f.slug, t.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
     def test_edit_post_belongs_to_thread_and_forum(self):
         # Edit post action - post belongs to thread and thread belongs
@@ -128,11 +126,11 @@ class BelongsTestCase(ForumTestCase):
 
         # Post isn't in the passed forum:
         r = get(self.client, "forums.edit_post", args=[f.slug, p.thread.id, p.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
         # Post isn't in the passed thread:
         r = get(self.client, "forums.edit_post", args=[p.thread.forum.slug, t.id, p.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
     def test_delete_post_belongs_to_thread_and_forum(self):
         # Delete post action - post belongs to thread and thread
@@ -161,8 +159,8 @@ class BelongsTestCase(ForumTestCase):
 
         # Post isn't in the passed forum:
         r = get(self.client, "forums.delete_post", args=[f.slug, p.thread.id, p.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)
 
         # Post isn't in the passed thread:
         r = get(self.client, "forums.delete_post", args=[p.thread.forum.slug, t.id, p.id])
-        eq_(404, r.status_code)
+        self.assertEqual(404, r.status_code)

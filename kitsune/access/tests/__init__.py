@@ -1,9 +1,7 @@
-from django.contrib.contenttypes.models import ContentType
-from django.test.client import RequestFactory
-
 import factory
 from authority.models import Permission
-from nose.tools import eq_
+from django.contrib.contenttypes.models import ContentType
+from django.test.client import RequestFactory
 
 from kitsune.access import utils as access
 from kitsune.sumo.tests import TestCase
@@ -11,7 +9,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 
 
-class PermissionFactory(factory.DjangoModelFactory):
+class PermissionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Permission
 
@@ -58,9 +56,9 @@ class AccessTests(TestCase):
         other_t = ThreadFactory()
         perm = "forums_forum.thread_edit_forum"
         allowed = access.has_perm_or_owns(me, perm, my_t, my_t.forum)
-        eq_(allowed, True)
+        self.assertEqual(allowed, True)
         allowed = access.has_perm_or_owns(me, perm, other_t, other_t.forum)
-        eq_(allowed, False)
+        self.assertEqual(allowed, False)
 
     def test_has_perm_per_object(self):
         """Assert has_perm checks per-object permissions correctly."""

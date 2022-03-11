@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
-from nose.tools import eq_
+
 from pyquery import PyQuery as pq
 
-from kitsune.forums.feeds import ThreadsFeed, PostsFeed
-from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
+from kitsune.forums.feeds import PostsFeed, ThreadsFeed
+from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.tests import get
-
 
 YESTERDAY = datetime.now() - timedelta(days=1)
 
@@ -21,7 +20,7 @@ class ForumTestFeedSorting(ForumTestCase):
         ThreadFactory(forum=f, created=YESTERDAY)
         t2 = ThreadFactory(forum=f)
 
-        eq_(t2.id, ThreadsFeed().items(f)[0].id)
+        self.assertEqual(t2.id, ThreadsFeed().items(f)[0].id)
 
     def test_posts_sort(self):
         """Ensure that posts are being sorted properly by date/time."""
@@ -31,7 +30,7 @@ class ForumTestFeedSorting(ForumTestCase):
         p = PostFactory(thread=t, created=now)
 
         # The newest post should be the first one listed.
-        eq_(p.id, PostsFeed().items(t)[0].id)
+        self.assertEqual(p.id, PostsFeed().items(t)[0].id)
 
     def test_multi_feed_titling(self):
         """Ensure that titles are being applied properly to feeds."""
@@ -41,6 +40,6 @@ class ForumTestFeedSorting(ForumTestCase):
 
         response = get(self.client, "forums.threads", args=[forum.slug])
         doc = pq(response.content)
-        eq_(
+        self.assertEqual(
             ThreadsFeed().title(forum), doc('link[type="application/atom+xml"]')[0].attrib["title"]
         )

@@ -6,7 +6,7 @@ from taggit.models import Tag
 from kitsune.sumo.tests import FuzzyUnicode
 
 
-class TagFactory(factory.DjangoModelFactory):
+class TagFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Tag
 

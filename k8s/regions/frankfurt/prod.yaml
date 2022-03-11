@@ -86,7 +86,6 @@ app:
     email_port: 25
     email_use_tls: True
     enable_admin: False
-    enable_whitenoise: True
     enforce_host: "support.mozilla.org,prod-frankfurt.sumo.mozit.cloud"
     engage_robots: True
     es_index_prefix: "sumo_prod"

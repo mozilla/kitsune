@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.management import call_command
-from nose.tools import eq_
 
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
@@ -51,4 +50,4 @@ class TestEmployeeReportCron(TestCase):
         assert "Number of questions answered: 2" in email.body
         assert "{username}: 1".format(username=tracked_user.username) in email.body
 
-        eq_([report_user.email], email.to)
+        self.assertEqual([report_user.email], email.to)

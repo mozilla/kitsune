@@ -19,7 +19,7 @@ docker rm -f "${CONTAINER_NAME}"
 
 # separate the hashed files into another directory
 mkdir "${TMP_DIR_HASHED}"
-find ${TMP_DIR} -maxdepth 1 -type f -regextype sed -regex ".*\.[0-9a-f]\{20\}\..*" -exec mv -t ${TMP_DIR_HASHED} {} +
+find ${TMP_DIR} -maxdepth 1 -type f -regextype sed -regex ".*\.[0-9a-f]\{16\}\..*" -exec mv -t ${TMP_DIR_HASHED} {} +
 
 for BUCKET in stage prod; do
     # hashed filenames

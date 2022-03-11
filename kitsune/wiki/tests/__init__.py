@@ -1,25 +1,23 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+import factory
 from django.conf import settings
 from django.template.defaultfilters import slugify
 
-import factory
-from nose.tools import eq_
-
 from kitsune.products.models import Product
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.sumo.tests import LocalizingClient, TestCase, FuzzyUnicode
+from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.models import Document, DraftRevision, Revision, Locale, HelpfulVote
 from kitsune.wiki.config import (
     CATEGORIES,
-    SIGNIFICANCES,
-    TEMPLATES_CATEGORY,
-    TEMPLATE_TITLE_PREFIX,
     REDIRECT_CONTENT,
     REDIRECT_TITLE,
+    SIGNIFICANCES,
+    TEMPLATE_TITLE_PREFIX,
+    TEMPLATES_CATEGORY,
 )
+from kitsune.wiki.models import Document, DraftRevision, HelpfulVote, Locale, Revision
 
 
 class TestCaseBase(TestCase):
@@ -28,7 +26,7 @@ class TestCaseBase(TestCase):
     client_class = LocalizingClient
 
 
-class DocumentFactory(factory.DjangoModelFactory):
+class DocumentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Document
 
@@ -72,7 +70,7 @@ class TemplateDocumentFactory(DocumentFactory):
     title = FuzzyUnicode(prefix=TEMPLATE_TITLE_PREFIX + ":")
 
 
-class RevisionFactory(factory.DjangoModelFactory):
+class RevisionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Revision
 
@@ -112,10 +110,11 @@ class TranslatedRevisionFactory(ApprovedRevisionFactory):
 
 
 def test_translated_revision_factory():
+    tc = TestCase()
     rev = TranslatedRevisionFactory()
     assert rev.document.locale != "en-US"
-    eq_(rev.based_on.document, rev.document.parent)
-    eq_(rev.document.parent.locale, "en-US")
+    tc.assertEqual(rev.based_on.document, rev.document.parent)
+    tc.assertEqual(rev.document.parent.locale, "en-US")
 
 
 class RedirectRevisionFactory(RevisionFactory):
@@ -130,7 +129,7 @@ class RedirectRevisionFactory(RevisionFactory):
     is_approved = True
 
 
-class DraftRevisionFactory(factory.DjangoModelFactory):
+class DraftRevisionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = DraftRevision
 
@@ -151,14 +150,14 @@ class DraftRevisionFactory(factory.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda o: slugify(o.title))
 
 
-class LocaleFactory(factory.DjangoModelFactory):
+class LocaleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Locale
 
     locale = "en-US"
 
 
-class HelpfulVoteFactory(factory.DjangoModelFactory):
+class HelpfulVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = HelpfulVote
 

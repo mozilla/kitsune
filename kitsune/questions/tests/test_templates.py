@@ -8,8 +8,6 @@ from unittest import mock
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.cache import cache
-from nose.tools import eq_
 from pyquery import PyQuery as pq
 from taggit.models import Tag
 from tidings.models import Watch
@@ -17,15 +15,8 @@ from tidings.models import Watch
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Answer, Question, QuestionLocale, VoteMetadata
-from kitsune.questions.tests import (
-    AnswerFactory,
-    AnswerVoteFactory,
-    QuestionFactory,
-    TestCaseBase,
-    tags_eq,
-)
+from kitsune.questions.tests import AnswerFactory, QuestionFactory, TestCaseBase, tags_eq
 from kitsune.questions.views import NO_TAG, UNAPPROVED_TAG
-from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import (
     LocalizingClient,
@@ -39,7 +30,6 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -63,14 +53,14 @@ class AnswersTemplateTestCase(TestCaseBase):
             args=[self.question.id],
         )
 
-        eq_(1, len(response.redirect_chain))
-        eq_(num_answers + 1, self.question.answers.count())
+        self.assertEqual(1, len(response.redirect_chain))
+        self.assertEqual(num_answers + 1, self.question.answers.count())
 
         new_answer = self.question.answers.order_by("-id")[0]
-        eq_(content, new_answer.content)
+        self.assertEqual(content, new_answer.content)
         # Check canonical url
         doc = pq(response.content)
-        eq_(
+        self.assertEqual(
             "%s/en-US/questions/%s" % (settings.CANONICAL_URL, self.question.id),
             doc('link[rel="canonical"]')[0].attrib["href"],
         )
@@ -93,15 +83,15 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content},
             args=[self.question.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         new_answer = self.question.answers.order_by("-id")[0]
-        eq_(1, new_answer.images.count())
+        self.assertEqual(1, new_answer.images.count())
         image = new_answer.images.all()[0]
         name = "098f6b.png"
         message = 'File name "%s" does not contain "%s"' % (image.file.name, name)
         assert name in image.file.name, message
-        eq_(self.user.username, image.creator.username)
+        self.assertEqual(self.user.username, image.creator.username)
 
         # Clean up
         ImageAttachment.objects.all().delete()
@@ -110,34 +100,34 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Test accepting a solution and undoing."""
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc("div.solution")))
+        self.assertEqual(0, len(doc("div.solution")))
 
         ans = self.question.answers.all()[0]
         # Sign in as asker, solve and verify
         self.client.login(username=self.question.creator.username, password="testpass")
         response = post(self.client, "questions.solve", args=[self.question.id, ans.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("div.solution")))
+        self.assertEqual(1, len(doc("div.solution")))
         div = doc("h3.is-solution")[0].getparent().getparent()
-        eq_("answer-%s" % ans.id, div.attrib["id"])
+        self.assertEqual("answer-%s" % ans.id, div.attrib["id"])
         q = Question.objects.get(pk=self.question.id)
-        eq_(q.solution, ans)
-        eq_(q.solver, self.question.creator)
+        self.assertEqual(q.solution, ans)
+        self.assertEqual(q.solver, self.question.creator)
 
         # Try to solve again with different answer. It shouldn't blow up or
         # change the solution.
         AnswerFactory(question=q)
         response = post(self.client, "questions.solve", args=[self.question.id, ans.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         q = Question.objects.get(pk=self.question.id)
-        eq_(q.solution, ans)
+        self.assertEqual(q.solution, ans)
 
         # Unsolve and verify
         response = post(self.client, "questions.unsolve", args=[self.question.id, ans.id])
         q = Question.objects.get(pk=self.question.id)
-        eq_(q.solution, None)
-        eq_(q.solver, None)
+        self.assertEqual(q.solution, None)
+        self.assertEqual(q.solver, None)
 
     def test_only_owner_or_admin_can_solve_unsolve(self):
         """Make sure non-owner/non-admin can't solve/unsolve."""
@@ -145,7 +135,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=self.question.creator.username, password="testpass")
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('input[name="solution"]')))
+        self.assertEqual(1, len(doc('input[name="solution"]')))
         self.client.logout()
 
         # Try as a nobody
@@ -153,15 +143,15 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc('input[name="solution"]')))
+        self.assertEqual(0, len(doc('input[name="solution"]')))
 
         ans = self.question.answers.all()[0]
         # Try to solve
         response = post(self.client, "questions.solve", args=[self.question.id, ans.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
         # Try to unsolve
         response = post(self.client, "questions.unsolve", args=[self.question.id, ans.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_solve_unsolve_with_perm(self):
         """Test marking solve/unsolve with 'change_solution' permission."""
@@ -172,30 +162,30 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Solve and verify
         post(self.client, "questions.solve", args=[self.question.id, ans.id])
         q = Question.objects.get(pk=self.question.id)
-        eq_(q.solution, ans)
-        eq_(q.solver, u)
+        self.assertEqual(q.solution, ans)
+        self.assertEqual(q.solver, u)
         # Unsolve and verify
         post(self.client, "questions.unsolve", args=[self.question.id, ans.id])
         q = Question.objects.get(pk=self.question.id)
-        eq_(q.solution, None)
-        eq_(q.solver, None)
+        self.assertEqual(q.solution, None)
+        self.assertEqual(q.solver, None)
 
     def test_needs_info_checkbox(self):
         """Test that needs info checkbox is correctly shown"""
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('input[name="needsinfo"]')))
+        self.assertEqual(1, len(doc('input[name="needsinfo"]')))
 
         self.question.set_needs_info()
 
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('input[name="clear_needsinfo"]')))
+        self.assertEqual(1, len(doc('input[name="clear_needsinfo"]')))
 
     def test_question_vote_GET(self):
         """Attempting to vote with HTTP GET returns a 405."""
         response = get(self.client, "questions.vote", args=[self.question.id])
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def common_vote(self, me_too_count=1):
         """Helper method for question vote tests."""
@@ -203,7 +193,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
         assert "0" in doc(".have-problem")[0].text
-        eq_(me_too_count, len(doc("div.me-too form")))
+        self.assertEqual(me_too_count, len(doc("div.me-too form")))
 
         # Vote
         ua = "Mozilla/5.0 (DjangoTestClient)"
@@ -215,11 +205,11 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
         assert "1" in doc(".have-problem")[0].text
-        eq_(0, len(doc("div.me-too form")))
+        self.assertEqual(0, len(doc("div.me-too form")))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
-        eq_("ua", vote_meta.key)
-        eq_(ua, vote_meta.value)
+        self.assertEqual("ua", vote_meta.key)
+        self.assertEqual(ua, vote_meta.value)
 
         # Voting again (same user) should not increment vote count
         post(self.client, "questions.vote", args=[self.question.id])
@@ -245,7 +235,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Check that there are no votes and vote form renders
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc('form.helpful button[name="helpful"]')))
+        self.assertEqual(1, len(doc('form.helpful button[name="helpful"]')))
 
         # Vote
         ua = "Mozilla/5.0 (DjangoTestClient)"
@@ -259,12 +249,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
 
-        eq_(1, len(doc("#answer-%s span.is-helpful" % self.answer.id)))
-        eq_(0, len(doc('form.helpful input[name="helpful"]')))
+        self.assertEqual(1, len(doc("#answer-%s span.is-helpful" % self.answer.id)))
+        self.assertEqual(0, len(doc('form.helpful input[name="helpful"]')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
-        eq_("ua", vote_meta.key)
-        eq_(ua, vote_meta.value)
+        self.assertEqual("ua", vote_meta.key)
+        self.assertEqual(ua, vote_meta.value)
 
     def test_answer_authenticated_vote(self):
         """Authenticated user answer vote."""
@@ -292,7 +282,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         Answer.objects.create(question=q, creator=q.creator, content="test")
         response = get(self.client, "questions.details", args=[q.id])
         doc = pq(response.content)
-        eq_(2, len(doc('form.helpful button[name="helpful"]')))
+        self.assertEqual(2, len(doc('form.helpful button[name="helpful"]')))
 
     def test_asker_can_vote(self):
         """The asker can vote Not/Helpful."""
@@ -307,24 +297,24 @@ class AnswersTemplateTestCase(TestCaseBase):
         Answer.objects.create(question=q, creator=q.creator, content="test")
         response = get(self.client, "questions.details", args=[q.id])
         doc = pq(response.content)
-        eq_(2, len(doc('form.solution input[name="solution"]')))
+        self.assertEqual(2, len(doc('form.solution input[name="solution"]')))
 
     def test_delete_question_without_permissions(self):
         """Deleting a question without permissions is a 403."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "questions.delete", args=[self.question.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
         response = post(self.client, "questions.delete", args=[self.question.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_delete_question_logged_out(self):
         """Deleting a question while logged out redirects to login."""
         self.client.logout()
         response = get(self.client, "questions.delete", args=[self.question.id])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/questions/%s/delete"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
             redirect[0],
@@ -332,8 +322,8 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         response = post(self.client, "questions.delete", args=[self.question.id])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/questions/%s/delete"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
             redirect[0],
@@ -345,10 +335,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         add_permission(u, Question, "delete_question")
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "questions.delete", args=[self.question.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         response = post(self.client, "questions.delete", args=[self.question.id])
-        eq_(0, Question.objects.filter(pk=self.question.id).count())
+        self.assertEqual(0, Question.objects.filter(pk=self.question.id).count())
 
     def test_delete_answer_without_permissions(self):
         """Deleting an answer without permissions sends 403."""
@@ -356,10 +346,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
         ans = self.question.last_answer
         response = get(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         response = post(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_delete_answer_logged_out(self):
         """Deleting an answer while logged out redirects to login."""
@@ -368,8 +358,8 @@ class AnswersTemplateTestCase(TestCaseBase):
         ans = q.last_answer
         response = get(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/questions/%s/delete/%s"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
             redirect[0],
@@ -377,8 +367,8 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         response = post(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/questions/%s/delete/%s"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
             redirect[0],
@@ -391,10 +381,10 @@ class AnswersTemplateTestCase(TestCaseBase):
         add_permission(u, Answer, "delete_answer")
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         response = post(self.client, "questions.delete_answer", args=[self.question.id, ans.id])
-        eq_(0, Answer.objects.filter(pk=self.question.id).count())
+        self.assertEqual(0, Answer.objects.filter(pk=self.question.id).count())
 
     def test_edit_answer_without_permission(self):
         """Editing an answer without permissions returns a 403.
@@ -402,11 +392,11 @@ class AnswersTemplateTestCase(TestCaseBase):
         The edit link shouldn't show up on the Answers page."""
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc("ol.answers li.edit")))
+        self.assertEqual(0, len(doc("ol.answers li.edit")))
 
         answer = self.question.last_answer
         response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         content = "New content for answer"
         response = post(
@@ -415,7 +405,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content},
             args=[self.question.id, answer.id],
         )
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_edit_answer_with_permissions(self):
         """Editing an answer with permissions.
@@ -427,11 +417,11 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc("li.edit")))
+        self.assertEqual(1, len(doc("li.edit")))
 
         answer = self.question.last_answer
         response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         content = "New content for answer"
         response = post(
@@ -440,7 +430,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content},
             args=[self.question.id, answer.id],
         )
-        eq_(content, Answer.objects.get(pk=answer.id).content)
+        self.assertEqual(content, Answer.objects.get(pk=answer.id).content)
 
     def test_answer_creator_can_edit(self):
         """The creator of an answer can edit his/her answer."""
@@ -450,7 +440,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Initially there should be no edit links
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc("ul.mzp-c-menu-list-list li.edit")))
+        self.assertEqual(0, len(doc("ul.mzp-c-menu-list-list li.edit")))
 
         # Add an answer and verify the edit link shows up
         content = "lorem ipsum dolor sit amet"
@@ -461,9 +451,9 @@ class AnswersTemplateTestCase(TestCaseBase):
             args=[self.question.id],
         )
         doc = pq(response.content)
-        eq_(1, len(doc("li.edit")))
+        self.assertEqual(1, len(doc("li.edit")))
         new_answer = self.question.answers.order_by("-id")[0]
-        eq_(1, len(doc("#answer-%s li.edit" % new_answer.id)))
+        self.assertEqual(1, len(doc("#answer-%s li.edit" % new_answer.id)))
 
         # Make sure it can be edited
         content = "New content for answer"
@@ -473,7 +463,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content},
             args=[self.question.id, new_answer.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         # Now lock it and make sure it can't be edited
         self.question.is_locked = True
@@ -484,7 +474,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content},
             args=[self.question.id, new_answer.id],
         )
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_lock_question_without_permissions(self):
         """Trying to lock a question without permission is a 403."""
@@ -492,7 +482,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
         q = self.question
         response = post(self.client, "questions.lock", args=[q.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_lock_question_logged_out(self):
         """Trying to lock a question while logged out redirects to login."""
@@ -500,8 +490,8 @@ class AnswersTemplateTestCase(TestCaseBase):
         q = self.question
         response = post(self.client, "questions.lock", args=[q.id])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/questions/%s/lock"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id),
             redirect[0],
@@ -513,7 +503,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         add_permission(u, Question, "lock_question")
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "questions.lock", args=[self.question.id])
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_lock_question_with_permissions_POST(self):
         """Locking questions with permissions via HTTP POST."""
@@ -522,14 +512,14 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
         q = self.question
         response = post(self.client, "questions.lock", args=[q.id])
-        eq_(200, response.status_code)
-        eq_(True, Question.objects.get(pk=q.pk).is_locked)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(True, Question.objects.get(pk=q.pk).is_locked)
         assert b"This thread was closed." in response.content
 
         # now unlock it
         response = post(self.client, "questions.lock", args=[q.id])
-        eq_(200, response.status_code)
-        eq_(False, Question.objects.get(pk=q.pk).is_locked)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(False, Question.objects.get(pk=q.pk).is_locked)
 
     def test_reply_to_locked_question(self):
         """Locked questions can't be answered."""
@@ -541,12 +531,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         q.is_locked = True
         q.save()
         response = post(self.client, "questions.reply", {"content": "just testing"}, args=[q.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         # With add_answer permission, it should work.
         add_permission(u, Answer, "add_answer")
         response = post(self.client, "questions.reply", {"content": "just testing"}, args=[q.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_edit_answer_locked_question(self):
         """Verify edit answer of a locked question only with permissions."""
@@ -559,11 +549,11 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(0, len(doc("li.edit")))
+        self.assertEqual(0, len(doc("li.edit")))
 
         answer = self.question.last_answer
         response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         # A user with edit_answer permission can edit.
         u = UserFactory()
@@ -572,11 +562,11 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_(1, len(doc("li.edit")))
+        self.assertEqual(1, len(doc("li.edit")))
 
         answer = self.question.last_answer
         response = get(self.client, "questions.edit_answer", args=[self.question.id, answer.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         content = "New content for answer"
         response = post(
@@ -585,7 +575,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content},
             args=[self.question.id, answer.id],
         )
-        eq_(content, Answer.objects.get(pk=answer.id).content)
+        self.assertEqual(content, Answer.objects.get(pk=answer.id).content)
 
     def test_vote_locked_question_403(self):
         """Locked questions can't be voted on."""
@@ -596,7 +586,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         q.is_locked = True
         q.save()
         response = post(self.client, "questions.vote", args=[q.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_vote_answer_to_locked_question_403(self):
         """Answers to locked questions can't be voted on."""
@@ -612,21 +602,21 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"helpful": "y"},
             args=[q.id, self.answer.id],
         )
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_watch_GET_405(self):
         """Watch replies with HTTP GET results in 405."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "questions.watch", args=[self.question.id])
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_unwatch_GET_405(self):
         """Unwatch replies with HTTP GET results in 405."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "questions.unwatch", args=[self.question.id])
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_watch_replies(self):
         """Watch a question for replies."""
@@ -693,7 +683,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Now activate the watch.
         w = Watch.objects.get()
         r = get(self.client, "questions.activate_watch", args=[w.id, "fail"])
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         assert not Watch.objects.get(id=w.id).is_active
 
     def test_watch_replies_logged_in(self):
@@ -756,7 +746,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         QuestionReplyEvent.notify(u, self.question)
         QuestionSolvedEvent.notify(u, self.question)
         response = get(self.client, "questions.details", args=[self.question.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_preview_answer(self):
         """Preview an answer."""
@@ -768,10 +758,10 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content, "preview": "any string"},
             args=[self.question.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc("#answer-preview div.content").text())
-        eq_(num_answers, self.question.answers.count())
+        self.assertEqual(content, doc("#answer-preview div.content").text())
+        self.assertEqual(num_answers, self.question.answers.count())
 
     def test_preview_answer_as_admin(self):
         """Preview an answer as admin and verify response is 200."""
@@ -784,7 +774,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             {"content": content, "preview": "any string"},
             args=[self.question.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_links_nofollow(self):
         """Links posted in questions and answers should have rel=nofollow."""
@@ -796,8 +786,8 @@ class AnswersTemplateTestCase(TestCaseBase):
         a.save()
         response = get(self.client, "questions.details", args=[self.question.id])
         doc = pq(response.content)
-        eq_("nofollow", doc(".question .main-content a")[0].attrib["rel"])
-        eq_("nofollow", doc(".answer .main-content a")[0].attrib["rel"])
+        self.assertEqual("nofollow", doc(".question .main-content a")[0].attrib["rel"])
+        self.assertEqual("nofollow", doc(".answer .main-content a")[0].attrib["rel"])
 
     def test_robots_noindex_unsolved(self):
         """Verify noindex on unsolved questions."""
@@ -805,25 +795,25 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         # A brand new questions should be noindexed...
         response = get(self.client, "questions.details", args=[q.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("meta[name=robots]")))
+        self.assertEqual(1, len(doc("meta[name=robots]")))
 
         # If it has one answer, it should still be noindexed...
         a = AnswerFactory(question=q)
         response = get(self.client, "questions.details", args=[q.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("meta[name=robots]")))
+        self.assertEqual(1, len(doc("meta[name=robots]")))
 
         # If the answer is the solution, then it shouldn't be noindexed
         # anymore.
         q.solution = a
         q.save()
         response = get(self.client, "questions.details", args=[q.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc("meta[name=robots]")))
+        self.assertEqual(0, len(doc("meta[name=robots]")))
 
 
 class TaggingViewTestsAsTagger(TestCaseBase):
@@ -901,7 +891,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
 
         # Test the backend since we don't have a newly rendered page to
         # rely on.
-        eq_([t.name for t in tags], ["purplepurplepurple"])
+        self.assertEqual([t.name for t in tags], ["purplepurplepurple"])
 
     def test_add_async_no_tag(self):
         """Assert adding an empty tag asynchronously yields an AJAX error."""
@@ -923,7 +913,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         )
         self._assert_redirects_to_question(response, self.question.id)
         tags = Question.objects.get(pk=self.question.id).tags.all()
-        eq_([t.name for t in tags], ["green"])
+        self.assertEqual([t.name for t in tags], ["green"])
 
     def test_remove_unapplied_tag(self):
         """Test removing an unapplied tag fails silently."""
@@ -954,9 +944,9 @@ class TaggingViewTestsAsTagger(TestCaseBase):
             data={"name": "colorless"},
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         tags = Question.objects.get(pk=self.question.id).tags.all()
-        eq_([t.name for t in tags], ["green"])
+        self.assertEqual([t.name for t in tags], ["green"])
 
     def test_remove_async_unapplied_tag(self):
         """Assert trying to remove a tag that isn't there succeeds."""
@@ -965,7 +955,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
             data={"name": "lemon"},
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_remove_async_no_tag(self):
         """Assert calling the remove handler with no param fails."""
@@ -1003,7 +993,7 @@ class TaggingViewTestsAsAdmin(TestCaseBase):
             data={"tag-name": "nonexistent tag"},
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         tags_eq(Question.objects.get(id=self.question.id), ["nonexistent tag"])
 
     def test_add_new_case_insensitive(self):
@@ -1023,7 +1013,7 @@ class TaggingViewTestsAsAdmin(TestCaseBase):
             data={"tag-name": "RED"},
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
-        eq_(json.loads(response.content)["canonicalName"], "red")
+        self.assertEqual(json.loads(response.content)["canonicalName"], "red")
 
 
 def _add_tag_url(question_id):
@@ -1058,12 +1048,12 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # First there should be no questions tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(0, len(doc(".forum--question-item")))
+        self.assertEqual(0, len(doc(".forum--question-item")))
 
         # Tag a question 'mobile'
         q = QuestionFactory()
         response = post(self.client, "questions.add_tag", {"tag-name": tagname}, args=[q.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         # Add an answer
         AnswerFactory(question=q)
@@ -1071,8 +1061,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(1, len(doc(".forum--question-item")))
-        eq_(
+        self.assertEqual(1, len(doc(".forum--question-item")))
+        self.assertEqual(
             "%s/en-US/questions/all?tagged=mobile&show=all" % settings.CANONICAL_URL,
             doc('link[rel="canonical"]')[0].attrib["href"],
         )
@@ -1082,14 +1072,14 @@ class QuestionsTemplateTestCase(TestCaseBase):
             reverse("questions.list", args=["all"]), tagged="garbage-plate", show="all"
         )
         response = self.client.get(url)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_owner_tab_selected_in_list(self):
         # Test one tab is selected for no show arg specified
         questions_list = urlparams(reverse("questions.list", args=["all"]))
         response = self.client.get(questions_list)
         doc = pq(response.content)
-        eq_(1, len(doc("#owner-tabs .selected")))
+        self.assertEqual(1, len(doc("#owner-tabs .selected")))
 
         # Test one tab is selected for all show args
         show_args = ["needs-attention", "responded", "done", "all"]
@@ -1097,7 +1087,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
             questions_list = urlparams(reverse("questions.list", args=["all"]), show=show_arg)
             response = self.client.get(questions_list)
             doc = pq(response.content)
-            eq_(1, len(doc("#owner-tabs .selected")))
+            self.assertEqual(1, len(doc("#owner-tabs .selected")))
 
     def test_product_filter(self):
         p1 = ProductFactory()
@@ -1118,10 +1108,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            eq_(len(expected), len(doc(".forum--question-item")))
+            self.assertEqual(len(expected), len(doc(".forum--question-item")))
 
             for q in expected:
-                eq_(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
+                self.assertEqual(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
 
         # No filtering -> All questions.
         check("all", [q1, q2, q3])
@@ -1157,10 +1147,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            # eq_(len(expected), len(doc('.forum--question-item')))
+            # self.assertEqual(len(expected), len(doc('.forum--question-item')))
 
             for q in expected:
-                eq_(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
+                self.assertEqual(1, len(doc(".forum--question-item[id=question-%s]" % q.id)))
 
         # No filtering -> All questions.
         check({}, [q1, q2, q3])
@@ -1174,9 +1164,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
     def test_robots_noindex(self):
         """Verify the page is set for noindex by robots."""
         response = self.client.get(reverse("questions.list", args=["all"]))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("meta[name=robots]")))
+        self.assertEqual(1, len(doc("meta[name=robots]")))
 
     def test_select_in_question(self):
         """Verify we properly escape <select/>."""
@@ -1188,7 +1178,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         assert b"test question lorem ipsum" in response.content
         assert b"test question content lorem ipsum" in response.content
         doc = pq(response.content)
-        eq_(0, len(doc("article.questions select")))
+        self.assertEqual(0, len(doc("article.questions select")))
 
     def test_truncated_text_is_stripped(self):
         """Verify we strip html from truncated text."""
@@ -1206,7 +1196,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q.questionvisits_set.create(visits=1007)
         response = self.client.get(reverse("questions.list", args=["all"]))
         doc = pq(response.content)
-        eq_("1007", doc(".views-val").text())
+        self.assertEqual("1007", doc(".views-val").text())
 
     def test_no_unarchive_on_old_questions(self):
         ques = QuestionFactory(created=(datetime.now() - timedelta(days=200)), is_archived=True)
@@ -1216,7 +1206,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
     def test_show_is_empty_string_doesnt_500(self):
         QuestionFactory()
         response = self.client.get(urlparams(reverse("questions.list", args=["all"]), show=""))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_product_shows_without_tags(self):
         p = ProductFactory()
@@ -1243,7 +1233,7 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         url = urlparams(url, filter="no-replies")
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(2, len(doc(".forum--question-item")))
+        self.assertEqual(2, len(doc(".forum--question-item")))
 
 
 class QuestionEditingTests(TestCaseBase):
@@ -1260,7 +1250,7 @@ class QuestionEditingTests(TestCaseBase):
         """The edit-question form should show appropriate metadata fields."""
         question_id = QuestionFactory().id
         response = get(self.client, "questions.edit_question", kwargs={"question_id": question_id})
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         # Make sure each extra metadata field is in the form:
         doc = pq(response.content)
@@ -1277,7 +1267,7 @@ class QuestionEditingTests(TestCaseBase):
         """The edit-question form shouldn't show inappropriate metadata."""
         question_id = QuestionFactory().id
         response = get(self.client, "questions.edit_question", kwargs={"question_id": question_id})
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
         # Take the "os" field as representative. Make sure it doesn't show up:
         doc = pq(response.content)
@@ -1305,9 +1295,9 @@ class QuestionEditingTests(TestCaseBase):
         # Make sure the static fields, the metadata, and the updated_by field
         # changed:
         q = Question.objects.get(pk=q.id)
-        eq_(q.title, "New title")
-        eq_(q.content, "New content")
-        eq_(q.updated_by, self.user)
+        self.assertEqual(q.title, "New title")
+        self.assertEqual(q.content, "New content")
+        self.assertEqual(q.updated_by, self.user)
 
 
 class AAQTemplateTestCase(TestCaseBase):
@@ -1373,7 +1363,7 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def test_full_workflow(self):
         response = self._post_new_question()
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert "Done!" in pq(response.content)("ul.user-messages li").text()
 
         # Verify question is in db now
@@ -1382,13 +1372,13 @@ class AAQTemplateTestCase(TestCaseBase):
         # Make sure question is in questions list
         response = self.client.get(reverse("questions.list", args=["all"]))
         doc = pq(response.content)
-        eq_(1, len(doc("#question-%s" % question.id)))
+        self.assertEqual(1, len(doc("#question-%s" % question.id)))
         # And no email was sent
-        eq_(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         # Verify product and topic assigned to question.
-        eq_("fix-problems", question.topic.slug)
-        eq_("firefox", question.product.slug)
+        self.assertEqual("fix-problems", question.topic.slug)
+        self.assertEqual("firefox", question.product.slug)
 
         # Verify troubleshooting information
         troubleshooting = question.metadata["troubleshooting"]
@@ -1397,7 +1387,7 @@ class AAQTemplateTestCase(TestCaseBase):
 
         # Verify firefox version
         version = question.metadata["ff_version"]
-        eq_("18.0.2", version)
+        self.assertEqual("18.0.2", version)
 
     def test_full_workflow_inactive(self):
         """
@@ -1407,27 +1397,27 @@ class AAQTemplateTestCase(TestCaseBase):
         u.is_active = False
         u.save()
         self._post_new_question()
-        eq_(0, Question.objects.count())
+        self.assertEqual(0, Question.objects.count())
 
     def test_localized_creation(self):
         response = self._post_new_question(locale="pt-BR")
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert "Done!" in pq(response.content)("ul.user-messages li").text()
 
         # Verify question is in db now
         question = Question.objects.filter(title="A test question")[0]
-        eq_(question.locale, "pt-BR")
+        self.assertEqual(question.locale, "pt-BR")
 
     def test_invalid_product_404(self):
         url = reverse("questions.aaq_step2", args=["lipsum"])
         response = self.client.get(url)
-        eq_(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_invalid_category_302(self):
         ProductFactory(slug="firefox")
         url = reverse("questions.aaq_step3", args=["desktop", "lipsum"])
         response = self.client.get(url)
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
 
 class ProductForumTemplateTestCase(TestCaseBase):
@@ -1443,66 +1433,11 @@ class ProductForumTemplateTestCase(TestCaseBase):
         fxos.questions_locales.add(lcl)
 
         response = self.client.get(reverse("questions.home"))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(4, len(doc(".product-list .product")))
+        self.assertEqual(4, len(doc(".product-list .product")))
         product_list_html = doc(".product-list").html()
         assert firefox.title in product_list_html
         assert android.title in product_list_html
         assert fxos.title in product_list_html
         assert openbadges.title not in product_list_html
-
-
-class RelatedThingsTestCase(Elastic7TestCase):
-    search_tests = True
-
-    def setUp(self):
-        super(RelatedThingsTestCase, self).setUp()
-        self.question = QuestionFactory(
-            title="lorem ipsum", content="lorem", product=ProductFactory()
-        )
-
-    def test_related_questions(self):
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        eq_(0, len(doc("#related-content .related-question")))
-
-        q1 = QuestionFactory(
-            title="lorem ipsum dolor", content="lorem", product=self.question.product
-        )
-        a1 = AnswerFactory(question=q1)
-        AnswerVoteFactory(answer=a1, helpful=True)
-
-        # Questions with no helpful answers should not be shown
-        q2 = QuestionFactory(
-            title="lorem ipsum dolor", content="lorem", product=self.question.product
-        )
-        AnswerFactory(question=q2)
-
-        # Questions that belong to different products should not be shown
-        q3 = QuestionFactory(title="lorem ipsum dolor", content="lorem", product=ProductFactory())
-        a3 = AnswerFactory(question=q3)
-        AnswerVoteFactory(answer=a3, helpful=True)
-
-        cache.clear()
-
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        eq_(1, len(doc("#related-content .related-question")))
-
-    def test_related_documents(self):
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        eq_(0, len(doc("#related-content .related-document")))
-
-        d1 = DocumentFactory(title="lorem ipsum")
-        d1.products.add(self.question.product)
-        r1 = ApprovedRevisionFactory(document=d1, summary="lorem", content="lorem ipsum dolor")
-        d1.current_revision = r1
-        d1.save()
-
-        cache.clear()
-
-        response = get(self.client, "questions.details", args=[self.question.id])
-        doc = pq(response.content)
-        eq_(1, len(doc("#related-content .related-document")))

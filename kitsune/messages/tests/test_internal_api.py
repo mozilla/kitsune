@@ -1,5 +1,3 @@
-from nose.tools import eq_
-
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.utils import send_message
 from kitsune.sumo.tests import TestCase
@@ -17,14 +15,14 @@ class SendTests(TestCase):
 
         msgs_in = InboxMessage.objects.all()
         msgs_out = OutboxMessage.objects.all()
-        eq_(1, msgs_out.count())
+        self.assertEqual(1, msgs_out.count())
         msg_out = msgs_out[0]
-        eq_(sender, msg_out.sender)
-        eq_(msg_text, msg_out.message)
+        self.assertEqual(sender, msg_out.sender)
+        self.assertEqual(msg_text, msg_out.message)
         for u in msg_out.to.all():
             assert u in to
-        eq_(2, msgs_in.count())
+        self.assertEqual(2, msgs_in.count())
         for message in msgs_in:
-            eq_(sender, message.sender)
+            self.assertEqual(sender, message.sender)
             assert message.to in to
-            eq_(msg_text, message.message)
+            self.assertEqual(msg_text, message.message)

@@ -1,22 +1,20 @@
 from datetime import datetime
 
+import factory
 from django.contrib.contenttypes.models import ContentType
 from django.template.defaultfilters import slugify
 
-import factory
-from nose.tools import eq_
-
 from kitsune.access.tests import PermissionFactory
-from kitsune.forums.models import Forum, Thread, Post
-from kitsune.users.tests import UserFactory
+from kitsune.forums.models import Forum, Post, Thread
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
+from kitsune.users.tests import UserFactory
 
 
 class ForumTestCase(TestCase):
     client_class = LocalizingClient
 
 
-class ForumFactory(factory.DjangoModelFactory):
+class ForumFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Forum
 
@@ -33,7 +31,7 @@ class RestrictedForumFactory(ForumFactory):
         PermissionFactory(codename=permission, content_type=ct, object_id=forum.id)
 
 
-class ThreadFactory(factory.DjangoModelFactory):
+class ThreadFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Thread
 
@@ -66,16 +64,16 @@ class ThreadFactory(factory.DjangoModelFactory):
 class ThreadFactoryTests(TestCase):
     def test_has_one_post(self):
         t = ThreadFactory()
-        eq_(t.post_set.count(), 1)
+        self.assertEqual(t.post_set.count(), 1)
 
     def test_can_set_post_properties(self):
         t = ThreadFactory(posts__content="lol")
-        eq_(t.post_set.get().content, "lol")
+        self.assertEqual(t.post_set.get().content, "lol")
 
     def test_can_set_posts(self):
         t = ThreadFactory(posts=[{"content": "one"}, {"content": "two"}])
         contents = list(t.post_set.values_list("content", flat=True))
-        eq_(contents, ["one", "two"])
+        self.assertEqual(contents, ["one", "two"])
 
     def test_posts_belong_to_the_thread(self):
         t = ThreadFactory()
@@ -86,7 +84,7 @@ class ThreadFactoryTests(TestCase):
         assert all(p.thread == t for p in t.post_set.all())
 
 
-class PostFactory(factory.DjangoModelFactory):
+class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
 

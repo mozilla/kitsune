@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.admin import DocumentAdmin
@@ -12,7 +11,7 @@ class ArchiveTests(TestCase):
 
     def test_inheritance(self):
         """Make sure parent/child equality of is_archived is maintained."""
-        eq_(Document.objects.filter(is_archived=True).count(), 0)
+        self.assertEqual(Document.objects.filter(is_archived=True).count(), 0)
         # Set up a child and a parent and an orphan (all false) and something
         # true.
         TranslatedRevisionFactory()
@@ -25,5 +24,5 @@ class ArchiveTests(TestCase):
 
         # Assert the child of the parent and the parent of the child (along
         # with everything else) became (or stayed) true:
-        eq_(Document.objects.filter(is_archived=True).count(), 6)
+        self.assertEqual(Document.objects.filter(is_archived=True).count(), 6)
         # We didn't lose any, and they're all true.

@@ -4,8 +4,6 @@ from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
 from django.test import TestCase, override_settings
-
-from nose.tools import assert_raises, eq_
 from pyquery import PyQuery as pq
 
 from kitsune.questions.models import Question
@@ -33,7 +31,8 @@ class ReadOnlyModeTest(TestCase):
 
     @override_settings(READ_ONLY=True)
     def test_db_error(self):
-        assert_raises(DatabaseError, Question.objects.create, id=12)
+        with self.assertRaises(DatabaseError):
+            Question.objects.create(id=12)
 
     @override_settings(READ_ONLY=True)
     def test_login_error(self):
@@ -47,13 +46,13 @@ class ReadOnlyModeTest(TestCase):
             },
             follow=True,
         )
-        eq_(r.status_code, 503)
+        self.assertEqual(r.status_code, 503)
         title = pq(r.content)("title").text()
         assert title.startswith("Maintenance in progress"), title
 
     @override_settings(READ_ONLY=True)
     def test_bail_on_post(self):
         r = self.client.post("/en-US/questions")
-        eq_(r.status_code, 503)
+        self.assertEqual(r.status_code, 503)
         title = pq(r.content)("title").text()
         assert title.startswith("Maintenance in progress"), title

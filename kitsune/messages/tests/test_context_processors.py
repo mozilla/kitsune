@@ -1,8 +1,7 @@
+from unittest import mock
+
 from django.contrib.auth.models import AnonymousUser
 from django.test.client import RequestFactory
-
-from unittest import mock
-from nose.tools import eq_
 
 from kitsune.messages import context_processors
 from kitsune.messages.context_processors import unread_message_count
@@ -20,7 +19,7 @@ class UnreadCountTests(TestCase):
         rf = RequestFactory()
         request = rf.get("/")
         request.user = AnonymousUser()
-        eq_(0, unread_message_count(request)["unread_message_count"])
+        self.assertEqual(0, unread_message_count(request)["unread_message_count"])
         assert not unread_count_for.called
 
     @mock.patch.object(context_processors, "unread_count_for")
@@ -30,5 +29,5 @@ class UnreadCountTests(TestCase):
         rf = RequestFactory()
         request = rf.get("/")
         request.user = UserFactory()
-        eq_(3, unread_message_count(request)["unread_message_count"])
+        self.assertEqual(3, unread_message_count(request)["unread_message_count"])
         assert unread_count_for.called

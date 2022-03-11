@@ -1,15 +1,14 @@
 import time
 
-from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.kbforums.models import Post, Thread
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory, PostFactory
-from kitsune.sumo.urlresolvers import reverse
+from kitsune.kbforums.tests import KBForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.tests import get, post
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class PostsTemplateTests(KBForumTestCase):
@@ -24,7 +23,7 @@ class PostsTemplateTests(KBForumTestCase):
 
         doc = pq(response.content)
         error_msg = doc("ul.errorlist li a")[0]
-        eq_(error_msg.text, "Please provide a message.")
+        self.assertEqual(error_msg.text, "Please provide a message.")
 
     def test_edit_post_errors(self):
         """Changing post content works."""
@@ -42,7 +41,7 @@ class PostsTemplateTests(KBForumTestCase):
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(
+        self.assertEqual(
             errors[0].text,
             "Your message is too short (4 characters). It must be at least 5 characters.",
         )
@@ -61,7 +60,7 @@ class PostsTemplateTests(KBForumTestCase):
         )
 
         doc = pq(res.content)
-        eq_(len(doc("form.edit-post")), 1)
+        self.assertEqual(len(doc("form.edit-post")), 1)
 
     def test_edit_post(self):
         """Changing post content works."""
@@ -79,7 +78,7 @@ class PostsTemplateTests(KBForumTestCase):
         )
         edited_p = t.post_set.get(pk=p.id)
 
-        eq_("Some new content", edited_p.content)
+        self.assertEqual("Some new content", edited_p.content)
 
     # TODO: This test should be enabled once the responsive redesign milestone is complete.
     # def test_long_title_truncated_in_crumbs(self):
@@ -89,7 +88,7 @@ class PostsTemplateTests(KBForumTestCase):
     # response = get(self.client, 'wiki.discuss.posts', args=[d.slug, t.id])
     # doc = pq(response.content)
     # crumb = doc('#breadcrumbs li:last-child')
-    # eq_(crumb.text(), 'A thread with a very very very very...')
+    # self.assertEqual(crumb.text(), 'A thread with a very very very very...')
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""
@@ -107,10 +106,10 @@ class PostsTemplateTests(KBForumTestCase):
             {"content": "More new content"},
             args=[d.slug, t.id, p.id],
         )
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
 
         edited_p = Post.objects.get(pk=p.pk)
-        eq_("More new content", edited_p.content)
+        self.assertEqual("More new content", edited_p.content)
 
     def test_preview_reply(self):
         """Preview a reply."""
@@ -127,10 +126,10 @@ class PostsTemplateTests(KBForumTestCase):
             {"content": content, "preview": "any string"},
             args=[d.slug, t.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc("#post-preview div.content").text())
-        eq_(num_posts, t.post_set.count())
+        self.assertEqual(content, doc("#post-preview div.content").text())
+        self.assertEqual(num_posts, t.post_set.count())
 
     def test_preview_async(self):
         """Preview a reply."""
@@ -145,9 +144,9 @@ class PostsTemplateTests(KBForumTestCase):
             {"content": content},
             args=[d.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc("div.content").text())
+        self.assertEqual(content, doc("div.content").text())
 
     def test_watch_thread(self):
         """Watch and unwatch a thread."""
@@ -178,7 +177,7 @@ class PostsTemplateTests(KBForumTestCase):
         t.new_post(creator=u, content="linking http://test.org")
         response = get(self.client, "wiki.discuss.posts", args=[t.document.slug, t.pk])
         doc = pq(response.content)
-        eq_("nofollow", doc("ol.posts div.content a")[0].attrib["rel"])
+        self.assertEqual("nofollow", doc("ol.posts div.content a")[0].attrib["rel"])
 
 
 class ThreadsTemplateTests(KBForumTestCase):
@@ -193,7 +192,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         doc = pq(response.content)
         last_post_link = doc("tr.threads td.last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
-        eq_(href.split("#")[1], "post-%d" % p2.id)
+        self.assertEqual(href.split("#")[1], "post-%d" % p2.id)
 
     def test_empty_thread_errors(self):
         """Posting an empty thread shows errors."""
@@ -210,8 +209,8 @@ class ThreadsTemplateTests(KBForumTestCase):
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(errors[0].text, "Please provide a title.")
-        eq_(errors[1].text, "Please provide a message.")
+        self.assertEqual(errors[0].text, "Please provide a title.")
+        self.assertEqual(errors[1].text, "Please provide a message.")
 
     def test_new_short_thread_errors(self):
         """Posting a short new thread shows errors."""
@@ -228,11 +227,11 @@ class ThreadsTemplateTests(KBForumTestCase):
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(
+        self.assertEqual(
             errors[0].text,
             "Your title is too short (4 characters). It must be at least 5 characters.",
         )
-        eq_(
+        self.assertEqual(
             errors[1].text,
             "Your message is too short (4 characters). It must be at least 5 characters.",
         )
@@ -253,7 +252,7 @@ class ThreadsTemplateTests(KBForumTestCase):
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(
+        self.assertEqual(
             errors[0].text,
             "Your title is too short (4 characters). It must be at least 5 characters.",
         )
@@ -267,7 +266,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         res = get(self.client, "wiki.discuss.edit_thread", args=[t.document.slug, t.id])
 
         doc = pq(res.content)
-        eq_(len(doc("form.edit-thread")), 1)
+        self.assertEqual(len(doc("form.edit-thread")), 1)
 
     def test_watch_forum(self):
         """Watch and unwatch a forum."""
@@ -305,7 +304,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         response = self.client.get(
             reverse("wiki.discuss.threads", args=[r.document.slug], locale="de")
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_all_locale_discussions(self):
         """Start or stop watching all discussions in a locale."""
@@ -335,7 +334,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         t2.new_post(creator=u, content="last")
         self.client.login(username=u.username, password="testpass")
         response = post(self.client, "wiki.locale_discussions")
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         title = doc(".threads .title a:first").text()
         assert title.startswith("A thread with a very very long")
@@ -355,10 +354,10 @@ class NewThreadTemplateTests(KBForumTestCase):
             {"title": "Topic", "content": content, "preview": "any string"},
             args=[d.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc("#post-preview div.content").text())
-        eq_(num_threads, d.thread_set.count())
+        self.assertEqual(content, doc("#post-preview div.content").text())
+        self.assertEqual(num_threads, d.thread_set.count())
 
 
 class FlaggedPostTests(KBForumTestCase):
@@ -373,9 +372,9 @@ class FlaggedPostTests(KBForumTestCase):
         add_permission(u2, FlaggedObject, "can_moderate")
         self.client.login(username=u2.username, password="testpass")
         response = get(self.client, "flagit.queue")
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("#flagged-queue li")))
+        self.assertEqual(1, len(doc("#flagged-queue li")))
 
 
 class TestRatelimiting(KBForumTestCase):
@@ -393,7 +392,7 @@ class TestRatelimiting(KBForumTestCase):
                 {"title": "Topic", "content": "hellooo"},
                 args=[d.slug],
             )
-            eq_(200, response.status_code)
+            self.assertEqual(200, response.status_code)
 
         # Now 3 replies (only 2 should save):
         t = Thread.objects.all()[0]
@@ -404,7 +403,7 @@ class TestRatelimiting(KBForumTestCase):
                 {"content": "hellooo"},
                 args=[d.slug, t.id],
             )
-            eq_(200, response.status_code)
+            self.assertEqual(200, response.status_code)
 
         # And another thread that shouldn't save:
         response = post(
@@ -415,4 +414,4 @@ class TestRatelimiting(KBForumTestCase):
         )
 
         # We should only have 4 posts (each thread and reply creates a post).
-        eq_(4, Post.objects.count())
+        self.assertEqual(4, Post.objects.count())

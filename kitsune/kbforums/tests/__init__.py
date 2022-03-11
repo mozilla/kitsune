@@ -1,16 +1,14 @@
+import factory
 from django.conf import settings
 
-import factory
-from nose.tools import eq_
-
-from kitsune.kbforums.models import Thread, Post, ThreadLockedError
+from kitsune.kbforums.models import Post, Thread, ThreadLockedError
 from kitsune.kbforums.views import sort_threads
-from kitsune.sumo.tests import get, LocalizingClient, TestCase
+from kitsune.sumo.tests import LocalizingClient, TestCase, get
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 
 
-class ThreadFactory(factory.DjangoModelFactory):
+class ThreadFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Thread
 
@@ -18,7 +16,7 @@ class ThreadFactory(factory.DjangoModelFactory):
     document = factory.SubFactory(DocumentFactory)
 
 
-class PostFactory(factory.DjangoModelFactory):
+class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Post
 
@@ -36,7 +34,7 @@ class PostTestCase(KBForumTestCase):
         that thread to point to the new post."""
         t = ThreadFactory()
         post = t.new_post(creator=t.creator, content="an update")
-        eq_(post.id, t.last_post_id)
+        self.assertEqual(post.id, t.last_post_id)
 
     def test_update_post_does_not_update_thread(self):
         """Updating/saving an old post in a thread should _not_ update the
@@ -44,7 +42,7 @@ class PostTestCase(KBForumTestCase):
         p = PostFactory()
         old = p.thread.last_post_id
         p.content = "updated content"
-        eq_(old, p.thread.last_post_id)
+        self.assertEqual(old, p.thread.last_post_id)
 
     def test_replies_count(self):
         """The Thread.replies value should remain one less than the number of
@@ -52,14 +50,14 @@ class PostTestCase(KBForumTestCase):
         t = ThreadFactory()
         old = t.replies
         t.new_post(creator=t.creator, content="test")
-        eq_(old, t.replies)
+        self.assertEqual(old, t.replies)
 
     def test_sticky_threads_first(self):
         """Sticky threads should come before non-sticky threads."""
         ThreadFactory()
         t2 = ThreadFactory(is_sticky=True)
         s = Thread.objects.all()[0]
-        eq_(t2.id, s.id)
+        self.assertEqual(t2.id, s.id)
 
     def test_thread_sorting(self):
         """After the sticky threads, threads should be sorted by the created
@@ -98,10 +96,10 @@ class PostTestCase(KBForumTestCase):
         t2.new_post(t2.creator, "baz")
         threads = sort_threads(Thread.objects, 4)
         self.assertLessEqual(threads[0].replies, threads[1].replies)
-        eq_(threads[0].replies, t1.replies)
-        eq_(threads[1].replies, t2.replies)
-        eq_(threads[0].title, t1.title)
-        eq_(threads[1].title, t2.title)
+        self.assertEqual(threads[0].replies, t1.replies)
+        self.assertEqual(threads[1].replies, t2.replies)
+        self.assertEqual(threads[0].title, t1.title)
+        self.assertEqual(threads[1].title, t2.title)
 
     def test_sorting_last_post_desc(self):
         """Sorting threads by last_post descendingly."""
@@ -125,7 +123,7 @@ class PostTestCase(KBForumTestCase):
         )
         for replies, pages in test_data:
             t.replies = replies
-            eq_(t.last_page, pages)
+            self.assertEqual(t.last_page, pages)
 
     def test_locked_thread(self):
         """Trying to reply to a locked thread should raise an exception."""
@@ -136,7 +134,7 @@ class PostTestCase(KBForumTestCase):
     def test_post_no_session(self):
         r = get(self.client, "wiki.discuss.new_thread", kwargs={"document_slug": "article-title"})
         assert settings.LOGIN_URL in r.redirect_chain[0][0]
-        eq_(302, r.redirect_chain[0][1])
+        self.assertEqual(302, r.redirect_chain[0][1])
 
 
 class ThreadTestCase(KBForumTestCase):
@@ -148,4 +146,4 @@ class ThreadTestCase(KBForumTestCase):
             kwargs={"document_slug": "article-title", "thread_id": 1},
         )
         assert settings.LOGIN_URL in r.redirect_chain[0][0]
-        eq_(302, r.redirect_chain[0][1])
+        self.assertEqual(302, r.redirect_chain[0][1])

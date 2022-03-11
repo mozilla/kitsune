@@ -1,7 +1,5 @@
 from datetime import date
-
 from unittest.mock import patch
-from nose.tools import eq_
 
 from kitsune.dashboards import utils
 from kitsune.dashboards.utils import get_locales_by_visit
@@ -22,7 +20,7 @@ class DashboardUtilsTests(TestCase):
         }
 
         results = get_locales_by_visit(date(2013, 7, 1), date(2013, 8, 1))
-        eq_(
+        self.assertEqual(
             [
                 ("en-US", 9381226),
                 ("de", 1674352),

@@ -1,8 +1,6 @@
 import json
 from datetime import date, timedelta
 
-from nose.tools import eq_
-
 from kitsune.dashboards.models import METRIC_CODE_CHOICES
 from kitsune.dashboards.tests import WikiMetricFactory
 from kitsune.products.tests import ProductFactory
@@ -26,17 +24,17 @@ class WikiMetricAPITests(TestCase):
 
         # Call the API.
         response = self.client.get(urlparams(reverse("api.wikimetric_list"), format="json"))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         results = json.loads(response.content)["results"]
 
         # Verify the results are what we created.
-        eq_(10, len(results))
+        self.assertEqual(10, len(results))
         for i in range(10):
             result = results[i]
-            eq_(i, result["value"])
-            eq_(METRIC_CODE_CHOICES[i % len(METRIC_CODE_CHOICES)][0], result["code"])
-            eq_(str(today - timedelta(days=i)), result["date"])
+            self.assertEqual(i, result["value"])
+            self.assertEqual(METRIC_CODE_CHOICES[i % len(METRIC_CODE_CHOICES)][0], result["code"])
+            self.assertEqual(str(today - timedelta(days=i)), result["date"])
 
     def test_product_filter(self):
         """Test filtering results by product."""
@@ -57,19 +55,19 @@ class WikiMetricAPITests(TestCase):
         response = self.client.get(
             urlparams(reverse("api.wikimetric_list"), format="json", product=p1.slug)
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         results = json.loads(response.content)["results"]
-        eq_(3, len(results))
+        self.assertEqual(3, len(results))
 
         # Call and verify the API for product=p1.
         response = self.client.get(
             urlparams(reverse("api.wikimetric_list"), format="json", product=p2.slug)
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         results = json.loads(response.content)["results"]
-        eq_(4, len(results))
+        self.assertEqual(4, len(results))
 
     def test_locale_filter(self):
         """Test filtering results by locale."""
@@ -86,19 +84,19 @@ class WikiMetricAPITests(TestCase):
         response = self.client.get(
             urlparams(reverse("api.wikimetric_list"), format="json", locale="es")
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         results = json.loads(response.content)["results"]
-        eq_(3, len(results))
+        self.assertEqual(3, len(results))
 
         # Call and verify the API for locale=fr.
         response = self.client.get(
             urlparams(reverse("api.wikimetric_list"), format="json", locale="fr")
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         results = json.loads(response.content)["results"]
-        eq_(1, len(results))
+        self.assertEqual(1, len(results))
 
     def test_code_filter(self):
         """Test filtering results by code."""
@@ -117,10 +115,10 @@ class WikiMetricAPITests(TestCase):
                 reverse("api.wikimetric_list"), format="json", code=METRIC_CODE_CHOICES[0][0]
             )
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         results = json.loads(response.content)["results"]
-        eq_(3, len(results))
+        self.assertEqual(3, len(results))
 
         # Call and verify the API for code=METRIC_CODE_CHOICES[1].
         response = self.client.get(
@@ -128,7 +126,7 @@ class WikiMetricAPITests(TestCase):
                 reverse("api.wikimetric_list"), format="json", code=METRIC_CODE_CHOICES[1][0]
             )
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         results = json.loads(response.content)["results"]
-        eq_(1, len(results))
+        self.assertEqual(1, len(results))

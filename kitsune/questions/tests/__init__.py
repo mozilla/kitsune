@@ -1,10 +1,9 @@
 from datetime import datetime
 
-from nose.tools import eq_
 import factory
 
-from kitsune.questions.models import Question, QuestionVote, Answer, AnswerVote, QuestionLocale
-from kitsune.sumo.tests import LocalizingClient, TestCase, FuzzyUnicode
+from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
+from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
 from kitsune.users.tests import UserFactory
 
 
@@ -16,10 +15,10 @@ class TestCaseBase(TestCase):
 
 def tags_eq(tagged_object, tag_names):
     """Assert that the names of the tags on tagged_object are tag_names."""
-    eq_(sorted([t.name for t in tagged_object.tags.all()]), sorted(tag_names))
+    TestCase().assertEqual(sorted([t.name for t in tagged_object.tags.all()]), sorted(tag_names))
 
 
-class QuestionFactory(factory.DjangoModelFactory):
+class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Question
 
@@ -47,7 +46,7 @@ class QuestionFactory(factory.DjangoModelFactory):
                 q.tags.add(tag)
 
 
-class QuestionVoteFactory(factory.DjangoModelFactory):
+class QuestionVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = QuestionVote
 
@@ -56,7 +55,7 @@ class QuestionVoteFactory(factory.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
 
 
-class QuestionLocaleFactory(factory.DjangoModelFactory):
+class QuestionLocaleFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = QuestionLocale
 
@@ -71,7 +70,7 @@ class QuestionLocaleFactory(factory.DjangoModelFactory):
                 obj.products.add(product)
 
 
-class AnswerFactory(factory.DjangoModelFactory):
+class AnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Answer
 
@@ -88,7 +87,7 @@ class SolutionAnswerFactory(AnswerFactory):
         obj.save()
 
 
-class AnswerVoteFactory(factory.DjangoModelFactory):
+class AnswerVoteFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AnswerVote
 
