@@ -21,7 +21,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
@@ -53,7 +53,6 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import build_paged_url, is_ratelimited, paginate, simple_paginate
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
-from kitsune.upload.views import upload_imageattachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
 
@@ -572,10 +571,6 @@ def aaq(request, product_key=None, category_key=None, step=1):
         )
         context["form"] = form
 
-        # NOJS: upload image
-        if "upload_image" in request.POST:
-            upload_imageattachment(request, request.user)
-
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
 
             question = form.save(
@@ -664,9 +659,6 @@ def edit_question(request, question_id):
             product=question.product_config,
         )
 
-        # NOJS: upload images, if any
-        upload_imageattachment(request, question)
-
         if form.is_valid():
             question.title = form.cleaned_data["title"]
             question.content = form.cleaned_data["content"]
@@ -699,18 +691,10 @@ def edit_question(request, question_id):
     )
 
 
-def _skip_answer_ratelimit(request):
-    """Exclude image uploading and deleting from the reply rate limiting.
-
-    Also exclude users with the questions.bypass_ratelimit permission.
-    """
-    return "delete_images" in request.POST or "upload_image" in request.POST
-
-
 @require_POST
 @login_required
-@ratelimit("answer-min", "4/m", skip_if=_skip_answer_ratelimit)
-@ratelimit("answer-day", "100/d", skip_if=_skip_answer_ratelimit)
+@ratelimit("answer-min", "4/m")
+@ratelimit("answer-day", "100/d")
 def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
@@ -720,18 +704,6 @@ def reply(request, question_id):
         raise PermissionDenied
 
     form = AnswerForm(request.POST, **{"user": request.user, "question": question})
-
-    # NOJS: delete images
-    if "delete_images" in request.POST:
-        for image_id in request.POST.getlist("delete_image"):
-            ImageAttachment.objects.get(pk=image_id).delete()
-
-        return question_details(request, question_id=question_id, form=form)
-
-    # NOJS: upload image
-    if "upload_image" in request.POST:
-        upload_imageattachment(request, request.user)
-        return question_details(request, question_id=question_id, form=form)
 
     if form.is_valid() and not request.limited:
         answer = Answer(
@@ -1160,9 +1132,6 @@ def edit_answer(request, question_id, answer_id):
 
     if not answer.allows_edit(request.user):
         raise PermissionDenied
-
-    # NOJS: upload images, if any
-    upload_imageattachment(request, answer)
 
     if request.method == "GET":
         form = AnswerForm({"content": answer.content}, user=request.user)

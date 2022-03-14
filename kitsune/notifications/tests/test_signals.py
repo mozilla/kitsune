@@ -1,10 +1,9 @@
-from django.contrib.contenttypes.models import ContentType
-
 from unittest import mock
+
 from actstream.actions import follow
-from actstream.signals import action
 from actstream.models import Action, Follow
-from nose.tools import eq_
+from actstream.signals import action
+from django.contrib.contenttypes.models import ContentType
 
 from kitsune.notifications import tasks as notification_tasks
 from kitsune.notifications.models import (
@@ -32,8 +31,8 @@ class TestNotificationsSentFromActions(TestCase):
         act = Action.objects.order_by("-id")[0]
         notification = Notification.objects.get(action=act)
 
-        eq_(notification.owner, follower)
-        eq_(notification.action, act)
+        self.assertEqual(notification.owner, follower)
+        self.assertEqual(notification.action, act)
 
     def test_following_target(self):
         follower = UserFactory()
@@ -48,8 +47,8 @@ class TestNotificationsSentFromActions(TestCase):
         act = Action.objects.order_by("-id")[0]
         notification = Notification.objects.get(action=act)
 
-        eq_(notification.owner, follower)
-        eq_(notification.action, act)
+        self.assertEqual(notification.owner, follower)
+        self.assertEqual(notification.action, act)
 
     def test_following_action_object(self):
         follower = UserFactory()
@@ -63,8 +62,8 @@ class TestNotificationsSentFromActions(TestCase):
         act = Action.objects.order_by("-id")[0]
         notification = Notification.objects.get(action=act)
 
-        eq_(notification.owner, follower)
-        eq_(notification.action, act)
+        self.assertEqual(notification.owner, follower)
+        self.assertEqual(notification.action, act)
 
     def test_no_action_for_self(self):
         """Test that a notification is not sent for actions the user took."""
@@ -77,7 +76,7 @@ class TestNotificationsSentFromActions(TestCase):
         # Make a new action for the above. This should not trigger notifications.
         action.send(q.creator, verb="edited", action_object=q)
         act = Action.objects.order_by("-id")[0]
-        eq_(Notification.objects.filter(action=act).count(), 0)
+        self.assertEqual(Notification.objects.filter(action=act).count(), 0)
 
 
 @mock.patch.object(notification_tasks, "requests")
@@ -111,7 +110,7 @@ class TestSimplePushNotifier(TestCase):
         n = NotificationFactory(owner=u)
 
         # The push notification handler should try, and then retry 3 times before giving up.
-        eq_(
+        self.assertEqual(
             requests.put.call_args_list,
             [
                 ((url, "version={}".format(n.id)), {}),

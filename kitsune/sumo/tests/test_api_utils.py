@@ -1,11 +1,9 @@
-import pytz
 from datetime import datetime
 from unittest.mock import Mock
-from nose.tools import eq_
 
+import pytz
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-
 from rest_framework import fields, serializers
 
 from kitsune.sumo import api_utils
@@ -24,7 +22,7 @@ class TestLanguageNegotiation(TestCase):
         negotiater = api_utils.LocaleNegotiationMixin()
         request = factory.get("/", HTTP_ACCEPT_LANGUAGE="es,en-US")
         negotiater.request = request
-        eq_(negotiater.get_locale(), "es")
+        self.assertEqual(negotiater.get_locale(), "es")
 
 
 class TestInequalityFilterBackend(TestCase):
@@ -53,7 +51,7 @@ class TestInequalityFilterBackend(TestCase):
         calls = self.queryset.method_calls
         # Since both variables are in `filterset_fields`, they both get processed.
         expected = [("filter", (), {"x__gte": 10}), ("filter", (), {"y__lt": 5})]
-        eq_(calls, expected)
+        self.assertEqual(calls, expected)
 
 
 class TestDateTimeUTCField(TestCase):
@@ -61,7 +59,7 @@ class TestDateTimeUTCField(TestCase):
         field = api_utils.DateTimeUTCField()
         as_pacific = pytz.timezone("US/Pacific").localize(datetime(2014, 11, 12, 13, 49, 59))
         as_utc = field.to_representation(as_pacific)
-        eq_(as_utc, "2014-11-12T21:49:59Z")
+        self.assertEqual(as_utc, "2014-11-12T21:49:59Z")
 
     # TODO: How can naive datetime conversion be tested?
 
@@ -98,16 +96,16 @@ class TestPermissionMod(TestCase):
         for case in cases:
             allow, allow_obj, expected_val, expected_write_only = case
             serializer = MockSerializer(instance=obj)
-            eq_(serializer.data.get("foo"), expected_val)
+            self.assertEqual(serializer.data.get("foo"), expected_val)
 
 
 class TestJsonRenderer(TestCase):
     def test_it_works(self):
         expected = b'{"foo":"bar"}'
         actual = api_utils.JSONRenderer().render({"foo": "bar"})
-        eq_(expected, actual)
+        self.assertEqual(expected, actual)
 
     def test_it_escapes_bracket_slash(self):
         expected = rb'{"xss":"<\/script>"}'
         actual = api_utils.JSONRenderer().render({"xss": "</script>"})
-        eq_(expected, actual)
+        self.assertEqual(expected, actual)

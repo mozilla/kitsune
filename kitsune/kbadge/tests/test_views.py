@@ -1,5 +1,3 @@
-from nose.tools import eq_
-
 from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -10,7 +8,7 @@ class AwardsListTests(TestCase):
 
     def test_list_empty(self):
         resp = self.client.get(reverse("kbadge.awards_list"), follow=True)
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
 
     def test_list_with_awards(self):
         b = BadgeFactory()
@@ -19,7 +17,7 @@ class AwardsListTests(TestCase):
         a3 = AwardFactory(description="A3 AWARD", badge=b)
 
         resp = self.client.get(reverse("kbadge.awards_list"), follow=True)
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         self.assertContains(resp, a1.user.username)
         self.assertContains(resp, a1.get_absolute_url())
         self.assertContains(resp, a2.user.username)
@@ -34,4 +32,4 @@ class AwardDetailsTests(TestCase):
         a1 = AwardFactory(description="A1 AWARD")
 
         resp = self.client.get(a1.get_absolute_url(), follow=True)
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)

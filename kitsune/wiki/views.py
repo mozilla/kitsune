@@ -15,8 +15,8 @@ from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
+from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -100,7 +100,7 @@ def doc_page_cache(view):
 
         # We only cache if the response returns HTTP 200.
         if response.status_code == 200:
-            cache.set(cache_key, (response.content, dict(list(response._headers.values()))))
+            cache.set(cache_key, (response.content, dict(list(response.headers.items()))))
 
         return response
 

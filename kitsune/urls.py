@@ -1,7 +1,6 @@
 import authority
 from django.conf import settings
-from django.conf.urls import include, url
-from django.urls import path
+from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
 from waffle.views import wafflejs
@@ -21,46 +20,46 @@ admin.autodiscover()
 authority.autodiscover()
 
 urlpatterns = [
-    url(r"^search", include("kitsune.search.urls")),
+    re_path(r"^search", include("kitsune.search.urls")),
     path("forums/", include("kitsune.forums.urls")),
-    url(r"^questions", include("kitsune.questions.urls")),
-    url(r"^flagged", include("kitsune.flagit.urls")),
-    url(r"^upload", include("kitsune.upload.urls")),
-    url(r"^kb", include("kitsune.wiki.urls")),
-    url(r"^gallery", include("kitsune.gallery.urls")),
-    url(r"^chat", RedirectView.as_view(url="questions/new")),
-    url(r"^messages", include("kitsune.messages.urls")),
-    url(r"^1", include("kitsune.inproduct.urls")),
-    url(r"^postcrash", include("kitsune.postcrash.urls")),
-    url(r"^groups", include("kitsune.groups.urls")),
-    url(r"^kpi/", include("kitsune.kpi.urls")),
-    url(r"^products", include("kitsune.products.urls")),
-    url(r"^announcements", include("kitsune.announcements.urls")),
-    url(r"^community", include("kitsune.community.urls")),
-    url(r"^badges/", include("kitsune.kbadge.urls")),
+    re_path(r"^questions", include("kitsune.questions.urls")),
+    re_path(r"^flagged", include("kitsune.flagit.urls")),
+    re_path(r"^upload", include("kitsune.upload.urls")),
+    re_path(r"^kb", include("kitsune.wiki.urls")),
+    re_path(r"^gallery", include("kitsune.gallery.urls")),
+    re_path(r"^chat", RedirectView.as_view(url="questions/new")),
+    re_path(r"^messages", include("kitsune.messages.urls")),
+    re_path(r"^1", include("kitsune.inproduct.urls")),
+    re_path(r"^postcrash", include("kitsune.postcrash.urls")),
+    re_path(r"^groups", include("kitsune.groups.urls")),
+    re_path(r"^kpi/", include("kitsune.kpi.urls")),
+    re_path(r"^products", include("kitsune.products.urls")),
+    re_path(r"^announcements", include("kitsune.announcements.urls")),
+    re_path(r"^community", include("kitsune.community.urls")),
+    re_path(r"^badges/", include("kitsune.kbadge.urls")),
     # JavaScript Waffle.
-    url(r"^wafflejs$", wafflejs, name="wafflejs"),
-    url(r"^", include("kitsune.dashboards.urls")),
-    url(r"^", include("kitsune.landings.urls")),
-    url(r"^", include("kitsune.kpi.urls_api")),
-    url(r"^", include("kitsune.motidings.urls")),
+    re_path(r"^wafflejs$", wafflejs, name="wafflejs"),
+    re_path(r"^", include("kitsune.dashboards.urls")),
+    re_path(r"^", include("kitsune.landings.urls")),
+    re_path(r"^", include("kitsune.kpi.urls_api")),
+    re_path(r"^", include("kitsune.motidings.urls")),
     # Users
-    url("", include("kitsune.users.urls")),
+    re_path("", include("kitsune.users.urls")),
     # Services and sundry.
-    url(r"", include("kitsune.sumo.urls")),
+    re_path(r"", include("kitsune.sumo.urls")),
     # v1 APIs
-    url(r"^api/1/kb/", include("kitsune.wiki.urls_api")),
-    url(r"^api/1/products/", include("kitsune.products.urls_api")),
-    url(r"^api/1/gallery/", include("kitsune.gallery.urls_api")),
-    url(r"^api/1/users/", include("kitsune.users.urls_api")),
+    re_path(r"^api/1/kb/", include("kitsune.wiki.urls_api")),
+    re_path(r"^api/1/products/", include("kitsune.products.urls_api")),
+    re_path(r"^api/1/gallery/", include("kitsune.gallery.urls_api")),
+    re_path(r"^api/1/users/", include("kitsune.users.urls_api")),
     # v2 APIs
-    url(r"^api/2/", include("kitsune.notifications.urls_api")),
-    url(r"^api/2/", include("kitsune.questions.urls_api")),
-    url(r"^api/2/", include("kitsune.sumo.urls_api")),
+    re_path(r"^api/2/", include("kitsune.notifications.urls_api")),
+    re_path(r"^api/2/", include("kitsune.questions.urls_api")),
+    re_path(r"^api/2/", include("kitsune.sumo.urls_api")),
     # These API urls include both v1 and v2 urls.
-    url(r"^api/", include("kitsune.users.urls_api")),
+    re_path(r"^api/", include("kitsune.users.urls_api")),
     # contribute.json url
-    url(
+    re_path(
         r"^(?P<path>contribute\.json)$",
         servestatic,
         kwargs={"document_root": settings.ROOT},
@@ -74,7 +73,7 @@ handler500 = sumo_views.handle500
 if settings.DEBUG:
     media_url = settings.MEDIA_URL.lstrip("/").rstrip("/")
     urlpatterns += [
-        url(
+        re_path(
             r"^%s/(?P<path>.*)$" % media_url,
             sumo_views.serve_cors,
             {"document_root": settings.MEDIA_ROOT},
@@ -85,13 +84,13 @@ if settings.SHOW_DEBUG_TOOLBAR:
     import debug_toolbar
 
     urlpatterns += [
-        url("__debug__/", include(debug_toolbar.urls)),
+        re_path("__debug__/", include(debug_toolbar.urls)),
     ]
 
 
 if settings.ENABLE_ADMIN:
     urlpatterns += [
-        url(r"^admin/", admin.site.urls),
+        re_path(r"^admin/", admin.site.urls),
     ]
 elif settings.ADMIN_REDIRECT_URL:
-    urlpatterns.append(url(r"^admin/", RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL)))
+    urlpatterns.append(re_path(r"^admin/", RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL)))

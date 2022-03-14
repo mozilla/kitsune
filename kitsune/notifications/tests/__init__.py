@@ -5,7 +5,7 @@ from kitsune.notifications.models import Notification
 from kitsune.users.tests import UserFactory
 
 
-class ActionFactory(factory.DjangoModelFactory):
+class ActionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Action
 
@@ -13,7 +13,7 @@ class ActionFactory(factory.DjangoModelFactory):
     verb = "looked at"
 
 
-class NotificationFactory(factory.DjangoModelFactory):
+class NotificationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Notification
 

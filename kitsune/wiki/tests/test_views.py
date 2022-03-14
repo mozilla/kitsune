@@ -1,31 +1,29 @@
 # -*- coding: utf-8 -*-
 
 import json
+from unittest import mock
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.test import Client
-
-from unittest import mock
-from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
-from kitsune.sumo.redis_utils import redis_client, RedisError
-from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, template_used
+from kitsune.sumo.redis_utils import RedisError, redis_client
+from kitsune.sumo.tests import LocalizingClient, SkipTest, TestCase, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import CATEGORIES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
-from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote, DraftRevision
+from kitsune.wiki.config import CATEGORIES, TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
+from kitsune.wiki.models import Document, DraftRevision, HelpfulVote, HelpfulVoteMetadata
 from kitsune.wiki.tests import (
-    HelpfulVoteFactory,
-    new_document_data,
-    RevisionFactory,
-    TemplateDocumentFactory,
+    ApprovedRevisionFactory,
     DocumentFactory,
     DraftRevisionFactory,
-    ApprovedRevisionFactory,
+    HelpfulVoteFactory,
     RedirectRevisionFactory,
+    RevisionFactory,
+    TemplateDocumentFactory,
+    new_document_data,
 )
 from kitsune.wiki.views import _document_lock_check, _document_lock_clear, _document_lock_steal
 
@@ -90,23 +88,23 @@ class JsonViewTests(TestCase):
         """Verify checking for an article by title."""
         url = reverse("wiki.json", force_locale=True)
         resp = self.client.get(url, {"title": "an article title"})
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_("article-title", data["slug"])
+        self.assertEqual("article-title", data["slug"])
 
     def test_json_view_by_slug(self):
         """Verify checking for an article by slug."""
         url = reverse("wiki.json", force_locale=True)
         resp = self.client.get(url, {"slug": "article-title"})
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_("an article title", data["title"])
+        self.assertEqual("an article title", data["title"])
 
     def test_json_view_404(self):
         """Searching for something that doesn't exist should 404."""
         url = reverse("wiki.json", force_locale=True)
         resp = self.client.get(url, {"title": "an article title ok."})
-        eq_(404, resp.status_code)
+        self.assertEqual(404, resp.status_code)
 
 
 class WhatLinksWhereTests(TestCase):
@@ -118,7 +116,7 @@ class WhatLinksWhereTests(TestCase):
 
         url = reverse("wiki.what_links_here", args=[d1.slug])
         resp = self.client.get(url, follow=True)
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         assert b"D2" in resp.content
 
     def test_what_links_here_locale_filtering(self):
@@ -129,7 +127,7 @@ class WhatLinksWhereTests(TestCase):
 
         url = reverse("wiki.what_links_here", args=[d1.slug], locale="de")
         resp = self.client.get(url, follow=True)
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         assert b"No other documents link to D1." in resp.content
 
 
@@ -156,7 +154,7 @@ class DocumentEditingTests(TestCase):
         data = new_document_data()
         data.update({"title": new_title, "slug": d.slug, "form": "doc"})
         self.client.post(reverse("wiki.edit_document", args=[d.slug]), data)
-        eq_(new_title, Document.objects.get(id=d.id).title)
+        self.assertEqual(new_title, Document.objects.get(id=d.id).title)
         assert Document.objects.get(title=old_title).redirect_url()
 
     def test_retitling_accent(self):
@@ -166,7 +164,7 @@ class DocumentEditingTests(TestCase):
         data = new_document_data()
         data.update({"title": new_title, "slug": d.slug, "form": "doc"})
         self.client.post(reverse("wiki.edit_document", args=[d.slug]), data)
-        eq_(new_title, Document.objects.get(id=d.id).title)
+        self.assertEqual(new_title, Document.objects.get(id=d.id).title)
 
     def test_retitling_template(self):
         d = TemplateDocumentFactory()
@@ -180,7 +178,7 @@ class DocumentEditingTests(TestCase):
         data.update({"title": new_title, "category": d.category, "slug": d.slug, "form": "doc"})
         url = reverse("wiki.edit_document", args=[d.slug])
         res = self.client.post(url, data, follow=True)
-        eq_(Document.objects.get(id=d.id).title, old_title)
+        self.assertEqual(Document.objects.get(id=d.id).title, old_title)
         # This message gets HTML encoded.
         assert (
             b"Documents in the Template category must have titles that start with "
@@ -191,12 +189,12 @@ class DocumentEditingTests(TestCase):
         data["category"] = CATEGORIES[0][0]
         url = reverse("wiki.edit_document", args=[d.slug])
         self.client.post(url, data, follow=True)
-        eq_(Document.objects.get(id=d.id).title, new_title)
+        self.assertEqual(Document.objects.get(id=d.id).title, new_title)
 
     def test_removing_template_category(self):
         d = TemplateDocumentFactory()
         RevisionFactory(document=d)
-        eq_(d.category, TEMPLATES_CATEGORY)
+        self.assertEqual(d.category, TEMPLATES_CATEGORY)
         assert d.title.startswith(TEMPLATE_TITLE_PREFIX)
 
         # First try and change the category without also changing the title. It should fail.
@@ -206,7 +204,7 @@ class DocumentEditingTests(TestCase):
         )
         url = reverse("wiki.edit_document", args=[d.slug])
         res = self.client.post(url, data, follow=True)
-        eq_(Document.objects.get(id=d.id).category, TEMPLATES_CATEGORY)
+        self.assertEqual(Document.objects.get(id=d.id).category, TEMPLATES_CATEGORY)
         # This message gets HTML encoded.
         assert (
             b"Documents with titles that start with &#34;Template:&#34; must be in the "
@@ -217,7 +215,7 @@ class DocumentEditingTests(TestCase):
         data["title"] = "not a template"
         url = reverse("wiki.edit_document", args=[d.slug])
         self.client.post(url, data)
-        eq_(Document.objects.get(id=d.id).category, CATEGORIES[0][0])
+        self.assertEqual(Document.objects.get(id=d.id).category, CATEGORIES[0][0])
 
     def test_changing_products(self):
         """Changing products works as expected."""
@@ -237,14 +235,14 @@ class DocumentEditingTests(TestCase):
         )
         self.client.post(reverse("wiki.edit_document", args=[d.slug]), data)
 
-        eq_(
+        self.assertEqual(
             sorted(Document.objects.get(id=d.id).products.values_list("id", flat=True)),
             sorted([prod.id for prod in [prod_desktop, prod_mobile]]),
         )
 
         data.update({"products": [prod_desktop.id], "form": "doc"})
         self.client.post(reverse("wiki.edit_document", args=[data["slug"]]), data)
-        eq_(
+        self.assertEqual(
             sorted(Document.objects.get(id=d.id).products.values_list("id", flat=True)),
             sorted([prod.id for prod in [prod_desktop]]),
         )
@@ -289,12 +287,12 @@ class DocumentEditingTests(TestCase):
         RevisionFactory(document=trans_doc, based_on=r)
         url = reverse("wiki.edit_document", args=[doc.slug], locale=trans_doc.locale)
         response = self.client.get(url)
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         # Check translate article template is being used
         assert template_used(response, "wiki/translate.html")
         content = pq(response.content)
-        eq_(content("#id_title").val(), trans_doc.title)
-        eq_(content("#id_slug").val(), trans_doc.slug)
+        self.assertEqual(content("#id_title").val(), trans_doc.title)
+        self.assertEqual(content("#id_slug").val(), trans_doc.slug)
 
     def test_translate_with_parent_slug_while_trans_article_not_available(self):
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
@@ -302,24 +300,24 @@ class DocumentEditingTests(TestCase):
         url = reverse("wiki.edit_document", args=[doc.slug], locale="bn")
         response = self.client.get(url)
         # Check redirect is happening
-        eq_(response.status_code, 302)
+        self.assertEqual(response.status_code, 302)
         # get the redirected url
         response = self.client.get(url, follow=True)
-        eq_(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         # Check translate article template is being used
         assert template_used(response, "wiki/translate.html")
         content = pq(response.content)
         # While first translation, the slug and title field is always blank.
         # So the value field should be None
-        eq_(content("#id_title").val(), "")
-        eq_(content("#id_slug").val(), "")
+        self.assertEqual(content("#id_title").val(), "")
+        self.assertEqual(content("#id_slug").val(), "")
 
     def test_while_there_is_no_parent_slug(self):
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         invalid_slug = doc.slug + "invalid_slug"
         url = reverse("wiki.edit_document", args=[invalid_slug], locale="bn")
         response = self.client.get(url)
-        eq_(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
     def test_localized_based_on(self):
         """Editing a localized article 'based on' an older revision of the
@@ -339,9 +337,9 @@ class DocumentEditingTests(TestCase):
         response = self.client.get(url)
         doc = pq(response.content)
         input = doc("#id_based_on")[0]
-        eq_(int(input.value), en_r.pk)
-        eq_(doc("#id_keywords")[0].attrib["value"], "oui")
-        eq_(doc("#id_summary").text(), "lipsum")
+        self.assertEqual(int(input.value), en_r.pk)
+        self.assertEqual(doc("#id_keywords")[0].attrib["value"], "oui")
+        self.assertEqual(doc("#id_summary").text(), "\nlipsum")
 
     def test_needs_change(self):
         """Test setting and unsetting the needs change flag"""
@@ -363,14 +361,14 @@ class DocumentEditingTests(TestCase):
         self.client.post(reverse("wiki.edit_document", args=[doc.slug]), data)
         doc = Document.objects.get(pk=doc.pk)
         assert doc.needs_change
-        eq_(comment, doc.needs_change_comment)
+        self.assertEqual(comment, doc.needs_change_comment)
 
         # Clear out needs_change.
         data.update({"needs_change": False, "needs_change_comment": comment})
         self.client.post(reverse("wiki.edit_document", args=[doc.slug]), data)
         doc = Document.objects.get(pk=doc.pk)
         assert not doc.needs_change
-        eq_("", doc.needs_change_comment)
+        self.assertEqual("", doc.needs_change_comment)
 
     def test_draft_revision_view(self):
         """Test Draft Revision saving is working propoerly"""
@@ -385,10 +383,10 @@ class DocumentEditingTests(TestCase):
             "based_on": rev.id,
         }
         resp = self.client.post(url, data)
-        eq_(201, resp.status_code)
+        self.assertEqual(201, resp.status_code)
         obj = DraftRevision.objects.get(creator=self.u, document=rev.document, locale="bn")
-        eq_(obj.content, data["content"])
-        eq_(obj.based_on, rev)
+        self.assertEqual(obj.content, data["content"])
+        self.assertEqual(obj.based_on, rev)
 
     def test_draft_revision_many_times(self):
         """Test only one draft revision for a single translation and user"""
@@ -405,11 +403,11 @@ class DocumentEditingTests(TestCase):
         # post 10 post request for draft
         for i in range(10):
             resp = self.client.post(url, data)
-            eq_(201, resp.status_code)
+            self.assertEqual(201, resp.status_code)
 
         obj = DraftRevision.objects.filter(creator=self.u, document=rev.document, locale="bn")
         # There should be only one draft revision
-        eq_(1, obj.count())
+        self.assertEqual(1, obj.count())
 
     def test_draft_revision_restore_in_translation_page(self):
         """Check Draft Revision is restored when a user click on the Restore Button"""
@@ -420,10 +418,10 @@ class DocumentEditingTests(TestCase):
         trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
         draft_request = {"restore": "Restore"}
         restore_draft_resp = self.client.get(trans_url, draft_request)
-        eq_(200, restore_draft_resp.status_code)
+        self.assertEqual(200, restore_draft_resp.status_code)
         # Check if the title of the translate page contains the title of draft revision
         trans_page = pq(restore_draft_resp.content)
-        eq_(draft.content, trans_page("#id_content").text())
+        self.assertEqual("\n" + draft.content, trans_page("#id_content").text())
 
     def test_discard_draft_revision(self):
         """Check Draft Revision is discarded
@@ -436,10 +434,10 @@ class DocumentEditingTests(TestCase):
         trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
         draft_request = {"discard": "Discard"}
         restore_draft_resp = self.client.get(trans_url, draft_request)
-        eq_(200, restore_draft_resp.status_code)
+        self.assertEqual(200, restore_draft_resp.status_code)
         # Check if the draft revision is in database
         draft = DraftRevision.objects.filter(id=draft.id)
-        eq_(False, draft.exists())
+        self.assertEqual(False, draft.exists())
 
     def test_draft_revision_discarded_when_submitting_revision(self):
         """Check draft revision is discarded when submitting a revision
@@ -460,7 +458,7 @@ class DocumentEditingTests(TestCase):
         }
         self.client.post(trans_url, data)
         draft_revision = DraftRevision.objects.filter(id=draft.id)
-        eq_(False, draft_revision.exists())
+        self.assertEqual(False, draft_revision.exists())
 
 
 class AddRemoveContributorTests(TestCase):
@@ -476,9 +474,9 @@ class AddRemoveContributorTests(TestCase):
     def test_add_contributor(self):
         url = reverse("wiki.add_contributor", locale="en-US", args=[self.document.slug])
         r = self.client.get(url)
-        eq_(405, r.status_code)
+        self.assertEqual(405, r.status_code)
         r = self.client.post(url, {"users": self.contributor.username})
-        eq_(302, r.status_code)
+        self.assertEqual(302, r.status_code)
         assert self.contributor in self.document.contributors.all()
 
     def test_remove_contributor(self):
@@ -489,9 +487,9 @@ class AddRemoveContributorTests(TestCase):
             args=[self.document.slug, self.contributor.id],
         )
         r = self.client.get(url)
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         r = self.client.post(url)
-        eq_(302, r.status_code)
+        self.assertEqual(302, r.status_code)
         assert self.contributor not in self.document.contributors.all()
 
 
@@ -503,12 +501,12 @@ class VoteTests(TestCase):
         response = self.client.post(
             reverse("wiki.document_vote", args=["hi"]), {"revision_id": "x"}
         )
-        eq_(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_helpful_vote_no_id(self):
         """Throw helpful_vote a POST without an ID and see if it 400s."""
         response = self.client.post(reverse("wiki.document_vote", args=["hi"]), {})
-        eq_(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_vote_on_template(self):
         """
@@ -519,7 +517,7 @@ class VoteTests(TestCase):
         response = self.client.post(
             reverse("wiki.document_vote", args=["hi"]), {"revision_id": r.id}
         )
-        eq_(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_unhelpful_survey(self):
         """The unhelpful survey is stored as vote metadata"""
@@ -533,22 +531,22 @@ class VoteTests(TestCase):
             "comment": "lorem ipsum dolor",
         }
         response = self.client.post(url, data)
-        eq_(200, response.status_code)
-        eq_(b'{"message": "Thanks for making us better!"}', response.content)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(b'{"message": "Thanks for making us better!"}', response.content)
 
         vote_meta = vote.metadata.all()
-        eq_(1, len(vote_meta))
-        eq_("survey", vote_meta[0].key)
+        self.assertEqual(1, len(vote_meta))
+        self.assertEqual("survey", vote_meta[0].key)
 
         survey = json.loads(vote_meta[0].value)
-        eq_(3, len(list(survey.keys())))
+        self.assertEqual(3, len(list(survey.keys())))
         assert "confusing" in survey
         assert "too-long" in survey
-        eq_("lorem ipsum dolor", survey["comment"])
+        self.assertEqual("lorem ipsum dolor", survey["comment"])
 
         # Posting the survey again shouldn't add a new survey result.
         self.client.post(url, data)
-        eq_(1, vote.metadata.filter(key="survey").count())
+        self.assertEqual(1, vote.metadata.filter(key="survey").count())
 
     def test_unhelpful_survey_on_helpful_vote(self):
         """Verify a survey doesn't get saved on helpful votes."""
@@ -562,7 +560,7 @@ class VoteTests(TestCase):
             "comment": "lorem ipsum dolor",
         }
         self.client.post(url, data)
-        eq_(0, vote.metadata.count())
+        self.assertEqual(0, vote.metadata.count())
 
     def test_unhelpful_truncation(self):
         """Give helpful_vote a survey that is too long.
@@ -594,7 +592,7 @@ class VoteTests(TestCase):
             },
         )
 
-        eq_(HelpfulVoteMetadata.objects.filter(key="source").count(), 1)
+        self.assertEqual(HelpfulVoteMetadata.objects.filter(key="source").count(), 1)
 
     def test_rate_limiting(self):
         """Verify only 10 votes are counted in a day."""
@@ -603,7 +601,7 @@ class VoteTests(TestCase):
             url = reverse("wiki.document_vote", kwargs={"document_slug": rev.document.slug})
             self.client.post(url, {"revision_id": rev.id, "helpful": True})
 
-        eq_(10, HelpfulVote.objects.count())
+        self.assertEqual(10, HelpfulVote.objects.count())
 
 
 class TestDocumentLocking(TestCase):
@@ -622,19 +620,19 @@ class TestDocumentLocking(TestCase):
         u2 = UserFactory()
 
         # No one has the document locked yet.
-        eq_(_document_lock_check(doc.id), None)
+        self.assertEqual(_document_lock_check(doc.id), None)
         # u1 should be able to lock the doc
-        eq_(_document_lock_steal(doc.id, u1.username), True)
-        eq_(_document_lock_check(doc.id), u1.username)
+        self.assertEqual(_document_lock_steal(doc.id, u1.username), True)
+        self.assertEqual(_document_lock_check(doc.id), u1.username)
         # u2 should be able to steal the lock
-        eq_(_document_lock_steal(doc.id, u2.username), True)
-        eq_(_document_lock_check(doc.id), u2.username)
+        self.assertEqual(_document_lock_steal(doc.id, u2.username), True)
+        self.assertEqual(_document_lock_check(doc.id), u2.username)
         # u1 can't release the lock, because u2 stole it
-        eq_(_document_lock_clear(doc.id, u1.username), False)
-        eq_(_document_lock_check(doc.id), u2.username)
+        self.assertEqual(_document_lock_clear(doc.id, u1.username), False)
+        self.assertEqual(_document_lock_check(doc.id), u2.username)
         # u2 can release the lock
-        eq_(_document_lock_clear(doc.id, u2.username), True)
-        eq_(_document_lock_check(doc.id), None)
+        self.assertEqual(_document_lock_clear(doc.id, u2.username), True)
+        self.assertEqual(_document_lock_check(doc.id), None)
 
     def test_lock_helpers_doc(self):
         doc = DocumentFactory()
@@ -724,12 +722,12 @@ class TestDocumentLocking(TestCase):
             "content": "loremo ipsumo doloro sito ameto",
         }
         r = self.client.post(trans_url, data)
-        eq_(r.status_code, 302)
+        self.assertEqual(r.status_code, 302)
 
         # Now run the test.
         edit_url = reverse("wiki.edit_document", locale="es", args=[data["slug"]])
         es_doc = Document.objects.get(slug=data["slug"])
-        eq_(es_doc.locale, "es")
+        self.assertEqual(es_doc.locale, "es")
         self._lock_workflow(es_doc, edit_url)
 
 
@@ -768,7 +766,7 @@ class FallbackSystem(TestCase):
         # Get the data of the requested locale version of the document
         url = reverse("wiki.document", args=[en_doc.slug], locale=req_doc_locale)
         response = client.get(url, follow=True)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         doc_content = doc("#doc-content").text()
         return doc_content

@@ -4,17 +4,17 @@ orbs:
 jobs:
   lint:
     docker:
-      - image: circleci/python:3.9-bullseye
+      - image: cimg/python:3.10
     steps:
       - checkout
       - run:
           name: Lint with pre-commit
           command: |
-            sudo pip install --upgrade pre-commit==2.15.0
+            pip install --upgrade pre-commit==2.15.0
             pre-commit run --all-files
   test-and-build:
     docker:
-      - image: circleci/python:3.9-bullseye
+      - image: cimg/python:3.10
     environment:
       AWS_DEFAULT_REGION: us-west-2
     steps:
@@ -33,7 +33,7 @@ jobs:
           name: Copy synonym files to elasticsearch7
           command: |
             ./bin/dc_ci.sh up -d elasticsearch7
-            docker cp ./kitsune/search/dictionaries/synonyms/. project_elasticsearch7_1:/usr/share/elasticsearch/config/synonyms
+            docker cp ./kitsune/search/dictionaries/synonyms/. project-elasticsearch7-1:/usr/share/elasticsearch/config/synonyms
       - run:
           name: Run unit tests
           command: ./bin/dc_ci.sh run test ./bin/run-unit-tests.sh
@@ -43,9 +43,10 @@ jobs:
       - when:
           condition:
             or:
-              - equal: [ main, << pipeline.git.branch >> ]
-              - equal: [ production, << pipeline.git.branch >> ]
-              - matches: { pattern: "^prod-.+$", value: << pipeline.git.branch >> }
+              - equal: [main, << pipeline.git.branch >>]
+              - equal: [production, << pipeline.git.branch >>]
+              - matches:
+                  { pattern: "^prod-.+$", value: << pipeline.git.branch >> }
           steps:
             - run:
                 name: Build prod image

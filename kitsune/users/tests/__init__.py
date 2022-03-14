@@ -1,9 +1,10 @@
 import factory
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
-from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
-from kitsune.users.models import AccountEvent, Profile, Setting
 from tidings.models import Watch
+
+from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
+from kitsune.users.models import AccountEvent, CONTRIBUTOR_GROUP, Profile, Setting
 
 
 class TestCaseBase(TestCase):
@@ -12,7 +13,7 @@ class TestCaseBase(TestCase):
     client_class = LocalizingClient
 
 
-class UserFactory(factory.DjangoModelFactory):
+class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User
 
@@ -31,7 +32,13 @@ class UserFactory(factory.DjangoModelFactory):
             user.groups.add(group)
 
 
-class ProfileFactory(factory.DjangoModelFactory):
+class ContributorFactory(UserFactory):
+    @factory.post_generation
+    def add_contributor_group(user, *args, **kwargs):
+        user.groups.add(GroupFactory(name=CONTRIBUTOR_GROUP))
+
+
+class ProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Profile
 
@@ -46,9 +53,10 @@ class ProfileFactory(factory.DjangoModelFactory):
     user = factory.SubFactory(UserFactory, profile=None)
 
 
-class GroupFactory(factory.DjangoModelFactory):
+class GroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Group
+        django_get_or_create = ("name",)
 
     name = factory.fuzzy.FuzzyText()
 
@@ -68,7 +76,7 @@ def add_permission(user, model, permission_codename):
     user.user_permissions.add(permission)
 
 
-class SettingFactory(factory.DjangoModelFactory):
+class SettingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Setting
 
@@ -87,7 +95,7 @@ def tidings_watch(save=False, **kwargs):
     return w
 
 
-class AccountEventFactory(factory.DjangoModelFactory):
+class AccountEventFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AccountEvent
 

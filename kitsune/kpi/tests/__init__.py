@@ -6,14 +6,14 @@ from kitsune.kpi.models import MetricKind, Metric
 from kitsune.sumo.tests import FuzzyUnicode
 
 
-class MetricKindFactory(factory.DjangoModelFactory):
+class MetricKindFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MetricKind
 
     code = FuzzyUnicode()
 
 
-class MetricFactory(factory.DjangoModelFactory):
+class MetricFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Metric
 

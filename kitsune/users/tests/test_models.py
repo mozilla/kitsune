@@ -1,7 +1,5 @@
 import logging
 
-from nose.tools import eq_
-
 from kitsune.sumo.tests import TestCase
 from kitsune.users.forms import SettingsForm
 from kitsune.users.models import Setting
@@ -22,8 +20,8 @@ class UserSettingsTests(TestCase):
             Setting.get_for_user(self.u, bad_setting)
 
     def test_default_values(self):
-        eq_(0, Setting.objects.count())
+        self.assertEqual(0, Setting.objects.count())
         keys = list(SettingsForm.base_fields.keys())
         for setting in keys:
             SettingsForm.base_fields[setting]
-            eq_(False, Setting.get_for_user(self.u, setting))
+            self.assertEqual(False, Setting.get_for_user(self.u, setting))

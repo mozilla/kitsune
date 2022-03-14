@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
-from kitsune.sumo.models import ModelBase, LocaleField
+from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files
 
@@ -18,7 +18,7 @@ class Media(ModelBase):
     updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     description = models.TextField(max_length=10000)
     locale = LocaleField(default=settings.GALLERY_DEFAULT_LANGUAGE, db_index=True)
-    is_draft = models.NullBooleanField(default=None, null=True, editable=False)
+    is_draft = models.BooleanField(default=None, null=True, editable=False)
 
     class Meta(object):
         abstract = True

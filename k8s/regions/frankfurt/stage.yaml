@@ -2,7 +2,8 @@ kubernetes:
     app_name: "sumo-stage"
     namespace: "sumo-stage"
     target_environment: "stage"
-    nodeport_name: "sumo-nodeport"
+    service_name: "sumo-svc"
+    service_cert_arn: "arn:aws:acm:eu-central-1:095732026120:certificate/d86b2f65-b8ee-4cb7-bba8-e1fdc54a8a28"
     secrets_name: "sumo-secrets-stage"
     image:
         repo: "mozilla/kitsune"
@@ -88,7 +89,6 @@ app:
     email_port: 25
     email_use_tls: True
     enable_admin: False
-    enable_whitenoise: True
     engage_robots: False
     es_index_prefix: "sumo_stage"
     es_live_indexing: True

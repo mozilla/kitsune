@@ -92,6 +92,8 @@ module.exports = {
   devtool: "cheap-module-source-map",
   output: {
     filename: "[name].js",
+    // be sure to update kitsune.settings.WHITENOISE_IMMUTABLE_FILE_TEST if changing this:
+    hashDigestLength: 16,
   },
 };
 

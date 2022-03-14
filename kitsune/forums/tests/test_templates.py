@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from nose.tools import eq_
 
 from kitsune.access.tests import PermissionFactory
 from kitsune.forums.models import Post
@@ -21,7 +20,7 @@ class PostsTemplateTests(ForumTestCase):
 
         doc = pq(response.content)
         error_msg = doc("ul.errorlist li a")[0]
-        eq_(error_msg.text, "Please provide a message.")
+        self.assertEqual(error_msg.text, "Please provide a message.")
 
     def test_edit_post_errors(self):
         """Changing post content works."""
@@ -39,7 +38,7 @@ class PostsTemplateTests(ForumTestCase):
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(
+        self.assertEqual(
             errors[0].text,
             "Your message is too short (4 characters). " + "It must be at least 5 characters.",
         )
@@ -57,7 +56,7 @@ class PostsTemplateTests(ForumTestCase):
         )
 
         doc = pq(res.content)
-        eq_(len(doc("form.edit-post")), 1)
+        self.assertEqual(len(doc("form.edit-post")), 1)
 
     def test_edit_post(self):
         """Changing post content works."""
@@ -74,15 +73,15 @@ class PostsTemplateTests(ForumTestCase):
         )
         edited_p = Post.objects.get(id=p.id)
 
-        eq_("Some new content", edited_p.content)
+        self.assertEqual("Some new content", edited_p.content)
 
     def test_posts_fr(self):
         """Posts render for [fr] locale."""
         t = ThreadFactory()
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id], locale="fr")
-        eq_(200, response.status_code)
-        eq_(
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
             "{c}/fr/forums/{f}/{t}".format(c=settings.CANONICAL_URL, f=t.forum.slug, t=t.id),
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
@@ -96,7 +95,7 @@ class PostsTemplateTests(ForumTestCase):
     # response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
     # doc = pq(response.content)
     # crumb = doc("#breadcrumbs li:last-child")
-    # eq_(crumb.text(), "A thread with a very very very very...")
+    # self.assertEqual(crumb.text(), "A thread with a very very very very...")
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""
@@ -125,10 +124,10 @@ class PostsTemplateTests(ForumTestCase):
             {"content": "More new content"},
             args=[f.slug, t.id, p.id],
         )
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
 
         edited_p = Post.objects.get(pk=p.pk)
-        eq_("More new content", edited_p.content)
+        self.assertEqual("More new content", edited_p.content)
 
     def test_preview_reply(self):
         """Preview a reply."""
@@ -143,10 +142,10 @@ class PostsTemplateTests(ForumTestCase):
             {"content": content, "preview": "any string"},
             args=[t.forum.slug, t.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc("#post-preview div.content").text())
-        eq_(1, t.post_set.count())
+        self.assertEqual(content, doc("#post-preview div.content").text())
+        self.assertEqual(1, t.post_set.count())
 
     def test_watch_thread(self):
         """Watch and unwatch a thread."""
@@ -202,21 +201,21 @@ class PostsTemplateTests(ForumTestCase):
 
         response = get(self.client, "forums.posts", args=[f.slug, t.pk])
         doc = pq(response.content)
-        eq_("nofollow", doc("ol.posts div.content a")[0].attrib["rel"])
+        self.assertEqual("nofollow", doc("ol.posts div.content a")[0].attrib["rel"])
 
     def test_num_replies(self):
         """Verify the number of replies label."""
         t = ThreadFactory()
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert b"0 Replies" in response.content
 
         PostFactory(thread=t)
         PostFactory(thread=t)
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert b"2 Replies" in response.content
 
     def test_youtube_in_post(self):
@@ -246,7 +245,7 @@ class ThreadsTemplateTests(ForumTestCase):
         doc = pq(response.content)
         last_post_link = doc(".threads .last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
-        eq_(href.split("#")[1], "post-%s" % last.id)
+        self.assertEqual(href.split("#")[1], "post-%s" % last.id)
 
     def test_empty_thread_errors(self):
         """Posting an empty thread shows errors."""
@@ -262,8 +261,8 @@ class ThreadsTemplateTests(ForumTestCase):
         )
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(errors[0].text, "Please provide a title.")
-        eq_(errors[1].text, "Please provide a message.")
+        self.assertEqual(errors[0].text, "Please provide a title.")
+        self.assertEqual(errors[1].text, "Please provide a message.")
 
     def test_new_short_thread_errors(self):
         """Posting a short new thread shows errors."""
@@ -280,11 +279,11 @@ class ThreadsTemplateTests(ForumTestCase):
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(
+        self.assertEqual(
             errors[0].text,
             "Your title is too short (4 characters). " + "It must be at least 5 characters.",
         )
-        eq_(
+        self.assertEqual(
             errors[1].text,
             "Your message is too short (4 characters). " + "It must be at least 5 characters.",
         )
@@ -304,7 +303,7 @@ class ThreadsTemplateTests(ForumTestCase):
 
         doc = pq(response.content)
         errors = doc("ul.errorlist li a")
-        eq_(
+        self.assertEqual(
             errors[0].text,
             "Your title is too short (4 characters). " + "It must be at least 5 characters.",
         )
@@ -318,7 +317,7 @@ class ThreadsTemplateTests(ForumTestCase):
         res = get(self.client, "forums.edit_thread", args=[t.forum.slug, t.id])
 
         doc = pq(res.content)
-        eq_(len(doc("form.edit-thread")), 1)
+        self.assertEqual(len(doc("form.edit-thread")), 1)
 
     def test_watch_forum(self):
         """Watch and unwatch a forum."""
@@ -338,7 +337,7 @@ class ThreadsTemplateTests(ForumTestCase):
         f = ForumFactory()
 
         response = get(self.client, "forums.threads", args=[f.slug])
-        eq_(
+        self.assertEqual(
             "%s/en-US/forums/%s/" % (settings.CANONICAL_URL, f.slug),
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
@@ -375,7 +374,7 @@ class ForumsTemplateTests(ForumTestCase):
         doc = pq(response.content)
         last_post_link = doc(".forums .last-post a:not(.username)")[0]
         href = last_post_link.attrib["href"]
-        eq_(href.split("#")[1], "post-%s" % p.id)
+        self.assertEqual(href.split("#")[1], "post-%s" % p.id)
 
     def test_restricted_is_invisible(self):
         """Forums with restricted view_in permission shouldn't show up."""
@@ -393,7 +392,7 @@ class ForumsTemplateTests(ForumTestCase):
 
     def test_canonical_url(self):
         response = get(self.client, "forums.forums")
-        eq_(
+        self.assertEqual(
             "{}/en-US/forums/".format(settings.CANONICAL_URL),
             pq(response.content)('link[rel="canonical"]')[0].attrib["href"],
         )
@@ -405,18 +404,18 @@ class ForumsTemplateTests(ForumTestCase):
 
         # forum1 should be listed first
         r = get(self.client, "forums.forums")
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        eq_(forum1.name, doc(".forums tr a").first().text())
+        self.assertEqual(forum1.name, doc(".forums tr a").first().text())
 
         forum1.display_order = 3
         forum1.save()
 
         # forum2 should be listed first
         r = get(self.client, "forums.forums")
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        eq_(forum2.name, doc(".forums tr a").first().text())
+        self.assertEqual(forum2.name, doc(".forums tr a").first().text())
 
     def test_is_listed(self):
         """Verify is_listed is respected."""
@@ -425,19 +424,19 @@ class ForumsTemplateTests(ForumTestCase):
 
         # Both forums should be listed.
         r = get(self.client, "forums.forums")
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        eq_(2, len(doc(".forums tr")))
+        self.assertEqual(2, len(doc(".forums tr")))
 
         forum1.is_listed = False
         forum1.save()
 
         # Only forum2 should be listed.
         r = get(self.client, "forums.forums")
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        eq_(1, len(doc(".forums tr")))
-        eq_(forum2.name, doc(".forums tr a").text())
+        self.assertEqual(1, len(doc(".forums tr")))
+        self.assertEqual(forum2.name, doc(".forums tr a").text())
 
 
 class NewThreadTemplateTests(ForumTestCase):
@@ -454,7 +453,7 @@ class NewThreadTemplateTests(ForumTestCase):
             {"title": "Topic", "content": content, "preview": "any string"},
             args=[f.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc("#post-preview div.content").text())
-        eq_(0, f.thread_set.count())  # No thread was created.
+        self.assertEqual(content, doc("#post-preview div.content").text())
+        self.assertEqual(0, f.thread_set.count())  # No thread was created.

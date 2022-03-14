@@ -1,5 +1,3 @@
-from nose.tools import eq_
-
 from kitsune.sumo.tests import TestCase
 
 
@@ -8,5 +6,5 @@ class TestVanityURLs(TestCase):
 
     def test_windows7(self):
         response = self.client.get("/en-US/windows7-support", follow=False)
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
         assert "home" in response["location"]

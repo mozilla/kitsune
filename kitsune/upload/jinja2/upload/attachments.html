@@ -41,10 +41,6 @@
         <div class="upload-progress"
              style="height:{{ settings.THUMBNAIL_SIZE }}px;width:{{ settings.THUMBNAIL_SIZE }}px"></div>
       </div>
-      <noscript>
-        <input type="submit" name="delete_images" class="btn image-delete"
-               value="{{ _('Delete selected images') }}"/>
-      </noscript>
     </div>
     <div class="field add-attachment">
       <label for="id_image">{{ _('Add images (optional):') }}</label>
@@ -54,10 +50,6 @@
               accept="{{ settings.IMAGE_ALLOWED_MIMETYPES }}"
               title="{{ _('Browse for an image to upload.') }}"/>
       </label>
-      <noscript>
-        <input type="submit" name="upload_image" class="sumo-button"
-               value="{{ _('Upload') }}"/>
-      </noscript>
     </div>
     <div class="adding-attachment"></div>
   </div>

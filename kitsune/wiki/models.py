@@ -14,7 +14,7 @@ from django.http import Http404
 from django.urls import resolve
 from django.utils.encoding import smart_bytes
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 
@@ -894,19 +894,19 @@ class Revision(ModelBase, AbstractRevision):
         # previous approved revision:
         if document.current_revision == self:
             new_current = latest_revision(self, Q(is_approved=True))
-            document.update(
-                current_revision=new_current,
-                html=new_current.content_parsed if new_current else "",
-            )
+            document.current_revision = new_current
+            document.html = new_current.content_parsed if new_current else ""
+            # trigger post_save signals
+            document.save(update_fields=["current_revision", "html"])
 
         # Likewise, step the latest_localizable_revision field backward if
         # we're deleting that revision:
         if document.latest_localizable_revision == self:
-            document.update(
-                latest_localizable_revision=latest_revision(
-                    self, Q(is_approved=True, is_ready_for_localization=True)
-                )
+            document.latest_localizable_revision = latest_revision(
+                self, Q(is_approved=True, is_ready_for_localization=True)
             )
+            # trigger post_save signals
+            document.save(update_fields=["latest_localizable_revision"])
 
         super(Revision, self).delete(*args, **kwargs)
 

@@ -95,7 +95,6 @@ CACHE_MIDDLEWARE_SECONDS = config(
 WAFFLE_CACHE_PREFIX = "w2.1:"
 # User agent cache settings
 USER_AGENTS_CACHE = "default"
-
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="notifications@support.mozilla.org")
 DEFAULT_REPLY_TO_EMAIL = config("DEFAULT_REPLY_TO_EMAIL", default="no-reply@mozilla.org")
@@ -413,6 +412,13 @@ STATICFILES_FINDERS = (
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
+
+def immutable_file_test(path, url):
+    return re.match(r"^.+\.[0-9a-f]{16}\..+$", url)
+
+
+WHITENOISE_IMMUTABLE_FILE_TEST = immutable_file_test
+
 WEBPACK_LRU_CACHE = 128
 if DEV or TEST:
     WEBPACK_LRU_CACHE = 0
@@ -500,6 +506,7 @@ MIDDLEWARE = (
     "allow_cidr.middleware.AllowCIDRMiddleware",
     "kitsune.sumo.middleware.FilterByUserAgentMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "commonware.request.middleware.SetRemoteAddrFromForwardedFor",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
@@ -699,8 +706,6 @@ INSTALLED_APPS = (
     "statici18n",
     "watchman",
     # 'axes',
-    # Extra apps for testing.
-    "django_nose",
     # Extra app for python migrations.
     "django_extensions",
     # In Django <= 1.6, this "must be placed somewhere after all the apps that
@@ -710,8 +715,6 @@ INSTALLED_APPS = (
     # Last so we can override admin templates.
     "django.contrib.admin",
 )
-
-TEST_RUNNER = "kitsune.sumo.tests.TestSuiteRunner"
 
 
 def JINJA_CONFIG():
@@ -849,6 +852,7 @@ AWS_S3_HOST = config("AWS_S3_HOST", default="s3-us-west-2.amazonaws.com")
 AWS_S3_OBJECT_PARAMETERS = {
     "CacheControl": "max-age=2592000",
 }
+AWS_DEFAULT_ACL = config("AWS_DEFAULT_ACL", default=None)
 
 # Auth and permissions related constants
 LOGIN_URL = "/users/login"

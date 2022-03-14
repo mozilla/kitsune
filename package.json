@@ -50,6 +50,7 @@
     "chai": "^4.3.4",
     "chai-lint": "0.1.1",
     "color-string": "^1.9.0",
+    "compression-webpack-plugin": "^9.2.0",
     "concurrently": "^7.0.0",
     "copy-webpack-plugin": "^10.2.0",
     "css-loader": "^6.5.1",

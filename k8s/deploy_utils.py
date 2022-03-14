@@ -24,13 +24,14 @@ def todict(obj, classkey=None):
     return obj
 
 
-def render_template(config, template_name, app):
+def render_template(config, template_name, app=None):
     loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
     tenv = jinja2.Environment(loader=loader)
     template = tenv.get_template(template_name)
     config = todict(config)
 
-    config["kubernetes"].update(**config["kubernetes"]["apps"][app])
+    if app:
+        config["kubernetes"].update(**config["kubernetes"]["apps"][app])
     return template.render(config)
 
 

@@ -1,9 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 
-from nose.tools import eq_
-
-from kitsune.flagit.tests import TestCaseBase
 from kitsune.flagit.models import FlaggedObject
+from kitsune.flagit.tests import TestCaseBase
 from kitsune.questions.models import Question
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import post
@@ -33,9 +31,9 @@ class FlagTestCase(TestCaseBase):
             "next": self.question.get_absolute_url(),
         }
         post(self.client, "flagit.flag", d)
-        eq_(1, FlaggedObject.objects.count())
+        self.assertEqual(1, FlaggedObject.objects.count())
 
         flag = FlaggedObject.objects.all()[0]
-        eq_(self.user.username, flag.creator.username)
-        eq_("spam", flag.reason)
-        eq_(self.question, flag.content_object)
+        self.assertEqual(self.user.username, flag.creator.username)
+        self.assertEqual("spam", flag.reason)
+        self.assertEqual(self.question, flag.content_object)

@@ -1,14 +1,12 @@
-from datetime import timedelta, datetime
-
-from nose.tools import eq_
+from datetime import datetime, timedelta
 
 from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.dashboards.readouts import CONTRIBUTOR_READOUTS
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.models import HelpfulVote, Document
-from kitsune.wiki.tests import LocaleFactory, ApprovedRevisionFactory
+from kitsune.wiki.models import Document, HelpfulVote
+from kitsune.wiki.tests import ApprovedRevisionFactory, LocaleFactory
 
 
 class LocalizationDashTests(TestCase):
@@ -63,7 +61,7 @@ class ContributorDashTests(TestCase):
     def test_main_view(self):
         """Assert the top page of the contributor dash resolves, renders."""
         response = self.client.get(reverse("dashboards.contributors", locale="en-US"))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_detail_view(self):
         """Assert the detail page of the contributor dash resolves, renders."""
@@ -75,7 +73,7 @@ class ContributorDashTests(TestCase):
                 locale="en-US",
             )
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_needs_change_comment_is_shown(self):
         # If there are already 10 documents, this is probably going to
@@ -89,7 +87,7 @@ class ContributorDashTests(TestCase):
         )
 
         response = self.client.get(reverse("dashboards.contributors", locale="en-US"))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert change_comment in response.content
 
 

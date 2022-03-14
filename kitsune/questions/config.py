@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 # The number of answers per page.
 ANSWERS_PER_PAGE = 20
@@ -813,6 +813,20 @@ products = OrderedDict(
                 "extra_fields": [],
                 "tags": ["relay"],
                 "product": "relay",
+                "categories": OrderedDict([]),
+            },
+        ),
+        (
+            "mdn",
+            {
+                "name": _lazy("MDN Plus"),
+                "subtitle": _lazy(
+                    "MDN is a documentation repository and learning resource for web developers. "
+                    "MDN Plus provides a custom experience for MDN supporters."
+                ),
+                "extra_fields": [],
+                "tags": ["mdn"],
+                "product": "mdn",
                 "categories": OrderedDict([]),
             },
         ),

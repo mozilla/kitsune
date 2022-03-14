@@ -176,6 +176,7 @@ def index_objects_bulk(
         (doc.to_action(action=action, is_bulk=True, **kwargs) for doc in docs),
         chunk_size=elastic_chunk_size,
         raise_on_error=False,  # we'll raise the errors ourselves, so all the chunks get sent
+        refresh=True if settings.TEST else False,  # update docs immediately when testing
     )
     errors = [
         error
@@ -205,6 +206,11 @@ def remove_from_field(doc_type_name, field_name, field_value):
     doc_type._index.refresh()
 
     update.execute()
+
+    # If we are in a test environment, refresh so that
+    # documents will be updated/added directly in the index.
+    if settings.TEST:
+        doc_type._index.refresh()
 
 
 @task

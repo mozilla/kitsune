@@ -1,7 +1,5 @@
 from django.core import mail
 
-from nose.tools import eq_
-
 from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.sumo.tests import TestCase
 
@@ -17,12 +15,12 @@ class AwardNotificationTests(TestCase):
         new_badge = BadgeFactory()
 
         # Check the mail queue first.
-        eq_(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
         # Create an award and save it. This triggers the notification.
         AwardFactory(description="yay!", badge=new_badge)
 
-        eq_(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
 
         # TODO: test contents--not doing that now because it's a
         # mockup.
