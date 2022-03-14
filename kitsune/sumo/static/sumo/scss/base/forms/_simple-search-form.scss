@@ -1,5 +1,5 @@
 @use '../../config' as c;
-@use '../../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 .simple-search-form {
   position: relative;
@@ -45,7 +45,7 @@
   height: p.$spacing-xl;
   border: none;
   border-radius: p.$spacing-xs;
-  background-image: url('#{p.$image-path}/icons/search.svg');
+  background-image: url('protocol/img/icons/search.svg');
   background-color: transparent;
   background-position: center center;
   background-repeat: no-repeat;
