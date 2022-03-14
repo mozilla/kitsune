@@ -1,8 +1,19 @@
+const { mergeWithRules } = require("webpack-merge");
 const path = require("path");
 const sveltePreprocess = require("svelte-preprocess");
 const SveltePreRenderPlugin = require("./webpack/svelte-pre-render-plugin");
 
-module.exports = {
+const common = require("./webpack.common.js");
+
+module.exports = mergeWithRules({
+  module: {
+    rules: {
+      test: "match",
+      type: "replace",
+      use: "replace",
+    },
+  },
+})(common, {
   entry: {
     contribute: "./svelte/contribute/Contribute",
   },
@@ -13,17 +24,10 @@ module.exports = {
         "/contribute/forum",
         "/contribute/kb",
         "/contribute/social",
-      ]
-    })
+      ],
+    }),
   ],
   mode: "production",
-  resolve: {
-    alias: {
-      svelte: path.resolve("node_modules", "svelte"),
-    },
-    extensions: [".mjs", ".js", ".svelte"],
-    mainFields: ["svelte", "browser", "module", "main"],
-  },
   module: {
     rules: [
       {
@@ -41,15 +45,14 @@ module.exports = {
         },
       },
       {
-        // required to prevent errors from Svelte on Webpack 5+, omit on Webpack 4
-        test: /node_modules\/svelte\/.*\.mjs$/,
-        resolve: {
-          fullySpecified: false,
+        test: /\.(svg|png|gif|woff2?)$/,
+        type: "asset/source",
+        use: {
+          loader: path.resolve("./webpack/ssr-asset-loader"),
         },
       },
     ],
   },
-  devtool: "cheap-module-source-map",
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "dist/pre-render"),
@@ -58,4 +61,4 @@ module.exports = {
     },
   },
   target: "node",
-};
+});
