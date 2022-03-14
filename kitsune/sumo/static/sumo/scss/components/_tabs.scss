@@ -11,7 +11,7 @@
 // Style guide: tabs
 
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 %link-styles {
   appearance: none;

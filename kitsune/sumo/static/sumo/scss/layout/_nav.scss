@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 // Navigation
 //
@@ -191,7 +191,7 @@
     height: p.$spacing-xl;
     border: none;
     border-radius: p.$spacing-xs;
-    background-image: url('#{p.$image-path}/icons/menu.svg');
+    background-image: url('protocol/img/icons/menu.svg');
     background-color: transparent;
     background-position: center center;
     background-repeat: no-repeat;
@@ -215,7 +215,7 @@
       (margin-left, auto, 0),
       (margin-right, 0, auto),
     ));
-    background-image: url('#{p.$image-path}/icons/search.svg');
+    background-image: url('protocol/img/icons/search.svg');
   }
 
   .simple-search-form {

@@ -31,3 +31,11 @@
         </Route>
     </Router>
 </div>
+
+<style lang="scss">
+    @use "../../kitsune/sumo/static/sumo/scss/config/typography-mixins";
+
+    h1 {
+        @include typography-mixins.text-display-sm;
+    }
+</style>
