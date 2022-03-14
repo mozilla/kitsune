@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 .is-details.mzp-c-menu-list.featured-dropdown,
 .is-details.mzp-c-menu-list.subheading-dropdown, {
