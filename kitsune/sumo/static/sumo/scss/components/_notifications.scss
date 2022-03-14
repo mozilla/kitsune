@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 // This is a container for Protocol notifications. See
 // https://protocol.mozilla.org/patterns/molecules/notification-bar.html

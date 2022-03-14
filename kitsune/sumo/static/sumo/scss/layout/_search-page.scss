@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 
 // this class is added to the body when the instant search is active. It should
