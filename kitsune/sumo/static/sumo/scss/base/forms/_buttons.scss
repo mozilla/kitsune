@@ -1,5 +1,5 @@
 @use '../../config' as c;
-@use '../../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 // Buttons
 //
@@ -238,7 +238,7 @@ input[type=submit]:focus {
   background: transparent;
   font: 0/0 a;
   color: transparent;
-  background-image: url('#{p.$image-path}/icons/more-vertical.svg');
+  background-image: url('protocol/img/icons/more-vertical.svg');
   background-size: p.$spacing-lg p.$spacing-lg;
   background-position: center center;
   background-repeat: no-repeat;

@@ -1,6 +1,7 @@
 const webpack = require("webpack");
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const sveltePreprocess = require("svelte-preprocess");
 
 module.exports = {
   mode: "development",
@@ -10,10 +11,10 @@ module.exports = {
       sumo: path.resolve(__dirname, "kitsune/sumo/static/sumo"),
       community: path.resolve(__dirname, "kitsune/community/static/community"),
       kpi: path.resolve(__dirname, "kitsune/kpi/static/kpi"),
-      svelte: path.resolve('node_modules', 'svelte')
+      svelte: path.resolve("node_modules", "svelte"),
     },
-    extensions: ['.mjs', '.js', '.svelte'],
-    mainFields: ['svelte', 'browser', 'module', 'main']
+    extensions: [".mjs", ".js", ".svelte"],
+    mainFields: ["svelte", "browser", "module", "main"],
   },
   module: {
     rules: [
@@ -43,17 +44,23 @@ module.exports = {
       },
       {
         test: /\.svelte$/,
-        use: "svelte-loader",
+        use: {
+          loader: "svelte-loader",
+          options: {
+            emitCss: true,
+            preprocess: sveltePreprocess(),
+          },
+        },
       },
       {
         // required to prevent errors from Svelte on Webpack 5+
         test: /node_modules\/svelte\/.*\.mjs$/,
         resolve: {
-          fullySpecified: false
-        }
+          fullySpecified: false,
+        },
       },
       {
-        test: /\.scss$/,
+        test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader,
           "css-loader",
