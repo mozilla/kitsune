@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 
 // These styles were pulled directly from the less files.
@@ -412,23 +412,23 @@ article {
 
   .delete {
     a {
-      background-image: url("#{p.$image-path}/icons/delete.svg");
+      background-image: url("protocol/img/icons/delete.svg");
     }
   }
 
   .l10n {
     a {
       &.yes {
-        background-image: url("#{p.$image-path}/icons/check.svg");
+        background-image: url("protocol/img/icons/check.svg");
       }
 
       &.markasready,
       &.no {
-        background-image: url("#{p.$image-path}/icons/close.svg");
+        background-image: url("protocol/img/icons/close.svg");
       }
 
       &.markasready:hover {
-        background-image: url("#{p.$image-path}/icons/check.svg");
+        background-image: url("protocol/img/icons/check.svg");
         cursor: pointer;
       }
     }
