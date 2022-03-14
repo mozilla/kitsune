@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 // Sidebar navigation
 //
@@ -62,7 +62,7 @@
   .related-document,
   .related-question {
     @include c.text-body-md;
-    background-image: url("#{p.$image-path}/icons/blog.svg");
+    background-image: url("protocol/img/icons/blog.svg");
     background-repeat: no-repeat;
     background-position: 0px 6px;
     background-size: p.$spacing-md p.$spacing-md;
@@ -70,7 +70,7 @@
   }
 
   .related-document {
-    background-image: url("#{p.$image-path}/icons/reader-mode.svg");
+    background-image: url("protocol/img/icons/reader-mode.svg");
   }
 
   li.selected > :link,

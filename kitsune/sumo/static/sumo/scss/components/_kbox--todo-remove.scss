@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 // This component should be replaced with Protocol's modal system, because
 // it doesn't make sense to include two of them. However, this plugin is doing
