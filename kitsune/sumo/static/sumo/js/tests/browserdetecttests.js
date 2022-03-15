@@ -1,145 +1,454 @@
-import {expect} from 'chai';
+import { expect } from "chai";
 
-import BrowserDetect from "sumo/js/browserdetect";
+import BrowserDetect, { Version } from "sumo/js/browserdetect";
 
-describe('BrowserDetect', () => {
-  describe('Fennec versions', () => {
-    it('should detect Fennec 7', () => {
-      let ua = 'Mozilla/5.0 (Android; Linux armv7l; rv:7.0.1) Gecko/ Firefox/7.0.1 Fennec/7.0.1';
-      expect(BrowserDetect.searchString(BrowserDetect.dataBrowser, ua)).to.equal('m');
-      expect(BrowserDetect.searchVersion(ua)).to.equal(7);
-      expect(BrowserDetect.detect(ua)).to.deep.equal(['m', 7, 'android']);
+describe("BrowserDetect", () => {
+  const cases = [
+    {
+      description: "Windows 11, Firefox with alpha label",
+      ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
+      application: {
+        name: "Firefox",
+        version: "98.0a1",
+        osVersion: "Windows_NT 10.0 22000",
+      },
+      browser: {
+        mozilla: true,
+        brands: ["Firefox"],
+        version: {
+          major: 98,
+          minor: 0,
+          patch: undefined,
+          label: "a1",
+        },
+      },
+      os: {
+        name: "Windows",
+        version: "11",
+      },
+    },
+    {
+      description: "Windows 11, Firefox no remote troubleshooting",
+      ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
+      browser: {
+        mozilla: true,
+        brands: ["Firefox"],
+        version: {
+          major: 100,
+          minor: 0,
+          patch: undefined,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "Windows",
+        version: "10",
+      },
+    },
+    {
+      description: "Windows 10, Firefox",
+      ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:96.0) Gecko/20100101 Firefox/96.0",
+      application: {
+        name: "Firefox",
+        version: "96.0.1",
+        osVersion: "Windows_NT 10.0 19044",
+      },
+      browser: {
+        mozilla: true,
+        brands: ["Firefox"],
+        version: {
+          major: 96,
+          minor: 0,
+          patch: 1,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "Windows",
+        version: "10",
+      },
+    },
+    {
+      description: "Windows 7, Firefox",
+      ua: "Mozilla/5.0 (Windows NT 6.1; rv:95.0) Gecko/20100101 Firefox/95.0",
+      application: {
+        name: "Firefox",
+        version: "95.0.2",
+        osVersion: "Windows_NT 6.1 7601",
+      },
+      browser: {
+        mozilla: true,
+        brands: ["Firefox"],
+        version: {
+          major: 95,
+          minor: 0,
+          patch: 2,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "Windows",
+        version: "7",
+      },
+    },
+    {
+      description: "Mac OS, Firefox with patch version",
+      ua: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:95.0) Gecko/20100101 Firefox/95.0",
+      application: {
+        name: "Firefox",
+        version: "95.0.2",
+        osVersion:
+          "Darwin 20.6.0 Darwin Kernel Version 20.6.0: Mon Aug 30 06:12:21 PDT 2021;",
+      },
+      browser: {
+        mozilla: true,
+        brands: ["Firefox"],
+        version: {
+          major: 95,
+          minor: 0,
+          patch: 2,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "Mac OS",
+        version: "x 10.15",
+      },
+    },
+    {
+      description: "Linux, Firefox",
+      ua: "Mozilla/5.0 (X11; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
+      application: {
+        name: "Firefox",
+        version: "95.0",
+        osVersion:
+          "Linux 5.15.7-arch1-1 #1 SMP PREEMPT Wed, 08 Dec 2021 14:33:16 +0000",
+      },
+      browser: {
+        mozilla: true,
+        brands: ["Firefox"],
+        version: {
+          major: 95,
+          minor: 0,
+          patch: undefined,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "Linux",
+        version: undefined,
+      },
+    },
+    {
+      description: "Android, Firefox",
+      ua: "Mozilla/5.0 (Android 12; Mobile; rv:98.0) Gecko/98.0 Firefox/98.0",
+      browser: {
+        mozilla: true,
+        brands: ["Firefox", "Firefox Focus"],
+        version: {
+          major: 98,
+          minor: 0,
+          patch: undefined,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "Android",
+        version: undefined,
+      },
+    },
+    {
+      description: "Android, Firefox Focus",
+      ua: "Mozilla/5.0 (Android 12; Mobile; rv:95.0) Gecko/95.0 Firefox/95.0",
+      browser: {
+        mozilla: true,
+        brands: ["Firefox", "Firefox Focus"],
+        version: {
+          major: 95,
+          minor: 0,
+          patch: undefined,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "Android",
+        version: undefined,
+      },
+    },
+    {
+      description: "iOS, Firefox",
+      ua: "Mozilla/5.0 (iPhone; CPU iPhone OS 15_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/40.2 Mobile/15E148 Safari/605.1.15",
+      browser: {
+        mozilla: true,
+        brands: ["Firefox", "Firefox Focus"],
+        version: {
+          major: 40,
+          minor: 2,
+          patch: undefined,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "iOS",
+        version: undefined,
+      },
+    },
+    {
+      description: "iOS, Firefox Focus",
+      ua: "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/7.0.4 Mobile/16B91 Safari/605.1.15",
+      browser: {
+        mozilla: true,
+        brands: ["Firefox", "Firefox Focus"],
+        version: {
+          major: 7,
+          minor: 0,
+          patch: 4,
+          label: undefined,
+        },
+      },
+      os: {
+        name: "iOS",
+        version: undefined,
+      },
+    },
+    {
+      description: "iPadOS, Firefox", // bug: https://github.com/mozilla-mobile/firefox-ios/issues/6620
+      ua: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Safari/605.1.15",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Mac OS",
+        version: "x 10_15_4",
+      },
+    },
+    {
+      description: "iPadOS, Firefox Focus", // bug: https://github.com/mozilla-mobile/firefox-ios/issues/6620
+      ua: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Safari/605.1.15",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Mac OS",
+        version: "x 10_15_6",
+      },
+    },
+    {
+      description: "Windows 11, Edge",
+      ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 Edg/96.0.1054.62",
+      hints: {
+        platform: "Windows",
+        platformVersion: "14.0.0",
+      },
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Windows",
+        version: "11",
+      },
+    },
+    {
+      description: "Windows 11, Edge no UA hints",
+      ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36 Edg/96.0.1054.62",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Windows",
+        version: "10",
+      },
+    },
+    {
+      description: "Windows 10, Edge",
+      ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62",
+      hints: {
+        platform: "Windows",
+        platformVersion: "10.0.0",
+      },
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Windows",
+        version: "10",
+      },
+    },
+    {
+      description: "Windows 7, Edge",
+      ua: "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.62",
+      hints: {
+        platform: "Windows",
+        platformVersion: "0.0.0",
+      },
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Windows",
+        version: "7",
+      },
+    },
+    {
+      description: "Mac OS, Safari",
+      ua: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Mac OS",
+        version: "x 10_15_7",
+      },
+    },
+    {
+      description: "Linux, Chromium",
+      ua: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Linux",
+        version: undefined,
+      },
+    },
+    {
+      description: "Android, Chrome",
+      ua: "Mozilla/5.0 (Linux; Android 12; Pixel 6 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.87 Mobile Safari/537.36",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Android",
+        version: undefined,
+      },
+    },
+    {
+      description: "iOS, Safari",
+      ua: "Mozilla/5.0 (iPhone; CPU iPhone OS 15_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Mobile/15E148 Safari/604.1",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "iOS",
+        version: undefined,
+      },
+    },
+    {
+      description: "iPadOS, Safari",
+      ua: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+      browser: {
+        mozilla: false,
+        brands: undefined,
+        version: undefined,
+      },
+      os: {
+        name: "Mac OS",
+        version: "x 10_15_6",
+      },
+    },
+  ];
+
+  for (const { description, ua, application, hints, browser, os } of cases) {
+    it(`handles ${description}`, async () => {
+      const detect = new BrowserDetect(ua, hints, { application });
+      let detectedBrowser = await detect.getBrowser();
+      let detectedOS = await detect.getOS();
+      expect(detectedBrowser).to.deep.equal(browser);
+      expect(detectedOS).to.deep.equal(os);
     });
+  }
 
-    it('should detect Fennec 10', () => {
-      let ua = 'Mozilla/5.0 (Android; Mobile; rv:10.0.4) Gecko/10.0.4 Firefox/10.0.4 Fennec/10.0.4';
-      expect(BrowserDetect.searchString(BrowserDetect.dataBrowser, ua)).to.equal('m');
-      expect(BrowserDetect.searchVersion(ua)).to.equal(10);
-      expect(BrowserDetect.detect(ua)).to.deep.equal(['m', 10, 'android']);
-    });
-
-    it('should detect Fennec 14', () => {
-      let ua = 'Mozilla/5.0 (Android; Mobile; rv:14.0) Gecko/14.0 Firefox/14.0';
-      expect(BrowserDetect.searchString(BrowserDetect.dataBrowser, ua)).to.equal('m');
-      expect(BrowserDetect.searchVersion(ua)).to.equal(14);
-      expect(BrowserDetect.detect(ua)).to.deep.equal(['m', 14, 'android']);
-    });
-  });
-
-  describe('Firefox versions', () => {
-    it('should detect Firefox 4', () => {
-      let ua = 'Mozilla/5.0 (X11; Linux i686; rv:2.0) Gecko/20100101 Firefox/4.0';
-      expect(BrowserDetect.searchString(BrowserDetect.dataBrowser, ua)).to.equal('fx');
-      expect(BrowserDetect.searchVersion(ua)).to.equal(4);
-      expect(BrowserDetect.detect(ua)).to.deep.equal(['fx', 4, 'linux']);
-    });
-
-    it('should detect Firefox 12', () => function() {
-      let ua = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0';
-      expect(BrowserDetect.searchString(BrowserDetect.dataBrowser, ua)).to.equal('fx');
-      expect(BrowserDetect.searchVersion(ua)).to.equal(12);
-      expect(BrowserDetect.detect(ua)).to.deep.equal(['fx', 12, 'win7']);
-    });
-  });
-
-  describe('Windows versions', () => {
-    let cases = [
-      {
-        ua: 'Mozilla/5.0 (Windows NT 5.0; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0',
-        expected: ['fx', 12, 'winxp'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Windows NT 5.01; WOW64; rv:12.0) Gecko/20100101 Firefox/13.0',
-        expected: ['fx', 13, 'winxp'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Windows NT 5.1; WOW64; rv:12.0) Gecko/20100101 Firefox/14.0',
-        expected: ['fx', 14, 'winxp'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:12.0) Gecko/20100101 Firefox/15.0',
-        expected: ['fx', 15, 'win7'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/16.0',
-        expected: ['fx', 16, 'win7'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:12.0) Gecko/20100101 Firefox/17.0',
-        expected: ['fx', 17, 'win8'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Windows NT 4.0; WOW64; rv:12.0) Gecko/20100101 Firefox/4.0',
-        expected: ['fx', 4, 'win'],
-      },
-    ];
-
-    for (let case_ of cases) {
-      it(`should detect ${case_.expected}`, () => {
-        expect(BrowserDetect.searchString(BrowserDetect.dataOS, case_.ua)).to.equal(case_.expected[2]);
-        expect(BrowserDetect.detect(case_.ua)).to.deep.equal(case_.expected);
-      });
-    }
-  });
-
-  describe('Firefox OS', function() {
-    let cases = [
-      {
-        ua: 'Mozilla/5.0 (Mobile; rv:18.0) Gecko/18.0 Firefox/18.0',
-        expected: ['fxos', 1, 'fxos'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Mobile; nnnn; rv:18.1) Gecko/18.1 Firefox/18.1',
-        expected: ['fxos', 1.1, 'fxos'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Mobile; nnnn; rv:26.0) Gecko/26.0 Firefox/26.0',
-        expected: ['fxos', 1.2, 'fxos'],
-      },
-      {
-        ua: 'Mozilla/5.0 (Mobile; nnnn; rv:28.0) Gecko/28.0 Firefox/28.0',
-        expected: ['fxos', 1.3, 'fxos'],
-      },
-    ];
-
-    for (let case_ of cases) {
-      it(`should detect ${case_.expected}`, () => {
-        expect(BrowserDetect.detect(case_.ua)).to.deep.equal(case_.expected);
-      });
-    }
-  });
-
-  describe('Firefox for iOS', () => {
-    it('all platforms', () => {
-      let uas = [
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4',
-        'Mozilla/5.0 (iPad; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4',
-        'Mozilla/5.0 (iPod touch; CPU iPhone OS 8_4 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12H143 Safari/600.1.4'
+  describe("Version", () => {
+    describe("toString", () => {
+      const stringCases = [
+        {
+          input: "1",
+          empty: "1",
+          major: "1",
+          minor: "1.0",
+          patch: "1.0.0",
+          label: "1.0.0",
+        },
+        {
+          input: "1.2",
+          empty: "1.2",
+          major: "1",
+          minor: "1.2",
+          patch: "1.2.0",
+          label: "1.2.0",
+        },
+        {
+          input: "1.2.3",
+          empty: "1.2.3",
+          major: "1",
+          minor: "1.2",
+          patch: "1.2.3",
+          label: "1.2.3",
+        },
+        {
+          input: "1.2.3.4",
+          empty: "1.2.3",
+          major: "1",
+          minor: "1.2",
+          patch: "1.2.3",
+          label: "1.2.3",
+        },
+        {
+          input: "1.2.3a1",
+          empty: "1.2.3a1",
+          major: "1",
+          minor: "1.2",
+          patch: "1.2.3",
+          label: "1.2.3a1",
+        },
+        {
+          input: "1.2.3z1",
+          empty: "1.2.3",
+          major: "1",
+          minor: "1.2",
+          patch: "1.2.3",
+          label: "1.2.3",
+        },
+        {
+          input: "foobar",
+          empty: "",
+          major: "0",
+          minor: "0.0",
+          patch: "0.0.0",
+          label: "0.0.0",
+        },
       ];
-      for (let ua of uas) {
-        expect(BrowserDetect.detect(ua)).to.deep.equal(['fxios', 1.0, 'ios']);
+
+      for (const { input, empty, major, minor, patch, label } of stringCases) {
+        it(`handles ${input}`, () => {
+          let version = new Version(input);
+          expect(version.toString()).to.equal(empty);
+          expect(version.toString("major")).to.equal(major);
+          expect(version.toString("minor")).to.equal(minor);
+          expect(version.toString("patch")).to.equal(patch);
+          expect(version.toString("label")).to.equal(label);
+        });
       }
     });
-
-    let cases = [
-      {
-        ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0.0 Mobile/12D508 Safari/600.1.4',
-        version: 1.0,
-      },
-      {
-        ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0.1 Mobile/12D508 Safari/600.1.4',
-        version: 1.0,
-      },
-      {
-        ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.1.0 Mobile/12D508 Safari/600.1.4',
-        version: 1.1,
-      },
-    ];
-
-    for (let case_ of cases) {
-      it(`version ${case_.version}`, () => {
-        expect(BrowserDetect.detect(case_.ua)[1]).to.equal(case_.version);
-      });
-    }
   });
 });

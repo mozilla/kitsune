@@ -14,7 +14,7 @@ module.exports = {
         "browser": true
     },
     "parserOptions": {
-        "ecmaVersion": 2021,
+        "ecmaVersion": "latest",
         "sourceType": "module",
     },
     "rules": {

@@ -26,7 +26,7 @@ products = OrderedDict(
             {
                 "name": _lazy("Firefox"),
                 "subtitle": _lazy("Web browser for Windows, Mac and Linux"),
-                "extra_fields": ["troubleshooting", "ff_version", "os", "plugins"],
+                "extra_fields": ["troubleshooting", "ff_version", "os"],
                 "tags": ["desktop"],
                 "product": "firefox",
                 "categories": OrderedDict(
@@ -132,7 +132,7 @@ products = OrderedDict(
             {
                 "name": _lazy("Firefox for Android"),
                 "subtitle": _lazy("Web browser for Android smartphones and tablets"),
-                "extra_fields": ["ff_version", "os", "plugins"],
+                "extra_fields": ["ff_version", "os"],
                 "tags": ["mobile"],
                 "product": "mobile",
                 "categories": OrderedDict(
@@ -238,7 +238,7 @@ products = OrderedDict(
             {
                 "name": _lazy("Firefox for iOS"),
                 "subtitle": _lazy("Firefox for iPhone, iPad and iPod touch devices"),
-                "extra_fields": ["ff_version", "os", "plugins"],
+                "extra_fields": ["ff_version", "os"],
                 "tags": ["ios"],
                 "product": "ios",
                 "categories": OrderedDict(
@@ -308,7 +308,7 @@ products = OrderedDict(
             {
                 "name": _lazy("Firefox Focus"),
                 "subtitle": _lazy("Automatic privacy browser and content blocker"),
-                "extra_fields": [],
+                "extra_fields": ["ff_version", "os"],
                 "tags": ["focus-firefox"],
                 "product": "focus-firefox",
                 "categories": OrderedDict(
@@ -467,7 +467,7 @@ products = OrderedDict(
             {
                 "name": _lazy("Firefox for Enterprise"),
                 "subtitle": _lazy("Firefox Quantum for businesses"),
-                "extra_fields": [],
+                "extra_fields": ["ff_version", "os"],
                 "tags": [],
                 "product": "firefox-enterprise",
                 "categories": OrderedDict(

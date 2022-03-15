@@ -132,24 +132,10 @@ class EditQuestionForm(forms.ModelForm):
                 required=False,
             )
 
-        if "device" in extra_fields:
-            self.fields["device"] = forms.CharField(
-                label=DEVICE_LABEL,
-                required=False,
-            )
-
         if "os" in extra_fields:
             self.fields["os"] = forms.CharField(
                 label=OS_LABEL,
                 required=False,
-            )
-
-        if "plugins" in extra_fields:
-            widget = forms.Textarea(attrs={"class": "plugins"})
-            self.fields["plugins"] = forms.CharField(
-                label=PLUGINS_LABEL,
-                required=False,
-                widget=widget,
             )
 
         if "troubleshooting" in extra_fields:
