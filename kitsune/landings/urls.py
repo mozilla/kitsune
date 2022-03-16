@@ -6,13 +6,13 @@ from kitsune.sumo.views import redirect_to
 urlpatterns = [
     re_path(r"^$", views.home, name="home"),
     # Redirect from old home re_path /home to new home /
-    re_path(r"^home$", redirect_to, {"re_path": "home"}, name="old_home"),
-    re_path(r"^topics/hot$", redirect_to, {"re_path": "products"}, name="hot_topics"),
+    re_path(r"^home$", redirect_to, {"url": "home"}, name="old_home"),
+    re_path(r"^topics/hot$", redirect_to, {"url": "products"}, name="hot_topics"),
     # Redirect from old mobile URL to new one.
     re_path(
         r"^mobile$",
         redirect_to,
-        {"re_path": "products.product", "slug": "mobile"},
+        {"url": "products.product", "slug": "mobile"},
         name="home.mobile",
     ),
     # A static page for downloading FirefoxIntegrityCheck.exe
