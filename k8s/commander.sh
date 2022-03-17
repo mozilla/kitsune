@@ -45,7 +45,7 @@ function post-deploy {
 	echo "Running post-deployment tasks"
 	# Get the name of a running web pod on which we can run the post-deploy script
 	SUMO_POD=$(${KUBECTL_BIN} -n "${K8S_NAMESPACE}" get pods | egrep 'sumo-.*-web' | grep Running | head -1 | awk '{ print $1 }')
-	${KUBECTL_BIN} -n "${K8S_NAMESPACE}" exec "${SUMO_POD}" bin/run-post-deploy.sh
+	${KUBECTL_BIN} -n "${K8S_NAMESPACE}" exec "${SUMO_POD}" -- bin/run-post-deploy.sh
 
 	# Unset the context used in the deployment
 	${KUBECTL_BIN} config unset current-context
