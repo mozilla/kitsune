@@ -377,3 +377,12 @@ body.scroll-header:not(.lock-body) {
     padding-top: 74px;
   }
 }
+
+// prevent anchor links being hidden behind sticky header
+html {
+  scroll-padding-top: 65px;
+
+  @media #{p.$mq-lg} {
+    scroll-padding-top: 74px;
+  }
+}
