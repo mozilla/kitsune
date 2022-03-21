@@ -817,16 +817,13 @@ products = OrderedDict(
             },
         ),
         (
-            "mdn",
+            "mdn-plus",
             {
                 "name": _lazy("MDN Plus"),
-                "subtitle": _lazy(
-                    "MDN is a documentation repository and learning resource for web developers. "
-                    "MDN Plus provides a custom experience for MDN supporters."
-                ),
+                "subtitle": _lazy("MDN Plus provides a custom experience for MDN supporters."),
                 "extra_fields": [],
-                "tags": ["mdn"],
-                "product": "mdn",
+                "tags": ["mdn-plus"],
+                "product": "mdn-plus",
                 "categories": OrderedDict([]),
             },
         ),
