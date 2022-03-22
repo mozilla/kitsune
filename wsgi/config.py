@@ -4,7 +4,6 @@ from os import getenv
 
 bind = "0.0.0.0:{}".format(getenv("PORT", 8000))
 workers = int(getenv("WSGI_NUM_WORKERS", 2))
-threads = int(getenv("WSGI_NUM_THREADS", 4))
 worker_tmp_dir = getenv("WSGI_WORKER_TMP_DIR", "/dev/shm")
 accesslog = "-"
 errorlog = "-"
