@@ -304,29 +304,238 @@ products = OrderedDict(
             },
         ),
         (
-            "focus",
+            "firefox-enterprise",
             {
-                "name": _lazy("Firefox Focus"),
-                "subtitle": _lazy("Automatic privacy browser and content blocker"),
+                "name": _lazy("Firefox for Enterprise"),
+                "subtitle": _lazy("Firefox Quantum for businesses"),
                 "extra_fields": ["ff_version", "os"],
-                "tags": ["focus-firefox"],
-                "product": "focus-firefox",
+                "tags": [],
+                "product": "firefox-enterprise",
                 "categories": OrderedDict(
                     [
                         (
-                            "Focus-ios",
+                            "deploy-firefox-for-enterprise",
                             {
-                                "name": _lazy("Firefox Focus for iOS"),
-                                "topic": "Focus-ios",
-                                "tags": ["Focus-ios"],
+                                "name": _lazy("Deploy"),
+                                "topic": "deploy-firefox-for-enterprise",
+                                "tags": ["deployment"],
                             },
                         ),
                         (
-                            "firefox-focus-android",
+                            "policies-customization-enterprise",
                             {
-                                "name": _lazy("Firefox Focus for Android"),
-                                "topic": "firefox-focus-android",
-                                "tags": ["firefox-focus-android"],
+                                "name": _lazy("Manage updates, policies & customization"),
+                                "topic": "policies-customization-enterprise",
+                                "tags": ["customization"],
+                            },
+                        ),
+                        (
+                            "manage-add-ons-enterprise",
+                            {
+                                "name": _lazy("Manage add-ons"),
+                                "topic": "manage-add-ons-enterprise",
+                                "tags": ["customization"],
+                            },
+                        ),
+                        (
+                            "manage-certificates-firefox-enterprise",
+                            {
+                                "name": _lazy("Manage certificates"),
+                                "topic": "manage-certificates-firefox-enterprise",
+                                "tags": ["customization"],
+                            },
+                        ),
+                    ]
+                ),
+            },
+        ),
+        (
+            "mdn-plus",
+            {
+                "name": _lazy("MDN Plus"),
+                "subtitle": _lazy("MDN Plus provides a custom experience for MDN supporters."),
+                "extra_fields": [],
+                "tags": ["mdn-plus"],
+                "product": "mdn-plus",
+                "categories": OrderedDict([]),
+            },
+        ),
+        (
+            "firefox-reality",
+            {
+                "name": _lazy("Firefox Reality"),
+                "subtitle": _lazy("Firefox for Virtual Reality headsets"),
+                "extra_fields": [],
+                "tags": [],
+                "product": "firefox-reality",
+                "categories": OrderedDict(
+                    [
+                        (
+                            "get-started",
+                            {
+                                "name": _lazy("Get started with Firefox Reality"),
+                                "topic": "get-started",
+                                "tags": ["get-started"],
+                            },
+                        ),
+                        (
+                            "troubleshooting-reality",
+                            {
+                                "name": _lazy("Troubleshooting Firefox Reality"),
+                                "topic": "troubleshooting-reality",
+                                "tags": ["troubleshooting"],
+                            },
+                        ),
+                    ]
+                ),
+            },
+        ),
+        (
+            "firefox-private-network-vpn",
+            {
+                "name": _lazy("Mozilla VPN"),
+                "subtitle": _lazy("VPN for Windows 10, Android and iOS devices"),
+                "extra_fields": [],
+                "tags": [],
+                "product": "firefox-private-network-vpn",
+                "categories": OrderedDict(
+                    [
+                        (
+                            "technical",
+                            {
+                                "name": _lazy("Technical"),
+                                "topic": "technical",
+                                "tags": ["technical"],
+                            },
+                        ),
+                        (
+                            "accounts",
+                            {
+                                "name": _lazy("Accounts"),
+                                "topic": "accounts",
+                                "tags": ["accounts"],
+                            },
+                        ),
+                        (
+                            "Payments",
+                            {
+                                "name": _lazy("Payments"),
+                                "topic": "payments",
+                                "tags": ["payments"],
+                            },
+                        ),
+                        (
+                            "Troubleshooting",
+                            {
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
+                                "tags": ["troubleshooting"],
+                            },
+                        ),
+                    ]
+                ),
+            },
+        ),
+        (
+            "firefox-private-network",
+            {
+                "name": _lazy("Firefox Private Network"),
+                "subtitle": _lazy("Browse securely on public Wi-Fi"),
+                "extra_fields": [],
+                "tags": [],
+                "product": "firefox-private-network",
+                "categories": OrderedDict(
+                    [
+                        (
+                            "technical",
+                            {
+                                "name": _lazy("Technical"),
+                                "topic": "technical",
+                                "tags": ["technical"],
+                            },
+                        ),
+                        (
+                            "accounts",
+                            {
+                                "name": _lazy("Accounts"),
+                                "topic": "accounts",
+                                "tags": ["accounts"],
+                            },
+                        ),
+                        (
+                            "payments",
+                            {
+                                "name": _lazy("Payments"),
+                                "topic": "payments",
+                                "tags": ["payments"],
+                            },
+                        ),
+                        (
+                            "troubleshooting",
+                            {
+                                "name": _lazy("Troubleshooting"),
+                                "topic": "troubleshooting",
+                                "tags": ["troubleshooting"],
+                            },
+                        ),
+                    ]
+                ),
+            },
+        ),
+        (
+            "relay",
+            {
+                "name": _lazy("Firefox Relay"),
+                "subtitle": _lazy("Service that lets you create aliases to hide your real email"),
+                "extra_fields": [],
+                "tags": ["relay"],
+                "product": "relay",
+                "categories": OrderedDict([]),
+            },
+        ),
+        (
+            "hubs",
+            {
+                "name": _lazy("Hubs"),
+                "subtitle": _lazy(
+                    "Virtual 3D meeting spaces for collaborating with friends, family, "
+                    "and colleagues on your browser or VR headset"
+                ),
+                "extra_fields": [],
+                "tags": ["hubs"],
+                "product": "hubs",
+                "categories": OrderedDict(
+                    [
+                        (
+                            "hubs-avatars",
+                            {
+                                "name": _lazy("Avatars"),
+                                "topic": "hubs-avatars",
+                                "tags": ["hubs-avatars"],
+                            },
+                        ),
+                        (
+                            "hubs-accounts",
+                            {
+                                "name": _lazy("Accounts"),
+                                "topic": "hubs-accounts",
+                                "tags": ["hubs-accounts"],
+                            },
+                        ),
+                        (
+                            "hubs-rooms",
+                            {
+                                "name": _lazy("Rooms"),
+                                "topic": "hubs-rooms",
+                                "tags": ["hubs-rooms"],
+                            },
+                        ),
+                        (
+                            "hubs-moderators",
+                            {
+                                "name": _lazy("Moderators & Hosts"),
+                                "topic": "hubs-moderators",
+                                "tags": ["hubs-moderators"],
                             },
                         ),
                     ]
@@ -401,75 +610,29 @@ products = OrderedDict(
             },
         ),
         (
-            "firefox-enterprise",
+            "focus",
             {
-                "name": _lazy("Firefox for Enterprise"),
-                "subtitle": _lazy("Firefox Quantum for businesses"),
+                "name": _lazy("Firefox Focus"),
+                "subtitle": _lazy("Automatic privacy browser and content blocker"),
                 "extra_fields": ["ff_version", "os"],
-                "tags": [],
-                "product": "firefox-enterprise",
+                "tags": ["focus-firefox"],
+                "product": "focus-firefox",
                 "categories": OrderedDict(
                     [
                         (
-                            "deploy-firefox-for-enterprise",
+                            "Focus-ios",
                             {
-                                "name": _lazy("Deploy"),
-                                "topic": "deploy-firefox-for-enterprise",
-                                "tags": ["deployment"],
+                                "name": _lazy("Firefox Focus for iOS"),
+                                "topic": "Focus-ios",
+                                "tags": ["Focus-ios"],
                             },
                         ),
                         (
-                            "policies-customization-enterprise",
+                            "firefox-focus-android",
                             {
-                                "name": _lazy("Manage updates, policies & customization"),
-                                "topic": "policies-customization-enterprise",
-                                "tags": ["customization"],
-                            },
-                        ),
-                        (
-                            "manage-add-ons-enterprise",
-                            {
-                                "name": _lazy("Manage add-ons"),
-                                "topic": "manage-add-ons-enterprise",
-                                "tags": ["customization"],
-                            },
-                        ),
-                        (
-                            "manage-certificates-firefox-enterprise",
-                            {
-                                "name": _lazy("Manage certificates"),
-                                "topic": "manage-certificates-firefox-enterprise",
-                                "tags": ["customization"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
-            "firefox-reality",
-            {
-                "name": _lazy("Firefox Reality"),
-                "subtitle": _lazy("Firefox for Virtual Reality headsets"),
-                "extra_fields": [],
-                "tags": [],
-                "product": "firefox-reality",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "get-started",
-                            {
-                                "name": _lazy("Get started with Firefox Reality"),
-                                "topic": "get-started",
-                                "tags": ["get-started"],
-                            },
-                        ),
-                        (
-                            "troubleshooting-reality",
-                            {
-                                "name": _lazy("Troubleshooting Firefox Reality"),
-                                "topic": "troubleshooting-reality",
-                                "tags": ["troubleshooting"],
+                                "name": _lazy("Firefox Focus for Android"),
+                                "topic": "firefox-focus-android",
+                                "tags": ["firefox-focus-android"],
                             },
                         ),
                     ]
@@ -560,169 +723,6 @@ products = OrderedDict(
                         ),
                     ]
                 ),
-            },
-        ),
-        (
-            "firefox-private-network",
-            {
-                "name": _lazy("Firefox Private Network"),
-                "subtitle": _lazy("Browse securely on public Wi-Fi"),
-                "extra_fields": [],
-                "tags": [],
-                "product": "firefox-private-network",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "technical",
-                            {
-                                "name": _lazy("Technical"),
-                                "topic": "technical",
-                                "tags": ["technical"],
-                            },
-                        ),
-                        (
-                            "accounts",
-                            {
-                                "name": _lazy("Accounts"),
-                                "topic": "accounts",
-                                "tags": ["accounts"],
-                            },
-                        ),
-                        (
-                            "payments",
-                            {
-                                "name": _lazy("Payments"),
-                                "topic": "payments",
-                                "tags": ["payments"],
-                            },
-                        ),
-                        (
-                            "troubleshooting",
-                            {
-                                "name": _lazy("Troubleshooting"),
-                                "topic": "troubleshooting",
-                                "tags": ["troubleshooting"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
-            "firefox-private-network-vpn",
-            {
-                "name": _lazy("Mozilla VPN"),
-                "subtitle": _lazy("VPN for Windows 10, Android and iOS devices"),
-                "extra_fields": [],
-                "tags": [],
-                "product": "firefox-private-network-vpn",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "technical",
-                            {
-                                "name": _lazy("Technical"),
-                                "topic": "technical",
-                                "tags": ["technical"],
-                            },
-                        ),
-                        (
-                            "accounts",
-                            {
-                                "name": _lazy("Accounts"),
-                                "topic": "accounts",
-                                "tags": ["accounts"],
-                            },
-                        ),
-                        (
-                            "Payments",
-                            {
-                                "name": _lazy("Payments"),
-                                "topic": "payments",
-                                "tags": ["payments"],
-                            },
-                        ),
-                        (
-                            "Troubleshooting",
-                            {
-                                "name": _lazy("Troubleshooting"),
-                                "topic": "troubleshooting",
-                                "tags": ["troubleshooting"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
-            "hubs",
-            {
-                "name": _lazy("Hubs"),
-                "subtitle": _lazy(
-                    "Virtual 3D meeting spaces for collaborating with friends, family, "
-                    "and colleagues on your browser or VR headset"
-                ),
-                "extra_fields": [],
-                "tags": ["hubs"],
-                "product": "hubs",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "hubs-avatars",
-                            {
-                                "name": _lazy("Avatars"),
-                                "topic": "hubs-avatars",
-                                "tags": ["hubs-avatars"],
-                            },
-                        ),
-                        (
-                            "hubs-accounts",
-                            {
-                                "name": _lazy("Accounts"),
-                                "topic": "hubs-accounts",
-                                "tags": ["hubs-accounts"],
-                            },
-                        ),
-                        (
-                            "hubs-rooms",
-                            {
-                                "name": _lazy("Rooms"),
-                                "topic": "hubs-rooms",
-                                "tags": ["hubs-rooms"],
-                            },
-                        ),
-                        (
-                            "hubs-moderators",
-                            {
-                                "name": _lazy("Moderators & Hosts"),
-                                "topic": "hubs-moderators",
-                                "tags": ["hubs-moderators"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
-            "relay",
-            {
-                "name": _lazy("Firefox Relay"),
-                "subtitle": _lazy("Service that lets you create aliases to hide your real email"),
-                "extra_fields": [],
-                "tags": ["relay"],
-                "product": "relay",
-                "categories": OrderedDict([]),
-            },
-        ),
-        (
-            "mdn-plus",
-            {
-                "name": _lazy("MDN Plus"),
-                "subtitle": _lazy("MDN Plus provides a custom experience for MDN supporters."),
-                "extra_fields": [],
-                "tags": ["mdn-plus"],
-                "product": "mdn-plus",
-                "categories": OrderedDict([]),
             },
         ),
     ]
