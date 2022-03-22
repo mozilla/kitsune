@@ -334,36 +334,6 @@ products = OrderedDict(
             },
         ),
         (
-            "firefox-amazon-devices",
-            {
-                "name": _lazy("Firefox for Amazon Devices"),
-                "subtitle": _lazy("Browser for Amazon devices"),
-                "extra_fields": [],
-                "tags": ["firefox-amazon"],
-                "product": "firefox-amazon-devices",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "firefox-fire-tv",
-                            {
-                                "name": _lazy("Firefox for Fire TV"),
-                                "topic": "firefox-fire-tv",
-                                "tags": ["firefox-fire-tv"],
-                            },
-                        ),
-                        (
-                            "firefox-echo-show",
-                            {
-                                "name": _lazy("Firefox for Echo Show"),
-                                "topic": "firefox-echo-show",
-                                "tags": ["firefox-echo-show"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
             "thunderbird",
             {
                 "name": _lazy("Thunderbird"),
@@ -424,38 +394,6 @@ products = OrderedDict(
                                 "name": _lazy("Other"),
                                 "topic": "other",
                                 "tags": ["other"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
-            "firefox-lite",
-            {
-                "name": _lazy("Firefox Lite"),
-                "subtitle": _lazy(
-                    "Mobile browser for Indonesia, India, The Philippines, and Thailand"
-                ),
-                "extra_fields": [],
-                "tags": ["firefox-lite"],
-                "product": "firefox-lite",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "get-started",
-                            {
-                                "name": _lazy("Get started"),
-                                "topic": "get-started",
-                                "tags": ["get-started"],
-                            },
-                        ),
-                        (
-                            "fix-problems",
-                            {
-                                "name": _lazy("Fix problems"),
-                                "topic": "fix-problems",
-                                "tags": ["fix-problems"],
                             },
                         ),
                     ]
@@ -618,46 +556,6 @@ products = OrderedDict(
                                 "name": _lazy("Advanced Settings"),
                                 "topic": "advanced-settings-preview",
                                 "tags": ["customize"],
-                            },
-                        ),
-                    ]
-                ),
-            },
-        ),
-        (
-            "firefox-lockwise",
-            {
-                "name": _lazy("Firefox Lockwise"),
-                "subtitle": _lazy(
-                    "Mobile app that gives you access to passwords " "you have saved to Firefox"
-                ),
-                "extra_fields": [],
-                "tags": [],
-                "product": "firefox-lockwise",
-                "categories": OrderedDict(
-                    [
-                        (
-                            "install-and-set-up",
-                            {
-                                "name": _lazy("Install and set up"),
-                                "topic": "install-lockwise",
-                                "tags": ["install-and-set-up"],
-                            },
-                        ),
-                        (
-                            "manage-settings-and-logins",
-                            {
-                                "name": _lazy("Manage settings and logins"),
-                                "topic": "lockwise-settings",
-                                "tags": ["settings-and-logins"],
-                            },
-                        ),
-                        (
-                            "fix-problems-with-firefox-lockwise",
-                            {
-                                "name": _lazy("Fix problems with Firefox Lockwise"),
-                                "topic": "fix-problems-lockwise",
-                                "tags": ["fix-problems"],
                             },
                         ),
                     ]
