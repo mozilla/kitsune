@@ -1,6 +1,6 @@
 from invoke import task
 from invoke.exceptions import Exit
-from env import SUMO_APP_TEMPLATE, SUMO_NODEPORT_TEMPLATE, SUMO_SERVICE_TEMPLATE
+from env import SUMO_APP_TEMPLATE, SUMO_NODEPORT_TEMPLATE, SUMO_SERVICE_TEMPLATE, SUMO_HPA_TEMPLATE
 from deploy_utils import render_template, k8s_apply, k8s_delete_resource
 
 
@@ -24,9 +24,12 @@ def _create(app, ctx, tag, apply, record=False):
 @task(check_environment)
 def create_web(ctx, tag=None, apply=False):
     """
-    Create or update a SUMO web deployment
+    Create or update a SUMO web deployment and HPA
     """
     _create("web", ctx, tag, apply, record=True)
+    # Create hpa
+    t = render_template(config=ctx.config, template_name=SUMO_HPA_TEMPLATE)
+    k8s_apply(ctx, t, apply)
 
 
 @task(check_environment)
@@ -90,7 +93,7 @@ def delete_service(ctx, apply=False, infra_apply=False):
     """
     if infra_apply:
         t = render_template(config=ctx.config, template_name=SUMO_SERVICE_TEMPLATE)
-        k8s_apply(ctx, t, apply)
+        k8s_delete_resource(ctx, t, apply)
     else:
         print("Infra tasks require an additional --infra-apply confirmation")
 

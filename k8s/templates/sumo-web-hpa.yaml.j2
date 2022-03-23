@@ -1,0 +1,14 @@
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ kubernetes.app_name }}-web
+  namespace: {{ kubernetes.namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ kubernetes.app_name }}-web
+  minReplicas: {{ kubernetes.hpa.min_replicas}}
+  maxReplicas: {{ kubernetes.hpa.max_replicas}}
+  targetCPUUtilizationPercentage: {{ kubernetes.hpa.target_cpu_utilization_percentage }}

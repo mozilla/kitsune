@@ -21,6 +21,10 @@ kubernetes:
         max_unavailable: 25%
     readiness: False
     liveness: False
+    hpa:
+      min_replicas: 50
+      max_replicas: 100
+      target_cpu_utilization_percentage: 80
     # app specific values
     apps:
         cron:
