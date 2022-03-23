@@ -7,8 +7,7 @@ import actstream
 import actstream.actions
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.fields import (GenericForeignKey,
-                                                GenericRelation)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import close_old_connections, connection, models
@@ -26,8 +25,7 @@ from taggit.models import Tag
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
-from kitsune.questions.managers import (AnswerManager, QuestionLocaleManager,
-                                        QuestionManager)
+from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
 from kitsune.questions.tasks import update_answer_pages, update_question_votes
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
@@ -300,7 +298,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
     @property
     def helpful_replies(self):
         """Return answers that have been voted as helpful."""
-        with connection.cursor() as cursor():
+        with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT votes.answer_id, "
                 "SUM(IF(votes.helpful=1,1,-1)) AS score "
