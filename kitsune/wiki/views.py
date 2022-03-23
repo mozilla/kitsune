@@ -1246,22 +1246,23 @@ def get_helpful_votes_async(request, document_slug):
     created_list = []
     dates_with_data = set()
 
-    cursor = connection.cursor()
+    with connection.cursor() as cursor:
 
-    cursor.execute(
-        "SELECT wiki_helpfulvote.revision_id, "
-        "    SUM(wiki_helpfulvote.helpful), "
-        "    SUM(NOT(wiki_helpfulvote.helpful)), "
-        "    wiki_helpfulvote.created "
-        "FROM wiki_helpfulvote "
-        "INNER JOIN wiki_revision ON "
-        "    wiki_helpfulvote.revision_id=wiki_revision.id "
-        "WHERE wiki_revision.document_id=%s "
-        "GROUP BY DATE(wiki_helpfulvote.created)",
-        [document.id],
-    )
+        cursor.execute(
+            "SELECT wiki_helpfulvote.revision_id, "
+            "    SUM(wiki_helpfulvote.helpful), "
+            "    SUM(NOT(wiki_helpfulvote.helpful)), "
+            "    wiki_helpfulvote.created "
+            "FROM wiki_helpfulvote "
+            "INNER JOIN wiki_revision ON "
+            "    wiki_helpfulvote.revision_id=wiki_revision.id "
+            "WHERE wiki_revision.document_id=%s "
+            "GROUP BY DATE(wiki_helpfulvote.created)",
+            [document.id],
+        )
 
-    results = cursor.fetchall()
+        results = cursor.fetchall()
+
     for res in results:
         revisions.add(int(res[0]))
         created_list.append(res[3])

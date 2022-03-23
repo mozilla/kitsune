@@ -5,8 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-from kitsune.questions.models import Question, Answer
-
+from kitsune.questions.models import Answer, Question
 from kitsune.search.es7_utils import index_objects_bulk
 
 log = logging.getLogger("k.cron")
@@ -40,8 +39,8 @@ class Command(BaseCommand):
                 map(str, q_ids)
             )
 
-            cursor = connection.cursor()
-            cursor.execute(sql)
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
             if not transaction.get_connection().in_atomic_block:
                 transaction.commit()
 

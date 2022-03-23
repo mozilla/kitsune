@@ -54,11 +54,11 @@ class WikiDocumentVisits(ModelBase):
             # cls.objects.filter(period=period).delete()
 
             # Instead, we use raw SQL!
-            cursor = connection.cursor()
-            cursor.execute(
-                "DELETE FROM `dashboards_wikidocumentvisits`" "    WHERE `period` = %s", [period]
-            )
-
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "DELETE FROM `dashboards_wikidocumentvisits`" "    WHERE `period` = %s",
+                    [period],
+                )
             # Now we create them again with fresh data.
             for doc_id, visits in counts.items():
                 cls.objects.create(document=Document(pk=doc_id), visits=visits, period=period)

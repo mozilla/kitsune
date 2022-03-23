@@ -67,9 +67,9 @@ admin.site.register_view("env", view=env, name="Environment")
 
 def schema_version(request):
     """Admin view that displays the current schema_version."""
-    cursor = connection.cursor()
-    cursor.execute("SELECT version FROM schema_version")
-    version = [x for x in cursor][0][0]
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT version FROM schema_version")
+        version = [x for x in cursor][0][0]
     return render(
         request,
         "kadmin/schema.html",
