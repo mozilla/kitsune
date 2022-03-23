@@ -55,7 +55,7 @@ def _get_current_unhelpful(old_formatted):
     """Gets the data for the past week and formats it as return value."""
 
     final = {}
-    with connection.cursor as cursor():
+    with connection.cursor() as cursor:
 
         cursor.execute(
             """SELECT doc_id, yes, no
