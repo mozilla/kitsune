@@ -300,7 +300,7 @@ class Question(ModelBase, BigVocabTaggableMixin):
     @property
     def helpful_replies(self):
         """Return answers that have been voted as helpful."""
-        with connection.cursor() as cursor():
+        with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT votes.answer_id, "
                 "SUM(IF(votes.helpful=1,1,-1)) AS score "
