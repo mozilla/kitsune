@@ -10,6 +10,7 @@ from datetime import date
 import dj_database_url
 import django_cache_url
 from decouple import Csv, config
+import pymysql
 
 from kitsune.lib.sumo_locales import LOCALES
 
@@ -70,6 +71,8 @@ DATABASES = {
 if DATABASES["default"]["ENGINE"] == "django.db.backends.mysql":
     DATABASES["default"]["CONN_MAX_AGE"] = DB_CONN_MAX_AGE
     DATABASES["default"]["OPTIONS"] = {"init_command": "SET default_storage_engine=InnoDB"}
+
+pymysql.install_as_MySQLdb()
 
 # Cache Settings
 CACHES = {
