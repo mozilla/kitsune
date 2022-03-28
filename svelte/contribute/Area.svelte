@@ -9,6 +9,12 @@
     export let location;
 </script>
 
+<svelte:head>
+    <title>
+        {area} | {gettext("Contribute")} | {gettext("Mozilla Support")}
+    </title>
+</svelte:head>
+
 <Header {area} {img}>
     <slot />
 </Header>
