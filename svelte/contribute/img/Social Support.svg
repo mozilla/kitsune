@@ -1,0 +1,14 @@
+<svg width="136" height="136" viewBox="0 0 136 136" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g style="mix-blend-mode:multiply">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M115 61.1666C115.019 68.6459 113.272 76.024 109.9 82.7C101.745 99.0162 85.0738 109.326 66.8333 109.333C59.3541 109.353 51.976 107.605 45.3 104.233L13 115L23.7667 82.7C20.3946 76.024 18.6472 68.6459 18.6667 61.1666C18.6737 42.9262 28.9838 26.2545 45.3 18.1C51.976 14.7279 59.3541 12.9805 66.8333 13H69.6667C94.1229 14.3492 113.651 33.8771 115 58.3333V61.1666V61.1666Z" stroke="#FF298A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="48.5" cy="61.5" r="2.5" stroke="#FF298A" stroke-width="5"/>
+<circle cx="65.5" cy="61.5" r="2.5" stroke="#FF298A" stroke-width="5"/>
+<circle cx="82.5" cy="61.5" r="2.5" stroke="#FF298A" stroke-width="5"/>
+</g>
+<g style="mix-blend-mode:multiply">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M123 69.1666C123.019 76.6459 121.272 84.024 117.9 90.7C109.745 107.016 93.0738 117.326 74.8333 117.333C67.3541 117.353 59.976 115.605 53.3 112.233L21 123L31.7667 90.7C28.3946 84.024 26.6472 76.6459 26.6667 69.1666C26.6737 50.9262 36.9838 34.2545 53.3 26.1C59.976 22.7279 67.3541 20.9805 74.8333 21H77.6667C102.123 22.3492 121.651 41.8771 123 66.3333V69.1666V69.1666Z" stroke="#FFEA80" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="56.5" cy="69.5" r="2.5" stroke="#FFEA80" stroke-width="5"/>
+<circle cx="73.5" cy="69.5" r="2.5" stroke="#FFEA80" stroke-width="5"/>
+<circle cx="90.5" cy="69.5" r="2.5" stroke="#FFEA80" stroke-width="5"/>
+</g>
+</svg>
