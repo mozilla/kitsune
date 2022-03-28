@@ -6,6 +6,10 @@
     export let img;
 </script>
 
+<svelte:head>
+    <title>{gettext("Contribute")} | {gettext("Mozilla Support")}</title>
+</svelte:head>
+
 <Header {img}>
     <h1>{gettext("Save the world from the comfort of your couch")}</h1>
 
