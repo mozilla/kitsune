@@ -22,11 +22,10 @@ localizing skills!
 * Locale Page - https://{{ host }}/kb/locales
 
 If you want to get in touch with other people localizing SUMO in your language
-you can check out the forums or our IRC channels.
+you can check out the forums or our Matrix channel.
 
 * L10n forums - https://{{ host }}/forums/l10n-forum/711196?last=64679
-* L10n IRC channel - https://www.mibbit.com/?server=irc.mozilla.org&channel=%23sumo-l10ns
-* General SUMO IRC channel - https://www.mibbit.com/?server=irc.mozilla.org&channel=%23sumo
+* General SUMO Matrix channel - https://chat.mozilla.org/#/room/#SUMO:mozilla.org
 
 ---
 Stay in touch

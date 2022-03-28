@@ -75,11 +75,11 @@ http://mzl.la/1CGbET4
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-Lastly, find others in the community just like you on the #sumo IRC channel. That is right Mozilla has a live chat channel for contributors.
-irc.mozilla.org #sumo - web-based IRC:
+Lastly, find others in the community just like you in the #SUMO Matrix channel. That is right Mozilla has a live chat channel for contributors.
+chat.mozilla.org #SUMO - web-based Matrix:
 {% endtrans %}
 
-{{ add_utm('https://kiwiirc.com/client/irc.mozilla.org/sumo', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://chat.mozilla.org/#/room/#SUMO:mozilla.org', 'get-involved', source='new-contributor') }}
 
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}

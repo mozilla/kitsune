@@ -21,11 +21,11 @@ help up to 1000 users a day!
 We are always very happy to hear from new people who like helping on the forums
 so if you haven’t met our community yet please take a minute to introduce
 yourself. If you want to stay low-profile, that’s also ok :). You can also find
-us all hanging out on IRC, on the #sumo channel on irc.mozilla.org.
+us all hanging out in the #SUMO channel on Matrix.
 {% endtrans %}
 
 * Introductions - https://{{ host }}/forums/contributors
-* IRC - https://www.mibbit.com/?server=irc.mozilla.org&channel=#sumo
+* Matrix - https://chat.mozilla.org/#/room/#SUMO:mozilla.org
 
 {% trans url='https://' + host + '/forums/contributors' %}
 The community forum is at {{ url }} .
