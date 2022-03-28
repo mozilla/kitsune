@@ -3,7 +3,7 @@ import {default as chai, expect} from 'chai';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
-import BrowserDetect from 'sumo/js/browserdetect';
+import { TroubleshootingDetector } from 'sumo/js/browserdetect';
 import ShowFor from "sumo/js/showfor";
 
 chai.use(chaiLint);
@@ -119,13 +119,15 @@ describe('ShowFor', () => {
     React.render(sandbox, document.body);
     showFor = showForNoInit($('body'));
 
-    BrowserDetect.browser = "firefox";
-    BrowserDetect.version = 25.0;
-    BrowserDetect.OS = "winxp";
+    sinon.stub(navigator, "userAgent").get(() =>
+      "Mozilla/5.0 (Windows NT 5.1;) Gecko/20100101 Firefox/25.0"
+    );
+    // avoid slowing down tests while we wait for remote troubleshooting api call to timeout:
+    sinon.stub(TroubleshootingDetector.prototype, "browser").resolvesArg(0);
   });
 
   afterEach(() => {
-    BrowserDetect.init();
+    sinon.restore();
   });
 
   describe('loadData', () => {
@@ -147,12 +149,12 @@ describe('ShowFor', () => {
 
   describe('updateUI', () => {
     describe('Firefox 26 on Windows XP', () => {
-      beforeEach(() => {
-        BrowserDetect.browser = "fx"
-        BrowserDetect.version = 26.0
-        BrowserDetect.OS = "winxp"
+      beforeEach(async () => {
+        sinon.stub(navigator, "userAgent").get(() =>
+          "Mozilla/5.0 (Windows NT 5.1;) Gecko/20100101 Firefox/26.0"
+        );
         showFor.loadData();
-        showFor.updateUI();
+        await showFor.updateUI();
       });
 
       it('should populate the UI with the values from BrowserDetect', () => {
@@ -162,12 +164,12 @@ describe('ShowFor', () => {
     });
 
     describe('Firefox for Android 23', () => {
-      beforeEach(() => {
-        BrowserDetect.browser = "m"
-        BrowserDetect.version = 23.0
-        BrowserDetect.OS = "android"
+      beforeEach(async () => {
+        sinon.stub(navigator, "userAgent").get(() =>
+          "Mozilla/5.0 (Android;) Gecko/20100101 Firefox/23.0"
+        );
         showFor.loadData();
-        showFor.updateUI();
+        await showFor.updateUI();
       });
 
       it('should populate the UI with the values from BrowserDetect', () => {
@@ -179,9 +181,9 @@ describe('ShowFor', () => {
 
   describe('updateState', () => {
 
-    beforeEach(() => {
+    beforeEach(async () => {
       showFor.loadData();
-      showFor.updateUI();
+      await showFor.updateUI();
       showFor.updateState();
     });
 
@@ -238,10 +240,10 @@ describe('ShowFor', () => {
 
   describe('initShowFuncs', () => {
 
-    beforeEach(() => {
+    beforeEach(async () => {
       sinon.stub(showFor, 'matchesCriteria');
       showFor.loadData();
-      showFor.updateUI();
+      await showFor.updateUI();
       showFor.updateState();
       showFor.initShowFuncs();
     });
@@ -269,9 +271,9 @@ describe('ShowFor', () => {
 
   describe('showAndHide', () => {
 
-    beforeEach(() => {
+    beforeEach(async () => {
       showFor.loadData();
-      showFor.updateUI();
+      await showFor.updateUI();
       showFor.updateState();
     });
 

@@ -13,31 +13,31 @@ def _get_old_unhelpful():
     """
 
     old_formatted = {}
-    cursor = connection.cursor()
+    with connection.cursor() as cursor:
 
-    cursor.execute(
-        """SELECT doc_id, yes, no
-        FROM
-            (SELECT wiki_revision.document_id as doc_id,
-                SUM(limitedvotes.helpful) as yes,
-                SUM(NOT(limitedvotes.helpful)) as no
+        cursor.execute(
+            """SELECT doc_id, yes, no
             FROM
-                (SELECT * FROM wiki_helpfulvote
-                    WHERE created <= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
-                    AND created >= DATE_SUB(DATE_SUB(CURDATE(),
-                        INTERVAL 1 WEEK), INTERVAL 1 WEEK)
-                ) as limitedvotes
-            INNER JOIN wiki_revision ON
-                limitedvotes.revision_id=wiki_revision.id
-            INNER JOIN wiki_document ON
-                wiki_document.id=wiki_revision.document_id
-            WHERE wiki_document.locale="en-US"
-            GROUP BY doc_id
-            HAVING no > yes
-            ) as calculated"""
-    )
+                (SELECT wiki_revision.document_id as doc_id,
+                    SUM(limitedvotes.helpful) as yes,
+                    SUM(NOT(limitedvotes.helpful)) as no
+                FROM
+                    (SELECT * FROM wiki_helpfulvote
+                        WHERE created <= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+                        AND created >= DATE_SUB(DATE_SUB(CURDATE(),
+                            INTERVAL 1 WEEK), INTERVAL 1 WEEK)
+                    ) as limitedvotes
+                INNER JOIN wiki_revision ON
+                    limitedvotes.revision_id=wiki_revision.id
+                INNER JOIN wiki_document ON
+                    wiki_document.id=wiki_revision.document_id
+                WHERE wiki_document.locale="en-US"
+                GROUP BY doc_id
+                HAVING no > yes
+                ) as calculated"""
+        )
 
-    old_data = cursor.fetchall()
+        old_data = cursor.fetchall()
 
     for data in old_data:
         doc_id = data[0]
@@ -55,29 +55,29 @@ def _get_current_unhelpful(old_formatted):
     """Gets the data for the past week and formats it as return value."""
 
     final = {}
-    cursor = connection.cursor()
+    with connection.cursor() as cursor:
 
-    cursor.execute(
-        """SELECT doc_id, yes, no
-        FROM
-            (SELECT wiki_revision.document_id as doc_id,
-                SUM(limitedvotes.helpful) as yes,
-                SUM(NOT(limitedvotes.helpful)) as no
+        cursor.execute(
+            """SELECT doc_id, yes, no
             FROM
-                (SELECT * FROM wiki_helpfulvote
-                    WHERE created >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
-                ) as limitedvotes
-            INNER JOIN wiki_revision ON
-                limitedvotes.revision_id=wiki_revision.id
-            INNER JOIN wiki_document ON
-                wiki_document.id=wiki_revision.document_id
-            WHERE wiki_document.locale="en-US"
-            GROUP BY doc_id
-            HAVING no > yes
-            ) as calculated"""
-    )
+                (SELECT wiki_revision.document_id as doc_id,
+                    SUM(limitedvotes.helpful) as yes,
+                    SUM(NOT(limitedvotes.helpful)) as no
+                FROM
+                    (SELECT * FROM wiki_helpfulvote
+                        WHERE created >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
+                    ) as limitedvotes
+                INNER JOIN wiki_revision ON
+                    limitedvotes.revision_id=wiki_revision.id
+                INNER JOIN wiki_document ON
+                    wiki_document.id=wiki_revision.document_id
+                WHERE wiki_document.locale="en-US"
+                GROUP BY doc_id
+                HAVING no > yes
+                ) as calculated"""
+        )
 
-    current_data = cursor.fetchall()
+        current_data = cursor.fetchall()
 
     for data in current_data:
         doc_id = data[0]

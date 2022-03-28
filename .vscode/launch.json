@@ -21,6 +21,9 @@
             "request": "launch",
             "django": true,
             "program": "/venv/bin/gunicorn",
+            "env": {
+                "GEVENT_SUPPORT": "True"
+            },
             "args": [
                 "wsgi.app",
                 "--config",

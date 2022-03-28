@@ -62,10 +62,10 @@ class TestNewQuestionForm(TestCaseBase):
                     )
                 ]
             ),
-            "extra_fields": ["troubleshooting", "ff_version", "os", "plugins"],
+            "extra_fields": ["troubleshooting", "ff_version", "os"],
         }
         form = NewQuestionForm(product=product)
-        expected = ["troubleshooting", "ff_version", "os", "plugins", "useragent", "category"]
+        expected = ["troubleshooting", "ff_version", "os", "useragent", "category"]
         actual = form.metadata_field_keys
         self.assertEqual(sorted(expected), sorted(actual))
 
@@ -88,7 +88,7 @@ class TestNewQuestionForm(TestCaseBase):
                     )
                 ]
             ),
-            "extra_fields": ["troubleshooting", "ff_version", "os", "plugins"],
+            "extra_fields": ["troubleshooting", "ff_version", "os"],
         }
         form = NewQuestionForm(product=product, data=data)
         form.is_valid()

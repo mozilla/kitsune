@@ -51,8 +51,8 @@ def update_question_vote_chunk(data):
         """
         % ids
     )
-    cursor = connection.cursor()
-    cursor.execute(sql)
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
     if not transaction.get_connection().in_atomic_block:
         transaction.commit()
 

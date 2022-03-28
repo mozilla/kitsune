@@ -111,12 +111,13 @@ function init() {
 * Initialize the new/edit question page/form
 */
 function initQuestion(action) {
-  var $questionForm = $('#question-form');
-  var aaq = new AAQSystemInfo($questionForm);
+  const questionForm = document.querySelector('#question-form');
+  if (!questionForm) return;
   if (action === "editing") {
-    $("#troubleshooting-field").show();
+    questionForm.querySelector("#troubleshooting-field").style.display = "block";
   } else {
-    hideDetails($questionForm, aaq);
+    new AAQSystemInfo(questionForm).fillDetails();
+    hideDetails(questionForm);
   }
 }
 
@@ -158,16 +159,18 @@ function initEditDetails() {
 
 // Hide the browser/system details for users on FF with js enabled
 // and are submitting a question for FF on desktop.
-function hideDetails($form, aaq) {
-  $form.find('ul').addClass('hide-details');
-  $form.find('a.show, a.hide').click(function(ev) {
-    ev.preventDefault();
-    $(this).closest('li')
-    .toggleClass('show')
-    .toggleClass('hide')
-    .closest('ul')
-    .toggleClass('show-details');
-  });
+function hideDetails(form) {
+  form.querySelector('ul').classList.add('hide-details');
+  for (const link of form.querySelectorAll('a.show, a.hide')) {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const li = e.currentTarget.closest("li");
+      li.classList.toggle("show");
+      li.classList.toggle("hide");
+      const ui = li.closest("ul");
+      ui.classList.toggle("show-details");
+    });
+  }
 }
 
 /*

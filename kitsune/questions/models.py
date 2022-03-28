@@ -298,21 +298,21 @@ class Question(ModelBase, BigVocabTaggableMixin):
     @property
     def helpful_replies(self):
         """Return answers that have been voted as helpful."""
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT votes.answer_id, "
-            "SUM(IF(votes.helpful=1,1,-1)) AS score "
-            "FROM questions_answervote AS votes "
-            "JOIN questions_answer AS ans "
-            "ON ans.id=votes.answer_id "
-            "AND ans.question_id=%s "
-            "GROUP BY votes.answer_id "
-            "HAVING score > 0 "
-            "ORDER BY score DESC LIMIT 2",
-            [self.id],
-        )
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT votes.answer_id, "
+                "SUM(IF(votes.helpful=1,1,-1)) AS score "
+                "FROM questions_answervote AS votes "
+                "JOIN questions_answer AS ans "
+                "ON ans.id=votes.answer_id "
+                "AND ans.question_id=%s "
+                "GROUP BY votes.answer_id "
+                "HAVING score > 0 "
+                "ORDER BY score DESC LIMIT 2",
+                [self.id],
+            )
 
-        helpful_ids = [row[0] for row in cursor.fetchall()]
+            helpful_ids = [row[0] for row in cursor.fetchall()]
 
         # Exclude the solution if it is set
         if self.solution and self.solution.id in helpful_ids:
