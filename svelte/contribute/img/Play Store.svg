@@ -1,0 +1,12 @@
+<svg width="136" height="136" viewBox="0 0 136 136" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g style="mix-blend-mode:multiply">
+<rect x="32.3334" y="13.6667" width="63.6666" height="100.048" rx="2" stroke="#FF298A" stroke-width="5"/>
+<path d="M32.3334 31.8572H96" stroke="#FF298A" stroke-width="5"/>
+<path d="M32.3334 95.5237H96" stroke="#FF298A" stroke-width="5"/>
+</g>
+<g style="mix-blend-mode:multiply">
+<rect x="41.3334" y="22.6667" width="63.6666" height="100.048" rx="2" stroke="#FFEA80" stroke-width="5"/>
+<path d="M41.3334 40.8572H105" stroke="#FFEA80" stroke-width="5"/>
+<path d="M41.3334 104.524H105" stroke="#FFEA80" stroke-width="5"/>
+</g>
+</svg>
