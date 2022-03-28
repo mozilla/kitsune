@@ -14,10 +14,6 @@
     export let locale = "";
 </script>
 
-<svelte:head>
-    <title>{gettext("Contribute")} | {gettext("Mozilla Support")}</title>
-</svelte:head>
-
 <Router basepath="/{locale}/contribute" {url}>
     <Route path="forum" let:location>
         <Area
