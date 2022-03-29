@@ -15,4 +15,4 @@ timeout = int(getenv("WSGI_TIMEOUT", 30))
 graceful_timeout = int(getenv("WSGI_GRACEFUL_TIMEOUT", 30))
 worker_connections = int(getenv("WSGI_WORKER_CONNECTIONS", 8))
 # improve fairness 
-reuse_port getenv("WSGI_REUSE_PORT", True)
+reuse_port = getenv("WSGI_REUSE_PORT", True)
