@@ -214,7 +214,7 @@ class NotificationsTests(TestCaseBase):
         # make sure email has the proper static url
         self.assertRegex(
             mail.outbox[1].alternatives[0][0],
-            fr"{re.escape('https://example.com/mozilla-support.')}[0-9a-z]+\.png",
+            rf"{re.escape('https://example.com/mozilla-support.')}[0-9a-z]+\.png",
         )
 
     @mock.patch.object(Site.objects, "get_current")
