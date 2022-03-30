@@ -24,6 +24,8 @@ module.exports = mergeWithRules({
         "/contribute/forum",
         "/contribute/kb",
         "/contribute/social",
+        "/contribute/l10n",
+        "/contribute/play-store",
       ],
     }),
   ],
