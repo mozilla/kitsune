@@ -1,8 +1,9 @@
 <script>
     import { Link } from "svelte-navigator";
+    import { srcset } from "../utils";
 
     export let area = "";
-    export let img;
+    export let images;
 </script>
 
 <header>
@@ -25,7 +26,13 @@
 
         <div class="hero">
             <div class="text"><slot /></div>
-            <img src={img} alt="" />
+            <picture>
+                <source
+                    srcset={srcset(images[1], images[2])}
+                    type="image/webp"
+                />
+                <img srcset={srcset(images[0])} src={images[0]} alt="" />
+            </picture>
         </div>
     </div>
 </header>
@@ -54,6 +61,7 @@
         }
 
         .text,
+        picture,
         img {
             flex: 1;
         }

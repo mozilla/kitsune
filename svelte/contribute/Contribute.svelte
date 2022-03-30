@@ -3,12 +3,26 @@
     import Area from "./Area";
     import Landing from "./Landing";
 
-    import imgScreens from "./img/Screens.png";
-    import imgHeads from "./img/Heads.png";
-    import imgIntroduction from "./img/Introduction.png";
-    import imgFoundation from "./img/Foundation.png";
-    import imgDots from "./img/Dots.png";
-    import imgHands from "./img/Hands.png";
+    // this is a little verbose, but dynamic imports aren't SSRed
+    // if we do this in more places, we could write a webpack loader
+    import imgScreensPng from "./img/Screens.png";
+    import imgScreensWebp from "./img/Screens.webp";
+    import imgScreens2xWebp from "./img/Screens@2x.webp";
+    import imgHeadsPng from "./img/Heads.png";
+    import imgHeadsWebp from "./img/Heads.webp";
+    import imgHeads2xWebp from "./img/Heads@2x.webp";
+    import imgIntroductionPng from "./img/Introduction.png";
+    import imgIntroductionWebp from "./img/Introduction.webp";
+    import imgIntroduction2xWebp from "./img/Introduction@2x.webp";
+    import imgFoundationPng from "./img/Foundation.png";
+    import imgFoundationWebp from "./img/Foundation.webp";
+    import imgFoundation2xWebp from "./img/Foundation@2x.webp";
+    import imgDotsPng from "./img/Dots.png";
+    import imgDotsWebp from "./img/Dots.webp";
+    import imgDots2xWebp from "./img/Dots@2x.webp";
+    import imgHandsPng from "./img/Hands.png";
+    import imgHandsWebp from "./img/Hands.webp";
+    import imgHands2xWebp from "./img/Hands@2x.webp";
 
     export let url = "";
     export let locale = "";
@@ -18,7 +32,7 @@
     <Route path="forum" let:location>
         <Area
             area={gettext("Support forum")}
-            img={imgHeads}
+            images={[imgHeadsPng, imgHeadsWebp, imgHeads2xWebp]}
             {location}
             steps={{
                 steps: [
@@ -48,7 +62,11 @@
     <Route path="kb" let:location>
         <Area
             area={gettext("Support articles")}
-            img={imgIntroduction}
+            images={[
+                imgIntroductionPng,
+                imgIntroductionWebp,
+                imgIntroduction2xWebp,
+            ]}
             {location}
             steps={{
                 steps: [
@@ -78,7 +96,7 @@
     <Route path="l10n" let:location>
         <Area
             area={gettext("Localization")}
-            img={imgFoundation}
+            images={[imgFoundationPng, imgFoundationWebp, imgFoundation2xWebp]}
             {location}
             steps={{
                 steps: [
@@ -110,7 +128,7 @@
     <Route path="social" let:location>
         <Area
             area={gettext("Social support")}
-            img={imgDots}
+            images={[imgDotsPng, imgDotsWebp, imgDots2xWebp]}
             {location}
             steps={{
                 steps: [
@@ -140,7 +158,7 @@
     <Route path="play-store" let:location>
         <Area
             area={gettext("Play Store support")}
-            img={imgHands}
+            images={[imgHandsPng, imgHandsWebp, imgHands2xWebp]}
             {location}
             steps={{
                 steps: [
@@ -172,7 +190,7 @@
         </Area>
     </Route>
     <Route path="/">
-        <Landing img={imgScreens} />
+        <Landing images={[imgScreensPng, imgScreensWebp, imgScreens2xWebp]} />
     </Route>
 </Router>
 

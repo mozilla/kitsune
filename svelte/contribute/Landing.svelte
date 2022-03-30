@@ -1,16 +1,20 @@
 <script>
     import Header from "./Header";
     import Picker from "./Picker";
-    import aboutImg from "./img/About Us.png";
+    import { srcset } from "../utils"
 
-    export let img;
+    import imgAboutPng from "./img/About Us.png";
+    import imgAboutWebp from "./img/About Us.webp";
+    import imgAbout2xWebp from "./img/About Us@2x.webp";
+
+    export let images;
 </script>
 
 <svelte:head>
     <title>{gettext("Contribute")} | {gettext("Mozilla Support")}</title>
 </svelte:head>
 
-<Header {img}>
+<Header {images}>
     <h1>{gettext("Save the world from the comfort of your couch")}</h1>
 
     <p>
@@ -39,10 +43,17 @@
             )}
         </p>
     </div>
-    <img
-        src={aboutImg}
-        alt={gettext("Photo of Mozilla staff and volunteers.")}
-    />
+    <picture>
+        <source
+            srcset={srcset(imgAboutWebp, imgAbout2xWebp)}
+            type="image/webp"
+        />
+        <img
+            srcset={srcset(imgAboutPng)}
+            src={imgAboutPng}
+            alt={gettext("Photo of Mozilla staff and volunteers.")}
+        />
+    </picture>
 </section>
 
 <style lang="scss">
@@ -59,6 +70,7 @@
         }
 
         img,
+        picture,
         .text {
             flex: 1;
         }
