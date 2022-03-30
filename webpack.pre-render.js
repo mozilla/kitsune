@@ -47,7 +47,7 @@ module.exports = mergeWithRules({
         },
       },
       {
-        test: /\.(svg|png|gif|woff2?)$/,
+        test: /\.(svg|png|webp|gif|woff2?)$/,
         type: "asset/source",
         use: {
           loader: path.resolve("./webpack/ssr-asset-loader"),
