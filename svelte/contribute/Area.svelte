@@ -4,7 +4,7 @@
     import Picker from "./Picker";
 
     export let area;
-    export let img;
+    export let images;
     export let steps;
     export let location;
 </script>
@@ -15,7 +15,7 @@
     </title>
 </svelte:head>
 
-<Header {area} {img}>
+<Header {area} {images}>
     <slot />
 </Header>
 
