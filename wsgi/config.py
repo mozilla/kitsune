@@ -13,6 +13,6 @@ worker_class = getenv("GUNICORN_WORKER_CLASS", "gevent")
 reload = getenv("DEV", False)
 timeout = int(getenv("WSGI_TIMEOUT", 30))
 graceful_timeout = int(getenv("WSGI_GRACEFUL_TIMEOUT", 30))
-worker_connections = int(getenv("WSGI_WORKER_CONNECTIONS", 8))
+worker_connections = int(getenv("WSGI_WORKER_CONNECTIONS", 5))
 # improve fairness 
 reuse_port = getenv("WSGI_REUSE_PORT", True)

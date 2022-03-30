@@ -58,7 +58,7 @@ app:
     csrf_cookie_secure: True
     database_url: SECRET
     default_from_email: "notifications-test@support.mozilla.org"
-    db_conn_max_age: 60
+    db_conn_max_age: 0
     debug: False
     dms_auto_archive_old_questions: SECRET
     dms_cache_most_unhelpful_kb_articles: SECRET

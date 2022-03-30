@@ -57,7 +57,7 @@ app:
     celery_task_always_eager: False
     csrf_cookie_secure: True
     database_url: SECRET
-    db_conn_max_age: 60
+    db_conn_max_age: 0
     debug: False
     dms_auto_archive_old_questions: SECRET
     dms_cache_most_unhelpful_kb_articles: SECRET
