@@ -104,7 +104,7 @@ def product_list(request):
     return render(
         request,
         "questions/product_list.html",
-        {"products": Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE)},
+        {"products": Product.objects.with_question_forums(request)},
     )
 
 
@@ -410,7 +410,7 @@ def question_details(
 
     extra_kwargs.update(ans_)
 
-    products = Product.objects.filter(visible=True)
+    products = Product.objects.with_question_forums(request)
     topics = topics_for(product=question.product)
 
     related_documents = question.related_documents
