@@ -60,3 +60,4 @@ celerybeat.pid
 dist/
 .mysql_history
 .local
+.pdbhistory
