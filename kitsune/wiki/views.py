@@ -17,7 +17,6 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -556,7 +555,6 @@ def edit_document(request, document_slug, revision_id=None):
     )
 
 
-@csrf_exempt
 @login_required
 @require_POST
 def draft_revision(request):
@@ -1156,7 +1154,6 @@ def json_view(request):
 
 
 @require_POST
-@csrf_exempt
 @ratelimit("document-vote", "10/d")
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
@@ -1216,7 +1213,6 @@ def helpful_vote(request, document_slug):
 
 
 @require_POST
-@csrf_exempt
 def unhelpful_survey(request):
     """Ajax only view: Unhelpful vote survey processing."""
     vote = get_object_or_404(HelpfulVote, id=smart_int(request.POST.get("vote_id")))
