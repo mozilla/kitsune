@@ -207,6 +207,7 @@
           {% if not question.has_voted(request) %}
             <div class="me-too">
               <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
+                {% csrf_token %}
                 <button class="sumo-button button-lg secondary-button" type="submit">{{ _('I have this problem, too') }}</button>
               </form>
             </div>
@@ -276,6 +277,7 @@
             <div class="me-too sumo-button-stack">
               <a class="sumo-button primary-button button-lg" href="{{ ask_url }}">{{ _('Ask a question') }}</a>
               <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
+                {% csrf_token %}
                 <button class="sumo-button secondary-button button-lg" type="submit">{{ _('I have this problem, too') }}</button>
               </form>
             </div>
