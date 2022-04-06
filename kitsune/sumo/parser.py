@@ -5,6 +5,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy, ugettext as _
 
+from sentry_sdk import capture_exception
 from wikimarkup.parser import Parser, ALLOWED_TAGS
 
 from kitsune.gallery.models import Image, Video
@@ -244,16 +245,22 @@ class WikiParser(Parser):
 
         @email_utils.safe_translation
         def _parse(locale):
-            return super(WikiParser, self).parse(
-                text,
-                show_toc=show_toc,
-                tags=tags or ALLOWED_TAGS,
-                attributes=attributes or ALLOWED_ATTRIBUTES,
-                styles=styles or ALLOWED_STYLES,
-                nofollow=nofollow,
-                strip_comments=True,
-                **kwargs,
-            )
+            try:
+                return super(WikiParser, self).parse(
+                    text,
+                    show_toc=show_toc,
+                    tags=tags or ALLOWED_TAGS,
+                    attributes=attributes or ALLOWED_ATTRIBUTES,
+                    styles=styles or ALLOWED_STYLES,
+                    nofollow=nofollow,
+                    strip_comments=True,
+                    **kwargs,
+                )
+            except TypeError as e:
+                if settings.DEBUG:
+                    raise e
+                capture_exception(e)
+                return "&#xFFFD; There was an error parsing this content. &#xFFFD;"
 
         html = _parse(locale)
 
