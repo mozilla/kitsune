@@ -28,7 +28,7 @@ metadata:
     type: lb
   annotations:
     alb.ingress.kubernetes.io/scheme: "internet-facing"
-    alb.ingress.kubernetes.io/target-type: "ip"
+    alb.ingress.kubernetes.io/target-type: "instance"
     alb.ingress.kubernetes.io/certificate-arn: "{{ kubernetes.service_cert_arn }}"
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '10'
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
