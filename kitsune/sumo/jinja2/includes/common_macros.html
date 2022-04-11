@@ -446,7 +446,7 @@
 
   {% if field.errors %}
   {% for error in field.errors %}
-  <span class="form-error is-visible">{{ error|safe }}</span>
+  <span class="form-error is-visible">{{ error }}</span>
   {% endfor %}
   {% endif %}
 
@@ -464,7 +464,7 @@
 
   {% if field.errors %}
   {% for error in field.errors %}
-  <span class="form-error is-visible">{{ error|safe }}</span>
+  <span class="form-error is-visible">{{ error }}</span>
   {% endfor %}
   {% endif %}
 
