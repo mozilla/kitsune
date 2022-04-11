@@ -9,7 +9,7 @@ class UnaryOperator(BaseToken):
         self.argument = tokens[0][-1]
 
     def __repr__(self):
-        return fr"{type(self).__name__}({repr(self.argument)})"
+        return rf"{type(self).__name__}({repr(self.argument)})"
 
 
 class BinaryOperator(BaseToken):
@@ -20,7 +20,7 @@ class BinaryOperator(BaseToken):
 
     def __repr__(self):
         args = ", ".join([repr(x) for x in self.arguments])
-        return fr"{type(self).__name__}({args})"
+        return rf"{type(self).__name__}({args})"
 
     def elastic_queries(self, tokens, context):
         """Get the elastic queries for every token in `tokens`."""
@@ -29,7 +29,7 @@ class BinaryOperator(BaseToken):
 
 class FieldOperator(UnaryOperator):
     def __repr__(self):
-        return fr"FieldOperator({repr(self.argument)}, field={repr(self.tokens.field)})"
+        return rf"FieldOperator({repr(self.argument)}, field={repr(self.tokens.field)})"
 
     def elastic_query(self, context):
         field = self.tokens.field

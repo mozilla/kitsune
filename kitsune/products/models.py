@@ -9,6 +9,11 @@ from kitsune.sumo.utils import webpack_static
 HOT_TOPIC_SLUG = "hot"
 
 
+class ProductQuerySet(models.QuerySet):
+    def with_question_forums(self, request):
+        return self.filter(questions_locales__locale=request.LANGUAGE_CODE).filter(codename="")
+
+
 class Product(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
     codename = models.CharField(max_length=255, blank=True, default="")
@@ -45,6 +50,8 @@ class Product(ModelBase):
 
     class Meta(object):
         ordering = ["display_order"]
+
+    objects = ProductQuerySet.as_manager()
 
     def __str__(self):
         return "%s" % self.title

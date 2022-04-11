@@ -2,21 +2,21 @@ default_language_version:
   python: python3.10
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.1.0
+    rev: v4.1.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: debug-statements
   - repo: https://github.com/psf/black
-    rev: 21.8b0
+    rev: 22.3.0
     hooks:
       - id: black
         files: "^kitsune/"
         exclude: "^.*/migrations/.*$|kitsune/sumo/db_strings.py"
         language_version: python3.10
   - repo: https://gitlab.com/pycqa/flake8.git
-    rev: 3.8.4
+    rev: 4.0.1
     hooks:
       - id: flake8
   # - repo: https://github.com/pre-commit/mirrors-eslint

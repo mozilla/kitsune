@@ -22,7 +22,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from django.utils.translation import gettext_lazy as _lazy
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
@@ -104,7 +103,7 @@ def product_list(request):
     return render(
         request,
         "questions/product_list.html",
-        {"products": Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE)},
+        {"products": Product.objects.with_question_forums(request)},
     )
 
 
@@ -410,7 +409,7 @@ def question_details(
 
     extra_kwargs.update(ans_)
 
-    products = Product.objects.filter(visible=True)
+    products = Product.objects.with_question_forums(request)
     topics = topics_for(product=question.product)
 
     related_documents = question.related_documents
@@ -805,7 +804,6 @@ def unsolve(request, question_id, answer_id):
 
 
 @require_POST
-@csrf_exempt
 @ratelimit("question-vote", "10/d")
 def question_vote(request, question_id):
     """I have this problem too."""
@@ -853,7 +851,7 @@ def question_vote(request, question_id):
     return HttpResponseRedirect(question.get_absolute_url())
 
 
-@csrf_exempt
+@require_POST
 @ratelimit("answer-vote", "10/d")
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
