@@ -1,5 +1,7 @@
 <script>
     import Tile from "./Tile";
+    import { gettext } from "../utils";
+
     import forumImg from "./img/Support Forum.svg";
     import kbImg from "./img/Support Articles.svg";
     import l10nImg from "./img/Localization.svg";
