@@ -1,4 +1,6 @@
 <script>
+    import { gettext } from "../utils";
+
     export let steps = [];
     export let fact = {};
 </script>
