@@ -55,3 +55,26 @@ First the components must pass through the Svelte compiler,
 with the appropriate flags enabled to compile components for server-side rendering (SSR).
 Then those compiled components must be rendered into static HTML.
 We do both these steps in Webpack using the `webpack.pre-render.js` config file.
+
+In order to pre-render a route,
+add it to the config object passed to `svelte-pre-render-plugin` in `webpack.pre-render.js`,
+referencing the entrypoint containing the component you want to render:
+
+```
+entry: {
+    foobar: "./svelte/SomeComponent",
+    barfoo: "./svelte/AnotherComponent",
+},
+plugins: [
+    new SveltePreRenderPlugin({
+        "foobar.js": [
+            "/route-1",
+            "/route-2",
+            "/route-2/subroute",
+        ],
+        "barfoo.js": [
+            "/route-3",
+        ],
+    }),
+],
+```
