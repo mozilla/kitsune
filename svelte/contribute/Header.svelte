@@ -1,6 +1,6 @@
 <script>
     import { Link } from "svelte-navigator";
-    import { srcset } from "../utils";
+    import { srcset, gettext } from "../utils";
 
     export let area = "";
     export let images;

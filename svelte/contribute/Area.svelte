@@ -2,6 +2,7 @@
     import Header from "./Header";
     import Steps from "./Steps";
     import Picker from "./Picker";
+    import { gettext } from "../utils";
 
     export let area;
     export let images;
