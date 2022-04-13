@@ -69,6 +69,7 @@ RUN ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n && \
     # minify jsi18n files:
     find jsi18n/ -name "*.js" -exec sh -c 'npx terser "$1" -o "${1%.js}-min.js"' sh {} \; && \
+    npm run webpack:build:pre-render && \
     ./manage.py collectstatic --noinput
 RUN poetry install --no-dev
 
