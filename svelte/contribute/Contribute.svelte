@@ -2,6 +2,7 @@
     import { Router, Route } from "svelte-navigator";
     import Area from "./Area";
     import Landing from "./Landing";
+    import { gettext } from "../utils";
 
     // this is a little verbose, but dynamic imports aren't SSRed
     // if we do this in more places, we could write a webpack loader
