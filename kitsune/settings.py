@@ -717,7 +717,7 @@ PUENTE = {
             ("kitsune/**/static/**/js/*.js", "javascript"),
             ("kitsune/**/static/**/tpl/**.njk", "jinja2"),
             # if this starts failing, switch to extracting from compiled output:
-            ("svelte/*.svelte", "javascript"),
+            ("svelte/**/*.svelte", "javascript"),
         ],
     },
 }

@@ -9,3 +9,7 @@ export function srcset(...sources) {
     )
     .join(", ");
 }
+
+export function gettext(...args) {
+  return (typeof window === "undefined" ? global : window).gettext(...args);
+}
