@@ -9,8 +9,8 @@ from datetime import date
 
 import dj_database_url
 import django_cache_url
-from decouple import Csv, config
 import pymysql
+from decouple import Csv, config
 
 from kitsune.lib.sumo_locales import LOCALES
 
@@ -546,6 +546,7 @@ MIDDLEWARE = (
     "kitsune.sumo.middleware.InAAQMiddleware",
     "kitsune.users.middleware.LogoutDeactivatedUsersMiddleware",
     "kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware",
+    "csp.middleware.CSPMiddleware",
 )
 
 # SecurityMiddleware settings
@@ -1201,3 +1202,49 @@ ZENDESK_PRODUCT_FIELD_ID = config("ZENDESK_PRODUCT_FIELD_ID", default="360047198
 ZENDESK_CATEGORY_FIELD_ID = config("ZENDESK_CATEGORY_FIELD_ID", default="360047206172", cast=int)
 ZENDESK_OS_FIELD_ID = config("ZENDESK_OS_FIELD_ID", default="360018604871", cast=int)
 ZENDESK_COUNTRY_FIELD_ID = config("ZENDESK_COUNTRY_FIELD_ID", default="360026463511", cast=int)
+
+# Django CSP configuration
+CSP_DEFAULT_SRC = ("'none'",)
+
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "https://*.mozilla.org",
+    "https://*.itsre-sumo.mozilla.net",
+    "https://*.google-analytics.com",
+    "https://*.googletagmanager.com",
+    "https://pontoon.mozilla.org",
+)
+
+CSP_IMG_SRC = (
+    "'self'",
+    "data:",
+    "https://*.mozaws.net",
+    "https://*.itsre-sumo.mozilla.net",
+    "https://*.google-analytics.com",
+)
+
+CSP_MEDIA_SRC = (
+    "'self'",
+    "https://*.itsre-sumo.mozilla.net",
+)
+
+CSP_FRAME_SRC = ("'self'",)
+
+CSP_FONT_SRC = (
+    "'self'",
+    "https://*.itsre-sumo.mozilla.net",
+)
+
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    "https://*.itsre-sumo.mozilla.net",
+)
+
+CSP_FORM_ACTION = ("'self'",)
+
+CSP_CONNECT_SRC = (
+    "'self'",
+    "https://*.google-analytics.com",
+    "https://location.services.mozilla.com",
+)
