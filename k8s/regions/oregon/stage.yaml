@@ -38,7 +38,7 @@ kubernetes:
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-stage-web"
-            replicas: 2
+            replicas: 4
             labels:
                 type: "web"
             liveness:
