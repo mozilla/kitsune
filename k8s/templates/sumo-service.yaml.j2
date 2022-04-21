@@ -1,23 +1,4 @@
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ kubernetes.app_name }}-nodeport
-  namespace: {{ kubernetes.namespace }}
-  labels:
-    app: {{ kubernetes.app_name }}
-    type: lb
-spec:
-  ports:
-    - name: http
-      port: 80
-      targetPort: 8000
-      protocol: TCP
-  type: NodePort
-  selector:
-    app: {{ kubernetes.app_name }}
-    type: web
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
