@@ -413,6 +413,7 @@ def _document_lock(doc_id, username):
 
 
 @login_required
+@require_http_methods(["POST"])
 def steal_lock(request, document_slug, revision_id=None):
     doc = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     user = request.user

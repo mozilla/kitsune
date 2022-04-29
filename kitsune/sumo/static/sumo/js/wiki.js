@@ -557,9 +557,14 @@ import ShowFor from "sumo/js/showfor";
       // Modify the current url, so we get the right locale.
       url = url.replace(/edit/, 'steal_lock');
 
-      $.ajax({
-        url: url
-      });
+      let xhr = new XMLHttpRequest();
+      let csrf = document.querySelector('#steal-lock-form input[name=csrfmiddlewaretoken]').value;
+      console.log(csrf);
+      xhr.open("POST", url)
+      if (csrf) {
+        xhr.setRequestHeader('X-CSRFToken', csrf);
+      }
+      xhr.send();
     });
   }
 
