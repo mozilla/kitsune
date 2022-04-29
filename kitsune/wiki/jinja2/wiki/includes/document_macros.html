@@ -367,7 +367,10 @@
       {% endtrans %}</p>
       <p>{{ _('If you know what you are doing, you can edit the document anyway.') }}</p>
 
-      <a href="#" id="unlock-button" class="sumo-button link-button">{{ _('Edit anyway') }}</a>
+      <form id="steal-lock-form" method="post" action="url('wiki.steal_lock')">
+        {% csrf_token %}
+        <a href="#" id="unlock-button" class="sumo-button link-button">{{ _('Edit anyway') }}</a>
+      </form>
     </div>
   </div>
 
