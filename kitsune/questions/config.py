@@ -100,11 +100,11 @@ products = OrderedDict(
                             },
                         ),
                         (
-                            "websites",
+                            "websites-breakages",
                             {
-                                "name": _lazy("Websites"),
-                                "topic": "websites",
-                                "tags": ["websites"],
+                                "name": _lazy("Websites breakages"),
+                                "topic": "websites-breakages",
+                                "tags": ["websites-breakages"],
                             },
                         ),
                         (
