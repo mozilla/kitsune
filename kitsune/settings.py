@@ -1222,6 +1222,7 @@ CSP_IMG_SRC = (
     "https://*.itsre-sumo.mozilla.net",
     "https://*.google-analytics.com",
     "https://profile.accounts.firefox.com",
+    "https://firefoxusercontent.com",
 )
 
 CSP_MEDIA_SRC = (
