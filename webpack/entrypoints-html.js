@@ -14,6 +14,11 @@ module.exports = Object.keys(entrypoints).map(entry =>
       if (entry == "screen") {
         return `<link href="${htmlWebpackPlugin.files.css[0]}" rel="stylesheet">`;
       }
+      // inject nonce in the script for django-csp to populate
+      htmlWebpackPlugin.tags.headTags.forEach(element => {
+        element.attributes.nonce = "{{ request.csp_nonce }}";
+      });
+        
       return htmlWebpackPlugin.tags.headTags.join("");
     }
   }),
