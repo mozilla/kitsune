@@ -1223,6 +1223,7 @@ CSP_IMG_SRC = (
     "https://*.google-analytics.com",
     "https://profile.accounts.firefox.com",
     "https://firefoxusercontent.com",
+    "https://secure.gravatar.com",
 )
 
 CSP_MEDIA_SRC = (
