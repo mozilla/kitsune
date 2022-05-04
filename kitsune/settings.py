@@ -1249,7 +1249,6 @@ CSP_STYLE_SRC = (
 CSP_FORM_ACTION = ("'self'",)
 
 CSP_MANIFEST_SRC = (
-    "'self",
     "https://support.allizom.org",
     "https://support.mozilla.org",
 )
