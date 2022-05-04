@@ -1204,6 +1204,8 @@ ZENDESK_OS_FIELD_ID = config("ZENDESK_OS_FIELD_ID", default="360018604871", cast
 ZENDESK_COUNTRY_FIELD_ID = config("ZENDESK_COUNTRY_FIELD_ID", default="360026463511", cast=int)
 
 # Django CSP configuration
+CSP_INCLUDE_NONCE_IN = ["script-src"]
+
 CSP_DEFAULT_SRC = ("'none'",)
 
 CSP_SCRIPT_SRC = (
