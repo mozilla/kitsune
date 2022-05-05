@@ -18,7 +18,6 @@ module.exports = Object.keys(entrypoints).map(entry =>
       htmlWebpackPlugin.tags.headTags.forEach(element => {
         element.attributes.nonce = "{{ request.csp_nonce }}";
       });
-        
       return htmlWebpackPlugin.tags.headTags.join("");
     }
   }),
