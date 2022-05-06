@@ -209,46 +209,6 @@ FALLBACK_LANGUAGES = {
     "zh-TW": "zh-Hant",
 }
 
-# These languages won't show a warning about FxOS when contributors try
-# to add content.
-FXOS_LANGUAGES = [
-    "af",
-    "bm",
-    "bn",
-    "cs",
-    "de",
-    "ee",
-    "el",
-    "en-US",
-    "es",
-    "fr",
-    "ha",
-    "hi-IN",
-    "hr",
-    "hu",
-    "ig",
-    "it",
-    "jv",
-    "ln",
-    "mg",
-    "nl",
-    "pl",
-    "pt-BR",
-    "pt-PT",
-    "ro",
-    "ru",
-    "sr",
-    "ta",
-    "sr",
-    "su",
-    "sw",
-    "tr",
-    "wo",
-    "xh",
-    "yo",
-    "zu",
-]
-
 # These languages will get a wiki page instead of the product and topic pages.
 SIMPLE_WIKI_LANGUAGES = [
     "az",

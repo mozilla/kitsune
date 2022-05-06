@@ -1055,10 +1055,10 @@ class NewRevisionTests(TestCaseBase):
         self.assertEqual(2, len(trans_content(".user-messages .info form .btn")))
         # Restore with the draft data
         draft_request = {"restore": "Restore"}
-        trans_resp = self.client.get(trans_url, draft_request)
+        trans_resp = self.client.post(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # No user message is shown there
-        self.assertEqual(0, len(trans_content(".user-messages .mzp-c-notification-bar")))
+        self.assertEqual(1, len(trans_content(".user-messages .mzp-c-notification-bar")))
         # Check title, slug, keywords, content etc are restored
         self.assertEqual(draft.title, trans_content("#id_title").val())
         self.assertEqual(draft.slug, trans_content("#id_slug").val())
@@ -1109,7 +1109,7 @@ class NewRevisionTests(TestCaseBase):
         # Now Restore the draft
         draft_request = {"restore": "Restore"}
         trans_url = reverse("wiki.translate", locale=trans.locale, args=[doc.slug])
-        trans_resp = self.client.get(trans_url, draft_request)
+        trans_resp = self.client.post(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # Check the data is restored
         self.assertEqual(draft.keywords, trans_content("#id_keywords").val())
@@ -1134,7 +1134,7 @@ class NewRevisionTests(TestCaseBase):
         # Now restore the draft
         draft_request = {"restore": "Restore"}
         trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
-        trans_resp = self.client.get(trans_url, draft_request)
+        trans_resp = self.client.post(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # Check there is a warning message
         self.assertEqual(1, len(trans_content(".user-messages .draft-warning")))

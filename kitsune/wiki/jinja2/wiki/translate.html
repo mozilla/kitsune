@@ -15,29 +15,6 @@
     <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">
 
       <ul class="user-messages">
-        {% if fxos_l10n_warning %}
-          <li class="info dismissible mzp-c-notification-bar mzp-t-info" id="fxos-l10n-warning">
-            <button class="mzp-c-notification-bar-button" type="button"></button>
-            <div>
-            <p>
-              {% trans %}
-                Thanks for your help! Just so you know, Firefox OS is
-                not available in your locale yet, and it's possible this
-                article will change before it is.
-              {% endtrans %}
-            </p>
-
-            <p>
-              {% trans email_link='<a href="mailto:mana@mozilla.com">mana@mozilla.com</a>'|safe %}
-                If you have any questions about localization priorities,
-                please contact {{ email_link }}.
-              {% endtrans %}
-            </p>
-            <button class="sumo-button btn dismiss">{{ _("I understand, don't show this again.") }}</button>
-            </div>
-          </li>
-        {% endif %}
-
         {% if not based_on.is_ready_for_localization %}
           <li class=" mzp-c-notification-bar mzp-t-warning warning">
             <button class="mzp-c-notification-bar-button" type="button"></button>
@@ -45,12 +22,13 @@
           </li>
         {% endif %}
 
-        {% if draft_revision %}
+        {% if draft_revision %}  
           <li class="mzp-c-notification-bar mzp-t-info info">
             <button class="mzp-c-notification-bar-button" type="button"></button>
             <div>
             <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.created) }}</strong></p>
-            <form action="" method="get">
+            <form action="{{ url('wiki.translate', parent.slug) }}" method="post">
+              {% csrf_token %}
               <input class="btn" name="restore" value={{ _('Restore') }} type="submit">
               <input class="btn" name="discard" value={{ _('Discard') }} type="submit">
             </form>

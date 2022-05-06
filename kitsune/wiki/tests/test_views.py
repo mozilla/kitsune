@@ -417,7 +417,7 @@ class DocumentEditingTests(TestCase):
         # Now send a get request to the page for restoring the draft
         trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
         draft_request = {"restore": "Restore"}
-        restore_draft_resp = self.client.get(trans_url, draft_request)
+        restore_draft_resp = self.client.post(trans_url, draft_request)
         self.assertEqual(200, restore_draft_resp.status_code)
         # Check if the title of the translate page contains the title of draft revision
         trans_page = pq(restore_draft_resp.content)
@@ -433,8 +433,8 @@ class DocumentEditingTests(TestCase):
         # Send a request to translate article page to discard the draft
         trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
         draft_request = {"discard": "Discard"}
-        restore_draft_resp = self.client.get(trans_url, draft_request)
-        self.assertEqual(200, restore_draft_resp.status_code)
+        restore_draft_resp = self.client.post(trans_url, draft_request)
+        self.assertEqual(302, restore_draft_resp.status_code)
         # Check if the draft revision is in database
         draft = DraftRevision.objects.filter(id=draft.id)
         self.assertEqual(False, draft.exists())

@@ -1,20 +1,20 @@
 import hashlib
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import urlparse, unquote
+from urllib.parse import unquote, urlparse
 
 import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
 from django.db.models import Q
 from django.http import Http404
 from django.urls import resolve
 from django.utils.encoding import smart_bytes
-from django.utils.translation import ugettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ugettext as _
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
 
@@ -573,17 +573,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
 
         """
 
-        def latest(queryset):
-            """Return the latest item from a queryset (by ID).
-
-            Return None if the queryset is empty.
-
-            """
-            try:
-                return queryset.order_by("-id")[0:1].get()
-            except ObjectDoesNotExist:  # Catching IndexError seems overbroad.
-                return None
-
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
             rejected = Q(is_approved=False, reviewed__isnull=False)
@@ -592,9 +581,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             # or not approved revs. Try unrejected
             # or not unrejected revs. Maybe fall back to rejected
             rev = (
-                latest(self.revisions.filter(is_approved=True))
-                or latest(self.revisions.exclude(rejected))
-                or (latest(self.revisions) if include_rejected else None)
+                self.revisions.filter(is_approved=True).last()
+                or self.revisions.exclude(rejected).last()
+                or (self.revisions.last() if include_rejected else None)
             )
         return rev
 
@@ -685,7 +674,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         # Also delete the DocumentImage instances for this document.
         DocumentImage.objects.filter(document=self).delete()
 
-        from kitsune.wiki.parser import wiki_to_html, WhatLinksHereParser
+        from kitsune.wiki.parser import WhatLinksHereParser, wiki_to_html
 
         return wiki_to_html(
             self.current_revision.content,
