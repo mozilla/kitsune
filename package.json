@@ -35,7 +35,7 @@
     "codemirror": "^5.65.0",
     "d3": "^3.1.5",
     "jquery": "1.11.3",
-    "jquery-ui": "1.12.1",
+    "jquery-ui": "^1.13.1",
     "nunjucks": "^3.2.3",
     "underscore": "^1.13.2"
   },
@@ -47,7 +47,7 @@
     "@mozilla-protocol/core": "10.0.1",
     "autoprefixer": "^10.4.1",
     "babel-loader": "^8.2.2",
-    "browser-sync": "^2.27.7",
+    "browser-sync": "^2.27.9",
     "chai": "^4.3.4",
     "chai-lint": "0.1.1",
     "color-string": "^1.9.0",
