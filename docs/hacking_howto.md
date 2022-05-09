@@ -165,7 +165,7 @@ or have entered data yourself through the admin interface.
 2. Build the indicies
 
     ```
-    $ ./manage.py es7_init && es7_reindex
+    $ ./manage.py es7_init && ./manage.py es7_reindex
     ```
 
 3. Now, exit from web's bash shell
