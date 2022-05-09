@@ -20,11 +20,11 @@ admin.autodiscover()
 authority.autodiscover()
 
 urlpatterns = [
-    re_path(r"^search", include("kitsune.search.urls")),
+    re_path(r"^search/", include("kitsune.search.urls")),
     re_path("forums/", include("kitsune.forums.urls")),
     re_path(r"^questions", include("kitsune.questions.urls")),
-    re_path(r"^flagged", include("kitsune.flagit.urls")),
-    re_path(r"^upload", include("kitsune.upload.urls")),
+    re_path(r"^flagged/", include("kitsune.flagit.urls")),
+    re_path(r"^upload/", include("kitsune.upload.urls")),
     re_path(r"^kb", include("kitsune.wiki.urls")),
     re_path(r"^gallery", include("kitsune.gallery.urls")),
     re_path(r"^chat", RedirectView.as_view(url="questions/new")),
