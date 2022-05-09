@@ -43,7 +43,7 @@
 
         <p>{{ _("Try searching again with a different keyword, or browse our featured articles and threads below instead.") }}</p>
 
-        <section class="sumo-card-grid content-box" style="--cg-count: {{ fallback_results|length }};">
+        <section class="sumo-card-grid content-box">
           <div class="scroll-wrap">
             {% for doc in fallback_results %}
             <div class="card card--article result document">
