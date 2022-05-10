@@ -58,7 +58,7 @@ pgettext("DB: products.Product.description", """VPN for Windows 10, Mac, Linux, 
 pgettext("DB: products.Product.title", """Firefox Private Network""")
 pgettext("DB: products.Product.description", """Browse securely on public Wi-Fi using a Firefox add-on.""")
 pgettext("DB: products.Product.title", """Firefox Relay""")
-pgettext("DB: products.Product.description", """Service that lets you create aliases to hide your real email""")
+pgettext("DB: products.Product.description", """Service that lets you create email masks to hide your real email address""")
 pgettext("DB: products.Product.title", """Open Badges""")
 pgettext("DB: products.Product.description", """A new online standard to recognize and verify learning""")
 pgettext("DB: products.Product.title", """Webmaker""")
