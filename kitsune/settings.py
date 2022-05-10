@@ -1234,7 +1234,10 @@ CSP_MEDIA_SRC = (
     "https://*.itsre-sumo.mozilla.net",
 )
 
-CSP_FRAME_SRC = ("'self'",)
+CSP_FRAME_SRC = (
+    "'self'",
+    "https://*.youtube.com",
+)
 
 CSP_FONT_SRC = (
     "'self'",
