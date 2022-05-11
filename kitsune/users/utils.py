@@ -92,14 +92,15 @@ def deactivate_user(user, moderator):
 
 def anonymize_user(user):
     # Clear the profile
+    uid = uuid4()
     profile = user.profile
     profile.clear()
-    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uuid4()))
+    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uid))
     profile.save()
 
     # Deactivate the user and change key information
-    user.username = "user%s" % user.id
-    user.email = "%s@example.com" % user.id
+    user.username = f"user{uid.int}"
+    user.email = f"{uid.int}@example.com"
     deactivate_user(user, user)
 
     # Remove from all groups
