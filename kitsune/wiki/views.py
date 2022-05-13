@@ -822,7 +822,6 @@ def select_locale(request, document_slug):
     )
 
 
-@require_http_methods(["GET", "POST"])
 @login_required
 def translate(request, document_slug, revision_id=None):
     """Create a new translation of a wiki document.
@@ -831,8 +830,8 @@ def translate(request, document_slug, revision_id=None):
     * translation is to the request.LANGUAGE_CODE
 
     """
-    # TODO: Refactor this view into two views? (new, edit)
-    # That might help reduce the headache-inducing branchiness.
+
+    # Inialization and checks
     parent_doc = get_object_or_404(
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
     )
@@ -862,57 +861,37 @@ def translate(request, document_slug, revision_id=None):
 
     user_has_doc_perm = not doc or doc.allows(user, "edit")
     user_has_rev_perm = not doc or doc.allows(user, "create_revision")
+
     if not user_has_doc_perm and not user_has_rev_perm:
         # User has no perms, bye.
         raise PermissionDenied
 
-    # Check if the user has draft resision saved for the parent document with requeted locale
+    # Check if the user has draft revision saved for the parent document with requeted locale
     draft = DraftRevision.objects.filter(
         creator=user, document=parent_doc, locale=request.LANGUAGE_CODE
-    )
+    ).first()
 
-    doc_form = rev_form = None
-    base_rev = None
-    restore_draft = None
-    # Check if the user has requested to restore or discard draft
-    draft_request = request.GET.get("restore") or request.GET.get("discard")
-    draft_revision = None
-    # If Draft is available and the user has requested with draft parameters
-    if draft_request and draft.exists():
-        restore_draft = request.GET.get("restore")
-        discard_draft = request.GET.get("discard")
-        # Discard draft if user requsted. And not requested to restore draft at the same time.
-        # Thuough from the UI its not possible, but maybe a hacky request with both parameters
-        if discard_draft and not restore_draft:
-            draft[0].delete()
-    elif draft.exists():
-        draft_revision = draft[0]
+    base_rev = doc_form = rev_form = None
 
     if user_has_doc_perm:
         # Restore draft if draft is available and user requested to restore
-        if restore_draft:
-            doc_initial = _draft_initial_doc(draft_revision=draft[0])
-        else:
-            doc_initial = _document_form_initial(doc) if doc else None
+        doc_initial = _document_form_initial(doc) if doc else {}
         doc_form = DocumentForm(initial=doc_initial)
 
     if user_has_rev_perm:
-        if restore_draft:
-            initial = _draft_initial_rev(draft_revision=draft[0])
-            based_on_rev = draft[0].based_on
-        else:
-            initial = {"based_on": based_on_rev.id, "comment": ""}
-            if revision_id:
-                base_rev = Revision.objects.get(pk=revision_id)
-                initial.update(
-                    content=base_rev.content, summary=base_rev.summary, keywords=base_rev.keywords
-                )
-            elif not doc:
-                initial.update(
-                    content=based_on_rev.content,
-                    summary=based_on_rev.summary,
-                    keywords=based_on_rev.keywords,
-                )
+        rev_initial = {"based_on": based_on_rev.id, "comment": ""}
+
+        if revision_id:
+            base_rev = Revision.objects.get(pk=revision_id)
+            rev_initial.update(
+                content=base_rev.content, summary=base_rev.summary, keywords=base_rev.keywords
+            )
+        elif not doc:
+            rev_initial.update(
+                content=based_on_rev.content,
+                summary=based_on_rev.summary,
+                keywords=based_on_rev.keywords,
+            )
 
         # Get a revision of the translation to plonk into the page as a
         # starting point. Since translations are never "ready for
@@ -920,67 +899,97 @@ def translate(request, document_slug, revision_id=None):
         # an unrejected one, then give up.
         instance = doc and doc.localizable_or_latest_revision()
 
-        rev_form = RevisionForm(instance=instance, initial=initial)
+        rev_form = RevisionForm(instance=instance, initial=rev_initial)
         base_rev = base_rev or instance
 
     if request.method == "POST":
-        which_form = request.POST.get("form", "both")
-        doc_form_invalid = False
+        # Use POST for restoring and deleting drafts to avoid CSRF
+        restore_draft = request.POST.get("restore", "") == "Restore" and bool(draft)
+        discard_draft = request.POST.get("discard", "") == "Discard" and bool(draft)
+        # Make sure that one of the two is True but not both
+        if discard_draft ^ restore_draft:
 
-        if doc is not None:
-            _document_lock_clear(doc.id, user.username)
+            if discard_draft:
+                draft.delete()
+                return HttpResponseRedirect(
+                    urlparams(reverse("wiki.translate", args=[document_slug]))
+                )
 
-        if user_has_doc_perm and which_form in ["doc", "both"]:
-            disclose_description = True
-            post_data = request.POST.copy()
-            post_data.update({"locale": request.LANGUAGE_CODE})
-            doc_form = DocumentForm(post_data, instance=doc)
-            doc_form.instance.locale = request.LANGUAGE_CODE
-            doc_form.instance.parent = parent_doc
-            if which_form == "both":
-                rev_form = RevisionForm(request.POST)
-
-            # If we are submitting the whole form, we need to check that
-            # the Revision is valid before saving the Document.
-            if doc_form.is_valid() and (which_form == "doc" or rev_form.is_valid()):
-                doc = doc_form.save(parent_doc)
-
-                # Possibly schedule a rebuild.
-                _maybe_schedule_rebuild(doc_form)
-
-                if which_form == "doc":
-                    url = urlparams(
-                        reverse("wiki.edit_document", args=[doc.slug]), opendescription=1
-                    )
-                    return HttpResponseRedirect(url)
-
-                doc_slug = doc_form.cleaned_data["slug"]
-            else:
-                doc_form_invalid = True
+            # If we are here - we have a draft to restore
+            if user_has_doc_perm:
+                doc_initial.update({"title": draft.title, "slug": draft.slug})
+                doc_form = DocumentForm(initial=doc_initial)
+            if user_has_rev_perm:
+                rev_initial.update(
+                    {
+                        "content": draft.content,
+                        "summary": draft.summary,
+                        "keywords": draft.keywords,
+                        "based_on": draft.based_on.id,
+                    }
+                )
+                based_on_rev = draft.based_on
+                rev_form = RevisionForm(instance=instance, initial=rev_initial)
         else:
-            doc_slug = doc.slug
+            which_form = request.POST.get("form", "both")
+            doc_form_invalid = False
 
-        if doc and user_has_rev_perm and which_form in ["rev", "both"]:
-            rev_form = RevisionForm(request.POST)
-            rev_form.instance.document = doc  # for rev_form.clean()
+            if doc:
+                _document_lock_clear(doc.id, user.username)
 
-            if rev_form.is_valid() and not doc_form_invalid:
-                if "no-update" in request.POST:
-                    # Keep the old based_on.
-                    based_on_id = base_rev.based_on_id
+            if user_has_doc_perm and which_form in ["doc", "both"]:
+                disclose_description = True
+                post_data = request.POST.copy()
+                post_data.update({"locale": request.LANGUAGE_CODE})
+                doc_form = DocumentForm(post_data, instance=doc)
+                doc_form.instance.locale = request.LANGUAGE_CODE
+                doc_form.instance.parent = parent_doc
+                if which_form == "both":
+                    rev_form = RevisionForm(request.POST)
+
+                # If we are submitting the whole form, we need to check that
+                # the Revision is valid before saving the Document.
+                if doc_form.is_valid() and (which_form == "doc" or rev_form.is_valid()):
+                    doc = doc_form.save(parent_doc)
+
+                    # Possibly schedule a rebuild.
+                    _maybe_schedule_rebuild(doc_form)
+
+                    if which_form == "doc":
+                        url = urlparams(
+                            reverse("wiki.edit_document", args=[doc.slug]), opendescription=1
+                        )
+                        return HttpResponseRedirect(url)
+
+                    doc_slug = doc_form.cleaned_data["slug"]
                 else:
-                    # Keep what was in the form.
-                    based_on_id = None
-                if draft_revision:
-                    draft_revision.delete()
-                _save_rev_and_notify(rev_form, request.user, doc, based_on_id, base_rev=base_rev)
+                    doc_form_invalid = True
+            else:
+                doc_slug = doc.slug
 
-                if "notify-future-changes" in request.POST:
-                    EditDocumentEvent.notify(request.user, doc)
+            if doc and user_has_rev_perm and which_form in ["rev", "both"]:
+                rev_form = RevisionForm(request.POST)
+                rev_form.instance.document = doc  # for rev_form.clean()
 
-                url = reverse("wiki.document_revisions", args=[doc_slug])
+                if rev_form.is_valid() and not doc_form_invalid:
+                    if "no-update" in request.POST:
+                        # Keep the old based_on.
+                        based_on_id = base_rev.based_on_id
+                    else:
+                        # Keep what was in the form.
+                        based_on_id = None
+                    if draft:
+                        draft.delete()
+                    _save_rev_and_notify(
+                        rev_form, request.user, doc, based_on_id, base_rev=base_rev
+                    )
 
-                return HttpResponseRedirect(url)
+                    if "notify-future-changes" in request.POST:
+                        EditDocumentEvent.notify(request.user, doc)
+
+                    return HttpResponseRedirect(
+                        reverse("wiki.document_revisions", args=[doc_slug])
+                    )
 
     show_revision_warning = _show_revision_warning(doc, base_rev)
 
@@ -1000,11 +1009,6 @@ def translate(request, document_slug, revision_id=None):
         locked, locked_by = False, None
         more_updated_rev = None
 
-    product_slugs = [p.slug for p in (doc or parent_doc).products.all()]
-    fxos_l10n_warning = (
-        "firefox-os" in product_slugs and request.LANGUAGE_CODE not in settings.FXOS_LANGUAGES
-    )
-
     return render(
         request,
         "wiki/translate.html",
@@ -1020,8 +1024,7 @@ def translate(request, document_slug, revision_id=None):
             "recent_approved_revs": recent_approved_revs,
             "locked": locked,
             "locked_by": locked_by,
-            "fxos_l10n_warning": fxos_l10n_warning,
-            "draft_revision": draft_revision,
+            "draft_revision": draft,
             "more_updated_rev": more_updated_rev,
         },
     )
@@ -1511,21 +1514,6 @@ def _document_form_initial(document):
         "needs_change": document.needs_change,
         "needs_change_comment": document.needs_change_comment,
     }
-
-
-def _draft_initial_doc(draft_revision):
-    data = {"title": draft_revision.title, "slug": draft_revision.slug}
-    return data
-
-
-def _draft_initial_rev(draft_revision):
-    data = {
-        "content": draft_revision.content,
-        "summary": draft_revision.summary,
-        "keywords": draft_revision.keywords,
-        "based_on": draft_revision.based_on.id,
-    }
-    return data
 
 
 def _save_rev_and_notify(rev_form, creator, document, based_on_id=None, base_rev=None):
