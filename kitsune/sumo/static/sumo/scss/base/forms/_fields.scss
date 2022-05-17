@@ -310,15 +310,8 @@ select,
   }
 }
 
-#id_involved_from_month {
-  display: inline-block;
-  width: calc(60% - #{p.$spacing-sm + 5});
-  margin-right: p.$spacing-sm;
-}
-
-#id_involved_from_year {
-  display: inline-block;
-  width: 40%;
+#language-select-field {
+  display: none;
 }
 
 // Textarea
