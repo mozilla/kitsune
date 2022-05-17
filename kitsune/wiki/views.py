@@ -904,8 +904,8 @@ def translate(request, document_slug, revision_id=None):
 
     if request.method == "POST":
         # Use POST for restoring and deleting drafts to avoid CSRF
-        restore_draft = request.POST.get("restore", "") == "Restore" and bool(draft)
-        discard_draft = request.POST.get("discard", "") == "Discard" and bool(draft)
+        restore_draft = "restore" in request.POST and bool(draft)
+        discard_draft = "discard" in request.POST and bool(draft)
         # Make sure that one of the two is True but not both
         if discard_draft ^ restore_draft:
 
