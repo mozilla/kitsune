@@ -167,7 +167,7 @@
       <div class="main-content">
         <div itemprop="text" class="content">{{ question.content_parsed|safe }}</div>
         {# Note: this is not vulnerable to injection because Jinja autoescapes the strings. #}
-        <div class="content-raw" style="display:none;">{{ question.content }}</div>
+        <div class="content-raw">{{ question.content }}</div>
         {% if question_images %}
           <div class="attachments-title">
             {{ _('Attached screenshots') }}

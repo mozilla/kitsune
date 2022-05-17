@@ -290,7 +290,7 @@
   <div>{{ field|safe }}</div>
   {{ field.errors }}
 </div>
-<div class="field" style="display: none;">
+<div class="field" id="language-select-field">
   <select id="_languages-select-box">
     {% for lang in settings.LANGUAGE_CHOICES %}
     <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected" {% endif %}>{{ lang[1] }}
