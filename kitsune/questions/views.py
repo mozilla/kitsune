@@ -20,14 +20,12 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
 from taggit.models import Tag
-from tidings.events import ActivationRequestFailed
-from tidings.models import Watch
 from zenpy.lib.exception import APIException
 
 from kitsune.access.decorators import login_required, permission_required
@@ -51,6 +49,8 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import build_paged_url, is_ratelimited, paginate, simple_paginate
 from kitsune.tags.utils import add_existing_tag
+from kitsune.tidings.events import ActivationRequestFailed
+from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for

@@ -1,6 +1,7 @@
 from factory import fuzzy
 from factory.django import DjangoModelFactory
-from tidings.models import Watch
+
+from kitsune.tidings.models import Watch
 
 
 class WatchFactory(DjangoModelFactory):

@@ -76,7 +76,6 @@ django-timezone-field = "^4.2.1"
 django-pipeline = "^2.0.7"
 djangorestframework = "^3.13.1"
 django-activity-stream = "^0.10.0"
-django-tidings = {git = "https://github.com/mozilla/django-tidings.git", rev = "master"}
 oauth2client = "^4.1.3"
 django-jsonfield-compat = "^0.4.4"
 django-jsonfield-backport = "^1.0.4"

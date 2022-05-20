@@ -636,7 +636,6 @@ INSTALLED_APPS = (
     "kitsune.sumo",
     "kitsune.search",
     "kitsune.forums",
-    "tidings",
     "rest_framework.authtoken",
     "kitsune.questions",
     "adminplus",
@@ -665,7 +664,7 @@ INSTALLED_APPS = (
     "kitsune.products",
     "kitsune.notifications",
     "kitsune.journal",
-    "kitsune.motidings",
+    "kitsune.tidings",
     "rest_framework",
     "statici18n",
     "watchman",
@@ -709,7 +708,6 @@ PUENTE = {
             ("kitsune/**/jinja2/**.html", "jinja2"),
             ("kitsune/**/jinja2/**.lhtml", "jinja2"),
             ("kitsune/**/jinja2/**.ltxt", "jinja2"),
-            ("vendor/src/django-tidings/**/templates/**.html", "jinja2"),
         ],
         "djangojs": [
             # We can't say **.js because that would dive into any libraries.

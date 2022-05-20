@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MotidingsConfig(AppConfig):
-    name = "kitsune.motidings"
+class TidingsConfig(AppConfig):
+    name = "kitsune.tidings"
     default_auto_field = "django.db.models.AutoField"

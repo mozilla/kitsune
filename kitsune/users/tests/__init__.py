@@ -1,10 +1,10 @@
 import factory
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
-from tidings.models import Watch
 
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
-from kitsune.users.models import AccountEvent, CONTRIBUTOR_GROUP, Profile, Setting
+from kitsune.tidings.models import Watch
+from kitsune.users.models import CONTRIBUTOR_GROUP, AccountEvent, Profile, Setting
 
 
 class TestCaseBase(TestCase):

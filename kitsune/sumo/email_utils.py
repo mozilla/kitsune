@@ -139,11 +139,6 @@ def emails_with_users_and_watches(
     ``user`` and ``watches`` key for each pair in
     ``users_and_watches``
 
-    .. Note::
-
-       This is a locale-aware re-write of the same function in django-tidings.
-       It's kind of goofy--I ain't gonna lie.
-
     :arg subject: lazy gettext subject string
     :arg text_template: path to text template file
     :arg html_template: path to html template file

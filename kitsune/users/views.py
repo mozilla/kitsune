@@ -1,8 +1,8 @@
 import json
-import waffle
 from ast import literal_eval
 
 import requests
+import waffle
 from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
@@ -34,7 +34,6 @@ from mozilla_django_oidc.views import (
     OIDCLogoutView,
 )
 from sentry_sdk import capture_exception, capture_message
-from tidings.models import Watch
 
 from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
@@ -44,6 +43,7 @@ from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate, simple_paginate
+from kitsune.tidings.models import Watch
 from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
