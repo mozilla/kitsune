@@ -604,7 +604,7 @@ AUTH_PROFILE_MODULE = "users.Profile"
 USER_AVATAR_PATH = "uploads/avatars/"
 DEFAULT_AVATAR = "sumo/img/avatar.png"
 AVATAR_SIZE = 200  # in pixels
-MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
+MAX_AVATAR_FILE_SIZE = 1310720  # 1MB, in bytes
 GROUP_AVATAR_PATH = "uploads/groupavatars/"
 
 ACCOUNT_ACTIVATION_DAYS = 30
@@ -825,7 +825,7 @@ REGISTER_URL = "/users/register"
 WIKI_VIDEO_WIDTH = 640
 WIKI_VIDEO_HEIGHT = 480
 
-IMAGE_MAX_FILESIZE = 1048576  # 1 megabyte, in bytes
+IMAGE_MAX_FILESIZE = 10485760  # 10 megabytes, in bytes
 THUMBNAIL_SIZE = 120  # Thumbnail size, in pixels
 THUMBNAIL_UPLOAD_PATH = "uploads/images/thumbnails/"
 IMAGE_UPLOAD_PATH = "uploads/images/"
