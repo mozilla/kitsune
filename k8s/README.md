@@ -12,7 +12,7 @@
 -   Releases to the production environment happen from the main branch after successful QA testing in the stage environment.
 
 ```
-Because there might be need to deploy while testing merged changes in main,
+Because there might be a need to deploy while testing merged changes in main,
 deployments to production and stage may happen from the production branch.
 The production branch maintains an image that can be released in production without further validation.
 ```
