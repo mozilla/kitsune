@@ -62,12 +62,17 @@ import trackEvent from "sumo/js/analytics";
       var $this = $(this);
       var id = $this.data('close-id');
       if (id) {
+        var $target = $('#' + id);
         if (localStorage.getItem(id + '.closed') === 'true') {
-          var $target = $('#' + id);
           if ($this.data('close-type') === 'remove') {
             $target.remove();
-          } else {
+          } 
+          else {
             $('#' + id).hide();
+          }
+        } else {
+            if ($target.data("close-initial") === "hidden") {
+              $target.show();
           }
         }
       }
