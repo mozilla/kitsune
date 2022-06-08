@@ -338,14 +338,14 @@ class TestMarkingSolved(TestCaseBase):
         self.answer.is_spam = True
         self.answer.save()
 
-        res = self.client.get(reverse("questions.solve", args=[self.question.id, self.answer.id]))
+        res = self.client.post(reverse("questions.solve", args=[self.question.id, self.answer.id]))
         self.assertEqual(res.status_code, 404)
 
     def test_cannot_mark_answers_on_spam_question(self):
         self.question.is_spam = True
         self.question.save()
 
-        res = self.client.get(reverse("questions.solve", args=[self.question.id, self.answer.id]))
+        res = self.client.post(reverse("questions.solve", args=[self.question.id, self.answer.id]))
         self.assertEqual(res.status_code, 404)
 
 

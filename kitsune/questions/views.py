@@ -20,8 +20,8 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
@@ -741,6 +741,7 @@ def reply(request, question_id):
     )
 
 
+@require_POST
 def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
 
