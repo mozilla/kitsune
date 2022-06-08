@@ -1,6 +1,5 @@
 from django.conf import settings
 from pyquery import PyQuery as pq
-from tidings.models import Watch
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.kbadge.tests import AwardFactory, BadgeFactory
@@ -8,6 +7,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import get
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tidings.models import Watch
 from kitsune.users.models import Profile
 from kitsune.users.tests import TestCaseBase, UserFactory, add_permission
 from kitsune.wiki.tests import RevisionFactory

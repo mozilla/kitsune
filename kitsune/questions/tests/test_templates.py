@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from django.core import mail
 from pyquery import PyQuery as pq
 from taggit.models import Tag
-from tidings.models import Watch
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -28,6 +27,7 @@ from kitsune.sumo.tests import (
 )
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
+from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.tests import UserFactory, add_permission
 

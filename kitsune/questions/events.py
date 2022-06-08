@@ -3,12 +3,12 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext as _
 from pytz import timezone
-from tidings.events import InstanceEvent
 
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
 from kitsune.sumo.templatetags.jinja_helpers import add_utm, urlparams
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tidings.events import InstanceEvent
 
 
 class QuestionEvent(InstanceEvent):

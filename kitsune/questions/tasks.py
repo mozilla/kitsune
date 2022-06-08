@@ -2,14 +2,14 @@ import logging
 from datetime import date
 from typing import Dict
 
-# NOTE: This import is just so _fire_task gets registered with celery.
-import tidings.events  # noqa
 from celery import task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection, transaction
 from sentry_sdk import capture_exception
 
+# NOTE: This import is just so _fire_task gets registered with celery.
+import kitsune.tidings.events  # noqa
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
 

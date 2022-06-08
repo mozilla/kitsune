@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from tidings.models import Watch
+from kitsune.tidings.models import Watch
 
 
 def unsubscribe(request, watch_id):
@@ -25,10 +25,10 @@ def unsubscribe(request, watch_id):
         if secret != watch.secret:
             raise Watch.DoesNotExist
     except Watch.DoesNotExist:
-        return render(request, "motidings/unsubscribe_error.html")
+        return render(request, "tidings/unsubscribe_error.html")
 
     if request.method == "POST":
         watch.delete()
-        return render(request, "motidings/unsubscribe_success.html")
+        return render(request, "tidings/unsubscribe_success.html")
 
-    return render(request, "motidings/unsub.html", {"watch": watch})
+    return render(request, "tidings/unsub.html", {"watch": watch})

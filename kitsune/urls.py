@@ -42,7 +42,7 @@ urlpatterns = [
     re_path(r"^", include("kitsune.dashboards.urls")),
     re_path(r"^", include("kitsune.landings.urls")),
     re_path(r"^", include("kitsune.kpi.urls_api")),
-    re_path(r"^", include("kitsune.motidings.urls")),
+    re_path(r"^", include("kitsune.tidings.urls")),
     # Users
     re_path("", include("kitsune.users.urls")),
     # Services and sundry.

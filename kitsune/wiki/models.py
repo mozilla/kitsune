@@ -16,7 +16,6 @@ from django.utils.encoding import smart_bytes
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
 from pyquery import PyQuery
-from tidings.models import NotificationsMixin
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
@@ -24,6 +23,7 @@ from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
+from kitsune.tidings.models import NotificationsMixin
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
