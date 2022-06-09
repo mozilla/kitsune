@@ -457,7 +457,7 @@ class TestQuestionViewSet(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(3, q.tags.count())
 
-    def test_remove_tags(self):
+    def test_remove_tags_without_perms(self):
         q = QuestionFactory()
         q.tags.add("test")
         q.tags.add("more")
@@ -465,6 +465,25 @@ class TestQuestionViewSet(TestCase):
         self.assertEqual(3, q.tags.count())
 
         u = UserFactory()
+        self.client.force_authenticate(user=u)
+
+        res = self.client.post(
+            reverse("question-remove-tags", args=[q.id]),
+            content_type="application/json",
+            data=json.dumps({"tags": ["more", "tags"]}),
+        )
+        self.assertEqual(res.status_code, 403)
+        self.assertEqual(3, q.tags.count())
+
+    def test_remove_tags_with_perms(self):
+        q = QuestionFactory()
+        q.tags.add("test")
+        q.tags.add("more")
+        q.tags.add("tags")
+        self.assertEqual(3, q.tags.count())
+
+        u = UserFactory()
+        add_permission(u, Question, "remove_tag")
         self.client.force_authenticate(user=u)
 
         res = self.client.post(
