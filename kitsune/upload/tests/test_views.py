@@ -6,7 +6,7 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase, post
 from kitsune.upload.forms import MSG_IMAGE_LONG
 from kitsune.upload.models import ImageAttachment
@@ -19,7 +19,7 @@ class UploadImageTestCase(TestCase):
     def setUp(self):
         super(UploadImageTestCase, self).setUp()
         self.user = UserFactory(username="berker")
-        self.question = QuestionFactory()
+        self.question = QuestionFactory(creator=self.user)
         self.client.login(username=self.user.username, password="testpass")
 
     def tearDown(self):
@@ -208,6 +208,43 @@ class UploadImageTestCase(TestCase):
             json_r["errors"]["image"][0],
         )
 
+    def test_deceptive_upload_to_question(self):
+        """
+        Disallow associating an image with a question that the user did not create.
+        """
+        self._test_deceptive_upload("questions.Question", self.question.pk)
+
+    def test_deceptive_upload_to_answer(self):
+        """
+        Disallow associating an image with an answer that the user did not create.
+        """
+        answer = AnswerFactory(creator=self.user)
+        self._test_deceptive_upload("questions.Answer", answer.pk)
+
+    def test_upload_to_different_user(self):
+        """
+        Disallow associating an image with a user different than the requesting user.
+        """
+        self._test_deceptive_upload("auth.User", self.user.pk)
+
+    def _test_deceptive_upload(self, object_name, object_pk):
+        another_client = LocalizingClient()
+        another_user = UserFactory(username="ringo")
+        another_client.login(username=another_user.username, password="testpass")
+
+        # The target or the creator of the target is different than the requesting user,
+        # so this request to upload and associate an image should be rejected as bad.
+        r = self._make_post_request(client=another_client, image="", args=(object_name, object_pk))
+
+        self.assertEqual(400, r.status_code)
+        json_r = json.loads(r.content)
+        self.assertEqual("error", json_r["status"])
+        self.assertEqual(
+            "You cannot associate an image with an object you do not own.",
+            json_r["message"],
+        )
+        assert not ImageAttachment.objects.exists()
+
     def _make_post_request(self, **kwargs):
         if "args" not in kwargs:
             kwargs["args"] = ["questions.Question", self.question.pk]
@@ -221,4 +258,4 @@ class UploadImageTestCase(TestCase):
             view = "upload.del_image_async"
         else:
             raise ValueError
-        return post(self.client, view, image, args=kwargs["args"])
+        return post(kwargs.get("client", self.client), view, image, args=kwargs["args"])
