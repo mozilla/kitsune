@@ -208,33 +208,36 @@ class UploadImageTestCase(TestCase):
             json_r["errors"]["image"][0],
         )
 
-    def test_deceptive_upload_to_question(self):
+    def test_non_owner_upload_to_question(self):
         """
-        Disallow associating an image with a question that the user did not create.
+        Disallow associating an image with a question that the user did not create,
+        except when the user is a superuser.
         """
-        self._test_deceptive_upload("questions.Question", self.question.pk)
+        self._test_non_owner_upload("questions.Question", self.question.pk)
 
-    def test_deceptive_upload_to_answer(self):
+    def test_non_owner_upload_to_answer(self):
         """
-        Disallow associating an image with an answer that the user did not create.
+        Disallow associating an image with an answer that the user did not create,
+        except when the user is a superuser.
         """
         answer = AnswerFactory(creator=self.user)
-        self._test_deceptive_upload("questions.Answer", answer.pk)
+        self._test_non_owner_upload("questions.Answer", answer.pk)
 
     def test_upload_to_different_user(self):
         """
-        Disallow associating an image with a user different than the requesting user.
+        Disallow associating an image with a user different than the requesting user,
+        except when the user is a superuser.
         """
-        self._test_deceptive_upload("auth.User", self.user.pk)
+        self._test_non_owner_upload("auth.User", self.user.pk)
 
-    def _test_deceptive_upload(self, object_name, object_pk):
-        another_client = LocalizingClient()
-        another_user = UserFactory(username="ringo")
-        another_client.login(username=another_user.username, password="testpass")
+    def _test_non_owner_upload(self, object_name, object_pk):
+        other_client = LocalizingClient()
+        other_user = UserFactory(username="ringo")
+        other_client.login(username=other_user.username, password="testpass")
 
         # The target or the creator of the target is different than the requesting user,
         # so this request to upload and associate an image should be rejected as bad.
-        r = self._make_post_request(client=another_client, image="", args=(object_name, object_pk))
+        r = self._make_post_request(client=other_client, image="", args=(object_name, object_pk))
 
         self.assertEqual(400, r.status_code)
         json_r = json.loads(r.content)
@@ -244,6 +247,21 @@ class UploadImageTestCase(TestCase):
             json_r["message"],
         )
         assert not ImageAttachment.objects.exists()
+
+        # Superusers are exempt from the owner restriction.
+        other_user.is_superuser = True
+        other_user.save()
+
+        with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
+            r = self._make_post_request(
+                client=other_client, image=f, args=(object_name, object_pk)
+            )
+
+        self.assertEqual(200, r.status_code)
+        images = ImageAttachment.objects.all()
+        self.assertEqual(1, len(images))
+        self.assertEqual(other_user.username, images[0].creator.username)
+        self.assertEqual(object_name.split(".")[-1].lower(), images[0].content_type.model)
 
     def _make_post_request(self, **kwargs):
         if "args" not in kwargs:

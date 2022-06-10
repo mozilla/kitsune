@@ -42,7 +42,8 @@ def up_image_async(request, model_name, object_pk):
         message = _("Object does not exist.")
         return HttpResponseNotFound(json.dumps({"status": "error", "message": message}))
 
-    if request.user != getattr(obj, "creator", obj):
+    # Reject the request if you're not a superuser or the owner of the object.
+    if not (request.user.is_superuser or (request.user == getattr(obj, "creator", obj))):
         message = _("You cannot associate an image with an object you do not own.")
         return HttpResponseBadRequest(json.dumps({"status": "error", "message": message}))
 
