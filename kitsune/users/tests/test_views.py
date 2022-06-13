@@ -16,7 +16,13 @@ from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import CONTRIBUTOR_GROUP, AccountEvent, Deactivation, Profile, Setting
-from kitsune.users.tests import GroupFactory, ProfileFactory, UserFactory, add_permission
+from kitsune.users.tests import (
+    ConversationFactory,
+    GroupFactory,
+    ProfileFactory,
+    UserFactory,
+    add_permission,
+)
 from kitsune.users.views import edit_profile
 
 
@@ -442,3 +448,37 @@ class WebhookViewTests(TestCase):
         )
         self.assertEqual(400, response.status_code)
         self.assertEqual(0, AccountEvent.objects.count())
+
+
+class UserCloseAccountTests(TestCase):
+    def setUp(self):
+        self.user = UserFactory(
+            username="ringo", email="ringo@beatles.com", groups=[GroupFactory()]
+        )
+        self.client.login(username=self.user.username, password="testpass")
+        super(UserCloseAccountTests, self).setUp()
+
+    def test_close_account(self):
+        """Test the closing of a user's account."""
+        # Populate inboxes and outboxes with messages between the user and other users.
+        conv = ConversationFactory(primary_user=self.user, number_of_other_users=2)
+        assert self.user.is_active
+        assert self.user.profile.name
+        assert self.user.groups.count()
+
+        res = self.client.post(reverse("users.close_account", locale="en-US"))
+        self.assertEqual(200, res.status_code)
+
+        self.user.refresh_from_db()
+
+        # The user should be anonymized.
+        assert self.user.username.startswith("user")
+        assert self.user.email.endswith("@example.com")
+        # The user should be deactivated, and the user's profile and groups cleared.
+        assert not self.user.is_active
+        assert not self.user.profile.name
+        assert not self.user.groups.count()
+        # Confirm that the user's inbox and outbox have been cleared, and
+        # that the inbox and outbox of each of the other users remain intact.
+        assert conv.inbox_and_outbox_of_primary_user_are_empty()
+        assert conv.inboxes_and_outboxes_of_others_are_populated()

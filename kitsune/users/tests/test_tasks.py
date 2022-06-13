@@ -9,7 +9,7 @@ from kitsune.users.tasks import (
     process_event_password_change,
     process_event_subscription_state_change,
 )
-from kitsune.users.tests import AccountEventFactory, ProfileFactory
+from kitsune.users.tests import AccountEventFactory, ConversationFactory, ProfileFactory
 
 
 class AccountEventsTasksTestCase(TestCase):
@@ -22,6 +22,9 @@ class AccountEventsTasksTestCase(TestCase):
             profile=profile,
         )
 
+        # Populate inboxes and outboxes with messages between the user and other users.
+        conv = ConversationFactory(primary_user=profile.user, number_of_other_users=2)
+
         assert profile.user.is_active
 
         process_event_delete_user(account_event.id)
@@ -30,6 +33,11 @@ class AccountEventsTasksTestCase(TestCase):
         account_event.refresh_from_db()
 
         assert not profile.user.is_active
+        # Confirm that the user's inbox and outbox have been cleared, and
+        # that the inbox and outbox of each of the other users remain intact.
+        assert conv.inbox_and_outbox_of_primary_user_are_empty()
+        assert conv.inboxes_and_outboxes_of_others_are_populated()
+
         self.assertEqual(account_event.status, AccountEvent.PROCESSED)
 
     def test_process_subscription_state_change(self):
