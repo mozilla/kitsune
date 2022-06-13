@@ -4,19 +4,17 @@ from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import (
     HttpResponse,
-    HttpResponseNotFound,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    HttpResponseNotFound,
 )
 from django.utils.translation import ugettext as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-
 from kitsune.access.decorators import login_required
 from kitsune.upload.models import ImageAttachment
-from kitsune.upload.utils import upload_imageattachment, FileTooLargeError
-
+from kitsune.upload.utils import FileTooLargeError, upload_imageattachment
 
 ALLOWED_MODELS = ["questions.Question", "questions.Answer", "auth.User"]
 
@@ -32,6 +30,7 @@ def up_image_async(request, model_name, object_pk):
         message = _("Model not allowed.")
         return HttpResponseBadRequest(json.dumps({"status": "error", "message": message}))
 
+    user = request.user
     # Get the model
     m = apps.get_model(*model_name.split("."))
 
@@ -42,8 +41,15 @@ def up_image_async(request, model_name, object_pk):
         message = _("Object does not exist.")
         return HttpResponseNotFound(json.dumps({"status": "error", "message": message}))
 
-    # Reject the request if you're not a superuser or the owner of the object.
-    if not (request.user.is_superuser or (request.user == getattr(obj, "creator", obj))):
+    # Reject the request if you're not a superuser, the owner of the object
+    # or a member of the trusted contributors group
+    if not any(
+        [
+            user.is_superuser,
+            user == getattr(obj, "creator", obj),
+            user.groups.filter(name="trusted contributors").exists(),
+        ]
+    ):
         message = _("You cannot associate an image with an object you do not own.")
         return HttpResponseBadRequest(json.dumps({"status": "error", "message": message}))
 
