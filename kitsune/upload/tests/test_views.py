@@ -2,7 +2,7 @@ import json
 import os
 
 from django.conf import settings
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -213,7 +213,7 @@ class UploadImageTestCase(TestCase):
         Disallow associating an image with a question that the user did not create,
         except when the user is a superuser.
         """
-        self._test_non_owner_upload("questions.Question", self.question.pk)
+        self._test_non_owner_upload("questions.Question", self.question.pk, is_superuser=True)
 
     def test_non_owner_upload_to_answer(self):
         """
@@ -221,16 +221,25 @@ class UploadImageTestCase(TestCase):
         except when the user is a superuser.
         """
         answer = AnswerFactory(creator=self.user)
-        self._test_non_owner_upload("questions.Answer", answer.pk)
+        self._test_non_owner_upload("questions.Answer", answer.pk, is_superuser=True)
 
-    def test_upload_to_different_user(self):
+    def test_upload_to_different_user_as_superuser(self):
         """
         Disallow associating an image with a user different than the requesting user,
         except when the user is a superuser.
         """
-        self._test_non_owner_upload("auth.User", self.user.pk)
+        self._test_non_owner_upload("auth.User", self.user.pk, is_superuser=True)
 
-    def _test_non_owner_upload(self, object_name, object_pk):
+    def test_upload_to_different_user_as_contributor(self):
+        """
+        Disallow associating an image with a user different than the requesting user,
+        except when the user is member of the `trusted contributor` group.
+        """
+        self._test_non_owner_upload(
+            "auth.User", self.user.pk, is_superuser=False, group_name="trusted contributors"
+        )
+
+    def _test_non_owner_upload(self, object_name, object_pk, is_superuser=False, group_name=""):
         other_client = LocalizingClient()
         other_user = UserFactory(username="ringo")
         other_client.login(username=other_user.username, password="testpass")
@@ -249,8 +258,13 @@ class UploadImageTestCase(TestCase):
         assert not ImageAttachment.objects.exists()
 
         # Superusers are exempt from the owner restriction.
-        other_user.is_superuser = True
-        other_user.save()
+        if is_superuser:
+            other_user.is_superuser = True
+            other_user.save()
+
+        if group_name:
+            group, _ = Group.objects.get_or_create(name=group_name)
+            other_user.groups.add(group)
 
         with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             r = self._make_post_request(
