@@ -2,7 +2,6 @@ import factory
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 
-from kitsune.messages.utils import send_message
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
 from kitsune.tidings.models import Watch
 from kitsune.users.models import CONTRIBUTOR_GROUP, AccountEvent, Profile, Setting
@@ -105,30 +104,3 @@ class AccountEventFactory(factory.django.DjangoModelFactory):
     jwt_id = "e19ed6c5-4816-4171-aa43-56ffe80dbda1"
     issued_at = "1565720808"
     profile = factory.SubFactory(ProfileFactory)
-
-
-class ConversationFactory:
-    """
-    Populate inboxes and outboxes with messages between a primary user and a number of other users.
-    """
-
-    def __init__(self, primary_user=None, number_of_other_users=2):
-        # Set or create the primary user and create some other users.
-        self.user = primary_user or UserFactory()
-        self.other_users = UserFactory.create_batch(number_of_other_users)
-        # Populate the inboxes and outboxes of the users.
-        for sender in self.other_users:
-            send_message([self.user], "foo", sender=sender)
-        send_message(self.other_users, "bar", sender=self.user)
-        # Confirm our expectations.
-        assert self.user.outbox.count() == 1
-        assert self.user.inbox.count() == len(self.other_users)
-        assert self.inboxes_and_outboxes_of_others_are_populated()
-
-    def inbox_and_outbox_of_primary_user_are_empty(self):
-        return (self.user.inbox.count() == 0) and (self.user.outbox.count() == 0)
-
-    def inboxes_and_outboxes_of_others_are_populated(self):
-        return all(
-            user.inbox.count() == 1 and user.outbox.count() == 1 for user in self.other_users
-        )

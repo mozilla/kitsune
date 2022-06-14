@@ -25,13 +25,3 @@ def send_message(to, text, sender=None):
 def unread_count_for(user):
     """Returns the number of unread messages for the specified user."""
     return InboxMessage.objects.filter(to=user, read=False).count()
-
-
-def clear_inbox_and_outbox(user):
-    """
-    Delete the InboxMessage objects received and OutboxMessage objects sent by the
-    given user. This does not affect the InboxMessage objects of the recipients of
-    messages sent by this user.
-    """
-    InboxMessage.objects.filter(to=user).delete()
-    OutboxMessage.objects.filter(sender=user).delete()
