@@ -627,7 +627,6 @@ INSTALLED_APPS = (
     "mozilla_django_oidc",
     "corsheaders",
     "kitsune.users",
-    "dennis.django_dennis",
     "puente",
     "authority",
     "waffle",

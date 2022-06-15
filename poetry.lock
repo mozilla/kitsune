@@ -408,11 +408,11 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "dennis"
-version = "0.9"
-description = "Utilities for working with PO and POT files to ease development and improve localization quality"
+version = "1.0.0"
+description = "Utilities for working with gettext PO and POT files to ease development and improve localization quality"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 
 [package.dependencies]
 click = ">=6"
@@ -724,25 +724,6 @@ python-versions = ">=3.6"
 
 [package.dependencies]
 Django = ">=2.2"
-
-[[package]]
-name = "django-tidings"
-version = "2.0.1"
-description = ""
-category = "main"
-optional = false
-python-versions = "*"
-develop = false
-
-[package.dependencies]
-celery = ">=3.1"
-django = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/mozilla/django-tidings.git"
-reference = "master"
-resolved_reference = "f617f91d8e384bccc819b2a6db47dd5ef0735f6a"
 
 [[package]]
 name = "django-timezone-field"
@@ -2370,7 +2351,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "40629d21e16b28b3ae58c68bd81d8857ea93cb08b47b68b0bc054abf64ec94a1"
+content-hash = "6af620c026af33b6731ce23fc95f85c40e0b47e056b0725328c568f698570cf9"
 
 [metadata.files]
 alabaster = [
@@ -2587,8 +2568,8 @@ decorator = [
     {file = "decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
 ]
 dennis = [
-    {file = "dennis-0.9-py2.py3-none-any.whl", hash = "sha256:f6487392ac91800c5f0684a99b404b7fd0f72ceb48faeb5a0ce4e2c24fb62d3f"},
-    {file = "dennis-0.9.tar.gz", hash = "sha256:8c942dd5da7d03c65daebc069c5ee5c7f1374ac9b0c8c89c627caa66fe822604"},
+    {file = "dennis-1.0.0-py3-none-any.whl", hash = "sha256:9691317bbea10494080395e2a310c372377a5a85de8a3d6388c706c0aa551145"},
+    {file = "dennis-1.0.0.tar.gz", hash = "sha256:07381af4e0c16340186446313ad72937a6188b68022e5961f1a35da67e4d3610"},
 ]
 deprecated = [
     {file = "Deprecated-1.2.13-py2.py3-none-any.whl", hash = "sha256:64756e3e14c8c5eea9795d93c524551432a0be75629f8f29e67ab8caf076c76d"},
@@ -2693,7 +2674,6 @@ django-taggit = [
     {file = "django-taggit-2.1.0.tar.gz", hash = "sha256:a9f41e4ad58efe4b28d86f274728ee87eb98eeae90c9eb4b4efad39e5068184e"},
     {file = "django_taggit-2.1.0-py3-none-any.whl", hash = "sha256:61547a23fc99967c9304107414a09e662b459f4163dbbae32e60b8ba40c34d05"},
 ]
-django-tidings = []
 django-timezone-field = [
     {file = "django-timezone-field-4.2.3.tar.gz", hash = "sha256:5dd5bd9249382bef8847d3e7e4c32b7be182a4b538f354130d1252ed228892f8"},
     {file = "django_timezone_field-4.2.3-py3-none-any.whl", hash = "sha256:7552d2b0f145684b7de3fb5046101c7efd600cc6ba951b15c630fa1e1b83558e"},
