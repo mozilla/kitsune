@@ -50,6 +50,7 @@ npm-debug.log
 .python-version
 .pylint*
 .devcontainer.code-workspace
+.devcontainer/.*CommandMarker
 assets/
 .gnupg
 celerybeat-schedule
