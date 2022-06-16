@@ -3,7 +3,7 @@ from celery import task
 from kitsune.tidings.models import Watch
 
 
-@task()
+@task
 def claim_watches(user):
     """Attach any anonymous watches having a user's email to that user.
 
