@@ -33,6 +33,9 @@ const entrypoints = {
     "sumo/js/document.js",
     "sumo/js/wiki.metrics.js",
   ],
+  revision: [
+    "sumo/js/revision.js",
+  ],
   questions: [
     "sumo/js/questions.js",
     "sumo/js/tags.filter.js",
