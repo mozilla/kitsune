@@ -309,6 +309,25 @@ class TestQuestionViewSet(TestCase):
         self.assertEqual(res.data, {"num_votes": 1})
         self.assertEqual(Question.objects.get(id=q.id).num_votes, 1)
 
+    def test_helpful_rate_limit(self):
+        u = UserFactory()
+        self.client.force_authenticate(user=u)
+
+        # The first ten votes by this user today should be fine.
+        for _ in range(10):
+            q = QuestionFactory()
+            res = self.client.post(reverse("question-helpful", args=[q.id]))
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.data, {"num_votes": 1})
+            self.assertEqual(Question.objects.get(id=q.id).num_votes, 1)
+
+        # The eleventh vote by this user today should trigger the rate limit.
+        q = QuestionFactory()
+        res = self.client.post(reverse("question-helpful", args=[q.id]))
+        self.assertEqual(res.status_code, 429)
+        # The vote count should not have changed.
+        self.assertEqual(Question.objects.get(id=q.id).num_votes, 0)
+
     def test_helpful_double_vote(self):
         q = QuestionFactory()
         u = UserFactory()
@@ -608,6 +627,25 @@ class TestAnswerViewSet(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data, {"num_helpful_votes": 1, "num_unhelpful_votes": 0})
         self.assertEqual(Answer.objects.get(id=a.id).num_votes, 1)
+
+    def test_helpful_rate_limit(self):
+        u = UserFactory()
+        self.client.force_authenticate(user=u)
+
+        # The first ten votes by this user today should be fine.
+        for _ in range(10):
+            a = AnswerFactory()
+            res = self.client.post(reverse("answer-helpful", args=[a.id]))
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(res.data, {"num_helpful_votes": 1, "num_unhelpful_votes": 0})
+            self.assertEqual(Answer.objects.get(id=a.id).num_votes, 1)
+
+        # The eleventh vote by this user today should trigger the rate limit.
+        a = AnswerFactory()
+        res = self.client.post(reverse("answer-helpful", args=[a.id]))
+        self.assertEqual(res.status_code, 429)
+        # The vote count should not have changed.
+        self.assertEqual(Answer.objects.get(id=a.id).num_votes, 0)
 
     def test_helpful_double_vote(self):
         a = AnswerFactory()
