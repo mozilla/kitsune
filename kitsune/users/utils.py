@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import ugettext as _
 
+from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.sumo import email_utils
 from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
 
@@ -98,9 +99,14 @@ def anonymize_user(user):
     profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uid))
     profile.save()
 
-    # Deactivate the user and change key information
+    # Change key information, clear the user's inbox/outbox, and deactivate the user.
     user.username = f"user{uid.int}"
     user.email = f"{uid.int}@example.com"
+    # Delete the InboxMessage objects received and OutboxMessage objects sent by the
+    # user. This does not affect the InboxMessage objects of the recipients of messages
+    # sent by the user.
+    InboxMessage.objects.filter(to=user).delete()
+    OutboxMessage.objects.filter(sender=user).delete()
     deactivate_user(user, user)
 
     # Remove from all groups

@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from kitsune.messages.utils import send_message
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import AccountEvent
@@ -9,7 +10,7 @@ from kitsune.users.tasks import (
     process_event_password_change,
     process_event_subscription_state_change,
 )
-from kitsune.users.tests import AccountEventFactory, ProfileFactory
+from kitsune.users.tests import AccountEventFactory, GroupFactory, ProfileFactory, UserFactory
 
 
 class AccountEventsTasksTestCase(TestCase):
@@ -21,15 +22,47 @@ class AccountEventsTasksTestCase(TestCase):
             status=AccountEvent.UNPROCESSED,
             profile=profile,
         )
+        user = profile.user
+        user.username = "ringo"
+        user.email = "ringo@beatles.com"
+        user.save()
+        user.groups.add(GroupFactory())
+        # Populate inboxes and outboxes with messages between the user and other users.
+        other_users = UserFactory.create_batch(2)
+        for sender in other_users:
+            send_message([user], "foo", sender=sender)
+        send_message(other_users, "bar", sender=user)
 
-        assert profile.user.is_active
+        # Confirm the expected initial state.
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.profile.name)
+        self.assertEqual(user.groups.count(), 1)
+        self.assertEqual(user.outbox.count(), 1)
+        self.assertEqual(user.inbox.count(), len(other_users))
+        for other_user in other_users:
+            self.assertEqual(other_user.inbox.count(), 1)
+            self.assertEqual(other_user.outbox.count(), 1)
 
         process_event_delete_user(account_event.id)
 
-        profile.user.refresh_from_db()
+        user.refresh_from_db()
         account_event.refresh_from_db()
 
-        assert not profile.user.is_active
+        # The user should be anonymized.
+        self.assertTrue(user.username.startswith("user"))
+        self.assertTrue(user.email.endswith("@example.com"))
+        # The user should be deactivated, and the user's profile and groups cleared.
+        self.assertFalse(user.is_active)
+        self.assertFalse(user.profile.name)
+        self.assertEqual(user.groups.count(), 0)
+        # Confirm that the user's inbox and outbox have been cleared, and
+        # that the inbox and outbox of each of the other users remain intact.
+        self.assertEqual(user.outbox.count(), 0)
+        self.assertEqual(user.inbox.count(), 0)
+        for other_user in other_users:
+            self.assertEqual(other_user.inbox.count(), 1)
+            self.assertEqual(other_user.outbox.count(), 1)
+
         self.assertEqual(account_event.status, AccountEvent.PROCESSED)
 
     def test_process_subscription_state_change(self):
