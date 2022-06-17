@@ -1162,10 +1162,26 @@ def edit_answer(request, question_id, answer_id):
 
 
 @require_POST
+@ratelimit("watch-question", "10/d")
 def watch_question(request, question_id):
     """Start watching a question for replies or solution."""
 
+    if request.limited:
+        msg = _(
+            "We were unable to register your request. You've exceeded the "
+            "limit for the number of questions allowed to watch in a day. "
+            "Please try again tomorrow."
+        )
+        if request.is_ajax():
+            return HttpResponse(json.dumps({"message": msg, "ignored": True}))
+
+        messages.add_message(request, messages.ERROR, msg)
+        return HttpResponseRedirect(
+            reverse("questions.details", kwargs={"question_id": question_id})
+        )
+
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
+
     form = WatchQuestionForm(request.user, request.POST)
 
     # Process the form

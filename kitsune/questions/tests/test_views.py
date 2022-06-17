@@ -14,6 +14,7 @@ from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import LocalizingClient, eq_msg, get, template_used
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tidings.models import Watch
 from kitsune.users.tests import UserFactory, add_permission
 
 
@@ -534,6 +535,15 @@ class TestRateLimiting(TestCaseBase):
             self.client.post(url, {"content": content})
 
         self.assertEqual(4, Answer.objects.count())
+
+    def test_question_watch_limit(self):
+        """Test limit of watches on questions per day."""
+        q = QuestionFactory()
+        url = reverse("questions.watch", args=[q.id], locale="en-US")
+        for i in range(15):
+            self.client.post(url, dict(event_type="solution", email=f"ringo{i}@beatles.com"))
+
+        self.assertEqual(Watch.objects.filter(object_id=q.id).count(), 10)
 
 
 class TestEditDetails(TestCaseBase):
