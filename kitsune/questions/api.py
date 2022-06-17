@@ -28,6 +28,7 @@ from kitsune.sumo.api_utils import (
     OnlyCreatorEdits,
     SplitSourceField,
 )
+from kitsune.sumo.utils import is_ratelimited
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
 from kitsune.users.models import Profile
@@ -276,6 +277,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
+        if is_ratelimited(request, "question-vote", "10/d"):
+            raise GenericAPIException(
+                429, "You've exceeded the number of votes for questions allowed in a day."
+            )
+
         question = self.get_object()
 
         if not question.editable:
@@ -502,6 +508,11 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
+        if is_ratelimited(request, "answer-vote", "10/d"):
+            raise GenericAPIException(
+                429, "You've exceeded the number of votes for answers allowed in a day."
+            )
+
         answer = self.get_object()
 
         if not answer.question.editable:
