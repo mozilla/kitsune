@@ -111,6 +111,7 @@ class AccountEventAdmin(admin.ModelAdmin):
         "event_type",
         "status",
     )
+    search_fields = ["profile__user__username", "profile__name", "status", "fxa_uid"]
     autocomplete_fields = ["profile"]
 
     class Meta:
