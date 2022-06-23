@@ -265,22 +265,22 @@ def is_ratelimited(request, name, rate, method="POST"):
     """
     if request.user.has_perm("sumo.bypass_ratelimit"):
         request.limited = False
-    else:
-        limited = is_ratelimited_core(
-            request, group=name, key="user_or_ip", rate=rate, method=method, increment=True
-        )
-        if limited:
-            # We only record a ratelimit event for this counter.
-            if hasattr(request, "user") and request.user.is_authenticated:
-                key = 'user "{}"'.format(request.user.username)
-            else:
-                key = "anonymous user ({})".format(request.META["REMOTE_ADDR"])
-            Record.objects.info(
-                "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
-            )
+        return False
 
-        # If the request was already limited, keep it that way.
-        request.limited = getattr(request, "limited", False) or limited
+    if limited := is_ratelimited_core(
+        request, group=name, key="user_or_ip", rate=rate, method=method, increment=True
+    ):
+        # We only record a ratelimit event for this counter.
+        if request.user.is_authenticated:
+            key = f'user "{request.user.username}"'
+        else:
+            key = f'anonymous user {request.META["REMOTE_ADDR"]}'
+        Record.objects.info(
+            "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
+        )
+
+    # If the request was already limited, keep it that way.
+    request.limited = getattr(request, "limited", False) or limited
 
     return request.limited
 
