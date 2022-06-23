@@ -103,6 +103,38 @@ class DeleteEditImageTests(TestCase):
         self.assertEqual(200, r.status_code)
         self.assertEqual(u.username, Image.objects.get().updated_by.username)
 
+    def test_edit_image_avoids_draft_constraint(self):
+        """
+        Ensure that editing an image doesn't trigger the creator/draft
+        database constraint on images. In other words, this tests that
+        we never set is_draft to False when saving an edit to an image.
+        """
+        # Setup the user to have one image with is_draft=False and another
+        # with is_draft=None. The intention of the creator/draft database
+        # constraint is to ensure that a user can never create more than
+        # one draft image. However, it works both ways. It also retricts
+        # a user to at most one image with is_draft=False. Since a user
+        # should be able to create more than one non-draft image, we should
+        # never set is_draft to False. It should be set to None (Null) to
+        # avoid triggering the constraint altogether.
+        u = UserFactory()
+        ImageFactory(creator=u, title="first image", is_draft=False)
+        img = ImageFactory(creator=u, title="second image", is_draft=None)
+        self.client.login(username=u.username, password="testpass")
+        # Ensure that an edit to the second image doesn't set is_draft to False
+        # and trigger the creator/draft database constraint.
+        r = post(
+            self.client,
+            "gallery.edit_media",
+            {"description": "yada yada"},
+            locale="en-US",
+            args=["image", img.id],
+        )
+        self.assertEqual(200, r.status_code)
+        img = Image.objects.get(id=img.id)
+        self.assertEqual(img.description, "yada yada")
+        self.assertEqual(img.updated_by.username, u.username)
+
 
 class ViewHelpersTests(TestCase):
     def tearDown(self):
