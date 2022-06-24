@@ -272,9 +272,9 @@ def is_ratelimited(request, name, rate, method="POST"):
     ):
         # We only record a ratelimit event for this counter.
         if request.user.is_authenticated:
-            key = f'user "{request.user.username}"'
+            key = f"user '{request.user.username}'"
         else:
-            key = f'anonymous user {request.META["REMOTE_ADDR"]}'
+            key = f"anonymous user {request.META['REMOTE_ADDR']}"
         Record.objects.info(
             "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
         )
