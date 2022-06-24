@@ -518,10 +518,8 @@ def post_preview_async(request):
 
 def search(request, forum_slug=None):
     """Search a specific forum."""
-
-    try:
-        forum = Forum.objects.get(slug=forum_slug)
-    except Forum.DoesNotExist:
+    forum = get_object_or_404(Forum, slug=forum_slug)
+    if not forum.allows_viewing_by(request.user):
         raise Http404
 
     search_form = BaseSearchForm(request.GET, initial={"forum": forum})
