@@ -12,7 +12,7 @@ from django.db.models.signals import pre_delete
 from django.templatetags.static import static
 from django.utils import translation
 from django.utils.http import is_safe_url, urlencode
-from ratelimit.utils import is_ratelimited as rl_is_ratelimited
+from ratelimit.core import is_ratelimited as is_ratelimited_core
 from timeout_decorator import timeout
 
 from kitsune.journal.models import Record
@@ -254,32 +254,34 @@ class Progress(object):
         sys.stdout.flush()
 
 
-def is_ratelimited(request, name, rate, method=["POST"], skip_if=lambda r: False):
+def is_ratelimited(request, name, rate, method="POST"):
     """
-    Reimplement ``ratelimit.helpers.is_ratelimited``, with sumo-specific details:
+    Wraps ``ratelimit.core.is_ratelimited`` with sumo-specific details:
 
     * Always check for the bypass rate limit permission.
     * Log times when users are rate limited.
     * Always uses ``user_or_ip`` for the rate limit key.
+    * Adds the Boolean attribute "limited" to the request.
     """
-    if skip_if(request) or request.user.has_perm("sumo.bypass_ratelimit"):
+    if request.user.has_perm("sumo.bypass_ratelimit"):
         request.limited = False
-    else:
-        # TODO: make sure 'group' value below is sufficient
-        # TODO: make sure 'user_or_ip' is a valid replacement for
-        # old/deleted custom user_or_ip method
-        rl_is_ratelimited(
-            request, increment=True, group="sumo.utils.is_ratelimited", rate=rate, key="user_or_ip"
+        return False
+
+    if limited := is_ratelimited_core(
+        request, group=name, key="user_or_ip", rate=rate, method=method, increment=True
+    ):
+        # We only record a ratelimit event for this counter.
+        if request.user.is_authenticated:
+            key = f"user '{request.user.username}'"
+        else:
+            key = f"anonymous user {request.META['REMOTE_ADDR']}"
+        Record.objects.info(
+            "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
         )
-        if request.limited:
-            if hasattr(request, "user") and request.user.is_authenticated:
-                key = 'user "{}"'.format(request.user.username)
-            else:
-                ip = request.META.get("HTTP_X_CLUSTER_CLIENT_IP", request.META["REMOTE_ADDR"])
-                key = "anonymous user ({})".format(ip)
-            Record.objects.info(
-                "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
-            )
+
+    # If the request was already limited, keep it that way.
+    request.limited = getattr(request, "limited", False) or limited
+
     return request.limited
 
 
