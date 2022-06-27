@@ -1,10 +1,10 @@
-from celery import task
+from celery import shared_task
 from django.contrib.auth.models import User
 
 from kitsune.customercare.zendesk import ZendeskClient
 
 
-@task
+@shared_task
 def update_zendesk_user(user_id: int) -> None:
     user = User.objects.get(pk=user_id)
     if user.profile.zendesk_id:
@@ -12,7 +12,7 @@ def update_zendesk_user(user_id: int) -> None:
         zendesk.update_user(user)
 
 
-@task
+@shared_task
 def update_zendesk_identity(user_id: int, email: str) -> None:
     user = User.objects.get(pk=user_id)
     zendesk_user_id = user.profile.zendesk_id

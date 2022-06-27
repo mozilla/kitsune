@@ -4,13 +4,13 @@ from django.contrib.sites.models import Site
 from django.utils.translation import ugettext as _
 
 import bleach
-from celery import task
+from celery import shared_task
 
 from kitsune.announcements.models import Announcement
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
 
 
-@task()
+@shared_task
 def send_group_email(announcement_id):
     """Build and send the announcement emails to a group."""
     try:

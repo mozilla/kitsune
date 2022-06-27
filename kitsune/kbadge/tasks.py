@@ -1,4 +1,4 @@
-from celery import task
+from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.translation import pgettext
@@ -9,7 +9,7 @@ from kitsune.kbadge.models import Award
 from kitsune.sumo import email_utils
 
 
-@task()
+@shared_task
 def send_award_notification(award_id: int):
     """Sends the award notification email
 

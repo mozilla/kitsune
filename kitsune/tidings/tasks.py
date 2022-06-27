@@ -1,9 +1,9 @@
-from celery import task
+from celery import shared_task
 
 from kitsune.tidings.models import Watch
 
 
-@task
+@shared_task
 def claim_watches(user):
     """Attach any anonymous watches having a user's email to that user.
 

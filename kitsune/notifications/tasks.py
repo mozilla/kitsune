@@ -4,7 +4,7 @@ import actstream.registry
 import requests
 import simplejson
 from actstream.models import Action, Follow
-from celery import task
+from celery import shared_task
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from requests.exceptions import RequestException
@@ -81,7 +81,7 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
             logger.error("SimplePush error: %s %s", r.status_code, r.json())
 
 
-@task(ignore_result=True)
+@shared_task
 def add_notification_for_action(action_id: int):
     action = Action.objects.get(id=action_id)
 
@@ -98,7 +98,7 @@ def add_notification_for_action(action_id: int):
         Notification.objects.create(owner=u, action=action)
 
 
-@task(ignore_result=True)
+@shared_task
 def send_realtimes_for_action(action_id: int):
     action = Action.objects.get(id=action_id)
     query = _full_ct_query(action)
@@ -110,7 +110,7 @@ def send_realtimes_for_action(action_id: int):
         _send_simple_push(reg.endpoint, action.id)
 
 
-@task(ignore_result=True)
+@shared_task
 def send_notification(notification_id: int):
     """Call every notification handler for a notification."""
     notification = Notification.objects.get(id=notification_id)

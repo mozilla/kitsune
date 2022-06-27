@@ -1,7 +1,7 @@
 import importlib
 import inspect
 
-from celery import task
+from celery import shared_task
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk as es7_bulk
@@ -119,7 +119,7 @@ def get_doc_types(paths=["kitsune.search.documents"]):
     return doc_types
 
 
-@task
+@shared_task
 def index_object(doc_type_name, obj_id):
     """Index an ORM object given an object id and a document type name."""
 
@@ -140,7 +140,7 @@ def index_object(doc_type_name, obj_id):
         doc_type.prepare(obj).to_action("index")
 
 
-@task
+@shared_task
 def index_objects_bulk(
     doc_type_name,
     obj_ids,
@@ -187,7 +187,7 @@ def index_objects_bulk(
         raise BulkIndexError(f"{len(errors)} document(s) failed to index.", errors)
 
 
-@task
+@shared_task
 def remove_from_field(doc_type_name, field_name, field_value):
     """Remove a value from all documents in the doc_type's index."""
     doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
@@ -213,7 +213,7 @@ def remove_from_field(doc_type_name, field_name, field_value):
         doc_type._index.refresh()
 
 
-@task
+@shared_task
 def delete_object(doc_type_name, obj_id):
     """Unindex an ORM object given an object id and document type name."""
 
