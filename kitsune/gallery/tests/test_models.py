@@ -21,5 +21,6 @@ class ImageTestCase(TestCase):
         self.assertEqual(img.file.url, img.thumbnail_url_if_set())
 
         create_thumbnail_mock.return_value = ContentFile("the dude")
-        generate_thumbnail(img, "file", "thumbnail")
+        generate_thumbnail("gallery.Image", img.id, "file", "thumbnail")
+        img.refresh_from_db()
         self.assertEqual(img.thumbnail.url, img.thumbnail_url_if_set())
