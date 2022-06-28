@@ -128,6 +128,10 @@ def get_next_url(request):
     else:
         url = request.META.get("HTTP_REFERER")
 
+    # Remove any newline or carriage-return characters.
+    if url:
+        url = url.replace("\n", "").replace("\r", "")
+
     if not settings.DEBUG and not is_safe_url(
         url, allowed_hosts={Site.objects.get_current().domain}
     ):

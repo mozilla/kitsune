@@ -98,6 +98,16 @@ class GetNextUrlTests(TestCase):
         r = self.r.get("/", {"next": "//example.com"})
         self.assertEqual(None, get_next_url(r))
 
+    def test_xss_attempt_with_newline(self):
+        """Next url with newline xss attempt"""
+        r = self.r.get("/", {"next": "j%0Aavascrip%0At%3aalert()//"})
+        self.assertEqual(None, get_next_url(r))
+
+    def test_xss_attempt_with_carriage_return(self):
+        """Next url with carriage-return xss attempt"""
+        r = self.r.get("/", {"next": "j%0Davascrip%0Dt%3aalert()//"})
+        self.assertEqual(None, get_next_url(r))
+
 
 class JSONTests(TestCase):
     def test_truncated_noop(self):
