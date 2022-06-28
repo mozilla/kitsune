@@ -4,7 +4,7 @@ import os
 import subprocess
 from tempfile import NamedTemporaryFile
 
-from celery import task
+from celery import shared_task
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -13,7 +13,7 @@ from PIL import Image
 log = logging.getLogger("k.task")
 
 
-@task(rate_limit="15/m", serializer="pickle")
+@shared_task(rate_limit="15/m", serializer="pickle")
 def generate_thumbnail(for_obj, from_field, to_field, max_size=settings.THUMBNAIL_SIZE):
     """Generate a thumbnail, given a model instance with from and to fields.
 
@@ -100,7 +100,7 @@ def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
     return (new_width, new_height)
 
 
-@task(rate_limit="15/m", serializer="pickle")
+@shared_task(rate_limit="15/m", serializer="pickle")
 def compress_image(for_obj, for_field):
     """Compress an image of given field for given object."""
 

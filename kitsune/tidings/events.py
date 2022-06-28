@@ -2,7 +2,7 @@ import random
 from collections.abc import Sequence
 from smtplib import SMTPException
 
-from celery import task
+from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -135,7 +135,7 @@ class Event(object):
         else:
             self._fire_task(self, exclude=exclude)
 
-    @task
+    @shared_task
     def _fire_task(self, exclude=None):
         """Build and send the emails as a celery task."""
         connection = mail.get_connection(fail_silently=True)

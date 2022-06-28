@@ -3,7 +3,7 @@ from datetime import date
 from typing import Dict, List
 
 import waffle
-from celery import task
+from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -32,7 +32,7 @@ from kitsune.wiki.utils import BitlyRateLimitException, generate_short_url
 log = logging.getLogger("k.task")
 
 
-@task()
+@shared_task
 def send_reviewed_notification(revision_id: int, document_id: int, message: str):
     """Send notification of review to the revision creator."""
 
@@ -92,7 +92,7 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
     email_utils.send_messages(msgs)
 
 
-@task()
+@shared_task
 def send_contributor_notification(
     based_on_ids: List[int], revision_id: int, document_id: int, message: str
 ):
@@ -172,7 +172,7 @@ def schedule_rebuild_kb():
     rebuild_kb.delay()
 
 
-@task
+@shared_task
 def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
     base_url = "https://{0}%s".format(Site.objects.get_current().domain)
@@ -188,7 +188,7 @@ def add_short_links(doc_ids):
         pass
 
 
-@task(rate_limit="3/h")
+@shared_task(rate_limit="3/h")
 def rebuild_kb():
     """Re-render all documents in the KB in chunks."""
     cache.delete(settings.WIKI_REBUILD_TOKEN)
@@ -203,7 +203,7 @@ def rebuild_kb():
         _rebuild_kb_chunk.apply_async(args=[chunk])
 
 
-@task(rate_limit="5/m")
+@shared_task(rate_limit="5/m")
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
 
@@ -254,7 +254,7 @@ def _rebuild_kb_chunk(data):
         transaction.commit()
 
 
-@task()
+@shared_task
 def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     """Award the specific badge to the user if they've earned it."""
     try:
@@ -289,7 +289,7 @@ def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
         return True
 
 
-@task()
+@shared_task
 def render_document_cascade(base_doc_id):
     """Given a document, render it and all documents that may be affected."""
 

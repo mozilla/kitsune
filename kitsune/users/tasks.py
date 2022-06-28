@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from celery import task
+from celery import shared_task
 
 from kitsune.products.models import Product
 from kitsune.users.auth import FXAAuthBackend
@@ -9,7 +9,7 @@ from kitsune.users.models import AccountEvent
 from kitsune.users.utils import anonymize_user
 
 
-@task
+@shared_task
 def process_event_delete_user(event_id):
     event = AccountEvent.objects.get(id=event_id)
 
@@ -19,7 +19,7 @@ def process_event_delete_user(event_id):
     event.save()
 
 
-@task
+@shared_task
 def process_event_subscription_state_change(event_id):
     event = AccountEvent.objects.get(id=event_id)
     body = json.loads(event.body)
@@ -45,7 +45,7 @@ def process_event_subscription_state_change(event_id):
     event.save()
 
 
-@task
+@shared_task
 def process_event_password_change(event_id):
     event = AccountEvent.objects.get(id=event_id)
     body = json.loads(event.body)
@@ -63,7 +63,7 @@ def process_event_password_change(event_id):
     event.save()
 
 
-@task
+@shared_task
 def process_event_profile_change(event_id):
     event = AccountEvent.objects.get(id=event_id)
     refresh_token = event.profile.fxa_refresh_token
