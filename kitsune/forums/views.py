@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from kitsune import forums as forum_constants
 from kitsune.access.decorators import has_perm_or_owns_or_403, login_required
 from kitsune.access.utils import has_perm
+from kitsune.forums.tasks import fire
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.feeds import PostsFeed, ThreadsFeed
 from kitsune.forums.forms import EditPostForm, EditThreadForm, NewThreadForm, ReplyForm
@@ -196,7 +197,7 @@ def reply(request, forum_slug, thread_id):
                     NewPostEvent.notify(request.user, thread)
 
                 # Send notifications to thread/forum watchers.
-                NewPostEvent(reply_).fire(exclude=reply_.author)
+                fire.delay("NewPostEvent", reply_.id, exclude_user_ids=reply_.author.id)
 
                 return HttpResponseRedirect(thread.get_last_post_url())
 
@@ -235,7 +236,7 @@ def new_thread(request, forum_slug):
             post = thread.new_post(author=request.user, content=form.cleaned_data["content"])
             post.save()
 
-            NewThreadEvent(post).fire(exclude=post.author)
+            fire.delay("NewThreadEvent", post.id, exclude_user_ids=post.author.id)
 
             # Add notification automatically if needed.
             if Setting.get_for_user(request.user, "forums_watch_new_thread"):

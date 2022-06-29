@@ -67,11 +67,10 @@ class NewPostEvent(InstanceEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def fire(self, **kwargs):
-        """Notify watchers of this thread, of the document, and of the
-        locale."""
+    def fire(self, exclude=None):
+        """Notify watchers of this thread, of the document, and of the locale."""
         return EventUnion(self, NewThreadEvent(self.reply), NewPostInLocaleEvent(self.reply)).fire(
-            **kwargs
+            exclude=exclude
         )
 
     def _mails(self, users_and_watches):
@@ -89,10 +88,10 @@ class NewThreadEvent(InstanceEvent):
         # Need to store the post for _mails
         self.post = post
 
-    def fire(self, **kwargs):
+    def fire(self, exclude=None):
         """Notify watches of the document and of the locale."""
         return EventUnion(self, NewThreadEvent(self.post), NewThreadInLocaleEvent(self.post)).fire(
-            **kwargs
+            exclude=exclude
         )
 
     def _mails(self, users_and_watches):

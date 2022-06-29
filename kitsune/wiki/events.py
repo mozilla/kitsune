@@ -269,15 +269,16 @@ class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter
 
 
 class ApprovedOrReadyUnion(EventUnion):
-    """Event union fired when a revision is approved and also possibly ready
-
-    Unioned events must have a `revision` attr.
-
+    """
+    Event union fired when a revision is approved and also possibly ready for localization.
     """
 
-    def __init__(self, *args, **kwargs):
-        super(ApprovedOrReadyUnion, self).__init__(*args, **kwargs)
-        self._revision = self.events[0].revision
+    def __init__(self, revision):
+        self.revision = revision
+        events = [ApproveRevisionInLocaleEvent(revision)]
+        if revision.is_ready_for_localization:
+            events.append(ReadyRevisionEvent(revision))
+        super(ApprovedOrReadyUnion, self).__init__(*events)
 
     def _mails(self, users_and_watches):
         """Send approval or readiness mails, as appropriate.
@@ -287,7 +288,7 @@ class ApprovedOrReadyUnion(EventUnion):
         email.
 
         """
-        revision = self._revision
+        revision = self.revision
         document = revision.document
         is_ready = revision.is_ready_for_localization
         log.debug("Sending approved/ready notifications for revision (id=%s)" % revision.id)

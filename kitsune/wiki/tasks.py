@@ -19,6 +19,8 @@ from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
+from kitsune.tidings.utils import get_users
+from kitsune.wiki import events
 from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.models import (
     Document,
@@ -320,3 +322,10 @@ def render_document_cascade(base_doc_id):
             link_to.linked_from
             for link_to in d.links_to().filter(kind__in=["template", "include"])
         )
+
+
+@shared_task
+def fire(event_cls_name, revision_id, exclude_user_ids=None):
+    revision = Revision.objects.get(id=revision_id)
+    event_cls = getattr(events, event_cls_name)
+    event_cls(revision).fire(exclude=get_users(exclude_user_ids))

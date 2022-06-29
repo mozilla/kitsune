@@ -1,6 +1,7 @@
 from zlib import crc32
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse as django_reverse
 from django.utils.module_loading import import_string
@@ -94,3 +95,12 @@ def import_from_setting(setting_name, fallback):
 
 # Here to be imported by others:
 reverse = import_from_setting("TIDINGS_REVERSE", django_reverse)  # no QA
+
+
+def get_users(user_ids):
+    """
+    Convenience function that returns a list of user objects for the given user ids.
+    """
+    if user_ids is None:
+        return None
+    return list(get_user_model().objects.filter(id__in=user_ids).all())

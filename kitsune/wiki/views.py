@@ -36,7 +36,6 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
 )
 from kitsune.wiki.events import (
-    ApprovedOrReadyUnion,
     ApproveRevisionInLocaleEvent,
     EditDocumentEvent,
     ReadyRevisionEvent,
@@ -62,6 +61,7 @@ from kitsune.wiki.models import (
 )
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
+    fire,
     render_document_cascade,
     schedule_rebuild_kb,
     send_contributor_notification,
@@ -725,10 +725,11 @@ def review_revision(request, document_slug, revision_id):
 
             # Send notifications of approvedness and readiness:
             if rev.is_ready_for_localization or rev.is_approved:
-                events = [ApproveRevisionInLocaleEvent(rev)]
-                if rev.is_ready_for_localization:
-                    events.append(ReadyRevisionEvent(rev))
-                ApprovedOrReadyUnion(*events).fire(exclude=[rev.creator, request.user])
+                fire.ready(
+                    "ApprovedOrReadyUnion",
+                    rev.id,
+                    exclude_user_ids=[rev.creator.id, request.user.id],
+                )
 
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
@@ -1386,7 +1387,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
         revision.readied_for_localization_by = request.user
         revision.save()
 
-        ReadyRevisionEvent(revision).fire(exclude=request.user)
+        fire.delay("ReadyRevisionEvent", revision.id, exclude_user_ids=request.user.id)
 
         return HttpResponse(json.dumps({"message": revision_id}))
 
@@ -1521,8 +1522,8 @@ def _save_rev_and_notify(rev_form, creator, document, based_on_id=None, base_rev
     new_rev = rev_form.save(creator, document, based_on_id, base_rev)
 
     # Enqueue notifications
-    ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)
-    EditDocumentEvent(new_rev).fire(exclude=new_rev.creator)
+    fire.delay("ReviewableRevisionInLocaleEvent", new_rev.id, exclude_user_ids=new_rev.creator.id)
+    fire.delay("EditDocumentEvent", new_rev.id, exclude_user_ids=new_rev.creator.id)
 
 
 def _maybe_schedule_rebuild(form):

@@ -17,6 +17,7 @@ from kitsune.kbforums.events import (
 from kitsune.kbforums.feeds import ThreadsFeed, PostsFeed
 from kitsune.kbforums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditPostForm
 from kitsune.kbforums.models import Thread, Post
+from kitsune.kbforums.tasks import fire
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, get_next_url, is_ratelimited
@@ -171,7 +172,7 @@ def reply(request, document_slug, thread_id):
                     NewPostEvent.notify(request.user, thread)
 
                 # Send notifications to thread/forum watchers.
-                NewPostEvent(reply_).fire(exclude=reply_.creator)
+                fire.delay("NewPostEvent", reply_.id, exclude_user_ids=reply_.creator.id)
 
                 return HttpResponseRedirect(reply_.get_absolute_url())
 
@@ -202,7 +203,7 @@ def new_thread(request, document_slug):
             post.save()
 
             # Send notifications to forum watchers.
-            NewThreadEvent(post).fire(exclude=post.creator)
+            fire.delay("NewThreadEvent", post.id, exclude_user_ids=post.creator.id)
 
             # Add notification automatically if needed.
             if Setting.get_for_user(request.user, "kbforums_watch_new_thread"):

@@ -2,7 +2,6 @@ import random
 from collections.abc import Sequence
 from smtplib import SMTPException
 
-from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -108,8 +107,9 @@ class Event(object):
     #: ``set(['color', 'flavor'])``
     filters = set()
 
-    def fire(self, exclude=None, delay=True):
-        """Notify everyone watching the event.
+    def fire(self, exclude=None):
+        """
+        Notify everyone watching the event (build and send emails).
 
         We are explicit about sending notifications; we don't just key off
         creation signals, because the receiver of a ``post_save`` signal has no
@@ -121,23 +121,7 @@ class Event(object):
         :arg exclude: If a saved user is passed in, that user will not be
           notified, though anonymous notifications having the same email
           address may still be sent. A sequence of users may also be passed in.
-
-        :arg delay: If True (default), the event is handled asynchronously with
-          Celery. This requires the pickle task serializer, which is no longer
-          the default starting in Celery 4.0. If False, the event is processed
-          immediately.
         """
-        if delay:
-            # Tasks don't receive the `self` arg implicitly.
-            self._fire_task.apply_async(
-                args=(self,), kwargs={"exclude": exclude}, serializer="pickle"
-            )
-        else:
-            self._fire_task(self, exclude=exclude)
-
-    @shared_task
-    def _fire_task(self, exclude=None):
-        """Build and send the emails as a celery task."""
         connection = mail.get_connection(fail_silently=True)
         # Warning: fail_silently swallows errors thrown by the generators, too.
         connection.open()
