@@ -36,14 +36,14 @@ These can be overriden in ``.env``.
 
 If you don't want to use Celery, you can set this in ``.env``::
 
-    CELERY_TASK_ALWAYS_EAGER = True
+    task_always_eager = True
 
 Setting this to ``True`` causes all task processing to be done online.
 This is useful when debugging tasks, for instance.
 
 You can also configure the concurrency. Here is the default::
 
-    CELERY_WORKER_CONCURRENCY = 4
+    worker_concurrency = 4
 
 Then to restart the Celery workers, you just need to run::
 

@@ -40,10 +40,10 @@ https://testserver/en-US/kb/%s/history
 """
 
 
-@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+@override_settings(task_always_eager=True)
 class RebuildTestCase(TestCase):
     rf = RequestFactory()
-    ALWAYS_EAGER = settings.CELERY_TASK_ALWAYS_EAGER
+    ALWAYS_EAGER = settings.task_always_eager
 
     def setUp(self):
         # create some random revisions.
@@ -67,7 +67,7 @@ class RebuildTestCase(TestCase):
 
     @mock.patch.object(rebuild_kb, "delay")
     @mock.patch.object(waffle, "switch_is_active")
-    @override_settings(CELERY_TASK_ALWAYS_EAGER=False)
+    @override_settings(task_always_eager=False)
     def test_task_queue(self, switch_is_active, delay):
         switch_is_active.return_value = True
         schedule_rebuild_kb()
