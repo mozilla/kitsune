@@ -7,11 +7,13 @@ from functools import lru_cache
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.core.exceptions import DisallowedRedirect
 from django.db import models
 from django.db.models.signals import pre_delete
+from django.http import HttpResponseRedirect
 from django.templatetags.static import static
 from django.utils import translation
-from django.utils.http import is_safe_url, urlencode
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from ratelimit.core import is_ratelimited as is_ratelimited_core
 from timeout_decorator import timeout
 
@@ -128,11 +130,16 @@ def get_next_url(request):
     else:
         url = request.META.get("HTTP_REFERER")
 
-    # Remove any newline or carriage-return characters.
-    if url:
-        url = url.replace("\n", "").replace("\r", "")
+    if not url:
+        return None
 
-    if not settings.DEBUG and not is_safe_url(
+    # Ensure that the URL is allowed as a redirect.
+    try:
+        HttpResponseRedirect(url)
+    except DisallowedRedirect:
+        return None
+
+    if not settings.DEBUG and not url_has_allowed_host_and_scheme(
         url, allowed_hosts={Site.objects.get_current().domain}
     ):
         return None

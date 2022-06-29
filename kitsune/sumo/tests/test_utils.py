@@ -98,14 +98,24 @@ class GetNextUrlTests(TestCase):
         r = self.r.get("/", {"next": "//example.com"})
         self.assertEqual(None, get_next_url(r))
 
+    def test_when_empty(self):
+        """Next url is empty"""
+        r = self.r.get("/", {"next": ""})
+        self.assertEqual(None, get_next_url(r))
+
     def test_xss_attempt_with_newline(self):
-        """Next url with newline xss attempt"""
-        r = self.r.get("/", {"next": "j%0Aavascrip%0At%3aalert()//"})
+        """Next url with newline-based xss attempt"""
+        r = self.r.get("/", {"next": "j\navascrip\nt:alert()//"})
         self.assertEqual(None, get_next_url(r))
 
     def test_xss_attempt_with_carriage_return(self):
-        """Next url with carriage-return xss attempt"""
-        r = self.r.get("/", {"next": "j%0Davascrip%0Dt%3aalert()//"})
+        """Next url with carriage-return-based xss attempt"""
+        r = self.r.get("/", {"next": "j\ravascrip\rt:alert()//"})
+        self.assertEqual(None, get_next_url(r))
+
+    def test_xss_attempt_with_tab(self):
+        """Next url with tab-based xss attempt"""
+        r = self.r.get("/", {"next": "j\tavascrip\tt:alert()//"})
         self.assertEqual(None, get_next_url(r))
 
 
