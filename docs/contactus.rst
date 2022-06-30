@@ -25,4 +25,4 @@ the case that we're not around. Please try pinging us again.
 Current developers:
 
 * Tasos Katsoulas (tasos)
-* Leo McArdle (leo)
+* Ryan Johnson (ryan)
