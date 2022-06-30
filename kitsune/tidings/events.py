@@ -9,6 +9,7 @@ from django.core import mail
 from django.db.models import Q
 
 from kitsune.tidings.models import EmailUser, Watch, WatchFilter, multi_raw
+from kitsune.tidings.tasks import fire
 from kitsune.tidings.utils import collate, hash_to_unsigned
 
 
@@ -94,10 +95,6 @@ class Event(object):
     related :class:`~tidings.models.WatchFilter` rows holding name/value pairs,
     the meaning of which is up to each individual subclass. NULL values are
     considered wildcards.
-
-    :class:`Event` subclass instances must be pickleable so they can be
-    shuttled off to celery tasks.
-
     """
 
     # event_type = 'hamster modified'  # key for the event_type column
@@ -106,6 +103,27 @@ class Event(object):
     #: Possible filter keys, for validation only. For example:
     #: ``set(['color', 'flavor'])``
     filters = set()
+
+    @classmethod
+    def fire_async(cls, instance=None, exclude=None):
+        """
+        Enqueues a JSON-serializer-friendly Celery task that builds and sends emails
+        to everyone watching the event, excluding any users provided by "exclude". The
+        event will be constructed with the given instance if provided.
+        """
+        kwargs = {}
+        if instance:
+            kwargs.update(
+                instance_cls_module_name=instance.__class__.__module__,
+                instance_cls_name=instance.__class__.__name__,
+                instance_id=instance.id,
+            )
+        if exclude:
+            if not isinstance(exclude, Sequence):
+                exclude = [exclude]
+            kwargs.update(exclude_user_ids=[user.id for user in exclude])
+
+        fire.delay(cls.__module__, cls.__name__, **kwargs)
 
     def fire(self, exclude=None):
         """

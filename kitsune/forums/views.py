@@ -22,7 +22,6 @@ from kitsune.search.search import ForumSearch
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_ratelimited, paginate
-from kitsune.tidings.tasks import fire
 from kitsune.users.models import Setting
 
 log = logging.getLogger("k.forums")
@@ -197,9 +196,7 @@ def reply(request, forum_slug, thread_id):
                     NewPostEvent.notify(request.user, thread)
 
                 # Send notifications to thread/forum watchers.
-                fire.delay(
-                    "forums", "NewPostEvent", "Post", reply_.id, exclude_user_ids=reply_.author.id
-                )
+                NewPostEvent.fire_async(reply_, exclude=reply_.author)
 
                 return HttpResponseRedirect(thread.get_last_post_url())
 
@@ -238,9 +235,7 @@ def new_thread(request, forum_slug):
             post = thread.new_post(author=request.user, content=form.cleaned_data["content"])
             post.save()
 
-            fire.delay(
-                "forums", "NewThreadEvent", "Post", post.id, exclude_user_ids=post.author.id
-            )
+            NewThreadEvent.fire_async(post, exclude=post.author)
 
             # Add notification automatically if needed.
             if Setting.get_for_user(request.user, "forums_watch_new_thread"):

@@ -1,10 +1,14 @@
+from importlib import import_module
 from zlib import crc32
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import reverse as django_reverse
 from django.utils.module_loading import import_string
+
+
+class DisallowedModule(Exception):
+    """Raised when trying to import a module outside of the project."""
 
 
 def collate(*iterables, **kwargs):
@@ -97,10 +101,13 @@ def import_from_setting(setting_name, fallback):
 reverse = import_from_setting("TIDINGS_REVERSE", django_reverse)  # no QA
 
 
-def get_users(user_ids):
+def get_class(module_name, class_name):
     """
-    Convenience function that returns a list of user objects for the given user ids.
+    Convenience function for extracting a class from the given module name using
+    the given class name. Raises a DisallowedModule exception if the module name
+    is outside of kitsune.
     """
-    if user_ids is None:
-        return None
-    return list(get_user_model().objects.filter(id__in=user_ids).all())
+    if not module_name.startswith("kitsune."):
+        raise DisallowedModule(f"attempt to import a module outside of kitsune: {module_name}")
+    module = import_module(module_name)
+    return getattr(module, class_name)
