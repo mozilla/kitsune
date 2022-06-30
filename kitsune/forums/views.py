@@ -12,7 +12,6 @@ from django.views.decorators.http import require_POST
 from kitsune import forums as forum_constants
 from kitsune.access.decorators import has_perm_or_owns_or_403, login_required
 from kitsune.access.utils import has_perm
-from kitsune.forums.tasks import fire
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.feeds import PostsFeed, ThreadsFeed
 from kitsune.forums.forms import EditPostForm, EditThreadForm, NewThreadForm, ReplyForm
@@ -23,6 +22,7 @@ from kitsune.search.search import ForumSearch
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_ratelimited, paginate
+from kitsune.tidings.tasks import fire
 from kitsune.users.models import Setting
 
 log = logging.getLogger("k.forums")
@@ -197,7 +197,9 @@ def reply(request, forum_slug, thread_id):
                     NewPostEvent.notify(request.user, thread)
 
                 # Send notifications to thread/forum watchers.
-                fire.delay("NewPostEvent", reply_.id, exclude_user_ids=reply_.author.id)
+                fire.delay(
+                    "forums", "NewPostEvent", "Post", reply_.id, exclude_user_ids=reply_.author.id
+                )
 
                 return HttpResponseRedirect(thread.get_last_post_url())
 
@@ -236,7 +238,9 @@ def new_thread(request, forum_slug):
             post = thread.new_post(author=request.user, content=form.cleaned_data["content"])
             post.save()
 
-            fire.delay("NewThreadEvent", post.id, exclude_user_ids=post.author.id)
+            fire.delay(
+                "forums", "NewThreadEvent", "Post", post.id, exclude_user_ids=post.author.id
+            )
 
             # Add notification automatically if needed.
             if Setting.get_for_user(request.user, "forums_watch_new_thread"):

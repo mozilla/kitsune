@@ -26,12 +26,13 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
-from kitsune.questions.tasks import fire, update_answer_pages, update_question_votes
+from kitsune.questions.tasks import update_answer_pages, update_question_votes
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
+from kitsune.tidings.task import fire
 from kitsune.upload.models import ImageAttachment
 from kitsune.wiki.models import Document
 
@@ -496,7 +497,13 @@ class Question(AAQBase, BigVocabTaggableMixin):
         self.solution = answer
         self.save()
         self.add_metadata(solver_id=str(solver.id))
-        fire.delay("QuestionSolvedEvent", answer.id, exclude_user_ids=self.creator.id)
+        fire.delay(
+            "questions",
+            "QuestionSolvedEvent",
+            "Answer",
+            answer.id,
+            exclude_user_ids=self.creator.id,
+        )
         actstream.action.send(
             solver, verb="marked as a solution", action_object=answer, target=self
         )
@@ -856,7 +863,13 @@ class Answer(AAQBase):
 
             if not no_notify:
                 if not self.is_spam:
-                    fire.delay("QuestionReplyEvent", self.id, exclude_user_ids=self.creator.id)
+                    fire.delay(
+                        "questions",
+                        "QuestionReplyEvent",
+                        "Answer",
+                        self.id,
+                        exclude_user_ids=self.creator.id,
+                    )
 
                 # actstream
                 actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)

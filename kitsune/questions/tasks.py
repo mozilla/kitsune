@@ -9,9 +9,7 @@ from django.db import connection, transaction
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
-from kitsune.questions import events
 from kitsune.questions.config import ANSWERS_PER_PAGE
-from kitsune.tidings.utils import get_users
 
 
 log = logging.getLogger("k.task")
@@ -106,12 +104,3 @@ def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     if qs.count() >= settings.BADGE_LIMIT_SUPPORT_FORUM:
         badge.award_to(user)
         return True
-
-
-@shared_task
-def fire(event_cls_name, answer_id, exclude_user_ids=None):
-    from kitsune.questions.models import Answer
-
-    answer = Answer.objects.get(id=answer_id)
-    event_cls = getattr(events, event_cls_name)
-    event_cls(answer).fire(exclude=get_users(exclude_user_ids))
