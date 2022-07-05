@@ -16,7 +16,7 @@ license = "BSD 3-Clause"
 [tool.poetry.dependencies]
 python = "^3.10"
 APScheduler = "^3.8.1"
-Django = "3.2.13"
+Django = "3.2.14"
 babis = "^0.2.4"
 Pillow = "^9.0.1"
 bleach = "^4.1.0"
