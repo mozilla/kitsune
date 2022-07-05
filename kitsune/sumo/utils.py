@@ -4,15 +4,16 @@ import sys
 from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache
+from urllib.parse import urlparse
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.exceptions import DisallowedRedirect
 from django.db import models
 from django.db.models.signals import pre_delete
-from django.http import HttpResponseRedirect
 from django.templatetags.static import static
 from django.utils import translation
+from django.utils.encoding import iri_to_uri
+
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from ratelimit.core import is_ratelimited as is_ratelimited_core
 from timeout_decorator import timeout
@@ -133,10 +134,12 @@ def get_next_url(request):
     if not url:
         return None
 
-    # Ensure that the URL is allowed as a redirect.
     try:
-        HttpResponseRedirect(url)
-    except DisallowedRedirect:
+        url_info = urlparse(url)
+    except ValueError:
+        return None
+
+    if url_info.scheme and url_info.scheme not in {"http", "https"}:
         return None
 
     if not settings.DEBUG and not url_has_allowed_host_and_scheme(
@@ -144,7 +147,7 @@ def get_next_url(request):
     ):
         return None
 
-    return url
+    return iri_to_uri(url)
 
 
 class TruncationException(Exception):

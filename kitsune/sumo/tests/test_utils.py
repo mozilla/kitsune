@@ -103,6 +103,11 @@ class GetNextUrlTests(TestCase):
         r = self.r.get("/", {"next": ""})
         self.assertEqual(None, get_next_url(r))
 
+    def test_when_spaces(self):
+        """Next url contains one or more spaces"""
+        r = self.r.get("/", {"next": "/kb/abc abc abc"})
+        self.assertEqual("/kb/abc%20abc%20abc", get_next_url(r))
+
     def test_xss_attempt_with_newline(self):
         """Next url with newline-based xss attempt"""
         r = self.r.get("/", {"next": "j\navascrip\nt:alert()//"})
