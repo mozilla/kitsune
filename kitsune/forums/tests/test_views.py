@@ -12,6 +12,7 @@ from kitsune.forums.tests import (
     RestrictedForumFactory,
     ThreadFactory,
 )
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
@@ -134,6 +135,14 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         """Listing threads without the view_in_forum permission should 404."""
         rforum = RestrictedForumFactory()
         response = get(self.client, "forums.threads", args=[rforum.slug])
+        self.assertEqual(404, response.status_code)
+
+    def test_search_without_permission(self):
+        """Searching a restricted forum without the view_in_forum permission should 404."""
+        u = UserFactory()
+        self.client.login(username=u.username, password="testpass")
+        forum = RestrictedForumFactory()
+        response = self.client.get(urlparams(reverse("forums.search", args=[forum.slug]), q="foo"))
         self.assertEqual(404, response.status_code)
 
 

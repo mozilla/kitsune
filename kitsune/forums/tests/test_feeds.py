@@ -1,17 +1,27 @@
 from datetime import datetime, timedelta
+from unittest.mock import Mock
 
+from django.http import Http404
 from pyquery import PyQuery as pq
 
 from kitsune.forums.feeds import PostsFeed, ThreadsFeed
-from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
+from kitsune.forums.tests import (
+    ForumFactory,
+    ForumTestCase,
+    PostFactory,
+    RestrictedForumFactory,
+    ThreadFactory,
+)
 from kitsune.sumo.tests import get
+from kitsune.users.tests import UserFactory
+
 
 YESTERDAY = datetime.now() - timedelta(days=1)
 
 
-class ForumTestFeedSorting(ForumTestCase):
+class ForumTestFeeds(ForumTestCase):
     def setUp(self):
-        super(ForumTestFeedSorting, self).setUp()
+        super(ForumTestFeeds, self).setUp()
 
     def test_threads_sort(self):
         """Ensure that threads are being sorted properly by date/time."""
@@ -43,3 +53,28 @@ class ForumTestFeedSorting(ForumTestCase):
         self.assertEqual(
             ThreadsFeed().title(forum), doc('link[type="application/atom+xml"]')[0].attrib["title"]
         )
+
+    def test_restricted_threads(self):
+        """Ensure that threads are not shown unless permitted."""
+        request = Mock()
+        request.user = UserFactory()
+        forum = RestrictedForumFactory()
+
+        with self.assertRaisesMessage(Http404, ""):
+            ThreadsFeed().get_object(request, forum.slug)
+
+        request.user.is_superuser = True
+        self.assertEqual(ThreadsFeed().get_object(request, forum.slug), forum)
+
+    def test_restricted_posts(self):
+        """Ensure that posts are not shown unless permitted."""
+        request = Mock()
+        request.user = UserFactory()
+        forum = RestrictedForumFactory()
+        thread = ThreadFactory(forum=forum)
+
+        with self.assertRaisesMessage(Http404, ""):
+            PostsFeed().get_object(request, forum.slug, thread.id)
+
+        request.user.is_superuser = True
+        self.assertEqual(PostsFeed().get_object(request, forum.slug, thread.id), thread)
