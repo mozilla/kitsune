@@ -98,6 +98,31 @@ class GetNextUrlTests(TestCase):
         r = self.r.get("/", {"next": "//example.com"})
         self.assertEqual(None, get_next_url(r))
 
+    def test_when_empty(self):
+        """Next url is empty"""
+        r = self.r.get("/", {"next": ""})
+        self.assertEqual(None, get_next_url(r))
+
+    def test_when_spaces(self):
+        """Next url contains one or more spaces"""
+        r = self.r.get("/", {"next": "/kb/abc abc abc"})
+        self.assertEqual("/kb/abc%20abc%20abc", get_next_url(r))
+
+    def test_xss_attempt_with_newline(self):
+        """Next url with newline-based xss attempt"""
+        r = self.r.get("/", {"next": "j\navascrip\nt:alert()//"})
+        self.assertEqual(None, get_next_url(r))
+
+    def test_xss_attempt_with_carriage_return(self):
+        """Next url with carriage-return-based xss attempt"""
+        r = self.r.get("/", {"next": "j\ravascrip\rt:alert()//"})
+        self.assertEqual(None, get_next_url(r))
+
+    def test_xss_attempt_with_tab(self):
+        """Next url with tab-based xss attempt"""
+        r = self.r.get("/", {"next": "j\tavascrip\tt:alert()//"})
+        self.assertEqual(None, get_next_url(r))
+
 
 class JSONTests(TestCase):
     def test_truncated_noop(self):
