@@ -449,7 +449,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "dennis"
-version = "1.0.0"
+version = "1.1.0"
 description = "Utilities for working with gettext PO and POT files to ease development and improve localization quality"
 category = "main"
 optional = false
@@ -2393,7 +2393,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "58ec31164039799234a5fefc3ce86d55354654f034929fb521c382a13508a2c7"
+content-hash = "dc30dc976ea5ce0e2832af732526b199776e57933d6d62819b976c7ce42cc508"
 
 [metadata.files]
 alabaster = [
@@ -2622,8 +2622,8 @@ decorator = [
     {file = "decorator-5.1.1.tar.gz", hash = "sha256:637996211036b6385ef91435e4fae22989472f9d571faba8927ba8253acbc330"},
 ]
 dennis = [
-    {file = "dennis-1.0.0-py3-none-any.whl", hash = "sha256:9691317bbea10494080395e2a310c372377a5a85de8a3d6388c706c0aa551145"},
-    {file = "dennis-1.0.0.tar.gz", hash = "sha256:07381af4e0c16340186446313ad72937a6188b68022e5961f1a35da67e4d3610"},
+    {file = "dennis-1.1.0-py3-none-any.whl", hash = "sha256:305ec6531b49edaf0434cb19b5498b7d66870e229234672cfad6a95811b9d66c"},
+    {file = "dennis-1.1.0.tar.gz", hash = "sha256:8cfa89acbee5acd3e70714fbc45d9dc23446a2418624c17b1dcfdf0bdd33bbe0"},
 ]
 deprecated = [
     {file = "Deprecated-1.2.13-py2.py3-none-any.whl", hash = "sha256:64756e3e14c8c5eea9795d93c524551432a0be75629f8f29e67ab8caf076c76d"},
