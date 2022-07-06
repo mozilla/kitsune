@@ -83,6 +83,28 @@ class CreateImageAttachmentTestCase(TestCase):
             thumbnail_url=image.thumbnail.url,
         )
 
+    def test_create_imageattachment_when_animated(self):
+        """
+        An image attachment is created from an uploaded animated GIF file.
+
+        Verifies all appropriate fields are correctly set.
+        """
+        filepath = "kitsune/upload/tests/media/animated.gif"
+        with open(filepath, "rb") as f:
+            up_file = File(f)
+            file_info = create_imageattachment({"image": up_file}, self.user, self.obj)
+
+        image = ImageAttachment.objects.all()[0]
+        check_file_info(
+            file_info,
+            name=filepath,
+            width=120,
+            height=120,
+            delete_url=image.get_delete_url(),
+            url=image.get_absolute_url(),
+            thumbnail_url=image.thumbnail.url,
+        )
+
 
 class FileNameTestCase(TestCase):
     def _match_file_name(self, name, name_end):
