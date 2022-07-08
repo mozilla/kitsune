@@ -48,15 +48,65 @@ class AlreadyTakenException(Exception):
     pass
 
 
-class Question(ModelBase, BigVocabTaggableMixin):
+class VoteBase(ModelBase):
+    created = models.DateTimeField(default=datetime.now, db_index=True)
+    anonymous_id = models.CharField(max_length=40, db_index=True)
+
+    class Meta:
+        abstract = True
+
+    def add_metadata(self, key, value):
+        VoteMetadata.objects.create(vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
+
+
+class AAQBase(ModelBase):
+    created = models.DateTimeField(default=datetime.now, db_index=True)
+    updated = models.DateTimeField(default=datetime.now, db_index=True)
+    content = models.TextField()
+    is_spam = models.BooleanField(default=False)
+    marked_as_spam = models.DateTimeField(default=None, null=True)
+    updated_column_name = "updated"
+
+    class Meta:
+        abstract = True
+
+    def has_voted(self, request):
+        """Is the user eligible to vote or
+        did the user already vote for this answer or question?"""
+
+        q_kwargs = {}
+
+        if self.__class__ == Answer:
+            VoteObject = AnswerVote
+            q_kwargs.update({"answer": self})
+        else:
+            VoteObject = QuestionVote
+            q_kwargs.update({"question": self})
+
+        if request.user.is_authenticated:
+            if self.creator == request.user:
+                return True
+            q_kwargs["creator"] = request.user
+            return VoteObject.objects.filter(**q_kwargs).exists()
+        elif request.anonymous.has_id:
+            q_kwargs["anonymous_id"] = request.anonymous.anonymous_id
+            return VoteObject.objects.filter(**q_kwargs).exists()
+        else:
+            return False
+
+    def clear_cached_html(self):
+        cache.delete(self.html_cache_key % self.id)
+
+    def clear_cached_images(self):
+        cache.delete(self.images_cache_key % self.id)
+
+
+class Question(AAQBase, BigVocabTaggableMixin):
     """A support question."""
 
     title = models.CharField(max_length=255)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="questions")
-    content = models.TextField()
 
-    created = models.DateTimeField(default=datetime.now, db_index=True)
-    updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True, related_name="questions_updated"
     )
@@ -71,8 +121,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
     is_archived = models.BooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
-    is_spam = models.BooleanField(default=False)
-    marked_as_spam = models.DateTimeField(default=None, null=True)
     marked_as_spam_by = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, related_name="questions_marked_as_spam"
     )
@@ -96,7 +144,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
     contributors_cache_key = "question:contributors:%s"
 
     objects = QuestionManager()
-    updated_column_name = "updated"
 
     class Meta:
         ordering = ["-updated"]
@@ -126,17 +173,11 @@ class Question(ModelBase, BigVocabTaggableMixin):
     def content_parsed(self):
         return _content_parsed(self, self.locale)
 
-    def clear_cached_html(self):
-        cache.delete(self.html_cache_key % self.id)
-
     def clear_cached_tags(self):
         cache.delete(self.tags_cache_key % self.id)
 
     def clear_cached_contributors(self):
         cache.delete(self.contributors_cache_key % self.id)
-
-    def clear_cached_images(self):
-        cache.delete(self.images_cache_key % self.id)
 
     def save(self, update=False, *args, **kwargs):
         """Override save method to take care of updated if requested."""
@@ -282,18 +323,6 @@ class Question(ModelBase, BigVocabTaggableMixin):
         n = QuestionVote.objects.filter(question=self, created__gte=last_week).count()
         self.num_votes_past_week = n
         return n
-
-    def has_voted(self, request):
-        """Did the user already vote?"""
-        if request.user.is_authenticated:
-            qs = QuestionVote.objects.filter(question=self, creator=request.user)
-        elif request.anonymous.has_id:
-            anon_id = request.anonymous.anonymous_id
-            qs = QuestionVote.objects.filter(question=self, anonymous_id=anon_id)
-        else:
-            return False
-
-        return qs.exists()
 
     @property
     def helpful_replies(self):
@@ -763,20 +792,15 @@ class AAQConfig(ModelBase):
         verbose_name = "AAQ configuration"
 
 
-class Answer(ModelBase):
+class Answer(AAQBase):
     """An answer to a support question."""
 
     question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="answers")
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="answers")
-    created = models.DateTimeField(default=datetime.now, db_index=True)
-    content = models.TextField()
-    updated = models.DateTimeField(default=datetime.now, db_index=True)
     updated_by = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True, related_name="answers_updated"
     )
     page = models.IntegerField(default=1)
-    is_spam = models.BooleanField(default=False)
-    marked_as_spam = models.DateTimeField(default=None, null=True)
     marked_as_spam_by = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, related_name="answers_marked_as_spam"
     )
@@ -788,7 +812,6 @@ class Answer(ModelBase):
     images_cache_key = "answer:images:%s"
 
     objects = AnswerManager()
-    updated_column_name = "updated"
 
     class Meta:
         ordering = ["created"]
@@ -800,12 +823,6 @@ class Answer(ModelBase):
     @property
     def content_parsed(self):
         return _content_parsed(self, self.question.locale)
-
-    def clear_cached_html(self):
-        cache.delete(self.html_cache_key % self.id)
-
-    def clear_cached_images(self):
-        cache.delete(self.images_cache_key % self.id)
 
     def save(self, update=True, no_notify=False, *args, **kwargs):
         """
@@ -927,18 +944,6 @@ class Answer(ModelBase):
 
         return num_solutions(self.creator)
 
-    def has_voted(self, request):
-        """Did the user already vote for this answer?"""
-        if request.user.is_authenticated:
-            qs = AnswerVote.objects.filter(answer=self, creator=request.user)
-        elif request.anonymous.has_id:
-            anon_id = request.anonymous.anonymous_id
-            qs = AnswerVote.objects.filter(answer=self, anonymous_id=anon_id)
-        else:
-            return False
-
-        return qs.exists()
-
     @classmethod
     def last_activity_for(cls, user):
         """Returns the datetime of the user's last answer."""
@@ -1003,34 +1008,24 @@ class Answer(ModelBase):
         self.save()
 
 
-class QuestionVote(ModelBase):
+class QuestionVote(VoteBase):
     """I have this problem too.
     Keeps track of users that have problem over time."""
 
     question = models.ForeignKey("Question", on_delete=models.CASCADE, related_name="votes")
-    created = models.DateTimeField(default=datetime.now, db_index=True)
     creator = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="question_votes", null=True
     )
-    anonymous_id = models.CharField(max_length=40, db_index=True)
-
-    def add_metadata(self, key, value):
-        VoteMetadata.objects.create(vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
-class AnswerVote(ModelBase):
+class AnswerVote(VoteBase):
     """Helpful or Not Helpful vote on Answer."""
 
     answer = models.ForeignKey("Answer", on_delete=models.CASCADE, related_name="votes")
     helpful = models.BooleanField(default=False)
-    created = models.DateTimeField(default=datetime.now, db_index=True)
     creator = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="answer_votes", null=True
     )
-    anonymous_id = models.CharField(max_length=40, db_index=True)
-
-    def add_metadata(self, key, value):
-        VoteMetadata.objects.create(vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
 class VoteMetadata(ModelBase):
