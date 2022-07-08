@@ -88,7 +88,7 @@ class DocumentDetail(LocaleNegotiationMixin, generics.RetrieveAPIView):
 
     def get_object(self):
         queryset = self.get_queryset()
-        queryset = queryset.filter(locale=self.get_locale())
+        queryset = queryset.filter(locale=self.get_locale(), current_revision__isnull=False)
 
         obj = get_object_or_404(queryset, **self.kwargs)
         self.check_object_permissions(self.request, obj)

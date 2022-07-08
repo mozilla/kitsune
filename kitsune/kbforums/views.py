@@ -21,16 +21,16 @@ from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, get_next_url, is_ratelimited
 from kitsune.users.models import Setting
-from kitsune.wiki.models import Document
+from kitsune.wiki.views import get_visible_document_or_404
 
 
 log = logging.getLogger("k.kbforums")
 
 
 def get_document(slug, request):
-    """Given a slug and a request, get the document or 404."""
-    return get_object_or_404(
-        Document, slug=slug, locale=request.LANGUAGE_CODE, allow_discussion=True
+    """Given a slug and a request, get the visible document or 404."""
+    return get_visible_document_or_404(
+        request.user, locale=request.LANGUAGE_CODE, slug=slug, allow_discussion=True
     )
 
 
