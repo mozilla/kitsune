@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Test",
+            "type": "python",
+            "request": "launch",
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "test",
+                "kitsune.wiki.tests.test_templates.DocumentTests.test_document_fallback_with_translation_english_slug"
+            ]
+        },
+        {
             "name": "Kitsune",
             "type": "python",
             "request": "launch",

@@ -10,7 +10,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
-from kitsune.sumo.tests import LocalizingClient, SkipTest, TestCase, template_used
+from kitsune.sumo.tests import SkipTest, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import CATEGORIES, TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
@@ -23,12 +23,14 @@ from kitsune.wiki.tests import (
     RedirectRevisionFactory,
     RevisionFactory,
     TemplateDocumentFactory,
+    TestCaseBase,
+    TranslatedRevisionFactory,
     new_document_data,
 )
 from kitsune.wiki.views import _document_lock_check, _document_lock_clear, _document_lock_steal
 
 
-class RedirectTests(TestCase):
+class RedirectTests(TestCaseBase):
     """Tests for the REDIRECT wiki directive"""
 
     def setUp(self):
@@ -43,7 +45,7 @@ class RedirectTests(TestCase):
         self.assertContains(response, "REDIRECT ")
 
 
-class LocaleRedirectTests(TestCase):
+class LocaleRedirectTests(TestCaseBase):
     """Tests for fallbacks to en-US and such for slug lookups."""
 
     # Some of these may fail or be invalid if your WIKI_DEFAULT_LANGUAGE is de.
@@ -51,33 +53,30 @@ class LocaleRedirectTests(TestCase):
     def setUp(self):
         super(LocaleRedirectTests, self).setUp()
         ProductFactory()
+        en = settings.WIKI_DEFAULT_LANGUAGE
+        self.en_doc = DocumentFactory(locale=en, slug="english-slug")
+        self.de_doc = DocumentFactory(locale="de", parent=self.en_doc)
+        RevisionFactory(document=self.de_doc, is_approved=True)
 
     def test_fallback_to_translation(self):
         """If a slug isn't found in the requested locale but is in the default
         locale and if there is a translation of that default-locale document to
         the requested locale, the translation should be served."""
-        en_doc, de_doc = self._create_en_and_de_docs()
+        self.login_as_user_with_permission("review_revision")
         response = self.client.get(
-            reverse("wiki.document", args=[en_doc.slug], locale="de"), follow=True
+            reverse("wiki.document", args=[self.en_doc.slug], locale="de"), follow=True
         )
-        self.assertRedirects(response, de_doc.get_absolute_url())
+        self.assertRedirects(response, self.de_doc.get_absolute_url())
 
     def test_fallback_with_query_params(self):
         """The query parameters should be passed along to the redirect."""
-        en_doc, de_doc = self._create_en_and_de_docs()
-        url = reverse("wiki.document", args=[en_doc.slug], locale="de")
+        self.login_as_user_with_permission("review_revision")
+        url = reverse("wiki.document", args=[self.en_doc.slug], locale="de")
         response = self.client.get(url + "?x=y&x=z", follow=True)
-        self.assertRedirects(response, de_doc.get_absolute_url() + "?x=y&x=z")
-
-    def _create_en_and_de_docs(self):
-        en = settings.WIKI_DEFAULT_LANGUAGE
-        en_doc = DocumentFactory(locale=en, slug="english-slug")
-        de_doc = DocumentFactory(locale="de", parent=en_doc)
-        RevisionFactory(document=de_doc, is_approved=True)
-        return en_doc, de_doc
+        self.assertRedirects(response, self.de_doc.get_absolute_url() + "?x=y&x=z")
 
 
-class JsonViewTests(TestCase):
+class JsonViewTests(TestCaseBase):
     def setUp(self):
         super(JsonViewTests, self).setUp()
 
@@ -107,7 +106,7 @@ class JsonViewTests(TestCase):
         self.assertEqual(404, resp.status_code)
 
 
-class WhatLinksWhereTests(TestCase):
+class WhatLinksWhereTests(TestCaseBase):
     def test_what_links_here(self):
         d1 = DocumentFactory(title="D1")
         RevisionFactory(document=d1, content="", is_approved=True)
@@ -131,14 +130,15 @@ class WhatLinksWhereTests(TestCase):
         assert b"No other documents link to D1." in resp.content
 
 
-class DocumentEditingTests(TestCase):
+class DocumentEditingTests(TestCaseBase):
     """Tests for the document-editing view"""
-
-    client_class = LocalizingClient
 
     def setUp(self):
         super(DocumentEditingTests, self).setUp()
         self.u = UserFactory()
+        # The "delete_document" permission is one of the ways to allow
+        # a user to "see" documents that have no approved content.
+        add_permission(self.u, Document, "delete_document")
         add_permission(self.u, Document, "change_document")
         self.client.login(username=self.u.username, password="testpass")
 
@@ -461,11 +461,14 @@ class DocumentEditingTests(TestCase):
         self.assertEqual(False, draft_revision.exists())
 
 
-class AddRemoveContributorTests(TestCase):
+class AddRemoveContributorTests(TestCaseBase):
     def setUp(self):
         super(AddRemoveContributorTests, self).setUp()
         self.user = UserFactory()
         self.contributor = UserFactory()
+        # The "delete_document" permission is one of the ways to allow
+        # a user to "see" documents that have no approved content.
+        add_permission(self.user, Document, "delete_document")
         add_permission(self.user, Document, "change_document")
         self.client.login(username=self.user.username, password="testpass")
         self.revision = RevisionFactory()
@@ -493,9 +496,7 @@ class AddRemoveContributorTests(TestCase):
         assert self.contributor not in self.document.contributors.all()
 
 
-class VoteTests(TestCase):
-    client_class = LocalizingClient
-
+class VoteTests(TestCaseBase):
     def test_helpful_vote_bad_id(self):
         """Throw helpful_vote a bad ID, and see if it crashes."""
         response = self.client.post(
@@ -513,7 +514,7 @@ class VoteTests(TestCase):
         Throw helpful_vote a document that is a template and see if it 400s.
         """
         d = TemplateDocumentFactory()
-        r = RevisionFactory(document=d)
+        r = ApprovedRevisionFactory(document=d)
         response = self.client.post(
             reverse("wiki.document_vote", args=["hi"]), {"revision_id": r.id}
         )
@@ -581,7 +582,7 @@ class VoteTests(TestCase):
 
     def test_source(self):
         """Test that the source metadata field works."""
-        rev = RevisionFactory()
+        rev = ApprovedRevisionFactory()
         url = reverse("wiki.document_vote", kwargs={"document_slug": rev.document.slug})
         self.client.post(
             url,
@@ -597,16 +598,14 @@ class VoteTests(TestCase):
     def test_rate_limiting(self):
         """Verify only 10 votes are counted in a day."""
         for i in range(13):
-            rev = RevisionFactory()
+            rev = ApprovedRevisionFactory()
             url = reverse("wiki.document_vote", kwargs={"document_slug": rev.document.slug})
             self.client.post(url, {"revision_id": rev.id, "helpful": True})
 
         self.assertEqual(10, HelpfulVote.objects.count())
 
 
-class TestDocumentLocking(TestCase):
-    client_class = LocalizingClient
-
+class TestDocumentLocking(TestCaseBase):
     def setUp(self):
         super(TestDocumentLocking, self).setUp()
         try:
@@ -690,7 +689,12 @@ class TestDocumentLocking(TestCase):
         r = self.client.post(edit_url)
 
         data = new_document_data()
-        data.update({"title": doc.title, "slug": doc.slug, "form": "doc"})
+        # We're using "rev" for the form because all users have the
+        # "create_revision" permission needed for "rev", but the "edit"
+        # permission needed for "doc" has to be explicitly granted when
+        # the translated document and its parent document have approved
+        # content.
+        data.update({"title": doc.title, "slug": doc.slug, "form": "rev"})
         self.client.post(edit_url, data)
 
         # And u1 should not see a lock warning.
@@ -707,31 +711,12 @@ class TestDocumentLocking(TestCase):
 
     def test_trans_lock_workflow(self):
         """End to end test of locking on a translated document."""
-        rev = ApprovedRevisionFactory()
-        doc = rev.document
-        u = UserFactory(password="testpass")
-
-        # Create a new translation of doc() using the translation view
-        self.client.login(username=u.username, password="testpass")
-        trans_url = reverse("wiki.translate", locale="es", args=[doc.slug])
-        data = {
-            "title": "Un Test Articulo",
-            "slug": "un-test-articulo",
-            "keywords": "keyUno, keyDos, keyTres",
-            "summary": "lipsumo",
-            "content": "loremo ipsumo doloro sito ameto",
-        }
-        r = self.client.post(trans_url, data)
-        self.assertEqual(r.status_code, 302)
-
-        # Now run the test.
-        edit_url = reverse("wiki.edit_document", locale="es", args=[data["slug"]])
-        es_doc = Document.objects.get(slug=data["slug"])
-        self.assertEqual(es_doc.locale, "es")
-        self._lock_workflow(es_doc, edit_url)
+        trans_doc = TranslatedRevisionFactory().document
+        edit_url = reverse("wiki.edit_document", locale=trans_doc.locale, args=[trans_doc.slug])
+        self._lock_workflow(trans_doc, edit_url)
 
 
-class FallbackSystem(TestCase):
+class FallbackSystem(TestCaseBase):
     """Check that fallback locales on article level are working correctly."""
 
     def setUp(self):

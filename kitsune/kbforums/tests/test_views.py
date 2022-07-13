@@ -3,7 +3,7 @@ from kitsune.kbforums.models import Thread
 from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
 from kitsune.sumo.tests import get, post
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class ThreadTests(KBForumTestCase):
@@ -14,7 +14,7 @@ class ThreadTests(KBForumTestCase):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
 
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         post(self.client, "wiki.discuss.watch_forum", {"watch": "yes"}, args=[d.slug])
         assert NewThreadEvent.is_notifying(u, d)
         # NewPostEvent is not notifying.
@@ -83,7 +83,7 @@ class ThreadTests(KBForumTestCase):
         """If document.allow_discussion is false, should return 404."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
-        doc = DocumentFactory(allow_discussion=False)
+        doc = ApprovedRevisionFactory(document__allow_discussion=False).document
 
         def check(url):
             response = get(self.client, url, args=[doc.slug])

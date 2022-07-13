@@ -10,7 +10,7 @@ from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
 from kitsune.sumo.tests import attrs_eq, post, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 # Some of these contain a locale prefix on included links, while others don't.
 # This depends on whether the tests use them inside or outside the scope of a
@@ -75,7 +75,7 @@ class NotificationsTests(KBForumTestCase):
     @mock.patch.object(NewThreadEvent, "fire")
     def test_fire_on_new_thread(self, fire):
         """The event fires when there is a new thread."""
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
         post(
@@ -177,7 +177,7 @@ class NotificationsTests(KBForumTestCase):
         get_current.return_value.domain = "testserver"
 
         u = UserFactory()
-        d = DocumentFactory(title="an article title")
+        d = ApprovedRevisionFactory(document__title="an article title").document
         f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
         u2 = UserFactory(username="jsocol")
         self.client.login(username=u2.username, password="testpass")
@@ -209,7 +209,7 @@ class NotificationsTests(KBForumTestCase):
         get_current.return_value.domain = "testserver"
 
         u = UserFactory()
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
         self.client.login(username=u.username, password="testpass")
         post(
@@ -227,7 +227,7 @@ class NotificationsTests(KBForumTestCase):
         get_current.return_value.domain = "testserver"
 
         u = UserFactory()
-        d = DocumentFactory(title="an article title")
+        d = ApprovedRevisionFactory(document__title="an article title").document
         f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
         t = ThreadFactory(title="Sticky Thread", document=d)
         u2 = UserFactory(username="jsocol")
@@ -253,7 +253,7 @@ class NotificationsTests(KBForumTestCase):
         get_current.return_value.domain = "testserver"
 
         u = UserFactory()
-        d = DocumentFactory(title="an article title")
+        d = ApprovedRevisionFactory(document__title="an article title").document
         f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
         t = ThreadFactory(document=d)
         self.client.login(username=u.username, password="testpass")
@@ -267,7 +267,7 @@ class NotificationsTests(KBForumTestCase):
         get_current.return_value.domain = "testserver"
 
         u = UserFactory()
-        d = DocumentFactory(title="an article title")
+        d = ApprovedRevisionFactory(document__title="an article title").document
         f = self._toggle_watch_kbforum_as(u.username, d, turn_on=True)
         t = ThreadFactory(title="Sticky Thread", document=d)
         self._toggle_watch_thread_as(u.username, t, turn_on=True)
@@ -329,7 +329,7 @@ class NotificationsTests(KBForumTestCase):
         get_current.return_value.domain = "testserver"
 
         u = UserFactory()
-        _d = DocumentFactory(title="an article title")
+        _d = ApprovedRevisionFactory(document__title="an article title").document
         d = self._toggle_watch_kbforum_as(u.username, _d, turn_on=True)
         t = ThreadFactory(title="Sticky Thread", document=d)
         self._toggle_watch_thread_as(u.username, t, turn_on=True)
@@ -362,7 +362,7 @@ class NotificationsTests(KBForumTestCase):
         notify."""
         get_current.return_value.domain = "testserver"
 
-        d = DocumentFactory(locale="en-US")
+        d = ApprovedRevisionFactory(document__locale="en-US").document
         u = UserFactory(username="berkerpeksag")
         self.client.login(username=u.username, password="testpass")
         post(self.client, "wiki.discuss.watch_locale", {"watch": "yes"}, locale="ja")
@@ -384,7 +384,9 @@ class NotificationsTests(KBForumTestCase):
         """Watching locale and create a thread."""
         get_current.return_value.domain = "testserver"
 
-        d = DocumentFactory(title="an article title", locale="en-US")
+        d = ApprovedRevisionFactory(
+            document__title="an article title", document__locale="en-US"
+        ).document
         u = UserFactory(username="berkerpeksag")
         self.client.login(username=u.username, password="testpass")
         post(self.client, "wiki.discuss.watch_locale", {"watch": "yes"})
@@ -416,7 +418,7 @@ class NotificationsTests(KBForumTestCase):
         """Creating a new thread should email responses"""
         get_current.return_value.domain = "testserver"
 
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
         s = Setting.objects.create(user=u, name="kbforums_watch_new_thread", value="False")

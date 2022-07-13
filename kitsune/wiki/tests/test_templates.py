@@ -139,6 +139,7 @@ class DocumentTests(TestCaseBase):
 
     def test_english_document_no_approved_content(self):
         """Load an English document with no approved content."""
+        self.login_as_user_with_permission("review_revision")
         r = RevisionFactory(content="Some text.", is_approved=False)
         response = self.client.get(r.document.get_absolute_url())
         self.assertEqual(200, response.status_code)
@@ -152,6 +153,7 @@ class DocumentTests(TestCaseBase):
     def test_translation_document_no_approved_content(self):
         """Load a non-English document with no approved content, with a parent
         with no approved content either."""
+        self.login_as_user_with_permission("review_revision")
         r = RevisionFactory(content="Some text.", is_approved=False)
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, content="Moartext", is_approved=False)
@@ -166,6 +168,7 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_with_translation(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions."""
+        self.login_as_user_with_permission("review_revision")
         r = ApprovedRevisionFactory(content="Test")
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, is_approved=False)
@@ -185,6 +188,7 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_with_translation_english_slug(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions, while visiting the English slug."""
+        self.login_as_user_with_permission("review_revision")
         r = ApprovedRevisionFactory(content="Test")
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, is_approved=False)
@@ -240,6 +244,7 @@ class DocumentTests(TestCaseBase):
         Also check the backlink to the redirect page.
 
         """
+        self.login_as_user_with_permission("review_revision")
         target = DocumentFactory()
         target_url = target.get_absolute_url()
 
@@ -261,6 +266,7 @@ class DocumentTests(TestCaseBase):
 
     def test_redirect_no_vote(self):
         """Make sure documents with REDIRECT directives have no vote form."""
+        self.login_as_user_with_permission("review_revision")
         target = DocumentFactory()
         redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
@@ -271,6 +277,7 @@ class DocumentTests(TestCaseBase):
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page
         doesn't exist."""
+        self.login_as_user_with_permission("review_revision")
         d = DocumentFactory()
         response = self.client.get(
             urlparams(d.get_absolute_url(), redirectlocale="en-US", redirectslug="nonexistent")
@@ -279,8 +286,7 @@ class DocumentTests(TestCaseBase):
 
     def test_watch_includes_csrf(self):
         """The watch/unwatch forms should include the csrf tag."""
-        u = UserFactory()
-        self.client.login(username=u.username, password="testpass")
+        self.login_as_user_with_permission("review_revision")
         d = DocumentFactory()
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -288,8 +294,7 @@ class DocumentTests(TestCaseBase):
 
     def test_non_localizable_translate_disabled(self):
         """Non localizable document doesn't show tab for 'Localize'."""
-        u = UserFactory()
-        self.client.login(username=u.username, password="testpass")
+        self.login_as_user_with_permission("review_revision")
         d = DocumentFactory(is_localizable=True)
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -304,6 +309,7 @@ class DocumentTests(TestCaseBase):
 
     def test_obsolete_hide_edit(self):
         """Make sure Edit sidebar link is hidden for obsolete articles."""
+        self.login_as_user_with_permission("review_revision")
         d = DocumentFactory(is_archived=True)
         r = self.client.get(d.get_absolute_url())
         doc = pq(r.content)
@@ -413,7 +419,7 @@ class DocumentTests(TestCaseBase):
         exists."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
-        # Create an English document and a es translated document
+        # Create an English document and an es translated document
         en_rev = ApprovedRevisionFactory(is_ready_for_localization=True)
         trans_doc = DocumentFactory(parent=en_rev.document, locale="es")
         trans_rev = ApprovedRevisionFactory(document=trans_doc)
@@ -567,7 +573,8 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_approval(self, fire):
         """Mark an unapproved revision as ready for l10n must fail."""
 
-        r = RevisionFactory(is_approved=False, is_ready_for_localization=False)
+        doc = ApprovedRevisionFactory().document
+        r = RevisionFactory(document=doc, is_approved=False, is_ready_for_localization=False)
 
         u = UserFactory()
         add_permission(u, Revision, "mark_ready_for_l10n")
@@ -892,6 +899,8 @@ class NewRevisionTests(TestCaseBase):
         the document fields are open for editing.
 
         """
+        self.login_as_user_with_permission("review_revision")
+
         get_current.return_value.domain = "testserver"
 
         self.d.current_revision = None
@@ -911,6 +920,7 @@ class NewRevisionTests(TestCaseBase):
     def test_edit_document_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
         that document."""
+        self.login_as_user_with_permission("review_revision")
         self.d.current_revision = None
         self.d.save()
         topics = [TopicFactory(), TopicFactory(), TopicFactory()]
@@ -1166,6 +1176,7 @@ class HistoryTests(TestCaseBase):
 
     def test_translation_history_with_english_slug(self):
         """Request in en-US slug but translated locale should redirect to translation history"""
+        self.login_as_user_with_permission("review_revision")
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         trans = DocumentFactory(parent=doc, locale="bn", slug="bn_trans_slug")
         ApprovedRevisionFactory(document=trans)
@@ -1179,6 +1190,7 @@ class HistoryTests(TestCaseBase):
 
     def test_translation_history_with_english_slug_while_no_trans(self):
         """Request in en-US slug but untranslated locale should raise 404"""
+        self.login_as_user_with_permission("review_revision")
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         url = reverse("wiki.document_revisions", args=[doc.slug], locale="bn")
         response = self.client.get(url)
@@ -2183,6 +2195,7 @@ class TranslateTests(TestCaseBase):
 
     def test_translate_rejected_parent(self):
         """Translate view of rejected English document shows warning."""
+        self.login_as_user_with_permission("review_revision")
         user = UserFactory()
         en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
 
@@ -2255,6 +2268,7 @@ class TranslateTests(TestCaseBase):
         self.assertEqual(r.id, new_es_rev.based_on_id)
 
     def test_show_translations_page(self):
+        self.login_as_user_with_permission("review_revision")
         en = settings.WIKI_DEFAULT_LANGUAGE
         en_doc = DocumentFactory(locale=en, slug="english-slug")
         DocumentFactory(locale="de", parent=en_doc)
@@ -2731,7 +2745,7 @@ class RevisionDeleteTestCase(TestCaseBase):
 
         # Create document with only 1 revision
         doc = DocumentFactory()
-        rev = RevisionFactory(document=doc)
+        rev = ApprovedRevisionFactory(document=doc)
 
         # Confirm page should show the message
         response = get(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
@@ -2791,6 +2805,7 @@ class DocumentDeleteTestCase(TestCaseBase):
 
     def test_delete_document_without_permissions(self):
         """Deleting a document without permissions sends 403."""
+        ApprovedRevisionFactory(document=self.document)
         self.client.login(username="testuser", password="testpass")
         response = get(self.client, "wiki.document_delete", args=[self.document.slug])
         self.assertEqual(403, response.status_code)

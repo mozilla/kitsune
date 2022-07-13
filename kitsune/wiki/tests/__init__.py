@@ -8,7 +8,7 @@ from django.template.defaultfilters import slugify
 from kitsune.products.models import Product
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
     CATEGORIES,
     REDIRECT_CONTENT,
@@ -24,6 +24,30 @@ class TestCaseBase(TestCase):
     """Base TestCase for the wiki app test cases."""
 
     client_class = LocalizingClient
+
+    def login_as_user_with_permission(self, permission_codename):
+        """
+        Login as a user with the given permission codename, and return the user.
+        """
+        is_superuser = permission_codename == "superuser"
+        user = UserFactory(password="testpass", is_superuser=is_superuser)
+        if not is_superuser:
+            if "__" in permission_codename:
+                # Handles things like "de__leaders" or "en-US__reviewers".
+                locale, role = permission_codename.split("__")
+                try:
+                    locale_team = Locale.objects.get(locale=locale)
+                except Locale.DoesNotExist:
+                    locale_team = LocaleFactory(locale=locale)
+                getattr(locale_team, role).add(user)
+            elif permission_codename.endswith("_revision"):
+                add_permission(user, Revision, permission_codename)
+            elif permission_codename.endswith("_document"):
+                add_permission(user, Document, permission_codename)
+            else:
+                raise Exception(f"unsupported permission codename: {permission_codename}")
+        self.client.login(username=user.username, password="testpass")
+        return user
 
 
 class DocumentFactory(factory.django.DjangoModelFactory):
