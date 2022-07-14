@@ -80,9 +80,6 @@ class EditDocumentEvent(InstanceEvent):
         super(EditDocumentEvent, self).__init__(revision.document)
         self.revision = revision
 
-    def get_constructor_instance(self):
-        return self.revision
-
     def _mails(self, users_and_watches):
         revision = self.revision
         document = revision.document
@@ -107,6 +104,19 @@ class EditDocumentEvent(InstanceEvent):
             default_locale=document.locale,
         )
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "EditDocumentEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
+
 
 class _RevisionConstructor(object):
     """An event that receives a revision when constructed"""
@@ -114,9 +124,6 @@ class _RevisionConstructor(object):
     def __init__(self, revision):
         super(_RevisionConstructor, self).__init__()
         self.revision = revision
-
-    def get_constructor_instance(self):
-        return self.revision
 
 
 class _BaseProductFilter(object):
@@ -232,6 +239,19 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFil
             default_locale=document.locale,
         )
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ReviewableRevisionInLocaleEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
+
 
 class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
     """Event fired when a revision becomes ready for l10n."""
@@ -261,6 +281,19 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
             default_locale=document.locale,
         )
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ReadyRevisionEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
+
 
 class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter, Event):
     """Event fed to a union when any revision in a certain locale is approved
@@ -272,6 +305,19 @@ class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter
     # No other content types have a concept of approval, so we don't bother
     # setting content_type.
     event_type = "approved wiki in locale"
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ApproveRevisionInLocaleEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
 
 
 class ApprovedOrReadyUnion(EventUnion):
@@ -285,9 +331,6 @@ class ApprovedOrReadyUnion(EventUnion):
         if revision.is_ready_for_localization:
             events.append(ReadyRevisionEvent(revision))
         super(ApprovedOrReadyUnion, self).__init__(*events)
-
-    def get_constructor_instance(self):
-        return self.revision
 
     def _mails(self, users_and_watches):
         """Send approval or readiness mails, as appropriate.
@@ -358,3 +401,16 @@ class ApprovedOrReadyUnion(EventUnion):
                 locale = document.locale
 
             yield _make_mail(locale, user, watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ApprovedOrReadyUnion"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }

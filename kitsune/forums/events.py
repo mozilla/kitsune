@@ -22,9 +22,6 @@ class NewPostEvent(InstanceEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def get_constructor_instance(self):
-        return self.reply
-
     def send_emails(self, exclude=None):
         """Notify not only watchers of this thread but of the parent forum."""
         return EventUnion(self, NewThreadEvent(self.reply)).send_emails(exclude=exclude)
@@ -50,6 +47,15 @@ class NewPostEvent(InstanceEvent):
             users_and_watches=users_and_watches,
         )
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.forums.events", "class": "NewPostEvent"},
+            "instance": {"module": "kitsune.forums.models", "class": "Post", "id": self.reply.id},
+        }
+
 
 class NewThreadEvent(InstanceEvent):
     """An event which fires when a new thread is added to a forum"""
@@ -61,9 +67,6 @@ class NewThreadEvent(InstanceEvent):
         super(NewThreadEvent, self).__init__(post.thread.forum)
         # Need to store the post for _mails
         self.post = post
-
-    def get_constructor_instance(self):
-        return self.post
 
     def _mails(self, users_and_watches):
         post_url = add_utm(self.post.thread.get_absolute_url(), "forums-thread")
@@ -85,3 +88,12 @@ class NewThreadEvent(InstanceEvent):
             context_vars=c,
             users_and_watches=users_and_watches,
         )
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.forums.events", "class": "NewThreadEvent"},
+            "instance": {"module": "kitsune.forums.models", "class": "Post", "id": self.post.id},
+        }

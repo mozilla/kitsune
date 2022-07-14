@@ -143,27 +143,25 @@ class Event(object):
 
     def serialize(self):
         """
-        Serialize this event into a JSON-friendly dictionary.
-        """
-        result = dict(
-            event={"module": self.__class__.__module__, "class": self.__class__.__name__}
-        )
-        if instance := self.get_constructor_instance():
-            result.update(
-                instance={
-                    "module": instance.__class__.__module__,
-                    "class": instance.__class__.__name__,
-                    "id": instance.id,
-                }
-            )
-        return result
+        Serialize this event into a JSON-friendly dictionary. Subclasses must
+        implement this method if they want to fire events asynchronously via
+        the "send_emails" Celery task. Here's an example:
 
-    def get_constructor_instance(self):
+        {
+            "event": {
+                "module": "kitsune.wiki.events"
+                "class": "ReadyRevisionEvent"
+            },
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": 3
+            }
+        }
+
+        where the "event" is required but the "instance" is optional.
         """
-        Event subclasses constructed from a database model instance should override this
-        method and provide the database model instance used to construct themselves.
-        """
-        return None
+        raise NotImplementedError
 
     @classmethod
     def _validate_filters(cls, filters):

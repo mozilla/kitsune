@@ -67,9 +67,6 @@ class NewPostEvent(InstanceEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def get_constructor_instance(self):
-        return self.reply
-
     def send_emails(self, exclude=None):
         """Notify watchers of this thread, of the document, and of the locale."""
         return EventUnion(
@@ -78,6 +75,19 @@ class NewPostEvent(InstanceEvent):
 
     def _mails(self, users_and_watches):
         return new_post_mails(self.reply, users_and_watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewPostEvent"},
+            "instance": {
+                "module": "kitsune.kbforums.models",
+                "class": "Post",
+                "id": self.reply.id,
+            },
+        }
 
 
 class NewThreadEvent(InstanceEvent):
@@ -91,9 +101,6 @@ class NewThreadEvent(InstanceEvent):
         # Need to store the post for _mails
         self.post = post
 
-    def get_constructor_instance(self):
-        return self.post
-
     def send_emails(self, exclude=None):
         """Notify watches of the document and of the locale."""
         return EventUnion(
@@ -102,6 +109,15 @@ class NewThreadEvent(InstanceEvent):
 
     def _mails(self, users_and_watches):
         return new_thread_mails(self.post, users_and_watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewThreadEvent"},
+            "instance": {"module": "kitsune.kbforums.models", "class": "Post", "id": self.post.id},
+        }
 
 
 class _NewActivityInLocaleEvent(Event):
@@ -125,11 +141,21 @@ class NewPostInLocaleEvent(_NewActivityInLocaleEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def get_constructor_instance(self):
-        return self.reply
-
     def _mails(self, users_and_watches):
         return new_post_mails(self.reply, users_and_watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewPostInLocaleEvent"},
+            "instance": {
+                "module": "kitsune.kbforums.models",
+                "class": "Post",
+                "id": self.reply.id,
+            },
+        }
 
 
 class NewThreadInLocaleEvent(_NewActivityInLocaleEvent):
@@ -142,8 +168,14 @@ class NewThreadInLocaleEvent(_NewActivityInLocaleEvent):
         # Need to store the post for _mails
         self.post = post
 
-    def get_constructor_instance(self):
-        return self.post
-
     def _mails(self, users_and_watches):
         return new_thread_mails(self.post, users_and_watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewThreadInLocaleEvent"},
+            "instance": {"module": "kitsune.kbforums.models", "class": "Post", "id": self.post.id},
+        }
