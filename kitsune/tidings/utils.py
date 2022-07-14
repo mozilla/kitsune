@@ -7,10 +7,6 @@ from django.urls import reverse as django_reverse
 from django.utils.module_loading import import_string
 
 
-class DisallowedModule(Exception):
-    """Raised when trying to import a module outside of the project."""
-
-
 def collate(*iterables, **kwargs):
     """Return an iterable ordered collation of the already-sorted items
     from each of ``iterables``, compared by kwarg ``key``.
@@ -104,10 +100,7 @@ reverse = import_from_setting("TIDINGS_REVERSE", django_reverse)  # no QA
 def get_class(module_name, class_name):
     """
     Convenience function for extracting a class from the given module name using
-    the given class name. Raises a DisallowedModule exception if the module name
-    is outside of kitsune.
+    the given class name.
     """
-    if not module_name.startswith("kitsune."):
-        raise DisallowedModule(f"attempt to import a module outside of kitsune: {module_name}")
     module = import_module(module_name)
     return getattr(module, class_name)

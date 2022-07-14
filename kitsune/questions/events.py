@@ -20,6 +20,9 @@ class QuestionEvent(InstanceEvent):
         super(QuestionEvent, self).__init__(answer.question)
         self.answer = answer
 
+    def get_constructor_instance(self):
+        return self.answer
+
     @classmethod
     def _activation_email(cls, watch, email):
         """Return an EmailMessage containing the activation URL to be sent to

@@ -22,9 +22,12 @@ class NewPostEvent(InstanceEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def fire(self, exclude=None):
+    def get_constructor_instance(self):
+        return self.reply
+
+    def send_emails(self, exclude=None):
         """Notify not only watchers of this thread but of the parent forum."""
-        return EventUnion(self, NewThreadEvent(self.reply)).fire(exclude=exclude)
+        return EventUnion(self, NewThreadEvent(self.reply)).send_emails(exclude=exclude)
 
     def _mails(self, users_and_watches):
         post_url = add_utm(self.reply.get_absolute_url(), "forums-post")
@@ -58,6 +61,9 @@ class NewThreadEvent(InstanceEvent):
         super(NewThreadEvent, self).__init__(post.thread.forum)
         # Need to store the post for _mails
         self.post = post
+
+    def get_constructor_instance(self):
+        return self.post
 
     def _mails(self, users_and_watches):
         post_url = add_utm(self.post.thread.get_absolute_url(), "forums-thread")

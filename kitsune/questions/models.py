@@ -499,7 +499,7 @@ class Question(AAQBase, BigVocabTaggableMixin):
         self.solution = answer
         self.save()
         self.add_metadata(solver_id=str(solver.id))
-        QuestionSolvedEvent.fire_async(answer, exclude=self.creator)
+        QuestionSolvedEvent(answer).fire(exclude=self.creator)
         actstream.action.send(
             solver, verb="marked as a solution", action_object=answer, target=self
         )
@@ -862,7 +862,7 @@ class Answer(AAQBase):
                     # Avoid circular import
                     from kitsune.questions.events import QuestionReplyEvent
 
-                    QuestionReplyEvent.fire_async(self, exclude=self.creator)
+                    QuestionReplyEvent(self).fire(exclude=self.creator)
 
                 # actstream
                 actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)

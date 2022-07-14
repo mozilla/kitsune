@@ -80,6 +80,9 @@ class EditDocumentEvent(InstanceEvent):
         super(EditDocumentEvent, self).__init__(revision.document)
         self.revision = revision
 
+    def get_constructor_instance(self):
+        return self.revision
+
     def _mails(self, users_and_watches):
         revision = self.revision
         document = revision.document
@@ -111,6 +114,9 @@ class _RevisionConstructor(object):
     def __init__(self, revision):
         super(_RevisionConstructor, self).__init__()
         self.revision = revision
+
+    def get_constructor_instance(self):
+        return self.revision
 
 
 class _BaseProductFilter(object):
@@ -279,6 +285,9 @@ class ApprovedOrReadyUnion(EventUnion):
         if revision.is_ready_for_localization:
             events.append(ReadyRevisionEvent(revision))
         super(ApprovedOrReadyUnion, self).__init__(*events)
+
+    def get_constructor_instance(self):
+        return self.revision
 
     def _mails(self, users_and_watches):
         """Send approval or readiness mails, as appropriate.

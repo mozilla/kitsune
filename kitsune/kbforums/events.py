@@ -67,11 +67,14 @@ class NewPostEvent(InstanceEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def fire(self, exclude=None):
+    def get_constructor_instance(self):
+        return self.reply
+
+    def send_emails(self, exclude=None):
         """Notify watchers of this thread, of the document, and of the locale."""
-        return EventUnion(self, NewThreadEvent(self.reply), NewPostInLocaleEvent(self.reply)).fire(
-            exclude=exclude
-        )
+        return EventUnion(
+            self, NewThreadEvent(self.reply), NewPostInLocaleEvent(self.reply)
+        ).send_emails(exclude=exclude)
 
     def _mails(self, users_and_watches):
         return new_post_mails(self.reply, users_and_watches)
@@ -88,11 +91,14 @@ class NewThreadEvent(InstanceEvent):
         # Need to store the post for _mails
         self.post = post
 
-    def fire(self, exclude=None):
+    def get_constructor_instance(self):
+        return self.post
+
+    def send_emails(self, exclude=None):
         """Notify watches of the document and of the locale."""
-        return EventUnion(self, NewThreadEvent(self.post), NewThreadInLocaleEvent(self.post)).fire(
-            exclude=exclude
-        )
+        return EventUnion(
+            self, NewThreadEvent(self.post), NewThreadInLocaleEvent(self.post)
+        ).send_emails(exclude=exclude)
 
     def _mails(self, users_and_watches):
         return new_thread_mails(self.post, users_and_watches)
@@ -119,6 +125,9 @@ class NewPostInLocaleEvent(_NewActivityInLocaleEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
+    def get_constructor_instance(self):
+        return self.reply
+
     def _mails(self, users_and_watches):
         return new_post_mails(self.reply, users_and_watches)
 
@@ -132,6 +141,9 @@ class NewThreadInLocaleEvent(_NewActivityInLocaleEvent):
         super(NewThreadInLocaleEvent, self).__init__(post.thread.document.locale)
         # Need to store the post for _mails
         self.post = post
+
+    def get_constructor_instance(self):
+        return self.post
 
     def _mails(self, users_and_watches):
         return new_thread_mails(self.post, users_and_watches)

@@ -9,7 +9,7 @@ from django.core import mail
 from django.db.models import Q
 
 from kitsune.tidings.models import EmailUser, Watch, WatchFilter, multi_raw
-from kitsune.tidings.tasks import fire
+from kitsune.tidings.tasks import send_emails
 from kitsune.tidings.utils import collate, hash_to_unsigned
 
 
@@ -104,28 +104,23 @@ class Event(object):
     #: ``set(['color', 'flavor'])``
     filters = set()
 
-    @classmethod
-    def fire_async(cls, instance=None, exclude=None):
+    def fire(self, exclude=None, delay=True):
         """
-        Enqueues a JSON-serializer-friendly Celery task that builds and sends emails
-        to everyone watching the event, excluding any users provided by "exclude". The
-        event will be constructed with the given instance if provided.
+        Notify everyone watching the event, either synchronously or asynchronously.
         """
-        kwargs = {}
-        if instance:
-            kwargs.update(
-                instance_cls_module_name=instance.__class__.__module__,
-                instance_cls_name=instance.__class__.__name__,
-                instance_id=instance.id,
-            )
-        if exclude:
-            if not isinstance(exclude, Sequence):
-                exclude = [exclude]
-            kwargs.update(exclude_user_ids=[user.id for user in exclude])
+        if delay:
+            event_info = self.serialize()
+            if exclude:
+                if not isinstance(exclude, Sequence):
+                    exclude = [exclude]
+                exclude_user_ids = [user.id for user in exclude]
+            else:
+                exclude_user_ids = None
+            send_emails.delay(event_info, exclude_user_ids=exclude_user_ids)
+        else:
+            self.send_emails(exclude=exclude)
 
-        fire.delay(cls.__module__, cls.__name__, **kwargs)
-
-    def fire(self, exclude=None):
+    def send_emails(self, exclude=None):
         """
         Notify everyone watching the event (build and send emails).
 
@@ -145,6 +140,30 @@ class Event(object):
         connection.open()
         for m in self._mails(self._users_watching(exclude=exclude)):
             connection.send_messages([m])
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        result = dict(
+            event={"module": self.__class__.__module__, "class": self.__class__.__name__}
+        )
+        if instance := self.get_constructor_instance():
+            result.update(
+                instance={
+                    "module": instance.__class__.__module__,
+                    "class": instance.__class__.__name__,
+                    "id": instance.id,
+                }
+            )
+        return result
+
+    def get_constructor_instance(self):
+        """
+        Event subclasses constructed from a database model instance should override this
+        method and provide the database model instance used to construct themselves.
+        """
+        return None
 
     @classmethod
     def _validate_filters(cls, filters):
