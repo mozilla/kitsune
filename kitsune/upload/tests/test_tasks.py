@@ -99,7 +99,8 @@ class GenerateThumbnail(TestCase):
         with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
-        generate_thumbnail(image, "file", "thumbnail")
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
+        image.refresh_from_db()
         return image
 
     def test_generate_thumbnail_default(self):
@@ -112,7 +113,8 @@ class GenerateThumbnail(TestCase):
     def test_generate_no_file(self):
         """generate_thumbnail does not fail when no file is provided."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        generate_thumbnail(image, "file", "thumbnail")
+        image.save()
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
 
     def test_generate_deleted_file(self):
         """generate_thumbnail does not fail if file doesn't actually exist."""
@@ -122,7 +124,7 @@ class GenerateThumbnail(TestCase):
             image.file.save(up_file.name, up_file, save=True)
         # The field will be set but the file isn't there.
         os.remove(image.file.path)
-        generate_thumbnail(image, "file", "thumbnail")
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
 
     def test_generate_thumbnail_twice(self):
         """generate_thumbnail replaces old thumbnail."""
@@ -132,7 +134,9 @@ class GenerateThumbnail(TestCase):
         # The thumbnail exists.
         assert os.path.isfile(old_path)
 
-        generate_thumbnail(image, "file", "thumbnail")
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
+
+        image.refresh_from_db()
         new_path = image.thumbnail.path
 
         # The thumbnail was replaced.
@@ -164,7 +168,7 @@ class CompressImageTestCase(TestCase):
     def test_compressed_image_default(self, call):
         """uploaded image is compressed."""
         image = self._uploaded_image()
-        compress_image(image, "file")
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert call.called
 
     @override_settings(OPTIPNG_PATH="/dude")
@@ -172,7 +176,8 @@ class CompressImageTestCase(TestCase):
     def test_compress_no_file(self, call):
         """compress_image does not fail when no file is provided."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        compress_image(image, "file")
+        image.save()
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert not call.called
 
     @override_settings(OPTIPNG_PATH="")
@@ -180,7 +185,7 @@ class CompressImageTestCase(TestCase):
     def test_compress_no_compression_software(self, call):
         """compress_image does not fail when no compression software."""
         image = self._uploaded_image()
-        compress_image(image, "file")
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert not call.called
 
     @override_settings(OPTIPNG_PATH="/dude")
@@ -188,5 +193,5 @@ class CompressImageTestCase(TestCase):
     def test_compressed_image_animated(self, call):
         """uploaded animated gif image is not compressed."""
         image = self._uploaded_image(testfile="animated.gif")
-        compress_image(image, "file")
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert not call.called

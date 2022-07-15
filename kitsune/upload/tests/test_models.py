@@ -29,5 +29,6 @@ class ImageAttachmentTestCase(TestCase):
 
         self.assertEqual(image.file, image.thumbnail_if_set())
 
-        generate_thumbnail(image, "file", "thumbnail")
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
+        image.refresh_from_db()
         self.assertEqual(image.thumbnail, image.thumbnail_if_set())

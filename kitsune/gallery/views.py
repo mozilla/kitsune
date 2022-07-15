@@ -68,8 +68,8 @@ def upload(request, media_type="image"):
         image_form = _init_media_form(ImageForm, request, drafts["image"][0])
         if image_form.is_valid():
             img = image_form.save(is_draft=None)
-            generate_thumbnail.delay(img, "file", "thumbnail")
-            compress_image.delay(img, "file")
+            generate_thumbnail.delay("gallery.Image", img.id, "file", "thumbnail")
+            compress_image.delay("gallery.Image", img.id, "file")
             # Rebuild KB
             schedule_rebuild_kb()
             return HttpResponseRedirect(img.get_absolute_url())

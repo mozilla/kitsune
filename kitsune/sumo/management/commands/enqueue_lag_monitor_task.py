@@ -9,4 +9,4 @@ class Command(BaseCommand):
     help = "Fire a task that measures the queue lag."
 
     def handle(self, **options):
-        measure_queue_lag.delay(datetime.now())
+        measure_queue_lag.delay(datetime.now().isoformat())

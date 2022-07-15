@@ -42,9 +42,9 @@ def create_imageattachment(files, user, obj):
     image.file.save(up_file.name, File(up_file), save=True)
 
     # Compress and generate thumbnail off thread
-    generate_thumbnail.delay(image, "file", "thumbnail")
+    generate_thumbnail.delay("upload.ImageAttachment", image.id, "file", "thumbnail")
     if not is_animated:
-        compress_image.delay(image, "file")
+        compress_image.delay("upload.ImageAttachment", image.id, "file")
 
     # Refresh because the image may have been changed by tasks.
     image.refresh_from_db()
