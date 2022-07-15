@@ -25,7 +25,7 @@ class TestCaseBase(TestCase):
 
     client_class = LocalizingClient
 
-    def login_as_user_with_permission(self, permission_codename):
+    def login_with_permission(self, permission_codename):
         """
         Login as a user with the given permission codename, and return the user.
         """
@@ -35,10 +35,7 @@ class TestCaseBase(TestCase):
             if "__" in permission_codename:
                 # Handles things like "de__leaders" or "en-US__reviewers".
                 locale, role = permission_codename.split("__")
-                try:
-                    locale_team = Locale.objects.get(locale=locale)
-                except Locale.DoesNotExist:
-                    locale_team = LocaleFactory(locale=locale)
+                locale_team, _ = Locale.objects.get_or_create(locale=locale)
                 getattr(locale_team, role).add(user)
             elif permission_codename.endswith("_revision"):
                 add_permission(user, Revision, permission_codename)

@@ -30,6 +30,319 @@ from kitsune.wiki.tests import (
 from kitsune.wiki.views import _document_lock_check, _document_lock_clear, _document_lock_steal
 
 
+class VisibilityTestsBase(TestCaseBase):
+    """Abstract base class for document visibility tests."""
+
+    login_required = False
+    expected_status_code_when_visible = 200
+
+    @classmethod
+    def setUpClass(cls):
+        if cls is VisibilityTestsBase:
+            # This class must be sub-classed in order to run the tests.
+            raise SkipTest("abstract test class")
+        super().setUpClass()
+
+    def setUp(self):
+        super().setUp()
+        ProductFactory()
+
+    def make_request(self, revision):
+        """
+        Override to make an HTTP request and return its response for the given
+        revision instance.
+        """
+        raise NotImplementedError
+
+    def get_expected_status_code_when_visible(self, permission_case):
+        """
+        Called when the response should reflect a visible document. Override when the
+        expected status code will vary according to the permission used for the test case.
+        """
+        return self.expected_status_code_when_visible
+
+    def test_visibility_when_approved_content_and_anonymous_user(self):
+        """Documents with approved content can be seen by anyone."""
+        if self.login_required:
+            raise SkipTest("login required")
+        rev = ApprovedRevisionFactory()
+        response = self.make_request(rev)
+        self.assertEqual(
+            response.status_code,
+            self.get_expected_status_code_when_visible("anonymous"),
+        )
+
+    def test_visibility_when_no_approved_content_and_anonymous_user(self):
+        """
+        Documents without approved content should effectively not exist for
+        anonymous users.
+        """
+        if self.login_required:
+            raise SkipTest("login required")
+        rev = RevisionFactory(is_approved=False)
+        response = self.make_request(rev)
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        self.login_with_permission("de__reviewers")
+        response = self.make_request(rev)
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                self.login_with_permission(perm)
+                rev = RevisionFactory(is_approved=False)
+                response = self.make_request(rev)
+                self.assertEqual(
+                    response.status_code,
+                    self.get_expected_status_code_when_visible(perm),
+                )
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.make_request(rev)
+        self.assertEqual(
+            response.status_code,
+            self.get_expected_status_code_when_visible("creator"),
+        )
+
+
+class DocumentVisibilityTests(VisibilityTestsBase):
+    """Document view visibility tests."""
+
+    def make_request(self, revision):
+        url = revision.document.get_absolute_url()
+        return self.client.get(url)
+
+
+class RevisionVisibilityTests(VisibilityTestsBase):
+    """Revision visibility tests."""
+
+    def make_request(self, revision):
+        url = reverse("wiki.revision", args=[revision.document.slug, revision.id])
+        return self.client.get(url)
+
+
+class StealLockVisibilityTests(VisibilityTestsBase):
+    """Steal-lock visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        url = reverse("wiki.steal_lock", args=[revision.document.slug])
+        return self.client.post(url)
+
+
+class EditDocumentVisibilityTests(VisibilityTestsBase):
+    """Edit-document visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        url = reverse("wiki.edit_document", args=[revision.document.slug])
+        return self.client.get(url)
+
+
+class PreviewRevisionVisibilityTests(VisibilityTestsBase):
+    """Preview visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        url = reverse("wiki.preview")
+        data = dict(slug=revision.document.slug, locale=revision.document.locale)
+        return self.client.post(url, data=data)
+
+
+class DocumentRevisionsVisibilityTests(VisibilityTestsBase):
+    """Document revisions visibility tests."""
+
+    def make_request(self, revision):
+        url = reverse("wiki.document_revisions", args=[revision.document.slug])
+        return self.client.get(url)
+
+
+class CompareRevisionsVisibilityTests(VisibilityTestsBase):
+    """Compare revisions visibility tests."""
+
+    def make_request(self, revision):
+        new_revision = RevisionFactory(document=revision.document)
+        url = reverse("wiki.compare_revisions", args=[revision.document.slug])
+        return self.client.get(f"{url}?from={revision.id}&to={new_revision.id}")
+
+
+class SelectLocaleVisibilityTests(VisibilityTestsBase):
+    """Select locale visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        url = reverse("wiki.select_locale", args=[revision.document.slug])
+        return self.client.get(url)
+
+
+class TranslateVisibilityTests(VisibilityTestsBase):
+    """Translate visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        en_doc = revision.document
+        trans_doc = RevisionFactory(
+            is_approved=False, document__parent=en_doc, document__locale="es"
+        ).document
+        url = reverse("wiki.translate", locale=trans_doc.locale, args=[en_doc.slug])
+        return self.client.get(url)
+
+    def get_expected_status_code_when_visible(self, permission_case):
+        if permission_case in ("superuser", "review_revision", "delete_document"):
+            return 200
+        return 403
+
+
+class WatchDocumentVisibilityTests(VisibilityTestsBase):
+    """Watch document visibility tests."""
+
+    login_required = True
+    expected_status_code_when_visible = 302
+
+    def make_request(self, revision):
+        url = reverse("wiki.document_watch", args=[revision.document.slug])
+        return self.client.post(url)
+
+
+class UnwatchDocumentVisibilityTests(VisibilityTestsBase):
+    """Unwatch document visibility tests."""
+
+    login_required = True
+    expected_status_code_when_visible = 302
+
+    def make_request(self, revision):
+        url = reverse("wiki.document_unwatch", args=[revision.document.slug])
+        return self.client.post(url)
+
+
+class GetHelpfulVotesAsyncVisibilityTests(VisibilityTestsBase):
+    """Get helpful votes async visibility tests."""
+
+    def make_request(self, revision):
+        url = reverse("wiki.get_helpful_votes_async", args=[revision.document.slug])
+        return self.client.get(url)
+
+
+class AddContributorVisibilityTests(VisibilityTestsBase):
+    """Add contributor visibility tests."""
+
+    login_required = True
+    expected_status_code_when_visible = 302
+
+    def make_request(self, revision):
+        users = UserFactory.create_batch(2)
+        data = dict(users=",".join(user.username for user in users))
+        url = reverse("wiki.add_contributor", args=[revision.document.slug])
+        return self.client.post(url, data=data)
+
+
+class RemoveContributorVisibilityTests(VisibilityTestsBase):
+    """Remove contributor visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        user = UserFactory()
+        url = reverse("wiki.remove_contributor", args=[revision.document.slug, user.id])
+        return self.client.get(url)
+
+
+class ShowTranslationsVisibilityTests(VisibilityTestsBase):
+    """Show translations visibility tests."""
+
+    def make_request(self, revision):
+        url = reverse("wiki.show_translations", args=[revision.document.slug])
+        return self.client.get(url)
+
+
+class WhatLinksHereVisibilityTests(VisibilityTestsBase):
+    """What-links-here visibility tests."""
+
+    def make_request(self, revision):
+        url = reverse("wiki.what_links_here", args=[revision.document.slug])
+        return self.client.get(url)
+
+
+class DeleteDocumentVisibilityTests(VisibilityTestsBase):
+    """Delete document visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        url = reverse("wiki.document_delete", args=[revision.document.slug])
+        return self.client.get(url)
+
+    def get_expected_status_code_when_visible(self, permission_case):
+        if permission_case in ("superuser", "delete_document", "en-US__leaders"):
+            return 200
+        return 403
+
+
+class MarkReadyForL10nVisibilityTests(VisibilityTestsBase):
+    """Mark ready for l10n visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        url = reverse(
+            "wiki.mark_ready_for_l10n_revision", args=[revision.document.slug, revision.id]
+        )
+        return self.client.post(url)
+
+    def get_expected_status_code_when_visible(self, permission_case):
+        if permission_case in ("superuser"):
+            return 400
+        return 403
+
+
+class DeleteRevisionVisibilityTests(VisibilityTestsBase):
+    """Delete revision visibility tests."""
+
+    login_required = True
+
+    def make_request(self, revision):
+        url = reverse("wiki.delete_revision", args=[revision.document.slug, revision.id])
+        return self.client.get(url)
+
+    def get_expected_status_code_when_visible(self, permission_case):
+        if permission_case in ("superuser", "en-US__leaders", "en-US__reviewers"):
+            return 200
+        return 403
+
+
 class RedirectTests(TestCaseBase):
     """Tests for the REDIRECT wiki directive"""
 
@@ -54,15 +367,17 @@ class LocaleRedirectTests(TestCaseBase):
         super(LocaleRedirectTests, self).setUp()
         ProductFactory()
         en = settings.WIKI_DEFAULT_LANGUAGE
-        self.en_doc = DocumentFactory(locale=en, slug="english-slug")
-        self.de_doc = DocumentFactory(locale="de", parent=self.en_doc)
-        RevisionFactory(document=self.de_doc, is_approved=True)
+        self.en_doc = ApprovedRevisionFactory(
+            document__locale=en, document__slug="english-slug"
+        ).document
+        self.de_doc = ApprovedRevisionFactory(
+            document__locale="de", document__parent=self.en_doc
+        ).document
 
     def test_fallback_to_translation(self):
         """If a slug isn't found in the requested locale but is in the default
         locale and if there is a translation of that default-locale document to
         the requested locale, the translation should be served."""
-        self.login_as_user_with_permission("review_revision")
         response = self.client.get(
             reverse("wiki.document", args=[self.en_doc.slug], locale="de"), follow=True
         )
@@ -70,7 +385,6 @@ class LocaleRedirectTests(TestCaseBase):
 
     def test_fallback_with_query_params(self):
         """The query parameters should be passed along to the redirect."""
-        self.login_as_user_with_permission("review_revision")
         url = reverse("wiki.document", args=[self.en_doc.slug], locale="de")
         response = self.client.get(url + "?x=y&x=z", follow=True)
         self.assertRedirects(response, self.de_doc.get_absolute_url() + "?x=y&x=z")

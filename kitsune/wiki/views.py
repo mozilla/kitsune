@@ -1198,7 +1198,7 @@ def helpful_vote(request, document_slug):
     revision = get_object_or_404(Revision, id=smart_int(request.POST["revision_id"]))
 
     if not revision.is_approved:
-        # I don't think it makse sense to vote for an unapproved revision.
+        # I don't think it makes sense to vote for an unapproved revision.
         raise PermissionDenied
 
     survey = None
