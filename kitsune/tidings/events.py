@@ -1,8 +1,6 @@
 import random
-from collections.abc import Sequence
 from smtplib import SMTPException
 
-from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -10,6 +8,7 @@ from django.core import mail
 from django.db.models import Q
 
 from kitsune.tidings.models import EmailUser, Watch, WatchFilter, multi_raw
+from kitsune.tidings.tasks import send_emails
 from kitsune.tidings.utils import collate, hash_to_unsigned
 
 
@@ -95,10 +94,6 @@ class Event(object):
     related :class:`~tidings.models.WatchFilter` rows holding name/value pairs,
     the meaning of which is up to each individual subclass. NULL values are
     considered wildcards.
-
-    :class:`Event` subclass instances must be pickleable so they can be
-    shuttled off to celery tasks.
-
     """
 
     # event_type = 'hamster modified'  # key for the event_type column
@@ -109,7 +104,24 @@ class Event(object):
     filters = set()
 
     def fire(self, exclude=None, delay=True):
-        """Notify everyone watching the event.
+        """
+        Notify everyone watching the event, either synchronously or asynchronously,
+        excluding the users provided by "exclude", which must be a sequence of user
+        objects if provided.
+        """
+        if delay:
+            event_info = self.serialize()
+            if exclude:
+                exclude_user_ids = [user.id for user in exclude]
+            else:
+                exclude_user_ids = None
+            send_emails.delay(event_info, exclude_user_ids=exclude_user_ids)
+        else:
+            self.send_emails(exclude=exclude)
+
+    def send_emails(self, exclude=None):
+        """
+        Notify everyone watching the event (build and send emails).
 
         We are explicit about sending notifications; we don't just key off
         creation signals, because the receiver of a ``post_save`` signal has no
@@ -118,31 +130,39 @@ class Event(object):
         tests. If we want implicit event firing, we can always register a
         signal handler that calls :meth:`fire()`.
 
-        :arg exclude: If a saved user is passed in, that user will not be
-          notified, though anonymous notifications having the same email
-          address may still be sent. A sequence of users may also be passed in.
-
-        :arg delay: If True (default), the event is handled asynchronously with
-          Celery. This requires the pickle task serializer, which is no longer
-          the default starting in Celery 4.0. If False, the event is processed
-          immediately.
+        :arg exclude: A sequence of users or None. If a sequence of users is
+          passed in, each of those users will not be notified, though anonymous
+          notifications having the same email address may still be sent.
         """
-        if delay:
-            # Tasks don't receive the `self` arg implicitly.
-            self._fire_task.apply_async(
-                args=(self,), kwargs={"exclude": exclude}, serializer="pickle"
-            )
-        else:
-            self._fire_task(self, exclude=exclude)
-
-    @shared_task
-    def _fire_task(self, exclude=None):
-        """Build and send the emails as a celery task."""
         connection = mail.get_connection(fail_silently=True)
         # Warning: fail_silently swallows errors thrown by the generators, too.
         connection.open()
         for m in self._mails(self._users_watching(exclude=exclude)):
             connection.send_messages([m])
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary. Subclasses must
+        implement this method if they want to fire events asynchronously via
+        the "send_emails" Celery task. Here's an example:
+
+        def serialize(self):
+            return {
+                "event": {
+                    "module": "kitsune.wiki.events"
+                    "class": "ReadyRevisionEvent"
+                },
+                "instance": {
+                    "module": "kitsune.wiki.models",
+                    "class": "Revision",
+                    "id": self.revision.id
+                }
+            }
+
+        where the "event" is always required, but the "instance" only if it's
+        needed to construct the event.
+        """
+        raise NotImplementedError
 
     @classmethod
     def _validate_filters(cls, filters):
@@ -179,9 +199,9 @@ class Event(object):
         the lack of a particularly named WatchFilter to scuttle the match, use
         a different event_type instead.
 
-        :arg exclude: If a saved user is passed in as this argument, that user
-            will never be returned, though anonymous watches having the same
-            email address may. A sequence of users may also be passed in.
+        :arg exclude: A sequence of users or None. If a sequence of users is
+          passed in, each of those users will not be notified, though anonymous
+          notifications having the same email address may still be sent.
 
         """
         # I don't think we can use the ORM here, as there's no way to get a
@@ -191,11 +211,6 @@ class Event(object):
         # with name=x and value=y?}--we could do it with extra(). Then we could
         # have EventUnion simply | the QuerySets together, which would avoid
         # having to merge in Python.
-
-        if exclude is None:
-            exclude = []
-        elif not isinstance(exclude, Sequence):
-            exclude = [exclude]
 
         def filter_conditions():
             """Return joins, WHERE conditions, and params to bind to them in

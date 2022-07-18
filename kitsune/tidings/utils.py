@@ -1,3 +1,4 @@
+from importlib import import_module
 from zlib import crc32
 
 from django.conf import settings
@@ -94,3 +95,12 @@ def import_from_setting(setting_name, fallback):
 
 # Here to be imported by others:
 reverse = import_from_setting("TIDINGS_REVERSE", django_reverse)  # no QA
+
+
+def get_class(module_name, class_name):
+    """
+    Convenience function for extracting a class from the given module name using
+    the given class name.
+    """
+    module = import_module(module_name)
+    return getattr(module, class_name)

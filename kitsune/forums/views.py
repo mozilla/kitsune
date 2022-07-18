@@ -196,7 +196,7 @@ def reply(request, forum_slug, thread_id):
                     NewPostEvent.notify(request.user, thread)
 
                 # Send notifications to thread/forum watchers.
-                NewPostEvent(reply_).fire(exclude=reply_.author)
+                NewPostEvent(reply_).fire(exclude=[reply_.author])
 
                 return HttpResponseRedirect(thread.get_last_post_url())
 
@@ -235,7 +235,7 @@ def new_thread(request, forum_slug):
             post = thread.new_post(author=request.user, content=form.cleaned_data["content"])
             post.save()
 
-            NewThreadEvent(post).fire(exclude=post.author)
+            NewThreadEvent(post).fire(exclude=[post.author])
 
             # Add notification automatically if needed.
             if Setting.get_for_user(request.user, "forums_watch_new_thread"):

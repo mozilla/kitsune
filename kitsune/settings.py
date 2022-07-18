@@ -857,11 +857,6 @@ if EMAIL_LOGGING_REAL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
 CELERY_TASK_PROTOCOL = 2
 CELERY_TASK_SERIALIZER = config("CELERY_TASK_SERIALIZER", default="json")
 CELERY_RESULT_SERIALIZER = config("CELERY_RESULT_SERIALIZER", default="json")
-CELERY_ACCEPT_CONTENT = config(
-    "CELERY_ACCEPT_CONTENT",
-    default="pickle, json",
-    cast=lambda v: [s.strip() for s in v.split(",")],
-)
 CELERY_TASK_IGNORE_RESULT = config("CELERY_TASK_IGNORE_RESULT", default=True, cast=bool)
 if not CELERY_TASK_IGNORE_RESULT:
     # E.g. redis://localhost:6479/1

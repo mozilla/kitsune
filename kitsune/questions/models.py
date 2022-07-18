@@ -499,7 +499,7 @@ class Question(AAQBase, BigVocabTaggableMixin):
         self.solution = answer
         self.save()
         self.add_metadata(solver_id=str(solver.id))
-        QuestionSolvedEvent(answer).fire(exclude=self.creator)
+        QuestionSolvedEvent(answer).fire(exclude=[self.creator])
         actstream.action.send(
             solver, verb="marked as a solution", action_object=answer, target=self
         )
@@ -858,12 +858,11 @@ class Answer(AAQBase):
             self.question.clear_cached_contributors()
 
             if not no_notify:
-                # tidings
-                # Avoid circular import: events.py imports Question.
-                from kitsune.questions.events import QuestionReplyEvent
-
                 if not self.is_spam:
-                    QuestionReplyEvent(self).fire(exclude=self.creator)
+                    # Avoid circular import
+                    from kitsune.questions.events import QuestionReplyEvent
+
+                    QuestionReplyEvent(self).fire(exclude=[self.creator])
 
                 # actstream
                 actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)

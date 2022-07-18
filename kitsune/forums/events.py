@@ -22,9 +22,9 @@ class NewPostEvent(InstanceEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def fire(self, **kwargs):
+    def send_emails(self, exclude=None):
         """Notify not only watchers of this thread but of the parent forum."""
-        return EventUnion(self, NewThreadEvent(self.reply)).fire(**kwargs)
+        return EventUnion(self, NewThreadEvent(self.reply)).send_emails(exclude=exclude)
 
     def _mails(self, users_and_watches):
         post_url = add_utm(self.reply.get_absolute_url(), "forums-post")
@@ -46,6 +46,15 @@ class NewPostEvent(InstanceEvent):
             context_vars=c,
             users_and_watches=users_and_watches,
         )
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.forums.events", "class": "NewPostEvent"},
+            "instance": {"module": "kitsune.forums.models", "class": "Post", "id": self.reply.id},
+        }
 
 
 class NewThreadEvent(InstanceEvent):
@@ -79,3 +88,12 @@ class NewThreadEvent(InstanceEvent):
             context_vars=c,
             users_and_watches=users_and_watches,
         )
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.forums.events", "class": "NewThreadEvent"},
+            "instance": {"module": "kitsune.forums.models", "class": "Post", "id": self.post.id},
+        }

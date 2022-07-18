@@ -269,9 +269,13 @@ class NotificationsTests(TestCaseBase):
         # Delete the question, pretend it hasn't been replicated yet
         Question.objects.get(pk=q.pk).delete()
 
-        event.fire(exclude=q.creator)
+        event.fire(exclude=[q.creator])
 
-        self.assertEqual("Solution found to Firefox Help question", mail.outbox[0].subject)
+        # Since we'll attempt to reconstruct the event within the Celery task, the answer
+        # needed to reconstruct the event will no longer exist since it's been deleted
+        # (cascade delete due to the deletion of the question). Therefore no emails will
+        # be sent.
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class TestAnswerNotifications(TestCaseBase):

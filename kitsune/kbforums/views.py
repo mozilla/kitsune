@@ -171,7 +171,7 @@ def reply(request, document_slug, thread_id):
                     NewPostEvent.notify(request.user, thread)
 
                 # Send notifications to thread/forum watchers.
-                NewPostEvent(reply_).fire(exclude=reply_.creator)
+                NewPostEvent(reply_).fire(exclude=[reply_.creator])
 
                 return HttpResponseRedirect(reply_.get_absolute_url())
 
@@ -202,7 +202,7 @@ def new_thread(request, document_slug):
             post.save()
 
             # Send notifications to forum watchers.
-            NewThreadEvent(post).fire(exclude=post.creator)
+            NewThreadEvent(post).fire(exclude=[post.creator])
 
             # Add notification automatically if needed.
             if Setting.get_for_user(request.user, "kbforums_watch_new_thread"):
