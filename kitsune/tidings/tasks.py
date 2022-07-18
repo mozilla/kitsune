@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.contrib.auth import get_user_model
+from sentry_sdk import capture_exception
 
 from kitsune.tidings.models import Watch
 from kitsune.tidings.utils import get_class
@@ -32,7 +33,11 @@ def send_emails(event_info, exclude_user_ids=None):
     if instance_info:
         # Get the instance class, and then the instance itself from the database.
         instance_cls = get_class(instance_info["module"], instance_info["class"])
-        instance = instance_cls.objects.get(id=instance_info["id"])
+        try:
+            instance = instance_cls.objects.get(id=instance_info["id"])
+        except instance_cls.DoesNotExist as err:
+            capture_exception(err)
+            return
         event = event_cls(instance)
     else:
         event = event_cls()
