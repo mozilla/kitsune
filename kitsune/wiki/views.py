@@ -1383,7 +1383,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
         revision.readied_for_localization_by = request.user
         revision.save()
 
-        ReadyRevisionEvent(revision).fire(exclude=request.user)
+        ReadyRevisionEvent(revision).fire(exclude=[request.user])
 
         return HttpResponse(json.dumps({"message": revision_id}))
 
@@ -1518,8 +1518,8 @@ def _save_rev_and_notify(rev_form, creator, document, based_on_id=None, base_rev
     new_rev = rev_form.save(creator, document, based_on_id, base_rev)
 
     # Enqueue notifications
-    ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)
-    EditDocumentEvent(new_rev).fire(exclude=new_rev.creator)
+    ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=[new_rev.creator])
+    EditDocumentEvent(new_rev).fire(exclude=[new_rev.creator])
 
 
 def _maybe_schedule_rebuild(form):

@@ -269,7 +269,7 @@ class NotificationsTests(TestCaseBase):
         # Delete the question, pretend it hasn't been replicated yet
         Question.objects.get(pk=q.pk).delete()
 
-        event.fire(exclude=q.creator)
+        event.fire(exclude=[q.creator])
 
         self.assertEqual("Solution found to Firefox Help question", mail.outbox[0].subject)
 

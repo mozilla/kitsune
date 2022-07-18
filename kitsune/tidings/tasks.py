@@ -19,9 +19,8 @@ def claim_watches(user_id):
 def send_emails(event_info, exclude_user_ids=None):
     """
     Celery task that is JSON-serializer friendly, and that fires the event specified by
-    the "event_cls_*" arguments while excluding the users specified by "exclude_user_ids"
-    if provided. The event will be constructed with the database model instance specified
-    by the "instance_*" arguments if provided.
+    the "event_info" argument while excluding the users specified by "exclude_user_ids",
+    which must be a sequence of user ids if not None.
     """
     event_cls_info = event_info["event"]
     instance_info = event_info.get("instance")
@@ -40,8 +39,8 @@ def send_emails(event_info, exclude_user_ids=None):
 
     # Get the excluded users, if any.
     if exclude_user_ids:
-        exclude = None
-    else:
         exclude = list(get_user_model().objects.filter(id__in=exclude_user_ids).all())
+    else:
+        exclude = None
 
     event.send_emails(exclude=exclude)

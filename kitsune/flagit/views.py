@@ -76,7 +76,7 @@ def update(request, flagged_object_id):
         # if the flag is invalid
         if str(new_status) == str(FlaggedObject.FLAG_REJECTED) and ct.model_class() == Answer:
             answer = flagged.content_object
-            QuestionReplyEvent(answer).fire(exclude=answer.creator)
+            QuestionReplyEvent(answer).fire(exclude=[answer.creator])
 
         flagged.status = new_status
         flagged.save()
