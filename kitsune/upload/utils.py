@@ -65,37 +65,26 @@ def create_imageattachment(files, user, obj):
 
 
 def _image_to_png(up_file):
-    # Extract exif data
-    original_image = Image.open(up_file)
-    original_image_data = list(original_image.getdata())
-    pil_image = Image.new(original_image.mode, original_image.size)
-    pil_image.putdata(original_image_data)
+    with Image.open(up_file) as image:
+        # This approach is recommended by pillow for checking if an image is animated.
+        is_animated = getattr(image, "is_animated", False)
 
-    # Detect animated GIFS since we don't convert them.
-    try:
-        # TODO: Find a less memory intensive way to do this, if even possible.
-        image_animation_check = pil_image
-        image_animation_check.seek(1)
-    except EOFError:
-        is_animated = False
-    else:
-        is_animated = True
+        if not is_animated:
+            options = {}
+            if "transparency" in image.info:
+                options["transparency"] = image.info["transparency"]
 
-    if not is_animated:
-        converted_image = io.BytesIO()
-        options = {}
-        if "transparency" in pil_image.info:
-            options["transparency"] = pil_image.info["transparency"]
-        pil_image.save(converted_image, format="PNG", **options)
+            png_image = io.BytesIO()
+            image.save(png_image, format="PNG", **options)
 
-        up_file = InMemoryUploadedFile(
-            converted_image,
-            None,
-            os.path.splitext(up_file.name)[0] + ".png",
-            "image/png",
-            len(converted_image.getbuffer()),
-            None,
-        )
+            up_file = InMemoryUploadedFile(
+                png_image,
+                None,
+                os.path.splitext(up_file.name)[0] + ".png",
+                "image/png",
+                len(png_image.getbuffer()),
+                None,
+            )
 
     return (up_file, is_animated)
 
