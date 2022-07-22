@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Prefetch, Q
+from django.shortcuts import get_object_or_404
 from django.utils.http import urlencode
 
 from kitsune.dashboards import LAST_7_DAYS
@@ -174,3 +175,11 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     if len(documents) <= 4:
         return documents
     return random.sample(documents, 4)
+
+
+def get_visible_document_or_404(user, **kwargs):
+    return get_object_or_404(Document.objects.visible(user, **kwargs))
+
+
+def get_visible_revision_or_404(user, **kwargs):
+    return get_object_or_404(Revision.objects.visible(user, **kwargs))

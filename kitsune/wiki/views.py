@@ -67,6 +67,8 @@ from kitsune.wiki.tasks import (
     send_contributor_notification,
     send_reviewed_notification,
 )
+from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
+
 
 log = logging.getLogger("k.wiki")
 
@@ -104,14 +106,6 @@ def doc_page_cache(view):
         return response
 
     return _doc_page_cache_view
-
-
-def get_visible_document_or_404(user, **kwargs):
-    return get_object_or_404(Document.objects.visible(user, **kwargs))
-
-
-def get_visible_revision_or_404(user, **kwargs):
-    return get_object_or_404(Revision.objects.visible(user, **kwargs))
 
 
 @require_GET

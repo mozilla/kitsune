@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Q
 from django.http import Http404
 from django.urls import resolve
 from django.utils.encoding import smart_bytes
@@ -40,6 +40,8 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
+from kitsune.wiki.managers import DocumentManager, RevisionManager
+
 from kitsune.wiki.permissions import (
     can_delete_documents_or_review_revisions,
     DocumentPermissionMixin,
@@ -59,34 +61,6 @@ class SlugCollision(Exception):
 
 class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
-
-
-class DocumentManager(models.Manager):
-    def visible(self, user, **kwargs):
-        """
-        Documents are effectively invisible when they have no approved content,
-        and the given user is not a superuser, nor allowed to delete documents or
-        review revisions, nor a creator of one of the (yet unapproved) revisions.
-        """
-        locale = kwargs.get("locale")
-        qs = self.filter(**kwargs)
-        if user.is_authenticated:
-            if not (
-                user.is_superuser or can_delete_documents_or_review_revisions(user, locale=locale)
-            ):
-                # Authenticated users without permission to see documents that
-                # have no approved content, can only see those they have created.
-                rev_created_by_user = Revision.objects.filter(
-                    document=OuterRef("pk"), creator=user
-                )
-                qs = qs.filter(Q(current_revision__isnull=False) | Exists(rev_created_by_user))
-        else:
-            # Anonymous users only see documents with approved content.
-            qs = qs.filter(current_revision__isnull=False)
-        return qs
-
-    def get_visible(self, user, **kwargs):
-        return self.visible(user, **kwargs).get()
 
 
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):
@@ -780,31 +754,6 @@ class AbstractRevision(models.Model):
 
     class Meta:
         abstract = True
-
-
-class RevisionManager(models.Manager):
-    def visible(self, user, **kwargs):
-        """
-        Revisions are effectively invisible when their document has no approved content,
-        and the given user is not a superuser, nor allowed to delete documents or review
-        revisions, nor the creator.
-        """
-        locale = kwargs.get("document__locale")
-        qs = self.filter(**kwargs)
-        if user.is_authenticated:
-            if not (
-                user.is_superuser or can_delete_documents_or_review_revisions(user, locale=locale)
-            ):
-                # Authenticated users without permission to see documents that
-                # have no approved content, can only see the revision they created.
-                qs = qs.filter(Q(document__current_revision__isnull=False) | Q(creator=user))
-        else:
-            # Anonymous users only see documents with approved content.
-            qs = qs.filter(document__current_revision__isnull=False)
-        return qs
-
-    def get_visible(self, user, **kwargs):
-        return self.visible(user, **kwargs).get()
 
 
 class Revision(ModelBase, AbstractRevision):
