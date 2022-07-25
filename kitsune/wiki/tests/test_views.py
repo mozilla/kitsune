@@ -14,7 +14,14 @@ from kitsune.sumo.tests import SkipTest, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import CATEGORIES, TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
-from kitsune.wiki.models import Document, DraftRevision, HelpfulVote, HelpfulVoteMetadata
+from kitsune.wiki.models import (
+    Document,
+    DraftRevision,
+    HelpfulVote,
+    HelpfulVoteMetadata,
+    Locale,
+    Revision,
+)
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -30,57 +37,25 @@ from kitsune.wiki.tests import (
 from kitsune.wiki.views import _document_lock_check, _document_lock_clear, _document_lock_steal
 
 
-class VisibilityTestsBase(TestCaseBase):
-    """Abstract base class for document visibility tests."""
-
-    login_required = False
-    expected_status_code_when_visible = 200
-
-    @classmethod
-    def setUpClass(cls):
-        if cls is VisibilityTestsBase:
-            # This class must be sub-classed in order to run the tests.
-            raise SkipTest("abstract test class")
-        super().setUpClass()
+class DocumentVisibilityTests(TestCaseBase):
+    """Document view visibility tests."""
 
     def setUp(self):
-        super().setUp()
         ProductFactory()
-
-    def make_request(self, revision):
-        """
-        Override to make an HTTP request and return its response for the given
-        revision instance.
-        """
-        raise NotImplementedError
-
-    def get_expected_status_code_when_visible(self, permission_case):
-        """
-        Called when the response should reflect a visible document. Override when the
-        expected status code will vary according to the permission used for the test case.
-        """
-        return self.expected_status_code_when_visible
 
     def test_visibility_when_approved_content_and_anonymous_user(self):
         """Documents with approved content can be seen by anyone."""
-        if self.login_required:
-            raise SkipTest("login required")
         rev = ApprovedRevisionFactory()
-        response = self.make_request(rev)
-        self.assertEqual(
-            response.status_code,
-            self.get_expected_status_code_when_visible("anonymous"),
-        )
+        response = self.client.get(rev.document.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
 
     def test_visibility_when_no_approved_content_and_anonymous_user(self):
         """
         Documents without approved content should effectively not exist for
         anonymous users.
         """
-        if self.login_required:
-            raise SkipTest("login required")
         rev = RevisionFactory(is_approved=False)
-        response = self.make_request(rev)
+        response = self.client.get(rev.document.get_absolute_url())
         self.assertEqual(404, response.status_code)
 
     def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
@@ -90,10 +65,13 @@ class VisibilityTestsBase(TestCaseBase):
         Documents without approved content should effectively not exist for
         authenticated users without the proper permission.
         """
-        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
         # The document is in the "en-US" locale, so this permission won't provide access.
-        self.login_with_permission("de__reviewers")
-        response = self.make_request(rev)
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(rev.document.get_absolute_url())
         self.assertEqual(404, response.status_code)
 
     def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
@@ -110,13 +88,19 @@ class VisibilityTestsBase(TestCaseBase):
             "en-US__reviewers",
         ):
             with self.subTest(perm):
-                self.login_with_permission(perm)
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
                 rev = RevisionFactory(is_approved=False)
-                response = self.make_request(rev)
-                self.assertEqual(
-                    response.status_code,
-                    self.get_expected_status_code_when_visible(perm),
-                )
+                response = self.client.get(rev.document.get_absolute_url())
+                self.assertEqual(response.status_code, 200)
                 self.client.logout()
 
     def test_visibility_when_no_approved_content_and_creator(self):
@@ -126,221 +110,1317 @@ class VisibilityTestsBase(TestCaseBase):
         creator = UserFactory()
         rev = RevisionFactory(is_approved=False, creator=creator)
         self.client.login(username=creator.username, password="testpass")
-        response = self.make_request(rev)
-        self.assertEqual(
-            response.status_code,
-            self.get_expected_status_code_when_visible("creator"),
-        )
+        response = self.client.get(rev.document.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
 
 
-class DocumentVisibilityTests(VisibilityTestsBase):
-    """Document view visibility tests."""
-
-    def make_request(self, revision):
-        url = revision.document.get_absolute_url()
-        return self.client.get(url)
-
-
-class RevisionVisibilityTests(VisibilityTestsBase):
+class RevisionVisibilityTests(TestCaseBase):
     """Revision visibility tests."""
 
-    def make_request(self, revision):
-        url = reverse("wiki.revision", args=[revision.document.slug, revision.id])
-        return self.client.get(url)
+    def setUp(self):
+        ProductFactory()
+
+    def test_visibility_when_approved_content_and_anonymous_user(self):
+        """Documents with approved content can be seen by anyone."""
+        rev = ApprovedRevisionFactory()
+        response = self.client.get(reverse("wiki.revision", args=[rev.document.slug, rev.id]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_visibility_when_no_approved_content_and_anonymous_user(self):
+        """
+        Documents without approved content should effectively not exist for
+        anonymous users.
+        """
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(reverse("wiki.revision", args=[rev.document.slug, rev.id]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.get(reverse("wiki.revision", args=[rev.document.slug, rev.id]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(
+                    reverse("wiki.revision", args=[rev.document.slug, rev.id])
+                )
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(reverse("wiki.revision", args=[rev.document.slug, rev.id]))
+        self.assertEqual(response.status_code, 200)
 
 
-class StealLockVisibilityTests(VisibilityTestsBase):
+class StealLockVisibilityTests(TestCaseBase):
     """Steal-lock visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.steal_lock", args=[revision.document.slug])
-        return self.client.post(url)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(reverse("wiki.steal_lock", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.post(reverse("wiki.steal_lock", args=[rev.document.slug]))
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.post(reverse("wiki.steal_lock", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
 
 
-class EditDocumentVisibilityTests(VisibilityTestsBase):
+class EditDocumentVisibilityTests(TestCaseBase):
     """Edit-document visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.edit_document", args=[revision.document.slug])
-        return self.client.get(url)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.get(reverse("wiki.edit_document", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(reverse("wiki.edit_document", args=[rev.document.slug]))
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(reverse("wiki.edit_document", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
 
 
-class PreviewRevisionVisibilityTests(VisibilityTestsBase):
+class PreviewRevisionVisibilityTests(TestCaseBase):
     """Preview visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.preview")
-        data = dict(slug=revision.document.slug, locale=revision.document.locale)
-        return self.client.post(url, data=data)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(
+            reverse("wiki.preview"),
+            data=dict(slug=rev.document.slug, locale=rev.document.locale),
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.post(
+                    reverse("wiki.preview"),
+                    data=dict(slug=rev.document.slug, locale=rev.document.locale),
+                )
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.post(
+            reverse("wiki.preview"),
+            data=dict(slug=rev.document.slug, locale=rev.document.locale),
+        )
+        self.assertEqual(response.status_code, 200)
 
 
-class DocumentRevisionsVisibilityTests(VisibilityTestsBase):
+class DocumentRevisionsVisibilityTests(TestCaseBase):
     """Document revisions visibility tests."""
 
-    def make_request(self, revision):
-        url = reverse("wiki.document_revisions", args=[revision.document.slug])
-        return self.client.get(url)
+    def setUp(self):
+        ProductFactory()
+
+    def test_visibility_when_approved_content_and_anonymous_user(self):
+        """Documents with approved content can be seen by anyone."""
+        rev = ApprovedRevisionFactory()
+        response = self.client.get(reverse("wiki.document_revisions", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_visibility_when_no_approved_content_and_anonymous_user(self):
+        """
+        Documents without approved content should effectively not exist for
+        anonymous users.
+        """
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(reverse("wiki.document_revisions", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.get(reverse("wiki.document_revisions", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(
+                    reverse("wiki.document_revisions", args=[rev.document.slug])
+                )
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(reverse("wiki.document_revisions", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
 
 
-class CompareRevisionsVisibilityTests(VisibilityTestsBase):
+class CompareRevisionsVisibilityTests(TestCaseBase):
     """Compare revisions visibility tests."""
 
-    def make_request(self, revision):
-        new_revision = RevisionFactory(document=revision.document)
-        url = reverse("wiki.compare_revisions", args=[revision.document.slug])
-        return self.client.get(f"{url}?from={revision.id}&to={new_revision.id}")
+    def setUp(self):
+        ProductFactory()
+
+    def test_visibility_when_approved_content_and_anonymous_user(self):
+        """Documents with approved content can be seen by anyone."""
+        rev = ApprovedRevisionFactory()
+        new_rev = RevisionFactory(document=rev.document)
+        url = reverse("wiki.compare_revisions", args=[rev.document.slug])
+        response = self.client.get(f"{url}?from={rev.id}&to={new_rev.id}")
+        self.assertEqual(response.status_code, 200)
+
+    def test_visibility_when_no_approved_content_and_anonymous_user(self):
+        """
+        Documents without approved content should effectively not exist for
+        anonymous users.
+        """
+        rev = RevisionFactory(is_approved=False)
+        new_rev = RevisionFactory(document=rev.document)
+        url = reverse("wiki.compare_revisions", args=[rev.document.slug])
+        response = self.client.get(f"{url}?from={rev.id}&to={new_rev.id}")
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        new_rev = RevisionFactory(document=rev.document)
+        url = reverse("wiki.compare_revisions", args=[rev.document.slug])
+        response = self.client.get(f"{url}?from={rev.id}&to={new_rev.id}")
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                new_rev = RevisionFactory(document=rev.document)
+                url = reverse("wiki.compare_revisions", args=[rev.document.slug])
+                response = self.client.get(f"{url}?from={rev.id}&to={new_rev.id}")
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        self.client.login(username=creator.username, password="testpass")
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        new_rev = RevisionFactory(document=rev.document)
+        url = reverse("wiki.compare_revisions", args=[rev.document.slug])
+        response = self.client.get(f"{url}?from={rev.id}&to={new_rev.id}")
+        self.assertEqual(response.status_code, 200)
 
 
-class SelectLocaleVisibilityTests(VisibilityTestsBase):
+class SelectLocaleVisibilityTests(TestCaseBase):
     """Select locale visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.select_locale", args=[revision.document.slug])
-        return self.client.get(url)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(reverse("wiki.select_locale", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(reverse("wiki.select_locale", args=[rev.document.slug]))
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(reverse("wiki.select_locale", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
 
 
-class TranslateVisibilityTests(VisibilityTestsBase):
+class TranslateVisibilityTests(TestCaseBase):
     """Translate visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        en_doc = revision.document
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        en_doc = rev.document
         trans_doc = RevisionFactory(
             is_approved=False, document__parent=en_doc, document__locale="es"
         ).document
-        url = reverse("wiki.translate", locale=trans_doc.locale, args=[en_doc.slug])
-        return self.client.get(url)
+        response = self.client.get(
+            reverse("wiki.translate", locale=trans_doc.locale, args=[en_doc.slug])
+        )
+        self.assertEqual(404, response.status_code)
 
-    def get_expected_status_code_when_visible(self, permission_case):
-        if permission_case in ("superuser", "review_revision", "delete_document"):
-            return 200
-        return 403
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                en_doc = rev.document
+                trans_doc = RevisionFactory(
+                    is_approved=False, document__parent=en_doc, document__locale="es"
+                ).document
+                response = self.client.get(
+                    reverse("wiki.translate", locale=trans_doc.locale, args=[en_doc.slug])
+                )
+                expected_status = (
+                    200 if perm in ("superuser", "review_revision", "delete_document") else 403
+                )
+                self.assertEqual(response.status_code, expected_status)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        en_doc = rev.document
+        trans_doc = RevisionFactory(
+            is_approved=False, document__parent=en_doc, document__locale="es"
+        ).document
+        response = self.client.get(
+            reverse("wiki.translate", locale=trans_doc.locale, args=[en_doc.slug])
+        )
+        self.assertEqual(response.status_code, 403)
 
 
-class WatchDocumentVisibilityTests(VisibilityTestsBase):
+class WatchDocumentVisibilityTests(TestCaseBase):
     """Watch document visibility tests."""
 
-    login_required = True
-    expected_status_code_when_visible = 302
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.document_watch", args=[revision.document.slug])
-        return self.client.post(url)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(reverse("wiki.document_watch", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.post(
+                    reverse("wiki.document_watch", args=[rev.document.slug])
+                )
+                self.assertEqual(response.status_code, 302)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.post(reverse("wiki.document_watch", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 302)
 
 
-class UnwatchDocumentVisibilityTests(VisibilityTestsBase):
+class UnwatchDocumentVisibilityTests(TestCaseBase):
     """Unwatch document visibility tests."""
 
-    login_required = True
-    expected_status_code_when_visible = 302
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.document_unwatch", args=[revision.document.slug])
-        return self.client.post(url)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(reverse("wiki.document_unwatch", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.post(
+                    reverse("wiki.document_unwatch", args=[rev.document.slug])
+                )
+                self.assertEqual(response.status_code, 302)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.post(reverse("wiki.document_unwatch", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 302)
 
 
-class GetHelpfulVotesAsyncVisibilityTests(VisibilityTestsBase):
+class GetHelpfulVotesAsyncVisibilityTests(TestCaseBase):
     """Get helpful votes async visibility tests."""
 
-    def make_request(self, revision):
-        url = reverse("wiki.get_helpful_votes_async", args=[revision.document.slug])
-        return self.client.get(url)
+    def setUp(self):
+        ProductFactory()
+
+    def test_visibility_when_approved_content_and_anonymous_user(self):
+        """Documents with approved content can be seen by anyone."""
+        rev = ApprovedRevisionFactory()
+        response = self.client.get(
+            reverse("wiki.get_helpful_votes_async", args=[rev.document.slug])
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_visibility_when_no_approved_content_and_anonymous_user(self):
+        """
+        Documents without approved content should effectively not exist for
+        anonymous users.
+        """
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(
+            reverse("wiki.get_helpful_votes_async", args=[rev.document.slug])
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.get(
+            reverse("wiki.get_helpful_votes_async", args=[rev.document.slug])
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(
+                    reverse("wiki.get_helpful_votes_async", args=[rev.document.slug])
+                )
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(
+            reverse("wiki.get_helpful_votes_async", args=[rev.document.slug])
+        )
+        self.assertEqual(response.status_code, 200)
 
 
-class AddContributorVisibilityTests(VisibilityTestsBase):
+class AddContributorVisibilityTests(TestCaseBase):
     """Add contributor visibility tests."""
 
-    login_required = True
-    expected_status_code_when_visible = 302
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        users = UserFactory.create_batch(2)
-        data = dict(users=",".join(user.username for user in users))
-        url = reverse("wiki.add_contributor", args=[revision.document.slug])
-        return self.client.post(url, data=data)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        contributors = UserFactory.create_batch(2)
+        data = dict(users=",".join(u.username for u in contributors))
+        response = self.client.post(
+            reverse("wiki.add_contributor", args=[rev.document.slug]), data=data
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                contributors = UserFactory.create_batch(2)
+                data = dict(users=",".join(u.username for u in contributors))
+                response = self.client.post(
+                    reverse("wiki.add_contributor", args=[rev.document.slug]), data=data
+                )
+                self.assertEqual(response.status_code, 302)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        self.client.login(username=creator.username, password="testpass")
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        contributors = UserFactory.create_batch(2)
+        data = dict(users=",".join(u.username for u in contributors))
+        response = self.client.post(
+            reverse("wiki.add_contributor", args=[rev.document.slug]), data=data
+        )
+        self.assertEqual(response.status_code, 302)
 
 
-class RemoveContributorVisibilityTests(VisibilityTestsBase):
+class RemoveContributorVisibilityTests(TestCaseBase):
     """Remove contributor visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
         user = UserFactory()
-        url = reverse("wiki.remove_contributor", args=[revision.document.slug, user.id])
-        return self.client.get(url)
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        contributor = UserFactory()
+        response = self.client.get(
+            reverse("wiki.remove_contributor", args=[rev.document.slug, contributor.id])
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                contributor = UserFactory()
+                response = self.client.get(
+                    reverse("wiki.remove_contributor", args=[rev.document.slug, contributor.id])
+                )
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        self.client.login(username=creator.username, password="testpass")
+        contributor = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        response = self.client.get(
+            reverse("wiki.remove_contributor", args=[rev.document.slug, contributor.id])
+        )
+        self.assertEqual(response.status_code, 200)
 
 
-class ShowTranslationsVisibilityTests(VisibilityTestsBase):
+class ShowTranslationsVisibilityTests(TestCaseBase):
     """Show translations visibility tests."""
 
-    def make_request(self, revision):
-        url = reverse("wiki.show_translations", args=[revision.document.slug])
-        return self.client.get(url)
+    def setUp(self):
+        ProductFactory()
+
+    def test_visibility_when_approved_content_and_anonymous_user(self):
+        """Documents with approved content can be seen by anyone."""
+        rev = ApprovedRevisionFactory()
+        response = self.client.get(reverse("wiki.show_translations", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_visibility_when_no_approved_content_and_anonymous_user(self):
+        """
+        Documents without approved content should effectively not exist for
+        anonymous users.
+        """
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(reverse("wiki.show_translations", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(reverse("wiki.show_translations", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(
+                    reverse("wiki.show_translations", args=[rev.document.slug])
+                )
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(reverse("wiki.show_translations", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
 
 
-class WhatLinksHereVisibilityTests(VisibilityTestsBase):
+class WhatLinksHereVisibilityTests(TestCaseBase):
     """What-links-here visibility tests."""
 
-    def make_request(self, revision):
-        url = reverse("wiki.what_links_here", args=[revision.document.slug])
-        return self.client.get(url)
+    def setUp(self):
+        ProductFactory()
+
+    def test_visibility_when_approved_content_and_anonymous_user(self):
+        """Documents with approved content can be seen by anyone."""
+        rev = ApprovedRevisionFactory()
+        response = self.client.get(reverse("wiki.what_links_here", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_visibility_when_no_approved_content_and_anonymous_user(self):
+        """
+        Documents without approved content should effectively not exist for
+        anonymous users.
+        """
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(reverse("wiki.what_links_here", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        rev = RevisionFactory(is_approved=False)
+        response = self.client.get(reverse("wiki.what_links_here", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
+
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(
+                    reverse("wiki.what_links_here", args=[rev.document.slug])
+                )
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(reverse("wiki.what_links_here", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 200)
 
 
-class DeleteDocumentVisibilityTests(VisibilityTestsBase):
+class DeleteDocumentVisibilityTests(TestCaseBase):
     """Delete document visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.document_delete", args=[revision.document.slug])
-        return self.client.get(url)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.get(reverse("wiki.document_delete", args=[rev.document.slug]))
+        self.assertEqual(404, response.status_code)
 
-    def get_expected_status_code_when_visible(self, permission_case):
-        if permission_case in ("superuser", "delete_document", "en-US__leaders"):
-            return 200
-        return 403
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(
+                    reverse("wiki.document_delete", args=[rev.document.slug])
+                )
+                expected_status = (
+                    200 if perm in ("superuser", "delete_document", "en-US__leaders") else 403
+                )
+                self.assertEqual(response.status_code, expected_status)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(reverse("wiki.document_delete", args=[rev.document.slug]))
+        self.assertEqual(response.status_code, 403)
 
 
-class MarkReadyForL10nVisibilityTests(VisibilityTestsBase):
+class MarkReadyForL10nVisibilityTests(TestCaseBase):
     """Mark ready for l10n visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse(
-            "wiki.mark_ready_for_l10n_revision", args=[revision.document.slug, revision.id]
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.post(
+            reverse("wiki.mark_ready_for_l10n_revision", args=[rev.document.slug, rev.id])
         )
-        return self.client.post(url)
+        self.assertEqual(404, response.status_code)
 
-    def get_expected_status_code_when_visible(self, permission_case):
-        if permission_case in ("superuser"):
-            return 400
-        return 403
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.post(
+                    reverse("wiki.mark_ready_for_l10n_revision", args=[rev.document.slug, rev.id])
+                )
+                self.assertEqual(response.status_code, 400 if perm == "superuser" else 403)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.post(
+            reverse("wiki.mark_ready_for_l10n_revision", args=[rev.document.slug, rev.id])
+        )
+        self.assertEqual(response.status_code, 403)
 
 
-class DeleteRevisionVisibilityTests(VisibilityTestsBase):
+class DeleteRevisionVisibilityTests(TestCaseBase):
     """Delete revision visibility tests."""
 
-    login_required = True
+    def setUp(self):
+        ProductFactory()
 
-    def make_request(self, revision):
-        url = reverse("wiki.delete_revision", args=[revision.document.slug, revision.id])
-        return self.client.get(url)
+    def test_visibility_when_no_approved_content_and_authenticated_user_without_permission(
+        self,
+    ):
+        """
+        Documents without approved content should effectively not exist for
+        authenticated users without the proper permission.
+        """
+        rev = RevisionFactory(is_approved=False)
+        user = UserFactory()
+        # The document is in the "en-US" locale, so this permission won't provide access.
+        locale_team, _ = Locale.objects.get_or_create(locale="de")
+        locale_team.reviewers.add(user)
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.get(
+            reverse("wiki.delete_revision", args=[rev.document.slug, rev.id])
+        )
+        self.assertEqual(404, response.status_code)
 
-    def get_expected_status_code_when_visible(self, permission_case):
-        if permission_case in ("superuser", "en-US__leaders", "en-US__reviewers"):
-            return 200
-        return 403
+    def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
+        """
+        Documents without approved content can be seen by authenticated users with one of
+        several special permissions.
+        """
+        # Each of these permissions will provide access.
+        for perm in (
+            "superuser",
+            "review_revision",
+            "delete_document",
+            "en-US__leaders",
+            "en-US__reviewers",
+        ):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                elif "__" in perm:
+                    locale, role = perm.split("__")
+                    locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                    getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                rev = RevisionFactory(is_approved=False)
+                response = self.client.get(
+                    reverse("wiki.delete_revision", args=[rev.document.slug, rev.id])
+                )
+                expected_status = (
+                    200 if perm in ("superuser", "en-US__leaders", "en-US__reviewers") else 403
+                )
+                self.assertEqual(response.status_code, expected_status)
+                self.client.logout()
+
+    def test_visibility_when_no_approved_content_and_creator(self):
+        """
+        Documents without approved content can be seen by their creator.
+        """
+        creator = UserFactory()
+        rev = RevisionFactory(is_approved=False, creator=creator)
+        self.client.login(username=creator.username, password="testpass")
+        response = self.client.get(
+            reverse("wiki.delete_revision", args=[rev.document.slug, rev.id])
+        )
+        self.assertEqual(response.status_code, 403)
 
 
 class RedirectTests(TestCaseBase):

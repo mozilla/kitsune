@@ -30,7 +30,7 @@ from kitsune.wiki.events import (
     ReviewableRevisionInLocaleEvent,
     get_diff_for,
 )
-from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Revision
+from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Locale, Revision
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -139,7 +139,9 @@ class DocumentTests(TestCaseBase):
 
     def test_english_document_no_approved_content(self):
         """Load an English document with no approved content."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = RevisionFactory(content="Some text.", is_approved=False)
         response = self.client.get(r.document.get_absolute_url())
         self.assertEqual(200, response.status_code)
@@ -153,7 +155,9 @@ class DocumentTests(TestCaseBase):
     def test_translation_document_no_approved_content(self):
         """Load a non-English document with no approved content, with a parent
         with no approved content either."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = RevisionFactory(content="Some text.", is_approved=False)
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, content="Moartext", is_approved=False)
@@ -168,7 +172,9 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_with_translation(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = ApprovedRevisionFactory(content="Test")
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, is_approved=False)
@@ -188,7 +194,9 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_with_translation_english_slug(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions, while visiting the English slug."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = ApprovedRevisionFactory(content="Test")
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, is_approved=False)
@@ -252,7 +260,9 @@ class DocumentTests(TestCaseBase):
         Also check the backlink to the redirect page.
 
         """
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         target = DocumentFactory()
         target_url = target.get_absolute_url()
 
@@ -274,7 +284,9 @@ class DocumentTests(TestCaseBase):
 
     def test_redirect_no_vote(self):
         """Make sure documents with REDIRECT directives have no vote form."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         target = DocumentFactory()
         redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
@@ -285,7 +297,9 @@ class DocumentTests(TestCaseBase):
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page
         doesn't exist."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory()
         response = self.client.get(
             urlparams(d.get_absolute_url(), redirectlocale="en-US", redirectslug="nonexistent")
@@ -294,7 +308,9 @@ class DocumentTests(TestCaseBase):
 
     def test_watch_includes_csrf(self):
         """The watch/unwatch forms should include the csrf tag."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory()
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -302,7 +318,9 @@ class DocumentTests(TestCaseBase):
 
     def test_non_localizable_translate_disabled(self):
         """Non localizable document doesn't show tab for 'Localize'."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory(is_localizable=True)
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -317,7 +335,9 @@ class DocumentTests(TestCaseBase):
 
     def test_obsolete_hide_edit(self):
         """Make sure Edit sidebar link is hidden for obsolete articles."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory(is_archived=True)
         r = self.client.get(d.get_absolute_url())
         doc = pq(r.content)
@@ -907,7 +927,9 @@ class NewRevisionTests(TestCaseBase):
         the document fields are open for editing.
 
         """
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
 
         get_current.return_value.domain = "testserver"
 
@@ -928,7 +950,9 @@ class NewRevisionTests(TestCaseBase):
     def test_edit_document_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
         that document."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         self.d.current_revision = None
         self.d.save()
         topics = [TopicFactory(), TopicFactory(), TopicFactory()]
@@ -1184,7 +1208,9 @@ class HistoryTests(TestCaseBase):
 
     def test_translation_history_with_english_slug(self):
         """Request in en-US slug but translated locale should redirect to translation history"""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         trans = DocumentFactory(parent=doc, locale="bn", slug="bn_trans_slug")
         ApprovedRevisionFactory(document=trans)
@@ -1198,7 +1224,9 @@ class HistoryTests(TestCaseBase):
 
     def test_translation_history_with_english_slug_while_no_trans(self):
         """Request in en-US slug but untranslated locale should raise 404"""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         url = reverse("wiki.document_revisions", args=[doc.slug], locale="bn")
         response = self.client.get(url)
@@ -2203,7 +2231,9 @@ class TranslateTests(TestCaseBase):
 
     def test_translate_rejected_parent(self):
         """Translate view of rejected English document shows warning."""
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         user = UserFactory()
         en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
 
@@ -2276,7 +2306,9 @@ class TranslateTests(TestCaseBase):
         self.assertEqual(r.id, new_es_rev.based_on_id)
 
     def test_show_translations_page(self):
-        self.login_with_permission("review_revision")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         en = settings.WIKI_DEFAULT_LANGUAGE
         en_doc = DocumentFactory(locale=en, slug="english-slug")
         DocumentFactory(locale="de", parent=en_doc)
@@ -2958,23 +2990,35 @@ class RecentRevisionsTest(TestCaseBase):
             self.assertEqual(res.status_code, 200)
             doc = pq(res.content)
             self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 6)
+            self.client.logout()
 
         for perm in ("superuser", "review_revision", "delete_document"):
             with self.subTest(perm):
-                self.login_with_permission(perm)
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                self.client.login(username=user.username, password="testpass")
                 res = self.client.get(self.url)
                 self.assertEqual(res.status_code, 200)
                 doc = pq(res.content)
                 self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 6)
+                self.client.logout()
 
         for perm in ("fr__leaders", "fr__reviewers"):
             with self.subTest(perm):
-                self.login_with_permission(perm)
+                user = UserFactory()
+                locale, role = perm.split("__")
+                locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
                 url = urlparams(self.url, locale="fr")
                 res = self.client.get(url)
                 self.assertEqual(res.status_code, 200)
                 doc = pq(res.content)
                 self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 3)
+                self.client.logout()
 
 
 # TODO: This should be a factory subclass

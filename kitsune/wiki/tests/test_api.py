@@ -10,6 +10,7 @@ class TestDocumentListView(TestCase):
         doc2 = ApprovedRevisionFactory().document
         url = reverse("document-list")
         res = self.client.get(url)
+        self.assertEqual(res.status_code, 200)
         # Only the document with approved content should be present.
         self.assertNotContains(res, doc1.slug)
         self.assertNotContains(res, doc1.title)
