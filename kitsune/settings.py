@@ -1179,6 +1179,7 @@ CSP_IMG_SRC = (
     "https://firefoxusercontent.com",
     "https://secure.gravatar.com",
     "https://i1.wp.com",
+    "https://mozillausercontent.com",
 )
 
 CSP_MEDIA_SRC = (
