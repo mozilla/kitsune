@@ -47,6 +47,12 @@ kubernetes:
                 period_seconds: 5
                 success_threshold: 1
                 timeout_seconds: 5
+            readiness:
+                failure_threshold: 2
+                initial_delay_seconds: 10
+                period_seconds: 10
+                success_threshold: 1
+                timeout_seconds: 5
 
 app:
     allowed_cidr_nets: SECRET
