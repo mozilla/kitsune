@@ -199,7 +199,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
 
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         response = post(
             self.client,
             "wiki.discuss.new_thread",
@@ -217,7 +217,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
 
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         response = post(
             self.client,
             "wiki.discuss.new_thread",
@@ -273,7 +273,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
 
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         response = post(self.client, "wiki.discuss.watch_forum", {"watch": "yes"}, args=[d.slug])
         self.assertContains(response, "Stop")
 
@@ -285,7 +285,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
 
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         next_url = reverse("wiki.discuss.threads", args=[d.slug])
         response = post(
             self.client, "wiki.discuss.watch_locale", {"watch": "yes", "next": next_url}
@@ -345,7 +345,7 @@ class NewThreadTemplateTests(KBForumTestCase):
         """Preview the thread post."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         num_threads = d.thread_set.count()
         content = "Full of awesome."
         response = post(
@@ -380,7 +380,7 @@ class FlaggedPostTests(KBForumTestCase):
 class TestRatelimiting(KBForumTestCase):
     def test_post_ratelimit(self):
         """Verify that rate limiting kicks in after 4 threads or replies."""
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
 

@@ -5,7 +5,7 @@ from kitsune.kbforums.models import Post, Thread, ThreadLockedError
 from kitsune.kbforums.views import sort_threads
 from kitsune.sumo.tests import LocalizingClient, TestCase, get
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class ThreadFactory(factory.django.DjangoModelFactory):
@@ -14,6 +14,12 @@ class ThreadFactory(factory.django.DjangoModelFactory):
 
     creator = factory.SubFactory(UserFactory)
     document = factory.SubFactory(DocumentFactory)
+
+    @factory.post_generation
+    def add_approved_revision_to_document(obj, create, extracted, **kwargs):
+        # Ensure the document has approved content, or else it'll be invisible
+        # to users without special permission.
+        ApprovedRevisionFactory(document=obj.document)
 
 
 class PostFactory(factory.django.DjangoModelFactory):

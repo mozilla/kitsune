@@ -4,7 +4,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.kbforums.feeds import PostsFeed, ThreadsFeed
 from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory, get
-from kitsune.wiki.tests import DocumentFactory
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class FeedSortingTestCase(KBForumTestCase):
@@ -30,7 +30,7 @@ class FeedSortingTestCase(KBForumTestCase):
 
     def test_multi_feed_titling(self):
         """Ensure that titles are being applied properly to feeds."""
-        d = DocumentFactory()
+        d = ApprovedRevisionFactory().document
         response = get(self.client, "wiki.discuss.threads", args=[d.slug])
         doc = pq(response.content)
         given_ = doc('link[type="application/atom+xml"]')[0].attrib["title"]
