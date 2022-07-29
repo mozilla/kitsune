@@ -67,7 +67,12 @@ from kitsune.wiki.tasks import (
     send_contributor_notification,
     send_reviewed_notification,
 )
-from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
+from kitsune.wiki.utils import (
+    FallbackCodes,
+    get_visible_document_or_404,
+    get_visible_document_or_fallback_or_404,
+    get_visible_revision_or_404,
+)
 
 
 log = logging.getLogger("k.wiki")
@@ -118,35 +123,20 @@ def document(request, document_slug, document=None):
 
     fallback_reason = None
     full_locale_name = None
-    # If a slug isn't available in the requested locale, fall back to en-US:
-    try:
-        doc = Document.objects.get_visible(
-            request.user, locale=request.LANGUAGE_CODE, slug=document_slug
-        )
-        if not doc.current_revision and doc.parent and doc.parent.current_revision:
-            # This is a translation but its current_revision is None
-            # and OK to fall back to parent (parent is approved).
-            fallback_reason = "translation_not_approved"
-        elif not doc.current_revision:
-            # The document as well as its parent have no approved content, so we won't
-            # show any content at all.
-            fallback_reason = "no_content"
-    except Document.DoesNotExist:
-        if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
-            # Don't repeat the query if it's going to be the same one we just tried.
-            raise Http404
-        # No visible document exists in the requested locale so let's try the default locale.
-        doc = get_visible_document_or_404(
-            request.user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-        )
-        # If there's a visible translation to the requested locale, redirect to it.
-        translation = doc.translated_to(request.LANGUAGE_CODE, visible_for_user=request.user)
-        if translation:
-            url = translation.get_absolute_url()
-            url = urlparams(url, query_dict=request.GET)
-            return HttpResponseRedirect(url)
-        elif doc.current_revision:
-            # There is no translation, so we'll fall back to the approved parent,
+
+    doc, fallback_code = get_visible_document_or_fallback_or_404(
+        request.user, request.LANGUAGE_CODE, document_slug
+    )
+
+    if fallback_code is FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG:
+        url = doc.get_absolute_url()
+        url = urlparams(url, query_dict=request.GET)
+        return HttpResponseRedirect(url)
+
+    if fallback_code is FallbackCodes.NO_TRANSLATION:
+        # The "doc" is the parent document.
+        if doc.current_revision:
+            # There is no translation, so we'll fall back to its approved parent,
             # unless we find an approved translation in a fallback locale.
             fallback_reason = "no_translation"
 
@@ -161,8 +151,8 @@ def document(request, document_slug, document=None):
             # If a fallback locale is defined, show the document in that locale,
             # otherwise continue with the document in the default language.
             if fallback_locale:
-                # If we have a fallback locale, we're certain to have an approved
-                # translation in that locale.
+                # If we have a fallback locale, it means we're guaranteed to have
+                # a translation in that locale with approved content.
                 doc = doc.translated_to(fallback_locale)
                 # For showing the fallback locale explanation message to the user
                 fallback_reason = "fallback_locale"
@@ -170,6 +160,16 @@ def document(request, document_slug, document=None):
                     request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
                     fallback_locale: LOCALES[fallback_locale].native,
                 }
+
+    if not doc.current_revision:
+        # We've got a document, but it has no approved content.
+        if doc.parent and doc.parent.current_revision:
+            # The "doc" is a translation with no approved content, but its
+            # parent has approved content, so let's fall back to its parent.
+            fallback_reason = "translation_not_approved"
+        else:
+            # We can't find any approved content to show.
+            fallback_reason = "no_content"
 
     any_localizable_revision = doc.revisions.filter(
         is_approved=True, is_ready_for_localization=True
@@ -438,28 +438,13 @@ def edit_document(request, document_slug, revision_id=None):
     """Create a new revision of a wiki document, or edit document metadata."""
     user = request.user
 
-    try:
-        doc = Document.objects.get_visible(user, locale=request.LANGUAGE_CODE, slug=document_slug)
-    except Document.DoesNotExist:
-        if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
-            # Don't repeat the query if it's going to be the same one we just tried.
-            raise Http404
-        # Check if the document slug is available in the default language.
-        parent_doc = get_visible_document_or_404(
-            user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-        )
-        # We've found the parent using the given slug, so let's see if there's a translation
-        # in the requested locale that's using a different slug.
-        translation = parent_doc.translated_to(request.LANGUAGE_CODE, visible_for_user=user)
-        if translation:
-            # The document is translated into the requested locale, so show them the edit
-            # article page of the translated document.
-            doc = translation
-        else:
-            # The document is not translated into the requested locale, so redirect them to
-            # translate the article page.
-            url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
-            return HttpResponseRedirect(url)
+    doc, fallback_code = get_visible_document_or_fallback_or_404(
+        user, request.LANGUAGE_CODE, document_slug
+    )
+
+    if fallback_code is FallbackCodes.NO_TRANSLATION:
+        url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
+        return HttpResponseRedirect(url)
 
     can_edit_needs_change = doc.allows(user, "edit_needs_change")
     can_archive = doc.allows(user, "archive")
@@ -606,24 +591,17 @@ def preview_revision(request):
 def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
     locale = request.GET.get("locale", request.LANGUAGE_CODE)
-    try:
-        doc = Document.objects.get_visible(request.user, locale=locale, slug=document_slug)
-    except Document.DoesNotExist:
-        if locale == settings.WIKI_DEFAULT_LANGUAGE:
-            # Don't repeat the query if it's going to be the same one we just tried.
-            raise Http404
-        # Check if the document slug is available in default language.
-        parent_doc = get_visible_document_or_404(
-            request.user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-        )
-        # If the document is available in default language, show the user the history page
-        # of the requested locale.
-        translation = parent_doc.translated_to(locale, visible_for_user=request.user)
-        if translation:
-            url = reverse("wiki.document_revisions", args=[translation.slug], locale=locale)
-            return HttpResponseRedirect(url)
-        else:
-            raise Http404
+
+    doc, fallback_code = get_visible_document_or_fallback_or_404(
+        request.user, locale, document_slug
+    )
+
+    if fallback_code is FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG:
+        url = reverse("wiki.document_revisions", args=[doc.slug], locale=locale)
+        return HttpResponseRedirect(url)
+
+    if fallback_code is FallbackCodes.NO_TRANSLATION:
+        raise Http404
 
     revs = Revision.objects.filter(document=doc).order_by("-created", "-id")
 
@@ -1634,7 +1612,17 @@ def recent_revisions(request):
 def what_links_here(request, document_slug):
     """List all documents that link to a document."""
     locale = request.GET.get("locale", request.LANGUAGE_CODE)
-    doc = get_visible_document_or_404(request.user, locale=locale, slug=document_slug)
+
+    doc, fallback_code = get_visible_document_or_fallback_or_404(
+        request.user, locale, document_slug
+    )
+
+    if fallback_code is FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG:
+        url = reverse("wiki.what_links_here", args=[doc.slug], locale=locale)
+        return HttpResponseRedirect(url)
+
+    if fallback_code is FallbackCodes.NO_TRANSLATION:
+        raise Http404
 
     links = {}
     for link_to in doc.links_to():

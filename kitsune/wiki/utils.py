@@ -1,15 +1,22 @@
+from enum import Enum, auto
 import random
 
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Prefetch, Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.http import urlencode
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.wiki.models import Document, Revision
+
+
+class FallbackCodes(Enum):
+    NO_TRANSLATION = auto()
+    TRANSLATION_AT_DIFFERENT_SLUG = auto()
 
 
 class BitlyException(Exception):
@@ -183,3 +190,21 @@ def get_visible_document_or_404(user, **kwargs):
 
 def get_visible_revision_or_404(user, **kwargs):
     return get_object_or_404(Revision.objects.visible(user, **kwargs))
+
+
+def get_visible_document_or_fallback_or_404(user, locale, slug):
+    """Return a document with its fallback code, or 404."""
+    try:
+        return (Document.objects.get_visible(user, locale=locale, slug=slug), None)
+    except Document.DoesNotExist:
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            # Don't repeat the query if it's going to be the same one we just tried.
+            raise Http404
+        # No visible document exists in the requested locale so let's try the default locale.
+        parent = get_visible_document_or_404(
+            user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=slug
+        )
+        # If there's a visible translation to the requested locale, redirect to it.
+        if translation := parent.translated_to(locale, visible_for_user=user):
+            return (translation, FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG)
+        return (parent, FallbackCodes.NO_TRANSLATION)

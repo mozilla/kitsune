@@ -1502,10 +1502,8 @@ class JsonViewTests(TestCaseBase):
 
 class WhatLinksWhereTests(TestCaseBase):
     def test_what_links_here(self):
-        d1 = DocumentFactory(title="D1")
-        RevisionFactory(document=d1, content="", is_approved=True)
-        d2 = DocumentFactory(title="D2")
-        RevisionFactory(document=d2, content="[[D1]]", is_approved=True)
+        d1 = ApprovedRevisionFactory(content="", document__title="D1").document
+        ApprovedRevisionFactory(content="[[D1]]", document__title="D2").document
 
         url = reverse("wiki.what_links_here", args=[d1.slug])
         resp = self.client.get(url, follow=True)
@@ -1522,6 +1520,27 @@ class WhatLinksWhereTests(TestCaseBase):
         resp = self.client.get(url, follow=True)
         self.assertEqual(200, resp.status_code)
         assert b"No other documents link to D1." in resp.content
+
+    def test_what_links_here_with_locale_fallback(self):
+        d1 = ApprovedRevisionFactory(content="", document__title="D1").document
+        d2 = ApprovedRevisionFactory(content="[[D1]]", document__title="D2").document
+        ApprovedRevisionFactory(
+            content="",
+            document__title="DAS-1",
+            document__locale="de",
+            document__parent=d1,
+        ).document
+        ApprovedRevisionFactory(
+            content="[[DAS-1]]",
+            document__title="DAS-2",
+            document__locale="de",
+            document__parent=d2,
+        ).document
+
+        url = reverse("wiki.what_links_here", args=[d1.slug], locale="de")
+        resp = self.client.get(url, follow=True)
+        self.assertEqual(200, resp.status_code)
+        assert b"DAS-2" in resp.content
 
 
 class DocumentEditingTests(TestCaseBase):
