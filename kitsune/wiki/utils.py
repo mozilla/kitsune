@@ -5,29 +5,10 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404
-from django.utils.http import urlencode
 
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.wiki.models import Document, Revision
-
-
-class BitlyException(Exception):
-    """Bitly Exception for any other errors."""
-
-    pass
-
-
-class BitlyUnauthorizedException(BitlyException):
-    """Bitly Exception for an unauthorized error."""
-
-    pass
-
-
-class BitlyRateLimitException(BitlyException):
-    """Bitly Exception for a rate limiting error."""
-
-    pass
 
 
 def active_contributors(from_date, to_date=None, locale=None, product=None):
@@ -53,29 +34,19 @@ def generate_short_url(long_url):
     """
 
     # Check for empty credentials.
-    if settings.BITLY_LOGIN is None or settings.BITLY_API_KEY is None:
+    if not settings.BITLY_ACCESS_TOKEN:
         return ""
 
     keys = {
-        "format": "json",
-        "longUrl": long_url,
-        "login": settings.BITLY_LOGIN,
-        "apiKey": settings.BITLY_API_KEY,
+        "long_url": long_url,
+        "group_guid": settings.BITLY_GUID,
     }
-    params = urlencode(keys)
+    headers = {"Authorization": f"Bearer {settings.BITLY_ACCESS_TOKEN}"}
 
-    resp = requests.post(settings.BITLY_API_URL, params).json()
-    if resp["status_code"] == 200:
-        short_url = resp.get("data", {}).get("url", "")
-        return short_url
-    elif resp["status_code"] == 401:
-        raise BitlyUnauthorizedException("Unauthorized access to bitly's API")
-    elif resp["status_code"] == 403:
-        raise BitlyRateLimitException("Rate limit exceeded while using " "bitly's API.")
-    else:
-        raise BitlyException(
-            "Error code: {0} recieved from bitly's API.".format(resp["status_code"])
-        )
+    resp = requests.post(url=settings.BITLY_API_URL, json=keys, headers=headers)
+    resp.raise_for_status()
+
+    return resp.json().get("link", "")
 
 
 def num_active_contributors(from_date, to_date=None, locale=None, product=None):

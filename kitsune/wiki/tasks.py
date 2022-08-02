@@ -13,6 +13,7 @@ from django.core.mail import mail_admins
 from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _
+from requests.exceptions import HTTPError
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -27,7 +28,7 @@ from kitsune.wiki.models import (
     TitleCollision,
     points_to_document_view,
 )
-from kitsune.wiki.utils import BitlyRateLimitException, generate_short_url
+from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger("k.task")
 
@@ -182,7 +183,7 @@ def add_short_links(doc_ids):
             # Use django's reverse so the locale isn't included.
             endpoint = django_reverse("wiki.document", args=[doc.slug])
             doc.update(share_link=generate_short_url(base_url % endpoint))
-    except BitlyRateLimitException:
+    except HTTPError:
         # The next run of the `generate_missing_share_links` cron job will
         # catch all documents that were unable to be processed.
         pass
