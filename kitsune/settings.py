@@ -902,9 +902,9 @@ THUMBNAIL_PROGRESS_WIDTH = 32  # width of the above image
 THUMBNAIL_PROGRESS_HEIGHT = 32  # height of the above image
 VIDEO_MAX_FILESIZE = 52428800  # 50 megabytes, in bytes
 
-BITLY_API_URL = config("BITLY_API_URL", default="http://api.bitly.com/v3/shorten?callback=?")
-BITLY_LOGIN = config("BITLY_LOGIN", default=None)
-BITLY_API_KEY = config("BITLY_API_KEY", default=None)
+BITLY_API_URL = config("BITLY_API_URL", default="https://api-ssl.bitly.com/v4/shorten")
+BITLY_GUID = config("BITLY_GUID", default="")
+BITLY_ACCESS_TOKEN = config("BITLY_ACCESS_TOKEN", default="")
 
 TIDINGS_FROM_ADDRESS = config("TIDINGS_FROM_ADDRESS", default="notifications@support.mozilla.org")
 # Anonymous watches must be confirmed.

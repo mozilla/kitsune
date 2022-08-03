@@ -53,6 +53,8 @@ app:
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
     aws_storage_bucket_name: SECRET
+    bitly_access_token: SECRET
+    bitly_guid: SECRET
     celery_broker_url: SECRET
     cache_url: SECRET
     celery_task_always_eager: False
