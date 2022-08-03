@@ -116,12 +116,12 @@ import _keys from "underscore/modules/keys";
 
     // Prevent the form, if it exists, from submitting so our AJAX handler
     // is always called:
-    $('form.remove-tag-form').submit(function() { return false; });
+    $('form.remove-tag-form').on("submit", function() { return false; });
   }
 
   // Attach onclick removal handlers to every .remove element in $tag.
   function attachRemoverHandlerTo($container, async) {
-    $container.find('.remover').click(
+    $container.find('.remover').on("click", 
       function() {
         var $remover = $(this),
           $tag = $remover.closest('.tag'),
@@ -238,9 +238,9 @@ import _keys from "underscore/modules/keys";
         return addTag($this, async);
       }
       if ($this.is('form')) {
-        $this.submit(handler);
+        $this.on('submit', handler);
       } else {
-        $this.find('input.adder').click(handler);
+        $this.find('input.adder').on("click", handler);
       }
     });
   }
@@ -299,6 +299,6 @@ import _keys from "underscore/modules/keys";
     return inArrayCaseInsensitive(tagName, getAppliedTags($tagList)) !== -1;
   }
 
-  $(document).ready(init);
+  $(init);
 
 })(jQuery);

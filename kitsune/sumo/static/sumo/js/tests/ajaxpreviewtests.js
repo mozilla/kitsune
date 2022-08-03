@@ -63,7 +63,7 @@ describe('ajax preview', () => {
           .to.equal('<p>The content to preview.</p>');
         done();
       });
-      $('#preview').click();
+      $('#preview').trigger('click');
     });
   });
 });

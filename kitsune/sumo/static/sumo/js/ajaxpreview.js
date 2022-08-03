@@ -38,14 +38,14 @@ export default function AjaxPreview(el, options) {
         locale = $btn.closest('form').find('[name=locale]').val(),
         changeHash = o.changeHash === undefined ? true : o.changeHash;
 
-      $btn.click(function(e) {
+      $btn.on('click', function(e) {
         e.preventDefault();
         $(this).attr('disabled', 'disabled');
         $(self).trigger('get-preview');
       });
 
       // Trying to make this event driven for easier testability.
-      $(self).bind('get-preview', function(e) {
+      $(self).on('get-preview', function(e) {
         $.ajax({
           url: previewUrl,
           type: 'POST',
@@ -67,7 +67,7 @@ export default function AjaxPreview(el, options) {
         });
       });
 
-      $(self).bind('show-preview', function(e, success, html) {
+      $(self).on('show-preview', function(e, success, html) {
         $preview.html(html);
         if ($.fn.lazyload) {
           $preview.find('img.lazy').lazyload();

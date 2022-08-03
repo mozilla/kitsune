@@ -28,7 +28,7 @@
 
         var intv = setInterval(function() {
             if(loaded <= 0) {
-                $(window).unbind('scroll');
+                $(window).off('scroll');
                 clearInterval(intv);
                 return;
             }

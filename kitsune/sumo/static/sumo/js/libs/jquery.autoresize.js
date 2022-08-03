@@ -93,7 +93,7 @@
 				return true;
 			}, this);
 
-			this.unbind();
+			this.off();
 
 			this.el
 				.bind('keyup.autoResize', check)
@@ -105,7 +105,7 @@
 		},
 
 		unbind: function() {
-			this.el.unbind('.autoResize');
+			this.el.off('.autoResize');
 		},
 
 		createClone: function() {
@@ -211,7 +211,7 @@
 		},
 
 		destroy: function() {
-			this.unbind();
+			this.off();
 			this.el.removeData('AutoResizer');
 			this.clone.remove();
 			delete this.el;

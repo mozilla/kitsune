@@ -34,7 +34,7 @@ describe('kbox', () => {
     });
 
     it('should open when the target is clicked', () => {
-      $('.kbox-target').click();
+      $('.kbox-target').trigger('click');
       expect($('.kbox-container').hasClass('kbox-open')).to.beTrue();
     });
 

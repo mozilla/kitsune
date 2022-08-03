@@ -5,7 +5,7 @@ $(document).ready(function() {
   var tabs = $('#search-tabs').tabs(),
     cache_search_date = $('.showhide-input');
 
-  $('#tab-wrapper form').submit(function() {
+  $('#tab-wrapper form').on("submit", function() {
     $('input.auto-fill').each(function() {
       if ($(this).val() === $(this).attr('placeholder')) {
         $(this).val('');

@@ -17,7 +17,7 @@ import Marky from "sumo/js/markup";
 
     new AjaxPreview($('#preview'));
 
-    $('.post-action a.reply').click(function() {
+    $('.post-action a.reply').on('click', function() {
       var post = $(this).data('post'),
         $post = $('#post-' + post),
         text = $post.find('div.content-raw').text(),
@@ -33,7 +33,7 @@ import Marky from "sumo/js/markup";
   }
   function watchDiscussion() {
     // For a thread on the all discussions for a locale.
-    $('.watch-form').click(function() {
+    $('.watch-form').on('click', function() {
       var form = $(this);
       $.post(form.attr('action'), form.serialize(), function() {
         form.find('a').toggleClass('yes').toggleClass('no');
@@ -81,6 +81,6 @@ import Marky from "sumo/js/markup";
     }
   });
 
-  $(document).ready(init);
+  jQuery(init);
 
 })(jQuery);

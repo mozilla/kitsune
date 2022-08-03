@@ -185,7 +185,7 @@ function initHaveThisProblemTooAjax() {
     initAjaxForm($(this), 'form', '#vote-thanks');
   });
 
-  $container.find('input').click(function() {
+  $container.find('input').on("click", function() {
     $(this).attr('disabled', 'disabled');
   });
 
@@ -193,7 +193,7 @@ function initHaveThisProblemTooAjax() {
   // all of them
   $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev) {
     ev.preventDefault();
-    $container.unbind().remove();
+    $container.off().remove();
   });
 }
 
@@ -269,7 +269,7 @@ function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
 }
 
 function initTagFilterToggle() {
-  $('#toggle-tag-filter').click(function(e) {
+  $('#toggle-tag-filter').on("click", function(e) {
     e.preventDefault();
     $('#tag-filter').slideToggle('fast');  // CSS3: Y U NO TRANSITION TO `height: auto;`?
     $(this).toggleClass('off');
@@ -306,7 +306,7 @@ function initCrashIdLinking() {
 }
 
 function initReplyToAnswer() {
-  $('a.quoted-reply').click(function() {
+  $('a.quoted-reply').on("click", function() {
     var contentId = $(this).data('content-id'),
       $content = $('#' + contentId),
       text = $content.find('.content-raw').text(),

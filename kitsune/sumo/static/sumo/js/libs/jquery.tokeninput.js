@@ -314,7 +314,7 @@ $.TokenList = function (input, url_or_data, settings) {
     // The list to store the token items in
     var token_list = $("<ul />")
         .addClass(settings.classes.tokenList)
-        .click(function (event) {
+        .on("click", function (event) {
             var li = $(event.target).closest("li");
             if(li && li.get(0) && $.data(li.get(0), "tokeninput")) {
                 toggle_select_token(li);
@@ -490,7 +490,7 @@ $.TokenList = function (input, url_or_data, settings) {
         $("<span>" + settings.deleteText + "</span>")
             .addClass(settings.classes.tokenDelete)
             .appendTo(this_token)
-            .click(function () {
+            .on("click", function () {
                 if (!settings.disabled) {
                     delete_token($(this).parent());
                     hidden_input.change();

@@ -48,7 +48,7 @@ function init($container) {
   }
 
   // When form is submitted, get the slugs to send over in request.
-  $form.submit(function() {
+  $form.on("submit", function() {
     var tagNames = $tags.val(),
       slugNames = [],
       currentSlugs = $form.find('input.current-tagged').val(),
@@ -57,7 +57,7 @@ function init($container) {
 
     // For each tag name, find the slug.
     _each(tagNames.split(','), function(tag) {
-      var trimmed = $.trim(tag),
+      var trimmed = tag.trim(),
         slug = lowerVocab[trimmed.toLowerCase()];
       if (slug) {
         slugNames.push(slug);
@@ -90,6 +90,6 @@ const TagsFilter = {
 };
 export default TagsFilter;
 
-$(document).ready(function() {
+$(function() {
   TagsFilter.init();
 });
