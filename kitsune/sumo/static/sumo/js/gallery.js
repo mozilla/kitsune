@@ -161,7 +161,7 @@ import "sumo/js/kbox";
 
       // Closing the modal with top-right X cancels upload drafts
       self.$modal.on('click', 'a.close', function(e) {
-        self.$modal.find('input[name="cancel"]:last').on("click", );
+        self.$modal.find('input[name="cancel"]:last').trigger("click");
       });
 
       // Submitting the form should call for validation first.
@@ -327,7 +327,7 @@ import "sumo/js/kbox";
       var self = this,
         type = $input.attr('name');
       // Cancel existing upload.
-      $('.progress.' + type).find('a.' + type).on("click", );
+      $('.progress.' + type).find('a.' + type).trigger("click");
       // Show an error message.
       self.setInputError($input, reason);
     },
@@ -484,7 +484,7 @@ import "sumo/js/kbox";
   if (document.location.hash === '#upload' ||
   $('#gallery-upload-type').hasClass('draft') ||
   $('body').hasClass('submitted')) {
-    $('#btn-upload').on("click", );
+    $('#btn-upload').trigger("click");
   }
 
 })(jQuery);

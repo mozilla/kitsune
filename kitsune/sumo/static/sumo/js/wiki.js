@@ -43,7 +43,7 @@ import ShowFor from "sumo/js/showfor";
       $('#id_comment').keypress(function(e) {
         if (e.which === 13) {
           $(this).trigger('blur');
-          $(this).closest('form').find('[type=submit]').trigger('submit');
+          $(this).closest('form').find('[type=submit]').trigger('click');
           return false;
         }
       });
@@ -167,7 +167,7 @@ import ShowFor from "sumo/js/showfor";
             // Opera already seems to trigger the `click` event when Enter is pressed
             if (!($.browser.opera && event.keyCode === 13)) {
               event.preventDefault();
-              $detailsSummary.on("click", );
+              $detailsSummary.trigger("click");
             }
           }
         });
@@ -326,7 +326,7 @@ import ShowFor from "sumo/js/showfor";
           // If form isn't valid, click the modal submit button
           // so the validation error is shown. (I couldn't find a
           // better way to trigger this.)
-          $modal.find('button[type="submit"]').on("click", );
+          $modal.find('button[type="submit"]').trigger("click");
           return false;
         }
         // Add this here because the "Submit for Review" button is

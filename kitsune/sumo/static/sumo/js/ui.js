@@ -19,18 +19,18 @@ import trackEvent from "sumo/js/analytics";
       }
     });
 
-    $(window).on('scroll', (_throttle(function() {
+    $(window).on('scroll', _throttle(function() {
       if ($(window).scrollTop() > $('body > header').outerHeight()) {
         $('body').addClass('scroll-header');
       } else {
         $('body').removeClass('scroll-header');
       }
-    }, 100)));
+    }, 100));
 
-    $('.ui-truncatable .show-more-link').on('click', (function(ev) {
+    $('.ui-truncatable .show-more-link').on('click', function(ev) {
       ev.preventDefault();
       $(this).closest('.ui-truncatable').removeClass('truncated');
-    }));
+    });
 
     $(document).on('click', '.close-button', function() {
       var $this = $(this);

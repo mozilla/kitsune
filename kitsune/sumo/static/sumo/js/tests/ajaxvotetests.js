@@ -34,7 +34,7 @@ describe('ajaxvote', () => {
         expect(data.url).to.equal('/vote');
         done();
       });
-      $('input[name="helpful"]').on("click", );
+      $('input[name="helpful"]').trigger("click");
     });
 
     it('should fire an event on an unhelpful vote', done => {

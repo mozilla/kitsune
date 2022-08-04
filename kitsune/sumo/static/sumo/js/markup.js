@@ -325,7 +325,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
       kbox;
 
     $html.find('li input[type="text"]').focus(function() {
-      $(this).closest('li').find('input[type="radio"]').on("click", );
+      $(this).closest('li').find('input[type="radio"]').trigger("click");
     });
 
     // Perform a query for the sections of an article if
