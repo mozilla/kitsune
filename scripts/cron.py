@@ -116,7 +116,7 @@ def job_update_product_details():
     minute="20",
     max_instances=1,
     coalesce=True,
-    skip=settings.READ_ONLY,
+    skip=(settings.READ_ONLY or settings.STAGE),
 )
 @babis.decorator(ping_after=settings.DMS_GENERATE_MISSING_SHARE_LINKS)
 def job_generate_missing_share_links():
