@@ -1,12 +1,11 @@
 import json
 from datetime import datetime, timedelta
-from unittest import mock
+from unittest import mock, skip
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
-from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -31,7 +30,7 @@ from kitsune.wiki.events import (
     ReviewableRevisionInLocaleEvent,
     get_diff_for,
 )
-from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Revision
+from kitsune.wiki.models import Document, HelpfulVote, HelpfulVoteMetadata, Locale, Revision
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
@@ -126,26 +125,29 @@ class DocumentTests(TestCaseBase):
         """Load the document view page and verify the title and content."""
         r = ApprovedRevisionFactory(summary="search summary", content="Some text.")
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(r.document.title, doc("h1.sumo-page-heading").text())
-        eq_(pq(r.document.html)("div").text(), doc("#doc-content div").text())
+        self.assertEqual(r.document.title, doc("h1.sumo-page-heading").text())
+        self.assertEqual(pq(r.document.html)("div").text(), doc("#doc-content div").text())
         # There's a canonical URL in the <head>.
-        eq_(
+        self.assertEqual(
             settings.CANONICAL_URL + r.document.get_absolute_url(),
             doc("link[rel=canonical]").attr("href"),
         )
         # The summary is in <meta name="description"...
-        eq_("search summary", doc("meta[name=description]").attr("content"))
+        self.assertEqual("search summary", doc("meta[name=description]").attr("content"))
 
     def test_english_document_no_approved_content(self):
         """Load an English document with no approved content."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = RevisionFactory(content="Some text.", is_approved=False)
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(r.document.title, doc("h1.sumo-page-heading").text())
-        eq_(
+        self.assertEqual(r.document.title, doc("h1.sumo-page-heading").text())
+        self.assertEqual(
             "This article doesn't have approved content yet.",
             doc("#doc-content").text(),
         )
@@ -153,53 +155,70 @@ class DocumentTests(TestCaseBase):
     def test_translation_document_no_approved_content(self):
         """Load a non-English document with no approved content, with a parent
         with no approved content either."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = RevisionFactory(content="Some text.", is_approved=False)
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, content="Moartext", is_approved=False)
         response = self.client.get(d2.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(d2.title, doc("h1.sumo-page-heading").text())
+        self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
         # Avoid depending on localization, assert just that there is only text
         # d.html would definitely have a <p> in it, at least.
-        eq_(doc("#doc-content").html().strip(), doc("#doc-content").text())
+        self.assertEqual(doc("#doc-content").html().strip(), doc("#doc-content").text())
 
     def test_document_fallback_with_translation(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = ApprovedRevisionFactory(content="Test")
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, is_approved=False)
         url = reverse("wiki.document", args=[d2.slug], locale="fr")
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(d2.title, doc("h1.sumo-page-heading").text())
+        self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
 
         # Fallback message is shown.
-        eq_(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#doc-pending-fallback")))
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()
         # Included content is English.
-        eq_(pq(r.document.html).text(), doc("#doc-content").text())
+        self.assertEqual(pq(r.document.html).text(), doc("#doc-content").text())
 
     def test_document_fallback_with_translation_english_slug(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions, while visiting the English slug."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         r = ApprovedRevisionFactory(content="Test")
         d2 = DocumentFactory(parent=r.document, locale="fr", slug="french")
         RevisionFactory(document=d2, is_approved=False)
         url = reverse("wiki.document", args=[r.document.slug], locale="fr")
         response = self.client.get(url, follow=True)
-        eq_("/fr/kb/french", response.redirect_chain[0][0])
+        self.assertEqual("/fr/kb/french", response.redirect_chain[0][0])
         doc = pq(response.content)
+        self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
         # Fallback message is shown.
-        eq_(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#doc-pending-fallback")))
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()
         # Included content is English.
-        eq_(pq(r.document.html).text(), doc("#doc-content").text())
+        self.assertEqual(pq(r.document.html).text(), doc("#doc-content").text())
+
+        self.client.logout()
+        # Users without permission to see unapproved documents will see the
+        # English document's title.
+        response = self.client.get(url)
+        doc = pq(response.content)
+        self.assertEqual(r.document.title, doc("h1.sumo-page-heading").text())
 
     def test_document_fallback_no_translation(self):
         """The document template falls back to English if no translation exists."""
@@ -208,12 +227,12 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
 
-        eq_(r.document.title, doc("h1.sumo-page-heading").text())
+        self.assertEqual(r.document.title, doc("h1.sumo-page-heading").text())
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()
         # Included content is English.
-        eq_(pq(r.document.html)("div").text(), doc("#doc-content div").text())
+        self.assertEqual(pq(r.document.html)("div").text(), doc("#doc-content div").text())
 
     def test_document_fallback_no_translation_not_ready_for_l10n(self):
         """Prompt to localize an article isn't shown when there is a pending localization."""
@@ -223,7 +242,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
         # Fallback message is not shown.
-        eq_(0, len(doc("#doc-pending-fallback")))
+        self.assertEqual(0, len(doc("#doc-pending-fallback")))
 
     def test_document_fallback_no_translation_ready_for_l10n(self):
         """Prompt to localize an article is shown when there are no pending localizations."""
@@ -233,7 +252,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
         # Fallback message is shown.
-        eq_(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#doc-pending-fallback")))
 
     def test_redirect(self):
         """Make sure documents with REDIRECT directives redirect properly.
@@ -241,6 +260,9 @@ class DocumentTests(TestCaseBase):
         Also check the backlink to the redirect page.
 
         """
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         target = DocumentFactory()
         target_url = target.get_absolute_url()
 
@@ -256,10 +278,15 @@ class DocumentTests(TestCaseBase):
         self.assertContains(response, redirect_url + "?redirect=no")
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
-        eq_(settings.CANONICAL_URL + target_url, doc("link[rel=canonical]").attr("href"))
+        self.assertEqual(
+            settings.CANONICAL_URL + target_url, doc("link[rel=canonical]").attr("href")
+        )
 
     def test_redirect_no_vote(self):
         """Make sure documents with REDIRECT directives have no vote form."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         target = DocumentFactory()
         redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
@@ -270,6 +297,9 @@ class DocumentTests(TestCaseBase):
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page
         doesn't exist."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory()
         response = self.client.get(
             urlparams(d.get_absolute_url(), redirectlocale="en-US", redirectslug="nonexistent")
@@ -278,8 +308,9 @@ class DocumentTests(TestCaseBase):
 
     def test_watch_includes_csrf(self):
         """The watch/unwatch forms should include the csrf tag."""
-        u = UserFactory()
-        self.client.login(username=u.username, password="testpass")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory()
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -287,8 +318,9 @@ class DocumentTests(TestCaseBase):
 
     def test_non_localizable_translate_disabled(self):
         """Non localizable document doesn't show tab for 'Localize'."""
-        u = UserFactory()
-        self.client.login(username=u.username, password="testpass")
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory(is_localizable=True)
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
@@ -303,6 +335,9 @@ class DocumentTests(TestCaseBase):
 
     def test_obsolete_hide_edit(self):
         """Make sure Edit sidebar link is hidden for obsolete articles."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         d = DocumentFactory(is_archived=True)
         r = self.client.get(d.get_absolute_url())
         doc = pq(r.content)
@@ -313,7 +348,7 @@ class DocumentTests(TestCaseBase):
         d = DocumentFactory(is_archived=True)
         RevisionFactory(document=d, is_approved=True)
         response = self.client.get(d.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         assert not doc(".document-vote")
 
@@ -324,9 +359,9 @@ class DocumentTests(TestCaseBase):
         r = ApprovedRevisionFactory(document=d)
 
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc("meta[name=robots]")))
+        self.assertEqual(0, len(doc("meta[name=robots]")))
 
         # Convert the document to a template and verify robots:noindex
         d.category = TEMPLATES_CATEGORY
@@ -337,18 +372,18 @@ class DocumentTests(TestCaseBase):
         cache.clear()
 
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(doc("meta[name=robots]")[0].attrib["content"], "noindex")
+        self.assertEqual(doc("meta[name=robots]")[0].attrib["content"], "noindex")
 
     def test_archived_noindex(self):
         """Archived documents should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
         r = ApprovedRevisionFactory(content="Some text.")
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc("meta[name=robots]")))
+        self.assertEqual(0, len(doc("meta[name=robots]")))
 
         # Archive the document and verify robots:noindex
         d = r.document
@@ -356,18 +391,18 @@ class DocumentTests(TestCaseBase):
         d.save()
         cache.clear()
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_("noindex", doc("meta[name=robots]")[0].attrib["content"])
+        self.assertEqual("noindex", doc("meta[name=robots]")[0].attrib["content"])
 
     def test_administration_noindex(self):
         """Administration documents should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
         r = ApprovedRevisionFactory(content="Some text.")
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc("meta[name=robots]")))
+        self.assertEqual(0, len(doc("meta[name=robots]")))
 
         # Archive the document and verify robots:noindex
         d = r.document
@@ -375,18 +410,18 @@ class DocumentTests(TestCaseBase):
         d.save()
         cache.clear()
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_("noindex", doc("meta[name=robots]")[0].attrib["content"])
+        self.assertEqual("noindex", doc("meta[name=robots]")[0].attrib["content"])
 
     def test_canned_responses_noindex(self):
         """Canned response documents should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
         r = ApprovedRevisionFactory(content="Some text.")
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc("meta[name=robots]")))
+        self.assertEqual(0, len(doc("meta[name=robots]")))
 
         # Archive the document and verify robots:noindex
         d = r.document
@@ -394,15 +429,15 @@ class DocumentTests(TestCaseBase):
         d.save()
         cache.clear()
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_("noindex", doc("meta[name=robots]")[0].attrib["content"])
+        self.assertEqual("noindex", doc("meta[name=robots]")[0].attrib["content"])
 
     def test_links_follow(self):
         """Links in kb should not have rel=nofollow"""
         r = ApprovedRevisionFactory(content="Some link http://test.com")
         response = self.client.get(r.document.get_absolute_url())
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         assert "rel" not in doc("#doc-content a")[0].attrib
 
@@ -412,7 +447,7 @@ class DocumentTests(TestCaseBase):
         exists."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
-        # Create an English document and a es translated document
+        # Create an English document and an es translated document
         en_rev = ApprovedRevisionFactory(is_ready_for_localization=True)
         trans_doc = DocumentFactory(parent=en_rev.document, locale="es")
         trans_rev = ApprovedRevisionFactory(document=trans_doc)
@@ -426,17 +461,17 @@ class DocumentTests(TestCaseBase):
         url = reverse("wiki.document", args=[en_rev.document.slug], locale="ca")
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(trans_doc.title, doc("h1.sumo-page-heading").text())
+        self.assertEqual(trans_doc.title, doc("h1.sumo-page-heading").text())
 
         # Display fallback message to the user.
-        eq_(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#doc-pending-fallback")))
         # Check Translate article is showing in the side tools bar
         assert "Translate Article" in doc("#editing-tools-sidebar").text()
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()
         # Check that content is available in es
-        eq_(pq(trans_doc.html)("div").text(), doc("#doc-content div").text())
+        self.assertEqual(pq(trans_doc.html)("div").text(), doc("#doc-content div").text())
 
     def test_document_share_link_escape(self):
         """Ensure that the share link isn't escaped."""
@@ -446,7 +481,7 @@ class DocumentTests(TestCaseBase):
         )
         response = self.client.get(r.document.get_absolute_url())
         doc = pq(response.content)
-        eq_(doc(".wiki-doc .share-link a").attr("href"), "https://www.example.org")
+        self.assertEqual(doc(".wiki-doc .share-link a").attr("href"), "https://www.example.org")
 
 
 class RevisionTests(TestCaseBase):
@@ -466,23 +501,23 @@ class RevisionTests(TestCaseBase):
         r.save()
         url = reverse("wiki.revision", args=[d.slug, r.id])
         response = self.client.get(url)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_("Revision id: %s" % r.id, doc("div.revision-info li").first().text())
-        eq_(d.title, doc("h1.sumo-page-heading").text())
-        eq_(pq(r.content_parsed)("div").text(), doc("#doc-content div").text())
-        eq_(
+        self.assertEqual("Revision id: %s" % r.id, doc("div.revision-info li").first().text())
+        self.assertEqual(d.title, doc("h1.sumo-page-heading").text())
+        self.assertEqual(pq(r.content_parsed)("div").text(), doc("#doc-content div").text())
+        self.assertEqual(
             "Created:\n              Jan 1, 2011, 12:00:00 AM",
             doc(".revision-info li")[1].text_content().strip(),
         )
-        eq_(
+        self.assertEqual(
             "Reviewed:\n                Jan 2, 2011, 12:00:00 AM",
             doc(".revision-info li")[5].text_content().strip(),
         )
         # is reviewed?
-        eq_("Yes", doc(".revision-info li").eq(4).find("span").text())
+        self.assertEqual("Yes", doc(".revision-info li").eq(4).find("span").text())
         # is current revision?
-        eq_("Yes", doc(".revision-info li").eq(8).find("span").text())
+        self.assertEqual("Yes", doc(".revision-info li").eq(8).find("span").text())
 
     @mock.patch.object(ReadyRevisionEvent, "fire")
     def test_mark_as_ready_POST(self, fire):
@@ -498,15 +533,15 @@ class RevisionTests(TestCaseBase):
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
         response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         r2 = Revision.objects.get(pk=r.pk)
 
         assert fire.called
         assert r2.is_ready_for_localization
         assert r2.readied_for_localization
-        eq_(r2.readied_for_localization_by, u)
-        eq_(r2.document.latest_localizable_revision, r2)
+        self.assertEqual(r2.readied_for_localization_by, u)
+        self.assertEqual(r2.document.latest_localizable_revision, r2)
 
     @mock.patch.object(ReadyRevisionEvent, "fire")
     def test_mark_as_ready_GET(self, fire):
@@ -520,7 +555,7 @@ class RevisionTests(TestCaseBase):
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
         response = self.client.get(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
         r2 = Revision.objects.get(pk=r.pk)
 
@@ -539,7 +574,7 @@ class RevisionTests(TestCaseBase):
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
         response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         r2 = Revision.objects.get(pk=r.pk)
 
@@ -555,7 +590,7 @@ class RevisionTests(TestCaseBase):
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
         response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         r2 = Revision.objects.get(pk=r.pk)
 
@@ -566,7 +601,8 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_approval(self, fire):
         """Mark an unapproved revision as ready for l10n must fail."""
 
-        r = RevisionFactory(is_approved=False, is_ready_for_localization=False)
+        doc = ApprovedRevisionFactory().document
+        r = RevisionFactory(document=doc, is_approved=False, is_ready_for_localization=False)
 
         u = UserFactory()
         add_permission(u, Revision, "mark_ready_for_l10n")
@@ -575,7 +611,7 @@ class RevisionTests(TestCaseBase):
         url = reverse("wiki.mark_ready_for_l10n_revision", args=[r.document.slug, r.id])
         response = self.client.post(url, data={}, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 
-        eq_(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
         r2 = Revision.objects.get(pk=r.pk)
 
@@ -596,9 +632,9 @@ class NewDocumentTests(TestCaseBase):
         """HTTP GET to new document URL renders the form."""
         self.client.login(username="admin", password="testpass")
         response = self.client.get(reverse("wiki.new_document"))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc('#document-form input[name="title"]')))
+        self.assertEqual(1, len(doc('#document-form input[name="title"]')))
 
     def test_new_document_form_defaults(self):
         """Verify that new document form defaults are correct."""
@@ -608,10 +644,10 @@ class NewDocumentTests(TestCaseBase):
         # TODO: Do we want to re-implement the initial product
         # checked? Maybe add a column to the table and use that to
         # figure out which are initial?
-        # eq_(1, len(doc('input[name="products"][checked=checked]')))
-        eq_(None, doc('input[name="tags"]').attr("required"))
-        eq_("checked", doc("input#id_allow_discussion").attr("checked"))
-        eq_(None, doc("input#id_allow_discussion").attr("required"))
+        # self.assertEqual(1, len(doc('input[name="products"][checked=checked]')))
+        self.assertEqual(None, doc('input[name="tags"]').attr("required"))
+        self.assertEqual("checked", doc("input#id_allow_discussion").attr("checked"))
+        self.assertEqual(None, doc("input#id_allow_discussion").attr("required"))
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, "fire")
     def test_new_document_POST(self, ready_fire):
@@ -620,13 +656,13 @@ class NewDocumentTests(TestCaseBase):
         data = new_document_data()
         response = self.client.post(reverse("wiki.new_document"), data, follow=True)
         d = Document.objects.get(title=data["title"])
-        eq_([("/en-US/kb/%s/history" % d.slug, 302)], response.redirect_chain)
-        eq_(settings.WIKI_DEFAULT_LANGUAGE, d.locale)
-        eq_(data["category"], d.category)
+        self.assertEqual([("/en-US/kb/%s/history" % d.slug, 302)], response.redirect_chain)
+        self.assertEqual(settings.WIKI_DEFAULT_LANGUAGE, d.locale)
+        self.assertEqual(data["category"], d.category)
         r = d.revisions.all()[0]
-        eq_(data["keywords"], r.keywords)
-        eq_(data["summary"], r.summary)
-        eq_(data["content"], r.content)
+        self.assertEqual(data["keywords"], r.keywords)
+        self.assertEqual(data["summary"], r.summary)
+        self.assertEqual(data["content"], r.content)
         assert ready_fire.called
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, "fire")
@@ -640,7 +676,7 @@ class NewDocumentTests(TestCaseBase):
         doc_locale = "es"
         self.client.post(reverse("wiki.new_document", locale=doc_locale), data, follow=True)
         d = Document.objects.get(title=data["title"])
-        eq_(doc_locale, d.locale)
+        self.assertEqual(doc_locale, d.locale)
         assert ready_fire.called
 
     def test_new_document_POST_empty_title(self):
@@ -651,8 +687,8 @@ class NewDocumentTests(TestCaseBase):
         response = self.client.post(reverse("wiki.new_document"), data, follow=True)
         doc = pq(response.content)
         ul = doc("#document-form > ul.errorlist")
-        eq_(1, len(ul))
-        eq_("Please provide a title.", ul("li").text())
+        self.assertEqual(1, len(ul))
+        self.assertEqual("Please provide a title.", ul("li").text())
 
     def test_new_document_POST_empty_content(self):
         """Trigger required field validation for content."""
@@ -662,8 +698,8 @@ class NewDocumentTests(TestCaseBase):
         response = self.client.post(reverse("wiki.new_document"), data, follow=True)
         doc = pq(response.content)
         ul = doc("#document-form > ul.errorlist")
-        eq_(1, len(ul))
-        eq_("Please provide content.", ul("li").text())
+        self.assertEqual(1, len(ul))
+        self.assertEqual("Please provide content.", ul("li").text())
 
     def test_new_document_POST_invalid_category(self):
         """Try to create a new document with an invalid category value."""
@@ -673,7 +709,7 @@ class NewDocumentTests(TestCaseBase):
         response = self.client.post(reverse("wiki.new_document"), data, follow=True)
         doc = pq(response.content)
         ul = doc("#document-form > ul.errorlist")
-        eq_(1, len(ul))
+        self.assertEqual(1, len(ul))
         assert "Select a valid choice. 963 is not one of the available choices." in ul("li").text()
 
     def test_new_document_missing_category(self):
@@ -698,8 +734,8 @@ class NewDocumentTests(TestCaseBase):
         response = self.client.post(reverse("wiki.new_document"), data, follow=True)
         doc = pq(response.content)
         ul = doc("#document-form > ul.errorlist")
-        eq_(1, len(ul))
-        eq_(
+        self.assertEqual(1, len(ul))
+        self.assertEqual(
             "Select a valid choice. l337 is not one of the available choices. "
             "Please select at least one product.",
             ul("li").text(),
@@ -713,11 +749,11 @@ class NewDocumentTests(TestCaseBase):
         data = new_document_data()
         data["slug"] = d.slug
         response = self.client.post(reverse("wiki.new_document"), data)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         ul = doc("#document-form > ul.errorlist")
-        eq_(1, len(ul))
-        eq_("Document with this Slug and Locale already exists.", ul("li").text())
+        self.assertEqual(1, len(ul))
+        self.assertEqual("Document with this Slug and Locale already exists.", ul("li").text())
 
     def test_title_collision_validation(self):
         """Trying to create document with existing locale/slug should
@@ -727,11 +763,11 @@ class NewDocumentTests(TestCaseBase):
         data = new_document_data()
         data["title"] = d.title
         response = self.client.post(reverse("wiki.new_document"), data)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         ul = doc("#document-form > ul.errorlist")
-        eq_(1, len(ul))
-        eq_("Document with this Title and Locale already exists.", ul("li").text())
+        self.assertEqual(1, len(ul))
+        self.assertEqual("Document with this Title and Locale already exists.", ul("li").text())
 
     @mock.patch.object(Site.objects, "get_current")
     def test_slug_3_chars(self, get_current):
@@ -741,8 +777,8 @@ class NewDocumentTests(TestCaseBase):
         data = new_document_data()
         data["slug"] = "ask"
         response = self.client.post(reverse("wiki.new_document"), data)
-        eq_(302, response.status_code)
-        eq_("ask", Document.objects.order_by("-id")[0].slug)
+        self.assertEqual(302, response.status_code)
+        self.assertEqual("ask", Document.objects.order_by("-id")[0].slug)
 
 
 class NewRevisionTests(TestCaseBase):
@@ -760,17 +796,17 @@ class NewRevisionTests(TestCaseBase):
         """Creating a revision without being logged in redirects to login page."""
         self.client.logout()
         response = self.client.get(reverse("wiki.edit_document", args=[self.d.slug]))
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_new_revision_GET_with_perm(self):
         """HTTP GET to new revision URL renders the form."""
         response = self.client.get(reverse("wiki.edit_document", args=[self.d.slug]))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc('#revision-form textarea[name="content"]')))
+        self.assertEqual(1, len(doc('#revision-form textarea[name="content"]')))
         comment = doc("#id_comment")[0]
         assert "value" not in comment.attrib
-        eq_("255", comment.attrib["maxlength"])
+        self.assertEqual("255", comment.attrib["maxlength"])
 
     def test_new_revision_GET_based_on(self):
         """HTTP GET to new revision URL based on another revision.
@@ -790,11 +826,11 @@ class NewRevisionTests(TestCaseBase):
 
         add_permission(self.user, Revision, "edit_keywords")
         response = self.client.get(reverse("wiki.new_revision_based_on", args=[self.d.slug, r.id]))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(doc("#id_keywords")[0].value, r.keywords)
-        eq_(doc("#id_summary")[0].value.strip(), r.summary)
-        eq_(doc("#id_content")[0].value.strip(), r.content)
+        self.assertEqual(doc("#id_keywords")[0].value, r.keywords)
+        self.assertEqual(doc("#id_summary")[0].value.strip(), r.summary)
+        self.assertEqual(doc("#id_content")[0].value.strip(), r.content)
 
     @mock.patch.object(Site.objects, "get_current")
     @mock.patch.object(settings._wrapped, "TIDINGS_CONFIRM_ANONYMOUS_WATCHES", False)
@@ -835,10 +871,10 @@ class NewRevisionTests(TestCaseBase):
                 "form": "rev",
             },
         )
-        eq_(302, response.status_code)
-        eq_(2, self.d.revisions.count())
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(2, self.d.revisions.count())
         new_rev = self.d.revisions.order_by("-id")[0]
-        eq_(self.d.current_revision, new_rev.based_on)
+        self.assertEqual(self.d.current_revision, new_rev.based_on)
 
         if new_rev.based_on is not None:
             diff = get_diff_for(new_rev.based_on.document, new_rev.based_on, new_rev)
@@ -846,7 +882,7 @@ class NewRevisionTests(TestCaseBase):
             diff = ""  # No based_on, so diff wouldn't make sense.
 
         # Assert notifications fired and have the expected content:
-        eq_(2, len(mail.outbox))
+        self.assertEqual(2, len(mail.outbox))
         attrs_eq(
             mail.outbox[0],
             subject="%s is ready for review (%s)" % (self.d.title, new_rev.creator),
@@ -891,6 +927,10 @@ class NewRevisionTests(TestCaseBase):
         the document fields are open for editing.
 
         """
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
+
         get_current.return_value.domain = "testserver"
 
         self.d.current_revision = None
@@ -898,29 +938,32 @@ class NewRevisionTests(TestCaseBase):
         data = new_document_data()
         data["form"] = "rev"
         response = self.client.post(reverse("wiki.edit_document", args=[self.d.slug]), data)
-        eq_(302, response.status_code)
-        eq_(2, self.d.revisions.count())
+        self.assertEqual(302, response.status_code)
+        self.assertEqual(2, self.d.revisions.count())
 
         new_rev = self.d.revisions.order_by("-id")[0]
         # There are no approved revisions, so it's based_on nothing:
-        eq_(None, new_rev.based_on)
+        self.assertEqual(None, new_rev.based_on)
         assert edited_fire.called
         assert ready_fire.called
 
     def test_edit_document_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
         that document."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         self.d.current_revision = None
         self.d.save()
         topics = [TopicFactory(), TopicFactory(), TopicFactory()]
         self.d.topics.add(*topics)
-        eq_(self.d.topics.count(), len(topics))
+        self.assertEqual(self.d.topics.count(), len(topics))
         new_topics = [topics[0], TopicFactory()]
         data = new_document_data(t.id for t in new_topics)
         data["form"] = "doc"
         self.client.post(reverse("wiki.edit_document", args=[self.d.slug]), data)
         topic_ids = self.d.topics.values_list("id", flat=True)
-        eq_(2, len(topic_ids))
+        self.assertEqual(2, len(topic_ids))
         assert new_topics[0].id in topic_ids
         assert new_topics[1].id in topic_ids
 
@@ -1004,11 +1047,11 @@ class NewRevisionTests(TestCaseBase):
                 "form": "rev",
             },
         )
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
         # Keywords should remain the same as in old revision.
         new_rev = Revision.objects.filter(document=doc).order_by("-id")[0]
-        eq_(old_rev.keywords, new_rev.keywords)
+        self.assertEqual(old_rev.keywords, new_rev.keywords)
 
         # Grant the permission.
         add_permission(u, Revision, "edit_keywords")
@@ -1024,11 +1067,11 @@ class NewRevisionTests(TestCaseBase):
                 "form": "rev",
             },
         )
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
         # Keywords should be updated now
         new_rev = Revision.objects.filter(document=doc).order_by("-id")[0]
-        eq_("keyword1 keyword2", new_rev.keywords)
+        self.assertEqual("keyword1 keyword2", new_rev.keywords)
 
     def test_draft_button(self):
         rev = ApprovedRevisionFactory(
@@ -1038,10 +1081,10 @@ class NewRevisionTests(TestCaseBase):
         # Check the Translation page has Save Draft Button
         trans_url = reverse("wiki.translate", locale="bn", args=[doc.slug])
         trans_resp = self.client.get(trans_url)
-        eq_(200, trans_resp.status_code)
+        self.assertEqual(200, trans_resp.status_code)
         trans_content = pq(trans_resp.content)
-        eq_(0, len(trans_content(".user-messages .mzp-c-notification-bar")))
-        eq_(2, len(trans_content(".submit .btn-draft")))
+        self.assertEqual(0, len(trans_content(".user-messages .mzp-c-notification-bar")))
+        self.assertEqual(2, len(trans_content(".submit .btn-draft")))
 
     def test_restore_draft_revision(self):
         draft = DraftRevisionFactory(creator=self.user)
@@ -1049,24 +1092,24 @@ class NewRevisionTests(TestCaseBase):
         trans_resp = self.client.get(trans_url)
         trans_content = pq(trans_resp.content)
         # Check user message is shown there
-        eq_(1, len(trans_content(".user-messages .mzp-c-notification-bar")))
+        self.assertEqual(1, len(trans_content(".user-messages .mzp-c-notification-bar")))
         # Check there are two buttons for restore and discard
-        eq_(2, len(trans_content(".user-messages .info form .btn")))
+        self.assertEqual(2, len(trans_content(".user-messages .info form .btn")))
         # Restore with the draft data
         draft_request = {"restore": "Restore"}
-        trans_resp = self.client.get(trans_url, draft_request)
+        trans_resp = self.client.post(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # No user message is shown there
-        eq_(0, len(trans_content(".user-messages .mzp-c-notification-bar")))
+        self.assertEqual(1, len(trans_content(".user-messages .mzp-c-notification-bar")))
         # Check title, slug, keywords, content etc are restored
-        eq_(draft.title, trans_content("#id_title").val())
-        eq_(draft.slug, trans_content("#id_slug").val())
-        eq_(draft.keywords, trans_content("#id_keywords").val())
-        eq_(draft.summary, trans_content("#id_summary").text())
-        eq_(draft.content, trans_content("#id_content").text())
-        eq_(draft.based_on.id, int(trans_content("#id_based_on").val()))
+        self.assertEqual(draft.title, trans_content("#id_title").val())
+        self.assertEqual(draft.slug, trans_content("#id_slug").val())
+        self.assertEqual(draft.keywords, trans_content("#id_keywords").val())
+        self.assertEqual("\n" + draft.summary, trans_content("#id_summary").text())
+        self.assertEqual("\n" + draft.content, trans_content("#id_content").text())
+        self.assertEqual(draft.based_on.id, int(trans_content("#id_based_on").val()))
 
-    @nottest
+    @skip("Disable revision restore test")
     def test_restore_draft_revision_with_older_based_on(self):
         """Test restoring a draft which is based on an old based on"""
         draft = DraftRevisionFactory(creator=self.user)
@@ -1078,13 +1121,13 @@ class NewRevisionTests(TestCaseBase):
         trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
         trans_resp = self.client.get(trans_url)
         trans_content = pq(trans_resp.content)
-        eq_(rev2.content, trans_content(".content textarea").text())
+        self.assertEqual(rev2.content, trans_content(".content textarea").text())
         # Now Restore the draft which is based on the past revision
         draft_request = {"restore": "Restore"}
         cache.clear()
         trans_resp = self.client.get(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
-        eq_(rev1.content, trans_content(".content textarea").text())
+        self.assertEqual(rev1.content, trans_content(".content textarea").text())
         # As the old based on draft is restored, the latest revision content should not be there
         assert rev2.content != trans_content(".content textarea").text()
 
@@ -1108,13 +1151,13 @@ class NewRevisionTests(TestCaseBase):
         # Now Restore the draft
         draft_request = {"restore": "Restore"}
         trans_url = reverse("wiki.translate", locale=trans.locale, args=[doc.slug])
-        trans_resp = self.client.get(trans_url, draft_request)
+        trans_resp = self.client.post(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # Check the data is restored
-        eq_(draft.keywords, trans_content("#id_keywords").val())
-        eq_(draft.summary, trans_content("#id_summary").text())
-        eq_(draft.content, trans_content("#id_content").text())
-        eq_(draft.based_on.id, int(trans_content("#id_based_on").val()))
+        self.assertEqual(draft.keywords, trans_content("#id_keywords").val())
+        self.assertEqual("\n" + draft.summary, trans_content("#id_summary").text())
+        self.assertEqual("\n" + draft.content, trans_content("#id_content").text())
+        self.assertEqual(draft.based_on.id, int(trans_content("#id_based_on").val()))
 
     def test_warning_showing_while_new_revision(self):
         """Check warning is being showed if another updated revision"""
@@ -1133,10 +1176,10 @@ class NewRevisionTests(TestCaseBase):
         # Now restore the draft
         draft_request = {"restore": "Restore"}
         trans_url = reverse("wiki.translate", locale=draft.locale, args=[doc.slug])
-        trans_resp = self.client.get(trans_url, draft_request)
+        trans_resp = self.client.post(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # Check there is a warning message
-        eq_(1, len(trans_content(".user-messages .draft-warning")))
+        self.assertEqual(1, len(trans_content(".user-messages .draft-warning")))
 
 
 class HistoryTests(TestCaseBase):
@@ -1151,20 +1194,23 @@ class HistoryTests(TestCaseBase):
         # Create a document and verify there is no robots:noindex
         r = ApprovedRevisionFactory(content="Some text.")
         response = get(self.client, "wiki.document_revisions", args=[r.document.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_("noindex, nofollow", doc("meta[name=robots]")[0].attrib["content"])
+        self.assertEqual("noindex, nofollow", doc("meta[name=robots]")[0].attrib["content"])
 
     def test_history_category_appears(self):
         """Document history should have a category on page"""
         category = CATEGORIES[1]
         r = ApprovedRevisionFactory(content="Some text.", document__category=category[0])
         response = get(self.client, "wiki.document_revisions", args=[r.document.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         self.assertContains(response, category[1])
 
     def test_translation_history_with_english_slug(self):
         """Request in en-US slug but translated locale should redirect to translation history"""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         trans = DocumentFactory(parent=doc, locale="bn", slug="bn_trans_slug")
         ApprovedRevisionFactory(document=trans)
@@ -1172,17 +1218,20 @@ class HistoryTests(TestCaseBase):
         url = reverse("wiki.document_revisions", args=[doc.slug], locale=trans.locale)
         response = self.client.get(url)
         # Check redirection happens
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
         url = "/bn/kb/bn_trans_slug/history"
-        eq_(url, response["Location"])
+        self.assertEqual(url, response["Location"])
 
     def test_translation_history_with_english_slug_while_no_trans(self):
         """Request in en-US slug but untranslated locale should raise 404"""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         url = reverse("wiki.document_revisions", args=[doc.slug], locale="bn")
         response = self.client.get(url)
         # Check raises 404 error
-        eq_(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
 
 class DocumentEditTests(TestCaseBase):
@@ -1202,11 +1251,11 @@ class DocumentEditTests(TestCaseBase):
         _create_document(title="Document Prueba", parent=self.d, locale="es")
         # Make sure is_localizable hidden field is rendered
         response = get(self.client, "wiki.edit_document", args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         is_localizable = doc('input[name="is_localizable"]')
-        eq_(1, len(is_localizable))
-        eq_("True", is_localizable[0].attrib["value"])
+        self.assertEqual(1, len(is_localizable))
+        self.assertEqual("True", is_localizable[0].attrib["value"])
         # And make sure we can update the document
         data = new_document_data()
         new_title = "A brand new title"
@@ -1214,9 +1263,9 @@ class DocumentEditTests(TestCaseBase):
         data.update(form="doc")
         data.update(is_localizable="True")
         response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
-        eq_(new_title, doc.title)
+        self.assertEqual(new_title, doc.title)
 
     def test_change_slug_case(self):
         """Changing the case of some letters in the slug should work."""
@@ -1225,9 +1274,9 @@ class DocumentEditTests(TestCaseBase):
         data.update(slug=new_slug)
         data.update(form="doc")
         response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
-        eq_(new_slug, doc.slug)
+        self.assertEqual(new_slug, doc.slug)
 
     def test_change_title_case(self):
         """Changing the case of some letters in the title should work."""
@@ -1236,9 +1285,9 @@ class DocumentEditTests(TestCaseBase):
         data.update(title=new_title)
         data.update(form="doc")
         response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
-        eq_(new_title, doc.title)
+        self.assertEqual(new_title, doc.title)
 
     def test_archive_permission_off(self):
         """Shouldn't be able to change is_archive bit without permission."""
@@ -1249,7 +1298,7 @@ class DocumentEditTests(TestCaseBase):
         # Try to set is_archived, even though we shouldn't have permission to:
         data.update(form="doc", is_archived="on")
         response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
         assert not doc.is_archived
 
@@ -1263,7 +1312,7 @@ class DocumentEditTests(TestCaseBase):
         data = new_document_data()
         data.update(form="doc", is_archived="on")
         response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
         assert doc.is_archived
 
@@ -1274,7 +1323,7 @@ class DocumentEditTests(TestCaseBase):
         data["form"] = "rev"
         data["notify-future-changes"] = "Yes"
         response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert notify_on_edit.called
 
     @mock.patch.object(EditDocumentEvent, "notify")
@@ -1283,7 +1332,7 @@ class DocumentEditTests(TestCaseBase):
         data = new_document_data()
         data["form"] = "rev"
         response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert not notify_on_edit.called
 
 
@@ -1304,7 +1353,7 @@ class DocumentListTests(TestCaseBase):
         response = self.client.get(reverse("wiki.category", args=[self.doc.category]))
         doc = pq(response.content)
         cat = self.doc.category
-        eq_(
+        self.assertEqual(
             Document.objects.filter(category=cat, locale=self.locale).count(),
             len(doc("#document-list ul.documents li")),
         )
@@ -1313,7 +1362,7 @@ class DocumentListTests(TestCaseBase):
         """Verify the all documents list view."""
         response = self.client.get(reverse("wiki.all_documents"))
         doc = pq(response.content)
-        eq_(
+        self.assertEqual(
             Document.objects.filter(locale=self.locale).count(),
             len(doc("#document-list ul.documents li")),
         )
@@ -1344,12 +1393,12 @@ class DocumentRevisionsTests(TestCaseBase):
             creator=creator,
         )
         response = self.client.get(reverse("wiki.document_revisions", args=[d.slug]))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(4, len(doc("#revision-list tr")))
+        self.assertEqual(4, len(doc("#revision-list tr")))
         # Verify there is no Review link
-        eq_(0, len(doc("#revision-list th.status a")))
-        eq_(
+        self.assertEqual(0, len(doc("#revision-list th.status a")))
+        self.assertEqual(
             "Unreviewed",
             doc("#revision-list td.status").first().text(),
         )
@@ -1359,15 +1408,15 @@ class DocumentRevisionsTests(TestCaseBase):
         add_permission(reviewer, Revision, "review_revision")
         self.client.login(username=reviewer.username, password="testpass")
         response = self.client.get(reverse("wiki.document_revisions", args=[d.slug]))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
 
         # Verify there are Review links now
-        eq_(2, len(doc("#revision-list td.status a")))
-        eq_("Review", doc("#revision-list td.status").first().text())
+        self.assertEqual(2, len(doc("#revision-list td.status a")))
+        self.assertEqual("Review", doc("#revision-list td.status").first().text())
 
         # Verify edit revision link
-        eq_(
+        self.assertEqual(
             "/en-US/kb/{slug}/edit/{rev_id}".format(slug=d.slug, rev_id=r2.id),
             doc("#revision-list td.edit a")[0].attrib["href"],
         )
@@ -1394,14 +1443,14 @@ class DocumentRevisionsTests(TestCaseBase):
         )
 
         response = self.client.get(reverse("wiki.document_revisions", args=[r1.document.slug]))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("#revision-list table th.l10n")))
+        self.assertEqual(1, len(doc("#revision-list table th.l10n")))
 
         response = self.client.get(reverse("wiki.document_revisions", args=[d2.slug], locale="es"))
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc("#revision-list th.l10n-head")))
+        self.assertEqual(0, len(doc("#revision-list th.l10n-head")))
 
 
 class ReviewRevisionTests(TestCaseBase):
@@ -1479,14 +1528,14 @@ class ReviewRevisionTests(TestCaseBase):
             args=[self.document.slug, self.revision.id],
         )
 
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         r = Revision.objects.get(pk=self.revision.id)
-        eq_(significance, r.significance)
+        self.assertEqual(significance, r.significance)
         assert r.reviewed
         assert r.is_approved
         assert r.document.needs_change
         assert not r.is_ready_for_localization
-        eq_("comment", r.document.needs_change_comment)
+        self.assertEqual("comment", r.document.needs_change_comment)
 
         # Verify that revision creator is now in contributors
         assert r.creator in self.document.contributors.all()
@@ -1513,7 +1562,7 @@ class ReviewRevisionTests(TestCaseBase):
             "content": r.content,
         }
 
-        eq_(1, len(mail.outbox))
+        self.assertEqual(1, len(mail.outbox))
         attrs_eq(
             mail.outbox[0],
             subject=(
@@ -1544,11 +1593,11 @@ class ReviewRevisionTests(TestCaseBase):
             args=[self.document.slug, self.revision.id],
         )
 
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         r = Revision.objects.get(pk=self.revision.id)
         assert r.is_ready_for_localization
-        eq_(r.reviewer, r.readied_for_localization_by)
-        eq_(r.reviewed, r.readied_for_localization)
+        self.assertEqual(r.reviewer, r.readied_for_localization_by)
+        self.assertEqual(r.reviewed, r.readied_for_localization)
 
     @mock.patch.object(send_reviewed_notification, "delay")
     @mock.patch.object(Site.objects, "get_current")
@@ -1563,7 +1612,7 @@ class ReviewRevisionTests(TestCaseBase):
             {"reject": "Reject Revision", "comment": comment},
             args=[self.document.slug, self.revision.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         r = Revision.objects.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
@@ -1591,13 +1640,13 @@ class ReviewRevisionTests(TestCaseBase):
             {"reject": "Reject Revision", "comment": comment},
             args=[d.slug, self.revision.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         r = Revision.objects.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
         d = Document.objects.get(pk=d.pk)
         assert d.needs_change
-        eq_(comment, d.needs_change_comment)
+        self.assertEqual(comment, d.needs_change_comment)
 
     def test_review_without_permission(self):
         """Make sure unauthorized users can't review revisions."""
@@ -1609,7 +1658,7 @@ class ReviewRevisionTests(TestCaseBase):
             {"reject": "Reject Revision"},
             args=[self.document.slug, self.revision.id],
         )
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_review_as_l10n_leader(self):
         """Reviewing a revision as an l10n leader should work."""
@@ -1623,7 +1672,7 @@ class ReviewRevisionTests(TestCaseBase):
             {"reject": "Reject Revision"},
             args=[self.document.slug, self.revision.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_review_as_l10n_reviewer(self):
         """Reviewing a revision as an l10n reviewer should work."""
@@ -1637,7 +1686,7 @@ class ReviewRevisionTests(TestCaseBase):
             {"reject": "Reject Revision"},
             args=[self.document.slug, self.revision.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_review_logged_out(self):
         """Make sure logged out users can't review revisions."""
@@ -1649,8 +1698,8 @@ class ReviewRevisionTests(TestCaseBase):
             args=[self.document.slug, self.revision.id],
         )
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/{0}{1}?next=/en-US/kb/test-document/review/{2}".format(
                 settings.LANGUAGE_CODE, settings.LOGIN_URL, str(self.revision.id)
             ),
@@ -1696,7 +1745,7 @@ class ReviewRevisionTests(TestCaseBase):
         self.client.login(username="admin", password="testpass")
         url = reverse("wiki.review_revision", locale="es", args=[doc_es.slug, rev_es2.id])
         response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         diff_heading = doc("div.revision-diff h3").text()
         assert str(rev_es1.based_on.id) in diff_heading
@@ -1706,10 +1755,10 @@ class ReviewRevisionTests(TestCaseBase):
         response = self.client.post(
             url, {"approve": "Approve Translation", "comment": "something"}, follow=True
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         d = Document.objects.get(pk=doc_es.id)
         r = Revision.objects.get(pk=rev_es2.id)
-        eq_(d.current_revision, r)
+        self.assertEqual(d.current_revision, r)
         assert r.reviewed
         assert r.is_approved
 
@@ -1735,11 +1784,11 @@ class ReviewRevisionTests(TestCaseBase):
         self.client.login(username="admin", password="testpass")
         url = reverse("wiki.review_revision", args=[es_document.slug, es_revision.id])
         response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         # There's no 'Recent English Changes' <details> section
-        eq_(3, len(doc("details")))
-        eq_("Approved English version:", doc("#content-fields h3").eq(0).text())
+        self.assertEqual(3, len(doc("details")))
+        self.assertEqual("Approved English version:", doc("#content-fields h3").eq(0).text())
         rev_message = doc("#content-fields p").eq(0).text()
         assert "by %s" % en_revision.creator.username in rev_message
 
@@ -1765,11 +1814,11 @@ class ReviewRevisionTests(TestCaseBase):
         self.client.login(username="admin", password="testpass")
         url = reverse("wiki.review_revision", args=[es_document.slug, es_revision.id])
         response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         # There's no 'Recent English Changes' <details> section
-        eq_(3, len(doc("details")))
-        eq_(
+        self.assertEqual(3, len(doc("details")))
+        self.assertEqual(
             "The English version has no approved content to show.",
             doc("details .warning-box").text(),
         )
@@ -1781,9 +1830,9 @@ class ReviewRevisionTests(TestCaseBase):
             "wiki.review_revision",
             args=[self.document.slug, self.revision.id],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(
+        self.assertEqual(
             MEDIUM_SIGNIFICANCE,
             int(doc("input[name=significance][checked]")[0].attrib["value"]),
         )
@@ -1799,9 +1848,9 @@ class ReviewRevisionTests(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
 
         response = get(self.client, "wiki.review_revision", args=[rev.document.slug, rev.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(0, len(doc('textarea[name="comment"]')))
+        self.assertEqual(0, len(doc('textarea[name="comment"]')))
 
     def test_self_approve_with_revision_contributors(self):
         """Verify review page when self approving and other contributors.
@@ -1815,10 +1864,10 @@ class ReviewRevisionTests(TestCaseBase):
         self.client.login(username=u.username, password="testpass")
 
         response = get(self.client, "wiki.review_revision", args=[rev2.document.slug, rev2.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         doc = pq(response.content)
-        eq_(2, len(doc('textarea[name="comment"]')))
+        self.assertEqual(2, len(doc('textarea[name="comment"]')))
         label = doc("div.message label").text()
         assert rev1.creator.username in label
         assert u.username not in label
@@ -1835,7 +1884,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # Get the data of the document
         response = get(self.client, "wiki.review_revision", args=[r1.document.slug, r1.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         message1 = "A newer revision has already been reviewed."
         message2 = (
             "This revision is outdated, but there is a new revision available. "
@@ -1870,7 +1919,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # Review the latest revision and Get the data of the document
         response = get(self.client, "wiki.review_revision", args=[d.slug, revs[6].id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         # Check there is comment of the revision that is being reviewed
         doc = pq(response.content)
@@ -1884,7 +1933,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         # Check *Revision Comment* text is in <label> to to be bolded
         text = doc("ul.revision-comment li label")[0].text_content()
-        eq_("Revision Comment:", text)
+        self.assertEqual("Revision Comment:", text)
 
         # Check whether past revisions Comments are there
         # As the comments are reversed means that the latest ones comment will be at 1st
@@ -1948,7 +1997,7 @@ class CompareRevisionTests(TestCaseBase):
         query = {"from": self.revision1.id, "to": self.revision2.id}
         url = urlparams(url, **query)
         response = self.client.get(url)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_compare_revisions_invalid_to_int(self):
         """Provide invalid 'to' int for revision ids."""
@@ -1956,7 +2005,7 @@ class CompareRevisionTests(TestCaseBase):
         query = {"from": "", "to": "invalid"}
         url = urlparams(url, **query)
         response = self.client.get(url)
-        eq_(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_compare_revisions_invalid_from_int(self):
         """Provide invalid 'from' int for revision ids."""
@@ -1964,7 +2013,7 @@ class CompareRevisionTests(TestCaseBase):
         query = {"from": "invalid", "to": ""}
         url = urlparams(url, **query)
         response = self.client.get(url)
-        eq_(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
     def test_compare_revisions_missing_query_param(self):
         """Try to compare two revisions, with a missing query string param."""
@@ -1972,13 +2021,13 @@ class CompareRevisionTests(TestCaseBase):
         query = {"from": self.revision1.id}
         url = urlparams(url, **query)
         response = self.client.get(url)
-        eq_(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
         url = reverse("wiki.compare_revisions", args=[self.document.slug])
         query = {"to": self.revision1.id}
         url = urlparams(url, **query)
         response = self.client.get(url)
-        eq_(404, response.status_code)
+        self.assertEqual(404, response.status_code)
 
 
 class TranslateTests(TestCaseBase):
@@ -1996,17 +2045,17 @@ class TranslateTests(TestCaseBase):
         self.client.logout()
         url = reverse("wiki.translate", locale="es", args=[self.d.slug])
         response = self.client.get(url)
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
     def test_translate_GET_with_perm(self):
         """HTTP GET to translate URL renders the form."""
         url = reverse("wiki.translate", locale="es", args=[self.d.slug])
         response = self.client.get(url)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc('form textarea[name="content"]')))
+        self.assertEqual(1, len(doc('form textarea[name="content"]')))
         assert "value" not in doc("#id_comment")[0].attrib
-        eq_("checked", doc("#id_allow_discussion")[0].attrib["checked"])
+        self.assertEqual("checked", doc("#id_allow_discussion")[0].attrib["checked"])
 
     def test_translate_disallow(self):
         """HTTP GET to translate URL returns 400 when not localizable."""
@@ -2014,7 +2063,7 @@ class TranslateTests(TestCaseBase):
         self.d.save()
         url = reverse("wiki.translate", locale="es", args=[self.d.slug])
         response = self.client.get(url)
-        eq_(400, response.status_code)
+        self.assertEqual(400, response.status_code)
 
     def test_invalid_document_form(self):
         """Make sure we handle invalid document form without a 500."""
@@ -2022,7 +2071,7 @@ class TranslateTests(TestCaseBase):
         data = _translation_data()
         data["slug"] = ""  # Invalid slug
         response = self.client.post(url, data)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_invalid_revision_form(self):
         """When creating a new translation, an invalid revision form shouldn't
@@ -2031,8 +2080,8 @@ class TranslateTests(TestCaseBase):
         data = _translation_data()
         data["content"] = ""  # Content is required
         response = self.client.post(url, data)
-        eq_(200, response.status_code)
-        eq_(0, self.d.translations.count())
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, self.d.translations.count())
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, "fire")
     @mock.patch.object(EditDocumentEvent, "fire")
@@ -2044,15 +2093,15 @@ class TranslateTests(TestCaseBase):
         url = reverse("wiki.translate", locale="es", args=[self.d.slug])
         data = _translation_data()
         response = self.client.post(url, data)
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
         new_doc = Document.objects.get(slug=data["slug"])
-        eq_("es", new_doc.locale)
-        eq_(data["title"], new_doc.title)
-        eq_(self.d, new_doc.parent)
+        self.assertEqual("es", new_doc.locale)
+        self.assertEqual(data["title"], new_doc.title)
+        self.assertEqual(self.d, new_doc.parent)
         rev = new_doc.revisions.all()[0]
-        eq_(data["keywords"], rev.keywords)
-        eq_(data["summary"], rev.summary)
-        eq_(data["content"], rev.content)
+        self.assertEqual(data["keywords"], rev.keywords)
+        self.assertEqual(data["summary"], rev.summary)
+        self.assertEqual(data["content"], rev.content)
         assert edited_fire.called
         assert ready_fire.called
 
@@ -2089,21 +2138,21 @@ class TranslateTests(TestCaseBase):
         url = reverse("wiki.translate", locale="es", args=[self.d.slug])
         response = self.client.get(url)
         doc = pq(response.content)
-        eq_(rev_es.content, doc("#id_content").text())
-        eq_(rev_enUS.content, doc("#content-fields textarea[readonly]").text())
-        eq_(2, len(doc(".recent-revisions li")))
+        self.assertEqual("\n" + rev_es.content, doc("#id_content").text())
+        self.assertEqual(rev_enUS.content, doc("#content-fields textarea[readonly]").text())
+        self.assertEqual(2, len(doc(".recent-revisions li")))
 
         # Post the translation and verify
         data = _translation_data()
         data["content"] = "loremo ipsumo doloro sito ameto nuevo"
         response = self.client.post(url, data)
-        eq_(302, response.status_code)
-        eq_("/es/kb/un-test-articulo/history", response["location"])
+        self.assertEqual(302, response.status_code)
+        self.assertEqual("/es/kb/un-test-articulo/history", response["location"])
         doc = Document.objects.get(slug=data["slug"])
         rev = doc.revisions.filter(content=data["content"])[0]
-        eq_(data["keywords"], rev.keywords)
-        eq_(data["summary"], rev.summary)
-        eq_(data["content"], rev.content)
+        self.assertEqual(data["keywords"], rev.keywords)
+        self.assertEqual(data["summary"], rev.summary)
+        self.assertEqual(data["content"], rev.content)
         assert not rev.is_approved
         assert edited_fire.called
         assert ready_fire.called
@@ -2129,12 +2178,12 @@ class TranslateTests(TestCaseBase):
         data["title"] = new_title
         data["form"] = "doc"
         response = self.client.post(url, data)
-        eq_(302, response.status_code)
-        eq_("/es/kb/un-test-articulo/edit?opendescription=1", response["location"])
+        self.assertEqual(302, response.status_code)
+        self.assertEqual("/es/kb/un-test-articulo/edit?opendescription=1", response["location"])
         revisions = rev_es.document.revisions.all()
-        eq_(1, revisions.count())  # No new revisions
+        self.assertEqual(1, revisions.count())  # No new revisions
         d = Document.objects.get(id=rev_es.document.id)
-        eq_(new_title, d.title)  # Title is updated
+        self.assertEqual(new_title, d.title)  # Title is updated
 
     def test_translate_update_rev_only(self):
         """Submitting the revision form should create a new revision.
@@ -2147,12 +2196,12 @@ class TranslateTests(TestCaseBase):
         data["title"] = new_title
         data["form"] = "rev"
         response = self.client.post(url, data)
-        eq_(302, response.status_code)
-        eq_("/es/kb/un-test-articulo/history", response["location"])
+        self.assertEqual(302, response.status_code)
+        self.assertEqual("/es/kb/un-test-articulo/history", response["location"])
         revisions = rev_es.document.revisions.all()
-        eq_(2, revisions.count())  # New revision is created
+        self.assertEqual(2, revisions.count())  # New revision is created
         d = Document.objects.get(id=rev_es.document.id)
-        eq_(orig_title, d.title)  # Title isn't updated
+        self.assertEqual(orig_title, d.title)  # Title isn't updated
 
     def test_translate_form_content_fallback(self):
         """If there are existing but unapproved translations, prefill
@@ -2163,7 +2212,7 @@ class TranslateTests(TestCaseBase):
         doc = pq(response.content)
         document = Document.objects.filter(locale="es")[0]
         existing_rev = document.revisions.all()[0]
-        eq_(existing_rev.content, doc("#id_content").text())
+        self.assertEqual("\n" + existing_rev.content, doc("#id_content").text())
 
     def test_translate_based_on(self):
         """Test translating based on a non-current revision."""
@@ -2172,16 +2221,19 @@ class TranslateTests(TestCaseBase):
         # Create a new current revision
         r = ApprovedRevisionFactory(document=base_rev.document)
         d = Document.objects.get(pk=base_rev.document.id)
-        eq_(r, base_rev.document.current_revision)
+        self.assertEqual(r, base_rev.document.current_revision)
 
         url = reverse("wiki.new_revision_based_on", locale="es", args=[d.slug, base_rev.id])
         response = self.client.get(url)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(doc("#id_content")[0].value.strip(), base_rev.content)
+        self.assertEqual(doc("#id_content")[0].value.strip(), base_rev.content)
 
     def test_translate_rejected_parent(self):
         """Translate view of rejected English document shows warning."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         user = UserFactory()
         en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
 
@@ -2217,7 +2269,7 @@ class TranslateTests(TestCaseBase):
 
         url = reverse("wiki.translate", locale=doc.locale, args=[en_doc.slug])
         response = self.client.get(url)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         # Get the link to the rev on the right side of the diff:
         to_link = pq(response.content)(".revision-diff h3 a")[1].attrib["href"]
         assert to_link.endswith("/%s" % ready.pk)
@@ -2244,16 +2296,19 @@ class TranslateTests(TestCaseBase):
         data["no-update"] = "Yes"
         self.client.post(url, data)
         new_es_rev = es_doc.revisions.order_by("-id")[0]
-        eq_(base_es_rev.based_on_id, new_es_rev.based_on_id)
+        self.assertEqual(base_es_rev.based_on_id, new_es_rev.based_on_id)
 
         # Not passing no-update will create a new revision based on the latest
         # approved and ready for l10n en-US revision.
         del data["no-update"]
         self.client.post(url, data)
         new_es_rev = es_doc.revisions.order_by("-id")[0]
-        eq_(r.id, new_es_rev.based_on_id)
+        self.assertEqual(r.id, new_es_rev.based_on_id)
 
     def test_show_translations_page(self):
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
         en = settings.WIKI_DEFAULT_LANGUAGE
         en_doc = DocumentFactory(locale=en, slug="english-slug")
         DocumentFactory(locale="de", parent=en_doc)
@@ -2266,9 +2321,9 @@ class TranslateTests(TestCaseBase):
         r = self.client.get(url)
         doc = pq(r.content)
         translated_locales = doc(".translated_locale")
-        eq_(translated_locales.length, 2)
-        eq_("English (en-US)", doc(".translated_locale").first().text())
-        eq_("Deutsch (de)", doc(".translated_locale:eq(1)").text())
+        self.assertEqual(translated_locales.length, 2)
+        self.assertEqual("English (en-US)", doc(".translated_locale").first().text())
+        self.assertEqual("Deutsch (de)", doc(".translated_locale:eq(1)").text())
 
     def test_keywords_dont_require_permission(self):
         """Test keywords don't require permission when translating."""
@@ -2289,11 +2344,11 @@ class TranslateTests(TestCaseBase):
                 "form": "rev",
             },
         )
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
 
         # Keywords should be updated
         new_rev = Revision.objects.filter(document=doc).order_by("-id")[0]
-        eq_("keyword1 keyword2", new_rev.keywords)
+        self.assertEqual("keyword1 keyword2", new_rev.keywords)
 
 
 def _test_form_maintains_based_on_rev(client, doc, view, post_data, locale=None):
@@ -2301,9 +2356,10 @@ def _test_form_maintains_based_on_rev(client, doc, view, post_data, locale=None)
     or translate form is the current_revision of the document as of when the
     form was first loaded, even if other revisions have been approved in the
     meantime."""
+    tc = TestCaseBase()
     response = client.get(reverse(view, locale=locale, args=[doc.slug]))
     orig_rev = doc.current_revision
-    eq_(orig_rev.id, int(pq(response.content)("input[name=based_on]").attr("value")))
+    tc.assertEqual(orig_rev.id, int(pq(response.content)("input[name=based_on]").attr("value")))
 
     # While Fred is editing the above, Martha approves a new rev:
     ApprovedRevisionFactory(document=doc)
@@ -2312,9 +2368,9 @@ def _test_form_maintains_based_on_rev(client, doc, view, post_data, locale=None)
     post_data_copy = {"based_on": orig_rev.id}
     post_data_copy.update(post_data)  # Don't mutate arg.
     response = client.post(reverse(view, locale=locale, args=[doc.slug]), data=post_data_copy)
-    eq_(302, response.status_code)
+    tc.assertEqual(302, response.status_code)
     fred_rev = Revision.objects.all().order_by("-id")[0]
-    eq_(orig_rev, fred_rev.based_on)
+    tc.assertEqual(orig_rev, fred_rev.based_on)
 
 
 class DocumentWatchTests(TestCaseBase):
@@ -2331,22 +2387,22 @@ class DocumentWatchTests(TestCaseBase):
     def test_watch_GET_405(self):
         """Watch document with HTTP GET results in 405."""
         response = get(self.client, "wiki.document_watch", args=[self.document.slug])
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_unwatch_GET_405(self):
         """Unwatch document with HTTP GET results in 405."""
         response = get(self.client, "wiki.document_unwatch", args=[self.document.slug])
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_watch_unwatch(self):
         """Watch and unwatch a document."""
         # Subscribe
         response = post(self.client, "wiki.document_watch", args=[self.document.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert EditDocumentEvent.is_notifying(self.user, self.document), "Watch was not created"
         # Unsubscribe
         response = post(self.client, "wiki.document_unwatch", args=[self.document.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert not EditDocumentEvent.is_notifying(
             self.user, self.document
         ), "Watch was not destroyed"
@@ -2364,36 +2420,36 @@ class LocaleWatchTests(TestCaseBase):
     def test_watch_GET_405(self):
         """Watch document with HTTP GET results in 405."""
         response = get(self.client, "wiki.locale_watch")
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_unwatch_GET_405(self):
         """Unwatch document with HTTP GET results in 405."""
         response = get(self.client, "wiki.locale_unwatch")
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_watch_and_unwatch_by_locale(self):
         """Watch and unwatch a locale."""
         # Subscribe
         response = post(self.client, "wiki.locale_watch")
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert ReviewableRevisionInLocaleEvent.is_notifying(self.user, locale="en-US")
 
         # Unsubscribe
         response = post(self.client, "wiki.locale_unwatch")
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert not ReviewableRevisionInLocaleEvent.is_notifying(self.user, locale="en-US")
 
     def test_watch_and_unwatch_by_locale_and_product(self):
         # Subscribe
         response = post(self.client, "wiki.locale_watch", args=["firefox-os"])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert ReviewableRevisionInLocaleEvent.is_notifying(
             self.user, locale="en-US", product="firefox-os"
         )
 
         # Unsubscribe
         response = post(self.client, "wiki.locale_unwatch", args=["firefox-os"])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert not ReviewableRevisionInLocaleEvent.is_notifying(
             self.user, locale="en-US", product="firefox-os"
         )
@@ -2411,7 +2467,7 @@ class ArticlePreviewTests(TestCaseBase):
     def test_preview_GET_405(self):
         """Preview with HTTP GET results in 405."""
         response = get(self.client, "wiki.preview")
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_preview(self):
         """Preview the wiki syntax content."""
@@ -2425,9 +2481,9 @@ class ArticlePreviewTests(TestCaseBase):
                 "locale": d.locale,
             },
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_("Test Content", doc("#doc-content h1").text())
+        self.assertEqual("Test Content", doc("#doc-content h1").text())
 
     def test_preview_locale(self):
         """Preview the wiki syntax content."""
@@ -2444,11 +2500,11 @@ class ArticlePreviewTests(TestCaseBase):
                 "locale": d.locale,
             },
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         link = doc("#doc-content a")
-        eq_("Prueba", link.text())
-        eq_("/es/kb/prueba", link[0].attrib["href"])
+        self.assertEqual("Prueba", link.text())
+        self.assertEqual("/es/kb/prueba", link[0].attrib["href"])
 
 
 class HelpfulVoteTests(TestCaseBase):
@@ -2476,15 +2532,15 @@ class HelpfulVoteTests(TestCaseBase):
             },
             args=[self.document.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=user_)
-        eq_(1, votes.count())
+        self.assertEqual(1, votes.count())
         assert votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
-        eq_(2, len(metadata))
+        self.assertEqual(2, len(metadata))
         metadata_dict = dict((k, v) for (k, v) in metadata)
-        eq_(referrer, metadata_dict["referrer"])
-        eq_(query, metadata_dict["query"])
+        self.assertEqual(referrer, metadata_dict["referrer"])
+        self.assertEqual(query, metadata_dict["query"])
 
     def test_vote_no(self):
         """Test voting not helpful."""
@@ -2504,14 +2560,14 @@ class HelpfulVoteTests(TestCaseBase):
             },
             args=[self.document.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=user_)
-        eq_(1, votes.count())
+        self.assertEqual(1, votes.count())
         assert not votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
-        eq_(1, len(metadata))
+        self.assertEqual(1, len(metadata))
         metadata_dict = dict((k, v) for (k, v) in metadata)
-        eq_(referrer, metadata_dict["referrer"])
+        self.assertEqual(referrer, metadata_dict["referrer"])
 
     def test_vote_anonymous(self):
         """Test that voting works for anonymous user."""
@@ -2529,16 +2585,16 @@ class HelpfulVoteTests(TestCaseBase):
             },
             args=[self.document.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
-        eq_(1, votes.count())
+        self.assertEqual(1, votes.count())
         assert votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
-        eq_(2, len(metadata))
+        self.assertEqual(2, len(metadata))
         metadata_dict = dict((k, v) for (k, v) in metadata)
-        eq_(referrer, metadata_dict["referrer"])
-        eq_(query, metadata_dict["query"])
+        self.assertEqual(referrer, metadata_dict["referrer"])
+        self.assertEqual(query, metadata_dict["query"])
 
     def test_vote_ajax(self):
         """Test voting via ajax."""
@@ -2556,18 +2612,18 @@ class HelpfulVoteTests(TestCaseBase):
             },
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
-        eq_(200, response.status_code)
-        eq_(
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
             b'{"message": "Great to hear &mdash; thanks for the feedback!'
             b' <br /><span disabled class=helpful-button>&#x1F44D;</span>"}',
             response.content,
         )
         votes = HelpfulVote.objects.filter(revision=r, creator=None)
         votes = votes.exclude(anonymous_id=None)
-        eq_(1, votes.count())
+        self.assertEqual(1, votes.count())
         assert votes[0].helpful
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
-        eq_(0, len(metadata))
+        self.assertEqual(0, len(metadata))
 
     def test_helpfulvotes_graph_async_yes(self):
         r = self.document.current_revision
@@ -2577,13 +2633,13 @@ class HelpfulVoteTests(TestCaseBase):
             {"helpful": "Yes", "revision_id": r.id},
             args=[self.document.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         resp = get(self.client, "wiki.get_helpful_votes_async", args=[r.document.slug])
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         data = json.loads(resp.content)
 
-        eq_(1, len(data["datums"]))
+        self.assertEqual(1, len(data["datums"]))
         assert "yes" in data["datums"][0]
         assert "no" in data["datums"][0]
 
@@ -2595,13 +2651,13 @@ class HelpfulVoteTests(TestCaseBase):
             {"helpful": "No", "revision_id": r.id},
             args=[self.document.slug],
         )
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         resp = get(self.client, "wiki.get_helpful_votes_async", args=[r.document.slug])
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         data = json.loads(resp.content)
 
-        eq_(1, len(data["datums"]))
+        self.assertEqual(1, len(data["datums"]))
         assert "yes" in data["datums"][0]
         assert "no" in data["datums"][0]
 
@@ -2609,9 +2665,9 @@ class HelpfulVoteTests(TestCaseBase):
         r = self.document.current_revision
 
         resp = get(self.client, "wiki.get_helpful_votes_async", args=[r.document.slug])
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         data = json.loads(resp.content)
-        eq_(0, len(data["datums"]))
+        self.assertEqual(0, len(data["datums"]))
 
 
 class SelectLocaleTests(TestCaseBase):
@@ -2627,9 +2683,9 @@ class SelectLocaleTests(TestCaseBase):
     def test_page_renders_locales(self):
         """Load the page and verify it contains all the locales for l10n."""
         response = get(self.client, "wiki.select_locale", args=[self.d.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(
+        self.assertEqual(
             len(settings.LANGUAGE_CHOICES),  # All Locals including ' en-US'.
             len(doc("#select-locale ul.locales li")),
         )
@@ -2643,10 +2699,10 @@ class RevisionDeleteTestCase(TestCaseBase):
         rev = ApprovedRevisionFactory(document=doc)
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         response = post(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_delete_revision_logged_out(self):
         """Deleting a revision while logged out redirects to login."""
@@ -2654,8 +2710,8 @@ class RevisionDeleteTestCase(TestCaseBase):
         rev = RevisionFactory(document=doc)
         response = get(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/kb/%s/revision/%s/delete"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0],
@@ -2663,8 +2719,8 @@ class RevisionDeleteTestCase(TestCaseBase):
 
         response = post(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/kb/%s/revision/%s/delete"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0],
@@ -2675,9 +2731,9 @@ class RevisionDeleteTestCase(TestCaseBase):
         rev1 = ApprovedRevisionFactory(document=doc)
         rev2 = ApprovedRevisionFactory(document=doc)
         response = get(self.client, "wiki.delete_revision", args=[doc.slug, rev2.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         response = post(self.client, "wiki.delete_revision", args=[doc.slug, rev2.id])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert not Revision.objects.filter(pk=rev2.id).exists()
         assert Revision.objects.filter(pk=rev1.id).exists()
 
@@ -2714,12 +2770,12 @@ class RevisionDeleteTestCase(TestCaseBase):
         u = UserFactory()
         add_permission(u, Revision, "delete_revision")
         self.client.login(username=u.username, password="testpass")
-        eq_(rev2, doc.current_revision)
+        self.assertEqual(rev2, doc.current_revision)
 
         res = post(self.client, "wiki.delete_revision", args=[doc.slug, rev2.id])
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
         doc = Document.objects.get(pk=doc.pk)
-        eq_(rev1, doc.current_revision)
+        self.assertEqual(rev1, doc.current_revision)
 
     def test_delete_only_revision(self):
         """If there is only one revision, it can't be deleted."""
@@ -2729,19 +2785,19 @@ class RevisionDeleteTestCase(TestCaseBase):
 
         # Create document with only 1 revision
         doc = DocumentFactory()
-        rev = RevisionFactory(document=doc)
+        rev = ApprovedRevisionFactory(document=doc)
 
         # Confirm page should show the message
         response = get(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
-        eq_(200, response.status_code)
-        eq_(
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
             "Unable to delete only revision of the document",
             pq(response.content)("h1.title").text(),
         )
 
         # POST should return bad request and revision should still exist
         response = post(self.client, "wiki.delete_revision", args=[doc.slug, rev.id])
-        eq_(400, response.status_code)
+        self.assertEqual(400, response.status_code)
         Revision.objects.get(id=rev.id)
 
 
@@ -2757,12 +2813,12 @@ class ApprovedWatchTests(TestCaseBase):
     def test_watch_GET_405(self):
         """Watch with HTTP GET results in 405."""
         response = get(self.client, "wiki.approved_watch")
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_unwatch_GET_405(self):
         """Unwatch with HTTP GET results in 405."""
         response = get(self.client, "wiki.approved_unwatch")
-        eq_(405, response.status_code)
+        self.assertEqual(405, response.status_code)
 
     def test_watch_unwatch(self):
         """Watch and unwatch a document."""
@@ -2770,12 +2826,12 @@ class ApprovedWatchTests(TestCaseBase):
 
         # Subscribe
         response = post(self.client, "wiki.approved_watch", locale=locale)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert ApproveRevisionInLocaleEvent.is_notifying(self.user, locale=locale)
 
         # Unsubscribe
         response = post(self.client, "wiki.approved_unwatch", locale=locale)
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         assert not ApproveRevisionInLocaleEvent.is_notifying(self.user, locale=locale)
 
 
@@ -2789,19 +2845,20 @@ class DocumentDeleteTestCase(TestCaseBase):
 
     def test_delete_document_without_permissions(self):
         """Deleting a document without permissions sends 403."""
+        ApprovedRevisionFactory(document=self.document)
         self.client.login(username="testuser", password="testpass")
         response = get(self.client, "wiki.document_delete", args=[self.document.slug])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         response = post(self.client, "wiki.document_delete", args=[self.document.slug])
-        eq_(403, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_delete_document_logged_out(self):
         """Deleting a document while logged out redirects to login."""
         response = get(self.client, "wiki.document_delete", args=[self.document.slug])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/kb/%s/delete"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
             redirect[0],
@@ -2809,8 +2866,8 @@ class DocumentDeleteTestCase(TestCaseBase):
 
         response = post(self.client, "wiki.document_delete", args=[self.document.slug])
         redirect = response.redirect_chain[0]
-        eq_(302, redirect[1])
-        eq_(
+        self.assertEqual(302, redirect[1])
+        self.assertEqual(
             "/%s%s?next=/en-US/kb/%s/delete"
             % (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.document.slug),
             redirect[0],
@@ -2831,10 +2888,10 @@ class DocumentDeleteTestCase(TestCaseBase):
     def _test_delete_document_with_permission(self):
         self.client.login(username="testuser", password="testpass")
         response = get(self.client, "wiki.document_delete", args=[self.document.slug])
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         response = post(self.client, "wiki.document_delete", args=[self.document.slug])
-        eq_(0, Document.objects.filter(pk=self.document.id).count())
+        self.assertEqual(0, Document.objects.filter(pk=self.document.id).count())
 
     def test_revision_with_permission(self):
         """Deleting a document with delete_document permission should work."""
@@ -2847,7 +2904,7 @@ class RecentRevisionsTest(TestCaseBase):
         self.u1 = UserFactory()
         self.u2 = UserFactory()
 
-        eq_(Document.objects.count(), 0)
+        self.assertEqual(Document.objects.count(), 0)
 
         _create_document(title="1", rev_kwargs={"creator": self.u1})
         _create_document(
@@ -2861,61 +2918,107 @@ class RecentRevisionsTest(TestCaseBase):
         _create_document(title="4", locale="fr", rev_kwargs={"creator": self.u2})
         _create_document(title="5", locale="fr", rev_kwargs={"creator": self.u2})
 
+        # Create a document without any approved content for visibility testing.
+        RevisionFactory(
+            is_approved=False, creator=self.u2, document__title="6", document__locale="fr"
+        )
+
         self.url = reverse("wiki.revisions")
 
     def test_basic(self):
         res = self.client.get(self.url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
         doc = pq(res.content)
-        eq_(len(doc("#revisions-fragment ul li:not(.header)")), 5)
+        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 5)
 
     def test_locale_filtering(self):
         url = urlparams(self.url, locale="fr")
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
         doc = pq(res.content)
-        eq_(len(doc("#revisions-fragment ul li:not(.header)")), 2)
+        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 2)
 
         url = urlparams(self.url, locale="de")
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
         doc = pq(res.content)
-        eq_(len(doc("#revisions-fragment ul li:not(.header)")), 1)
+        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 1)
 
     def test_bad_locale(self):
         """A bad locale should not filter anything."""
         url = urlparams(self.url, locale="asdf")
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
         doc = pq(res.content)
-        eq_(len(doc("#revisions-fragment ul li:not(.header)")), 5)
+        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 5)
 
     def test_user_filtering(self):
         url = urlparams(self.url, users=self.u1.username)
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
         doc = pq(res.content)
-        eq_(len(doc("#revisions-fragment ul li:not(.header)")), 2)
+        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 2)
 
     def test_date_filtering(self):
         url = urlparams(self.url, start="2013-03-02")
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
         doc = pq(res.content)
-        eq_(len(doc("#revisions-fragment ul li:not(.header)")), 4)
+        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 4)
 
         url = urlparams(self.url, end="2013-03-02")
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
         doc = pq(res.content)
-        eq_(len(doc("#revisions-fragment ul li:not(.header)")), 1)
+        self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 1)
+
+    def test_visibility(self):
+        """
+        Test that revisions of documents without any approved content are visible
+        only to their creators, superusers, or users with one of a set of permissions.
+        """
+        with self.subTest("creator"):
+            self.client.login(username=self.u2.username, password="testpass")
+            res = self.client.get(self.url)
+            self.assertEqual(res.status_code, 200)
+            doc = pq(res.content)
+            self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 6)
+            self.client.logout()
+
+        for perm in ("superuser", "review_revision", "delete_document"):
+            with self.subTest(perm):
+                user = UserFactory(is_superuser=(perm == "superuser"))
+                if perm == "review_revision":
+                    add_permission(user, Revision, "review_revision")
+                elif perm == "delete_document":
+                    add_permission(user, Document, "delete_document")
+                self.client.login(username=user.username, password="testpass")
+                res = self.client.get(self.url)
+                self.assertEqual(res.status_code, 200)
+                doc = pq(res.content)
+                self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 6)
+                self.client.logout()
+
+        for perm in ("fr__leaders", "fr__reviewers"):
+            with self.subTest(perm):
+                user = UserFactory()
+                locale, role = perm.split("__")
+                locale_team, _ = Locale.objects.get_or_create(locale=locale)
+                getattr(locale_team, role).add(user)
+                self.client.login(username=user.username, password="testpass")
+                url = urlparams(self.url, locale="fr")
+                res = self.client.get(url)
+                self.assertEqual(res.status_code, 200)
+                doc = pq(res.content)
+                self.assertEqual(len(doc("#revisions-fragment ul li:not(.header)")), 3)
+                self.client.logout()
 
 
 # TODO: This should be a factory subclass

@@ -3,8 +3,9 @@ from urllib.parse import urlparse, parse_qs
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
+from django.utils.translation import gettext_lazy as _lazy, ugettext as _
 
+from sentry_sdk import capture_exception
 from wikimarkup.parser import Parser, ALLOWED_TAGS
 
 from kitsune.gallery.models import Image, Video
@@ -13,7 +14,7 @@ from kitsune.sumo.urlresolvers import reverse
 
 
 ALLOWED_ATTRIBUTES = {
-    "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset"],
+    "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset", "data-mozilla-ui-preferences"],
     "div": ["id", "class", "style", "data-for", "title", "data-target", "data-modal"],
     "h1": ["id"],
     "h2": ["id"],
@@ -244,16 +245,22 @@ class WikiParser(Parser):
 
         @email_utils.safe_translation
         def _parse(locale):
-            return super(WikiParser, self).parse(
-                text,
-                show_toc=show_toc,
-                tags=tags or ALLOWED_TAGS,
-                attributes=attributes or ALLOWED_ATTRIBUTES,
-                styles=styles or ALLOWED_STYLES,
-                nofollow=nofollow,
-                strip_comments=True,
-                **kwargs,
-            )
+            try:
+                return super(WikiParser, self).parse(
+                    text,
+                    show_toc=show_toc,
+                    tags=tags or ALLOWED_TAGS,
+                    attributes=attributes or ALLOWED_ATTRIBUTES,
+                    styles=styles or ALLOWED_STYLES,
+                    nofollow=nofollow,
+                    strip_comments=True,
+                    **kwargs,
+                )
+            except TypeError as e:
+                if settings.DEBUG:
+                    raise e
+                capture_exception(e)
+                return "&#xFFFD; There was an error parsing this content. &#xFFFD;"
 
         html = _parse(locale)
 
@@ -321,7 +328,6 @@ class WikiParser(Parser):
             {
                 "image": image,
                 "params": params,
-                "STATIC_URL": settings.STATIC_URL,
             },
         )
 
@@ -358,10 +364,14 @@ class WikiParser(Parser):
         return generate_video(v, params)
 
     def _hook_button(self, parser, space, btn_type):
-        btn_type, params = build_hook_params(btn_type, self.locale)
+        btn_type, params = build_hook_params(
+            btn_type, self.locale, allowed_params=["pane", "text"]
+        )
 
         if btn_type == "refresh":
             template = "wikiparser/hook_refresh_button.html"
+        elif btn_type == "preferences":
+            template = "wikiparser/hook_preferences_button.html"
         else:
             return _lazy('Button of type "%s" does not exist.') % btn_type
 

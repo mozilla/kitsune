@@ -1,5 +1,5 @@
-from django.db import connection
 from django.core.management.base import BaseCommand
+from django.db import connection
 
 from kitsune.settings import path
 
@@ -10,5 +10,5 @@ class Command(BaseCommand):
     def handle(self, *arg, **kwargs):
         with open(path("scripts/anonymize.sql")) as fp:
             sql = fp.read()
-            cursor = connection.cursor()
-            cursor.execute(sql)
+            with connection.cursor() as cursor:
+                cursor.execute(sql)

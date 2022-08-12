@@ -2,7 +2,6 @@
 {% if not title %}
   {% set title = _('{title} | Media Gallery')|f(title=media.title) %}
 {% endif %}
-{% set styles = ('gallery',) %}
 {% set scripts = ('wiki',) %}
 {% if not crumbs %}
   {% set crumbs = [(url('gallery.gallery', media_type), _('Media Gallery')),

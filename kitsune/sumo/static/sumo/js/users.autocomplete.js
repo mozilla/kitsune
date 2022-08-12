@@ -1,4 +1,6 @@
-/* globals k:false, gettext:false, jQuery:false */
+import "sumo/js/libs/jquery.tokeninput";
+import { safeString, safeInterpolate } from "sumo/js/main";
+
 /*
  * users.autocomplete.js
  * A username autocomplete widget.
@@ -26,7 +28,7 @@
 
     if ($('#id_to').val()) {
       prefill = $('#id_to').val().split(',').map(function(username) {
-        return {username: k.safeString(username), display_name: null};
+        return {username: safeString(username), display_name: null};
       });
     }
 
@@ -40,9 +42,9 @@
       resultsFormatter: function(item) {
         var term = $('#token-input-id_to').val();
         if (item.display_name) {
-          return k.safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(display_name)s [%(username)s]</div></li>', item, true);
+          return safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(display_name)s [%(username)s]</div></li>', item, true);
         }
-        return k.safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(username)s</div></li>', item, true);
+        return safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(username)s</div></li>', item, true);
       },
       onAdd: function (item) {
         $(this).closest('.single').closest('form').submit();

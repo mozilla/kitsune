@@ -1,8 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
 
-from nose.tools import raises
-
 from kitsune.gallery.models import Image, Video
 from kitsune.gallery.tests import ImageFactory, VideoFactory
 from kitsune.gallery.utils import check_media_permissions, create_image
@@ -27,12 +25,12 @@ class CheckPermissionsTestCase(TestCase):
         vid = VideoFactory(creator=self.user)
         check_media_permissions(vid, self.user, "change")
 
-    @raises(PermissionDenied)
     def test_check_not_own_object(self):
         """tagger cannot delete an image s/he doesn't own."""
         img = ImageFactory()
         # This should raise
-        check_media_permissions(img, self.user, "delete")
+        with self.assertRaises(PermissionDenied):
+            check_media_permissions(img, self.user, "delete")
 
     def test_check_has_perm(self):
         """User with django permission has perm to change video."""
@@ -67,6 +65,29 @@ class CreateImageTestCase(TestCase):
             file_info,
             name="test.png",
             width=90,
+            height=120,
+            delete_url=delete_url,
+            url=image.get_absolute_url(),
+            thumbnail_url=image.file.url,
+        )
+
+    def test_create_image_when_animated(self):
+        """
+        An image is created from an uploaded animated GIF file.
+
+        Verifies all appropriate fields are correctly set.
+        """
+        filepath = "kitsune/upload/tests/media/animated.gif"
+        with open(filepath, "rb") as f:
+            up_file = File(f)
+            file_info = create_image({"image": up_file}, self.user)
+
+        image = Image.objects.all()[0]
+        delete_url = reverse("gallery.delete_media", args=["image", image.id])
+        check_file_info(
+            file_info,
+            name=filepath,
+            width=120,
             height=120,
             delete_url=delete_url,
             url=image.get_absolute_url(),

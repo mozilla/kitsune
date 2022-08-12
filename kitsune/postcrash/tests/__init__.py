@@ -5,7 +5,7 @@ from kitsune.sumo.tests import FuzzyUnicode
 from kitsune.wiki.tests import DocumentFactory
 
 
-class SignatureFactory(factory.DjangoModelFactory):
+class SignatureFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Signature
 

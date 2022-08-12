@@ -7,7 +7,7 @@ from invoke.config import DataProxy
 
 
 def get_kubectl():
-    return os.environ.get('KUBECTL_BIN', 'kubectl')
+    return os.environ.get("KUBECTL_BIN", "kubectl")
 
 
 def todict(obj, classkey=None):
@@ -24,25 +24,29 @@ def todict(obj, classkey=None):
     return obj
 
 
-def render_template(config, template_name, app):
+def render_template(config, template_name, app=None):
     loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)
     tenv = jinja2.Environment(loader=loader)
     template = tenv.get_template(template_name)
     config = todict(config)
 
-    config['kubernetes'].update(**config['kubernetes']['apps'][app])
+    if app:
+        config["kubernetes"].update(**config["kubernetes"]["apps"][app])
     return template.render(config)
 
 
-def k8s_apply(ctx, template_text, apply):
-    namespace = ctx.config['kubernetes']['namespace']
-    with tempfile.NamedTemporaryFile(prefix='k8s', suffix='.yaml', delete=False) as f:
-        f.write(template_text.encode('utf-8'))
-        f.write("\n".encode('utf-8'))
+def k8s_apply(ctx, template_text, apply, record=False):
+    namespace = ctx.config["kubernetes"]["namespace"]
+    with tempfile.NamedTemporaryFile(prefix="k8s", suffix=".yaml", delete=False) as f:
+        f.write(template_text.encode("utf-8"))
+        f.write("\n".encode("utf-8"))
         f.flush()
 
     print("Rendering template to:", f.name)
-    cmd = '{} apply -n {} -f {}'.format(get_kubectl(), namespace, f.name)
+    if record:
+        cmd = "{} apply -n {} -f {} --record".format(get_kubectl(), namespace, f.name)
+    else:
+        cmd = "{} apply -n {} -f {}".format(get_kubectl(), namespace, f.name)
     print("Command:", cmd)
     if apply:
         ctx.run(cmd, echo=True)
@@ -51,9 +55,8 @@ def k8s_apply(ctx, template_text, apply):
 
 
 def k8s_delete_resource(ctx, resource_name, apply):
-    namespace = ctx.config['kubernetes']['namespace']
-    cmd = '{} delete -n {} --ignore-not-found {}'.format(
-        get_kubectl(), namespace, resource_name)
+    namespace = ctx.config["kubernetes"]["namespace"]
+    cmd = "{} delete -n {} --ignore-not-found {}".format(get_kubectl(), namespace, resource_name)
     print("Command:", cmd)
     if apply:
         ctx.run(cmd, echo=True)

@@ -68,8 +68,8 @@ def upload(request, media_type="image"):
         image_form = _init_media_form(ImageForm, request, drafts["image"][0])
         if image_form.is_valid():
             img = image_form.save(is_draft=None)
-            generate_thumbnail.delay(img, "file", "thumbnail")
-            compress_image.delay(img, "file")
+            generate_thumbnail.delay("gallery.Image", img.id, "file", "thumbnail")
+            compress_image.delay("gallery.Image", img.id, "file")
             # Rebuild KB
             schedule_rebuild_kb()
             return HttpResponseRedirect(img.get_absolute_url())
@@ -188,7 +188,7 @@ def edit_media(request, media_id, media_type="image"):
         raise Http404
 
     if request.method == "POST" and media_form.is_valid():
-        media = media_form.save(update_user=request.user, is_draft=False)
+        media = media_form.save(update_user=request.user, is_draft=None)
         return HttpResponseRedirect(reverse("gallery.media", args=[media_type, media_id]))
 
     return render(

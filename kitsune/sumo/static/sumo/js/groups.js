@@ -1,4 +1,5 @@
-/* globals Marky:false, jQuery:false */
+import Marky from "sumo/js/markup";
+
 /*
  * JS for Groups app
  */

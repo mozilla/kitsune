@@ -6,6 +6,7 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Revision {num}')|f(num=revision.id))] %}
 {% set classes = 'document' %}
+{% set scripts = ('revision',) %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}

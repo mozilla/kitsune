@@ -2,7 +2,6 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
 {% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
-{% set styles = ('products',) %}
 {% set scripts = ('products',) %}
 {% set classes = 'product-landing' %}
 {% set search_params = {'product': product.slug} %}
@@ -149,10 +148,10 @@
       </div>
       {% endif %}
     </div>
-    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+    {{ help_topics(topics) }}
   </div>
 
-  {{ topic_metadata(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+  {{ topic_metadata(topics, product=product, product_key=product_key) }}
 
 {% if featured %}
   <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
@@ -171,7 +170,4 @@
 {% block for_contributors %}{% endblock %}
 
 {% block outer_side %}
-{% endblock %}
-
-{% block footer_script %}
 {% endblock %}

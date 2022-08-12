@@ -1,5 +1,3 @@
-/* globals $:false, _dntEnabled:false */
-
 (function($) {
   'use strict';
   // Track clicks to form buttons with data-event-category attr.
@@ -56,7 +54,7 @@
   });
 })(jQuery);
 
-function trackEvent(category, action, label, value) {
+export default function trackEvent(category, action, label, value) {
   if (window.gtag) {
     window.gtag('event', action, {
       'event_category': category,

@@ -1,4 +1,10 @@
-/* globals k:false, gettext:false, _:false, jQuery:false */
+import "jquery-ui/ui/widgets/datepicker";
+import _values from "underscore/modules/values";
+import _each from "underscore/modules/each";
+import _map from "underscore/modules/map";
+import { Graph } from "sumo/js/rickshaw_utils";
+import { getQueryParamsAsDict } from "sumo/js/main";
+
 /*
  * kb dashboard chart
  */
@@ -17,7 +23,7 @@
         {
           name: gettext('Article Votes: % Helpful'),
           slug: 'wiki_percent',
-          func: k.Graph.fraction('kb_helpful', 'kb_votes'),
+          func: Graph.fraction('kb_helpful', 'kb_votes'),
           type: 'percent'
         }
       ]);
@@ -37,7 +43,7 @@
     // product selector page reloading
     $('#product-selector select').change(function() {
       var val = $(this).val();
-      var queryParams = k.getQueryParamsAsDict(document.location.toString());
+      var queryParams = getQueryParamsAsDict(document.location.toString());
 
       if (val === '') {
         delete queryParams.product;
@@ -54,7 +60,7 @@
 
   function makeVoteGraph($container, descriptors) {
     $.getJSON($container.data('url'), function(data) {
-      new k.Graph($container, {
+      new Graph($container, {
         data: {
           datums: data.objects,
           seriesSpec: descriptors
@@ -109,22 +115,22 @@
             {
               name: gettext('All Articles: % Localized'),
               slug: 'percent_localized_all',
-              func: k.Graph.identity('percent_localized_all')
+              func: Graph.identity('percent_localized_all')
             },
             {
               name: gettext('Top 20 Articles: % Localized'),
               slug: 'percent_localized_top20',
-              func: k.Graph.identity('percent_localized_top20')
+              func: Graph.identity('percent_localized_top20')
             },
             {
               name: gettext('Top 100 Articles: % Localized'),
               slug: 'percent_localized_top100',
-              func: k.Graph.identity('percent_localized_top100')
+              func: Graph.identity('percent_localized_top100')
             }
           ],
           'mini',
           true,
-          _.values(l10nByDate)
+          _values(l10nByDate)
         );
       }
 
@@ -134,12 +140,12 @@
           {
             name: gettext('Active Contributors'),
             slug: 'active_contributors',
-            func: k.Graph.identity('active_contributors')
+            func: Graph.identity('active_contributors')
           }
         ],
         false,
         false,
-        _.values(contributorsByDate)
+        _values(contributorsByDate)
       );
 
     });
@@ -148,7 +154,7 @@
 
 
   function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
-    var graph = new k.Graph($container, {
+    var graph = new Graph($container, {
       data: {
         datums: results,
         seriesSpec: descriptors
@@ -225,32 +231,32 @@
         }
 
         // Create the graphs.
-        _.each(graphConfigs, function (config) {
+        _each(graphConfigs, function (config) {
           graphs.push(makeWikiMetricGraph(
             $(config.selector),
-            _.map(locales, function (locale) {
+            _map(locales, function (locale) {
               return {
                 name: locale,
                 slug: locale,
-                func: k.Graph.identity(locale)
+                func: Graph.identity(locale)
               };
             }),
             false,
             false,
-            _.values(resultsByCode[config.code])
+            _values(resultsByCode[config.code])
           ));
         });
 
         var updateGraphLocales = function() {
           // Update the locale series based on the selected locales.
-          var selectedLocales = _.map($('#locale-picker :checked'), function (el) {
+          var selectedLocales = _map($('#locale-picker :checked'), function (el) {
             return $(el).val();
           });
 
           // Loop through all the graphs...
-          _.each(graphs, function (graph) {
+          _each(graphs, function (graph) {
             // And all the series (locales) in each graph...
-            _.each(graph.data.series, function (series, index) {
+            _each(graph.data.series, function (series, index) {
               if (selectedLocales.indexOf(locales[index]) >= 0) {
                 // The locale is selected, show it.
                 series.disabled = false;

@@ -1,24 +1,25 @@
-/* globals gettext:false, jQuery:false */
+import "sumo/js/libs/jquery.lazyload";
+
 /*
  * Wiki content previews - ajaxified.
  */
 
+export default function AjaxPreview(el, options) {
+  /* Args:
+   * el - The button/link DOM element that triggers the preview
+   * options - dict of options
+   *      previewUrl - url to POST the content and get a preview
+   *      contentElement - DOM element or selector that input content
+   *      previewElement - DOM element or selector to insert the preview
+   *      changeHash - Change document.location.hash to the id of
+   *                   previewElemnt (default: true)
+   */
+  AjaxPreview.prototype.init.call(this, el, options);
+}
+
 (function($) {
 
   'use strict';
-
-  function AjaxPreview(el, options) {
-    /* Args:
-     * el - The button/link DOM element that triggers the preview
-     * options - dict of options
-     *      previewUrl - url to POST the content and get a preview
-     *      contentElement - DOM element or selector that input content
-     *      previewElement - DOM element or selector to insert the preview
-     *      changeHash - Change document.location.hash to the id of
-     *                   previewElemnt (default: true)
-     */
-    AjaxPreview.prototype.init.call(this, el, options);
-  }
 
   AjaxPreview.prototype = {
     init: function(el, options) {
@@ -79,8 +80,5 @@
       });
     }
   };
-
-  window.k = window.k || {};
-  window.k.AjaxPreview = AjaxPreview;
 
 })(jQuery);

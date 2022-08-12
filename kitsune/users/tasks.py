@@ -1,12 +1,15 @@
 import json
 from datetime import datetime
-from celery import task
+
+from celery import shared_task
+
+from kitsune.products.models import Product
+from kitsune.users.auth import FXAAuthBackend
 from kitsune.users.models import AccountEvent
 from kitsune.users.utils import anonymize_user
-from kitsune.products.models import Product
 
 
-@task
+@shared_task
 def process_event_delete_user(event_id):
     event = AccountEvent.objects.get(id=event_id)
 
@@ -16,7 +19,7 @@ def process_event_delete_user(event_id):
     event.save()
 
 
-@task
+@shared_task
 def process_event_subscription_state_change(event_id):
     event = AccountEvent.objects.get(id=event_id)
     body = json.loads(event.body)
@@ -42,7 +45,7 @@ def process_event_subscription_state_change(event_id):
     event.save()
 
 
-@task
+@shared_task
 def process_event_password_change(event_id):
     event = AccountEvent.objects.get(id=event_id)
     body = json.loads(event.body)
@@ -56,5 +59,25 @@ def process_event_password_change(event_id):
 
     event.profile.fxa_password_change = change_time
     event.profile.save()
+    event.status = AccountEvent.PROCESSED
+    event.save()
+
+
+@shared_task
+def process_event_profile_change(event_id):
+    event = AccountEvent.objects.get(id=event_id)
+    refresh_token = event.profile.fxa_refresh_token
+
+    fxa = FXAAuthBackend()
+    token_info = fxa.refresh_access_token(refresh_token, ttl=300)
+
+    if not (access_token := token_info.get("access_token")):
+        event.status = AccountEvent.IGNORED
+        event.save()
+        return
+
+    user_info = fxa.get_userinfo(access_token, None, None)
+    fxa.update_user(event.profile.user, user_info)
+
     event.status = AccountEvent.PROCESSED
     event.save()

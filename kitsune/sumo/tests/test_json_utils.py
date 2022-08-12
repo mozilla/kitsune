@@ -1,5 +1,3 @@
-from nose.tools import eq_
-
 from django.http import HttpResponse
 from django.test.client import RequestFactory
 
@@ -28,7 +26,7 @@ def test_jsonp_is_valid():
         ("var x=", False),
     ]
     for funcname, expected in tests:
-        eq_(jsonp_is_valid(funcname), expected)
+        TestCase().assertEqual(jsonp_is_valid(funcname), expected)
 
 
 def random_view_fun(request, *args, **kwargs):
@@ -46,63 +44,64 @@ class TestMarkupJson(TestCase):
         # the request and response after processing the request.
         req = self.factory.get("/")
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, False)
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, False)
+        self.assertEqual(resp.status_code, 200)
 
     def test_is_json_false_wrong_format(self):
         req = self.factory.get("/", {"format": "html"})
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, False)
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, False)
+        self.assertEqual(resp.status_code, 200)
 
     def test_is_json_true(self):
         req = self.factory.get("/", {"format": "json"})
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, True)
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, True)
+        self.assertEqual(resp.status_code, 200)
 
     def test_json_callback_not_is_json(self):
         req = self.factory.get("/")
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, False)
-        eq_(req.JSON_CALLBACK, "")
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, False)
+        self.assertEqual(req.JSON_CALLBACK, "")
+        self.assertEqual(resp.status_code, 200)
 
     def test_json_callback_valid(self):
         req = self.factory.get("/", {"format": "json", "callback": "callback"})
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, True)
-        eq_(req.JSON_CALLBACK, "callback")
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, True)
+        self.assertEqual(req.JSON_CALLBACK, "callback")
+        self.assertEqual(resp.status_code, 200)
 
     def test_json_callback_invalid(self):
         req = self.factory.get("/", {"format": "json", "callback": '">'})
         resp = jsonified_fun(req)
-        eq_(resp.status_code, 400)
-        eq_(resp.content, b'{"error": "Invalid callback function."}')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content, b'{"error": "Invalid callback function."}')
 
     def test_content_type_not_json(self):
         req = self.factory.get("/")
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, False)
-        eq_(req.CONTENT_TYPE, "text/html")
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, False)
+        self.assertEqual(req.CONTENT_TYPE, "text/html")
+        self.assertEqual(resp.status_code, 200)
 
     def test_content_type_json(self):
         req = self.factory.get("/", {"format": "json"})
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, True)
-        eq_(req.CONTENT_TYPE, "application/json")
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, True)
+        self.assertEqual(req.CONTENT_TYPE, "application/json")
+        self.assertEqual(resp.status_code, 200)
 
     def test_content_type_jsonp(self):
         req = self.factory.get("/", {"format": "json", "callback": "callback"})
         resp = jsonified_fun(req)
-        eq_(req.IS_JSON, True)
-        eq_(req.CONTENT_TYPE, "application/x-javascript")
-        eq_(resp.status_code, 200)
+        self.assertEqual(req.IS_JSON, True)
+        self.assertEqual(req.CONTENT_TYPE, "application/x-javascript")
+        self.assertEqual(resp.status_code, 200)
 
 
 def test_template_json():
-    eq_(template_json([]), "[]")
-    eq_(type(template_json([])), str)
+    tc = TestCase()
+    tc.assertEqual(template_json([]), "[]")
+    tc.assertEqual(type(template_json([])), str)

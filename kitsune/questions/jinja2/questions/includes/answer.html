@@ -112,6 +112,7 @@
       {% if user != answer.creator %}
       <div class="document-vote is-forum-answer text-right">
         <form class="document-vote--form helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
+          {% csrf_token %}
           <h4 class="document-vote--heading">{{ _('Helpful?') }}</h4>
           <div class="document-vote--buttons">
             <button type="submit" class="btn helpful-button" name="helpful" {% if answer.has_voted(request) %}disabled{% endif %}>

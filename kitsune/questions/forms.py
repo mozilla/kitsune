@@ -2,8 +2,8 @@ import json
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
@@ -132,24 +132,10 @@ class EditQuestionForm(forms.ModelForm):
                 required=False,
             )
 
-        if "device" in extra_fields:
-            self.fields["device"] = forms.CharField(
-                label=DEVICE_LABEL,
-                required=False,
-            )
-
         if "os" in extra_fields:
             self.fields["os"] = forms.CharField(
                 label=OS_LABEL,
                 required=False,
-            )
-
-        if "plugins" in extra_fields:
-            widget = forms.Textarea(attrs={"class": "plugins"})
-            self.fields["plugins"] = forms.CharField(
-                label=PLUGINS_LABEL,
-                required=False,
-                widget=widget,
             )
 
         if "troubleshooting" in extra_fields:

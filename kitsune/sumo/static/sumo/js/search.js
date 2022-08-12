@@ -1,4 +1,5 @@
-/* globals $:false */
+import "jquery-ui/ui/widgets/tabs";
+
 $(document).ready(function() {
   // initiate tabs
   var tabs = $('#search-tabs').tabs(),
@@ -11,9 +12,6 @@ $(document).ready(function() {
       }
     });
   });
-
-  $('.datepicker').attr('type','text').datepicker();
-  $('.datepicker').attr('readonly', 'readonly').css('background', '#ddd');
 
   $('select', cache_search_date).change(function () {
     if ($(this).val() === 0) {

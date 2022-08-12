@@ -1,0 +1,40 @@
+{% macro search_result(result, icons) %}
+<article class="topic-article {{ result.type }}">
+  <div class="topic-article--icon-wrap">
+    {% if result.type == 'document' %}
+    <img class="topic-article--icon" src="{{ icons.reader_mode }}" alt="">
+    {% elif result.type == 'question' %}
+    <img class="topic-article--icon" src="{{ icons.blog }}" alt="">
+    {% endif %}
+  </div>
+  <div class="topic-article--text">
+    <h3 class="sumo-card-heading">
+      <a class="title" href="{{ result.url }}" data-event-category="Instant Search" data-event-action="Result Clicked">{{ result.title }}</a>
+    </h3>
+
+    {% if result.type == 'question' %}
+      <ul class="topic-article--meta-list thread-meta">
+        {% if result.is_solved %}
+          <li>{{ _('Solved') }}</li>
+        {% endif %}
+        <li>
+          {% if result.num_answers > 0 %}
+            {{ ngettext('1 reply', '%s replies', result.num_answers)|f([result.num_answers]) }}
+          {% else %}
+            {{ _('No replies') }}
+          {% endif %}
+        </li>
+        <li>
+          {{ ngettext('1 person has this problem', '%s people have this problem', result.num_votes)|f([result.num_votes]) }}
+        </li>
+        {% if result.num_votes_past_week %}
+          <li>
+            {{ ngettext('1 new this week', '%s new this week', result.num_votes_past_week)|f([result.num_votes_past_week]) }}
+          </li>
+        {% endif %}
+      </ul>
+    {% endif %}
+    <p>{{ result.search_summary | safe }}</p>
+  </div>
+</article>
+{% endmacro %}

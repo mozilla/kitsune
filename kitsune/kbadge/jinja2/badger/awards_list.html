@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% set crumbs = [(url('kbadge.badges_list'), _('Badges')), (None, _('Recently Awarded'))] %}
-{% set styles=('badges',) %}
 
 {% block content %}
   <div class="grid_12">
@@ -21,7 +20,7 @@
       {% elif award.badge.image %}
         {% set award_image = award.badge.image.url %}
       {% else %}
-        {% set award_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
+        {% set award_image = webpack_static('kbadge/img/default-badge.png') %}
       {% endif %}
       <li class="grid_4">
         <a class="cf" href="{{ award.get_absolute_url() }}">

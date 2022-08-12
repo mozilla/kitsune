@@ -1,7 +1,7 @@
 {% extends "wiki/base.html" %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
 
-{% set scripts = ('jqueryui', 'wiki', 'wiki.diff') %}
+{% set scripts = ('wiki', 'wiki.diff') %}
 {% set title = _('Recent Revisions') %}
 {% set crumbs = [(None, title)] %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
@@ -26,7 +26,7 @@
         {{ field }}
       {% endfor %}
       <button class="btn btn-submit">{{ _('Submit') }}</button>
-      <img src="{{ STATIC_URL }}sumo/img/wait-trans.gif" class="loading" alt="" />
+      <img src="{{ webpack_static('sumo/img/wait-trans.gif') }}" class="loading" alt="" />
     </form>
 
     <div id="revisions-fragment">

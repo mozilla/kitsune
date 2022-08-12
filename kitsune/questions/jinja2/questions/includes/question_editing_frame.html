@@ -14,6 +14,7 @@ we can compute the edit-title URL.
 {% from "questions/includes/aaq_macros.html" import progress_bar %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 {% from "upload/attachments.html" import attachments_form %}
+{% set scripts = ('questions', 'questions.geo',) %}
 
 {% set hide_aaq_link = True %}
 
@@ -22,9 +23,11 @@ we can compute the edit-title URL.
   <article class="main mzp-l-content sumo-page-section--inner">
     {% if current_step %}
       {{ progress_bar(current_step, product_key=current_product.key) }}
-    {% endif %}
 
-    {{ scam_banner() }}
+      {% if current_step > 1 and not has_subscriptions %}
+        {{ scam_banner() }}
+      {% endif %}
+    {% endif %}
 
     {% block formwrap %}
     <img class="page-heading--logo" src="{{ image_for_product(current_product.get('product', '')) }}" alt="{{ current_product.get('name', '') }} logo" />
@@ -46,23 +49,23 @@ we can compute the edit-title URL.
     {% endblock %}
     <div class="sumo-l-two-col">
       <aside class="sumo-l-two-col--sidebar">
-        {% if form %}
-        <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
-            <img class="card--img" src="{{ STATIC_URL }}sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png" alt="Illustration of community" />
-            <div class="card--details">
-              <h3 class="card--title">{{ _('Our Community is here to help') }}</h3>
-              <p class="card--desc">{{ _('Kindness is at the heart of our community. Our volunteers are happy to share their time and Firefox knowledge with you.') }}</p>
-              <p><strong><a href="{{ url('landings.get_involved') }}">{{ _('Learn More') }}</a></strong></p>
-            </div>
-        </div>
+        {% if form and not has_subscriptions %}
+          <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
+              <img class="card--img" src="{{ webpack_static('sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png') }}" alt="Illustration of community" />
+              <div class="card--details">
+                <h3 class="card--title">{{ _('Our Community is here to help') }}</h3>
+                <p class="card--desc">{{ _('Kindness is at the heart of our community. Our volunteers are happy to share their time and Firefox knowledge with you.') }}</p>
+                <p><strong><a href="{{ url('landings.get_involved') }}">{{ _('Learn More') }}</a></strong></p>
+              </div>
+          </div>
 
-        <div class="large-only">
-          <h3 class="sumo-card-heading">
-            <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
-            {{ _('Helpful Tip!')}}
-          </h3>
-          <p>{{ _('Follow through. Sometimes, our volunteers would ask you for more information or to test out certain scenarios. The sooner you can do this, the sooner they would know how to fix it.')}}
-        </div>
+          <div class="large-only">
+            <h3 class="sumo-card-heading">
+              <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/highlight.svg') }}" alt="Helpful Tip icon" />
+              {{ _('Helpful Tip!')}}
+            </h3>
+            <p>{{ _('Follow through. Sometimes, our volunteers would ask you for more information or to test out certain scenarios. The sooner you can do this, the sooner they would know how to fix it.')}}
+          </div>
         {% endif %}
       </aside>
       <article class="sumo-l-two-col--main">
@@ -77,19 +80,21 @@ we can compute the edit-title URL.
             <form id="question-form" method="post">
               {% csrf_token %}
 
-              <p class="sumo-page-intro">
+              {% if not has_subscriptions %}
+                <p class="sumo-page-intro">
+                  {% trans %}
+                    Be nice. Our volunteers are Mozilla users just like you,
+                    who take the time out of their day to help.
+                  {% endtrans %}
+                </p>
+              {% endif %}
 
-                {% trans %}
-                  Be nice. Our volunteers are Mozilla users just like you,
-                  who take the time out of their day to help.
-                {% endtrans %}
-              </p>
               <div class="info card shade-bg highlight mb">
                 {% trans %}
-                  Be descriptive. Saying &quot;Playing video on YouTube is
-                  always choppy&quot; will help our volunteers identify
-                  your problem better than saying &quot;Something is
-                  wrong&quot; or &quot;Firefox is broken&quot;.
+                  Be descriptive.
+                  Saying “playing video on YouTube is always choppy”
+                  will help us understand the issue better than saying
+                  “something is wrong” or “the app is broken”.
                 {% endtrans %}
               </div>
 
@@ -100,19 +105,21 @@ we can compute the edit-title URL.
                 {% set li_class='' %}
                 {% for field in form.visible_fields() if not field.name == 'notifications' %}
 
-                  {% if field.name == 'ff_version' or field.name == 'device' %}
-                    <li class="system-details-info show">
-                      <p>
-                        {{ _("We've made some educated guesses about your current browser and operating system.") }}
-                        <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
-                        <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
-                      </p>
-                    </li>
-                  {% endif %}
-
-                  {% if field.name == 'ff_version' or field.name == 'device' or field.name == 'os' or field.name == 'plugins' %}
-                    {% set li_class='details' %}
+                  {% if not has_subscriptions %}
+                    {% if field.name == 'ff_version' %}
+                      <li class="system-details-info show">
+                        <p>
+                          {{ _("We've made some educated guesses about your current browser and operating system.") }}
+                          <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
+                          <a href="#hide-details" class="hide hide-until-expanded">{{ _('Hide details &raquo;')|safe }}</a>
+                        </p>
+                      </li>
                     {% endif %}
+
+                    {% if field.name == 'ff_version' or field.name == 'os' %}
+                      {% set li_class='details' %}
+                    {% endif %}
+                  {% endif %}
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
                     {{ field.label_tag()|safe }}
@@ -152,7 +159,7 @@ we can compute the edit-title URL.
 
               <div class="hide-on-large field">
                 <h3 class="sumo-card-heading">
-                  <img class="card--icon-sm" src="{{ STATIC_URL }}protocol/img/icons/highlight.svg" alt="Helpful Tip icon" />
+                  <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/highlight.svg') }}" alt="Helpful Tip icon" />
                   {{ _('Helpful Tip!')}}
                 </h3>
                 <p>

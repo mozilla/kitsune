@@ -1,14 +1,17 @@
-import os
-
 from django.conf import settings
 from django.db import models
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
-
+from kitsune.sumo.utils import webpack_static
 
 HOT_TOPIC_SLUG = "hot"
+
+
+class ProductQuerySet(models.QuerySet):
+    def with_question_forums(self, request):
+        return self.filter(questions_locales__locale=request.LANGUAGE_CODE).filter(codename="")
 
 
 class Product(ModelBase):
@@ -48,6 +51,8 @@ class Product(ModelBase):
     class Meta(object):
         ordering = ["display_order"]
 
+    objects = ProductQuerySet.as_manager()
+
     def __str__(self):
         return "%s" % self.title
 
@@ -55,15 +60,18 @@ class Product(ModelBase):
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(settings.STATIC_URL, "products", "img", "product_placeholder.png")
+        return webpack_static("products/img/product_placeholder.png")
 
     @property
     def image_alternate_url(self):
         if self.image_alternate:
             return self.image_alternate.url
-        return os.path.join(
-            settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
-        )
+        return webpack_static("products/img/product_placeholder_alternate.png")
+
+    @property
+    def has_subscriptions(self):
+        """Return boolean if a product has subscriptions"""
+        return bool(self.codename)
 
     def questions_enabled(self, locale):
         return self.questions_locales.filter(locale=locale).exists()
@@ -114,7 +122,7 @@ class Topic(ModelBase):
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(settings.STATIC_URL, "products", "img", "topic_placeholder.png")
+        return webpack_static("products/img/topic_placeholder.png")
 
     @property
     def path(self):

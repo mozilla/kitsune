@@ -1,4 +1,4 @@
-/* global CodeMirror, jQuery */
+import CodeMirror from "codemirror";
 
 (function($) {
   'use strict';

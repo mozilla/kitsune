@@ -1,7 +1,6 @@
 import datetime
 import json as jsonlib
 import logging
-import os
 import re
 import urllib
 
@@ -11,14 +10,14 @@ from babel import localedata
 from babel.dates import format_date, format_datetime, format_time
 from babel.numbers import format_decimal
 from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
 from django.http import QueryDict
 from django.template.loader import render_to_string
+from django.templatetags.static import static as django_static
 from django.utils.encoding import smart_bytes, smart_text
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ungettext
 from django_jinja import library
 from jinja2.utils import Markup
@@ -27,6 +26,7 @@ from pytz import timezone
 from kitsune.products.models import Product
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
@@ -179,7 +179,7 @@ class Paginator(object):
         return jinja2.Markup(render_to_string("layout/paginator.html", c))
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def breadcrumbs(context, items=list(), add_default=True, id=None):
     """
@@ -220,7 +220,7 @@ def _contextual_locale(context):
     return locale
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def datetimeformat(context, value, format="shortdatetime"):
     """
@@ -315,7 +315,7 @@ def json(s):
     return jsonlib.dumps(s)
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def number(context, n):
     """Return the localized representation of an integer or decimal.
@@ -411,7 +411,7 @@ def remove(list_, item):
     return [i for i in list_ if i != item]
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def is_secure(context):
     request = context.get("request")
@@ -451,6 +451,11 @@ def static(path):
     except ValueError as err:
         log.error("Static helper error: %s" % err)
         return ""
+
+
+@library.global_function
+def webpack_static(source_path):
+    return webpack_static_func(source_path)
 
 
 @library.global_function
@@ -508,9 +513,7 @@ def image_for_product(product_slug):
     """
     Return square/alternate image for product slug
     """
-    default_image = os.path.join(
-        settings.STATIC_URL, "products", "img", "product_placeholder_alternate.png"
-    )
+    default_image = webpack_static("products/img/product_placeholder_alternate.png")
 
     if not product_slug:
         return default_image
@@ -522,7 +525,7 @@ def image_for_product(product_slug):
     return obj.image_alternate_url
 
 
-@jinja2.contextfunction
+@jinja2.pass_context
 @library.global_function
 def show_header_fx_download(context):
     """

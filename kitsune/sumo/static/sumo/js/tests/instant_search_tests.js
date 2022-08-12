@@ -1,59 +1,22 @@
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {default as chai, expect} from 'chai';
 import React from 'react';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
-import mochaK from './fixtures/mochaK.js';
-import mochaJquery from './fixtures/mochaJquery.js';
-import mochaGoogleAnalytics from './fixtures/mochaGoogleAnalytics.js';
-import mochaNunjucks from './fixtures/mochaNunjucks.js';
-import mochaGettext from './fixtures/mochaGettext.js';
+import "sumo/js/instant_search";
+import CachedXHR from "sumo/js/cached_xhr";
 
 chai.use(chaiLint);
 
 describe('instant search', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  mochaK();
-  mochaGoogleAnalytics();
-  mochaGettext();
-  mochaNunjucks();
-  /* globals window, document, $ */
-
   describe('', () => {
-    let $sandbox;
     let clock;
     let cxhrMock;
 
     beforeEach(() => {
       clock = sinon.useFakeTimers();
-      cxhrMock = sinon.mock({request: () => {}});
-      window.k.CachedXHR = () => cxhrMock.object;
-      window.matchMedia = () => {
-        return {
-          matches: false,
-          addListener: () => {}
-        }
-      }
-
-      global.matchMedia = window.matchMedia;
-      window.Mzp = {};
-      window._localStorage = { getItem: () => undefined };
-
-      // These functions are pulled from the global scope. They're not
-      // actually tested below, but are required to get the rest of the
-      // tests to pass. This should be revisited when we have a frontend
-      // build process in place.
-      global.tabsInit = require('../sumo-tabs.es6').tabsInit;
-      global.detailsInit = require('../protocol-details-init.js').detailsInit;
-
-
-      rerequire('../i18n.js');
-      global.interpolate = global.window.interpolate;
-      rerequire('../search_utils.es6');
-      rerequire('../instant_search.es6');
-
+      cxhrMock = sinon.fake();
+      sinon.replace(CachedXHR.prototype, "request", cxhrMock);
       let content = (
         <div>
           <div id="main-content"/>
@@ -69,6 +32,7 @@ describe('instant search', () => {
     afterEach(() => {
       React.unmountComponentAtNode(document.body);
       clock.restore();
+      sinon.restore();
     });
 
     it('shows and hides the main content correctly', () => {
@@ -76,27 +40,24 @@ describe('instant search', () => {
       expect($('#main-content').css('display')).to.not.equal('none');
 
       $searchInput.val('test');
-      $searchInput.keyup();
+      $searchInput.trigger('keyup');
       expect($('#main-content').css('display')).to.equal('none');
 
       $searchInput.val('');
-      $searchInput.keyup();
+      $searchInput.trigger('keyup');
       expect($('#main-content').css('display')).to.not.equal('none');
     });
 
     it('shows the search query at the top of the page', () => {
       const query = 'search query';
-      const requestExpectation = cxhrMock.expects('request')
-        .once()
-        .withArgs(sinon.match.string, sinon.match(opts => opts.data.q === query));
 
       const $searchInput = $('#search-q');
       $searchInput.val(query);
-      $searchInput.keyup();
+      $searchInput.trigger('keyup');
 
       clock.tick(200);
       // call the callback to actually render things
-      requestExpectation.firstCall.args[1].success({
+      cxhrMock.firstCall.args[1].success({
         num_results: 0,
         q: query,
       });
@@ -107,15 +68,14 @@ describe('instant search', () => {
 
     it('escapes the search query at the top of the page', () => {
       const query = '<';
-      const requestExpectation = cxhrMock.expects('request');
 
       const $searchInput = $('#search-q');
       $searchInput.val(query);
-      $searchInput.keyup();
+      $searchInput.trigger('keyup');
 
       clock.tick(200);
       // call the callback to actually render things
-      requestExpectation.firstCall.args[1].success({
+      cxhrMock.firstCall.args[1].success({
         num_results: 0,
         q: query,
       });

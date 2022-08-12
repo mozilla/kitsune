@@ -1,37 +1,29 @@
 import hashlib
 import logging
-import time
 from datetime import datetime, timedelta
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import waffle
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
 from django.db.models import Q
 from django.http import Http404
 from django.urls import resolve
 from django.utils.encoding import smart_bytes
+from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
 from pyquery import PyQuery
-from tidings.models import NotificationsMixin
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
-from kitsune.search.es_utils import UnindexMeBro, es_analyzer_for_locale
-from kitsune.search.models import (
-    SearchMappingType,
-    SearchMixin,
-    register_for_indexing,
-    register_mapping_type,
-)
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
+from kitsune.tidings.models import NotificationsMixin
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
@@ -48,9 +40,15 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.permissions import DocumentPermissionMixin
+from kitsune.wiki.managers import DocumentManager, RevisionManager
+
+from kitsune.wiki.permissions import (
+    can_delete_documents_or_review_revisions,
+    DocumentPermissionMixin,
+)
 
 log = logging.getLogger("k.wiki")
+MAX_REVISION_COMMENT_LENGTH = 255
 
 
 class TitleCollision(Exception):
@@ -65,9 +63,7 @@ class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
 
 
-class Document(
-    NotificationsMixin, ModelBase, BigVocabTaggableMixin, SearchMixin, DocumentPermissionMixin
-):
+class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):
     """A localized knowledgebase document, not revision-specific."""
 
     title = models.CharField(max_length=255, db_index=True)
@@ -158,6 +154,8 @@ class Document(
     related_documents = models.ManyToManyField("self", blank=True)
 
     updated_column_name = "current_revision__created"
+
+    objects = DocumentManager()
 
     # firefox_versions,
     # operating_systems:
@@ -549,7 +547,7 @@ class Document(
             and not waffle.switch_is_active("hide-voting")
         )
 
-    def translated_to(self, locale):
+    def translated_to(self, locale, visible_for_user=None):
         """Return the translation of me to the given locale.
 
         If there is no such Document, return None.
@@ -562,6 +560,8 @@ class Document(
                 "far."
             )
         try:
+            if visible_for_user:
+                return Document.objects.get_visible(visible_for_user, locale=locale, parent=self)
             return Document.objects.get(locale=locale, parent=self)
         except Document.DoesNotExist:
             return None
@@ -582,17 +582,6 @@ class Document(
 
         """
 
-        def latest(queryset):
-            """Return the latest item from a queryset (by ID).
-
-            Return None if the queryset is empty.
-
-            """
-            try:
-                return queryset.order_by("-id")[0:1].get()
-            except ObjectDoesNotExist:  # Catching IndexError seems overbroad.
-                return None
-
         rev = self.latest_localizable_revision
         if not rev or not self.is_localizable:
             rejected = Q(is_approved=False, reviewed__isnull=False)
@@ -601,9 +590,9 @@ class Document(
             # or not approved revs. Try unrejected
             # or not unrejected revs. Maybe fall back to rejected
             rev = (
-                latest(self.revisions.filter(is_approved=True))
-                or latest(self.revisions.exclude(rejected))
-                or (latest(self.revisions) if include_rejected else None)
+                self.revisions.filter(is_approved=True).last()
+                or self.revisions.exclude(rejected).last()
+                or (self.revisions.last() if include_rejected else None)
             )
         return rev
 
@@ -676,10 +665,6 @@ class Document(
             revision__document=self, created__gt=start, helpful=True
         ).count()
 
-    @classmethod
-    def get_mapping_type(cls):
-        return DocumentMappingType
-
     def parse_and_calculate_links(self):
         """Calculate What Links Here data for links going out from this.
 
@@ -698,7 +683,7 @@ class Document(
         # Also delete the DocumentImage instances for this document.
         DocumentImage.objects.filter(document=self).delete()
 
-        from kitsune.wiki.parser import wiki_to_html, WhatLinksHereParser
+        from kitsune.wiki.parser import WhatLinksHereParser, wiki_to_html
 
         return wiki_to_html(
             self.current_revision.content,
@@ -735,157 +720,24 @@ class Document(
         # Clear out both mobile and desktop templates.
         cache.delete(doc_html_cache_key(self.locale, self.slug))
 
-
-@register_mapping_type
-class DocumentMappingType(SearchMappingType):
-    seconds_ago_filter = "current_revision__created__gte"
-    list_keys = ["topic", "product"]
-
-    @classmethod
-    def get_model(cls):
-        return Document
-
-    @classmethod
-    def get_query_fields(cls):
-        return ["document_title", "document_content", "document_summary", "document_keywords"]
-
-    @classmethod
-    def get_localized_fields(cls):
-        # This is the same list as `get_query_fields`, but it doesn't
-        # have to be, which is why it is typed twice.
-        return ["document_title", "document_content", "document_summary", "document_keywords"]
-
-    @classmethod
-    def get_mapping(cls):
-        return {
-            "properties": {
-                # General fields
-                "id": {"type": "long"},
-                "model": {"type": "string", "index": "not_analyzed"},
-                "url": {"type": "string", "index": "not_analyzed"},
-                "indexed_on": {"type": "integer"},
-                "updated": {"type": "integer"},
-                "product": {"type": "string", "index": "not_analyzed"},
-                "topic": {"type": "string", "index": "not_analyzed"},
-                # Document specific fields (locale aware)
-                "document_title": {"type": "string", "analyzer": "snowball"},
-                "document_keywords": {"type": "string", "analyzer": "snowball"},
-                "document_content": {
-                    "type": "string",
-                    "store": "yes",
-                    "analyzer": "snowball",
-                    "term_vector": "with_positions_offsets",
-                },
-                "document_summary": {
-                    "type": "string",
-                    "store": "yes",
-                    "analyzer": "snowball",
-                    "term_vector": "with_positions_offsets",
-                },
-                # Document specific fields (locale naive)
-                "document_locale": {"type": "string", "index": "not_analyzed"},
-                "document_current_id": {"type": "integer"},
-                "document_parent_id": {"type": "integer"},
-                "document_category": {"type": "integer"},
-                "document_slug": {"type": "string", "index": "not_analyzed"},
-                "document_is_archived": {"type": "boolean"},
-                "document_recent_helpful_votes": {"type": "integer"},
-                "document_display_order": {"type": "integer"},
-            }
-        }
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        if obj is None:
-            model = cls.get_model()
-            obj = model.objects.select_related("current_revision", "parent").get(pk=obj_id)
-
-        if obj.html.startswith(REDIRECT_HTML):
-            # It's possible this document is indexed and was turned
-            # into a redirect, so now we want to explicitly unindex
-            # it. The way we do that is by throwing an exception
-            # which gets handled by the indexing machinery.
-            raise UnindexMeBro()
-
-        d = {}
-        d["id"] = obj.id
-        d["model"] = cls.get_mapping_type_name()
-        d["url"] = obj.get_absolute_url()
-        d["indexed_on"] = int(time.time())
-
-        d["topic"] = [t.slug for t in obj.get_topics()]
-        d["product"] = [p.slug for p in obj.get_products()]
-
-        d["document_title"] = obj.title
-        d["document_locale"] = obj.locale
-        d["document_parent_id"] = obj.parent.id if obj.parent else None
-        d["document_content"] = obj.html
-        d["document_category"] = obj.category
-        d["document_slug"] = obj.slug
-        d["document_is_archived"] = obj.is_archived
-        d["document_display_order"] = obj.original.display_order
-
-        d["document_summary"] = obj.summary
-        if obj.current_revision is not None:
-            d["document_keywords"] = obj.current_revision.keywords
-            d["updated"] = int(time.mktime(obj.current_revision.created.timetuple()))
-            d["document_current_id"] = obj.current_revision.id
-            d["document_recent_helpful_votes"] = obj.recent_helpful_votes
-        else:
-            d["document_summary"] = None
-            d["document_keywords"] = None
-            d["updated"] = None
-            d["document_current_id"] = None
-            d["document_recent_helpful_votes"] = 0
-
-        # Don't query for helpful votes if the document doesn't have a current
-        # revision, or is a template, or is a redirect, or is in Navigation
-        # category (50).
-        if (
-            obj.current_revision
-            and not obj.is_template
-            and not obj.html.startswith(REDIRECT_HTML)
-            and not obj.category == 50
-        ):
-            d["document_recent_helpful_votes"] = obj.recent_helpful_votes
-        else:
-            d["document_recent_helpful_votes"] = 0
-
-        # Select a locale-appropriate default analyzer for all strings.
-        d["_analyzer"] = es_analyzer_for_locale(obj.locale)
-
-        return d
-
-    @classmethod
-    def get_indexable(cls, seconds_ago=0):
-        # This function returns all the indexable things, but we
-        # really need to handle the case where something was indexable
-        # and isn't anymore. Given that, this returns everything that
-        # has a revision.
-        indexable = super(cls, cls).get_indexable(seconds_ago=seconds_ago)
-        indexable = indexable.filter(current_revision__isnull=False)
-        return indexable
-
-    @classmethod
-    def index(cls, document, **kwargs):
-        # If there are no revisions or the current revision is a
-        # redirect, we want to remove it from the index.
-        if document["document_current_id"] is None or document["document_content"].startswith(
-            REDIRECT_HTML
-        ):
-
-            cls.unindex(document["id"], es=kwargs.get("es", None))
-            return
-
-        super(cls, cls).index(document, **kwargs)
-
-
-register_for_indexing("wiki", Document)
-register_for_indexing("wiki", Document.topics.through, m2m=True)
-register_for_indexing("wiki", Document.products.through, m2m=True)
-
-
-MAX_REVISION_COMMENT_LENGTH = 255
+    def is_visible_for(self, user):
+        """
+        This document is effectively invisible when it has no approved content,
+        and the given user is not a superuser, nor allowed to delete documents or
+        review revisions, nor a creator of one of the document's (yet unapproved)
+        revisions.
+        """
+        return (
+            self.current_revision
+            or user.is_superuser
+            or (
+                user.is_authenticated
+                and (
+                    can_delete_documents_or_review_revisions(user, locale=self.locale)
+                    or self.revisions.filter(creator=user).exists()
+                )
+            )
+        )
 
 
 class AbstractRevision(models.Model):
@@ -904,7 +756,7 @@ class AbstractRevision(models.Model):
         abstract = True
 
 
-class Revision(ModelBase, SearchMixin, AbstractRevision):
+class Revision(ModelBase, AbstractRevision):
     """A revision of a localized knowledgebase document"""
 
     summary = models.TextField()  # wiki markup
@@ -939,6 +791,8 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
     readied_for_localization_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="readied_for_l10n_revisions", null=True
     )
+
+    objects = RevisionManager()
 
     class Meta(object):
         permissions = [
@@ -1059,19 +913,19 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
         # previous approved revision:
         if document.current_revision == self:
             new_current = latest_revision(self, Q(is_approved=True))
-            document.update(
-                current_revision=new_current,
-                html=new_current.content_parsed if new_current else "",
-            )
+            document.current_revision = new_current
+            document.html = new_current.content_parsed if new_current else ""
+            # trigger post_save signals
+            document.save(update_fields=["current_revision", "html"])
 
         # Likewise, step the latest_localizable_revision field backward if
         # we're deleting that revision:
         if document.latest_localizable_revision == self:
-            document.update(
-                latest_localizable_revision=latest_revision(
-                    self, Q(is_approved=True, is_ready_for_localization=True)
-                )
+            document.latest_localizable_revision = latest_revision(
+                self, Q(is_approved=True, is_ready_for_localization=True)
             )
+            # trigger post_save signals
+            document.save(update_fields=["latest_localizable_revision"])
 
         super(Revision, self).delete(*args, **kwargs)
 
@@ -1135,103 +989,14 @@ class Revision(ModelBase, SearchMixin, AbstractRevision):
         except IndexError:
             return None
 
-    @classmethod
-    def get_mapping_type(cls):
-        return RevisionMetricsMappingType
 
-
-class DraftRevision(ModelBase, SearchMixin, AbstractRevision):
+class DraftRevision(ModelBase, AbstractRevision):
     based_on = models.ForeignKey(Revision, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
     locale = LocaleField(blank=False, db_index=True)
     slug = models.CharField(max_length=255, blank=True)
     summary = models.TextField(blank=True)
     title = models.CharField(max_length=255, blank=True)
-
-
-@register_mapping_type
-class RevisionMetricsMappingType(SearchMappingType):
-    seconds_ago_filter = "created__gte"
-
-    @classmethod
-    def get_model(cls):
-        return Revision
-
-    @classmethod
-    def get_index_group(cls):
-        return "metrics"
-
-    @classmethod
-    def get_mapping(cls):
-        return {
-            "properties": {
-                "id": {"type": "long"},
-                "model": {"type": "string", "index": "not_analyzed"},
-                "url": {"type": "string", "index": "not_analyzed"},
-                "indexed_on": {"type": "integer"},
-                "created": {"type": "date"},
-                "reviewed": {"type": "date"},
-                "locale": {"type": "string", "index": "not_analyzed"},
-                "product": {"type": "string", "index": "not_analyzed"},
-                "is_approved": {"type": "boolean"},
-                "creator_id": {"type": "long"},
-                "reviewer_id": {"type": "long"},
-            }
-        }
-
-    @classmethod
-    def extract_document(cls, obj_id, obj=None):
-        """Extracts indexable attributes from an Answer."""
-        fields = [
-            "id",
-            "created",
-            "creator_id",
-            "reviewed",
-            "reviewer_id",
-            "is_approved",
-            "document_id",
-        ]
-        composed_fields = ["document__locale", "document__slug"]
-        all_fields = fields + composed_fields
-
-        if obj is None:
-            model = cls.get_model()
-            obj_dict = model.objects.values(*all_fields).get(pk=obj_id)
-        else:
-            obj_dict = dict([(field, getattr(obj, field)) for field in fields])
-            obj_dict["document__locale"] = obj.document.locale
-            obj_dict["document__slug"] = obj.document.slug
-
-        d = {}
-        d["id"] = obj_dict["id"]
-        d["model"] = cls.get_mapping_type_name()
-
-        # We do this because get_absolute_url is an instance method
-        # and we don't want to create an instance because it's a DB
-        # hit and expensive. So we do it by hand. get_absolute_url
-        # doesn't change much, so this is probably ok.
-        d["url"] = reverse(
-            "wiki.revision",
-            kwargs={"revision_id": obj_dict["id"], "document_slug": obj_dict["document__slug"]},
-        )
-
-        d["indexed_on"] = int(time.time())
-
-        d["created"] = obj_dict["created"]
-        d["reviewed"] = obj_dict["reviewed"]
-
-        d["locale"] = obj_dict["document__locale"]
-        d["is_approved"] = obj_dict["is_approved"]
-        d["creator_id"] = obj_dict["creator_id"]
-        d["reviewer_id"] = obj_dict["reviewer_id"]
-
-        doc = Document.objects.get(id=obj_dict["document_id"])
-        d["product"] = [p.slug for p in doc.get_products()]
-
-        return d
-
-
-register_for_indexing("revisions", Revision)
 
 
 class HelpfulVote(ModelBase):
@@ -1334,7 +1099,7 @@ def _doc_components_from_url(url, required_locale=None, check_host=True):
     locale, path = split_path(parsed.path)
     if required_locale and locale != required_locale:
         return False
-    path = "/" + path
+    path = "/" + unquote(path)
 
     try:
         view, view_args, view_kwargs = resolve(path)
@@ -1362,7 +1127,7 @@ def points_to_document_view(url, required_locale=None):
 
 
 def user_num_documents(user):
-    """Count the number of documents a user has contributed to. """
+    """Count the number of documents a user has contributed to."""
     return (
         Document.objects.filter(revisions__creator=user)
         .exclude(html__startswith="<p>REDIRECT <a")

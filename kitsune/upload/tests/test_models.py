@@ -1,8 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 
-from nose.tools import eq_
-
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
@@ -29,7 +27,8 @@ class ImageAttachmentTestCase(TestCase):
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
 
-        eq_(image.file, image.thumbnail_if_set())
+        self.assertEqual(image.file, image.thumbnail_if_set())
 
-        generate_thumbnail(image, "file", "thumbnail")
-        eq_(image.thumbnail, image.thumbnail_if_set())
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
+        image.refresh_from_db()
+        self.assertEqual(image.thumbnail, image.thumbnail_if_set())

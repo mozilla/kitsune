@@ -5,7 +5,7 @@ from kitsune.sumo.tests import FuzzyUnicode
 from kitsune.users.tests import UserFactory
 
 
-class BadgeFactory(factory.DjangoModelFactory):
+class BadgeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Badge
 
@@ -13,7 +13,7 @@ class BadgeFactory(factory.DjangoModelFactory):
     title = FuzzyUnicode()
 
 
-class AwardFactory(factory.DjangoModelFactory):
+class AwardFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Award
 

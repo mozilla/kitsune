@@ -4,21 +4,19 @@
 
 High level:
 
-- [SUMO Infra home](https://github.com/mozilla-it/sumo-infra)
-- [Deploying SUMO](https://github.com/mozilla/kitsune/tree/master/k8s#deploying-sumo)
-- [MozMEAO escalation path](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=50267455)
+-   [SUMO Infra home](https://github.com/mozilla-it/sumo-infra)
+-   [Deploying SUMO](https://github.com/mozilla/kitsune/tree/main/k8s#deploying-sumo)
+-   [MozMEAO escalation path](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=50267455)
 
-- [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/master/docs/SUMO%20architecture%202019.svg)
-    - [Source](https://www.lucidchart.com/documents/view/3687b2eb-57c7-4488-a8b5-4ddcf54e47b3)
-- [SLA](https://docs.google.com/document/d/1SYtkEioKl6uvdZZA06YtVigWYJY0Nb9hGfvE0UwEPXA/edit)
-- [Incident Reports](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=52265112)
+-   [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/main/docs/SUMO%20architecture%202019.svg)
+    -   [Source](https://www.lucidchart.com/documents/view/3687b2eb-57c7-4488-a8b5-4ddcf54e47b3)
+-   [SLA](https://docs.google.com/document/d/1SYtkEioKl6uvdZZA06YtVigWYJY0Nb9hGfvE0UwEPXA/edit)
+-   [Incident Reports](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=52265112)
 
 Tech details:
 
-- [SUMO K8s deployments/services/secrets templates](https://github.com/mozilla/kitsune/tree/master/k8s/)
-- [SUMO AWS resource definitions](https://github.com/mozilla-it/sumo-infra/tree/master/k8s/tf)
-
-
+-   [SUMO K8s deployments/services/secrets templates](https://github.com/mozilla/kitsune/tree/main/k8s/)
+-   [SUMO AWS resource definitions](https://github.com/mozilla-it/sumo-infra/tree/main/k8s/tf)
 
 ## K8s commands
 
@@ -117,7 +115,6 @@ Processing K8s command json output with jq:
 kubectl -n sumo-prod get pods -o json | jq -r .items[].metadata.name
 ```
 
-
 ### K8s Services
 
 List SUMO services:
@@ -128,8 +125,6 @@ NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
 sumo-nodeport   NodePort   100.71.222.28   <none>        443:30139/TCP   341d
 ```
 
-
-
 ### Secrets
 
 [K8s secrets docs](https://kubernetes.io/docs/concepts/configuration/secret/)
@@ -138,7 +133,7 @@ Secret values are base64 encoded when viewed in K8s output. Once setup as an env
 
 Kitsune uses secrets specified as environment variables in a deployment spec:
 
-- [example](https://github.com/mozilla/kitsune/blob/7ff9934d185ce58153c652928298b5f62d37f8d2/k8s/templates/sumo-app.yaml.j2#L43-L46)
+-   [example](https://github.com/mozilla/kitsune/blob/7ff9934d185ce58153c652928298b5f62d37f8d2/k8s/templates/sumo-app.yaml.j2#L43-L46)
 
 To list secrets:
 
@@ -175,41 +170,39 @@ Updating secrets:
 kubectl -n sumo-prod apply -f ./some-secret.yaml
 ```
 
-
-
 ## Monitoring
 
-### New Relic		
+### New Relic
 
-- [Primary region, A + B "rollup view"](https://rpm.newrelic.com/accounts/1299394/applications/55558271)
-    - `sumo-prod-oregon`
+-   [Primary region, A + B "rollup view"](https://rpm.newrelic.com/accounts/1299394/applications/55558271)
 
-- [Primary cluster A](https://rpm.newrelic.com/accounts/1299394/applications/45098028)
-    - `sumo-prod-oregon-a`
-- [Primary cluster B](https://rpm.newrelic.com/accounts/1299394/applications/45097089)
-    - `sumo-prod-oregon-b`
-			
-- [Failover region](https://rpm.newrelic.com/accounts/1299394/applications/45103938)
-    - `sumo-prod-frankfurt`
+    -   `sumo-prod-oregon`
+
+-   [Primary cluster A](https://rpm.newrelic.com/accounts/1299394/applications/45098028)
+    -   `sumo-prod-oregon-a`
+-   [Primary cluster B](https://rpm.newrelic.com/accounts/1299394/applications/45097089)
+    -   `sumo-prod-oregon-b`
+-   [Failover region](https://rpm.newrelic.com/accounts/1299394/applications/45103938)
+    -   `sumo-prod-frankfurt`
 
 ### Papertrail
 
 All pod output is logged to Papertrail.
-- [Oregon-a](https://papertrailapp.com/groups/8137172/events)
-- [Oregon-b](https://papertrailapp.com/groups/6778452/events)
-    - combined Oregon-A | Oregon-B output can be viewed in the `All Systems` log destination with custom filters.
-- [Frankfurt](https://papertrailapp.com/groups/5458941/events)
-			
+
+-   [Oregon-a](https://papertrailapp.com/groups/8137172/events)
+-   [Oregon-b](https://papertrailapp.com/groups/6778452/events)
+    -   combined Oregon-A | Oregon-B output can be viewed in the `All Systems` log destination with custom filters.
+-   [Frankfurt](https://papertrailapp.com/groups/5458941/events)
+
 ### elastic.co
 
 Our hosted Elasticsearch cluster is in the `us-west-2` region of AWS. Elastic.co hosting status can be found on [this](https://cloud-status.elastic.co/) page.
-
 
 ## Operations
 
 ### Cronjobs
 
-The `sumo-prod-cron` deployment is a self-contained Python cron system that ***runs in only one of the primary clusters***. 
+The `sumo-prod-cron` deployment is a self-contained Python cron system that **_runs in only one of the primary clusters_**.
 
 ```
  # Oregon-A
@@ -226,7 +219,6 @@ sumo-prod-celery   3         3         3            3           330d
 sumo-prod-cron     0         0         0            0           330d
 sumo-prod-web      50        50        50           50          331d
 ```
-
 
 ### Manually adding/removing K8s Oregon-A/B/Frankfurt cluster nodes
 
@@ -245,7 +237,7 @@ sumo-prod-web      50        50        50           50          331d
 10. you can see when the nodes join the K8s cluster with the following command:
 
 ```
-watch 'kubectl get nodes | tail -n +2 | grep -v master | wc -l'
+watch 'kubectl get nodes | tail -n +2 | grep -v main | wc -l'
 ```
 
 > The number that is displayed should eventually match your ASG `Desired` value. Note this value only includes K8s workers.
@@ -263,32 +255,32 @@ watch 'kubectl get nodes | tail -n +2 | grep -v master | wc -l'
 9. for `Rule#`, select a value < 100 and > 0
 10. for `Type`, select `All Traffic`
 11. for `Source`, enter the IP address in CIDR format. To block a single IP, append `/32` to the IP address.
-    1. example: `196.52.2.54/32`    
+    1. example: `196.52.2.54/32`
 12. for `Allow / Deny`, select `DENY`
 13. click `Save`
 
 There are limits that apply to using VPC ACLs documented [here](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Appendix_Limits.html#vpc-limits-nacls).
 
-
 ### Manually Initiating Cluster failover
 
 > Note: Route 53 will provide automated cluster failover, these docs cover things to consider if there is a catastrophic failure in Oregon-A and B and Frankfurt must be promoted to primary rather than a read-only failover.
 
-- **verify the Frankfurt read replica**
-    - `eu-central-1` (Frankfurt) has a read-replica of the SUMO production database
-    - the replica is currently a `db.m4.xlarge`, while the prod DB is `db.m4.4xlarge`
-        - this may be ok in maintenance mode, but if you are going to enable write traffic, the instance type must be scaled up. 
-            - SRE's performed a manual instance type change on the Frankfurt read-replica, and it took ~10 minutes to change from a `db.t2.medium` to a `db.m4.xlarge`. 
-    - although we have alerting in place to notify the SRE team in the event of a replication error, it's a good idea to check the replication status on the RDS details page for the `sumo` MySQL instance.
-        - specifically, check the `DB Instance Status`, `Read Replica Source`, `Replication State`, and `Replication Error` values.
-    - decide if [promoting the read-replica](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html#USER_ReadRepl.Promote) to a master is appropriate.
-        - it's preferrable to have a multi-AZ RDS instance, as we can take snapshots against the failover instance (RDS does this by default in a multi-AZ setup).
-        - if data is written to a promoted instance, and failover back to the us-west-2 clusters is desirable, a full DB backup and restore in us-west-2 is required.
-        - the replica is automatically rebooted before being promoted to a full instance.
-- **ensure image versions are up to date**
-- Most MySQL changes should already be replicated to the read-replica, however, if you're reading this, chances are things are broken. Ensure that the DB schema is correct for the iamges you're deploying.
-- **scale cluster and pods**
-    - the prod deployments [A](https://github.com/mozilla/kitsune/blob/master/k8s/regions/oregon-a/prod.yaml#L24-L48) and [B](https://github.com/mozilla/kitsune/blob/master/k8s/regions/oregon-b/prod.yaml#L24-L48) yaml contain the correct number of replicas, but here are some safe values to use in an emergency:
+-   **verify the Frankfurt read replica**
+    -   `eu-central-1` (Frankfurt) has a read-replica of the SUMO production database
+    -   the replica is currently a `db.m4.xlarge`, while the prod DB is `db.m4.4xlarge`
+        -   this may be ok in maintenance mode, but if you are going to enable write traffic, the instance type must be scaled up.
+            -   SRE's performed a manual instance type change on the Frankfurt read-replica, and it took ~10 minutes to change from a `db.t2.medium` to a `db.m4.xlarge`.
+    -   although we have alerting in place to notify the SRE team in the event of a replication error, it's a good idea to check the replication status on the RDS details page for the `sumo` MySQL instance.
+        -   specifically, check the `DB Instance Status`, `Read Replica Source`, `Replication State`, and `Replication Error` values.
+    -   decide if [promoting the read-replica](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_ReadRepl.html#USER_ReadRepl.Promote) to a main is appropriate.
+        -   it's preferrable to have a multi-AZ RDS instance, as we can take snapshots against the failover instance (RDS does this by default in a multi-AZ setup).
+        -   if data is written to a promoted instance, and failover back to the us-west-2 clusters is desirable, a full DB backup and restore in us-west-2 is required.
+        -   the replica is automatically rebooted before being promoted to a full instance.
+-   **ensure image versions are up to date**
+-   Most MySQL changes should already be replicated to the read-replica, however, if you're reading this, chances are things are broken. Ensure that the DB schema is correct for the iamges you're deploying.
+-   **scale cluster and pods**
+
+    -   the prod deployments [A](https://github.com/mozilla/kitsune/blob/main/k8s/regions/oregon-a/prod.yaml#L24-L48) and [B](https://github.com/mozilla/kitsune/blob/main/k8s/regions/oregon-b/prod.yaml#L24-L48) yaml contain the correct number of replicas, but here are some safe values to use in an emergency:
 
         ```
         # Oregon A - ALSO runs cron pod
@@ -301,5 +293,6 @@ There are limits that apply to using VPC ACLs documented [here](http://docs.aws.
         kubectl -n sumo-prod scale --replicas=3 deployment/sumo-prod-celery
         kubectl -n sumo-prod scale --replicas=0 deployment/sumo-prod-cron
         ```
-- **DNS**
-    - point the `prod-tp.sumo.mozit.cloud` traffic policy at the Frankfurt ELB
+
+-   **DNS**
+    -   point the `prod-tp.sumo.mozit.cloud` traffic policy at the Frankfurt ELB

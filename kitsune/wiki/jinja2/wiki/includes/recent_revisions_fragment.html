@@ -13,11 +13,11 @@
         {% set diff_url = url('wiki.compare_revisions', rev.document.slug) %}
         {% set diff_url = diff_url|urlparams(from=prev_rev.id, to=rev.id, locale=rev.document.locale) %}
         <a class="show-diff" href="{{ diff_url }}">
-          <img src="{{ STATIC_URL }}protocol/img/icons/search.svg" alt="{{ _('View Diff') }}" />
+          <img src="{{ webpack_static('protocol/img/icons/search.svg') }}" alt="{{ _('View Diff') }}" />
         </a>
-        <img class="loading" src="{{ STATIC_URL }}sumo/img/wait-trans.gif" alt="" />
+        <img class="loading" src="{{ webpack_static('sumo/img/wait-trans.gif') }}" alt="" />
         <a class="close-diff" href="">
-          <img src="{{ STATIC_URL }}protocol/img/icons/close.svg" alt="{{ _('Close Diff') }}" />
+          <img src="{{ webpack_static('protocol/img/icons/close.svg') }}" alt="{{ _('Close Diff') }}" />
         </a>
       {% endif %}
     </div>
@@ -26,7 +26,7 @@
       <a href="{{ rev.document.get_absolute_url() }}">{{ rev.document.title }}</a>
     </div>
     <div class="comment wider">
-      {{ rev.comment|linkify|safe }}
+      {{ rev.comment }}
     </div>
     <div class="creator">
       <a href="{{ rev.creator.get_absolute_url() }}">

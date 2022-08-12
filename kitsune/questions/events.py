@@ -3,12 +3,12 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext as _
 from pytz import timezone
-from tidings.events import InstanceEvent
 
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
 from kitsune.sumo.templatetags.jinja_helpers import add_utm, urlparams
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tidings.events import InstanceEvent
 
 
 class QuestionEvent(InstanceEvent):
@@ -60,6 +60,19 @@ class QuestionEvent(InstanceEvent):
     def _activation_url(cls, watch):
         url = reverse("questions.activate_watch", args=[watch.id, watch.secret])
         return add_utm(url, "questions-activate")
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.questions.events", "class": "QuestionEvent"},
+            "instance": {
+                "module": "kitsune.questions.models",
+                "class": "Answer",
+                "id": self.answer.id,
+            },
+        }
 
 
 class QuestionReplyEvent(QuestionEvent):
@@ -141,6 +154,19 @@ class QuestionReplyEvent(QuestionEvent):
     def description_of_watch(cls, watch):
         return _("New answers for question: %s") % watch.content_object.title
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.questions.events", "class": "QuestionReplyEvent"},
+            "instance": {
+                "module": "kitsune.questions.models",
+                "class": "Answer",
+                "id": self.answer.id,
+            },
+        }
+
 
 class QuestionSolvedEvent(QuestionEvent):
     """An event which fires when a Question gets solved"""
@@ -197,3 +223,16 @@ class QuestionSolvedEvent(QuestionEvent):
     def description_of_watch(cls, watch):
         question = watch.content_object
         return _("Solution found for question: %s") % question.title
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.questions.events", "class": "QuestionSolvedEvent"},
+            "instance": {
+                "module": "kitsune.questions.models",
+                "class": "Answer",
+                "id": self.answer.id,
+            },
+        }

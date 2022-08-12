@@ -1,13 +1,13 @@
 import logging
 from datetime import timedelta
 from functools import wraps
-
-from django.conf import settings
+from io import BytesIO
 
 import httplib2
 from apiclient.discovery import build
 from apiclient.errors import HttpError
-from oauth2client.client import SignedJwtAssertionCredentials
+from django.conf import settings
+from oauth2client.service_account import ServiceAccountCredentials
 
 from kitsune.questions.models import Question
 from kitsune.wiki.models import Document
@@ -42,7 +42,7 @@ def retry_503(f):
 
 def _build_request():
     scope = "https://www.googleapis.com/auth/analytics.readonly"
-    creds = SignedJwtAssertionCredentials(account, key, scope)
+    creds = ServiceAccountCredentials.from_p12_keyfile_buffer(account, BytesIO(key), scopes=scope)
     request = creds.authorize(httplib2.Http())
     service = build("analytics", "v3", request)
     return service.data().ga()

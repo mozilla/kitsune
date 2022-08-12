@@ -1,11 +1,10 @@
 import React from 'react';
-import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
 import {default as chai, expect} from 'chai';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
-import mochaJquery from './fixtures/mochaJquery.js';
-import mochaBrowserDetect from './fixtures/mochaBrowserDetect.js';
+import { TroubleshootingDetector } from 'sumo/js/browserdetect';
+import ShowFor from "sumo/js/showfor";
 
 chai.use(chaiLint);
 
@@ -15,7 +14,7 @@ chai.use(chaiLint);
 * be bound to the passed $sandbox.
 */
 function showForNoInit($sandbox) {
-  let sf = Object.create(window.ShowFor.prototype);
+  let sf = Object.create(ShowFor.prototype);
   sf.$container = $sandbox;
   sf.state = {};
   return sf;
@@ -29,14 +28,9 @@ function unorderedEquals(arr1, arr2) {
 
 
 describe('ShowFor', () => {
-  mochaJsdom({useEach: true, url: 'http://localhost'});
-  mochaJquery();
-  /* globals window, document, $ */
   let showFor;
 
   beforeEach(() => {
-    rerequire('../showfor.js');
-
     // Wow. That's a lot of data. Can we make this smaller?
     let sandbox = (
       <div>
@@ -124,6 +118,16 @@ describe('ShowFor', () => {
 
     React.render(sandbox, document.body);
     showFor = showForNoInit($('body'));
+
+    sinon.stub(navigator, "userAgent").get(() =>
+      "Mozilla/5.0 (Windows NT 5.1;) Gecko/20100101 Firefox/25.0"
+    );
+    // avoid slowing down tests while we wait for remote troubleshooting api call to timeout:
+    sinon.stub(TroubleshootingDetector.prototype, "browser").resolvesArg(0);
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   describe('loadData', () => {
@@ -145,15 +149,12 @@ describe('ShowFor', () => {
 
   describe('updateUI', () => {
     describe('Firefox 26 on Windows XP', () => {
-      mochaBrowserDetect({
-        browser: 'fx',
-        version: 26.0,
-        OS: 'winxp',
-      });
-
-      beforeEach(() => {
+      beforeEach(async () => {
+        sinon.stub(navigator, "userAgent").get(() =>
+          "Mozilla/5.0 (Windows NT 5.1;) Gecko/20100101 Firefox/26.0"
+        );
         showFor.loadData();
-        showFor.updateUI();
+        await showFor.updateUI();
       });
 
       it('should populate the UI with the values from BrowserDetect', () => {
@@ -163,15 +164,12 @@ describe('ShowFor', () => {
     });
 
     describe('Firefox for Android 23', () => {
-      mochaBrowserDetect({
-        browser: 'm',
-        version: 23.0,
-        OS: 'android',
-      });
-
-      beforeEach(() => {
+      beforeEach(async () => {
+        sinon.stub(navigator, "userAgent").get(() =>
+          "Mozilla/5.0 (Android;) Gecko/20100101 Firefox/23.0"
+        );
         showFor.loadData();
-        showFor.updateUI();
+        await showFor.updateUI();
       });
 
       it('should populate the UI with the values from BrowserDetect', () => {
@@ -182,11 +180,10 @@ describe('ShowFor', () => {
   });
 
   describe('updateState', () => {
-    mochaBrowserDetect();
 
-    beforeEach(() => {
+    beforeEach(async () => {
       showFor.loadData();
-      showFor.updateUI();
+      await showFor.updateUI();
       showFor.updateState();
     });
 
@@ -242,12 +239,11 @@ describe('ShowFor', () => {
   });
 
   describe('initShowFuncs', () => {
-    mochaBrowserDetect();
 
-    beforeEach(() => {
+    beforeEach(async () => {
       sinon.stub(showFor, 'matchesCriteria');
       showFor.loadData();
-      showFor.updateUI();
+      await showFor.updateUI();
       showFor.updateState();
       showFor.initShowFuncs();
     });
@@ -274,11 +270,10 @@ describe('ShowFor', () => {
   });
 
   describe('showAndHide', () => {
-    mochaBrowserDetect();
 
-    beforeEach(() => {
+    beforeEach(async () => {
       showFor.loadData();
-      showFor.updateUI();
+      await showFor.updateUI();
       showFor.updateState();
     });
 
@@ -302,7 +297,6 @@ describe('ShowFor', () => {
   });
 
   describe('matchesCriteria', () => {
-    mochaBrowserDetect();
 
     beforeEach(() => {
       showFor.loadData();

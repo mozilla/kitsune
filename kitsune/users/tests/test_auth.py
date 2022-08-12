@@ -1,9 +1,8 @@
+from unittest.mock import Mock, patch
+
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import RequestFactory, override_settings
-
-from unittest.mock import Mock, patch
-from nose.tools import eq_, ok_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
@@ -36,17 +35,17 @@ class FXAAuthBackendTests(TestCase):
         self.backend.claims = claims
         self.backend.request = request_mock
         users = User.objects.all()
-        eq_(users.count(), 0)
+        self.assertEqual(users.count(), 0)
         self.backend.create_user(claims)
         users = User.objects.all()
-        eq_(users.count(), 1)
-        eq_(users[0].email, "bar@example.com")
-        eq_(users[0].username, "bar")
-        eq_(users[0].profile.fxa_uid, "my_unique_fxa_id")
-        eq_(users[0].profile.fxa_avatar, "http://example.com/avatar")
-        eq_(users[0].profile.locale, "en-US")
-        eq_(users[0].profile.name, "Crazy Joe Davola")
-        eq_(0, users[0].groups.count())
+        self.assertEqual(users.count(), 1)
+        self.assertEqual(users[0].email, "bar@example.com")
+        self.assertEqual(users[0].username, "bar")
+        self.assertEqual(users[0].profile.fxa_uid, "my_unique_fxa_id")
+        self.assertEqual(users[0].profile.fxa_avatar, "http://example.com/avatar")
+        self.assertEqual(users[0].profile.locale, "en-US")
+        self.assertEqual(users[0].profile.name, "Crazy Joe Davola")
+        self.assertEqual(0, users[0].groups.count())
         message_mock.success.assert_called()
 
     @patch("kitsune.users.auth.messages")
@@ -69,11 +68,11 @@ class FXAAuthBackendTests(TestCase):
         self.backend.claims = claims
         self.backend.request = request_mock
         users = User.objects.all()
-        eq_(users.count(), 0)
+        self.assertEqual(users.count(), 0)
         self.backend.create_user(claims)
         users = User.objects.all()
-        eq_(CONTRIBUTOR_GROUP, users[0].groups.all()[0].name)
-        ok_("is_contributor" not in request_mock.session)
+        self.assertEqual(CONTRIBUTOR_GROUP, users[0].groups.all()[0].name)
+        assert "is_contributor" not in request_mock.session
         message_mock.success.assert_called()
 
     @patch("kitsune.users.auth.messages")
@@ -91,7 +90,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.request = request_mock
         self.backend.create_user(claims)
         user = User.objects.get(profile__fxa_uid="my_unique_fxa_id")
-        eq_(user.username, "bar1")
+        self.assertEqual(user.username, "bar1")
         message_mock.success.assert_called()
 
     def test_login_fxa_uid_missing(self):
@@ -103,7 +102,7 @@ class FXAAuthBackendTests(TestCase):
         request_mock = Mock(spec=HttpRequest)
         self.backend.claims = claims
         self.backend.request = request_mock
-        ok_(not self.backend.filter_users_by_claims(claims))
+        assert not self.backend.filter_users_by_claims(claims)
 
     def test_login_existing_user_by_fxa_uid(self):
         """Test user filtering by FxA uid."""
@@ -118,7 +117,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.request = request_mock
         self.backend.request.user = user
         self.backend.filter_users_by_claims(claims)
-        eq_(User.objects.all()[0].id, user.id)
+        self.assertEqual(User.objects.all()[0].id, user.id)
 
     @patch("kitsune.users.auth.messages")
     def test_connecting_using_existing_fxa_account(self, message_mock):
@@ -138,8 +137,8 @@ class FXAAuthBackendTests(TestCase):
         message_mock.error.assert_called_with(
             request_mock, "This Firefox Account is already used in another profile."
         )
-        ok_(not User.objects.get(id=user.id).profile.is_fxa_migrated)
-        ok_(not User.objects.get(id=user.id).profile.fxa_uid)
+        assert not User.objects.get(id=user.id).profile.is_fxa_migrated
+        assert not User.objects.get(id=user.id).profile.fxa_uid
 
     def test_login_existing_user_by_email(self):
         """Test user filtering by email."""
@@ -153,7 +152,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.request = request_mock
         self.backend.request.user = user
         self.backend.filter_users_by_claims(claims)
-        eq_(User.objects.all()[0].id, user.id)
+        self.assertEqual(User.objects.all()[0].id, user.id)
 
     @patch("kitsune.users.auth.messages")
     def test_email_changed_in_FxA_match_by_uid(self, message_mock):
@@ -172,8 +171,8 @@ class FXAAuthBackendTests(TestCase):
         self.backend.request = request_mock
         self.backend.update_user(user, claims)
         user = User.objects.get(id=user.id)
-        eq_(user.email, "bar@example.com")
-        ok_(not message_mock.info.called)
+        self.assertEqual(user.email, "bar@example.com")
+        assert not message_mock.info.called
 
     @patch("kitsune.users.auth.messages")
     @patch("mozilla_django_oidc.auth.requests")
@@ -211,11 +210,11 @@ class FXAAuthBackendTests(TestCase):
         requests_mock.post.return_value = post_json_mock
 
         self.backend.authenticate(auth_request)
-        ok_(user.profile.is_fxa_migrated)
-        eq_(user.profile.fxa_uid, "my_unique_fxa_id")
-        eq_(user.email, "fxa@example.com")
-        eq_(user.profile.avatar, "sumo_avatar")
-        eq_(user.profile.name, "Kenny Bania")
+        assert user.profile.is_fxa_migrated
+        self.assertEqual(user.profile.fxa_uid, "my_unique_fxa_id")
+        self.assertEqual(user.email, "fxa@example.com")
+        self.assertEqual(user.profile.avatar, "sumo_avatar")
+        self.assertEqual(user.profile.name, "Kenny Bania")
         message_mock.info.assert_called_with(auth_request, "fxa_notification_updated")
 
     @patch("kitsune.users.auth.messages")
@@ -233,4 +232,4 @@ class FXAAuthBackendTests(TestCase):
             request_mock,
             "The email used with this Firefox Account is already linked in another profile.",
         )
-        eq_(User.objects.get(id=user.id).email, "bar@example.com")
+        self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")

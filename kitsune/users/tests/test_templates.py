@@ -1,7 +1,5 @@
 from django.conf import settings
-from nose.tools import eq_
 from pyquery import PyQuery as pq
-from tidings.models import Watch
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.kbadge.tests import AwardFactory, BadgeFactory
@@ -9,6 +7,7 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import get
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tidings.models import Watch
 from kitsune.users.models import Profile
 from kitsune.users.tests import TestCaseBase, UserFactory, add_permission
 from kitsune.wiki.tests import RevisionFactory
@@ -36,7 +35,7 @@ class EditProfileTests(TestCaseBase):
         }
 
         response = self.client.post(url, data)
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
         profile = Profile.objects.get(user=user)
         for key in data:
             if key not in ["timezone", "username"]:
@@ -46,8 +45,8 @@ class EditProfileTests(TestCaseBase):
                     key,
                 )
 
-        eq_(data["timezone"], profile.timezone.zone)
-        eq_(data["username"], profile.user.username)
+        self.assertEqual(data["timezone"], profile.timezone.zone)
+        self.assertEqual(data["username"], profile.user.username)
 
     def test_user_cant_edit_others_profile_without_permission(self):
         u1 = UserFactory()
@@ -58,11 +57,11 @@ class EditProfileTests(TestCaseBase):
 
         # Try GET
         r = self.client.get(url)
-        eq_(403, r.status_code)
+        self.assertEqual(403, r.status_code)
 
         # Try POST
         r = self.client.post(url, {})
-        eq_(403, r.status_code)
+        self.assertEqual(403, r.status_code)
 
     def test_user_can_edit_others_profile_with_permission(self):
         user1 = UserFactory()
@@ -74,7 +73,7 @@ class EditProfileTests(TestCaseBase):
 
         # Try GET
         resp = self.client.get(url)
-        eq_(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
 
         # Try POST
         data = {
@@ -93,7 +92,7 @@ class EditProfileTests(TestCaseBase):
             "locale": "en-US",
         }
         resp = self.client.post(url, data)
-        eq_(302, resp.status_code)
+        self.assertEqual(302, resp.status_code)
         profile = Profile.objects.get(user=user1)
         for key in data:
             if key not in ["timezone", "username"]:
@@ -103,8 +102,8 @@ class EditProfileTests(TestCaseBase):
                     key,
                 )
 
-        eq_(data["timezone"], profile.timezone.zone)
-        eq_(data["username"], profile.user.username)
+        self.assertEqual(data["timezone"], profile.timezone.zone)
+        self.assertEqual(data["username"], profile.user.username)
 
 
 class ViewProfileTests(TestCaseBase):
@@ -114,14 +113,14 @@ class ViewProfileTests(TestCaseBase):
 
     def test_view_ProfileFactory(self):
         r = self.client.get(reverse("users.profile", args=[self.u.username]))
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        eq_(0, doc("#edit-profile-link").length)
-        eq_(self.u.username, doc("h2.user").text())
+        self.assertEqual(0, doc("#edit-profile-link").length)
+        self.assertEqual(self.u.username, doc("h2.user").text())
         # No name set => no optional fields.
-        eq_(0, doc(".contact").length)
+        self.assertEqual(0, doc(".contact").length)
         # Check canonical url
-        eq_(
+        self.assertEqual(
             "%s/en-US/user/%s" % (settings.CANONICAL_URL, self.u.username),
             doc('link[rel="canonical"]')[0].attrib["href"],
         )
@@ -130,9 +129,9 @@ class ViewProfileTests(TestCaseBase):
         """Logged in, on my profile, I see an edit link."""
         self.client.login(username=self.u.username, password="testpass")
         r = self.client.get(reverse("users.profile", args=[self.u.username]))
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        eq_(
+        self.assertEqual(
             1,
             len(doc(f"#user-nav li a[href='{reverse('users.edit_my_profile', locale='en-US')}']")),
         )
@@ -142,16 +141,16 @@ class ViewProfileTests(TestCaseBase):
         self.profile.bio = "http://getseo.com, [http://getseo.com]"
         self.profile.save()
         r = self.client.get(reverse("users.profile", args=[self.u.username]))
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         doc = pq(r.content)
-        eq_(2, len(doc('.bio a[rel="nofollow"]')))
+        self.assertEqual(2, len(doc('.bio a[rel="nofollow"]')))
 
     def test_bio_links_no_img(self):
         # bug 1427813
         self.profile.bio = '<p>my dude image <img src="https://www.example.com/the-dude.jpg"></p>'
         self.profile.save()
         r = self.client.get(reverse("users.profile", args=[self.u.username]))
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         assert b"<p>my dude image </p>" in r.content
 
     def test_num_documents(self):
@@ -161,7 +160,7 @@ class ViewProfileTests(TestCaseBase):
         RevisionFactory(creator=u)
 
         r = self.client.get(reverse("users.profile", args=[u.username]))
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         assert b"2 documents" in r.content
 
     def test_deactivate_button(self):
@@ -208,9 +207,9 @@ class FlagProfileTests(TestCaseBase):
         add_permission(u, FlaggedObject, "can_moderate")
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "flagit.queue")
-        eq_(200, response.status_code)
+        self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        eq_(1, len(doc("#flagged-queue form.update")))
+        self.assertEqual(1, len(doc("#flagged-queue form.update")))
 
 
 class EditWatchListTests(TestCaseBase):
@@ -225,17 +224,17 @@ class EditWatchListTests(TestCaseBase):
 
     def test_GET(self):
         r = self.client.get(reverse("users.edit_watch_list"))
-        eq_(200, r.status_code)
+        self.assertEqual(200, r.status_code)
         assert "question: " + self.question.title in r.content.decode("utf8")
 
     def test_POST(self):
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
-        eq_(w.is_active, True)
+        self.assertEqual(w.is_active, True)
 
         self.client.post(reverse("users.edit_watch_list"))
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
-        eq_(w.is_active, False)
+        self.assertEqual(w.is_active, False)
 
         self.client.post(reverse("users.edit_watch_list"), {"watch_%s" % w.id: "1"})
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
-        eq_(w.is_active, True)
+        self.assertEqual(w.is_active, True)

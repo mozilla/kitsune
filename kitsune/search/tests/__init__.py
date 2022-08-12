@@ -1,26 +1,19 @@
-from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
-import factory
-
-from kitsune.search.models import Synonym
+from kitsune.search.es7_utils import get_doc_types
 from kitsune.sumo.tests import TestCase
 
 
-# Dummy request for passing to question_searcher() and brethren.
-dummy_request = RequestFactory().get("/")
-
-
 @override_settings(ES_LIVE_INDEXING=True)
-class ElasticTestCase(TestCase):
-    """Base class for Elastic Search tests, providing some conveniences"""
+class Elastic7TestCase(TestCase):
+    """Base class for Elastic Search 7 tests, providing some conveniences"""
 
-    search_tests = True
-
-
-class SynonymFactory(factory.DjangoModelFactory):
-    class Meta:
-        model = Synonym
-
-    from_words = "foo, bar"
-    to_words = "baz"
+    def tearDown(self):
+        """Delete all documents in each index."""
+        for doc_type in get_doc_types():
+            doc_type.search().query("match_all").delete()
+            # specify a refresh operation on the index to update all shards
+            # participated in the delete operation. This is different from
+            # the API refresh=True which only updates the shard that performed
+            # the specific delete/update/save op
+            doc_type._index.refresh()

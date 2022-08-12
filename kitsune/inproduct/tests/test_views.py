@@ -1,10 +1,8 @@
+from unittest import mock
 from urllib.parse import urlparse
 
-from django.contrib.sites.models import Site
-
-from unittest import mock
 import waffle
-from nose.tools import eq_
+from django.contrib.sites.models import Site
 
 from kitsune.inproduct.tests import RedirectFactory
 from kitsune.sumo.tests import TestCase
@@ -73,7 +71,7 @@ class RedirectTestCase(TestCase):
         for input, output in urls:
             response = self.client.get("/1/%s" % input, follow=True)
             if output == 404:
-                eq_(404, response.status_code)
+                self.assertEqual(404, response.status_code)
             elif output.startswith("http"):
                 chain = [u[0] for u in response.redirect_chain]
                 assert output in chain
@@ -81,8 +79,8 @@ class RedirectTestCase(TestCase):
                 r = response.redirect_chain
                 r.reverse()
                 final = urlparse(r[0][0])
-                eq_(output, final.path)
-                eq_(querystring, final.query)
+                self.assertEqual(output, final.path)
+                self.assertEqual(querystring, final.query)
 
     @mock.patch.object(Site.objects, "get_current")
     @mock.patch.object(waffle, "sample_is_active")
@@ -92,5 +90,5 @@ class RedirectTestCase(TestCase):
         sample_is_active.return_value = True
 
         response = self.client.get("/1/firefox/4.0/Linux/en-US/prefs-applications")
-        eq_(302, response.status_code)
+        self.assertEqual(302, response.status_code)
         assert response["location"].startswith("https://example.com/")

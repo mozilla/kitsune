@@ -1,4 +1,5 @@
-/* globals gettext:false, k:false, jQuery:false */
+import { Graph } from "sumo/js/rickshaw_utils";
+
 /*
 * Scripts to support Graphs on wiki article history.
 */
@@ -42,21 +43,21 @@
       {
         name: gettext('Yes'),
         slug: 'yes',
-        func: k.Graph.identity('yes'),
+        func: Graph.identity('yes'),
         color: '#21de2b',
         axisGroup: 'votes'
       },
       {
         name: gettext('No'),
         slug: 'no',
-        func: k.Graph.identity('no'),
+        func: Graph.identity('no'),
         color: '#de2b21',
         axisGroup: 'votes'
       },
       {
         name: gettext('Percent'),
         slug: 'percent',
-        func: k.Graph.percentage('yes', 'no'),
+        func: Graph.percentage('yes', 'no'),
         color: '#2b21de',
         axisGroup: 'percent',
         type: 'percent'
@@ -64,7 +65,7 @@
     ];
 
     $container.show();
-    var graph = new k.Graph($container, {
+    var graph = new Graph($container, {
       data: data,
       graph: {
         width: 600

@@ -4,7 +4,6 @@
 {% from "questions/includes/aaq_macros.html" import progress_bar %}
 
 {% set title = _('Log In / Sign up') %}
-{% set styles = ('users',) %}
 {% set classes = 'login register contributor light-grey-bg' if contributor else 'login register light-grey-bg' %}
 
 {% block breadcrumbs %}
@@ -13,11 +12,11 @@
 
 {% block contentwrap %}
 
-{% set aaq_product = request.session.get('product_key') %}
-{% if aaq_product %}
+{% set aaq_context = request.session.get('aaq_context') %}
+{% if aaq_context and aaq_context.key %}
   <section class="sumo-page-section question-masthead shade-bg">
     <div class="mzp-l-content">
-      {{ progress_bar(3, product_key=aaq_product) }}
+      {{ progress_bar(3, product_key=aaq_context.key) }}
     </div>
   </section>
 {% endif %}
@@ -26,14 +25,14 @@
   <div class="mzp-l-content">
 
     {% if notification == 'already_migrated' %}
-      {{ notification_already_migrated(STATIC_URL) }}
+      {{ notification_already_migrated() }}
     {% endif %}
 
 
     <div class="card feature-padding elevation-03">
       <div class="sumo-auth">
         <figure class="sumo-auth--logo">
-          <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/FF_Master__icon.svg" alt="{{ _('Firefox logo') }}"/>
+          <img class="ff-logo" src="{{ webpack_static('sumo/img/FF_Master__icon.svg') }}" alt="{{ _('Firefox logo') }}"/>
         </figure>
         <div class="sumo-auth--form">
           <div id="login-fxa">
@@ -41,7 +40,7 @@
               <div class="sumo-page-section">
                 <h1 class="sumo-page-heading">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
                 <p>
-                  {% if request.session.get('in-aaq') %}
+                  {% if aaq_context and not aaq_context.has_subscriptions %}
                     {{ _('Never miss an answer. A free Firefox Account lets you view your question history and track or post responses.')}}
                   {% else %}
                     {% trans url=url('wiki.document', 'firefox-accounts-mozilla-support-faq') %}

@@ -1,6 +1,9 @@
-DC_CI = "bin/dc.sh"
+DC := $(shell command -v docker-compose 2> /dev/null)
+ifeq (DC,)
 DC = $(shell which docker-compose)
-PIP_TIMEOUT=60
+else
+DC = $(shell which docker) compose
+endif
 
 default: help
 	@echo ""
@@ -11,22 +14,17 @@ help:
 	@echo "build         - build docker images for dev"
 	@echo "run           - docker-compose up the entire system for dev"
 	@echo ""
-	@echo "pull          - pull the latest production images from Docker Hub"
 	@echo "init          - initialize the database and install Node packages"
 	@echo "djshell       - start a Django Python shell (ipython)"
 	@echo "dbshell       - start a MySQL shell"
 	@echo "shell         - start a bash shell"
 	@echo "runshell      - start a bash shell with ports bound so you can run the server"
 	@echo "clean         - remove all build, test, coverage and Python artifacts"
-	@echo "rebuild       - force a rebuild of all of the docker images"
-	@echo "lint          - check style with flake8, jshint, and stylelint"
-	@echo "test          - run tests against local files"
-	@echo "test-image    - run tests against files in docker image"
+	@echo "rebuild       - force a rebuild of the dev docker image"
+	@echo "lint          - run pre-commit hooks"
+	@echo "test          - run python tests"
+	@echo "test-js       - run js tests"
 	@echo "docs          - generate Sphinx HTML documentation"
-	@echo "build-ci      - build docker images for use in our CI pipeline"
-	@echo "test-ci       - run tests against files in docker image built by CI"
-	@echo "frontend      - build docker images for front-end dependencies and tooling"
-	@echo "styleguide    - build the SUMO's styleguide"
 
 .env:
 	@if [ ! -f .env ]; then \
@@ -37,44 +35,28 @@ help:
 .docker-build:
 	${MAKE} build
 
-.docker-build-pull:
-	${MAKE} pull
-
-.docker-build-full:
-	${MAKE} build-full
-
-build: .docker-build-pull
-	${DC} build node-dev base-dev
+build:
+	${DC} build web
 	touch .docker-build
-
-build-full: .docker-build-pull
-	${DC} build full
-#   tag other images
-	${DC} build --build-arg PIP_DEFAULT_TIMEOUT=${PIP_TIMEOUT} base base-dev staticfiles locales full-no-locales
-	touch .docker-build-full
-
-pull: .env
-	-GIT_COMMIT_SHORT= ${DC} pull base base-dev staticfiles locales full-no-locales full mariadb elasticsearch redis
-	touch .docker-build-pull
 
 rebuild: clean build
 
-run: .docker-build-pull
+run: .docker-build
 	${DC} up web
 
-init: .docker-build-pull
+init: .docker-build
 	${DC} run web bin/run-bootstrap.sh
 
-shell: .docker-build-pull
+shell: .docker-build
 	${DC} run web bash
 
-runshell: .docker-build-pull
+runshell: .docker-build
 	${DC} run --service-ports web bash
 
-djshell: .docker-build-pull
+djshell: .docker-build
 	${DC} run web python manage.py shell
 
-dbshell: .docker-build-pull
+dbshell: .docker-build
 	${DC} run web python manage.py dbshell
 
 clean:
@@ -91,66 +73,17 @@ clean:
 #	node stuff
 	-rm -rf node_modules
 
-lint: .docker-build-pull
-	${DC} run test flake8 kitsune
+lint: .docker-build
+	${DC} run web pre-commit run --all-files
 
-test: .docker-build-pull
-	${DC} run test
+test: .docker-build
+	${DC} run web ./bin/run-unit-tests.sh
 
-test-js: .docker-build-pull
-	${DC} run test-js
+test-js: .docker-build
+	${DC} run web npm run webpack:test
 
-test-image: .docker-build-full
-	${DC} run test-image
-
-lint-image: .docker-build-full
-	${DC} run test-image flake8 kitsune
-
-lint-l10n: .env
-	@GIT_COMMIT_SHORT= ${DC} pull base > /dev/null 2>&1
-	@GIT_COMMIT_SHORT= ${DC} run lint-l10n
-
-docs: .docker-build-pull
+docs: .docker-build
 	${DC} run web $(MAKE) -C docs/ clean
 	${DC} run web $(MAKE) -C docs/ html
 
-###############
-# For use in CI
-###############
-.docker-build-ci:
-	${MAKE} build-ci
-
-build-ci: .docker-build-pull
-	${DC_CI} build full
-#	tag intermediate images using cache
-	${DC_CI} build --build-arg PIP_DEFAULT_TIMEOUT=${PIP_TIMEOUT} base base-dev staticfiles locales full-no-locales
-	touch .docker-build-ci
-
-test-ci: .docker-build-ci
-	${DC_CI} run test-image
-
-test-js-ci: .docker-build-ci
-	${DC_CI} run test-image-js
-
-lint-ci: .docker-build-ci
-	${DC_CI} run test-image flake8 kitsune
-
-#####################
-# For use in frontend
-#####################
-frontend:
-	npm run build:scss
-	npm run build:postcss
-
-styleguide: frontend
-	npm run build:docs:copystyles
-	npm run build:docs:copyfonts
-	npm run build:docs:copyjs
-	npm run build:docs:copyprotocol
-	npm run build:docs:copyprotocolimgs
-	npm run build:docs:copysumoimgs
-	npm run build:docs:copyproductimgs
-	npm run build:docs:styles
-	npm run build:docs:kss
-
-.PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci frontend styleguide
+.PHONY: build rebuild run init shell runshell djshell clean lint test test-js docs

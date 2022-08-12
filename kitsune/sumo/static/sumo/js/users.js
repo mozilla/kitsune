@@ -1,4 +1,5 @@
-/* globals gettext:false, trackEvent:false, jQuery */
+import trackEvent from "sumo/js/analytics";
+
 /*
  * users.js
  * Make public emails clickable.
@@ -22,7 +23,7 @@
   var CONFIRM_TEXT = gettext('WARNING! Are you sure you want to deactivate this user? This cannot be undone!');
   function confirmUserDeactivation() {
     $('.deactivate').submit(function() {
-      return confirm(CONFIRM_TEXT); // eslint-disable-line
+      return confirm(CONFIRM_TEXT);
     });
   }
 

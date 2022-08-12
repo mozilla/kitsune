@@ -116,7 +116,7 @@ def cors_enabled(origin, methods=["GET"]):
     return decorator
 
 
-def ratelimit(name, rate, method=["POST"], skip_if=lambda r: False):
+def ratelimit(name, rate, method="POST"):
     """
     Reimplement ``ratelimit.decorators.ratelimit``, using a sumo-specic ``is_ratelimited``.
 
@@ -127,7 +127,7 @@ def ratelimit(name, rate, method=["POST"], skip_if=lambda r: False):
         @wraps(fn)
         def _wrapped(request, *args, **kwargs):
             # Sets ``request.limited`` on ``request``.
-            is_ratelimited(request, name, rate, method, skip_if)
+            is_ratelimited(request, name, rate, method)
             return fn(request, *args, **kwargs)
 
         return _wrapped

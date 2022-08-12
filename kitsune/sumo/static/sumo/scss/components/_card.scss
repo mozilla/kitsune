@@ -61,6 +61,11 @@
     }
   }
 
+  &.subscriptions {
+    margin: p.$spacing-lg 0;
+    min-height: initial;
+  }
+
   &.is-shaded {
     background: var(--color-shade-bg);
   }
@@ -99,6 +104,10 @@
     &.has-bottom-margin {
       margin-bottom: p.$spacing-sm;
     }
+  }
+
+  &--subscriptions {
+    padding-top: p.$spacing-sm;
   }
 
   &.is-inverse {
@@ -161,6 +170,7 @@
       flex-direction: column;
       height: 100%;
     }
+
   }
 
   &--product {
@@ -214,17 +224,12 @@
       margin-bottom: p.$spacing-sm;
       width: p.$spacing-xl;
       height: auto;
+      flex-shrink: 0;
     }
 
     .card--desc {
       @include c.text-body-xs;
       margin: 20px 0;
-    }
-
-    &.heading-is-one-line {
-      .card--title {
-        white-space: nowrap;
-      }
     }
 
     &.no-body-text {
@@ -409,22 +414,25 @@
       .card--details {
         display: flex;
         align-items: center;
-        max-width: 940px;
+        justify-content: center;
         margin: 0 auto;
       }
 
       .card--title {
         margin-right: 40px;
         line-height: 1.2;
+        flex: 0 1 auto;
+        text-align: center;
       }
 
       .sumo-button {
-        flex: 0 0 auto;
-        word-wrap: nowrap;
+        flex: 0 1 auto;
       }
 
       .card--desc {
-        flex: 1 1 auto;
+        min-width: 25ch;
+        max-width: 45ch;
+        flex: 1 1 0;
         @include p.bidi((
           (margin, 0 40px 0 0, 0 0 0 40px),
         ));

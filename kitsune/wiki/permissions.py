@@ -70,7 +70,7 @@ class DocumentPermissionMixin(object):
         )
 
     def _allows_mark_ready_for_l10n(self, user):
-        """"Can the user mark the document as ready for localization?"""
+        """Can the user mark the document as ready for localization?"""
         # If the document is localizable and the user has the django
         # permission, then the user can mark as ready for l10n.
         return self.is_localizable and user.has_perm("wiki.mark_ready_for_l10n")
@@ -130,3 +130,16 @@ def _is_reviewer(locale, user):
         return False
 
     return user in locale_team.reviewers.all()
+
+
+def can_delete_documents_or_review_revisions(user, locale=None):
+    """
+    Can the given user delete documents or review revisions. If an optional locale is
+    provided, will perform the extra check of whether the user is a leader or reviewer
+    within that locale team.
+    """
+    if locale and (_is_leader(locale, user) or _is_reviewer(locale, user)):
+        return True
+
+    # Fallback to the django permissions.
+    return user.has_perm("wiki.review_revision") or user.has_perm("wiki.delete_document")

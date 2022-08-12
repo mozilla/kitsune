@@ -5,50 +5,10 @@
   "destination": "build",
   "//": "The css and js paths are URLs relative to the style guide destination.",
   "css": [
-    "static/css/screen.css"
-  ],
-  "//": [
-    "TODO: Fix this mess and remove this note when JS is compiled with the frontend."
+    "static/screen.css"
   ],
   "js": [
-    "static/sumo/js/i18n.js",
-    "static/underscore/underscore.js",
-    "static/moment/moment.js",
-    "static/jquery/dist/jquery.min.js",
-    "static/sumo/js/libs/jquery.cookie.js",
-    "static/sumo/js/libs/jquery.placeholder.js",
-    "static/nunjucks/browser/nunjucks-slim.js",
-    "static/sumo/js/nunjucks.js",
-    "static/sumo/js/cached_xhr.js",
-    "static/sumo/js/search_utils.js",
-    "static/sumo/js/browserdetect.js",
-    "static/sumo/js/libs/uitour.js",
-    "static/sumo/js/kbox.js",
-    "static/sumo/js/main.js",
-    "static/sumo/js/format.js",
-    "static/sumo/js/geoip-locale.js",
-    "static/mailcheck/src/mailcheck.js",
-    "static/sumo/js/ui.js",
-    "static/sumo/js/analytics.js",
-    "static/sumo/js/surveygizmo.js",
-    "static/sumo/js/instant_search.js",
-    "static/sumo/js/responsive-nav-toggle.js",
-    "static/sumo/js/profile-avatars.js",
-    "static/protocol/js/protocol-base.js",
-    "static/protocol/js/protocol-utils.js",
-    "static/protocol/js/protocol-supports.js",
-    "static/protocol/js/protocol-details.js",
-    "static/protocol/js/protocol-footer.js",
-    "static/protocol/js/protocol-menu.js",
-    "static/protocol/js/protocol-modal.js",
-    "static/protocol/js/protocol-navigation.js",
-    "static/protocol/js/protocol-newsletter.js",
-    "static/protocol/js/protocol-notification-bar.js",
-    "static/sumo/js/protocol-nav.js",
-    "static/sumo/js/protocol-details-init.js",
-    "static/sumo/js/show-fx-download.js",
-    "static/sumo/js/sumo-tabs.js"
-
+    "static/common.js"
   ],
   "homepage": "../../../../../styleguide/styleguide-examples/styleguide-index.md",
   "builder": "kss-template"

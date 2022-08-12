@@ -167,7 +167,7 @@
       <div class="main-content">
         <div itemprop="text" class="content">{{ question.content_parsed|safe }}</div>
         {# Note: this is not vulnerable to injection because Jinja autoescapes the strings. #}
-        <div class="content-raw" style="display:none;">{{ question.content }}</div>
+        <div class="content-raw">{{ question.content }}</div>
         {% if question_images %}
           <div class="attachments-title">
             {{ _('Attached screenshots') }}
@@ -207,6 +207,7 @@
           {% if not question.has_voted(request) %}
             <div class="me-too">
               <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
+                {% csrf_token %}
                 <button class="sumo-button button-lg secondary-button" type="submit">{{ _('I have this problem, too') }}</button>
               </form>
             </div>
@@ -253,7 +254,7 @@
             {% else %}
             <div class="field checkbox">
               <input id="id_needs_info" type="checkbox" name="needsinfo">
-              <label for="id_needs_info">{{ _('Needs more information') }}</label>
+              <label for="id_needs_info">{{ _('Needs more information from the user') }}</label>
             </div>
             {% endif %}
           </div>
@@ -270,20 +271,17 @@
         </form>
       {% elif question.editable and not user.is_authenticated %}
         <div class="question-tools ask-a-question card is-shaded">
-          {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
-            {% set ask_url = url('questions.aaq_step1') %}
-          {% else %}
-            {% set ask_url = url('wiki.document', 'get-community-support') %}
-          {% endif %}
+          {% set ask_url = url('questions.aaq_step1') %}
           {% if answers.object_list and not question.has_voted(request) %}
-          {# Only show the button again if there are answers in between #}
-          <div class="me-too sumo-button-stack">
-            <a class="sumo-button primary-button button-lg" href="{{ ask_url }}">{{ _('Ask a question') }}</a>
-            <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
-              <button class="sumo-button secondary-button button-lg" type="submit">{{ _('I have this problem, too') }}</button>
-            </form>
-          </div>
-        {% endif %}
+            {# Only show the button again if there are answers in between #}
+            <div class="me-too sumo-button-stack">
+              <a class="sumo-button primary-button button-lg" href="{{ ask_url }}">{{ _('Ask a question') }}</a>
+              <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
+                {% csrf_token %}
+                <button class="sumo-button secondary-button button-lg" type="submit">{{ _('I have this problem, too') }}</button>
+              </form>
+            </div>
+          {% endif %}
           <p>
             {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.auth'), ask_url=ask_url) }}
           </p>
@@ -304,10 +302,7 @@
   {{ search_box(settings, id='support-search-sidebar', params=search_params, placeholder=_('Search Support')) }}
 </div>
 
-{% set aaq_product = request.session.get('product_key') %}
-{% if aaq_product %}
-  {{ aaq_widget(aaq_product, user, "question") }}
-{% endif %}
+{{ aaq_widget(request, "question") }}
 
 <div class="questions-sidebar">
   <nav class="sidebar-nav is-action-list" id="question-tools">

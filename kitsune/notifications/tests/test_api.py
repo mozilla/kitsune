@@ -1,22 +1,20 @@
 from datetime import datetime
-
-from django.contrib.contenttypes.models import ContentType
+from unittest.mock import Mock, patch
 
 from actstream.actions import follow
-from actstream.signals import action
 from actstream.models import Action, Follow
-from unittest.mock import Mock, patch
-from nose.tools import eq_, ok_
+from actstream.signals import action
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.test import APIClient
 
 from kitsune.notifications import api
 from kitsune.notifications import tasks as notification_tasks
 from kitsune.notifications.models import Notification, RealtimeRegistration
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import QuestionFactory, AnswerFactory
-from kitsune.users.tests import UserFactory
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
+from kitsune.users.tests import UserFactory
 
 
 class TestPushNotificationRegistrationSerializer(TestCase):
@@ -38,10 +36,10 @@ class TestPushNotificationRegistrationSerializer(TestCase):
         serializer = api.PushNotificationRegistrationSerializer(
             context=self.context, data=self.data
         )
-        ok_(serializer.is_valid())
-        eq_(serializer.errors, {})
+        assert serializer.is_valid()
+        self.assertEqual(serializer.errors, {})
         obj = serializer.save()
-        eq_(obj.creator, self.user)
+        self.assertEqual(obj.creator, self.user)
 
     def test_cant_register_for_other_users(self):
         wrong_user = UserFactory()
@@ -49,8 +47,8 @@ class TestPushNotificationRegistrationSerializer(TestCase):
         serializer = api.PushNotificationRegistrationSerializer(
             context=self.context, data=self.data
         )
-        ok_(not serializer.is_valid())
-        eq_(
+        assert not serializer.is_valid()
+        self.assertEqual(
             serializer.errors,
             {
                 "creator": ["Can't register push notifications for another user."],
@@ -74,8 +72,8 @@ class TestNotificationSerializer(TestCase):
 
         serializer = api.NotificationSerializer(instance=notification)
 
-        eq_(serializer.data["is_read"], False)
-        eq_(
+        self.assertEqual(serializer.data["is_read"], False)
+        self.assertEqual(
             serializer.data["actor"],
             {
                 "type": "user",
@@ -84,10 +82,10 @@ class TestNotificationSerializer(TestCase):
                 "avatar": profile_avatar(followed),
             },
         )
-        eq_(serializer.data["verb"], "asked")
-        eq_(serializer.data["action_object"]["type"], "question")
-        eq_(serializer.data["action_object"]["id"], q.id)
-        eq_(serializer.data["target"], None)
+        self.assertEqual(serializer.data["verb"], "asked")
+        self.assertEqual(serializer.data["action_object"]["type"], "question")
+        self.assertEqual(serializer.data["action_object"]["id"], q.id)
+        self.assertEqual(serializer.data["target"], None)
         # Check that the serialized data is in the correct format. If it is
         # not, this will throw an exception.
         datetime.strptime(serializer.data["timestamp"], "%Y-%m-%dT%H:%M:%SZ")
@@ -118,33 +116,33 @@ class TestNotificationViewSet(TestCase):
         n = self._makeNotification()
         self.client.force_authenticate(user=self.follower)
         res = self.client.post(reverse("notification-mark-read", args=[n.id]))
-        eq_(res.status_code, 204)
+        self.assertEqual(res.status_code, 204)
         n = Notification.objects.get(id=n.id)
-        eq_(n.is_read, True)
+        self.assertEqual(n.is_read, True)
 
     def test_mark_unread(self):
         n = self._makeNotification(is_read=True)
         self.client.force_authenticate(user=self.follower)
         res = self.client.post(reverse("notification-mark-unread", args=[n.id]))
-        eq_(res.status_code, 204)
+        self.assertEqual(res.status_code, 204)
         n = Notification.objects.get(id=n.id)
-        eq_(n.is_read, False)
+        self.assertEqual(n.is_read, False)
 
     def test_filter_is_read_false(self):
         n = self._makeNotification(is_read=False)
         self._makeNotification(is_read=True)
         self.client.force_authenticate(user=self.follower)
         res = self.client.get(reverse("notification-list") + "?is_read=0")
-        eq_(res.status_code, 200)
-        eq_([d["id"] for d in res.data], [n.id])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual([d["id"] for d in res.data], [n.id])
 
     def test_filter_is_read_true(self):
         self._makeNotification(is_read=False)
         n = self._makeNotification(is_read=True)
         self.client.force_authenticate(user=self.follower)
         res = self.client.get(reverse("notification-list") + "?is_read=1")
-        eq_(res.status_code, 200)
-        eq_([d["id"] for d in res.data], [n.id])
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual([d["id"] for d in res.data], [n.id])
 
 
 @patch.object(notification_tasks, "requests")
@@ -169,13 +167,13 @@ class RealtimeViewSet(TestCase):
         self.client.force_authenticate(user=u)
         url = reverse("realtimeregistration-updates", args=[rt.id])
         res = self.client.get(url)
-        eq_(res.status_code, 200)
+        self.assertEqual(res.status_code, 200)
 
-        eq_(len(res.data), 1)
+        self.assertEqual(len(res.data), 1)
         act = res.data[0]
-        eq_(act["actor"]["username"], a.creator.username)
-        eq_(act["target"]["content"], q.content_parsed)
-        eq_(act["action_object"]["content"], a.content_parsed)
+        self.assertEqual(act["actor"]["username"], a.creator.username)
+        self.assertEqual(act["target"]["content"], q.content_parsed)
+        self.assertEqual(act["action_object"]["content"], a.content_parsed)
 
     def test_is_cors(self, requests):
         u = UserFactory()
@@ -188,5 +186,5 @@ class RealtimeViewSet(TestCase):
             "endpoint": "http://example.com",
         }
         res = self.client.post(url, data, HTTP_ORIGIN="http://example.com")
-        eq_(res.status_code, 201)
-        eq_(res["Access-Control-Allow-Origin"], "*")
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res["Access-Control-Allow-Origin"], "*")

@@ -2,6 +2,7 @@ import json
 from ast import literal_eval
 
 import requests
+import waffle
 from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
@@ -32,7 +33,7 @@ from mozilla_django_oidc.views import (
     OIDCAuthenticationRequestView,
     OIDCLogoutView,
 )
-from tidings.models import Watch
+from sentry_sdk import capture_exception, capture_message
 
 from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
@@ -42,12 +43,14 @@ from kitsune.questions.utils import days_since, mark_content_as_spam, num_answer
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, simple_paginate, paginate
+from kitsune.sumo.utils import get_next_url, paginate, simple_paginate
+from kitsune.tidings.models import Watch
 from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
     process_event_delete_user,
     process_event_password_change,
+    process_event_profile_change,
     process_event_subscription_state_change,
 )
 from kitsune.users.templatetags.jinja_helpers import profile_url
@@ -213,6 +216,19 @@ def answers_contributed(request, username):
             "answers": answers,
         },
     )
+
+
+@login_required
+@require_GET
+def subscribed_products(request, username):
+    # plus sign (+) is converted to space
+    username = username.replace(" ", "+")
+    user = get_object_or_404(User, username=username, is_active=True)
+    if user != request.user:
+        raise Http404
+
+    context = {"user": user, "products": user.profile.products.all()}
+    return render(request, "users/user_subscriptions.html", context)
 
 
 @require_GET
@@ -419,6 +435,14 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
                 "Please contact an administrator if you believe this is an error"
             ),
         )
+        if waffle.switch_is_active("log-login-failure"):
+            # sentry will attempt to find an exception being handled
+            # or if none is (I think by this point it will have been handled)
+            # just send a stack trace
+            capture_exception()
+            # I might be completely wrong about the above so, for now, also send a message
+            capture_message("This account is not active error.", level="error")
+
         return HttpResponseRedirect(reverse("home"))
 
 
@@ -529,6 +553,8 @@ class WebhookView(View):
                     process_event_subscription_state_change.delay(account_event.id)
                 elif short_id == AccountEvent.PASSWORD_CHANGE:
                     process_event_password_change.delay(account_event.id)
+                elif short_id == AccountEvent.PROFILE_CHANGE:
+                    process_event_profile_change.delay(account_event.id)
                 else:
                     account_event.status = AccountEvent.NOT_IMPLEMENTED
                     account_event.save()

@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% set crumbs = [(None, _('Badges'))] %}
-{% set styles=('badges',) %}
 
 {% block contentwrap %}
 <div id="main-content">
@@ -19,7 +18,7 @@
           {% if badge.image %}
             {% set badge_image = badge.image.url %}
           {% else %}
-            {% set badge_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
+            {% set badge_image = webpack_static('kbadge/img/default-badge.png') %}
           {% endif %}
           <div class="card elevation-01 zoom-on-hover">
             <div class="card--horizontal">

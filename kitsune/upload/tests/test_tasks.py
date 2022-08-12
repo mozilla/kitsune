@@ -1,20 +1,18 @@
 import os
+from unittest import mock
 
 from django.conf import settings
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.test import override_settings
 
-from unittest import mock
-from nose.tools import eq_
-
 import kitsune.upload.tasks
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import (
-    _scale_dimensions,
     _create_image_thumbnail,
+    _scale_dimensions,
     compress_image,
     generate_thumbnail,
 )
@@ -26,43 +24,43 @@ class ScaleDimensionsTestCase(TestCase):
         """A square image of exact size is not scaled."""
         ts = settings.THUMBNAIL_SIZE
         (width, height) = _scale_dimensions(ts, ts, ts)
-        eq_(ts, width)
-        eq_(ts, height)
+        self.assertEqual(ts, width)
+        self.assertEqual(ts, height)
 
     def test_small(self):
         """A small image is not scaled."""
         ts = settings.THUMBNAIL_SIZE // 2
         (width, height) = _scale_dimensions(ts, ts)
-        eq_(ts, width)
-        eq_(ts, height)
+        self.assertEqual(ts, width)
+        self.assertEqual(ts, height)
 
     def test_width_large(self):
         """An image with large width is scaled to width=MAX."""
         ts = 120
         (width, height) = _scale_dimensions(ts * 3 + 10, ts - 1, ts)
-        eq_(ts, width)
-        eq_(38, height)
+        self.assertEqual(ts, width)
+        self.assertEqual(38, height)
 
     def test_large_height(self):
         """An image with large height is scaled to height=MAX."""
         ts = 150
         (width, height) = _scale_dimensions(ts - 2, ts * 2 + 9, ts)
-        eq_(71, width)
-        eq_(ts, height)
+        self.assertEqual(71, width)
+        self.assertEqual(ts, height)
 
     def test_large_both_height(self):
         """An image with both large is scaled to the largest - height."""
         ts = 150
         (width, height) = _scale_dimensions(ts * 2 + 13, ts * 5 + 30, ts)
-        eq_(60, width)
-        eq_(ts, height)
+        self.assertEqual(60, width)
+        self.assertEqual(ts, height)
 
     def test_large_both_width(self):
         """An image with both large is scaled to the largest - width."""
         ts = 150
         (width, height) = _scale_dimensions(ts * 20 + 8, ts * 4 + 36, ts)
-        eq_(ts, width)
-        eq_(31, height)
+        self.assertEqual(ts, width)
+        self.assertEqual(31, height)
 
 
 class CreateThumbnailTestCase(TestCase):
@@ -73,8 +71,8 @@ class CreateThumbnailTestCase(TestCase):
         with open("kitsune/upload/tests/media/test_thumb.jpg", "rb") as f:
             expected_thumb = ImageFile(f)
 
-        eq_(expected_thumb.width, actual_thumb.width)
-        eq_(expected_thumb.height, actual_thumb.height)
+        self.assertEqual(expected_thumb.width, actual_thumb.width)
+        self.assertEqual(expected_thumb.height, actual_thumb.height)
 
     def test_create_image_thumbnail_avatar(self):
         """An avatar is created from an image file."""
@@ -83,8 +81,8 @@ class CreateThumbnailTestCase(TestCase):
         )
         actual_thumb = ImageFile(thumb_content)
 
-        eq_(settings.AVATAR_SIZE, actual_thumb.width)
-        eq_(settings.AVATAR_SIZE, actual_thumb.height)
+        self.assertEqual(settings.AVATAR_SIZE, actual_thumb.width)
+        self.assertEqual(settings.AVATAR_SIZE, actual_thumb.height)
 
 
 class GenerateThumbnail(TestCase):
@@ -101,20 +99,22 @@ class GenerateThumbnail(TestCase):
         with open("kitsune/upload/tests/media/test.jpg", "rb") as f:
             up_file = File(f)
             image.file.save(up_file.name, up_file, save=True)
-        generate_thumbnail(image, "file", "thumbnail")
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
+        image.refresh_from_db()
         return image
 
     def test_generate_thumbnail_default(self):
         """generate_thumbnail creates a thumbnail."""
         image = self._image_with_thumbnail()
 
-        eq_(90, image.thumbnail.width)
-        eq_(120, image.thumbnail.height)
+        self.assertEqual(90, image.thumbnail.width)
+        self.assertEqual(120, image.thumbnail.height)
 
     def test_generate_no_file(self):
         """generate_thumbnail does not fail when no file is provided."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        generate_thumbnail(image, "file", "thumbnail")
+        image.save()
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
 
     def test_generate_deleted_file(self):
         """generate_thumbnail does not fail if file doesn't actually exist."""
@@ -124,7 +124,7 @@ class GenerateThumbnail(TestCase):
             image.file.save(up_file.name, up_file, save=True)
         # The field will be set but the file isn't there.
         os.remove(image.file.path)
-        generate_thumbnail(image, "file", "thumbnail")
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
 
     def test_generate_thumbnail_twice(self):
         """generate_thumbnail replaces old thumbnail."""
@@ -134,7 +134,9 @@ class GenerateThumbnail(TestCase):
         # The thumbnail exists.
         assert os.path.isfile(old_path)
 
-        generate_thumbnail(image, "file", "thumbnail")
+        generate_thumbnail("upload.ImageAttachment", image.id, "file", "thumbnail")
+
+        image.refresh_from_db()
         new_path = image.thumbnail.path
 
         # The thumbnail was replaced.
@@ -166,7 +168,7 @@ class CompressImageTestCase(TestCase):
     def test_compressed_image_default(self, call):
         """uploaded image is compressed."""
         image = self._uploaded_image()
-        compress_image(image, "file")
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert call.called
 
     @override_settings(OPTIPNG_PATH="/dude")
@@ -174,7 +176,8 @@ class CompressImageTestCase(TestCase):
     def test_compress_no_file(self, call):
         """compress_image does not fail when no file is provided."""
         image = ImageAttachment(content_object=self.obj, creator=self.user)
-        compress_image(image, "file")
+        image.save()
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert not call.called
 
     @override_settings(OPTIPNG_PATH="")
@@ -182,7 +185,7 @@ class CompressImageTestCase(TestCase):
     def test_compress_no_compression_software(self, call):
         """compress_image does not fail when no compression software."""
         image = self._uploaded_image()
-        compress_image(image, "file")
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert not call.called
 
     @override_settings(OPTIPNG_PATH="/dude")
@@ -190,5 +193,5 @@ class CompressImageTestCase(TestCase):
     def test_compressed_image_animated(self, call):
         """uploaded animated gif image is not compressed."""
         image = self._uploaded_image(testfile="animated.gif")
-        compress_image(image, "file")
+        compress_image("upload.ImageAttachment", image.id, "file")
         assert not call.called

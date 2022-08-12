@@ -1,0 +1,12 @@
+import "./protocol-compat";
+import "protocol/js/protocol-base";
+import "protocol/js/protocol-utils";
+import "protocol/js/protocol-supports";
+import "protocol/js/protocol-details";
+import "protocol/js/protocol-footer";
+import "protocol/js/protocol-menu";
+import "protocol/js/protocol-modal";
+import "protocol/js/protocol-navigation";
+import "protocol/js/protocol-newsletter";
+import "protocol/js/protocol-notification-bar";
+import "protocol/js/protocol-lang-switcher";

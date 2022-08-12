@@ -1,11 +1,10 @@
 from django.contrib.sites.models import Site
-from django.utils.translation import ugettext_lazy as _lazy
-
-from tidings.events import InstanceEvent, EventUnion, Event
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.kbforums.models import Thread
 from kitsune.sumo.email_utils import emails_with_users_and_watches
 from kitsune.sumo.templatetags.jinja_helpers import add_utm
+from kitsune.tidings.events import Event, EventUnion, InstanceEvent
 from kitsune.wiki.models import Document
 
 
@@ -68,15 +67,27 @@ class NewPostEvent(InstanceEvent):
         # Need to store the reply for _mails
         self.reply = reply
 
-    def fire(self, **kwargs):
-        """Notify watchers of this thread, of the document, and of the
-        locale."""
-        return EventUnion(self, NewThreadEvent(self.reply), NewPostInLocaleEvent(self.reply)).fire(
-            **kwargs
-        )
+    def send_emails(self, exclude=None):
+        """Notify watchers of this thread, of the document, and of the locale."""
+        return EventUnion(
+            self, NewThreadEvent(self.reply), NewPostInLocaleEvent(self.reply)
+        ).send_emails(exclude=exclude)
 
     def _mails(self, users_and_watches):
         return new_post_mails(self.reply, users_and_watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewPostEvent"},
+            "instance": {
+                "module": "kitsune.kbforums.models",
+                "class": "Post",
+                "id": self.reply.id,
+            },
+        }
 
 
 class NewThreadEvent(InstanceEvent):
@@ -90,14 +101,23 @@ class NewThreadEvent(InstanceEvent):
         # Need to store the post for _mails
         self.post = post
 
-    def fire(self, **kwargs):
+    def send_emails(self, exclude=None):
         """Notify watches of the document and of the locale."""
-        return EventUnion(self, NewThreadEvent(self.post), NewThreadInLocaleEvent(self.post)).fire(
-            **kwargs
-        )
+        return EventUnion(
+            self, NewThreadEvent(self.post), NewThreadInLocaleEvent(self.post)
+        ).send_emails(exclude=exclude)
 
     def _mails(self, users_and_watches):
         return new_thread_mails(self.post, users_and_watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewThreadEvent"},
+            "instance": {"module": "kitsune.kbforums.models", "class": "Post", "id": self.post.id},
+        }
 
 
 class _NewActivityInLocaleEvent(Event):
@@ -124,6 +144,19 @@ class NewPostInLocaleEvent(_NewActivityInLocaleEvent):
     def _mails(self, users_and_watches):
         return new_post_mails(self.reply, users_and_watches)
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewPostInLocaleEvent"},
+            "instance": {
+                "module": "kitsune.kbforums.models",
+                "class": "Post",
+                "id": self.reply.id,
+            },
+        }
+
 
 class NewThreadInLocaleEvent(_NewActivityInLocaleEvent):
     """Event fired when there is a new reply in a locale."""
@@ -137,3 +170,12 @@ class NewThreadInLocaleEvent(_NewActivityInLocaleEvent):
 
     def _mails(self, users_and_watches):
         return new_thread_mails(self.post, users_and_watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.kbforums.events", "class": "NewThreadInLocaleEvent"},
+            "instance": {"module": "kitsune.kbforums.models", "class": "Post", "id": self.post.id},
+        }

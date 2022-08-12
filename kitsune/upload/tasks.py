@@ -4,7 +4,8 @@ import os
 import subprocess
 from tempfile import NamedTemporaryFile
 
-from celery import task
+from celery import shared_task
+from django.apps import apps
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -13,41 +14,41 @@ from PIL import Image
 log = logging.getLogger("k.task")
 
 
-@task(rate_limit="15/m", serializer="pickle")
-def generate_thumbnail(for_obj, from_field, to_field, max_size=settings.THUMBNAIL_SIZE):
-    """Generate a thumbnail, given a model instance with from and to fields.
-
-    Optionally specify a max_size.
-
+@shared_task(rate_limit="15/m")
+def generate_thumbnail(
+    obj_model_name, obj_id, from_field, to_field, max_size=settings.THUMBNAIL_SIZE
+):
     """
-    from_ = getattr(for_obj, from_field)
-    to_ = getattr(for_obj, to_field)
+    Generate a thumbnail, given an object's model name, id, "from" and "to" fields, and
+    optionally the "max_size" of its longest side. The model name must be in the form of
+    "<app>.<model-name>", so for example, "gallery.Image" or "upload.ImageAttachment".
+    """
 
-    # Bail silently if nothing to generate from, image was probably deleted.
+    # Get the model of the object, and then get the object itself.
+    model = apps.get_model(obj_model_name)
+    obj = model.objects.get(id=obj_id)
+
+    from_ = getattr(obj, from_field)
+    to_ = getattr(obj, to_field)
+
+    # Bail silently if nothing to generate from. The image was probably deleted.
     if not (from_ and default_storage.exists(from_.name)):
-        log_msg = "No file to generate from: {model} {id}, {from_f} -> {to_f}"
         log.info(
-            log_msg.format(
-                model=for_obj.__class__.__name__, id=for_obj.id, from_f=from_field, to_f=to_field
-            )
+            f"No file to generate from: {obj_model_name} {obj.id}, {from_field} -> {to_field}"
         )
         return
 
-    log_msg = "Generating thumbnail for {model} {id}: {from_f} -> {to_f}"
-    log.info(
-        log_msg.format(
-            model=for_obj.__class__.__name__, id=for_obj.id, from_f=from_field, to_f=to_field
-        )
-    )
+    log.info(f"Generating thumbnail for {obj_model_name} {obj.id}: {from_field} -> {to_field}")
     thumb_content = _create_image_thumbnail(from_.file, longest_side=max_size)
-    if to_:  # Clean up old file before creating new one.
+    if to_:
+        # Clean up old file before creating new one.
         to_.delete(save=False)
     # Don't modify the object.
     to_.save(from_.name, thumb_content, save=False)
     # Use update to avoid race conditions with updating different fields.
     # E.g. when generating two thumbnails for different fields of a single
     # object.
-    for_obj.update(**{to_field: to_.name})
+    obj.update(**{to_field: to_.name})
 
 
 def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE, pad=False):
@@ -100,27 +101,27 @@ def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
     return (new_width, new_height)
 
 
-@task(rate_limit="15/m", serializer="pickle")
-def compress_image(for_obj, for_field):
+@shared_task(rate_limit="15/m")
+def compress_image(obj_model_name, obj_id, for_field):
     """Compress an image of given field for given object."""
 
-    for_ = getattr(for_obj, for_field)
+    # Get the model of the object, and then get the object itself.
+    model = apps.get_model(obj_model_name)
+    obj = model.objects.get(id=obj_id)
 
-    # Bail silently if nothing to compress, image was probably deleted.
+    for_ = getattr(obj, for_field)
+
+    # Bail silently if nothing to compress. The image was probably deleted.
     if not (for_ and default_storage.exists(for_.name)):
-        log_msg = "No file to compress for: {model} {id}, {for_f}"
-        log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id, for_f=for_field))
+        log.info(f"No file to compress for: {obj_model_name} {obj.id}, {for_field}")
         return
 
     # Bail silently if not a PNG.
     if not (os.path.splitext(for_.name)[1].lower() == ".png"):
-        log_msg = "File is not PNG for: {model} {id}, {for_f}"
-        log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id, for_f=for_field))
+        log.info(f"File is not PNG for: {obj_model_name} {obj.id}, {for_field}")
         return
 
-    log_msg = "Compressing {model} {id}: {for_f}"
-    log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id, for_f=for_field))
-
+    log.info(f"Compressing {obj_model_name} {obj.id}: {for_field}")
     _optipng(for_.name)
 
 

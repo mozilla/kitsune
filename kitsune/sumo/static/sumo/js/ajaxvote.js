@@ -1,22 +1,21 @@
-/* global gettext:false, k:false, jQuery:false */
 /*
 * Voting form ajaxified.
 */
 
+export default function AjaxVote(form, options) {
+  /* Args:
+  * form - the voting form to ajaxify. Can be a selector, DOM element,
+  *        or jQuery node
+  * options - dict of options
+  *      positionMessage - absolutely position the response message?
+  *      removeForm - remove the form after vote?
+  */
+  AjaxVote.prototype.init.call(this, form, options);
+}
+
 (function($) {
 
   'use strict';
-
-  function AjaxVote(form, options) {
-    /* Args:
-    * form - the voting form to ajaxify. Can be a selector, DOM element,
-    *        or jQuery node
-    * options - dict of options
-    *      positionMessage - absolutely position the response message?
-    *      removeForm - remove the form after vote?
-    */
-    AjaxVote.prototype.init.call(this, form, options);
-  }
 
   AjaxVote.prototype = {
     init: function(form, options) {
@@ -170,13 +169,10 @@
 
       $radios.bind('change', validate);
 
-      new k.AjaxVote($survey.find('form'), { // eslint-disable-line
+      new AjaxVote($survey.find('form'), {
         replaceFormWithMessage: true
       });
     }
   };
-
-  window.k = window.k || {};
-  window.k.AjaxVote = AjaxVote;
 
 })(jQuery);

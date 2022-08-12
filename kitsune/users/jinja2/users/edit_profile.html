@@ -12,7 +12,7 @@
 {% if fxa_messages %}
   {% for message in fxa_messages %}
     {% if message == 'fxa_notification_updated' %}
-      {{ notification_fxa_updated(STATIC_URL) }}
+      {{ notification_fxa_updated() }}
     {% endif %}
   {% endfor %}
 {% endif %}

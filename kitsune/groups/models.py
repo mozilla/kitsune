@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.template.defaultfilters import slugify
-from django.utils.translation import ugettext_lazy as _lazy
+from django.utils.translation import gettext_lazy as _lazy
 
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse

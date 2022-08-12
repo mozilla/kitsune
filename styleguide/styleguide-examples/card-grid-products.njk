@@ -3,7 +3,7 @@
     <h2 class="sumo-page-subheading">Get Help</h2>
     <p>Pick your product</p>
   </div>
-  <div class="sumo-card-grid" style="--cg-count: 2;">
+  <div class="sumo-card-grid">
   <div class="scroll-wrap">
 
       <div class="card card--product">
@@ -11,7 +11,7 @@
 
 
 
-          <img class="card--icon" src="static/products/img/product_placeholder.png" alt="Firefox">
+          <img class="card--icon" src="{{ webpack_static('products/img/product_placeholder.png') }}" alt="Firefox">
           <div class="card--details">
             <h3 class="card--title">
               <a class="expand-this-link" href="/en-US/products/firefox" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
@@ -27,7 +27,7 @@
 
 
 
-          <img class="card--icon" src="static/products/img/product_placeholder.png" alt="Firefox for Android">
+          <img class="card--icon" src="{{ webpack_static('products/img/product_placeholder.png') }}" alt="Firefox for Android">
           <div class="card--details">
             <h3 class="card--title">
               <a class="expand-this-link" href="/en-US/products/mobile" data-event-category="link click" data-event-action="product" data-event-label="Firefox for Android">

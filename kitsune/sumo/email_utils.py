@@ -67,7 +67,6 @@ def render_email(template, context):
 
     Falls back to WIKI_DEFAULT_LANGUAGE in case of error.
     """
-    context["STATIC_URL"] = settings.STATIC_URL
 
     @safe_translation
     def _render(locale):
@@ -139,11 +138,6 @@ def emails_with_users_and_watches(
     rendering a Django template with the given ``context_vars`` plus a
     ``user`` and ``watches`` key for each pair in
     ``users_and_watches``
-
-    .. Note::
-
-       This is a locale-aware re-write of the same function in django-tidings.
-       It's kind of goofy--I ain't gonna lie.
 
     :arg subject: lazy gettext subject string
     :arg text_template: path to text template file

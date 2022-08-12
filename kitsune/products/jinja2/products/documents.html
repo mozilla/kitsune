@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
-{% from 'includes/common_macros.html' import download_firefox %}
+{% from 'includes/common_macros.html' import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
@@ -11,7 +11,6 @@
   {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title))] %}
   {% set canonical_url = canonicalize(model_url=topic.get_absolute_url()) %}
 {% endif %}
-{% set styles = ('products',) %}
 {% set search_params = {'product': product.slug} %}
 
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
@@ -24,10 +23,7 @@
   {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
 </div>
 
-{% set aaq_product = request.session.get('product_key') %}
-{% if aaq_product %}
-  {{ aaq_widget(aaq_product, user, "topic") }}
-{% endif %}
+{{ aaq_widget(request, "topic") }}
 
 {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endblock %}
@@ -73,6 +69,22 @@
         </div>
       </header>
 
+      {% if topic.slug == "Focus-ios" %}
+        {{ sumo_banner(
+          id="focus-ios-beta-banner",
+          text=_('Experience new functionality and updates by helping us test the Beta and Nightly versions of Firefox Focus for iOS.'),
+          button_text=_('Get started'),
+          button_link="https://testflight.apple.com/join/dH8lkFZi",
+        ) }}
+      {% elif topic.slug == "firefox-focus-android" %}
+        {{ sumo_banner(
+          id="focus-android-update-banner",
+          text=_('Update to the latest version of Firefox Focus for Android to receive the latest features, enhancements and bug fixes. Firefox Focus is available for free in the Google Play store.'),
+          button_text=_('Download now'),
+          button_link="https://play.google.com/store/apps/details?id=org.mozilla.focus")
+          }}
+      {% endif %}
+
       {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
 
 
@@ -81,7 +93,7 @@
         {% for document in documents %}
           <article class="topic-article">
             <div class="topic-article--icon-wrap">
-              <img class="topic-article--icon" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="" />
+              <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
             </div>
             <div class="topic-article--text">
               <h2 class="sumo-card-heading">

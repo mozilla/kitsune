@@ -334,13 +334,14 @@
   {% if document.allows_vote(request) %}
     <div class="document-vote elevation-01 text-center">
       <form class="document-vote--form helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
+          {% csrf_token %}
           <h4 class="document-vote--heading">{{ header }}</h4>
           <div class="document-vote--buttons">
             <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
             {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
             <button type="submit" class="btn helpful-button" name="helpful"><span class="hidden-text">{{ _('Yes') }}</span>👍</button>
             <button type="submit" class="btn not-helpful-button" name="not-helpful"><span class="hidden-text">{{ _('No') }}</span>👎</button>
-            <img class="wait" src="{{ settings.STATIC_URL }}sumo/img/spinner.gif" alt="{{ _('Please wait...') }}" />
+            <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
           </div>
       </form>
     </div>
@@ -366,7 +367,10 @@
       {% endtrans %}</p>
       <p>{{ _('If you know what you are doing, you can edit the document anyway.') }}</p>
 
-      <a href="#" id="unlock-button" class="sumo-button link-button">{{ _('Edit anyway') }}</a>
+      <form id="steal-lock-form" method="post" action="url('wiki.steal_lock')">
+        {% csrf_token %}
+        <a href="#" id="unlock-button" class="sumo-button link-button">{{ _('Edit anyway') }}</a>
+      </form>
     </div>
   </div>
 

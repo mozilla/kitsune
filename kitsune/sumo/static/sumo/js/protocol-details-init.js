@@ -1,4 +1,6 @@
-function detailsInit() {
+import "sumo/js/protocol";
+
+export default function detailsInit() {
   'use strict';
   var _mqWide = matchMedia('(max-width: 1055px)');
 
@@ -39,11 +41,6 @@ function detailsInit() {
   if ( forumDropdown ) {
     window.Mzp.Details.init('[data-has-dropdown]');
   }
-}
-
-// This is patched here to help the tests locate the referenced function
-if (typeof module != 'undefined' && module.exports) {
-  module.exports.detailsInit = detailsInit;
 }
 
 detailsInit();

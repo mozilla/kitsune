@@ -1,5 +1,4 @@
 from django.forms import ValidationError
-from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.forms import username_allowed
@@ -35,4 +34,4 @@ class Testusername_allowed(TestCase):
         ]
 
         for name, expected in data:
-            eq_(username_allowed(name), expected)
+            self.assertEqual(username_allowed(name), expected)

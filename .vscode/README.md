@@ -14,7 +14,7 @@ In the vscode command palette (Ctrl+Shift+P) build and launch the container:
 
 Once vscode has reopened in the container, open a terminal (View > Terminal) and start browser-sync and the on-demand asset rebuilding:
 ```
-npm run start-in-container
+npm start
 ```
 
 And run kitsune through the debugger:
@@ -26,7 +26,7 @@ And run kitsune through the debugger:
 
 To run kitsune without debugging, ensure you start browser-sync and asset rebuilding as before with:
 ```
-npm run start-in-container
+npm start
 ```
 
 And run kitsune with this vscode command instead:

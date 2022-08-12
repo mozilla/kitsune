@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import ugettext as _
 
+from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.sumo import email_utils
 from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
 
@@ -92,14 +93,20 @@ def deactivate_user(user, moderator):
 
 def anonymize_user(user):
     # Clear the profile
+    uid = uuid4()
     profile = user.profile
     profile.clear()
-    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uuid4()))
+    profile.fxa_uid = "{user_id}-{uid}".format(user_id=user.id, uid=str(uid))
     profile.save()
 
-    # Deactivate the user and change key information
-    user.username = "user%s" % user.id
-    user.email = "%s@example.com" % user.id
+    # Change key information, clear the user's inbox/outbox, and deactivate the user.
+    user.username = f"user{uid.int}"
+    user.email = f"{uid.int}@example.com"
+    # Delete the InboxMessage objects received and OutboxMessage objects sent by the
+    # user. This does not affect the InboxMessage objects of the recipients of messages
+    # sent by the user.
+    InboxMessage.objects.filter(to=user).delete()
+    OutboxMessage.objects.filter(sender=user).delete()
     deactivate_user(user, user)
 
     # Remove from all groups
@@ -126,6 +133,11 @@ def get_oidc_fxa_setting(attr):
         "OIDC_USERNAME_ALGO": settings.FXA_USERNAME_ALGO,
         "OIDC_STORE_ACCESS_TOKEN": settings.FXA_STORE_ACCESS_TOKEN,
         "OIDC_STORE_ID_TOKEN": settings.FXA_STORE_ID_TOKEN,
+        "OIDC_AUTH_REQUEST_EXTRA_PARAMS": {
+            "access_type": "offline",
+        },
+        "OIDC_ADD_TOKEN_INFO_TO_USER_CLAIMS": True,
+        "OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS": settings.FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS,
     }
 
     return FXA_CONFIGURATION.get(attr, None)

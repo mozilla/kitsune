@@ -13,7 +13,5 @@
 <Url type="application/opensearchdescription+xml"
      rel="self"
      template="{{ host }}{{ url('search.plugin', locale=locale) }}"/>
-<Url type="application/x-suggestions+json"
-     template="{{ host }}{{ url('search.suggestions', locale=locale) }}?q={searchTerms}"/>
 <moz:SearchForm>{{ host }}{{ url('search', locale=locale) }}</moz:SearchForm>
 </OpenSearchDescription>

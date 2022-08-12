@@ -1,21 +1,20 @@
 import difflib
 import logging
 
+from bleach import clean
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.urls import reverse as django_reverse
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
-
-from bleach import clean
-from tidings.events import InstanceEvent, Event, EventUnion
-from tidings.utils import hash_to_unsigned
-from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
+from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ugettext as _
+from wikimarkup.parser import ALLOWED_ATTRIBUTES, ALLOWED_TAGS
 
 from kitsune.sumo import email_utils
 from kitsune.sumo.templatetags.jinja_helpers import add_utm
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tidings.events import Event, EventUnion, InstanceEvent
+from kitsune.tidings.utils import hash_to_unsigned
 from kitsune.wiki.models import Document
-
 
 log = logging.getLogger("k.wiki.events")
 
@@ -104,6 +103,19 @@ class EditDocumentEvent(InstanceEvent):
             users_and_watches=users_and_watches,
             default_locale=document.locale,
         )
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "EditDocumentEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
 
 
 class _RevisionConstructor(object):
@@ -227,6 +239,19 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFil
             default_locale=document.locale,
         )
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ReviewableRevisionInLocaleEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
+
 
 class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
     """Event fired when a revision becomes ready for l10n."""
@@ -256,6 +281,19 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
             default_locale=document.locale,
         )
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ReadyRevisionEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
+
 
 class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter, Event):
     """Event fed to a union when any revision in a certain locale is approved
@@ -268,17 +306,31 @@ class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter
     # setting content_type.
     event_type = "approved wiki in locale"
 
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ApproveRevisionInLocaleEvent"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }
+
 
 class ApprovedOrReadyUnion(EventUnion):
-    """Event union fired when a revision is approved and also possibly ready
-
-    Unioned events must have a `revision` attr.
-
+    """
+    Event union fired when a revision is approved and also possibly ready for localization.
     """
 
-    def __init__(self, *args, **kwargs):
-        super(ApprovedOrReadyUnion, self).__init__(*args, **kwargs)
-        self._revision = self.events[0].revision
+    def __init__(self, revision):
+        self.revision = revision
+        events = [ApproveRevisionInLocaleEvent(revision)]
+        if revision.is_ready_for_localization:
+            events.append(ReadyRevisionEvent(revision))
+        super(ApprovedOrReadyUnion, self).__init__(*events)
 
     def _mails(self, users_and_watches):
         """Send approval or readiness mails, as appropriate.
@@ -288,7 +340,7 @@ class ApprovedOrReadyUnion(EventUnion):
         email.
 
         """
-        revision = self._revision
+        revision = self.revision
         document = revision.document
         is_ready = revision.is_ready_for_localization
         log.debug("Sending approved/ready notifications for revision (id=%s)" % revision.id)
@@ -349,3 +401,16 @@ class ApprovedOrReadyUnion(EventUnion):
                 locale = document.locale
 
             yield _make_mail(locale, user, watches)
+
+    def serialize(self):
+        """
+        Serialize this event into a JSON-friendly dictionary.
+        """
+        return {
+            "event": {"module": "kitsune.wiki.events", "class": "ApprovedOrReadyUnion"},
+            "instance": {
+                "module": "kitsune.wiki.models",
+                "class": "Revision",
+                "id": self.revision.id,
+            },
+        }

@@ -2,7 +2,7 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" media="screen,projection,tv" href="{{ STATIC_URL }}sumo/css/kadmin.css" />
+  <link rel="stylesheet" media="screen,projection,tv" href="{{ webpack_static('sumo/css/kadmin.css') }}" />
 {% endblock %}
 
 {% block breadcrumbs %}

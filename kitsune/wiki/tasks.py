@@ -3,7 +3,7 @@ from datetime import date
 from typing import Dict, List
 
 import waffle
-from celery import task
+from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -13,7 +13,7 @@ from django.core.mail import mail_admins
 from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import ugettext as _
-from multidb.pinning import pin_this_thread, unpin_this_thread
+from requests.exceptions import HTTPError
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -28,12 +28,12 @@ from kitsune.wiki.models import (
     TitleCollision,
     points_to_document_view,
 )
-from kitsune.wiki.utils import BitlyRateLimitException, generate_short_url
+from kitsune.wiki.utils import generate_short_url
 
 log = logging.getLogger("k.task")
 
 
-@task()
+@shared_task
 def send_reviewed_notification(revision_id: int, document_id: int, message: str):
     """Send notification of review to the revision creator."""
 
@@ -93,7 +93,7 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
     email_utils.send_messages(msgs)
 
 
-@task()
+@shared_task
 def send_contributor_notification(
     based_on_ids: List[int], revision_id: int, document_id: int, message: str
 ):
@@ -173,26 +173,23 @@ def schedule_rebuild_kb():
     rebuild_kb.delay()
 
 
-@task
+@shared_task
 def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
     base_url = "https://{0}%s".format(Site.objects.get_current().domain)
     docs = Document.objects.filter(id__in=doc_ids)
     try:
-        pin_this_thread()  # Stick to master.
         for doc in docs:
             # Use django's reverse so the locale isn't included.
             endpoint = django_reverse("wiki.document", args=[doc.slug])
             doc.update(share_link=generate_short_url(base_url % endpoint))
-    except BitlyRateLimitException:
+    except HTTPError:
         # The next run of the `generate_missing_share_links` cron job will
         # catch all documents that were unable to be processed.
         pass
-    finally:
-        unpin_this_thread()
 
 
-@task(rate_limit="3/h")
+@shared_task(rate_limit="3/h")
 def rebuild_kb():
     """Re-render all documents in the KB in chunks."""
     cache.delete(settings.WIKI_REBUILD_TOKEN)
@@ -207,7 +204,7 @@ def rebuild_kb():
         _rebuild_kb_chunk.apply_async(args=[chunk])
 
 
-@task(rate_limit="5/m")
+@shared_task(rate_limit="5/m")
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
 
@@ -216,8 +213,6 @@ def _rebuild_kb_chunk(data):
 
     """
     log.info("Rebuilding %s documents." % len(data))
-
-    pin_this_thread()  # Stick to master.
 
     messages = []
     for pk in data:
@@ -259,10 +254,8 @@ def _rebuild_kb_chunk(data):
     if not transaction.get_connection().in_atomic_block:
         transaction.commit()
 
-    unpin_this_thread()  # Not all tasks need to do use the master.
 
-
-@task()
+@shared_task
 def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     """Award the specific badge to the user if they've earned it."""
     try:
@@ -297,7 +290,7 @@ def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
         return True
 
 
-@task()
+@shared_task
 def render_document_cascade(base_doc_id):
     """Given a document, render it and all documents that may be affected."""
 
@@ -313,26 +306,18 @@ def render_document_cascade(base_doc_id):
     except Document.DoesNotExist as err:
         capture_exception(err)
         return
-    # In case any thing goes wrong, this guarantees we unpin the DB
-    try:
-        # Sends all writes to the master DB. Slaves are readonly.
-        pin_this_thread()
+    todo = {base_doc}
+    done = set()
 
-        todo = {base_doc}
-        done = set()
-
-        while todo:
-            d = todo.pop()
-            if d in done:
-                # Don't process a node twice.
-                continue
-            d.html = d.parse_and_calculate_links()
-            d.save()
-            done.add(d)
-            todo.update(
-                link_to.linked_from
-                for link_to in d.links_to().filter(kind__in=["template", "include"])
-            )
-
-    finally:
-        unpin_this_thread()
+    while todo:
+        d = todo.pop()
+        if d in done:
+            # Don't process a node twice.
+            continue
+        d.html = d.parse_and_calculate_links()
+        d.save()
+        done.add(d)
+        todo.update(
+            link_to.linked_from
+            for link_to in d.links_to().filter(kind__in=["template", "include"])
+        )

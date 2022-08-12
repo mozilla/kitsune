@@ -36,6 +36,7 @@ k8s/regions/*/*-secrets.yaml
 *.sqlite3
 .bash_history
 .vscode-server
+.vscode/*.log
 .yarnrc
 .docker-build*
 postatus.txt
@@ -49,6 +50,7 @@ npm-debug.log
 .python-version
 .pylint*
 .devcontainer.code-workspace
+.devcontainer/.*CommandMarker
 assets/
 .gnupg
 celerybeat-schedule
@@ -56,3 +58,8 @@ celerybeat.pid
 .python_history
 .ssh
 *.zip
+dist/
+.mysql_history
+.local
+.pdbhistory
+.minikube

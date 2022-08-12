@@ -10,9 +10,9 @@
         "home": "https://kitsune.readthedocs.io/en/latest/contributors.html",
         "docs": "https://kitsune.readthedocs.io/en/latest/hacking_howto.html",
         "matrix": "https://chat.mozilla.org/#/room/#support-platform:mozilla.org",
-        "matrix-contacts": ["tasos", "leo"],
+        "matrix-contacts": ["tasos", "ryan"],
         "slack": "https://mozilla.slack.com/messages/support-platform",
-        "slack-contacts": ["tasos", "leo"]
+        "slack-contacts": ["tasos", "ryan"]
     },
     "bugs": {
         "list": "https://bugzilla.mozilla.org/buglist.cgi?quicksearch=OPEN%20product%3Asupport.mozilla.org",

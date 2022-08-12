@@ -2,29 +2,24 @@ import logging
 from datetime import date
 from typing import Dict
 
-# NOTE: This import is just so _fire_task gets registered with celery.
-import tidings.events  # noqa
-from celery import task
+from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import connection, transaction
-from multidb.pinning import pin_this_thread, unpin_this_thread
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
 
+
 log = logging.getLogger("k.task")
 
 
-@task(rate_limit="1/s")
+@shared_task(rate_limit="1/s")
 def update_question_votes(question_id):
     from kitsune.questions.models import Question
 
     log.debug("Got a new QuestionVote for question_id=%s." % question_id)
-
-    # Pin to master db to avoid lag delay issues.
-    pin_this_thread()
 
     try:
         q = Question.objects.get(id=question_id)
@@ -33,10 +28,8 @@ def update_question_votes(question_id):
     except Question.DoesNotExist:
         log.info("Question id=%s deleted before task." % question_id)
 
-    unpin_this_thread()
 
-
-@task(rate_limit="4/s")
+@shared_task(rate_limit="4/s")
 def update_question_vote_chunk(data):
     """Update num_votes_past_week for a number of questions."""
 
@@ -57,13 +50,13 @@ def update_question_vote_chunk(data):
         """
         % ids
     )
-    cursor = connection.cursor()
-    cursor.execute(sql)
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
     if not transaction.get_connection().in_atomic_block:
         transaction.commit()
 
 
-@task(rate_limit="4/m")
+@shared_task(rate_limit="4/m")
 def update_answer_pages(question_id: int):
     from kitsune.questions.models import Question
 
@@ -85,7 +78,7 @@ def update_answer_pages(question_id: int):
         i += 1
 
 
-@task()
+@shared_task
 def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)

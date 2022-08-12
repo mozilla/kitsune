@@ -15,9 +15,8 @@ from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
+from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -68,6 +67,8 @@ from kitsune.wiki.tasks import (
     send_contributor_notification,
     send_reviewed_notification,
 )
+from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
+
 
 log = logging.getLogger("k.wiki")
 
@@ -83,6 +84,7 @@ def doc_page_cache(view):
             request.user.is_authenticated
             or request.GET.get("redirect") == "no"
             or request.session.get("product_key")
+            or settings.DEV
         ):
             return view(request, document_slug, *args, **kwargs)
 
@@ -99,7 +101,7 @@ def doc_page_cache(view):
 
         # We only cache if the response returns HTTP 200.
         if response.status_code == 200:
-            cache.set(cache_key, (response.content, dict(list(response._headers.values()))))
+            cache.set(cache_key, (response.content, dict(list(response.headers.items()))))
 
         return response
 
@@ -118,55 +120,56 @@ def document(request, document_slug, document=None):
     full_locale_name = None
     # If a slug isn't available in the requested locale, fall back to en-US:
     try:
-        doc = Document.objects.get(locale=request.LANGUAGE_CODE, slug=document_slug)
+        doc = Document.objects.get_visible(
+            request.user, locale=request.LANGUAGE_CODE, slug=document_slug
+        )
         if not doc.current_revision and doc.parent and doc.parent.current_revision:
             # This is a translation but its current_revision is None
             # and OK to fall back to parent (parent is approved).
             fallback_reason = "translation_not_approved"
         elif not doc.current_revision:
-            # No current_revision, no parent with current revision, so
-            # nothing to show.
+            # The document as well as its parent have no approved content, so we won't
+            # show any content at all.
             fallback_reason = "no_content"
     except Document.DoesNotExist:
-        # Look in default language:
-        doc = get_object_or_404(
-            Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
+        if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
+            # Don't repeat the query if it's going to be the same one we just tried.
+            raise Http404
+        # No visible document exists in the requested locale so let's try the default locale.
+        doc = get_visible_document_or_404(
+            request.user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
         )
-        # If there's a translation to the requested locale, take it:
-        translation = doc.translated_to(request.LANGUAGE_CODE)
+        # If there's a visible translation to the requested locale, redirect to it.
+        translation = doc.translated_to(request.LANGUAGE_CODE, visible_for_user=request.user)
         if translation:
             url = translation.get_absolute_url()
             url = urlparams(url, query_dict=request.GET)
             return HttpResponseRedirect(url)
         elif doc.current_revision:
-            # There is no translation
-            # and OK to fall back to parent (parent is approved).
+            # There is no translation, so we'll fall back to the approved parent,
+            # unless we find an approved translation in a fallback locale.
             fallback_reason = "no_translation"
 
-    # Find and show the defined fallback locale rather than the English version of the document
-    # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
-    # site-wide locale mapping and custom fallback locale
-    # The custom fallback locale is defined in the FALLBACK_LOCALES array in
-    # kitsune/wiki/config.py. See bug 800880 for more details
-    if fallback_reason == "no_translation":
-        fallback_locale = get_fallback_locale(doc, request)
+            # Find and show the defined fallback locale rather than the English
+            # version of the document. The fallback locale is defined based on
+            # the ACCEPT_LANGUAGE header, site-wide locale mapping and custom
+            # fallback locale. The custom fallback locale is defined in the
+            # FALLBACK_LOCALES array in kitsune/wiki/config.py. See bug 800880
+            # for more details
+            fallback_locale = get_fallback_locale(doc, request)
 
-        # If a fallback locale is defined, show the document in that locale.
-        if fallback_locale is not None:
-            # Get the fallback Locale and show doc in the locale
-            translation = doc.translated_to(fallback_locale)
-            doc = translation
-            # For showing the fallback locale explanation message to the user
-            fallback_reason = "fallback_locale"
-            full_locale_name = {
-                request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
-                fallback_locale: LOCALES[fallback_locale].native,
-            }
-        # If there is no defined fallback locale, show the document in English
-        else:
-            doc = get_object_or_404(
-                Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-            )
+            # If a fallback locale is defined, show the document in that locale,
+            # otherwise continue with the document in the default language.
+            if fallback_locale:
+                # If we have a fallback locale, we're certain to have an approved
+                # translation in that locale.
+                doc = doc.translated_to(fallback_locale)
+                # For showing the fallback locale explanation message to the user
+                fallback_reason = "fallback_locale"
+                full_locale_name = {
+                    request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
+                    fallback_locale: LOCALES[fallback_locale].native,
+                }
 
     any_localizable_revision = doc.revisions.filter(
         is_approved=True, is_ready_for_localization=True
@@ -271,15 +274,23 @@ def document(request, document_slug, document=None):
 
 def revision(request, document_slug, revision_id):
     """View a wiki document revision."""
-    rev = get_object_or_404(Revision, pk=revision_id, document__slug=document_slug)
-    data = {"document": rev.document, "revision": rev}
+    rev = get_visible_revision_or_404(
+        request.user,
+        pk=revision_id,
+        document__slug=document_slug,
+        document__locale=request.LANGUAGE_CODE,
+    )
+    doc = rev.document
+    data = {"document": doc, "revision": rev}
     return render(request, "wiki/revision.html", data)
 
 
 @require_GET
 def list_documents(request, category=None):
     """List wiki documents."""
-    docs = Document.objects.filter(locale=request.LANGUAGE_CODE).order_by("title")
+    user = request.user
+    docs = Document.objects.visible(user, locale=request.LANGUAGE_CODE).order_by("title")
+
     if category:
         docs = docs.filter(category=category)
         try:
@@ -413,10 +424,10 @@ def _document_lock(doc_id, username):
 
 
 @login_required
+@require_http_methods(["POST"])
 def steal_lock(request, document_slug, revision_id=None):
-    doc = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
     user = request.user
-
+    doc = get_visible_document_or_404(user, locale=request.LANGUAGE_CODE, slug=document_slug)
     ok = _document_lock_steal(doc.id, user.username)
     return HttpResponse("", status=200 if ok else 400)
 
@@ -425,27 +436,30 @@ def steal_lock(request, document_slug, revision_id=None):
 @login_required
 def edit_document(request, document_slug, revision_id=None):
     """Create a new revision of a wiki document, or edit document metadata."""
+    user = request.user
+
     try:
-        doc = Document.objects.get(locale=request.LANGUAGE_CODE, slug=document_slug)
+        doc = Document.objects.get_visible(user, locale=request.LANGUAGE_CODE, slug=document_slug)
     except Document.DoesNotExist:
-        # Check if the document slug is available in default language.
-        parent_doc = get_object_or_404(
-            Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
+        if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
+            # Don't repeat the query if it's going to be the same one we just tried.
+            raise Http404
+        # Check if the document slug is available in the default language.
+        parent_doc = get_visible_document_or_404(
+            user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
         )
-        # If the document is available in default language, show the user the translation page
-        # of the requested locale
-        translation = parent_doc.translated_to(request.LANGUAGE_CODE)
-        # If the document is translated into the requested locale, show them the edit article
-        # page of that translated document
+        # We've found the parent using the given slug, so let's see if there's a translation
+        # in the requested locale that's using a different slug.
+        translation = parent_doc.translated_to(request.LANGUAGE_CODE, visible_for_user=user)
         if translation:
+            # The document is translated into the requested locale, so show them the edit
+            # article page of the translated document.
             doc = translation
-        # If the document is not translated into the requested locale, redirect them to translate
-        # the article page.
         else:
+            # The document is not translated into the requested locale, so redirect them to
+            # translate the article page.
             url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
             return HttpResponseRedirect(url)
-
-    user = request.user
 
     can_edit_needs_change = doc.allows(user, "edit_needs_change")
     can_archive = doc.allows(user, "archive")
@@ -555,7 +569,6 @@ def edit_document(request, document_slug, revision_id=None):
     )
 
 
-@csrf_exempt
 @login_required
 @require_POST
 def draft_revision(request):
@@ -580,7 +593,7 @@ def preview_revision(request):
     locale = request.POST.get("locale")
 
     if slug and locale:
-        doc = get_object_or_404(Document, slug=slug, locale=locale)
+        doc = get_visible_document_or_404(request.user, locale=locale, slug=slug)
         products = doc.get_products()
     else:
         products = Product.objects.all()
@@ -594,15 +607,18 @@ def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
     locale = request.GET.get("locale", request.LANGUAGE_CODE)
     try:
-        doc = Document.objects.get(locale=locale, slug=document_slug)
+        doc = Document.objects.get_visible(request.user, locale=locale, slug=document_slug)
     except Document.DoesNotExist:
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            # Don't repeat the query if it's going to be the same one we just tried.
+            raise Http404
         # Check if the document slug is available in default language.
-        parent_doc = get_object_or_404(
-            Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
+        parent_doc = get_visible_document_or_404(
+            request.user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
         )
         # If the document is available in default language, show the user the history page
-        # of the requested locale
-        translation = parent_doc.translated_to(locale)
+        # of the requested locale.
+        translation = parent_doc.translated_to(locale, visible_for_user=request.user)
         if translation:
             url = reverse("wiki.document_revisions", args=[translation.slug], locale=locale)
             return HttpResponseRedirect(url)
@@ -725,10 +741,7 @@ def review_revision(request, document_slug, revision_id):
 
             # Send notifications of approvedness and readiness:
             if rev.is_ready_for_localization or rev.is_approved:
-                events = [ApproveRevisionInLocaleEvent(rev)]
-                if rev.is_ready_for_localization:
-                    events.append(ReadyRevisionEvent(rev))
-                ApprovedOrReadyUnion(*events).fire(exclude=[rev.creator, request.user])
+                ApprovedOrReadyUnion(rev).fire(exclude=[rev.creator, request.user])
 
             # Send an email (not really a "notification" in the sense that
             # there's a Watch table entry) to revision creator.
@@ -772,7 +785,7 @@ def compare_revisions(request, document_slug):
 
     """
     locale = request.GET.get("locale", request.LANGUAGE_CODE)
-    doc = get_object_or_404(Document, locale=locale, slug=document_slug)
+    doc = get_visible_document_or_404(request.user, locale=locale, slug=document_slug)
     if "from" not in request.GET or "to" not in request.GET:
         raise Http404
 
@@ -796,7 +809,9 @@ def compare_revisions(request, document_slug):
 @login_required
 def select_locale(request, document_slug):
     """Select a locale to translate the document to."""
-    doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
+    doc = get_visible_document_or_404(
+        request.user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
+    )
     translated_locales_code = []  # Translated Locales list with Locale Code only
     translated_locales = []
     untranslated_locales = []
@@ -822,7 +837,6 @@ def select_locale(request, document_slug):
     )
 
 
-@require_http_methods(["GET", "POST"])
 @login_required
 def translate(request, document_slug, revision_id=None):
     """Create a new translation of a wiki document.
@@ -831,12 +845,12 @@ def translate(request, document_slug, revision_id=None):
     * translation is to the request.LANGUAGE_CODE
 
     """
-    # TODO: Refactor this view into two views? (new, edit)
-    # That might help reduce the headache-inducing branchiness.
-    parent_doc = get_object_or_404(
-        Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
-    )
+
+    # Inialization and checks
     user = request.user
+    parent_doc = get_visible_document_or_404(
+        user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
+    )
 
     if settings.WIKI_DEFAULT_LANGUAGE == request.LANGUAGE_CODE:
         # Don't translate to the default language.
@@ -859,60 +873,46 @@ def translate(request, document_slug, revision_id=None):
     except Document.DoesNotExist:
         doc = None
         disclose_description = True
+    else:
+        if not doc.is_visible_for(user):
+            # A translation has been started, but isn't approved yet for
+            # public visibility, and this user doesn't have permission
+            # to see/work on it.
+            raise PermissionDenied
 
     user_has_doc_perm = not doc or doc.allows(user, "edit")
     user_has_rev_perm = not doc or doc.allows(user, "create_revision")
+
     if not user_has_doc_perm and not user_has_rev_perm:
         # User has no perms, bye.
         raise PermissionDenied
 
-    # Check if the user has draft resision saved for the parent document with requeted locale
+    # Check if the user has draft revision saved for the parent document with requeted locale
     draft = DraftRevision.objects.filter(
         creator=user, document=parent_doc, locale=request.LANGUAGE_CODE
-    )
+    ).first()
 
-    doc_form = rev_form = None
-    base_rev = None
-    restore_draft = None
-    # Check if the user has requested to restore or discard draft
-    draft_request = request.GET.get("restore") or request.GET.get("discard")
-    draft_revision = None
-    # If Draft is available and the user has requested with draft parameters
-    if draft_request and draft.exists():
-        restore_draft = request.GET.get("restore")
-        discard_draft = request.GET.get("discard")
-        # Discard draft if user requsted. And not requested to restore draft at the same time.
-        # Thuough from the UI its not possible, but maybe a hacky request with both parameters
-        if discard_draft and not restore_draft:
-            draft[0].delete()
-    elif draft.exists():
-        draft_revision = draft[0]
+    base_rev = doc_form = rev_form = None
 
     if user_has_doc_perm:
         # Restore draft if draft is available and user requested to restore
-        if restore_draft:
-            doc_initial = _draft_initial_doc(draft_revision=draft[0])
-        else:
-            doc_initial = _document_form_initial(doc) if doc else None
+        doc_initial = _document_form_initial(doc) if doc else {}
         doc_form = DocumentForm(initial=doc_initial)
 
     if user_has_rev_perm:
-        if restore_draft:
-            initial = _draft_initial_rev(draft_revision=draft[0])
-            based_on_rev = draft[0].based_on
-        else:
-            initial = {"based_on": based_on_rev.id, "comment": ""}
-            if revision_id:
-                base_rev = Revision.objects.get(pk=revision_id)
-                initial.update(
-                    content=base_rev.content, summary=base_rev.summary, keywords=base_rev.keywords
-                )
-            elif not doc:
-                initial.update(
-                    content=based_on_rev.content,
-                    summary=based_on_rev.summary,
-                    keywords=based_on_rev.keywords,
-                )
+        rev_initial = {"based_on": based_on_rev.id, "comment": ""}
+
+        if revision_id:
+            base_rev = Revision.objects.get(pk=revision_id)
+            rev_initial.update(
+                content=base_rev.content, summary=base_rev.summary, keywords=base_rev.keywords
+            )
+        elif not doc:
+            rev_initial.update(
+                content=based_on_rev.content,
+                summary=based_on_rev.summary,
+                keywords=based_on_rev.keywords,
+            )
 
         # Get a revision of the translation to plonk into the page as a
         # starting point. Since translations are never "ready for
@@ -920,67 +920,97 @@ def translate(request, document_slug, revision_id=None):
         # an unrejected one, then give up.
         instance = doc and doc.localizable_or_latest_revision()
 
-        rev_form = RevisionForm(instance=instance, initial=initial)
+        rev_form = RevisionForm(instance=instance, initial=rev_initial)
         base_rev = base_rev or instance
 
     if request.method == "POST":
-        which_form = request.POST.get("form", "both")
-        doc_form_invalid = False
+        # Use POST for restoring and deleting drafts to avoid CSRF
+        restore_draft = "restore" in request.POST and bool(draft)
+        discard_draft = "discard" in request.POST and bool(draft)
+        # Make sure that one of the two is True but not both
+        if discard_draft ^ restore_draft:
 
-        if doc is not None:
-            _document_lock_clear(doc.id, user.username)
+            if discard_draft:
+                draft.delete()
+                return HttpResponseRedirect(
+                    urlparams(reverse("wiki.translate", args=[document_slug]))
+                )
 
-        if user_has_doc_perm and which_form in ["doc", "both"]:
-            disclose_description = True
-            post_data = request.POST.copy()
-            post_data.update({"locale": request.LANGUAGE_CODE})
-            doc_form = DocumentForm(post_data, instance=doc)
-            doc_form.instance.locale = request.LANGUAGE_CODE
-            doc_form.instance.parent = parent_doc
-            if which_form == "both":
-                rev_form = RevisionForm(request.POST)
-
-            # If we are submitting the whole form, we need to check that
-            # the Revision is valid before saving the Document.
-            if doc_form.is_valid() and (which_form == "doc" or rev_form.is_valid()):
-                doc = doc_form.save(parent_doc)
-
-                # Possibly schedule a rebuild.
-                _maybe_schedule_rebuild(doc_form)
-
-                if which_form == "doc":
-                    url = urlparams(
-                        reverse("wiki.edit_document", args=[doc.slug]), opendescription=1
-                    )
-                    return HttpResponseRedirect(url)
-
-                doc_slug = doc_form.cleaned_data["slug"]
-            else:
-                doc_form_invalid = True
+            # If we are here - we have a draft to restore
+            if user_has_doc_perm:
+                doc_initial.update({"title": draft.title, "slug": draft.slug})
+                doc_form = DocumentForm(initial=doc_initial)
+            if user_has_rev_perm:
+                rev_initial.update(
+                    {
+                        "content": draft.content,
+                        "summary": draft.summary,
+                        "keywords": draft.keywords,
+                        "based_on": draft.based_on.id,
+                    }
+                )
+                based_on_rev = draft.based_on
+                rev_form = RevisionForm(instance=instance, initial=rev_initial)
         else:
-            doc_slug = doc.slug
+            which_form = request.POST.get("form", "both")
+            doc_form_invalid = False
 
-        if doc and user_has_rev_perm and which_form in ["rev", "both"]:
-            rev_form = RevisionForm(request.POST)
-            rev_form.instance.document = doc  # for rev_form.clean()
+            if doc:
+                _document_lock_clear(doc.id, user.username)
 
-            if rev_form.is_valid() and not doc_form_invalid:
-                if "no-update" in request.POST:
-                    # Keep the old based_on.
-                    based_on_id = base_rev.based_on_id
+            if user_has_doc_perm and which_form in ["doc", "both"]:
+                disclose_description = True
+                post_data = request.POST.copy()
+                post_data.update({"locale": request.LANGUAGE_CODE})
+                doc_form = DocumentForm(post_data, instance=doc)
+                doc_form.instance.locale = request.LANGUAGE_CODE
+                doc_form.instance.parent = parent_doc
+                if which_form == "both":
+                    rev_form = RevisionForm(request.POST)
+
+                # If we are submitting the whole form, we need to check that
+                # the Revision is valid before saving the Document.
+                if doc_form.is_valid() and (which_form == "doc" or rev_form.is_valid()):
+                    doc = doc_form.save(parent_doc)
+
+                    # Possibly schedule a rebuild.
+                    _maybe_schedule_rebuild(doc_form)
+
+                    if which_form == "doc":
+                        url = urlparams(
+                            reverse("wiki.edit_document", args=[doc.slug]), opendescription=1
+                        )
+                        return HttpResponseRedirect(url)
+
+                    doc_slug = doc_form.cleaned_data["slug"]
                 else:
-                    # Keep what was in the form.
-                    based_on_id = None
-                if draft_revision:
-                    draft_revision.delete()
-                _save_rev_and_notify(rev_form, request.user, doc, based_on_id, base_rev=base_rev)
+                    doc_form_invalid = True
+            else:
+                doc_slug = doc.slug
 
-                if "notify-future-changes" in request.POST:
-                    EditDocumentEvent.notify(request.user, doc)
+            if doc and user_has_rev_perm and which_form in ["rev", "both"]:
+                rev_form = RevisionForm(request.POST)
+                rev_form.instance.document = doc  # for rev_form.clean()
 
-                url = reverse("wiki.document_revisions", args=[doc_slug])
+                if rev_form.is_valid() and not doc_form_invalid:
+                    if "no-update" in request.POST:
+                        # Keep the old based_on.
+                        based_on_id = base_rev.based_on_id
+                    else:
+                        # Keep what was in the form.
+                        based_on_id = None
+                    if draft:
+                        draft.delete()
+                    _save_rev_and_notify(
+                        rev_form, request.user, doc, based_on_id, base_rev=base_rev
+                    )
 
-                return HttpResponseRedirect(url)
+                    if "notify-future-changes" in request.POST:
+                        EditDocumentEvent.notify(request.user, doc)
+
+                    return HttpResponseRedirect(
+                        reverse("wiki.document_revisions", args=[doc_slug])
+                    )
 
     show_revision_warning = _show_revision_warning(doc, base_rev)
 
@@ -1000,11 +1030,6 @@ def translate(request, document_slug, revision_id=None):
         locked, locked_by = False, None
         more_updated_rev = None
 
-    product_slugs = [p.slug for p in (doc or parent_doc).products.all()]
-    fxos_l10n_warning = (
-        "firefox-os" in product_slugs and request.LANGUAGE_CODE not in settings.FXOS_LANGUAGES
-    )
-
     return render(
         request,
         "wiki/translate.html",
@@ -1020,8 +1045,7 @@ def translate(request, document_slug, revision_id=None):
             "recent_approved_revs": recent_approved_revs,
             "locked": locked,
             "locked_by": locked_by,
-            "fxos_l10n_warning": fxos_l10n_warning,
-            "draft_revision": draft_revision,
+            "draft_revision": draft,
             "more_updated_rev": more_updated_rev,
         },
     )
@@ -1031,7 +1055,9 @@ def translate(request, document_slug, revision_id=None):
 @login_required
 def watch_document(request, document_slug):
     """Start watching a document for edits."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = get_visible_document_or_404(
+        request.user, locale=request.LANGUAGE_CODE, slug=document_slug
+    )
     EditDocumentEvent.notify(request.user, document)
     return HttpResponseRedirect(document.get_absolute_url())
 
@@ -1040,7 +1066,9 @@ def watch_document(request, document_slug):
 @login_required
 def unwatch_document(request, document_slug):
     """Stop watching a document for edits."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = get_visible_document_or_404(
+        request.user, locale=request.LANGUAGE_CODE, slug=document_slug
+    )
     EditDocumentEvent.stop_notifying(request.user, document)
     return HttpResponseRedirect(document.get_absolute_url())
 
@@ -1155,7 +1183,6 @@ def json_view(request):
 
 
 @require_POST
-@csrf_exempt
 @ratelimit("document-vote", "10/d")
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
@@ -1163,6 +1190,11 @@ def helpful_vote(request, document_slug):
         return HttpResponseBadRequest()
 
     revision = get_object_or_404(Revision, id=smart_int(request.POST["revision_id"]))
+
+    if not revision.is_approved:
+        # I don't think it makes sense to vote for an unapproved revision.
+        raise PermissionDenied
+
     survey = None
 
     if revision.document.category == TEMPLATES_CATEGORY:
@@ -1215,7 +1247,6 @@ def helpful_vote(request, document_slug):
 
 
 @require_POST
-@csrf_exempt
 def unhelpful_survey(request):
     """Ajax only view: Unhelpful vote survey processing."""
     vote = get_object_or_404(HelpfulVote, id=smart_int(request.POST.get("vote_id")))
@@ -1236,7 +1267,9 @@ def unhelpful_survey(request):
 
 @require_GET
 def get_helpful_votes_async(request, document_slug):
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = get_visible_document_or_404(
+        request.user, locale=request.LANGUAGE_CODE, slug=document_slug
+    )
 
     datums = []
     flag_data = []
@@ -1245,22 +1278,23 @@ def get_helpful_votes_async(request, document_slug):
     created_list = []
     dates_with_data = set()
 
-    cursor = connection.cursor()
+    with connection.cursor() as cursor:
 
-    cursor.execute(
-        "SELECT wiki_helpfulvote.revision_id, "
-        "    SUM(wiki_helpfulvote.helpful), "
-        "    SUM(NOT(wiki_helpfulvote.helpful)), "
-        "    wiki_helpfulvote.created "
-        "FROM wiki_helpfulvote "
-        "INNER JOIN wiki_revision ON "
-        "    wiki_helpfulvote.revision_id=wiki_revision.id "
-        "WHERE wiki_revision.document_id=%s "
-        "GROUP BY DATE(wiki_helpfulvote.created)",
-        [document.id],
-    )
+        cursor.execute(
+            "SELECT wiki_helpfulvote.revision_id, "
+            "    SUM(wiki_helpfulvote.helpful), "
+            "    SUM(NOT(wiki_helpfulvote.helpful)), "
+            "    wiki_helpfulvote.created "
+            "FROM wiki_helpfulvote "
+            "INNER JOIN wiki_revision ON "
+            "    wiki_helpfulvote.revision_id=wiki_revision.id "
+            "WHERE wiki_revision.document_id=%s "
+            "GROUP BY DATE(wiki_helpfulvote.created)",
+            [document.id],
+        )
 
-    results = cursor.fetchall()
+        results = cursor.fetchall()
+
     for res in results:
         revisions.add(int(res[0]))
         created_list.append(res[3])
@@ -1335,7 +1369,12 @@ def get_helpful_votes_async(request, document_slug):
 @login_required
 def delete_revision(request, document_slug, revision_id):
     """Delete a revision."""
-    revision = get_object_or_404(Revision, pk=revision_id, document__slug=document_slug)
+    revision = get_visible_revision_or_404(
+        request.user,
+        pk=revision_id,
+        document__slug=document_slug,
+        document__locale=request.LANGUAGE_CODE,
+    )
     document = revision.document
 
     if not document.allows(request.user, "delete_revision"):
@@ -1371,7 +1410,12 @@ def delete_revision(request, document_slug, revision_id):
 @require_POST
 def mark_ready_for_l10n_revision(request, document_slug, revision_id):
     """Mark a revision as ready for l10n."""
-    revision = get_object_or_404(Revision, pk=revision_id, document__slug=document_slug)
+    revision = get_visible_revision_or_404(
+        request.user,
+        pk=revision_id,
+        document__slug=document_slug,
+        document__locale=settings.WIKI_DEFAULT_LANGUAGE,
+    )
 
     if not revision.document.allows(request.user, "mark_ready_for_l10n"):
         raise PermissionDenied
@@ -1384,7 +1428,7 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
         revision.readied_for_localization_by = request.user
         revision.save()
 
-        ReadyRevisionEvent(revision).fire(exclude=request.user)
+        ReadyRevisionEvent(revision).fire(exclude=[request.user])
 
         return HttpResponse(json.dumps({"message": revision_id}))
 
@@ -1393,8 +1437,10 @@ def mark_ready_for_l10n_revision(request, document_slug, revision_id):
 
 @login_required
 def delete_document(request, document_slug):
-    """Delete a revision."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    """Delete a document."""
+    document = get_visible_document_or_404(
+        request.user, locale=request.LANGUAGE_CODE, slug=document_slug
+    )
 
     # Check permission
     if not document.allows(request.user, "delete"):
@@ -1421,7 +1467,9 @@ def delete_document(request, document_slug):
 @require_POST
 def add_contributor(request, document_slug):
     """Add a contributor to a document."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = get_visible_document_or_404(
+        request.user, locale=request.LANGUAGE_CODE, slug=document_slug
+    )
 
     if not document.allows(request.user, "edit"):
         raise PermissionDenied
@@ -1446,7 +1494,9 @@ def add_contributor(request, document_slug):
 @require_http_methods(["GET", "POST"])
 def remove_contributor(request, document_slug, user_id):
     """Remove a contributor from a document."""
-    document = get_object_or_404(Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    document = get_visible_document_or_404(
+        request.user, locale=request.LANGUAGE_CODE, slug=document_slug
+    )
 
     if not document.allows(request.user, "edit"):
         raise PermissionDenied
@@ -1467,9 +1517,10 @@ def remove_contributor(request, document_slug, user_id):
 
 
 def show_translations(request, document_slug):
-    document = get_object_or_404(
-        Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
+    document = get_visible_document_or_404(
+        request.user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug
     )
+
     translated_locales = []
     untranslated_locales = []
 
@@ -1514,28 +1565,13 @@ def _document_form_initial(document):
     }
 
 
-def _draft_initial_doc(draft_revision):
-    data = {"title": draft_revision.title, "slug": draft_revision.slug}
-    return data
-
-
-def _draft_initial_rev(draft_revision):
-    data = {
-        "content": draft_revision.content,
-        "summary": draft_revision.summary,
-        "keywords": draft_revision.keywords,
-        "based_on": draft_revision.based_on.id,
-    }
-    return data
-
-
 def _save_rev_and_notify(rev_form, creator, document, based_on_id=None, base_rev=None):
     """Save the given RevisionForm and send notifications."""
     new_rev = rev_form.save(creator, document, based_on_id, base_rev)
 
     # Enqueue notifications
-    ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=new_rev.creator)
-    EditDocumentEvent(new_rev).fire(exclude=new_rev.creator)
+    ReviewableRevisionInLocaleEvent(new_rev).fire(exclude=[new_rev.creator])
+    EditDocumentEvent(new_rev).fire(exclude=[new_rev.creator])
 
 
 def _maybe_schedule_rebuild(form):
@@ -1560,23 +1596,25 @@ def recent_revisions(request):
 
     fragment = request.GET.pop("fragment", None)
     form = RevisionFilterForm(request.GET)
-    revs = Revision.objects.order_by("-created")
 
     # We are going to ignore validation errors for the most part, but
     # this is needed to call the functions that generate `cleaned_data`
     # This helps in particular when bad user names are typed in.
     form.is_valid()
 
+    filters = {}
     # If something has gone very wrong, `cleaned_data` won't be there.
     if hasattr(form, "cleaned_data"):
         if form.cleaned_data.get("locale"):
-            revs = revs.filter(document__locale=form.cleaned_data["locale"])
+            filters.update(document__locale=form.cleaned_data["locale"])
         if form.cleaned_data.get("users"):
-            revs = revs.filter(creator__in=form.cleaned_data["users"])
+            filters.update(creator__in=form.cleaned_data["users"])
         if form.cleaned_data.get("start"):
-            revs = revs.filter(created__gte=form.cleaned_data["start"])
+            filters.update(created__gte=form.cleaned_data["start"])
         if form.cleaned_data.get("end"):
-            revs = revs.filter(created__lte=form.cleaned_data["end"])
+            filters.update(created__lte=form.cleaned_data["end"])
+
+    revs = Revision.objects.visible(request.user, **filters).order_by("-created")
 
     revs = paginate(request, revs)
 
@@ -1596,7 +1634,7 @@ def recent_revisions(request):
 def what_links_here(request, document_slug):
     """List all documents that link to a document."""
     locale = request.GET.get("locale", request.LANGUAGE_CODE)
-    doc = get_object_or_404(Document, locale=locale, slug=document_slug)
+    doc = get_visible_document_or_404(request.user, locale=locale, slug=document_slug)
 
     links = {}
     for link_to in doc.links_to():

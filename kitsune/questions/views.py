@@ -20,16 +20,16 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
+from sentry_sdk import capture_exception
 from taggit.models import Tag
-from tidings.events import ActivationRequestFailed
-from tidings.models import Watch
+from zenpy.lib.exception import APIException
 
 from kitsune.access.decorators import login_required, permission_required
+from kitsune.customercare.forms import ZendeskForm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -43,17 +43,17 @@ from kitsune.questions.forms import (
     WatchQuestionForm,
 )
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.utils import get_mobile_product_from_ua
+from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
 from kitsune.sumo.decorators import ratelimit, ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import build_paged_url, is_ratelimited, paginate, simple_paginate
 from kitsune.tags.utils import add_existing_tag
+from kitsune.tidings.events import ActivationRequestFailed
+from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
-from kitsune.upload.views import upload_imageattachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
-from kitsune.wiki.utils import get_featured_articles
 
 log = logging.getLogger("k.questions")
 
@@ -103,7 +103,7 @@ def product_list(request):
     return render(
         request,
         "questions/product_list.html",
-        {"products": Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE)},
+        {"products": Product.objects.with_question_forums(request)},
     )
 
 
@@ -126,7 +126,7 @@ def question_list(request, product_slug):
 
     order = request.GET.get("order", "updated")
     if order not in ORDER_BY:
-        order == "updated"
+        order = "updated"
     sort = request.GET.get("sort", "desc")
 
     product_slugs = product_slug.split(",")
@@ -185,9 +185,17 @@ def question_list(request, product_slug):
             question_qs = question_qs.done()
 
     question_qs = question_qs.select_related("creator", "last_answer", "last_answer__creator")
-    question_qs = question_qs.prefetch_related("topic", "topic__product")
+    # Exclude questions over 90 days old without an answer or
+    # older than 2 years or
+    # created by deactivated users
+    today = date.today()
+    question_qs = (
+        question_qs.exclude(created__lt=today - timedelta(days=90), num_answers=0)
+        .filter(creator__is_active=True)
+        .filter(updated__gt=today - timedelta(days=365 * 2))
+    )
 
-    question_qs = question_qs.filter(creator__is_active=1)
+    question_qs = question_qs.prefetch_related("topic", "product")
 
     if not request.user.has_perm("flagit.can_moderate"):
         question_qs = question_qs.filter(is_spam=False)
@@ -221,15 +229,11 @@ def question_list(request, product_slug):
         else:
             question_qs = Question.objects.none()
 
-    # Exclude questions over 90 days old without an answer.
-    oldest_date = date.today() - timedelta(days=90)
-    question_qs = question_qs.exclude(created__lt=oldest_date, num_answers=0)
-
     # Filter by products.
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
-        question_qs = question_qs.filter(product__in=products).distinct()
+        question_qs = question_qs.filter(product__in=products)
 
     # Filter by topic.
     if topic:
@@ -405,7 +409,7 @@ def question_details(
 
     extra_kwargs.update(ans_)
 
-    products = Product.objects.filter(visible=True)
+    products = Product.objects.with_question_forums(request)
     topics = topics_for(product=question.product)
 
     related_documents = question.related_documents
@@ -462,25 +466,6 @@ def aaq(request, product_key=None, category_key=None, step=1):
 
     template = "questions/new_question.html"
 
-    # Check if any product forum has a locale in the user's current locale
-    if (
-        request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list()
-        and request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE
-    ):
-
-        locale, path = split_path(request.path)
-        path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
-
-        old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-        msg = _(
-            "The questions forum isn't available in {old_lang}, we "
-            "have redirected you to the {new_lang} questions forum."
-        ).format(old_lang=old_lang, new_lang=new_lang)
-        messages.add_message(request, messages.WARNING, msg)
-
-        return HttpResponseRedirect(path)
-
     # Check if the user is using a mobile device,
     # render step 2 if they are
     product_key = product_key or request.GET.get("product")
@@ -511,21 +496,13 @@ def aaq(request, product_key=None, category_key=None, step=1):
             product = Product.objects.get(slug=product_config["product"])
         except Product.DoesNotExist:
             raise Http404
-        else:
-            # Check if the selected product has a forum in the user's locale
-            if not product.questions_locales.filter(locale=request.LANGUAGE_CODE).count():
-                locale, path = split_path(request.path)
-                path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
-
-                old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-                new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
-                msg = _(
-                    "The questions forum isn't available for {product} in {old_lang}, we "
-                    "have redirected you to the {new_lang} questions forum."
-                ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
-                messages.add_message(request, messages.WARNING, msg)
-
-                return HttpResponseRedirect(path)
+        has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
+        has_subscriptions = product.has_subscriptions
+        request.session["aaq_context"] = {
+            "key": product_key,
+            "has_public_forum": has_public_forum,
+            "has_subscriptions": has_subscriptions,
+        }
 
     context = {
         "products": config.products,
@@ -534,20 +511,64 @@ def aaq(request, product_key=None, category_key=None, step=1):
         "host": Site.objects.get_current().domain,
     }
 
+    if step > 1:
+        context["has_subscriptions"] = has_subscriptions
+
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
         context["topics"] = topics_for(product, parent=None)
+
     elif step == 3:
+        # Check if the selected product has a forum in the user's locale
+        if not has_public_forum:
+            locale, path = split_path(request.path)
+            path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
+
+            old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
+            new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+            msg = _(
+                "The questions forum isn't available for {product} in {old_lang}, we "
+                "have redirected you to the {new_lang} questions forum."
+            ).format(product=product.title, old_lang=old_lang, new_lang=new_lang)
+            messages.add_message(request, messages.WARNING, msg)
+
+            return HttpResponseRedirect(path)
+
+        if has_subscriptions:
+            zendesk_form = ZendeskForm(data=request.POST or None, product=product)
+            context["form"] = zendesk_form
+
+            if zendesk_form.is_valid():
+                try:
+                    zendesk_form.send(request.user)
+
+                    messages.add_message(
+                        request,
+                        messages.SUCCESS,
+                        _(
+                            "Done! Your message was sent to Mozilla Support, "
+                            "thank you for reaching out. "
+                            "We'll contact you via email as soon as possible."
+                        ),
+                    )
+
+                    url = reverse("products.product", args=[product.slug])
+                    return HttpResponseRedirect(url)
+
+                except APIException as err:
+                    messages.add_message(
+                        request, messages.ERROR, _("That didn't work. Please try again.")
+                    )
+                    capture_exception(err)
+
+            return render(request, template, context)
+
         form = NewQuestionForm(
             product=product_config,
             data=request.POST or None,
             initial={"category": category_key},
         )
         context["form"] = form
-
-        # NOJS: upload image
-        if "upload_image" in request.POST:
-            upload_imageattachment(request, request.user)
 
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
 
@@ -637,9 +658,6 @@ def edit_question(request, question_id):
             product=question.product_config,
         )
 
-        # NOJS: upload images, if any
-        upload_imageattachment(request, question)
-
         if form.is_valid():
             question.title = form.cleaned_data["title"]
             question.content = form.cleaned_data["content"]
@@ -672,18 +690,10 @@ def edit_question(request, question_id):
     )
 
 
-def _skip_answer_ratelimit(request):
-    """Exclude image uploading and deleting from the reply rate limiting.
-
-    Also exclude users with the questions.bypass_ratelimit permission.
-    """
-    return "delete_images" in request.POST or "upload_image" in request.POST
-
-
 @require_POST
 @login_required
-@ratelimit("answer-min", "4/m", skip_if=_skip_answer_ratelimit)
-@ratelimit("answer-day", "100/d", skip_if=_skip_answer_ratelimit)
+@ratelimit("answer-min", "4/m")
+@ratelimit("answer-day", "100/d")
 def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
@@ -693,18 +703,6 @@ def reply(request, question_id):
         raise PermissionDenied
 
     form = AnswerForm(request.POST, **{"user": request.user, "question": question})
-
-    # NOJS: delete images
-    if "delete_images" in request.POST:
-        for image_id in request.POST.getlist("delete_image"):
-            ImageAttachment.objects.get(pk=image_id).delete()
-
-        return question_details(request, question_id=question_id, form=form)
-
-    # NOJS: upload image
-    if "upload_image" in request.POST:
-        upload_imageattachment(request, request.user)
-        return question_details(request, question_id=question_id, form=form)
 
     if form.is_valid() and not request.limited:
         answer = Answer(
@@ -743,6 +741,7 @@ def reply(request, question_id):
     )
 
 
+@require_POST
 def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
 
@@ -806,7 +805,6 @@ def unsolve(request, question_id, answer_id):
 
 
 @require_POST
-@csrf_exempt
 @ratelimit("question-vote", "10/d")
 def question_vote(request, question_id):
     """I have this problem too."""
@@ -854,7 +852,7 @@ def question_vote(request, question_id):
     return HttpResponseRedirect(question.get_absolute_url())
 
 
-@csrf_exempt
+@require_POST
 @ratelimit("answer-vote", "10/d")
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
@@ -1134,9 +1132,6 @@ def edit_answer(request, question_id, answer_id):
     if not answer.allows_edit(request.user):
         raise PermissionDenied
 
-    # NOJS: upload images, if any
-    upload_imageattachment(request, answer)
-
     if request.method == "GET":
         form = AnswerForm({"content": answer.content}, user=request.user)
         return render(request, "questions/edit_answer.html", {"form": form, "answer": answer})
@@ -1167,10 +1162,26 @@ def edit_answer(request, question_id, answer_id):
 
 
 @require_POST
+@ratelimit("watch-question", "10/d")
 def watch_question(request, question_id):
     """Start watching a question for replies or solution."""
 
+    if request.limited:
+        msg = _(
+            "We were unable to register your request. You've exceeded the "
+            "limit for the number of questions allowed to watch in a day. "
+            "Please try again tomorrow."
+        )
+        if request.is_ajax():
+            return HttpResponse(json.dumps({"message": msg, "ignored": True}))
+
+        messages.add_message(request, messages.ERROR, msg)
+        return HttpResponseRedirect(
+            reverse("questions.details", kwargs={"question_id": question_id})
+        )
+
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
+
     form = WatchQuestionForm(request.user, request.POST)
 
     # Process the form
@@ -1294,7 +1305,8 @@ def _answers_data(request, question_id, form=None, watch_form=None, answer_previ
     answers_ = question.answers.all()
 
     # Remove spam flag if an answer passed the moderation queue
-    answers_.filter(flags__status=2).update(is_spam=False)
+    if not settings.READ_ONLY:
+        answers_.filter(flags__status=2).update(is_spam=False)
 
     if not request.user.has_perm("flagit.can_moderate"):
         answers_ = answers_.filter(is_spam=False)

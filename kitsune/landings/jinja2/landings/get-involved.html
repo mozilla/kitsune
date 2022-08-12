@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% set crumbs = [(None, _('Help Other Users'))] %}
-{% set styles = ('landings-get-involved',) %}
 
 {% set canonical_url = canonicalize(viewname='landings.get_involved') %}
 
@@ -9,7 +8,7 @@
   <div class="sumo-page-section has-moz-headings">
     <div class="hero-bar sumo-l-two-col">
       <div class="sumo-l-two-col--one-half">
-        <img class="hero-butler" src="{{ STATIC_URL }}sumo/img/gi-hero-butler.png" alt="">
+        <img class="hero-butler" src="{{ webpack_static('sumo/img/gi-hero-butler.png') }}" alt="">
       </div>
       <div class="sumo-l-two-col--one-half">
         <h1 class="sumo-page-heading">{{ _('Save the world') }}</h1>
@@ -81,7 +80,7 @@
           {% endtrans %}</p>
       </div>
       <div class="sumo-l-two-col--one-half">
-        <img class="moz-heroes" src="{{ STATIC_URL }}sumo/img/moz-heroes.jpg" alt="">
+        <img class="moz-heroes" src="{{ webpack_static('sumo/img/moz-heroes.jpg') }}" alt="">
       </div>
     </div>
   </section>

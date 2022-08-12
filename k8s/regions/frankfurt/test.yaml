@@ -5,8 +5,8 @@ kubernetes:
     nodeport_name: "sumo-nodeport"
     secrets_name: "sumo-secrets-test"
     image:
-        repo: "itsre/sumo-kitsune"
-        tag: "full-latest"
+        repo: "mozilla/kitsune"
+        tag: "prod-latest"
         pull_policy: "Always"
     # default values
     limits:
@@ -58,25 +58,21 @@ app:
     csrf_cookie_secure: True
     database_url: SECRET
     default_from_email: "notifications-test@support.mozilla.org"
-    db_conn_max_age: 60
+    db_conn_max_age: 0
     debug: False
     dms_auto_archive_old_questions: SECRET
     dms_cache_most_unhelpful_kb_articles: SECRET
-    dms_calculate_csat_metrics: SECRET
     dms_cohort_analysis: SECRET
     dms_enqueue_lag_monitor_task: SECRET
     dms_fix_current_revisions: SECRET
     dms_generate_missing_share_links: SECRET
-    dms_process_exit_surveys: SECRET
     dms_rebuild_kb: SECRET
-    dms_reindex: SECRET
     dms_reindex_es7: SECRET
     dms_reload_question_traffic_stats: SECRET
     dms_reload_wiki_traffic_stats: SECRET
     dms_report_employee_answers: SECRET
     dms_send_weekly_ready_for_review_digest: SECRET
     dms_send_welcome_emails: SECRET
-    dms_survey_recent_askers: SECRET
     dms_update_contributor_metrics: SECRET
     dms_update_l10n_contributor_metrics: SECRET
     dms_update_l10n_coverage_metrics: SECRET
@@ -93,14 +89,10 @@ app:
     email_subject_prefix: "[support-test] "
     email_use_tls: True
     enable_admin: True
-    enable_whitenoise: True
     enforce_host: "test.sumo.mozit.cloud,support-test.allizom.org"
     engage_robots: False
     es_index_prefix: "sumo_dev"
-    es_http_auth: SECRET
     es_live_indexing: True
-    es_use_ssl: True
-    es_urls: SECRET
     ga_account: SECRET
     ga_key: SECRET
     ga_profile_id: SECRET
@@ -108,7 +100,6 @@ app:
     media_url: "https://user-media-stage-cdn.itsre-sumo.mozilla.net/"
     new_relic_app_name: "sumo-test-frankfurt"
     new_relic_license_key: SECRET
-    pipeline_enabled: True
     port: 8000
     read_only: False
     redis_default_url: SECRET

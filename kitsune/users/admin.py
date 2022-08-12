@@ -1,11 +1,22 @@
 from django import forms
 from django.contrib import admin
+from django.db.models import Q
 
+from kitsune.products.models import Product
 from kitsune.users import monkeypatch
 from kitsune.users.models import AccountEvent, Profile
 
 
 class ProfileAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # limit the subscriptions choices to the appropriate products
+        associated_products = [product.id for product in self.initial.get("products", [])]
+        products = Product.objects.filter(Q(pk__in=associated_products) | ~Q(codename__exact=""))
+
+        self.fields["products"].queryset = products
+        self.fields["products"].required = False
+
     delete_avatar = forms.BooleanField(
         required=False, help_text=("Check to remove the user's avatar.")
     )
@@ -29,6 +40,8 @@ class ProfileAdmin(admin.ModelAdmin):
                     "bio",
                     "is_fxa_migrated",
                     "fxa_uid",
+                    "fxa_refresh_token",
+                    "zendesk_id",
                 ],
             },
         ),
@@ -52,6 +65,13 @@ class ProfileAdmin(admin.ModelAdmin):
                 "classes": ["collapse"],
             },
         ),
+        (
+            "Subscriptions",
+            {
+                "fields": ["products"],
+                "classes": ["collapse"],
+            },
+        ),
     )
     form = ProfileAdminForm
     list_display = ["full_user", "name", "get_products"]
@@ -59,6 +79,7 @@ class ProfileAdmin(admin.ModelAdmin):
     list_filter = ["is_fxa_migrated", "country"]
     search_fields = ["user__username", "user__email", "name", "fxa_uid"]
     autocomplete_fields = ["user"]
+    readonly_fields = ["fxa_refresh_token", "zendesk_id"]
 
     def get_products(self, obj):
         """Get a list of products that a user is subscribed to."""
@@ -90,6 +111,7 @@ class AccountEventAdmin(admin.ModelAdmin):
         "event_type",
         "status",
     )
+    search_fields = ["profile__user__username", "profile__name", "status", "fxa_uid"]
     autocomplete_fields = ["profile"]
 
     class Meta:

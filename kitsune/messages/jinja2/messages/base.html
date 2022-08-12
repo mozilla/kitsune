@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% from "messages/includes/macros.html" import message_tabs %}
 {% from "includes/common_macros.html" import scam_banner %}
-{% set styles = ('jqueryui', 'messages') %}
-{% set scripts = ('messages', 'jqueryui') %}
+{% set scripts = ('messages',) %}
 
 {% block above_main %}
   {{ scam_banner() }}

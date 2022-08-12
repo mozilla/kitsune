@@ -17,8 +17,8 @@ from kitsune.forums.feeds import PostsFeed, ThreadsFeed
 from kitsune.forums.forms import EditPostForm, EditThreadForm, NewThreadForm, ReplyForm
 from kitsune.forums.models import Forum, Post, Thread
 from kitsune.search.forms import BaseSearchForm
-from kitsune.search.v2.base import SumoSearchPaginator
-from kitsune.search.v2.search import ForumSearch
+from kitsune.search.base import SumoSearchPaginator
+from kitsune.search.search import ForumSearch
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import is_ratelimited, paginate
@@ -196,7 +196,7 @@ def reply(request, forum_slug, thread_id):
                     NewPostEvent.notify(request.user, thread)
 
                 # Send notifications to thread/forum watchers.
-                NewPostEvent(reply_).fire(exclude=reply_.author)
+                NewPostEvent(reply_).fire(exclude=[reply_.author])
 
                 return HttpResponseRedirect(thread.get_last_post_url())
 
@@ -235,7 +235,7 @@ def new_thread(request, forum_slug):
             post = thread.new_post(author=request.user, content=form.cleaned_data["content"])
             post.save()
 
-            NewThreadEvent(post).fire(exclude=post.author)
+            NewThreadEvent(post).fire(exclude=[post.author])
 
             # Add notification automatically if needed.
             if Setting.get_for_user(request.user, "forums_watch_new_thread"):
@@ -518,10 +518,8 @@ def post_preview_async(request):
 
 def search(request, forum_slug=None):
     """Search a specific forum."""
-
-    try:
-        forum = Forum.objects.get(slug=forum_slug)
-    except Forum.DoesNotExist:
+    forum = get_object_or_404(Forum, slug=forum_slug)
+    if not forum.allows_viewing_by(request.user):
         raise Http404
 
     search_form = BaseSearchForm(request.GET, initial={"forum": forum})

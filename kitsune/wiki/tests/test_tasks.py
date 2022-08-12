@@ -10,7 +10,6 @@ from django.core import mail
 from django.core.cache import cache
 from django.test import override_settings
 from django.test.client import RequestFactory
-from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory, add_permission
@@ -100,7 +99,7 @@ class RebuildTestCase(TestCase):
         assert not cache.get(settings.WIKI_REBUILD_TOKEN)
         assert "args" in apply_async.call_args[1]
         # There should be 4 documents with an approved revision
-        eq_(4, len(apply_async.call_args[1]["args"][0]))
+        self.assertEqual(4, len(apply_async.call_args[1]["args"][0]))
 
 
 class ReviewMailTestCase(TestCaseBase):
@@ -127,10 +126,10 @@ class ReviewMailTestCase(TestCaseBase):
         self._approve_and_send(rev, self.user, msg)
 
         # Two emails will be sent, one each for the reviewer and the reviewed.
-        eq_(2, len(mail.outbox))
-        eq_("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
-        eq_([rev.creator.email], mail.outbox[0].to)
-        eq_(
+        self.assertEqual(2, len(mail.outbox))
+        self.assertEqual("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
+        self.assertEqual([rev.creator.email], mail.outbox[0].to)
+        self.assertEqual(
             REVIEWED_EMAIL_CONTENT % (self.user.profile.name, doc.title, msg, doc.slug),
             mail.outbox[0].body,
         )
@@ -144,7 +143,7 @@ class ReviewMailTestCase(TestCaseBase):
         self._approve_and_send(rev, rev.creator, msg)
 
         # Verify no email was sent
-        eq_(0, len(mail.outbox))
+        self.assertEqual(0, len(mail.outbox))
 
     @mock.patch.object(Site.objects, "get_current")
     def test_unicode_notifications(self, get_current):
@@ -157,8 +156,8 @@ class ReviewMailTestCase(TestCaseBase):
         self._approve_and_send(rev, self.user, msg)
 
         # Two emails will be sent, one each for the reviewer and the reviewed.
-        eq_(2, len(mail.outbox))
-        eq_("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
+        self.assertEqual(2, len(mail.outbox))
+        self.assertEqual("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
 
     @mock.patch.object(Site.objects, "get_current")
     def test_escaping(self, get_current):
@@ -171,8 +170,8 @@ class ReviewMailTestCase(TestCaseBase):
         self._approve_and_send(rev, self.user, msg)
 
         # Two emails will be sent, one each for the reviewer and the reviewed.
-        eq_(2, len(mail.outbox))
-        eq_("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
+        self.assertEqual(2, len(mail.outbox))
+        self.assertEqual("Your revision has been approved: %s" % doc.title, mail.outbox[0].subject)
         assert "&quot;" not in mail.outbox[0].body
         assert '"All about quotes"' in mail.outbox[0].body
         assert 'foo & "bar"' in mail.outbox[0].body
@@ -193,11 +192,11 @@ class TestDocumentRenderCascades(TestCaseBase):
         )
         d3, _, _ = doc_rev_parser("[[T:D1]] [[T:D2]] three", title="D3")
 
-        eq_(self._clean(d3), "one one two three")
+        self.assertEqual(self._clean(d3), "one one two three")
 
         RevisionFactory(document=d1, content="ONE", is_approved=True)
         render_document_cascade(d1.id)
 
-        eq_(self._clean(d1), "ONE")
-        eq_(self._clean(d2), "ONE two")
-        eq_(self._clean(d3), "ONE ONE two three")
+        self.assertEqual(self._clean(d1), "ONE")
+        self.assertEqual(self._clean(d2), "ONE two")
+        self.assertEqual(self._clean(d3), "ONE ONE two three")

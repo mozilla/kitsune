@@ -13,8 +13,8 @@ from kitsune.community.utils import (
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
 from kitsune.questions.models import QuestionLocale
-from kitsune.search.v2.base import SumoSearchPaginator
-from kitsune.search.v2.search import ProfileSearch
+from kitsune.search.base import SumoSearchPaginator
+from kitsune.search.search import ProfileSearch
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.sumo.utils import paginate
 from kitsune.users.models import CONTRIBUTOR_GROUP

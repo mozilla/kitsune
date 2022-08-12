@@ -1,15 +1,14 @@
 import re
 import sys
 
+from celery import current_app
 from django import VERSION
 from django.conf import settings as django_settings
 from django.contrib import admin
 from django.db import connection
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 from django.views import debug
-
-from celery import current_app
 from redis import ConnectionError
 
 from kitsune.sumo.redis_utils import redis_client
@@ -20,7 +19,8 @@ def settings(request):
     settings = debug.get_safe_settings()
     sorted_settings = [{"key": key, "value": settings[key]} for key in sorted(settings.keys())]
 
-    return render_to_response(
+    return render(
+        request,
         "kadmin/settings.html",
         {"pythonpath": sys.path, "settings": sorted_settings, "title": "Settings"},
         RequestContext(request, {}),
@@ -42,7 +42,8 @@ def celery_settings(request):
         for key in sorted(settings)
     ]
 
-    return render_to_response(
+    return render(
+        request,
         "kadmin/settings.html",
         {"settings": sorted_settings, "title": "Celery Settings"},
         RequestContext(request, {}),
@@ -54,7 +55,8 @@ admin.site.register_view("celery", view=celery_settings, name="Celery Settings")
 
 def env(request):
     """Admin view that displays env info."""
-    return render_to_response(
+    return render(
+        request,
         "kadmin/env_view.html",
         {"request": request, "pythonver": sys.version, "djangover": VERSION},
     )
@@ -65,10 +67,11 @@ admin.site.register_view("env", view=env, name="Environment")
 
 def schema_version(request):
     """Admin view that displays the current schema_version."""
-    cursor = connection.cursor()
-    cursor.execute("SELECT version FROM schema_version")
-    version = [x for x in cursor][0][0]
-    return render_to_response(
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT version FROM schema_version")
+        version = [x for x in cursor][0][0]
+    return render(
+        request,
         "kadmin/schema.html",
         {"schema_version": version, "title": "Schema Version"},
         RequestContext(request, {}),
@@ -93,7 +96,8 @@ def redis_info(request):
         except ConnectionError:
             redis_info[key]["down"] = True
 
-    return render_to_response(
+    return render(
+        request,
         "kadmin/redis.html",
         {"redis_info": redis_info, "title": "Redis Information"},
         RequestContext(request, {}),
