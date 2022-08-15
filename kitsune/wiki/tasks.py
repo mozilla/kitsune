@@ -180,8 +180,13 @@ def add_short_links(doc_ids):
     docs = Document.objects.filter(id__in=doc_ids)
     try:
         for doc in docs:
-            # Use django's reverse so the locale isn't included.
-            endpoint = django_reverse("wiki.document", args=[doc.slug])
+            # Use Django's reverse so the locale isn't included.
+            # Since we're not including the locale in the URL, we
+            # should always use the English slug. That ensures that
+            # we'll find and redirect to the translation based on the
+            # locale of the user using the short link.
+            slug = doc.parent.slug if doc.parent else doc.slug
+            endpoint = django_reverse("wiki.document", args=[slug])
             doc.update(share_link=generate_short_url(base_url % endpoint))
     except HTTPError:
         # The next run of the `generate_missing_share_links` cron job will
