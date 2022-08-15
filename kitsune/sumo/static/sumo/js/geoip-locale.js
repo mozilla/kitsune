@@ -108,7 +108,7 @@ function handleLocale(countryName) {
       * in local storage, so the bar won't ever show up again.
       */
       var $this = $(this);
-      $announceBar.find('.close-button').click();
+      $announceBar.find('.close-button').trigger("click");
       if ($this.hasClass('confirm')) {
         trackEvent('Geo IP Targeting', 'click yes');
         // Delay the click navigation by 250ms to ensure the event is tracked.

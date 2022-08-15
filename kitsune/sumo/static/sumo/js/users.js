@@ -22,7 +22,7 @@ import trackEvent from "sumo/js/analytics";
 
   var CONFIRM_TEXT = gettext('WARNING! Are you sure you want to deactivate this user? This cannot be undone!');
   function confirmUserDeactivation() {
-    $('.deactivate').submit(function() {
+    $('.deactivate').on("submit", function() {
       return confirm(CONFIRM_TEXT);
     });
   }

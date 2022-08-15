@@ -4,7 +4,7 @@ import "sumo/js/kbox";
 (function($) {
   'use strict';
 
-  $(document).ready(function() {
+  jQuery(function() {
     $('#media-type-select').on('change', function() {
       window.location = $(this).val();
     });
@@ -93,7 +93,7 @@ import "sumo/js/kbox";
       self.forms.$image.showFade();
 
       // Bind cancel upload event.
-      $('.progress a', self.$modal).click(function cancelUpload(ev) {
+      $('.progress a', self.$modal).on("click", function cancelUpload(ev) {
         var type = $(this).attr('class');
         ev.preventDefault();
         self.cancelUpload($(this));
@@ -148,7 +148,7 @@ import "sumo/js/kbox";
         $form.append($('input[name="csrfmiddlewaretoken"]')
         .first().clone());
 
-        $input.click(function deleteField(ev) {
+        $input.on('click', function deleteField(ev) {
           ev.preventDefault();
           self.deleteUpload($input);
           return false;
@@ -160,8 +160,8 @@ import "sumo/js/kbox";
       .attr('required', 'required');
 
       // Closing the modal with top-right X cancels upload drafts
-      self.$modal.delegate('a.close', 'click', function(e) {
-        self.$modal.find('input[name="cancel"]:last').click();
+      self.$modal.on('click', 'a.close', function(e) {
+        self.$modal.find('input[name="cancel"]:last').trigger("click");
       });
 
       // Submitting the form should call for validation first.
@@ -171,7 +171,7 @@ import "sumo/js/kbox";
           return false;
         }
       }
-      self.forms.$image.find('input[name="upload"]').click(validateSubmit);
+      self.forms.$image.find('input[name="upload"]').on("click", validateSubmit);
 
 
       if (self.forms.$image.hasClass('draft')) {
@@ -249,7 +249,7 @@ import "sumo/js/kbox";
       }
       var iframeJSON, self = this;
       try {
-        iframeJSON = $.parseJSON(iframeContent);
+        iframeJSON = JSON.parse(iframeContent);
       } catch (err) {
         self.uploadError($input, 'server');
       }
@@ -327,7 +327,7 @@ import "sumo/js/kbox";
       var self = this,
         type = $input.attr('name');
       // Cancel existing upload.
-      $('.progress.' + type).find('a.' + type).click();
+      $('.progress.' + type).find('a.' + type).trigger("click");
       // Show an error message.
       self.setInputError($input, reason);
     },
@@ -484,7 +484,7 @@ import "sumo/js/kbox";
   if (document.location.hash === '#upload' ||
   $('#gallery-upload-type').hasClass('draft') ||
   $('body').hasClass('submitted')) {
-    $('#btn-upload').click();
+    $('#btn-upload').trigger("click");
   }
 
 })(jQuery);

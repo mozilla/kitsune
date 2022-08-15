@@ -118,7 +118,7 @@ KBox.prototype = {
 
     // If we have a click target, open the kbox when it is clicked.
     if (self.$clickTarget) {
-      self.$clickTarget.click(function(ev) {
+      self.$clickTarget.on("click", function(ev) {
         ev.preventDefault();
         self.open();
       });
@@ -209,7 +209,7 @@ KBox.prototype = {
         }
       };
       setTimeout(function() { // so it doesn't get triggered on this click
-        $('body').click(self.clickHandler);
+        $('body').on("click", self.clickHandler);
       }, 0);
     }
   },
@@ -264,10 +264,10 @@ KBox.prototype = {
       self.destroy();
     }
     if (self.options.closeOnEsc) {
-      $('body').unbind('keypress', self.keypressHandler);
+      $('body').off('keypress', self.keypressHandler);
     }
     if (self.options.closeOnOutClick) {
-      $('body').unbind('click', self.clickHandler);
+      $('body').off('click', self.clickHandler);
     }
   },
   destroy: function() {

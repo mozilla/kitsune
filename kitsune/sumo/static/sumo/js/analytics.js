@@ -14,7 +14,7 @@
 
     // Delay the form post by 250ms to ensure the event is tracked.
     setTimeout(function() {
-      $this.closest('form').submit();
+      $this.closest('form').trigger('submit');
     }, 250);
 
     return false;

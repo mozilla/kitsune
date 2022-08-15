@@ -6,7 +6,7 @@ import { Graph } from "sumo/js/rickshaw_utils";
 
 (function ($) {
   function init() {
-    $('#show-graph').unbind('click');
+    $('#show-graph').off('click');
     $('#show-graph').html(gettext('Loading...'));
     $('#show-graph').css('color', '#333333').css('cursor', 'auto').css('text-decoration', 'none');
     initGraph();
@@ -22,12 +22,12 @@ import { Graph } from "sumo/js/rickshaw_utils";
           $('#show-graph').hide();
         } else {
           $('#show-graph').html(gettext('No votes data'));
-          $('#show-graph').unbind('click');
+          $('#show-graph').off('click');
         }
       },
       error: function () {
         $('#show-graph').html(gettext('Error loading graph'));
-        $('#show-graph').unbind('click');
+        $('#show-graph').off('click');
       }
     });
   }
@@ -84,5 +84,5 @@ import { Graph } from "sumo/js/rickshaw_utils";
     graph.render();
   }
 
-  $('#show-graph').click(init);
+  $('#show-graph').on("click", init);
 })(jQuery);

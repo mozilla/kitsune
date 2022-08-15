@@ -114,7 +114,7 @@ $.ajaxSetup({
 $(document).ready(function() {
   layoutTweaks();
   /* Focus form field when clicking on error message. */
-  $('#content ul.errorlist a').click(function () {
+  $('#content ul.errorlist a').on("click", function () {
     $($(this).attr('href')).focus();
     return false;
   });
@@ -161,7 +161,7 @@ function initAutoSubmitSelects() {
   * from being submitted and we depend on those in some views.
   */
 function disableFormsOnSubmit() {
-  $('form').submit(function(ev) {
+  $('form').on("submit", function(ev) {
     var $this = $(this);
     if ($this.attr('method').toLowerCase() === 'post') {
       if ($this.data('disabled')) {
@@ -176,7 +176,7 @@ function disableFormsOnSubmit() {
 
       $this.ajaxComplete(function() {
         enableForm();
-        $this.unbind('ajaxComplete');
+        $this.off('ajaxComplete');
       });
 
       // Re-enable the form when users leave the page in case they come back.

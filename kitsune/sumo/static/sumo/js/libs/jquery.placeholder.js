@@ -12,7 +12,7 @@
             this.handlePassword();
         }
         // Prevent placeholder values from submitting
-        $(input[0].form).submit(function() {
+        $(input[0].form).on("submit", function() {
             if (input.hasClass('placeholder') && input[0].value == input.attr('placeholder')) {
                 input[0].value = '';
             }
@@ -62,7 +62,7 @@
                     input.trigger('focus');
                     $(this).hide();
                 });
-                $(input[0].form).submit(function() {
+                $(input[0].form).on("submit", function() {
                     fakeHTML.remove();
                     input.show()
                 });

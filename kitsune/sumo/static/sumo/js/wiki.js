@@ -42,8 +42,8 @@ import ShowFor from "sumo/js/showfor";
       // Submit form
       $('#id_comment').keypress(function(e) {
         if (e.which === 13) {
-          $(this).blur();
-          $(this).closest('form').find('[type=submit]').click();
+          $(this).trigger('blur');
+          $(this).closest('form').find('[type=submit]').trigger('click');
           return false;
         }
       });
@@ -96,9 +96,9 @@ import ShowFor from "sumo/js/showfor";
         }
       };
 
-      $('#id_significance_0').click(onSignificanceClick);
-      $('#id_significance_1').click(onSignificanceClick);
-      $('#id_significance_2').click(onSignificanceClick);
+      $('#id_significance_0').on("click", onSignificanceClick);
+      $('#id_significance_1').on("click", onSignificanceClick);
+      $('#id_significance_2').on("click", onSignificanceClick);
     }
   }
 
@@ -149,7 +149,7 @@ import ShowFor from "sumo/js/showfor";
         }
 
         // Set the `tabindex` attribute of the `summary` element to 0 to make it keyboard accessible
-        $detailsSummary.attr('tabindex', 0).click(function() {
+        $detailsSummary.attr('tabindex', 0).on("click", function() {
           // Focus on the `summary` element
           $detailsSummary.focus();
           // Toggle the `open` attribute of the `details` element
@@ -167,7 +167,7 @@ import ShowFor from "sumo/js/showfor";
             // Opera already seems to trigger the `click` event when Enter is pressed
             if (!($.browser.opera && event.keyCode === 13)) {
               event.preventDefault();
-              $detailsSummary.click();
+              $detailsSummary.trigger("click");
             }
           }
         });
@@ -244,7 +244,7 @@ import ShowFor from "sumo/js/showfor";
       $previewBottom = $('#preview-bottom'),
       $diffButton = $('.btn-diff');
     $diff.addClass('diff-this');
-    $diffButton.click(function() {
+    $diffButton.on("click", function() {
       $diff.find('.to').text($('#id_content').val());
       initDiff($diff.parent());
       $previewBottom.show();
@@ -326,7 +326,7 @@ import ShowFor from "sumo/js/showfor";
           // If form isn't valid, click the modal submit button
           // so the validation error is shown. (I couldn't find a
           // better way to trigger this.)
-          $modal.find('button[type="submit"]').click();
+          $modal.find('button[type="submit"]').trigger("click");
           return false;
         }
         // Add this here because the "Submit for Review" button is
@@ -348,7 +348,7 @@ import ShowFor from "sumo/js/showfor";
   function initDiffPicker() {
     $('div.revision-diff').each(function() {
       var $diff = $(this);
-      $diff.find('div.picker a').unbind().click(function(ev) {
+      $diff.find('div.picker a').off().on("click", function(ev) {
         ev.preventDefault();
         $.ajax({
           url: $(this).attr('href'),
@@ -375,7 +375,7 @@ import ShowFor from "sumo/js/showfor";
   }
 
   function ajaxifyDiffPicker($form, kbox, $diff) {
-    $form.submit(function(ev) {
+    $form.on("submit", function(ev) {
       ev.preventDefault();
       $.ajax({
         url: $form.attr('action'),
@@ -397,14 +397,14 @@ import ShowFor from "sumo/js/showfor";
     var $watchDiv = $('#revision-list .l10n'),
       post_url, checkbox_id;
 
-    $watchDiv.find('a.markasready').click(function() {
+    $watchDiv.find('a.markasready').on("click", function() {
       var $check = $(this);
       post_url = $check.data('url');
       checkbox_id = $check.attr('id');
       $('#ready-for-l10n-modal span.revtime').html('(' + $check.data('revdate') + ')');
     });
 
-    $('#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]').click(function() {
+    $('#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]').on("click", function() {
       var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val();
       if (post_url !== undefined && checkbox_id !== undefined) {
         $.ajax({
@@ -413,7 +413,7 @@ import ShowFor from "sumo/js/showfor";
           data: { csrfmiddlewaretoken: csrf },
           success: function(response) {
             $('#' + checkbox_id).removeClass('markasready').addClass('yes');
-            $('#' + checkbox_id).unbind('click');
+            $('#' + checkbox_id).off('click');
             Mzp.Modal.closeModal()
           },
           error: function() {
@@ -449,7 +449,7 @@ import ShowFor from "sumo/js/showfor";
 
   function watchDiscussion() {
     // For a thread on the all discussions for a locale.
-    $('.watch-form').click(function() {
+    $('.watch-form').on("click", function() {
       var form = $(this);
       $.post(form.attr('action'), form.serialize(), function() {
         form.find('.watchtoggle').toggleClass('on');
@@ -462,7 +462,7 @@ import ShowFor from "sumo/js/showfor";
 
   function initEditingTools() {
     // Init the show/hide links for editing tools
-    $('#quick-links .edit a').click(function(ev) {
+    $('#quick-links .edit a').on("click", function(ev) {
       ev.preventDefault();
       $('#doc-tabs').slideToggle('fast', function() {
         $('body').toggleClass('show-editing-tools');
@@ -497,7 +497,7 @@ import ShowFor from "sumo/js/showfor";
     var switch_link = $('<a></a>')
       .text(gettext('Toggle syntax highlighting'))
       .css({ textAlign: 'right', cursor: 'pointer', display: 'block' })
-      .click(function() {
+      .on("click", function() {
         if (editor_wrapper.css('display') === 'block') {
           editor_wrapper.css('display', 'none');
           $('#id_content').css('display', 'block');
@@ -578,7 +578,7 @@ import ShowFor from "sumo/js/showfor";
         .append(
           $('<a/>')
             .text(gettext('Toggle Diff'))
-            .click(function(e) {
+            .on("click", function(e) {
               e.preventDefault();
               $contentOrDiff.toggleClass('content diff');
             }));
@@ -590,7 +590,7 @@ import ShowFor from "sumo/js/showfor";
       url = $('.btn-draft').data('draft-url'),
       $draftMessage = $('#draft-message');
 
-    $draftButton.click(function() {
+    $draftButton.on("click", function() {
       var message = gettext('<strong>Draft is saving...</strong>'),
         image = `<img src="${spinnerImg}">`,
         bothData = $('#both_form').serializeArray(),

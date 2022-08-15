@@ -15,7 +15,7 @@
         slug = $modes.attr('data-slug');
       $modes.find('.mode').each(function() {
         var $button = $(this);
-        $button.click(function switchMode() {
+        $button.on("click", function switchMode() {
           // Dim table to convey that its data isn't what
           // the select mode indicates:
           var $table = $('#' + slug + '-table');
@@ -39,13 +39,13 @@
       $menu = $watchDiv.find('.popup-menu');
 
     // Initialize popup menu behavior:
-    $watchDiv.find('.popup-trigger').click(function toggleMenu() {
+    $watchDiv.find('.popup-trigger').on("click", function toggleMenu() {
       $menu.toggle();
     });
 
     // Teach checkboxes to dim and post on click:
     // Dim the checkbox, post the watch change, then undim.
-    $watchDiv.find('input[type=checkbox]').click(function post() {
+    $watchDiv.find('input[type=checkbox]').on("click", function post() {
       var $box = $(this),
         csrf = $box.closest('form').find('input[name=csrfmiddlewaretoken]').val(),
         isChecked = $box.attr('checked');
@@ -69,7 +69,7 @@
 
   function initNeedsChange() {
     // Expand rows on click
-    $('#need-changes-table tr').click(function(e) {
+    $('#need-changes-table tr').on("click", function(e) {
       // Don't expand if a link was clicked.
       if (!$(e.target).is('a')) {
         $(this).toggleClass('active');

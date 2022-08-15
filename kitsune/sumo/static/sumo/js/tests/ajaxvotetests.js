@@ -34,7 +34,7 @@ describe('ajaxvote', () => {
         expect(data.url).to.equal('/vote');
         done();
       });
-      $('input[name="helpful"]').click();
+      $('input[name="helpful"]').trigger("click");
     });
 
     it('should fire an event on an unhelpful vote', done => {
@@ -47,7 +47,7 @@ describe('ajaxvote', () => {
         expect(data.url).to.equal('/vote');
         done();
       });
-      $('input[name="not-helpful"]').click();
+      $('input[name="not-helpful"]').trigger('click');
     });
 
     it('should include the right data in the request', done => {
@@ -60,7 +60,7 @@ describe('ajaxvote', () => {
         expect($.ajax.firstCall.args[0].data.helpful).to.equal('Yes');
         done();
       });
-      $('input[name="helpful"]').click();
+      $('input[name="helpful"]').trigger('click');
     });
 
     it('should update the UI with the response', done => {
@@ -72,7 +72,7 @@ describe('ajaxvote', () => {
         expect($('.ajax-vote-box').text()).to.equal('Thanks for the vote!');
         done();
       });
-      $('input[name="helpful"]').click();
+      $('input[name="helpful"]').trigger('click');
     });
 
   });
