@@ -13,7 +13,7 @@ import { getQueryParamsAsDict } from "sumo/js/main";
 
   'use strict';
 
-  $(document).ready(function() {
+  $(function() {
     if ($('body').is('.locale-metrics')) {
       // Create the dashboard charts.
 

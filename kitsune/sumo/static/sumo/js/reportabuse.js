@@ -5,7 +5,7 @@
 (function($) {
   'use strict';
 
-  $(document).ready(function() {
+  $(function() {
     $('#report-abuse [type="submit"]').on('click', function(ev) {
       ev.preventDefault();
       var $this = $(this);

@@ -14,6 +14,6 @@ import Marky from "sumo/js/markup";
     Marky.createCustomToolbar('.editor-tools', '#id_information', buttons);
   }
 
-  $(document).ready(init);
+  $(init);
 
 })(jQuery);

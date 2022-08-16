@@ -48,6 +48,6 @@ import trackEvent from "sumo/js/analytics";
     });
   }
 
-  $(document).ready(init);
+  $(init);
 
 })(jQuery);

@@ -7,7 +7,7 @@ import Marky from "sumo/js/markup";
  * Private messaging.
  */
 
-$(document).ready(function() {
+$(function() {
   // Show the ajax preview on the new message page.
   Marky.createSimpleToolbar('#new-message .editor-tools', '#id_message');
   new AjaxPreview($('#preview-btn'), {

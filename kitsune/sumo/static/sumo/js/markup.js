@@ -611,7 +611,7 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     });
 
     // Handle pagination
-    $html.delegate('ol.pagination a', 'click', function(e) {
+    $html.on('click', 'ol.pagination a', function(e) {
       mediaPage = parseInt($(this).attr('href').split('&page=')[1], 10);
       updateResults();
       e.preventDefault();

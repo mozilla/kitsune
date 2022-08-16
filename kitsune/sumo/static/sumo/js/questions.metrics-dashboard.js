@@ -138,6 +138,6 @@ import { Graph } from "sumo/js/rickshaw_utils";
     });
   }
 
-  $(document).ready(init);
+  $(init);
 
 })();

@@ -194,5 +194,5 @@
       });
   }
 
-  $(document).ready(init);
+  $(init);
 })(jQuery);
