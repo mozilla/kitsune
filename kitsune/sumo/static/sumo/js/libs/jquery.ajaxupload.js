@@ -59,7 +59,7 @@ jQuery.fn.wrapDeleteInput = function (options) {
             }
             var iframeJSON;
             try {
-                iframeJSON = $.parseJSON(iframeContent);
+                iframeJSON = JSON.parse(iframeContent);
             } catch(err) {
                 if (err.substr(0, 12)  === 'Invalid JSON') {
                     dialogSet(options.error_json, options.error_title_del);
@@ -126,12 +126,12 @@ jQuery.fn.ajaxSubmitInput = function (options) {
     // add the csrfmiddlewaretoken to the upload form
     $('input[name="csrfmiddlewaretoken"]').first().clone().appendTo($form);
 
-    $iframe.load(function() {
+    $iframe.on('load', function() {
         var iframeContent = $iframe[0].contentWindow.document.body.innerHTML;
         options.onComplete($input, iframeContent, passJSON);
     });
 
-    $input.bind(options.inputEvent, function() {
+    $input.on(options.inputEvent, function() {
         passJSON = options.beforeSubmit($input);
 
         if (false === passJSON) {

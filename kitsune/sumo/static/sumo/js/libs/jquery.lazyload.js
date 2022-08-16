@@ -63,7 +63,7 @@
 
     $.fn.lazyload.loadOriginalImage = function(element, assocAnchor) {
         if(assocAnchor != null) {
-            $(element).load(function() { resetHashPosition(); });
+            $(element).on('load', function() { resetHashPosition(); });
         }
         $(element).attr('src', $(element).data('original-src')).removeData('original-src');
     };
