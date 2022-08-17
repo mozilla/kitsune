@@ -24,6 +24,6 @@
     });
   }
 
-  $(document).ready(initInlineEditing);
+  $(initInlineEditing);
 
 })(jQuery);

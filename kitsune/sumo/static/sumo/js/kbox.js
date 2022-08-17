@@ -163,7 +163,7 @@ KBox.prototype = {
     self.$kbox.find('.kbox-placeholder').replaceWith(self.$el.detach());
 
     // Handle close events
-    self.$kbox.delegate('.kbox-close, .kbox-cancel', 'click', function(ev) {
+    self.$kbox.on('click', '.kbox-close, .kbox-cancel', function(ev) {
       ev.preventDefault();
       self.close();
     });

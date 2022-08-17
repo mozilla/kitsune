@@ -85,7 +85,7 @@
             // On page refresh, IE doesn't re-populate user input
             // until the window.onload event is fired.
             if ($.browser.msie) {
-                $(window).load(function() {
+                $(window).on('load', function() {
                     if(input.val()) {
                         input.removeClass("placeholder");
                     }

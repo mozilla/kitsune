@@ -31,7 +31,7 @@
 {% if action_form %}{% if actions_on_top or actions_on_bottom %}
 <script type="text/javascript">
 (function($) {
-    $(document).ready(function($) {
+    $(function($) {
         $("tr input.action-select").actions();
     });
 })(django.jQuery);

@@ -1,6 +1,6 @@
 import "jquery-ui/ui/widgets/tabs";
 
-$(document).ready(function() {
+$(function() {
   // initiate tabs
   var tabs = $('#search-tabs').tabs(),
     cache_search_date = $('.showhide-input');

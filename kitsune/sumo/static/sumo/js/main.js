@@ -111,7 +111,7 @@ $.ajaxSetup({
   }
 });
 
-$(document).ready(function() {
+$(function() {
   layoutTweaks();
   /* Focus form field when clicking on error message. */
   $('#content ul.errorlist a').on("click", function () {

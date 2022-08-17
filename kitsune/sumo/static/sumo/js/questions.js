@@ -191,7 +191,7 @@ function initHaveThisProblemTooAjax() {
 
   // closing or cancelling the kbox on any of the forms should remove
   // all of them
-  $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev) {
+  $container.on('click', '.kbox-close, .kbox-cancel', function(ev) {
     ev.preventDefault();
     $container.off().remove();
   });
@@ -223,7 +223,7 @@ function initHelpfulVote() {
 
 // Helper
 function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
-  $container.delegate(formSelector, 'submit', function(ev) {
+  $container.on('submit', formSelector, function(ev) {
     ev.preventDefault();
     var $form = $(this);
     var url = $form.attr('action');
@@ -325,4 +325,4 @@ function initReplyToAnswer() {
   });
 }
 
-$(document).ready(init);
+$(init);

@@ -708,7 +708,7 @@ import ShowFor from "sumo/js/showfor";
     });
   }
 
-  $(document).ready(init);
+  $(init);
 
   function makeWikiCollapsable() {
     // Hide the TOC

@@ -54,6 +54,6 @@ import { safeString, safeInterpolate } from "sumo/js/main";
     $('input.user-autocomplete').tokenInput($('body').data('usernames-api'), tokenInputSettings);
   }
 
-  $(document).ready(init);
+  $(init);
 
 })(jQuery);
