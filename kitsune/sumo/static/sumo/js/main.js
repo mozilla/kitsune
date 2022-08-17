@@ -180,7 +180,7 @@ function disableFormsOnSubmit() {
       });
 
       // Re-enable the form when users leave the page in case they come back.
-      $(window).unload(enableForm);
+      $(window).on('unload', enableForm);
       // Re-enable the form after 5 seconds in case something else went wrong.
       setTimeout(enableForm, 5000);
     }
