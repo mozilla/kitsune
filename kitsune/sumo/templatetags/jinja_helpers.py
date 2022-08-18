@@ -17,7 +17,7 @@ from django.utils.encoding import smart_bytes, smart_text
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone
 from django.utils.translation import ugettext as _
-from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 from django.utils.translation import ungettext
 from django_jinja import library
 from jinja2.utils import Markup
@@ -26,6 +26,7 @@ from pytz import timezone
 from kitsune.products.models import Product
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import is_trusted_user as is_trusted_user_func
 from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
@@ -549,3 +550,8 @@ def show_header_fx_download(context):
         return product.slug != "firefox"
     else:
         return True
+
+
+@library.global_function
+def is_trusted_user(user):
+    return is_trusted_user_func(user)

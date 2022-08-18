@@ -13,7 +13,6 @@ from django.db.models.signals import pre_delete
 from django.templatetags.static import static
 from django.utils import translation
 from django.utils.encoding import iri_to_uri
-
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from ratelimit.core import is_ratelimited as is_ratelimited_core
 from timeout_decorator import timeout
@@ -387,3 +386,20 @@ def webpack_static(source_path):
             return ""
         url = static(asset)
         return url
+
+
+def is_trusted_user(user: object) -> bool:
+    """Given a user ID, checks for group membership.
+
+    If a user belongs to one of the trusted groups as defined in the project
+    settings, then is considered a trusted user.
+    """
+    if not user or not user.is_authenticated:
+        return False
+    return any(
+        [
+            user.groups.filter(name__in=settings.TRUSTED_GROUPS).exists(),
+            user.is_superuser,
+            user.is_staff,
+        ]
+    )

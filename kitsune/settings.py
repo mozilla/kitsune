@@ -1214,3 +1214,14 @@ CSP_CONNECT_SRC = (
     "https://*.google-analytics.com",
     "https://location.services.mozilla.com",
 )
+
+# Trusted Contributor Groups
+TRUSTED_GROUPS = [
+    "Forum Moderators",
+    "Administrators",
+    "SUMO Locale Leaders",
+    "Knowledge Base Reviewers",
+    "Reviewers",
+    # Temporary workaround to exempt individual users if needed
+    "Escape Spam Filtering",
+]
