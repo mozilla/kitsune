@@ -24,7 +24,6 @@ Part 2: Developer's Guide
    development
    tests
    celery
-   wsgi
    email
    localization
    search
