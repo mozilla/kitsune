@@ -1,4 +1,3 @@
-from enum import Enum, auto
 import random
 
 import requests
@@ -12,11 +11,6 @@ from django.utils.http import urlencode
 from kitsune.dashboards import LAST_7_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.wiki.models import Document, Revision
-
-
-class FallbackCodes(Enum):
-    NO_TRANSLATION = auto()
-    TRANSLATION_AT_DIFFERENT_SLUG = auto()
 
 
 class BitlyException(Exception):
@@ -185,26 +179,43 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
 
 
 def get_visible_document_or_404(user, **kwargs):
-    return get_object_or_404(Document.objects.visible(user, **kwargs))
+    """
+    Get the document specified by the keyword arguments and visible to the given user, or 404.
+    """
+
+    look_for_translation_via_parent = kwargs.pop("look_for_translation_via_parent", False)
+    return_parent_if_no_translation = kwargs.pop("return_parent_if_no_translation", False)
+
+    try:
+        return Document.objects.get_visible(user, **kwargs)
+    except Document.DoesNotExist:
+        pass
+
+    if (
+        not look_for_translation_via_parent
+        or not (locale := kwargs.get("locale"))
+        or (locale == settings.WIKI_DEFAULT_LANGUAGE)
+    ):
+        # We either don't want to try to find the translation via its parent, or it doesn't
+        # make sense, because we're not making a locale-specific request or the locale we're
+        # requesting is already the default locale.
+        raise Http404
+
+    # We couldn't find a visible translation in the requested non-default locale, so let's
+    # see if we can find a visible translation via its parent.
+    kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+    parent = get_object_or_404(Document.objects.visible(user, **kwargs))
+
+    # If there's a visible translation of the parent for the requested locale, return it.
+    if translation := parent.translated_to(locale, visible_for_user=user):
+        return translation
+
+    # Otherwise, we're left with the parent.
+    if return_parent_if_no_translation:
+        return parent
+
+    raise Http404
 
 
 def get_visible_revision_or_404(user, **kwargs):
     return get_object_or_404(Revision.objects.visible(user, **kwargs))
-
-
-def get_visible_document_or_fallback_or_404(user, locale, slug):
-    """Return a document with its fallback code, or 404."""
-    try:
-        return (Document.objects.get_visible(user, locale=locale, slug=slug), None)
-    except Document.DoesNotExist:
-        if locale == settings.WIKI_DEFAULT_LANGUAGE:
-            # Don't repeat the query if it's going to be the same one we just tried.
-            raise Http404
-        # No visible document exists in the requested locale so let's try the default locale.
-        parent = get_visible_document_or_404(
-            user, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=slug
-        )
-        # If there's a visible translation to the requested locale, redirect to it.
-        if translation := parent.translated_to(locale, visible_for_user=user):
-            return (translation, FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG)
-        return (parent, FallbackCodes.NO_TRANSLATION)

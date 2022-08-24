@@ -67,12 +67,7 @@ from kitsune.wiki.tasks import (
     send_contributor_notification,
     send_reviewed_notification,
 )
-from kitsune.wiki.utils import (
-    FallbackCodes,
-    get_visible_document_or_404,
-    get_visible_document_or_fallback_or_404,
-    get_visible_revision_or_404,
-)
+from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
 
 
 log = logging.getLogger("k.wiki")
@@ -124,16 +119,21 @@ def document(request, document_slug, document=None):
     fallback_reason = None
     full_locale_name = None
 
-    doc, fallback_code = get_visible_document_or_fallback_or_404(
-        request.user, request.LANGUAGE_CODE, document_slug
+    doc = get_visible_document_or_404(
+        request.user,
+        locale=request.LANGUAGE_CODE,
+        slug=document_slug,
+        look_for_translation_via_parent=True,
+        return_parent_if_no_translation=True,
     )
 
-    if fallback_code is FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG:
+    if doc.slug != document_slug:
+        # We've found the translation at a different slug.
         url = doc.get_absolute_url()
         url = urlparams(url, query_dict=request.GET)
         return HttpResponseRedirect(url)
 
-    if fallback_code is FallbackCodes.NO_TRANSLATION:
+    if doc.locale != request.LANGUAGE_CODE:
         # The "doc" is the parent document.
         if doc.current_revision:
             # There is no translation, so we'll fall back to its approved parent,
@@ -438,11 +438,16 @@ def edit_document(request, document_slug, revision_id=None):
     """Create a new revision of a wiki document, or edit document metadata."""
     user = request.user
 
-    doc, fallback_code = get_visible_document_or_fallback_or_404(
-        user, request.LANGUAGE_CODE, document_slug
+    doc = get_visible_document_or_404(
+        user,
+        locale=request.LANGUAGE_CODE,
+        slug=document_slug,
+        look_for_translation_via_parent=True,
+        return_parent_if_no_translation=True,
     )
 
-    if fallback_code is FallbackCodes.NO_TRANSLATION:
+    if doc.locale != request.LANGUAGE_CODE:
+        # We've fallen back to the parent, since no visible translation existed.
         url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
         return HttpResponseRedirect(url)
 
@@ -592,16 +597,17 @@ def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
     locale = request.GET.get("locale", request.LANGUAGE_CODE)
 
-    doc, fallback_code = get_visible_document_or_fallback_or_404(
-        request.user, locale, document_slug
+    doc = get_visible_document_or_404(
+        request.user,
+        locale=locale,
+        slug=document_slug,
+        look_for_translation_via_parent=True,
     )
 
-    if fallback_code is FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG:
+    if doc.slug != document_slug:
+        # We've found the translation at a different slug.
         url = reverse("wiki.document_revisions", args=[doc.slug], locale=locale)
         return HttpResponseRedirect(url)
-
-    if fallback_code is FallbackCodes.NO_TRANSLATION:
-        raise Http404
 
     revs = Revision.objects.filter(document=doc).order_by("-created", "-id")
 
@@ -1613,16 +1619,17 @@ def what_links_here(request, document_slug):
     """List all documents that link to a document."""
     locale = request.GET.get("locale", request.LANGUAGE_CODE)
 
-    doc, fallback_code = get_visible_document_or_fallback_or_404(
-        request.user, locale, document_slug
+    doc = get_visible_document_or_404(
+        request.user,
+        locale=locale,
+        slug=document_slug,
+        look_for_translation_via_parent=True,
     )
 
-    if fallback_code is FallbackCodes.TRANSLATION_AT_DIFFERENT_SLUG:
+    if doc.slug != document_slug:
+        # We've found the translation at a different slug.
         url = reverse("wiki.what_links_here", args=[doc.slug], locale=locale)
         return HttpResponseRedirect(url)
-
-    if fallback_code is FallbackCodes.NO_TRANSLATION:
-        raise Http404
 
     links = {}
     for link_to in doc.links_to():
