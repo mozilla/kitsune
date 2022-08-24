@@ -284,7 +284,7 @@ export function linkCrashIds(container) {
     return;
   }
   var crashIDRegex = new RegExp('(bp-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})', 'g');
-  var crashStatsBase = 'https://crash-stats.mozilla.com/report/index/';
+  var crashStatsBase = 'https://crash-stats.mozilla.org/report/index/';
   var helpingWithCrashesArticle = '/kb/helping-crashes';
   var crashReportContainer =
   "<span class='crash-report'>" +
