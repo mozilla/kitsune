@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Prefetch, Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from kitsune.dashboards import LAST_7_DAYS
@@ -148,8 +149,41 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     return random.sample(documents, 4)
 
 
-def get_visible_document_or_404(user, **kwargs):
-    return get_object_or_404(Document.objects.visible(user, **kwargs))
+def get_visible_document_or_404(
+    user, look_for_translation_via_parent=False, return_parent_if_no_translation=False, **kwargs
+):
+    """
+    Get the document specified by the keyword arguments and visible to the given user, or 404.
+    """
+    try:
+        return Document.objects.get_visible(user, **kwargs)
+    except Document.DoesNotExist:
+        pass
+
+    if (
+        not look_for_translation_via_parent
+        or not (locale := kwargs.get("locale"))
+        or (locale == settings.WIKI_DEFAULT_LANGUAGE)
+    ):
+        # We either don't want to try to find the translation via its parent, or it doesn't
+        # make sense, because we're not making a locale-specific request or the locale we're
+        # requesting is already the default locale.
+        raise Http404
+
+    # We couldn't find a visible translation in the requested non-default locale, so let's
+    # see if we can find a visible translation via its parent.
+    kwargs.update(locale=settings.WIKI_DEFAULT_LANGUAGE)
+    parent = get_object_or_404(Document.objects.visible(user, **kwargs))
+
+    # If there's a visible translation of the parent for the requested locale, return it.
+    if translation := parent.translated_to(locale, visible_for_user=user):
+        return translation
+
+    # Otherwise, we're left with the parent.
+    if return_parent_if_no_translation:
+        return parent
+
+    raise Http404
 
 
 def get_visible_revision_or_404(user, **kwargs):
