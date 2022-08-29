@@ -1,16 +1,6 @@
 from django import forms
 
-from kitsune.sumo.utils import check_for_spam_content
-
-TRUSTED_GROUPS = [
-    "Forum Moderators",
-    "Administrators",
-    "SUMO Locale Leaders",
-    "Knowledge Base Reviewers",
-    "Reviewers",
-    # Temporary workaround to exempt individual users if needed
-    "Escape Spam Filtering",
-]
+from kitsune.sumo.utils import check_for_spam_content, is_trusted_user
 
 
 class KitsuneBaseForumForm(forms.Form):
@@ -43,7 +33,7 @@ class KitsuneBaseForumForm(forms.Form):
 
         # Exclude moderators and trusted contributors
         if not (
-            self.user.groups.filter(name__in=TRUSTED_GROUPS).exists()
+            is_trusted_user(self.user)
             or self.user.has_perm("flagit.can_moderate")
             or self.user.has_perm("sumo.bypass_ratelimit")
         ) and check_for_spam_content(cdata):
