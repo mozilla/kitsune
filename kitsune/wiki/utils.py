@@ -178,14 +178,12 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     return random.sample(documents, 4)
 
 
-def get_visible_document_or_404(user, **kwargs):
+def get_visible_document_or_404(
+    user, look_for_translation_via_parent=False, return_parent_if_no_translation=False, **kwargs
+):
     """
     Get the document specified by the keyword arguments and visible to the given user, or 404.
     """
-
-    look_for_translation_via_parent = kwargs.pop("look_for_translation_via_parent", False)
-    return_parent_if_no_translation = kwargs.pop("return_parent_if_no_translation", False)
-
     try:
         return Document.objects.get_visible(user, **kwargs)
     except Document.DoesNotExist:
