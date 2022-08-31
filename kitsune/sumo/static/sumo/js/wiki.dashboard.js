@@ -41,7 +41,7 @@ import { getQueryParamsAsDict } from "sumo/js/main";
     }
 
     // product selector page reloading
-    $('#product-selector select').change(function() {
+    $('#product-selector select').on('change', function() {
       var val = $(this).val();
       var queryParams = getQueryParamsAsDict(document.location.toString());
 

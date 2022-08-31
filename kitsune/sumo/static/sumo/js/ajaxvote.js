@@ -59,7 +59,7 @@ export default function AjaxVote(form, options) {
                 self.showMessage(response.message, $btn, $form);
               }
               $btn.addClass('active');
-              $btns.removeAttr('disabled');
+              $btns.prop("disabled", false);
               $form.removeClass('busy');
               self.voted = true;
 
@@ -74,7 +74,7 @@ export default function AjaxVote(form, options) {
             error: function() {
               var msg = gettext('There was an error submitting your vote.');
               self.showMessage(msg, $btn);
-              $btns.removeAttr('disabled');
+              $btns.prop("disabled", false);
               $form.removeClass('busy');
             }
           });

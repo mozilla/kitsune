@@ -75,10 +75,10 @@
             var input = $(this);
             var placeholder = new Placeholder(input);
             placeholder.show(true);
-            input.focus(function() {
+            input.on('focus', function() {
                 placeholder.hide();
             });
-            input.blur(function() {
+            input.on('blur', function() {
                 placeholder.show(false);
             });
 
@@ -93,7 +93,7 @@
                 });
                 // What's even worse, the text cursor disappears
                 // when tabbing between text inputs, here's a fix
-                input.focus(function() {
+                input.on('focus', function() {
                     if(this.value == "") {
                         var range = this.createTextRange();
                         range.collapse(true);

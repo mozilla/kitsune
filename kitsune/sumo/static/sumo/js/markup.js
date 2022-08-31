@@ -324,7 +324,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
       selectedText = me.getSelectedText(),
       kbox;
 
-    $html.find('li input[type="text"]').focus(function() {
+    $html.find('li input[type="text"]').on('focus', function() {
       $(this).closest('li').find('input[type="radio"]').trigger("click");
     });
 
@@ -596,7 +596,7 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     });
 
     // Handle Search
-    $html.find('form#gallery-modal-search').on("submit", function(e) {
+    $html.find('form#gallery-modal-search').on('submit', function(e) {
       mediaQ = $html.find('input[name="q"]').val();
       mediaPage = 1;
       updateResults();
@@ -650,7 +650,7 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         dataType: 'html',
         success: function(html) {
           $html.find('div.placeholder').html(html);
-          $html.find('#media-list > li').on("click", function(e) {
+          $html.find('#media-list > li').on('click', function(e) {
             var $this = $(this),
               $mediaList = $(this).parent();
             $mediaList.find('li.selected').removeClass('selected');
@@ -973,7 +973,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
       kbox.close();
     });
 
-    $html.find('#filter-responses-field').keyup(function() {
+    $html.find('#filter-responses-field').on('keyup', function() {
       var term = $(this).val();
       searchResponses(term);
     });

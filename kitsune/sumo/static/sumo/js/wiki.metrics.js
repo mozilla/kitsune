@@ -31,14 +31,14 @@ import trackEvent from "sumo/js/analytics";
     });
 
     // Track showfor changes in Google Analytics:
-    $('#os').change(function() {
+    $('#os').on('change', function() {
       trackEvent('ShowFor Switch',
                  'OS - ' + $(this).val(),
                  getEnglishSlug() + ' / ' + getLocale());
 
     });
 
-    $('#browser').change(function() {
+    $('#browser').on('change', function() {
       trackEvent(
         'ShowFor Switch',
         'Version - ' + $(this).val(),

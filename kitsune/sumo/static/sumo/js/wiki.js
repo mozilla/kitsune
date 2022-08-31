@@ -23,7 +23,7 @@ import ShowFor from "sumo/js/showfor";
   function init() {
     var $body = $('body');
 
-    $('select.enable-if-js').removeAttr('disabled');
+    $('select.enable-if-js').prop("disabled", false);
 
     initPrepopulatedSlugs();
     initDetailsTags();
@@ -35,12 +35,12 @@ import ShowFor from "sumo/js/showfor";
       $('img.lazy').loadnow();
 
       // We can enable the buttons now.
-      $('#actions input').removeAttr('disabled');
+      $('#actions input').prop("disabled", false);
     }
 
     if ($body.is('.edit, .new, .translate')) { // Document form page
       // Submit form
-      $('#id_comment').keypress(function(e) {
+      $('#id_comment').on('keypress', function(e) {
         if (e.which === 13) {
           $(this).trigger('blur');
           $(this).closest('form').find('[type=submit]').trigger('click');
@@ -60,7 +60,7 @@ import ShowFor from "sumo/js/showfor";
       $('img.lazy').loadnow();
 
       // We can enable the buttons now.
-      $('.submit input').removeAttr('disabled');
+      $('.submit input').prop("disabled", false);
     }
 
     if ($body.is('.translate')) {  // Translate page
@@ -154,14 +154,14 @@ import ShowFor from "sumo/js/showfor";
           $detailsSummary.focus();
           // Toggle the `open` attribute of the `details` element
           if (typeof $details.attr('open') !== 'undefined') {
-            $details.removeAttr('open');
+            $details.prop('open', false);
           } else {
             $details.attr('open', 'open');
           }
           // Toggle the additional information in the `details` element
           $detailsNotSummary.slideToggle();
           $details.toggleClass('open');
-        }).keyup(function(event) {
+        }).on('keyup', function(event) {
           if (event.keyCode === 13 || event.keyCode === 32) {
             // Enter or Space is pressed -- trigger the `click` event on the `summary` element
             // Opera already seems to trigger the `click` event when Enter is pressed
@@ -214,7 +214,7 @@ import ShowFor from "sumo/js/showfor";
       };
 
     updateCount();
-    $summaryBox.bind('input', updateCount);
+    $summaryBox.on('input', updateCount);
   }
 
   /*
@@ -227,11 +227,11 @@ import ShowFor from "sumo/js/showfor";
         contentElement: $('#id_content'),
         previewElement: $preview
       });
-    $(preview).bind('done', function(e, success) {
+    $(preview).on('done', function(e, success) {
       if (success) {
         $previewBottom.show();
         new ShowFor();
-        $preview.find('select.enable-if-js').removeAttr('disabled');
+        $preview.find('select.enable-if-js').prop("disabled", false);
         $preview.find('.kbox').kbox();
         $('#preview-diff .output').empty();
       }
@@ -253,7 +253,7 @@ import ShowFor from "sumo/js/showfor";
   }
 
   function initTitleAndSlugCheck() {
-    $('#id_title').change(function() {
+    $('#id_title').on('change', function() {
       var $this = $(this),
         $form = $this.closest('form'),
         title = $this.val(),
@@ -263,7 +263,7 @@ import ShowFor from "sumo/js/showfor";
       // off change event.
       verifySlugUnique(slug, $form);
     });
-    $('#id_slug').change(function() {
+    $('#id_slug').on('change', function() {
       var $this = $(this),
         $form = $this.closest('form'),
         slug = $('#id_slug').val();
@@ -332,13 +332,13 @@ import ShowFor from "sumo/js/showfor";
         // Add this here because the "Submit for Review" button is
         // a submit button that triggers validation and fails
         // because the modal hasn't been displayed yet.
-        $modal.find('#id_comment').attr('required', true);
+        $modal.find('#id_comment').prop('required', true);
         return true;
       },
       preClose: function() {
         // Remove the required attribute so validation doesn't
         // fail after clicking cancel.
-        $modal.find('#id_comment').removeAttr('required');
+        $modal.find('#id_comment').prop('required', false);
         return true;
       }
     });
@@ -433,16 +433,16 @@ import ShowFor from "sumo/js/showfor";
 
     if ($checkbox.length > 0) {
       updateComment();
-      $checkbox.change(updateComment);
+      $checkbox.on('change', updateComment);
     }
 
     function updateComment() {
       if ($checkbox.is(':checked')) {
         $comment.slideDown();
-        $comment.find('textarea').attr('required', 'required');
+        $comment.find('textarea').prop('required', true);
       } else {
         $comment.hide();
-        $comment.find('textarea').removeAttr('required');
+        $comment.find('textarea').prop('required', false);
       }
     }
   }
@@ -488,7 +488,6 @@ import ShowFor from "sumo/js/showfor";
       if (!currentEditor) {
         return;
       }
-
       var content = $('#id_content').val();
       currentEditor.setValue(content);
     };
@@ -526,7 +525,7 @@ import ShowFor from "sumo/js/showfor";
       });
       window.highlighting.editor = cm_editor;
 
-      $('#id_content').bind('keyup', updateHighlightingEditor);
+      $('#id_content').on('keyup', updateHighlightingEditor);
       updateHighlightingEditor();
 
       cm_editor.on('change', function(e) {

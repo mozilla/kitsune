@@ -9,7 +9,7 @@ import trackEvent from "sumo/js/analytics";
     initFolding();
     initAnnouncements();
 
-    $('#delete-profile-username-input').keyup(function(ev) {
+    $('#delete-profile-username-input').on('keyup', function(ev) {
       var username = $('#delete-profile-username').val();
       var inputUsername = $('#delete-profile-username-input').val();
       if (inputUsername === username) {
