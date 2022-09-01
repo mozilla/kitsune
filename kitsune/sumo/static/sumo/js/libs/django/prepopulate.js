@@ -19,7 +19,7 @@ import { URLify } from "./urlify";
             var field = $(this);
 
             field.data('_changed', false);
-            field.change(function() {
+            field.on('change', function() {
                 field.data('_changed', true);
             });
 
@@ -40,7 +40,7 @@ import { URLify } from "./urlify";
             };
 
             //rlr: Changed behavior to only run populate on the change event
-            dependencies/*.keyup(populate)*/.change(populate)/*.focus(populate)*/;
+            dependencies/*.on('keyup', populate)*/.on('change', populate)/*.focus(populate)*/;
         });
     };
 })(jQuery);

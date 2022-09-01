@@ -327,7 +327,7 @@ import "sumo/js/kbox";
       var self = this,
         type = $input.attr('name');
       // Cancel existing upload.
-      $('.progress.' + type).find('a.' + type).trigger("click");
+      $('.progress.' + type).find('a.' + type).trigger('click');
       // Show an error message.
       self.setInputError($input, reason);
     },

@@ -13,13 +13,13 @@ $(function() {
     });
   });
 
-  $('select', cache_search_date).change(function () {
+  $('select', cache_search_date).trigger(function () {
     if ($(this).val() === 0) {
       $('input', $(this).parent()).hide();
     } else {
       $('input', $(this).parent()).show();
     }
-  }).change();
+  }).trigger();
 
   switch (parseInt($('#where').text(), 10)) {
     case 4:

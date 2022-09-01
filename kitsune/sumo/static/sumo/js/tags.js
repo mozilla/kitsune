@@ -94,7 +94,7 @@ import _keys from "underscore/modules/keys";
 
         // keyup isn't triggered by pasting into the field. FWIW,
         // Google Suggest also punts on this.
-        $input.keyup(tender);
+        $input.on('keyup', tender);
         $input.bind('autocompletechange', tender);
       }
     );

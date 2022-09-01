@@ -12,7 +12,7 @@
         var didScroll = false;
         var loaded = elements.length;
 
-        $(window).bind('scroll', function(e){
+        $(window).on('scroll', function(e){
             didScroll = true;
         });
 
