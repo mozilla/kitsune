@@ -515,7 +515,7 @@ import ShowFor from "sumo/js/showfor";
     editor_wrapper.append(editor);
     $('#id_content').after(switch_link).after(editor_wrapper).hide();
 
-    window.addEventListener('load', function() {
+    document.addEventListener('DOMContentLoaded', function() {
       var cm_editor = CodeMirror(document.getElementById('editor'), {
         mode: { 'name': 'sumo' },
         value: $('#id_content').val(),
@@ -707,7 +707,7 @@ import ShowFor from "sumo/js/showfor";
     });
   }
 
-  $(init);
+  init();
 
   function makeWikiCollapsable() {
     // Hide the TOC
