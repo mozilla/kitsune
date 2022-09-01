@@ -197,7 +197,7 @@ KBox.prototype = {
           self.close();
         }
       };
-      $(document).keypress(self.keypressHandler);
+      $(document).on('keypress', self.keypressHandler);
     }
 
     // Handle outside clicks

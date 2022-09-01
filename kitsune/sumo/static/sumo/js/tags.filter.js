@@ -29,9 +29,9 @@ function init($container) {
 
   // Disable button while text input is empty.
   $btn.attr('disabled', 'disabled');
-  $tags.keyup(function() {
+  $tags.on('keyup', function() {
     if ($tags.val()) {
-      $btn.removeAttr('disabled');
+      $btn.prop("disabled", false);
     } else {
       $btn.attr('disabled', 'disabled');
     }

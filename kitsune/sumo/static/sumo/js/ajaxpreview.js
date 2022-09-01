@@ -75,7 +75,7 @@ export default function AjaxPreview(el, options) {
         if (changeHash) {
           document.location.hash = $preview.attr('id');
         }
-        $btn.removeAttr('disabled');
+        $btn.prop("disabled", false);
         $(self).trigger('done', [success]);
       });
     }

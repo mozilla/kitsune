@@ -148,8 +148,8 @@ window.addEventListener('popstate', function() {
   * Initialize some selects so that they auto-submit on change.
   */
 function initAutoSubmitSelects() {
-  $('select.autosubmit').change(function() {
-    $(this).closest('form').submit();
+  $('select.autosubmit').on('change keyup', function() {
+    $(this).closest('form').trigger('submit');
   });
 }
 
