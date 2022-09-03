@@ -16,7 +16,7 @@
         <p class="mb-0"><strong>{{ user.email }}</strong></p>
         <p>
           {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
-            To change your email or avatar, visit the Firefox Accounts page, {{ a_open }} learn more. {{ a_close }}
+            To change your email or avatar, visit the Firefox Accounts page. {{ a_open }} Learn more. {{ a_close }}
           {% endtrans %}
         </p>
         <section class="avatar-group">
@@ -45,8 +45,8 @@
         <p>
           {% if is_owner %}
             {% trans a_open='<a href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
-              Your privacy is important to us, your username is always visible to the public,
-              if you would like to edit your username {{ a_open }} click here. {{ a_close }}
+              Your privacy is important to us. Your username is always visible to the public -
+              if you would like to edit your username, {{ a_open }} click here. {{ a_close }}
             {% endtrans %}
           {% endif %}
         </p>
