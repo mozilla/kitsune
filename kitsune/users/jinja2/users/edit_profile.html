@@ -28,7 +28,7 @@
     <p class="mb-0"><strong>{{ user.email }}</strong></p>
     <p>
       {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
-        To change your email or avatar, visit the Firefox Accounts page, {{ a_open }} learn more. {{ a_close }}
+        To change your email or avatar, visit the Firefox Accounts page. {{ a_open }} Learn more. {{ a_close }}
       {% endtrans %}
     </p>
 
@@ -92,7 +92,7 @@
       <form method="post" action="{{ url('users.close_account') }}">
         {% csrf_token %}
         <p>
-          {{ _('Deleting your account will prevent you from answering or posting questions in Mozilla Support. This action will clear your profile and cannot be restored again.') }}
+          {{ _('Deleting your account will prevent you from answering or posting questions in Mozilla Support. This action will clear your profile and cannot be undone.') }}
         </p>
         <p>
           {{ _('Please type in your username to confirm') }}
