@@ -493,7 +493,7 @@ Marky.LinkButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     if (selectedText) {
       // If there user has selected text, lets default to it being
       // the Article Title.
-      $html.find('input[name="internal"]').val(selectedText).focus();
+      $html.find('input[name="internal"]').val(selectedText).trigger("focus");
     }
 
     kbox = new KBox($html, {
@@ -557,12 +557,12 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
           '<span>' + gettext('Show:') + '</span>' +
           '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
           '<li data-type="video">' + gettext('Videos') + '</li></ol></div>' +
-          '<div class="locale-filter">' + gettext('Show media for:') + ' <select /></div></div>' +
-          '<div class="placeholder" /><div class="submit sumo-button-wrap reverse-on-desktop align-end">' +
+          '<div class="locale-filter">' + gettext('Show media for:') + ' <select></select></div></div>' +
+          '<div class="placeholder"><div class="submit sumo-button-wrap reverse-on-desktop align-end">' +
           '<button class="sumo-button primary-button">' + gettext('Insert Media') + '</button>' +
           '<a href="' + galleryUrl + '#upload" class="upload sumo-button secondary-button" target="_blank">' +
           gettext('Upload Media') + '</a>' +
-          '<a href="#cancel" class="kbox-cancel sumo-button push-left">' + gettext('Cancel') + '</a></div>' +
+          '<a href="#cancel" class="kbox-cancel sumo-button push-left">' + gettext('Cancel') + '</a></div></div>' +
           '</section>'
       ),
       selectedText = me.getSelectedText(),
@@ -650,9 +650,9 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
         dataType: 'html',
         success: function(html) {
           $html.find('div.placeholder').html(html);
-          $html.find('#media-list > li').on('click', function(e) {
-            var $this = $(this),
-              $mediaList = $(this).parent();
+          $html.find('#media-list > li').on("click", function(e) {
+            let $this = $(this);
+            let $mediaList = $(this).parent();
             $mediaList.find('li.selected').removeClass('selected');
             $this.addClass('selected');
             e.preventDefault();
