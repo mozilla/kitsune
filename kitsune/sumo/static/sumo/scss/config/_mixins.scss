@@ -1,10 +1,11 @@
 @use './color-swatches';
 @use '@mozilla-protocol/core/protocol/css/includes/lib' as p;
 @use 'sass:map';
+@use 'sass:math';
 
 // Think in pixels, but use rems. Takes a whole number.
 @function rem-calc($size, $multiplier:1) {
-  $remSize: $size / 16 * $multiplier;
+  $remSize: math.div($pixels, 16px) * $multiplier;
   @return #{$remSize}rem;
 }
 
@@ -113,7 +114,7 @@
   $encoded: '';
   $slice: 2000;
   $index: 0;
-  $loops: ceil(str-length($svg)/$slice);
+  $loops: ceil(math.div(str-length($svg), $slice));
 
   @for $i from 1 through $loops {
     $chunk: str-slice($svg, $index, $index + $slice - 1);
