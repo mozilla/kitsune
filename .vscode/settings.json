@@ -11,7 +11,8 @@
     "python.linting.pylintArgs": [
         "--disable=C0111",
         "--enable=W0614",
-        "--load-plugins=pylint_django"
+        "--load-plugins=pylint_django",
+        "--django-settings-module=kitsune.settings"
     ],
     "python.autoComplete.extraPaths": [
         "/vendor"
