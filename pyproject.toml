@@ -108,6 +108,7 @@ recommonmark = "^0.7.1"
 sphinx-rtd-theme = "^1.0.0"
 sphinxcontrib-httpdomain = "^1.8.0"
 tabulate = "^0.8.9"
+pylint-django = "^2.5.3"
 
 
 [build-system]
