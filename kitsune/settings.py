@@ -5,7 +5,6 @@ import logging
 import os
 import platform
 import re
-from datetime import date
 
 import dj_database_url
 import django_cache_url
@@ -430,6 +429,7 @@ _CONTEXT_PROCESSORS = [
 TEMPLATES = [
     {
         "BACKEND": "django_jinja.backend.Jinja2",
+        "NAME": "jinja2",
         "DIRS": [
             path("dist"),
         ],
@@ -444,15 +444,16 @@ TEMPLATES = [
             "context_processors": _CONTEXT_PROCESSORS,
             "undefined": "jinja2.Undefined",
             "extensions": [
-                "puente.ext.i18n",
                 "waffle.jinja.WaffleExtension",
-                "jinja2.ext.autoescape",
-                "jinja2.ext.with_",
                 "jinja2.ext.do",
                 "django_jinja.builtins.extensions.CsrfExtension",
                 "django_jinja.builtins.extensions.StaticFilesExtension",
                 "django_jinja.builtins.extensions.DjangoFiltersExtension",
+                "jinja2.ext.i18n",
             ],
+            "policies": {
+                "ext.i18n.trimmed": True,
+            },
         },
     },
     {
@@ -630,7 +631,6 @@ INSTALLED_APPS = (
     "mozilla_django_oidc",
     "corsheaders",
     "kitsune.users",
-    "puente",
     "authority",
     "waffle",
     "storages",
@@ -685,7 +685,7 @@ INSTALLED_APPS = (
 def JINJA_CONFIG():
     config = {
         "extensions": [
-            "puente.ext.i18n",
+            "jinja2.ext.i18n",
         ],
         "finalize": lambda x: x if x is not None else "",
         "autoescape": True,
@@ -693,33 +693,6 @@ def JINJA_CONFIG():
 
     return config
 
-
-# Tells the extract script what files to look for l10n in and what
-# function handles the extraction. Puente expects this.
-PUENTE = {
-    "BASE_DIR": ROOT,
-    "DOMAIN_METHODS": {
-        "django": [
-            ("kitsune/forums/**.py", "ignore"),
-            ("kitsune/forums/**.html", "ignore"),
-            ("kitsune/**/tests/**.py", "ignore"),
-            ("kitsune/**/management/**.py", "ignore"),
-            ("kitsune/forums/**.lhtml", "ignore"),
-            ("kitsune/**.py", "python"),
-            ("kitsune/**/templates/**.html", "jinja2"),
-            ("kitsune/**/jinja2/**.html", "jinja2"),
-            ("kitsune/**/jinja2/**.lhtml", "jinja2"),
-            ("kitsune/**/jinja2/**.ltxt", "jinja2"),
-        ],
-        "djangojs": [
-            # We can't say **.js because that would dive into any libraries.
-            ("kitsune/**/static/**/js/*-all.js", "ignore"),
-            ("kitsune/**/static/**/js/*-min.js", "ignore"),
-            ("kitsune/**/static/**/js/*.js", "javascript"),
-            ("kitsune/**/static/**/tpl/**.njk", "jinja2"),
-        ],
-    },
-}
 
 # These domains will not be merged into messages.pot and will use
 # separate PO files. See the following URL for an example of how to

@@ -103,7 +103,7 @@ class ErrorListTests(MockRequestTests):
         source = (
             """{% from "layout/errorlist.html" import errorlist %}""" """{{ errorlist(form) }}"""
         )
-        template = template_engines["backend"].from_string(source)
+        template = template_engines["jinja2"].from_string(source)
         html = template.render({"form": MockForm()})
         assert '<"evil&ness' not in html
         assert "&lt;&#34;evil&amp;ness-field&#34;&gt;" in html

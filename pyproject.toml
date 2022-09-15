@@ -84,6 +84,7 @@ PyMySQL = "^1.0.2"
 django-csp = "^3.7"
 oauthlib = "^3.2.1"
 protobuf = "3.19.5"
+Babel = "2.10"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"
