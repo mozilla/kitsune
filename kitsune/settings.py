@@ -446,6 +446,8 @@ TEMPLATES = [
             "extensions": [
                 "waffle.jinja.WaffleExtension",
                 "jinja2.ext.do",
+                "jinja2.ext.autoescape",
+                "jinja2.ext.with_",
                 "django_jinja.builtins.extensions.CsrfExtension",
                 "django_jinja.builtins.extensions.StaticFilesExtension",
                 "django_jinja.builtins.extensions.DjangoFiltersExtension",
