@@ -1224,4 +1224,5 @@ TRUSTED_GROUPS = [
     "Reviewers",
     # Temporary workaround to exempt individual users if needed
     "Escape Spam Filtering",
+    "Trusted Contributors",
 ]
