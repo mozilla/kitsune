@@ -38,6 +38,7 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
     alb.ingress.kubernetes.io/tags: "environment={{ kubernetes.target_environment }},project=sumo"
+    alb.ingress.kubernetes.io/load-balancer-attributes: "{{ kubernetes.load_balancer_attributes }}"
 spec:
   ingressClassName: alb
   rules:
