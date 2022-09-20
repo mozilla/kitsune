@@ -174,24 +174,18 @@ kubectl -n sumo-prod apply -f ./some-secret.yaml
 
 ### New Relic
 
--   [Primary region, A + B "rollup view"](https://rpm.newrelic.com/accounts/1299394/applications/55558271)
+-   [Primary region](https://onenr.io/0MRNqKbP8wn)
 
     -   `sumo-prod-oregon`
 
--   [Primary cluster A](https://rpm.newrelic.com/accounts/1299394/applications/45098028)
-    -   `sumo-prod-oregon-a`
--   [Primary cluster B](https://rpm.newrelic.com/accounts/1299394/applications/45097089)
-    -   `sumo-prod-oregon-b`
--   [Failover region](https://rpm.newrelic.com/accounts/1299394/applications/45103938)
+-   [Failover region](https://onenr.io/0qwyem31Gwn)
     -   `sumo-prod-frankfurt`
 
 ### Papertrail
 
 All pod output is logged to Papertrail.
 
--   [Oregon-a](https://papertrailapp.com/groups/8137172/events)
--   [Oregon-b](https://papertrailapp.com/groups/6778452/events)
-    -   combined Oregon-A | Oregon-B output can be viewed in the `All Systems` log destination with custom filters.
+-   [Oregon](https://my.papertrailapp.com/groups/13629141/events)
 -   [Frankfurt](https://papertrailapp.com/groups/5458941/events)
 
 ### elastic.co
@@ -202,25 +196,18 @@ Our hosted Elasticsearch cluster is in the `us-west-2` region of AWS. Elastic.co
 
 ### Cronjobs
 
-The `sumo-prod-cron` deployment is a self-contained Python cron system that **_runs in only one of the primary clusters_**.
+The `sumo-prod-cron` deployment is a self-contained Python cron system that runs in both Primary and Failover clusters.
 
 ```
- # Oregon-A
+ # Oregon
 kubectl -n sumo-prod get deployments
 NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 sumo-prod-celery   3         3         3            3           330d
 sumo-prod-cron     1         1         1            1           330d
 sumo-prod-web      25        25        25           25          331d
-
-# Oregon-B
-kubectl -n sumo-prod get deployments
-NAME               DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
-sumo-prod-celery   3         3         3            3           330d
-sumo-prod-cron     0         0         0            0           330d
-sumo-prod-web      50        50        50           50          331d
 ```
 
-### Manually adding/removing K8s Oregon-A/B/Frankfurt cluster nodes
+### Manually adding/removing K8s Oregon/Frankfurt cluster nodes
 
 > If you are modifying the Frankfurt cluster, replace instances of `oregon-*` below with `frankfurt`.
 
@@ -248,7 +235,7 @@ watch 'kubectl get nodes | tail -n +2 | grep -v main | wc -l'
 2. ensure you are in the `Oregon` region
 3. search for and select the `VPC` service in the AWS console
 4. select `Network ACLs` from the navigation on the left side of the page
-5. select the row containing the `Oregon-a and b` VPC
+5. select the row containing the `Oregon` VPC
 6. click on the `Inbound Rules` tab
 7. click `Edit`
 8. click `Add another rule`
@@ -263,7 +250,7 @@ There are limits that apply to using VPC ACLs documented [here](http://docs.aws.
 
 ### Manually Initiating Cluster failover
 
-> Note: Route 53 will provide automated cluster failover, these docs cover things to consider if there is a catastrophic failure in Oregon-A and B and Frankfurt must be promoted to primary rather than a read-only failover.
+> Note: Route 53 will provide automated cluster failover, these docs cover things to consider if there is a catastrophic failure in Oregon and Frankfurt must be promoted to primary rather than a read-only failover.
 
 -   **verify the Frankfurt read replica**
     -   `eu-central-1` (Frankfurt) has a read-replica of the SUMO production database
@@ -280,19 +267,7 @@ There are limits that apply to using VPC ACLs documented [here](http://docs.aws.
 -   Most MySQL changes should already be replicated to the read-replica, however, if you're reading this, chances are things are broken. Ensure that the DB schema is correct for the iamges you're deploying.
 -   **scale cluster and pods**
 
-    -   the prod deployments [A](https://github.com/mozilla/kitsune/blob/main/k8s/regions/oregon-a/prod.yaml#L24-L48) and [B](https://github.com/mozilla/kitsune/blob/main/k8s/regions/oregon-b/prod.yaml#L24-L48) yaml contain the correct number of replicas, but here are some safe values to use in an emergency:
-
-        ```
-        # Oregon A - ALSO runs cron pod
-        kubectl -n sumo-prod scale --replicas=50 deployment/sumo-prod-web
-        kubectl -n sumo-prod scale --replicas=3 deployment/sumo-prod-celery
-        kubectl -n sumo-prod scale --replicas=1 deployment/sumo-prod-cron
-
-        # Oregon B - Does NOT run cron pod
-        kubectl -n sumo-prod scale --replicas=50 deployment/sumo-prod-web
-        kubectl -n sumo-prod scale --replicas=3 deployment/sumo-prod-celery
-        kubectl -n sumo-prod scale --replicas=0 deployment/sumo-prod-cron
-        ```
+    -   the prod deployments [A](https://github.com/mozilla/kitsune/blob/main/k8s/regions/oregon/prod.yaml#L24-L48) yaml contain the correct number of replicas, but here are some safe values to use in an emergency:
 
 -   **DNS**
     -   point the `prod-tp.sumo.mozit.cloud` traffic policy at the Frankfurt ELB
