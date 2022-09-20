@@ -46,6 +46,8 @@ kubernetes:
                 period_seconds: 5
                 success_threshold: 1
                 timeout_seconds: 5
+    load_balancer_attributes: "access_logs.s3.enabled=false"
+
 app:
     allowed_cidr_nets: SECRET
     allowed_hosts: ".sumo.mozit.cloud,support-dev.allizom.org"
