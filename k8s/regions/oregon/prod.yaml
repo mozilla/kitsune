@@ -11,7 +11,7 @@ kubernetes:
         pull_policy: "Always"
     # default values
     limits:
-        memory_request: 384Mi
+        memory_request: 1Gi
         memory_limit: 2Gi
         cpu_request: 250m
         cpu_limit: 1000m
