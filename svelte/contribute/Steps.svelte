@@ -1,4 +1,5 @@
 <script>
+    import Linkable from "./Linkable.svelte";
     import { gettext } from "../utils";
 
     export let steps = [];
@@ -10,8 +11,18 @@
 
     <div class="wrapper">
         <ol>
-            <li>{gettext("Sign up as a volunteer")}</li>
-            <li>{gettext("Learn basic guidelines")}</li>
+            <li>
+                <Linkable link={"https://support.mozilla.org/"}>
+                    {gettext("Sign up as a volunteer")}
+                </Linkable>
+            </li>
+            <li>
+                <Linkable
+                    link={"https://support.mozilla.org/kb/mozilla-support-rules-guidelines"}
+                >
+                    {gettext("Learn basic guidelines")}
+                </Linkable>
+            </li>
             {#each steps as step}
                 <li>{step}</li>
             {/each}
