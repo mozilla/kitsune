@@ -82,6 +82,7 @@ cffi = "^1.15.0"
 django-mozilla-product-details = "^1.0.1"
 PyMySQL = "^1.0.2"
 django-csp = "^3.7"
+oauthlib = "^3.2.1"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"
