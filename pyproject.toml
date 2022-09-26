@@ -86,6 +86,7 @@ protobuf = "3.19.5"
 Babel = "2.10.3"
 Jinja2 = "^3.1.2"
 pip = "22.2.2"
+graphene-django = "~3.0.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"
