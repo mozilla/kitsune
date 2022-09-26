@@ -85,6 +85,7 @@ django-csp = "^3.7"
 oauthlib = "^3.2.1"
 protobuf = "3.19.5"
 pip = "22.2.2"
+graphene-django = "~3.0.0"
 
 [tool.poetry.dev-dependencies]
 ipdb = "^0.13.9"
