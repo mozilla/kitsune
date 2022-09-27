@@ -404,6 +404,7 @@ SUPPORTED_NONLOCALES = (
     "healthz",
     "readiness",
     "__debug__",
+    "graphql",
 )
 
 # Make this unique, and don't share it with anybody.
@@ -624,6 +625,7 @@ INSTALLED_APPS = (
     "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "graphene_django",
     "mozilla_django_oidc",
     "corsheaders",
     "kitsune.users",
@@ -1171,6 +1173,7 @@ CSP_SCRIPT_SRC = (
     "https://*.google-analytics.com",
     "https://*.googletagmanager.com",
     "https://pontoon.mozilla.org",
+    "https://*.jsdelivr.net",
 )
 
 CSP_IMG_SRC = (
@@ -1204,6 +1207,7 @@ CSP_FONT_SRC = (
 CSP_STYLE_SRC = (
     "'self'",
     "https://*.itsre-sumo.mozilla.net",
+    "https://*.jsdelivr.net",
 )
 
 CSP_FORM_ACTION = ("'self'",)
@@ -1219,6 +1223,13 @@ CSP_CONNECT_SRC = (
     "https://location.services.mozilla.com",
 )
 
+if DEBUG:
+    CSP_STYLE_SRC += ("'unsafe-inline'",)
+    CSP_SCRIPT_SRC += (
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+    )
+
 # Trusted Contributor Groups
 TRUSTED_GROUPS = [
     "Forum Moderators",
@@ -1230,3 +1241,8 @@ TRUSTED_GROUPS = [
     "Escape Spam Filtering",
     "Trusted Contributors",
 ]
+
+# GraphQL configuration
+GRAPHENE = {
+    "SCHEMA": "kitsune.graphql.schema.schema",
+}

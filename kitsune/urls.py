@@ -1,8 +1,10 @@
 import authority
 from django.conf import settings
-from django.urls import include, re_path
+from django.urls import include, path, re_path
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
+from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
 
 from kitsune.sumo import views as sumo_views
@@ -64,6 +66,8 @@ urlpatterns = [
         servestatic,
         kwargs={"document_root": settings.ROOT},
     ),
+    # GraphiQL
+    path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
 ]
 
 # Handle 404 and 500 errors
