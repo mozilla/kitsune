@@ -1244,5 +1244,5 @@ TRUSTED_GROUPS = [
 
 # GraphQL configuration
 GRAPHENE = {
-    "SCHEMA": "kitsune.graphql.schema.schema",
+    "SCHEMA": "kitsune.schema.schema",
 }
