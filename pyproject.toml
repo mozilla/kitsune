@@ -45,7 +45,7 @@ python-dateutil = "^2.8.2"
 python-memcached = "^1.59"
 pytz = "^2021.3"
 redis = "^4.1.0"
-django-cors-headers = "^3.10.1"
+django-cors-headers = "^3.13.0"
 django-enforce-host = "^1.0.1"
 django-cache-url = "^3.2.3"
 django-authority = {git = "https://github.com/jazzband/django-authority.git"}
