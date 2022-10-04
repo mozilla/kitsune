@@ -26,6 +26,9 @@ class RedirectTestCase(TestCase):
         # Make sure Basque doesn't trigger the EU ballot logic.
         ("firefox/29.0/Darwin/eu/", "/eu/"),
         ("firefox/29.0/Darwin/eu", "/eu/"),
+        ("mobile/105.1.0/Android/iw/foo", "/he/"),
+        ("mobile/105.1.0/Android/iw-IL/foo", "/he/"),
+        ("mobile/105.1.0/Android/in/foo", "/id/"),
     )
 
     test_eu_urls = (
