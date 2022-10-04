@@ -652,7 +652,7 @@ Django = ">=2.2"
 
 [[package]]
 name = "django-jinja"
-version = "2.10.0"
+version = "2.10.2"
 description = "Jinja2 templating language integrated in Django."
 category = "main"
 optional = false
@@ -1179,11 +1179,11 @@ testing = ["Django (<3.1)", "colorama", "docopt", "pytest (<7.0.0)"]
 
 [[package]]
 name = "jinja2"
-version = "3.0.3"
+version = "3.1.2"
 description = "A very fast and expressive template engine."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 MarkupSafe = ">=2.0"

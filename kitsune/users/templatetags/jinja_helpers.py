@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils.translation import ugettext as _
 from django_jinja import library
-from jinja2 import Markup, escape
+from markupsafe import Markup, escape
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse

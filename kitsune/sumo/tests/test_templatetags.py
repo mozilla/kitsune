@@ -2,10 +2,10 @@
 from collections import namedtuple
 from datetime import datetime
 
-import jinja2
 from babel.dates import format_date, format_datetime, format_time
 from django.forms.fields import CharField
 from django.test.client import RequestFactory
+from markupsafe import Markup
 from pyquery import PyQuery as pq
 from pytz import timezone
 
@@ -248,7 +248,7 @@ class TestClassSelected(TestCase):
 
     def test_is_escaped(self):
         value_returned = class_selected(1, 1)
-        type_expected = jinja2.Markup
+        type_expected = Markup
         self.assertEqual(type(value_returned), type_expected)
 
     def test_is_selected(self):

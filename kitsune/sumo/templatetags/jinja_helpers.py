@@ -20,7 +20,7 @@ from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _lazy
 from django.utils.translation import ungettext
 from django_jinja import library
-from jinja2.utils import Markup
+from markupsafe import Markup, escape
 from pytz import timezone
 
 from kitsune.products.models import Product
@@ -52,17 +52,17 @@ def paginator(pager):
 
 @library.filter
 def simple_paginator(pager):
-    return jinja2.Markup(render_to_string("includes/simple_paginator.html", {"pager": pager}))
+    return Markup(render_to_string("includes/simple_paginator.html", {"pager": pager}))
 
 
 @library.filter
 def quick_paginator(pager):
-    return jinja2.Markup(render_to_string("includes/quick_paginator.html", {"pager": pager}))
+    return Markup(render_to_string("includes/quick_paginator.html", {"pager": pager}))
 
 
 @library.filter
 def mobile_paginator(pager):
-    return jinja2.Markup(render_to_string("includes/mobile/paginator.html", {"pager": pager}))
+    return Markup(render_to_string("includes/mobile/paginator.html", {"pager": pager}))
 
 
 @library.global_function
@@ -113,17 +113,17 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 
 @library.filter
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
-    """Wiki Markup -> HTML jinja2.Markup object"""
+    """Wiki Markup -> HTML Markup object"""
     if not wiki_markup:
         return ""
-    return jinja2.Markup(parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow))
+    return Markup(parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow))
 
 
 @library.filter
 def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
-    """Wiki Markup -> HTML jinja2.Markup object with limited tags"""
+    """Wiki Markup -> HTML Markup object with limited tags"""
     html = parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
-    return jinja2.Markup(
+    return Markup(
         bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)
     )
 
@@ -177,7 +177,7 @@ class Paginator(object):
 
     def render(self):
         c = {"pager": self.pager, "num_pages": self.num_pages, "count": self.count}
-        return jinja2.Markup(render_to_string("layout/paginator.html", c))
+        return Markup(render_to_string("layout/paginator.html", c))
 
 
 @jinja2.pass_context
@@ -203,7 +203,7 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
 
     c = {"breadcrumbs": crumbs, "id": id}
 
-    return jinja2.Markup(render_to_string("layout/breadcrumbs.html", c))
+    return Markup(render_to_string("layout/breadcrumbs.html", c))
 
 
 def _babel_locale(locale):
@@ -287,7 +287,7 @@ def datetimeformat(context, value, format="shortdatetime"):
         # Unknown format
         raise DateTimeFormatError
 
-    return jinja2.Markup('<time datetime="%s">%s</time>' % (convert_value.isoformat(), formatted))
+    return Markup('<time datetime="%s">%s</time>' % (convert_value.isoformat(), formatted))
 
 
 _whitespace_then_break = re.compile(r"[\r\n\t ]+[\r\n]+")
@@ -398,12 +398,12 @@ def label_with_help(f):
     """Print the label tag for a form field, including the help_text
     value as a title attribute."""
     label = '<label for="%s" title="%s">%s</label>'
-    return jinja2.Markup(label % (f.auto_id, f.help_text, f.label))
+    return Markup(label % (f.auto_id, f.help_text, f.label))
 
 
 @library.filter
 def yesno(boolean_value):
-    return jinja2.Markup(_lazy("Yes") if boolean_value else _lazy("No"))
+    return Markup(_lazy("Yes") if boolean_value else _lazy("No"))
 
 
 @library.filter
@@ -470,7 +470,7 @@ def class_selected(a, b):
     Return 'class="selected"' if a == b, otherwise return ''.
     """
     if a == b:
-        return jinja2.Markup('class="selected"')
+        return Markup('class="selected"')
     else:
         return ""
 
@@ -496,17 +496,17 @@ def f(format_string, *args, **kwargs):
 def fe(format_string, *args, **kwargs):
     """Format a safe string with potentially unsafe arguments. returns a safe string."""
 
-    args = [jinja2.escape(smart_text(v)) for v in args]
+    args = [escape(smart_text(v)) for v in args]
 
     for k in kwargs:
-        kwargs[k] = jinja2.escape(smart_text(kwargs[k]))
+        kwargs[k] = escape(smart_text(kwargs[k]))
 
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
         format_string = str(format_string)
 
-    return jinja2.Markup(format_string.format(*args, **kwargs))
+    return Markup(format_string.format(*args, **kwargs))
 
 
 @library.global_function

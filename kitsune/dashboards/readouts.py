@@ -15,7 +15,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
 from django.utils.translation import ugettext as _
-from jinja2 import Markup
+from markupsafe import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.questions.models import QuestionLocale
