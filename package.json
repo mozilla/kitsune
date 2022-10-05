@@ -27,7 +27,7 @@
     "webpack:build": "npx webpack build --config webpack.dev.js",
     "webpack:build:pre-render": "npx webpack build --config webpack.pre-render.js",
     "webpack:build:prod": "npx webpack build --config webpack.prod.js",
-    "webpack:watch": "npx concurrently npm:webpack:watch:*",
+    "webpack:watch": "env-cmd npx concurrently npm:webpack:watch:*",
     "webpack:watch:dev": "npx webpack watch --config webpack.dev.js",
     "webpack:watch:pre-render": "npx webpack watch --config webpack.pre-render.js",
     "webpack:test": "npx webpack build --config webpack.test.js && npx mocha --require ./webpack/mocha-require dist/tests.js"
@@ -35,8 +35,10 @@
   "license": "MPL-2.0",
   "dependencies": {
     "@babel/runtime": "^7.16.7",
+    "@urql/svelte": "^3.0.1",
     "codemirror": "^5.65.0",
     "d3": "^3.1.5",
+    "graphql": "^16.6.0",
     "jquery": "^3.6.0",
     "jquery-ui": "1.13.2",
     "nunjucks": "^3.2.3",
@@ -61,6 +63,7 @@
     "copy-webpack-plugin": "^10.2.0",
     "css-loader": "^6.5.1",
     "cssnano": "^5.0.14",
+    "env-cmd": "^10.1.0",
     "eslint": "^8.6.0",
     "eslint-import-resolver-webpack": "^0.13.2",
     "eslint-plugin-import": "^2.25.4",

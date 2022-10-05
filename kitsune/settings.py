@@ -1003,7 +1003,7 @@ if SHOW_DEBUG_TOOLBAR:
 ATOMIC_REQUESTS = config("ATOMIC_REQUESTS", default=True, cast=bool)
 
 # CORS Setup
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_URLS_REGEX = [
     r"^/api/1/gallery/.*$",
     r"^/api/1/kb/.*$",
@@ -1017,6 +1017,7 @@ CORS_URLS_REGEX = [
     r"^/api/2/realtime/.*$",
     r"^/api/2/search/.*$",
     r"^/api/2/user/.*$",
+    r"^/graphql/.*$",
 ]
 # Now combine all those regexes with one big "or".
 CORS_URLS_REGEX = re.compile("|".join("({0})".format(r) for r in CORS_URLS_REGEX))
