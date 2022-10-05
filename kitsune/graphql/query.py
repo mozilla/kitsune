@@ -5,11 +5,15 @@ from kitsune.graphql.schema import ContributorType
 
 
 class Query(graphene.ObjectType):
-    is_contributor = graphene.Field(ContributorType, username=graphene.String())
+    is_contributor = graphene.Field(ContributorType)
 
-    def resolve_is_contributor(root, info, username):
+    def resolve_is_contributor(root, info):
+        """Return the current user if they are a contributor."""
+        # by default we reject non logged in users
+        user = info.context.user
+
         try:
-            contributor = User.objects.get(username=username)
+            contributor = User.objects.get(username=user.username)
         except User.DoesNotExist:
             pass
         else:

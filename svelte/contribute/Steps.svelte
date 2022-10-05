@@ -1,9 +1,22 @@
 <script>
+    import { queryStore, gql, getContextClient } from "@urql/svelte";
     import Linkable from "./Linkable.svelte";
-    import { gettext } from "../utils";
+    import { gettext } from "../lib/utils";
 
     export let steps = [];
     export let fact = {};
+
+    const isContributor = queryStore({
+        client: getContextClient(),
+        query: gql`
+            query getContributorStatus {
+                isContributor {
+                    id
+                    username
+                }
+            }
+        `,
+    });
 </script>
 
 <section class="mzp-l-content">
