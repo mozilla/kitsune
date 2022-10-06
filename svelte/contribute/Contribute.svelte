@@ -2,8 +2,10 @@
     import { Router, Route } from "svelte-navigator";
     import Area from "./Area";
     import Landing from "./Landing";
+    import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
     import { createClient, setContextClient } from "@urql/svelte";
+    import { SUMO_URL, GRAPHQL_ENDPOINT } from "../lib/constants";
 
     // this is a little verbose, but dynamic imports aren't SSRed
     // if we do this in more places, we could write a webpack loader
@@ -29,9 +31,6 @@
     export let url = "";
     export let locale = "";
 
-    const GRAPHQL_ENDPOINT =
-        process.env["GRAPHQL_ENDPOINT"] ||
-        "https://support.mozilla.org/graphql";
     const gqlClient = createClient({
         url: GRAPHQL_ENDPOINT,
     });
@@ -46,9 +45,32 @@
             {location}
             steps={{
                 steps: [
-                    gettext("Find support questions"),
-                    gettext("Start answering!"),
-                    gettext("Learn more about forum contribution"),
+                    [
+                        Linkable,
+                        {
+                            link:
+                                SUMO_URL +
+                                "/kb/mozilla-support-rules-guidelines",
+                            text: gettext(
+                                "Learn about basic contribution guidelines."
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: SUMO_URL + "/questions",
+                            text: gettext("Find support questions"),
+                        },
+                    ],
+                    [Linkable, { link: "", text: gettext("Start answering!") }],
+                    [
+                        Linkable,
+                        {
+                            link: SUMO_URL + "/kb/how-contribute-support-forum",
+                            text: gettext("Learn about forum contribution"),
+                        },
+                    ],
                 ],
                 fact: {
                     number: gettext("1 → 1000"),
@@ -80,11 +102,43 @@
             {location}
             steps={{
                 steps: [
-                    gettext("Explore the Knowledge Base Dashboard"),
-                    gettext(
-                        "Check the Needs Update column and start editing articles!"
-                    ),
-                    gettext("Learn more about Knowledge Base contribution"),
+                    [
+                        Linkable,
+                        {
+                            link:
+                                SUMO_URL +
+                                "/kb/mozilla-support-rules-guidelines",
+                            text: gettext(
+                                "Learn about basic contribution guidelines."
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: SUMO_URL + "/contributors/kb-overview",
+                            text: gettext(
+                                "Explore the Knowledge Base Dashboard"
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: "",
+                            text: gettext(
+                                "Check the Needs Update column and start editing articles!"
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link:
+                                SUMO_URL + "/kb/how-contribute-knowledge-base",
+                            text: gettext("More about KB contribution"),
+                        },
+                    ],
                 ],
                 fact: {
                     number: gettext("400 → 70+"),
@@ -110,11 +164,44 @@
             {location}
             steps={{
                 steps: [
-                    gettext(
-                        "Check if your locale is available and go to your localization dashboard"
-                    ),
-                    gettext("Start localizing an article!"),
-                    gettext("Learn more about localization contribution"),
+                    [
+                        Linkable,
+                        {
+                            link:
+                                SUMO_URL +
+                                "/kb/mozilla-support-rules-guidelines",
+                            text: gettext(
+                                "Learn about basic contribution guidelines."
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: SUMO_URL + "/kb/locales",
+                            text: gettext(
+                                "Check if your locale is available and go to your localization dashboard"
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: "",
+                            text: gettext("Start localizing an article!"),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link:
+                                SUMO_URL +
+                                "/kb/how-contribute-article-localization",
+                            text: gettext(
+                                "Learn more about localization contribution"
+                            ),
+                        },
+                    ],
                 ],
                 fact: {
                     number: gettext("400 → 70+"),
@@ -142,9 +229,41 @@
             {location}
             steps={{
                 steps: [
-                    gettext("Request access to Conversocial"),
-                    gettext("Start tweeting from @FirefoxSupport!"),
-                    gettext("Learn more about social support contribution"),
+                    [
+                        Linkable,
+                        {
+                            link: SUMO_URL + "/kb/social-support-guidelines",
+                            text: gettext(
+                                "Learn about basic contribution guidelines."
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: "https://bit.ly/conversocial-sign-up",
+                            text: gettext("Request access to Conversocial"),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: "",
+                            text: gettext(
+                                "Start tweeting from @FirefoxSupport!"
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link:
+                                SUMO_URL + "/kb/how-contribute-social-support",
+                            text: gettext(
+                                "Learn more about social support contribution"
+                            ),
+                        },
+                    ],
                 ],
                 fact: {
                     number: gettext("1 → 300+"),
@@ -172,11 +291,42 @@
             {location}
             steps={{
                 steps: [
-                    gettext("Request access to Conversocial"),
-                    gettext(
-                        "Start replying to Play Store reviews for Firefox for Android!"
-                    ),
-                    gettext("Learn more about Play Store contribution"),
+                    [
+                        Linkable,
+                        {
+                            link: SUMO_URL + "/kb/get-started-mobile-support",
+                            text: gettext(
+                                "Learn about basic contribution guidelines."
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: "https://bit.ly/conversocial-sign-up",
+                            text: gettext("Request access to Conversocial"),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link: "",
+                            text: gettext(
+                                "Start replying to Play Store reviews for Firefox for Android!"
+                            ),
+                        },
+                    ],
+                    [
+                        Linkable,
+                        {
+                            link:
+                                SUMO_URL +
+                                "/kb/how-contribute-mobile-support-start-here",
+                            text: gettext(
+                                "Learn more about Play Store contribution"
+                            ),
+                        },
+                    ],
                 ],
                 fact: {
                     number: gettext("1 → 20k+"),
