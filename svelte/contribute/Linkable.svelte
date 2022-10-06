@@ -1,11 +1,12 @@
 <script>
-    export let link;
+    export let link = undefined;
+    export let text = "<p>placeholder</p>";
 </script>
 
 {#if link}
-    <a href={link}><slot /></a>
+    <a href={link}><slot>{text}</slot></a>
 {:else}
-    <slot />
+    <slot>{text}</slot>
 {/if}
 
 <style lang="scss">
