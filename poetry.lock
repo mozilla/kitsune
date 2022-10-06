@@ -597,14 +597,14 @@ python-versions = "*"
 
 [[package]]
 name = "django-cors-headers"
-version = "3.11.0"
+version = "3.13.0"
 description = "django-cors-headers is a Django application for handling the server headers required for Cross-Origin Resource Sharing (CORS)."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
-Django = ">=2.2"
+Django = ">=3.2"
 
 [[package]]
 name = "django-csp"
@@ -2530,7 +2530,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "09001d8690d5bce82bdb4100316d9c90cb993af52b4e0500856e6d505d4a71e0"
+content-hash = "7aba6afbf9522c20f9b3fa7e762fae7d350b7d830e169e1969157cdabbb99b26"
 
 [metadata.files]
 alabaster = [
@@ -2807,8 +2807,8 @@ django-cache-url = [
     {file = "django_cache_url-3.3.0-py2.py3-none-any.whl", hash = "sha256:dd689515d78a824f469d9cd4e447198999d2f13d1279487da20203f2f3b1e06b"},
 ]
 django-cors-headers = [
-    {file = "django-cors-headers-3.11.0.tar.gz", hash = "sha256:eb98389bf7a2afc5d374806af4a9149697e3a6955b5a2dc2bf049f7d33647456"},
-    {file = "django_cors_headers-3.11.0-py3-none-any.whl", hash = "sha256:a22be2befd4069c4fc174f11cf067351df5c061a3a5f94a01650b4e928b0372b"},
+    {file = "django-cors-headers-3.13.0.tar.gz", hash = "sha256:f9dc6b4e3f611c3199700b3e5f3398c28757dcd559c2f82932687f3d0443cfdf"},
+    {file = "django_cors_headers-3.13.0-py3-none-any.whl", hash = "sha256:37e42883b5f1f2295df6b4bba96eb2417a14a03270cb24b2a07f021cd4487cf4"},
 ]
 django-csp = [
     {file = "django_csp-3.7-py2.py3-none-any.whl", hash = "sha256:01443a07723f9a479d498bd7bb63571aaa771e690f64bde515db6cdb76e8041a"},

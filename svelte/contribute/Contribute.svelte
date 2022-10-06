@@ -2,7 +2,8 @@
     import { Router, Route } from "svelte-navigator";
     import Area from "./Area";
     import Landing from "./Landing";
-    import { gettext } from "../utils";
+    import { gettext } from "../lib/utils";
+    import { createClient, setContextClient } from "@urql/svelte";
 
     // this is a little verbose, but dynamic imports aren't SSRed
     // if we do this in more places, we could write a webpack loader
@@ -27,6 +28,14 @@
 
     export let url = "";
     export let locale = "";
+
+    const GRAPHQL_ENDPOINT =
+        process.env["GRAPHQL_ENDPOINT"] ||
+        "https://support.mozilla.org/graphql";
+    const gqlClient = createClient({
+        url: GRAPHQL_ENDPOINT,
+    });
+    setContextClient(gqlClient);
 </script>
 
 <Router basepath="/{locale}/contribute" {url}>

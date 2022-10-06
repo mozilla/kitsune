@@ -1,7 +1,7 @@
 <script>
     import Header from "./Header";
     import Picker from "./Picker";
-    import { srcset, gettext } from "../utils";
+    import { srcset, gettext } from "../lib/utils";
 
     import imgAboutPng from "./img/About Us.png";
     import imgAboutWebp from "./img/About Us.webp";
