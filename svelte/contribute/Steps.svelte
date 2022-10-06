@@ -2,6 +2,10 @@
     import { queryStore, gql, getContextClient } from "@urql/svelte";
     import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
+    import { link } from "svelte-navigator";
+    import { SUMO_URL, TEACHABLE_URL } from "../lib/constants";
+    import Area from "./Area.svelte";
+    import Contribute from "./Contribute.svelte";
 
     export let steps = [];
     export let fact = {};
@@ -25,19 +29,22 @@
     <div class="wrapper">
         <ol>
             <li>
-                <Linkable link={"https://support.mozilla.org/"}>
-                    {gettext("Sign up as a volunteer")}
-                </Linkable>
+                {#if !$isContributor.data?.isContributor?.id}
+                    <Linkable link={SUMO_URL}>
+                        {gettext("Sign up as a volunteer")}
+                    </Linkable>
+                {:else}
+                    <Linkable link={TEACHABLE_URL}>
+                        {gettext(
+                            "Learn about our Community Participation guidelines"
+                        )}
+                    </Linkable>
+                {/if}
             </li>
-            <li>
-                <Linkable
-                    link={"https://support.mozilla.org/kb/mozilla-support-rules-guidelines"}
-                >
-                    {gettext("Learn basic guidelines")}
-                </Linkable>
-            </li>
-            {#each steps as step}
-                <li>{step}</li>
+            {#each steps as [step, rest]}
+                <li>
+                    <svelte:component this={step} {...rest} />
+                </li>
             {/each}
         </ol>
         <div class="fact">
