@@ -7,7 +7,6 @@ class Command(BaseCommand):
     Allows you to extract strings for localization.
     Extract creates two .pot files - django.pot and djangojs.pot - that contain
     messages to merge into the existing l10n files.
-
     """
 
     help = "Extracts localizable strings from the codebase."

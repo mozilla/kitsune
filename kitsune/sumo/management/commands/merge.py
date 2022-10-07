@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from babel.messages.frontend import CommandLineInterface
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -5,84 +7,47 @@ from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
     """
-    Merge will merge the .pot files into the existing l10n files,
-    which exist in locale (if you have the repo downloaded).
-
+    Merge will update the .po files for all locales based on the .pot files, or
+    if the .po files don't yet exist for a locale, initialize them. It assumes that
+    you've cloned the https://github.com/mozilla-l10n/sumo-l10n repo into the "locale"
+    sub-directory.
     """
 
-    help = "Merges the .pot files into the existing l10n files."
+    help = "Updates or initializes the .po files for all locales."
 
     def handle(self, *args, **options):
-        no_repo_locales = []
         for locale in settings.SUMO_LANGUAGES:
-            if locale in ("en-US", "xx", "xx-testing", "templates"):
+            locale = locale.replace("-", "_")
+            if locale in ("en_US", "tn", "xx"):
+                # NOTE: The "tn" locale is not supported by the CLDR,
+                #       which Babel uses, and "xx" is a test locale.
                 continue
-            try:
-                CommandLineInterface().run(
-                    [
-                        "pybabel",
-                        "update",
-                        "-d",
-                        "locale/",
-                        "-l",
-                        locale.replace("-", "_"),
-                        "-D",
-                        "django",
-                        "-i",
-                        "locale/templates/LC_MESSAGES/django.pot",
-                    ]
-                )
-                CommandLineInterface().run(
-                    [
-                        "pybabel",
-                        "update",
-                        "-d",
-                        "locale/",
-                        "-l",
-                        locale.replace("-", "_"),
-                        "-D",
-                        "djangojs",
-                        "-i",
-                        "locale/templates/LC_MESSAGES/djangojs.pot",
-                    ]
-                )
-                self.stdout.write(f"Merge complete for {locale}.\n")
-            except Exception as merge_error:
-                self.stdout.write(f"Merge failed for {locale}.\n")
-                self.stdout.write(f"Error: {merge_error}.\n")
-                no_repo_locales.append(locale)
-        if no_repo_locales:
-            self.stdout.write(f"The following locales were unable to update: {no_repo_locales}.\n")
-            self.stdout.write("Attempting to initialize them now.\n")
-            for locale in no_repo_locales:
-                try:
-                    CommandLineInterface().run(
-                        [
-                            "pybabel",
-                            "init",
-                            "-d",
-                            "locale/" + locale.repalce("-", "_"),
-                            "-l",
-                            locale.replace("-", "_"),
-                            "-D",
-                            "djangojs",
-                            "-i",
-                            "locale/templates/LC_MESSAGES/djangojs.pot",
-                        ]
-                    )
-                    CommandLineInterface().run(
-                        [
-                            "pybabel",
-                            "init",
-                            "-d",
-                            "locale/",
-                            "-l",
-                            locale.replace("-", "_"),
-                            "-D",
-                            "django",
-                            "-i",
-                            "locale/templates/LC_MESSAGES/django.pot",
-                        ]
-                    )
-                except Exception as error:
-                    self.stdout.write(f"Error: {error}.\n")
+            sub_cmd = "update" if Path(f"locale/{locale}").is_dir() else "init"
+            CommandLineInterface().run(
+                [
+                    "pybabel",
+                    sub_cmd,
+                    "-d",
+                    "locale/",
+                    "-l",
+                    locale,
+                    "-D",
+                    "django",
+                    "-i",
+                    "locale/templates/LC_MESSAGES/django.pot",
+                ]
+            )
+            CommandLineInterface().run(
+                [
+                    "pybabel",
+                    sub_cmd,
+                    "-d",
+                    "locale/",
+                    "-l",
+                    locale,
+                    "-D",
+                    "djangojs",
+                    "-i",
+                    "locale/templates/LC_MESSAGES/djangojs.pot",
+                ]
+            )
