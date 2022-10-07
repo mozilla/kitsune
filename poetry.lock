@@ -112,7 +112,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "babel"
-version = "2.10.0"
+version = "2.10.3"
 description = "Internationalization utilities"
 category = "main"
 optional = false
@@ -1546,19 +1546,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "puente"
-version = "0.5.0"
-description = "Strings extraction and other tools"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-babel = ">=2.1.1"
-django = ">=1.8"
-jinja2 = ">=2.7"
-
-[[package]]
 name = "pure-eval"
 version = "0.2.2"
 description = "Safely evaluate AST nodes without side effects"
@@ -2412,7 +2399,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "5e390a9283cbaba70733b3a040d57dffc74b4aa68c779794167abbcf4786e338"
+content-hash = "b6ae4815e724adfb83d38a0ecca293b68069c4cb61eb662512142d3296a8e025"
 
 [metadata.files]
 alabaster = []
@@ -2539,7 +2526,6 @@ premailer = []
 prompt-toolkit = []
 protobuf = []
 ptyprocess = []
-puente = []
 pure-eval = []
 py-wikimarkup = []
 pyasn1 = []
