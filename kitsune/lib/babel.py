@@ -3,24 +3,6 @@ from django.conf import settings
 from jinja2.ext import babel_extract
 
 
-# List of settings jinja2.ext.babel_extract() cares about and that are safe
-# to pass as options as a result.
-RELEVANT_SETTINGS = [
-    "block_start_string",
-    "block_end_string",
-    "variable_start_string",
-    "variable_end_string",
-    "comment_start_string",
-    "comment_end_string",
-    "line_statement_prefix",
-    "line_comment_prefix",
-    "trim_blocks",
-    "lstrip_blocks",
-    "keep_trailing_newline",
-    "extensions",
-]
-
-
 def generate_option(value):
     """
     Generate option to pass to babel_extract() from a TEMPLATES['OPTION'] value
@@ -30,7 +12,7 @@ def generate_option(value):
     everything is based on strings.
     """
     if isinstance(value, bool):
-        return f"{bool(value)}".lower()
+        return str(value).lower()
     if isinstance(value, (list, tuple)):
         return ",".join(value)
     return value
@@ -48,22 +30,39 @@ def extract_jinja(fileobj, keywords, comment_tags, options):
     gettext calls because of the whitespace differences.
     """
 
-    # It looks like this call is required to make sure
-    # jinja2 extensions load properly.
+    # It looks like this call is required to make sure jinja2 extensions load properly.
     django.setup()
 
+    # Get the options settings for the Jinja2 templates.
+    jinja2_options = {}
     for template in settings.TEMPLATES:
         if template.get("NAME") == "jinja2":
-            overrides = {
-                key: generate_option(template["OPTIONS"][key])
-                for key in RELEVANT_SETTINGS
-                if key in template["OPTIONS"]
-            }
-            options.update(overrides)
-            # Special case: `trimmed` is configured through an environment policy,
-            # but babel_extract() considers it's an option.
-            options["trimmed"] = generate_option(
-                template["OPTIONS"].get("policies", {}).get("ext.i18n.trimmed", False)
-            )
+            jinja2_options = template.get("OPTIONS", {})
             break
+
+    options.update(
+        {
+            name: generate_option(jinja2_options[name])
+            for name in [
+                "extensions",
+                "block_start_string",
+                "block_end_string",
+                "variable_start_string",
+                "variable_end_string",
+                "comment_start_string",
+                "comment_end_string",
+                "line_statement_prefix",
+                "line_comment_prefix",
+                "trim_blocks",
+                "lstrip_blocks",
+                "keep_trailing_newline",
+            ]
+            if name in jinja2_options
+        }
+    )
+
+    options["trimmed"] = generate_option(
+        jinja2_options.get("policies", {}).get("ext.i18n.trimmed", False)
+    )
+
     return babel_extract(fileobj, keywords, comment_tags, options)
