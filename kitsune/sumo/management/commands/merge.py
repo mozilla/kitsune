@@ -1,8 +1,17 @@
 from pathlib import Path
 
+from babel import Locale, UnknownLocaleError
 from babel.messages.frontend import CommandLineInterface
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
+
+def is_supported_for_init(locale):
+    try:
+        Locale.parse(locale)
+    except UnknownLocaleError:
+        return False
+    return True
 
 
 class Command(BaseCommand):
@@ -18,11 +27,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         for locale in settings.SUMO_LANGUAGES:
             locale = locale.replace("-", "_")
-            if locale in ("en_US", "tn", "xx"):
-                # NOTE: The "tn" locale is not supported by the CLDR,
-                #       which Babel uses, and "xx" is a test locale.
+
+            if locale in ("en_US", "xx"):
                 continue
-            sub_cmd = "update" if Path(f"locale/{locale}").is_dir() else "init"
+
+            if Path(f"locale/{locale}").is_dir():
+                sub_cmd = "update"
+            elif not is_supported_for_init(locale):
+                # NOTE: Babel only supports initializing locales included in the CLDR.
+                self.stdout.write(
+                    self.style.WARNING(f"WARNING: skipping locale {locale} (unsupported for init)")
+                )
+                continue
+            else:
+                sub_cmd = "init"
+
             CommandLineInterface().run(
                 [
                     "pybabel",
