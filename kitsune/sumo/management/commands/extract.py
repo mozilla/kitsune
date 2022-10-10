@@ -59,4 +59,4 @@ class Command(BaseCommand):
             ]
         )
 
-        self.stdout.write("Extraction complete.\n")
+        self.stdout.write(self.style.SUCCESS("extraction complete"))
