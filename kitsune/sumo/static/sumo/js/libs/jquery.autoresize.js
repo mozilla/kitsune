@@ -88,10 +88,10 @@
 
 		bind: function() {
 
-			var check = $.bind(function(){
+			var check = (function(){
 				this.check();
 				return true;
-			}, this);
+			}).bind(this);
 
 			this.off && this.off();
 
