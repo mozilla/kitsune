@@ -56,5 +56,5 @@ $(function() {
   };
 
   updateCount();
-  $summaryBox.bind('input', updateCount);
+  $summaryBox.on('input', updateCount);
 });
