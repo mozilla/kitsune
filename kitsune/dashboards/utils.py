@@ -4,9 +4,8 @@ from collections import OrderedDict
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
-
-from apiclient.errors import Error as GoogleAPIError
-from oauth2client.client import Error as Oauth2Error
+from google.auth.exceptions import GoogleAuthError
+from googleapiclient.errors import Error as GoogleAPIError
 from OpenSSL.crypto import Error as OpenSSLError
 
 from kitsune.announcements.forms import AnnouncementForm
@@ -98,7 +97,7 @@ def get_locales_by_visit(start_date, end_date):
             locales_and_visits = list(results.items())
             sorted_locales = list(reversed(sorted(locales_and_visits, key=lambda x: x[1])))
             cache.add(cache_key, sorted_locales, settings.CACHE_LONG_TIMEOUT)
-        except (GoogleAPIError, Oauth2Error, OpenSSLError):
+        except (GoogleAPIError, GoogleAuthError, OpenSSLError):
             # Just return all locales with 0s for visits.
             log.exception(
                 "Something went wrong getting visitors by locale "

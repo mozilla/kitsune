@@ -1,13 +1,12 @@
+import json
 import logging
 from datetime import timedelta
 from functools import wraps
-from io import BytesIO
 
-import httplib2
-from apiclient.discovery import build
-from apiclient.errors import HttpError
 from django.conf import settings
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 from kitsune.questions.models import Question
 from kitsune.wiki.models import Document
@@ -15,8 +14,6 @@ from kitsune.wiki.models import Document
 log = logging.getLogger("k.googleanalytics")
 
 
-key = settings.GA_KEY
-account = settings.GA_ACCOUNT
 profile_id = settings.GA_PROFILE_ID
 
 
@@ -41,10 +38,11 @@ def retry_503(f):
 
 
 def _build_request():
-    scope = "https://www.googleapis.com/auth/analytics.readonly"
-    creds = ServiceAccountCredentials.from_p12_keyfile_buffer(account, BytesIO(key), scopes=scope)
-    request = creds.authorize(httplib2.Http())
-    service = build("analytics", "v3", request)
+    credentials = service_account.Credentials.from_service_account_info(
+        json.loads(settings.GA_KEY),
+        scopes=["https://www.googleapis.com/auth/analytics.readonly"],
+    )
+    service = build("analytics", "v3", credentials=credentials)
     return service.data().ga()
 
 
