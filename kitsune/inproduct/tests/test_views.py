@@ -29,6 +29,9 @@ class RedirectTestCase(TestCase):
         ("mobile/105.1.0/Android/iw/foo", "/he/"),
         ("mobile/105.1.0/Android/iw-IL/foo", "/he/"),
         ("mobile/105.1.0/Android/in/foo", "/id/"),
+        ("mobile/105.1.0/Android/co/foo", "/en-US/"),
+        ("mobile/105.1.0/Android/ia/foo", "/en-US/"),
+        ("mobile/105.1.0/Android/su/foo", "/en-US/"),
     )
 
     test_eu_urls = (
