@@ -20,6 +20,5 @@
     <slot />
 </Header>
 
-<Steps {...steps} />
-
+<Steps {location} {...steps} />
 <Picker {location} />
