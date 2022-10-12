@@ -5,7 +5,12 @@
     import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
     import { createClient, setContextClient } from "@urql/svelte";
-    import { SUMO_URL, GRAPHQL_ENDPOINT } from "../lib/constants";
+    import {
+        SUMO_URL,
+        GRAPHQL_ENDPOINT,
+        TEACHABLE_URL,
+    } from "../lib/constants";
+    import { queryStore, gql, getContextClient } from "@urql/svelte";
 
     // this is a little verbose, but dynamic imports aren't SSRed
     // if we do this in more places, we could write a webpack loader
@@ -35,6 +40,17 @@
         url: GRAPHQL_ENDPOINT,
     });
     setContextClient(gqlClient);
+    const isContributor = queryStore({
+        client: getContextClient(),
+        query: gql`
+            query getContributorStatus {
+                isContributor {
+                    id
+                    username
+                }
+            }
+        `,
+    });
 </script>
 
 <Router basepath="/{locale}/contribute" {url}>

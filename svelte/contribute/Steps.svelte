@@ -2,13 +2,11 @@
     import { queryStore, gql, getContextClient } from "@urql/svelte";
     import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
-    import { link } from "svelte-navigator";
     import { SUMO_URL, TEACHABLE_URL } from "../lib/constants";
-    import Area from "./Area.svelte";
-    import Contribute from "./Contribute.svelte";
 
     export let steps = [];
     export let fact = {};
+    export let location = "";
 
     const isContributor = queryStore({
         client: getContextClient(),
@@ -21,6 +19,9 @@
             }
         `,
     });
+    let contributionArea = location?.pathname.split("/").pop();
+    let signUp = new URL(SUMO_URL + "?next=/contribute/" + contributionArea);
+    signUp.searchParams.append("contributor", contributionArea);
 </script>
 
 <section class="mzp-l-content">
@@ -30,7 +31,7 @@
         <ol>
             <li>
                 {#if !$isContributor.data?.isContributor?.id}
-                    <Linkable link={SUMO_URL}>
+                    <Linkable link={signUp}>
                         {gettext("Sign up as a volunteer")}
                     </Linkable>
                 {:else}
