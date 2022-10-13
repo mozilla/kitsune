@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.contrib.auth.models import AnonymousUser, User
-from jinja2 import Markup
+from markupsafe import Markup
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase

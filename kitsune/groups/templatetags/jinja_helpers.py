@@ -1,7 +1,6 @@
 from django.conf import settings
-
-import jinja2
 from django_jinja import library
+from markupsafe import Markup, escape
 
 from kitsune.groups.models import GroupProfile
 from kitsune.sumo.urlresolvers import reverse
@@ -22,7 +21,7 @@ def group_link(group):
     try:
         profile = GroupProfile.objects.get(group=group)
         url = reverse("groups.profile", args=[profile.slug])
-        html = '<a href="%s">%s</a>' % (jinja2.escape(url), jinja2.escape(group.name))
-        return jinja2.Markup(html)
+        html = '<a href="%s">%s</a>' % (escape(url), escape(group.name))
+        return Markup(html)
     except GroupProfile.DoesNotExist:
         return group.name
