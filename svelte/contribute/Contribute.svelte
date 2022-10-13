@@ -300,7 +300,7 @@
             </p>
         </Area>
     </Route>
-    <Route path="play-store" let:location>
+    <Route path="playstore" let:location>
         <Area
             area={gettext("Play Store support")}
             images={[imgHandsPng, imgHandsWebp, imgHands2xWebp]}

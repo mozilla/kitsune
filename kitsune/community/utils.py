@@ -9,14 +9,9 @@ from elasticsearch_dsl import A
 
 from kitsune.products.models import Product
 from kitsune.search.documents import AnswerDocument, ProfileDocument
-from kitsune.users.models import CONTRIBUTOR_GROUP, User
+from kitsune.users.models import ContributionAreas, User
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.wiki.models import Revision
-
-CONTRIBUTOR_GROUPS = [
-    "Contributors",
-    CONTRIBUTOR_GROUP,
-]
 
 
 def top_contributors_questions(start=None, end=None, locale=None, product=None, count=10, page=1):
@@ -68,7 +63,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
 
     user_ids = [bucket.key for bucket in contribution_buckets]
     contributor_group_ids = list(
-        Group.objects.filter(name__in=CONTRIBUTOR_GROUPS).values_list("id", flat=True)
+        Group.objects.filter(name__in=ContributionAreas.get_groups()).values_list("id", flat=True)
     )
 
     # fetch all the users returned by the aggregation which are in the contributor groups

@@ -1218,3 +1218,9 @@ TRUSTED_GROUPS = [
 GRAPHENE = {
     "SCHEMA": "kitsune.schema.schema",
 }
+
+# Contributor Groups
+LEGACY_CONTRIBUTOR_GROUPS = [
+    "Contributors",
+    "Registered as Contributors",
+]
