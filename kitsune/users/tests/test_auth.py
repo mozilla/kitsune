@@ -3,10 +3,11 @@ from unittest.mock import Mock, patch
 from django.contrib.auth.models import User
 from django.http import HttpRequest
 from django.test import RequestFactory, override_settings
+from factory.fuzzy import FuzzyChoice
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
-from kitsune.users.models import CONTRIBUTOR_GROUP
+from kitsune.users.models import ContributionAreas
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
@@ -54,7 +55,7 @@ class FXAAuthBackendTests(TestCase):
         Test that a new contributor can be created through Firefox Accounts
         if is_contributor is True in session
         """
-        GroupFactory(name=CONTRIBUTOR_GROUP)
+        GroupFactory(name=FuzzyChoice(ContributionAreas.get_groups()))
         claims = {
             "email": "crazy_joe_davola@example.com",
             "uid": "abc123",
@@ -64,14 +65,14 @@ class FXAAuthBackendTests(TestCase):
 
         request_mock = Mock(spec=HttpRequest)
         request_mock.LANGUAGE_CODE = "en"
-        request_mock.session = {"is_contributor": True}
+        request_mock.session = {"contributor": "kb"}
         self.backend.claims = claims
         self.backend.request = request_mock
         users = User.objects.all()
         self.assertEqual(users.count(), 0)
         self.backend.create_user(claims)
         users = User.objects.all()
-        self.assertEqual(CONTRIBUTOR_GROUP, users[0].groups.all()[0].name)
+        self.assertEqual("KB Contributors", users[0].groups.all()[0].name)
         assert "is_contributor" not in request_mock.session
         message_mock.success.assert_called()
 

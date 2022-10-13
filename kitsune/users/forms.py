@@ -5,8 +5,8 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.utils.translation import ugettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ugettext as _
 
 from kitsune.users.models import Profile
 from kitsune.users.widgets import MonthYearWidget
