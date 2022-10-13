@@ -20,7 +20,9 @@
         `,
     });
     let contributionArea = location?.pathname.split("/").pop();
-    let signUp = new URL(SUMO_URL + "?next=/contribute/" + contributionArea);
+    let signUp = new URL(
+        SUMO_URL + "/fxa/authenticate?next=/contribute/" + contributionArea
+    );
     signUp.searchParams.append("contributor", contributionArea);
 </script>
 

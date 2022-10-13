@@ -10,13 +10,21 @@ from django.utils.translation import ugettext as _
 
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.sumo import email_utils
-from kitsune.users.models import CONTRIBUTOR_GROUP, Deactivation, Setting
+from kitsune.users.models import ContributionAreas, Deactivation, Setting
 
 log = logging.getLogger("k.users")
 
 
-def add_to_contributors(user, language_code):
-    group = Group.objects.get(name=CONTRIBUTOR_GROUP)
+def add_to_contributors(user, language_code, contribution_area=""):
+    area = contribution_area.upper()
+    if not ContributionAreas.has_member(area):
+        return
+
+    group, created = Group.objects.get_or_create(name=ContributionAreas[area].value)
+    # don't fire an email if the user is already member of the group
+    if user.groups.filter(pk=group.pk).exists():
+        return
+
     user.groups.add(group)
     user.save()
 
