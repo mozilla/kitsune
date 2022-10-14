@@ -33,6 +33,7 @@ users_patterns = [
     url(r"^/close_account$", views.close_account, name="users.close_account"),
     url(r"^/edit$", views.edit_profile, name="users.edit_my_profile"),
     url(r"^/settings$", views.edit_settings, name="users.edit_settings"),
+    url(r"^/contributions$", views.edit_contribution_area, name="users.edit_contribution_area"),
     url(r"^/watches$", views.edit_watch_list, name="users.edit_watch_list"),
     url(r"^/deactivate$", views.deactivate, name="users.deactivate"),
     url(

@@ -1,18 +1,17 @@
 {% extends "users/base.html" %}
-{% set title = _('Edit Settings') %}
-{% set classes = 'settings' %}
-{% set active = 'edit-settings' %}
+{% set title = _('Edit Contribution Areas') %}
+{% set classes = 'contributions' %}
+{% set active = 'edit-contributions' %}
 {% set crumbs = [(None, title)] %}
 
 {% block breadcrumbs %}{% endblock %}
 {% block content %}
-<article id="edit-settings" class="main">
+<article id="edit-contributions" class="main">
   <h3 class="sumo-page-heading">{{ title }}</h3>
   <form method="post" action="">
     {% csrf_token %}
-    {% for field in settings_form %}
-      {{ checkbox(field) }}
-    {% endfor %}
+    {{ contribution_form.as_p() }}
+
     <div class="sumo-button-wrap align-end">
       <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update') }}</button>
     </div>
