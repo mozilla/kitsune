@@ -103,7 +103,7 @@ urlpatterns = [
     re_path(
         r"^/How to contribute$",
         redirect_to,
-        {"url": "landings.get_involved"},
+        {"url": "landings.contribute"},
         name="old_get_involved",
     ),
     re_path(r"^/locales$", locale_views.locale_list, name="wiki.locales"),
