@@ -8,7 +8,6 @@ from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-from factory.fuzzy import FuzzyChoice
 from josepy import jwa, jwk, jws
 from pyquery import PyQuery as pq
 
