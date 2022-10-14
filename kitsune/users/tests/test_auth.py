@@ -72,7 +72,7 @@ class FXAAuthBackendTests(TestCase):
         self.assertEqual(users.count(), 0)
         self.backend.create_user(claims)
         users = User.objects.all()
-        self.assertEqual("KB Contributors", users[0].groups.all()[0].name)
+        self.assertEqual("kb-contributors", users[0].groups.all()[0].name)
         assert "is_contributor" not in request_mock.session
         message_mock.success.assert_called()
 

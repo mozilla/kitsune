@@ -3,12 +3,13 @@ from datetime import datetime
 
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
 
-from kitsune.users.models import Profile
+from kitsune.users.models import ContributionAreas, Profile
+from kitsune.users.utils import add_to_contributors
 from kitsune.users.widgets import MonthYearWidget
 
 USERNAME_INVALID = _lazy(
@@ -68,6 +69,46 @@ class SettingsForm(forms.Form):
             if update_count == 0:
                 # This user didn't have this setting so create it.
                 user.settings.create(name=field, value=value)
+
+
+class ContributionAreaForm(forms.Form):
+    area = forms.MultipleChoiceField(
+        label="",
+        required=False,
+        choices=ContributionAreas.choices,
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "field"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super().__init__(*args, **kwargs)
+        if self.request and self.request.user.is_authenticated:
+            groups_qs = self.request.user.groups.filter(
+                name__in=ContributionAreas.get_values()
+            ).values_list("name", flat=True)
+            self.fields["area"].initial = list(groups_qs)
+
+    def save(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return
+        cdata = self.cleaned_data.get("area")
+        all_data = ContributionAreas.get_values()
+        groups_to_remove = list(set(all_data) - set(cdata))
+        groups_to_add = list(set(all_data).intersection(set(cdata)))
+        for group_name in groups_to_add:
+            add_to_contributors(
+                user, user.profile.locale, ContributionAreas._value2member_map_[group_name].name
+            )
+
+        groups = []
+        groups_to_remove += settings.LEGACY_CONTRIBUTOR_GROUPS
+        for group_name in groups_to_remove:
+            try:
+                groups.append(Group.objects.get(name=group_name))
+            except Group.DoesNotExist:
+                continue
+        user.groups.remove(*groups)
 
 
 class UserForm(forms.ModelForm):
