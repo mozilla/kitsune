@@ -102,6 +102,7 @@ class ContributionAreaForm(forms.Form):
             )
 
         groups = []
+        groups_to_remove += settings.LEGACY_CONTRIBUTOR_GROUPS
         for group_name in groups_to_remove:
             try:
                 groups.append(Group.objects.get(name=group_name))
