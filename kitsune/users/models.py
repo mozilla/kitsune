@@ -27,7 +27,7 @@ class ContributionAreas(models.TextChoices):
     L10N = "l10n-contributors", _lazy("L10n Contributors")
     FORUM = "forum-contributors", _lazy("Forum Contributors")
     SOCIAL = "social-contributors", _lazy("Social media Contributors")
-    PLAYSTORE = "playstore-contributors", _lazy("Google Playstore Contributors")
+    MOBILE = "mobile-contributors", _lazy("Mobile support Contributors")
 
     @classmethod
     def has_value(cls, value):

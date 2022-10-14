@@ -68,7 +68,7 @@
                                 SUMO_URL +
                                 "/kb/mozilla-support-rules-guidelines",
                             text: gettext(
-                                "Learn about basic contribution guidelines."
+                                "Learn about basic contribution guidelines"
                             ),
                         },
                     ],
@@ -84,7 +84,9 @@
                         Linkable,
                         {
                             link: SUMO_URL + "/kb/how-contribute-support-forum",
-                            text: gettext("Learn about forum contribution"),
+                            text: gettext(
+                                "Learn more about forum contribution"
+                            ),
                         },
                     ],
                 ],
@@ -125,7 +127,7 @@
                                 SUMO_URL +
                                 "/kb/mozilla-support-rules-guidelines",
                             text: gettext(
-                                "Learn about basic contribution guidelines."
+                                "Learn about basic contribution guidelines"
                             ),
                         },
                     ],
@@ -164,7 +166,7 @@
                 },
             }}
         >
-            <h1>{gettext("Help us write help articles")}</h1>
+            <h1>{gettext("Help us write support articles")}</h1>
             <h2>{gettext("Share your wisdom with the world!")}</h2>
             <p>
                 {gettext(
@@ -187,7 +189,7 @@
                                 SUMO_URL +
                                 "/kb/mozilla-support-rules-guidelines",
                             text: gettext(
-                                "Learn about basic contribution guidelines."
+                                "Learn about basic contribution guidelines"
                             ),
                         },
                     ],
@@ -227,7 +229,7 @@
                 },
             }}
         >
-            <h1>{gettext("Translate help articles")}</h1>
+            <h1>{gettext("Help us localize support articles")}</h1>
             <h2>
                 {gettext("Let’s make Mozilla Support speak your language!")}
             </h2>
@@ -250,7 +252,7 @@
                         {
                             link: SUMO_URL + "/kb/social-support-guidelines",
                             text: gettext(
-                                "Learn about basic contribution guidelines."
+                                "Learn about basic contribution guidelines"
                             ),
                         },
                     ],
@@ -266,7 +268,7 @@
                         {
                             link: "",
                             text: gettext(
-                                "Start tweeting from @FirefoxSupport!"
+                                "Start replying from @FirefoxSupport!"
                             ),
                         },
                     ],
@@ -300,9 +302,9 @@
             </p>
         </Area>
     </Route>
-    <Route path="playstore" let:location>
+    <Route path="mobile" let:location>
         <Area
-            area={gettext("Play Store support")}
+            area={gettext("Mobile Store support")}
             images={[imgHandsPng, imgHandsWebp, imgHands2xWebp]}
             {location}
             steps={{
@@ -312,7 +314,7 @@
                         {
                             link: SUMO_URL + "/kb/get-started-mobile-support",
                             text: gettext(
-                                "Learn about basic contribution guidelines."
+                                "Learn about basic contribution guidelines"
                             ),
                         },
                     ],
@@ -327,9 +329,7 @@
                         Linkable,
                         {
                             link: "",
-                            text: gettext(
-                                "Start replying to Play Store reviews for Firefox for Android!"
-                            ),
+                            text: gettext("Start replying to app reviews!"),
                         },
                     ],
                     [
@@ -339,7 +339,7 @@
                                 SUMO_URL +
                                 "/kb/how-contribute-mobile-support-start-here",
                             text: gettext(
-                                "Learn more about Play Store contribution"
+                                "Learn more about mobile store support contribution"
                             ),
                         },
                     ],
@@ -347,20 +347,20 @@
                 fact: {
                     number: gettext("1 → 20k+"),
                     text: gettext(
-                        "Help 20K+ users who leave reviews in Play Store every month"
+                        "Help 20K+ users who leave reviews in mobile store every month"
                     ),
                 },
             }}
         >
-            <h1>{gettext("Support Firefox users on mobile")}</h1>
+            <h1>{gettext("Support Firefox users on mobile store")}</h1>
             <h2>
                 {gettext(
-                    "Help us respond to Play Store reviews for Firefox for Android!"
+                    "Help us respond to app reviews for our mobile products!"
                 )}
             </h2>
             <p>
                 {gettext(
-                    "Smartphones are taking over the world. We have many users leaving reviews while also asking for support on Play Store. By joining Play Store Support, you can help them by reply to their reviews from the comfort of your desk. Pretty simple, right?"
+                    "Smartphones are taking over the world. Nowdays, many people prefer to app reviews instead of going to the support forum. By joining, you can help them by replying to their reviews from the comfort of your desk. Pretty simple, right?"
                 )}
             </p>
         </Area>
