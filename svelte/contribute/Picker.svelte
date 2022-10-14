@@ -41,8 +41,8 @@
                     {gettext("Social support")}
                 </Tile>
             {/if}
-            {#if location?.pathname != "/play-store"}
-                <Tile to="../play-store" img={storeImg}>
+            {#if location?.pathname != "/playstore"}
+                <Tile to="../playstore" img={storeImg}>
                     {gettext("Play Store support")}
                 </Tile>
             {/if}
