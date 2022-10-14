@@ -1,6 +1,6 @@
 {% macro contributor_list(contributors) -%}
   <section id="doc-contributors" class="document--contributors sumo-page-section">
-    {% trans contributors=user_list(contributors), link=url('landings.get_involved') %}
+    {% trans contributors=user_list(contributors), link=url('landings.contribute') %}
     <p class="help-title text-body-md">These fine people helped write this article:</p>
     <div class="document--contributors-list text-body-xs">{{ contributors }}</div>
     {% endtrans %}
