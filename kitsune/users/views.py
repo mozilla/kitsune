@@ -380,7 +380,7 @@ def make_contributor(request):
     if "return_to" in request.POST:
         return HttpResponseRedirect(request.POST["return_to"])
     else:
-        return HttpResponseRedirect(reverse("landings.get_involved"))
+        return HttpResponseRedirect(reverse("landings.contribute"))
 
 
 def become(request, username=None):
