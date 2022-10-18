@@ -1,5 +1,5 @@
 @use '../config' as c;
-@use '../protocol' as p;
+@use 'protocol/css/includes/lib' as p;
 
 
 .mzp-c-modal-inner {
@@ -11,7 +11,7 @@
 }
 
 .mzp-c-modal-close .mzp-c-modal-button-close {
-  background: transparent url("#{p.$image-path}/icons/close.svg") center center no-repeat;
+  background: transparent url("protocol/img/icons/close.svg") center center no-repeat;
 }
 
 

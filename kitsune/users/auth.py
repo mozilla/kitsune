@@ -77,6 +77,12 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         except requests.exceptions.HTTPError:
             return {}
 
+    def update_contributor_status(self, profile):
+        """Register user as contributor."""
+        if contribution_area := self.request.session.get("contributor"):
+            add_to_contributors(profile.user, profile.locale, contribution_area)
+            del self.request.session["contributor"]
+
     def create_user(self, claims):
         """Override create user method to mark the profile as migrated."""
 
@@ -126,9 +132,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             extra_tags="safe",
         )
 
-        if self.request.session.get("is_contributor", False):
-            add_to_contributors(user, profile.locale)
-            del self.request.session["is_contributor"]
+        # update contributor status
+        self.update_contributor_status(profile)
 
         return user
 
@@ -224,6 +229,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         products = Product.objects.filter(codename__in=subscriptions)
         profile.products.clear()
         profile.products.add(*products)
+
+        # update contributor status
+        self.update_contributor_status(profile)
 
         # Users can select their own display name.
         if not profile.name:

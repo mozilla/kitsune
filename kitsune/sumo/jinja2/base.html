@@ -8,7 +8,10 @@
 <head>
   {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>{% block title %}{% if title %}{{ title }} | {% endif %}{{ pgettext('site_title', 'Mozilla Support') }}{% endblock %}</title>
+
+  {% block head_title %}
+    <title>{% block title %}{% if title %}{{ title }} | {% endif %}{{ pgettext('site_title', 'Mozilla Support') }}{% endblock %}</title>
+  {% endblock %}
 
   {{ favicon() }}
 
@@ -221,7 +224,7 @@
             <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
             <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
             <li><a href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
-            <li><a href="{{ url('landings.get_involved') }}">{{ _('Join our Community') }}</a></li>
+            <li><a href="{{ url('landings.contribute') }}">{{ _('Join our Community') }}</a></li>
             <li><a href="{{ url('home') }}">{{ _('Explore Help Articles')}}</a></li>
           </ul>
         </section>

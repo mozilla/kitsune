@@ -23,9 +23,19 @@ echo "extract and merge...."
 echo "creating dir...."
 mkdir -p locale/xx/LC_MESSAGES
 
-echo "copying messages.pot file...."
-cp locale/templates/LC_MESSAGES/messages.pot locale/xx/LC_MESSAGES/messages.po
+echo "copying pot files...."
+for potfile in $(find locale/templates/LC_MESSAGES/ -name "*.pot")
+do 
+    stem=$(basename $potfile .pot)
+    cp $potfile locale/xx/LC_MESSAGES/${stem}.po
+done
 
 echo "translate messages.po file...."
-./manage.py translate --pipeline=html,pirate locale/xx/LC_MESSAGES/messages.po
-locale/compile-mo.sh locale/xx/
+for pofile in $(find locale/xx/LC_MESSAGES/ -name "*.po")
+do
+    dennis-cmd translate --pipeline=html,pirate $pofile
+
+    dir=$(dirname $pofile)
+    stem=$(basename $pofile .po)
+    msgfmt -o ${dir}/${stem}.mo $pofile
+done

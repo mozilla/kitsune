@@ -10,8 +10,8 @@ ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/venv/bin:$PATH" \
-    POETRY_VERSION=1.1.12 \
-    PIP_VERSION=21.3.1
+    POETRY_VERSION=1.2.1 \
+    PIP_VERSION=22.2.2
 
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
@@ -69,6 +69,7 @@ RUN ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n && \
     # minify jsi18n files:
     find jsi18n/ -name "*.js" -exec sh -c 'npx terser "$1" -o "${1%.js}-min.js"' sh {} \; && \
+    npm run webpack:build:pre-render && \
     ./manage.py collectstatic --noinput
 RUN poetry install --no-dev
 

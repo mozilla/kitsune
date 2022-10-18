@@ -1,6 +1,7 @@
 const webpack = require("webpack");
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const sveltePreprocess = require("svelte-preprocess");
 
 module.exports = {
   mode: "development",
@@ -10,12 +11,15 @@ module.exports = {
       sumo: path.resolve(__dirname, "kitsune/sumo/static/sumo"),
       community: path.resolve(__dirname, "kitsune/community/static/community"),
       kpi: path.resolve(__dirname, "kitsune/kpi/static/kpi"),
+      svelte: path.resolve("node_modules", "svelte"),
     },
+    extensions: [".mjs", ".js", ".svelte"],
+    mainFields: ["svelte", "browser", "module", "main"],
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|svelte)$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
@@ -39,7 +43,27 @@ module.exports = {
         },
       },
       {
-        test: /\.scss$/,
+        test: /\.svelte$/,
+        use: {
+          loader: "svelte-loader",
+          options: {
+            emitCss: true,
+            preprocess: sveltePreprocess(),
+            compilerOptions: {
+              hydratable: true,
+            }
+          },
+        },
+      },
+      {
+        // required to prevent errors from Svelte on Webpack 5+
+        test: /node_modules\/svelte\/.*\.mjs$/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
+      {
+        test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader,
           "css-loader",
@@ -48,7 +72,7 @@ module.exports = {
         ],
       },
       {
-        test: /\.(svg|png|gif|woff2?)$/,
+        test: /\.(svg|png|webp|gif|woff2?)$/,
         type: "asset/resource",
       },
       // we copy these libraries from external sources, so define their exports here,
@@ -71,6 +95,9 @@ module.exports = {
     }),
     new MiniCssExtractPlugin({
       filename: "[name].css",
+    }),
+    new webpack.DefinePlugin({
+      "process.env": JSON.stringify(process.env),
     }),
   ],
   cache: {

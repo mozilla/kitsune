@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% set scripts = ("contribute",) %}
+
+{% block head_title %}
+{% include "pre-render" + path + ".head.html" %}
+{% endblock %}
+
+{% block contentwrap %}
+<div id="svelte">
+{% include "pre-render" + path + ".html" %}
+</div>
+{% endblock %}

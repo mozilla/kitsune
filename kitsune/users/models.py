@@ -19,8 +19,32 @@ log = logging.getLogger("k.users")
 
 
 SHA1_RE = re.compile("^[a-f0-9]{40}$")
-CONTRIBUTOR_GROUP = "Registered as contributor"
 SET_ID_PREFIX = "https://schemas.accounts.firefox.com/event/"
+
+
+class ContributionAreas(models.TextChoices):
+    KB = "kb-contributors", _lazy("KB Contributors")
+    L10N = "l10n-contributors", _lazy("L10n Contributors")
+    FORUM = "forum-contributors", _lazy("Forum Contributors")
+    SOCIAL = "social-contributors", _lazy("Social media Contributors")
+    MOBILE = "mobile-contributors", _lazy("Mobile support Contributors")
+
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
+
+    @classmethod
+    def get_values(cls):
+        return [item.value for item in cls]
+
+    @classmethod
+    def get_groups(cls):
+        """Transitional class method that will return both old and new groups."""
+        return cls.get_values() + settings.LEGACY_CONTRIBUTOR_GROUPS
+
+    @classmethod
+    def has_member(cls, value):
+        return value in cls._member_names_
 
 
 @auto_delete_files

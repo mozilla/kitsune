@@ -44,7 +44,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate, simple_paginate
 from kitsune.tidings.models import Watch
-from kitsune.users.forms import ProfileForm, SettingsForm, UserForm
+from kitsune.users.forms import ContributionAreaForm, ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
     process_event_delete_user,
@@ -252,13 +252,13 @@ def edit_settings(request):
     """Edit user settings"""
     template = "users/edit_settings.html"
     if request.method == "POST":
-        form = SettingsForm(request.POST)
-        if form.is_valid():
-            form.save_for_user(request.user)
+        settings_form = SettingsForm(request.POST)
+        if settings_form.is_valid():
+            settings_form.save_for_user(request.user)
             messages.add_message(request, messages.INFO, _("Your settings have been saved."))
             return HttpResponseRedirect(reverse("users.edit_settings"))
         # Invalid form
-        return render(request, template, {"form": form})
+        return render(request, template, {"settings_form": settings_form})
 
     # Pass the current user's settings as the initial values.
     values = list(request.user.settings.values())
@@ -272,8 +272,22 @@ def edit_settings(request):
             # Attempted to convert the string value to a Python value
             # but failed so leave it a string.
             initial[val["name"]] = val["value"]
-    form = SettingsForm(initial=initial)
-    return render(request, template, {"form": form})
+    settings_form = SettingsForm(initial=initial)
+    return render(request, template, {"settings_form": settings_form})
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def edit_contribution_area(request):
+    """Edit user settings"""
+    template = "users/edit_contributions.html"
+    contribution_form = ContributionAreaForm(request.POST or None, request=request)
+
+    if contribution_form.is_valid():
+        contribution_form.save()
+        messages.add_message(request, messages.INFO, _("Your preferences have been saved."))
+        return HttpResponseRedirect(reverse("users.edit_contribution_area"))
+    return render(request, template, {"contribution_form": contribution_form})
 
 
 @login_required
@@ -366,7 +380,7 @@ def make_contributor(request):
     if "return_to" in request.POST:
         return HttpResponseRedirect(request.POST["return_to"])
     else:
-        return HttpResponseRedirect(reverse("landings.get_involved"))
+        return HttpResponseRedirect(reverse("landings.contribute"))
 
 
 def become(request, username=None):
@@ -399,8 +413,8 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
         return super(FXAAuthenticateView, FXAAuthenticateView).get_settings(attr, *args)
 
     def get(self, request):
-        is_contributor = request.GET.get("is_contributor") == "True"
-        request.session["is_contributor"] = is_contributor
+        if contribution_area := request.GET.get("contributor"):
+            request.session["contributor"] = contribution_area
 
         request.session["login_locale"] = getattr(request, "LANGUAGE_CODE", settings.LANGUAGE_CODE)
 

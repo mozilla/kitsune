@@ -17,33 +17,9 @@ from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import (
-    CONTRIBUTOR_GROUP,
-    AccountEvent,
-    Deactivation,
-    Profile,
-    Setting,
-    User,
-)
+from kitsune.users.models import AccountEvent, Deactivation, Profile, Setting, User
 from kitsune.users.tests import GroupFactory, ProfileFactory, UserFactory, add_permission
 from kitsune.users.views import edit_profile
-
-
-class MakeContributorTests(TestCase):
-    def setUp(self):
-        self.user = UserFactory()
-        self.client.login(username=self.user.username, password="testpass")
-        GroupFactory(name=CONTRIBUTOR_GROUP)
-        super(MakeContributorTests, self).setUp()
-
-    def test_make_contributor(self):
-        """Test adding a user to the contributor group"""
-        self.assertEqual(0, self.user.groups.filter(name=CONTRIBUTOR_GROUP).count())
-
-        response = self.client.post(reverse("users.make_contributor", force_locale=True))
-        self.assertEqual(302, response.status_code)
-
-        self.assertEqual(1, self.user.groups.filter(name=CONTRIBUTOR_GROUP).count())
 
 
 class UserSettingsTests(TestCase):
@@ -178,9 +154,9 @@ class FXAAuthenticationTests(TestCase):
         assert not self.client.session.get("is_contributor")
 
     def test_authenticate_does_update_session(self):
-        url = reverse("users.fxa_authentication_init") + "?is_contributor=True"
+        url = reverse("users.fxa_authentication_init") + "?contributor=KB"
         self.client.get(url)
-        assert self.client.session.get("is_contributor")
+        assert self.client.session.get("contributor")
 
 
 def setup_key(test):
