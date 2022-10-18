@@ -35,12 +35,12 @@ export default class RemoteTroubleshooting {
     // Create the remote-troubleshooting event requesting data and
     // kick it off.
     const request = new window.CustomEvent("WebChannelMessageToChrome", {
-      detail: {
+      detail: JSON.stringify({
         id: "remote-troubleshooting",
         message: {
           command: "request",
         },
-      },
+      }),
     });
     window.dispatchEvent(request);
 
