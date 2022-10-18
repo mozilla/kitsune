@@ -9,11 +9,3 @@ class ContributorType(DjangoObjectType):
             "id",
             "username",
         )
-
-    @classmethod
-    def get_queryset(cls, queryset, info):
-        """Do not return inactive users of info to non logged in users."""
-        user = info.context.user
-        if not user.is_authenticated or not user.is_active:
-            return queryset.none()
-        return super().get_queryset(queryset, info)

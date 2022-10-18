@@ -1,7 +1,7 @@
 import graphene
-from django.contrib.auth.models import User
 
 from kitsune.graphql.schema import ContributorType
+from kitsune.users.models import ContributionAreas
 
 
 class Query(graphene.ObjectType):
@@ -12,11 +12,6 @@ class Query(graphene.ObjectType):
         # by default we reject non logged in users
         user = info.context.user
 
-        try:
-            contributor = User.objects.get(username=user.username)
-        except User.DoesNotExist:
-            pass
-        else:
-            if contributor.groups.filter(name="Contributors").exists():
-                return contributor
+        if user.is_authenticated and user.groups.filter(name__in=ContributionAreas.get_groups()):
+            return user
         return None
