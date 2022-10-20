@@ -22,7 +22,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.tags.models import BigVocabTaggableMixin
+from kitsune.tags.models import BigVocabTaggableManager, BigVocabTaggableMixin
 from kitsune.tidings.models import NotificationsMixin
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
@@ -41,10 +41,9 @@ from kitsune.wiki.config import (
     TYPO_SIGNIFICANCE,
 )
 from kitsune.wiki.managers import DocumentManager, RevisionManager
-
 from kitsune.wiki.permissions import (
-    can_delete_documents_or_review_revisions,
     DocumentPermissionMixin,
+    can_delete_documents_or_review_revisions,
 )
 
 log = logging.getLogger("k.wiki")
@@ -127,7 +126,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     )
 
     # List of users that have contributed to this document.
-    contributors = models.ManyToManyField(User)
+    contributors = models.ManyToManyField(User, related_name="sumo_documents_contributed")
 
     # List of products this document applies to.
     # Children should query their parents for this.
@@ -154,6 +153,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     related_documents = models.ManyToManyField("self", blank=True)
 
     updated_column_name = "current_revision__created"
+    tags = BigVocabTaggableManager(related_name="documents_tagged")
 
     objects = DocumentManager()
 
