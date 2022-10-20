@@ -1,5 +1,4 @@
 from django.db import models
-
 from taggit.managers import TaggableManager
 
 from kitsune.tags.forms import TagField
@@ -25,7 +24,7 @@ class BigVocabTaggableMixin(models.Model):
 
     """
 
-    tags = BigVocabTaggableManager()
+    tags = BigVocabTaggableManager(related_name="tags")
 
     class Meta:
         abstract = True
