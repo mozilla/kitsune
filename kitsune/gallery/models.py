@@ -15,7 +15,9 @@ class Media(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    updated_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, related_name="%(app_label)s_%(class)s_related"
+    )
     description = models.TextField(max_length=10000)
     locale = LocaleField(default=settings.GALLERY_DEFAULT_LANGUAGE, db_index=True)
     is_draft = models.BooleanField(default=None, null=True, editable=False)
