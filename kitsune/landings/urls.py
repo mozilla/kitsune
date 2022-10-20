@@ -1,4 +1,5 @@
 from django.urls import re_path
+from django.views.generic.base import RedirectView
 
 from kitsune.landings import views
 from kitsune.sumo.views import redirect_to
@@ -22,4 +23,8 @@ urlpatterns = [
         name="download.integrity-check",
     ),
     re_path(r"^contribute/?.*$", views.contribute, name="landings.contribute"),
+    re_path(
+        r"^get-involved/?.*$",
+        RedirectView.as_view(pattern_name="landings.contribute", permanent=True),
+    ),
 ]
