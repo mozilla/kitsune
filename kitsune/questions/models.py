@@ -30,7 +30,7 @@ from kitsune.questions.tasks import update_answer_pages, update_question_votes
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.tags.models import BigVocabTaggableMixin
+from kitsune.tags.models import BigVocabTaggableManager, BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.wiki.models import Document
@@ -142,6 +142,7 @@ class Question(AAQBase, BigVocabTaggableMixin):
     tags_cache_key = "question:tags:%s"
     images_cache_key = "question:images:%s"
     contributors_cache_key = "question:contributors:%s"
+    tags = BigVocabTaggableManager(related_name="questions_tagged")
 
     objects = QuestionManager()
 

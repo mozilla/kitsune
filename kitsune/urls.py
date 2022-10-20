@@ -5,6 +5,9 @@ from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
+from wagtail import urls as wagtail_urls
+from wagtail.admin import urls as wagtailadmin_urls
+from wagtail.documents import urls as wagtaildocs_urls
 
 from kitsune.sumo import views as sumo_views
 
@@ -65,6 +68,10 @@ urlpatterns = [
     ),
     # GraphiQL
     path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
+    # Wagtail
+    path("cms/", include(wagtailadmin_urls)),
+    path("documents/", include(wagtaildocs_urls)),
+    path("pages/", include(wagtail_urls)),
 ]
 
 # Handle 404 and 500 errors
