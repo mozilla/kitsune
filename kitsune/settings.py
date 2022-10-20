@@ -515,6 +515,7 @@ MIDDLEWARE = (
     "kitsune.users.middleware.LogoutDeactivatedUsersMiddleware",
     "kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware",
     "csp.middleware.CSPMiddleware",
+    "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 )
 
 # SecurityMiddleware settings
@@ -686,6 +687,18 @@ INSTALLED_APPS = (
     # are going to be generating activities". Putting it at the end is the safest.
     "actstream",
     "django_user_agents",
+    "wagtail.contrib.forms",
+    "wagtail.contrib.redirects",
+    "wagtail.embeds",
+    "wagtail.sites",
+    "wagtail.users",
+    "wagtail.snippets",
+    "wagtail.documents",
+    "wagtail.images",
+    "wagtail.search",
+    "wagtail.admin",
+    "wagtail",
+    "modelcluster",
     # Last so we can override admin templates.
     "django.contrib.admin",
 )
@@ -1234,3 +1247,7 @@ LEGACY_CONTRIBUTOR_GROUPS = [
     "Registered as contributor",
     "trusted contributors",
 ]
+
+# Wagtail configuration
+WAGTAIL_SITE_NAME = "Mozilla Support"
+WAGTAILADMIN_BASE_URL = config("WAGTAILADMIN_BASE_URL", default="https://support.mozilla.org")
