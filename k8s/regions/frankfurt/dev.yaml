@@ -119,6 +119,7 @@ app:
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True
     secure_ssl_redirect: True
+    sumo_url: "https://support-dev.allizom.org"
     wsgi_keep_alive: 60
     fxa_op_token_endpoint: SECRET
     fxa_op_authorization_endpoint: SECRET

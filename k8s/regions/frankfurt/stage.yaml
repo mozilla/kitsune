@@ -123,6 +123,7 @@ app:
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True
     secure_ssl_redirect: True
+    sumo_url: "https://support.allizom.org"
     wsgi_keep_alive: 60
     disable_feeds: False
     user_agent_filters: "360spider,semrushBot"

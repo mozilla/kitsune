@@ -120,6 +120,7 @@ app:
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True
     secure_ssl_redirect: True
+    sumo_url: "https://support.mozilla.org"
     surveygizmo_user: SECRET
     surveygizmo_password: SECRET
     surveygizmo_api_token: SECRET
