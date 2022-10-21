@@ -8,8 +8,10 @@ from django.utils.translation import ugettext as _
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
+from kitsune.questions.utils import scrub, scrub_home_dir_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
+
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy("URL of affected site")
@@ -189,7 +191,11 @@ class EditQuestionForm(forms.ModelForm):
                     for pref in list(parsed["modifiedPreferences"].keys()):
                         if pref.startswith("print.macosx.pagesetup"):
                             del parsed["modifiedPreferences"][pref]
-                    clean["troubleshooting"] = json.dumps(parsed)
+
+                # Scrub the troubleshooting data of any known PII.
+                scrub(parsed, [scrub_home_dir_pii])
+
+                clean["troubleshooting"] = json.dumps(parsed)
 
                 # Override ff_version with the version in troubleshooting
                 # which is more precise for the dot releases.

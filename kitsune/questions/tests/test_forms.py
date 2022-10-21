@@ -1,3 +1,4 @@
+import json
 from collections import OrderedDict
 
 from django.contrib.auth.models import AnonymousUser
@@ -94,7 +95,7 @@ class TestNewQuestionForm(TestCaseBase):
         form.is_valid()
         expected = {}
         actual = form.cleaned_metadata
-        self.assertEqual(expected, actual)
+        self.assertDictEqual(expected, actual)
 
         # Test with metadata
         data["os"] = "Linux"
@@ -102,7 +103,7 @@ class TestNewQuestionForm(TestCaseBase):
         form.is_valid()
         expected = {"os": "Linux"}
         actual = form.cleaned_metadata
-        self.assertEqual(expected, actual)
+        self.assertDictEqual(expected, actual)
 
         # Add an empty metadata value
         data["ff_version"] = ""
@@ -110,4 +111,32 @@ class TestNewQuestionForm(TestCaseBase):
         form.is_valid()
         expected = {"os": "Linux"}
         actual = form.cleaned_metadata
-        self.assertEqual(expected, actual)
+        self.assertDictEqual(expected, actual)
+
+        # Check for clean troubleshooting data
+        data["modifiedPreferences"] = {
+            "print.macosx.pagesetup": True,
+        }
+        data["troubleshooting"] = json.dumps(
+            {
+                "environmentVariables": {
+                    "MOZ_CRASHREPORTER_DATA_DIRECTORY": "/home/ringo/crashs",
+                    "MOZ_CRASHREPORTER_PING_DIRECTORY": "/home/ringo/pings",
+                },
+            }
+        )
+        form = NewQuestionForm(product=product, data=data)
+        form.is_valid()
+        expected = {
+            "os": "Linux",
+            "troubleshooting": json.dumps(
+                {
+                    "environmentVariables": {
+                        "MOZ_CRASHREPORTER_DATA_DIRECTORY": "/home/<USERNAME>/crashs",
+                        "MOZ_CRASHREPORTER_PING_DIRECTORY": "/home/<USERNAME>/pings",
+                    },
+                }
+            ),
+        }
+        actual = form.cleaned_metadata
+        self.assertDictEqual(actual, expected)
