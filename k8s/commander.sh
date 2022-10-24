@@ -23,16 +23,16 @@ function deploy {
 		echo "Secrets will *NOT* be applied"
 	fi
 
-	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag "prod-${COMMIT_HASH}"
+	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag "${REGION_ENV}-${COMMIT_HASH}"
 	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-celery
-	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag "prod-${COMMIT_HASH}"
+	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag "${REGION_ENV}-${COMMIT_HASH}"
 	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-cron
-	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag "prod-${COMMIT_HASH}"
+	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag "${REGION_ENV}-${COMMIT_HASH}"
 	invoke -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-web
 
 	post-deploy "$@"
 
-	echo ":tada: Successfully deployed <${DOCKER_HUB}|prod-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
+	echo ":tada: Successfully deployed <${DOCKER_HUB}|${REGION_ENV}-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
 	printf "${GREEN}OK${NC}\n"
 }
 

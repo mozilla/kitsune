@@ -16,4 +16,14 @@ services:
       target: prod
       args:
         - GIT_SHA
+        - SUMO_URL=https://support.mozilla.org
     image: mozilla/kitsune:prod-${GIT_COMMIT_SHORT:-latest}
+
+  stage:
+    build:
+      context: .
+      target: prod
+      args:
+        - GIT_SHA
+        - SUMO_URL=https://support.allizom.org
+    image: mozilla/kitsune:stage-${GIT_COMMIT_SHORT:-latest}

@@ -49,13 +49,19 @@ jobs:
                   { pattern: "^prod-.+$", value: << pipeline.git.branch >> }
           steps:
             - run:
+                name: Build stage image
+                command: ./bin/dc_ci.sh build --progress=plain stage
+            - run:
                 name: Build prod image
                 command: ./bin/dc_ci.sh build --progress=plain prod
             - run:
-                name: Push prod image
+                name: Push stage and prod images
                 command: |
                   echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
                   source docker/bin/set_git_env_vars.sh
+                  docker image tag mozilla/kitsune:stage-${GIT_COMMIT_SHORT} mozilla/kitsune:stage-latest
+                  docker image push mozilla/kitsune:stage-${GIT_COMMIT_SHORT}
+                  docker image push mozilla/kitsune:stage-latest
                   docker image tag mozilla/kitsune:prod-${GIT_COMMIT_SHORT} mozilla/kitsune:prod-latest
                   docker image push mozilla/kitsune:prod-${GIT_COMMIT_SHORT}
                   docker image push mozilla/kitsune:prod-latest
@@ -67,11 +73,11 @@ jobs:
                   source docker/bin/set_git_env_vars.sh
                   ./docker/bin/upload-staticfiles.sh
             - run:
-                name: Echo prod image hash
+                name: Echo image hash for stage and prod
                 command: |
                   source docker/bin/set_git_env_vars.sh
                   sed s/replaceme/${GIT_COMMIT_SHORT}/ .circleci/build.html > /tmp/build-status.html
-                  echo -e 'build completed!\n'"hash: ${GIT_COMMIT_SHORT}\nimage: mozilla/kitsune:prod-${GIT_COMMIT_SHORT}"
+                  echo -e 'build completed!\n'"hash: ${GIT_COMMIT_SHORT}\nimage: mozilla/kitsune:stage-${GIT_COMMIT_SHORT}\nimage: mozilla/kitsune:prod-${GIT_COMMIT_SHORT}"
             - store_artifacts:
                 path: /tmp/build-status.html
                 destination: build-status.html

@@ -27,18 +27,18 @@ RUN set -xe \
     optipng nodejs zip \
     # python
     && python -m venv /venv \
-    && pip install --upgrade pip==${PIP_VERSION} \  
-    && pip install --upgrade poetry==${POETRY_VERSION} \ 
+    && pip install --upgrade pip==${PIP_VERSION} \
+    && pip install --upgrade poetry==${POETRY_VERSION} \
     && poetry config virtualenvs.create false \
     # clean up
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install 
+RUN poetry install
 
-#########################
-# Frontend dependencies #
-#########################
+##############################
+# Base frontend dependencies #
+##############################
 FROM base AS base-frontend
 
 COPY package*.json ./
@@ -59,17 +59,17 @@ RUN cp .env-test .env && \
     ./manage.py collectstatic --noinput
 
 
-##########################
-# Production dependences #
-##########################
+###########################
+# Production dependencies #
+###########################
 FROM base-frontend AS prod-deps
-
+ARG SUMO_URL
 RUN ./scripts/l10n-fetch-lint-compile.sh && \
     find ./locale ! -name '*.mo' -type f -delete && \
     ./manage.py compilejsi18n && \
     # minify jsi18n files:
     find jsi18n/ -name "*.js" -exec sh -c 'npx terser "$1" -o "${1%.js}-min.js"' sh {} \; && \
-    npm run webpack:build:pre-render && \
+    SUMO_URL=${SUMO_URL} npm run webpack:build:pre-render && \
     ./manage.py collectstatic --noinput
 RUN poetry install --no-dev
 
@@ -86,7 +86,7 @@ EXPOSE 8000
 ENV PATH="/venv/bin:$PATH" \
     LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 
+    PYTHONUNBUFFERED=1
 
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 

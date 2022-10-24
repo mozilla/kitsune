@@ -7,7 +7,7 @@ kubernetes:
     secrets_name: "sumo-secrets-dev"
     image:
         repo: "mozilla/kitsune"
-        tag: "prod-latest"
+        tag: "dev-latest"
         pull_policy: "Always"
     # default values
     limits:
