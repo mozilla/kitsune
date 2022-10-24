@@ -67,16 +67,14 @@
                             link:
                                 SUMO_URL +
                                 "/kb/mozilla-support-rules-guidelines",
-                            text: gettext(
-                                "Learn about basic contribution guidelines"
-                            ),
+                            text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
                         Linkable,
                         {
                             link: SUMO_URL + "/questions",
-                            text: gettext("Find support questions"),
+                            text: gettext("Find support questions to answer"),
                         },
                     ],
                     [Linkable, { link: "", text: gettext("Start answering!") }],
@@ -126,9 +124,7 @@
                             link:
                                 SUMO_URL +
                                 "/kb/mozilla-support-rules-guidelines",
-                            text: gettext(
-                                "Learn about basic contribution guidelines"
-                            ),
+                            text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
@@ -154,7 +150,7 @@
                         {
                             link:
                                 SUMO_URL + "/kb/how-contribute-knowledge-base",
-                            text: gettext("More about KB contribution"),
+                            text: gettext("Learn moore about KB contribution"),
                         },
                     ],
                 ],
@@ -170,7 +166,7 @@
             <h2>{gettext("Share your wisdom with the world!")}</h2>
             <p>
                 {gettext(
-                    "If you like writing and teaching then the Knowledge Base is the place for you. We need contributors that can write, edit or proofread articles in English. Thousands of people are accessing our Knowledge Base every week. Imagine how many will be helped by you!"
+                    "If you like writing and teaching, then the Knowledge Base (KB) is the place for you. We need contributors that can write, edit or proofread articles in English. Thousands of people are accessing our Knowledge Base every week. Imagine how many will be helped by you!"
                 )}
             </p>
         </Area>
@@ -188,9 +184,7 @@
                             link:
                                 SUMO_URL +
                                 "/kb/mozilla-support-rules-guidelines",
-                            text: gettext(
-                                "Learn about basic contribution guidelines"
-                            ),
+                            text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
@@ -251,9 +245,7 @@
                         Linkable,
                         {
                             link: SUMO_URL + "/kb/social-support-guidelines",
-                            text: gettext(
-                                "Learn about basic contribution guidelines"
-                            ),
+                            text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
@@ -313,9 +305,7 @@
                         Linkable,
                         {
                             link: SUMO_URL + "/kb/get-started-mobile-support",
-                            text: gettext(
-                                "Learn about basic contribution guidelines"
-                            ),
+                            text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
