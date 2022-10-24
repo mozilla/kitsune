@@ -23,27 +23,27 @@
         <ul>
             {#if location?.pathname != "/forum"}
                 <Tile to="../forum" img={forumImg}>
-                    {gettext("Support forum")}
+                    {gettext("Answer questions in the support forum")}
                 </Tile>
             {/if}
             {#if location?.pathname != "/kb"}
                 <Tile to="../kb" img={kbImg}>
-                    {gettext("Support articles")}
+                    {gettext("Write help articles")}
                 </Tile>
             {/if}
             {#if location?.pathname != "/l10n"}
                 <Tile to="../l10n" img={l10nImg}>
-                    {gettext("Localization")}
+                    {gettext("Localize support content")}
                 </Tile>
             {/if}
             {#if location?.pathname != "/social"}
                 <Tile to="../social" img={socialImg}>
-                    {gettext("Social support")}
+                    {gettext("Provide support on social channels")}
                 </Tile>
             {/if}
             {#if location?.pathname != "/mobile"}
                 <Tile to="../mobile" img={storeImg}>
-                    {gettext("Mobile Store support")}
+                    {gettext("Respond to mobile store reviews")}
                 </Tile>
             {/if}
         </ul>

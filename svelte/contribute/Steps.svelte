@@ -38,9 +38,7 @@
                     </Linkable>
                 {:else}
                     <Linkable link={TEACHABLE_URL}>
-                        {gettext(
-                            "Learn about our Community Participation guidelines"
-                        )}
+                        {gettext("Take the contributor's CPG training.")}
                     </Linkable>
                 {/if}
             </li>
