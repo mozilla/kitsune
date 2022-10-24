@@ -1,4 +1,3 @@
-from collections.abc import Callable
 import logging
 import re
 
@@ -98,7 +97,7 @@ def get_featured_articles(product, locale):
     return pinned_articles[-4:]
 
 
-def scrub_home_dir_pii(text: str, mask: str = "<USERNAME>") -> str:
+def remove_home_dir_pii(text: str, mask: str = "<USERNAME>") -> str:
     """
     Cleans the given text of any PII within home directory paths.
     """
@@ -108,15 +107,12 @@ def scrub_home_dir_pii(text: str, mask: str = "<USERNAME>") -> str:
     )
 
 
-def scrub(data: dict, scrubbers: list[Callable[[str], str]]) -> dict:
+def remove_pii(data: dict) -> None:
     """
-    Clean any text within the given dict with the given scrubbers.
+    Remove PII from any text within the given dict.
     """
     for key, value in data.items():
         if isinstance(value, dict):
-            scrub(value, scrubbers)
+            remove_pii(value)
         elif isinstance(value, str):
-            for scrubber in scrubbers:
-                value = scrubber(value)
-            data[key] = value
-    return data
+            data[key] = remove_home_dir_pii(value)

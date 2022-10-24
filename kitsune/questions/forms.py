@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 from kitsune.products.models import Topic
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.models import Answer, Question
-from kitsune.questions.utils import scrub, scrub_home_dir_pii
+from kitsune.questions.utils import remove_pii
 from kitsune.sumo.forms import KitsuneBaseForumForm
 from kitsune.upload.models import ImageAttachment
 
@@ -192,8 +192,8 @@ class EditQuestionForm(forms.ModelForm):
                         if pref.startswith("print.macosx.pagesetup"):
                             del parsed["modifiedPreferences"][pref]
 
-                # Scrub the troubleshooting data of any known PII.
-                scrub(parsed, [scrub_home_dir_pii])
+                # Remove any known PII from the troubleshooting data.
+                remove_pii(parsed)
 
                 clean["troubleshooting"] = json.dumps(parsed)
 

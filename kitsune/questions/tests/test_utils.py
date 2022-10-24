@@ -10,8 +10,8 @@ from kitsune.questions.utils import (
     num_answers,
     num_questions,
     num_solutions,
-    scrub,
-    scrub_home_dir_pii,
+    remove_pii,
+    remove_home_dir_pii,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -129,7 +129,7 @@ class GetMobileProductFromUATests(TestCase):
         self.assertEqual(expected, get_mobile_product_from_ua(ua))
 
 
-class ScrubbingTests(TestCase):
+class PIIRemovalTests(TestCase):
     @parameterized.expand(
         [
             ("C:\\User\\ringo", "C:\\User\\<USERNAME>"),
@@ -152,10 +152,10 @@ class ScrubbingTests(TestCase):
             ),
         ]
     )
-    def test_scrub_home_dir_pii(self, text, expected):
-        self.assertEqual(scrub_home_dir_pii(text), expected)
+    def test_remove_home_dir_pii(self, text, expected):
+        self.assertEqual(remove_home_dir_pii(text), expected)
 
-    def test_scrub(self):
+    def test_remove_pii(self):
         data = {
             "application": {
                 "name": "Firefox",
@@ -207,4 +207,5 @@ class ScrubbingTests(TestCase):
         expected["startupCache"]["paths"][
             "DiskCachePath"
         ] = "C:\\Users\\<USERNAME>\\AppData\\Local\\Mozilla\\Firefox"
-        self.assertDictEqual(scrub(data, [scrub_home_dir_pii]), expected)
+        remove_pii(data)
+        self.assertDictEqual(data, expected)
