@@ -150,7 +150,7 @@
                         {
                             link:
                                 SUMO_URL + "/kb/how-contribute-knowledge-base",
-                            text: gettext("Learn moore about KB contribution"),
+                            text: gettext("Learn more about KB contribution"),
                         },
                     ],
                 ],
