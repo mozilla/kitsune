@@ -2,20 +2,17 @@ import os
 
 from django.db import connection
 
-DEFAULT_COLATION = "utf8_unicode_ci"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "kitsune.settings")
 
 
-def run(colation=DEFAULT_COLATION):
+def run(*args):
 
-    db_tables = connection.introspection.table_names()
+    db_name = "kitsune"
+    if args:
+        db_name = args[0]
 
     with connection.cursor() as cursor:
-        for table in db_tables:
-            print(f"Setting colation for table {table}")
-            cursor.execute(
-                f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8 COLLATE {colation};"
-            )
+        cursor.execute(f"ALTER DATABASE {db_name} CHARACTER SET utf8 COLLATE utf8_general_ci;")
 
 
 if __name__ == "__main__":
