@@ -2,7 +2,7 @@
     import { queryStore, gql, getContextClient } from "@urql/svelte";
     import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
-    import { SUMO_URL, TEACHABLE_URL } from "../lib/constants";
+    import { TEACHABLE_URL } from "../lib/constants";
 
     export let steps = [];
     export let fact = {};
@@ -20,10 +20,10 @@
         `,
     });
     let contributionArea = location?.pathname.split("/").pop();
-    let signUp = new URL(
-        SUMO_URL + "/fxa/authenticate?next=/contribute/" + contributionArea
-    );
-    signUp.searchParams.append("contributor", contributionArea);
+    let signUp = `/fxa/authenticate?${new URLSearchParams({
+        next: "/contribute/" + contributionArea,
+        contributor: contributionArea,
+    }).toString()}`;
 </script>
 
 <section class="mzp-l-content">

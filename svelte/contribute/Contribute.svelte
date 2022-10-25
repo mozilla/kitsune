@@ -5,11 +5,7 @@
     import Linkable from "./Linkable.svelte";
     import { gettext } from "../lib/utils";
     import { createClient, setContextClient } from "@urql/svelte";
-    import {
-        SUMO_URL,
-        GRAPHQL_ENDPOINT,
-        TEACHABLE_URL,
-    } from "../lib/constants";
+    import { GRAPHQL_ENDPOINT } from "../lib/constants";
     import { queryStore, gql, getContextClient } from "@urql/svelte";
 
     // this is a little verbose, but dynamic imports aren't SSRed
@@ -64,16 +60,14 @@
                     [
                         Linkable,
                         {
-                            link:
-                                SUMO_URL +
-                                "/kb/mozilla-support-rules-guidelines",
+                            link: "/kb/mozilla-support-rules-guidelines",
                             text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
                         Linkable,
                         {
-                            link: SUMO_URL + "/questions",
+                            link: "/questions",
                             text: gettext("Find support questions to answer"),
                         },
                     ],
@@ -81,7 +75,7 @@
                     [
                         Linkable,
                         {
-                            link: SUMO_URL + "/kb/how-contribute-support-forum",
+                            link: "/kb/how-contribute-support-forum",
                             text: gettext(
                                 "Learn more about forum contribution"
                             ),
@@ -121,16 +115,14 @@
                     [
                         Linkable,
                         {
-                            link:
-                                SUMO_URL +
-                                "/kb/mozilla-support-rules-guidelines",
+                            link: "/kb/mozilla-support-rules-guidelines",
                             text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
                         Linkable,
                         {
-                            link: SUMO_URL + "/contributors/kb-overview",
+                            link: "/contributors/kb-overview",
                             text: gettext(
                                 "Explore the Knowledge Base Dashboard"
                             ),
@@ -148,8 +140,7 @@
                     [
                         Linkable,
                         {
-                            link:
-                                SUMO_URL + "/kb/how-contribute-knowledge-base",
+                            link: "/kb/how-contribute-knowledge-base",
                             text: gettext("Learn moore about KB contribution"),
                         },
                     ],
@@ -181,16 +172,14 @@
                     [
                         Linkable,
                         {
-                            link:
-                                SUMO_URL +
-                                "/kb/mozilla-support-rules-guidelines",
+                            link: "/kb/mozilla-support-rules-guidelines",
                             text: gettext("Learn the basic guidelines"),
                         },
                     ],
                     [
                         Linkable,
                         {
-                            link: SUMO_URL + "/kb/locales",
+                            link: "/kb/locales",
                             text: gettext(
                                 "Check if your locale is available and go to your localization dashboard"
                             ),
@@ -206,9 +195,7 @@
                     [
                         Linkable,
                         {
-                            link:
-                                SUMO_URL +
-                                "/kb/how-contribute-article-localization",
+                            link: "/kb/how-contribute-article-localization",
                             text: gettext(
                                 "Learn more about localization contribution"
                             ),
@@ -244,7 +231,7 @@
                     [
                         Linkable,
                         {
-                            link: SUMO_URL + "/kb/social-support-guidelines",
+                            link: "/kb/social-support-guidelines",
                             text: gettext("Learn the basic guidelines"),
                         },
                     ],
@@ -267,8 +254,7 @@
                     [
                         Linkable,
                         {
-                            link:
-                                SUMO_URL + "/kb/how-contribute-social-support",
+                            link: "/kb/how-contribute-social-support",
                             text: gettext(
                                 "Learn more about social support contribution"
                             ),
@@ -304,7 +290,7 @@
                     [
                         Linkable,
                         {
-                            link: SUMO_URL + "/kb/get-started-mobile-support",
+                            link: "/kb/get-started-mobile-support",
                             text: gettext("Learn the basic guidelines"),
                         },
                     ],
@@ -325,9 +311,7 @@
                     [
                         Linkable,
                         {
-                            link:
-                                SUMO_URL +
-                                "/kb/how-contribute-mobile-support-start-here",
+                            link: "/kb/how-contribute-mobile-support-start-here",
                             text: gettext(
                                 "Learn more about mobile store support contribution"
                             ),
