@@ -544,6 +544,7 @@ AUTHENTICATION_BACKENDS = (
     "kitsune.users.auth.SumoOIDCAuthBackend",
     "kitsune.users.auth.FXAAuthBackend",
     "django.contrib.auth.backends.ModelBackend",
+    "guardian.backends.ObjectPermissionBackend",
 )
 if READ_ONLY:
     AUTHENTICATION_BACKENDS = ("kitsune.sumo.readonlyauth.ReadOnlyBackend",)
@@ -615,6 +616,10 @@ AVATAR_SIZE = 200  # in pixels
 MAX_AVATAR_FILE_SIZE = 1310720  # 1MB, in bytes
 GROUP_AVATAR_PATH = "uploads/groupavatars/"
 
+# Informs django-guardian that we don't want to enable object-level
+# permissions for anonymous users.
+ANONYMOUS_USER_NAME = None
+
 ACCOUNT_ACTIVATION_DAYS = 30
 
 PASSWORD_HASHERS = ("kitsune.users.hashers.SHA256PasswordHasher",)
@@ -636,7 +641,8 @@ INSTALLED_APPS = (
     "mozilla_django_oidc",
     "corsheaders",
     "kitsune.users",
-    "authority",
+    "authority",  # Remove after its migrations have been reverted.
+    "guardian",
     "waffle",
     "storages",
     "kitsune.access",

@@ -1,4 +1,3 @@
-import authority
 from django.conf import settings
 from django.urls import include, path, re_path
 from django.views.decorators.csrf import csrf_exempt
@@ -18,8 +17,6 @@ patch()
 from django.contrib import admin  # noqa
 
 admin.autodiscover()
-
-authority.autodiscover()
 
 urlpatterns = [
     re_path(r"^search/", include("kitsune.search.urls")),

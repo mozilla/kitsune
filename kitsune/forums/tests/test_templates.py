@@ -1,7 +1,6 @@
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
+from guardian.shortcuts import assign_perm
 
-from kitsune.access.tests import PermissionFactory
 from kitsune.forums.models import Post
 from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.tests import SumoPyQuery as pq
@@ -103,18 +102,11 @@ class PostsTemplateTests(ForumTestCase):
         t = p.thread
         f = t.forum
 
-        # Create the moderator group, give it the edit permission
-        # and add a moderator.
-        moderator_group = GroupFactory()
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(
-            codename="forums_forum.post_edit_forum",
-            content_type=ct,
-            object_id=f.id,
-            group=moderator_group,
-        )
+        # Create a moderator group, and give the group the edit permission.
         moderator = UserFactory()
+        moderator_group = GroupFactory()
         moderator_group.user_set.add(moderator)
+        assign_perm("forums.edit_forum_thread_post", moderator_group, f)
 
         self.client.login(username=moderator.username, password="testpass")
 
@@ -181,14 +173,9 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_restricted_hide_reply(self):
         """Reply fields don't show if user has no permission to post."""
-        t = ThreadFactory()
-        f = t.forum
-        ct = ContentType.objects.get_for_model(f)
-        # If the forum has the permission and the user isn't assigned said
-        # permission, then they can't post.
-        PermissionFactory(codename="forums_forum.post_in_forum", content_type=ct, object_id=f.id)
+        f = ForumFactory(restrict_posting=True)
+        t = ThreadFactory(forum=f)
         u = UserFactory()
-
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "forums.posts", args=[f.slug, t.pk])
         self.assertNotContains(response, "thread-reply")
@@ -353,13 +340,8 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_restricted_hide_new_thread(self):
         """'Post new thread' doesn't show if user has no permission to post."""
-        f = ForumFactory()
-        ct = ContentType.objects.get_for_model(f)
-        # If the forum has the permission and the user isn't assigned said
-        # permission, then they can't post.
-        PermissionFactory(codename="forums_forum.post_in_forum", content_type=ct, object_id=f.id)
+        f = ForumFactory(restrict_posting=True)
         u = UserFactory()
-
         self.client.login(username=u.username, password="testpass")
         response = get(self.client, "forums.threads", args=[f.slug])
         self.assertNotContains(response, "Post a new thread")
@@ -378,15 +360,7 @@ class ForumsTemplateTests(ForumTestCase):
 
     def test_restricted_is_invisible(self):
         """Forums with restricted view_in permission shouldn't show up."""
-        restricted_forum = ForumFactory()
-        # Make it restricted.
-        ct = ContentType.objects.get_for_model(restricted_forum)
-        PermissionFactory(
-            codename="forums_forum.view_in_forum",
-            content_type=ct,
-            object_id=restricted_forum.id,
-        )
-
+        restricted_forum = ForumFactory(restrict_viewing=True)
         response = get(self.client, "forums.forums")
         self.assertNotContains(response, restricted_forum.slug)
 

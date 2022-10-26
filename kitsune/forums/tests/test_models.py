@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta
 
-from django.contrib.contenttypes.models import ContentType
-
-from kitsune.access.tests import PermissionFactory
 from kitsune.flagit.models import FlaggedObject
 from kitsune.forums import POSTS_PER_PAGE
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Forum, Post, Thread
-from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
+from kitsune.forums.tests import (
+    ForumFactory,
+    ForumTestCase,
+    PostFactory,
+    ThreadFactory,
+)
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
@@ -100,29 +102,21 @@ class ForumModelTestCase(ForumTestCase):
         self.assertEqual(f.last_post.id, orig_post.id)
         self.assertEqual(t.last_post.id, orig_post.id)
 
-    def test_public_access(self):
-        # Assert Forums think they're publicly viewable and postable
-        # at appropriate times.
-
-        # By default, users have access to forums that aren't restricted.
-        u = UserFactory()
-        f = ForumFactory()
-        assert f.allows_viewing_by(u)
-        assert f.allows_posting_by(u)
-
-    def test_access_restriction(self):
+    def test_access(self):
         """Assert Forums are inaccessible to the public when restricted."""
-        # If the a forum has 'forums_forum.view_in_forum' permission defined,
-        # then it isn't public by default. If it has
-        # 'forums_forum.post_in_forum', then it isn't postable to by default.
-        f = ForumFactory()
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(codename="forums_forum.view_in_forum", content_type=ct, object_id=f.id)
-        PermissionFactory(codename="forums_forum.post_in_forum", content_type=ct, object_id=f.id)
-
+        forum1 = ForumFactory()
+        forum2 = ForumFactory(restrict_viewing=True)
+        forum3 = ForumFactory(restrict_posting=True)
+        forum4 = ForumFactory(restrict_viewing=True, restrict_posting=True)
         unprivileged_user = UserFactory()
-        assert not f.allows_viewing_by(unprivileged_user)
-        assert not f.allows_posting_by(unprivileged_user)
+        self.assertTrue(forum1.allows_viewing_by(unprivileged_user))
+        self.assertTrue(forum1.allows_posting_by(unprivileged_user))
+        self.assertFalse(forum2.allows_viewing_by(unprivileged_user))
+        self.assertTrue(forum2.allows_posting_by(unprivileged_user))
+        self.assertTrue(forum3.allows_viewing_by(unprivileged_user))
+        self.assertFalse(forum3.allows_posting_by(unprivileged_user))
+        self.assertFalse(forum4.allows_viewing_by(unprivileged_user))
+        self.assertFalse(forum4.allows_posting_by(unprivileged_user))
 
     def test_move_updates_last_posts(self):
         # Moving the thread containing a forum's last post to a new

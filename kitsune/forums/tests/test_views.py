@@ -1,15 +1,11 @@
-from unittest.mock import Mock, patch
+from guardian.shortcuts import assign_perm
 
-from django.contrib.contenttypes.models import ContentType
-
-from kitsune.access.tests import PermissionFactory
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
-from kitsune.forums.models import Forum, Thread
+from kitsune.forums.models import Thread
 from kitsune.forums.tests import (
     ForumFactory,
     ForumTestCase,
     PostFactory,
-    RestrictedForumFactory,
     ThreadFactory,
 )
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -23,7 +19,7 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_read_without_permission(self):
         """Listing posts without the view_in_forum permission should 404."""
-        rforum = RestrictedForumFactory()
+        rforum = ForumFactory(restrict_viewing=True)
         t = ThreadFactory(forum=rforum)
 
         response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
@@ -31,7 +27,7 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_reply_without_view_permission(self):
         """Posting without view_in_forum permission should 404."""
-        rforum = RestrictedForumFactory()
+        rforum = ForumFactory(restrict_viewing=True)
         t = ThreadFactory(forum=rforum)
         u = UserFactory()
 
@@ -43,15 +39,15 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_reply_without_post_permission(self):
         """Posting without post_in_forum permission should 403."""
-        rforum = RestrictedForumFactory(permission_code="forums_forum.post_in_forum")
+        rforum = ForumFactory(restrict_viewing=True, restrict_posting=True)
         t = ThreadFactory(forum=rforum)
         u = UserFactory()
+        assign_perm("forums.view_in_forum", u, rforum)
 
         self.client.login(username=u.username, password="testpass")
-        with patch.object(Forum, "allows_viewing_by", Mock(return_value=True)):
-            response = post(
-                self.client, "forums.reply", {"content": "Blahs"}, args=[t.forum.slug, t.id]
-            )
+        response = post(
+            self.client, "forums.reply", {"content": "Blahs"}, args=[t.forum.slug, t.id]
+        )
         self.assertEqual(403, response.status_code)
 
     def test_reply_thread_405(self):
@@ -69,7 +65,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_new_thread_without_view_permission(self):
         """Making a new thread without view permission should 404."""
-        rforum = RestrictedForumFactory()
+        rforum = ForumFactory(restrict_viewing=True)
         ThreadFactory(forum=rforum)
         u = UserFactory()
 
@@ -84,17 +80,17 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_new_thread_without_post_permission(self):
         """Making a new thread without post permission should 403."""
-        rforum = RestrictedForumFactory(permission_code="forums_forum.post_in_forum")
+        rforum = ForumFactory(restrict_viewing=True, restrict_posting=True)
         u = UserFactory()
+        assign_perm("forums.view_in_forum", u, rforum)
 
         self.client.login(username=u.username, password="testpass")
-        with patch.object(Forum, "allows_viewing_by", Mock(return_value=True)):
-            response = post(
-                self.client,
-                "forums.new_thread",
-                {"title": "Blahs", "content": "Blahs"},
-                args=[rforum.slug],
-            )
+        response = post(
+            self.client,
+            "forums.new_thread",
+            {"title": "Blahs", "content": "Blahs"},
+            args=[rforum.slug],
+        )
         self.assertEqual(403, response.status_code)
 
     def test_watch_GET_405(self):
@@ -108,7 +104,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_watch_forum_without_permission(self):
         """Watching forums without the view_in_forum permission should 404."""
-        rforum = RestrictedForumFactory()
+        rforum = ForumFactory(restrict_viewing=True)
         u = UserFactory()
 
         self.client.login(username=u.username, password="testpass")
@@ -119,7 +115,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_watch_thread_without_permission(self):
         """Watching threads without the view_in_forum permission should 404."""
-        rforum = RestrictedForumFactory()
+        rforum = ForumFactory(restrict_viewing=True)
         t = ThreadFactory(forum=rforum)
         u = UserFactory()
 
@@ -133,7 +129,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_read_without_permission(self):
         """Listing threads without the view_in_forum permission should 404."""
-        rforum = RestrictedForumFactory()
+        rforum = ForumFactory(restrict_viewing=True)
         response = get(self.client, "forums.threads", args=[rforum.slug])
         self.assertEqual(404, response.status_code)
 
@@ -141,7 +137,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         """Searching a restricted forum without the view_in_forum permission should 404."""
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
-        forum = RestrictedForumFactory()
+        forum = ForumFactory(restrict_viewing=True)
         response = self.client.get(urlparams(reverse("forums.search", args=[forum.slug]), q="foo"))
         self.assertEqual(404, response.status_code)
 
@@ -198,11 +194,9 @@ class ThreadTests(ForumTestCase):
         f = t.forum
         u = UserFactory()
         g = GroupFactory()
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(
-            codename="forums_forum.thread_edit_forum", content_type=ct, object_id=f.id, group=g
-        )
         g.user_set.add(u)
+
+        assign_perm("forums.edit_forum_thread", g, f)
 
         self.client.login(username=u.username, password="testpass")
         r = post(self.client, "forums.edit_thread", {"title": "new title"}, args=[f.slug, t.id])
@@ -332,17 +326,9 @@ class ThreadPermissionsTests(ForumTestCase):
         g = GroupFactory()
 
         # Give the user permission to move threads between the two forums.
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(
-            codename="forums_forum.thread_move_forum", content_type=ct, object_id=f.id, group=g
-        )
-        PermissionFactory(
-            codename="forums_forum.thread_move_forum",
-            content_type=ct,
-            object_id=t.forum.id,
-            group=g,
-        )
         g.user_set.add(u)
+        assign_perm("forums.move_forum_thread", g, f)
+        assign_perm("forums.move_forum_thread", g, t.forum)
 
         self.client.login(username=u.username, password="testpass")
         response = post(

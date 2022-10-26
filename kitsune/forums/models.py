@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 
 from kitsune import forums
-from kitsune.access.utils import has_perm, perm_is_defined_on
+from kitsune.access.utils import has_perm
 from kitsune.flagit.models import FlaggedObject
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
@@ -47,11 +47,23 @@ class Forum(NotificationsMixin, ModelBase):
     # Whether or not this forum is visible in the forum list.
     is_listed = models.BooleanField(default=True, db_index=True)
 
+    # Can only users/groups with permission view this forum?
+    restrict_viewing = models.BooleanField(default=False, db_index=True)
+    # Can only users/groups with permission post to this forum?
+    restrict_posting = models.BooleanField(default=False, db_index=True)
+
     class Meta(object):
         ordering = ["display_order", "id"]
         permissions = (
             ("view_in_forum", "Can view restricted forums"),
             ("post_in_forum", "Can post in restricted forums"),
+            ("delete_forum_thread", "Can delete forum threads"),
+            ("edit_forum_thread", "Can edit forum threads"),
+            ("lock_forum_thread", "Can lock/unlock forum threads"),
+            ("move_forum_thread", "Can move threads between forums"),
+            ("sticky_forum_thread", "Can mark/unmark a forum thread as sticky"),
+            ("delete_forum_thread_post", "Can delete posts within forum threads"),
+            ("edit_forum_thread_post", "Can edit posts within forum threads"),
         )
 
     def __str__(self):
@@ -62,28 +74,11 @@ class Forum(NotificationsMixin, ModelBase):
 
     def allows_viewing_by(self, user):
         """Return whether a user can view me, my threads, and their posts."""
-        return self._allows_public_viewing() or has_perm(user, "forums_forum.view_in_forum", self)
-
-    def _allows_public_viewing(self):
-        """Return whether I am a world-readable forum.
-
-        If a django-authority permission relates to me, I am considered non-
-        public. (We assume that you attached a permission to me in order to
-        assign it to some users or groups.) Considered adding a Public flag to
-        this model, but we didn't want it to show up on form and thus be
-        accidentally flippable by readers of the Admin forum, who are all
-        privileged enough to do so.
-
-        """
-        return not perm_is_defined_on("forums_forum.view_in_forum", self)
+        return (not self.restrict_viewing) or has_perm(user, "forums.view_in_forum", self)
 
     def allows_posting_by(self, user):
         """Return whether a user can make threads and posts in me."""
-        return self._allows_public_posting() or has_perm(user, "forums_forum.post_in_forum", self)
-
-    def _allows_public_posting(self):
-        """Return whether I am a world-writable forum."""
-        return not perm_is_defined_on("forums_forum.post_in_forum", self)
+        return (not self.restrict_posting) or has_perm(user, "forums.post_in_forum", self)
 
     def update_last_post(self, exclude_thread=None, exclude_post=None):
         """Set my last post to the newest, excluding given thread and post."""

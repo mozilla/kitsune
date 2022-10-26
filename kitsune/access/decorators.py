@@ -1,14 +1,9 @@
-import inspect
 from functools import wraps
 
-from django.apps import apps
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.db.models import Model
 from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
 from django.utils.http import urlquote
 
-from kitsune.access import utils as access
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -103,62 +98,3 @@ def permission_required(perm, login_url=None, redirect=REDIRECT_FIELD_NAME, only
         redirect_url_func=lambda: login_url,
         deny_func=deny_func,
     )
-
-
-def has_perm_or_owns_or_403(perm, owner_attr, obj_lookup, perm_obj_lookup, **kwargs):
-    """Act like permission_required_or_403 but also grant permission to owners.
-
-    Arguments:
-        perm: authority permission to check, e.g. 'forums_forum.edit_forum'
-
-        owner_attr: Attr of model object that references the owner
-
-        obj_lookup: Triple that specifies a lookup to the object on which
-            ownership should be compared. Items in the tuple are...
-            (model class or import path thereof,
-             kwarg name specifying field and comparator (e.g. 'id__exact'),
-             name of kwarg containing the value to which to compare)
-
-        perm_obj_lookup: Triple that specifies a lookup to the object on which
-            to check for permission. Elements of the tuple are as in
-            obj_lookup.
-
-    """
-
-    def decorator(view_func):
-        def _wrapped_view(request, *args, **kwargs):
-            # based on authority/decorators.py
-            user = request.user
-            if user.is_authenticated:
-                obj = _resolve_lookup(obj_lookup, kwargs)
-                perm_obj = _resolve_lookup(perm_obj_lookup, kwargs)
-                granted = access.has_perm_or_owns(user, perm, obj, perm_obj, owner_attr)
-                if granted or user.has_perm(perm):
-                    return view_func(request, *args, **kwargs)
-
-            # In all other cases, permission denied
-            return HttpResponseForbidden()
-
-        return wraps(view_func)(_wrapped_view)
-
-    return decorator
-
-
-def _resolve_lookup(obj_lookup, view_kwargs):
-    """Return the object indicated by the lookup triple and the kwargs passed
-    to the view.
-
-    """
-    (model, lookup, arg_name) = obj_lookup
-    value = view_kwargs.get(arg_name)
-    if value is None:
-        raise ValueError("Expected kwarg '%s' not found." % arg_name)
-    if isinstance(model, str):
-        model_class = apps.get_model(*model.split("."))
-    else:
-        model_class = model
-    if model_class is None:
-        raise ValueError("The given argument '%s' is not a valid model." % model)
-    if inspect.isclass(model_class) and not issubclass(model_class, Model):
-        raise ValueError("The argument '%s' needs to be a model." % model)
-    return get_object_or_404(model_class, **{lookup: value})
