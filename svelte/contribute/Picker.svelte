@@ -41,8 +41,8 @@
                     {gettext("Provide support on social channels")}
                 </Tile>
             {/if}
-            {#if location?.pathname != "/mobile"}
-                <Tile to="../mobile" img={storeImg}>
+            {#if location?.pathname != "/store"}
+                <Tile to="../store" img={storeImg}>
                     {gettext("Respond to mobile store reviews")}
                 </Tile>
             {/if}
