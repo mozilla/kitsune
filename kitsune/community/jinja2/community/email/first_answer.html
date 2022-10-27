@@ -23,17 +23,17 @@
   <p><strong>{{ _('Tell us about yourself!') }}</strong></p>
 
   <p>
-    {% trans intro_url='/forums/contributors', irc_url='https://client01.chat.mibbit.com/?server=irc.mozilla.org&channel=#sumo' %}
+    {% trans intro_url='/forums/contributors', matrix_url='https://chat.mozilla.org/#/room/#SUMO:mozilla.org' %}
       We are always very happy to hear from new people who like helping
       on the forums so if you haven’t met our community yet
       <a href="{{ intro_url }}">
         please take a minute to introduce yourself
       </a>.
       If you want to stay low-profile, that’s also ok :). You can also
-      find us all hanging out on IRC, on the
-      <a href="{{ irc_url }}">
-        #sumo channel
-      </a>.
+      find us all hanging out in the
+      <a href="{{ matrix_url }}">
+        #SUMO channel
+      </a> on Matrix.
     {% endtrans %}
   </p>
 
