@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from parameterized import parameterized
 
 from kitsune.questions.models import Answer, Question
@@ -8,6 +10,8 @@ from kitsune.questions.utils import (
     num_answers,
     num_questions,
     num_solutions,
+    remove_pii,
+    remove_home_dir_pii,
 )
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
@@ -123,3 +127,85 @@ class GetMobileProductFromUATests(TestCase):
     )
     def test_user_agents(self, ua, expected):
         self.assertEqual(expected, get_mobile_product_from_ua(ua))
+
+
+class PIIRemovalTests(TestCase):
+    @parameterized.expand(
+        [
+            ("C:\\User\\ringo", "C:\\User\\<USERNAME>"),
+            ("C:\\Users\\ringo\\Songs", "C:\\Users\\<USERNAME>\\Songs"),
+            ("C:\\WINNT\\Profiles\\ringo\\Songs\\", "C:\\WINNT\\Profiles\\<USERNAME>\\Songs\\"),
+            (
+                "C:\\Documents and Settings\\ringo\\Songs",
+                "C:\\Documents and Settings\\<USERNAME>\\Songs",
+            ),
+            (
+                "C:\\Users\\ringo\\AppData and C:\\Users\\ringo\\Songs",
+                "C:\\Users\\<USERNAME>\\AppData and C:\\Users\\<USERNAME>\\Songs",
+            ),
+            ("/user/ringo", "/user/<USERNAME>"),
+            ("/Users/ringo/Music", "/Users/<USERNAME>/Music"),
+            ("here is the path: /home/ringo/music", "here is the path: /home/<USERNAME>/music"),
+            (
+                "/Users/ringo/Music and /Users/ringo/Documents",
+                "/Users/<USERNAME>/Music and /Users/<USERNAME>/Documents",
+            ),
+        ]
+    )
+    def test_remove_home_dir_pii(self, text, expected):
+        self.assertEqual(remove_home_dir_pii(text), expected)
+
+    def test_remove_pii(self):
+        data = {
+            "application": {
+                "name": "Firefox",
+                "osVersion": "Windows_NT 10.0 19041",
+                "version": "88.0",
+                "buildID": "20210415204500",
+                "distributionID": "",
+                "userAgent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) "
+                    "Gecko/20100101 Firefox/88.0"
+                ),
+                "safeMode": False,
+                "updateChannel": "release",
+                "supportURL": "https://support.mozilla.org/1/firefox/88.0/WINNT/en-US/",
+                "numTotalWindows": 1,
+                "numFissionWindows": 0,
+                "numRemoteWindows": 1,
+                "launcherProcessState": 0,
+                "fissionAutoStart": False,
+                "fissionDecisionStatus": "disabledByDefault",
+                "remoteAutoStart": True,
+                "policiesStatus": 0,
+                "keyLocationServiceGoogleFound": True,
+                "keySafebrowsingGoogleFound": True,
+                "keyMozillaFound": True,
+            },
+            "environmentVariables": {
+                "MOZ_CRASHREPORTER_DATA_DIRECTORY": (
+                    "C:\\Users\\ringo\\AppData\\Roaming\\Mozilla\\Firefox\\Crash Reports"
+                ),
+                "MOZ_CRASHREPORTER_PING_DIRECTORY": (
+                    "C:\\Users\\ringo\\AppData\\Roaming\\Mozilla\\Firefox\\Pending Pings"
+                ),
+            },
+            "startupCache": {
+                "IgnoreDiskCache": False,
+                "paths": {
+                    "DiskCachePath": "C:\\Users\\ringo\\AppData\\Local\\Mozilla\\Firefox",
+                },
+            },
+        }
+        expected = deepcopy(data)
+        expected["environmentVariables"][
+            "MOZ_CRASHREPORTER_DATA_DIRECTORY"
+        ] = "C:\\Users\\<USERNAME>\\AppData\\Roaming\\Mozilla\\Firefox\\Crash Reports"
+        expected["environmentVariables"][
+            "MOZ_CRASHREPORTER_PING_DIRECTORY"
+        ] = "C:\\Users\\<USERNAME>\\AppData\\Roaming\\Mozilla\\Firefox\\Pending Pings"
+        expected["startupCache"]["paths"][
+            "DiskCachePath"
+        ] = "C:\\Users\\<USERNAME>\\AppData\\Local\\Mozilla\\Firefox"
+        remove_pii(data)
+        self.assertDictEqual(data, expected)

@@ -6,6 +6,16 @@ from django.conf import settings
 from kitsune.questions.models import Answer, Question
 from kitsune.wiki.utils import get_featured_articles as kb_get_featured_articles
 
+
+REGEX_NON_WINDOWS_HOME_DIR = re.compile(
+    r"(?P<home_dir_parent>/(?:user|users|home)/)[^/]+", re.IGNORECASE
+)
+REGEX_WINDOWS_HOME_DIR = re.compile(
+    r"(?P<home_dir_parent>\\(?:user|users|documents and settings|winnt\\profiles)\\)[^\\]+",
+    re.IGNORECASE,
+)
+
+
 log = logging.getLogger("k.questions")
 
 
@@ -85,3 +95,24 @@ def get_featured_articles(product, locale):
         return (pinned_articles + kb_get_featured_articles(product=product, locale=locale))[:4]
 
     return pinned_articles[-4:]
+
+
+def remove_home_dir_pii(text: str, mask: str = "<USERNAME>") -> str:
+    """
+    Cleans the given text of any PII within home directory paths.
+    """
+    scrubbed_home_dir = rf"\g<home_dir_parent>{mask}"
+    return REGEX_NON_WINDOWS_HOME_DIR.sub(
+        scrubbed_home_dir, REGEX_WINDOWS_HOME_DIR.sub(scrubbed_home_dir, text)
+    )
+
+
+def remove_pii(data: dict) -> None:
+    """
+    Remove PII from any text within the given dict.
+    """
+    for key, value in data.items():
+        if isinstance(value, dict):
+            remove_pii(value)
+        elif isinstance(value, str):
+            data[key] = remove_home_dir_pii(value)
