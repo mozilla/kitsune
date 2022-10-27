@@ -280,7 +280,7 @@
             </p>
         </Area>
     </Route>
-    <Route path="mobile" let:location>
+    <Route path="store" let:location>
         <Area
             area={gettext("Mobile Store support")}
             images={[imgHandsPng, imgHandsWebp, imgHands2xWebp]}
