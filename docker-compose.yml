@@ -13,7 +13,7 @@ services:
     tty: true
     depends_on:
       - mariadb
-      - elasticsearch7
+      - elasticsearch
       - kibana
       - redis
       - celery
@@ -36,7 +36,7 @@ services:
     volumes:
       - mysqlvolume:/var/lib/mysql
 
-  elasticsearch7:
+  elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
     environment:
       - discovery.type=single-node
@@ -52,8 +52,8 @@ services:
     ports:
       - 5601:5601
     environment:
-      ELASTICSEARCH_URL: http://elasticsearch7:9200
-      ELASTICSEARCH_HOSTS: http://elasticsearch7:9200
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
 
   redis:
     image: redis:3

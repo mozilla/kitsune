@@ -12,11 +12,11 @@ To know whether a change you make to a Document will work in prod,
 try it locally having already set up the mapping:
 
 ```
-./manage.py es7_init --limit TestDocument
+./manage.py es_init --limit TestDocument
 
 ... make changes to TestDocument ...
 
-./manage.py es7_init --limit TestDocument
+./manage.py es_init --limit TestDocument
 ```
 
 If that fails with an error,
@@ -26,16 +26,16 @@ and reindex everything into that index.
 However if it succeeds then it should also work on prod.
 
 Once the changes are deployed to prod,
-and the mapping is updated with `es7_init`,
+and the mapping is updated with `es_init`,
 some documents may need to be reindexed.
 This is because we disable dynamic mapping in `SumoDocument`,
-to prevent a dynamic mapping of the wrong type being set up before `es7_init` was able to be run during a deployment.
+to prevent a dynamic mapping of the wrong type being set up before `es_init` was able to be run during a deployment.
 
 So to ensure no data is missing from the index,
 run something like:
 
 ```
-./manage.py es7_reindex --limit TestDocument --updated-after <datetime of deploy> --updated-before <datetime of mapping update>
+./manage.py es_reindex --limit TestDocument --updated-after <datetime of deploy> --updated-before <datetime of mapping update>
 ```
 
 ### Indexing performance
@@ -45,7 +45,7 @@ you might want to add the `--print-sql-count` argument when testing out your cha
 to see how many SQL queries are being executed:
 
 ```sh
-CELERY_TASK_ALWAYS_EAGER=True ./manage.py es7_reindex --print-sql-count --sql-chunk-size=100 --count=100
+CELERY_TASK_ALWAYS_EAGER=True ./manage.py es_reindex --print-sql-count --sql-chunk-size=100 --count=100
 ```
 
 If the result is much less than 100,
@@ -87,7 +87,7 @@ as that returns a naive or aware datetime depending on the value of `USE_TZ`, wh
 You can set the following variable in your .env file to enable the logging of the queries that are sent to your local ElasticSearch instance.
 
 ```
-ES7_ENABLE_CONSOLE_LOGGING=True
+ES_ENABLE_CONSOLE_LOGGING=True
 ```
 
 ### Simulate slow and out of order query responses
@@ -234,7 +234,7 @@ In development synonyms can be updated very easily.
 Save your changes in the text file and run:
 
 ```
-./manage.py es7_init --reload-search-analyzers
+./manage.py es_init --reload-search-analyzers
 ```
 
 If no other changes were made to the index configurations,

@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, post_delete, m2m_changed
 from django.contrib.auth.models import User, Group
 from kitsune.users.models import Profile
-from kitsune.search.es7_utils import (
+from kitsune.search.es_utils import (
     index_object,
     delete_object,
     remove_from_field,

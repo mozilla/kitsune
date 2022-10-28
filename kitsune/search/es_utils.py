@@ -4,7 +4,7 @@ import inspect
 from celery import shared_task
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk as es7_bulk
+from elasticsearch.helpers import bulk as es_bulk
 from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch_dsl import Document, UpdateByQuery, analyzer, char_filter, token_filter
 
@@ -90,13 +90,13 @@ def es_analyzer_for_locale(locale, search_analyzer=False):
     )
 
 
-def es7_client(**kwargs):
-    """Return an ES7 Elasticsearch client"""
+def es_client(**kwargs):
+    """Return an ES Elasticsearch client"""
     # prefer a cloud_id if available
-    if es7_cloud_id := settings.ES7_CLOUD_ID:
-        kwargs.update({"cloud_id": es7_cloud_id, "http_auth": settings.ES7_HTTP_AUTH})
+    if es_cloud_id := settings.ES_CLOUD_ID:
+        kwargs.update({"cloud_id": es_cloud_id, "http_auth": settings.ES_HTTP_AUTH})
     else:
-        kwargs.update({"hosts": settings.ES7_URLS})
+        kwargs.update({"hosts": settings.ES_URLS})
     return Elasticsearch(**kwargs)
 
 
@@ -166,8 +166,8 @@ def index_objects_bulk(
     # if the request doesn't resolve within `timeout`,
     # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
     # before raising an exception:
-    success, errors = es7_bulk(
-        es7_client(
+    success, errors = es_bulk(
+        es_client(
             timeout=timeout,
             retry_on_timeout=True,
             initial_backoff=timeout,
@@ -198,7 +198,7 @@ def remove_from_field(doc_type_name, field_name, field_value):
         f"}}"
     )
 
-    update = UpdateByQuery(using=es7_client(), index=doc_type._index._name)
+    update = UpdateByQuery(using=es_client(), index=doc_type._index._name)
     update = update.filter("term", **{field_name: field_value})
     update = update.script(source=script, params={"value": field_value}, conflicts="proceed")
 

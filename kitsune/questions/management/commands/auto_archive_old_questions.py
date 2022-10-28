@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
 from kitsune.questions.models import Answer, Question
-from kitsune.search.es7_utils import index_objects_bulk
+from kitsune.search.es_utils import index_objects_bulk
 
 log = logging.getLogger("k.cron")
 

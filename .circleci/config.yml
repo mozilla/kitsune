@@ -30,10 +30,10 @@ jobs:
       - run:
           # copy synonym files to elasticsearch7 container, since circleci doesn't support volume mounts:
           # https://circleci.com/docs/2.0/building-docker-images/#mounting-folders
-          name: Copy synonym files to elasticsearch7
+          name: Copy synonym files to elasticsearch
           command: |
-            ./bin/dc_ci.sh up -d elasticsearch7
-            docker cp ./kitsune/search/dictionaries/synonyms/. project-elasticsearch7-1:/usr/share/elasticsearch/config/synonyms
+            ./bin/dc_ci.sh up -d elasticsearch
+            docker cp ./kitsune/search/dictionaries/synonyms/. project-elasticsearch-1:/usr/share/elasticsearch/config/synonyms
       - run:
           name: Run unit tests
           command: ./bin/dc_ci.sh run test ./bin/run-unit-tests.sh

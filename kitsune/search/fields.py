@@ -5,7 +5,7 @@ from elasticsearch_dsl.field import Keyword
 from elasticsearch_dsl.field import Object as DSLObject
 from elasticsearch_dsl.field import Text
 
-from kitsune.search.es7_utils import es_analyzer_for_locale
+from kitsune.search.es_utils import es_analyzer_for_locale
 
 SUPPORTED_LANGUAGES = list(settings.SUMO_LANGUAGES)
 # this is a test locale - no need to add it to ES
