@@ -4,85 +4,113 @@
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Thanks so much for your interest in helping users of Mozilla
-technologies!
+Welcome to SUMO a.k.a SUpport.Mozilla.Org! Thank you so much for your interest in helping Mozilla users.
+We are happy to have you here and very excited to share some fundamental resources and information to get you started.
 {% endtrans %}
 
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans url=add_utm('https://www.mozilla.org/en-US/about/governance/policies/participation/', 'contribute', source='new-contributor')%}
+First and foremost, you need to know about our <a href="{{ url }}">Community Participation Guidelines</a> (CPG). 
+Everyone within Mozilla is required to adhere to Mozilla’s CPG to help us create a safe and positive community experience for all. 
+If you’re just starting out, we highly encourage you to enroll in the following course to learn more about it.
+{% endtrans %}
+
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{{ _('(Contributor) Community Particiation Guidelines (CPG) Enforcement.') }}
+
+{{ add_utm('https://mozilla.teachable.com/', 'contribute', source='new-contributor') }}
+
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{{ _('Now you might be wondering: “Ok, I understand the CPG now. How can I help and get involved in the community?”') }}
+{#- L10n: This is an email.  Whitespace matters! -#}
+{{ _('There are many ways you can contribute to SUMO') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-We would love to find a good place for you to help users,
-so please send us an email with your username and the area
-you would like to get involved. Please feel free to add all
-your skills, we will try to find the right use for them :)
+Answer questions in the support forum
 {% endtrans %}
 
-
-{#- L10n: This is an email.  Whitespace matters! -#}
-{{ _('To help you find out where to help check this site:') }}
-
-{{ add_utm('https://support.mozilla.org/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}
-
-{#- L10n: This is an email.  Whitespace matters! -#}
-{{ _('There are several ways in which you can get involved:') }}
+{{ add_utm('https://support.mozilla.org/en-US/contribute/forum', 'contribute', source='new-forum-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Forum Contributor - Answer user support questions that are
-most-requested but have no replies:
+Improve our help articles
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor') }}
-
-{#- L10n: This is an email.  Whitespace matters! -#}
-{% trans %}
-Social Support Helper - Respond to tweets about Firefox and as the Firefox brand account:
-{% endtrans %}
-
-{{ add_utm('https://support.mozilla.org/kb/social-support-guidelines', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/en-US/contribute/kb', 'contribute', source='new-kb-contributor') }}
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-KB Editor - Help to update knowledge base articles that
-need changes or write new articles:
+Localize help articles to your local language
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/contributors/need-changes', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/en-US/contribute/l10n', 'contribute', source='new-l10n-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-L10N Contributor - Help to translate Firefox Help content
-to your language:
+Help users on social media
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/kb/localize-firefox-help', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/en-US/contribute/social', 'contribute', source='new-social-contributor') }}
+
+{% trans %}
+Respond to mobile store reviews
+{% endtrans %}
+
+{{ add_utm('https://support.mozilla.org/en-US/contribute/store', 'contribute', source='new-social-contributor') }}
+
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{{ _('Great! Now, how can I connect to other contributors?') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Let us know which of the above you would be interested in
-and we’ll help you get started. It’s great to have you onboard!
+We have a few channels you can use to reach out, introduce yourself, or discuss anything related to SUMO: 
 {% endtrans %}
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+SUMO Matrix room: You can chat with other community members in our Matrix room
+{% endtrans %}
+
+{{ add_utm('https://chat.mozilla.org/#/room/#SUMO:mozilla.org', 'contribute', source='new-contributor') }}
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+Contributors Forum: Follow contributor’s discussion to get updated on releases and community updates
+{% endtrans %}
+
+{{ add_utm('https://support.mozilla.org/en-US/forums/contributors/', 'contribute', source='new-training') }}
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+Discourse Forum: Get updated on what’s going on in other parts of Mozilla community
+{% endtrans %}
+
+{{ add_utm('https://discourse.mozilla.org/c/sumo/22', 'contribute', source='new-contributor') }}
 
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
-Just introduce yourself in the forum for New
-Contributors by starting a new thread. Put your name on the thread title and
-tell us a bit about yourself:
+Contributors also meet monthly at 5 pm UTC on Wednesday (usually a week before the Firefox train-release) to discuss product releases, community updates, or general Mozilla updates. 
+You can find the agenda of past and upcoming meetings.
 {% endtrans %}
 
-http://mzl.la/1CGbET4
+{{ add_utm('https://wiki.mozilla.org/Support:Community_Calls', 'contribute', source='new-contributor') }}
+
+
+{#- L10n: This is an email.  Whitespace matters! -#}
+{% trans %}
+Last but not least, let’s keep rocking the helpful web together!
+{% endtrans %}
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-Lastly, find others in the community just like you on the #sumo IRC channel. That is right Mozilla has a live chat channel for contributors.
-irc.mozilla.org #sumo - web-based IRC:
+Thanks,
+SUMO Community Managers
 {% endtrans %}
 
-{{ add_utm('https://kiwiirc.com/client/irc.mozilla.org/sumo', 'get-involved', source='new-contributor') }}
-
-{# L10n: This is at the end of an email. #}
-{{ _('Welcome to SUMO!') }}
-
-Giulia and Kiki
-SUMO Community Manager{% endautoescape %}
+{% endautoescape %}
