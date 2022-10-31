@@ -5,76 +5,102 @@
 
   <p>
     {% trans %}
-      Thanks so much for your interest in helping users of Mozilla
-      technologies!
+      Welcome to SUMO a.k.a SUpport.Mozilla.Org! Thank you so much for your interest in helping Mozilla users.
+      We are happy to have you here and very excited to share some fundamental resources and information to get you started.
     {% endtrans %}
   </p>
 
   <p>
-    {% trans %}
-      We would love to find a good place for you to help users,
-      so please send us an email with your username and the area
-      you would like to get involved. Please feel free to add all
-      your skills, we will try to find the right use for them :)
+    {% trans url=add_utm('https://www.mozilla.org/en-US/about/governance/policies/participation/', 'contribute', source='new-contributor')%}
+      First and foremost, you need to know about our <a href="{{ url }}">Community Participation Guidelines</a> (CPG). 
+      Everyone within Mozilla is required to adhere to Mozilla’s CPG to help us create a safe and positive community experience for all. 
+      If you’re just starting out, we highly encourage you to enroll in the following course to learn more about it.
     {% endtrans %}
   </p>
 
   <p>
-    <a href="{{ add_utm('https://support.mozilla.org/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}">
-      {{ _('Click here to find out where to help.') }}
+    <a href="{{ add_utm('https://mozilla.teachable.com/', 'contribute', source='new-contributor') }}">
+      {{ _('(Contributor) Community Particiation Guidelines (CPG) Enforcement.') }}
     </a>
   </p>
 
-  <p>{{ _('There are several ways in which you can get involved:') }}</p>
+  <p>
+    {{ _('Now you might be wondering: <bold>“Ok, I understand the CPG now. How can I help and get involved in the community?”</bold>') }}
+  </p>
+
+  <p>{{ _('There are many ways you can contribute to SUMO') }}</p>
 
   <ul>
     <li>
-      {% trans url=add_utm('https://support.mozilla.org/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor')%}
-        <a href="{{ url }}">Forum Contributor</a>
-        - Answer user support questions that are
-        most-requested but have no replies.
-      {% endtrans %}
-      </a>
-    </li>
-    <li>
-      {% trans url=add_utm('http://goo.gl/pKis5g', 'essentials for new contributors here', source='new-training')%}
-        As you’re getting started, you might be worried about facing situations that can scare away any new contributor: “What if I encounter an angry user who doesn’t want to cooperate?”, “What if I don’t know the answer?”) Don’t worry, we’ve all been there! That’s why we've put together this guide to help you navigate tough situations and keep the forum a positive place for both you and the people you help. Learn the <a href="{{ url }}">essentials for new contributors here</a>.
-      {% endtrans %}
-    </li>
-    {% trans url=add_utm('https://support.mozilla.org/social-support-guidelines', 'get-involved', source='new-contributor') %}
-        <a href="{{ url }}">Social Support Contributor</a>
-        - Respond to tweets about Firefox as the Firefox Brand account.
+      {% trans url=add_utm('https://support.mozilla.org/en-US/contribute/forum', 'contribute', source='new-forum-contributor')%}
+        <a href="{{ url }}">Answer questions in the support forum</a>
       {% endtrans %}
     </li>
     <li>
-      {% trans url=add_utm('https://support.mozilla.org/contributors/need-changes', 'get-involved', source='new-contributor') %}
-        <a href="{{ url }}">KB Editor</a>
-        - Help to update knowledge base articles that
-        need changes or write new articles.
+      {% trans url=add_utm('https://support.mozilla.org/en-US/contribute/kb', 'contribute', source='new-kb-contributor')%}
+        <a href="{{ url }}">Improve our help articles</a>
       {% endtrans %}
     </li>
     <li>
-      {% trans url=add_utm('https://support.mozilla.org/kb/localize-firefox-help', 'get-involved', source='new-contributor') %}
-        <a href="{{ url }}">L10N Contributor</a>
-        - Help to translate Firefox Help content
-        to your language.
+      {% trans url=add_utm('https://support.mozilla.org/en-US/contribute/l10n', 'contribute', source='new-l10n-contributor') %}
+          <a href="{{ url }}">Localize help articles to your local language</a>
+      {% endtrans %}
+    </li>
+    <li>
+      {% trans url=add_utm('https://support.mozilla.org/en-US/contribute/social', 'contribute', source='new-social-contributor') %}
+          <a href="{{ url }}">Help users on social media</a>
+      {% endtrans %}
+    </li>
+    <li>
+      {% trans url=add_utm('https://support.mozilla.org/en-US/contribute/store', 'contribute', source='new-mobile-contributor') %}
+          <a href="{{ url }}">Respond to mobile store reviews</a>
       {% endtrans %}
     </li>
   </ul>
 
+  <p>{{ _('<bold>Great! Now, how can I connect to other contributors?</bold>') }}</p>
+
+
   <p>
     {% trans %}
-      Let us know which of the above you would be interested in
-      and we’ll help you get started. It’s great to have you onboard!
+      We have a few channels you can use to reach out, introduce yourself, or discuss anything related to SUMO: 
     {% endtrans %}
   </p>
 
-  <p>{{ _('Welcome to SUMO!') }}</p>
-
-  <p>Giulia and Kiki </p>
+  <ul>
+    <li>
+      {% trans url=add_utm('https://chat.mozilla.org/#/room/#SUMO:mozilla.org', 'contribute', source='new-contributor')%}
+        <a href="{{ url }}">SUMO Matrix room</a>
+        : You can chat with other community members in our Matrix room
+      {% endtrans %}
+    </li>
+    <li>
+      {% trans url=add_utm('https://support.mozilla.org/en-US/forums/contributors/', 'contribute', source='new-training')%}
+        <a href="{{ url }}">Contributors Forum</a>
+        : Follow contributor’s discussion to get updated on releases and community updates
+      {% endtrans %}
+    </li>
+    <li>
+      {% trans url=add_utm('https://discourse.mozilla.org/c/sumo/22', 'contribute', source='new-contributor') %}
+          <a href="{{ url }}">Discourse Forum</a>
+          : Get updated on what’s going on in other parts of Mozilla community
+      {% endtrans %}
+    </li>
 
   <p>
+    {% trans url="https://wiki.mozilla.org/Support:Community_Calls" %}
+      Contributors also meet monthly at 5 pm UTC on Wednesday (usually a week before the Firefox train-release) to discuss product releases, community updates, or general Mozilla updates. 
+      Here is <a href="{{ url }}">the agenda</a> of past and upcoming meetings.
+    {% endtrans %}
+  </p>
+
+  <p>{{ _('Last but not least, let’s keep rocking the helpful web together!') }}</p>
+
+  <p>
+  {% trans %}
+    Thanks,
     <br />SUMO Community Managers
+  {% endtrans %}
   </p>
 {% endblock %}
 
