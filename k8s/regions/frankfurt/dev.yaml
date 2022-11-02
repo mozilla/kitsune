@@ -65,6 +65,8 @@ app:
     default_from_email: "notifications-dev@support.mozilla.org"
     db_conn_max_age: 0
     debug: False
+    dev: True
+    enable_dev_login: True
     dms_auto_archive_old_questions: SECRET
     dms_cache_most_unhelpful_kb_articles: SECRET
     dms_cohort_analysis: SECRET
