@@ -1222,5 +1222,5 @@ GRAPHENE = {
 # Contributor Groups
 LEGACY_CONTRIBUTOR_GROUPS = [
     "Contributors",
-    "Registered as Contributors",
+    "Registered as contributor",
 ]
