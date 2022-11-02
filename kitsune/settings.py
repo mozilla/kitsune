@@ -1211,7 +1211,12 @@ TRUSTED_GROUPS = [
     "Reviewers",
     # Temporary workaround to exempt individual users if needed
     "Escape Spam Filtering",
-    "Trusted Contributors",
+    "trusted contributors",
+    "kb-contributors",
+    "l10n-contributors",
+    "forum-contributors",
+    "social-contributors",
+    "mobile-contributors",
 ]
 
 # GraphQL configuration
@@ -1223,4 +1228,5 @@ GRAPHENE = {
 LEGACY_CONTRIBUTOR_GROUPS = [
     "Contributors",
     "Registered as contributor",
+    "trusted contributors",
 ]
