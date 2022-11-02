@@ -1211,7 +1211,7 @@ TRUSTED_GROUPS = [
     "Reviewers",
     # Temporary workaround to exempt individual users if needed
     "Escape Spam Filtering",
-    "Trusted Contributors",
+    "trusted contributors",
     "kb-contributors",
     "l10n-contributors",
     "forum-contributors",
@@ -1228,5 +1228,5 @@ GRAPHENE = {
 LEGACY_CONTRIBUTOR_GROUPS = [
     "Contributors",
     "Registered as Contributors",
-    "Trusted Contributors",
+    "trusted contributors",
 ]
