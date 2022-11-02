@@ -95,7 +95,7 @@
 
   {% for announ in get_announcements() %}
       {% call announcement_bar(announ.id, 'warning') %}
-          {{ announ.content | safe }}
+          {{ announ.content | wiki_to_html }}
       {% endcall %}
   {% endfor %}
   {% if settings.READ_ONLY %}
