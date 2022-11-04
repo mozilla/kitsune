@@ -32,7 +32,11 @@ class Command(BaseCommand):
                 continue
 
             if Path(f"locale/{locale}").is_dir():
-                sub_cmd = "update"
+                command = [
+                    "pybabel",
+                    "update",
+                    "--ignore-obsolete",
+                ]
             elif not is_supported_for_init(locale):
                 # NOTE: Babel only supports initializing locales included in the CLDR.
                 self.stdout.write(
@@ -40,16 +44,20 @@ class Command(BaseCommand):
                 )
                 continue
             else:
-                sub_cmd = "init"
+                command = ["pybabel", "init"]
 
-            CommandLineInterface().run(
-                [
-                    "pybabel",
-                    sub_cmd,
+            command.extend(
+                (
                     "-d",
                     "locale/",
                     "-l",
                     locale,
+                )
+            )
+
+            CommandLineInterface().run(
+                command
+                + [
                     "-D",
                     "django",
                     "-i",
@@ -57,13 +65,8 @@ class Command(BaseCommand):
                 ]
             )
             CommandLineInterface().run(
-                [
-                    "pybabel",
-                    sub_cmd,
-                    "-d",
-                    "locale/",
-                    "-l",
-                    locale,
+                command
+                + [
                     "-D",
                     "djangojs",
                     "-i",
