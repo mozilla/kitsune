@@ -36,6 +36,7 @@ class Command(BaseCommand):
                     "pybabel",
                     "update",
                     "--ignore-obsolete",
+                    "--no-fuzzy-matching",
                 ]
             elif not is_supported_for_init(locale):
                 # NOTE: Babel only supports initializing locales included in the CLDR.
