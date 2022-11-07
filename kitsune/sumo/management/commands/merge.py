@@ -1,17 +1,9 @@
 from pathlib import Path
+import subprocess
+import textwrap
 
-from babel import Locale, UnknownLocaleError
-from babel.messages.frontend import CommandLineInterface
 from django.conf import settings
-from django.core.management.base import BaseCommand
-
-
-def is_supported_for_init(locale):
-    try:
-        Locale.parse(locale)
-    except UnknownLocaleError:
-        return False
-    return True
+from django.core.management.base import BaseCommand, CommandError
 
 
 class Command(BaseCommand):
@@ -31,42 +23,44 @@ class Command(BaseCommand):
             if locale in ("en_US", "xx"):
                 continue
 
-            if Path(f"locale/{locale}").is_dir():
-                sub_cmd = "update"
-            elif not is_supported_for_init(locale):
-                # NOTE: Babel only supports initializing locales included in the CLDR.
-                self.stdout.write(
-                    self.style.WARNING(f"WARNING: skipping locale {locale} (unsupported for init)")
-                )
-                continue
-            else:
-                sub_cmd = "init"
+            for domain in ("django", "djangojs"):
 
-            CommandLineInterface().run(
-                [
-                    "pybabel",
-                    sub_cmd,
-                    "-d",
-                    "locale/",
-                    "-l",
-                    locale,
-                    "-D",
-                    "django",
-                    "-i",
-                    "locale/templates/LC_MESSAGES/django.pot",
-                ]
-            )
-            CommandLineInterface().run(
-                [
-                    "pybabel",
-                    sub_cmd,
-                    "-d",
-                    "locale/",
-                    "-l",
-                    locale,
-                    "-D",
-                    "djangojs",
-                    "-i",
-                    "locale/templates/LC_MESSAGES/djangojs.pot",
-                ]
-            )
+                domain_pot = Path(f"locale/templates/LC_MESSAGES/{domain}.pot")
+                if not domain_pot.is_file():
+                    raise CommandError(f"unable to find {domain_pot}")
+                domain_po = Path(f"locale/{locale}/LC_MESSAGES/{domain}.po")
+                if not domain_po.parent.is_dir():
+                    domain_po.parent.mkdir(parents=True)
+
+                if not domain_po.is_file():
+                    self.run(
+                        "msginit",
+                        "--no-translator",
+                        f"--locale={locale}",
+                        f"--input={domain_pot}",
+                        f"--output-file={domain_po}",
+                        "--width=200",
+                        on_success=f"initialized {domain_po}",
+                        on_failure=f"error initializing {domain_po}",
+                    )
+
+                self.run(
+                    "msgmerge",
+                    "--update",
+                    "--width=200",
+                    "--backup=off",
+                    domain_po,
+                    domain_pot,
+                    on_success=f"updated {domain_po}",
+                    on_failure=f"error updating {domain_po}",
+                )
+
+    def run(self, *args, on_success=None, on_failure=None):
+        result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        if result.returncode == 0:
+            if on_success:
+                self.stdout.write(self.style.SUCCESS(on_success))
+        else:
+            if on_failure:
+                self.stdout.write(self.style.ERROR(on_failure))
+            self.stdout.write(self.style.ERROR(textwrap.indent(result.stdout, "   ")))
