@@ -59,6 +59,10 @@
 <style lang="scss">
     @use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
 
+    h1 {
+        outline: none;
+    }
+
     .hero {
         display: flex;
         flex-direction: column-reverse;
