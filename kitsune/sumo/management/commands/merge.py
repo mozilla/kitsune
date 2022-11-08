@@ -6,6 +6,10 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 
+INDENT = " " * 3
+CHECKMARK = "\u2713"
+
+
 class Command(BaseCommand):
     """
     Merge will update the .po files for all locales based on the .pot files, or
@@ -34,33 +38,40 @@ class Command(BaseCommand):
 
                 if not domain_po.is_file():
                     self.run(
+                        f"initializing {domain_po}",
                         "msginit",
                         "--no-translator",
                         f"--locale={locale}",
                         f"--input={domain_pot}",
                         f"--output-file={domain_po}",
                         "--width=200",
-                        on_success=f"initialized {domain_po}",
-                        on_failure=f"error initializing {domain_po}",
                     )
 
                 self.run(
+                    f"updating {domain_po}",
                     "msgmerge",
                     "--update",
                     "--width=200",
                     "--backup=off",
                     domain_po,
                     domain_pot,
-                    on_success=f"updated {domain_po}",
-                    on_failure=f"error updating {domain_po}",
                 )
 
-    def run(self, *args, on_success=None, on_failure=None):
-        result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        if result.returncode == 0:
-            if on_success:
-                self.stdout.write(self.style.SUCCESS(on_success))
+    def run(self, description, *cmd_and_args):
+        self.stdout.write(f"{description}...", ending="")
+        try:
+            subprocess.run(
+                cmd_and_args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=True,
+                text=True,
+            )
+        except subprocess.CalledProcessError as err:
+            self.stdout.write(self.style.ERROR("x"))
+            self.stdout.write(
+                self.style.ERROR(textwrap.indent(f"error(s) while {description}:", INDENT))
+            )
+            self.stdout.write(self.style.ERROR(textwrap.indent(err.stdout, INDENT * 2)), ending="")
         else:
-            if on_failure:
-                self.stdout.write(self.style.ERROR(on_failure))
-            self.stdout.write(self.style.ERROR(textwrap.indent(result.stdout, "   ")))
+            self.stdout.write(self.style.SUCCESS(CHECKMARK))
