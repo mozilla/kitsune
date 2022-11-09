@@ -30,7 +30,7 @@ urlpatterns = [
     re_path(r"^messages", include("kitsune.messages.urls")),
     re_path(r"^1", include("kitsune.inproduct.urls")),
     re_path(r"^postcrash", include("kitsune.postcrash.urls")),
-    re_path(r"^groups", include("kitsune.groups.urls")),
+    re_path(r"^groups/", include("kitsune.groups.urls")),
     re_path(r"^kpi/", include("kitsune.kpi.urls")),
     re_path(r"^products", include("kitsune.products.urls")),
     re_path(r"^announcements", include("kitsune.announcements.urls")),
