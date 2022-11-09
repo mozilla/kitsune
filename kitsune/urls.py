@@ -25,7 +25,7 @@ urlpatterns = [
     re_path(r"^flagged/", include("kitsune.flagit.urls")),
     re_path(r"^upload/", include("kitsune.upload.urls")),
     re_path(r"^kb", include("kitsune.wiki.urls")),
-    re_path(r"^gallery", include("kitsune.gallery.urls")),
+    re_path(r"^gallery/", include("kitsune.gallery.urls")),
     re_path(r"^chat", RedirectView.as_view(url="questions/new")),
     re_path(r"^messages", include("kitsune.messages.urls")),
     re_path(r"^1", include("kitsune.inproduct.urls")),
