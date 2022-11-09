@@ -21,7 +21,7 @@ admin.autodiscover()
 urlpatterns = [
     re_path(r"^search/", include("kitsune.search.urls")),
     re_path("forums/", include("kitsune.forums.urls")),
-    re_path(r"^questions", include("kitsune.questions.urls")),
+    re_path(r"^questions/", include("kitsune.questions.urls")),
     re_path(r"^flagged/", include("kitsune.flagit.urls")),
     re_path(r"^upload/", include("kitsune.upload.urls")),
     re_path(r"^kb", include("kitsune.wiki.urls")),
