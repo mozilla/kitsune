@@ -191,11 +191,11 @@ class SimpleSyntaxTestCase(TestCase):
         # Both internal links should link to the same article
         self.assertEqual(
             p.parse("[[%s]]" % doc.title),
-            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title),
+            '<p><a href="/en-US/kb/%s/">%s</a>\n</p>' % (doc.slug, doc.title),
         )
         self.assertEqual(
             p.parse("[[%s]]" % redirect.title),
-            '<p><a href="/en-US/kb/%s">%s</a>\n</p>' % (doc.slug, doc.title),
+            '<p><a href="/en-US/kb/%s/">%s</a>\n</p>' % (doc.slug, doc.title),
         )
 
 

@@ -202,7 +202,7 @@ class DocumentTests(TestCaseBase):
         RevisionFactory(document=d2, is_approved=False)
         url = reverse("wiki.document", args=[r.document.slug], locale="fr")
         response = self.client.get(url, follow=True)
-        self.assertEqual("/fr/kb/french", response.redirect_chain[0][0])
+        self.assertEqual("/fr/kb/french/", response.redirect_chain[0][0])
         doc = pq(response.content)
         self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
         # Fallback message is shown.
@@ -2504,7 +2504,7 @@ class ArticlePreviewTests(TestCaseBase):
         doc = pq(response.content)
         link = doc("#doc-content a")
         self.assertEqual("Prueba", link.text())
-        self.assertEqual("/es/kb/prueba", link[0].attrib["href"])
+        self.assertEqual("/es/kb/prueba/", link[0].attrib["href"])
 
 
 class HelpfulVoteTests(TestCaseBase):

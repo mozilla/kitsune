@@ -19,7 +19,7 @@ class SimpleWikiDecoratorTests(TestCase):
         req.LANGUAGE_CODE = "es"
         res = temp(req)
         self.assertEqual(302, res.status_code)
-        self.assertEqual("/kb/frequently-asked-questions", res["location"])
+        self.assertEqual("/kb/frequently-asked-questions/", res["location"])
 
     def test_non_faq_locale_doesnt_redirect(self):
         @check_simple_wiki_locale
