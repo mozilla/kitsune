@@ -37,12 +37,14 @@ def opensearch_plugin(request):
     """Render an OpenSearch Plugin."""
     host = "%s://%s" % ("https" if request.is_secure() else "http", request.get_host())
 
-    return render(
+    response = render(
         request,
         "search/plugin.html",
         {"host": host, "locale": request.LANGUAGE_CODE},
         content_type="application/opensearchdescription+xml",
     )
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    return response
 
 
 def _fallback_results(locale, product_slugs):
@@ -81,6 +83,7 @@ def simple_search(request):
             json.dumps({"error": _("Invalid search data.")}),
             content_type="application/json",
             status=400,
+            headers={"X-Robots-Tag": "noindex"},
         )
 
     cleaned = search_form.cleaned_data
@@ -154,7 +157,9 @@ def simple_search(request):
         data["message"] = constants.NO_MATCH
 
     json_data = JSONRenderer().render(data)
-    return HttpResponse(json_data, content_type="application/json")
+    return HttpResponse(
+        json_data, content_type="application/json", headers={"X-Robots-Tag": "noindex, nofollow"}
+    )
 
 
 def _make_pagination(page):
