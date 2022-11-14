@@ -1,10 +1,8 @@
 from datetime import datetime
 
 import factory
-from django.contrib.contenttypes.models import ContentType
 from django.template.defaultfilters import slugify
 
-from kitsune.access.tests import PermissionFactory
 from kitsune.forums.models import Forum, Post, Thread
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
 from kitsune.users.tests import UserFactory
@@ -20,15 +18,6 @@ class ForumFactory(factory.django.DjangoModelFactory):
 
     name = FuzzyUnicode()
     slug = factory.LazyAttribute(lambda o: slugify(o.name))
-
-
-class RestrictedForumFactory(ForumFactory):
-    @factory.post_generation
-    def permission_code(forum, created, extracted, **kwargs):
-        assert created
-        permission = extracted or "forums_forum.view_in_forum"
-        ct = ContentType.objects.get_for_model(forum)
-        PermissionFactory(codename=permission, content_type=ct, object_id=forum.id)
 
 
 class ThreadFactory(factory.django.DjangoModelFactory):

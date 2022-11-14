@@ -31,11 +31,11 @@
       <li class="mzp-c-menu-list-item clear-button-styles">{{ private_message(post.author) }}</li>
       {% endif %}
       {% if post.id and not thread.is_locked and
-        has_perm_or_owns('forums_forum.post_edit_forum', post, forum, 'author') %}
+        (user == post.author or has_perm(user, 'forums.edit_forum_thread_post', forum)) %}
       <li class="mzp-c-menu-list-item"><a
           href="{{ url('forums.edit_post', forum.slug, thread.id, post.id) }}">{{ _('Edit this post') }}</a></li>
       {% endif %}
-      {% if post.id and has_perm('forums_forum.post_delete_forum', forum) %}
+      {% if post.id and has_perm(user, 'forums.delete_forum_thread_post', forum) %}
       <li class="mzp-c-menu-list-item"><a
           href="{{ url('forums.delete_post', forum.slug, thread.id, post.id) }}">{{ _('Delete this post') }}</a></li>
       {% endif %}

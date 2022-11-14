@@ -9,7 +9,6 @@ from kitsune.forums.tests import (
     ForumFactory,
     ForumTestCase,
     PostFactory,
-    RestrictedForumFactory,
     ThreadFactory,
 )
 from kitsune.sumo.tests import get
@@ -58,7 +57,7 @@ class ForumTestFeeds(ForumTestCase):
         """Ensure that threads are not shown unless permitted."""
         request = Mock()
         request.user = UserFactory()
-        forum = RestrictedForumFactory()
+        forum = ForumFactory(restrict_viewing=True)
 
         with self.assertRaisesMessage(Http404, ""):
             ThreadsFeed().get_object(request, forum.slug)
@@ -70,7 +69,7 @@ class ForumTestFeeds(ForumTestCase):
         """Ensure that posts are not shown unless permitted."""
         request = Mock()
         request.user = UserFactory()
-        forum = RestrictedForumFactory()
+        forum = ForumFactory(restrict_viewing=True)
         thread = ThreadFactory(forum=forum)
 
         with self.assertRaisesMessage(Http404, ""):

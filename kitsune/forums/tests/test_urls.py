@@ -1,6 +1,5 @@
-from django.contrib.contenttypes.models import ContentType
+from guardian.shortcuts import assign_perm
 
-from kitsune.access.tests import PermissionFactory
 from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
 from kitsune.sumo.tests import get, post
 from kitsune.users.tests import GroupFactory, UserFactory
@@ -39,17 +38,9 @@ class BelongsTestCase(ForumTestCase):
 
         # Give the user the permission to lock threads.
         g = GroupFactory()
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(
-            codename="forums_forum.thread_locked_forum", content_type=ct, object_id=f.id, group=g
-        )
-        PermissionFactory(
-            codename="forums_forum.thread_locked_forum",
-            content_type=ct,
-            object_id=t.forum.id,
-            group=g,
-        )
         g.user_set.add(u)
+        assign_perm("forums.lock_forum_thread", g, f)
+        assign_perm("forums.lock_forum_thread", g, t.forum)
 
         self.client.login(username=u.username, password="testpass")
         r = post(self.client, "forums.lock_thread", {}, args=[f.slug, t.id])
@@ -63,17 +54,9 @@ class BelongsTestCase(ForumTestCase):
 
         # Give the user the permission to sticky threads.
         g = GroupFactory()
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(
-            codename="forums_forum.thread_sticky_forum", content_type=ct, object_id=f.id, group=g
-        )
-        PermissionFactory(
-            codename="forums_forum.thread_sticky_forum",
-            content_type=ct,
-            object_id=t.forum.id,
-            group=g,
-        )
         g.user_set.add(u)
+        assign_perm("forums.sticky_forum_thread", g, f)
+        assign_perm("forums.sticky_forum_thread", g, t.forum)
 
         self.client.login(username=u.username, password="testpass")
         r = post(self.client, "forums.sticky_thread", {}, args=[f.slug, t.id])
@@ -97,17 +80,9 @@ class BelongsTestCase(ForumTestCase):
 
         # Give the user the permission to delete threads.
         g = GroupFactory()
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(
-            codename="forums_forum.thread_delete_forum", content_type=ct, object_id=f.id, group=g
-        )
-        PermissionFactory(
-            codename="forums_forum.thread_delete_forum",
-            content_type=ct,
-            object_id=t.forum.id,
-            group=g,
-        )
         g.user_set.add(u)
+        assign_perm("forums.delete_forum_thread", g, f)
+        assign_perm("forums.delete_forum_thread", g, t.forum)
 
         self.client.login(username=u.username, password="testpass")
         r = get(self.client, "forums.delete_thread", args=[f.slug, t.id])
@@ -143,17 +118,9 @@ class BelongsTestCase(ForumTestCase):
 
         # Give the user the permission to delete posts.
         g = GroupFactory()
-        ct = ContentType.objects.get_for_model(f)
-        PermissionFactory(
-            codename="forums_forum.post_delete_forum",
-            content_type=ct,
-            object_id=p.thread.forum_id,
-            group=g,
-        )
-        PermissionFactory(
-            codename="forums_forum.post_delete_forum", content_type=ct, object_id=f.id, group=g
-        )
         g.user_set.add(u)
+        assign_perm("forums.delete_forum_thread_post", g, f)
+        assign_perm("forums.delete_forum_thread_post", g, p.thread.forum)
 
         self.client.login(username=u.username, password="testpass")
 
