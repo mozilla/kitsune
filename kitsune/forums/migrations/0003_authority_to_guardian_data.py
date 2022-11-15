@@ -30,8 +30,8 @@ def migrate_authority_to_guardian(apps, schema_editor):
         return
 
     try:
-        Permission = apps.get_model("authority", "Permission")
-    except LookupError:
+        from authority.models import Permission
+    except ImportError:
         # The django-authority app is not installed.
         return
 
