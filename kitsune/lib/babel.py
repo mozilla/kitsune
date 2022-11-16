@@ -1,5 +1,4 @@
 from io import BytesIO
-import re
 
 from babel.messages.extract import extract_javascript
 import django
@@ -7,13 +6,7 @@ from django.conf import settings
 from jinja2.ext import babel_extract
 
 
-SVELTE_SPECIAL_TAGS = (
-    re.compile(rb"{#(if|each|await|key)\s+[^}]+}"),
-    re.compile(rb"{:else\s*}"),
-    re.compile(rb"{:else\s+if\s+[^}]+}"),
-    re.compile(rb"{/(if|each|await|key)\s*}"),
-    re.compile(rb"{@(html|debug|const)\s+[^}]+}"),
-)
+SVELTE_SPECIAL_TAG_PREFIXES = set([b"{#", b"{:", b"{/", b"{@"])
 
 
 def generate_option(value):
@@ -44,15 +37,21 @@ def extract_svelte(fileobj, keywords, comment_tags, options):
     the underlying Babel JavaScript extractor, while maintaining the same
     line numbers as the original Svelte file.
 
-    NOTE: The goal is to avoid a full-blown Svelte language parser, so this
-          approach can fail in specific syntactical cases. We can revisit
-          this if we find it doesn't handle some important case.
+    NOTE: This approach assumes that any special Svelte tags always exist
+          on their own line without anything else on that line. Of course,
+          this approach is not as elegant as using a full-blown parser for
+          Svelte files, but it's much easier and will work for our current
+          practical purposes.
     """
-    tagless = fileobj.read()
-    for tag in SVELTE_SPECIAL_TAGS:
-        tagless = tag.sub(b" ", tagless)
-
-    return extract_javascript(BytesIO(tagless), keywords, comment_tags, options)
+    filtered = BytesIO()
+    for line in fileobj:
+        if line.lstrip()[:2] in SVELTE_SPECIAL_TAG_PREFIXES:
+            # Write a new line to maintain equivalent line numbers.
+            filtered.write(b"\n")
+        else:
+            filtered.write(line)
+    filtered.seek(0)
+    return extract_javascript(filtered, keywords, comment_tags, options)
 
 
 def extract_jinja(fileobj, keywords, comment_tags, options):
