@@ -1,6 +1,14 @@
+import re
+
 import django
 from django.conf import settings
 from jinja2.ext import babel_extract
+
+
+EXTRACTION_REGEX = re.compile(
+    r"""(?P<funcname>_|N_|gettext|ugettext)\(\s*(?P<quote>['"`])(?P<msgid>.*?)(?P=quote)\s*\)""",
+    re.DOTALL,
+)
 
 
 def generate_option(value):
@@ -16,6 +24,20 @@ def generate_option(value):
     if isinstance(value, (list, tuple)):
         return ",".join(value)
     return value
+
+
+def extract_svelte(fileobj, keywords, comment_tags, options):
+    """
+    Regular-expression-based extractor for Svelte files.
+    """
+    text = fileobj.read().decode(options.get("encoding", "utf-8"))
+
+    lineno = 1
+    previous_pos = 0
+    for match_object in EXTRACTION_REGEX.finditer(text):
+        lineno = text.count("\n", previous_pos, match_object.start()) + lineno
+        yield (lineno, match_object["funcname"], match_object["msgid"], [])
+        previous_pos = match_object.start()
 
 
 def extract_jinja(fileobj, keywords, comment_tags, options):
