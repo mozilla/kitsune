@@ -57,10 +57,9 @@ def patch():
 
     # Monkey-patch admin site.
     from django.contrib import admin
-    from adminplus.sites import AdminSitePlus
 
     # Patch the admin
-    admin.site = AdminSitePlus()
+    admin.site = admin.AdminSite()
     admin.sites.site = admin.site
     admin.site.site_header = "Kitsune Administration"
     admin.site.site_title = "Mozilla Support"

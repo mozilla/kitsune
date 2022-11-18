@@ -50,7 +50,6 @@ django-enforce-host = "^1.0.1"
 django-cache-url = "^3.2.3"
 django-authority = {git = "https://github.com/jazzband/django-authority.git"}
 django-extensions = "^3.1.5"
-django-adminplus = "^0.5"
 django-filter = "^21.1"
 django-redis = "^5.2.0"
 factory-boy = "^3.2.1"
