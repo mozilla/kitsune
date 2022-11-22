@@ -4,7 +4,7 @@ import pytz
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, serializers, viewsets
@@ -30,7 +30,7 @@ def display_name_or_none(user):
 
 class TimezoneField(serializers.Field):
     def to_representation(self, obj):
-        return force_text(obj)
+        return force_str(obj)
 
     def to_internal_value(self, data):
         try:

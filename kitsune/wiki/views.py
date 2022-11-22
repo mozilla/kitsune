@@ -16,7 +16,7 @@ from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpRespo
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -611,7 +611,7 @@ def document_revisions(request, document_slug, contributor_form=None):
 
     revs = Revision.objects.filter(document=doc).order_by("-created", "-id")
 
-    if request.is_ajax():
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         template = "wiki/includes/revision_list.html"
     else:
         template = "wiki/history.html"
@@ -778,7 +778,7 @@ def compare_revisions(request, document_slug):
     revision_from = get_object_or_404(Revision, document=doc, id=from_id)
     revision_to = get_object_or_404(Revision, document=doc, id=to_id)
 
-    if request.is_ajax():
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         template = "wiki/includes/revision_diff.html"
     else:
         template = "wiki/compare_revisions.html"
@@ -1220,7 +1220,7 @@ def helpful_vote(request, document_slug):
     else:
         message = _("You already voted on this Article.")
 
-    if request.is_ajax():
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         r = {"message": message}
         if survey:
             r.update(survey=survey)

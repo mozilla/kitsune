@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.contrib.sites.models import Site
-from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse
 from django.test import override_settings
 from django.test.client import RequestFactory
 from pyquery import PyQuery as pq
@@ -27,10 +27,11 @@ class RedirectTests(TestCase):
 
     @mock.patch.object(Site.objects, "get_current")
     def test_deprecated_redirect(self, get_current):
+        self.get_response = lambda *args, **kwargs: HttpResponse()
         get_current.return_value.domain = "su.mo.com"
         req = self.rf.get("/en-US/")
         # Since we're rendering a template we need this to run.
-        LocaleURLMiddleware().process_request(req)
+        LocaleURLMiddleware(self.get_response).process_request(req)
         resp = deprecated_redirect(req, url="home")
         self.assertEqual(200, resp.status_code)
         doc = pq(resp.content)

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django_jinja import library
 from markupsafe import Markup, escape
 

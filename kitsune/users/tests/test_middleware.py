@@ -4,7 +4,7 @@ from django.test.client import RequestFactory
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.auth.middleware import AuthenticationMiddleware
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 
 from kitsune.users.middleware import LogoutInvalidatedSessionsMiddleware
 from kitsune.sumo.tests import TestCase
@@ -14,13 +14,14 @@ from kitsune.users.tests import UserFactory, ProfileFactory
 class LogoutInvalidatedSessionsMiddlewareTests(TestCase):
     def setUp(self):
         self.request = RequestFactory().request()
-        session_middleware = SessionMiddleware()
+        self.get_response = lambda *args, **kwargs: HttpResponse()
+        session_middleware = SessionMiddleware(self.get_response)
         session_middleware.process_request(self.request)
-        auth_middleware = AuthenticationMiddleware()
+        auth_middleware = AuthenticationMiddleware(self.get_response)
         auth_middleware.process_request(self.request)
 
     def _process_request(self, request):
-        middleware = LogoutInvalidatedSessionsMiddleware()
+        middleware = LogoutInvalidatedSessionsMiddleware(self.get_response)
         return middleware.process_request(request)
 
     def test_does_nothing_to_anonymous_sessions(self):

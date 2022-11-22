@@ -3,10 +3,10 @@ import json
 from django.forms import MultipleChoiceField, Widget
 from django.forms.utils import flatatt
 from django.utils.datastructures import MultiValueDict
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from taggit.models import Tag
 
 
@@ -52,7 +52,7 @@ class TagWidget(Widget):
             # Hidden input for form state:
             if not self.async_urls:
                 output += "<input%s />" % flatatt(
-                    {"value": force_text(tag.name), "type": "hidden", "name": control_name}
+                    {"value": force_str(tag.name), "type": "hidden", "name": control_name}
                 )
 
                 # Linkless tag name:

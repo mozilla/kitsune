@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _lazy, ugettext as _
+from django.utils.translation import gettext_lazy as _lazy, gettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.lib.sumo_locales import LOCALES

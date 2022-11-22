@@ -8,6 +8,7 @@ from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
+from django.http import HttpResponse
 from josepy import jwa, jwk, jws
 from pyquery import PyQuery as pq
 
@@ -116,12 +117,13 @@ class ProfileNotificationTests(TestCase):
         request = RequestFactory().get(reverse("users.edit_profile", args=[user.username]))
         request.user = user
         request.LANGUAGE_CODE = "en"
+        self.get_response = lambda *args, **kwargs: HttpResponse()
 
-        middleware = SessionMiddleware()
+        middleware = SessionMiddleware(self.get_response)
         middleware.process_request(request)
         request.session.save()
 
-        middleware = MessageMiddleware()
+        middleware = MessageMiddleware(self.get_response)
         middleware.process_request(request)
         request.session.save()
         return request

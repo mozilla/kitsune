@@ -593,7 +593,7 @@ class RevisionTests(TestCase):
         """Saving a Revision with a bad based_on value raises an error."""
         r1 = RevisionFactory()
         # Revision of some other unrelated Document
-        r2 = RevisionFactory.build(based_on=r1)
+        r2 = RevisionFactory.build(document=DocumentFactory(), based_on=r1)
         self.assertRaises(ProgrammingError, r2.save)
 
     def test_correct_based_on_to_none(self):
@@ -601,7 +601,7 @@ class RevisionTests(TestCase):
         there is no current_revision of the English document."""
         r1 = RevisionFactory()
         # Revision of some other unrelated Document
-        r2 = RevisionFactory.build(based_on=r1)
+        r2 = RevisionFactory.build(document=DocumentFactory(), based_on=r1)
         self.assertRaises(ValidationError, r2.clean)
         self.assertEqual(None, r2.based_on)
 

@@ -31,7 +31,7 @@ from django.dispatch import Signal
 def _signal_with_docs(args, doc):
     # FIXME - this fixes the docstring, but not the provided arguments
     # so the API docs look weird.
-    signal = Signal(providing_args=args)
+    signal = Signal()
     signal.__doc__ = doc
     return signal
 

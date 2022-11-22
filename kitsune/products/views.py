@@ -33,7 +33,7 @@ def product_landing(request, slug):
     """The product landing page."""
     product = get_object_or_404(Product, slug=slug)
 
-    if request.is_ajax():
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         # Return a list of topics/subtopics for the product
         topic_list = list()
         for t in Topic.objects.filter(product=product, visible=True):

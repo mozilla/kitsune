@@ -6,7 +6,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.sumo import email_utils

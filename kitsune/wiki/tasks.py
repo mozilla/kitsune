@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
 from django.urls import reverse as django_reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from requests.exceptions import HTTPError
 from sentry_sdk import capture_exception
 

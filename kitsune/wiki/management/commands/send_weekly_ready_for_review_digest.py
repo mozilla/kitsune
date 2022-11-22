@@ -5,7 +5,7 @@ from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
 from django.db.models import F, ObjectDoesNotExist, Q
 from django.utils.translation import pgettext
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from kitsune.products.models import Product
 from kitsune.sumo import email_utils

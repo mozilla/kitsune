@@ -1,7 +1,7 @@
 from babel.dates import format_datetime
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from pytz import timezone
 
 from kitsune.questions.models import Question

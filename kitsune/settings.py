@@ -641,7 +641,6 @@ INSTALLED_APPS = (
     "mozilla_django_oidc",
     "corsheaders",
     "kitsune.users",
-    "authority",  # Remove after its migrations have been reverted.
     "guardian",
     "waffle",
     "storages",

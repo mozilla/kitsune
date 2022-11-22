@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 class TypedMultipleChoiceField(forms.MultipleChoiceField):

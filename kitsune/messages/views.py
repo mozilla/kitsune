@@ -4,8 +4,8 @@ from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import ugettext as _
-from django.utils.translation import ungettext
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import login_required
@@ -145,10 +145,10 @@ def delete(request, msgid=None, msgtype="inbox"):
             )
         else:
             messages.delete()
-            msg = ungettext("The message was deleted!", "The messages were deleted!", len(msgids))
+            msg = ngettext("The message was deleted!", "The messages were deleted!", len(msgids))
             contrib_messages.add_message(request, contrib_messages.SUCCESS, msg)
 
-        if request.is_ajax():
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return HttpResponse(json.dumps({"message": m} for m in messages))
 
         return HttpResponseRedirect(reverse("messages.{t}".format(t=msgtype)))
