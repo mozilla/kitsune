@@ -5,9 +5,11 @@ Disallow: /admin/
 Disallow: /{{ l }}/forums
 Disallow: /{{ l }}/users
 Disallow: /{{ l }}/user
+Disallow: /{{ l }}/search
 {% endfor %}
 {% for l in settings.NON_SUPPORTED_LOCALES.keys() %}
 Disallow: /{{ l }}/forums
 Disallow: /{{ l }}/users
 Disallow: /{{ l }}/user
+Disallow: /{{ l }}/search
 {% endfor %}

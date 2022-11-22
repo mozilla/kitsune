@@ -13,6 +13,12 @@ class OpenSearchTestCase(TestCase):
         # were correct.
         assert b"en-US" not in response.content
 
+    def test_robots_tag(self):
+        response = self.client.get(reverse("search.plugin", locale="en-US"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("x-robots-tag" in response)
+        self.assertEqual(response["x-robots-tag"], "noindex, nofollow")
+
     def test_plugin_expires_and_mimetype(self):
         response = self.client.get(reverse("search.plugin", locale="en-US"))
         self.assertEqual(response.status_code, 200)
