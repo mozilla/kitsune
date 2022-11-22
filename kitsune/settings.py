@@ -651,8 +651,6 @@ INSTALLED_APPS = (
     "kitsune.forums",
     "rest_framework.authtoken",
     "kitsune.questions",
-    "adminplus",
-    "kitsune.kadmin",
     "kitsune.kbadge",
     "taggit",
     "kitsune.flagit",
