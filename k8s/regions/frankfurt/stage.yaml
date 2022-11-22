@@ -72,6 +72,7 @@ app:
     dms_fix_current_revisions: SECRET
     dms_generate_missing_share_links: SECRET
     dms_rebuild_kb: SECRET
+    dms_reindex_es: SECRET
     dms_reindex_es7: SECRET
     dms_reload_question_traffic_stats: SECRET
     dms_reload_wiki_traffic_stats: SECRET
@@ -95,6 +96,9 @@ app:
     engage_robots: False
     es_index_prefix: "sumo_stage"
     es_live_indexing: True
+    es_use_ssl: True
+    es_http_auth: SECRET
+    es_cloud_id: SECRET
     es7_use_ssl: True
     es7_http_auth: SECRET
     es7_cloud_id: SECRET
