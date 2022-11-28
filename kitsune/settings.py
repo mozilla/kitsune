@@ -688,6 +688,7 @@ INSTALLED_APPS = (
     "django_user_agents",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.modeladmin",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
