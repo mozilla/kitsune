@@ -1,6 +1,12 @@
+from io import BytesIO
+
+from babel.messages.extract import extract_javascript
 import django
 from django.conf import settings
 from jinja2.ext import babel_extract
+
+
+SVELTE_SPECIAL_TAG_PREFIXES = set([b"{#", b"{:", b"{/", b"{@"])
 
 
 def generate_option(value):
@@ -16,6 +22,36 @@ def generate_option(value):
     if isinstance(value, (list, tuple)):
         return ",".join(value)
     return value
+
+
+def extract_svelte(fileobj, keywords, comment_tags, options):
+    """
+    Custom extractor for Svelte files.
+
+    Since Babel's built-in JavaScript extractor is designed to handle JSX
+    files as well plain JavaScript files, it can also handle nearly all of
+    the syntax within a Svelte file. What it doesn't always handle well are
+    the statements that open, continue, and close Svelte logic blocks. They
+    sometimes confuse it such that it fails to recognize some localizable
+    strings. This custom extractor essentially hides those statements from
+    the underlying Babel JavaScript extractor, while maintaining the same
+    line numbers as the original Svelte file.
+
+    NOTE: This approach assumes that any special Svelte tags always exist
+          on their own line without anything else on that line. Of course,
+          this approach is not as elegant as using a full-blown parser for
+          Svelte files, but it's much easier and will work for our current
+          practical purposes.
+    """
+    filtered = BytesIO()
+    for line in fileobj:
+        if line.lstrip()[:2] in SVELTE_SPECIAL_TAG_PREFIXES:
+            # Write a new line to maintain equivalent line numbers.
+            filtered.write(b"\n")
+        else:
+            filtered.write(line)
+    filtered.seek(0)
+    return extract_javascript(filtered, keywords, comment_tags, options)
 
 
 def extract_jinja(fileobj, keywords, comment_tags, options):
