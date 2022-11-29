@@ -1,18 +1,51 @@
 from django.apps import apps as global_apps
+from django.contrib.auth.models import Permission
 from django.db import migrations
 
 
 AUTHORITY_TO_GUARDIAN = {
-    "forums_forum.thread_edit_forum": "forums.edit_forum_thread",
-    "forums_forum.thread_delete_forum": "forums.delete_forum_thread",
-    "forums_forum.thread_move_forum": "forums.move_forum_thread",
-    "forums_forum.thread_sticky_forum": "forums.sticky_forum_thread",
-    "forums_forum.thread_locked_forum": "forums.lock_forum_thread",
-    "forums_forum.post_edit_forum": "forums.edit_forum_thread_post",
-    "forums_forum.post_delete_forum": "forums.delete_forum_thread_post",
-    "forums_forum.post_in_forum": "forums.post_in_forum",
-    "forums_forum.view_in_forum": "forums.view_in_forum",
+    "forums_forum.thread_edit_forum": ("edit_forum_thread", "Can edit forum threads"),
+    "forums_forum.thread_delete_forum": ("delete_forum_thread", "Can delete forum threads"),
+    "forums_forum.thread_move_forum": (
+        "move_forum_thread",
+        "Can move threads between forums",
+    ),
+    "forums_forum.thread_sticky_forum": (
+        "sticky_forum_thread",
+        "Can mark/unmark a forum thread as sticky",
+    ),
+    "forums_forum.thread_locked_forum": (
+        "lock_forum_thread",
+        "Can lock/unlock forum threads",
+    ),
+    "forums_forum.post_edit_forum": (
+        "edit_forum_thread_post",
+        "Can edit posts within forum threads",
+    ),
+    "forums_forum.post_delete_forum": (
+        "delete_forum_thread_post",
+        "Can delete posts within forum threads",
+    ),
+    "forums_forum.post_in_forum": ("post_in_forum", "Can post in restricted forums"),
+    "forums_forum.view_in_forum": ("view_in_forum", "Can view restricted forums"),
 }
+
+
+def get_or_create_guardian_perm(authority_perm):
+    """
+    Given an authority.models.Permission instance, returns its equivalent Django
+    Permission (django.contrib.auth.models.Permission) instance. If the equivalent
+    Django Permission instance doesn't already exist, it is created.
+    """
+    assert authority_perm.codename in AUTHORITY_TO_GUARDIAN
+
+    codename, name = AUTHORITY_TO_GUARDIAN[authority_perm.codename]
+
+    return Permission.objects.get_or_create(
+        name=name,
+        codename=codename,
+        content_type=authority_perm.content_type,
+    )[0]
 
 
 def migrate_authority_to_guardian(apps, schema_editor):
@@ -62,10 +95,8 @@ def migrate_authority_to_guardian(apps, schema_editor):
             # of django-guardian.
             continue
 
-        assert perm.codename in AUTHORITY_TO_GUARDIAN
-
         assign_perm(
-            AUTHORITY_TO_GUARDIAN[perm.codename],
+            get_or_create_guardian_perm(perm),
             perm.group if perm.group else perm.user,
             forum,
         )
