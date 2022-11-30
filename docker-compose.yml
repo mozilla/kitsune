@@ -22,7 +22,7 @@ services:
       - "8000:8000"
 
   mariadb:
-    image: mariadb:10.8
+    image: mariadb:10.7
     environment:
       - MYSQL_ROOT_PASSWORD=kitsune
       - MYSQL_USER=kitsune
