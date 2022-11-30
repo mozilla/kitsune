@@ -59,7 +59,7 @@ simplejson = "^3.17.6"
 twython = "^3.9.1"
 translate-toolkit = "^3.5.1"
 django-ratelimit = "^3.0.1"
-django-storages = "^1.12.3"
+django-storages = {extras = ["google"], version = "^1.13.1"}
 django-taggit = "^3.0.0"
 django-user-agents = "^0.4.0"
 django-watchman = "^1.2.0"
