@@ -103,7 +103,7 @@
     </Route>
     <Route path="kb" let:location>
         <Area
-            area={gettext("Support articles")}
+            area={gettext("Help articles")}
             images={[
                 imgIntroductionPng,
                 imgIntroductionWebp,
@@ -153,7 +153,7 @@
                 },
             }}
         >
-            <h1>{gettext("Help us write support articles")}</h1>
+            <h1>{gettext("Help us write help articles")}</h1>
             <h2>{gettext("Share your wisdom with the world!")}</h2>
             <p>
                 {gettext(
