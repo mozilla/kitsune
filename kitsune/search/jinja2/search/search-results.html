@@ -2,6 +2,7 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from "search/includes/result.html" import search_result with context %}
 {% set crumbs = [(url('forums.search', forum_slug=forum.slug), forum.name), (None, _('Results'))] %}
+{% set meta = (('robots', 'noindex, nofollow'),) %}
 
 {% block content %}
 <div id="search-results" class="sumo-page-section--inner">
