@@ -4,7 +4,8 @@
 {% if not scripts %}
   {% set scripts = ('forums',) %}
 {% endif %}
-{% set meta = (('robots', 'noindex'),) %}
+{% set meta = (('robots', 'noindex, nofollow'),) %}
+
 
 {% block side_top %}
   {% block side_top_top %}{% endblock %}
