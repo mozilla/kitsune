@@ -24,7 +24,7 @@
 
       <div class="form-widget submit">
         <button type="submit" class="btn btn-submit big">{{ _('Update thread') }}</button>
-        <a class="btn" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+        <a class="btn" rel="ugc" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
       </div>
     </form>
   </article>

@@ -12,10 +12,10 @@
 {% block side_top_top %}
   <ul id="thread-actions" class="sidebar-nav">
     {% if perms.kbforums.change_thread or (thread.creator == request.user and not thread.is_locked) %}
-      <li><a href="{{ url('wiki.discuss.edit_thread', document.slug, thread.id) }}">{{ _('Edit this thread') }}</a></li>
+      <li><a rel="ugc" href="{{ url('wiki.discuss.edit_thread', document.slug, thread.id) }}">{{ _('Edit this thread') }}</a></li>
     {% endif %}
     {% if perms.kbforums.delete_thread %}
-      <li><a href="{{ url('wiki.discuss.delete_thread', document.slug, thread.id) }}">{{ _('Delete this thread') }}</a></li>
+      <li><a rel="ugc" href="{{ url('wiki.discuss.delete_thread', document.slug, thread.id) }}">{{ _('Delete this thread') }}</a></li>
     {% endif %}
     {% if perms.kbforums.lock_thread %}
       <li>

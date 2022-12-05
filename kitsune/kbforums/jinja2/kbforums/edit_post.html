@@ -33,7 +33,7 @@
             data-preview-container-id="post-preview"
             data-preview-content-id="id_content">{{ _('Preview') }}
         </button>
-        <a class="sumo-button push-left" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+        <a class="sumo-button push-left" rel="ugc" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
       </div>
     </form>
 

@@ -10,7 +10,7 @@
     <article id="threads" class="content-box sumo-page-section">
       <h1 class="sumo-page-heading">{{ _('{d} Discussion')|f(d=document.title) }}</h1>
       <div class="sumo-button-wrap forum-actions">
-        <a id="new-thread" class="sumo-button button-primary" href="{{ url('wiki.discuss.new_thread', document_slug=document.slug) }}">{{ _('Post a new thread') }}</a>
+        <a id="new-thread" class="sumo-button button-primary" rel="ugc" href="{{ url('wiki.discuss.new_thread', document_slug=document.slug) }}">{{ _('Post a new thread') }}</a>
 
         {% if user.is_authenticated %}
           <form action="{{ url('wiki.discuss.watch_forum', document.slug) }}" method="post">
@@ -31,11 +31,11 @@
       <div class="table-scroll">
       <table class="{% if not desc_toggle %}desc{% endif %}">
         <tr>
-          <th class="type"><a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Type') }}</a></th>
+          <th class="type"><a rel="ugc" href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Type') }}</a></th>
           <th class="title">{{ _('Title') }}</th>
-          <th class="author{% if sort == 3 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
-          <th class="replies{% if sort == 4 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
-          <th class="last-post{% if sort == 5 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
+          <th class="author{% if sort == 3 %} sort{% endif %}"><a rel="ugc" href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
+          <th class="replies{% if sort == 4 %} sort{% endif %}"><a rel="ugc" href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
+          <th class="last-post{% if sort == 5 %} sort{% endif %}"><a rel="ugc" href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
         </tr>
         {% for thread in threads.object_list %}
           <tr class="threads">
@@ -47,14 +47,14 @@
                 <img src="{{ webpack_static('sumo/img/blank.png') }}" alt="{{ pgettext('thread_type', 'Sticky') }}" title="{{ pgettext('thread_type', 'Sticky') }}" class="icon-sticky" />
               {% endif %}
             </td>
-            <td class="title"><a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ thread.title }}</a></td>
-            <td class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></td>
+            <td class="title"><a rel="ugc" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ thread.title }}</a></td>
+            <td class="author"><a class="username" rel="ugc" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></td>
             <td class="replies">{{ thread.replies }}</td>
             <td class="last-post">
-              <a href="{{ thread.last_post.get_absolute_url() }}">
+              <a rel="ugc" href="{{ thread.last_post.get_absolute_url() }}">
                 {{ datetimeformat(thread.last_post.created) }}
               </a><br/>
-              <span class="text-body-xs ">{{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}</span>
+              <span class="text-body-xs ">{{ _('by <a class="username" rel="ugc" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}</span>
             </td>
           </tr>
         {% endfor %}
