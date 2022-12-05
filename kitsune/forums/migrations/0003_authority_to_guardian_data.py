@@ -4,8 +4,14 @@ from django.db import migrations
 
 
 AUTHORITY_TO_GUARDIAN = {
-    "forums_forum.thread_edit_forum": ("edit_forum_thread", "Can edit forum threads"),
-    "forums_forum.thread_delete_forum": ("delete_forum_thread", "Can delete forum threads"),
+    "forums_forum.thread_edit_forum": (
+        "edit_forum_thread",
+        "Can edit forum threads",
+    ),
+    "forums_forum.thread_delete_forum": (
+        "delete_forum_thread",
+        "Can delete forum threads",
+    ),
     "forums_forum.thread_move_forum": (
         "move_forum_thread",
         "Can move threads between forums",
@@ -26,8 +32,14 @@ AUTHORITY_TO_GUARDIAN = {
         "delete_forum_thread_post",
         "Can delete posts within forum threads",
     ),
-    "forums_forum.post_in_forum": ("post_in_forum", "Can post in restricted forums"),
-    "forums_forum.view_in_forum": ("view_in_forum", "Can view restricted forums"),
+    "forums_forum.post_in_forum": (
+        "post_in_forum",
+        "Can post in restricted forums",
+    ),
+    "forums_forum.view_in_forum": (
+        "view_in_forum",
+        "Can view restricted forums",
+    ),
 }
 
 
@@ -37,7 +49,8 @@ def get_or_create_guardian_perm(authority_perm):
     Permission (django.contrib.auth.models.Permission) instance. If the equivalent
     Django Permission instance doesn't already exist, it is created.
     """
-    assert authority_perm.codename in AUTHORITY_TO_GUARDIAN
+    if authority_perm.codename not in AUTHORITY_TO_GUARDIAN:
+        return None
 
     codename, name = AUTHORITY_TO_GUARDIAN[authority_perm.codename]
 
@@ -95,8 +108,13 @@ def migrate_authority_to_guardian(apps, schema_editor):
             # of django-guardian.
             continue
 
+        if not (guardian_perm := get_or_create_guardian_perm(perm)):
+            # Silently ignore any Authority permissions that don't have a
+            # Guardian equivalent.
+            continue
+
         assign_perm(
-            get_or_create_guardian_perm(perm),
+            guardian_perm,
             perm.group if perm.group else perm.user,
             forum,
         )
