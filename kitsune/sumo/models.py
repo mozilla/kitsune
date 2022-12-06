@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from wagtail.models import Page
 
 
 class ModelBase(models.Model):
@@ -35,6 +36,13 @@ class ModelBase(models.Model):
     def update(self, **kw):
         """Shortcicuit to the update method."""
         self.__class__.objects.filter(pk=self.pk).update(**kw)
+
+
+class WagtailBase(Page, ModelBase):
+    ...
+
+    class Meta:
+        abstract = True
 
 
 class LocaleField(models.CharField):
