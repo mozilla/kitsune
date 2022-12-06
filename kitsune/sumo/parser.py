@@ -3,7 +3,7 @@ from urllib.parse import urlparse, parse_qs
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.translation import gettext_lazy as _lazy, ugettext as _
+from django.utils.translation import gettext_lazy as _lazy, gettext as _
 
 from sentry_sdk import capture_exception
 from wikimarkup.parser import Parser, ALLOWED_TAGS

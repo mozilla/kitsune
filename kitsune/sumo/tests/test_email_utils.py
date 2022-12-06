@@ -29,7 +29,7 @@ mock_gettext_lazy = lazy(mock_ugettext)
 
 
 def mock_gettext(f):
-    f = patch("django.utils.translation.ugettext", mock_ugettext)(f)
+    f = patch("django.utils.translation.gettext", mock_ugettext)(f)
     f = patch("django.utils.translation.gettext_lazy", mock_gettext_lazy)(f)
     return f
 
@@ -44,7 +44,7 @@ class SafeTranslationTests(TestCase):
     def test_mocked_gettext(self):
         """I'm not entirely sure about the mocking, so test that."""
         # Import translation now so it is affected by the mock.
-        from django.utils.translation import ugettext as _
+        from django.utils.translation import gettext as _
 
         with uselocale("en-US"):
             self.assertEqual(_("Hello"), "Hello")
@@ -57,7 +57,7 @@ class SafeTranslationTests(TestCase):
     def test_safe_translation_noop(self):
         """Test that safe_translation doesn't mess with good translations."""
         # Import translation now so it is affected by the mock.
-        from django.utils.translation import ugettext as _
+        from django.utils.translation import gettext as _
 
         @safe_translation
         def simple(locale):
@@ -72,7 +72,7 @@ class SafeTranslationTests(TestCase):
     def test_safe_translation_bad_trans(self):
         """Test that safe_translation insulates from bad translations."""
         # Import translation now so it is affected by the mock.
-        from django.utils.translation import ugettext as _
+        from django.utils.translation import gettext as _
 
         # `safe_translation` will call this with the given locale, and
         # if that fails, fall back to English.
@@ -91,7 +91,7 @@ class SafeTranslationTests(TestCase):
     def test_safe_translation_logging(self, mocked_log):
         """Logging translation errors is really important, so test it."""
         # Import translation now so it is affected by the mock.
-        from django.utils.translation import ugettext as _
+        from django.utils.translation import gettext as _
 
         # Assert that bad translations cause error logging.
         @safe_translation

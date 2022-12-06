@@ -12,21 +12,24 @@ from kitsune.sumo.tests import TestCase
 
 @override_settings(ENFORCE_HOST=["support.mozilla.org", "all-your-base.are-belong-to.us"])
 class EnforceHostIPMiddlewareTestCase(TestCase):
+    def g_response(*args, **kwargs):
+        return HttpResponse()
+
     def _get_response(self, hostname):
-        mw = EnforceHostIPMiddleware()
+        mw = EnforceHostIPMiddleware(self.g_response)
         rf = RequestFactory()
-        return mw.process_request(rf.get("/", HTTP_HOST=hostname))
+        return mw(rf.get("/", HTTP_HOST=hostname))
 
     def test_valid_domain(self):
         resp = self._get_response("support.mozilla.org")
-        self.assertIsNone(resp)
+        self.assertEqual(resp.status_code, 200)
 
     def test_valid_ip_address(self):
         resp = self._get_response("192.168.200.200")
-        self.assertIsNone(resp)
+        self.assertEqual(resp.status_code, 200)
         # with port
         resp = self._get_response("192.168.200.200:443")
-        self.assertIsNone(resp)
+        self.assertEqual(resp.status_code, 200)
 
     def test_invalid_domain(self):
         resp = self._get_response("none-of-ur-base.are-belong-to.us")
@@ -34,9 +37,13 @@ class EnforceHostIPMiddlewareTestCase(TestCase):
 
 
 class CacheHeadersMiddlewareTestCase(TestCase):
+    def g_response(*args, **kwargs):
+        return HttpResponse()
+
     def setUp(self):
+        self.get_response = self.g_response()
         self.rf = RequestFactory()
-        self.mw = CacheHeadersMiddleware()
+        self.mw = CacheHeadersMiddleware(self.get_response)
 
     @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
     def test_add_cache_control(self):
@@ -97,9 +104,12 @@ class TrailingSlashMiddlewareTestCase(TestCase):
 
 
 class PlusToSpaceTestCase(TestCase):
+    def g_response(*args, **kwargs):
+        return HttpResponse()
 
+    get_response = g_response()
     rf = RequestFactory()
-    ptsm = PlusToSpaceMiddleware()
+    ptsm = PlusToSpaceMiddleware(get_response)
 
     def test_plus_to_space(self):
         """Pluses should be converted to %20."""

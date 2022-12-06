@@ -11,8 +11,8 @@ class TestAnonymousMiddleware(TestCase):
 
     def setUp(self):
         super(TestAnonymousMiddleware, self).setUp()
-
-        self.middleware = AnonymousIdentityMiddleware()
+        self.get_response = lambda *args, **kwargs: HttpResponse()
+        self.middleware = AnonymousIdentityMiddleware(self.get_response)
 
     def test_cookie_set(self):
         """The anonymous cookie is set when the anonymous id is created."""

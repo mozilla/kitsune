@@ -13,12 +13,13 @@ from django.conf import settings
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.templatetags.static import static as django_static
-from django.utils.encoding import smart_bytes, smart_text
+from django.utils.encoding import smart_bytes
+from django.utils.encoding import smart_str
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy as _lazy
-from django.utils.translation import ungettext
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import ngettext
 from django_jinja import library
 from markupsafe import Markup, escape
 from pytz import timezone
@@ -350,26 +351,26 @@ def timesince(d, now=None):
     chunks = [
         (
             60 * 60 * 24 * 365,
-            lambda n: ungettext("%(number)d year ago", "%(number)d years ago", n),
+            lambda n: ngettext("%(number)d year ago", "%(number)d years ago", n),
         ),
         (
             60 * 60 * 24 * 30,
-            lambda n: ungettext("%(number)d month ago", "%(number)d months ago", n),
+            lambda n: ngettext("%(number)d month ago", "%(number)d months ago", n),
         ),
         (
             60 * 60 * 24 * 7,
-            lambda n: ungettext("%(number)d week ago", "%(number)d weeks ago", n),
+            lambda n: ngettext("%(number)d week ago", "%(number)d weeks ago", n),
         ),
         (
             60 * 60 * 24,
-            lambda n: ungettext("%(number)d day ago", "%(number)d days ago", n),
+            lambda n: ngettext("%(number)d day ago", "%(number)d days ago", n),
         ),
         (
             60 * 60,
-            lambda n: ungettext("%(number)d hour ago", "%(number)d hours ago", n),
+            lambda n: ngettext("%(number)d hour ago", "%(number)d hours ago", n),
         ),
-        (60, lambda n: ungettext("%(number)d minute ago", "%(number)d minutes ago", n)),
-        (1, lambda n: ungettext("%(number)d second ago", "%(number)d seconds ago", n)),
+        (60, lambda n: ngettext("%(number)d minute ago", "%(number)d minutes ago", n)),
+        (1, lambda n: ngettext("%(number)d second ago", "%(number)d seconds ago", n)),
     ]
     if not now:
         if d.tzinfo:
@@ -496,10 +497,10 @@ def f(format_string, *args, **kwargs):
 def fe(format_string, *args, **kwargs):
     """Format a safe string with potentially unsafe arguments. returns a safe string."""
 
-    args = [escape(smart_text(v)) for v in args]
+    args = [escape(smart_str(v)) for v in args]
 
     for k in kwargs:
-        kwargs[k] = escape(smart_text(kwargs[k]))
+        kwargs[k] = escape(smart_str(kwargs[k]))
 
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.

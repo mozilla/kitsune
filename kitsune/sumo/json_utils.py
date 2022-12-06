@@ -2,7 +2,7 @@ import json
 import re
 
 from django.http import HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from kitsune.sumo.api_utils import JSONRenderer
 

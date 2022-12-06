@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.urls import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from celery import shared_task
 

@@ -23,7 +23,7 @@ from django.urls import Resolver404, is_valid_path, resolve
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.encoding import iri_to_uri, smart_text
+from django.utils.encoding import iri_to_uri, smart_str
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
@@ -36,17 +36,17 @@ from kitsune.users.auth import FXAAuthBackend
 class EnforceHostIPMiddleware(EnforceHostMiddleware):
     """Modify the `EnforceHostMiddleware` to allow IP addresses"""
 
-    def process_request(self, request):
+    def __call__(self, request):
         host = request.get_host()
-        domain, port = split_domain_port(host)
+        domain, _ = split_domain_port(host)
         try:
             validate_ipv4_address(domain)
         except ValidationError:
             # not an IP address. Call the superclass
-            return super(EnforceHostIPMiddleware, self).process_request(request)
+            return super().__call__(request)
 
         # it is an IP address
-        return
+        return self.get_response(request)
 
 
 class HttpResponseRateLimited(HttpResponse):
@@ -139,7 +139,7 @@ class LocaleURLMiddleware(MiddlewareMixin):
 
             prefixer.locale = ""
             new_path = prefixer.fix(prefixer.shortened_path)
-            query = dict((smart_text(k), v) for k, v in request.GET.items() if k != "lang")
+            query = dict((smart_str(k), v) for k, v in request.GET.items() if k != "lang")
 
             # 'lang' is only used on the language selection page. If this is
             # present it is safe to set language preference for the current
@@ -244,7 +244,7 @@ class PlusToSpaceMiddleware(MiddlewareMixin):
         if p.search(request.path_info):
             new = p.sub(" ", request.path_info)
             if request.META.get("QUERY_STRING"):
-                new = "%s?%s" % (new, smart_text(request.META["QUERY_STRING"]))
+                new = "%s?%s" % (new, smart_str(request.META["QUERY_STRING"]))
             if hasattr(request, "LANGUAGE_CODE"):
                 new = "/%s%s" % (request.LANGUAGE_CODE, new)
             return HttpResponsePermanentRedirect(new)
@@ -272,6 +272,9 @@ class RemoveSlashMiddleware(MiddlewareMixin):
     If the response is a 404 because url resolution failed, we'll look for a
     better url without a trailing slash.
     """
+
+    def __init__(self, get_response):
+        super(RemoveSlashMiddleware, self).__init__(get_response)
 
     def process_response(self, request, response):
         if (

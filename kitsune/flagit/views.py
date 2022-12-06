@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from kitsune.access.decorators import permission_required, login_required
@@ -47,7 +47,7 @@ def flag(request, content_type=None, model=None, object_id=None, **kwargs):
         flag.save()
         msg = _("You have flagged this content. A moderator will review your submission shortly.")
 
-    if request.is_ajax():
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return HttpResponse(json.dumps({"message": msg}))
     elif next:
         messages.add_message(request, messages.INFO, msg)

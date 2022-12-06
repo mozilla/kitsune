@@ -21,7 +21,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
@@ -835,7 +835,7 @@ def question_vote(request, question_id):
             if ua:
                 vote.add_metadata("ua", ua)
 
-        if request.is_ajax():
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
             tmpl = "questions/includes/question_vote_thanks.html"
             form = _init_watch_form(request)
             html = render_to_string(
@@ -868,7 +868,7 @@ def answer_vote(request, question_id, answer_id):
         raise PermissionDenied
 
     if request.limited:
-        if request.is_ajax():
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return HttpResponse(json.dumps({"ignored": True}))
         else:
             return HttpResponseRedirect(answer.get_absolute_url())
@@ -902,7 +902,7 @@ def answer_vote(request, question_id, answer_id):
     else:
         message = _("You already voted on this reply.")
 
-    if request.is_ajax():
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         return HttpResponse(json.dumps({"message": message}))
 
     return HttpResponseRedirect(answer.get_absolute_url())
@@ -1172,7 +1172,7 @@ def watch_question(request, question_id):
             "limit for the number of questions allowed to watch in a day. "
             "Please try again tomorrow."
         )
-        if request.is_ajax():
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
             return HttpResponse(json.dumps({"message": msg, "ignored": True}))
 
         messages.add_message(request, messages.ERROR, msg)
@@ -1199,7 +1199,7 @@ def watch_question(request, question_id):
             msg = _("Could not send a message to that email address.")
 
     # Respond to ajax request
-    if request.is_ajax():
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
         if form.is_valid():
             msg = msg or (
                 _("You will be notified of updates by email.")

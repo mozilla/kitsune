@@ -2,7 +2,7 @@ from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.translation import pgettext
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.models import Award

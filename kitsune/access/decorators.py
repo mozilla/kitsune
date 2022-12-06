@@ -2,7 +2,8 @@ from functools import wraps
 
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.utils.http import urlquote
+
+from urllib.parse import quote
 
 from kitsune.sumo.urlresolvers import reverse
 
@@ -25,18 +26,20 @@ def user_access_decorator(
     def decorator(view_fn):
         def _wrapped_view(request, *args, **kwargs):
             redirect = redirect_func(request.user)
-            if redirect and not request.is_ajax():
+            if redirect and not request.headers.get("x-requested-with") == "XMLHttpRequest":
                 # We must call reverse at the view level, else the threadlocal
                 # locale prefixing doesn't take effect.
                 redirect_url = redirect_url_func() or reverse("users.login")
 
                 # Redirect back here afterwards?
                 if redirect_field:
-                    path = urlquote(request.get_full_path())
+                    path = quote(request.get_full_path())
                     redirect_url = "%s?%s=%s" % (redirect_url, redirect_field, path)
 
                 return HttpResponseRedirect(redirect_url)
-            elif (redirect and request.is_ajax()) or (deny_func and deny_func(request.user)):
+            elif (redirect and (request.headers.get("x-requested-with") == "XMLHttpRequest")) or (
+                deny_func and deny_func(request.user)
+            ):
                 return HttpResponseForbidden()
 
             return view_fn(request, *args, **kwargs)

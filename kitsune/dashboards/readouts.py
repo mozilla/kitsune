@@ -14,7 +14,7 @@ from django.db import connections, router
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from markupsafe import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS

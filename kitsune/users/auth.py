@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.urls import reverse as django_reverse
 from django.utils.translation import activate
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.customercare.tasks import update_zendesk_identity

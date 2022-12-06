@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from django.contrib.auth.hashers import BasePasswordHasher, mask_hash
 from django.utils.crypto import constant_time_compare
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 class SHA256PasswordHasher(BasePasswordHasher):
