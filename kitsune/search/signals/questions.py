@@ -1,5 +1,5 @@
 from django.db.models.signals import post_save, post_delete, m2m_changed
-from kitsune.search.es7_utils import (
+from kitsune.search.es_utils import (
     index_object,
     delete_object,
     index_objects_bulk,

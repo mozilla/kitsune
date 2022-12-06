@@ -2,7 +2,7 @@ from django.db.models.signals import m2m_changed, post_delete, post_save
 
 from kitsune.products.models import Product, Topic
 from kitsune.search.decorators import search_receiver
-from kitsune.search.es7_utils import delete_object, index_object, remove_from_field
+from kitsune.search.es_utils import delete_object, index_object, remove_from_field
 from kitsune.wiki.models import Document
 
 

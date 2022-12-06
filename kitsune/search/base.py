@@ -18,11 +18,11 @@ from elasticsearch_dsl.utils import AttrDict
 from pyparsing import ParseException
 
 from kitsune.search.config import (
-    DEFAULT_ES7_CONNECTION,
-    DEFAULT_ES7_REFRESH_INTERVAL,
+    DEFAULT_ES_CONNECTION,
+    DEFAULT_ES_REFRESH_INTERVAL,
     UPDATE_RETRY_ON_CONFLICT,
 )
-from kitsune.search.es7_utils import es7_client
+from kitsune.search.es_utils import es_client
 from kitsune.search.parser import Parser
 from kitsune.search.parser.tokens import TermToken
 
@@ -40,7 +40,7 @@ class SumoDocument(DSLDocument):
         """Automatically set up each subclass' Index attribute."""
         super().__init_subclass__(**kwargs)
 
-        cls.Index.using = DEFAULT_ES7_CONNECTION
+        cls.Index.using = DEFAULT_ES_CONNECTION
 
         # this is here to ensure subclasses of subclasses of SumoDocument (e.g. AnswerDocument)
         # use the same name in their index as their parent class (e.g. QuestionDocument) since
@@ -55,7 +55,7 @@ class SumoDocument(DSLDocument):
         cls.Index.read_alias = f"{cls.Index.base_name}_read"
         cls.Index.write_alias = f"{cls.Index.base_name}_write"
         # Bump the refresh interval to 1 minute
-        cls.Index.settings = {"refresh_interval": DEFAULT_ES7_REFRESH_INTERVAL}
+        cls.Index.settings = {"refresh_interval": DEFAULT_ES_REFRESH_INTERVAL}
 
         # this is the attribute elastic-dsl actually uses to determine which index
         # to query. we override the .search() method to get that to use the read
@@ -88,7 +88,7 @@ class SumoDocument(DSLDocument):
 
     @classmethod
     def _update_alias(cls, alias, new_index):
-        client = es7_client()
+        client = es_client()
         old_index = cls.alias_points_at(alias)
         if not old_index:
             client.indices.put_alias(new_index, alias)
@@ -106,7 +106,7 @@ class SumoDocument(DSLDocument):
     def alias_points_at(cls, alias):
         """Returns the index `alias` points at."""
         try:
-            aliased_indices = list(es7_client().indices.get_alias(name=alias))
+            aliased_indices = list(es_client().indices.get_alias(name=alias))
         except NotFoundError:
             aliased_indices = []
 
@@ -376,8 +376,8 @@ class SumoSearch(SumoSearchInterface):
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
-        search = DSLSearch(using=es7_client(), index=self.get_index()).params(
-            **settings.ES7_SEARCH_PARAMS
+        search = DSLSearch(using=es_client(), index=self.get_index()).params(
+            **settings.ES_SEARCH_PARAMS
         )
 
         # add the search class' filter

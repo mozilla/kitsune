@@ -2,11 +2,11 @@ from django.core.management.base import BaseCommand
 from elasticsearch_dsl.exceptions import IllegalOperation
 from datetime import datetime, timezone
 
-from kitsune.search.es7_utils import get_doc_types, es7_client
+from kitsune.search.es_utils import get_doc_types, es_client
 
 
 class Command(BaseCommand):
-    help = "Initialize ES7 document types"
+    help = "Initialize ES document types"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -34,7 +34,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **kwargs):
-        client = es7_client()
+        client = es_client()
         doc_types = get_doc_types()
 
         limit = kwargs["limit"]

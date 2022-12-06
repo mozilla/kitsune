@@ -70,7 +70,6 @@ app:
     dms_generate_missing_share_links: SECRET
     dms_rebuild_kb: SECRET
     dms_reindex_es: SECRET
-    dms_reindex_es7: SECRET
     dms_reload_question_traffic_stats: SECRET
     dms_reload_wiki_traffic_stats: SECRET
     dms_report_employee_answers: SECRET
@@ -97,9 +96,6 @@ app:
     es_use_ssl: True
     es_http_auth: SECRET
     es_cloud_id: SECRET
-    es7_use_ssl: True
-    es7_http_auth: SECRET
-    es7_cloud_id: SECRET
     ga_account: SECRET
     ga_key: SECRET
     ga_profile_id: SECRET

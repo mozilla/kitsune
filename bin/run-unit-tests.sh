@@ -9,8 +9,8 @@ set -ex
 urlwait
 
 # wait for elasticsearch to be ready
-urlwait http://elasticsearch7:9200 60
+urlwait http://elasticsearch:9200 60
 
-./manage.py es7_init --migrate-writes --migrate-reads
+./manage.py es_init --migrate-writes --migrate-reads
 
 ./manage.py test --noinput --force-color --timing $@

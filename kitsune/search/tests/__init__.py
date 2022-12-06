@@ -1,6 +1,6 @@
 from django.test.utils import override_settings
 
-from kitsune.search.es7_utils import get_doc_types
+from kitsune.search.es_utils import get_doc_types
 from kitsune.sumo.tests import TestCase
 
 

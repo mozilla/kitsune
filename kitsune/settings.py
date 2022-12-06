@@ -736,14 +736,14 @@ CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=not DEBUG, cast=bool)
 #
 # Connection information for Elastic 7
 ES_TIMEOUT = 5  # Timeout for querying requests
-ES7_URLS = config("ES7_URLS", cast=Csv(), default="elasticsearch7:9200")
-ES7_CLOUD_ID = config("ES7_CLOUD_ID", default="")
-ES7_USE_SSL = config("ES7_USE_SSL", default=False, cast=bool)
-ES7_HTTP_AUTH = config("ES7_HTTP_AUTH", default="", cast=Csv())
-ES7_ENABLE_CONSOLE_LOGGING = config("ES7_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
-# Pass parameters to the ES7 client
+ES_URLS = config("ES_URLS", cast=Csv(), default="elasticsearch:9200")
+ES_CLOUD_ID = config("ES_CLOUD_ID", default="")
+ES_USE_SSL = config("ES_USE_SSL", default=False, cast=bool)
+ES_HTTP_AUTH = config("ES_HTTP_AUTH", default="", cast=Csv())
+ES_ENABLE_CONSOLE_LOGGING = config("ES_ENABLE_CONSOLE_LOGGING", default=False, cast=bool)
+# Pass parameters to the ES client
 # like "search_type": "dfs_query_then_fetch"
-ES7_SEARCH_PARAMS = {"request_timeout": ES_TIMEOUT}
+ES_SEARCH_PARAMS = {"request_timeout": ES_TIMEOUT}
 
 # This is prepended to index names to get the final read/write index
 # names used by kitsune. This is so that you can have multiple
@@ -1057,7 +1057,7 @@ DMS_UPDATE_SEARCH_CTR_METRIC = config("DMS_UPDATE_SEARCH_CTR_METRIC", default=No
 DMS_UPDATE_CONTRIBUTOR_METRICS = config("DMS_UPDATE_CONTRIBUTOR_METRICS", default=None)
 DMS_AUTO_ARCHIVE_OLD_QUESTIONS = config("DMS_AUTO_ARCHIVE_OLD_QUESTIONS", default=None)
 DMS_REINDEX = config("DMS_REINDEX", default=None)
-DMS_REINDEX_ES7 = config("DMS_REINDEX_ES7", default=None)
+DMS_REINDEX_ES = config("DMS_REINDEX_ES", default=None)
 # DMS_PROCESS_EXIT_SURVEYS = config("DMS_PROCESS_EXIT_SURVEYS", default=None)
 # DMS_SURVEY_RECENT_ASKERS = config("DMS_SURVEY_RECENT_ASKERS", default=None)
 # DMS_UPDATE_VISITORS_METRIC = config('DMS_UPDATE_VISITORS_METRIC', default=None)
@@ -1121,7 +1121,7 @@ TOLL_FREE_REGEX = re.compile(r"^.*8(00|33|44|55|66|77|88)[2-9]\d{6,}$")
 REGEX_TIMEOUT = config("REGEX_TIMEOUT", default=5, cast=int)
 NANP_REGEX = re.compile(r"[0-9]{3}-?[a-zA-Z2-9][a-zA-Z0-9]{2}-?[a-zA-Z0-9]{4}")
 
-if ES7_ENABLE_CONSOLE_LOGGING and DEV:
+if ES_ENABLE_CONSOLE_LOGGING and DEV:
     es_trace_logger = logging.getLogger("elasticsearch.trace")
     es_trace_logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
