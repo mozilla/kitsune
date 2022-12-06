@@ -496,7 +496,7 @@ MIDDLEWARE = (
     "kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware",
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
-    "kitsune.sumo.middleware.LocaleURLMiddleware",
+    # "kitsune.sumo.middleware.LocaleURLMiddleware",
     "kitsune.sumo.middleware.Forbidden403Middleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -697,6 +697,7 @@ INSTALLED_APPS = (
     "wagtail.images",
     "wagtail.search",
     "wagtail.admin",
+    "wagtail.locales",
     "wagtail",
     "modelcluster",
     # Last so we can override admin templates.
@@ -1188,6 +1189,7 @@ CSP_IMG_SRC = (
     "https://secure.gravatar.com",
     "https://i1.wp.com",
     "https://mozillausercontent.com",
+    "https://*.gravatar.com",
 )
 
 CSP_MEDIA_SRC = (
@@ -1264,5 +1266,13 @@ LEGACY_CONTRIBUTOR_GROUPS = [
 ]
 
 # Wagtail configuration
-WAGTAIL_SITE_NAME = "Mozilla Support"
-WAGTAILADMIN_BASE_URL = config("WAGTAILADMIN_BASE_URL", default="https://support.mozilla.org")
+WAGTAIL_SITE_NAME = "Mozilla /Support"
+WAGTAIL_I18N_ENABLED = True
+
+LOCALE_MIDDLEWARE_EXEMPT_URLS = [
+    "/cms/",
+]
+
+# WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
+#     ("en-US", "English"),
+# ]
