@@ -16,11 +16,14 @@ from django.utils.encoding import smart_bytes
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ugettext as _
 from pyquery import PyQuery
+from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
+from wagtail.fields import RichTextField
+from wagtail.models import Page
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.apps import ProgrammingError
-from kitsune.sumo.models import LocaleField, ModelBase
+from kitsune.sumo.models import LocaleField, ModelBase, WagtailBase
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableManager, BigVocabTaggableMixin
 from kitsune.tidings.models import NotificationsMixin
@@ -60,6 +63,52 @@ class SlugCollision(Exception):
 
 class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
+
+
+class WgDocument(NotificationsMixin, WagtailBase):
+    summary = RichTextField()
+    content = RichTextField()
+    # A document's category must always be that of its parent. If it has no
+    # parent, it can do what it wants. This invariant is enforced in save().
+    category = models.IntegerField(choices=CATEGORIES, db_index=True, blank=True)
+    # List of products this document applies to.
+    # Children should query their parents for this.
+    products = models.ManyToManyField(Product, blank=True)
+    # # List of product-specific topics this document applies to.
+    # Children should query their parents for this.
+    topics = models.ManyToManyField(Topic, blank=True)
+    is_template = models.BooleanField(default=False)
+    allow_discussion = models.BooleanField(
+        default=True,
+        help_text=_lazy(
+            "If checked, this document allows discussion in an associated "
+            "forum. Uncheck to hide/disable the forum."
+        ),
+    )
+    # List of users that have contributed to this document.
+    contributors = models.ManyToManyField(User, related_name="wg_documents_contributed")
+
+    # A 24 character length gives years before having to alter max_length.
+    share_link = models.CharField(max_length=24, default="", blank=True)
+    # Dictates the order in which articles are displayed.
+    # Children should query their parents for this.
+    display_order = models.IntegerField(default=1, db_index=True)
+    # List of related documents
+    related_documents = models.ManyToManyField("self", blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel("summary"),
+        FieldPanel("content"),
+        FieldPanel("category"),
+        FieldPanel("products"),
+        FieldPanel("topics"),
+        FieldPanel("is_template"),
+        FieldPanel("allow_discussion"),
+        FieldPanel("contributors"),
+        FieldPanel("share_link"),
+        FieldPanel("display_order"),
+        FieldPanel("related_documents"),
+    ]
 
 
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):
