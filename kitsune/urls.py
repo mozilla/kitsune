@@ -70,8 +70,8 @@ urlpatterns = [
     path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=True))),
     # Wagtail
     path("cms/", include(wagtailadmin_urls)),
-    path("documents/", include(wagtaildocs_urls)),
-    path("pages/", include(wagtail_urls)),
+    path("wagtail-docs/", include(wagtaildocs_urls)),
+    path("wagtail-kb/", include(wagtail_urls)),
 ]
 
 # Handle 404 and 500 errors
