@@ -784,7 +784,7 @@ DEFAULT_FILE_STORAGE = "kitsune.upload.storage.RenameFileStorage"
 
 # GCP storage settings
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="")
-GS_CUSTOM_ENDPOINT = config("MEDIA_URL", default="")
+GS_CUSTOM_ENDPOINT = config("MEDIA_URL", default="").rstrip("/")
 GS_LOCATION = config("GS_LOCATION", default="media")
 GS_QUERYSTRING_AUTH = config("GS_QUERYSTRING_AUTH", default=False, cast=bool)
 
