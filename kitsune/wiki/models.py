@@ -16,7 +16,7 @@ from django.utils.encoding import smart_bytes
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
 from pyquery import PyQuery
-from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
+from wagtail.admin.panels import FieldPanel
 from wagtail.fields import RichTextField
 from wagtail.models import Page
 
