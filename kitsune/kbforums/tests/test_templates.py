@@ -418,12 +418,12 @@ class TestRatelimiting(KBForumTestCase):
 
 
 class SEOTemplateTests(KBForumTestCase):
-    def test_posts(self):
-        """Test the posts view for SEO characteristics."""
+    def test_threads(self):
+        """Test the threads view for SEO characteristics."""
         user = UserFactory()
         thread = ThreadFactory()
         thread.new_post(creator=user, content="yada yada")
-        resp = get(self.client, "wiki.discuss.posts", args=[thread.document.slug, thread.pk])
+        resp = get(self.client, "wiki.discuss.threads", args=[thread.document.slug])
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
         # All links to KB forums pages should have rel="ugc".
@@ -433,12 +433,12 @@ class SEOTemplateTests(KBForumTestCase):
         # All KB pages should not be indexed and their links should not be followed.
         self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
 
-    def test_threads(self):
-        """Test the threads view for SEO characteristics."""
+    def test_posts(self):
+        """Test the posts view for SEO characteristics."""
         user = UserFactory()
         thread = ThreadFactory()
         thread.new_post(creator=user, content="yada yada")
-        resp = get(self.client, "wiki.discuss.threads", args=[thread.document.slug])
+        resp = get(self.client, "wiki.discuss.posts", args=[thread.document.slug, thread.pk])
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
         # All links to KB forums pages should have rel="ugc".
@@ -489,6 +489,47 @@ class SEOTemplateTests(KBForumTestCase):
         self.client.login(username=user.username, password="testpass")
         resp = get(
             self.client, "wiki.discuss.delete_thread", args=[thread.document.slug, thread.pk]
+        )
+        self.assertEqual(resp.status_code, 200)
+        doc = pq(resp.content)
+        # All links to KB forums pages should have rel="ugc".
+        self.assertEqual(
+            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+        )
+        # All KB pages should not be indexed and their links should not be followed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+
+    def test_edit_post(self):
+        """Test the edit post view for SEO characteristics."""
+        user = UserFactory()
+        thread = ThreadFactory()
+        entry = thread.new_post(creator=user, content="yada yada")
+        self.client.login(username=user.username, password="testpass")
+        resp = get(
+            self.client,
+            "wiki.discuss.edit_post",
+            args=[thread.document.slug, thread.pk, entry.pk],
+        )
+        self.assertEqual(resp.status_code, 200)
+        doc = pq(resp.content)
+        # All links to KB forums pages should have rel="ugc".
+        self.assertEqual(
+            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+        )
+        # All KB pages should not be indexed and their links should not be followed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+
+    def test_delete_post(self):
+        """Test the delete post view for SEO characteristics."""
+        user = UserFactory()
+        add_permission(user, Post, "delete_post")
+        thread = ThreadFactory()
+        entry = thread.new_post(creator=user, content="yada yada")
+        self.client.login(username=user.username, password="testpass")
+        resp = get(
+            self.client,
+            "wiki.discuss.delete_post",
+            args=[thread.document.slug, thread.pk, entry.pk],
         )
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
