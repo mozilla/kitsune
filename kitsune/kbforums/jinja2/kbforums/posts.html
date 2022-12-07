@@ -5,7 +5,7 @@
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('{t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
-                 (url('wiki.discuss.threads', document.slug), _('Discuss')),
+                 ((url('wiki.discuss.threads', document.slug), 'rel="ugc"'), _('Discuss')),
                  (None, thread.title)] %}
 {% set scripts = ('forums',) %}
 

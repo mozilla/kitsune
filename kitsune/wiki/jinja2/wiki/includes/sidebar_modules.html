@@ -20,7 +20,7 @@
           {% endif %}
           {% if document and document.allow_discussion %}
             <li {{ active|class_selected('discussion') }}>
-              <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
+              <a rel="ugc nofollow" href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
             </li>
           {% endif %}
           {% if document and not document.is_archived and (document.allows(user, 'create_revision') or document.allows(user, 'edit')) and fallback_reason != "fallback_locale" %}
