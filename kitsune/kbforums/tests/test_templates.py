@@ -415,3 +415,86 @@ class TestRatelimiting(KBForumTestCase):
 
         # We should only have 4 posts (each thread and reply creates a post).
         self.assertEqual(4, Post.objects.count())
+
+
+class SEOTemplateTests(KBForumTestCase):
+    def test_posts(self):
+        """Test the posts view for SEO characteristics."""
+        user = UserFactory()
+        thread = ThreadFactory()
+        thread.new_post(creator=user, content="yada yada")
+        resp = get(self.client, "wiki.discuss.posts", args=[thread.document.slug, thread.pk])
+        self.assertEqual(resp.status_code, 200)
+        doc = pq(resp.content)
+        # All links to KB forums pages should have rel="ugc".
+        self.assertEqual(
+            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+        )
+        # All KB pages should not be indexed and their links should not be followed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+
+    def test_threads(self):
+        """Test the threads view for SEO characteristics."""
+        user = UserFactory()
+        thread = ThreadFactory()
+        thread.new_post(creator=user, content="yada yada")
+        resp = get(self.client, "wiki.discuss.threads", args=[thread.document.slug])
+        self.assertEqual(resp.status_code, 200)
+        doc = pq(resp.content)
+        # All links to KB forums pages should have rel="ugc".
+        self.assertEqual(
+            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+        )
+        # All KB pages should not be indexed and their links should not be followed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+
+    def test_new_thread(self):
+        """Test the new thread view for SEO characteristics.."""
+        user = UserFactory()
+        self.client.login(username=user.username, password="testpass")
+        doc = ApprovedRevisionFactory().document
+        resp = get(self.client, "wiki.discuss.new_thread", args=[doc.slug])
+        self.assertEqual(resp.status_code, 200)
+        doc = pq(resp.content)
+        # All links to KB forums pages should have rel="ugc".
+        self.assertEqual(
+            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+        )
+        # All KB pages should not be indexed and their links should not be followed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+
+    def test_edit_thread(self):
+        """Test the edit thread view for SEO characteristics."""
+        user = UserFactory()
+        add_permission(user, Thread, "change_thread")
+        thread = ThreadFactory()
+        thread.new_post(creator=user, content="yada yada")
+        self.client.login(username=user.username, password="testpass")
+        resp = get(self.client, "wiki.discuss.edit_thread", args=[thread.document.slug, thread.pk])
+        self.assertEqual(resp.status_code, 200)
+        doc = pq(resp.content)
+        # All links to KB forums pages should have rel="ugc".
+        self.assertEqual(
+            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+        )
+        # All KB pages should not be indexed and their links should not be followed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+
+    def test_delete_thread(self):
+        """Test the delete thread view for SEO characteristics."""
+        user = UserFactory()
+        add_permission(user, Thread, "delete_thread")
+        thread = ThreadFactory()
+        thread.new_post(creator=user, content="yada yada")
+        self.client.login(username=user.username, password="testpass")
+        resp = get(
+            self.client, "wiki.discuss.delete_thread", args=[thread.document.slug, thread.pk]
+        )
+        self.assertEqual(resp.status_code, 200)
+        doc = pq(resp.content)
+        # All links to KB forums pages should have rel="ugc".
+        self.assertEqual(
+            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+        )
+        # All KB pages should not be indexed and their links should not be followed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
