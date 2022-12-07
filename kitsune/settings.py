@@ -782,6 +782,12 @@ MAX_FILEPATH_LENGTH = 250
 # Default storage engine - ours does not preserve filenames
 DEFAULT_FILE_STORAGE = "kitsune.upload.storage.RenameFileStorage"
 
+# GCP storage settings
+GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="")
+GS_CUSTOM_ENDPOINT = config("MEDIA_URL", default="").rstrip("/")
+GS_LOCATION = config("GS_LOCATION", default="media")
+GS_QUERYSTRING_AUTH = config("GS_QUERYSTRING_AUTH", default=False, cast=bool)
+
 # AWS S3 Storage Settings
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default="")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default="")
@@ -1145,6 +1151,7 @@ CSP_SCRIPT_SRC = (
     "'self'",
     "https://*.mozilla.org",
     "https://*.itsre-sumo.mozilla.net",
+    "https://*.webservices.mozgcp.net",
     "https://*.google-analytics.com",
     "https://*.googletagmanager.com",
     "https://pontoon.mozilla.org",
@@ -1156,6 +1163,7 @@ CSP_IMG_SRC = (
     "data:",
     "https://*.mozaws.net",
     "https://*.itsre-sumo.mozilla.net",
+    "https://*.webservices.mozgcp.net",
     "https://*.google-analytics.com",
     "https://profile.accounts.firefox.com",
     "https://firefoxusercontent.com",
@@ -1167,6 +1175,7 @@ CSP_IMG_SRC = (
 CSP_MEDIA_SRC = (
     "'self'",
     "https://*.itsre-sumo.mozilla.net",
+    "https://*.webservices.mozgcp.net",
 )
 
 CSP_FRAME_SRC = (
@@ -1177,11 +1186,13 @@ CSP_FRAME_SRC = (
 CSP_FONT_SRC = (
     "'self'",
     "https://*.itsre-sumo.mozilla.net",
+    "https://*.webservices.mozgcp.net",
 )
 
 CSP_STYLE_SRC = (
     "'self'",
     "https://*.itsre-sumo.mozilla.net",
+    "https://*.webservices.mozgcp.net",
     "https://*.jsdelivr.net",
 )
 
