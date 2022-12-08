@@ -51,7 +51,7 @@
 {% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision=False, full_locale_name=None) -%}
   <section id="doc-content" class="document--content {{ css_class }}">
     {% if not fallback_reason %}
-      {{ document.html|safe }}
+      {{ document.content|safe }}
     {% elif fallback_reason == 'no_translation' %}
       {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
       <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
@@ -337,7 +337,7 @@
           {% csrf_token %}
           <h4 class="document-vote--heading">{{ header }}</h4>
           <div class="document-vote--buttons">
-            <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+            <input type="hidden" name="revision_id" value="{{ document.latest_revision.id }}" />
             {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
             <button type="submit" class="btn helpful-button" name="helpful"><span class="hidden-text">{{ _('Yes') }}</span>👍</button>
             <button type="submit" class="btn not-helpful-button" name="not-helpful"><span class="hidden-text">{{ _('No') }}</span>👎</button>

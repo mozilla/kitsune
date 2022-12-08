@@ -13,10 +13,12 @@ from django.db.models import Q
 from django.http import Http404
 from django.urls import resolve
 from django.utils.encoding import smart_bytes
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
+from modelcluster.fields import ParentalKey
 from pyquery import PyQuery
-from wagtail.admin.panels import FieldPanel
+from wagtail.admin.panels import FieldPanel, InlinePanel
+from wagtail.core.models import Orderable
 from wagtail.fields import RichTextField
 from wagtail.models import Page
 
@@ -27,27 +29,16 @@ from kitsune.sumo.models import LocaleField, ModelBase, WagtailBase
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableManager, BigVocabTaggableMixin
 from kitsune.tidings.models import NotificationsMixin
-from kitsune.wiki.config import (
-    ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY,
-    CATEGORIES,
-    DOC_HTML_CACHE_KEY,
-    MAJOR_SIGNIFICANCE,
-    MEDIUM_SIGNIFICANCE,
-    REDIRECT_CONTENT,
-    REDIRECT_HTML,
-    REDIRECT_SLUG,
-    REDIRECT_TITLE,
-    SIGNIFICANCES,
-    TEMPLATE_TITLE_PREFIX,
-    TEMPLATES_CATEGORY,
-    TYPO_SIGNIFICANCE,
-)
+from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
+                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
+                                 DOC_HTML_CACHE_KEY, MAJOR_SIGNIFICANCE,
+                                 MEDIUM_SIGNIFICANCE, REDIRECT_CONTENT,
+                                 REDIRECT_HTML, REDIRECT_SLUG, REDIRECT_TITLE,
+                                 SIGNIFICANCES, TEMPLATE_TITLE_PREFIX,
+                                 TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE)
 from kitsune.wiki.managers import DocumentManager, RevisionManager
-from kitsune.wiki.permissions import (
-    DocumentPermissionMixin,
-    can_delete_documents_or_review_revisions,
-)
+from kitsune.wiki.permissions import (DocumentPermissionMixin,
+                                      can_delete_documents_or_review_revisions)
 
 log = logging.getLogger("k.wiki")
 MAX_REVISION_COMMENT_LENGTH = 255
@@ -65,18 +56,25 @@ class _NotDocumentView(Exception):
     """A URL not pointing to the document view was passed to from_url()."""
 
 
-class WgDocument(NotificationsMixin, WagtailBase):
+class WgDocumentProduct(Orderable):
+    wgdocument = ParentalKey("WgDocument", related_name="product")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+
+    panels = [FieldPanel("product")]
+    
+class WgDocumentTopic(Orderable):
+    wgdocument = ParentalKey("WgDocument", related_name="topic")
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+
+    panels = [FieldPanel("topic")]
+
+
+class WgDocument(NotificationsMixin, WagtailBase, DocumentPermissionMixin):
     summary = RichTextField()
     content = RichTextField()
     # A document's category must always be that of its parent. If it has no
     # parent, it can do what it wants. This invariant is enforced in save().
     category = models.IntegerField(choices=CATEGORIES, db_index=True, blank=True)
-    # List of products this document applies to.
-    # Children should query their parents for this.
-    products = models.ManyToManyField(Product, blank=True)
-    # # List of product-specific topics this document applies to.
-    # Children should query their parents for this.
-    topics = models.ManyToManyField(Topic, blank=True)
     is_template = models.BooleanField(default=False)
     allow_discussion = models.BooleanField(
         default=True,
@@ -100,8 +98,8 @@ class WgDocument(NotificationsMixin, WagtailBase):
         FieldPanel("summary"),
         FieldPanel("content"),
         FieldPanel("category"),
-        FieldPanel("products"),
-        FieldPanel("topics"),
+        InlinePanel("product", label="Products"),
+        InlinePanel("topic", label="Topics"),
         FieldPanel("is_template"),
         FieldPanel("allow_discussion"),
         FieldPanel("contributors"),
@@ -109,6 +107,29 @@ class WgDocument(NotificationsMixin, WagtailBase):
         FieldPanel("display_order"),
         FieldPanel("related_documents"),
     ]
+
+    def get_products(self):
+        """Return the list of products that apply to this document.
+
+        If the document has a parent, it inherits the parent's products.
+        """
+        return Product.objects.filter(wgdocumentproduct__wgdocument=self)
+
+    def allows_vote(self, request):
+        """Return whether we should render the vote form for the document."""
+
+        # short-circuit for demo puposes
+        return True
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        product = self.get_products()
+        context["product"] = product[0] if product else []
+        return context
+
+    def is_majorly_outdated(self):
+        # dependednt on the revision and localiztion - see Document model
+        return False
 
 
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):
