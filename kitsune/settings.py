@@ -421,6 +421,7 @@ _CONTEXT_PROCESSORS = [
     "django.template.context_processors.media",
     "django.template.context_processors.static",
     "django.template.context_processors.request",
+    "django.template.context_processors.i18n",
     "django.contrib.messages.context_processors.messages",
     "kitsune.sumo.context_processors.global_settings",
     "kitsune.sumo.context_processors.i18n",
@@ -497,6 +498,7 @@ MIDDLEWARE = (
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
     # "kitsune.sumo.middleware.LocaleURLMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "kitsune.sumo.middleware.Forbidden403Middleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
