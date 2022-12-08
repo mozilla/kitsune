@@ -51,7 +51,7 @@
 {% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision=False, full_locale_name=None) -%}
   <section id="doc-content" class="document--content {{ css_class }}">
     {% if not fallback_reason %}
-      {{ document.content|safe }}
+      {{ document.content|richtext }}
     {% elif fallback_reason == 'no_translation' %}
       {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
       <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
