@@ -1,0 +1,148 @@
+{% extends "wiki/base.html" %}
+{% from "wiki/includes/wg_sidebar_modules.html" import document_tools, document_notifications, related_products_sidebar with context %}
+{% from 'products/includes/topic_macros.html' import topic_sidebar %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
+{% from "wiki/includes/document_macros.html" import vote_form with context %}
+{% from "includes/common_macros.html" import download_firefox, sumo_banner %}
+{% from "questions/includes/aaq_macros.html" import aaq_widget %}
+{% set classes = 'document' %}
+{% set scripts = ('document',) %}
+{% set extra_body_attrs = {'data-document-id': page.id, 'data-default-slug': page.parent.slug if page.parent else page.slug} %}
+
+{% block title %}
+  {{ page.title }} | {% if not products or products|count > 1 %}{{ pgettext('site_title', 'Mozilla Support') }}{% else %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endif %}
+{% endblock %}
+
+{% if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE %}
+  {# If we are on a non default locale, use default locale's slug for Google Analytics tracking. #}
+  {% set ga_alternate_url = url('wiki.document', page.parent.slug if page.parent else page.slug) %}
+{% endif %}
+
+{% if page.parent %}
+  {# If there is a parent doc, use it's URL for switching locales. #}
+  {% set localizable_url = url('wiki.document', page.parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) %}
+{% endif %}
+
+{% set meta = [] %}
+
+
+{% if page.latest_revision and page.latest_revision.summary %}
+  {% set meta = meta + [('description', page.current_revision.summary)] %}
+{% endif %}
+
+{% block breadcrumbs %}
+  {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
+{% endblock %}
+
+{% block side %}
+  <div class="search-form-sidebar large-only">
+    {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
+  </div>
+
+  {{ aaq_widget(request, "document") }}
+
+  {% if fallback_reason == 'no_translation' %}
+    {# If there is no translation, there is no document and the (future) parent is document. #}
+    {% set doc = None %}
+    {% set parent = page %}
+  {% else %}
+    {% set doc = page %}
+    {% set parent = doc.parent %}
+  {% endif %}
+  {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
+{% endblock %}
+
+{% block content %}
+  <section id="document-list">
+    <header class="sumo-article-header has-border-bottom">
+      <div class="sumo-article-header--text">
+        <div class="documents-product-title">
+          {% set prod_url = url('products.product', slug=product.slug) %}
+          <a href="{{ prod_url }}" title="{{ pgettext('DB: products.Product.title', product.title) }}">
+            <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
+          </a>
+          {% if product.slug == 'firefox' %}
+            {{ download_firefox() }}
+          {% endif %}
+        </div>
+        {{ document_title(page) }}
+      </div>
+    </header>
+
+    {% if show_cta_banner %}
+      {{ sumo_banner(
+        id="id_ff_alert",
+        text=_('Unlock more from the Firefox suite: Sync, Monitor, Relay and <a href="https://www.mozilla.org/firefox/accounts/">more.</a>'),
+        image=webpack_static('sumo/img/FF_Master__icon.svg'),
+        button_text=_('Start Now'),
+        button_link="https://accounts.firefox.com",
+        modifier_class="hide-on-mobile",
+      ) }}
+    {% endif %}
+    <article class="wiki-doc">
+      {{ document_messages(page, redirected_from) }}
+      {{ document_content(page, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
+
+      {% if share_link %}
+        <p class="share-link">
+          <br/>
+          {% set link='<a href="' + share_link + '">' + share_link + '</a>' %}
+          {{ _('Share this article: {link}')|f(link=link)|safe }}
+        </p>
+      {% endif %}
+    </article>
+
+    <section class="sumo-page-section hide-on-large">
+      {{ vote_form(page, 'footer') }}
+    </section>
+
+    {{ contributor_list(contributors) }}
+
+    <section class="sumo-page-section">
+      {% include "landings/includes/volunteer-callout.html" %}
+    </section>
+
+    {% if page.related_documents.count() %}
+    {% set docs = document.related_documents.all() %}
+    <section id="related-documents" class="sumo-page-section wiki-related-documents">
+      <div class="text-center">
+        <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
+      </div>
+      <div class="sumo-card-grid">
+        <div class="scroll-wrap">
+          {% for related in docs %}
+          <div class="card card--article">
+              <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
+              <div class="card--details">
+                <h3 class="card--title">
+                  <a
+                    class="expand-this-link"
+                    href="{{ url('wiki.document', related.slug) }}"
+                    data-event-category="link click"
+                    data-event-action="product"
+                    data-event-label="{{ related.title }}"
+                  >
+                    {{ related.title }}
+                  </a>
+                </h3>
+                <div class="card--desc">
+                  <p>
+                  {{ related.html|striptags|truncate(length=150) }}
+                  </p>
+                </div>
+              </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+  </section>
+{% endblock %}
+
+{% block side_bottom %}
+<div class="document-vote--sidebar-wrap">
+  {# this vote-wrap class is to make the js compatible with old theme. TODO: Remove and fix js. #}
+  {{ vote_form(page, 'footer') }}
+</div>
+{% endblock %}
