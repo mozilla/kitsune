@@ -31,7 +31,7 @@ services:
     entrypoint:
       - docker-entrypoint.sh
       - --character-set-server=utf8
-      - --collation-server=utf8_unicode_ci
+      - --collation-server=utf8_general_ci
       - --sql-mode=ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
     volumes:
       - mysqlvolume:/var/lib/mysql
