@@ -32,9 +32,9 @@
                 <th class="watch">{{ _('Watch') }}</th>
               {% endif %}
               <th class="title">{{ _('Title') }}</th>
-              <th class="author{% if sort == 3 %} sort{% endif %}"><a rel="ugc" href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
-              <th class="replies{% if sort == 4 %} sort{% endif %}"><a rel="ugc" href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
-              <th class="last-post{% if sort == 5 %} sort{% endif %}"><a rel="ugc" href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
+              <th class="author{% if sort == 3 %} sort{% endif %}"><a rel="ugc nofollow" href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></th>
+              <th class="replies{% if sort == 4 %} sort{% endif %}"><a rel="ugc nofollow" href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></th>
+              <th class="last-post{% if sort == 5 %} sort{% endif %}"><a rel="ugc nofollow" href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></th>
             </tr>
           </thead>
           <tbody class="threads">
@@ -79,17 +79,17 @@
                            thread_title=thread.title,
                            document_discussion_url=url('wiki.discuss.threads',thread.document.slug),
                            document=thread.document %}
-                    <a rel="ugc" href="{{ thread_url }}">{{ thread_title }}</a><br>
-                    in <a rel="ugc" href="{{ document_discussion_url }}">{{ document }}</a>
+                    <a rel="ugc nofollow" href="{{ thread_url }}">{{ thread_title }}</a><br>
+                    in <a rel="ugc nofollow" href="{{ document_discussion_url }}">{{ document }}</a>
                   {% endtrans %}
                 </td>
-                <td class="author"><a class="username" rel="ugc" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></td>
+                <td class="author"><a class="username" rel="ugc nofollow" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></td>
                 <td class="replies">{{ thread.replies }}</td>
                 <td class="last-post">
-                  <a rel="ugc" href="{{ thread.last_post.get_absolute_url() }}">
+                  <a rel="ugc nofollow" href="{{ thread.last_post.get_absolute_url() }}">
                     {{ datetimeformat(thread.last_post.created) }}
                   </a><br/>
-                  {{ _('by <a class="username" rel="ugc" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}
+                  {{ _('by <a class="username" rel="ugc nofollow" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}
                 </td>
               </tr>
             {% endfor %}

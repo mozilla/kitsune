@@ -3,8 +3,8 @@
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('Delete Thread | {t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
-                 ((url('wiki.discuss.threads', document.slug), 'rel="ugc"'), _('Discuss')),
-                 ((url('wiki.discuss.posts', document.slug, thread.id), 'rel="ugc"'), thread.title),
+                 ((url('wiki.discuss.threads', document.slug), 'rel="ugc nofollow"'), _('Discuss')),
+                 ((url('wiki.discuss.posts', document.slug, thread.id), 'rel="ugc nofollow"'), thread.title),
                  (None, _('Delete Thread'))] %}
 
 {% block content %}
@@ -28,7 +28,7 @@
         {{ _('You are about to permanently delete this thread. <strong>This cannot be undone!</strong> Are you sure you want to continue?')|safe }}
       </p>
       <input type="submit" value="{{ _('Delete') }}" />
-      <a rel="ugc" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+      <a rel="ugc nofollow" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
     </form>
   </div>
 </article>

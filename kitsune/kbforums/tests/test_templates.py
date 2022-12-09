@@ -426,12 +426,12 @@ class SEOTemplateTests(KBForumTestCase):
         resp = get(self.client, "wiki.discuss.threads", args=[thread.document.slug])
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
-        # All links to KB forums pages should have rel="ugc".
+        # All links to KB forums pages should have rel="ugc nofollow".
         self.assertEqual(
-            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+            len(doc('a[href*="/discuss/"][rel="ugc nofollow"]')), len(doc('a[href*="/discuss/"]'))
         )
-        # All KB pages should not be indexed and their links should not be followed.
-        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        # All KB pages should not be indexed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex")
 
     def test_posts(self):
         """Test the posts view for SEO characteristics."""
@@ -441,12 +441,12 @@ class SEOTemplateTests(KBForumTestCase):
         resp = get(self.client, "wiki.discuss.posts", args=[thread.document.slug, thread.pk])
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
-        # All links to KB forums pages should have rel="ugc".
+        # All links to KB forums pages should have rel="ugc nofollow".
         self.assertEqual(
-            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+            len(doc('a[href*="/discuss/"][rel="ugc nofollow"]')), len(doc('a[href*="/discuss/"]'))
         )
-        # All KB pages should not be indexed and their links should not be followed.
-        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        # All KB pages should not be indexed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex")
 
     def test_new_thread(self):
         """Test the new thread view for SEO characteristics.."""
@@ -456,12 +456,12 @@ class SEOTemplateTests(KBForumTestCase):
         resp = get(self.client, "wiki.discuss.new_thread", args=[doc.slug])
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
-        # All links to KB forums pages should have rel="ugc".
+        # All links to KB forums pages should have rel="ugc nofollow".
         self.assertEqual(
-            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+            len(doc('a[href*="/discuss/"][rel="ugc nofollow"]')), len(doc('a[href*="/discuss/"]'))
         )
-        # All KB pages should not be indexed and their links should not be followed.
-        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        # All KB pages should not be indexed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex")
 
     def test_edit_thread(self):
         """Test the edit thread view for SEO characteristics."""
@@ -473,12 +473,12 @@ class SEOTemplateTests(KBForumTestCase):
         resp = get(self.client, "wiki.discuss.edit_thread", args=[thread.document.slug, thread.pk])
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
-        # All links to KB forums pages should have rel="ugc".
+        # All links to KB forums pages should have rel="ugc nofollow".
         self.assertEqual(
-            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+            len(doc('a[href*="/discuss/"][rel="ugc nofollow"]')), len(doc('a[href*="/discuss/"]'))
         )
-        # All KB pages should not be indexed and their links should not be followed.
-        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        # All KB pages should not be indexed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex")
 
     def test_delete_thread(self):
         """Test the delete thread view for SEO characteristics."""
@@ -492,12 +492,12 @@ class SEOTemplateTests(KBForumTestCase):
         )
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
-        # All links to KB forums pages should have rel="ugc".
+        # All links to KB forums pages should have rel="ugc nofollow".
         self.assertEqual(
-            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+            len(doc('a[href*="/discuss/"][rel="ugc nofollow"]')), len(doc('a[href*="/discuss/"]'))
         )
-        # All KB pages should not be indexed and their links should not be followed.
-        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        # All KB pages should not be indexed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex")
 
     def test_edit_post(self):
         """Test the edit post view for SEO characteristics."""
@@ -512,12 +512,12 @@ class SEOTemplateTests(KBForumTestCase):
         )
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
-        # All links to KB forums pages should have rel="ugc".
+        # All links to KB forums pages should have rel="ugc nofollow".
         self.assertEqual(
-            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+            len(doc('a[href*="/discuss/"][rel="ugc nofollow"]')), len(doc('a[href*="/discuss/"]'))
         )
-        # All KB pages should not be indexed and their links should not be followed.
-        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        # All KB pages should not be indexed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex")
 
     def test_delete_post(self):
         """Test the delete post view for SEO characteristics."""
@@ -533,9 +533,9 @@ class SEOTemplateTests(KBForumTestCase):
         )
         self.assertEqual(resp.status_code, 200)
         doc = pq(resp.content)
-        # All links to KB forums pages should have rel="ugc".
+        # All links to KB forums pages should have rel="ugc nofollow".
         self.assertEqual(
-            len(doc('a[href*="/discuss/"][rel="ugc"]')), len(doc('a[href*="/discuss/"]'))
+            len(doc('a[href*="/discuss/"][rel="ugc nofollow"]')), len(doc('a[href*="/discuss/"]'))
         )
-        # All KB pages should not be indexed and their links should not be followed.
-        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex, nofollow")
+        # All KB pages should not be indexed.
+        self.assertEqual(doc('meta[name="robots"]').attr("content"), "noindex")
