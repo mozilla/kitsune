@@ -3,14 +3,14 @@
   <nav class="sidebar-nav">
     <span class="details-heading">My Profile</span>
     <ul id="user-nav" class="sidebar-nav--list">
-      <li class="sidebar-nav--item"><a {{ selected|class_selected('my-profile') }} href="{{ profile_url(user) }}">{{ _('My profile') }}</a></li>
-      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-profile') }} href="{{ url('users.edit_my_profile') }}">{{ _('Edit my profile') }}</a></li>
-      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-settings') }} href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a></li>
-      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-contributions') }} href="{{ url('users.edit_contribution_area') }}">{{ _('Edit contribution areas') }}</a></li>
-      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-watches') }} href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a></li>
-      <li class="sidebar-nav--item"><a {{ selected|class_selected('user-questions') }} href="{{ url('users.questions', user.username) }}">{{ _('My questions') }}</a></li>
+      <li class="sidebar-nav--item"><a {{ selected|class_selected('my-profile') }} rel="ugc nofollow" href="{{ profile_url(user) }}">{{ _('My profile') }}</a></li>
+      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-profile') }} rel="ugc nofollow" href="{{ url('users.edit_my_profile') }}">{{ _('Edit my profile') }}</a></li>
+      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-settings') }} rel="ugc nofollow" href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a></li>
+      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-contributions') }} rel="ugc nofollow" href="{{ url('users.edit_contribution_area') }}">{{ _('Edit contribution areas') }}</a></li>
+      <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-watches') }} rel="ugc nofollow" href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a></li>
+      <li class="sidebar-nav--item"><a {{ selected|class_selected('user-questions') }} rel="ugc nofollow" href="{{ url('users.questions', user.username) }}">{{ _('My questions') }}</a></li>
       {% if user.profile.is_subscriber %}
-        <li class="sidebar-nav--item"><a {{ selected|class_selected('user-subscriptions') }} href="{{ url('users.subscriptions', user.username) }}">{{ _('My subscriptions') }}</a></li>
+        <li class="sidebar-nav--item"><a {{ selected|class_selected('user-subscriptions') }} rel="ugc nofollow" href="{{ url('users.subscriptions', user.username) }}">{{ _('My subscriptions') }}</a></li>
       {% endif %}
     </ul>
   </nav>

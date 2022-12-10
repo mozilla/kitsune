@@ -58,7 +58,7 @@
         </ul>
         <ul id="media-meta" class="topic-article--meta-list">
           <li class="creator">
-              {{ _('by <a href="{profile_url}">{user}</a>')|fe
+              {{ _('by <a rel="ugc nofollow" href="{profile_url}">{user}</a>')|fe
                       (profile_url=profile_url(media.creator),
                       user=display_name(media.creator)) }}
           </li>

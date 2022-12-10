@@ -60,7 +60,7 @@ def unicode_to_html(text):
 @library.global_function
 def user_list(users):
     """Turn a list of users into a list of links to their profiles."""
-    link = '<a class="user secondary-color" href="%s">%s</a>'
+    link = '<a class="user secondary-color" rel="ugc nofollow" href="%s">%s</a>'
     result_list = ", ".join(
         [link % (escape(profile_url(u)), escape(display_name(u))) for u in users]
     )

@@ -48,13 +48,13 @@
               {% endif %}
             </td>
             <td class="title"><a rel="ugc nofollow" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ thread.title }}</a></td>
-            <td class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></td>
+            <td class="author"><a class="username" rel="ugc nofollow" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></td>
             <td class="replies">{{ thread.replies }}</td>
             <td class="last-post">
               <a rel="ugc nofollow" href="{{ thread.last_post.get_absolute_url() }}">
                 {{ datetimeformat(thread.last_post.created) }}
               </a><br/>
-              <span class="text-body-xs ">{{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}</span>
+              <span class="text-body-xs ">{{ _('by <a class="username" rel="ugc nofollow" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}</span>
             </td>
           </tr>
         {% endfor %}

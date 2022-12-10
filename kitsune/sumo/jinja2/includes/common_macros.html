@@ -211,7 +211,7 @@
           aria-controls="mzp-c-menu-panel-profile">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ profile_url(user) }}">
+            <a class="mzp-c-menu-item-link" rel="ugc nofollow" href="{{ profile_url(user) }}">
               <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <g transform="translate(5 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd">
                   <path d="M0 18c1-4 3.333-6 7-6s6 2 7 6" stroke-linecap="round" />
@@ -224,14 +224,14 @@
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
-              <li><a href="{{ url('users.questions', user.username) }}">{{ _('My Questions') }}</a></li>
+              <li><a rel="ugc nofollow" href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
+              <li><a rel="ugc nofollow" href="{{ url('users.questions', user.username) }}">{{ _('My Questions') }}</a></li>
             </ul>
           </section>
         </div>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('users.edit_settings') }}">
+            <a class="mzp-c-menu-item-link" rel="ugc nofollow" href="{{ url('users.edit_settings') }}">
               <svg class="mzp-c-menu-item-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <g transform="translate(1 1)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
                   stroke-linecap="round" stroke-linejoin="round">

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% set title = _('Deactivation Log') %}
+{% set meta = (('robots', 'noindex'),) %}
 
 
 {% block content %}
@@ -17,9 +18,9 @@
       {% for deactivation in deactivations %}
         <tr>
           <td>{{ deactivation.date }}</td>
-          <td><a href="{{ profile_url(deactivation.user) }}">
+          <td><a rel="ugc nofollow" href="{{ profile_url(deactivation.user) }}">
               {{ display_name(deactivation.user) }}</a></td>
-          <td><a href="{{ profile_url(deactivation.moderator) }}">
+          <td><a rel="ugc nofollow" href="{{ profile_url(deactivation.moderator) }}">
               {{ display_name(deactivation.moderator) }}</a></td>
         </tr>
       {% endfor %}
