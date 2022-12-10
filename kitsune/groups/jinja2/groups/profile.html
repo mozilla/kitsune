@@ -100,12 +100,12 @@
 
 {% macro user_row(user) -%}
   <div class="avatar">
-    <a href="{{ profile_url(user) }}">
+    <a rel="ugc nofollow" href="{{ profile_url(user) }}">
       <img src="{{ profile_avatar(user) }}" alt="" />
     </a>
   </div>
   <div class="info">
-    <a href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
+    <a rel="ugc nofollow" href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
     {{ private_message(user) }}
   </div>
 {%- endmacro %}

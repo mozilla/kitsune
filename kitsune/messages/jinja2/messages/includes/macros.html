@@ -2,7 +2,7 @@
 
 {% macro avatar_link(user=None) -%}
   {% if user %}
-    <a href="{{ profile_url(user) }}">
+    <a rel="ugc nofollow" href="{{ profile_url(user) }}">
       <img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ display_name(user) }}" />
     </a>
   {% else %}
@@ -12,7 +12,7 @@
 
 {% macro name_link(user=None, name=None) -%}
   {% if user -%}
-    <a href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
+    <a rel="ugc nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
   {%- else -%}
     {{ name if name else _('System') }}
   {%- endif %}

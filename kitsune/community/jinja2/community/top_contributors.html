@@ -114,7 +114,7 @@
                 <ul class="results-user-details">
                   <li>{{ result['user']['username'] }}</li>
                   <li>{{ _('Contributions in last 90 days: {count}')|f(count=result['count']) }}</li>
-                  <li><a href="{{ url('users.profile', result['user']['id']) }}">{{ _('View Profile') }}</a></li>
+                  <li><a rel="ugc nofollow" href="{{ url('users.profile', result['user']['id']) }}">{{ _('View Profile') }}</a></li>
                   <li><a href="{{ url('messages.new')|urlparams(to=result['user']['username']) }}">{{ _('Private Message') }}</a></li>
                   {% if result['user']['days_since_last_activity'] is not undefined %}
                     <li>

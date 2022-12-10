@@ -53,7 +53,7 @@
         <ul class="avatar-wrap">
           {% for u in document.contributors.all() %}
             <li class="avatar-wrap--item">
-                <a class="avatar" href="{{ profile_url(u) }}">
+                <a class="avatar" rel="ugc nofollow" href="{{ profile_url(u) }}">
                   <img src="{{ profile_avatar(u) }}" alt="" />
                   <span class="avatar-wrap--info">{{ display_name(u) }}</span>
                 </a>

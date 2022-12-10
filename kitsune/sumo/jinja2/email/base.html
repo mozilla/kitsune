@@ -244,7 +244,7 @@
             <td>
               {% block prefooter %}{% endblock %}
               {% block footer %}
-                <a class="email-prefs" href="{{ url('users.edit_settings') }}">{{ _('Change your email preferences') }}</a>
+                <a class="email-prefs" rel="ugc nofollow" href="{{ url('users.edit_settings') }}">{{ _('Change your email preferences') }}</a>
                 {% if watch %}
                   <div class="watch-link"><a href="{{ watch.unsubscribe_url() }}">{{ _('Unsubscribe from these emails') }}</a></div>
                 {% endif %}
