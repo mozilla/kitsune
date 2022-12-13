@@ -63,3 +63,4 @@ dist/
 .local
 .pdbhistory
 .minikube
+locust*
