@@ -5,13 +5,13 @@
 <section class="avatar-row">
   <div class="avatar-details user-meta">
     <div class="avatar">
-      <a rel="ugc nofollow" href="{{ profile_url(post.creator, request.user == post.creator) }}">
+      <a rel="nofollow" href="{{ profile_url(post.creator, request.user == post.creator) }}">
         <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
       </a>
     </div>
     <div class="user">
       <div class="asked-by">
-        <a class="author-name" rel="ugc nofollow" href="{{ profile_url(post.creator, request.user == post.creator) }}">
+        <a class="author-name" rel="nofollow" href="{{ profile_url(post.creator, request.user == post.creator) }}">
           <span class="display-name">{{ display_name(post.creator) }}</span>
           {# L10n: {0} is the number of posts. #}
           {% with count = post.creator.post_set.count() %}

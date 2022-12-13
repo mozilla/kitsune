@@ -23,7 +23,7 @@
 
     {% if badge.creator %}
       <dt>{{ _('Creator:') }}</dt>
-      <dd><a rel="ugc nofollow" href="{{ profile_url(badge.creator) }}">{{ badge.creator }}</a></dd>
+      <dd><a rel="nofollow" href="{{ profile_url(badge.creator) }}">{{ badge.creator }}</a></dd>
     {% endif %}
 
     <dt>{{ _('Created:') }}</dt>
@@ -39,7 +39,7 @@
   <dl class="badge-details">
     <dt>{{ _('Awarded to:') }}</dt>
     <dd class="awarded_to">
-      <a rel="ugc nofollow" href="{{ profile_url(award.user) }}">
+      <a rel="nofollow" href="{{ profile_url(award.user) }}">
         <img src="{{ profile_avatar(award.user) }}" alt="" title="{{ display_name(award.user) }}">
         <br>{{ award.user }}
       </a>
@@ -53,7 +53,7 @@
     {% if award.creator %}
       <dt>{{ _('Awarded by:') }}</dt>
       <dd>
-        <a rel="ugc nofollow" href="{{ profile_url(award.creator) }}">
+        <a rel="nofollow" href="{{ profile_url(award.creator) }}">
           <img src="{{ profile_avatar(award.creator) }}" alt="" title="{{ award.creator }}">
           {{ award.creator }}
         </a>

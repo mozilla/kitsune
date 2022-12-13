@@ -4,13 +4,13 @@
 <section class="avatar-row">
   <div class="avatar-details user-meta">
     <div class="avatar">
-      <a rel="ugc nofollow" href="{{ profile_url(post.author) }}">
+      <a rel="nofollow" href="{{ profile_url(post.author) }}">
         <img src="{{ profile_avatar(post.author) }}" height="45" width="45" alt="{{ display_name(post.author) }}" />
       </a>
     </div>
     <div class="user">
       <div class="asked-by">
-        <a class="author-name" rel="ugc nofollow" href="{{ profile_url(post.author) }}">
+        <a class="author-name" rel="nofollow" href="{{ profile_url(post.author) }}">
           <span class="display-name">{{ display_name(post.author) }}</span>
           {# L10n: {0} is the number of posts. #}
           <span

@@ -22,7 +22,7 @@
 
     {% if badge.creator %}
       <dt>{{ _('Creator:') }}</dt>
-      <dd><a rel="ugc nofollow" href="{{ profile_url(badge.creator) }}">{{ display_name(badge.creator) }}</a></dd>
+      <dd><a rel="nofollow" href="{{ profile_url(badge.creator) }}">{{ display_name(badge.creator) }}</a></dd>
     {% endif %}
 
     <dt>{{ _('Created:') }}</dt>

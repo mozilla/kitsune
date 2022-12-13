@@ -137,13 +137,13 @@
       <section class="avatar-row">
         <div class="avatar-details user-meta">
           <div class="avatar">
-            <a rel="ugc nofollow" href="{{ profile_url(question.creator, request.user == question.creator) }}">
+            <a rel="nofollow" href="{{ profile_url(question.creator, request.user == question.creator) }}">
               <img src="{{ profile_avatar(question.creator) }}" height="48" width="48" alt="{{ display_name(question.creator) }}"/>
             </a>
           </div>
           <div class="user">
             <div class="asked-by">
-              <a class="author-name" rel="ugc nofollow" href="{{ profile_url(question.creator, request.user == question.creator) }}">
+              <a class="author-name" rel="nofollow" href="{{ profile_url(question.creator, request.user == question.creator) }}">
                 <span class="display-name">{{ display_name(question.creator) }}</span>
               </a>
             </div>
@@ -283,7 +283,7 @@
             </div>
           {% endif %}
           <p>
-            {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.auth'), ask_url=ask_url) }}
+            {{ _('You must <a rel="nofollow" href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.auth'), ask_url=ask_url) }}
           </p>
         </div>
       {% endif %}
