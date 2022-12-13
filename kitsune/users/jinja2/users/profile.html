@@ -30,7 +30,7 @@
         {% if request.user.is_authenticated and request.user != profile.user %}
           {% if user.has_perm('users.change_profile') %}
             <div id="admin-actions">
-              <a class="edit" rel="ugc nofollow" href="{{ url('users.edit_profile', profile.user.username) }}">
+              <a class="edit" rel="nofollow" href="{{ url('users.edit_profile', profile.user.username) }}">
                 {{ _('Edit user profile') }}
               </a>
            </div>
@@ -44,7 +44,7 @@
         </h2>
         <p>
           {% if is_owner %}
-            {% trans a_open='<a href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
+            {% trans a_open='<a rel="nofollow" href="'|safe + url("users.edit_my_profile") + '">'|safe, a_close='</a>'|safe %}
               Your privacy is important to us. Your username is always visible to the public -
               if you would like to edit your username, {{ a_open }} click here. {{ a_close }}
             {% endtrans %}
@@ -142,14 +142,14 @@
             {% endif %}
             {% if num_questions %}
               <li>
-                <a rel="ugc nofollow" href="{{ url('users.questions', profile.user.username) }}">
+                <a rel="nofollow" href="{{ url('users.questions', profile.user.username) }}">
                   {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
                 </a>
               </li>
             {% endif %}
             {% if num_answers %}
               <li>
-                <a rel="ugc nofollow" href="{{ url('users.answers', profile.user.username) }}">
+                <a rel="nofollow" href="{{ url('users.answers', profile.user.username) }}">
                   {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
                 </a>
               </li>
@@ -161,7 +161,7 @@
             {% endif %}
             {% if num_documents %}
               <li>
-                <a rel="ugc nofollow" href="{{ url('users.documents', profile.user.username) }}">
+                <a rel="nofollow" href="{{ url('users.documents', profile.user.username) }}">
                   {{ ngettext('{0} document', '{0} documents', num_documents)|f(num_documents) }}
                 </a>
               </li>

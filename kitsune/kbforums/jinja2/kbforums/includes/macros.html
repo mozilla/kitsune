@@ -12,7 +12,7 @@
       {% else %}
         {% trans title=document.title, register_url=url('users.fxa_authentication_init') %}
           This forum is a discussion about improving the "{{ title }}" article. If
-          you'd like to participate, please <a href="{{ register_url }}">register</a>.
+          you'd like to participate, please <a rel="nofollow" href="{{ register_url }}">register</a>.
         {% endtrans %}
       {% endif %}
     </p>

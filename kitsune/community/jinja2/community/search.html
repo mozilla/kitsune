@@ -37,7 +37,7 @@
                   <h2 class="card--title">{{ result['name'] }}</h2>
                   <ul class="results-user-details">
                     <li>{{ result['username'] }}</li>
-                    <li><a rel="ugc nofollow" href="{{ url('users.profile', result['user_id']) }}">{{ _('View Profile') }}</a></li>
+                    <li><a rel="nofollow" href="{{ url('users.profile', result['user_id']) }}">{{ _('View Profile') }}</a></li>
                     <li><a href="{{ url('messages.new')|urlparams(to=result['username']) }}">{{ _('Private Message') }}</a></li>
                   </ul>
                 </div>

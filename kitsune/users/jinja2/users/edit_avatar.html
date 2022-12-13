@@ -1,7 +1,7 @@
 {% extends "users/base.html" %}
 {% set title = _('Change Avatar') %}
 {% set classes = 'profile' %}
-{% set crumbs = [((profile_url(user), 'rel="ugc nofollow"'), user.username),
+{% set crumbs = [((profile_url(user), 'rel="nofollow"'), user.username),
                  (None, title)] %}
 
 {% block content %}
