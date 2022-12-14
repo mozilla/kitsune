@@ -805,7 +805,7 @@ def unsolve(request, question_id, answer_id):
 
 
 @require_POST
-@ratelimit("question-vote", "10/d")
+@ratelimit("question-vote", "1/h")
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
@@ -853,7 +853,7 @@ def question_vote(request, question_id):
 
 
 @require_POST
-@ratelimit("answer-vote", "10/d")
+@ratelimit("answer-vote", "1/h")
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(

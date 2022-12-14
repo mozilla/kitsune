@@ -449,78 +449,79 @@ class TestRateLimiting(TestCaseBase):
             self.assertEqual(AnswerVote.objects.filter(answer=a).count(), votes + 1)
 
     def test_question_vote_limit(self):
-        """Test that an anonymous user's votes are ignored after 10
-        question votes."""
-        questions = [QuestionFactory() for _ in range(11)]
+        """Test that an anonymous user's votes are ignored after 1
+        question vote."""
+        question1 = QuestionFactory()
+        question2 = QuestionFactory()
 
-        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
-        for i in range(10):
-            self._check_question_vote(questions[i], False)
+        # The rate limit is 1 per minute. So make 1 request.
+        self._check_question_vote(question1, False)
 
         # Now make another, it should fail.
-        self._check_question_vote(questions[10], True)
+        self._check_question_vote(question2, True)
 
     def test_answer_vote_limit(self):
-        """Test that an anonymous user's votes are ignored after 10
+        """Test that an anonymous user's votes are ignored after 1
         answer votes."""
         q = QuestionFactory()
         answers = AnswerFactory.create_batch(11, question=q)
 
-        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
-        for i in range(10):
-            self._check_answer_vote(q, answers[i], False)
+        # The rate limit is 1 per minute. So make 1 requests.
+        self._check_answer_vote(q, answers[0], False)
 
         # Now make another, it should fail.
-        self._check_answer_vote(q, answers[10], True)
+        self._check_answer_vote(q, answers[1], True)
 
     def test_question_vote_logged_in(self):
         """This exhausts the rate limit, then logs in, and exhausts it
         again."""
-        questions = [QuestionFactory() for _ in range(11)]
+        question1 = QuestionFactory()
+        question2 = QuestionFactory()
         u = UserFactory(password="testpass")
 
-        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
-        for i in range(10):
-            self._check_question_vote(questions[i], False)
-        # The rate limit has been hit, so this fails.
-        self._check_question_vote(questions[10], True)
+        # The rate limit is 1 per minute. So make 1 request.
+        self._check_question_vote(question1, False)
+
+        # Now make another, it should fail.
+        self._check_question_vote(question2, True)
 
         # Login.
         self.client.login(username=u.username, password="testpass")
-        for i in range(10):
-            self._check_question_vote(questions[i], False)
 
-        # Now the user has hit the rate limit too, so this should fail.
-        self._check_question_vote(questions[10], True)
+        # The rate limit is 1 per minute. So make 1 request.
+        self._check_question_vote(question1, False)
+
+        # Now make another, it should fail.
+        self._check_question_vote(question2, True)
 
         # Logging out out won't help
         self.client.logout()
-        self._check_question_vote(questions[10], True)
+        self._check_question_vote(question2, True)
 
     def test_answer_vote_logged_in(self):
         """This exhausts the rate limit, then logs in, and exhausts it
         again."""
         q = QuestionFactory()
-        answers = [AnswerFactory(question=q) for _ in range(12)]
+        answer1 = AnswerFactory(question=q)
+        answer2 = AnswerFactory(question=q)
         u = UserFactory(password="testpass")
 
-        # The rate limit is 10 per day. So make 10 requests. (0 through 9)
-        for i in range(10):
-            self._check_answer_vote(q, answers[i], False)
+        # The rate limit is 1 per day. So make 1 requests.
+        self._check_answer_vote(q, answer1, False)
+
         # The ratelimit has been hit, so the next request will fail.
-        self._check_answer_vote(q, answers[11], True)
+        self._check_answer_vote(q, answer2, True)
 
         # Login.
         self.client.login(username=u.username, password="testpass")
-        for i in range(10):
-            self._check_answer_vote(q, answers[i], False)
+        self._check_answer_vote(q, answer1, False)
 
         # Now the user has hit the rate limit too, so this should fail.
-        self._check_answer_vote(q, answers[10], True)
+        self._check_answer_vote(q, answer2, True)
 
         # Logging out out won't help
         self.client.logout()
-        self._check_answer_vote(q, answers[11], True)
+        self._check_answer_vote(q, answer2, True)
 
     def test_answers_limit(self):
         """Only four answers per minute can be posted."""
