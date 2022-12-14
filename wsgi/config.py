@@ -11,9 +11,9 @@ errorlog = "-"
 loglevel = getenv("WSGI_LOG_LEVEL", "info")
 worker_class = getenv("GUNICORN_WORKER_CLASS", "gevent")
 reload = getenv("DEV", False)
-# improve fairness 
+# improve fairness
 reuse_port = getenv("WSGI_REUSE_PORT", True)
-keepalive = int(getenv("WSGI_KEEP_ALIVE", 620))
+keepalive = int(getenv("WSGI_KEEP_ALIVE", 60))
 timeout = int(getenv("WSGI_TIMEOUT", 30))
 graceful_timeout = int(getenv("WSGI_GRACEFUL_TIMEOUT", 10))
 worker_connections = int(getenv("WSGI_WORKER_CONNECTIONS", 1000))

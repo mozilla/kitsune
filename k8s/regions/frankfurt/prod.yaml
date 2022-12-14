@@ -127,6 +127,11 @@ app:
     use_x_forwarded_host: True
     user_agent_filters: "360spider,semrushBot"
     wsgi_keep_alive: 60
+    wsgi_timeout: 30
+    wsgi_graceful_timeout: 10
+    wsgi_worker_connections: 1000
+    wsgi_max_requests: 1500
+    wsgi_max_requests_jitter: 30
     disable_questions_list_global: False
     disable_questions_list_all: False
     disable_feeds: False
