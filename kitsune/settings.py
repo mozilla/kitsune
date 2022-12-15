@@ -1271,13 +1271,7 @@ LEGACY_CONTRIBUTOR_GROUPS = [
 ]
 
 # Wagtail configuration
-WAGTAIL_SITE_NAME = "Mozilla /Support"
+WAGTAIL_SITE_NAME = "Mozilla Support"
+WAGTAILADMIN_BASE_URL = config("WAGTAILADMIN_BASE_URL", default="https://support.mozilla.org")
+
 WAGTAIL_I18N_ENABLED = True
-
-LOCALE_MIDDLEWARE_EXEMPT_URLS = [
-    "/cms/",
-]
-
-# WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = [
-#     ("en-US", "English"),
-# ]
