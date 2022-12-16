@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.utils.translation import pgettext
 
 import pytz
@@ -315,7 +316,11 @@ class InactiveSessionAuthentication(SessionAuthentication):
         """
         Enforce CSRF validation for session based authentication.
         """
-        reason = CSRFCheck().process_view(request, None, (), {})
+
+        def get_response(request):
+            return HttpResponse()
+
+        reason = CSRFCheck(get_response).process_view(request, None, (), {})
         if reason:
             # CSRF failed, bail with explicit error message
             raise AuthenticationFailed("CSRF Failed: %s" % reason)
