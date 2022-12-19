@@ -231,6 +231,7 @@ class FXAAuthBackendTests(TestCase):
         self.backend.update_user(user, claims)
         message_mock.error.assert_called_with(
             request_mock,
-            "The e-mail address used with this Firefox Account is already linked in another profile.",
+            "The e-mail address used with this Firefox Account"
+            " is already linked in another profile.",
         )
         self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")
