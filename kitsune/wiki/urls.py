@@ -35,7 +35,7 @@ document_patterns = [
         r"^get-votes-async", views.get_helpful_votes_async, name="wiki.get_helpful_votes_async"
     ),
     # KB discussion forums
-    re_path(r"^discuss/", include("kitsune.kbforums.urls")),
+    re_path(r"^discuss", include("kitsune.kbforums.urls")),
     # Delete a revision
     re_path(
         r"^revision/(?P<revision_id>\d+)/delete$",
@@ -146,7 +146,7 @@ urlpatterns = [
     re_path(r"^preview-wiki-content$", views.preview_revision, name="wiki.preview"),
     re_path(r"^save_draft$", views.draft_revision, name="wiki.draft_revision"),
     re_path(r"^category/(?P<category>\d+)$", views.list_documents, name="wiki.category"),
-    re_path(r"^(?P<document_slug>[^/]+)/", include(document_patterns)),
+    re_path(r"^(?P<document_slug>[^/]+)/?$", include(document_patterns)),
 ]
 
 urlpatterns += [
