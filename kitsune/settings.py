@@ -1173,6 +1173,8 @@ CSP_DEFAULT_SRC = ("'none'",)
 
 CSP_SCRIPT_SRC = (
     "'self'",
+    "'unsafe-inline'",
+    "'unsafe-eval'",
     "https://*.mozilla.org",
     "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
@@ -1216,7 +1218,6 @@ CSP_FONT_SRC = (
 
 CSP_STYLE_SRC = (
     "'self'",
-    "'unsafe-inline'",
     "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
     "https://*.jsdelivr.net",
