@@ -1214,6 +1214,7 @@ CSP_FONT_SRC = (
 
 CSP_STYLE_SRC = (
     "'self'",
+    "'unsafe-inline'",
     "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
     "https://*.jsdelivr.net",
