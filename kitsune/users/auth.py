@@ -215,7 +215,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if user.email != email and not user.is_staff:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
                 msg = _(
-                    "The email used with this Firefox Account is already "
+                    "The e-mail address used with this Firefox Account is already "
                     "linked in another profile."
                 )
                 messages.error(self.request, msg)
