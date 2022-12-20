@@ -455,9 +455,9 @@ TEMPLATES = [
                 "django_jinja.builtins.extensions.StaticFilesExtension",
                 "django_jinja.builtins.extensions.DjangoFiltersExtension",
                 "jinja2.ext.i18n",
-                'wagtail.jinja2tags.core',
-                'wagtail.admin.jinja2tags.userbar',
-                'wagtail.images.jinja2tags.images',
+                "wagtail.jinja2tags.core",
+                "wagtail.admin.jinja2tags.userbar",
+                "wagtail.images.jinja2tags.images",
             ],
             "policies": {
                 "ext.i18n.trimmed": True,
@@ -1232,6 +1232,7 @@ CSP_MANIFEST_SRC = (
 
 CSP_CONNECT_SRC = (
     "'self'",
+    "https://releases.wagtail.io",
     "https://*.google-analytics.com",
     "https://location.services.mozilla.com",
 )
