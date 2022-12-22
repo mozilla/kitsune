@@ -18,8 +18,11 @@ and follow the following steps.
     ```
     git clone https://github.com/mozilla/kitsune.git
     ```
-
-2. Pull base Kitsune Docker images, install node packages and build the Webpack bundle, and create your database.
+2. If .env file not already exists, create .env file using 
+   ```
+   make .env
+   ```
+6. Pull base Kitsune Docker images, install node packages and build the Webpack bundle, and create your database.
 
     ```
     make init
