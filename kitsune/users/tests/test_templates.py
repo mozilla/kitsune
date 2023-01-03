@@ -121,7 +121,7 @@ class ViewProfileTests(TestCaseBase):
         self.assertEqual(0, doc(".contact").length)
         # Check canonical url
         self.assertEqual(
-            "%s/en-US/user/%s" % (settings.CANONICAL_URL, self.u.username),
+            "%s/en-US/user/%s/" % (settings.CANONICAL_URL, self.u.username),
             doc('link[rel="canonical"]')[0].attrib["href"],
         )
 

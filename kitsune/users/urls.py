@@ -14,48 +14,46 @@ api_patterns = [
 # These will all start with /user/<user_id>/
 detail_patterns = [
     re_path(r"^$", views.profile, name="users.profile"),
-    re_path(r"^/questions$", views.questions_contributed, name="users.questions"),
-    re_path(r"^/answers$", views.answers_contributed, name="users.answers"),
-    re_path(r"^/documents$", views.documents_contributed, name="users.documents"),
-    re_path(r"^/edit$", views.edit_profile, name="users.edit_profile"),
-    re_path(r"^/subscriptions$", views.subscribed_products, name="users.subscriptions"),
+    re_path(r"^questions$", views.questions_contributed, name="users.questions"),
+    re_path(r"^answers$", views.answers_contributed, name="users.answers"),
+    re_path(r"^documents$", views.documents_contributed, name="users.documents"),
+    re_path(r"^edit$", views.edit_profile, name="users.edit_profile"),
+    re_path(r"^subscriptions$", views.subscribed_products, name="users.subscriptions"),
 ]
 
 if settings.DEV and settings.ENABLE_DEV_LOGIN:
     detail_patterns += [
-        re_path(r"^/become$", views.become, name="users.become"),
+        re_path(r"^become$", views.become, name="users.become"),
     ]
 
 users_patterns = [
-    re_path(r"^/auth$", views.user_auth, name="users.auth"),
-    re_path(r"^/login$", views.login, name="users.login"),
-    re_path(r"^/logout$", views.logout, name="users.logout"),
-    re_path(r"^/close_account$", views.close_account, name="users.close_account"),
-    re_path(r"^/edit$", views.edit_profile, name="users.edit_my_profile"),
-    re_path(r"^/settings$", views.edit_settings, name="users.edit_settings"),
+    re_path(r"^auth$", views.user_auth, name="users.auth"),
+    re_path(r"^login$", views.login, name="users.login"),
+    re_path(r"^logout$", views.logout, name="users.logout"),
+    re_path(r"^close_account$", views.close_account, name="users.close_account"),
+    re_path(r"^edit$", views.edit_profile, name="users.edit_my_profile"),
+    re_path(r"^settings$", views.edit_settings, name="users.edit_settings"),
+    re_path(r"^contributions$", views.edit_contribution_area, name="users.edit_contribution_area"),
+    re_path(r"^watches$", views.edit_watch_list, name="users.edit_watch_list"),
+    re_path(r"^deactivate$", views.deactivate, name="users.deactivate"),
     re_path(
-        r"^/contributions$", views.edit_contribution_area, name="users.edit_contribution_area"
+        r"^deactivate-spam$", views.deactivate, {"mark_spam": True}, name="users.deactivate-spam"
     ),
-    re_path(r"^/watches$", views.edit_watch_list, name="users.edit_watch_list"),
-    re_path(r"^/deactivate$", views.deactivate, name="users.deactivate"),
-    re_path(
-        r"^/deactivate-spam$", views.deactivate, {"mark_spam": True}, name="users.deactivate-spam"
-    ),
-    re_path(r"^/deactivation_log$", views.deactivation_log, name="users.deactivation_log"),
-    re_path(r"^/make_contributor$", views.make_contributor, name="users.make_contributor"),
-    re_path(r"^/api/", include(api_patterns)),
+    re_path(r"^deactivation_log$", views.deactivation_log, name="users.deactivation_log"),
+    re_path(r"^make_contributor$", views.make_contributor, name="users.make_contributor"),
+    re_path(r"^api/", include(api_patterns)),
 ]
 
 urlpatterns = [
     # URLs for a single user.
-    re_path(r"^user/(?P<username>[\w@\.\s+-]+)", include(detail_patterns)),
+    re_path(r"^user/(?P<username>[\w@\.\s+-]+)/", include(detail_patterns)),
     re_path(
         r"^user/(?P<object_id>\w+)/flag$",
         kitsune.flagit.views.flag,
         {"model": Profile},
         name="users.flag",
     ),
-    re_path(r"^users", include(users_patterns)),
+    re_path(r"^users/", include(users_patterns)),
 ]
 
 
