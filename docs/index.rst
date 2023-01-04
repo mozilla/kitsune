@@ -31,6 +31,7 @@ Part 2: Developer's Guide
    svelte
    browser_permissions
    zendesk
+   seo
    notes
 
 
