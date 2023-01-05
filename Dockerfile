@@ -27,14 +27,14 @@ RUN set -xe \
     optipng nodejs zip \
     # python
     && python -m venv /venv \
-    && pip install --upgrade pip==${PIP_VERSION} \  
-    && pip install --upgrade poetry==${POETRY_VERSION} \ 
+    && pip install --upgrade pip==${PIP_VERSION} \
+    && pip install --upgrade poetry==${POETRY_VERSION} \
     && poetry config virtualenvs.create false \
     # clean up
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry install 
+RUN poetry install
 
 #########################
 # Frontend dependencies #
@@ -55,7 +55,9 @@ RUN cp .env-build .env && \
 FROM base-frontend AS test
 
 RUN cp .env-test .env && \
+    ./scripts/l10n-fetch-lint-compile.sh && \
     ./manage.py compilejsi18n && \
+    npm run webpack:build:pre-render && \
     ./manage.py collectstatic --noinput
 
 
@@ -86,7 +88,7 @@ EXPOSE 8000
 ENV PATH="/venv/bin:$PATH" \
     LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 
+    PYTHONUNBUFFERED=1
 
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
