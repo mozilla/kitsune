@@ -20,7 +20,7 @@ class HelperTestCase(TestCase):
         self.u = UserFactory()
 
     def test_profile_url(self):
-        self.assertEqual("/user/%s" % self.u.username, profile_url(self.u))
+        self.assertEqual("/user/%s/" % self.u.username, profile_url(self.u))
 
     def test_public_email(self):
         self.assertEqual(
@@ -54,5 +54,5 @@ class HelperTestCase(TestCase):
         fragment = pq(list)
         self.assertEqual(len(users), len(fragment("a")))
         a = fragment("a")[1]
-        assert a.attrib["href"].endswith(str(users[1].username))
+        assert a.attrib["href"].endswith(str(users[1].username + "/"))
         self.assertEqual(display_name(users[1]), a.text)
