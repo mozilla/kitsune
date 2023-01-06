@@ -52,7 +52,7 @@ class ReadOnlyModeTest(TestCase):
 
     @override_settings(READ_ONLY=True)
     def test_bail_on_post(self):
-        r = self.client.post("/en-US/questions")
+        r = self.client.post("/en-US/questions/")
         self.assertEqual(r.status_code, 503)
         title = pq(r.content)("title").text()
         assert title.startswith("Maintenance in progress"), title
