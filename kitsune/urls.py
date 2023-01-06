@@ -28,7 +28,7 @@ urlpatterns = [
     re_path(r"^gallery/", include("kitsune.gallery.urls")),
     re_path(r"^chat", RedirectView.as_view(url="questions/new")),
     re_path(r"^messages/", include("kitsune.messages.urls")),
-    re_path(r"^1", include("kitsune.inproduct.urls")),
+    re_path(r"^1/", include("kitsune.inproduct.urls")),
     re_path(r"^postcrash", include("kitsune.postcrash.urls")),
     re_path(r"^groups/", include("kitsune.groups.urls")),
     re_path(r"^kpi/", include("kitsune.kpi.urls")),
