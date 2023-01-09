@@ -241,16 +241,16 @@
 
                   <div class="forum--user-meta">
                     <p class="user-meta-asked-by">
-                      {{ _('Asked by <strong><a href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.creator), username=display_name(question.creator), when=question.created|timesince) }}
+                      {{ _('Asked by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.creator), username=display_name(question.creator), when=question.created|timesince) }}
                     </p>
                     {% if question.solution %}
                       <p class="user-meta-answered-by">
-                        {{ _('Answered by <strong><a href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.solution.creator), username=display_name(question.solution.creator), when=question.solution.created|timesince) }}
+                        {{ _('Answered by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.solution.creator), username=display_name(question.solution.creator), when=question.solution.created|timesince) }}
                       </p>
                     {% else %}
                       {% if question.last_answer %}
                         <p class="user-meta-answered-by">
-                          {{ _('<a href="{reply_url}">Last reply</a> by <strong><a href="{user_url}">{username}</a></strong> {when}')|fe(reply_url=question.last_answer.get_absolute_url(), user_url=profile_url(question.last_answer.creator), username=display_name(question.last_answer.creator), when=question.last_answer.created|timesince) }}
+                          {{ _('<a href="{reply_url}">Last reply</a> by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(reply_url=question.last_answer.get_absolute_url(), user_url=profile_url(question.last_answer.creator), username=display_name(question.last_answer.creator), when=question.last_answer.created|timesince) }}
                         </p>
                       {% endif %}
                     {% endif %}

@@ -116,13 +116,13 @@
 {% macro user_row(user) -%}
 <div class="avatar-details user-meta">
   <div class="avatar">
-    <a href="{{ profile_url(user) }}">
+    <a rel="nofollow" href="{{ profile_url(user) }}">
       <img src="{{ profile_avatar(user) }}" alt="" />
     </a>
   </div>
   <div class="user">
     <div class="asked-by">
-      <a class="author-name" href="{{ profile_url(user) }}">
+      <a class="author-name" rel="nofollow" href="{{ profile_url(user) }}">
         <span class="display-name">{{ display_name(user) }}</span>
       </a>
     </div>

@@ -6,10 +6,12 @@ Disallow: /{{ l }}/forums
 Disallow: /{{ l }}/users
 Disallow: /{{ l }}/user
 Disallow: /{{ l }}/search
+Disallow: /{{ l }}/kb/*/discuss
 {% endfor %}
 {% for l in settings.NON_SUPPORTED_LOCALES.keys() %}
 Disallow: /{{ l }}/forums
 Disallow: /{{ l }}/users
 Disallow: /{{ l }}/user
 Disallow: /{{ l }}/search
+Disallow: /{{ l }}/kb/*/discuss
 {% endfor %}

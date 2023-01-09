@@ -3,7 +3,12 @@
   <ol id="breadcrumbs" class="breadcrumbs--list">
   {% for target, label in breadcrumbs %}
     {% if target %}
-      <li><a href="{{ target }}">{{ label|truncate(length=30) }}</a></li>
+      {% if target is string %}
+        <li><a href="{{ target }}">{{ label|truncate(length=30) }}</a></li>
+      {% else %}
+        {% set target, extra = target %}
+        <li><a {{ extra|safe }} href="{{ target }}">{{ label|truncate(length=30) }}</a></li>
+      {% endif %}
     {% else %}
       <li>{{ label|truncate(length=40) }}</li>
     {% endif %}

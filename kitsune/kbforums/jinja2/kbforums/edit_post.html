@@ -5,8 +5,8 @@
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('Edit a post | {t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
-                 (url('wiki.discuss.threads', document.slug), _('Discuss')),
-                 (url('wiki.discuss.posts', document.slug, thread.id), thread.title),
+                 ((url('wiki.discuss.threads', document.slug), 'rel="ugc nofollow"'), _('Discuss')),
+                 ((url('wiki.discuss.posts', document.slug, thread.id), 'rel="ugc nofollow"'), thread.title),
                  (None, _('Edit a post'))] %}
 {% set scripts = ('forums',) %}
 
@@ -33,7 +33,7 @@
             data-preview-container-id="post-preview"
             data-preview-content-id="id_content">{{ _('Preview') }}
         </button>
-        <a class="sumo-button push-left" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+        <a class="sumo-button push-left" rel="ugc nofollow" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
       </div>
     </form>
 

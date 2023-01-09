@@ -12,7 +12,7 @@
       {% else %}
         {% trans title=document.title, register_url=url('users.fxa_authentication_init') %}
           This forum is a discussion about improving the "{{ title }}" article. If
-          you'd like to participate, please <a href="{{ register_url }}">register</a>.
+          you'd like to participate, please <a rel="nofollow" href="{{ register_url }}">register</a>.
         {% endtrans %}
       {% endif %}
     </p>
@@ -22,7 +22,7 @@
                url=url('wiki.discuss.threads', document.parent.slug, locale='en-US') %}
         This forum is a discussion about improving the localization of the
         "{{ title }}" article. If you want to improve the article content,
-        go to the <a href="{{ url }}">English article discussion</a>.
+        go to the <a rel="ugc nofollow" href="{{ url }}">English article discussion</a>.
       {% endtrans %}
     </p>
   {% endif %}

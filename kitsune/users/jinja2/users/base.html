@@ -3,6 +3,7 @@
 {% set scripts = ('users',) %}
 {% set classes = "profile" %}
 {% set is_owner = profile and profile.user == request.user %}
+{% set meta = (('robots', 'noindex'),) %}
 
 {% block breadcrumbs %}
 {% endblock %}
@@ -22,7 +23,7 @@
       <nav class="sidebar-nav">
         <span class="details-heading">{{ display_name(profile.user) }}</span>
         <ul id="user-nav" class="sidebar-nav--list">
-          <li class="sidebar-nav--item"><a href="{{ profile_url(profile.user) }}" class="sidebar-nav--link selected">{{ display_name(profile.user) }}</a></li>
+          <li class="sidebar-nav--item"><a rel="nofollow" href="{{ profile_url(profile.user) }}" class="sidebar-nav--link selected">{{ display_name(profile.user) }}</a></li>
         </ul>
       </nav>
     {% endif %}

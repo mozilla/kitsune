@@ -5,7 +5,7 @@
 {% set classes = 'profile' %}
 {% set active = 'edit-profile' %}
 {% if not user_form.errors %}
- {% set crumbs = [(profile_url(user=profile.user), profile.user.username), (None, title)] %}
+ {% set crumbs = [((profile_url(user=profile.user), 'rel="nofollow"'), profile.user.username), (None, title)] %}
 {% endif %}
 
 {% block above_main %}

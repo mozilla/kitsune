@@ -4,8 +4,8 @@
 {# L10n: {t} is the title of the thread. {d} is the name of the document. #}
 {% set title = _('Edit thread {t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
-                 (url('wiki.discuss.threads', document.slug), _('Discuss')),
-                 (url('wiki.discuss.posts', document.slug, thread.id), thread.title),
+                 ((url('wiki.discuss.threads', document.slug), 'rel="ugc nofollow"'), _('Discuss')),
+                 ((url('wiki.discuss.posts', document.slug, thread.id), 'rel="ugc nofollow"'), thread.title),
                  (None, _('Edit thread'))] %}
 
 {% block content %}
@@ -24,7 +24,7 @@
 
       <div class="form-widget submit">
         <button type="submit" class="btn btn-submit big">{{ _('Update thread') }}</button>
-        <a class="btn" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
+        <a class="btn" rel="ugc nofollow" href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ _('Cancel') }}</a>
       </div>
     </form>
   </article>
