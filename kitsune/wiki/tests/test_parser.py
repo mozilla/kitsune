@@ -229,9 +229,7 @@ class TestWikiTemplate(TestCase):
         """If template does not exist in set locale or English."""
         p = WikiParser()
         doc = pq(p.parse("[[T:test]]", locale="fr"))
-        self.assertEqual(
-            'The template "test" does not exist or has no approved revision.', doc.text()
-        )
+        self.assertEqual("Le modèle « test » n’existe pas ou n’a pas été approuvé.", doc.text())
 
     def test_template_locale_fallback(self):
         """If localized template does not exist, fall back to English."""
@@ -502,7 +500,7 @@ class TestWikiVideo(TestCase):
         """Video does not exist."""
         p = WikiParser()
         doc = pq(p.parse("[[V:404]]", locale="fr"))
-        self.assertEqual('The video "404" does not exist.', doc.text())
+        self.assertEqual("La vidéo « 404 » n’existe pas.", doc.text())
 
     def test_video_modal(self):
         """Video modal defaults for plcaeholder and text."""
