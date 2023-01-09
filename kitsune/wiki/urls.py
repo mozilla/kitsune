@@ -35,7 +35,7 @@ document_patterns = [
         r"^/get-votes-async", views.get_helpful_votes_async, name="wiki.get_helpful_votes_async"
     ),
     # KB discussion forums
-    re_path(r"^/discuss", include("kitsune.kbforums.urls")),
+    re_path(r"^/discuss/", include("kitsune.kbforums.urls")),
     # Delete a revision
     re_path(
         r"^/revision/(?P<revision_id>\d+)/delete$",
