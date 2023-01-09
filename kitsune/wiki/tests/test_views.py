@@ -1519,7 +1519,7 @@ class WhatLinksWhereTests(TestCaseBase):
         url = reverse("wiki.what_links_here", args=[d1.slug], locale="de")
         resp = self.client.get(url, follow=True)
         self.assertEqual(200, resp.status_code)
-        assert b"No other documents link to D1." in resp.content
+        assert b"Auf D1 verweisen keine anderen Dokumente." in resp.content
 
     def test_what_links_here_with_locale_fallback(self):
         d1 = ApprovedRevisionFactory(content="", document__title="D1").document

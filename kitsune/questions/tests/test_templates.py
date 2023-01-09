@@ -1402,7 +1402,7 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_localized_creation(self):
         response = self._post_new_question(locale="pt-BR")
         self.assertEqual(200, response.status_code)
-        assert "Done!" in pq(response.content)("ul.user-messages li").text()
+        assert "Pronto!" in pq(response.content)("ul.user-messages li").text()
 
         # Verify question is in db now
         question = Question.objects.filter(title="A test question")[0]

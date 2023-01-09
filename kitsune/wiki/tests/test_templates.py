@@ -466,7 +466,7 @@ class DocumentTests(TestCaseBase):
         # Display fallback message to the user.
         self.assertEqual(1, len(doc("#doc-pending-fallback")))
         # Check Translate article is showing in the side tools bar
-        assert "Translate Article" in doc("#editing-tools-sidebar").text()
+        assert "Tradueix l'article" in doc("#editing-tools-sidebar").text()
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()

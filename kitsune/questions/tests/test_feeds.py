@@ -98,6 +98,6 @@ class ForumTestFeeds(TestCaseBase):
         feed_links = doc('link[type="application/atom+xml"]')
         feed = feed_links[0]
         self.assertEqual(1, len(feed_links))
-        self.assertEqual("Recently updated questions", feed.attrib["title"])
+        self.assertEqual("Perguntas atualizadas recentemente", feed.attrib["title"])
         self.assertEqual(urlparams("/pt-BR/questions/feed?product=all"), feed.attrib["href"])
         self.assertEqual(200, self.client.get(feed.attrib["href"]).status_code)
