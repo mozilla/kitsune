@@ -1014,9 +1014,7 @@ class UnhelpfulReadout(Readout):
         )
         return dict(
             title=str(result[6]),
-            url=reverse(
-                "wiki.document_revisions", args=[str(result[5], "utf-8")], locale=self.locale
-            ),
+            url=reverse("wiki.document_revisions", args=[result[5]], locale=self.locale),
             visits=int(float(result[1])),
             custom=True,
             column4_data=helpfulness,
