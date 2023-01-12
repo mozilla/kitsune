@@ -29,27 +29,16 @@ from kitsune.sumo.models import LocaleField, ModelBase, WagtailBase
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableManager, BigVocabTaggableMixin
 from kitsune.tidings.models import NotificationsMixin
-from kitsune.wiki.config import (
-    ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY,
-    CATEGORIES,
-    DOC_HTML_CACHE_KEY,
-    MAJOR_SIGNIFICANCE,
-    MEDIUM_SIGNIFICANCE,
-    REDIRECT_CONTENT,
-    REDIRECT_HTML,
-    REDIRECT_SLUG,
-    REDIRECT_TITLE,
-    SIGNIFICANCES,
-    TEMPLATE_TITLE_PREFIX,
-    TEMPLATES_CATEGORY,
-    TYPO_SIGNIFICANCE,
-)
+from kitsune.wiki.config import (ADMINISTRATION_CATEGORY,
+                                 CANNED_RESPONSES_CATEGORY, CATEGORIES,
+                                 DOC_HTML_CACHE_KEY, MAJOR_SIGNIFICANCE,
+                                 MEDIUM_SIGNIFICANCE, REDIRECT_CONTENT,
+                                 REDIRECT_HTML, REDIRECT_SLUG, REDIRECT_TITLE,
+                                 SIGNIFICANCES, TEMPLATE_TITLE_PREFIX,
+                                 TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE)
 from kitsune.wiki.managers import DocumentManager, RevisionManager
-from kitsune.wiki.permissions import (
-    DocumentPermissionMixin,
-    can_delete_documents_or_review_revisions,
-)
+from kitsune.wiki.permissions import (DocumentPermissionMixin,
+                                      can_delete_documents_or_review_revisions)
 
 log = logging.getLogger("k.wiki")
 MAX_REVISION_COMMENT_LENGTH = 255
@@ -114,7 +103,7 @@ class WgDocument(NotificationsMixin, WagtailBase, DocumentPermissionMixin):
         InlinePanel("topic", label="Topics"),
         FieldPanel("is_template"),
         FieldPanel("allow_discussion"),
-        FieldPanel("contributors"),
+        # FieldPanel("contributors"),
         FieldPanel("share_link"),
         FieldPanel("display_order"),
         FieldPanel("related_documents"),
