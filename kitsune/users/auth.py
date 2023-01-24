@@ -197,25 +197,20 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # Check if the user has active subscriptions
         subscriptions = claims.get("subscriptions", [])
 
-        # The request attribute might not be set.
-        request = getattr(self, "request", None)
-
-        if not profile.is_fxa_migrated:
+        if (request := getattr(self, "request", None)) and not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
             if Profile.objects.filter(fxa_uid=fxa_uid).exists():
-                if request:
-                    msg = _("This Firefox Account is already used in another profile.")
-                    messages.error(request, msg)
+                msg = _("This Firefox Account is already used in another profile.")
+                messages.error(request, msg)
                 return None
 
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
-            if request:
-                # This is the first time an existing user is using FxA. Redirect to profile edit
-                # in case the user wants to update any settings.
-                request.session["oidc_login_next"] = reverse("users.edit_my_profile")
-                messages.info(request, "fxa_notification_updated")
+            # This is the first time an existing user is using FxA. Redirect to profile edit
+            # in case the user wants to update any settings.
+            request.session["oidc_login_next"] = reverse("users.edit_my_profile")
+            messages.info(request, "fxa_notification_updated")
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         # unless we have a superuser
