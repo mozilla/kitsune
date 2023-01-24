@@ -79,9 +79,11 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
     def update_contributor_status(self, profile):
         """Register user as contributor."""
-        if contribution_area := self.request.session.get("contributor"):
+        # The request attribute might not be set.
+        request = getattr(self, "request", None)
+        if request and (contribution_area := request.session.get("contributor")):
             add_to_contributors(profile.user, profile.locale, contribution_area)
-            del self.request.session["contributor"]
+            del request.session["contributor"]
 
     def create_user(self, claims):
         """Override create user method to mark the profile as migrated."""
@@ -195,11 +197,11 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # Check if the user has active subscriptions
         subscriptions = claims.get("subscriptions", [])
 
-        if not profile.is_fxa_migrated:
+        if (request := getattr(self, "request", None)) and not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
             if Profile.objects.filter(fxa_uid=fxa_uid).exists():
                 msg = _("This Firefox Account is already used in another profile.")
-                messages.error(self.request, msg)
+                messages.error(request, msg)
                 return None
 
             # If it's not migrated, we can assume that there isn't an FxA id too
@@ -207,18 +209,19 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             profile.fxa_uid = fxa_uid
             # This is the first time an existing user is using FxA. Redirect to profile edit
             # in case the user wants to update any settings.
-            self.request.session["oidc_login_next"] = reverse("users.edit_my_profile")
-            messages.info(self.request, "fxa_notification_updated")
+            request.session["oidc_login_next"] = reverse("users.edit_my_profile")
+            messages.info(request, "fxa_notification_updated")
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         # unless we have a superuser
         if user.email != email and not user.is_staff:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
-                msg = _(
-                    "The e-mail address used with this Firefox Account is already "
-                    "linked in another profile."
-                )
-                messages.error(self.request, msg)
+                if request:
+                    msg = _(
+                        "The e-mail address used with this Firefox Account is already "
+                        "linked in another profile."
+                    )
+                    messages.error(request, msg)
                 return None
             user.email = email
             user_attr_changed = True

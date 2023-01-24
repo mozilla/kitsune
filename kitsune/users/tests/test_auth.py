@@ -130,16 +130,23 @@ class FXAAuthBackendTests(TestCase):
         claims = {
             "uid": "my_unique_fxa_id",
         }
+        # Test without a request (for example, when called from a Celery task).
+        with self.subTest("without a request"):
+            self.backend.update_user(user, claims)
+            assert not message_mock.error.called
+            assert not User.objects.get(id=user.id).profile.is_fxa_migrated
+            assert not User.objects.get(id=user.id).profile.fxa_uid
+        # Test with a request.
         request_mock = Mock(spec=HttpRequest)
         request_mock.session = {}
-        self.backend.claims = claims
-        self.backend.request = request_mock
-        self.backend.update_user(user, claims)
-        message_mock.error.assert_called_with(
-            request_mock, "This Firefox Account is already used in another profile."
-        )
-        assert not User.objects.get(id=user.id).profile.is_fxa_migrated
-        assert not User.objects.get(id=user.id).profile.fxa_uid
+        with self.subTest("with a request"):
+            self.backend.request = request_mock
+            self.backend.update_user(user, claims)
+            message_mock.error.assert_called_with(
+                request_mock, "This Firefox Account is already used in another profile."
+            )
+            assert not User.objects.get(id=user.id).profile.is_fxa_migrated
+            assert not User.objects.get(id=user.id).profile.fxa_uid
 
     def test_login_existing_user_by_email(self):
         """Test user filtering by email."""
@@ -166,10 +173,6 @@ class FXAAuthBackendTests(TestCase):
             profile__is_fxa_migrated=True,
         )
         claims = {"uid": "my_unique_fxa_id", "email": "bar@example.com", "subscriptions": "[]"}
-        request_mock = Mock(spec=HttpRequest)
-        request_mock.session = {}
-        self.backend.claims = claims
-        self.backend.request = request_mock
         self.backend.update_user(user, claims)
         user = User.objects.get(id=user.id)
         self.assertEqual(user.email, "bar@example.com")
@@ -224,14 +227,20 @@ class FXAAuthBackendTests(TestCase):
         UserFactory.create(email="foo@example.com")
         user = UserFactory.create(email="bar@example.com")
         claims = {"uid": "my_unique_fxa_id", "email": "foo@example.com"}
+        # Test without a request (for example, when called from a Celery task).
+        with self.subTest("without a request"):
+            self.backend.update_user(user, claims)
+            assert not message_mock.error.called
+            self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")
+        # Test with a request.
         request_mock = Mock(spec=HttpRequest)
         request_mock.session = {}
-        self.backend.claims = claims
-        self.backend.request = request_mock
-        self.backend.update_user(user, claims)
-        message_mock.error.assert_called_with(
-            request_mock,
-            "The e-mail address used with this Firefox Account"
-            " is already linked in another profile.",
-        )
-        self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")
+        with self.subTest("with a request"):
+            self.backend.request = request_mock
+            self.backend.update_user(user, claims)
+            message_mock.error.assert_called_with(
+                request_mock,
+                "The e-mail address used with this Firefox Account"
+                " is already linked in another profile.",
+            )
+            self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")
