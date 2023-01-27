@@ -13,3 +13,8 @@ By participating in this project, you're agreeing to uphold the [Mozilla Communi
 ## Contribute
 
 See our [contribution guide](https://kitsune.readthedocs.io/en/latest/contributors.html), or dive into [setting up your development environment](https://kitsune.readthedocs.io/en/latest/hacking_howto.html).
+
+## Thanks to all of our contributors ❤️
+<a href = "https://github.com/mozilla/kitsune/contributors">
+  <img src = "https://contrib.rocks/image?repo=mozilla/kitsune"/>
+</a>
