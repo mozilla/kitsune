@@ -17,9 +17,11 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from modelcluster.fields import ParentalKey
 from pyquery import PyQuery
+from wagtail import blocks
 from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail.core.models import Orderable
-from wagtail.fields import RichTextField
+from wagtail.fields import RichTextField, StreamField
+from wagtail.images.blocks import ImageChooserBlock
 from wagtail.models import Page
 
 from kitsune.gallery.models import Image
@@ -105,10 +107,22 @@ class WgDocument(NotificationsMixin, WagtailBase, DocumentPermissionMixin):
     display_order = models.IntegerField(default=1, db_index=True)
     # List of related documents
     related_documents = models.ManyToManyField("self", blank=True)
+    # Streamfield test
+    article_body = StreamField(
+        [
+            ("heading", blocks.CharBlock(form_classname="title")),
+            ("paragraph", blocks.RichTextBlock()),
+            ("image", ImageChooserBlock()),
+        ],
+        null=True,
+        blank=True,
+        use_json_field=False,
+    )
 
     content_panels = Page.content_panels + [
         FieldPanel("summary"),
         FieldPanel("content"),
+        FieldPanel("article_body"),
         FieldPanel("category"),
         InlinePanel("product", label="Products"),
         InlinePanel("topic", label="Topics"),

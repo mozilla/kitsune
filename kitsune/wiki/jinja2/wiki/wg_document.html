@@ -83,6 +83,8 @@
       {{ document_messages(page, redirected_from) }}
       {{ document_content(page, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
+      {{ page.article_body }}
+
       {% if share_link %}
         <p class="share-link">
           <br/>
