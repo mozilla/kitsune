@@ -11,7 +11,7 @@ ENV LANG=C.UTF-8 \
     PYTHONUNBUFFERED=1 \
     PATH="/venv/bin:$PATH" \
     POETRY_VERSION=1.2.1 \
-    PIP_VERSION=22.2.2
+    PIP_VERSION=22.3.1
 
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
