@@ -3,6 +3,7 @@ import json as jsonlib
 import logging
 import re
 import urllib
+from zoneinfo import ZoneInfo
 
 import bleach
 import jinja2
@@ -16,13 +17,12 @@ from django.templatetags.static import static as django_static
 from django.utils.encoding import smart_bytes
 from django.utils.encoding import smart_str
 from django.utils.http import urlencode
-from django.utils.timezone import get_default_timezone
+from django.utils.timezone import get_default_timezone, is_aware, is_naive
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext
 from django_jinja import library
 from markupsafe import Markup, escape
-from pytz import timezone
 
 from kitsune.products.models import Product
 from kitsune.sumo import parser
@@ -235,10 +235,11 @@ def datetimeformat(context, value, format="shortdatetime"):
 
     request = context.get("request")
 
-    default_tzinfo = convert_tzinfo = timezone(settings.TIME_ZONE)
-    if value.tzinfo is None:
-        value = default_tzinfo.localize(value)
-        new_value = value.astimezone(default_tzinfo)
+    default_tzinfo = convert_tzinfo = ZoneInfo(settings.TIME_ZONE)
+    if is_naive(value):
+        # Since Python 3.9, due to the introduction of the new "fold" parameter, this is the
+        # recommended way to convert a datetime instance from "naive" to "aware".
+        new_value = value.replace(tzinfo=default_tzinfo)
     else:
         new_value = value
 
@@ -373,10 +374,7 @@ def timesince(d, now=None):
         (1, lambda n: ngettext("%(number)d second ago", "%(number)d seconds ago", n)),
     ]
     if not now:
-        if d.tzinfo:
-            # TODO: is this correct?
-            # https://docs.djangoproject.com/en/1.8/_modules/django/utils/tzinfo/#LocalTimezone
-            # https://docs.djangoproject.com/en/1.9/_modules/django/utils/timezone/#get_default_timezone
+        if is_aware(d):
             now = datetime.datetime.now(get_default_timezone())
         else:
             now = datetime.datetime.now()

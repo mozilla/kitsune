@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+
 from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -5,7 +7,6 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.utils.translation import pgettext
 
-import pytz
 from rest_framework import fields, permissions, serializers
 from rest_framework.authentication import SessionAuthentication, CSRFCheck
 from rest_framework.exceptions import APIException, AuthenticationFailed
@@ -152,7 +153,7 @@ class DateTimeUTCField(fields.DateTimeField):
     """
 
     def default_timezone(self):
-        return pytz.utc
+        return ZoneInfo("UTC")
 
 
 class _IDSerializer(serializers.Serializer):

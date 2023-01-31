@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-import pytz
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
@@ -34,8 +34,8 @@ class TimezoneField(serializers.Field):
 
     def to_internal_value(self, data):
         try:
-            return pytz.timezone(str(data))
-        except pytz.exceptions.UnknownTimeZoneError:
+            return ZoneInfo(str(data))
+        except ZoneInfoNotFoundError:
             raise ValidationError("Unknown timezone")
 
 

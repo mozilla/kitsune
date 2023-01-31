@@ -1,8 +1,9 @@
+from zoneinfo import ZoneInfo
+
 from babel.dates import format_datetime
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.translation import gettext as _
-from pytz import timezone
 
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
@@ -142,7 +143,7 @@ class QuestionReplyEvent(QuestionEvent):
                 tzinfo = u.profile.timezone
             else:
                 locale = "en-US"
-                tzinfo = timezone(settings.TIME_ZONE)
+                tzinfo = ZoneInfo(settings.TIME_ZONE)
 
             c["created"] = format_datetime(
                 self.answer.created, tzinfo=tzinfo, locale=locale.replace("-", "_")
