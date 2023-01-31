@@ -3,6 +3,7 @@ from itertools import count
 from xml.sax.saxutils import quoteattr
 
 import bleach
+from bleach.css_sanitizer import CSSSanitizer
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
@@ -214,7 +215,9 @@ class ForParser(object):
             html,
             tags=kwargs.get("tags") or (ALLOWED_TAGS + ["for"]),
             attributes=kwargs.get("attributes") or ALLOWED_ATTRIBUTES,
-            styles=kwargs.get("styles") or ALLOWED_STYLES,
+            css_sanitizer=CSSSanitizer(
+                allowed_css_properties=kwargs.get("styles") or ALLOWED_STYLES
+            ),
             strip_comments=True,
         )
 
@@ -486,7 +489,7 @@ class WhatLinksHereParser(WikiParser):
 
     def __init__(self, doc_id, **kwargs):
         self.current_doc = Document.objects.get(pk=doc_id)
-        return super(WhatLinksHereParser, self).__init__(doc_id=doc_id, **kwargs)
+        super(WhatLinksHereParser, self).__init__(doc_id=doc_id, **kwargs)
 
     def _hook_internal_link(self, parser, space, name):
         """Records links between documents, and then calls super()."""

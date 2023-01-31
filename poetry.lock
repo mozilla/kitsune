@@ -264,20 +264,23 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "bleach"
-version = "4.1.0"
+version = "6.0.0"
 description = "An easy safelist-based HTML-sanitizing tool."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "bleach-4.1.0-py2.py3-none-any.whl", hash = "sha256:4d2651ab93271d1129ac9cbc679f524565cc8a1b791909c4a51eac4446a15994"},
-    {file = "bleach-4.1.0.tar.gz", hash = "sha256:0900d8b37eba61a802ee40ac0061f8c2b5dee29c1927dd1d233e075ebf5a71da"},
+    {file = "bleach-6.0.0-py3-none-any.whl", hash = "sha256:33c16e3353dbd13028ab4799a0f89a83f113405c766e9c122df8a06f5b85b3f4"},
+    {file = "bleach-6.0.0.tar.gz", hash = "sha256:1a1a85c1595e07d8db14c5f09f09e6433502c51c595970edc090551f0db99414"},
 ]
 
 [package.dependencies]
-packaging = "*"
 six = ">=1.9.0"
+tinycss2 = {version = ">=1.1.0,<1.2", optional = true, markers = "extra == \"css\""}
 webencodings = "*"
+
+[package.extras]
+css = ["tinycss2 (>=1.1.0,<1.2)"]
 
 [[package]]
 name = "boto3"
@@ -2827,18 +2830,18 @@ tests = ["pytest"]
 
 [[package]]
 name = "py-wikimarkup"
-version = "2.1.3"
+version = "2.3.0"
 description = "A basic MediaWiki markup parser."
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "py-wikimarkup-2.1.3.tar.gz", hash = "sha256:ed201b9e34e9fae90f698469b60c2c8b981c78967eb71bd8e4fbf5e782d55bde"},
-    {file = "py_wikimarkup-2.1.3-py3-none-any.whl", hash = "sha256:31b873a7cd3e959b4bbd0ee7a00482438e4aa7e96bcac726f2e305ba06665f48"},
+    {file = "py-wikimarkup-2.3.0.tar.gz", hash = "sha256:7081ab990afb95bf9d55b762a3db6f779838844a8de0bf8d2589443a6e378e1c"},
+    {file = "py_wikimarkup-2.3.0-py3-none-any.whl", hash = "sha256:90060fbdfda0e2c611d04fe963be4a9e894f12cb28a21d2d515fe504925fc55b"},
 ]
 
 [package.dependencies]
-bleach = ">=4.0.0,<5.0.0"
+bleach = {version = ">=6.0.0,<7.0.0", extras = ["css"]}
 unidecode = ">=1.0.0,<2.0.0"
 
 [[package]]
@@ -3760,6 +3763,25 @@ files = [
 ]
 
 [[package]]
+name = "tinycss2"
+version = "1.1.1"
+description = "A tiny CSS parser"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "tinycss2-1.1.1-py3-none-any.whl", hash = "sha256:fe794ceaadfe3cf3e686b22155d0da5780dd0e273471a51846d0a02bc204fec8"},
+    {file = "tinycss2-1.1.1.tar.gz", hash = "sha256:b2e44dd8883c360c35dd0d1b5aad0b610e5156c2cb3b33434634e539ead9d8bf"},
+]
+
+[package.dependencies]
+webencodings = ">=0.4"
+
+[package.extras]
+doc = ["sphinx", "sphinx_rtd_theme"]
+test = ["coverage[toml]", "pytest", "pytest-cov", "pytest-flake8", "pytest-isort"]
+
+[[package]]
 name = "tomli"
 version = "1.2.3"
 description = "A lil' TOML parser"
@@ -4228,4 +4250,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c03e207416847affc5551d0a85b3cd4d02654a3a59963d06eba872dd8a18d077"
+content-hash = "e3794d777a92bac22287b5f84a8315043e5ef10f0c00a3e6f91778ba97b5f04e"

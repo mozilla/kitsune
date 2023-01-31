@@ -32,7 +32,7 @@ from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
-ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS + ["p"]
+ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS | {"p"}
 ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
 # allow rel="nofollow"
 ALLOWED_BIO_ATTRIBUTES["a"].append("rel")
