@@ -14,7 +14,6 @@ authors = ["Your Name <you@example.com>"]
 license = "BSD 3-Clause"
 
 [tool.poetry.dependencies]
-python = "^3.10"
 APScheduler = "^3.9.1"
 Django = "^4.1.6"
 babis = "^0.2.4"
