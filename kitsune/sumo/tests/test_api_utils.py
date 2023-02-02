@@ -1,7 +1,7 @@
 from datetime import datetime
 from unittest.mock import Mock
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from rest_framework import fields, serializers
@@ -57,7 +57,7 @@ class TestInequalityFilterBackend(TestCase):
 class TestDateTimeUTCField(TestCase):
     def test_translation_of_nonnaive(self):
         field = api_utils.DateTimeUTCField()
-        as_pacific = pytz.timezone("US/Pacific").localize(datetime(2014, 11, 12, 13, 49, 59))
+        as_pacific = datetime(2014, 11, 12, 13, 49, 59, tzinfo=ZoneInfo("US/Pacific"))
         as_utc = field.to_representation(as_pacific)
         self.assertEqual(as_utc, "2014-11-12T21:49:59Z")
 

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from collections import namedtuple
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from babel.dates import format_date, format_datetime, format_time
 from django.forms.fields import CharField
 from django.test.client import RequestFactory
 from markupsafe import Markup
 from pyquery import PyQuery as pq
-from pytz import timezone
 
 from kitsune.sumo.templatetags.jinja_helpers import (
     DateTimeFormatError,
@@ -106,7 +106,7 @@ class TestHelpers(TestCase):
 
 class TestDateTimeFormat(TestCase):
     def setUp(self):
-        self.timezone = timezone("US/Pacific")
+        self.timezone = ZoneInfo("US/Pacific")
         self.locale = "en_US"
         url_ = reverse("forums.threads", args=["testslug"])
         self.context = {"request": RequestFactory().get(url_)}
@@ -117,8 +117,7 @@ class TestDateTimeFormat(TestCase):
         self, locale, timezone, format="short", return_format="shortdatetime"
     ):
         value = datetime.fromordinal(733900)
-        value = self.timezone.localize(value)
-        value_test = value.astimezone(self.timezone)
+        value_test = value.replace(tzinfo=self.timezone)
 
         value_localize = value_test.astimezone(timezone)
         value_expected = format_datetime(
@@ -130,7 +129,7 @@ class TestDateTimeFormat(TestCase):
     def test_today(self):
         """Expects shortdatetime, format: Today at {time}."""
         date_today = datetime.today()
-        date_localize = self.timezone.localize(date_today)
+        date_localize = date_today.replace(tzinfo=self.timezone)
         value_returned = str(datetimeformat(self.context, date_today))
         value_expected = "Today at %s" % format_time(
             date_localize, format="short", locale=self.locale, tzinfo=self.timezone
@@ -160,7 +159,7 @@ class TestDateTimeFormat(TestCase):
     def test_time(self):
         """Expects time format."""
         value_test = datetime.fromordinal(733900)
-        value_localize = self.timezone.localize(value_test)
+        value_localize = value_test.replace(tzinfo=self.timezone)
         value_expected = format_time(value_localize, locale=self.locale, tzinfo=self.timezone)
         value_returned = datetimeformat(self.context, value_test, format="time")
         self.assertEqual(pq(value_returned)("time").text(), value_expected)
@@ -181,14 +180,14 @@ class TestDateTimeFormat(TestCase):
 
     def test_timezone(self):
         """Expects Europe/Paris timezone."""
-        fr_timezone = timezone("Europe/Paris")
+        fr_timezone = ZoneInfo("Europe/Paris")
         self.context["request"].LANGUAGE_CODE = "fr"
         self.context["request"].session = {"timezone": fr_timezone}
         self._get_datetime_result("fr", fr_timezone, "medium", "datetime")
 
     def test_timezone_different_locale(self):
         """Expects Europe/Paris timezone with different locale."""
-        fr_timezone = timezone("Europe/Paris")
+        fr_timezone = ZoneInfo("Europe/Paris")
         self.context["request"].LANGUAGE_CODE = "tr"
         self.context["request"].session = {"timezone": fr_timezone}
         self._get_datetime_result("tr", fr_timezone, "medium", "datetime")

@@ -1,7 +1,7 @@
 #######################
 # Common dependencies #
 #######################
-FROM python:3.10-bullseye AS base
+FROM python:3.11-bullseye AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -10,8 +10,8 @@ ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/venv/bin:$PATH" \
-    POETRY_VERSION=1.2.1 \
-    PIP_VERSION=22.2.2
+    POETRY_VERSION=1.3.2 \
+    PIP_VERSION=23.0
 
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
@@ -79,7 +79,7 @@ RUN poetry install --no-dev
 ##########################
 # Clean production image #
 ##########################
-FROM python:3.10-slim-bullseye AS prod
+FROM python:3.11-slim-bullseye AS prod
 
 WORKDIR /app
 

@@ -45,7 +45,7 @@ class EditProfileTests(TestCaseBase):
                     key,
                 )
 
-        self.assertEqual(data["timezone"], profile.timezone.zone)
+        self.assertEqual(data["timezone"], str(profile.timezone))
         self.assertEqual(data["username"], profile.user.username)
 
     def test_user_cant_edit_others_profile_without_permission(self):
@@ -102,7 +102,7 @@ class EditProfileTests(TestCaseBase):
                     key,
                 )
 
-        self.assertEqual(data["timezone"], profile.timezone.zone)
+        self.assertEqual(data["timezone"], str(profile.timezone))
         self.assertEqual(data["username"], profile.user.username)
 
 

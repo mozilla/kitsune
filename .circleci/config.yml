@@ -2,21 +2,21 @@ version: 2.1
 jobs:
   lint:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.11
     steps:
       - checkout
       - run:
           name: Lint with pre-commit
           command: |
-            pip install --upgrade pre-commit==2.15.0
+            pip install --upgrade pre-commit==3.0.2
             pre-commit run --all-files
   test-and-build:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.11
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.7
+          version: 20.10.18
           docker_layer_caching: true
       - run:
           name: Build test image

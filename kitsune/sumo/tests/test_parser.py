@@ -505,7 +505,7 @@ class TestWikiImageTags(TestCase):
     def test_link_valign(self):
         """Link with valign."""
         img = pq_img(self.p, "[[Image:test.jpg|link=http://example.com|valign=top]]")
-        self.assertEqual("vertical-align: top;", img.attr("style"))
+        self.assertEqual("vertical-align:top;", img.attr("style"))
 
     def test_link_valign_invalid(self):
         """Link with invalid valign."""
@@ -532,19 +532,18 @@ class TestWikiImageTags(TestCase):
         unsafe_vals = (
             (
                 'an"<script>alert()</script>',
-                "an&quot;&amp;amp;lt;script&amp;amp;gt;alert()&amp;amp;lt;/script&amp;amp;gt;",
+                "an&quot;&amp;lt;script&amp;gt;alert()&amp;lt;/script&amp;gt;",
             ),
             (
                 "an'<script>alert()</script>",
-                "an'&lt;script&gt;alert()&lt;/script&gt;",
+                "an'&amp;lt;script&amp;gt;alert()&amp;lt;/script&amp;gt;",
             ),
             ("single'\"double", "single'&quot;double"),
         )
         for alt_sent, alt_expected in unsafe_vals:
-            img = pq_img(self.p, "[[Image:test.jpg|alt=" + alt_sent + "]]")
-
-            is_true = str(img).startswith('<img alt="' + alt_expected + '"')
-            assert is_true, 'Expected "%s", sent "%s"' % (alt_expected, alt_sent)
+            with self.subTest(f"case: {repr(alt_sent)}"):
+                img = pq_img(self.p, f"[[Image:test.jpg|alt={alt_sent}]]")
+                self.assertIn(f'alt="{alt_expected}"', str(img))
 
     def test_width(self):
         """Image width attribute set."""

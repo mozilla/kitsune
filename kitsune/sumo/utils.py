@@ -14,7 +14,7 @@ from django.templatetags.static import static
 from django.utils import translation
 from django.utils.encoding import iri_to_uri
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
-from ratelimit.core import is_ratelimited as is_ratelimited_core
+from django_ratelimit.core import is_ratelimited as is_ratelimited_core
 from timeout_decorator import timeout
 
 from kitsune.journal.models import Record
