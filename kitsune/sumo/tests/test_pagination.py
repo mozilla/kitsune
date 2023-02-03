@@ -28,7 +28,6 @@ def test_invalid_page_param():
 
 
 def test_paginator_filter():
-
     tc = TestCase()
     # Correct number of <li>s on page 1.
     url = reverse("search")
@@ -48,7 +47,6 @@ def test_paginator_filter():
 
 
 class SimplePaginatorTestCase(TestCase):
-
     rf = RequestFactory()
 
     def test_no_explicit_page(self):

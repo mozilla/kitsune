@@ -972,7 +972,6 @@ def show_toolbar_callback(*args):
 SHOW_DEBUG_TOOLBAR = show_toolbar_callback()
 
 if SHOW_DEBUG_TOOLBAR:
-
     DEBUG_TOOLBAR_CONFIG = {"SHOW_TOOLBAR_CALLBACK": "kitsune.settings.show_toolbar_callback"}
 
     INSTALLED_APPS = INSTALLED_APPS + ("debug_toolbar",)

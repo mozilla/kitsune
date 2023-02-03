@@ -147,7 +147,6 @@ class SumoDocument(DSLDocument):
         # not suitable for indexing based on criteria defined on each said method
         if not hasattr(instance, "es_discard_doc"):
             for f in fields:
-
                 # This will allow child classes to have their own methods
                 # in the form of prepare_field
                 prepare_method = getattr(obj, "prepare_{}".format(f), None)

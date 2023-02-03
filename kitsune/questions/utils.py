@@ -49,7 +49,6 @@ def mark_content_as_spam(user, by_user):
 
 
 def get_mobile_product_from_ua(user_agent):
-
     ua = user_agent.lower()
 
     if "rocket" in ua:

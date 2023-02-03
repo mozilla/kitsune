@@ -28,7 +28,6 @@ class Command(BaseCommand):
                 continue
 
             for domain in ("django", "djangojs"):
-
                 domain_pot = Path(f"locale/templates/LC_MESSAGES/{domain}.pot")
                 if not domain_pot.is_file():
                     raise CommandError(f"unable to find {domain_pot}")

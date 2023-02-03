@@ -14,11 +14,9 @@ class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-
         user = request.user
 
         if user.is_authenticated and not user.is_active:
-
             logout(request)
             return HttpResponseRedirect(reverse("home"))
 
@@ -29,7 +27,6 @@ class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-
         user = request.user
 
         if user.is_authenticated:

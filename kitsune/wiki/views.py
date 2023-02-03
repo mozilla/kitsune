@@ -913,7 +913,6 @@ def translate(request, document_slug, revision_id=None):
         discard_draft = "discard" in request.POST and bool(draft)
         # Make sure that one of the two is True but not both
         if discard_draft ^ restore_draft:
-
             if discard_draft:
                 draft.delete()
                 return HttpResponseRedirect(
@@ -1263,7 +1262,6 @@ def get_helpful_votes_async(request, document_slug):
     dates_with_data = set()
 
     with connection.cursor() as cursor:
-
         cursor.execute(
             "SELECT wiki_helpfulvote.revision_id, "
             "    SUM(wiki_helpfulvote.helpful), "

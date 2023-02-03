@@ -21,14 +21,12 @@ class Command(BaseCommand):
 
         # Loop through all locales.
         for locale in settings.SUMO_LANGUAGES:
-
             # Skip en-US, it is always 100% localized.
             if locale == settings.WIKI_DEFAULT_LANGUAGE:
                 continue
 
             # Loop through all enabled products, including None (really All).
             for product in [None] + list(Product.objects.filter(visible=True)):
-
                 # (Ab)use the l10n_overview_rows helper from the readouts.
                 rows = l10n_overview_rows(locale=locale, product=product)
 

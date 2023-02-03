@@ -38,10 +38,8 @@ class Command(BaseCommand):
 
         # Loop through all locales.
         for locale in settings.SUMO_LANGUAGES:
-
             # Loop through all enabled products, including None (really All).
             for product in [None] + list(Product.objects.filter(visible=True)):
-
                 num = num_active_contributors(
                     from_date=previous_first_of_month,
                     to_date=first_of_month,

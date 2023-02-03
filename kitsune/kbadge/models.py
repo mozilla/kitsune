@@ -375,7 +375,6 @@ class Award(models.Model):
         return False
 
     def save(self, *args, **kwargs):
-
         # Signals and some bits of logic only happen on a new award.
         is_new = not self.pk
 
