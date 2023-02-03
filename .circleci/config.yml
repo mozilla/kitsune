@@ -8,7 +8,7 @@ jobs:
       - run:
           name: Lint with pre-commit
           command: |
-            pip install --upgrade pre-commit==3.0.2
+            pip install --upgrade pre-commit==3.0.3
             pre-commit run --all-files
   test-and-build:
     docker:
