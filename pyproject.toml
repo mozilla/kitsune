@@ -98,7 +98,6 @@ pre-commit = "^3.0.2"
 q = "^2.7"
 pylint = "^2.15.10"
 debugpy = "^1.6.6"
-black = "^22.12.0"
 flake8 = "^6.0.0"
 urlwait = "^1.0"
 testfixtures = "^7.0.4"
@@ -109,6 +108,7 @@ sphinxcontrib-httpdomain = "^1.8.1"
 tabulate = "^0.9.0"
 pylint-django = "^2.5.3"
 rope = "^1.7.0"
+black = "^23.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
