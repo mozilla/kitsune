@@ -16,9 +16,7 @@ class Command(BaseCommand):
     help = "Award yearly badges starting from 2010."
 
     def handle(self, *arg, **kwargs):
-
         for year in [2010, 2011, 2012, 2013]:
-
             # KB Badge
             # Figure out who the KB contributors are for the year and
             # try to award them a badge.

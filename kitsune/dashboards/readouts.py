@@ -1171,7 +1171,6 @@ class CannedResponsesReadout(Readout):
         return request.LANGUAGE_CODE in QuestionLocale.objects.locales_list()
 
     def _query_and_params(self, max):
-
         if self.product:
             params = [
                 self.locale,

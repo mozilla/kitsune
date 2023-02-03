@@ -470,7 +470,6 @@ def aaq(request, product_key=None, category_key=None, step=1):
     # render step 2 if they are
     product_key = product_key or request.GET.get("product")
     if product_key is None:
-
         change_product = False
         if request.GET.get("q") == "change_product":
             change_product = True
@@ -571,7 +570,6 @@ def aaq(request, product_key=None, category_key=None, step=1):
         context["form"] = form
 
         if form.is_valid() and not is_ratelimited(request, "aaq-day", "5/d"):
-
             question = form.save(
                 user=request.user,
                 locale=request.LANGUAGE_CODE,

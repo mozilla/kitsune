@@ -93,7 +93,6 @@ def cors_enabled(origin, methods=["GET"]):
                     "HTTP_ACCESS_CONTROL_REQUEST_METHOD" in request.META
                     and "HTTP_ACCESS_CONTROL_REQUEST_HEADERS" in request.META
                 ):
-
                     response = http.HttpResponse()
                     response["Access-Control-Allow-Methods"] = ", ".join(methods)
 

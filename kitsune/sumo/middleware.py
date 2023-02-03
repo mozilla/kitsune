@@ -95,7 +95,6 @@ class ValidateAccessTokenMiddleware(SessionRefresh):
         profile = request.user.profile
 
         if access_token and expiration < now:
-
             token_info = FXAAuthBackend.refresh_access_token(profile.fxa_refresh_token)
             new_access_token = token_info.get("access_token")
             if new_access_token:

@@ -83,7 +83,6 @@ class DataMigrationTests(TestCase):
         ).save()
 
     def test_authority_to_guardian_data_migration(self):
-
         from guardian.shortcuts import get_objects_for_group, get_objects_for_user
 
         migration = import_module("kitsune.forums.migrations.0003_authority_to_guardian_data")

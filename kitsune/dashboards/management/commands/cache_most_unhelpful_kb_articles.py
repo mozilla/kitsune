@@ -14,7 +14,6 @@ def _get_old_unhelpful():
 
     old_formatted = {}
     with connection.cursor() as cursor:
-
         cursor.execute(
             """SELECT doc_id, yes, no
             FROM
@@ -56,7 +55,6 @@ def _get_current_unhelpful(old_formatted):
 
     final = {}
     with connection.cursor() as cursor:
-
         cursor.execute(
             """SELECT doc_id, yes, no
             FROM

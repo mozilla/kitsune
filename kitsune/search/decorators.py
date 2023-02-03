@@ -17,7 +17,6 @@ def search_receiver(signal, sender):
     def decorator(func):
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-
             if not settings.ES_LIVE_INDEXING:
                 return
 

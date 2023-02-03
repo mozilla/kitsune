@@ -6,7 +6,6 @@ from kitsune.questions import config
 
 
 class QuestionManager(Manager):
-
     # If question is marked as "locked" or "solved"
     #     the status is "Done"
     def done(self):
