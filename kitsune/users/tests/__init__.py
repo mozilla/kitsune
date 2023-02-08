@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+
 import factory
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -47,7 +49,7 @@ class ProfileFactory(factory.django.DjangoModelFactory):
     name = FuzzyUnicode()
     bio = FuzzyUnicode()
     website = "http://support.example.com"
-    timezone = None
+    timezone = ZoneInfo("US/Pacific")
     country = "US"
     city = "Portland"
     locale = "en-US"
