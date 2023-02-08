@@ -353,7 +353,7 @@ class ProfileDocument(SumoDocument):
             return InnerDoc(url=avatar)
 
     def prepare_timezone(self, instance):
-        return instance.timezone if instance.timezone else None
+        return str(instance.timezone) if instance.timezone else None
 
     def prepare_product_ids(self, instance):
         return [product.id for product in instance.products.all()]
