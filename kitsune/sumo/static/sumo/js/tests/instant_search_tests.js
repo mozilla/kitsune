@@ -1,5 +1,4 @@
 import {default as chai, expect} from 'chai';
-import React from 'react';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
 
@@ -17,20 +16,18 @@ describe('instant search', () => {
       clock = sinon.useFakeTimers();
       cxhrMock = sinon.fake();
       sinon.replace(CachedXHR.prototype, "request", cxhrMock);
-      let content = (
+      $('body').empty().html(`
         <div>
-          <div id="main-content"/>
-          <form data-instant-search="form" action="" method="get" className="simple-search-form">
-            <input type="search" name="q" className="searchbox" id="search-q"/>
-            <button type="submit" title="{{ _('Search') }}" className="submit-button">Search</button>
+          <div id="main-content"></div>
+          <form data-instant-search="form" action="" method="get" class="simple-search-form">
+            <input type="search" name="q" class="searchbox" id="search-q">
+            <button type="submit" title="Search" class="submit-button">Search</button>
           </form>
-        </div>
+        </div>`
       );
-      React.render(content, document.body);
     });
 
     afterEach(() => {
-      React.unmountComponentAtNode(document.body);
       clock.restore();
       sinon.restore();
     });

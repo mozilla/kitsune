@@ -1,16 +1,12 @@
 import {expect} from 'chai';
-import React from 'react';
 
 import { linkCrashIds } from "sumo/js/questions";
 
 describe('k', () => {
   describe('linkCrashIds', () => {
-    afterEach(() => {
-      React.unmountComponentAtNode(document.body);
-    });
 
     it('should link one crash ID', () => {
-      let sandbox = (
+      $('body').empty().html(`
         <section>
           <h1>Firefox keeps crashing</h1>
           <p>Firefox keeps crashing</p>
@@ -18,17 +14,15 @@ describe('k', () => {
             This is my crash ID:<br/>
             bp-6ec83338-f37e-4ee1-aef4-0e66c2120808
           </p>
-          <div className="stem"></div>
-        </section>
+          <div class="stem"></div>
+        </section>`
       );
-      React.render(sandbox, document.body);
-
       linkCrashIds($('body'));
       expect($('.crash-report').length).to.equal(1);
     });
 
     it('should link multiple crash IDs', function() {
-      let sandbox = (
+      $('body').empty().html(`
         <section>
           <h1>Firefox keeps crashing</h1>
           <p>Firefox keeps crashing</p>
@@ -40,37 +34,31 @@ describe('k', () => {
             bp-15a73687-dabf-4014-9c03-b97b3212071717.07.1211:27
             bp-f894adf7-9ff8-4f21-8564-da425212071111.07.1218:22
           </p>
-          <div className="stem"></div>
-        </section>
+          <div class="stem"></div>
+        </section>`
       );
-      React.render(sandbox, document.body);
-
       linkCrashIds($('body'));
       expect($('.crash-report').length).to.equal(5);
     });
 
     it("shouldn't link invalid crash IDs", function() {
-      let sandbox = (
+      $('body').empty().html(`
         <section>
           <p>The following will look like an invalid crash ID that hasn't been processed yet:</p>
           <p>765879E6-CFE7-43A7-BE93-B2F322E67649</p>
-        </section>
+        </section>`
       );
-      React.render(sandbox, document.body);
       linkCrashIds($('body'));
-
       expect($('.crash-report').length).to.equal(0);
     });
 
     it("shouldn't link crash IDs without 'bp-'", function() {
-      let sandbox = (
+      $('body').empty().html(`
         <section>
           <p>Now, crash IDs without 'bp-' at the beginning shouldn't get linked either</p>
           <p>6ec83338-f37e-4ee1-aef4-0e66c2120808</p>
-        </section>
+        </section>`
       );
-      React.render(sandbox, document.body);
-
       linkCrashIds($('body'));
       expect($('.crash-report').length).to.equal(0);
     });

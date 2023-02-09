@@ -1,4 +1,3 @@
-import React from 'react';
 import {expect} from 'chai';
 
 import TagsFilter from "sumo/js/tags.filter";
@@ -6,34 +5,33 @@ import TagsFilter from "sumo/js/tags.filter";
 describe('k', () => {
   describe('TagsFilter', () => {
     beforeEach(() => {
-      let sandbox = (
+      $('body').empty().html(`
         <div>
-          <section className="tag-filter">
+          <section class="tag-filter">
             <form method="get" action="">
               <input type="text"
                      name="tagged"
-                     className="text tags-autocomplete"
-                     defaultValue="Go"
-                     data-vocabulary={JSON.stringify({
-                       'Name 1': 'slug-1',
-                       'Name 2': 'slug-2',
-                       'Name 3': 'slug-3',
-                     })}/>
-              <input type="submit" defaultValue="Go" />
+                     class="text tags-autocomplete"
+                     value="Go"
+                     data-vocabulary="{
+                       &quot;Name 1&quot;: &quot;slug-1&quot;,
+                       &quot;Name 2&quot;: &quot;slug-2&quot;,
+                       &quot;Name 3&quot;: &quot;slug-3&quot;
+                     }">
+              <input type="submit" value="Go">
             </form>
           </section>
-        </div>
+        </div>`
       );
-      React.render(sandbox, window.document.body);
 
       TagsFilter.init($('body'));
       // Don't let forms submit
-      $('form').submit((e) => e.preventDefault());
+      $('form').on("submit", (e) => e.preventDefault());
     });
 
     function check(input, output) {
       $('form').find('input[type="text"]').val(input);
-      $('form').submit();
+      $('form').trigger("submit");
       expect($('form').find('input[name="tagged"]').val()).to.equal(output);
     }
 
