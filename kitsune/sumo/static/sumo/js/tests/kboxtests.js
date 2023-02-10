@@ -1,5 +1,4 @@
 import {default as chai, expect} from 'chai';
-import React from 'react';
 import chaiLint from 'chai-lint';
 
 import KBox from "sumo/js/kbox.js";
@@ -11,26 +10,21 @@ describe('kbox', () => {
     let $kbox, kbox;
 
     beforeEach(() => {
-      let sandbox = (
+      $('body').empty().html(`
         <div id="sandbox">
-          <div className="kbox"
+          <div class="kbox"
                data-title="ignored title"
                title="test kbox"
                data-target="#sandbox a.kbox-target"
                data-modal="true">
             <p>lorem ipsum dolor sit amet.</p>
           </div>
-          <a href="#" className="kbox-target">click me</a>
-        </div>
+          <a href="#" class="kbox-target">click me</a>
+        </div>`
       );
-      React.render(sandbox, document.body);
 
       $kbox = $('.kbox');
       kbox = new KBox($kbox);
-    });
-
-    afterEach(() => {
-      React.unmountComponentAtNode(document.body);
     });
 
     it('should open when the target is clicked', () => {

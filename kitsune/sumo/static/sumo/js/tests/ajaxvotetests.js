@@ -1,4 +1,3 @@
-import React from 'react';
 import {expect} from 'chai';
 import sinon from 'sinon';
 
@@ -8,19 +7,16 @@ describe('ajaxvote', () => {
   describe('helpful vote', () => {
     beforeEach(() => {
       sinon.stub($, 'ajax').yieldsTo('success', {message: 'Thanks for the vote!'});
-
-      let sandbox = (
-        <form className="vote" action="/vote" method="post">
-          <input type="submit" name="helpful" defaultValue="Yes" />
-          <input type="submit" name="not-helpful" defaultValue="No" />
-        </form>
+      $('body').empty().html(`
+        <form class="vote" action="/vote" method="post">
+          <input type="submit" name="helpful" value="Yes">
+          <input type="submit" name="not-helpful" value="No">
+        </form>`
       );
-      React.render(sandbox, document.body);
     });
 
     afterEach(() => {
       $.ajax.restore();
-      React.unmountComponentAtNode(document.body);
       $(document).off('vote');
     });
 

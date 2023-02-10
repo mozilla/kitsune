@@ -1,4 +1,3 @@
-import React from 'react';
 import {default as chai, expect} from 'chai';
 import chaiLint from 'chai-lint';
 import sinon from 'sinon';
@@ -32,29 +31,29 @@ describe('ShowFor', () => {
 
   beforeEach(() => {
     // Wow. That's a lot of data. Can we make this smaller?
-    let sandbox = (
+    $('body').empty().html(`
       <div>
-        <span className="for" data-for="fx24"></span>
-        <span className="for" data-for="fx24,win"></span>
-        <span className="for" data-for="=fx25"></span>
-        <span className="for" data-for="not m25"></span>
+        <span class="for" data-for="fx24"></span>
+        <span class="for" data-for="fx24,win"></span>
+        <span class="for" data-for="=fx25"></span>
+        <span class="for" data-for="not m25"></span>
 
-        <div className="product" data-product="firefox">
+        <div class="product" data-product="firefox">
           <h2>
-            <input type="checkbox" defaultChecked value="product:firefox"/>
+            <input type="checkbox" checked value="product:firefox">
             Firefox
           </h2>
-          <div className="selectbox-wrapper">
-            <select className="version" value="version:fx24">
+          <div class="selectbox-wrapper">
+            <select class="version" value="version:fx24">
               <option value="version:fx26" data-min="26.0" data-max="27.0">Version 26</option>
               <option value="version:fx25" data-min="25.0" data-max="26.0">Version 25</option>
-              <option value="version:fx24" data-min="24.0" data-max="25.0">Version 24</option>
+              <option value="version:fx24" data-min="24.0" data-max="25.0" selected>Version 24</option>
               <option value="version:fx23" data-min="23.0" data-max="24.0">Version 23</option>
               <option value="version:fx17" data-min="17.0" data-max="18.0">Version 17 (ESR)</option>
             </select>
           </div>
-          <div className="selectbox-wrapper">
-            <select className="platform">
+          <div class="selectbox-wrapper">
+            <select class="platform">
               <option value="platform:win8">Windows 8</option>
               <option value="platform:win7">Windows 7/Vista</option>
               <option value="platform:winxp">Windows XP</option>
@@ -64,59 +63,60 @@ describe('ShowFor', () => {
           </div>
         </div>
 
-        <div className="product" data-product="mobile">
+        <div class="product" data-product="mobile">
           <h2>
-            <input type="checkbox" defaultChecked value="product:mobile"/>
+            <input type="checkbox" checked value="product:mobile">
             Firefox for Android
           </h2>
-          <div className="selectbox-wrapper">
-            <select className="version" value="version:m24">
+          <div class="selectbox-wrapper">
+            <select class="version" value="version:m24">
               <option value="version:m26" data-min="26.0" data-max="27.0">Version 26</option>
               <option value="version:m25" data-min="25.0" data-max="26.0">Version 25</option>
-              <option value="version:m24" data-min="24.0" data-max="25.0">Version 24</option>
+              <option value="version:m24" data-min="24.0" data-max="25.0" selected>Version 24</option>
               <option value="version:m23" data-min="23.0" data-max="24.0">Version 23</option>
             </select>
           </div>
         </div>
 
-        <script type="application/json" className="showfor-data" dangerouslySetInnerHTML={{__html: JSON.stringify({
-          platforms: {
-            firefox: [
-              {title: 'Linux', slug: 'linux', visible: true},
-              {title: 'Mac', slug: 'mac', visible: true},
-              {title: 'Windows XP', slug: 'winxp', visible: true},
-              {title: 'Windows 7', slug: 'win7', visible: true},
-              {title: 'Windows 8', slug: 'win8', visible: true},
-              {title: 'Windows 10', slug: 'win10', visible: true},
+        <script type="application/json" class="showfor-data">
+          {
+            "platforms": {
+              "firefox": [
+                {"title": "Linux", "slug": "linux", "visible": true},
+                {"title": "Mac", "slug": "mac", "visible": true},
+                {"title": "Windows XP", "slug": "winxp", "visible": true},
+                {"title": "Windows 7", "slug": "win7", "visible": true},
+                {"title": "Windows 8", "slug": "win8", "visible": true},
+                {"title": "Windows 10", "slug": "win10", "visible": true}
+              ],
+              "mobile": [{"slug": "android"}],
+              "firefox-os": [{"slug": "web"}]
+            },
+            "products": [
+              {"slug": "firefox", "title": "Firefox", "platforms": ["linux", "mac", "winxp", "win7", "win8"]},
+              {"slug": "mobile", "title": "Firefox for Android", "platforms": ["android"]},
+              {"slug": "firefox-os", "title": "Firefox OS", "platforms": ["web"]}
             ],
-            mobile: [{slug: 'android'}],
-            'firefox-os': [{slug: 'web'}],
-          },
-          products: [
-            {slug: 'firefox', title: 'Firefox', platforms: ['linux', 'mac', 'winxp', 'win7', 'win8']},
-            {slug: 'mobile', title: 'Firefox for Android', platforms: ['android']},
-            {slug: 'firefox-os', title: 'Firefox OS', platforms: ['web']},
-          ],
-          'versions': {
-            firefox: [
-              {product: 'firefox', name: 'Version 26', default: false, min_version: 26.0, max_version: 27.0, slug: 'fx26'},
-              {product: 'firefox', name: 'Version 25', default: false, min_version: 25.0, max_version: 26.0, slug: 'fx25'},
-              {product: 'firefox', name: 'Version 24', default: true, min_version: 24.0, max_version: 25.0, slug: 'fx24'},
-              {product: 'firefox', name: 'Version 23', default: false, min_version: 23.0, max_version: 24.0, slug: 'fx23'},
-              {product: 'firefox', name: 'Version 17 (ESR)', default: false, min_version: 17.0, max_version: 18.0, slug: 'fx17'},
-            ],
-            mobile: [
-              {product: 'mobile', name: 'Version 26', default: false, min_version: 26.0, max_version: 27.0, slug: 'm26'},
-              {product: 'mobile', name: 'Version 25', default: false, min_version: 25.0, max_version: 26.0, slug: 'm25'},
-              {product: 'mobile', name: 'Version 24', default: true, min_version: 24.0, max_version: 25.0, slug: 'm24'},
-              {product: 'mobile', name: 'Version 23', default: false, min_version: 23.0, max_version: 24.0, slug: 'm23'},
-            ],
+            "versions": {
+              "firefox": [
+                {"product": "firefox", "name": "Version 26", "default": false, "min_version": 26.0, "max_version": 27.0, "slug": "fx26"},
+                {"product": "firefox", "name": "Version 25", "default": false, "min_version": 25.0, "max_version": 26.0, "slug": "fx25"},
+                {"product": "firefox", "name": "Version 24", "default": true, "min_version": 24.0, "max_version": 25.0, "slug": "fx24"},
+                {"product": "firefox", "name": "Version 23", "default": false, "min_version": 23.0, "max_version": 24.0, "slug": "fx23"},
+                {"product": "firefox", "name": "Version 17 (ESR)", "default": false, "min_version": 17.0, "max_version": 18.0, "slug": "fx17"}
+              ],
+              "mobile": [
+                {"product": "mobile", "name": "Version 26", "default": false, "min_version": 26.0, "max_version": 27.0, "slug": "m26"},
+                {"product": "mobile", "name": "Version 25", "default": false, "min_version": 25.0, "max_version": 26.0, "slug": "m25"},
+                {"product": "mobile", "name": "Version 24", "default": true, "min_version": 24.0, "max_version": 25.0, "slug": "m24"},
+                {"product": "mobile", "name": "Version 23", "default": false, "min_version": 23.0, "max_version": 24.0, "slug": "m23"}
+              ]
+            }
           }
-        })}}/>
-      </div>
+        </script>
+      </div>`
     );
 
-    React.render(sandbox, document.body);
     showFor = showForNoInit($('body'));
 
     sinon.stub(navigator, "userAgent").get(() =>
@@ -275,6 +275,7 @@ describe('ShowFor', () => {
       showFor.loadData();
       await showFor.updateUI();
       showFor.updateState();
+      showFor.initShowFuncs();
     });
 
     it('should show and hide elements correctly', () => {
