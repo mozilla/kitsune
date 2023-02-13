@@ -1,7 +1,7 @@
 from unittest import mock
 
 from django.contrib.sites.models import Site
-from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
 from pyquery import PyQuery as pq
@@ -10,6 +10,7 @@ from kitsune.sumo.middleware import LocaleURLMiddleware
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.views import deprecated_redirect, redirect_to
+from kitsune.users.tests import UserFactory
 
 
 class RedirectTests(TestCase):
@@ -30,6 +31,7 @@ class RedirectTests(TestCase):
         self.get_response = lambda *args, **kwargs: HttpResponse()
         get_current.return_value.domain = "su.mo.com"
         req = self.rf.get("/en-US/")
+        req.user = UserFactory()
         # Since we're rendering a template we need this to run.
         LocaleURLMiddleware(self.get_response).process_request(req)
         resp = deprecated_redirect(req, url="home")

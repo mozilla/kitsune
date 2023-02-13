@@ -1,12 +1,13 @@
 from datetime import datetime
+from typing import Self
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.db.models.signals import post_save
 
-from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.sumo.models import ModelBase
+from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.wiki.models import Locale
 
 
@@ -35,6 +36,12 @@ class Announcement(ModelBase):
     )
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
     locale = models.ForeignKey(Locale, on_delete=models.CASCADE, null=True, blank=True)
+    send_email = models.BooleanField(
+        default=False,
+        help_text=(
+            "Send an email to all users in the group. If no group is selected, this is ignored."
+        ),
+    )
 
     def __str__(self):
         excerpt = self.content[:50]
@@ -57,9 +64,9 @@ class Announcement(ModelBase):
         return cls._visible_query(group=None, locale=None)
 
     @classmethod
-    def get_for_group_id(cls, group_id):
+    def get_for_groups(cls, group_ids: list[int] | QuerySet) -> QuerySet[Self]:
         """Returns visible announcements for a given group id."""
-        return cls._visible_query(group__id=group_id)
+        return cls._visible_query(group__id__in=group_ids)
 
     @classmethod
     def get_for_locale_name(cls, locale_name):
@@ -79,7 +86,7 @@ class Announcement(ModelBase):
 
 def connector(sender, instance, created, **kw):
     # Only email new announcements in a group. We don't want to email everyone.
-    if created and instance.group:
+    if created and instance.group and instance.send_email:
         from kitsune.announcements.tasks import send_group_email
 
         now = datetime.now()

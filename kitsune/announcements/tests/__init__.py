@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 import factory
 
 from kitsune.announcements.models import Announcement
-from kitsune.users.tests import UserFactory
 from kitsune.sumo.tests import FuzzyUnicode
+from kitsune.users.tests import UserFactory
 
 
 class AnnouncementFactory(factory.django.DjangoModelFactory):
@@ -16,6 +16,7 @@ class AnnouncementFactory(factory.django.DjangoModelFactory):
     creator = factory.SubFactory(UserFactory)
     show_after = factory.LazyAttribute(lambda a: datetime.now() - timedelta(days=2))
     visible_dates = True
+    send_email = False
 
     @factory.lazy_attribute
     def show_until(self):

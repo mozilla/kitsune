@@ -6,6 +6,7 @@ from django.utils import translation
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory
 
 # def test_breadcrumb():
 #     """Make sure breadcrumb links start with /."""
@@ -38,6 +39,7 @@ class BaseTemplateTests(MockRequestTests):
 
     def test_dir_ltr(self):
         """Make sure dir attr is set to 'ltr' for LTR language."""
+        self.request.user = UserFactory()
         html = render_to_string(self.template, request=self.request)
         self.assertEqual("ltr", pq(html)("html").attr["dir"])
 
@@ -45,6 +47,7 @@ class BaseTemplateTests(MockRequestTests):
         """Make sure dir attr is set to 'rtl' for RTL language."""
         translation.activate("he")
         self.request.LANGUAGE_CODE = "he"
+        self.request.user = UserFactory()
         html = render_to_string(self.template, request=self.request)
         self.assertEqual("rtl", pq(html)("html").attr["dir"])
         translation.deactivate()
@@ -52,6 +55,7 @@ class BaseTemplateTests(MockRequestTests):
     def test_multi_feeds(self):
         """Ensure that multiple feeds are put into the page when set."""
 
+        self.request.user = UserFactory()
         feed_urls = (
             ("/feed_one", "First Feed"),
             ("/feed_two", "Second Feed"),
@@ -64,6 +68,7 @@ class BaseTemplateTests(MockRequestTests):
         self.assertEqual("Second Feed", feeds[1].attrib["title"])
 
     def test_readonly_attr(self):
+        self.request.user = UserFactory()
         html = render_to_string(self.template, request=self.request)
         doc = pq(html)
         self.assertEqual("false", doc("body")[0].attrib["data-readonly"])
@@ -71,6 +76,7 @@ class BaseTemplateTests(MockRequestTests):
     @override_settings(READ_ONLY=True)
     def test_readonly_login_link_disabled(self):
         """Ensure that login/register links are hidden in READ_ONLY."""
+        self.request.user = UserFactory()
         html = render_to_string(self.template, request=self.request)
         doc = pq(html)
         self.assertEqual(0, len(doc("a.sign-out, a.sign-in")))

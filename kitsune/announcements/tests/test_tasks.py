@@ -12,21 +12,22 @@ from kitsune.users.tests import GroupFactory, UserFactory
 class AnnouncementSaveTests(TestCase):
     """Test creating group announcements."""
 
-    def _setup_announcement(self, visible_dates=True):
+    def _setup_announcement(self, visible_dates=True, send_email=False):
         g = GroupFactory()
         u1 = UserFactory(groups=[g])
         u2 = UserFactory(groups=[g])
         self.user = u2
 
-        return AnnouncementFactory(creator=u1, group=g, visible_dates=visible_dates)
+        return AnnouncementFactory(
+            creator=u1, group=g, visible_dates=visible_dates, send_email=send_email
+        )
 
     @mock.patch.object(Site.objects, "get_current")
     def test_create_announcement(self, get_current):
         """An announcement is created and email is sent to group members."""
         get_current.return_value.domain = "testserver"
 
-        a = self._setup_announcement()
-
+        a = self._setup_announcement(send_email=True)
         # Signal fired, emails sent.
         self.assertEqual(2, len(mail.outbox))
         assert a.content in mail.outbox[0].body
