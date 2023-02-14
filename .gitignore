@@ -64,3 +64,4 @@ dist/
 .pdbhistory
 .minikube
 locust*
+.dotnet

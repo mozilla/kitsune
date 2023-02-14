@@ -93,7 +93,7 @@
 <div id="announcements">
   {% call announcement_bar('geoip-suggestion', 'warning', close_memory="remember", close_type="remove") %}{% endcall %}
 
-  {% for announ in get_announcements() %}
+  {% for announ in get_announcements(request) %}
       {% call announcement_bar(announ.id, 'warning') %}
           {{ announ.content | wiki_to_html }}
       {% endcall %}

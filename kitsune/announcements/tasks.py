@@ -1,10 +1,9 @@
+import bleach
+from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.utils.translation import gettext as _
-
-import bleach
-from celery import shared_task
 
 from kitsune.announcements.models import Announcement
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
