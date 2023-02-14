@@ -3,6 +3,9 @@ const pathRemovals = [
   /^kitsune\/[^/]+\/static\//,
 ];
 
+const path = require("node:path");
+const root = path.resolve(__dirname, "..");
+
 class AssetJsonPlugin {
   apply(compiler) {
     const RawSource = compiler.webpack.sources.RawSource;
@@ -12,9 +15,12 @@ class AssetJsonPlugin {
         for (const [k, v] of compilation.assetsInfo) {
           const source = v.sourceFilename;
           if (source) {
+            // The "source" can sometimes be an absolute path, so let's ensure
+            // that we're always working with a path relative to the project root.
+            const relativeSource = path.relative(root, path.resolve(root, source))
             const shortSource = pathRemovals.reduce(
               (accumulator, current) => accumulator.replace(current, ""),
-              source
+              relativeSource
             );
             sourceToAsset[shortSource] = k;
           }
