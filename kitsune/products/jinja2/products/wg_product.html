@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
+{% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
+{% set crumbs = [(None, pgettext('DB: products.Product.title', page.title))] %}
+{% set scripts = ('products',) %}
+{% set classes = 'product-landing' %}
+{% set search_params = {'product': page.slug} %}
+
+{% set extra_body_attrs = {'data-product-slug': page.slug} %}
+
+
+{% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', page.title)) }}{% endblock %}
+
+{% block base_container_classes %}container_wide{% endblock %}
+
+{% block hidden_search_masthead %}{% endblock %}
+
+{% block masthead %}
+<section class="home-search-section sumo-page-section extra-pad-bottom shade-bg">
+  <div class="mzp-l-content">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
+  </div>
+  <div class="mzp-l-content narrow">
+    <div class="home-search-section--content">
+      <h1 class="sumo-page-heading-xl">
+        <img class="page-heading--logo" src="{( image(page.image, fill-100x100) }}" alt="Photo of {{ page.title }}" />
+        <span class="product-title-text">{{ pgettext('DB: products.Product.title', page.title) }} {{ _('Support') }}</span>
+      </h1>
+      {{ search_box(settings, id='support-search-masthead', params=search_params) }}
+
+      <p class="popular-searches">
+        <span>{{ _('Popular Searches:') }}</span>
+
+        {% if page.slug == "firefox-browser" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Update Firefox') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+
+        {% elif page.slug == "frefox-android" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Firefox Sync') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Send tab') }}</a>
+
+        {% elif page.slug == "ios" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Send tab') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Night mode') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Block images') }}</a>
+
+        {% elif page.slug == "firefox-enterprise" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Policies') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Customization') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('extensions') }}</a>
+
+        {% elif page.slug == "firefox-amazon-devices" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Voice commands') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Receive tabs') }}</a>
+
+        {% elif page.slug == "firefox-private-network-vpn" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Manage devices') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Download VPN') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Limits') }}</a>
+
+        {% elif page.slug == "firefox-private-network" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Activate add-on') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Update add-on') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Manage devices') }}</a>
+
+        {% elif page.slug == "firefox-lockwise" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Lockwise iOS') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Lockwise Android') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Lockwise desktop') }}</a>
+
+        {% elif page.slug == "firefox-reality" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Voice search') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Bookmarks') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Full screen') }}</a>
+
+        {% elif page.slug == "firefox-lite" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Turbo mode') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Rewards') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Games') }}</a>
+
+        {% elif page.slug == "hubs" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Room size') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Avatars') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('VR') }}</a>
+
+        {% elif page.slug == "focus-firefox" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Autocomplete') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Default search') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Desktop view') }}</a>
+
+        {% elif page.slug == "screenshot-go" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Capture a screenshot') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Organize a screenshot') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Create a collection') }}</a>
+
+        {% elif page.slug == "thunderbird" %}
+          <a href="#popular_search_1" data-featured-search>{{ _('Thunderbird profiles') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Migrate') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Themes') }}</a>
+
+        {% else %}
+          <a href="#popular_search_1" data-debug="{{ page.title }}" data-featured-search>{{ _('Update Firefox') }}</a>
+          <a href="#popular_search_2" data-featured-search>{{ _('Profiles') }}</a>
+          <a href="#popular_search_3" data-featured-search>{{ _('Firefox Sync') }}</a>
+        {% endif %}
+      </p>
+
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block contentwrap %}
+<div id="main-content">
+  <div class="mzp-l-content sumo-page-section--inner">
+    <div class="sumo-page-subheader">
+      <div class="sumo-page-subheader--text">
+        <div class="text-center-to-left-on-large">
+          <h2 class="sumo-page-subheading">{{ _('Frequent Topics') }}</h2>
+          <p class="sumo-page-intro">{{ _('Explore the knowledge base.') }}</p>
+        </div>
+      </div>
+      {% if page.slug == 'firefox-browser' %}
+      {{ download_firefox() }}
+      {% endif %}
+      {% if page.slug == 'thunderbird' %}
+      <div class="download-buttons">
+        <div class="download-thunderbird">
+          <a href="https://www.thunderbird.net/" class="download-button sumo-button primary-button button-lg"
+          data-event-category="Download Button"
+          data-event-action="Download Thunderbird">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+            </span>
+          </a>
+          <ul class="download-info text-body-xs">
+            <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {{ help_topics(topics) }}
+  </div>
+
+  {{ topic_metadata(topics, product=page, product_key=product_key) }}
+
+{% if featured %}
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+      <h2 class="sumo-page-subheading text-center-to-left-on-large">{{ _('Featured Articles') }}</h2>
+      {{ featured_articles(featured) }}
+  </section>
+{% endif %}
+
+  <section class="mzp-l-content mzp-l-content sumo-page-section--inner">
+    {% include "landings/includes/join-our-community-callout.html" %}
+  </section>
+</div>
+
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}
+
+{% block outer_side %}
+{% endblock %}

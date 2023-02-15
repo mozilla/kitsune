@@ -19,10 +19,9 @@ from modelcluster.fields import ParentalKey
 from pyquery import PyQuery
 from wagtail import blocks
 from wagtail.admin.panels import FieldPanel, InlinePanel
-from wagtail.core.models import Orderable
 from wagtail.fields import RichTextField, StreamField
 from wagtail.images.blocks import ImageChooserBlock
-from wagtail.models import Page
+from wagtail.models import Orderable, Page
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
@@ -119,6 +118,8 @@ class WgDocument(NotificationsMixin, WagtailBase, DocumentPermissionMixin):
         use_json_field=False,
     )
 
+    parent_page_type = ["products.WgProduct"]
+
     content_panels = Page.content_panels + [
         FieldPanel("summary"),
         FieldPanel("content"),
@@ -156,6 +157,9 @@ class WgDocument(NotificationsMixin, WagtailBase, DocumentPermissionMixin):
     def is_majorly_outdated(self):
         # dependednt on the revision and localiztion - see Document model
         return False
+
+    class Meta:
+        verbose_name = "Wiki Document"
 
 
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):

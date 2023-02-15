@@ -14,8 +14,7 @@ from django.conf import settings
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.templatetags.static import static as django_static
-from django.utils.encoding import smart_bytes
-from django.utils.encoding import smart_str
+from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlencode
 from django.utils.timezone import get_default_timezone, is_aware, is_naive
 from django.utils.translation import gettext as _
@@ -191,7 +190,7 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
     if add_default:
         first_crumb = "Home"
 
-        crumbs = [(reverse("home"), _lazy(first_crumb))]
+        crumbs = [("/", _lazy(first_crumb))]
     else:
         crumbs = []
 
