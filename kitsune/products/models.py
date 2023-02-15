@@ -1,8 +1,13 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
+from modelcluster.fields import ParentalKey
+from wagtail.admin.panels import FieldPanel, InlinePanel
+from wagtail.fields import RichTextField
+from wagtail.images.blocks import ImageChooserBlock
+from wagtail.models import Orderable, Page
 
-from kitsune.sumo.models import ModelBase
+from kitsune.sumo.models import ModelBase, WagtailBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 
@@ -12,6 +17,60 @@ HOT_TOPIC_SLUG = "hot"
 class ProductQuerySet(models.QuerySet):
     def with_question_forums(self, request):
         return self.filter(questions_locales__locale=request.LANGUAGE_CODE).filter(codename="")
+
+
+class WgProductIndex(WagtailBase):
+    """Index page for WgProduct pages."""
+
+    def products(self):
+        return WgProduct.objects.all()
+
+    subpage_types = ["products.WgProduct"]
+
+    class Meta:
+        verbose_name = "Product Index"
+        verbose_name_plural = "Product Indexes"
+
+
+class WgProductPlatform(Orderable):
+    wgproduct = ParentalKey("WgProduct", related_name="platforms")
+    platform = models.ForeignKey("products.Platform", on_delete=models.CASCADE)
+
+    panels = [FieldPanel("platform")]
+
+
+class WgProduct(WagtailBase):
+    description = RichTextField(blank=True, default="")
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        max_length=settings.MAX_FILEPATH_LENGTH,
+        on_delete=models.SET_NULL,
+        # no l10n in admin
+        help_text="Used on the the home page. Must be 484x244.",
+    )
+    # Dictates the order in which products are displayed in product
+    # lists.
+    display_order = models.IntegerField()
+    # Whether or not this product is visible in the KB ui to users.
+    visible = models.BooleanField(default=False)
+
+    def product_index(self):
+        return self.ancestors().type(WgProductIndex).last()
+
+    parent_page_types = ["products.WgProductIndex"]
+
+    content_panels = Page.content_panels + [
+        FieldPanel("description"),
+        FieldPanel("image"),
+        FieldPanel("display_order"),
+        FieldPanel("visible"),
+        InlinePanel("platforms", label="Platforms"),
+    ]
+
+    class Meta:
+        verbose_name = "Product"
 
 
 class Product(ModelBase):

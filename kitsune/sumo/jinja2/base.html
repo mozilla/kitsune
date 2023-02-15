@@ -109,7 +109,11 @@
   <div class="mzp-c-navigation-l-content">
     <div class="sumo-nav--container">
       <div class="sumo-nav--logo">
-        <a href="{{ url('home') }}"><img src="{{ webpack_static('sumo/img/mozilla-support.svg') }}" alt="Mozilla Support Logo"/></a>
+        {% if page %}
+          <a href="{{ pageurl(page) }}"><img src="{{ webpack_static('sumo/img/mozilla-support.svg') }}" alt="Mozilla Support Logo"/></a>
+        {% else %}
+          <a href="{{ url('home') }}"><img src="{{ webpack_static('sumo/img/mozilla-support.svg') }}" alt="Mozilla Support Logo"/></a>
+        {% endif %}
       </div>
 
       <button data-mobile-nav-search-button class="sumo-nav--search-button" type="button">Search</button>
@@ -225,7 +229,13 @@
             <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
             <li><a href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
             <li><a href="{{ url('landings.contribute') }}">{{ _('Join our Community') }}</a></li>
-            <li><a href="{{ url('home') }}">{{ _('Explore Help Articles')}}</a></li>
+            <li>
+              {% if page %}
+                <a href="{{ pageurl(page) }}">{{ _('Explore Help Articles')}}</a>
+              {% else %}
+                <a href="{{ url('home') }}">{{ _('Explore Help Articles')}}</a>
+              {% endif %}
+            </li>
           </ul>
         </section>
 

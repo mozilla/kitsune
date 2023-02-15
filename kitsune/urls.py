@@ -5,7 +5,6 @@ from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
-from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
@@ -71,7 +70,6 @@ urlpatterns = [
     # Wagtail
     path("cms/", include(wagtailadmin_urls)),
     path("wagtail-docs/", include(wagtaildocs_urls)),
-    path("wagtail-kb/", include(wagtail_urls)),
 ]
 
 # Handle 404 and 500 errors
