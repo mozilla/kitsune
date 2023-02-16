@@ -20,8 +20,10 @@ connections.add_connection(config.DEFAULT_ES_CONNECTION, es_client())
 
 
 class WikiDocument(SumoDocument):
-    updated = field.Date()
+    # Wiki Documents should be merged/updated.
+    update_document = True
 
+    updated = field.Date()
     product_ids = field.Keyword(multi=True)
     topic_ids = field.Keyword(multi=True)
     category = field.Keyword()
@@ -37,12 +39,6 @@ class WikiDocument(SumoDocument):
 
     class Index:
         pass
-
-    @classmethod
-    @property
-    def update_document(cls):
-        """Wiki Documents should be merged/updated."""
-        return True
 
     @classmethod
     def prepare(cls, instance):

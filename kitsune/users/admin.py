@@ -94,7 +94,7 @@ class ProfileAdmin(admin.ModelAdmin):
         else:
             return obj.user.username
 
-    full_user.short_description = "User"
+    full_user.short_description = "User"  # type: ignore
 
     def save_model(self, request, obj, form, change):
         delete_avatar = form.cleaned_data.pop("delete_avatar", False)

@@ -17,7 +17,7 @@ class ImageShortSerializer(serializers.ModelSerializer):
 
     class Meta(object):
         model = Image
-        fields = ("id", "title", "url", "locale", "width", "height")
+        fields: tuple[str, ...] = ("id", "title", "url", "locale", "width", "height")
 
 
 class ImageDetailSerializer(ImageShortSerializer):

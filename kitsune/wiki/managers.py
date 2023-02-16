@@ -10,7 +10,7 @@ class VisibilityManager(models.Manager):
     # For managers of models related to documents, provide the name of the model attribute
     # that provides the related document. For example, for the manager of revisions, this
     # should be "document".
-    document_relation = None
+    document_relation: str | None = None
 
     def get_creator_condition(self, user):
         """

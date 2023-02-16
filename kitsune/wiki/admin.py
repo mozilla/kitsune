@@ -56,14 +56,14 @@ class DocumentAdmin(admin.ModelAdmin):
         self._set_archival(queryset, True)
         self._show_archival_message(request, queryset, "obsolete")
 
-    archive.short_description = "Mark as obsolete"
+    archive.short_description = "Mark as obsolete"  # type: ignore
 
     def unarchive(self, request, queryset):
         """Mark several documents as not obsolete."""
         self._set_archival(queryset, False)
         self._show_archival_message(request, queryset, "no longer obsolete")
 
-    unarchive.short_description = "Mark as not obsolete"
+    unarchive.short_description = "Mark as not obsolete"  # type: ignore
 
     def allow_discussion(self, request, queryset):
         """Allow discussion on several documents."""

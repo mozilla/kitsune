@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core import mail
+from django.db import models
 from django.db.models import Q
 
 from kitsune.tidings.models import EmailUser, Watch, WatchFilter, multi_raw
@@ -97,11 +98,11 @@ class Event(object):
     """
 
     # event_type = 'hamster modified'  # key for the event_type column
-    content_type = None  # or, for example, Hamster
+    content_type: models.Model | None = None  # or, for example, Hamster
 
     #: Possible filter keys, for validation only. For example:
     #: ``set(['color', 'flavor'])``
-    filters = set()
+    filters: set[str] = set()
 
     def fire(self, exclude=None, delay=True):
         """

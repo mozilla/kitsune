@@ -300,7 +300,7 @@ class RegistrationProfile(models.Model):
         """
         return True
 
-    activation_key_expired.boolean = True
+    activation_key_expired.boolean = True  # type: ignore
 
 
 class EmailChange(models.Model):

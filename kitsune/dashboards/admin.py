@@ -11,7 +11,7 @@ class WikiMetricAdmin(admin.ModelAdmin):
     def locale_code(self, obj):
         return obj.locale
 
-    locale_code.short_description = "Locale Code"
+    locale_code.short_description = "Locale Code"  # type: ignore
 
 
 admin.site.register(WikiMetric, WikiMetricAdmin)

@@ -990,7 +990,7 @@ class Revision(ModelBase, AbstractRevision):
             return None
 
 
-class DraftRevision(ModelBase, AbstractRevision):
+class DraftRevision(ModelBase, AbstractRevision):  # type: ignore
     based_on = models.ForeignKey(Revision, on_delete=models.CASCADE)
     content = models.TextField(blank=True)
     locale = LocaleField(blank=False, db_index=True)

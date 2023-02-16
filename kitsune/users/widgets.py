@@ -20,6 +20,10 @@ class MonthYearWidget(Widget):
     month_field = "%s_month"
     year_field = "%s_year"
 
+    @classmethod
+    def id_for_label(cls, id_):
+        return "%s_month" % id_
+
     def __init__(self, attrs=None, years=None, required=True):
         # years is an optional list/tuple of years to use in the "year" select box.
         self.attrs = attrs or {}
@@ -65,11 +69,6 @@ class MonthYearWidget(Widget):
         output.append(select_html)
 
         return mark_safe("\n".join(output))
-
-    def id_for_label(self, id_):
-        return "%s_month" % id_
-
-    id_for_label = classmethod(id_for_label)
 
     def value_from_datadict(self, data, files, name):
         y = data.get(self.year_field % name)
