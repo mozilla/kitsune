@@ -1,4 +1,4 @@
-# 2. Storing localized content in Search
+# 2 - Storing localized content in Search
 
 Date: 2020-10-27
 
