@@ -2,10 +2,10 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
 from modelcluster.fields import ParentalKey
-from wagtail.admin.panels import FieldPanel, InlinePanel
+from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.fields import RichTextField
-from wagtail.images.blocks import ImageChooserBlock
 from wagtail.models import Orderable, Page
+from wagtail.snippets.models import register_snippet
 
 from kitsune.sumo.models import ModelBase, WagtailBase
 from kitsune.sumo.urlresolvers import reverse
@@ -59,6 +59,12 @@ class WgProduct(WagtailBase):
     def product_index(self):
         return self.ancestors().type(WgProductIndex).last()
 
+    def get_context(self, request):
+        context = super().get_context(request)
+        # TODO: This is a hack to get the product index page into the
+        context["topics"] = KbListing.objects.all()
+        return context
+
     parent_page_types = ["products.WgProductIndex"]
 
     content_panels = Page.content_panels + [
@@ -71,6 +77,7 @@ class WgProduct(WagtailBase):
 
     class Meta:
         verbose_name = "Product"
+        verbose_name_plural = "Products"
 
 
 class Product(ModelBase):
@@ -137,6 +144,59 @@ class Product(ModelBase):
 
     def get_absolute_url(self):
         return reverse("products.product", kwargs={"slug": self.slug})
+
+
+@register_snippet
+class WgTopic(ModelBase):
+    """Snippets for reusable topics both in AAQ and products."""
+
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    image = models.ForeignKey(
+        "wagtailimages.Image",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, related_name="subtopics", null=True, blank=True
+    )
+    # Dictates the order in which topics are displayed in topic lists.
+    display_order = models.IntegerField()
+    # Whether or not this topic is visible in the ui to users.
+    visible = models.BooleanField(default=False)
+
+    class Meta:  # noqa
+        verbose_name = "Topic"
+        verbose_name_plural = "Topics"
+
+    content_panels = [
+        MultiFieldPanel(
+            [
+                FieldPanel("title"),
+                FieldPanel("description"),
+                FieldPanel("image"),
+            ],
+            heading="Title, Description, and Image",
+        ),
+        MultiFieldPanel(
+            [FieldPanel("visible"), FieldPanel("display_order"), FieldPanel("parent")],
+            heading="Parent Topic and configuration",
+            classname="collapsible collapsed",
+        ),
+    ]
+
+
+class KbListing(WagtailBase):
+    topic = models.ForeignKey(
+        "products.WgTopic", on_delete=models.SET_NULL, null=True, blank=False
+    )
+    product = models.ForeignKey(WgProduct, on_delete=models.CASCADE)
+
+    content_panels = Page.content_panels + [FieldPanel("topic"), FieldPanel("product")]
+    parent_page_types = ["products.WgProduct"]
+    subpage_types = ["wiki.WgDocument"]
 
 
 # Note: This is the "new" Topic class
