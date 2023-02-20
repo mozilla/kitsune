@@ -198,6 +198,13 @@ class KbListing(WagtailBase):
     parent_page_types = ["products.WgProduct"]
     subpage_types = ["wiki.WgDocument"]
 
+    def get_context(self, request):
+        context = super().get_context(request)
+        context["product"] = self.get_parent()
+        context["documents"] = self.get_children().live()
+        context["topics"] = KbListing.objects.filter(product=self.product).live()
+        return context
+
 
 # Note: This is the "new" Topic class
 class Topic(ModelBase):
