@@ -22,7 +22,7 @@ class MonthYearWidget(Widget):
 
     @classmethod
     def id_for_label(cls, id_):
-        return "%s_month" % id_
+        return f"{id_}_month"
 
     def __init__(self, attrs=None, years=None, required=True):
         # years is an optional list/tuple of years to use in the "year" select box.
