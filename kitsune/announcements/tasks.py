@@ -17,8 +17,8 @@ def send_group_email(announcement_id):
     except Announcement.DoesNotExist:
         return
 
-    group = announcement.group
-    users = User.objects.filter(groups__in=[group])
+    groups = announcement.groups.all()
+    users = User.objects.filter(groups__in=groups).distinct()
     plain_content = bleach.clean(announcement.content_parsed, tags=[], strip=True).strip()
     email_kwargs = {
         "content": plain_content,
@@ -30,7 +30,10 @@ def send_group_email(announcement_id):
 
     @safe_translation
     def _make_mail(locale, user):
-        subject = _("New announcement for {group}").format(group=group.name)
+        if groups.count() == 1:
+            subject = _(f"New announcement for {groups[0].name}")
+        else:
+            subject = _(f"New announcement for groups [{', '.join([g.name for g in groups])}]")
 
         mail = make_mail(
             subject=subject,
