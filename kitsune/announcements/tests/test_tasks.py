@@ -18,9 +18,11 @@ class AnnouncementSaveTests(TestCase):
         u2 = UserFactory(groups=[g])
         self.user = u2
 
-        return AnnouncementFactory(
-            creator=u1, group=g, visible_dates=visible_dates, send_email=send_email
+        announcement = AnnouncementFactory(
+            creator=u1, visible_dates=visible_dates, send_email=send_email
         )
+        announcement.groups.add(g)
+        return announcement
 
     @mock.patch.object(Site.objects, "get_current")
     def test_create_announcement(self, get_current):

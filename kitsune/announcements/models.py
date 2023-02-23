@@ -5,7 +5,8 @@ from typing import Self
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.db.models import Q, QuerySet
-from django.db.models.signals import post_save
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
@@ -35,20 +36,17 @@ class Announcement(ModelBase):
         max_length=10000,
         help_text=("Use wiki syntax or HTML. It will display similar to a document's content."),
     )
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
+    groups = models.ManyToManyField(Group, related_name="announcements", blank=True, null=True)
     locale = models.ForeignKey(Locale, on_delete=models.CASCADE, null=True, blank=True)
     send_email = models.BooleanField(
         default=False,
         help_text=(
-            "Send an email to all users in the group. If no group is selected, this is ignored."
+            "Send an email to all users in the groups. If no groups are selected, this is ignored."
         ),
     )
 
     def __str__(self):
-        excerpt = self.content[:50]
-        if self.group:
-            return "[{group}] {excerpt}".format(group=self.group, excerpt=excerpt)
-        return "{excerpt}".format(excerpt=excerpt)
+        return f"{self.content[:50]}"
 
     def is_visible(self):
         now = datetime.now()
@@ -62,12 +60,12 @@ class Announcement(ModelBase):
 
     @classmethod
     def get_site_wide(cls):
-        return cls._visible_query(group=None, locale=None)
+        return cls._visible_query(groups=None, locale=None)
 
     @classmethod
     def get_for_groups(cls, group_ids: Iterable[int]) -> QuerySet[Self]:
-        """Returns visible announcements for a given group id."""
-        return cls._visible_query(group__id__in=group_ids)
+        """Returns visible announcements for the given group ids."""
+        return cls._visible_query(groups__id__in=group_ids).distinct()
 
     @classmethod
     def get_for_locale_name(cls, locale_name):
@@ -76,7 +74,7 @@ class Announcement(ModelBase):
 
     @classmethod
     def _visible_query(cls, **query_kwargs):
-        """Return visible announcements given a group query."""
+        """Return visible announcements given a groups query."""
         return Announcement.objects.filter(
             # Show if interval is specified and current or show_until is None
             Q(show_after__lt=datetime.now())
@@ -85,16 +83,15 @@ class Announcement(ModelBase):
         )
 
 
-def connector(sender, instance, created, **kw):
-    # Only email new announcements in a group. We don't want to email everyone.
-    if created and instance.group and instance.send_email:
-        from kitsune.announcements.tasks import send_group_email
+@receiver(m2m_changed, sender=Announcement.groups.through)
+def connector(sender, **kw):
+    if kw.get("action", "") == "post_add":
+        instance = kw["instance"]
+        if instance.send_email:
+            from kitsune.announcements.tasks import send_group_email
 
-        now = datetime.now()
-        if instance.is_visible():
-            send_group_email.delay(instance.pk)
-        elif now < instance.show_after:
-            send_group_email.delay(instance.pk, eta=instance.show_after)
-
-
-post_save.connect(connector, sender=Announcement, dispatch_uid="email_announcement")
+            now = datetime.now()
+            if instance.is_visible():
+                send_group_email.delay(instance.pk)
+            elif now < instance.show_after:
+                send_group_email.delay(instance.pk, eta=instance.show_after)
