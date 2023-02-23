@@ -323,7 +323,7 @@ class CompoundSearch(SumoSearch):
     _children: list[SumoSearch] = dfield(default_factory=list, init=False)
     _parse_query: bool = True
 
-    @property
+    @property  # type: ignore
     def parse_query(self):
         return self._parse_query
 

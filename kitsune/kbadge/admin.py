@@ -20,7 +20,7 @@ def show_image(obj):
     )
 
 
-show_image.short_description = "Image"
+show_image.short_description = "Image"  # type: ignore
 
 
 def build_related_link(self, model_name, name_single, name_plural, qs):
@@ -41,7 +41,7 @@ def related_awards_link(self):
     return mark_safe(build_related_link(self, "award", "award", "awards", self.award_set))
 
 
-related_awards_link.short_description = "Awards"
+related_awards_link.short_description = "Awards"  # type: ignore
 
 
 class BadgeAdmin(admin.ModelAdmin):
@@ -80,7 +80,7 @@ def badge_link(self):
     return mark_safe('<a href="%s">%s</a>' % (url, self.badge))
 
 
-badge_link.short_description = "Badge"
+badge_link.short_description = "Badge"  # type: ignore
 
 
 class AwardAdmin(admin.ModelAdmin):
@@ -110,7 +110,7 @@ def award_link(self):
     return mark_safe('<a href="%s">%s</a>' % (url, self.award))
 
 
-award_link.short_description = "award"
+award_link.short_description = "award"  # type: ignore
 
 
 for x in (

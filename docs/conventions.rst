@@ -15,6 +15,13 @@ bootcamp guide
 
 It is recommended that you :ref:`install pre-commit<hacking_howto:Install linting tools>`.
 
+Type hints
+----------
+When creating and/or modifying Python functions/methods, we add `type hints
+<https://docs.python.org/3/library/typing.html>`_ to their arguments and result,
+but only when it makes sense. See
+:doc:`our Architectural Decision Record<architecture/decisions/0004-type-checking>`
+for more details.
 
 Git conventions
 ===============

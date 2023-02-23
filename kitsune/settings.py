@@ -472,7 +472,7 @@ TEMPLATES = [
 ]
 
 
-MIDDLEWARE = (
+MIDDLEWARE: tuple[str, ...] = (
     "kitsune.sumo.middleware.HostnameMiddleware",
     "allow_cidr.middleware.AllowCIDRMiddleware",
     "kitsune.sumo.middleware.FilterByUserAgentMiddleware",
@@ -539,7 +539,7 @@ WATCHMAN_CHECKS = (
 )
 
 # Auth
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     # This backend is used for the /admin interface
     "kitsune.users.auth.SumoOIDCAuthBackend",
     "kitsune.users.auth.FXAAuthBackend",
@@ -630,7 +630,7 @@ ROOT_URLCONF = "%s.urls" % PROJECT_MODULE
 
 # TODO: Figure out why changing the order of apps (for example, moving
 # taggit higher in the list) breaks tests.
-INSTALLED_APPS = (
+INSTALLED_APPS: tuple[str, ...] = (
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
@@ -983,26 +983,26 @@ ATOMIC_REQUESTS = config("ATOMIC_REQUESTS", default=True, cast=bool)
 
 # CORS Setup
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_URLS_REGEX = [
-    r"^/api/1/gallery/.*$",
-    r"^/api/1/kb/.*$",
-    r"^/api/1/products/.*",
-    r"^/api/1/users/get_token$",
-    r"^/api/1/users/test_auth$",
-    r"^/api/2/answer/.*$",
-    r"^/api/2/pushnotification/.*$",
-    r"^/api/2/notification/.*$",
-    r"^/api/2/question/.*$",
-    r"^/api/2/realtime/.*$",
-    r"^/api/2/search/.*$",
-    r"^/api/2/user/.*$",
-    r"^/graphql/.*$",
-]
-# Now combine all those regexes with one big "or".
-CORS_URLS_REGEX = re.compile("|".join("({0})".format(r) for r in CORS_URLS_REGEX))
-
-# XXX Fix this when Bug 1059545 is fixed
-CC_IGNORE_USERS = []
+CORS_URLS_REGEX = re.compile(
+    "|".join(
+        "({0})".format(r)
+        for r in [
+            r"^/api/1/gallery/.*$",
+            r"^/api/1/kb/.*$",
+            r"^/api/1/products/.*",
+            r"^/api/1/users/get_token$",
+            r"^/api/1/users/test_auth$",
+            r"^/api/2/answer/.*$",
+            r"^/api/2/pushnotification/.*$",
+            r"^/api/2/notification/.*$",
+            r"^/api/2/question/.*$",
+            r"^/api/2/realtime/.*$",
+            r"^/api/2/search/.*$",
+            r"^/api/2/user/.*$",
+            r"^/graphql/.*$",
+        ]
+    )
+)
 
 ACTSTREAM_SETTINGS = {
     "USE_JSONFIELD": True,
@@ -1150,7 +1150,7 @@ CSP_INCLUDE_NONCE_IN = ["script-src"]
 
 CSP_DEFAULT_SRC = ("'none'",)
 
-CSP_SCRIPT_SRC = (
+CSP_SCRIPT_SRC: tuple[str, ...] = (
     "'self'",
     "https://*.mozilla.org",
     "https://*.itsre-sumo.mozilla.net",
@@ -1192,7 +1192,7 @@ CSP_FONT_SRC = (
     "https://*.webservices.mozgcp.net",
 )
 
-CSP_STYLE_SRC = (
+CSP_STYLE_SRC: tuple[str, ...] = (
     "'self'",
     "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",

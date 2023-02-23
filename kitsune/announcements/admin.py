@@ -19,7 +19,7 @@ class AnnouncementAdmin(admin.ModelAdmin):
             return "Yes (always)"
         return ""
 
-    is_visible.short_description = "Visible?"
+    is_visible.short_description = "Visible?"  # type: ignore
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:

@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from datetime import datetime
 from typing import Self
 
@@ -64,7 +65,7 @@ class Announcement(ModelBase):
         return cls._visible_query(group=None, locale=None)
 
     @classmethod
-    def get_for_groups(cls, group_ids: list[int] | QuerySet) -> QuerySet[Self]:
+    def get_for_groups(cls, group_ids: Iterable[int]) -> QuerySet[Self]:
         """Returns visible announcements for a given group id."""
         return cls._visible_query(group__id__in=group_ids)
 

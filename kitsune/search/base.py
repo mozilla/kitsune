@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import datetime
-from typing import Union, overload
+from typing import Union, Self, overload
 
 from django.conf import settings
 from django.core.paginator import EmptyPage, PageNotAnInteger
@@ -29,6 +29,11 @@ from kitsune.search.parser.tokens import TermToken
 
 class SumoDocument(DSLDocument):
     """Base class with common methods for all the different documents."""
+
+    # Controls if a document should be indexed or updated in ES.
+    #   True: An update action will be performed in ES.
+    #   False: An index action will be performed in ES.
+    update_document = False
 
     indexed_on = field.Date()
 
@@ -116,16 +121,6 @@ class SumoDocument(DSLDocument):
             )
 
         return aliased_indices[0] if aliased_indices else None
-
-    @classmethod
-    @property
-    def update_document(cls):
-        """Controls if a document should be indexed or updated in ES.
-
-        True: An update action will be performed in ES.
-        False: An index action will be performed in ES.
-        """
-        return False
 
     @classmethod
     def prepare(cls, instance, parent_id=None, **kwargs):
@@ -304,7 +299,7 @@ class SumoSearchInterface(ABC):
         ...
 
     @abstractmethod
-    def run(self, **kwargs):
+    def run(self, *args, **kwargs) -> Self:
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
         ...
@@ -369,7 +364,7 @@ class SumoSearch(SumoSearchInterface):
             }
         )
 
-    def run(self, key: Union[int, slice] = slice(0, settings.SEARCH_RESULTS_PER_PAGE)):
+    def run(self, key: Union[int, slice] = slice(0, settings.SEARCH_RESULTS_PER_PAGE)) -> Self:
         """Perform search, placing the results in `self.results`, and the total
         number of results (across all pages) in `self.total`. Chainable."""
 
@@ -398,7 +393,7 @@ class SumoSearch(SumoSearchInterface):
         self.hits = result.hits
         self.last_key = key
 
-        self.total = self.hits.total.value
+        self.total = self.hits.total.value  # type: ignore
         self.results = [self.make_result(hit) for hit in self.hits]
 
         return self

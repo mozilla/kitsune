@@ -138,10 +138,6 @@ class BadgeException(Exception):
     """General Badger model exception"""
 
 
-class BadgeException(BadgeException):
-    """Badge model exception"""
-
-
 class BadgeAwardNotAllowedException(BadgeException):
     """Attempt to award a badge not allowed."""
 

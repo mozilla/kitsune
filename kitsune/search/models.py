@@ -53,7 +53,7 @@ class SearchMappingType(object):
 
     """
 
-    list_keys = []
+    list_keys: list[str] = []
     seconds_ago_filter = None
 
     @classmethod

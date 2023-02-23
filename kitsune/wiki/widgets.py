@@ -1,13 +1,10 @@
+from collections.abc import Iterable
+
 from django import forms
 from django.template.loader import render_to_string
 
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document
-
-try:
-    from collections.abc import Iterable
-except ImportError:
-    from collections import Iterable
 
 
 class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):

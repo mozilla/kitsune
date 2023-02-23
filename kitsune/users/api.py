@@ -251,8 +251,8 @@ class ProfileViewSet(
         DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    filterset_fields = []
-    ordering_fields = []
+    filterset_fields: list[str] = []
+    ordering_fields: list[str] = []
     # Default, if not overwritten
     ordering = ("-user__date_joined",)
 

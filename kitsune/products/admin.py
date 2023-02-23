@@ -15,7 +15,7 @@ class TopicAdmin(admin.ModelAdmin):
     def parent(obj):
         return obj.parent
 
-    parent.short_description = "Parent"
+    parent.short_description = "Parent"  # type: ignore
 
     list_display = ("product", "title", "slug", parent, "display_order", "visible", "in_aaq")
     list_display_links = ("title", "slug")

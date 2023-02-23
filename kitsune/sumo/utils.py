@@ -7,6 +7,7 @@ from functools import lru_cache
 from urllib.parse import urlparse
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
@@ -21,8 +22,11 @@ from kitsune.journal.models import Record
 from kitsune.lib.tlds import VALID_TLDS
 from kitsune.sumo import paginator
 
+
 POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
 POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
+
+User: models.Model = get_user_model()
 
 
 def paginate(request, queryset, per_page=20, paginator_cls=paginator.Paginator, **kwargs):
@@ -388,7 +392,7 @@ def webpack_static(source_path):
         return url
 
 
-def is_trusted_user(user: object) -> bool:
+def is_trusted_user(user: User) -> bool:
     """Given a user ID, checks for group membership.
 
     If a user belongs to one of the trusted groups as defined in the project

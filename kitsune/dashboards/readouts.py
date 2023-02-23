@@ -486,7 +486,7 @@ class Readout(object):
     column3_label = _lazy("Visits in last 30 days")
     column4_label = _lazy("Status")
     modes = [(MOST_VIEWED, _lazy("Most Viewed")), (MOST_RECENT, _lazy("Most Recent"))]
-    default_mode = MOST_VIEWED
+    default_mode: int | None = MOST_VIEWED
 
     def __init__(self, request, locale=None, mode=None, product=None):
         """Take request so the template can use contextual macros that need it.
@@ -1216,13 +1216,13 @@ class CannedResponsesReadout(Readout):
 
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = OrderedDict(
-    (t.slug, t)
+    (t.slug, t)  # type: ignore
     for t in [MostVisitedTranslationsReadout, TemplateTranslationsReadout, UnreviewedReadout]
 )
 
 # Contributors ones:
 CONTRIBUTOR_READOUTS = OrderedDict(
-    (t.slug, t)
+    (t.slug, t)  # type: ignore
     for t in [
         MostVisitedDefaultLanguageReadout,
         TemplateReadout,
@@ -1240,7 +1240,7 @@ READOUTS = L10N_READOUTS.copy()
 READOUTS.update(CONTRIBUTOR_READOUTS)
 
 GROUP_L10N_READOUTS = OrderedDict(
-    (t.slug, t) for t in [MostVisitedTranslationsReadout, UnreviewedReadout]
+    (t.slug, t) for t in [MostVisitedTranslationsReadout, UnreviewedReadout]  # type: ignore
 )
 # English group locale is the same as l10n dashboard.
 GROUP_CONTRIBUTOR_READOUTS = CONTRIBUTOR_READOUTS

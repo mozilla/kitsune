@@ -7,7 +7,7 @@ from django.db import connections, models, router
 
 from .utils import import_from_setting, reverse
 
-ModelBase = import_from_setting("TIDINGS_MODEL_BASE", models.Model)
+ModelBase: models.Model = import_from_setting("TIDINGS_MODEL_BASE", models.Model)
 
 
 def multi_raw(query, params, models, model_to_fields):
