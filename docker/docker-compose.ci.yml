@@ -6,7 +6,7 @@ services:
       target: test
     env_file: .env-test
     depends_on:
-      - mariadb
+      - postgres
       - elasticsearch
       - redis
 

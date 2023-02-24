@@ -8,7 +8,6 @@ import re
 
 import dj_database_url
 import django_cache_url
-import pymysql
 from decouple import Csv, config
 
 from kitsune.lib.sumo_locales import LOCALES
@@ -63,15 +62,10 @@ def parse_conn_max_age(value):
 
 DB_CONN_MAX_AGE = config("DB_CONN_MAX_AGE", default=60, cast=parse_conn_max_age)
 
-DATABASES = {
-    "default": config("DATABASE_URL", cast=dj_database_url.parse),
-}
+DATABASES = {"default": config("DATABASE_URL", cast=dj_database_url.parse)}
 
-if DATABASES["default"]["ENGINE"] == "django.db.backends.mysql":
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
     DATABASES["default"]["CONN_MAX_AGE"] = DB_CONN_MAX_AGE
-    DATABASES["default"]["OPTIONS"] = {"init_command": "SET default_storage_engine=InnoDB"}
-
-pymysql.install_as_MySQLdb()
 
 # Cache Settings
 CACHES = {
