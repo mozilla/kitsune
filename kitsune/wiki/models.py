@@ -159,7 +159,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     #    test_firefox_versions.
 
     # TODO: Rethink indexes once controller code is near complete. Depending on
-    # how MySQL uses indexes, we probably don't need individual indexes on
+    # how PostgreSQL uses indexes, we probably don't need individual indexes on
     # title and locale as well as a combined (title, locale) one.
     class Meta(object):
         ordering = ["display_order", "id"]

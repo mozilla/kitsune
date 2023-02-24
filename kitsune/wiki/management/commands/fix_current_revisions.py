@@ -7,9 +7,7 @@ class Command(BaseCommand):
     help = "Fixes documents that have the current_revision set incorrectly."
 
     def handle(self, **options):
-        # Since we currently use MySQL, we have to load the whole table into memory
-        # at once - iterator() won't chunk requests to MySQL. However, we can massively
-        # reduce memory usage by only loading the columns we need:
+        # Reduce memory usage by only loading the columns we need.
         docs = Document.objects.all().values("id", "current_revision_id")
 
         for d in docs.iterator():
