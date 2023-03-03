@@ -23,6 +23,7 @@
   @include p.bidi(((padding, p.$spacing-sm p.$spacing-2xl p.$spacing-sm p.$spacing-sm, p.$spacing-sm p.$spacing-sm p.$spacing-sm p.$spacing-2xl),));
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-width: 0;
