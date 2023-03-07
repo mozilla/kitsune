@@ -24,9 +24,9 @@ class InboxMessage(ModelBase):
 
     @property
     def content_parsed(self):
-        from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
+        from kitsune.sumo.templatetags.jinja_helpers import wiki_to_safe_html
 
-        return wiki_to_html(self.message)
+        return wiki_to_safe_html(self.message)
 
     class Meta:
         db_table = "messages_inboxmessage"
@@ -44,9 +44,9 @@ class OutboxMessage(ModelBase):
 
     @property
     def content_parsed(self):
-        from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
+        from kitsune.sumo.templatetags.jinja_helpers import wiki_to_safe_html
 
-        return wiki_to_html(self.message)
+        return wiki_to_safe_html(self.message)
 
     class Meta:
         db_table = "messages_outboxmessage"

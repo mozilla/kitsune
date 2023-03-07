@@ -74,9 +74,11 @@ class MessagePreviewTests(TestCase):
         """Preview the wiki syntax content."""
         response = self.client.post(
             reverse("messages.preview_async", locale="en-US"),
-            {"content": "=Test Content="},
+            {"content": "[https://www.newyorker.com The New Yorker]"},
             follow=True,
         )
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual("Test Content", doc("div.message h1").text())
+        link = doc('a[href="https://www.newyorker.com"][rel="nofollow"]')
+        self.assertTrue(link)
+        self.assertEqual("The New Yorker", link.text())
