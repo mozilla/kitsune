@@ -46,10 +46,17 @@ VIDEO_PARAMS = ["height", "width", "modal", "title", "placeholder"]
 YOUTUBE_PLACEHOLDER = "YOUTUBE_EMBED_PLACEHOLDER_%s"
 
 
-def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True, tags=None):
+def wiki_to_html(
+    wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True, tags=None, attributes=None
+):
     """Wiki Markup -> HTML"""
     return WikiParser().parse(
-        wiki_markup, show_toc=False, locale=locale, nofollow=nofollow, tags=tags
+        wiki_markup,
+        show_toc=False,
+        locale=locale,
+        nofollow=nofollow,
+        tags=tags,
+        attributes=attributes,
     )
 
 

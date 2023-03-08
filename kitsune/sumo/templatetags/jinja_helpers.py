@@ -113,11 +113,17 @@ def urlparams(url_, hash=None, query_dict=None, **query):
 
 
 @library.filter
-def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
+def wiki_to_html(
+    wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True, tags=None, attributes=None
+):
     """Wiki Markup -> HTML Markup object"""
     if not wiki_markup:
         return ""
-    return Markup(parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow))
+    return Markup(
+        parser.wiki_to_html(
+            wiki_markup, locale=locale, nofollow=nofollow, tags=tags, attributes=attributes
+        )
+    )
 
 
 @library.filter
