@@ -6,6 +6,30 @@ from django.db import models
 from kitsune.sumo.models import ModelBase
 
 
+ALLOWED_MESSAGE_ATTRIBUTES = {
+    "a": ["href", "title", "rel", "data-mozilla-ui-reset", "data-mozilla-ui-preferences"],
+    "div": ["id", "data-for", "title", "data-target", "data-modal"],
+    "h1": ["id"],
+    "h2": ["id"],
+    "h3": ["id"],
+    "h4": ["id"],
+    "h5": ["id"],
+    "h6": ["id"],
+    "span": ["data-for"],
+    "img": ["src", "data-original-src", "alt", "title", "height", "width"],
+    "video": [
+        "height",
+        "width",
+        "controls",
+        "data-fallback",
+        "poster",
+        "data-width",
+        "data-height",
+    ],
+    "source": ["src", "type"],
+}
+
+
 class InboxMessage(ModelBase):
     """A message in a user's private message inbox."""
 
@@ -26,7 +50,7 @@ class InboxMessage(ModelBase):
     def content_parsed(self):
         from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 
-        return wiki_to_html(self.message)
+        return wiki_to_html(self.message, attributes=ALLOWED_MESSAGE_ATTRIBUTES)
 
     class Meta:
         db_table = "messages_inboxmessage"
@@ -46,7 +70,7 @@ class OutboxMessage(ModelBase):
     def content_parsed(self):
         from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 
-        return wiki_to_html(self.message)
+        return wiki_to_html(self.message, attributes=ALLOWED_MESSAGE_ATTRIBUTES)
 
     class Meta:
         db_table = "messages_outboxmessage"

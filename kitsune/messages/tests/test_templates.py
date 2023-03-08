@@ -80,3 +80,15 @@ class MessagePreviewTests(TestCase):
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         self.assertEqual("Test Content", doc("div.message h1").text())
+
+    def test_preview_with_disallowed_attribute(self):
+        """Test removal of disallowed attributes."""
+        response = self.client.post(
+            reverse("messages.preview_async", locale="en-US"),
+            {"content": '[https://attacker.com <img src="login.png" class="mzp-c-modal">]'},
+            follow=True,
+        )
+        self.assertEqual(200, response.status_code)
+        doc = pq(response.content)
+        self.assertIsNone(doc("img").attr("class"))
+        self.assertEqual(doc('a[href="https://attacker.com"]').attr("rel"), "nofollow")
