@@ -1,10 +1,18 @@
 import logging
 import re
+import unicodedata
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.models import Group, Permission, User
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.cache import caches
+from django.core.mail import send_mail
 from django.db import models
+from django.db.models.manager import EmptyManager
+from django.utils.itercompat import is_iterable
 from django.utils.translation import gettext_lazy as _lazy
 from timezone_field import TimeZoneField
 
@@ -375,3 +383,231 @@ class AccountEvent(models.Model):
 
     class Meta(object):
         ordering = ["-last_modified"]
+
+
+class UserProxyProfile:
+    """A class that mimics a profile for a user proxy."""
+
+    SESSION_ATTRIBUTES = frozenset(
+        ("name", "locale", "fxa_uid", "fxa_avatar", "fxa_refresh_token", "zendesk_id")
+    )
+
+    def __init__(self, user):
+        self.user = user
+
+    def __getattr__(self, name):
+        if name not in self.SESSION_ATTRIBUTES:
+            raise AttributeError(name)
+        return getattr(self.user, name)
+
+    def __setattr__(self, name, value):
+        if name in self.SESSION_ATTRIBUTES:
+            setattr(self.user, name, value)
+        object.__setattr__(self, name, value)
+
+    @property
+    def is_fxa_migrated(self):
+        return True
+
+    @property
+    def public_email(self):
+        return False
+
+    @property
+    def avatar(self):
+        return None
+
+    @property
+    def bio(self):
+        return None
+
+    @property
+    def website(self):
+        return None
+
+    @property
+    def twitter(self):
+        return None
+
+    @property
+    def community_mozilla_org(self):
+        return ""
+
+    @property
+    def people_mozilla_org(self):
+        return ""
+
+    @property
+    def matrix_handle(self):
+        return ""
+
+    @property
+    def timezone(self):
+        return ZoneInfo(settings.TIME_ZONE)
+
+    @property
+    def country(self):
+        return None
+
+    @property
+    def city(self):
+        return None
+
+    @property
+    def first_answer_email_sent(self):
+        return False
+
+    @property
+    def first_l10n_email_sent(self):
+        return False
+
+    @property
+    def involved_from(self):
+        return None
+
+    @property
+    def csat_email_sent(self):
+        return None
+
+    @property
+    def fxa_password_change(self):
+        return None
+
+    @property
+    def display_name(self):
+        return self.name if self.name else self.user.username
+
+    @property
+    def products(self):
+        return Product.objects.filter(codename__in=self.user.subscriptions)
+
+    @property
+    def is_subscriber(self):
+        return self.products.exists()
+
+    def save(self, update_fields=None):
+        self.user.save()
+
+
+class UserProxy:
+    """An authenticated user without an account or profile"""
+
+    GROUP_NAMES: set[str] = set()
+    CACHE_KEY_PREFIX = "kitsune_user."
+
+    _user_permissions = EmptyManager(Permission)
+
+    @classmethod
+    def cache(cls):
+        return caches[settings.USER_CACHE_ALIAS]
+
+    @classmethod
+    def get_key(cls, fxa_uid):
+        return f"{cls.CACHE_KEY_PREFIX}{fxa_uid}"
+
+    @classmethod
+    def get_user_from_key(cls, key):
+        if key and (data := cls.cache.get(key)):
+            return cls(**data)
+        return None
+
+    @classmethod
+    def get_user_from_fxa_uid(cls, fxa_uid):
+        return cls.get_user_from_key(cls.get_key(fxa_uid))
+
+    def __init__(self, **attrs):
+        for name, value in attrs.items():
+            setattr(self, name, value)
+
+    def __setattr__(self, name, value):
+        """Clean and/or validate some attribute values before setting them."""
+        if name == "email":
+            value = BaseUserManager.normalize_email(value)
+        elif name == "username":
+            # Normalize and validate the username
+            validate = UnicodeUsernameValidator()
+            value = validate(unicodedata.normalize("NFKC", value))
+        object.__setattr__(self, name, value)
+
+    @property
+    def key(self):
+        return self.get_key(self.fxa_uid)
+
+    @property
+    def profile(self):
+        return UserProxyProfile(self)
+
+    def __str__(self):
+        return self.username
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and (vars(self) == vars(other))
+
+    def __hash__(self):
+        return hash(self.fxa_uid)
+
+    def save(self, update_fields=None):
+        self.cache.set(self.key, vars(self), timeout=settings.USER_CACHE_TIMEOUT)
+
+    def delete(self):
+        return self.cache.delete(self.key)
+
+    @property
+    def groups(self):
+        return Group.objects.filter(name__in=self.GROUP_NAMES)
+
+    @property
+    def user_permissions(self):
+        return self._user_permissions
+
+    def get_user_permissions(self, obj=None):
+        return set()
+
+    def get_group_permissions(self, obj=None):
+        if getattr(self, "_group_perm_cache", None) is None:
+            perms = Permission.objects.filter(group__name__in=self.GROUP_NAMES).values_list(
+                "content_type__app_label", "codename"
+            )
+            self._group_perm_cache = {f"{app_label}.{codename}" for app_label, codename in perms}
+        return self._group_perm_cache
+
+    def get_all_permissions(self, obj=None):
+        return self.get_group_permissions(obj=obj)
+
+    def has_perm(self, perm, obj=None):
+        return perm in self.get_all_permissions(obj=obj)
+
+    def has_perms(self, perm_list, obj=None):
+        if not is_iterable(perm_list) or isinstance(perm_list, str):
+            raise ValueError("perm_list must be an iterable of permissions.")
+        return all(self.has_perm(perm, obj) for perm in perm_list)
+
+    def has_module_perms(self, app_label):
+        return any(perm[: perm.index(".")] == app_label for perm in self.get_all_permissions())
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_staff(self):
+        return False
+
+    @property
+    def is_superuser(self):
+        return False
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    def get_username(self):
+        return self.username
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        """Send an email to this user."""
+        send_mail(subject, message, from_email, [self.email], **kwargs)

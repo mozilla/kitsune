@@ -2,22 +2,24 @@ import logging
 
 import requests
 from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
-from django.db import transaction
+from django.contrib import auth, messages
+from django.contrib.auth.signals import user_logged_in
+
+from django.middleware.csrf import rotate_token
 from django.urls import reverse as django_reverse
 from django.utils.translation import activate
 from django.utils.translation import gettext as _
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.customercare.tasks import update_zendesk_identity
-from kitsune.products.models import Product
-from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import Profile
+from kitsune.users.models import UserProxy
 from kitsune.users.utils import add_to_contributors, get_oidc_fxa_setting
 
 log = logging.getLogger("k.users")
+
+
+SESSION_KEY = "kitsune_user_key"
+BACKEND_SESSION_KEY = "kitsune_user_backend"
 
 
 class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
@@ -31,6 +33,9 @@ class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
             return None
 
         return super(SumoOIDCAuthBackend, self).authenticate(request, **kwargs)
+
+    def get_user(self, user_key):
+        return UserProxy.get_user_from_key(user_key)
 
 
 class FXAAuthBackend(OIDCAuthenticationBackend):
@@ -87,81 +92,54 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
     def create_user(self, claims):
         """Override create user method to mark the profile as migrated."""
+        fxa_uid = claims.get("uid")
 
-        user = super(FXAAuthBackend, self).create_user(claims)
-        # Create a user profile for the user and populate it with data from
-        # Firefox Accounts
-        profile, created = Profile.objects.get_or_create(user=user)
-        profile.is_fxa_migrated = True
-        profile.fxa_uid = claims.get("uid")
-        profile.fxa_avatar = claims.get("avatar", "")
-        profile.name = claims.get("displayName", "")
-        subscriptions = claims.get("subscriptions", [])
+        if not fxa_uid:
+            return None
 
-        # Let's get the first element even if it's an empty string
         # A few assertions return a locale of None so we need to default to empty string
-        fxa_locale = (claims.get("locale", "") or "").split(",")[0]
-        if fxa_locale in settings.SUMO_LANGUAGES:
-            profile.locale = fxa_locale
+        for locale in (claims.get("locale") or "").split(","):
+            if locale in settings.SUMO_LANGUAGES:
+                break
         else:
-            profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
-        activate(profile.locale)
+            locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
 
-        # If there is a refresh token, store it
-        if self.refresh_token:
-            profile.fxa_refresh_token = self.refresh_token
-        profile.save()
-        # User subscription information
-        products = Product.objects.filter(codename__in=subscriptions)
-        profile.products.clear()
-        profile.products.add(*products)
+        activate(locale)
 
-        # This is a new sumo profile, show edit profile message
+        # The user's information is saved in the cache, and is only a reflection of
+        # what we get from FxA. It should only be changed in FxA, not SUMO.
+        user = UserProxy(
+            fxa_uid=fxa_uid,
+            email=claims.get("email"),
+            username=self.get_username(claims),
+            name=claims.get("displayName", ""),
+            fxa_avatar=claims.get("avatar", ""),
+            subscriptions=claims.get("subscriptions", []),
+            fxa_refresh_token=self.refresh_token or "",
+            locale=locale,
+            zendesk_id="",
+        )
+        user.save()
+
         messages.success(
             self.request,
-            _(
-                "<strong>Welcome!</strong> You are now logged in using Firefox Accounts. "
-                + "{a_profile}Edit your profile.{a_close}<br>"
-                + "Already have a different Mozilla Support Account? "
-                + "{a_more}Read more.{a_close}"
-            ).format(
-                a_profile='<a href="' + reverse("users.edit_my_profile") + '" target="_blank">',
-                a_more='<a href="'
-                + reverse("wiki.document", args=["firefox-accounts-mozilla-support-faq"])
-                + '" target="_blank">',
-                a_close="</a>",
-            ),
+            _("<strong>Welcome!</strong> You are now logged in using Firefox Accounts."),
             extra_tags="safe",
         )
-
-        # update contributor status
-        self.update_contributor_status(profile)
 
         return user
 
     def filter_users_by_claims(self, claims):
-        """Match users by FxA uid or email."""
-        fxa_uid = claims.get("uid")
-        user_model = get_user_model()
-        users = user_model.objects.none()
-
-        # something went terribly wrong. Return None
-        if not fxa_uid:
+        """Match a user by FxA uid"""
+        # Something went terribly wrong. Return an empty list.
+        if not (fxa_uid := claims.get("uid")):
             log.warning("Failed to get Firefox Account UID.")
-            return users
+            return []
 
-        # A existing user is attempting to connect a Firefox Account to the SUMO profile
-        # NOTE: this section will be dropped when the migration is complete
-        if self.request and self.request.user and self.request.user.is_authenticated:
-            return [self.request.user]
+        if not (user := UserProxy.get_user_from_fxa_uid(fxa_uid)):
+            return []
 
-        users = user_model.objects.filter(profile__fxa_uid=fxa_uid)
-
-        if not users:
-            # We did not match any users so far. Let's call the super method
-            # which will try to match users based on email
-            users = super(FXAAuthBackend, self).filter_users_by_claims(claims)
-        return users
+        return [user]
 
     def get_userinfo(self, access_token, id_token, payload):
         """Return user details and subscription information dictionary."""
@@ -190,70 +168,41 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
     def update_user(self, user, claims):
         """Update existing user with new claims, if necessary save, and return user"""
-        profile = user.profile
-        fxa_uid = claims.get("uid")
-        email = claims.get("email")
-        user_attr_changed = False
-        # Check if the user has active subscriptions
-        subscriptions = claims.get("subscriptions", [])
 
-        if (request := getattr(self, "request", None)) and not profile.is_fxa_migrated:
-            # Check if there is already a Firefox Account with this ID
-            if Profile.objects.filter(fxa_uid=fxa_uid).exists():
-                msg = _("This Firefox Account is already used in another profile.")
-                messages.error(request, msg)
-                return None
+        attrs_to_check = {}
+        attrs_changed = set()
 
-            # If it's not migrated, we can assume that there isn't an FxA id too
-            profile.is_fxa_migrated = True
-            profile.fxa_uid = fxa_uid
-            # This is the first time an existing user is using FxA. Redirect to profile edit
-            # in case the user wants to update any settings.
-            request.session["oidc_login_next"] = reverse("users.edit_my_profile")
-            messages.info(request, "fxa_notification_updated")
+        for locale in (claims.get("locale") or "").split(","):
+            if locale in settings.SUMO_LANGUAGES:
+                attrs_to_check["locale"] = locale
+                break
 
-        # There is a change in the email in Firefox Accounts. Let's update user's email
-        # unless we have a superuser
-        if user.email != email and not user.is_staff:
-            if User.objects.exclude(id=user.id).filter(email=email).exists():
-                if request:
-                    msg = _(
-                        "The e-mail address used with this Firefox Account is already "
-                        "linked in another profile."
-                    )
-                    messages.error(request, msg)
-                return None
-            user.email = email
-            user_attr_changed = True
+        attrs_to_check["fxa_uid"] = claims.get("uid")
+        attrs_to_check["email"] = claims.get("email")
+        attrs_to_check["username"] = self.get_username(claims)
+        attrs_to_check["fxa_avatar"] = claims.get("avatar", "")
+        attrs_to_check["name"] = claims.get("displayName", "")
+        attrs_to_check["subscriptions"] = claims.get("subscriptions", [])
 
-        # Follow avatars from FxA profiles
-        profile.fxa_avatar = claims.get("avatar", "")
-        # User subscription information
-        products = Product.objects.filter(codename__in=subscriptions)
-        profile.products.clear()
-        profile.products.add(*products)
-
-        # update contributor status
-        self.update_contributor_status(profile)
-
-        # Users can select their own display name.
-        if not profile.name:
-            profile.name = claims.get("displayName", "")
-
-        # If there is a refresh token, store it
         if self.refresh_token:
-            profile.fxa_refresh_token = self.refresh_token
+            attrs_to_check["fxa_refresh_token"] = self.refresh_token
 
-        with transaction.atomic():
-            if user_attr_changed:
-                user.save()
-            profile.save()
+        for name, value in attrs_to_check.items():
+            if getattr(user, name) != value:
+                setattr(user, name, value)
+                attrs_changed.add(name)
+
+        # TODO: If we need to take this POC further.
+        # self.update_contributor_status(profile)
+
+        if attrs_changed:
+            user.save()
 
         # If we have an updated email, let's update Zendesk too
         # the check is repeated for now but it will save a few
         # API calls if we trigger the task only when we know that we have new emails
-        if user_attr_changed:
-            update_zendesk_identity.delay(user.id, email)
+        if ("email" in attrs_changed) and user.zendesk_id:
+            update_zendesk_identity.delay(user.key, user.email)
 
         return user
 
@@ -267,3 +216,50 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             return None
 
         return super(FXAAuthBackend, self).authenticate(request, **kwargs)
+
+    def get_user(self, user_key):
+        return UserProxy.get_user_from_key(user_key)
+
+
+def login(request, user, backend=None):
+    """
+    Persist a user key and a backend in the request. This way a user doesn't
+    have to reauthenticate on every request. Note that data set during
+    the anonymous session is retained when the user logs in.
+    """
+    if SESSION_KEY in request.session:
+        if request.session[SESSION_KEY] != user.key:
+            # To avoid reusing another user's session, create a new, empty
+            # session if the existing session corresponds to a different
+            # authenticated user.
+            request.session.flush()
+    else:
+        request.session.cycle_key()
+
+    request.session[SESSION_KEY] = user.key
+    request.session[BACKEND_SESSION_KEY] = backend or user.backend
+    if hasattr(request, "user"):
+        request.user = user
+    rotate_token(request)
+    user_logged_in.send(sender=user.__class__, request=request, user=user)
+
+
+def get_user(request):
+    """
+    Return the user associated with the given request session.
+    If no user is retrieved, return an instance of `AnonymousUser`.
+    """
+    from django.contrib.auth.models import AnonymousUser
+
+    user = None
+    try:
+        user_key = request.session[SESSION_KEY]
+        backend_path = request.session[BACKEND_SESSION_KEY]
+    except KeyError:
+        pass
+    else:
+        if backend_path in settings.AUTHENTICATION_BACKENDS:
+            backend = auth.load_backend(backend_path)
+            user = backend.get_user(user_key)
+
+    return user or AnonymousUser()

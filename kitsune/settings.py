@@ -97,6 +97,9 @@ CACHE_MIDDLEWARE_SECONDS = config(
 WAFFLE_CACHE_PREFIX = "w2.1:"
 # User agent cache settings
 USER_AGENTS_CACHE = "default"
+# Cache alias to use for storing users.
+USER_CACHE_ALIAS = "default"
+USER_CACHE_TIMEOUT = 30 * 24 * 60 * 60  # 1 month in seconds
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="notifications@support.mozilla.org")
 DEFAULT_REPLY_TO_EMAIL = config("DEFAULT_REPLY_TO_EMAIL", default="no-reply@mozilla.org")
@@ -487,7 +490,7 @@ MIDDLEWARE: tuple[str, ...] = (
     # LocaleURLMiddleware requires access to request.user. These two must be
     # loaded before the LocaleURLMiddleware
     "commonware.middleware.NoVarySessionMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "kitsune.users.middleware.AuthenticationMiddleware",
     # This has to come after NoVarySessionMiddleware.
     "django.contrib.messages.middleware.MessageMiddleware",
     # refresh middleware for Firefox Accounts
