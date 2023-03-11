@@ -2,10 +2,10 @@ import logging
 
 import requests
 from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.middleware.csrf import rotate_token
 from django.urls import reverse as django_reverse
 from django.utils.translation import activate
 from django.utils.translation import gettext as _
@@ -14,7 +14,7 @@ from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 from kitsune.customercare.tasks import update_zendesk_identity
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import Profile
+from kitsune.users.models import LightUser, Profile
 from kitsune.users.utils import add_to_contributors, get_oidc_fxa_setting
 
 log = logging.getLogger("k.users")
@@ -88,6 +88,41 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
     def create_user(self, claims):
         """Override create user method to mark the profile as migrated."""
 
+        # Let's get the first element even if it's an empty string
+        # A few assertions return a locale of None so we need to default to empty string
+        fxa_locale = (claims.get("locale") or "").split(",")[0]
+        if fxa_locale in settings.SUMO_LANGUAGES:
+            locale = fxa_locale
+        else:
+            locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
+        activate(locale)
+
+        if settings.FXA_ENABLE_LIGHTWEIGHT_USERS:
+            # The "light" user's information is stored in the session, and every
+            # "light" user has a "profile" attribute that mimics a standard profile.
+            # All of the attributes saved on the "profile" are saved in the session
+            # as well, and are also available on the user (e.g., "user.fxa_uid").
+            user = LightUser(self.request.session)
+            user.email = claims.get("email")
+            user.username = self.get_username(claims)
+            user.save()
+            user.profile.fxa_uid = claims.get("uid")
+            user.profile.name = claims.get("displayName", "")
+            user.profile.fxa_avatar = claims.get("avatar", "")
+            user.profile.subscriptions = claims.get("subscriptions", [])
+            user.profile.fxa_refresh_token = self.refresh_token or ""
+            user.profile.locale = locale
+            user.profile.zendesk_id = ""
+            user.profile.save()
+
+            messages.success(
+                self.request,
+                _("<strong>Welcome!</strong> You are now logged in using Firefox Accounts."),
+                extra_tags="safe",
+            )
+
+            return user
+
         user = super(FXAAuthBackend, self).create_user(claims)
         # Create a user profile for the user and populate it with data from
         # Firefox Accounts
@@ -96,16 +131,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.fxa_uid = claims.get("uid")
         profile.fxa_avatar = claims.get("avatar", "")
         profile.name = claims.get("displayName", "")
+        profile.locale = locale
         subscriptions = claims.get("subscriptions", [])
-
-        # Let's get the first element even if it's an empty string
-        # A few assertions return a locale of None so we need to default to empty string
-        fxa_locale = (claims.get("locale", "") or "").split(",")[0]
-        if fxa_locale in settings.SUMO_LANGUAGES:
-            profile.locale = fxa_locale
-        else:
-            profile.locale = self.request.session.get("login_locale", settings.LANGUAGE_CODE)
-        activate(profile.locale)
 
         # If there is a refresh token, store it
         if self.refresh_token:
@@ -142,7 +169,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
     def filter_users_by_claims(self, claims):
         """Match users by FxA uid or email."""
         fxa_uid = claims.get("uid")
-        user_model = get_user_model()
+        user_model = auth.get_user_model()
         users = user_model.objects.none()
 
         # something went terribly wrong. Return None
@@ -267,3 +294,25 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             return None
 
         return super(FXAAuthBackend, self).authenticate(request, **kwargs)
+
+
+def login(request, user, backend=None):
+    """
+    Persist a user and a backend in the request. This way a user doesn't
+    have to reauthenticate on every request. Note that data set during
+    the anonymous session is retained when the user logs in.
+    """
+    if isinstance(user, LightUser):
+        # Ensure that the session doesn't have a "heavy" user embedded.
+        request.session.pop(auth.SESSION_KEY, default=None)
+        request.session.pop(auth.HASH_SESSION_KEY, default=None)
+        # Create a new session key, while retaining the current session data.
+        request.session.cycle_key()
+        # Store the backend since other middleware depends on it.
+        request.session[auth.BACKEND_SESSION_KEY] = backend or user.backend
+        if hasattr(request, "user"):
+            request.user = user
+        rotate_token(request)
+        auth.user_logged_in.send(sender=user.__class__, request=request, user=user)
+    else:
+        auth.login(request, user, backend)

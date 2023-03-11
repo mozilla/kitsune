@@ -1,4 +1,5 @@
 import json
+import time
 from ast import literal_eval
 
 import requests
@@ -44,6 +45,7 @@ from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate, simple_paginate
 from kitsune.tidings.models import Watch
+from kitsune.users import auth as kitsune_auth
 from kitsune.users.forms import ContributionAreaForm, ProfileForm, SettingsForm, UserForm
 from kitsune.users.models import SET_ID_PREFIX, AccountEvent, Deactivation, Profile
 from kitsune.users.tasks import (
@@ -456,6 +458,18 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
             capture_message("This account is not active error.", level="error")
 
         return HttpResponseRedirect(reverse("home"))
+
+    def login_success(self):
+        request_user = getattr(self.request, "user", None)
+        if not request_user or not request_user.is_authenticated or request_user != self.user:
+            kitsune_auth.login(self.request, self.user)
+
+        # Figure out when this id_token will expire. This is ignored unless you're
+        # using the SessionRefresh middleware.
+        expiration_interval = self.get_settings("OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS", 60 * 15)
+        self.request.session["oidc_id_token_expiration"] = time.time() + expiration_interval
+
+        return HttpResponseRedirect(self.success_url)
 
 
 class FXALogoutView(OIDCLogoutView):

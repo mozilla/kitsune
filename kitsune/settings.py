@@ -487,7 +487,7 @@ MIDDLEWARE: tuple[str, ...] = (
     # LocaleURLMiddleware requires access to request.user. These two must be
     # loaded before the LocaleURLMiddleware
     "commonware.middleware.NoVarySessionMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "kitsune.users.middleware.AuthenticationMiddleware",
     # This has to come after NoVarySessionMiddleware.
     "django.contrib.messages.middleware.MessageMiddleware",
     # refresh middleware for Firefox Accounts
@@ -601,6 +601,9 @@ else:
         # Defaults to 12 hours
         FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS = config(
             "FXA_RENEW_ID_TOKEN_EXPIRY_SECONDS", default=43200, cast=int
+        )
+        FXA_ENABLE_LIGHTWEIGHT_USERS = config(
+            "FXA_ENABLE_LIGHTWEIGHT_USERS", default=True, cast=bool
         )
 
 ADMIN_REDIRECT_URL = config("ADMIN_REDIRECT_URL", default=None)
