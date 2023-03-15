@@ -2,29 +2,9 @@ import json
 from functools import wraps
 
 from django import http
-from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
-
 from kitsune.sumo.utils import is_ratelimited
-
-
-def ssl_required(view_func):
-    """A view decorator that enforces HTTPS.
-
-    If settings.SESSION_COOKIE_SECURE is False, it won't enforce anything."""
-
-    @wraps(view_func)
-    def _checkssl(request, *args, **kwargs):
-        if settings.SESSION_COOKIE_SECURE and not request.is_secure():
-            url_str = request.build_absolute_uri()
-            url_str = url_str.replace("http://", "https://")
-            return http.HttpResponseRedirect(url_str)
-
-        return view_func(request, *args, **kwargs)
-
-    return _checkssl
-
 
 # Copy/pasta from from https://gist.github.com/1405096
 # TODO: Log the hell out of the exceptions.
