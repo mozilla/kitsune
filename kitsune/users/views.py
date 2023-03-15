@@ -39,7 +39,6 @@ from kitsune import users as constants
 from kitsune.access.decorators import login_required, logout_required, permission_required
 from kitsune.kbadge.models import Award
 from kitsune.questions.utils import mark_content_as_spam, num_answers, num_questions, num_solutions
-from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, paginate, simple_paginate
@@ -62,7 +61,6 @@ from kitsune.users.utils import (
 from kitsune.wiki.models import user_documents, user_num_documents, user_redirects
 
 
-@ssl_required
 @logout_required
 @require_http_methods(["GET", "POST"])
 def user_auth(request, notification=None):
@@ -78,7 +76,6 @@ def user_auth(request, notification=None):
     )
 
 
-@ssl_required
 def login(request):
     """
     This views is used as a wrapper for user_auth to login users
@@ -99,7 +96,6 @@ def login(request):
     return user_auth(request)
 
 
-@ssl_required
 @require_POST
 def logout(request):
     """Log the user out.

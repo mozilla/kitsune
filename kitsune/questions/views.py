@@ -20,8 +20,8 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
@@ -44,7 +44,7 @@ from kitsune.questions.forms import (
 )
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
 from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
-from kitsune.sumo.decorators import ratelimit, ssl_required
+from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import build_paged_url, is_ratelimited, paginate, simple_paginate
@@ -460,7 +460,6 @@ def edit_details(request, question_id):
     return redirect(reverse("questions.details", kwargs={"question_id": question_id}))
 
 
-@ssl_required
 def aaq(request, product_key=None, category_key=None, step=1):
     """Ask a new question."""
 
@@ -612,14 +611,12 @@ def aaq(request, product_key=None, category_key=None, step=1):
     return render(request, template, context)
 
 
-@ssl_required
 def aaq_step2(request, product_key):
     """Step 2: The product is selected."""
     return aaq(request, product_key=product_key, step=2)
 
 
 @login_required
-@ssl_required
 def aaq_step3(request, product_key, category_key=None):
     """Step 3: Show full question form."""
     return aaq(
