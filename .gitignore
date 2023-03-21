@@ -65,3 +65,6 @@ dist/
 .minikube
 locust*
 .dotnet
+.pytest_cache/
+geckodriver.log
+chromedriver.log
