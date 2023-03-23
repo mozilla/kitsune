@@ -1,3 +1,5 @@
+@use 'protocol/css/includes/lib' as p;
+
 .rickshaw_graph .detail {
   pointer-events: none;
   position: absolute;
@@ -19,7 +21,7 @@
 }
 .rickshaw_graph .detail .x_label {
   font-family: Arial, sans-serif;
-  border-radius: 3px;
+  border-radius: p.$border-radius-sm;
   padding: 6px;
   opacity: 0.5;
   border: 1px solid #e0e0e0;
@@ -31,7 +33,7 @@
 .rickshaw_graph .detail .item {
   position: absolute;
   z-index: 2;
-  border-radius: 3px;
+  border-radius: p.$border-radius-sm;
   padding: 0.25em;
   font-size: 12px;
   font-family: Arial, sans-serif;
@@ -59,7 +61,7 @@
   height: 4px;
   margin-left: -4px;
   margin-top: -3px;
-  border-radius: 5px;
+  border-radius: p.$border-radius-sm;
   position: absolute;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
   background: white;
@@ -115,7 +117,7 @@
   width: 6px;
   margin-left: -2px;
   top: -3px;
-  border-radius: 5px;
+  border-radius: p.$border-radius-sm;
   background-color: rgba(0, 0, 0, 0.25);
 }
 .rickshaw_graph .annotation_line {
@@ -150,7 +152,7 @@
   opacity: 0.9;
   padding: 5px 5px;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
-  border-radius: 3px;
+  border-radius: p.$border-radius-sm;
   position: relative;
   z-index: 20;
   font-size: 12px;
@@ -252,7 +254,7 @@
   background: #404040;
   display: inline-block;
   padding: 12px 5px;
-  border-radius: 2px;
+  border-radius: p.$border-radius-xs;
   position: relative;
 }
 .rickshaw_legend:hover {
@@ -271,7 +273,7 @@
 .rickshaw_legend .line .swatch {
   display: inline-block;
   margin-right: 3px;
-  border-radius: 2px;
+  border-radius: p.$border-radius-xs;
 }
 .rickshaw_legend .label {
   margin: 0;
@@ -312,9 +314,9 @@
 }
 .rickshaw_legend li:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
+  border-radius: p.$border-radius-sm;
 }
 .rickshaw_legend li:active {
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  border-radius: p.$border-radius-sm;
 }
