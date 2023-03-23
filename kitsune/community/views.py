@@ -112,21 +112,22 @@ def top_contributors(request, area):
     if product:
         product = get_object_or_404(Product, slug=product)
 
-    if area == "questions":
-        results, total = top_contributors_questions(
-            locale=locale, product=product, count=page_size, page=page
-        )
-        locales = QuestionLocale.objects.locales_list()
-    elif area == "kb":
-        results, total = top_contributors_kb(product=product, count=page_size, page=page)
-        locales = None
-    elif area == "l10n":
-        results, total = top_contributors_l10n(
-            locale=locale, product=product, count=page_size, page=page
-        )
-        locales = settings.SUMO_LANGUAGES
-    else:
-        raise Http404
+    match area:
+        case "questions":
+            results, total = top_contributors_questions(
+                locale=locale, product=product, count=page_size, page=page
+            )
+            locales = QuestionLocale.objects.locales_list()
+        case "kb":
+            results, total = top_contributors_kb(product=product, count=page_size, page=page)
+            locales = None
+        case "l10n":
+            results, total = top_contributors_l10n(
+                locale=locale, product=product, count=page_size, page=page
+            )
+            locales = settings.SUMO_LANGUAGES
+        case _:
+            raise Http404
 
     return render(
         request,
