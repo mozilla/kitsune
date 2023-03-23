@@ -4,11 +4,11 @@ from kitsune.sumo.models import ModelBase
 
 
 class Redirect(ModelBase):
-    product = models.CharField(max_length=255, blank=True, db_index=True)
-    version = models.CharField(max_length=255, blank=True, db_index=True)
-    platform = models.CharField(max_length=255, blank=True, db_index=True)
+    product = models.CharField(max_length=50, blank=True, db_index=True)
+    version = models.CharField(max_length=50, blank=True, db_index=True)
+    platform = models.CharField(max_length=50, blank=True, db_index=True)
     locale = models.CharField(max_length=10, blank=True, db_index=True)
-    topic = models.CharField(max_length=255, blank=True, db_index=True)
+    topic = models.CharField(max_length=100, blank=True, db_index=True)
     target = models.CharField(max_length=255)
 
     class Meta:
