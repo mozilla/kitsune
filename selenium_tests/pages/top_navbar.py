@@ -1,12 +1,13 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-
 from selenium_tests.core.base_page import BasePage
 
 
 class TopNavbar(BasePage):
-
-    __menu_titles = (By.XPATH, "//div[@id='main-navigation']//a[contains(@class,'mzp-c-menu-title')]")
+    __menu_titles = (
+        By.XPATH,
+        "//div[@id='main-navigation']//a[contains(@class,'mzp-c-menu-title')]",
+    )
 
     def __init__(self, driver: WebDriver):
         super().__init__(driver)
