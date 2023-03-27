@@ -225,7 +225,7 @@ LANGUAGE_CHOICES_ENGLISH = tuple(
     [(lang, LOCALES[lang].english) for lang in SUMO_LANGUAGES if lang != "xx"]
 )
 LANGUAGES_DICT = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
-LANGUAGES = list(LANGUAGES_DICT.items())
+WAGTAIL_CONTENT_LANGUAGES = LANGUAGES = list(LANGUAGES_DICT.items())
 
 LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 
@@ -694,6 +694,7 @@ INSTALLED_APPS = (
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.contrib.modeladmin",
+    "wagtail.contrib.simple_translation",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",

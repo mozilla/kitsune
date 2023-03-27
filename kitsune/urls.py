@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.conf.urls.i18n import i18n_patterns
 from django.urls import include, path, re_path
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import RedirectView
@@ -41,6 +42,11 @@ urlpatterns = [
     # JavaScript Waffle.
     re_path(r"^wafflejs$", wafflejs, name="wafflejs"),
     re_path(r"^", include("kitsune.dashboards.urls")),
+]
+
+urlpatterns += i18n_patterns(re_path("wg/", include("wagtail.urls")))
+
+urlpatterns += [
     re_path(r"^", include("kitsune.landings.urls")),
     re_path(r"^", include("kitsune.kpi.urls_api")),
     re_path(r"^", include("kitsune.tidings.urls")),

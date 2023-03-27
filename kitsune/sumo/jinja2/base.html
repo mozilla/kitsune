@@ -274,11 +274,17 @@
           <form class="mzp-c-language-switcher" method="get" action="#">
             <a class="mzp-c-language-switcher-link" href="https://www.mozilla.org/locales/">{{ _('Language') }}</a>
             <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
-            <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
-             name="lang">
-              {% for locale in settings.LANGUAGE_CHOICES %}
-                  <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
-              {% endfor %}
+              {% if page %}
+                <select id="mzp-c-language-switcher-select" class="sumo-js-language-switcher-select" name="lang">
+                {% for t in page.get_translations(inclusive=True).all() %}
+                    <option value="{{ t.url }}" {% if t.locale.language_code == request.LANGUAGE_CODE.lower() %}selected{% endif %}>{{ settings.LANGUAGES_DICT[t.locale.language_code] }}</option>
+                {% endfor %}
+              {% else %}
+                <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select" name="lang">
+                {% for locale in settings.LANGUAGE_CHOICES %}
+                    <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
+                {% endfor %}
+              {% endif %}
             </select>
             <!-- form submit button is shown when JavaScript is not enabled -->
             <button type="submit">{{ _('Go') }}</button>

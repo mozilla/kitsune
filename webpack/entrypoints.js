@@ -16,6 +16,7 @@ const entrypoints = {
     "sumo/js/protocol-modal-init.js",
     "sumo/js/protocol-notification-init.js",
     "sumo/js/protocol-language-switcher-init.js",
+    "sumo/js/sumo-language-switcher-init.js",
     "sumo/js/sumo-tabs.js",
     "sumo/js/sumo-close-this.js",
   ],
