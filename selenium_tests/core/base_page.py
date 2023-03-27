@@ -5,7 +5,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 
 
-# Abstract all common actions into this central location and leverage them in any Page Object we see fit.
+# Abstract all common actions into this central location.
+
 
 class BasePage:
     def __init__(self, driver: WebDriver):
@@ -31,10 +32,8 @@ class BasePage:
     def _get_text_of_elements(self, locator: tuple) -> list[str]:
         text = []
         elements = self._find_elements(locator)
-
         for element in elements:
             text.append(element.text)
-
         return text
 
     @property

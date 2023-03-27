@@ -1,12 +1,10 @@
 import inspect
 import logging
-
 import pytest
 
 
 @pytest.mark.usefixtures("setup")
 class TestUtilities:
-
     # Defining the logging mechanism
     def get_logger(self):
         logger_name = inspect.stack()[1][3]
