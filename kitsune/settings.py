@@ -694,7 +694,6 @@ INSTALLED_APPS = (
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.contrib.modeladmin",
-    "wagtail.contrib.simple_translation",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -703,7 +702,8 @@ INSTALLED_APPS = (
     "wagtail.images",
     "wagtail.search",
     "wagtail.admin",
-    "wagtail.locales",
+    "wagtail_localize",
+    "wagtail_localize.locales",
     "wagtail",
     "modelcluster",
     # Last so we can override admin templates.
