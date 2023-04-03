@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from cairosvg import svg2svg
 from django import forms
 from django.contrib.auth.models import User
 from django.core import validators
@@ -79,3 +82,64 @@ class MultiUsernameField(forms.Field):
                     raise forms.ValidationError(msg.format(username=username))
 
         return users
+
+
+class ImagePlusField(forms.ImageField):
+    """
+    Same as django.forms.ImageField but with support for SVG images as well.
+    """
+
+    default_validators = [
+        validators.FileExtensionValidator(
+            allowed_extensions=validators.get_available_image_extensions() + ["svg"]
+        )
+    ]
+
+    def to_python(self, data):
+        """
+        Check that the file-upload field data contains an image that
+        Pillow supports or a valid SVG image.
+        """
+        try:
+            return super().to_python(data)
+        except ValidationError as verr:
+            if (getattr(verr, "code", None) != "invalid_image") or (
+                Path(data.name).suffix.lower() != ".svg"
+            ):
+                raise
+
+        def scrub(svg_as_bytes):
+            """
+            Accepts an SVG file as bytes and returns a safe version of that
+            SVG file as bytes.
+            """
+            try:
+                return svg2svg(bytestring=svg_as_bytes)
+            except Exception as exc:
+                # CairoSVG doesn't recognize it as an SVG image.
+                msg = _("Invalid or unsupported SVG image: {reason}")
+                raise ValidationError(
+                    msg.format(reason=str(exc)),
+                    code="invalid_svg_image",
+                ) from exc
+
+        if hasattr(data, "read"):
+            # This is typically an instance of a sub-class of UploadedFile,
+            # which shouldn't be closed, otherwise it will be deleted.
+            data.seek(0)
+            try:
+                scrubbed = scrub(data.read())
+            finally:
+                # The read pointer is expected to point to the start of the file.
+                data.seek(0)
+            try:
+                # Over-write the image with its scrubbed version.
+                data.truncate()
+                data.write(scrubbed)
+            finally:
+                # The read pointer is expected to point to the start of the file.
+                data.seek(0)
+        else:
+            data["content"] = scrub(data["content"])
+
+        return data

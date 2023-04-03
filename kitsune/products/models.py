@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _lazy
 
+from kitsune.sumo.fields import ImagePlusField
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
@@ -19,7 +20,7 @@ class Product(ModelBase):
     codename = models.CharField(max_length=255, blank=True, default="")
     slug = models.SlugField()
     description = models.TextField()
-    image = models.ImageField(
+    image = ImagePlusField(
         upload_to=settings.PRODUCT_IMAGE_PATH,
         null=True,
         blank=True,
@@ -27,7 +28,7 @@ class Product(ModelBase):
         # no l10n in admin
         help_text="Used on the the home page. Must be 484x244.",
     )
-    image_alternate = models.ImageField(
+    image_alternate = ImagePlusField(
         upload_to=settings.PRODUCT_IMAGE_PATH,
         null=True,
         blank=True,
@@ -86,7 +87,7 @@ class Topic(ModelBase):
     # We don't use a SlugField here because it isn't unique by itself.
     slug = models.CharField(max_length=255, db_index=True)
     description = models.TextField()
-    image = models.ImageField(
+    image = ImagePlusField(
         upload_to=settings.TOPIC_IMAGE_PATH,
         null=True,
         blank=True,
