@@ -261,7 +261,7 @@
     align-items: center;
     border: 2px solid var(--color-marketing-gray-03);
     padding: 0 p.$spacing-md;
-    border-radius: 2px;
+    border-radius: p.$border-radius-xs;
     font-family: var(--heading-alt-font-family);
     @include p.font-size(14px);
     font-weight:700;

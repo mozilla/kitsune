@@ -1,5 +1,6 @@
 @use 'protocol/css/includes/lib' as p;
 @use '../config' as c;
+@use 'sass:math';
 
 // Containers
 //
@@ -19,8 +20,8 @@
   }
 
   & & {
-    padding-right: c.$gutter-width /2;
-    padding-left: c.$gutter-width /2;
+    padding-right: math.div(c.$gutter-width, 2);
+    padding-left: math.div(c.$gutter-width, 2);
   }
 }
 

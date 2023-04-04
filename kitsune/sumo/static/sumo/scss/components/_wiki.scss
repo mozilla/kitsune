@@ -1097,7 +1097,7 @@ article {
 /* Ace syntax custom CSS */
 #editor {
   border: 2px solid #F7F7F7;
-  border-radius: 5px;
+  border-radius: p.$border-radius-sm;
   bottom: 0;
   left: 0;
   position: absolute;

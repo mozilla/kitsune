@@ -89,7 +89,7 @@
     li {
         background: var(--tile-bg);
         box-shadow: var(--tile-shadow);
-        border-radius: 4px;
+        border-radius: p.$border-radius-sm;
 
         font-family: var(--base-font-family);
         font-weight: 600;
@@ -129,7 +129,7 @@
 
     .fact {
         background: var(--fact-bg);
-        border-radius: 4px;
+        border-radius: p.$border-radius-sm;
         text-align: center;
         display: flex;
         flex-direction: column;

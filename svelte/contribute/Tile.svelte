@@ -13,11 +13,13 @@
 </Link>
 
 <style lang="scss">
+    @use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
+
     li {
         height: 100%;
         background-color: var(--tile-bg);
         box-shadow: var(--tile-shadow);
-        border-radius: 4px;
+        border-radius: p.$border-radius-sm;
 
         display: flex;
         align-items: center;
