@@ -1,5 +1,6 @@
 import socket
 import pytest
+import docker
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -11,10 +12,10 @@ from selenium_tests.pages.pages import Pages
 
 
 @pytest.fixture(params=["chrome", "firefox"])
-def setup(request, logger_setup):
+def setup(request, logger_setup, get_docker_container_ip):
     browser = request.param
     logger = logger_setup
-    host_ip = socket.gethostbyname("localhost")
+    selenium_hub_ip = get_docker_container_ip
 
     if browser == "chrome":
         browser_options = ChromeOptions()
@@ -30,7 +31,9 @@ def setup(request, logger_setup):
         browser_options.add_argument("-disable-gpu")
         browser_options.log.level = "warn"
 
-    driver = webdriver.Remote(command_executor=f"http://{host_ip}:4444", options=browser_options)
+    driver = webdriver.Remote(
+        command_executor=f"http://{selenium_hub_ip}:4444", options=browser_options
+    )
 
     pages = Pages(driver)
     logger.info(f"Running tests on {browser} browser")
@@ -61,3 +64,12 @@ def logger_setup():
         print("No log file found to remove")
 
     return logger
+
+
+@pytest.fixture(scope="session")
+def get_docker_container_ip():
+    client = docker.from_env()
+    container = client.containers.get("selenium-hub")
+    ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+
+    return socket.gethostbyname(ip_address)
