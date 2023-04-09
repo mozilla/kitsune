@@ -132,17 +132,13 @@ class LocaleURLMiddleware(MiddlewareMixin):
         set_url_prefixer(prefixer)
         full_path = prefixer.fix(prefixer.shortened_path)
 
-        if request.GET.get("lang", "") in settings.SUMO_LANGUAGES:
-            # Blank out the locale so that we can set a new one. Remove lang
-            # from the query params so we don't have an infinite loop.
-
-            prefixer.locale = ""
+        if (lang := request.GET.get("lang", "").lower()) in settings.LANGUAGE_URL_MAP:
+            # The "lang" query parameter overrides everything, even the locale in the path.
+            prefixer.locale = settings.LANGUAGE_URL_MAP[lang]
             new_path = prefixer.fix(prefixer.shortened_path)
+            # Remove "lang" from the query parameters so we don't create an infinite loop.
             query = dict((smart_str(k), v) for k, v in request.GET.items() if k != "lang")
 
-            # 'lang' is only used on the language selection page. If this is
-            # present it is safe to set language preference for the current
-            # user.
             if request.user.is_anonymous:
                 cookie = settings.LANGUAGE_COOKIE_NAME
                 request.session[cookie] = request.GET["lang"]

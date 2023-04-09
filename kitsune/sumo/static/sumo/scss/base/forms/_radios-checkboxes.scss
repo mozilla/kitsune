@@ -36,7 +36,7 @@
       width: 20px;
       height: 20px;
       border: 2px solid var(--field-border-color-default);
-      border-radius: 2px;
+      border-radius: p.$border-radius-xs;
       background-color: var(--color-white);
       vertical-align: middle;
       content: "";

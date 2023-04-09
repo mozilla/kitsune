@@ -162,27 +162,28 @@ def question_list(request, product_slug):
     if filter_ not in FILTER_GROUPS[show]:
         filter_ = None
 
-    if filter_ == "new":
-        question_qs = question_qs.new()
-    elif filter_ == "unhelpful-answers":
-        question_qs = question_qs.unhelpful_answers()
-    elif filter_ == "needsinfo":
-        question_qs = question_qs.needs_info()
-    elif filter_ == "solution-provided":
-        question_qs = question_qs.solution_provided()
-    elif filter_ == "solved":
-        question_qs = question_qs.solved()
-    elif filter_ == "locked":
-        question_qs = question_qs.locked()
-    elif filter_ == "recently-unanswered":
-        question_qs = question_qs.recently_unanswered()
-    else:
-        if show == "needs-attention":
-            question_qs = question_qs.needs_attention()
-        if show == "responded":
-            question_qs = question_qs.responded()
-        if show == "done":
-            question_qs = question_qs.done()
+    match filter_:
+        case "new":
+            question_qs = question_qs.new()
+        case "unhelpful-answers":
+            question_qs = question_qs.unhelpful_answers()
+        case "needsinfo":
+            question_qs = question_qs.needs_info()
+        case "solution-provided":
+            question_qs = question_qs.solution_provided()
+        case "solved":
+            question_qs = question_qs.solved()
+        case "locked":
+            question_qs = question_qs.locked()
+        case "recently-unanswered":
+            question_qs = question_qs.recently_unanswered()
+        case _:
+            if show == "needs-attention":
+                question_qs = question_qs.needs_attention()
+            if show == "responded":
+                question_qs = question_qs.responded()
+            if show == "done":
+                question_qs = question_qs.done()
 
     question_qs = question_qs.select_related("creator", "last_answer", "last_answer__creator")
     # Exclude questions over 90 days old without an answer or

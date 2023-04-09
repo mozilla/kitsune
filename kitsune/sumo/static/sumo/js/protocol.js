@@ -1,4 +1,3 @@
-import "./protocol-compat";
 import "protocol/js/protocol-base";
 import "protocol/js/protocol-utils";
 import "protocol/js/protocol-supports";

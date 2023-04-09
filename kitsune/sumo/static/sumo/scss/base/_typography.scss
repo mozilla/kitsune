@@ -82,9 +82,17 @@ h1,
   @include c.text-display-xxl;
 }
 
+h1 {
+  margin-bottom: .25em;
+}
+
 h2,
 .text-display-xl {
   @include c.text-display-xl;
+}
+
+h2 {
+  margin-bottom: .45em;
 }
 
 h3,

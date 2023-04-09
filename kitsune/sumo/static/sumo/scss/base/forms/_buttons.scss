@@ -81,7 +81,7 @@
   &.button-sm {
     padding: 0 p.$spacing-md;
     height: p.$spacing-lg;
-    border-radius: 2px;
+    border-radius: p.$border-radius-xs;
 
   }
 

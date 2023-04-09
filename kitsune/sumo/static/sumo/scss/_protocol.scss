@@ -21,15 +21,16 @@ $image-path: 'protocol/img' !default;
 
 // Base elements - general HTML elements
 @import 'protocol/css/base/elements/reset';
+@import 'protocol/css/base/elements/common';
+@import 'protocol/css/base/elements/containers';
 @import 'protocol/css/base/elements/details';
 @import 'protocol/css/base/elements/document';
 // @import 'protocol/css/base/elements/forms';
 @import 'protocol/css/base/elements/links';
 @import 'protocol/css/base/elements/lists';
 @import 'protocol/css/base/elements/quotes';
-@import 'protocol/css/base/elements/sections';
 @import 'protocol/css/base/elements/tables';
-@import 'protocol/css/base/elements/typography';
+@import 'protocol/css/base/elements/titles';
 
 // Base includes - animations
 @import 'protocol/css/base/includes';
@@ -49,13 +50,13 @@ $image-path: 'protocol/img' !default;
 @import 'protocol/css/components/call-out';
 @import 'protocol/css/components/emphasis-box';
 @import 'protocol/css/components/feature-card';
-@import 'protocol/css/components/hero';
+@import 'protocol/css/components/split';
 @import 'protocol/css/components/inline-list';
 @import 'protocol/css/components/modal';
 @import 'protocol/css/components/menu-list';
 @import 'protocol/css/components/newsletter-form';
 @import 'protocol/css/components/notification-bar';
-@import 'protocol/css/components/picto-card';
+@import 'protocol/css/components/picto';
 @import 'protocol/css/components/sidebar-menu';
 @import 'protocol/css/components/zap';
 @import 'protocol/css/templates/card-layout';
