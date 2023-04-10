@@ -65,3 +65,4 @@ dist/
 .minikube
 locust*
 .dotnet
+.vim
