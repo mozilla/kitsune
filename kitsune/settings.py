@@ -527,6 +527,9 @@ SECURE_REDIRECT_EXEMPT = [
     r"^healthz/$",
     r"^readiness/$",
 ]
+SECURE_REFERRER_POLICY = config(
+    "SECURE_REFERRER_POLICY", default="strict-origin-when-cross-origin"
+)
 USE_X_FORWARDED_HOST = config("USE_X_FORWARDED_HOST", default=False, cast=bool)
 if config("USE_SECURE_PROXY_HEADER", default=SECURE_SSL_REDIRECT, cast=bool):
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
