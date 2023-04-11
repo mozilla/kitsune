@@ -199,9 +199,7 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
     if mode is None:
         mode = LAST_30_DAYS
 
-    docs = Document.objects.filter(
-        locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False, is_template=False
-    )
+    docs = Document.objects.filter(locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False)
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
