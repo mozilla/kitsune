@@ -275,11 +275,15 @@ NON_SUPPORTED_LOCALES = {
     "pa-IN": None,
     "rm": None,
     "rw": None,
+    "sc": "it",
+    "sco": None,
     "sah": None,
     "son": None,
     "su": None,
     "sv-SE": "sv",
+    "szl": "pl",
     "tl": None,
+    "trs": "es",
     "uz": None,
 }
 
