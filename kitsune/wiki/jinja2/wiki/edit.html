@@ -8,11 +8,12 @@
 {# TODO: Change KB url to landing page when we have one #}
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Edit Article'))] %}
-{% set classes = 'edit' %}
+
 {% set scripts = ('wiki', 'wiki.diff', 'wiki.editor') %}
 {% if document.is_switching_devices_document %}
   {% set scripts = scripts + ('switching-devices',) %}
 {% endif %}
+{% set classes = 'edit' %}
 
 {% block content %}
   <div class="user-messages">
@@ -22,7 +23,7 @@
 
   <div class="sumo-page-section">
     <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
-      <h1 class="sumo-page-heading">{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
+      <h1 class="sumo-page-heading">{{ _('<em>Editing Content For:</em><br>{title}')|fe(title=document.title) }}</h1>
       {% if document.needs_change %}
         <p>
           {% trans comment=document.needs_change_comment %}
@@ -30,75 +31,43 @@
           {% endtrans %}
         </p>
       {% endif %}
-
-      {% if document_form %}
-        <div id="document-form">
-          <details {% if disclose_description %} open="open"{% endif %}>
-            <summary class="sumo-page-subheading">{{ _('Edit Description') }}</summary>
-            {{ errorlist(document_form) }}
-            <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
-              {% csrf_token %}
-                {% for field in document_form.visible_fields() if
-                   (field.name != 'is_localizable' or not document.translations.exists()) %}
-                  <div class="field {% if field.name == 'needs_change_comment' %}has-large-textarea comment{% endif %}">
-                    {{ field|label_with_help }}{{ field }}
-                  </div>
-                {% endfor %}
-              {% if document.translations.exists() %}
-                {{ document_form.is_localizable.as_hidden()|safe }}
+      <p>
+        {% trans url=url('wiki.document', 'support-document-guide') %}For help with writing articles, check out the
+          <a href="{{ url }}">Support Document Guide</a>.{% endtrans %}
+      </p>
+      {{ errorlist(revision_form) }}
+      <form action="" method="post">
+        {% csrf_token %}
+          {% for field in revision_form.visible_fields() %}
+            <div class="field {% if field.name == 'content' %}has-large-textarea{% endif %}">
+              {% if field.name not in ['comment', 'content'] %}
+                {% if not field.name == 'keywords' or document.allows(user, 'edit_keywords') %}
+                  {{ field|label_with_help }}{{ field|safe }}
+                {% endif %}
+              {% elif field.name == 'content' %}
+                {{ revision_form.content.label_tag()|safe }}
+                {{ content_editor(revision_form.content) }}
               {% endif %}
-              <input type="hidden" name="form" value="doc" />
-              <div class="submit sumo-button-wrap align-end">
-                <button class="sumo-button primary-button" type="submit">{{ _('Save description') }}</button>
-              </div>
-            </form>
-          </details>
+              {% if field.name == 'summary' %}
+                <p><span id="remaining-characters">{{ field.field.max_length }}</span> {{_('characters remaining.') }}</p>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {{ revision_form.hidden_fields()|join|safe }}
+        <input type="hidden" name="form" value="rev" />
+        <input type="hidden" name="slug" value="{{ document.slug }}" />
+        <input type="hidden" name="locale" value="{{ document.locale }}" />
+        {{ submit_revision(revision_form, include_diff=True) }}
+        <div id="preview"></div>
+        <div id="preview-diff">
+          <div class="from">{{ revision_form.content.value() }}</div>
+          <div class="to"></div>
+          <div class="output"></div>
         </div>
-      {% endif %}
-      {% if revision_form %}
-        <div id="revision-form">
-          <details open="open">
-            <summary class="sumo-page-subheading">{{ _('Edit Content') }}</summary>
-            <p>
-              {% trans url=url('wiki.document', 'support-document-guide') %}For help with writing articles, check out the
-                <a href="{{ url }}">Support Document Guide</a>.{% endtrans %}
-            </p>
-            {{ errorlist(revision_form) }}
-            <form action="" method="post">
-              {% csrf_token %}
-                {% for field in revision_form.visible_fields() %}
-                  <div class="field {% if field.name == 'content' %}has-large-textarea{% endif %}">
-                    {% if field.name not in ['comment', 'content'] %}
-                      {% if not field.name == 'keywords' or document.allows(user, 'edit_keywords') %}
-                        {{ field|label_with_help }}{{ field|safe }}
-                      {% endif %}
-                    {% elif field.name == 'content' %}
-                      {{ revision_form.content.label_tag()|safe }}
-                      {{ content_editor(revision_form.content) }}
-                    {% endif %}
-                    {% if field.name == 'summary' %}
-                      <p><span id="remaining-characters">{{ field.field.max_length }}</span> {{_('characters remaining.') }}</p>
-                    {% endif %}
-                  </div>
-                {% endfor %}
-              {{ revision_form.hidden_fields()|join|safe }}
-              <input type="hidden" name="form" value="rev" />
-              <input type="hidden" name="slug" value="{{ document.slug }}" />
-              <input type="hidden" name="locale" value="{{ document.locale }}" />
-              {{ submit_revision(revision_form, include_diff=True) }}
-              <div id="preview"></div>
-              <div id="preview-diff">
-                <div class="from">{{ revision_form.content.value() }}</div>
-                <div class="to"></div>
-                <div class="output"></div>
-              </div>
-              <div class="submit" id="preview-bottom">
-                {{ submit_revision(revision_form, buttons_only=True, include_diff=True) }}
-              </div>
-            </form>
-          </details>
+        <div class="submit" id="preview-bottom">
+          {{ submit_revision(revision_form, buttons_only=True, include_diff=True) }}
         </div>
-      {% endif %}
+      </form>
     </article>
   </div>
 

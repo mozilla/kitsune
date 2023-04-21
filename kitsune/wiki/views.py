@@ -452,12 +452,8 @@ def steal_lock(request, document_slug, revision_id=None):
     return HttpResponse("", status=200 if ok else 400)
 
 
-@require_http_methods(["GET", "POST"])
-@login_required
-def edit_document(request, document_slug, revision_id=None):
-    """Create a new revision of a wiki document, or edit document metadata."""
+def edit_init_and_perms(request, document_slug, revision_id=None, doctype="doc"):
     user = request.user
-
     doc = get_visible_document_or_404(
         user,
         locale=request.LANGUAGE_CODE,
@@ -466,100 +462,55 @@ def edit_document(request, document_slug, revision_id=None):
         return_parent_if_no_translation=True,
     )
 
+    if doctype == "doc":
+        if not doc.allows(user, "create_revision"):
+            raise PermissionDenied
+    if doctype == "meta":
+        if not doc.allows(user, "edit") or not user.is_staff:
+            raise PermissionDenied
+
     if doc.locale != request.LANGUAGE_CODE:
         # We've fallen back to the parent, since no visible translation existed.
         url = reverse("wiki.translate", locale=request.LANGUAGE_CODE, args=[document_slug])
         return HttpResponseRedirect(url)
 
-    can_edit_needs_change = doc.allows(user, "edit_needs_change")
-    can_archive = doc.allows(user, "archive")
-
     # If this document has a parent, then the edit is handled by the
     # translate view. Pass it on.
     if doc.parent:
         return translate(request, doc.parent.slug, revision_id)
+
     if revision_id:
         rev = get_object_or_404(Revision, pk=revision_id, document=doc)
     else:
         rev = doc.current_revision or doc.revisions.order_by("-created", "-id")[0]
 
-    disclose_description = bool(request.GET.get("opendescription"))
-    doc_form = rev_form = None
-    if doc.allows(user, "create_revision"):
-        rev_form = RevisionForm(instance=rev, initial={"based_on": rev.id, "comment": ""})
-    if doc.allows(user, "edit"):
-        doc_form = DocumentForm(
-            initial=_document_form_initial(doc),
-            can_archive=can_archive,
-            can_edit_needs_change=can_edit_needs_change,
-        )
+    return user, doc, rev
 
-    if request.method == "GET":
-        if not (rev_form or doc_form):
-            # You can't do anything on this page, so get lost.
-            raise PermissionDenied
 
-    else:  # POST
-        # Comparing against localized names for the Save button bothers me, so
-        # I embedded a hidden input:
-        which_form = request.POST.get("form")
+@require_http_methods(["GET", "POST"])
+@login_required
+def edit_document(request, document_slug, revision_id=None):
+    """Create a new revision of a wiki document"""
 
-        _document_lock_clear(doc.id, user.username)
+    # Initialize values and check basic perms
+    init_check = edit_init_and_perms(request, document_slug, revision_id, "doc")
+    # If we were redirected during init, return that response.
+    if isinstance(init_check, HttpResponse):
+        return init_check
+    user, doc, rev = init_check
 
-        if which_form == "doc":
-            if doc.allows(user, "edit"):
-                post_data = request.POST.copy()
-                post_data.update({"locale": request.LANGUAGE_CODE})
+    rev_form = RevisionForm(instance=rev, initial={"based_on": rev.id, "comment": ""})
 
-                topics = []
-                for t in post_data.getlist("topics"):
-                    topics.append(int(t))
-                post_data.setlist("topics", topics)
-
-                doc_form = DocumentForm(
-                    post_data,
-                    instance=doc,
-                    can_archive=can_archive,
-                    can_edit_needs_change=can_edit_needs_change,
-                )
-                if doc_form.is_valid():
-                    # Get the possibly new slug for the imminent redirection:
-                    try:
-                        doc = doc_form.save(None)
-                    except (TitleCollision, SlugCollision) as e:
-                        # TODO: .add_error() when we upgrade to Django 1.7
-                        errors = doc_form._errors.setdefault("title", ErrorList())
-                        message = "The {type} you selected is already in use."
-                        message = message.format(
-                            type="title" if isinstance(e, TitleCollision) else "slug"
-                        )
-                        errors.append(_(message))
-                    else:
-                        # Do we need to rebuild the KB?
-                        _maybe_schedule_rebuild(doc_form)
-
-                        return HttpResponseRedirect(
-                            urlparams(
-                                reverse("wiki.edit_document", args=[doc.slug]), opendescription=1
-                            )
-                        )
-                disclose_description = True
-            else:
-                raise PermissionDenied
-        elif which_form == "rev":
-            if doc.allows(user, "create_revision"):
-                rev_form = RevisionForm(request.POST)
-                rev_form.instance.document = doc  # for rev_form.clean()
-                if rev_form.is_valid():
-                    _save_rev_and_notify(rev_form, user, doc, base_rev=rev)
-                    if "notify-future-changes" in request.POST:
-                        EditDocumentEvent.notify(request.user, doc)
-
-                    return HttpResponseRedirect(
-                        reverse("wiki.document_revisions", args=[document_slug])
-                    )
-            else:
-                raise PermissionDenied
+    # POST
+    if request.method == "POST":
+        rev_form = RevisionForm(request.POST)
+        rev_form.instance.document = doc  # for rev_form.clean()
+        if rev_form.is_valid():
+            _document_lock_clear(doc.id, user.username)
+            _save_rev_and_notify(rev_form, user, doc, base_rev=rev)
+            if "notify-future-changes" in request.POST:
+                EditDocumentEvent.notify(request.user, doc)
+            return HttpResponseRedirect(reverse("wiki.document_revisions", args=[document_slug]))
 
     show_revision_warning = _show_revision_warning(doc, rev)
     locked, locked_by = _document_lock(doc.id, user.username)
@@ -569,8 +520,77 @@ def edit_document(request, document_slug, revision_id=None):
         "wiki/edit.html",
         {
             "revision_form": rev_form,
+            "document": doc,
+            "show_revision_warning": show_revision_warning,
+            "locked": locked,
+            "locked_by": locked_by,
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+@login_required
+def edit_document_metadata(request, document_slug, revision_id=None):
+    """Edit document metadata."""
+
+    # Initialize values and check basic perms
+    init_check = edit_init_and_perms(request, document_slug, revision_id, "doc")
+    # If we were redirected, return that response.
+    if isinstance(init_check, HttpResponse):
+        return init_check
+    user, doc, rev = init_check
+
+    can_edit_needs_change = doc.allows(user, "edit_needs_change")
+    can_archive = doc.allows(user, "archive")
+
+    doc_form = DocumentForm(
+        initial=_document_form_initial(doc),
+        can_archive=can_archive,
+        can_edit_needs_change=can_edit_needs_change,
+    )
+
+    if request.method == "POST":  # POST
+        _document_lock_clear(doc.id, user.username)
+
+        post_data = request.POST.copy()
+        post_data.update({"locale": request.LANGUAGE_CODE})
+
+        topics = []
+        for t in post_data.getlist("topics"):
+            topics.append(int(t))
+        post_data.setlist("topics", topics)
+
+        doc_form = DocumentForm(
+            post_data,
+            instance=doc,
+            can_archive=can_archive,
+            can_edit_needs_change=can_edit_needs_change,
+        )
+        if doc_form.is_valid():
+            # Get the possibly new slug for the imminent redirection:
+            try:
+                doc = doc_form.save(None)
+            except (TitleCollision, SlugCollision) as metadata_error:
+                # TODO: .add_error() when we upgrade to Django 1.7
+                errors = doc_form._errors.setdefault("title", ErrorList())
+                message = "The {type} you selected is already in use."
+                message = message.format(
+                    type="title" if isinstance(metadata_error, TitleCollision) else "slug"
+                )
+                errors.append(_(message))
+            else:
+                # Do we need to rebuild the KB?
+                _maybe_schedule_rebuild(doc_form)
+                return HttpResponseRedirect(reverse("wiki.document", args=[doc.slug]))
+
+    show_revision_warning = _show_revision_warning(doc, rev)
+    locked, locked_by = _document_lock(doc.id, user.username)
+
+    return render(
+        request,
+        "wiki/edit_metadata.html",
+        {
             "document_form": doc_form,
-            "disclose_description": disclose_description,
             "document": doc,
             "show_revision_warning": show_revision_warning,
             "locked": locked,

@@ -1,0 +1,60 @@
+{% extends "wiki/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
+{% from "includes/common_macros.html" import content_editor with context %}
+{% from "wiki/includes/document_macros.html" import edit_messages, submit_revision %}
+{% from "wiki/includes/document_macros.html" import document_lock_warning with context %}
+{% set title = _('Edit Article Metadata | {document}')|f(document=document.title) %}
+{# TODO: Change KB url to landing page when we have one #}
+{% set crumbs = [(document.get_absolute_url(), document.title),
+                 (None, _('Edit Article Metadata'))] %}
+
+{% set scripts = ('wiki', 'wiki.diff', 'wiki.editor') %}
+{% set classes = 'edit_metadata' %}
+
+{% block content %}
+  <div class="user-messages">
+    {{ edit_messages(document, show_revision_warning) }}
+    {{ document_lock_warning() }}
+  </div>
+
+  <div class="sumo-page-section">
+    <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
+      <h1 class="sumo-page-heading">{{ _('<em>Editing Description For:</em><br>{title}')|fe(title=document.title) }}</h1>
+      {% if document.needs_change %}
+        <p>
+          {% trans comment=document.needs_change_comment %}
+            <label>Needs Change:</label> {{comment}}
+          {% endtrans %}
+        </p>
+      {% endif %}
+      <div id="document-form">
+          {{ errorlist(document_form) }}
+          <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
+            {% csrf_token %}
+              {% for field in document_form.visible_fields() if
+                (field.name != 'is_localizable' or not document.translations.exists()) %}
+                <div class="field">
+                  {{ field|label_with_help }}{{ field }}
+                </div>
+              {% endfor %}
+            {% if document.translations.exists() %}
+              {{ document_form.is_localizable.as_hidden()|safe }}
+            {% endif %}
+            <input type="hidden" name="form" value="doc" />
+            <div class="submit sumo-button-wrap align-end">
+              <button class="sumo-button primary-button" type="submit">{{ _('Save description') }}</button>
+            </div>
+          </form>
+      </div>
+    </article>
+  </div>
+
+  <script type="application/json" class="showfor-data">
+    {{ showfor_data(document.get_products()) }}
+  </script>
+{% endblock %}
+
+{% block side_top %}
+  {{ document_tools(document, document.parent, user, 'edit_metadata', settings) }}
+{% endblock %}
