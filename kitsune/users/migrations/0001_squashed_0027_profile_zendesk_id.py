@@ -10,17 +10,6 @@ import kitsune.sumo.models
 import timezone_field.fields
 
 
-def create_forum_metrics_groups(apps, schema_editor):
-    Group = apps.get_model("auth", "Group")
-    Group.objects.create(name="Support Forum Tracked")
-    Group.objects.create(name="Support Forum Metrics")
-
-
-def remove_forum_metrics_groups(apps, schema_editor):
-    Group = apps.get_model("auth", "Group")
-    Group.objects.filter(name__in=["Support Forum Tracked", "Support Forum Metrics"]).delete()
-
-
 class Migration(migrations.Migration):
     replaces = [
         ("users", "0001_initial"),
@@ -696,5 +685,4 @@ class Migration(migrations.Migration):
                 "ordering": ["-last_modified"],
             },
         ),
-        migrations.RunPython(create_forum_metrics_groups, remove_forum_metrics_groups),
     ]

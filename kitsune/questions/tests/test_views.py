@@ -37,7 +37,7 @@ class AAQSearchTests(Elastic7TestCase):
             "Firefox/3.6.6",
         }
         p = ProductFactory(slug="firefox")
-        locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
         TopicFactory(slug="fix-problems", product=p)
         url = urlparams(
@@ -75,8 +75,8 @@ class AAQSearchTests(Elastic7TestCase):
 class AAQTests(TestCaseBase):
     def setUp(self):
         product = ProductFactory(title="Firefox", slug="firefox")
-        for locale in QuestionLocale.objects.all():
-            product.questions_locales.add(locale)
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+        product.questions_locales.add(locale)
 
     def test_non_authenticated_user(self):
         """
@@ -257,6 +257,9 @@ class TestQuestionList(TestCaseBase):
     def test_locale_filter(self):
         """Only questions for the current locale should be shown on the
         questions front page for AAQ locales."""
+
+        for locale in (settings.LANGUAGE_CODE, "pt-BR"):
+            QuestionLocale.objects.get_or_create(locale=locale)
 
         self.assertEqual(Question.objects.count(), 0)
         p = ProductFactory(slug="firefox")
@@ -553,6 +556,9 @@ class TestEditDetails(TestCaseBase):
         add_permission(u, Question, "change_question")
         assert u.has_perm("questions.change_question")
         self.user = u
+
+        for locale in (settings.LANGUAGE_CODE, "hu"):
+            QuestionLocale.objects.get_or_create(locale=locale)
 
         p = ProductFactory()
         t = TopicFactory(product=p)

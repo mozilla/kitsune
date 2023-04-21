@@ -231,7 +231,7 @@ class IsRatelimitedTest(TestCase):
 
     def test_ratelimit_bypass(self):
         u = UserFactory()
-        bypass = Permission.objects.get(codename="bypass_ratelimit")
+        bypass, _ = Permission.objects.get_or_create(codename="bypass_ratelimit")
         u.user_permissions.add(bypass)
         request = Mock()
         request.user = u

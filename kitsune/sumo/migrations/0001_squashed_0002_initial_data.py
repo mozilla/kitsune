@@ -22,20 +22,6 @@ def remove_ratelimit_bypass_perm(apps, schema_editor):
     perm = Permission.objects.filter(codename="bypass_ratelimit").delete()
 
 
-def create_refresh_survey_flag(apps, schema_editor):
-    Sample = apps.get_model("waffle", "Sample")
-    Sample.objects.get_or_create(
-        name="refresh-survey",
-        note="Samples users that refresh Firefox to give them a survey.",
-        percent=50.0,
-    )
-
-
-def remove_refresh_survey_flag(apps, schema_editor):
-    Sample = apps.get_model("waffle", "Sample")
-    Sample.objects.filter(name="refresh-survey").delete()
-
-
 class Migration(migrations.Migration):
     replaces = [("sumo", "0001_initial"), ("sumo", "0002_initial_data")]
 
@@ -50,9 +36,5 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             code=create_ratelimit_bypass_perm,
             reverse_code=remove_ratelimit_bypass_perm,
-        ),
-        migrations.RunPython(
-            code=create_refresh_survey_flag,
-            reverse_code=remove_refresh_survey_flag,
-        ),
+        )
     ]

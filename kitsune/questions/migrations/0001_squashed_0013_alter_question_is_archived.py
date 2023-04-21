@@ -9,66 +9,6 @@ import kitsune.sumo.models
 import kitsune.tags.models
 
 
-AAQ_LANGUAGES = (
-    "en-US",
-    "fi",
-    "hu",
-    "pt-BR",
-    "sl",
-    "sr",
-)
-
-
-def create_aaq_locales(apps, schema_editor):
-    QuestionLocale = apps.get_model("questions", "QuestionLocale")
-    for lang in AAQ_LANGUAGES:
-        locale = QuestionLocale(locale=lang)
-        locale.save()
-
-
-def remove_aaq_locales(apps, schema_editor):
-    QuestionLocale = apps.get_model("questions", "QuestionLocale")
-    QuestionLocale(locale__in=AAQ_LANGUAGES).delete()
-
-
-def create_waffle_flag(apps, schema_editor):
-    Flag = apps.get_model("waffle", "Flag")
-    f = Flag(
-        name="new_aaq",
-        everyone=False,
-        superusers=False,
-        staff=False,
-        authenticated=False,
-        rollout=False,
-        testing=False,
-    )
-    f.save()
-
-
-def delete_waffle_flag(apps, schema_editor):
-    Flag = apps.get_model("waffle", "Flag")
-    f = Flag.objects.get(name="new_aaq")
-    f.delete()
-
-
-def create_questionlocale(apps, schema_editor):
-    Product = apps.get_model("products", "Product")
-    QuestionLocale = apps.get_model("questions", "QuestionLocale")
-
-    p, created = Product.objects.get_or_create(
-        slug="ios",
-        defaults={
-            "title": "Firefox for iOS",
-            "description": "Firefox for iPhone, iPad and iPod touch devices",
-            "display_order": 0,
-            "visible": False,
-        },
-    )
-
-    ql, created = QuestionLocale.objects.get_or_create(locale="en-US")
-    ql.products.add(p)
-
-
 class Migration(migrations.Migration):
     replaces = [
         ("questions", "0001_initial"),
@@ -625,7 +565,4 @@ class Migration(migrations.Migration):
                 "verbose_name": "AAQ configuration",
             },
         ),
-        migrations.RunPython(create_aaq_locales, remove_aaq_locales),
-        migrations.RunPython(create_waffle_flag, delete_waffle_flag),
-        migrations.RunPython(create_questionlocale),
     ]

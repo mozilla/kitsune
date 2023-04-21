@@ -1345,7 +1345,8 @@ class AAQTemplateTestCase(TestCaseBase):
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
         product = ProductFactory(title="Firefox", slug="firefox")
-        for loc in QuestionLocale.objects.all():
+        for loc_code in (settings.LANGUAGE_CODE, "pt-BR"):
+            loc, _ = QuestionLocale.objects.get_or_create(locale=loc_code)
             product.questions_locales.add(loc)
         TopicFactory(slug="fix-problems", product=product)
         extra = {}
@@ -1427,7 +1428,7 @@ class ProductForumTemplateTestCase(TestCaseBase):
         fxos = ProductFactory(title="Firefox OS", slug="firefox-os")
         openbadges = ProductFactory(title="Open Badges", slug="open-badges")
 
-        lcl = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        lcl, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         firefox.questions_locales.add(lcl)
         android.questions_locales.add(lcl)
         fxos.questions_locales.add(lcl)
@@ -1435,7 +1436,7 @@ class ProductForumTemplateTestCase(TestCaseBase):
         response = self.client.get(reverse("questions.home"))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(4, len(doc(".product-list .product")))
+        self.assertEqual(3, len(doc(".product-list .product")))
         product_list_html = doc(".product-list").html()
         assert firefox.title in product_list_html
         assert android.title in product_list_html
