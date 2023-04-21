@@ -2,7 +2,6 @@ import spinnerImg from "sumo/img/spinner.gif";
 import "sumo/js/libs/jquery.cookie";
 import "sumo/js/libs/jquery.lazyload";
 import KBox from "sumo/js/kbox";
-import "sumo/js/libs/django/prepopulate";
 import CodeMirror from "codemirror";
 import "codemirror/addon/mode/simple";
 import "codemirror/addon/hint/show-hint";
@@ -25,7 +24,6 @@ import ShowFor from "sumo/js/showfor";
 
     $('select.enable-if-js').prop("disabled", false);
 
-    initPrepopulatedSlugs();
     initDetailsTags();
 
     if ($body.is('.review')) { // Review pages
@@ -38,7 +36,7 @@ import ShowFor from "sumo/js/showfor";
       $('#actions input').prop("disabled", false);
     }
 
-    if ($body.is('.edit, .new, .translate')) { // Document form page
+    if ($body.is('.edit_doc, .edit, .new, .translate')) { // Document form page
       // Submit form
       $('#id_comment').on('keypress', function(e) {
         if (e.which === 13) {
@@ -51,16 +49,19 @@ import ShowFor from "sumo/js/showfor";
       initArticlePreview();
       initPreviewDiff();
       initTitleAndSlugCheck();
-      initPreValidation();
       initNeedsChange();
-      initSummaryCount();
       initFormLock();
-      initCodeMirrorEditor();
 
       $('img.lazy').loadnow();
 
       // We can enable the buttons now.
       $('.submit input').prop("disabled", false);
+    }
+
+    if ($body.is('.edit, .new, .translate')) {
+      initPreValidation();
+      initSummaryCount();
+      initCodeMirrorEditor();
     }
 
     if ($body.is('.translate')) {  // Translate page
@@ -151,7 +152,7 @@ import ShowFor from "sumo/js/showfor";
         // Set the `tabindex` attribute of the `summary` element to 0 to make it keyboard accessible
         $detailsSummary.attr('tabindex', 0).on("click", function() {
           // Focus on the `summary` element
-          $detailsSummary.focus();
+          $detailsSummary.trigger('focus');
           // Toggle the `open` attribute of the `details` element
           if (typeof $details.attr('open') !== 'undefined') {
             $details.prop('open', false);
@@ -173,24 +174,6 @@ import ShowFor from "sumo/js/showfor";
         });
       });
     }
-  }
-
-  function initPrepopulatedSlugs() {
-    var fields = {
-      title: {
-        id: '#id_slug',
-        dependency_ids: ['#id_title'],
-        dependency_list: ['#id_title'],
-        maxLength: 50
-      }
-    };
-
-    $.each(fields, function(i, field) {
-      $(field.id).addClass('prepopulated_field');
-      $(field.id).data('dependency_list', field.dependency_list)
-        .prepopulate($(field.dependency_ids.join(',')),
-          field.maxLength);
-    });
   }
 
   function initSummaryCount() {
