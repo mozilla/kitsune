@@ -41,7 +41,7 @@
     "graphql": "^16.6.0",
     "jquery": "^3.6.3",
     "jquery-ui": "1.13.2",
-    "nunjucks": "^3.2.3",
+    "nunjucks": "^3.2.4",
     "svelte-navigator": "^3.2.2",
     "underscore": "^1.13.6"
   },
