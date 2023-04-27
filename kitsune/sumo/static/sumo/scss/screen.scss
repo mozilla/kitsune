@@ -7,5 +7,7 @@
 
 @use 'examples/examples'; // styleguide-only comment files
 
+@use './switching-devices';
+
 @import "../../../../../node_modules/codemirror/lib/codemirror";
 @import "../../../../../node_modules/codemirror/addon/hint/show-hint";
