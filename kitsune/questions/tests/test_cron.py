@@ -15,11 +15,11 @@ class TestEmployeeReportCron(TestCase):
         # If we fix the tests to not run migrations, we'll need to create the
         # two groups here: 'Support Forum Tracked', 'Support Forum Metrics'
 
-        tracked_group = Group.objects.get(name="Support Forum Tracked")
+        tracked_group, _ = Group.objects.get_or_create(name="Support Forum Tracked")
         tracked_user = UserFactory()
         tracked_user.groups.add(tracked_group)
 
-        report_group = Group.objects.get(name="Support Forum Metrics")
+        report_group, _ = Group.objects.get_or_create(name="Support Forum Metrics")
         report_user = UserFactory()
         report_user.groups.add(report_group)
 

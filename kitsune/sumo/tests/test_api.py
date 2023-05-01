@@ -1,10 +1,16 @@
 import json
 
+from django.conf import settings
+
+from kitsune.questions.models import QuestionLocale
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
 class TestLocalesAPIView(TestCase):
+    def setUp(self):
+        QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
+
     def test_basic(self):
         url = reverse("sumo.locales_api")
         response = self.client.get(url)

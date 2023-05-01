@@ -16,9 +16,9 @@ class ProductViewsTestCase(Elastic7TestCase):
     def test_products(self):
         """Verify that /products page renders products."""
         # Create some products.
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         for i in range(3):
             p = ProductFactory(visible=True)
-            locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
             p.questions_locales.add(locale)
 
         # GET the products page and verify the content.
@@ -31,7 +31,7 @@ class ProductViewsTestCase(Elastic7TestCase):
         """Verify that /products/<slug> page renders topics."""
         # Create a product.
         p = ProductFactory()
-        locale = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(locale)
 
         # Create some topics.
