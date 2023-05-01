@@ -89,6 +89,9 @@
     {% endif %}
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
+      {% if is_switching_devices_doc %}
+        {% include "wiki/includes/switching-devices.html" %}
+      {% endif %}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
       {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
@@ -111,7 +114,9 @@
       {% include "landings/includes/volunteer-callout.html" %}
     </section>
 
-    {% if document.related_documents.count() %}
+    {% if is_switching_devices_doc %}
+      {# TODO: Add HTML for tabbed panel here. #}
+    {% elif document.related_documents.count() %}
     {% set docs = document.related_documents.all() %}
     <section id="related-documents" class="sumo-page-section wiki-related-documents">
       <div class="text-center">
