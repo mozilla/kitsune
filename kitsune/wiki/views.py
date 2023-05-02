@@ -114,9 +114,6 @@ def document(request, document_slug, document=None):
 
     # Whether or not the sumo banner CTA in KB should be visible
     show_cta_banner = False
-    is_switching_devices = (
-        document_slug in settings.FIREFOX_SWITCHING_DEVICES if document_slug else False
-    )
 
     fallback_reason = None
     full_locale_name = None
@@ -209,6 +206,22 @@ def document(request, document_slug, document=None):
 
     product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
+    # Switching devices section
+    switching_devices_product = switching_devices_topic = switching_devices_subtopics = None
+    if is_switching_devices := doc.slug in settings.FIREFOX_SWITCHING_DEVICES_ARTICLES:
+        # make sure that the article is in the right product and topic
+        if (
+            not products.filter(slug="firefox").exists()
+            or not product_topics.filter(slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC).exists()
+        ):
+            raise Http404
+
+        switching_devices_product = Product.objects.get(slug="firefox")
+        switching_devices_topic = Topic.objects.get(
+            product=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
+        )
+        switching_devices_subtopics = Topic.objects.filter(parent=switching_devices_topic)
+
     if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
         document_css_class = "collapsible"
     else:
@@ -236,7 +249,6 @@ def document(request, document_slug, document=None):
         breadcrumbs.append((product.get_absolute_url(), product.title))
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
-
     # Decide whether the sumo banner should be displayed in the KB.
     # Base the decision on the English version of the document. If this is True
     # all translation should display the banner
@@ -271,6 +283,9 @@ def document(request, document_slug, document=None):
         "show_cta_banner": show_cta_banner,
         "show_related_documents": not is_switching_devices,
         "is_switching_devices": is_switching_devices,
+        "switching_devices_product": switching_devices_product,
+        "switching_devices_topic": switching_devices_topic,
+        "switching_devices_subtopics": switching_devices_subtopics,
     }
 
     return render(request, "wiki/document.html", data)
