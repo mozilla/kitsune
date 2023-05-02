@@ -1254,3 +1254,6 @@ LEGACY_CONTRIBUTOR_GROUPS = [
     "Registered as contributor",
     "trusted contributors",
 ]
+
+
+FIREFOX_SWITCHING_DEVICES = config("FIREFOX_SWITCHING_DEVICES", default="", cast=Csv())

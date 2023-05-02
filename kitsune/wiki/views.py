@@ -15,8 +15,8 @@ from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -69,7 +69,6 @@ from kitsune.wiki.tasks import (
 )
 from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
 
-
 log = logging.getLogger("k.wiki")
 
 
@@ -115,6 +114,9 @@ def document(request, document_slug, document=None):
 
     # Whether or not the sumo banner CTA in KB should be visible
     show_cta_banner = False
+    is_switching_devices = (
+        document_slug in settings.FIREFOX_SWITCHING_DEVICES if document_slug else False
+    )
 
     fallback_reason = None
     full_locale_name = None
@@ -267,6 +269,8 @@ def document(request, document_slug, document=None):
         "any_localizable_revision": any_localizable_revision,
         "full_locale_name": full_locale_name,
         "show_cta_banner": show_cta_banner,
+        "show_related_documents": not is_switching_devices,
+        "is_switching_devices": is_switching_devices,
     }
 
     return render(request, "wiki/document.html", data)
