@@ -1,4 +1,5 @@
 import re
+from unittest.mock import patch
 
 from django.conf import settings
 from django.test.utils import override_settings
@@ -996,3 +997,26 @@ class TestLazyWikiImageTags(TestCase):
         self.assertEqual("test.jpg", img.attr("alt"))
         self.assertEqual(self.img.file.url, img.attr("data-original-src"))
         self.assertRegex(img.attr("src"), r"placeholder\.[0-9a-z]+\.gif")
+
+
+class TestWikiUIComponent(TestCase):
+    """Test the UI Component hook."""
+
+    def test_ui_component(self):
+        """Verify that the UI component hook works."""
+        parser = WikiParser()
+        dmw = '<input type="text" id="x" name="x">'
+        content_template = "<p>before</p>{}<p>after</p>"
+        with patch("kitsune.sumo.parser.generate_ui_component_embed", return_value=dmw):
+            result = parser.parse(content_template.format("[[UI:device_migration_wizard]]"))
+            self.assertEqual(result, content_template.format(dmw))
+
+    def test_invalid_ui_component(self):
+        """Verify error message shown for invalid UI component requests."""
+        parser = WikiParser()
+        content_template = "<p>before</p>{}<p>after</p>"
+        result = parser.parse(content_template.format("[[UI:undefined]]"))
+        self.assertEqual(
+            result,
+            content_template.format('The UI component "undefined" does not exist.'),
+        )

@@ -412,7 +412,9 @@ class WikiParser(sumo_parser.WikiParser):
         text = parse_simple_syntax(text)
 
         # Run the formatter:
-        html = super(WikiParser, self).parse(text, youtube_embeds=False, **kwargs)
+        html = super(WikiParser, self).parse(
+            text, youtube_embeds=False, ui_component_embeds=False, **kwargs
+        )
 
         # Put the fors back in (as XML-ish <for> tags this time):
         html = ForParser.unstrip_fors(html, data)
@@ -426,6 +428,7 @@ class WikiParser(sumo_parser.WikiParser):
         html = for_parser.serialize(**kwargs)
 
         html = self.add_youtube_embeds(html)
+        html = self.add_ui_component_embeds(html)
 
         return html
 
