@@ -215,7 +215,7 @@ class WikiParser(Parser):
         self.registerInternalLinkHook("Button", self._hook_button)
         self.registerInternalLinkHook("UI", self._hook_ui_component)
 
-        self.youtube_videos = []
+        self.youtube_videos = set()
         self.ui_components = set()
 
     def parse(
@@ -250,6 +250,10 @@ class WikiParser(Parser):
         :arg nofollow: should links have nofollow set?
         :arg youtube_embeds: should we replace the youtube placeholders
             with the iframes? This is kind of a hack so that subclasses
+            can skip embedding here and do it on their own at the end
+            of parsing.
+        :arg ui_component_embeds: should we replace the UI component
+            placeholders with their HTML? This exists so that subclasses
             can skip embedding here and do it on their own at the end
             of parsing.
         """
@@ -382,7 +386,7 @@ class WikiParser(Parser):
                 # The video id is in the v= query param
                 video_id = parse_qs(parsed_url.query)["v"][0]
 
-            self.youtube_videos.append(video_id)
+            self.youtube_videos.add(video_id)
 
             return YOUTUBE_PLACEHOLDER % video_id
 
