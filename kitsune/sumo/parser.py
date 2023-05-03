@@ -306,9 +306,7 @@ class WikiParser(Parser):
         """
 
         for name in self.ui_components:
-            html = html.replace(
-                UI_COMPONENT_PLACEHOLDER % name, render_to_string(f"wikiparser/hook_{name}.html")
-            )
+            html = html.replace(UI_COMPONENT_PLACEHOLDER % name, generate_ui_component_embed(name))
 
         return html
 
@@ -445,6 +443,11 @@ def generate_video(v, params=[]):
 def generate_youtube_embed(video_id):
     """Takes a youtube video id and returns the embed markup."""
     return render_to_string("wikiparser/hook_youtube_embed.html", {"video_id": video_id})
+
+
+def generate_ui_component_embed(name):
+    """Takes a UI component name and returns the embed markup."""
+    return render_to_string(f"wikiparser/hook_{name}.html")
 
 
 def _get_video_url(video_file):
