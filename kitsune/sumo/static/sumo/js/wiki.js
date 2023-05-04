@@ -25,6 +25,23 @@ import ShowFor from "sumo/js/showfor";
 
     $('select.enable-if-js').prop("disabled", false);
 
+    // TODO: remove this - just for testing
+    let steps = [
+      {
+        name: "first",
+        status: "available",
+      },
+      {
+        name: "second",
+        status: "active",
+      },
+      {
+        name: "third",
+        status: "unavailable"
+      },
+    ]
+    $('form-wizard').prop('steps', steps);
+
     initPrepopulatedSlugs();
     initDetailsTags();
 

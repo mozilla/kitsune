@@ -10,6 +10,18 @@
 
 {% block content %}
     <article id="revision-history">
+      {# TODO: remove this - just for testing #}
+      <form-wizard>
+          <div name="first">
+            <p>this is the first step</p>
+          </div>
+          <div name="second">
+            <p>this is the second step</p>
+          </div>
+          <div name="third">
+            <p>this is the third step</p>
+          </div>
+      </form-wizard>
       <div class="sumo-page-section">
       <h1 class="title sumo-page-subheading">{{ _('History of {title}')|fe(title=document.title) }}</h1>
 
