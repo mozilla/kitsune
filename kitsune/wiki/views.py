@@ -208,7 +208,10 @@ def document(request, document_slug, document=None):
 
     # Switching devices section
     switching_devices_product = switching_devices_topic = switching_devices_subtopics = None
-    if is_switching_devices := doc.slug in settings.FIREFOX_SWITCHING_DEVICES_ARTICLES:
+    if (
+        is_switching_devices := (doc.parent.slug if doc.parent else doc.slug)
+        in settings.FIREFOX_SWITCHING_DEVICES_ARTICLES
+    ):
         # make sure that the article is in the right product and topic
         if (
             not products.filter(slug="firefox").exists()
