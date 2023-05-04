@@ -9,7 +9,7 @@
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% set scripts = ('document',) %}
 {% if is_switching_devices %}
-  {% set scripts = scripts + ('document.switching-devices',) %}
+  {% set scripts = scripts + ('switching-devices',) %}
 {% endif %}
 {% set extra_body_attrs = {'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
@@ -90,7 +90,7 @@
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
-      {% if is_switching_devices %} 
+      {% if is_switching_devices %}
         {{ topic_tabs(product_topics, switching_devices_subtopics, switching_devices_product, switching_devices_topic)}}
       {% endif %}
 
@@ -118,7 +118,7 @@
     {% if show_related_documents %}
       {{ related_documents(document) }}
     {% endif %}
-  
+
   </section>
 {% endblock %}
 

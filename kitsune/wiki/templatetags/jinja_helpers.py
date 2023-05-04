@@ -1,3 +1,4 @@
+from django.conf import settings
 from django_jinja import library
 from markupsafe import Markup
 
@@ -16,3 +17,10 @@ def diff_table(content_from, content_to):
 @library.global_function
 def generate_video(v):
     return Markup(parser.generate_video(v))
+
+
+@library.global_function
+def is_switching_devices_document(doc):
+    return (
+        doc.parent.slug if doc.parent else doc.slug
+    ) in settings.FIREFOX_SWITCHING_DEVICES_ARTICLES

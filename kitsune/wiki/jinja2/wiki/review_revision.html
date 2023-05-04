@@ -5,6 +5,9 @@
 {% set crumbs = [(document.get_absolute_url(), document.title), (None, _('Review Revision'))] %}
 {% set classes = 'review' %}
 {% set scripts = ('wiki', 'wiki.diff') %}
+{% if is_switching_devices_document(document) %}
+  {% set scripts = scripts + ('switching-devices',) %}
+{% endif %}
 
 {% block content %}
 <article id="review-revision" class="sumo-page-section--inner">

@@ -7,6 +7,9 @@
                  (None, _('Revision {num}')|f(num=revision.id))] %}
 {% set classes = 'document' %}
 {% set scripts = ('revision',) %}
+{% if is_switching_devices_document(document) %}
+  {% set scripts = scripts + ('switching-devices',) %}
+{% endif %}
 {% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}

@@ -33,8 +33,8 @@ const entrypoints = {
     "sumo/js/document.js",
     "sumo/js/wiki.metrics.js",
   ],
-  "document.switching-devices": [
-    "sumo/js/document.switching-devices.js",
+  "switching-devices": [
+    "sumo/js/device-migration-wizard.js",
   ],
   revision: [
     "sumo/js/revision.js",
