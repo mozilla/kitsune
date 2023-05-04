@@ -1217,6 +1217,8 @@ CSP_CONNECT_SRC = (
     "'self'",
     "https://*.google-analytics.com",
     "https://location.services.mozilla.com",
+    "https://accounts.firefox.com/metrics-flow",
+    "https://accounts.stage.mozaws.net/metrics-flow",
 )
 
 if DEBUG:
