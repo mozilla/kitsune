@@ -4,5 +4,5 @@ import SwitchingDevicesWizardManager from "sumo/js/switching-devices-wizard-mana
 import "sumo/js/form-wizard";
 
 $(document).ready(function() {
-  new SwitchingDevicesWizardManager($("#switching-devices-wizard"))
+  new SwitchingDevicesWizardManager(document.querySelector("#switching-devices-wizard"))
 });
