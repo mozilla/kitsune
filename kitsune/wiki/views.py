@@ -67,7 +67,6 @@ from kitsune.wiki.tasks import (
     send_contributor_notification,
     send_reviewed_notification,
 )
-from kitsune.wiki.templatetags.jinja_helpers import is_switching_devices_document
 from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
 
 log = logging.getLogger("k.wiki")
@@ -209,7 +208,7 @@ def document(request, document_slug, document=None):
 
     # Switching devices section
     switching_devices_product = switching_devices_topic = switching_devices_subtopics = None
-    if is_switching_devices := is_switching_devices_document(doc):
+    if doc.is_switching_devices_document:
         # make sure that the article is in the right product and topic
         if (
             not products.filter(slug="firefox").exists()
@@ -282,8 +281,6 @@ def document(request, document_slug, document=None):
         "any_localizable_revision": any_localizable_revision,
         "full_locale_name": full_locale_name,
         "show_cta_banner": show_cta_banner,
-        "show_related_documents": not is_switching_devices,
-        "is_switching_devices": is_switching_devices,
         "switching_devices_product": switching_devices_product,
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,

@@ -8,7 +8,7 @@
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% set scripts = ('document',) %}
-{% if is_switching_devices %}
+{% if document.is_switching_devices_document %}
   {% set scripts = scripts + ('switching-devices',) %}
 {% endif %}
 {% set extra_body_attrs = {'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
@@ -90,7 +90,7 @@
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
-      {% if is_switching_devices %}
+      {% if document.is_switching_devices_document %}
         {{ topic_tabs(product_topics, switching_devices_subtopics, switching_devices_product, switching_devices_topic)}}
       {% endif %}
 
@@ -115,7 +115,7 @@
       {% include "landings/includes/volunteer-callout.html" %}
     </section>
 
-    {% if show_related_documents %}
+    {% if not document.is_switching_devices_document %}
       {{ related_documents(document) }}
     {% endif %}
 

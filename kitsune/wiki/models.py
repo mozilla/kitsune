@@ -739,6 +739,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             )
         )
 
+    @property
+    def is_switching_devices_document(self):
+        return (
+            self.parent.slug if self.parent else self.slug
+        ) in settings.FIREFOX_SWITCHING_DEVICES_ARTICLES
+
 
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
