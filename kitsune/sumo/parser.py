@@ -43,8 +43,8 @@ IMAGE_PARAM_VALUES = {
     "valign": ("baseline", "sub", "super", "top", "text-top", "middle", "bottom", "text-bottom"),
 }
 VIDEO_PARAMS = ["height", "width", "modal", "title", "placeholder"]
-YOUTUBE_PLACEHOLDER = "YOUTUBE_EMBED_PLACEHOLDER_%s"
-UI_COMPONENT_PLACEHOLDER = "UI_COMPONENT_EMBED_PLACEHOLDER_%s"
+YOUTUBE_PLACEHOLDER = "<p>YOUTUBE_EMBED_PLACEHOLDER_%s</p>"
+UI_COMPONENT_PLACEHOLDER = "<p>UI_COMPONENT_EMBED_PLACEHOLDER_%s</p>"
 ALLOWED_UI_COMPONENTS = frozenset(["device_migration_wizard"])
 
 
