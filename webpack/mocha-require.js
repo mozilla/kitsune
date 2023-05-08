@@ -12,6 +12,8 @@ global.navigator = dom.window.navigator;
 global.sessionStorage = dom.window.sessionStorage;
 global.history = dom.window.history;
 global.Element = dom.window.Element;
+global.HTMLElement = dom.window.HTMLElement;
+global.customElements = dom.window.customElements;
 global.matchMedia = () => ({
   matches : false,
   addListener : () =>{},
