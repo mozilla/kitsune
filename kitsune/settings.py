@@ -1206,7 +1206,11 @@ CSP_STYLE_SRC: tuple[str, ...] = (
     "https://*.jsdelivr.net",
 )
 
-CSP_FORM_ACTION = ("'self'",)
+CSP_FORM_ACTION = (
+    "'self'",
+    "https://accounts.firefox.com",
+    "https://accounts.stage.mozaws.net",
+)
 
 CSP_MANIFEST_SRC = (
     "https://support.allizom.org",
