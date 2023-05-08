@@ -81,7 +81,6 @@ const entrypoints = {
   ],
   "wiki.editor": [
     "sumo/js/wiki.editor.js",
-    "sumo/js/form-wizard.js",
   ],
   "wiki.dashboard": [
     "sumo/js/wiki.dashboard.js",

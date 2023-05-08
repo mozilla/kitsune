@@ -7,7 +7,6 @@
  *
  */
 export class FormWizard extends HTMLElement {
-  #steps = null;
   #activeStep = null;
 
   constructor() {
@@ -35,15 +34,6 @@ export class FormWizard extends HTMLElement {
   set activeStep(name) {
     this.#activeStep = name;
     this.#setActiveStepAttributes();
-  }
-
-  get steps() {
-    return this.#steps;
-  }
-
-  set steps(nextSteps) {
-    this.#steps = nextSteps;
-    this.activeStep = nextSteps.find((step) => step.status === "active")?.name;
   }
 
   /**

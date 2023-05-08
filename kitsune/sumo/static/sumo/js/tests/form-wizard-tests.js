@@ -34,18 +34,7 @@ describe("form-wizard custom element", () => {
   });
 
   it("should show a different step when the active step changes", () => {
-    let nextSteps = [
-      {
-        name: "first",
-        status: "done",
-      },
-      {
-        name: "second",
-        status: "active",
-      },
-    ];
-    wizard.steps = nextSteps;
-
+    wizard.activeStep = "second";
     let assignedElements = slot.assignedElements();
     let activeStep = assignedElements[0];
     expect(assignedElements.length).to.equal(1);
