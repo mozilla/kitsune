@@ -219,14 +219,19 @@ class TestWikiParser(TestCase):
         """Verify youtube embeds."""
         urls = [
             "http://www.youtube.com/watch?v=oHg5SJYRHA0",
-            "https://youtube.com/watch?v=oHg5SJYRHA0"
-            "http://youtu.be/oHg5SJYRHA0"
+            "https://youtube.com/watch?v=oHg5SJYRHA0",
+            "http://youtu.be/oHg5SJYRHA0",
             "https://youtu.be/oHg5SJYRHA0",
         ]
 
         for url in urls:
-            doc = pq(self.p.parse("[[V:%s]]" % url))
-            assert doc("iframe")[0].attrib["src"].startswith("//www.youtube.com/embed/oHg5SJYRHA0")
+            with self.subTest(url):
+                doc = pq(self.p.parse("[[V:%s]]" % url))
+                assert (
+                    doc("iframe")[0]
+                    .attrib["src"]
+                    .startswith("//www.youtube.com/embed/oHg5SJYRHA0")
+                )
 
     def test_ui_component(self):
         """Verify that the UI component hook works."""
