@@ -447,7 +447,7 @@ def generate_youtube_embed(video_id):
 
 def generate_ui_component_embed(name):
     """Takes a UI component name and returns the embed markup."""
-    return render_to_string(f"wikiparser/hook_{name}.html")
+    return render_to_string(f"wikiparser/hook_{name}.html", {"settings": settings})
 
 
 def _get_video_url(video_file):
