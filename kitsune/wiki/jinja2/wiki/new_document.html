@@ -7,7 +7,8 @@
 {# TODO: Change KB url to landing page when we have one #}
 {% set crumbs = [(None, _('New Article'))] %}
 {% set classes = 'new' %}
-{% set scripts = ('wiki', 'wiki.editor') %}
+{# Always include "switching-devices" because there's no way to predict when it's really needed. #}
+{% set scripts = ('wiki', 'wiki.editor', 'switching-devices') %}
 
 {% block content %}
   <div class="grid_9">
