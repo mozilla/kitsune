@@ -18,8 +18,6 @@ const entrypoints = {
     "sumo/js/protocol-language-switcher-init.js",
     "sumo/js/sumo-tabs.js",
     "sumo/js/sumo-close-this.js",
-    // TODO: remove this - just for testing
-    "sumo/js/form-wizard.js",
   ],
   "common.fx.download": [
     "sumo/js/show-fx-download.js",
@@ -83,6 +81,7 @@ const entrypoints = {
   ],
   "wiki.editor": [
     "sumo/js/wiki.editor.js",
+    "sumo/js/form-wizard.js",
   ],
   "wiki.dashboard": [
     "sumo/js/wiki.dashboard.js",
