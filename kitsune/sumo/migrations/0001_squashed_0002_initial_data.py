@@ -12,14 +12,14 @@ def create_ratelimit_bypass_perm(apps, schema_editor):
 
     # Then we create a permission attached to that content type.
     Permission = apps.get_model("auth", "Permission")
-    perm = Permission.objects.create(
+    Permission.objects.get_or_create(
         name="Bypass Ratelimits", content_type=global_permission_ct, codename="bypass_ratelimit"
     )
 
 
 def remove_ratelimit_bypass_perm(apps, schema_editor):
     Permission = apps.get_model("auth", "Permission")
-    perm = Permission.objects.filter(codename="bypass_ratelimit").delete()
+    Permission.objects.filter(codename="bypass_ratelimit").delete()
 
 
 class Migration(migrations.Migration):
