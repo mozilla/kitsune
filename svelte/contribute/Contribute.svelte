@@ -36,13 +36,12 @@
         url: GRAPHQL_ENDPOINT,
     });
     setContextClient(gqlClient);
-    const isContributor = queryStore({
+    const contributorQ = queryStore({
         client: getContextClient(),
         query: gql`
             query getContributorStatus {
-                isContributor {
-                    id
-                    username
+                currentUser {
+                    isContributor
                 }
             }
         `,

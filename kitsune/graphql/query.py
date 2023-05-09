@@ -1,17 +1,14 @@
 import graphene
 
-from kitsune.graphql.schema import ContributorType
-from kitsune.users.models import ContributionAreas
+from kitsune.graphql.schema import CurrentUserType
 
 
 class Query(graphene.ObjectType):
-    is_contributor = graphene.Field(ContributorType)
+    current_user = graphene.Field(CurrentUserType)
 
-    def resolve_is_contributor(root, info):
-        """Return the current user if they are a contributor."""
-        # by default we reject non logged in users
+    def resolve_current_user(root, info):
+        """Return the current user."""
         user = info.context.user
-
-        if user.is_authenticated and user.groups.filter(name__in=ContributionAreas.get_groups()):
+        if user.is_authenticated:
             return user
         return None
