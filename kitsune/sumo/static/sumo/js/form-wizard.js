@@ -9,12 +9,13 @@
 export class FormWizard extends HTMLElement {
   #activeStep = null;
   #progressIndicator = null;
+  #steps = [];
 
   static get markup() {
     return `
       <template>
         <div>
-          <h2>Wizard header</h2>
+          <h2>${gettext("Wizard header")}</h2>
           <section>
             <slot name="active"></slot>
           </section>
@@ -36,6 +37,11 @@ export class FormWizard extends HTMLElement {
     shadow.appendChild(template.content.cloneNode(true));
 
     this.#progressIndicator = shadow.querySelector("progress");
+    
+    this.#updateSteps();
+    this.observer = new MutationObserver(() => {
+      this.#updateSteps();
+    });
   }
 
   connectedCallback() {
@@ -46,6 +52,11 @@ export class FormWizard extends HTMLElement {
       // If there's no active step, default to the first step.
       this.activeStep = this.firstElementChild?.getAttribute("name");
     }
+    this.observer.observe(this, { childList: true });
+  }
+
+  disconnectedCallback() {
+    this.observer.disconnect();
   }
 
   get activeStep() {
@@ -58,8 +69,9 @@ export class FormWizard extends HTMLElement {
     this.#updateFormProgress();
   }
 
-  get #steps() {
-    return [...this.children].map((child) => child.getAttribute("name"));
+  #updateSteps() {
+    this.#steps = [...this.children].map((child) => child.getAttribute("name"));
+    this.#updateFormProgress();
   }
 
   /**
