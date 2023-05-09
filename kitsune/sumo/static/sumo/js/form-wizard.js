@@ -37,7 +37,7 @@ export class FormWizard extends HTMLElement {
     shadow.appendChild(template.content.cloneNode(true));
 
     this.#progressIndicator = shadow.querySelector("progress");
-    
+
     this.#updateSteps();
     this.observer = new MutationObserver(() => {
       this.#updateSteps();
