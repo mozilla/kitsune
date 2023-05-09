@@ -8,13 +8,40 @@
  */
 export class FormWizard extends HTMLElement {
   #activeStep = null;
+  #progressIndicator = null;
+  #steps = [];
+
+  static get markup() {
+    return `
+      <template>
+        <div>
+          <h2>${gettext("Wizard header")}</h2>
+          <section>
+            <slot name="active"></slot>
+          </section>
+          <footer>
+            <progress max="100" value="0"></progress>
+          </footer>
+        </div>
+      </template>
+    `;
+  }
 
   constructor() {
     super();
     let shadow = this.attachShadow({ mode: "open" });
-    let activeSlot = document.createElement("slot");
-    activeSlot.setAttribute("name", "active");
-    shadow.appendChild(activeSlot);
+
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(FormWizard.markup, "text/html");
+    let template = doc.querySelector("template");
+    shadow.appendChild(template.content.cloneNode(true));
+
+    this.#progressIndicator = shadow.querySelector("progress");
+
+    this.#updateSteps();
+    this.observer = new MutationObserver(() => {
+      this.#updateSteps();
+    });
   }
 
   connectedCallback() {
@@ -25,6 +52,11 @@ export class FormWizard extends HTMLElement {
       // If there's no active step, default to the first step.
       this.activeStep = this.firstElementChild?.getAttribute("name");
     }
+    this.observer.observe(this, { childList: true });
+  }
+
+  disconnectedCallback() {
+    this.observer.disconnect();
   }
 
   get activeStep() {
@@ -34,6 +66,25 @@ export class FormWizard extends HTMLElement {
   set activeStep(name) {
     this.#activeStep = name;
     this.#setActiveStepAttributes();
+    this.#updateFormProgress();
+  }
+
+  #updateSteps() {
+    this.#steps = [...this.children].map((child) => child.getAttribute("name"));
+    this.#updateFormProgress();
+  }
+
+  /**
+   * Update the value of the progress element to show form completion.
+   * Defaults to 10% for the first step.
+   */
+  #updateFormProgress() {
+    if (this.#steps?.length) {
+      let activeStepIndex = this.#steps.indexOf(this.activeStep);
+      let progress =
+        Math.ceil((activeStepIndex / (this.#steps.length - 1)) * 100) || 10;
+      this.#progressIndicator.value = progress;
+    }
   }
 
   /**

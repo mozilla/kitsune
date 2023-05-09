@@ -14,6 +14,8 @@ global.history = dom.window.history;
 global.Element = dom.window.Element;
 global.HTMLElement = dom.window.HTMLElement;
 global.customElements = dom.window.customElements;
+global.DOMParser = dom.window.DOMParser;
+global.MutationObserver = dom.window.MutationObserver;
 global.matchMedia = () => ({
   matches : false,
   addListener : () =>{},
