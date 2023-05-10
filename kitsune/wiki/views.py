@@ -15,8 +15,8 @@ from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -68,7 +68,6 @@ from kitsune.wiki.tasks import (
     send_reviewed_notification,
 )
 from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
-
 
 log = logging.getLogger("k.wiki")
 
@@ -207,6 +206,22 @@ def document(request, document_slug, document=None):
 
     product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
+    # Switching devices section
+    switching_devices_product = switching_devices_topic = switching_devices_subtopics = None
+    if doc.is_switching_devices_document:
+        # make sure that the article is in the right product and topic
+        if (
+            not products.filter(slug="firefox").exists()
+            or not product_topics.filter(slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC).exists()
+        ):
+            raise Http404
+
+        switching_devices_product = Product.objects.get(slug="firefox")
+        switching_devices_topic = Topic.objects.get(
+            product=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
+        )
+        switching_devices_subtopics = Topic.objects.filter(parent=switching_devices_topic)
+
     if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
         document_css_class = "collapsible"
     else:
@@ -234,7 +249,6 @@ def document(request, document_slug, document=None):
         breadcrumbs.append((product.get_absolute_url(), product.title))
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
-
     # Decide whether the sumo banner should be displayed in the KB.
     # Base the decision on the English version of the document. If this is True
     # all translation should display the banner
@@ -267,6 +281,9 @@ def document(request, document_slug, document=None):
         "any_localizable_revision": any_localizable_revision,
         "full_locale_name": full_locale_name,
         "show_cta_banner": show_cta_banner,
+        "switching_devices_product": switching_devices_product,
+        "switching_devices_topic": switching_devices_topic,
+        "switching_devices_subtopics": switching_devices_subtopics,
     }
 
     return render(request, "wiki/document.html", data)

@@ -601,6 +601,7 @@ else:
         FXA_SUBSCRIPTIONS = config(
             "FXA_SUBSCRIPTIONS", default="https://accounts.firefox.com/subscriptions"
         )
+        FXA_ROOT = config("FXA_ROOT", default="https://accounts.firefox.com")
         FXA_SET_ISSUER = config("FXA_SET_ISSUER", default="https://accounts.firefox.com")
         FXA_VERIFY_URL = config(
             "FXA_VERIFY_URL", default="https://oauth.accounts.firefox.com/v1/verify"
@@ -1206,7 +1207,11 @@ CSP_STYLE_SRC: tuple[str, ...] = (
     "https://*.jsdelivr.net",
 )
 
-CSP_FORM_ACTION = ("'self'",)
+CSP_FORM_ACTION = (
+    "'self'",
+    "https://accounts.firefox.com",
+    "https://accounts.stage.mozaws.net",
+)
 
 CSP_MANIFEST_SRC = (
     "https://support.allizom.org",
@@ -1217,6 +1222,8 @@ CSP_CONNECT_SRC = (
     "'self'",
     "https://*.google-analytics.com",
     "https://location.services.mozilla.com",
+    "https://accounts.firefox.com/metrics-flow",
+    "https://accounts.stage.mozaws.net/metrics-flow",
 )
 
 if DEBUG:
@@ -1254,3 +1261,11 @@ LEGACY_CONTRIBUTOR_GROUPS = [
     "Registered as contributor",
     "trusted contributors",
 ]
+
+
+FIREFOX_SWITCHING_DEVICES_ARTICLES = config(
+    "FIREFOX_SWITCHING_DEVICES_ARTICLES", default="switching-devices", cast=Csv()
+)
+FIREFOX_SWITCHING_DEVICES_TOPIC = config(
+    "FIREFOX_SWITCHING_DEVICES_TOPIC", default="download-and-install"
+)

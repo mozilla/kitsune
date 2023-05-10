@@ -12,6 +12,10 @@ global.navigator = dom.window.navigator;
 global.sessionStorage = dom.window.sessionStorage;
 global.history = dom.window.history;
 global.Element = dom.window.Element;
+global.HTMLElement = dom.window.HTMLElement;
+global.customElements = dom.window.customElements;
+global.DOMParser = dom.window.DOMParser;
+global.MutationObserver = dom.window.MutationObserver;
 global.matchMedia = () => ({
   matches : false,
   addListener : () =>{},
@@ -20,3 +24,5 @@ global.matchMedia = () => ({
 global.jQuery = global.$ = require("jquery");
 require("../kitsune/sumo/static/sumo/js/i18n");
 global.gettext = dom.window.gettext;
+global.jsdom = dom
+global.window.fetch = () => {};

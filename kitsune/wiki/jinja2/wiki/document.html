@@ -1,13 +1,16 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications, related_products_sidebar with context %}
-{% from 'products/includes/topic_macros.html' import topic_sidebar %}
-{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
+{% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs  %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list, related_documents  %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
 {% from "includes/common_macros.html" import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% set scripts = ('document',) %}
+{% if document.is_switching_devices_document %}
+  {% set scripts = scripts + ('switching-devices',) %}
+{% endif %}
 {% set extra_body_attrs = {'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
 {% block title %}
@@ -87,6 +90,10 @@
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
+      {% if document.is_switching_devices_document %}
+        {{ topic_tabs(product_topics, switching_devices_subtopics, switching_devices_product, switching_devices_topic)}}
+      {% endif %}
+
       {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
       {% if share_link %}
         <p class="share-link">
@@ -101,47 +108,17 @@
       {{ vote_form(document, 'footer') }}
     </section>
 
+
     {{ contributor_list(contributors) }}
 
     <section class="sumo-page-section">
       {% include "landings/includes/volunteer-callout.html" %}
     </section>
 
-    {% if document.related_documents.count() %}
-    {% set docs = document.related_documents.all() %}
-    <section id="related-documents" class="sumo-page-section wiki-related-documents">
-      <div class="text-center">
-        <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
-      </div>
-      <div class="sumo-card-grid">
-        <div class="scroll-wrap">
-          {% for related in docs %}
-          <div class="card card--article">
-              <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
-              <div class="card--details">
-                <h3 class="card--title">
-                  <a
-                    class="expand-this-link"
-                    href="{{ url('wiki.document', related.slug) }}"
-                    data-event-category="link click"
-                    data-event-action="product"
-                    data-event-label="{{ related.title }}"
-                  >
-                    {{ related.title }}
-                  </a>
-                </h3>
-                <div class="card--desc">
-                  <p>
-                  {{ related.html|striptags|truncate(length=150) }}
-                  </p>
-                </div>
-              </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </section>
-  {% endif %}
+    {% if not document.is_switching_devices_document %}
+      {{ related_documents(document) }}
+    {% endif %}
+
   </section>
 {% endblock %}
 

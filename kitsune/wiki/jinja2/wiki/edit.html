@@ -10,6 +10,9 @@
                  (None, _('Edit Article'))] %}
 {% set classes = 'edit' %}
 {% set scripts = ('wiki', 'wiki.diff', 'wiki.editor') %}
+{% if document.is_switching_devices_document %}
+  {% set scripts = scripts + ('switching-devices',) %}
+{% endif %}
 
 {% block content %}
   <div class="user-messages">

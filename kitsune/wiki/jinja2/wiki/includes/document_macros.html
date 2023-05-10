@@ -116,7 +116,6 @@
   {%- endfor %}
 {%- endmacro %}
 
-
 {% macro edit_messages(document, show_revision_warning) -%}
   {% if show_revision_warning %}
   <div class="mzp-c-notification-bar mzp-t-warning">
@@ -373,7 +372,43 @@
       </form>
     </div>
   </div>
-
-
   {% endif %}
 {%- endmacro %}
+
+{% macro related_documents(document) %}
+  {% if document.related_documents.count() > 0 %}
+    {% set docs = document.related_documents.all() %}
+    <section id="related-documents" class="sumo-page-section wiki-related-documents">
+      <div class="text-center">
+        <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
+      </div>
+      <div class="sumo-card-grid">
+        <div class="scroll-wrap">
+          {% for related in docs %}
+          <div class="card card--article">
+              <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
+              <div class="card--details">
+                <h3 class="card--title">
+                  <a
+                    class="expand-this-link"
+                    href="{{ url('wiki.document', related.slug) }}"
+                    data-event-category="link click"
+                    data-event-action="product"
+                    data-event-label="{{ related.title }}"
+                  >
+                    {{ related.title }}
+                  </a>
+                </h3>
+                <div class="card--desc">
+                  <p>
+                  {{ related.html|striptags|truncate(length=150) }}
+                  </p>
+                </div>
+              </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  {% endif %}
+{% endmacro %}
