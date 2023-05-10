@@ -1,14 +1,28 @@
 /**
  * A custom element for displaying multi-step forms.
  *
- * Uses a named slot and "#activeStep" state to determine which step of the form
- * should be shown. All child elements where the "name" attribute doesn't match
- * the "#activeStep" will not be assigned to the named slot.
+ * Uses a named slot and `#activeStep` state to determine which step of the form
+ * should be shown. All child elements where the `name` attribute doesn't match
+ * the `#activeStep` will not be assigned to the named slot.
+ *
+ * Can be initialized with step data via the `steps` setter.
+ *
+ * wizard.steps = [
+ *  { name: "first", status: "done", label: "foo" },
+ *  { name: "second", status: "active", label: "bar" },
+ *  { name: "third", status: "unavailable", label: "baz" },
+ * ];
+ *
+ * The active step can be changed by calling `setStep` and passing in a step
+ * name along with new data representing that step.
+ *
+ * wizard.setStep("third", { name: "third", status: "active", label: "baz" });
  *
  */
 export class FormWizard extends HTMLElement {
   #activeStep = null;
   #progressIndicator = null;
+  #stepIndicator = null;
   #steps = [];
 
   static get markup() {
@@ -17,6 +31,7 @@ export class FormWizard extends HTMLElement {
         <div>
           <h2>${gettext("Wizard header")}</h2>
           <section>
+            <ul id="step-indicator"></ul>
             <slot name="active"></slot>
           </section>
           <footer>
@@ -37,11 +52,7 @@ export class FormWizard extends HTMLElement {
     shadow.appendChild(template.content.cloneNode(true));
 
     this.#progressIndicator = shadow.querySelector("progress");
-
-    this.#updateSteps();
-    this.observer = new MutationObserver(() => {
-      this.#updateSteps();
-    });
+    this.#stepIndicator = shadow.getElementById("step-indicator");
   }
 
   connectedCallback() {
@@ -52,11 +63,6 @@ export class FormWizard extends HTMLElement {
       // If there's no active step, default to the first step.
       this.activeStep = this.firstElementChild?.getAttribute("name");
     }
-    this.observer.observe(this, { childList: true });
-  }
-
-  disconnectedCallback() {
-    this.observer.disconnect();
   }
 
   get activeStep() {
@@ -69,9 +75,84 @@ export class FormWizard extends HTMLElement {
     this.#updateFormProgress();
   }
 
-  #updateSteps() {
-    this.#steps = [...this.children].map((child) => child.getAttribute("name"));
-    this.#updateFormProgress();
+  /**
+   * @typedef {object} FormWizardStep
+   * @property {string} name
+   *  The name of the step. Used as an identifier to determine which
+   *  child view should be shown and help determine how far the user
+   *  has progressed through the form.
+   * @property {string} status
+   *  Status of the step. One of "done" | "active" | "unavailable".
+   *  Used to hide/show steps and update the step indicator.
+   * @property {string} label
+   *  Label for the form step to be shown in the step indicator.
+   */
+
+  /**
+   * Stores the possible form step names and associated data.
+   *
+   * @param {FormWizardStep[]} nextSteps
+   *  Step data representing the desired state of the wizard.
+   */
+  set steps(nextSteps) {
+    this.#steps = nextSteps;
+    // Determine whether or not we need to update activeStep.
+    let nextActiveStep = nextSteps.find(
+      (step) => step.status === "active"
+    )?.name;
+    if (nextActiveStep) {
+      this.activeStep = nextActiveStep;
+    }
+    // Build or update the steps sidebar.
+    this.#updateStepIndicator();
+  }
+
+  /**
+   * Changes the active step and updates the status of the
+   * previously active step to "done".
+   *
+   * @param {string} name - Name of the active step.
+   * @param {FormWizardStep} data - Data about the active step.
+   */
+  setStep(name, data) {
+    let nextSteps = this.#steps.map((step) => {
+      if (step.status === "active") {
+        return { ...step, status: "done" };
+      }
+      return step.name === name ? { ...step, ...data } : step;
+    });
+    this.steps = nextSteps;
+  }
+
+  /**
+   * Populates the step indicator the first time step data is passed in,
+   * otherwise updates the statuses of the steps.
+   */
+  #updateStepIndicator() {
+    if (!this.#stepIndicator.children.length) {
+      this.#steps.forEach(({ name, status, label }, index) => {
+        let item = document.createElement("li");
+        item.setAttribute("id", name);
+        item.setAttribute("status", status);
+
+        let subtitle = document.createElement("p");
+        subtitle.classList.add("subtitle");
+        subtitle.textContent = `Step ${index + 1}`;
+        item.appendChild(subtitle);
+
+        let title = document.createElement("p");
+        title.classList.add("title");
+        title.textContent = gettext(label);
+        item.appendChild(title);
+
+        this.#stepIndicator.appendChild(item);
+      });
+    } else {
+      this.#steps.forEach((step) => {
+        let indicator = this.shadowRoot.getElementById(step.name);
+        indicator.setAttribute("status", step.status);
+      });
+    }
   }
 
   /**
@@ -80,7 +161,9 @@ export class FormWizard extends HTMLElement {
    */
   #updateFormProgress() {
     if (this.#steps?.length) {
-      let activeStepIndex = this.#steps.indexOf(this.activeStep);
+      let activeStepIndex = this.#steps.findIndex(
+        ({ name }) => name === this.activeStep
+      );
       let progress =
         Math.ceil((activeStepIndex / (this.#steps.length - 1)) * 100) || 10;
       this.#progressIndicator.value = progress;

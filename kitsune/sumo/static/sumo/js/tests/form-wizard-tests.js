@@ -7,18 +7,18 @@ describe("form-wizard custom element", () => {
 
   beforeEach(() => {
     $("body").empty().html(`
-            <form-wizard>
-                <div name="first">
-                    <p>This is the first step.</p>
-                </div>
-                <div name="second">
-                    <p>This is the second step.</p>
-                </div>
-                <div name="third">
-                    <p>This is the third step.</p>
-                </div>
-            </form-wizard>
-        `);
+        <form-wizard>
+            <div name="first">
+                <p>This is the first step.</p>
+            </div>
+            <div name="second">
+                <p>This is the second step.</p>
+            </div>
+            <div name="third">
+                <p>This is the third step.</p>
+            </div>
+        </form-wizard>
+    `);
     wizard = document.querySelector("form-wizard");
     slot = wizard.shadowRoot.querySelector('slot[name="active"]');
   });
@@ -37,13 +37,19 @@ describe("form-wizard custom element", () => {
   });
 
   describe("step change behavior", () => {
+    let initialSteps = [
+      { name: "first", status: "active", label: "First label" },
+      { name: "second", status: "unavailable", label: "Second label" },
+      { name: "third", status: "unavailable", label: "Third label" },
+    ];
+
     // Reset the active step before each test in this block.
     beforeEach(() => {
-      wizard.activeStep = "first";
+      wizard.steps = initialSteps;
     });
 
     it("should show a different step when the active step changes", () => {
-      wizard.activeStep = "second";
+      wizard.setStep("second", { status: "active" });
       let assignedElements = slot.assignedElements();
       let activeStep = assignedElements[0];
       expect(assignedElements.length).to.equal(1);
@@ -63,6 +69,32 @@ describe("form-wizard custom element", () => {
 
       wizard.activeStep = "third";
       expect(progress.value).to.equal(100);
+    });
+
+    it("should show an indicator of how many steps are in the form", () => {
+      let indicator = wizard.shadowRoot.getElementById("step-indicator");
+      let steps = indicator.children;
+      expect(indicator).to.exist;
+      expect(steps.length).to.equal(initialSteps.length);
+      [...steps].forEach((step, i) => {
+        let subtitle = step.querySelector(".subtitle");
+        let title = step.querySelector(".title");
+        expect(step.getAttribute("status")).to.equal(initialSteps[i].status);
+        expect(subtitle.textContent).to.equal(`Step ${i + 1}`);
+        expect(title.textContent).to.equal(initialSteps[i].label);
+      });
+    });
+
+    it("should update the statuses of the steps when the active step changes", () => {
+      let indicator = wizard.shadowRoot.getElementById("step-indicator");
+      let steps = indicator.children;
+      expect(steps[0].getAttribute("status")).to.equal("active");
+      expect(steps[1].getAttribute("status")).to.equal("unavailable");
+
+      wizard.setStep("second", { status: "active" });
+
+      expect(steps[0].getAttribute("status")).to.equal("done");
+      expect(steps[1].getAttribute("status")).to.equal("active");
     });
   });
 });
