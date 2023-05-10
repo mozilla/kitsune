@@ -8,13 +8,12 @@
     export let fact = {};
     export let location = "";
 
-    const isContributor = queryStore({
+    const contributorQ = queryStore({
         client: getContextClient(),
         query: gql`
             query getContributorStatus {
-                isContributor {
-                    id
-                    username
+                currentUser {
+                    isContributor
                 }
             }
         `,
@@ -32,7 +31,7 @@
     <div class="wrapper">
         <ol>
             <li>
-                {#if !$isContributor.data?.isContributor?.id}
+                {#if !$contributorQ.data?.currentUser?.isContributor}
                     <Linkable link={signUp}>
                         {gettext("Sign up as a volunteer")}
                     </Linkable>
