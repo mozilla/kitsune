@@ -8,12 +8,27 @@ const FAKE_FXA_FLOW_ID = "abc123";
 const FAKE_FXA_FLOW_BEGIN_TIME = "123456789";
 
 describe("k", () => {
-  describe("SwitchingDevicesWizardManager", () => {
+  describe("SwitchingDevicesWizardManager with a qualified UA", () => {
+    const QUALIFIED_FX_UA =
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/114.0";
+    const QUALIFIED_FX_TROUBLESHOOTING_DATA = Object.freeze({
+      application: {
+        name: "Firefox",
+        version: "114.0.0",
+        osVersion: "Windows_NT 10.0 22000",
+      },
+    });
+
     let gOriginalLocation;
     let gSandbox = sinon.createSandbox();
 
-    // A sinon stub for window.fetch, set up in beforeEach
+    // A sinon stub for window.fetch, set up and reset in beforeEach and
+    // afterEach, respectively.
     let gFetchStub;
+
+    // A sinon stub for <form-wizard>.setStep. This is setup and reset
+    // in beforeEach and afterEach, respectively.
+    let gSetStepStub;
 
     // A Promise that gets created in beforeEach, and is awaited during
     // each afterEach. When this Promise resolves, the metrics-flow request
@@ -39,6 +54,10 @@ describe("k", () => {
       $("body").empty().html(`
         <form-wizard fxa-root="${FAKE_FXA_ROOT}"></form-wizard>
       `);
+      let wizard = document.querySelector("form-wizard");
+      wizard.disqualify = () => {};
+      wizard.setStep = () => {};
+      gSetStepStub = gSandbox.stub(wizard, "setStep");
 
       // This is a little complicated, but makes it so that each of our tests
       // can wait for both the metrics-flow request and JSON parsing Promises
@@ -73,22 +92,30 @@ describe("k", () => {
     afterEach(async () => {
       await gMetricsPromise;
       gFetchStub.restore();
+      gSetStepStub.restore();
     });
 
+    /**
+     * A helper function to return a SwitchingDevicesWizardManager that
+     * is constructed with some testing UA strings that result in the
+     * manager evaluating the user agent as qualified to use the wizard.
+     */
+    let constructValidManager = () => {
+      return new SwitchingDevicesWizardManager(
+        document.querySelector("form-wizard"),
+        QUALIFIED_FX_UA,
+        QUALIFIED_FX_TROUBLESHOOTING_DATA
+      );
+    };
+
     it("should be constructable", () => {
-      expect(() => {
-        new SwitchingDevicesWizardManager(
-          document.querySelector("form-wizard")
-        );
-      }).to.not.throw();
+      expect(constructValidManager).to.not.throw();
     });
 
     it("should require an fxa-root attribute on the wizard to be constructable", async () => {
       let node = document.querySelector("form-wizard");
       node.removeAttribute("fxa-root");
-      expect(() => {
-        new SwitchingDevicesWizardManager(node);
-      }).to.throw();
+      expect(constructValidManager).to.throw();
 
       // Most of the subtests in this test file cause the
       // SwitchingDevicesWizardManager to kick off an XHR to request
@@ -109,9 +136,7 @@ describe("k", () => {
         url: "https://support.mozilla.org/no-params-url",
       });
 
-      let manager = new SwitchingDevicesWizardManager(
-        document.querySelector("form-wizard")
-      );
+      let manager = constructValidManager();
       expect(manager.state.utm_source).to.equal("support.mozilla.org");
       expect(manager.state.utm_campaign).to.equal("migration");
       expect(manager.state.utm_medium).to.equal("mozilla-websites");
@@ -123,9 +148,7 @@ describe("k", () => {
           "https://support.mozilla.org/params-url?utm_source=source&utm_campaign=campaign&utm_medium=medium",
       });
 
-      let manager = new SwitchingDevicesWizardManager(
-        document.querySelector("form-wizard")
-      );
+      let manager = constructValidManager();
       expect(manager.state.utm_source).to.equal("source");
       expect(manager.state.utm_campaign).to.equal("campaign");
       expect(manager.state.utm_medium).to.equal("medium");
@@ -141,9 +164,7 @@ describe("k", () => {
           "https://support.mozilla.org/params-url?entrypoint=entrypoint&entrypoint_variation=variation&entrypoint_experiment=experiment",
       });
 
-      let manager = new SwitchingDevicesWizardManager(
-        document.querySelector("form-wizard")
-      );
+      let manager = constructValidManager();
       expect(manager.state.entrypoint).to.equal("entrypoint");
       expect(manager.state.entrypoint_variation).to.equal("variation");
       expect(manager.state.entrypoint_experiment).to.equal("experiment");
@@ -154,18 +175,249 @@ describe("k", () => {
     });
 
     it("should request flow metrics from the FxA root and update internal state", async () => {
-      let manager = new SwitchingDevicesWizardManager(
-        document.querySelector("form-wizard")
-      );
+      let manager = constructValidManager();
       await gMetricsPromise;
 
       expect(manager.state.flow_id).to.equal(FAKE_FXA_FLOW_ID);
-      expect(manager.state.flow_begin_time).to.equal(
-        FAKE_FXA_FLOW_BEGIN_TIME
+      expect(manager.state.flow_begin_time).to.equal(FAKE_FXA_FLOW_BEGIN_TIME);
+      expect(manager.state.utm_source).to.equal("support.mozilla.org");
+    });
+
+    it("should sent the user to the sign-into-fxa step when not signed in", async () => {
+      let setStepCalled = new Promise((resolve) => {
+        gSetStepStub.callsFake((name, payload) => {
+          resolve({ name, payload });
+        });
+      });
+
+      let manager = constructValidManager();
+      await gMetricsPromise;
+      let { name, payload } = await setStepCalled;
+      expect(name).to.equal("sign-into-fxa");
+      expect(payload).to.deep.equal({
+        fxaRoot: FAKE_FXA_ROOT,
+        email: "",
+
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        utm_medium: "mozilla-websites",
+        entrypoint: "fx-new-device-sync",
+        entrypoint_experiment: null,
+        entrypoint_variation: null,
+        flow_id: FAKE_FXA_FLOW_ID,
+        flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
+        context: null,
+      });
+    });
+
+    it("should not let the user advance past the sign-into-fxa step unless signed in", async () => {
+      let manager = constructValidManager();
+      let step = manager.steps.find((s) => s.name == "sign-into-fxa");
+
+      expect(step.exitConditionsMet({ fxaSignedIn: false })).to.be.false;
+      expect(step.exitConditionsMet({ fxaSignedIn: true })).to.be.true;
+    });
+
+    it("should have the sign-into-fxa step emit the right payload if entering", async () => {
+      let manager = constructValidManager();
+      let step = manager.steps.find((s) => s.name == "sign-into-fxa");
+
+      const TEST_STATE = {
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        utm_medium: "mozilla-websites",
+        entrypoint: "fx-new-device-sync",
+        entrypoint_experiment: "experiment",
+        entrypoint_variation: "variation",
+        flow_id: FAKE_FXA_FLOW_ID,
+        flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
+        context: "sync",
+        fxaRoot: FAKE_FXA_ROOT,
+        fxaSignedIn: false,
+        sumoEmail: "test@example.com",
+        syncEnabled: false,
+        confirmedSyncChoices: false,
+      };
+      const EXPECTED_PAYLOAD = {
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        utm_medium: "mozilla-websites",
+        entrypoint: "fx-new-device-sync",
+        entrypoint_experiment: "experiment",
+        entrypoint_variation: "variation",
+        flow_id: FAKE_FXA_FLOW_ID,
+        flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
+        context: "sync",
+        fxaRoot: FAKE_FXA_ROOT,
+        email: "test@example.com",
+      };
+      expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
+    });
+
+    it("should not let the user advance past the configure-sync step unless sync enabled and configured", async () => {
+      let manager = constructValidManager();
+      let step = manager.steps.find((s) => s.name == "configure-sync");
+      expect(
+        step.exitConditionsMet({
+          syncEnabled: false,
+          confirmedSyncChoices: false,
+        })
+      ).to.be.false;
+      expect(
+        step.exitConditionsMet({
+          syncEnabled: true,
+          confirmedSyncChoices: false,
+        })
+      ).to.be.false;
+      expect(
+        step.exitConditionsMet({
+          syncEnabled: true,
+          confirmedSyncChoices: true,
+        })
+      ).to.be.true;
+
+      // I suppose this could occur if the user confirms their choices, and at the
+      // same instant, sync gets disabled. Seems unlikely, but testing it anyway.
+      expect(
+        step.exitConditionsMet({
+          syncEnabled: false,
+          confirmedSyncChoices: true,
+        })
+      ).to.be.false;
+    });
+
+    it("should have the configure-sync step emit the right payload if entering", async () => {
+      let manager = constructValidManager();
+      let step = manager.steps.find((s) => s.name == "configure-sync");
+
+      const TEST_STATE = {
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        utm_medium: "mozilla-websites",
+        entrypoint: "fx-new-device-sync",
+        entrypoint_experiment: "experiment",
+        entrypoint_variation: "variation",
+        flow_id: FAKE_FXA_FLOW_ID,
+        flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
+        context: "sync",
+        fxaRoot: FAKE_FXA_ROOT,
+        fxaSignedIn: true,
+        sumoEmail: "test@example.com",
+        syncEnabled: false,
+        confirmedSyncChoices: false,
+      };
+      const EXPECTED_PAYLOAD = {
+        syncEnabled: false,
+      };
+      expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
+    });
+
+    it("should not let the user exit the setup-new-device step", async () => {
+      let manager = constructValidManager();
+      let step = manager.steps.find((s) => s.name == "setup-new-device");
+      expect(step.exitConditionsMet()).to.be.false;
+      expect(
+        step.exitConditionsMet({
+          fxaSignedIn: true,
+          syncEnabled: true,
+          confirmedSyncChoices: true,
+        })
+      ).to.be.false;
+    });
+
+    it("should not supply a payload to the setup-new-device step when entering", async () => {
+      let manager = constructValidManager();
+      let step = manager.steps.find((s) => s.name == "setup-new-device");
+
+      const TEST_STATE = {
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        utm_medium: "mozilla-websites",
+        entrypoint: "fx-new-device-sync",
+        entrypoint_experiment: "experiment",
+        entrypoint_variation: "variation",
+        flow_id: FAKE_FXA_FLOW_ID,
+        flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
+        context: "sync",
+        fxaRoot: FAKE_FXA_ROOT,
+        fxaSignedIn: true,
+        sumoEmail: "test@example.com",
+        syncEnabled: true,
+        confirmedSyncChoices: true,
+      };
+      const EXPECTED_PAYLOAD = {};
+
+      expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
+    });
+  });
+
+  describe("SwitchingDevicesWizardManager with a disqualified UA", () => {
+    const DISQUALIFIED_FX_UA =
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
+
+    let gSandbox = sinon.createSandbox();
+
+    // A sinon stub for <form-wizard>.setStep. This is setup and reset
+    // in beforeEach and afterEach, respectively.
+    let gSetStepStub;
+
+    // A sinon stub for <form-wizard>.disqualify. This is setup and reset
+    // in beforeEach and afterEach, respectively.
+    let gDisqualifyStub;
+
+    after(function() {
+      gSandbox.restore();
+    });
+
+    beforeEach(() => {
+      $("body").empty().html(`
+        <form-wizard fxa-root="${FAKE_FXA_ROOT}"></form-wizard>
+      `);
+      let wizard = document.querySelector("form-wizard");
+      wizard.disqualify = () => {};
+      wizard.setStep = () => {};
+      gSetStepStub = gSandbox.stub(wizard, "setStep");
+      gDisqualifyStub = gSandbox.stub(wizard, "disqualify");
+    });
+
+    afterEach(async () => {
+      gSetStepStub.restore();
+      gDisqualifyStub.restore();
+    });
+
+    /**
+     * A helper function to return a SwitchingDevicesWizardManager that
+     * is constructed with some testing UA strings that result in the
+     * manager evaluating the user agent as NOT qualified to use the wizard.
+     */
+    let constructInvalidManager = () => {
+      return new SwitchingDevicesWizardManager(
+        document.querySelector("form-wizard"),
+        DISQUALIFIED_FX_UA
       );
-      expect(manager.state.utm_source).to.equal(
-        "support.mozilla.org"
-      );
+    };
+
+    it("should be constructable", () => {
+      expect(constructInvalidManager).to.not.throw();
+    });
+
+    it("should require an fxa-root attribute on the wizard to be constructable", async () => {
+      let node = document.querySelector("form-wizard");
+      node.removeAttribute("fxa-root");
+      expect(constructInvalidManager).to.throw();
+    });
+
+    it("should result in the wizard being called with disqualify", async () => {
+      let disqualifyCalled = new Promise((resolve) => {
+        gDisqualifyStub.callsFake((header, message) => {
+          resolve({ header, message });
+        });
+      });
+      let manager = constructInvalidManager();
+      let { header, message } = await disqualifyCalled;
+      expect(gSetStepStub.called).to.be.false;
+      expect(header).to.not.be.empty;
+      expect(message).to.not.be.empty;
     });
   });
 });
