@@ -31,16 +31,14 @@ export class FormWizard extends HTMLElement {
   static get markup() {
     return `
       <template>
-        <div>
+        <div class="form-wizard-content">
           <h2>${gettext("Wizard header")}</h2>
           <section>
             <ul id="step-indicator"></ul>
             <slot name="active"></slot>
           </section>
-          <footer>
-            <progress max="100" value="0"></progress>
-          </footer>
         </div>
+        <progress max="100" value="0"></progress>
       </template>
     `;
   }
@@ -49,10 +47,17 @@ export class FormWizard extends HTMLElement {
     super();
     let shadow = this.attachShadow({ mode: "open" });
 
+    let stylesheet = document.createElement("link");
+    stylesheet.setAttribute("rel", "stylesheet");
+    stylesheet.setAttribute(
+      "href",
+      this.getAttribute("static-url") + "form-wizard-styles.css"
+    );
+
     let parser = new DOMParser();
     let doc = parser.parseFromString(FormWizard.markup, "text/html");
     let template = doc.querySelector("template");
-    shadow.appendChild(template.content.cloneNode(true));
+    shadow.append(stylesheet, template.content.cloneNode(true));
 
     this.#progressIndicator = shadow.querySelector("progress");
     this.#stepIndicator = shadow.getElementById("step-indicator");
