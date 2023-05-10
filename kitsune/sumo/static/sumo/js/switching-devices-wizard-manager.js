@@ -1,4 +1,5 @@
 import BrowserDetect from "./browserdetect";
+import UITour from "./libs/uitour";
 
 /**
  * This class is responsible for managing the state for a wizard that
@@ -10,6 +11,11 @@ import BrowserDetect from "./browserdetect";
  */
 export default class SwitchingDevicesWizardManager {
   #formWizard = null;
+
+  // For versions of Firefox < 114, we use this value as a polling interval
+  // to check for FxA sign-in state changes.
+  #pollIntervalMs = 500;
+  #pollIntervalID = null;
 
   // Some of these #state properties use snake_case since there are some
   // properties that are going to be sent as queryParameters, and this
@@ -70,6 +76,8 @@ export default class SwitchingDevicesWizardManager {
   steps = Object.freeze([
     {
       name: "sign-into-fxa",
+      status: "active",
+      label: gettext("Create an account"),
       exitConditionsMet(state) {
         return state.fxaSignedIn;
       },
@@ -92,6 +100,8 @@ export default class SwitchingDevicesWizardManager {
     },
     {
       name: "configure-sync",
+      status: "unavailable",
+      label: gettext("Sync your data"),
       exitConditionsMet(state) {
         return state.syncEnabled && state.confirmedSyncChoices;
       },
@@ -103,6 +113,8 @@ export default class SwitchingDevicesWizardManager {
     },
     {
       name: "setup-new-device",
+      status: "unavailable",
+      label: gettext("Set up your new device"),
       exitConditionsMet(state) {
         return false;
       },
@@ -123,8 +135,10 @@ export default class SwitchingDevicesWizardManager {
    *   An optional fake object to pass to the BrowserDetect library to simulate
    *   what is returned from a WebChannel on a Firefox Desktop browser for
    *   a request for troubleshooting data.
+   * @param {number} [pollIntervalMs=undefined]
+   *   The interval for polling for FxA state changes while under test.
    */
-  constructor(formWizard, fakeUA, fakeTroubleshooting) {
+  constructor(formWizard, fakeUA, fakeTroubleshooting, pollIntervalMs) {
     this.#formWizard = formWizard;
 
     if (!this.#formWizard.hasAttribute("fxa-root")) {
@@ -133,6 +147,8 @@ export default class SwitchingDevicesWizardManager {
           "SwitchingDevicesWizardManager constructor."
       );
     }
+
+    this.#setupFormWizardStepIndicator();
 
     this.#state.fxaRoot = this.#formWizard.getAttribute("fxa-root");
 
@@ -155,7 +171,7 @@ export default class SwitchingDevicesWizardManager {
       }
     }
 
-    this.#init(fakeUA, fakeTroubleshooting);
+    this.#init(fakeUA, fakeTroubleshooting, pollIntervalMs);
   }
 
   /**
@@ -170,13 +186,36 @@ export default class SwitchingDevicesWizardManager {
    *   An optional fake object to pass to the BrowserDetect library to simulate
    *   what is returned from a WebChannel on a Firefox Desktop browser for
    *   a request for troubleshooting data.
+   * @param {number} [pollIntervalMs=undefined]
+   *   The interval for polling for FxA state changes while under test.
    */
-  async #init(fakeUA, fakeTroubleshooting) {
+  async #init(fakeUA, fakeTroubleshooting, pollIntervalMs = this.#pollIntervalMs) {
     try {
       let detect = new BrowserDetect(fakeUA, null, fakeTroubleshooting);
       let browser = await detect.getBrowser();
       let platform = await detect.getOS();
       if (browser.mozilla && !platform.mobile) {
+        await new Promise(resolve => {
+          UITour.ping(resolve);
+        });
+
+        await this.#updateFxAState();
+
+        if (browser.version.major >= 114) {
+          // Firefox 114+ allows us to get notified when the FxA sign-in state
+          // changes through UITour.
+          await new Promise(resolve => {
+            UITour.observe((name, params) => {
+              this.#onUITourNotification(name, params);
+            }, resolve);
+          });
+        } else {
+          // For older Firefox versions, we'll do polling.
+          this.#pollIntervalID = window.setInterval(() => {
+            this.#updateFxAState();
+          }, pollIntervalMs);
+        }
+
         // We need to get some query parameters from the FxA server before we
         // show the user any kind of form to create or sign-in to an account.
         // See https://mozilla.github.io/ecosystem-platform/relying-parties/reference/metrics-for-relying-parties#relying-party-hosted-email-form.
@@ -184,6 +223,7 @@ export default class SwitchingDevicesWizardManager {
         return;
       }
     } catch (e) {
+      console.error(e);
       // Intentional fall-through - we want to do this if any part of the
       // UA computation didn't meet our criteria OR failed.
     }
@@ -196,6 +236,15 @@ export default class SwitchingDevicesWizardManager {
           "computer to begin the migration process"
       )
     );
+  }
+
+  /**
+   * A testing-only function to do any cleanup once an instance of
+   * SwitchingDevicesWizardManager is being thrown away.
+   */
+  destroy() {
+    window.clearInterval(this.#pollIntervalID);
+    this.#pollIntervalID = null;
   }
 
   /**
@@ -218,8 +267,16 @@ export default class SwitchingDevicesWizardManager {
    *   mechanism as when using `Object.assign`.
    */
   #updateState(stateDiff) {
-    this.#state = Object.assign(this.#state, stateDiff);
-    this.#recomputeCurrentStep();
+    let oldState = this.state;
+    let newState = Object.assign(this.#state, stateDiff);
+    this.#state = newState;
+
+    for (let prop in oldState) {
+      if (oldState[prop] !== newState[prop]) {
+        this.#recomputeCurrentStep();
+        break;
+      }
+    }
   }
 
   /**
@@ -235,6 +292,70 @@ export default class SwitchingDevicesWizardManager {
         this.#formWizard.setStep(step.name, payload);
         break;
       }
+    }
+  }
+
+  /**
+   * Sets up the step indicator on the #formWizard based on the
+   * default state of this.steps. This should be called either
+   * during initialization or if the whole wizard is being reset
+   * back to the starting state.
+   */
+  #setupFormWizardStepIndicator() {
+    let fwSteps = this.steps.map(({ name, status, label }) => {
+      return { name, status, label };
+    });
+    this.#formWizard.steps = fwSteps;
+  }
+
+  /**
+   * Handler for UITour notifications. Specifically, this monitors
+   * for changes to the FxA sign-in state.
+   *
+   * @param {string} name
+   *   The name of the UITour notification.
+   * @param {object} params
+   *   Extra parameters that UITour sends with each notification.
+   * @return {Promise<undefined>}
+   *   Resolves after recomputing the FxA sign-in state.
+   */
+  async #onUITourNotification(name, params) {
+    if (name == "FxA:SignedInStateChange") {
+      await this.#updateFxAState();
+    }
+  }
+
+  /**
+   * Uses UITour to query for the current FxA sign-in state. A user
+   * is considered signed in if their FxA account is both setup and
+   * the account state is "ok" (as in, they have verified their email
+   * address).
+   *
+   * Once the sign-in state is determined from UITour, the internal
+   * state of the SwichingDevicesWizardManager is updated to reflect
+   * it.
+   *
+   * In the event that the state is transitioning from "signed in" to
+   * "signed out", the #formWizard is reset back to its starting point.
+   */
+  async #updateFxAState() {
+    let fxaConfig = await new Promise(resolve => {
+      UITour.getConfiguration("fxa", resolve);
+    });
+
+    if (fxaConfig.setup && fxaConfig.accountStateOK) {
+      this.#updateState({
+        fxaSignedIn: true,
+        syncEnabled: !!fxaConfig.browserServices?.sync?.setup,
+      });
+    } else if (this.#state.fxaSignedIn) {
+      // If we've gone from being signed in to signed out, we need to
+      // reset our state.
+      this.#setupFormWizardStepIndicator();
+      this.#updateState({
+        fxaSignedIn: false,
+        syncEnabled: false,
+      });
     }
   }
 
@@ -258,18 +379,26 @@ export default class SwitchingDevicesWizardManager {
         params.set(paramName, this.#state[paramName]);
       }
     }
-    let response = await window.fetch(
-      `${this.#state.fxaRoot}/metrics-flow?${params}`
-    );
+    try {
+      let response = await window.fetch(
+        `${this.#state.fxaRoot}/metrics-flow?${params}`
+      );
 
-    if (response.status == 200) {
-      let { flowId, flowBeginTime } = await response.json();
+      if (response.status == 200) {
+        let { flowId, flowBeginTime } = await response.json();
 
-      let stateDiff = {
-        flow_id: flowId,
-        flow_begin_time: flowBeginTime,
-      };
-      this.#updateState(stateDiff);
+        let stateDiff = {
+          flow_id: flowId,
+          flow_begin_time: flowBeginTime,
+        };
+        this.#updateState(stateDiff);
+      }
+    } catch (e) {
+      // Log but intentionally ignore this case. If getting the metrics flow
+      // parameters somehow failed (say, for example, a problem on the FxA
+      // handler for metrics-flow), this shouldn't prevent the user from
+      // completing their task.
+      console.error(e);
     }
   }
 }
