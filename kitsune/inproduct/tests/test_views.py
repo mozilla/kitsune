@@ -19,9 +19,6 @@ class RedirectTestCase(TestCase):
         ("firefox/4.0/Linux/en-US/prefs-applications", "/en-US/kb/Applications"),
         ("firefox/4.0/Linux/en-US/prefs-applications/", "/en-US/kb/Applications"),
         ("firefox/5.0/NONE/en-US/", "/en-US/does-not-exist"),
-        # temporarily disabled during django upgrade
-        # TODO: fix prior to production push
-        # ('mobile/4.0/MARTIAN/en-US/', 'http://martian.com'),
         ("firefox/4.0/Android/en-US/foo", 404),
         # Make sure Basque doesn't trigger the EU ballot logic.
         ("firefox/29.0/Darwin/eu/", "/eu/"),
@@ -44,9 +41,6 @@ class RedirectTestCase(TestCase):
         ("firefox/4.0/Linux/en-US/eu/prefs-applications", "/en-US/kb/Applications"),
         ("firefox/4.0/Linux/en-US/eu/prefs-applications/", "/en-US/kb/Applications"),
         ("firefox/5.0/NONE/en-US/eu/", "/en-US/does-not-exist"),
-        # temporarily disabled during django upgrade
-        # TODO: fix prior to production push
-        # ('mobile/4.0/MARTIAN/en-US/eu/', 'http://martian.com'),
         ("firefox/4.0/Android/en-US/eu/foo", 404),
         # Basque is awesome.
         ("firefox/30.0/WINNT/eu/eu/", "/eu/"),
@@ -63,7 +57,13 @@ class RedirectTestCase(TestCase):
         RedirectFactory(platform="iPhone", target="")
         RedirectFactory(product="mobile", platform="Android", topic="foo", target="")
         RedirectFactory(version="5.0", target="does-not-exist")
-        RedirectFactory(platform="martian", target="http://martian.com")
+        RedirectFactory(platform="martian", target="https://martian.com")
+        RedirectFactory(product="firefox", topic="learn", target="kb/learn?utm_source=yada")
+        RedirectFactory(
+            product="monitor",
+            topic="share",
+            target="kb/share?utm_content=firefox-share&utm_source=blue",
+        )
 
     def test_target(self):
         """Test that we can vary on any parameter and targets work."""
@@ -73,20 +73,71 @@ class RedirectTestCase(TestCase):
         """Test that all URLs work with the extra 'eu'."""
         self._targets(self.test_eu_urls, "as=u&utm_source=inproduct&eu=1")
 
+    def test_external_target(self):
+        tests = (
+            ("mobile/4.0/MARTIAN/en-US/", "https://martian.com"),
+            ("mobile/4.0/MARTIAN/en-US/eu/", "https://martian.com"),
+        )
+        self._targets(tests, "")
+
+    def test_with_incoming_params(self):
+        """Test that incoming query parameters are preserved."""
+
+        tests = (
+            ("firefox/112/Linux/en-US/learn", "/en-US/kb/learn", "utm_source=yada&as=u"),
+            (
+                "firefox/112/Linux/en-US/learn?utm_source=firefox",
+                "/en-US/kb/learn",
+                "utm_source=firefox&as=u",
+            ),
+            (
+                "firefox/112/Linux/en-US/learn?utm_content=learn&utm_source=firefox",
+                "/en-US/kb/learn",
+                "utm_source=firefox&utm_content=learn&as=u",
+            ),
+            (
+                "firefox/112/Linux/en-US/learn?utm_content=learn",
+                "/en-US/kb/learn",
+                "utm_source=yada&utm_content=learn&as=u",
+            ),
+            (
+                "monitor/112/Linux/en-US/share",
+                "/en-US/kb/share",
+                "utm_content=firefox-share&utm_source=blue&as=u",
+            ),
+            (
+                "monitor/112/Linux/en-US/eu/share",
+                "/en-US/kb/share",
+                "utm_content=firefox-share&utm_source=blue&as=u&eu=1",
+            ),
+            (
+                "mobile/4.0/martian/en-US?utm_source=aliens",
+                "https://martian.com",
+                "utm_source=aliens",
+            ),
+        )
+
+        for ipl, expected_path, expected_qs in tests:
+            self._targets([(ipl, expected_path)], expected_qs)
+
     def _targets(self, urls, querystring):
         for input, output in urls:
-            response = self.client.get("/1/%s" % input, follow=True)
-            if output == 404:
-                self.assertEqual(404, response.status_code)
-            elif output.startswith("http"):
-                chain = [u[0] for u in response.redirect_chain]
-                assert output in chain
-            else:
-                r = response.redirect_chain
-                r.reverse()
-                final = urlparse(r[0][0])
-                self.assertEqual(output, final.path)
-                self.assertEqual(querystring, final.query)
+            with self.subTest(input):
+                response = self.client.get(f"/1/{input}", follow=True)
+                if output == 404:
+                    self.assertEqual(404, response.status_code)
+                elif output.startswith("http"):
+                    # Since we're redirecting to an external domain, just check the first one.
+                    url, status_code = response.redirect_chain[0]
+                    self.assertEqual(302, status_code)
+                    self.assertEqual(url, output + (f"?{querystring}" if querystring else ""))
+                else:
+                    # The first redirect should be a 302.
+                    self.assertEqual(302, response.redirect_chain[0][1])
+                    # Let's check the final redirect against what we expected.
+                    final = urlparse(response.redirect_chain[-1][0])
+                    self.assertEqual(output, final.path)
+                    self.assertEqual(querystring, final.query)
 
     @mock.patch.object(Site.objects, "get_current")
     @mock.patch.object(waffle, "sample_is_active")

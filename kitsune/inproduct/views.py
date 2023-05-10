@@ -91,13 +91,21 @@ def redirect(request, product, version, platform, locale, topic=None):
     # If the target starts with HTTP, we don't add a locale or query string
     # params.
     if destination.target.startswith("http"):
-        target = destination.target
+        # Preserve all incoming query parameters when redirecting to the target.
+        target = urlparams(destination.target, query_dict=request.GET)
     else:
-        params = {"as": "u", "utm_source": "inproduct"}
+        # Preserve all incoming query parameters except for "as" and "eu".
+        params = {"as": "u"}
+        if (
+            ("utm_source" not in request.GET)
+            and ("?utm_source=" not in destination.target)
+            and ("&utm_source=" not in destination.target)
+        ):
+            params["utm_source"] = "inproduct"
         if hasattr(request, "eu_build"):
             params["eu"] = 1
         target = "/%s/%s" % (locale, destination.target.lstrip("/"))
-        target = urlparams(target, **params)
+        target = urlparams(target, query_dict=request.GET, **params)
 
         # Switch over to HTTPS if we DEBUG=False and sample is active.
         if not settings.DEBUG and waffle.sample_is_active("inproduct-https"):
