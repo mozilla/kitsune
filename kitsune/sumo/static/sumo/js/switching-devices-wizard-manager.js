@@ -189,22 +189,26 @@ export default class SwitchingDevicesWizardManager {
    * @param {number} [pollIntervalMs=undefined]
    *   The interval for polling for FxA state changes while under test.
    */
-  async #init(fakeUA, fakeTroubleshooting, pollIntervalMs = this.#pollIntervalMs) {
+  async #init(
+    fakeUA,
+    fakeTroubleshooting,
+    pollIntervalMs = this.#pollIntervalMs
+  ) {
     try {
       let detect = new BrowserDetect(fakeUA, null, fakeTroubleshooting);
       let browser = await detect.getBrowser();
       let platform = await detect.getOS();
       if (browser.mozilla && !platform.mobile) {
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           UITour.ping(resolve);
         });
 
-        await this.#updateFxAState();
+        await Promise.all([this.#checkForSUMOEmail(), this.#updateFxAState()]);
 
         if (browser.version.major >= 114) {
           // Firefox 114+ allows us to get notified when the FxA sign-in state
           // changes through UITour.
-          await new Promise(resolve => {
+          await new Promise((resolve) => {
             UITour.observe((name, params) => {
               this.#onUITourNotification(name, params);
             }, resolve);
@@ -339,7 +343,7 @@ export default class SwitchingDevicesWizardManager {
    * "signed out", the #formWizard is reset back to its starting point.
    */
   async #updateFxAState() {
-    let fxaConfig = await new Promise(resolve => {
+    let fxaConfig = await new Promise((resolve) => {
       UITour.getConfiguration("fxa", resolve);
     });
 
@@ -399,6 +403,41 @@ export default class SwitchingDevicesWizardManager {
       // handler for metrics-flow), this shouldn't prevent the user from
       // completing their task.
       console.error(e);
+    }
+  }
+
+  /**
+   * Queries SUMO for the email address of the currently signed in SUMO
+   * user viewing the page. If the user is logged into SUMO and the account
+   * has a valid email address, we will update the internal state so that
+   * the <form-wizard> can re-use that email address for signing into
+   * a Firefox Account for syncing.
+   */
+  async #checkForSUMOEmail() {
+    const query = `
+      query {
+        currentUser {
+          email
+        }
+      }
+    `;
+
+    let response = await window.fetch("/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    if (response.status == 200) {
+      let responseBody = await response.json();
+      let sumoEmail = responseBody.data?.currentUser?.email;
+      if (sumoEmail) {
+        this.#updateState({
+          sumoEmail,
+        });
+      }
     }
   }
 }
