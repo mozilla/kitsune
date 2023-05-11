@@ -26,3 +26,4 @@ require("../kitsune/sumo/static/sumo/js/i18n");
 global.gettext = dom.window.gettext;
 global.jsdom = dom
 global.window.fetch = () => {};
+global.CustomEvent = dom.window.CustomEvent;

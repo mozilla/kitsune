@@ -1,11 +1,107 @@
 import { expect } from "chai";
 import sinon from "sinon";
+import UITour from "../libs/uitour";
 
 import SwitchingDevicesWizardManager from "sumo/js/switching-devices-wizard-manager";
 
 const FAKE_FXA_ROOT = "https://example.local";
 const FAKE_FXA_FLOW_ID = "abc123";
 const FAKE_FXA_FLOW_BEGIN_TIME = "123456789";
+
+/**
+ * This is a utility class that knows how to respond to UITour-lib
+ * messages that normally get processed by Firefox.
+ *
+ * The events are captured, and there are a series of built-in responses
+ * for different UITour functions. Users of this class can use sinon to
+ * override the default response.
+ *
+ * Users of this class need to ensure that they call `destroy` after
+ * using it to remove the UITour event listener.
+ */
+class FakeUITourResponder {
+  constructor() {
+    document.addEventListener("mozUITour", this);
+  }
+
+  destroy() {
+    document.removeEventListener("mozUITour", this);
+  }
+
+  handleEvent(event) {
+    switch (event.detail.action) {
+      case "ping": {
+        this.onPing(event.detail.data);
+        break;
+      }
+      case "getConfiguration": {
+        this.onGetConfiguration(event.detail.data);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Default response to the `ping` message sent by calling
+   * `UITour.ping`.
+   *
+   * @param {object} data
+   *   The data object passed through UITour-lib. This must include
+   *   a callbackID field so that responses are properly mapped to
+   *   the caller.
+   */
+  onPing(data) {
+    FakeUITourResponder.respond(data.callbackID);
+  }
+
+  /**
+   * Default response to the `getConfiguration` message sent by calling
+   * `UITour.getConfiguration`.
+   *
+   * At this time, only `getConfiguration("fxa")` is supported, and the
+   * default response indicates that no Firefox Account is currently
+   * set up.
+   *
+   * @param {object} data
+   *   The data object passed through UITour-lib. This must include
+   *   a callbackID field so that responses are properly mapped to
+   *   the caller.
+   */
+  onGetConfiguration(data) {
+    if (data.configuration != "fxa") {
+      throw new Error(
+        "FakeUITourResponder only expects fxa configuration requests"
+      );
+    }
+
+    FakeUITourResponder.respond(data.callbackID, {
+      setup: false,
+    });
+  }
+
+  /**
+   * Queues a microtask to dispatch a response event. This is made
+   * static in order for overrides to easily reuse this from within
+   * a sinon stub override.
+   *
+   * @param {string} callbackID
+   *   The callbackID associated with the event being responded to.
+   * @param {object} data
+   *   Any other data that should be passed along with the response.
+   */
+  static respond(callbackID, data = {}) {
+    let event = new CustomEvent("mozUITourResponse", {
+      bubbles: true,
+      detail: {
+        callbackID,
+        data,
+      },
+    });
+    queueMicrotask(() => {
+      document.dispatchEvent(event);
+    });
+  }
+}
 
 describe("k", () => {
   describe("SwitchingDevicesWizardManager with a qualified UA", () => {
@@ -18,6 +114,8 @@ describe("k", () => {
         osVersion: "Windows_NT 10.0 22000",
       },
     });
+
+    let gManager;
 
     let gOriginalLocation;
     let gSandbox = sinon.createSandbox();
@@ -36,6 +134,9 @@ describe("k", () => {
     // and the subsequent JSON parsing Promise have also both resolved.
     let gMetricsPromise;
 
+    // An instance of FakeUITourResponder that is setup before each subtest.
+    let gFakeUITour;
+
     before(function() {
       // Some of the subtests here reconfigure JSDOM's notion of
       // window.location.href, so we record the original value so
@@ -47,7 +148,6 @@ describe("k", () => {
       global.jsdom.reconfigure({
         url: gOriginalLocation,
       });
-      gSandbox.restore();
     });
 
     beforeEach(() => {
@@ -87,12 +187,17 @@ describe("k", () => {
           });
         });
       });
+
+      gFakeUITour = new FakeUITourResponder();
     });
 
     afterEach(async () => {
       await gMetricsPromise;
       gFetchStub.restore();
       gSetStepStub.restore();
+      gFakeUITour.destroy();
+      gManager.destroy();
+      gSandbox.restore();
     });
 
     /**
@@ -100,12 +205,18 @@ describe("k", () => {
      * is constructed with some testing UA strings that result in the
      * manager evaluating the user agent as qualified to use the wizard.
      */
-    let constructValidManager = () => {
-      return new SwitchingDevicesWizardManager(
+    let constructValidManager = (
+      ua = QUALIFIED_FX_UA,
+      troubleshootingData = QUALIFIED_FX_TROUBLESHOOTING_DATA,
+      pollInterval
+    ) => {
+      gManager = new SwitchingDevicesWizardManager(
         document.querySelector("form-wizard"),
-        QUALIFIED_FX_UA,
-        QUALIFIED_FX_TROUBLESHOOTING_DATA
+        ua,
+        troubleshootingData,
+        pollInterval
       );
+      return gManager;
     };
 
     it("should be constructable", () => {
@@ -254,6 +365,34 @@ describe("k", () => {
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });
 
+    it("should send the user to the configure-sync step immediately if UITour says that the user is signed in", async () => {
+      let setStepCalled = new Promise((resolve) => {
+        gSetStepStub.callsFake((name, payload) => {
+          resolve({ name, payload });
+        });
+      });
+
+      gSandbox.stub(gFakeUITour, "onGetConfiguration").callsFake((data) => {
+        FakeUITourResponder.respond(data.callbackID, {
+          setup: true,
+          accountStateOK: true,
+          browserServices: {
+            sync: {
+              setup: true,
+            },
+          },
+        });
+      });
+
+      let manager = constructValidManager();
+      await gMetricsPromise;
+      let { name, payload } = await setStepCalled;
+      expect(name).to.equal("configure-sync");
+      expect(payload).to.deep.equal({
+        syncEnabled: true,
+      });
+    });
+
     it("should not let the user advance past the configure-sync step unless sync enabled and configured", async () => {
       let manager = constructValidManager();
       let step = manager.steps.find((s) => s.name == "configure-sync");
@@ -348,6 +487,101 @@ describe("k", () => {
       const EXPECTED_PAYLOAD = {};
 
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
+    });
+
+    it("should not poll for FxA sign-in when using a version of Firefox >= 114", async () => {
+      let setIntervalStub = gSandbox.stub(window, "setInterval").callThrough();
+      let manager = constructValidManager(undefined, undefined, 1);
+      await gMetricsPromise;
+      expect(setIntervalStub.called).to.be.false;
+    });
+
+    it("should poll for FxA sign-in when using versions of Firefox < 114", async () => {
+      const QUALIFIED_OLDER_FX_UA =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/112.0";
+      const QUALIFIED_OLDER_FX_TROUBLESHOOTING_DATA = Object.freeze({
+        application: {
+          name: "Firefox",
+          version: "112.0.0",
+          osVersion: "Windows_NT 10.0 22000",
+        },
+      });
+
+      let setIntervalStub = gSandbox.stub(window, "setInterval").callThrough();
+
+      let polledForConfig = new Promise((resolve) => {
+        gSandbox
+          .stub(gFakeUITour, "onGetConfiguration")
+          .onCall(2)
+          .callsFake((data) => {
+            FakeUITourResponder.respond(data.callbackID, {
+              setup: true,
+              accountStateOK: true,
+              browserServices: {
+                sync: {
+                  setup: true,
+                },
+              },
+            });
+            resolve();
+          })
+          .callThrough();
+      });
+
+      let manager = constructValidManager(
+        QUALIFIED_OLDER_FX_UA,
+        QUALIFIED_OLDER_FX_TROUBLESHOOTING_DATA,
+        1
+      );
+      await polledForConfig;
+      expect(setIntervalStub.called).to.be.true;
+    });
+
+    it("should poll for FxA sign-out when using versions of Firefox < 114", async () => {
+      const QUALIFIED_OLDER_FX_UA =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/112.0";
+      const QUALIFIED_OLDER_FX_TROUBLESHOOTING_DATA = Object.freeze({
+        application: {
+          name: "Firefox",
+          version: "112.0.0",
+          osVersion: "Windows_NT 10.0 22000",
+        },
+      });
+
+      let setIntervalStub = gSandbox.stub(window, "setInterval").callThrough();
+
+      let polledForConfig = new Promise((resolve) => {
+        gSandbox
+          .stub(gFakeUITour, "onGetConfiguration")
+          .onCall(0)
+          .callsFake((data) => {
+            FakeUITourResponder.respond(data.callbackID, {
+              setup: true,
+              accountStateOK: true,
+              browserServices: {
+                sync: {
+                  setup: true,
+                },
+              },
+            });
+          })
+          .onCall(2)
+          .callsFake((data) => {
+            FakeUITourResponder.respond(data.callbackID, {
+              setup: false,
+            });
+            resolve();
+          })
+          .callThrough();
+      });
+
+      let manager = constructValidManager(
+        QUALIFIED_OLDER_FX_UA,
+        QUALIFIED_OLDER_FX_TROUBLESHOOTING_DATA,
+        1
+      );
+      await polledForConfig;
+      expect(setIntervalStub.called).to.be.true;
     });
   });
 
