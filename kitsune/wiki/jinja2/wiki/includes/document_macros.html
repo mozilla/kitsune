@@ -437,10 +437,35 @@
     </ul>
   </nav>
 
+<<<<<<< HEAD
   {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, topics=[topic], products=[product])%}
   {#TODO: Add fallback docs rendering #}
 
   <section class="topic-list" id="tab-view-all">
+=======
+  {% set all_docs, all_fallback_documents = kb_documents_for(request.LANGUAGE_CODE, topics=[topic], products=[product]) %}
+    {% if all_fallback_documents %}
+        <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
+        <section class="topic-list" id="kb-tab-all">
+        {% for document in all_fallback_documents %}
+          <article class="topic-article">
+            <div class="topic-article--icon-wrap">
+              <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+            </div>
+            <div class="topic-article--text">
+              <h2 class="sumo-card-heading">
+                  <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}" data-event-category="link click" data-event-action="document"
+              data-event-label="{{ document['document_title'] }}">
+                    {{ document['document_title'] }}
+                  </a>
+              </h2>
+              <p>{{ document['document_summary'] }}</p>
+            </div>
+          </article>
+        {% endfor %}
+        </section>
+    {% endif %}
+>>>>>>> 7003a8f82 (Fallback docs)
     {% for document in all_docs %}
       <article class="topic-article">
         <div class="topic-article--icon-wrap">
@@ -464,6 +489,26 @@
   {% for subtopic in subtopics %}
   {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, topics=[subtopic], products=[product])%}
     <section class="topic-list" id="tab-{{ subtopic.title }}">
+        {% if all_fallback_documents %}
+        <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
+        {% for document in all_fallback_documents %}
+          <article class="topic-article">
+            <div class="topic-article--icon-wrap">
+              <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+            </div>
+            <div class="topic-article--text">
+              <h2 class="sumo-card-heading">
+                  <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}" data-event-category="link click" data-event-action="document"
+              data-event-label="{{ document['document_title'] }}">
+                    {{ document['document_title'] }}
+                  </a>
+              </h2>
+              <p>{{ document['document_summary'] }}</p>
+            </div>
+          </article>
+        {% endfor %}
+        </section>
+    {% endif %}
       {% for document in documents %}
         <article class="topic-article">
           <div class="topic-article--icon-wrap">

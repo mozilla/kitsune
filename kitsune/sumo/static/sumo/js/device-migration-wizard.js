@@ -71,6 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
   kbTabsInit();
 });
 
+
+// This function initializes the tabs on the switching-devices page
+// and adds click event listener
 function kbTabsInit() {
   document.getElementById("tab-view-all").style.display = "block";
   let tabItems = document.querySelectorAll('.tabs--link');
@@ -81,6 +84,8 @@ function kbTabsInit() {
   });
 }
 
+// This function toggles the visibility of the tab content based on 
+// clicked tab 
 function toggleTabContent(ev) {
   let tabContent = document.getElementsByClassName("topic-list");
   [].forEach.call(tabContent, (el) => {
