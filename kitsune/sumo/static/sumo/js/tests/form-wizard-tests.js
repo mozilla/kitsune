@@ -1,5 +1,28 @@
 import { expect } from "chai";
-import { FormWizard } from "sumo/js/form-wizard";
+import { FormWizard, BaseFormStep } from "sumo/js/form-wizard";
+
+/**
+ * Basic form step element providing a minimal demonstration of how overriding
+ * `template` and `render` can work in practice.
+ */
+class TestFormStep extends BaseFormStep {
+  get template() {
+    return `
+      <template>
+        <slot></slot>
+        <p id="email"></p>
+      </template>
+    `;
+  }
+
+  render() {
+    if (this.state.email) {
+      let emailEl = this.shadowRoot.getElementById("email");
+      emailEl.textContent = this.state.email;
+    }
+  }
+}
+customElements.define("test-form-step", TestFormStep);
 
 describe("form-wizard custom element", () => {
   let wizard;
@@ -8,15 +31,15 @@ describe("form-wizard custom element", () => {
   beforeEach(() => {
     $("body").empty().html(`
         <form-wizard>
-            <div name="first">
-                <p>This is the first step.</p>
-            </div>
-            <div name="second">
-                <p>This is the second step.</p>
-            </div>
-            <div name="third">
-                <p>This is the third step.</p>
-            </div>
+          <test-form-step name="first">
+            <p>This is the first step.</p>
+          </test-form-step>
+          <test-form-step name="second">
+            <p>This is the second step.</p>
+          </test-form-step>
+          <test-form-step name="third">
+            <p>This is the third step.</p>
+          </test-form-step>
         </form-wizard>
     `);
     wizard = document.querySelector("form-wizard");
@@ -98,52 +121,72 @@ describe("form-wizard custom element", () => {
     });
 
     describe("form wizard `setStep` method", () => {
+      // <test-form-step> will display email on state change, allowing us to
+      // easily verify the `render` method gets called.
+      const MOCK_EMAIL = "tester@test.com";
+      const EXPECTED_STEP_STATE = { email: MOCK_EMAIL };
+
       it("should update 'unavailable' steps to 'active' update step data", () => {
-        const EXPECTED_STEPS = [
+        const EXPECTED_WIZARD_STEPS = [
           { name: "first", status: "done", label: "First label" },
-          {
-            name: "second",
-            status: "active",
-            label: "Second label",
-            foo: "bar",
-          },
+          { name: "second", status: "active", label: "Second label" },
           { name: "third", status: "unavailable", label: "Third label" },
         ];
+
         expect(wizard.steps).to.deep.equal(INITIAL_STEPS);
-        wizard.setStep("second", { foo: "bar" });
-        expect(wizard.steps).to.deep.equal(EXPECTED_STEPS);
+        wizard.setStep("second", EXPECTED_STEP_STATE);
+        expect(wizard.steps).to.deep.equal(EXPECTED_WIZARD_STEPS);
+
+        let activeStep = slot.assignedElements()[0];
+        let emailEl = activeStep.shadowRoot.getElementById("email");
+
+        expect(activeStep.state).to.deep.equal(EXPECTED_STEP_STATE);
+        expect(activeStep.getAttribute("name")).to.equal("second");
+        expect(emailEl.textContent).to.equal(MOCK_EMAIL);
       });
 
       it("should update data for 'active' steps", () => {
-        const EXPECTED_STEPS = [
-          { name: "first", status: "active", label: "First label", foo: "bar" },
+        const EXPECTED_WIZARD_STEPS = [
+          { name: "first", status: "active", label: "First label" },
           { name: "second", status: "unavailable", label: "Second label" },
           { name: "third", status: "unavailable", label: "Third label" },
         ];
+        const EXPECTED_STEP_STATE = { email: MOCK_EMAIL };
+
         expect(wizard.steps).to.deep.equal(INITIAL_STEPS);
-        wizard.setStep("first", { foo: "bar" });
-        expect(wizard.steps).to.deep.equal(EXPECTED_STEPS);
+        wizard.setStep("first", EXPECTED_STEP_STATE);
+        expect(wizard.steps).to.deep.equal(EXPECTED_WIZARD_STEPS);
+
+        let activeStep = slot.assignedElements()[0];
+        let emailEl = activeStep.shadowRoot.getElementById("email");
+
+        expect(activeStep.state).to.deep.equal(EXPECTED_STEP_STATE);
+        expect(activeStep.getAttribute("name")).to.equal("first");
+        expect(emailEl.textContent).to.equal(MOCK_EMAIL);
+
+        const NEXT_MOCK_EMAIL = "foo@bar.com";
+        wizard.setStep("first", { email: NEXT_MOCK_EMAIL });
+        expect(emailEl.textContent).to.equal(NEXT_MOCK_EMAIL);
       });
 
       it("should update data for 'done' steps without changing the 'active' step", () => {
-        const TEST_STEPS = [
+        const EXPECTED_WIZARD_STEPS = [
           { name: "first", status: "done", label: "First label" },
           { name: "second", status: "done", label: "Second label" },
           { name: "third", status: "active", label: "Third label" },
         ];
-        const EXPECTED_STEPS = [
-          { name: "first", status: "done", label: "First label" },
-          { name: "second", status: "done", label: "Second label" },
-          {
-            name: "third",
-            status: "active",
-            label: "Third label",
-            foo: "bar",
-          },
-        ];
-        wizard.steps = TEST_STEPS;
-        wizard.setStep("third", { foo: "bar" });
-        expect(wizard.steps).to.deep.equal(EXPECTED_STEPS);
+        wizard.steps = EXPECTED_WIZARD_STEPS;
+        wizard.setStep("second", EXPECTED_STEP_STATE);
+        // We don't expect the <form-wizard> state to change, just the step state.
+        expect(wizard.steps).to.deep.equal(EXPECTED_WIZARD_STEPS);
+
+        let activeStep = slot.assignedElements()[0];
+        expect(activeStep.getAttribute("name")).to.equal("third");
+
+        let doneStep = wizard.getRootNode().querySelector("[name='second']");
+        let emailEl = doneStep.shadowRoot.getElementById("email");
+        expect(doneStep.state).to.deep.equal(EXPECTED_STEP_STATE);
+        expect(emailEl.textContent).to.equal(MOCK_EMAIL);
       });
     });
   });

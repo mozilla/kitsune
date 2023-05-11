@@ -1,11 +1,5 @@
 <form-wizard id="switching-devices-wizard" fxa-root="{{ settings.FXA_ROOT }}">
-  <div name="sign-into-fxa">
-    <p>This is where the sign in/sign up form will go.</p>
-  </div>
-  <div name="configure-sync">
-    <p>This is where the sync step will go.</p>
-  </div>
-  <div name="setup-new-device">
-    <p>This is where the link info will go.</p>
-  </div>
+  <sign-in-step name="sign-into-fxa"></sign-in-step>
+  <configure-step name="configure-sync"></configure-step>
+  <setup-device-step name="setup-new-device"></setup-device-step>
 </form-wizard>
