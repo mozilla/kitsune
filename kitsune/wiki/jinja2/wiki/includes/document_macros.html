@@ -412,3 +412,76 @@
     </section>
   {% endif %}
 {% endmacro %}
+
+{% macro kb_subtopic_tabs(request, product, topic, subtopics) -%}
+  <nav class="tabs">
+    <ul class="tabs--list subtopics">
+      <li class="tabs--item">
+      <button class="tabs--link is-active" id="kb-tab-all" 
+        data-event-category="device-migration-tabbed-menu"
+        data-event-action="tab-click" 
+        data-event-label="view-all">
+        <span>{{ _('View All') }}</span>
+      </button>
+      </li>
+      {% for subtopic in subtopics %}
+        <li class="tabs--item">
+          <button class="tabs--link" id="kb-subtopic-{{ subtopic.title }}" 
+             data-event-category="device-migration-tabbed-menu"
+             data-event-action="tab-click" 
+             data-event-label="{{subtopic.title}}">
+            <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, topics=[topic], products=[product])%}
+  {#TODO: Add fallback docs rendering #}
+
+  <section class="topic-list" id="tab-view-all">
+    {% for document in all_docs %}
+      <article class="topic-article">
+        <div class="topic-article--icon-wrap">
+          <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+        </div>
+        <div class="topic-article--text">
+          <h2 class="sumo-card-heading">
+            <a href="{{ document['url'] }}" 
+              data-event-category="device-migration-tabbed-menu" 
+              data-event-action="link-click"
+              data-event-label="{{ document['document_title'] }}">
+              {{ document['document_title'] }}
+            </a>
+          </h2>
+          <p>{{ document['document_summary'] }}</p>
+        </div>
+      </article>
+    {% endfor %}
+  </section>
+
+  {% for subtopic in subtopics %}
+  {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, topics=[subtopic], products=[product])%}
+    <section class="topic-list" id="tab-{{ subtopic.title }}">
+      {% for document in documents %}
+        <article class="topic-article">
+          <div class="topic-article--icon-wrap">
+            <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+          </div>
+          <div class="topic-article--text">
+            <h2 class="sumo-card-heading">
+              <a href="{{ document['url'] }}" 
+                data-event-category="device-migration-tabbed-menu" 
+                data-event-action="link-click"
+                data-event-label="{{ document['document_title'] }}">
+                {{ document['document_title'] }}
+              </a>
+            </h2>
+            <p>{{ document['document_summary'] }}</p>
+          </div>
+        </article>
+      {% endfor %}
+    </section>
+  {% endfor %}
+{%- endmacro %}

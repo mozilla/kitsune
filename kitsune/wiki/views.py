@@ -42,6 +42,7 @@ from kitsune.wiki.events import (
     ReadyRevisionEvent,
     ReviewableRevisionInLocaleEvent,
 )
+from kitsune.wiki.facets import topics_for
 from kitsune.wiki.forms import (
     AddContributorForm,
     DocumentForm,
@@ -220,7 +221,9 @@ def document(request, document_slug, document=None):
         switching_devices_topic = Topic.objects.get(
             product=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
         )
-        switching_devices_subtopics = Topic.objects.filter(parent=switching_devices_topic)
+        switching_devices_subtopics = topics_for(
+            product=switching_devices_product, parent=switching_devices_topic
+        )
 
     if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
         document_css_class = "collapsible"

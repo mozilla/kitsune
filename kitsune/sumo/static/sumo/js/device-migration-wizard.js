@@ -64,8 +64,34 @@ class SetupDeviceStep extends BaseFormStep {
 }
 customElements.define("setup-device-step", SetupDeviceStep);
 
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
   new SwitchingDevicesWizardManager(
     document.querySelector("#switching-devices-wizard")
   );
+  kbTabsInit();
 });
+
+function kbTabsInit() {
+  document.getElementById("tab-view-all").style.display = "block";
+  let tabItems = document.querySelectorAll('.tabs--link');
+  tabItems.forEach((item) => {
+    item.addEventListener("click", (ev) => {
+      toggleTabContent(ev);
+    });
+  });
+}
+
+function toggleTabContent(ev) {
+  let tabContent = document.getElementsByClassName("topic-list");
+  [].forEach.call(tabContent, (el) => {
+    el.style.display = "none";
+  });
+
+  let tabItems = document.getElementsByClassName("tabs--link");
+  [].forEach.call(tabItems, (item) => {
+    item.classList.remove("is-active");
+  });
+
+  ev.target.parentElement.classList.add("is-active");
+  document.getElementById("tab-" + ev.target.parentElement.dataset.eventLabel).style.display = "block";
+}
