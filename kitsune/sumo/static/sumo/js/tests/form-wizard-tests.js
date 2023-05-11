@@ -37,7 +37,7 @@ describe("form-wizard custom element", () => {
   });
 
   describe("step change behavior", () => {
-    let initialSteps = [
+    const INITIAL_STEPS = [
       { name: "first", status: "active", label: "First label" },
       { name: "second", status: "unavailable", label: "Second label" },
       { name: "third", status: "unavailable", label: "Third label" },
@@ -45,11 +45,11 @@ describe("form-wizard custom element", () => {
 
     // Reset the active step before each test in this block.
     beforeEach(() => {
-      wizard.steps = initialSteps;
+      wizard.steps = INITIAL_STEPS;
     });
 
     it("should show a different step when the active step changes", () => {
-      wizard.setStep("second", { status: "active" });
+      wizard.setStep("second", {});
       let assignedElements = slot.assignedElements();
       let activeStep = assignedElements[0];
       expect(assignedElements.length).to.equal(1);
@@ -75,13 +75,13 @@ describe("form-wizard custom element", () => {
       let indicator = wizard.shadowRoot.getElementById("step-indicator");
       let steps = indicator.children;
       expect(indicator).to.exist;
-      expect(steps.length).to.equal(initialSteps.length);
+      expect(steps.length).to.equal(INITIAL_STEPS.length);
       [...steps].forEach((step, i) => {
         let subtitle = step.querySelector(".subtitle");
         let title = step.querySelector(".title");
-        expect(step.getAttribute("status")).to.equal(initialSteps[i].status);
+        expect(step.getAttribute("status")).to.equal(INITIAL_STEPS[i].status);
         expect(subtitle.textContent).to.equal(`Step ${i + 1}`);
-        expect(title.textContent).to.equal(initialSteps[i].label);
+        expect(title.textContent).to.equal(INITIAL_STEPS[i].label);
       });
     });
 
@@ -91,10 +91,60 @@ describe("form-wizard custom element", () => {
       expect(steps[0].getAttribute("status")).to.equal("active");
       expect(steps[1].getAttribute("status")).to.equal("unavailable");
 
-      wizard.setStep("second", { status: "active" });
+      wizard.setStep("second", {});
 
       expect(steps[0].getAttribute("status")).to.equal("done");
       expect(steps[1].getAttribute("status")).to.equal("active");
+    });
+
+    describe("form wizard `setStep` method", () => {
+      it("should update 'unavailable' steps to 'active' update step data", () => {
+        const EXPECTED_STEPS = [
+          { name: "first", status: "done", label: "First label" },
+          {
+            name: "second",
+            status: "active",
+            label: "Second label",
+            foo: "bar",
+          },
+          { name: "third", status: "unavailable", label: "Third label" },
+        ];
+        expect(wizard.steps).to.deep.equal(INITIAL_STEPS);
+        wizard.setStep("second", { foo: "bar" });
+        expect(wizard.steps).to.deep.equal(EXPECTED_STEPS);
+      });
+
+      it("should update data for 'active' steps", () => {
+        const EXPECTED_STEPS = [
+          { name: "first", status: "active", label: "First label", foo: "bar" },
+          { name: "second", status: "unavailable", label: "Second label" },
+          { name: "third", status: "unavailable", label: "Third label" },
+        ];
+        expect(wizard.steps).to.deep.equal(INITIAL_STEPS);
+        wizard.setStep("first", { foo: "bar" });
+        expect(wizard.steps).to.deep.equal(EXPECTED_STEPS);
+      });
+
+      it("should update data for 'done' steps without changing the 'active' step", () => {
+        const TEST_STEPS = [
+          { name: "first", status: "done", label: "First label" },
+          { name: "second", status: "done", label: "Second label" },
+          { name: "third", status: "active", label: "Third label" },
+        ];
+        const EXPECTED_STEPS = [
+          { name: "first", status: "done", label: "First label" },
+          { name: "second", status: "done", label: "Second label" },
+          {
+            name: "third",
+            status: "active",
+            label: "Third label",
+            foo: "bar",
+          },
+        ];
+        wizard.steps = TEST_STEPS;
+        wizard.setStep("third", { foo: "bar" });
+        expect(wizard.steps).to.deep.equal(EXPECTED_STEPS);
+      });
     });
   });
 });

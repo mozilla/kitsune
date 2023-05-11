@@ -2,12 +2,12 @@
  * A custom element for displaying multi-step forms.
  *
  * Uses a named slot and `#activeStep` state to determine which step of the form
- * should be shown. All child elements where the `name` attribute doesn't match
- * the `#activeStep` will not be assigned to the named slot.
+ * wizard should be shown. All child elements where the `name` attribute doesn't
+ * match the `#activeStep` will not be assigned to the named slot.
  *
  * Can be initialized with step data via the `steps` setter.
  *
- * wizard.steps = [
+ * wizard.steps = [ 
  *  { name: "first", status: "done", label: "foo" },
  *  { name: "second", status: "active", label: "bar" },
  *  { name: "third", status: "unavailable", label: "baz" },
@@ -107,21 +107,37 @@ export class FormWizard extends HTMLElement {
     this.#updateStepIndicator();
   }
 
+  get steps() {
+    return this.#steps;
+  }
+
   /**
-   * Changes the active step and updates the status of the
-   * previously active step to "done".
+   * Updates data for the step specified by name and/or changes the currently
+   * active step. Active step only changes when the step getting updated is
+   * currently "unavailable".
    *
-   * @param {string} name - Name of the active step.
-   * @param {FormWizardStep} data - Data about the active step.
+   * @param {string} name - Name of the step to be updated.
+   * @param {FormWizardStep} data - Data to update the step with.
    */
   setStep(name, data) {
+    let currentStatus = this.#steps.find((step) => step.name === name)?.status;
+    let isUnavailable = currentStatus === "unavailable";
     let nextSteps = this.#steps.map((step) => {
-      if (step.status === "active") {
+      if (step.status === "active" && isUnavailable) {
         return { ...step, status: "done" };
+      } else if (step.name === name && isUnavailable) {
+        return { ...step, ...data, status: "active" };
+      } else if (step.name === name) {
+        return { ...step, ...data };
       }
-      return step.name === name ? { ...step, ...data } : step;
+      return step;
     });
     this.steps = nextSteps;
+  }
+
+  // To be implemented as part of mozilla/sumo #1274.
+  disqualify(header, text) {
+    // NOOP
   }
 
   /**
