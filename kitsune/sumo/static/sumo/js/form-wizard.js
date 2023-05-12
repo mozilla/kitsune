@@ -1,22 +1,25 @@
 /**
- * A custom element for displaying multi-step forms.
+ * A custom element for displaying multi-step forms. Designed to be used with
+ * child elements that inherit from `BaseFormStep`, or which implement a
+ * `setState` method for receiving updates.
  *
  * Uses a named slot and `#activeStep` state to determine which step of the form
  * wizard should be shown. All child elements where the `name` attribute doesn't
  * match the `#activeStep` will not be assigned to the named slot.
  *
- * Can be initialized with step data via the `steps` setter.
+ * Can be initialized with step data via the `steps` setter:
  *
- * wizard.steps = [ 
+ * wizard.steps = [
  *  { name: "first", status: "done", label: "foo" },
  *  { name: "second", status: "active", label: "bar" },
  *  { name: "third", status: "unavailable", label: "baz" },
  * ];
  *
- * The active step can be changed by calling `setStep` and passing in a step
- * name along with new data representing that step.
+ * The active step can be changed by calling `setStep`. Any `data` passed into
+ * `setStep` will be passed along to the intended child by calling that
+ * element's `setState` method.
  *
- * wizard.setStep("third", { name: "third", status: "active", label: "baz" });
+ * wizard.setStep("third", { foo: "bar", someState: true });
  *
  */
 export class FormWizard extends HTMLElement {
@@ -117,18 +120,21 @@ export class FormWizard extends HTMLElement {
    * currently "unavailable".
    *
    * @param {string} name - Name of the step to be updated.
-   * @param {FormWizardStep} data - Data to update the step with.
+   * @param {object} data - Data to update the step with.
    */
   setStep(name, data) {
+    // Find the step getting updated and set its state.
+    let formStep = this.getRootNode().querySelector(`[name="${name}"]`);
+    formStep.setState(data);
+
+    // Determine if the statuses of the steps need to change.
     let currentStatus = this.#steps.find((step) => step.name === name)?.status;
     let isUnavailable = currentStatus === "unavailable";
     let nextSteps = this.#steps.map((step) => {
       if (step.status === "active" && isUnavailable) {
         return { ...step, status: "done" };
       } else if (step.name === name && isUnavailable) {
-        return { ...step, ...data, status: "active" };
-      } else if (step.name === name) {
-        return { ...step, ...data };
+        return { ...step, status: "active" };
       }
       return step;
     });
@@ -203,3 +209,61 @@ export class FormWizard extends HTMLElement {
   }
 }
 customElements.define("form-wizard", FormWizard);
+
+/**
+ * Base class that defines the basic re-rendering logic for form steps.
+ * The`template` getter can be overridden to provide custom markup. The `render`
+ * method can be overridden to define custom logic for how the DOM updates when
+ * state changes.
+ */
+export class BaseFormStep extends HTMLElement {
+  #state = {};
+
+  /**
+   * Provides markup for the form step. Default markup is not provided since
+   * `BaseFormStep` should never be used directly.
+   */
+  get template() {
+    throw new Error("template must be implemented.");
+  }
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(this.template, "text/html");
+    let template = doc.querySelector("template");
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
+
+    this.render({}, this.#state);
+  }
+
+  get state() {
+    return this.#state;
+  }
+
+  /**
+   * Updates the element's state and tells the element to re-render.
+   *
+   * @param {object} nextState
+   */
+  setState(nextState) {
+    let prevState = Object.assign({}, this.#state);
+    this.#state = Object.assign(this.#state, nextState);
+    this.render(prevState, this.#state);
+  }
+
+  /**
+   * Method that gets run whenever the element's state changes. Can be used to
+   * specify how the DOM should update in response to state changes. `prevState`
+   * and `nextState` are provided for making comparisons.
+   *
+   * @param {object} prevState The element's state before the most recent
+   *  update.
+   * @param {object} nextState The element's current state.
+   */
+  render(prevState, nextState) {
+    throw new Error("render must be implemented.");
+  }
+}
