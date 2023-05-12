@@ -341,10 +341,12 @@ describe("k", () => {
       expect(manager.state.utm_source).to.equal("support.mozilla.org");
     });
 
-    it("should sent the user to the sign-into-fxa step when not signed in", async () => {
+    it("should send the user to the sign-into-fxa step when not signed in", async () => {
       let setStepCalled = new Promise((resolve) => {
         gSetStepStub.callsFake((name, payload) => {
-          resolve({ name, payload });
+          if (payload.flow_id && payload.flow_begin_time) {
+            resolve({ name, payload });
+          }
         });
       });
 
@@ -355,6 +357,7 @@ describe("k", () => {
       expect(payload).to.deep.equal({
         fxaRoot: FAKE_FXA_ROOT,
         email: "",
+        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search`,
 
         utm_source: "support.mozilla.org",
         utm_campaign: "migration",
@@ -364,7 +367,8 @@ describe("k", () => {
         entrypoint_variation: null,
         flow_id: FAKE_FXA_FLOW_ID,
         flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
-        context: null,
+        context: "fx_desktop_v3",
+        redirect_to: window.location.href,
       });
     });
 
@@ -389,7 +393,7 @@ describe("k", () => {
         entrypoint_variation: "variation",
         flow_id: FAKE_FXA_FLOW_ID,
         flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
-        context: "sync",
+        context: "fx_desktop_v3",
         fxaRoot: FAKE_FXA_ROOT,
         fxaSignedIn: false,
         sumoEmail: "test@example.com",
@@ -405,9 +409,11 @@ describe("k", () => {
         entrypoint_variation: "variation",
         flow_id: FAKE_FXA_FLOW_ID,
         flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
-        context: "sync",
+        context: "fx_desktop_v3",
         fxaRoot: FAKE_FXA_ROOT,
         email: "test@example.com",
+        redirect_to: window.location.href,
+        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search`
       };
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });
