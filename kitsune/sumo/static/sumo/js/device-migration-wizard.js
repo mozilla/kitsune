@@ -75,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // This function initializes the tabs on the switching-devices page
 // and adds click event listener
 function kbTabsInit() {
-  document.getElementById("tab-view-all").style.display = "block";
   let tabItems = document.querySelectorAll('.tabs--link');
   tabItems.forEach((item) => {
     item.addEventListener("click", (ev) => {
@@ -87,16 +86,17 @@ function kbTabsInit() {
 // This function toggles the visibility of the tab content based on 
 // clicked tab 
 function toggleTabContent(ev) {
-  let tabContent = document.getElementsByClassName("topic-list");
-  [].forEach.call(tabContent, (el) => {
-    el.style.display = "none";
-  });
+  // Remove the active state from the previously selected tab / tab content
+  let oldSelectedTabContent = document.querySelector(".topic-list.is-active");
+  let oldSelectedTab = document.querySelector(".tabs--link.is-active");
 
-  let tabItems = document.getElementsByClassName("tabs--link");
-  [].forEach.call(tabItems, (item) => {
-    item.classList.remove("is-active");
-  });
+  oldSelectedTabContent.classList.remove("is-active");
+  oldSelectedTab.classList.remove("is-active");
 
-  ev.target.parentElement.classList.add("is-active");
-  document.getElementById("tab-" + ev.target.parentElement.dataset.eventLabel).style.display = "block";
+  // Put the newly selected tab / tab content into the active state.
+  let selectedTab = ev.target.parentElement;
+  let selectedTabContent = document.querySelector(`#tab-${ev.target.parentElement.dataset.eventLabel}`);
+
+  selectedTab.classList.add("is-active");
+  selectedTabContent.classList.add("is-active");
 }
