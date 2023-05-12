@@ -134,6 +134,19 @@ describe("k", () => {
     // and the subsequent JSON parsing Promise have also both resolved.
     let gMetricsPromise;
 
+    // gGraphQLQueryResult will be set to an object that is returned via
+    // the stubbed out fetch request to /graphql, which is used to try to
+    // get the email address of the user if they're already signed into
+    // SUMO. This object is set in beforeEach so that subtests have the
+    // option to override the default. By default, the returned object
+    // indicates that the user is not signed into SUMO.
+    let gGraphQLQueryResult;
+    // A Promise that gets created in beforeEach, and is awaited during
+    // each afterEach. When this Promise resolves, the graphql request
+    // that's kicked off during SwitchingDevicesWizardManager construction
+    // and the subsequent JSON parsing Promise have also both resolved.
+    let gGraphQLQuery;
+
     // An instance of FakeUITourResponder that is setup before each subtest.
     let gFakeUITour;
 
@@ -157,44 +170,76 @@ describe("k", () => {
       let wizard = document.querySelector("form-wizard");
       wizard.disqualify = () => {};
       wizard.setStep = () => {};
+
+      gGraphQLQueryResult = {
+        data: {
+          currentUser: {
+            email: "",
+          },
+        },
+      };
+
       gSetStepStub = gSandbox.stub(wizard, "setStep");
+
+      gFetchStub = gSandbox.stub(window, "fetch");
 
       // This is a little complicated, but makes it so that each of our tests
       // can wait for both the metrics-flow request and JSON parsing Promises
       // to resolve before moving onto the next test. This helps ensure that
       // the tests are in a "steady state" before proceeding.
       gMetricsPromise = new Promise((resolve) => {
-        gFetchStub = gSandbox.stub(window, "fetch").callsFake((url) => {
-          if (!url.startsWith(FAKE_FXA_ROOT)) {
-            throw new Error("Fetch called with an unexpected URL: " + url);
-          }
-
-          return Promise.resolve({
-            json: () => {
-              return new Promise((resolveInner) => {
-                resolveInner({
-                  flowId: FAKE_FXA_FLOW_ID,
-                  flowBeginTime: FAKE_FXA_FLOW_BEGIN_TIME,
+        gFetchStub
+          .withArgs(sinon.match(new RegExp(`^${FAKE_FXA_ROOT}`)))
+          .callsFake((url) => {
+            return Promise.resolve({
+              json: () => {
+                return new Promise((resolveInner) => {
+                  resolveInner({
+                    flowId: FAKE_FXA_FLOW_ID,
+                    flowBeginTime: FAKE_FXA_FLOW_BEGIN_TIME,
+                  });
+                  // We need to defer resolving here so that the
+                  // SwitchingDevicesWizardManager that made the request has the
+                  // opportunity to react to the Promise resolution.
+                  queueMicrotask(resolve);
                 });
-                // We need to defer resolving here so that the
-                // SwitchingDevicesWizardManager that made the request has the
-                // opportunity to react to the Promise resolution.
-                queueMicrotask(resolve);
-              });
-            },
+              },
 
-            status: 200,
+              status: 200,
+            });
           });
-        });
+      });
+
+      // Similar to the above, this also catches the /graphql query that runs
+      // during initialization to get the SUMO user email address if the user
+      // viewing the article is signed in. This helps ensure that the tests
+      // are in a "steady state" before proceeding.
+      gGraphQLQuery = new Promise((resolve) => {
+        gFetchStub
+          .withArgs(sinon.match(new RegExp(`^/graphql`)))
+          .callsFake((url) => {
+            return Promise.resolve({
+              json: () => {
+                return new Promise((resolveInner) => {
+                  resolveInner(gGraphQLQueryResult);
+                  // We need to defer resolving here so that the
+                  // SwitchingDevicesWizardManager that made the request has the
+                  // opportunity to react to the Promise resolution.
+                  queueMicrotask(resolve);
+                });
+              },
+
+              status: 200,
+            });
+          });
       });
 
       gFakeUITour = new FakeUITourResponder();
     });
 
     afterEach(async () => {
+      await gGraphQLQuery;
       await gMetricsPromise;
-      gFetchStub.restore();
-      gSetStepStub.restore();
       gFakeUITour.destroy();
       gManager.destroy();
       gSandbox.restore();
@@ -239,6 +284,8 @@ describe("k", () => {
       // for our hooks to let the test file proceed to the next test, we fake
       // out the requests just to keep everything happy.
       let response = await window.fetch(FAKE_FXA_ROOT);
+      await response.json();
+      response = await window.fetch("/graphql");
       await response.json();
     });
 
@@ -582,6 +629,20 @@ describe("k", () => {
       );
       await polledForConfig;
       expect(setIntervalStub.called).to.be.true;
+    });
+
+    it("should have its state updated with the signed-in SUMO account email address if it exists", async () => {
+      const TEST_EMAIL = "test@example.com";
+      gGraphQLQueryResult = {
+        data: {
+          currentUser: {
+            email: TEST_EMAIL,
+          },
+        },
+      };
+      let manager = constructValidManager();
+      await gGraphQLQuery;
+      expect(manager.state.sumoEmail).to.equal(TEST_EMAIL);
     });
   });
 
