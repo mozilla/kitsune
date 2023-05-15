@@ -1267,5 +1267,5 @@ FIREFOX_SWITCHING_DEVICES_ARTICLES = config(
     "FIREFOX_SWITCHING_DEVICES_ARTICLES", default="switching-devices", cast=Csv()
 )
 FIREFOX_SWITCHING_DEVICES_TOPIC = config(
-    "FIREFOX_SWITCHING_DEVICES_TOPIC", default="download-and-install"
+    "FIREFOX_SWITCHING_DEVICES_TOPIC", default="sync-and-save"
 )
