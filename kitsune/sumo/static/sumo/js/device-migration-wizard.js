@@ -47,7 +47,7 @@ class SignInStep extends BaseFormStep {
           </p>
 
           <p class="warning">
-            <img class="key-icon" src="${keyImageURL}"></img>
+            <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
             ${gettext("Provide any warnings about unexpected password situations (like noted in mock)")}
           </p>
         </div>
