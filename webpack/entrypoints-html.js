@@ -11,7 +11,7 @@ module.exports = Object.keys(entrypoints).map(entry =>
     inject: false,
     scriptLoading: "defer",
     templateContent: ({htmlWebpackPlugin}) => {
-      if (entry == "screen" || entry == "form-wizard-styles") {
+      if (entry == "screen") {
         return `<link href="${htmlWebpackPlugin.files.css[0]}" rel="stylesheet">`;
       }
       // inject nonce in the script for django-csp to populate

@@ -36,9 +36,6 @@ const entrypoints = {
   "switching-devices": [
     "sumo/js/device-migration-wizard.js",
   ],
-  "form-wizard-styles": [
-    "sumo/scss/form-wizard.scss",
-  ],
   revision: [
     "sumo/js/revision.js",
   ],
