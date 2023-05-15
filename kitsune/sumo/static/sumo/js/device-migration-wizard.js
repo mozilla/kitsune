@@ -35,15 +35,15 @@ class SignInStep extends BaseFormStep {
             <label for="email">${gettext("Email")}</label>
             <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email")}"/>
 
-            <input class="for-sign-up" type="submit" value="${gettext("Sign up")}"/>
-            <input class="for-sign-in" type="submit" value="${gettext("Sign in")}"/>
+            <button class="for-sign-up" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-button">${gettext("Sign up")}</button>
+            <button class="for-sign-in" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-button">${gettext("Sign in")}</button>
           </form>
 
           <p class="for-sign-up">
             ${gettext("Already have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-link">${gettext("Sign in")}</a>
           </p>
           <p class="for-sign-in">
-            ${gettext("Don’t have an account?")}<a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
+            ${gettext("Don’t have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
           </p>
 
           <p class="warning">
@@ -178,8 +178,8 @@ function kbTabsInit() {
   });
 }
 
-// This function toggles the visibility of the tab content based on 
-// clicked tab 
+// This function toggles the visibility of the tab content based on
+// clicked tab
 function toggleTabContent(ev) {
   // Remove the active state from the previously selected tab / tab content
   let oldSelectedTabContent = document.querySelector(".switching-devices.topic-list.is-active");
