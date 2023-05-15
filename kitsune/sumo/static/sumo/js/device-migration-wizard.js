@@ -64,8 +64,39 @@ class SetupDeviceStep extends BaseFormStep {
 }
 customElements.define("setup-device-step", SetupDeviceStep);
 
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
   new SwitchingDevicesWizardManager(
     document.querySelector("#switching-devices-wizard")
   );
+  kbTabsInit();
 });
+
+
+// This function initializes the tabs on the switching-devices page
+// and adds click event listener
+function kbTabsInit() {
+  let tabItems = document.querySelectorAll('.tabs--link');
+  tabItems.forEach((item) => {
+    item.addEventListener("click", (ev) => {
+      toggleTabContent(ev);
+    });
+  });
+}
+
+// This function toggles the visibility of the tab content based on 
+// clicked tab 
+function toggleTabContent(ev) {
+  // Remove the active state from the previously selected tab / tab content
+  let oldSelectedTabContent = document.querySelector(".topic-list.is-active");
+  let oldSelectedTab = document.querySelector(".tabs--link.is-active");
+
+  oldSelectedTabContent.classList.remove("is-active");
+  oldSelectedTab.classList.remove("is-active");
+
+  // Put the newly selected tab / tab content into the active state.
+  let selectedTab = ev.target.parentElement;
+  let selectedTabContent = document.querySelector(`#tab-${ev.target.parentElement.dataset.eventLabel}`);
+
+  selectedTab.classList.add("is-active");
+  selectedTabContent.classList.add("is-active");
+}

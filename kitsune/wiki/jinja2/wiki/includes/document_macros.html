@@ -412,3 +412,70 @@
     </section>
   {% endif %}
 {% endmacro %}
+
+{% macro kb_subtopic_documents(documents, active_topic="", is_fallback=False) %}
+  {% set active_topic_slug = active_topic or 'view-all' %}
+  <section class="topic-list {% if not active_topic %}is-active{% endif %}" id="tab-{{ active_topic_slug }}">
+    {% if is_fallback %}
+      <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
+    {% endif %}
+    {% for document in documents %}
+        <article class="topic-article">
+          <div class="topic-article--icon-wrap">
+            <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+          </div>
+          <div class="topic-article--text">
+            <h2 class="sumo-card-heading">
+              <a {% if is_fallback %} href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}" {% else %} href="{{ document['url'] }}" {% endif %}
+                data-event-category="device-migration-tabbed-menu" 
+                data-event-action="link-click"
+                data-event-label="{{ active_topic_slug }}">
+                {{ document['document_title'] }}
+              </a>
+            </h2>
+            <p>{{ document['document_summary'] }}</p>
+          </div>
+        </article>
+    {% endfor %}
+  </section>
+{% endmacro %}
+
+{% macro kb_subtopic_tabs(request, product, topic, subtopics) -%}
+  <nav class="tabs">
+    <ul class="tabs--list subtopics">
+      <li class="tabs--item">
+      <button class="tabs--link is-active" id="kb-tab-all" 
+        data-event-category="device-migration-tabbed-menu"
+        data-event-action="tab-click" 
+        data-event-label="view-all">
+        <span>{{ _('View All') }}</span>
+      </button>
+      </li>
+      {% for subtopic in subtopics %}
+        <li class="tabs--item">
+          <button class="tabs--link" id="kb-subtopic-{{ subtopic.title }}" 
+             data-event-category="device-migration-tabbed-menu"
+             data-event-action="tab-click" 
+             data-event-label="{{subtopic.slug}}">
+            <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
+          </button>
+        </li>
+      {% endfor %}
+    </ul>
+  </nav>
+
+  {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, topics=[topic], products=[product])%}
+
+  {% if all_fallback_docs %}
+    {{ kb_subtopic_documents(documents=all_fallback_docs, is_fallback=True) }}
+  {% endif %}
+  {{ kb_subtopic_documents(documents=all_docs) }}
+
+  {% for subtopic in subtopics %}
+    {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, topics=[subtopic], products=[product])%}
+    {% if fallback_documents %}
+      {{ kb_subtopic_documents(documents=fallback_docs, active_topic=subtopic.slug, is_fallback=True) }}
+    {% endif %}
+    {{ kb_subtopic_documents(documents=documents, active_topic=subtopic.slug) }}
+  {% endfor %}
+{%- endmacro %}

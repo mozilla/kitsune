@@ -1,7 +1,7 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications, related_products_sidebar with context %}
-{% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs  %}
-{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list, related_documents  %}
+{% from 'products/includes/topic_macros.html' import topic_sidebar %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list, related_documents, kb_subtopic_tabs  %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
 {% from "includes/common_macros.html" import download_firefox, sumo_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
@@ -91,7 +91,7 @@
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
       {% if document.is_switching_devices_document %}
-        {{ topic_tabs(product_topics, switching_devices_subtopics, switching_devices_product, switching_devices_topic)}}
+        {{ kb_subtopic_tabs(request, switching_devices_product, switching_devices_topic, switching_devices_subtopics) }}
       {% endif %}
 
       {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
@@ -107,7 +107,6 @@
     <section class="sumo-page-section hide-on-large">
       {{ vote_form(document, 'footer') }}
     </section>
-
 
     {{ contributor_list(contributors) }}
 
