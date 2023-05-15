@@ -440,7 +440,7 @@
   </section>
 {% endmacro %}
 
-{% macro kb_subtopic_tabs(request, product, topic, subtopics) -%}
+{% macro kb_subtopic_tabs(request, product, topic, subtopics, current_document) -%}
   <nav class="switching-devices tabs">
     <ul class="tabs--list subtopics">
       <li class="tabs--item">
@@ -464,7 +464,7 @@
     </ul>
   </nav>
 
-  {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, topics=[topic], products=[product])%}
+  {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, [topic], [product], current_document)%}
 
   {% if all_fallback_docs %}
     {{ kb_subtopic_documents(documents=all_fallback_docs, is_fallback=True) }}
@@ -472,7 +472,7 @@
   {{ kb_subtopic_documents(documents=all_docs) }}
 
   {% for subtopic in subtopics %}
-    {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, topics=[subtopic], products=[product])%}
+    {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, [subtopic], [product], current_document=current_document)%}
     {% if fallback_documents %}
       {{ kb_subtopic_documents(documents=fallback_docs, active_topic=subtopic.slug, is_fallback=True) }}
     {% endif %}

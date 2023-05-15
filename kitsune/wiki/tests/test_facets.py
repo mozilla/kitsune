@@ -25,11 +25,18 @@ class TestFacetHelpers(TestCase):
         self.sync_m = TopicFactory(product=self.mobile, slug="sync")
 
         # Set up documents.
-        doc1 = DocumentFactory(products=[self.desktop], topics=[self.general_d, self.bookmarks_d])
-        doc1_revision = ApprovedRevisionFactory(document=doc1, is_ready_for_localization=True)
+        self.doc1 = DocumentFactory(
+            products=[self.desktop], topics=[self.general_d, self.bookmarks_d]
+        )
+        doc1_revision = ApprovedRevisionFactory(document=self.doc1, is_ready_for_localization=True)
 
-        doc1_localized = DocumentFactory(locale="de", products=[], topics=[], parent=doc1)
-        ApprovedRevisionFactory(document=doc1_localized, based_on=doc1_revision)
+        self.doc1_localized = DocumentFactory(
+            locale="de",
+            products=[self.desktop],
+            topics=[self.general_d, self.bookmarks_d],
+            parent=self.doc1,
+        )
+        ApprovedRevisionFactory(document=self.doc1_localized, based_on=doc1_revision)
 
         doc2 = DocumentFactory(
             products=[self.desktop, self.mobile],
@@ -74,29 +81,74 @@ class TestFacetHelpers(TestCase):
 
     def test_documents_for(self):
         """Verify documents_for() returns documents for passed topics."""
-        general_documents = _documents_for(locale="en-US", topics=[self.general_d])
-        self.assertEqual(len(general_documents), 1)
+        with self.subTest("documents_for-general"):
+            general_documents = _documents_for(locale="en-US", topics=[self.general_d])
+            self.assertEqual(len(general_documents), 1)
 
-        bookmarks_documents = _documents_for(locale="en-US", topics=[self.bookmarks_d])
-        self.assertEqual(len(bookmarks_documents), 2)
+        with self.subTest("documents_for-bookmarks"):
+            bookmarks_documents = _documents_for(locale="en-US", topics=[self.bookmarks_d])
+            self.assertEqual(len(bookmarks_documents), 2)
 
-        sync_documents = _documents_for(locale="en-US", topics=[self.sync_d])
-        self.assertEqual(len(sync_documents), 1)
+        with self.subTest("documents_for-sync"):
+            sync_documents = _documents_for(locale="en-US", topics=[self.sync_d])
+            self.assertEqual(len(sync_documents), 1)
 
-        general_bookmarks_documents = _documents_for(
-            locale="en-US", topics=[self.general_d, self.bookmarks_d]
+        with self.subTest("documents_for-general_bookmarks"):
+            general_bookmarks_documents = _documents_for(
+                locale="en-US", topics=[self.general_d, self.bookmarks_d]
+            )
+            self.assertEqual(len(general_bookmarks_documents), 1)
+
+        with self.subTest("documents_for-general_bookmarks_sync_localized"):
+            general_bookmarks_sync_documents = _documents_for(
+                locale="de", topics=[self.general_d, self.bookmarks_d]
+            )
+            self.assertEqual(len(general_bookmarks_sync_documents), 1)
+
+        with self.subTest("documents_for-general_sync"):
+            general_sync_documents = _documents_for(
+                locale="en-US", topics=[self.general_d, self.sync_d]
+            )
+            self.assertEqual(len(general_sync_documents), 0)
+
+    def test_documents_for_caching_1(self):
+        """
+        Ensure that when we exclude a document, it doesn't affect the result when
+        we don't. Note that the cache is automatically cleared between tests.
+        """
+        docs, _ = documents_for(
+            locale="en-US", topics=[self.bookmarks_d], current_document=self.doc1
         )
-        self.assertEqual(len(general_bookmarks_documents), 1)
+        self.assertEqual(len(docs), 1)
+        docs, _ = documents_for(locale="en-US", topics=[self.bookmarks_d])
+        self.assertEqual(len(docs), 2)
 
-        general_bookmarks_documents_localized = _documents_for(
-            locale="de", topics=[self.general_d, self.bookmarks_d]
+    def test_documents_for_caching_2(self):
+        """
+        Ensure that when we don't exclude a document, it doesn't affect the result
+        when we do. Note that the cache is automatically cleared between tests.
+        """
+        docs, _ = documents_for(locale="en-US", topics=[self.bookmarks_d])
+        self.assertEqual(len(docs), 2)
+        docs, _ = documents_for(
+            locale="en-US", topics=[self.bookmarks_d], current_document=self.doc1
         )
-        self.assertEqual(len(general_bookmarks_documents_localized), 1)
+        self.assertEqual(len(docs), 1)
 
-        general_sync_documents = _documents_for(
-            locale="en-US", topics=[self.general_d, self.sync_d]
+    def test_exclude_localized_parent_document(self):
+        """
+        Ensure that when we exclude the parent of a localized document, the child is excluded too
+        """
+        docs, _ = documents_for(locale="de", topics=[self.bookmarks_d], current_document=self.doc1)
+        self.assertEqual(len(docs), 1)
+
+    def test_exclude_localized_document(self):
+        """
+        Ensure that when we exclude a localized document, its parent is excluded too"""
+        docs, _ = documents_for(
+            locale="de", topics=[self.bookmarks_d], current_document=self.doc1_localized
         )
-        self.assertEqual(len(general_sync_documents), 0)
+        self.assertEqual(len(docs), 0)
 
     def test_documents_for_fallback(self):
         """Verify the fallback in documents_for."""

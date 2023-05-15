@@ -33,7 +33,7 @@ def topics_for(product, parent=False):
     return qs
 
 
-def documents_for(locale, topics=None, products=None):
+def documents_for(locale, topics=None, products=None, current_document=None):
     """Returns a tuple of lists of articles that apply to topics and products.
 
     The first item in the tuple is the list of articles for the locale
@@ -44,6 +44,7 @@ def documents_for(locale, topics=None, products=None):
     :arg locale: the locale
     :arg topics: (optional) a list of Topic instances
     :arg products: (optional) a list of Product instances
+    :arg current_document: (optional) a Document instance to exclude from the results
 
     The articles are returned as a list of dicts with the following keys:
         id
@@ -53,16 +54,29 @@ def documents_for(locale, topics=None, products=None):
     """
     documents = _documents_for(locale, topics, products)
 
+    if exclude_current_document := isinstance(current_document, Document):
+        if documents and current_document.locale == locale:
+            documents = [d for d in documents if d["id"] != current_document.id]
+
     # For locales that aren't en-US, get the en-US documents
     # to fill in for untranslated articles.
     if locale != settings.WIKI_DEFAULT_LANGUAGE:
-        l10n_document_ids = [
-            d["document_parent_id"] for d in documents if "document_parent_id" in d
-        ]
+        # Start by getting all of the English documents for the given products and topics.
         en_documents = _documents_for(
-            locale=settings.WIKI_DEFAULT_LANGUAGE, products=products, topics=topics
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            products=products,
+            topics=topics,
         )
-        fallback_documents = [d for d in en_documents if d["id"] not in l10n_document_ids]
+        # Exclude the English versions of the translated documents we've already found.
+        exclude_en_document_ids = set(
+            d["document_parent_id"] for d in documents if "document_parent_id" in d
+        )
+        if exclude_current_document:
+            # Exclude the current document if it's in English, or its parent if it's not.
+            exclude_en_document_ids.add(
+                current_document.parent.id if current_document.parent else current_document.id
+            )
+        fallback_documents = [d for d in en_documents if d["id"] not in exclude_en_document_ids]
     else:
         fallback_documents = None
 
@@ -70,7 +84,7 @@ def documents_for(locale, topics=None, products=None):
 
 
 def _documents_for(locale, topics=None, products=None):
-    """Returns a list of articles that apply to passed in topics and products."""
+    """Returns a list of articles that apply to passed in locale, topics and products."""
     # First try to get the results from the cache
     cache_key = _cache_key(locale, topics, products)
     documents_cache_key = f"documents_for:{cache_key}"
@@ -78,22 +92,22 @@ def _documents_for(locale, topics=None, products=None):
     if documents is not None:
         return documents
 
-    qs = (
-        Document.objects.filter(
-            locale=locale,
-            is_archived=False,
-            current_revision__isnull=False,
-            category__in=settings.IA_DEFAULT_CATEGORIES,
-        ).select_related("current_revision", "parent")
-        # speed up query by removing any ordering, since we're doing it in python:
-        .order_by()
+    qs = Document.objects.filter(
+        locale=locale,
+        is_archived=False,
+        current_revision__isnull=False,
+        category__in=settings.IA_DEFAULT_CATEGORIES,
     )
+    # speed up query by removing any ordering, since we're doing it in python:
+    qs = qs.select_related("current_revision", "parent").order_by()
+
     for topic in topics or []:
         # we need to filter against parent topics for localized articles
         qs = qs.filter(Q(topics=topic) | Q(parent__topics=topic))
     for product in products or []:
         # we need to filter against parent products for localized articles
         qs = qs.filter(Q(products=product) | Q(parent__products=product))
+    qs = qs.distinct()
 
     votes_cache_key = f"votes_for:{cache_key}"
     votes_dict = cache.get(votes_cache_key)
