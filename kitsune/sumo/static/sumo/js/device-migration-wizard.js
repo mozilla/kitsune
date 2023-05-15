@@ -2,22 +2,117 @@ import trackEvent from "sumo/js/analytics";
 import SwitchingDevicesWizardManager from "sumo/js/switching-devices-wizard-manager";
 import { BaseFormStep } from "sumo/js/form-wizard";
 
+import keyImageURL from "sumo/img/key.svg";
+
 class SignInStep extends BaseFormStep {
   get template() {
     return `
       <template>
-        <div>
-          <p>This is where the sign in/sign up form will go.</p>
-          <p id="email"></p>
+        <div id="sign-in-step-root">
+          <p>
+            ${gettext("Body provide short value of the account other than the bookmarks/password/history line, what else could they get out of it that would be good to know here?")}
+          </p>
+
+          <p class="for-sign-up">
+            <strong>${gettext("Create an account")}</strong>
+          </p>
+          <p class="for-sign-in">
+            <strong>${gettext("Sign in to your account")}</strong>
+          </p>
+
+          <form method="get">
+            <input name="service" value="sync" type="hidden"/>
+            <input name="action" value="email" type="hidden"/>
+            <input name="context" value="" type="hidden"/>
+            <input name="flow_id" value="" type="hidden"/>
+            <input name="flow_begin_time" value="" type="hidden"/>
+            <input name="utm_source" value="" type="hidden"/>
+            <input name="utm_medium" value="" type="hidden"/>
+            <input name="entrypoint" value="" type="hidden"/>
+            <input name="redirect_immediately" value="true" type="hidden"/>
+            <input name="redirect_to" value="" type="hidden"/>
+
+            <label for="email">${gettext("Email")}</label>
+            <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email")}"/>
+
+            <input class="for-sign-up" type="submit" value="${gettext("Sign up")}"/>
+            <input class="for-sign-in" type="submit" value="${gettext("Sign in")}"/>
+          </form>
+
+          <p class="for-sign-up">
+            ${gettext("Already have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-link">${gettext("Sign in")}</a>
+          </p>
+          <p class="for-sign-in">
+            ${gettext("Don’t have an account?")}<a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
+          </p>
+
+          <p class="warning">
+            <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
+            ${gettext("Provide any warnings about unexpected password situations (like noted in mock)")}
+          </p>
         </div>
       </template>
     `;
   }
 
+  get styles() {
+    let style = document.createElement("style");
+    style.textContent = `
+      #sign-in-step-root[mode="sign-in"] .for-sign-up,
+      #sign-in-step-root[mode="sign-up"] .for-sign-in {
+        display: none;
+      }
+
+      .key-icon {
+        width: 16px;
+        height: 8px;
+      }
+    `;
+    return style;
+  }
+
   render() {
+    let root = this.shadowRoot.querySelector("#sign-in-step-root");
+
     if (this.state.email) {
-      let emailEl = this.shadowRoot.getElementById("email");
-      emailEl.textContent = this.state.email;
+      let emailEl = this.shadowRoot.querySelector("#email");
+      // If the user somehow has managed to type something into the email
+      // field before we were able to get the email address, let's not
+      // overwrite what the user had typed in.
+      if (!emailEl.value) {
+        emailEl.value = this.state.email;
+      }
+      root.setAttribute("mode", "sign-in");
+    } else {
+      root.setAttribute("mode", "sign-up");
+    }
+
+    let form = this.shadowRoot.querySelector("form");
+    form.action = this.state.fxaRoot;
+
+    const STATE_FIELDS = [
+      "context",
+      "flow_id",
+      "flow_begin_time",
+      "utm_source",
+      "utm_medium",
+      "entrypoint",
+      "redirect_to",
+    ];
+
+    for (let fieldName of STATE_FIELDS) {
+      let fieldEl = this.shadowRoot.querySelector(`input[name=${fieldName}]`);
+      if (this.state[fieldName]) {
+        fieldEl.disabled = false;
+        fieldEl.value = this.state[fieldName];
+      } else {
+        fieldEl.disabled = true;
+      }
+    }
+
+    let alternativeLinks = this.shadowRoot.querySelectorAll(".alternative-link");
+    for (let link of alternativeLinks) {
+      link.href = this.state.linkHref;
     }
   }
 }
