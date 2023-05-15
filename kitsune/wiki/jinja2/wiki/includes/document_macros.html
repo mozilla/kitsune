@@ -415,7 +415,7 @@
 
 {% macro kb_subtopic_documents(documents, active_topic="", is_fallback=False) %}
   {% set active_topic_slug = active_topic or 'view-all' %}
-  <section class="topic-list {% if not active_topic %}is-active{% endif %}" id="tab-{{ active_topic_slug }}">
+  <section class="switching-devices topic-list {% if not active_topic %}is-active{% endif %}" id="tab-{{ active_topic_slug }}">
     {% if is_fallback %}
       <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
     {% endif %}

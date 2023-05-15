@@ -87,7 +87,7 @@ function kbTabsInit() {
 // clicked tab 
 function toggleTabContent(ev) {
   // Remove the active state from the previously selected tab / tab content
-  let oldSelectedTabContent = document.querySelector(".topic-list.is-active");
+  let oldSelectedTabContent = document.querySelector(".switching-devices.topic-list.is-active");
   let oldSelectedTab = document.querySelector(".tabs--link.is-active");
 
   oldSelectedTabContent.classList.remove("is-active");
