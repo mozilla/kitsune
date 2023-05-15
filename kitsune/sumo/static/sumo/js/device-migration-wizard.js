@@ -40,10 +40,10 @@ class SignInStep extends BaseFormStep {
           </form>
 
           <p class="for-sign-up">
-            ${gettext("Already have an account? <a class='alternative-link' href='#'>Sign in</a>")}
+            ${gettext("Already have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-link">${gettext("Sign in")}</a>
           </p>
           <p class="for-sign-in">
-            ${gettext("Don’t have an account? <a class='alternative-link' href='#'>Sign up</a>")}
+            ${gettext("Don’t have an account?")}<a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
           </p>
 
           <p class="warning">
