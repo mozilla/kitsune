@@ -1,6 +1,6 @@
 {
     "python.pythonPath": "/venv/bin/python",
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "python.formatting.blackPath": "/venv/bin/black",
     "python.formatting.blackArgs": [
         "--config=/app/pyproject.toml"
@@ -43,5 +43,8 @@
     },
     "[svelte]": {
         "editor.defaultFormatter": "svelte.svelte-vscode"
+    },
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
     }
 }
