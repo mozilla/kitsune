@@ -235,11 +235,11 @@ export class BaseFormStep extends HTMLElement {
   }
 
   /**
-   * Provides a <style> element to be injected into the shadow DOM at construction
+   * Provides a <link> element to be injected into the shadow DOM at construction
    * time. Subclasses that need custom styles should override this.
    */
   get styles() {
-    return document.createElement("style");
+    return document.createElement("link");
   }
 
   constructor() {

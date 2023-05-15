@@ -1,0 +1,57 @@
+#header,
+#sync-status-container {
+  display: flex;
+  align-items: center;
+}
+
+#header {
+  padding-block-end: 12px;
+  border-bottom: 1px solid var(--color-light-gray-03);
+}
+
+.icon {
+  height: 16px;
+  margin-inline-end: 12px;
+}
+
+#header > a {
+  margin-inline-start: auto;
+}
+
+#sync-status {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-white);
+  border-radius: 34px;
+  padding: 2px 16px;
+  margin-inline-start: 12px;
+  text-transform: uppercase;
+
+  /**
+   * TODO: the spec calls for this to be #E22850, but that's not part of
+   * the colour swatches available to us.
+   */
+  background-color: var(--color-error);
+}
+
+#sync-status[sync-enabled] {
+  background-color: var(--color-green-07);
+}
+
+#buttons {
+  display: flex;
+  flex-direction: column;
+}
+
+#buttons > button {
+  width: max-content;
+}
+
+#buttons[sync-enabled] > #turn-on-sync,
+#buttons:not([sync-enabled]) > #change-sync-prefs {
+  display: none;
+}
+
+#next {
+  align-self: end;
+}
