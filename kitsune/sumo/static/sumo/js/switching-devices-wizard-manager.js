@@ -1,3 +1,4 @@
+import trackEvent from "./analytics";
 import BrowserDetect from "./browserdetect";
 import UITour from "./libs/uitour";
 
@@ -82,6 +83,7 @@ export default class SwitchingDevicesWizardManager {
         return state.fxaSignedIn;
       },
       enter(state) {
+        trackEvent("device-migration-wizard", "report-state", "sign-into-fxa");
         let baseParams = {
           utm_source: state.utm_source,
           utm_campaign: state.utm_campaign,
@@ -119,6 +121,7 @@ export default class SwitchingDevicesWizardManager {
         return state.syncEnabled && state.confirmedSyncChoices;
       },
       enter(state) {
+        trackEvent("device-migration-wizard", "report-state", "configure-sync");
         return {
           syncEnabled: state.syncEnabled,
         };
@@ -132,6 +135,7 @@ export default class SwitchingDevicesWizardManager {
         return false;
       },
       enter(state) {
+        trackEvent("device-migration-wizard", "report-state", "setup-new-device");
         return {};
       },
     },

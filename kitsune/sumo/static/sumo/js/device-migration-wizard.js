@@ -1,4 +1,3 @@
-import trackEvent from "sumo/js/analytics";
 import SwitchingDevicesWizardManager from "sumo/js/switching-devices-wizard-manager";
 import { BaseFormStep } from "sumo/js/form-wizard";
 
