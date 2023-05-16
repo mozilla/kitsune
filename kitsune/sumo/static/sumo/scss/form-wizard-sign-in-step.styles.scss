@@ -6,4 +6,44 @@
 .key-icon {
   width: 16px;
   height: 8px;
+  margin-inline-end: 11px;
+}
+
+label,
+input[name="email"] {
+  font-size: 0.8125rem;
+}
+
+label {
+  font-weight: normal;
+}
+
+input[name="email"] {
+  width: 325px;
+  margin-block-end: 16px;
+}
+
+button.for-sign-in,
+button.for-sign-up {
+  display: block;
+  margin-block-end: 8px;
+}
+
+.form-title {
+  margin-block-end: 8px;
+}
+
+.form-footer {
+  margin-block-end: 26px;
+  font-size: 0.8125rem;
+}
+
+.warning {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 234, 128, 0.4);
+  padding-inline: 16px;
+  padding-block: 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
 }
