@@ -279,6 +279,14 @@ export class BaseFormStep extends HTMLElement {
     throw new Error("template must be implemented.");
   }
 
+  /**
+   * Provides a <style> element to be injected into the shadow DOM at construction
+   * time. Subclasses that need custom styles should override this.
+   */
+  get styles() {
+    return document.createElement("style");
+  }
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -286,7 +294,7 @@ export class BaseFormStep extends HTMLElement {
     let parser = new DOMParser();
     let doc = parser.parseFromString(this.template, "text/html");
     let template = doc.querySelector("template");
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this.shadowRoot.append(this.styles, template.content.cloneNode(true));
 
     this.render({}, this.#state);
   }

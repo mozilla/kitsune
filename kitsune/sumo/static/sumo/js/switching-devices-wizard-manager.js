@@ -1,3 +1,4 @@
+import trackEvent from "./analytics";
 import BrowserDetect from "./browserdetect";
 import UITour from "./libs/uitour";
 
@@ -39,7 +40,7 @@ export default class SwitchingDevicesWizardManager {
     entrypoint_variation: null,
     flow_id: null,
     flow_begin_time: null,
-    context: null,
+    context: "fx_desktop_v3",
 
     // The rest of these are internal state variables used by this class
     // to determine which step to show the user in the <form-wizard>.
@@ -82,10 +83,8 @@ export default class SwitchingDevicesWizardManager {
         return state.fxaSignedIn;
       },
       enter(state) {
-        return {
-          fxaRoot: state.fxaRoot,
-          email: state.sumoEmail,
-
+        trackEvent("device-migration-wizard", "report-state", "sign-into-fxa");
+        let baseParams = {
           utm_source: state.utm_source,
           utm_campaign: state.utm_campaign,
           utm_medium: state.utm_medium,
@@ -95,6 +94,22 @@ export default class SwitchingDevicesWizardManager {
           flow_id: state.flow_id,
           flow_begin_time: state.flow_begin_time,
           context: state.context,
+          redirect_to: window.location.href,
+        }
+
+        let linkParams = new URLSearchParams();
+        for (let param in baseParams) {
+          if (baseParams[param]) {
+            linkParams.set(param, baseParams[param]);
+          }
+        }
+
+        return {
+          fxaRoot: state.fxaRoot,
+          email: state.sumoEmail,
+          linkHref: `${state.fxaRoot}?${linkParams}`,
+
+          ...baseParams,
         };
       },
     },
@@ -106,6 +121,7 @@ export default class SwitchingDevicesWizardManager {
         return state.syncEnabled && state.confirmedSyncChoices;
       },
       enter(state) {
+        trackEvent("device-migration-wizard", "report-state", "configure-sync");
         return {
           syncEnabled: state.syncEnabled,
         };
@@ -119,6 +135,7 @@ export default class SwitchingDevicesWizardManager {
         return false;
       },
       enter(state) {
+        trackEvent("device-migration-wizard", "report-state", "setup-new-device");
         return {};
       },
     },
@@ -219,6 +236,8 @@ export default class SwitchingDevicesWizardManager {
             this.#updateFxAState();
           }, pollIntervalMs);
         }
+
+        this.#recomputeCurrentStep();
 
         // We need to get some query parameters from the FxA server before we
         // show the user any kind of form to create or sign-in to an account.
