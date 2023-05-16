@@ -5,6 +5,7 @@ import keyImageURL from "sumo/img/key.svg";
 import infoImageURL from "sumo/img/info.svg";
 import syncingImageURL from "sumo/img/syncing.svg";
 
+import signInStepStylesURL from "../scss/form-wizard-sign-in-step.styles.scss";
 import configurationStepStylesURL from "../scss/form-wizard-configuration-step.styles.scss";
 
 class SignInStep extends BaseFormStep {
@@ -59,19 +60,10 @@ class SignInStep extends BaseFormStep {
   }
 
   get styles() {
-    let style = document.createElement("style");
-    style.textContent = `
-      #sign-in-step-root[mode="sign-in"] .for-sign-up,
-      #sign-in-step-root[mode="sign-up"] .for-sign-in {
-        display: none;
-      }
-
-      .key-icon {
-        width: 16px;
-        height: 8px;
-      }
-    `;
-    return style;
+    let linkEl = document.createElement("link");
+    linkEl.rel = "stylesheet";
+    linkEl.href = signInStepStylesURL;
+    return linkEl;
   }
 
   render() {
