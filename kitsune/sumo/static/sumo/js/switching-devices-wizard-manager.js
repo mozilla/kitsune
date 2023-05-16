@@ -100,6 +100,7 @@ export default class SwitchingDevicesWizardManager {
           flow_begin_time: state.flow_begin_time,
           context: state.context,
           redirect_to: window.location.href,
+          redirect_immediately: true,
         }
 
         let linkParams = new URLSearchParams();
