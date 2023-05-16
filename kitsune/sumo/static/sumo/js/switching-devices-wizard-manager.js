@@ -12,6 +12,11 @@ import UITour from "./libs/uitour";
  */
 export default class SwitchingDevicesWizardManager {
   #formWizard = null;
+  #formWizardEvents = Object.freeze([
+    "DeviceMigrationWizard:ConfigureStep:TurnOnSync",
+    "DeviceMigrationWizard:ConfigureStep:ChangeSyncPrefs",
+    "DeviceMigrationWizard:ConfigureStep:Next",
+  ]);
 
   // For versions of Firefox < 114, we use this value as a polling interval
   // to check for FxA sign-in state changes.
@@ -166,6 +171,10 @@ export default class SwitchingDevicesWizardManager {
     }
 
     this.#setupFormWizardStepIndicator();
+
+    for (let eventName of this.#formWizardEvents) {
+      this.#formWizard.addEventListener(eventName, this);
+    }
 
     this.#state.fxaRoot = this.#formWizard.getAttribute("fxa-root");
 
@@ -456,6 +465,23 @@ export default class SwitchingDevicesWizardManager {
         this.#updateState({
           sumoEmail,
         });
+      }
+    }
+  }
+
+  handleEvent(event) {
+    switch (event.type) {
+      case "DeviceMigrationWizard:ConfigureStep:TurnOnSync":
+        // Intentional fall-through
+      case "DeviceMigrationWizard:ConfigureStep:ChangeSyncPrefs": {
+        UITour.openPreferences("sync");
+        break;
+      }
+      case "DeviceMigrationWizard:ConfigureStep:Next": {
+        this.#updateState({
+          confirmedSyncChoices: true,
+        });
+        break;
       }
     }
   }
