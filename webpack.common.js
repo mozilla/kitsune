@@ -51,7 +51,7 @@ module.exports = {
             preprocess: sveltePreprocess(),
             compilerOptions: {
               hydratable: true,
-            }
+            },
           },
         },
       },
@@ -64,12 +64,22 @@ module.exports = {
       },
       {
         test: /\.s?css$/,
+        exclude: /\.styles.scss$/,
         use: [
           MiniCssExtractPlugin.loader,
           "css-loader",
           "postcss-loader",
           "sass-loader",
         ],
+      },
+      {
+        test: /\.styles.scss$/,
+        exclude: /node_modules/,
+        type: "asset/resource",
+        use: ["sass-loader"],
+        generator: {
+          filename: "[name].[contenthash].css"
+        }
       },
       {
         test: /\.(svg|png|webp|gif|woff2?)$/,

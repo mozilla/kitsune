@@ -1,3 +1,5 @@
+import wizardStylesURL from "../scss/form-wizard.styles.scss";
+
 /**
  * A custom element for displaying multi-step forms. Designed to be used with
  * child elements that inherit from `BaseFormStep`, or which implement a
@@ -44,57 +46,10 @@ export class FormWizard extends HTMLElement {
   }
 
   static get styles() {
-    let style = document.createElement("style");
-    style.textContent = `
-      :root,
-      :host {
-        --color-progress: var(--color-blue-06);
-      }
-      
-      :host {
-        display: flex;
-        flex-direction: column;
-        border-radius: 8px;
-        box-shadow: 0px 2px 6px rgba(58, 57, 68, 0.2);
-      }
-      
-      .form-wizard-content {
-        padding-inline: 32px;
-        padding-block-start: 24px;
-      }
-      
-      h2 {
-        margin: 0;
-        font-size: 1.5rem;
-        line-height: 1;
-        color: var(--color-heading);
-      }
-      
-      ul {
-        margin-inline-end: 48px;
-      }
-      
-      section,
-      ::slotted([slot="active"])  {
-        display: flex;
-        flex: 1;
-      }
-      
-      progress {
-        flex: 1;
-        max-height: 8px;
-        appearance: none;
-        border: none;
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
-      }
-      
-      progress::-moz-progress-bar,
-      progress::-webkit-progress-value {
-        background-color: var(--color-progress);
-      }
-    `;
-    return style;
+    let stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = wizardStylesURL;
+    return stylesheet;
   }
 
   constructor() {
