@@ -75,28 +75,25 @@ document.addEventListener("DOMContentLoaded", function () {
 // This function initializes the tabs on the switching-devices page
 // and adds click event listener
 function kbTabsInit() {
-  let tabItems = document.querySelectorAll('.tabs--link');
-  tabItems.forEach((item) => {
-    item.addEventListener("click", (ev) => {
-      toggleTabContent(ev);
-    });
-  });
-}
+  const tabs = document.querySelectorAll('.tabs--link');
+  const tabContents = document.querySelectorAll('.switching-devices.topic-list');
 
-// This function toggles the visibility of the tab content based on 
-// clicked tab 
-function toggleTabContent(ev) {
-  // Remove the active state from the previously selected tab / tab content
-  let oldSelectedTabContent = document.querySelector(".switching-devices.topic-list.is-active");
-  let oldSelectedTab = document.querySelector(".tabs--link.is-active");
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      // Remove active class from all tabs and hide all tab contents
+      tabs.forEach(function(tab) {
+        tab.classList.remove('is-active');
+      });
 
-  oldSelectedTabContent.classList.remove("is-active");
-  oldSelectedTab.classList.remove("is-active");
+      tabContents.forEach(function(content) {
+        content.classList.remove('is-active');
+      });
 
-  // Put the newly selected tab / tab content into the active state.
-  let selectedTab = ev.target.parentElement;
-  let selectedTabContent = document.querySelector(`#tab-${ev.target.parentElement.dataset.eventLabel}`);
-
-  selectedTab.classList.add("is-active");
-  selectedTabContent.classList.add("is-active");
-}
+      // Add active class to the selected tab and show its content
+      tab.classList.add('is-active');
+      const targetContent = document.getElementById('tab-' + tab.getAttribute('data-event-label'));
+      if (targetContent) {
+        targetContent.classList.add('is-active');
+      }
+    })
+  })};
