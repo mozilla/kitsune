@@ -2,6 +2,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-.switching-devices.topic-list:not(.switching-devices.topic-list.is-active){
+.switching-devices.topic-list:not(.switching-devices.topic-list.is-active) {
     display: none;
+}
+
+nav.switching-devices.tabs {
+    button.tabs--link:focus {
+        box-shadow: none;
+    }
 }
