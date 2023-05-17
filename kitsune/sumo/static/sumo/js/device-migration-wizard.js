@@ -1,5 +1,4 @@
 import SwitchingDevicesWizardManager from "sumo/js/switching-devices-wizard-manager";
-import { BaseFormStep } from "sumo/js/form-wizard";
 import { SignInStep } from "sumo/js/form-wizard-sign-in-step";
 import { ConfigureStep } from "sumo/js/form-wizard-configure-step";
 import { SetupDeviceStep } from "sumo/js/form-wizard-setup-device-step";
