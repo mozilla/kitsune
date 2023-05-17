@@ -4,6 +4,10 @@ import keyImageURL from "sumo/img/key.svg";
 import signInStepStylesURL from "../scss/form-wizard-sign-in-step.styles.scss";
 
 export class SignInStep extends BaseFormStep {
+  #formEl = null;
+  #emailEl = null;
+  #emailErrorEl = null;
+
   get template() {
     return `
       <template>
@@ -19,7 +23,7 @@ export class SignInStep extends BaseFormStep {
             <strong>${gettext("Sign in to your account")}</strong>
           </p>
 
-          <form method="get">
+          <form method="get" novalidate>
             <input name="service" value="sync" type="hidden"/>
             <input name="action" value="email" type="hidden"/>
             <input name="context" value="" type="hidden"/>
@@ -32,7 +36,10 @@ export class SignInStep extends BaseFormStep {
             <input name="redirect_to" value="" type="hidden"/>
 
             <label for="email">${gettext("Email")}</label>
-            <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email")}"/>
+            <div class="tooltip-container">
+              <aside id="email-error" class="error-tooltip hidden"></aside>
+              <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email")}"/>
+            </div>
 
             <button class="for-sign-up mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-button">${gettext("Sign up")}</button>
             <button class="for-sign-in mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-button">${gettext("Sign in")}</button>
@@ -59,6 +66,52 @@ export class SignInStep extends BaseFormStep {
     linkEl.rel = "stylesheet";
     linkEl.href = signInStepStylesURL;
     return linkEl;
+  }
+
+  connectedCallback() {
+    this.#formEl = this.shadowRoot.querySelector("form");
+    this.#emailEl = this.shadowRoot.getElementById("email");
+    this.#emailErrorEl = this.shadowRoot.getElementById("email-error");
+
+    this.#formEl.addEventListener("submit", this);
+    this.#emailEl.addEventListener("blur", this);
+    this.#emailEl.addEventListener("input", this);
+  }
+
+  disconnectedCallback() {
+    this.#formEl.removeEventListener("submit", this);
+    this.#emailEl.removeEventListener("blur", this);
+    this.#emailEl.removeEventListener("input", this);
+  }
+
+  handleEvent(event) {
+    switch (event.type) {
+      case "blur": {
+        if (!this.#emailEl.validity.valid) {
+          this.handleShowError();
+        }
+        break;
+      }
+      case "input": {
+        if (this.#emailEl.value?.trim()) {
+          this.#emailErrorEl.classList.add("hidden");
+          this.#emailErrorEl.textContent = "";
+        }
+        break;
+      }
+      case "submit": {
+        if (!this.#emailEl.validity.valid) {
+          this.handleShowError();
+          event.preventDefault();
+        }
+        break;
+      }
+    }
+  }
+
+  handleShowError() {
+    this.#emailErrorEl.textContent = gettext("Valid email required");
+    this.#emailErrorEl.classList.remove("hidden");
   }
 
   render() {

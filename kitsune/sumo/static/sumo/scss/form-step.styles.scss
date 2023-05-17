@@ -1,3 +1,5 @@
+@use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
+
 // Base elements - general HTML elements
 @import "protocol/css/base/elements/reset";
 @import "protocol/css/base/elements/common";
@@ -15,4 +17,43 @@
   font-size: 0.875rem;
   line-height: 1.14;
   color: var(--color-text-form-step);
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.error-tooltip:not(.hidden) + input:invalid,
+input:not(:focus):not(:placeholder-shown):invalid {
+  border: 2px solid p.$color-red-60;
+}
+
+.error-tooltip:not(.hidden) + input:focus:invalid {
+  box-shadow: 0 0 0 2px rgba(226, 40, 80, 0.5);
+}
+
+.tooltip-container {
+  position: relative;
+}
+
+.error-tooltip {
+  background-color: p.$color-red-60;
+  border-radius: 4px;
+  color: var(--color-white);
+  padding: 8px;
+  position: absolute;
+  top: -34px;
+}
+
+.error-tooltip::before {
+  background-color: p.$color-red-60;
+  bottom: -8px;
+  content: ".";
+  height: 16px;
+  position: absolute;
+  text-indent: -999px;
+  transform: rotate(45deg);
+  white-space: nowrap;
+  width: 16px;
+  margin-inline-start: 6px;
 }

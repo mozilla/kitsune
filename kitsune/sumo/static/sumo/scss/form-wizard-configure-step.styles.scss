@@ -1,3 +1,5 @@
+@use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
+
 .configure-step-wrapper {
   display: flex;
   flex-direction: column;
@@ -32,12 +34,7 @@
   padding: 4px 16px;
   margin-inline-start: 12px;
   text-transform: uppercase;
-
-  /**
-   * TODO: the spec calls for this to be #E22850, but that's not part of
-   * the colour swatches available to us.
-   */
-  background-color: var(--color-error);
+  background-color: p.$color-red-60;
 }
 
 #sync-status[sync-enabled] {

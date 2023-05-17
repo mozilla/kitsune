@@ -245,4 +245,57 @@ describe("sign-in-step custom element", () => {
       expect(link.href).to.equal("https://expected-url.com/")
     }
   });
+
+  describe("form valdiation", () => {
+    let form;
+    let submitBtn;
+    let emailField;
+    let emailErrorMessage;
+
+    beforeEach(() => {
+      form = step.shadowRoot.querySelector("form");
+      submitBtn = form.querySelector("button[type=submit]");
+      emailField = form.querySelector("input[name=email]");
+      emailErrorMessage = form.querySelector("#email-error");
+    });
+
+    it("should display an error message if an email address is not supplied", () => {
+      expect([...emailErrorMessage.classList]).to.include("hidden");
+
+      emailField.value = "";
+      submitBtn.click();
+
+      expect(emailField.validity.valid).to.be.false;
+      expect([...emailErrorMessage.classList]).to.not.include("hidden");
+      expect(emailErrorMessage.textContent).to.equal("Valid email required");
+    });
+
+    it("should display an error message if an incomplete email address is supplied", () => {
+      expect([...emailErrorMessage.classList]).to.include("hidden");
+
+      emailField.value = "this-is-not-an-email-address";
+      submitBtn.click();
+
+      expect(emailField.validity.valid).to.be.false;
+      expect([...emailErrorMessage.classList]).to.not.include("hidden");
+      expect(emailErrorMessage.textContent).to.equal("Valid email required");
+    });
+
+    it("should submit the form when a valid email address is supplied", () => {
+      // Prevent the form from actually submitting.
+      form.addEventListener(
+        "submit",
+        (e) => {
+          e.preventDefault();
+        },
+        { once: true }
+      );
+
+      emailField.value = "email@email.com";
+      submitBtn.click();
+
+      expect(emailField.validity.valid).to.be.true;
+      expect([...emailErrorMessage.classList]).to.include("hidden");
+    });
+  });
 });
