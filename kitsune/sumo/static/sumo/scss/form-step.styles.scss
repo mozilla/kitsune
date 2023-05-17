@@ -1,0 +1,18 @@
+// Base elements - general HTML elements
+@import "protocol/css/base/elements/reset";
+@import "protocol/css/base/elements/common";
+@import "protocol/css/base/elements/forms";
+
+// Components from protocol-extra.scss
+@import "protocol/css/components/button";
+
+@import "./base/typography";
+
+:root,
+:host {
+  --color-text-form-step: var(--color-dark-gray-10);
+
+  font-size: 0.875rem;
+  line-height: 1.14;
+  color: var(--color-text-form-step);
+}

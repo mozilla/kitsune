@@ -1,4 +1,5 @@
 import wizardStylesURL from "../scss/form-wizard.styles.scss";
+import formStepStylesURL from "../scss/form-step.styles.scss";
 
 /**
  * A custom element for displaying multi-step forms. Designed to be used with
@@ -235,6 +236,17 @@ export class BaseFormStep extends HTMLElement {
   }
 
   /**
+   * Provides styles that are common to all form steps, mainly selected Protocol
+   * styles and components.
+   */
+  get defaultStyles() {
+    let stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = formStepStylesURL;
+    return stylesheet;
+  }
+
+  /**
    * Provides a <link> element to be injected into the shadow DOM at construction
    * time. Subclasses that need custom styles should override this.
    */
@@ -249,7 +261,11 @@ export class BaseFormStep extends HTMLElement {
     let parser = new DOMParser();
     let doc = parser.parseFromString(this.template, "text/html");
     let template = doc.querySelector("template");
-    this.shadowRoot.append(this.styles, template.content.cloneNode(true));
+    this.shadowRoot.append(
+      this.defaultStyles,
+      this.styles,
+      template.content.cloneNode(true)
+    );
 
     this.render({}, this.#state);
   }

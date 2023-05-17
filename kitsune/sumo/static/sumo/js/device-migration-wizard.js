@@ -17,10 +17,10 @@ class SignInStep extends BaseFormStep {
             ${gettext("Body provide short value of the account other than the bookmarks/password/history line, what else could they get out of it that would be good to know here?")}
           </p>
 
-          <p class="for-sign-up">
+          <p class="for-sign-up form-title">
             <strong>${gettext("Create an account")}</strong>
           </p>
-          <p class="for-sign-in">
+          <p class="for-sign-in form-title">
             <strong>${gettext("Sign in to your account")}</strong>
           </p>
 
@@ -39,14 +39,14 @@ class SignInStep extends BaseFormStep {
             <label for="email">${gettext("Email")}</label>
             <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email")}"/>
 
-            <button class="for-sign-up" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-button">${gettext("Sign up")}</button>
-            <button class="for-sign-in" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-button">${gettext("Sign in")}</button>
+            <button class="for-sign-up mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-button">${gettext("Sign up")}</button>
+            <button class="for-sign-in mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-button">${gettext("Sign in")}</button>
           </form>
 
-          <p class="for-sign-up">
+          <p class="for-sign-up form-footer">
             ${gettext("Already have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-link">${gettext("Sign in")}</a>
           </p>
-          <p class="for-sign-in">
+          <p class="for-sign-in form-footer">
             ${gettext("Don’t have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
           </p>
 
@@ -117,7 +117,7 @@ class ConfigureStep extends BaseFormStep {
   get template() {
     return `
       <template>
-        <div>
+        <div class="configure-step-wrapper">
           <p id="header">
             <img class="icon" src="${infoImageURL}" aria-hidden="true"></img>
             <span>${gettext("You are now logged in to Firefox Accounts")}</span>
@@ -134,9 +134,9 @@ class ConfigureStep extends BaseFormStep {
             <li>${gettext("set expectations we sync all data across all devices - can’t pick and choose")}</li>
           </ul>
           <p id="buttons">
-            <button id="turn-on-sync" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="turn-on-sync">${gettext("Turn on sync")}</button>
-            <button id="change-sync-prefs" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="change-sync-prefs">${gettext("Change what you are syncing")}</button>
-            <button id="next" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="configuration-next">${gettext("Next")}</button>
+            <button id="turn-on-sync" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="turn-on-sync">${gettext("Turn on sync")}</button>
+            <button id="change-sync-prefs" class="mzp-c-button" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="change-sync-prefs">${gettext("Change what you are syncing")}</button>
+            <button id="next" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="configuration-next">${gettext("Next")}</button>
           </p>
         </div>
       </template>
