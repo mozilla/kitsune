@@ -19,41 +19,60 @@
   color: var(--color-text-form-step);
 }
 
-.hidden {
-  visibility: hidden;
-}
-
-.error-tooltip:not(.hidden) + input:invalid,
-input:not(:focus):not(:placeholder-shown):invalid {
-  border: 2px solid p.$color-red-60;
-}
-
-.error-tooltip:not(.hidden) + input:focus:invalid {
-  box-shadow: 0 0 0 2px rgba(226, 40, 80, 0.5);
+.visible {
+  visibility: visible;
 }
 
 .tooltip-container {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.error-tooltip {
-  background-color: p.$color-red-60;
+.tooltip {
   border-radius: 4px;
-  color: var(--color-white);
   padding: 8px;
   position: absolute;
+  background-color: var(--color-light-gray-02);
+  width: max-content;
+  visibility: hidden;
+}
+
+.tooltip-top {
   top: -34px;
 }
 
-.error-tooltip::before {
+.tooltip-top::before {
+  bottom: -6px;
+  left: 12px;
+}
+
+.tooltip-right {
+  left: 34px;
+}
+
+.tooltip-right::before {
+  left: -6px;
+  bottom: 0;
+  top: 10px;
+}
+
+.tooltip-error {
   background-color: p.$color-red-60;
-  bottom: -8px;
+  color: var(--color-white);
+}
+
+.tooltip::before {
+  background-color: var(--color-light-gray-02);
   content: "";
-  height: 16px;
+  height: 12px;
   position: absolute;
   text-indent: -999px;
   transform: rotate(45deg);
   white-space: nowrap;
-  width: 16px;
-  margin-inline-start: 6px;
+  width: 12px;
+}
+
+.tooltip-error::before {
+  background-color: p.$color-red-60;
 }

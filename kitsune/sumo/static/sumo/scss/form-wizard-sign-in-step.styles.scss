@@ -1,3 +1,5 @@
+@use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
+
 #sign-in-step-root[mode="sign-in"] .for-sign-up,
 #sign-in-step-root[mode="sign-up"] .for-sign-in {
   display: none;
@@ -46,4 +48,13 @@ button.for-sign-up {
   padding-block: 8px;
   border-radius: 8px;
   font-size: 0.75rem;
+}
+
+.tooltip-error.visible + input:invalid,
+input:not(:focus):not(:placeholder-shown):invalid {
+  border: 2px solid p.$color-red-60;
+}
+
+.tooltip-error.visible + input:focus:invalid {
+  box-shadow: 0 0 0 2px rgba(226, 40, 80, 0.5);
 }
