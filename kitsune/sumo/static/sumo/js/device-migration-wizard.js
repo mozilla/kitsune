@@ -33,7 +33,7 @@ class SignInStep extends BaseFormStep {
             <input name="utm_source" value="" type="hidden"/>
             <input name="utm_medium" value="" type="hidden"/>
             <input name="entrypoint" value="" type="hidden"/>
-            <input name="redirect_immediately" value="true" type="hidden"/>
+            <input name="redirect_immediately" value="" type="hidden"/>
             <input name="redirect_to" value="" type="hidden"/>
 
             <label for="email">${gettext("Email")}</label>
@@ -93,6 +93,7 @@ class SignInStep extends BaseFormStep {
       "utm_medium",
       "entrypoint",
       "redirect_to",
+      "redirect_immediately",
     ];
 
     for (let fieldName of STATE_FIELDS) {

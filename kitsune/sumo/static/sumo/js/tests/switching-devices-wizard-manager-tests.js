@@ -357,7 +357,7 @@ describe("k", () => {
       expect(payload).to.deep.equal({
         fxaRoot: FAKE_FXA_ROOT,
         email: "",
-        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search`,
+        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`,
 
         utm_source: "support.mozilla.org",
         utm_campaign: "migration",
@@ -369,6 +369,7 @@ describe("k", () => {
         flow_begin_time: FAKE_FXA_FLOW_BEGIN_TIME,
         context: "fx_desktop_v3",
         redirect_to: window.location.href,
+        redirect_immediately: true,
       });
     });
 
@@ -413,7 +414,8 @@ describe("k", () => {
         fxaRoot: FAKE_FXA_ROOT,
         email: "test@example.com",
         redirect_to: window.location.href,
-        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search`
+        redirect_immediately: true,
+        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`
       };
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });
