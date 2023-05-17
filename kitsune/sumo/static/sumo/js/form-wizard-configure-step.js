@@ -11,7 +11,7 @@ export class ConfigureStep extends BaseFormStep {
           <p id="header">
             <img class="icon" src="${infoImageURL}" aria-hidden="true"></img>
             <span>${gettext("You are now logged in to Firefox Accounts")}</span>
-            <a href="#" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="forgot-password">${gettext("Forgot password?")}</a>
+            <a id="forgot-password" href="#" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="forgot-password">${gettext("Forgot password?")}</a>
           </p>
           <p id="sync-status-container">
             <img class="icon" src="${syncingImageURL}" aria-hidden="true"></img>
@@ -62,6 +62,11 @@ export class ConfigureStep extends BaseFormStep {
       buttons.toggleAttribute("sync-enabled", this.state.syncEnabled);
       let nextButton = this.shadowRoot.getElementById("next");
       nextButton.disabled = !this.state.syncEnabled;
+    }
+
+    if (this.state.forgotPasswordLinkHref !== prevState.forgotPasswordLinkHref) {
+      let linkEl = this.shadowRoot.querySelector("#forgot-password");
+      linkEl.href = this.state.forgotPasswordLinkHref;
     }
   }
 

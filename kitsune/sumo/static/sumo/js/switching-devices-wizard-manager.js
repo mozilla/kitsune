@@ -130,6 +130,7 @@ export default class SwitchingDevicesWizardManager {
         trackEvent("device-migration-wizard", "report-state", "configure-sync");
         return {
           syncEnabled: state.syncEnabled,
+          forgotPasswordLinkHref: `${state.fxaRoot}/reset_password`,
         };
       },
     },

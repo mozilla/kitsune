@@ -63,4 +63,16 @@ describe("configure-step custom element", () => {
     nextButton.click();
     nextButton.removeEventListener("click", listener);
   });
+
+  it("should set the reset password link with a href attribute", async () => {
+    const RESET_PASSWORD_URL = "https://example.com/reset_password";
+    step.setState({
+      syncEnabled: false,
+      forgotPasswordLinkHref: RESET_PASSWORD_URL,
+    });
+    let shadow = step.shadowRoot;
+
+    let forgotPasswordLink = shadow.querySelector("#forgot-password");
+    expect(forgotPasswordLink.href).to.equal(RESET_PASSWORD_URL);
+  });
 });

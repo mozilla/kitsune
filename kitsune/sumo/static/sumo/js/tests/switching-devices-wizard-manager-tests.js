@@ -445,6 +445,7 @@ describe("k", () => {
       expect(name).to.equal("configure-sync");
       expect(payload).to.deep.equal({
         syncEnabled: true,
+        forgotPasswordLinkHref: `${FAKE_FXA_ROOT}/reset_password`,
       });
     });
 
@@ -502,6 +503,7 @@ describe("k", () => {
       };
       const EXPECTED_PAYLOAD = {
         syncEnabled: false,
+        forgotPasswordLinkHref: `${FAKE_FXA_ROOT}/reset_password`,
       };
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });
