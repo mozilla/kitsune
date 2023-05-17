@@ -415,7 +415,7 @@ describe("k", () => {
         email: "test@example.com",
         redirect_to: window.location.href,
         redirect_immediately: true,
-        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`
+        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`,
       };
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });
@@ -627,9 +627,8 @@ describe("k", () => {
             FakeUITourResponder.respond(data.callbackID, {
               setup: false,
             });
-            resolve();
-          })
-          .callThrough();
+            queueMicrotask(resolve);
+          });
       });
 
       let manager = constructValidManager(
@@ -639,6 +638,80 @@ describe("k", () => {
       );
       await polledForConfig;
       expect(setIntervalStub.called).to.be.true;
+      expect(manager.state.fxaSignedIn).to.be.false;
+      expect(manager.state.syncEnabled).to.be.false;
+      expect(manager.state.confirmedSyncChoices).to.be.false;
+    });
+
+    it("should be able to poll for disabling sync after confirming sync choices", async () => {
+      const QUALIFIED_OLDER_FX_UA =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/112.0";
+      const QUALIFIED_OLDER_FX_TROUBLESHOOTING_DATA = Object.freeze({
+        application: {
+          name: "Firefox",
+          version: "112.0.0",
+          osVersion: "Windows_NT 10.0 22000",
+        },
+      });
+
+      let setIntervalStub = gSandbox.stub(window, "setInterval").callThrough();
+
+      let signedInStub;
+      let polledForSignedInConfig = new Promise((resolve) => {
+        signedInStub = gSandbox
+          .stub(gFakeUITour, "onGetConfiguration")
+          .callsFake((data) => {
+            FakeUITourResponder.respond(data.callbackID, {
+              setup: true,
+              accountStateOK: true,
+              browserServices: {
+                sync: {
+                  setup: true,
+                },
+              },
+            });
+            queueMicrotask(resolve);
+          });
+      });
+
+      let manager = constructValidManager(
+        QUALIFIED_OLDER_FX_UA,
+        QUALIFIED_OLDER_FX_TROUBLESHOOTING_DATA,
+        1
+      );
+      await polledForSignedInConfig;
+      signedInStub.restore();
+
+      // This simulates the user hitting the "Next" button on the sync
+      // configuration step.
+      let nextEvent = new CustomEvent(
+        "DeviceMigrationWizard:ConfigureStep:Next",
+        { bubbles: true }
+      );
+      let wizard = document.querySelector("form-wizard");
+      wizard.dispatchEvent(nextEvent);
+
+      expect(manager.state.confirmedSyncChoices).to.be.true;
+
+      await new Promise((resolve) => {
+        gSandbox.stub(gFakeUITour, "onGetConfiguration").callsFake((data) => {
+          FakeUITourResponder.respond(data.callbackID, {
+            setup: true,
+            accountStateOK: true,
+            browserServices: {
+              sync: {
+                setup: false,
+              },
+            },
+          });
+          queueMicrotask(resolve);
+        });
+      });
+
+      expect(setIntervalStub.called).to.be.true;
+      expect(manager.state.fxaSignedIn).to.be.true;
+      expect(manager.state.syncEnabled).to.be.false;
+      expect(manager.state.confirmedSyncChoices).to.be.false;
     });
 
     it("should have its state updated with the signed-in SUMO account email address if it exists", async () => {

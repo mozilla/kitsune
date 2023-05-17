@@ -378,17 +378,31 @@ export default class SwitchingDevicesWizardManager {
     });
 
     if (fxaConfig.setup && fxaConfig.accountStateOK) {
+      let syncEnabled = !!fxaConfig.browserServices?.sync?.setup;
+      // If the user had already confirmed their sync choices, but then sync
+      // becomes disabled, they should reconfirm that their sync choices are
+      // what they expect after they sign back in.
+      let confirmedSyncChoices = this.#state.confirmedSyncChoices;
+      if (this.#state.syncEnabled != syncEnabled &&
+          confirmedSyncChoices) {
+        // We need to do this in order for the form-wizard to go back a step.
+        this.#setupFormWizardStepIndicator();
+        confirmedSyncChoices = false;
+      }
+
       this.#updateState({
         fxaSignedIn: true,
-        syncEnabled: !!fxaConfig.browserServices?.sync?.setup,
+        syncEnabled,
+        confirmedSyncChoices,
       });
     } else if (this.#state.fxaSignedIn) {
       // If we've gone from being signed in to signed out, we need to
-      // reset our state.
+      // reset some of our state.
       this.#setupFormWizardStepIndicator();
       this.#updateState({
         fxaSignedIn: false,
         syncEnabled: false,
+        confirmedSyncChoices: false,
       });
     }
   }
