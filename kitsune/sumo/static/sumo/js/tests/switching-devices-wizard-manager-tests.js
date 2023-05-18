@@ -191,6 +191,12 @@ describe("k", () => {
         gFetchStub
           .withArgs(sinon.match(new RegExp(`^${FAKE_FXA_ROOT}`)))
           .callsFake((url) => {
+            let searchParams = new URLSearchParams(new URL(url).search);
+            expect(searchParams.get("utm_source")).to.not.be.null;
+            expect(searchParams.get("utm_campaign")).to.not.be.null;
+            expect(searchParams.get("entrypoint")).to.not.be.null;
+            expect(searchParams.get("form_type")).to.not.be.null;
+
             return Promise.resolve({
               json: () => {
                 return new Promise((resolveInner) => {
@@ -283,7 +289,13 @@ describe("k", () => {
       // SwitchingDevicesWizardManager construction doesn't succeed. In order
       // for our hooks to let the test file proceed to the next test, we fake
       // out the requests just to keep everything happy.
-      let response = await window.fetch(FAKE_FXA_ROOT);
+      let params = new URLSearchParams({
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        entrypoint: "fx-new-device-sync",
+        form_type: "email",
+      });
+      let response = await window.fetch(`${FAKE_FXA_ROOT}/metrics-flow?${params}`);
       await response.json();
       response = await window.fetch("/graphql");
       await response.json();

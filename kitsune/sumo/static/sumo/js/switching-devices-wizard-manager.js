@@ -46,6 +46,7 @@ export default class SwitchingDevicesWizardManager {
     flow_id: null,
     flow_begin_time: null,
     context: "fx_desktop_v3",
+    form_type: "email",
 
     // The rest of these are internal state variables used by this class
     // to determine which step to show the user in the <form-wizard>.
@@ -422,6 +423,7 @@ export default class SwitchingDevicesWizardManager {
       "entrypoint",
       "entrypoint_variation",
       "entrypoint_experiment",
+      "form_type",
     ]) {
       if (this.#state[paramName]) {
         params.set(paramName, this.#state[paramName]);
