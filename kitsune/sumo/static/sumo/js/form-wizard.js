@@ -289,12 +289,15 @@ export class BaseFormStep extends HTMLElement {
    * Method that gets run whenever the element's state changes. Can be used to
    * specify how the DOM should update in response to state changes. `prevState`
    * and `nextState` are provided for making comparisons.
+   * 
+   * This must be implemented in the subclass if the form step needs to respond
+   * to state updates.
    *
-   * @param {object} prevState The element's state before the most recent
-   *  update.
+   * @param {object} prevState
+   *  The element's state before the most recent update.
    * @param {object} nextState The element's current state.
    */
   render(prevState, nextState) {
-    throw new Error("render must be implemented.");
+    // NOOP
   }
 }

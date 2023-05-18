@@ -1,0 +1,38 @@
+h3 {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+h3,
+ul,
+li {
+  margin-block-end: 16px;
+}
+
+.download-link-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+#download-link {
+  margin-inline-end: 8px;
+  font-size: 1.375rem;
+}
+
+#copy-button {
+  display: flex;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+#copy-button > img {
+  height: 16px;
+}
+
+#copy-button:focus-visible + .tooltip,
+#copy-button:hover + .tooltip {
+  visibility: visible;
+}

@@ -271,24 +271,24 @@ describe("sign-in-step custom element", () => {
     });
 
     it("should display an error message if an email address is not supplied", () => {
-      expect([...emailErrorMessage.classList]).to.include("hidden");
+      expect([...emailErrorMessage.classList]).to.not.include("visible");
 
       emailField.value = "";
       submitBtn.click();
 
       expect(emailField.validity.valid).to.be.false;
-      expect([...emailErrorMessage.classList]).to.not.include("hidden");
+      expect([...emailErrorMessage.classList]).to.include("visible");
       expect(emailErrorMessage.textContent).to.equal("Valid email required");
     });
 
     it("should display an error message if an incomplete email address is supplied", () => {
-      expect([...emailErrorMessage.classList]).to.include("hidden");
+      expect([...emailErrorMessage.classList]).to.not.include("visible");
 
       emailField.value = "this-is-not-an-email-address";
       submitBtn.click();
 
       expect(emailField.validity.valid).to.be.false;
-      expect([...emailErrorMessage.classList]).to.not.include("hidden");
+      expect([...emailErrorMessage.classList]).to.include("visible");
       expect(emailErrorMessage.textContent).to.equal("Valid email required");
     });
 
@@ -310,7 +310,7 @@ describe("sign-in-step custom element", () => {
       await preventSubmitListener;
 
       expect(emailField.validity.valid).to.be.true;
-      expect([...emailErrorMessage.classList]).to.include("hidden");
+      expect([...emailErrorMessage.classList]).to.not.include("visible");
     });
   });
 });
