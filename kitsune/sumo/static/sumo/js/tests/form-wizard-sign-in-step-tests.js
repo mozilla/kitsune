@@ -46,6 +46,8 @@ describe("sign-in-step custom element", () => {
       context: "context",
       redirect_to: window.location.href,
       redirect_immediately: true,
+      service: "sync",
+      action: "email",
     };
 
     const EXPECTED_FORM_ELEMENTS_NO_FLOW_METRICS = {
@@ -102,6 +104,8 @@ describe("sign-in-step custom element", () => {
       redirect_to: window.location.href,
       redirect_immediately: true,
 
+      service: "sync",
+      action: "email",
       flow_id: "flow_id",
       flow_begin_time: "flow_begin_time",
       redirect_immediately: true,
@@ -144,6 +148,8 @@ describe("sign-in-step custom element", () => {
       redirect_to: window.location.href,
       redirect_immediately: true,
 
+      service: "sync",
+      action: "email",
       flow_id: "flow_id",
       flow_begin_time: "flow_begin_time",
       redirect_immediately: true,
