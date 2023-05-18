@@ -91,7 +91,7 @@
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
       {% if document.is_switching_devices_document %}
-        {{ kb_subtopic_tabs(request, switching_devices_product, switching_devices_topic, switching_devices_subtopics) }}
+        {{ kb_subtopic_tabs(request, switching_devices_product, switching_devices_topic, switching_devices_subtopics, document) }}
       {% endif %}
 
       {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}

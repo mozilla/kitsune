@@ -20,5 +20,5 @@ def generate_video(v):
 
 
 @library.global_function
-def kb_documents_for(locale, topics=None, products=None):
-    return documents_for(locale, topics, products)
+def kb_documents_for(locale, topics=None, products=None, current_document=None):
+    return documents_for(locale, topics, products, current_document)
