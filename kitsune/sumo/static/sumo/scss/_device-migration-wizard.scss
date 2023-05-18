@@ -10,4 +10,8 @@ nav.switching-devices.tabs {
     button.tabs--link:focus {
         box-shadow: none;
     }
+
+    button.tabs--link:hover {
+        cursor: pointer;
+    }
 }
