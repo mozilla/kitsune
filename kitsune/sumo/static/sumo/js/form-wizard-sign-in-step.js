@@ -37,7 +37,7 @@ export class SignInStep extends BaseFormStep {
 
             <label for="email">${gettext("Email")}</label>
             <div class="tooltip-container">
-              <aside id="email-error" class="error-tooltip hidden"></aside>
+              <aside id="email-error" class="error-tooltip hidden">${gettext("Valid email required")}</aside>
               <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email")}"/>
             </div>
 
@@ -88,30 +88,24 @@ export class SignInStep extends BaseFormStep {
     switch (event.type) {
       case "blur": {
         if (!this.#emailEl.validity.valid) {
-          this.handleShowError();
+          this.#emailErrorEl.classList.remove("hidden");
         }
         break;
       }
       case "input": {
         if (this.#emailEl.value?.trim()) {
           this.#emailErrorEl.classList.add("hidden");
-          this.#emailErrorEl.textContent = "";
         }
         break;
       }
       case "submit": {
         if (!this.#emailEl.validity.valid) {
-          this.handleShowError();
+          this.#emailErrorEl.classList.remove("hidden");
           event.preventDefault();
         }
         break;
       }
     }
-  }
-
-  handleShowError() {
-    this.#emailErrorEl.textContent = gettext("Valid email required");
-    this.#emailErrorEl.classList.remove("hidden");
   }
 
   render() {

@@ -281,18 +281,22 @@ describe("sign-in-step custom element", () => {
       expect(emailErrorMessage.textContent).to.equal("Valid email required");
     });
 
-    it("should submit the form when a valid email address is supplied", () => {
+    it("should submit the form when a valid email address is supplied", async () => {
       // Prevent the form from actually submitting.
-      form.addEventListener(
-        "submit",
-        (e) => {
-          e.preventDefault();
-        },
-        { once: true }
-      );
+      let preventSubmitListener = new Promise((resolve) => {
+        form.addEventListener(
+          "submit",
+          (e) => {
+            e.preventDefault();
+            resolve();
+          },
+          { once: true }
+        );
+      });
 
       emailField.value = "email@email.com";
       submitBtn.click();
+      await preventSubmitListener;
 
       expect(emailField.validity.valid).to.be.true;
       expect([...emailErrorMessage.classList]).to.include("hidden");

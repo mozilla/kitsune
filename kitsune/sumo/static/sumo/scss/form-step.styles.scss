@@ -48,7 +48,7 @@ input:not(:focus):not(:placeholder-shown):invalid {
 .error-tooltip::before {
   background-color: p.$color-red-60;
   bottom: -8px;
-  content: ".";
+  content: "";
   height: 16px;
   position: absolute;
   text-indent: -999px;
