@@ -24,14 +24,17 @@ export class SignInStep extends BaseFormStep {
           </p>
 
           <form method="get" novalidate>
-            <input name="service" value="sync" type="hidden"/>
-            <input name="action" value="email" type="hidden"/>
+            <input name="service" value="" type="hidden"/>
+            <input name="action" value="" type="hidden"/>
             <input name="context" value="" type="hidden"/>
             <input name="flow_id" value="" type="hidden"/>
             <input name="flow_begin_time" value="" type="hidden"/>
             <input name="utm_source" value="" type="hidden"/>
             <input name="utm_medium" value="" type="hidden"/>
+            <input name="utm_campaign" value="" type="hidden"/>
             <input name="entrypoint" value="" type="hidden"/>
+            <input name="entrypoint_experiment" value="" type="hidden"/>
+            <input name="entrypoint_variation" value="" type="hidden"/>
             <input name="redirect_immediately" value="" type="hidden"/>
             <input name="redirect_to" value="" type="hidden"/>
 
@@ -127,12 +130,17 @@ export class SignInStep extends BaseFormStep {
     form.action = this.state.fxaRoot;
 
     const STATE_FIELDS = [
+      "service",
+      "action",
       "context",
       "flow_id",
       "flow_begin_time",
       "utm_source",
       "utm_medium",
+      "utm_campaign",
       "entrypoint",
+      "entrypoint_experiment",
+      "entrypoint_variation",
       "redirect_to",
       "redirect_immediately",
     ];

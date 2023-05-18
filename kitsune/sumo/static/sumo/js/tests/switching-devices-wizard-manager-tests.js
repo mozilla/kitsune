@@ -191,6 +191,12 @@ describe("k", () => {
         gFetchStub
           .withArgs(sinon.match(new RegExp(`^${FAKE_FXA_ROOT}`)))
           .callsFake((url) => {
+            let searchParams = new URLSearchParams(new URL(url).search);
+            expect(searchParams.get("utm_source")).to.not.be.null;
+            expect(searchParams.get("utm_campaign")).to.not.be.null;
+            expect(searchParams.get("entrypoint")).to.not.be.null;
+            expect(searchParams.get("form_type")).to.not.be.null;
+
             return Promise.resolve({
               json: () => {
                 return new Promise((resolveInner) => {
@@ -283,7 +289,13 @@ describe("k", () => {
       // SwitchingDevicesWizardManager construction doesn't succeed. In order
       // for our hooks to let the test file proceed to the next test, we fake
       // out the requests just to keep everything happy.
-      let response = await window.fetch(FAKE_FXA_ROOT);
+      let params = new URLSearchParams({
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        entrypoint: "fx-new-device-sync",
+        form_type: "email",
+      });
+      let response = await window.fetch(`${FAKE_FXA_ROOT}/metrics-flow?${params}`);
       await response.json();
       response = await window.fetch("/graphql");
       await response.json();
@@ -357,8 +369,10 @@ describe("k", () => {
       expect(payload).to.deep.equal({
         fxaRoot: FAKE_FXA_ROOT,
         email: "",
-        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`,
+        linkHref: `${FAKE_FXA_ROOT}?service=sync&action=email&utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`,
 
+        service: "sync",
+        action: "email",
         utm_source: "support.mozilla.org",
         utm_campaign: "migration",
         utm_medium: "mozilla-websites",
@@ -386,6 +400,8 @@ describe("k", () => {
       let step = manager.steps.find((s) => s.name == "sign-into-fxa");
 
       const TEST_STATE = {
+        service: "sync",
+        action: "email",
         utm_source: "support.mozilla.org",
         utm_campaign: "migration",
         utm_medium: "mozilla-websites",
@@ -402,6 +418,8 @@ describe("k", () => {
         confirmedSyncChoices: false,
       };
       const EXPECTED_PAYLOAD = {
+        service: "sync",
+        action: "email",
         utm_source: "support.mozilla.org",
         utm_campaign: "migration",
         utm_medium: "mozilla-websites",
@@ -415,7 +433,7 @@ describe("k", () => {
         email: "test@example.com",
         redirect_to: window.location.href,
         redirect_immediately: true,
-        linkHref: `${FAKE_FXA_ROOT}?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`,
+        linkHref: `${FAKE_FXA_ROOT}?service=sync&action=email&utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`,
       };
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });

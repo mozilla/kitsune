@@ -2,16 +2,21 @@ import { expect } from "chai";
 import { SignInStep } from "sumo/js/form-wizard-sign-in-step";
 
 function assertFormElements(form, expectedElements) {
+  let expectations = Object.assign({}, expectedElements);
+
   for (let element of form.elements) {
     if (element.type == "submit") {
       continue;
     }
 
-    expect(expectedElements[element.name], `Checking ${element.name}`).to.exist;
-    expect(element.type).to.equal(expectedElements[element.name].type);
-    expect(element.disabled).to.equal(expectedElements[element.name].disabled);
-    expect(element.value).to.equal(expectedElements[element.name].value);
+    expect(expectations[element.name], `Checking ${element.name}`).to.exist;
+    expect(element.type).to.equal(expectations[element.name].type);
+    expect(element.disabled).to.equal(expectations[element.name].disabled);
+    expect(element.value).to.equal(expectations[element.name].value);
+    delete expectations[element.name];
   }
+
+  expect(Object.keys(expectations).length).to.equal(0);
 }
 
 describe("sign-in-step custom element", () => {
@@ -41,6 +46,8 @@ describe("sign-in-step custom element", () => {
       context: "context",
       redirect_to: window.location.href,
       redirect_immediately: true,
+      service: "sync",
+      action: "email",
     };
 
     const EXPECTED_FORM_ELEMENTS_NO_FLOW_METRICS = {
@@ -97,6 +104,8 @@ describe("sign-in-step custom element", () => {
       redirect_to: window.location.href,
       redirect_immediately: true,
 
+      service: "sync",
+      action: "email",
       flow_id: "flow_id",
       flow_begin_time: "flow_begin_time",
       redirect_immediately: true,
@@ -139,6 +148,8 @@ describe("sign-in-step custom element", () => {
       redirect_to: window.location.href,
       redirect_immediately: true,
 
+      service: "sync",
+      action: "email",
       flow_id: "flow_id",
       flow_begin_time: "flow_begin_time",
       redirect_immediately: true,

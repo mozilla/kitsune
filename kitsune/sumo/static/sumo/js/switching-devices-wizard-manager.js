@@ -40,12 +40,15 @@ export default class SwitchingDevicesWizardManager {
 
     // These are the other parameters that are sent through the FxA sign-in
     // flow.
+    service: "sync",
+    action: "email",
     entrypoint: "fx-new-device-sync",
     entrypoint_experiment: null,
     entrypoint_variation: null,
     flow_id: null,
     flow_begin_time: null,
     context: "fx_desktop_v3",
+    form_type: "email",
 
     // The rest of these are internal state variables used by this class
     // to determine which step to show the user in the <form-wizard>.
@@ -90,6 +93,8 @@ export default class SwitchingDevicesWizardManager {
       enter(state) {
         trackEvent("device-migration-wizard", "report-state", "sign-into-fxa");
         let baseParams = {
+          service: state.service,
+          action: state.action,
           utm_source: state.utm_source,
           utm_campaign: state.utm_campaign,
           utm_medium: state.utm_medium,
@@ -422,6 +427,7 @@ export default class SwitchingDevicesWizardManager {
       "entrypoint",
       "entrypoint_variation",
       "entrypoint_experiment",
+      "form_type",
     ]) {
       if (this.#state[paramName]) {
         params.set(paramName, this.#state[paramName]);
