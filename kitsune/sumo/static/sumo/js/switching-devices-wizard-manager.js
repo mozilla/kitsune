@@ -267,14 +267,7 @@ export default class SwitchingDevicesWizardManager {
       // UA computation didn't meet our criteria OR failed.
     }
 
-    // mozilla/sumo #1270: Replace this placeholder text with final copy
-    this.#formWizard.disqualify(
-      gettext("Use Firefox to continue"),
-      gettext(
-        "Please switch to Firefox Desktop on your old " +
-          "computer to begin the migration process"
-      )
-    );
+    this.#formWizard.disqualify("need-fx-desktop");
   }
 
   /**

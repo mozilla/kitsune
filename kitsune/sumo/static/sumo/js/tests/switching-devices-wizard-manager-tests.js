@@ -805,15 +805,14 @@ describe("k", () => {
 
     it("should result in the wizard being called with disqualify", async () => {
       let disqualifyCalled = new Promise((resolve) => {
-        gDisqualifyStub.callsFake((header, message) => {
-          resolve({ header, message });
+        gDisqualifyStub.callsFake(reason => {
+          resolve({ reason });
         });
       });
       let manager = constructInvalidManager();
-      let { header, message } = await disqualifyCalled;
+      let { reason } = await disqualifyCalled;
       expect(gSetStepStub.called).to.be.false;
-      expect(header).to.not.be.empty;
-      expect(message).to.not.be.empty;
+      expect(reason).to.equal("need-fx-desktop");
     });
   });
 });

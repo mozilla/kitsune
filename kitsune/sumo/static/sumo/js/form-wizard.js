@@ -1,5 +1,6 @@
 import wizardStylesURL from "../scss/form-wizard.styles.scss";
 import formStepStylesURL from "../scss/form-step.styles.scss";
+import warningImageURL from "sumo/img/warning.svg";
 
 /**
  * A custom element for displaying multi-step forms. Designed to be used with
@@ -34,17 +35,30 @@ export class FormWizard extends HTMLElement {
   static get markup() {
     return `
       <template>
-        <div class="form-wizard-content">
-          <h2>${gettext("Wizard header")}</h2>
-          <section>
-            <ul id="step-indicator"></ul>
-            <slot name="active"></slot>
-          </section>
+        <div class="form-wizard-root">
+          <div class="form-wizard-content">
+            <h2>${gettext("Wizard header")}</h2>
+            <section>
+              <ul id="step-indicator"></ul>
+              <slot name="active"></slot>
+            </section>
+          </div>
+          <progress max="100" value="0"></progress>
+          <div class="form-wizard-disqualified">
+            <div class="disqualification" reason="need-fx-desktop">
+              <span class="disqualification-header"><img class="warning-icon" src="${warningImageURL}" aria-hidden="true"/>${gettext("Use Firefox to continue")}</span>
+              <div class="disqualification-message">${gettext("To use the setup assistant or access the settings for backing up your Firefox data, please visit this page using Firefox on a desktop device.")}</div>
+            </div>
+
+            <div class="disqualification" reason="uitour-broken">
+              <div class="disqualification-message">${gettext("The setup assistant is currently unavailable for your version of Firefox. However, you can still perform a manual backup of your data by following the steps outlined in")} <a href="/kb/profile-manager-create-remote-switch-firefox-profiles">${gettext("this article.")}</a></div>
+            </div>
+          </div>
         </div>
-        <progress max="100" value="0"></progress>
       </template>
     `;
   }
+
 
   static get styles() {
     let stylesheet = document.createElement("link");
@@ -149,9 +163,23 @@ export class FormWizard extends HTMLElement {
     this.steps = nextSteps;
   }
 
-  // To be implemented as part of mozilla/sumo #1274.
-  disqualify(header, text) {
-    // NOOP
+  /**
+   * Puts the form-wizard into the "disqualified" state with a particular
+   * message. The messages are defined in the markup and displayed when their
+   * reason attribute matches "reason".
+   *
+   * @param {string} reason
+   *   A string that matches the reason attribute on the disqualification message
+   *   to display.
+   */
+  disqualify(reason) {
+    let disqualified = this.shadowRoot.querySelector(".form-wizard-disqualified");
+    for (let child of disqualified.children) {
+      child.toggleAttribute("active", child.getAttribute("reason") === reason);
+    }
+
+    let root = this.shadowRoot.querySelector(".form-wizard-root");
+    root.toggleAttribute("disqualified", true);
   }
 
   /**
