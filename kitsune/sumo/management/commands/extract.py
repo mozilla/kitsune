@@ -1,3 +1,5 @@
+import subprocess
+
 from django.core.management.base import BaseCommand
 from babel.messages.frontend import CommandLineInterface
 
@@ -35,6 +37,7 @@ class Command(BaseCommand):
                 ".",
             ]
         )
+        # First run the Babel-based extraction on the JS-based Svelte and Nunjucks files.
         CommandLineInterface().run(
             [
                 "pybabel",
@@ -57,6 +60,31 @@ class Command(BaseCommand):
                 "--copyright-holder=Mozilla",
                 ".",
             ]
+        )
+        # Finally run the extraction on the JS files themselves. This will add to the
+        # djangojs.pot file created by the previous command due to the "--join-existing"
+        # option.
+        subprocess.run(
+            " ".join(
+                [
+                    "xgettext",
+                    "--join-existing",
+                    "--sort-by-file",
+                    "--copyright-holder=Mozilla",
+                    "--package-name=kitsune",
+                    "--package-version=1.0",
+                    "--msgid-bugs-address='https://github.com/mozilla-l10n/sumo-l10n/issues'",
+                    "--output=locale/templates/LC_MESSAGES/djangojs.pot",
+                    "--width=80",
+                    "--add-comments='L10n,L10n:'",
+                    "--keyword='_lazy'",
+                    "--keyword='pgettext_lazy:1c,2'",
+                    "--from-code=utf-8",
+                    "kitsune/**/static/**/js/*.js",
+                ]
+            ),
+            shell=True,
+            check=True,
         )
 
         self.stdout.write(self.style.SUCCESS("extraction complete"))
