@@ -7,9 +7,10 @@ export class SetupDeviceStep extends BaseFormStep {
     return `
       <template>
         <div>
-          <h3>${gettext("Congratulatory headline they’ve done all they need to do on THIS device")}</h3>
+          <h3>${gettext("You’re all set on this device!")}</h3>
           <ul>
-            <li>${gettext("Let user know this is the point in the flow they will need to access their new device - if they don’t have it yet, that’s okay but.. (give next step - come back here when __ , do ___ until")}</li>
+            <li>${gettext("To continue with the download and sync process on your new device, click the copy-paste button and save the link in a place that you will remember, such as a note-taking app or send it to your email. When you're on your new device, simply paste the download link into the default browser of your new device to download Firefox and we'll be there to assist you with the next steps.")}</li>
+            <li>${gettext("You can save the link to this article in a convenient location, and we'll be here to help you pick up where you left off whenever you're ready.")}</li>
           </ul>
           <div class="download-link-wrapper">
             <a id="download-link" href="https://mzl.la/newdevice" target="_blank">https://mzl.la/newdevice</a>
@@ -20,10 +21,6 @@ export class SetupDeviceStep extends BaseFormStep {
               <aside id="copy-message" class="tooltip tooltip-right">${gettext("Copy to clipboard")}</aside>
             </div>
           </div>
-          <ul>
-            <li>${gettext("if they do have their device here’s how they can get it")}</li>
-            <li>${gettext("Try to let user know where the link goes so they don’t have to click it to understand it’s an app download - maybe in language, maybe we can do this visually?")}</li>
-          </ul>
         </div>
       </template>
     `;
@@ -54,10 +51,6 @@ export class SetupDeviceStep extends BaseFormStep {
   copyLink() {
     let downloadLink = this.shadowRoot.getElementById("download-link");
     navigator.clipboard.writeText(downloadLink.href);
-  }
-
-  render() {
-    // NOOP
   }
 }
 customElements.define("setup-device-step", SetupDeviceStep);

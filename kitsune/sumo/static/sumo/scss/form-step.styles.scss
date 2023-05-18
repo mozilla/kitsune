@@ -19,10 +19,6 @@
   color: var(--color-text-form-step);
 }
 
-.visible {
-  visibility: visible;
-}
-
 .tooltip-container {
   position: relative;
   display: flex;
@@ -75,4 +71,8 @@
 
 .tooltip-error::before {
   background-color: p.$color-red-60;
+}
+
+.visible {
+  visibility: visible;
 }

@@ -1,17 +1,17 @@
 h3 {
   font-size: 1rem;
   line-height: 1.5;
-  margin-block-end: 26px;
 }
 
-ul {
-  margin-block-end: 0;
+h3,
+ul,
+li {
+  margin-block-end: 16px;
 }
 
 .download-link-wrapper {
   display: flex;
   align-items: center;
-  margin-block: 16px;
 }
 
 #download-link {
@@ -25,6 +25,7 @@ ul {
   background-color: transparent;
   border: none;
   padding: 0;
+  cursor: pointer;
 }
 
 #copy-button > img {
