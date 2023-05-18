@@ -12,15 +12,15 @@ export class SignInStep extends BaseFormStep {
     return `
       <template>
         <div id="sign-in-step-root">
-          <p>
-            ${gettext("Body provide short value of the account other than the bookmarks/password/history line, what else could they get out of it that would be good to know here?")}
+          <h3 class="for-sign-up">${gettext("Create an account")}</h3>
+          <h3 class="for-sign-in">${gettext("Sign in to your account")}</h3>
+
+          <p class="for-sign-up">
+            ${gettext("We will guide you through the process of creating a Firefox account to securely back up your data. With an account, your data remains encrypted and protected, while also giving you access to other Mozilla products and services like Firefox Relay and Pocket.")}
           </p>
 
-          <p class="for-sign-up form-title">
-            <strong>${gettext("Create an account")}</strong>
-          </p>
-          <p class="for-sign-in form-title">
-            <strong>${gettext("Sign in to your account")}</strong>
+          <p class="for-sign-in">
+            ${gettext("A Firefox account allows you to securely sync your data when logging in from other devices and gives access to other fantastic Mozilla services.")}
           </p>
 
           <form method="get" novalidate>
@@ -41,7 +41,7 @@ export class SignInStep extends BaseFormStep {
             <label for="email">${gettext("Email")}</label>
             <div class="tooltip-container">
               <aside id="email-error" class="tooltip tooltip-error tooltip-top">${gettext("Valid email required")}</aside>
-              <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email")}"/>
+              <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email address")}"/>
             </div>
 
             <button class="for-sign-up mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-button">${gettext("Sign up")}</button>
@@ -57,7 +57,7 @@ export class SignInStep extends BaseFormStep {
 
           <p class="warning">
             <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
-            ${gettext("Provide any warnings about unexpected password situations (like noted in mock)")}
+            ${gettext("Make sure to create a recovery key in case you need to reset your password. For security purposes, Mozilla isn't able to retain your synced data when you reset your password without one. If you must reset your password without a recovery key, only do so on the machine that has the data you want re-synced.")}
           </p>
         </div>
       </template>
