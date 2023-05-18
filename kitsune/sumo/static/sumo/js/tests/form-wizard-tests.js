@@ -190,4 +190,27 @@ describe("form-wizard custom element", () => {
       });
     });
   });
+
+  describe("disqualification behavior", () => {
+    it("should put the root into the disqualified state and populate the header/message", () => {
+      wizard.disqualify("need-fx-desktop");
+
+      let root = wizard.shadowRoot.querySelector(".form-wizard-root");
+      expect(root.hasAttribute("disqualified")).to.be.true;
+
+      let needFxDesktop = wizard.shadowRoot.querySelector(
+        ".disqualification[reason='need-fx-desktop']"
+      );
+      expect(needFxDesktop.hasAttribute("active")).to.be.true;
+
+      let uiTourBroken = wizard.shadowRoot.querySelector(
+        ".disqualification[reason='uitour-broken']"
+      );
+      expect(uiTourBroken.hasAttribute("active")).to.be.false;
+
+      wizard.disqualify("uitour-broken");
+      expect(needFxDesktop.hasAttribute("active")).to.be.false;
+      expect(uiTourBroken.hasAttribute("active")).to.be.true;
+    });
+  });
 });
