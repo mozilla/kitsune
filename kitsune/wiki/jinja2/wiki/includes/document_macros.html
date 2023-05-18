@@ -453,10 +453,10 @@
       </li>
       {% for subtopic in subtopics %}
         <li class="tabs--item">
-          <button class="tabs--link" id="kb-subtopic-{{ subtopic.title }}"
+          <button class="tabs--link" id="kb-subtopic-{{ subtopic.slug }}"
              data-event-category="device-migration-tabbed-menu"
              data-event-action="tab-click"
-             data-event-label="{{subtopic.slug}}">
+             data-event-label="{{ subtopic.slug }}">
             <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
           </button>
         </li>
