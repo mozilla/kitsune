@@ -31,7 +31,10 @@ export class SignInStep extends BaseFormStep {
             <input name="flow_begin_time" value="" type="hidden"/>
             <input name="utm_source" value="" type="hidden"/>
             <input name="utm_medium" value="" type="hidden"/>
+            <input name="utm_campaign" value="" type="hidden"/>
             <input name="entrypoint" value="" type="hidden"/>
+            <input name="entrypoint_experiment" value="" type="hidden"/>
+            <input name="entrypoint_variation" value="" type="hidden"/>
             <input name="redirect_immediately" value="" type="hidden"/>
             <input name="redirect_to" value="" type="hidden"/>
 
@@ -132,7 +135,10 @@ export class SignInStep extends BaseFormStep {
       "flow_begin_time",
       "utm_source",
       "utm_medium",
+      "utm_campaign",
       "entrypoint",
+      "entrypoint_experiment",
+      "entrypoint_variation",
       "redirect_to",
       "redirect_immediately",
     ];
