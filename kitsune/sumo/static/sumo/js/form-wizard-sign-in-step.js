@@ -118,12 +118,11 @@ export class SignInStep extends BaseFormStep {
     let root = this.shadowRoot.querySelector("#sign-in-step-root");
 
     if (this.state.email) {
-      let emailEl = this.shadowRoot.querySelector("#email");
       // If the user somehow has managed to type something into the email
       // field before we were able to get the email address, let's not
       // overwrite what the user had typed in.
-      if (!emailEl.value) {
-        emailEl.value = this.state.email;
+      if (!this.#emailEl.value) {
+        this.#emailEl.value = this.state.email;
       }
       root.setAttribute("mode", "sign-in");
     } else {
