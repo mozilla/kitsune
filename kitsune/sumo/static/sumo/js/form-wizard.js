@@ -37,7 +37,7 @@ export class FormWizard extends HTMLElement {
       <template>
         <div class="form-wizard-root">
           <div class="form-wizard-content">
-            <h2>${gettext("Wizard header")}</h2>
+            <h2>${gettext("Setup assistant")}</h2>
             <section>
               <ul id="step-indicator"></ul>
               <slot name="active"></slot>
@@ -47,7 +47,7 @@ export class FormWizard extends HTMLElement {
           <div class="form-wizard-disqualified">
             <div class="disqualification" reason="need-fx-desktop">
               <span class="disqualification-header"><img class="warning-icon" src="${warningImageURL}" aria-hidden="true"/>${gettext("Use Firefox to continue")}</span>
-              <div class="disqualification-message">${gettext("To use the setup assistant or access the settings for backing up your Firefox data, please visit this page using Firefox on a desktop device.")}</div>
+              <div class="disqualification-message">${gettext("To use the setup assistant or access the settings for backing up your Firefox data, visit this page using Firefox on a desktop device.")}</div>
             </div>
 
             <div class="disqualification" reason="uitour-broken">

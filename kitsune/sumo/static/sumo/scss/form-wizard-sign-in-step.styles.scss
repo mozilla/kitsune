@@ -7,7 +7,7 @@
 
 .key-icon {
   width: 16px;
-  height: 8px;
+  height: 16px;
   margin-inline-end: 11px;
 }
 
@@ -31,10 +31,6 @@ button.for-sign-up {
   margin-block-end: 8px;
 }
 
-.form-title {
-  margin-block-end: 8px;
-}
-
 .form-footer {
   margin-block-end: 26px;
   font-size: 0.8125rem;
@@ -42,7 +38,7 @@ button.for-sign-up {
 
 .warning {
   display: flex;
-  align-items: center;
+  align-items: start;
   background-color: rgba(255, 234, 128, 0.4);
   padding-inline: 16px;
   padding-block: 8px;

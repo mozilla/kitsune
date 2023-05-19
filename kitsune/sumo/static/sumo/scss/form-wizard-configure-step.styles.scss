@@ -19,6 +19,7 @@
 
 .icon {
   height: 16px;
+  width: 16px;
   margin-inline-end: 12px;
 }
 
@@ -70,5 +71,15 @@
 }
 
 #instructions {
+  margin-inline-start: 18px;
   margin-block-end: 30px;
+}
+
+#instructions[sync-enabled] > .not-syncing,
+#instructions:not([sync-enabled]) > .syncing {
+  display: none;
+}
+
+li {
+  margin-block-end: 24px;
 }
