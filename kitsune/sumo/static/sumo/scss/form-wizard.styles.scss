@@ -58,7 +58,7 @@
 }
 
 .form-wizard-content {
-  padding-inline: 32px;
+  padding-inline-end: 32px;
   padding-block-start: 24px;
 }
 
@@ -67,16 +67,17 @@ h2 {
   font-size: 1.5rem;
   line-height: 1;
   color: var(--color-heading);
-}
-
-ul {
-  margin-inline-end: 48px;
+  padding-inline-start: 32px;
 }
 
 section,
 ::slotted([slot="active"]) {
   display: flex;
   flex: 1;
+}
+
+section {
+  margin-block-start: 24px;
 }
 
 progress {
@@ -92,3 +93,65 @@ progress::-moz-progress-bar,
 progress::-webkit-progress-value {
   background-color: var(--color-progress);
 }
+
+p {
+  margin: 0;
+  color: var(--color-dark-gray-10);
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+  margin-inline-end: 36px;
+}
+
+.subtitle {
+  font-size: 0.625rem;
+  line-height: 1.2;
+  margin-block-end: 4px;
+}
+
+.title {
+  font-size: 0.875rem;
+  line-height: 1.14;
+}
+
+.title,
+.subtitle {
+  padding-inline-start: 42px;
+}
+
+li {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  margin-block-end: 22px;
+  padding-block: 8px;
+  padding-inline-start: 32px;
+  width: 220px;
+}
+
+li::before {
+  content: url("sumo/img/list-active.svg");
+  height: 24px;
+  position: absolute;
+}
+
+li[status="active"] {
+  background-color: rgba(0, 96, 223, 0.1);
+}
+
+li[status="done"]::before {
+  content: url("sumo/img/list-done.svg");
+}
+
+li[status="active"] .title {
+  font-weight: bold;
+}
+
+li[status="unavailable"] {
+  opacity: 0.4;
+}
+ 
