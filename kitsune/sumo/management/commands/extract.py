@@ -1,5 +1,8 @@
+import datetime
 import glob
+import re
 import subprocess
+from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
 from babel.messages.frontend import CommandLineInterface
@@ -35,9 +38,11 @@ class Command(BaseCommand):
                 "1.0",
                 "--project=kitsune",
                 "--copyright-holder=Mozilla",
+                "--msgid-bugs-address=https://github.com/mozilla-l10n/sumo-l10n/issues",
                 ".",
             ]
         )
+        update_header_comments("locale/templates/LC_MESSAGES/django.pot")
         # First run the Babel-based extraction on the Svelte and Nunjucks files.
         CommandLineInterface().run(
             [
@@ -59,6 +64,7 @@ class Command(BaseCommand):
                 "1.0",
                 "--project=kitsune",
                 "--copyright-holder=Mozilla",
+                "--msgid-bugs-address=https://github.com/mozilla-l10n/sumo-l10n/issues",
                 ".",
             ]
         )
@@ -95,4 +101,43 @@ class Command(BaseCommand):
             except subprocess.CalledProcessError as err:
                 raise CommandError(err.output)
 
+        update_header_comments("locale/templates/LC_MESSAGES/djangojs.pot")
+
         self.stdout.write(self.style.SUCCESS("extraction complete"))
+
+
+def update_header_comments(filename):
+    """Given a POT filename, adjust some of the header comments if necessary."""
+    current_year = datetime.datetime.now().year
+    replacements = [
+        (
+            re.compile(r"^# SOME DESCRIPTIVE TITLE.$", flags=re.MULTILINE),
+            "# Translations template for kitsune.",
+        ),
+        (
+            re.compile(r"^# Copyright \(C\) YEAR Mozilla$", flags=re.MULTILINE),
+            f"# Copyright (C) {current_year} Mozilla",
+        ),
+        (
+            re.compile(
+                (
+                    r"^# This file is distributed under the same license as the "
+                    r"kitsune (package|project).$"
+                ),
+                flags=re.MULTILINE,
+            ),
+            (
+                "# This file is distributed under the license specified at "
+                "https://github.com/mozilla-l10n/sumo-l10n."
+            ),
+        ),
+        (
+            re.compile(r"^# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.$", flags=re.MULTILINE),
+            f"# FIRST AUTHOR <EMAIL@ADDRESS>, {current_year}.",
+        ),
+    ]
+    pot_file = Path(filename)
+    text = pot_file.read_text()
+    for regex, replacement in replacements:
+        text = regex.sub(replacement, text, count=1)
+    pot_file.write_text(text)
