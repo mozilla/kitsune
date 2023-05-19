@@ -225,6 +225,11 @@ export class FormWizard extends HTMLElement {
       let progress =
         Math.ceil((activeStepIndex / (this.#steps.length - 1)) * 100) || 10;
       this.#progressIndicator.value = progress;
+      this.#progressIndicator.setAttribute(
+        "aria-label",
+        gettext(`Step ${activeStepIndex + 1} of 3`)
+      );
+      this.#progressIndicator.style.setProperty("--progress", progress + "%");
     }
   }
 
@@ -317,7 +322,7 @@ export class BaseFormStep extends HTMLElement {
    * Method that gets run whenever the element's state changes. Can be used to
    * specify how the DOM should update in response to state changes. `prevState`
    * and `nextState` are provided for making comparisons.
-   * 
+   *
    * This must be implemented in the subclass if the form step needs to respond
    * to state updates.
    *

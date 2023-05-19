@@ -94,6 +94,15 @@ progress::-webkit-progress-value {
   background-color: var(--color-progress);
 }
 
+progress::-moz-progress-bar {
+  transition: padding-bottom 0.6s;
+  padding-left: 8px;
+  height: 0;
+  padding-bottom: var(--progress);
+  transform-origin: 0 0;
+  transform: rotate(-90deg) translateX(-8px);
+}
+
 p {
   margin: 0;
   color: var(--color-dark-gray-10);
