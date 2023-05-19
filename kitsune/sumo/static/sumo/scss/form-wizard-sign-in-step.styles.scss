@@ -1,11 +1,5 @@
 @use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
 
-h3 {
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-block-end: 26px;
-}
-
 #sign-in-step-root[mode="sign-in"] .for-sign-up,
 #sign-in-step-root[mode="sign-up"] .for-sign-in {
   display: none;

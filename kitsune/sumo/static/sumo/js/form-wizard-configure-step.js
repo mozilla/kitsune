@@ -19,9 +19,9 @@ export class ConfigureStep extends BaseFormStep {
             <span id="sync-status"></span>
           </p>
           <ul id="instructions">
-            <li class="not-syncing">${gettext("Turn on Sync to access your bookmarks, add-ons, browsing history and more.")}</li>
-            <li class="not-syncing">${gettext("When you sign in to your Firefox account using the Firefox browser, you’ll access all your synced tabs on the devices you sign in with your Firefox account.")}</li>
-            <li class="not-syncing">${gettext("Syncing your data may take a few minutes, so please hang on while we complete the process for you.")}</li>
+            <li class="not-syncing">${gettext("Turn on sync to access your bookmarks, add-ons, browsing history and more.")}</li>
+            <li class="not-syncing">${gettext("When you sign in using the Firefox browser, you’ll access all your synced tabs on the devices you sign in with your Firefox account.")}</li>
+            <li class="not-syncing">${gettext("Syncing your data may take a few minutes.")}</li>
 
             <li class="syncing">${gettext("Choose the data you want to sync, including bookmarks, history, passwords and more,  for seamless access on other devices where you sign in with your Firefox account.")}</li>
           </ul>

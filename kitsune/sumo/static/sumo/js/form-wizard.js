@@ -47,7 +47,7 @@ export class FormWizard extends HTMLElement {
           <div class="form-wizard-disqualified">
             <div class="disqualification" reason="need-fx-desktop">
               <span class="disqualification-header"><img class="warning-icon" src="${warningImageURL}" aria-hidden="true"/>${gettext("Use Firefox to continue")}</span>
-              <div class="disqualification-message">${gettext("To use the setup assistant or access the settings for backing up your Firefox data, please visit this page using Firefox on a desktop device.")}</div>
+              <div class="disqualification-message">${gettext("To use the setup assistant or access the settings for backing up your Firefox data, visit this page using Firefox on a desktop device.")}</div>
             </div>
 
             <div class="disqualification" reason="uitour-broken">

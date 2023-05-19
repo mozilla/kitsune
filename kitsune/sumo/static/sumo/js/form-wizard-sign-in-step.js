@@ -16,11 +16,11 @@ export class SignInStep extends BaseFormStep {
           <h3 class="for-sign-in">${gettext("Sign in to your account")}</h3>
 
           <p class="for-sign-up">
-            ${gettext("We will guide you through the process of creating a Firefox account to securely back up your data. With an account, your data remains encrypted and protected, while also giving you access to other Mozilla products and services like Firefox Relay and Pocket.")}
+            ${gettext("With an account, your data remains encrypted and protected, while also giving you access to other Mozilla products and services like Firefox Relay and Pocket.")}
           </p>
 
           <p class="for-sign-in">
-            ${gettext("A Firefox account allows you to securely sync your data when logging in from other devices and gives access to other fantastic Mozilla services.")}
+            ${gettext("A Firefox account allows you to securely sync your data when signing in from other devices and gives access to other fantastic Mozilla services.")}
           </p>
 
           <form method="get" novalidate>
@@ -57,7 +57,7 @@ export class SignInStep extends BaseFormStep {
 
           <p class="warning">
             <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
-            ${gettext("Make sure to create a recovery key in case you need to reset your password. For security purposes, Mozilla isn't able to retain your synced data when you reset your password without one. If you must reset your password without a recovery key, only do so on the machine that has the data you want re-synced.")}
+            <span><strong>${gettext("Important:")}</strong> ${gettext("Make sure to create a recovery key in case you need to reset your password. For security purposes, Firefox is only able to keep synced data if a recovery key is set up. ")}</span>
           </p>
         </div>
       </template>
