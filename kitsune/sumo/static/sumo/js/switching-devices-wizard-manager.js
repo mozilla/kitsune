@@ -23,6 +23,11 @@ export default class SwitchingDevicesWizardManager {
   #pollIntervalMs = 500;
   #pollIntervalID = null;
 
+  // How many milliseconds to wait before we give up on UITour and presume
+  // we cannot contact it. This is for users that may have disabled UITour
+  // via about:config, or have a corrupt permissions database.
+  #uiTourTimeoutMs = 1500;
+
   // Some of these #state properties use snake_case since there are some
   // properties that are going to be sent as queryParameters, and this
   // lets us not worry about translating them from camelCase to snake_case.
@@ -166,8 +171,11 @@ export default class SwitchingDevicesWizardManager {
    *   a request for troubleshooting data.
    * @param {number} [pollIntervalMs=undefined]
    *   The interval for polling for FxA state changes while under test.
+   * @param {number} [uiTourTimeoutMs=undefined]
+   *   The timeout for presuming UITour is broken if we haven't heard from it while
+   *   under test.
    */
-  constructor(formWizard, fakeUA, fakeTroubleshooting, pollIntervalMs) {
+  constructor(formWizard, fakeUA, fakeTroubleshooting, pollIntervalMs, uiTourTimeoutMs) {
     this.#formWizard = formWizard;
 
     if (!this.#formWizard.hasAttribute("fxa-root")) {
@@ -204,7 +212,7 @@ export default class SwitchingDevicesWizardManager {
       }
     }
 
-    this.#init(fakeUA, fakeTroubleshooting, pollIntervalMs);
+    this.#init(fakeUA, fakeTroubleshooting, pollIntervalMs, uiTourTimeoutMs);
   }
 
   /**
@@ -221,20 +229,36 @@ export default class SwitchingDevicesWizardManager {
    *   a request for troubleshooting data.
    * @param {number} [pollIntervalMs=undefined]
    *   The interval for polling for FxA state changes while under test.
+   * @param {number} [uiTourTimeoutMs=undefined]
+   *   The timeout for presuming UITour is broken if we haven't heard from it while
+   *   under test.
    */
   async #init(
     fakeUA,
     fakeTroubleshooting,
-    pollIntervalMs = this.#pollIntervalMs
+    pollIntervalMs = this.#pollIntervalMs,
+    uiTourTimeoutMs = this.#uiTourTimeoutMs
   ) {
     try {
       let detect = new BrowserDetect(fakeUA, null, fakeTroubleshooting);
       let browser = await detect.getBrowser();
       let platform = await detect.getOS();
       if (browser.mozilla && !platform.mobile) {
-        await new Promise((resolve) => {
+        let uiTourPromise = new Promise((resolve) => {
           UITour.ping(resolve);
         });
+        let timeoutPromise = new Promise((resolve, reject) => {
+          setTimeout(() => reject(), uiTourTimeoutMs);
+        });
+
+        try {
+          await Promise.race([uiTourPromise, timeoutPromise]);
+        } catch (e) {
+          // UITour ping timed out, so let's disqualify because UITour is broken.
+          trackEvent("device-migration-wizard", "report-state", "uitour-broken");
+          this.#formWizard.disqualify("uitour-broken");
+          return;
+        }
 
         await Promise.all([this.#checkForSUMOEmail(), this.#updateFxAState()]);
 
@@ -267,6 +291,7 @@ export default class SwitchingDevicesWizardManager {
       // UA computation didn't meet our criteria OR failed.
     }
 
+    trackEvent("device-migration-wizard", "report-state", "need-fx-desktop");
     this.#formWizard.disqualify("need-fx-desktop");
   }
 
