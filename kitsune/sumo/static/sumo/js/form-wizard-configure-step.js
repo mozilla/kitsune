@@ -27,7 +27,7 @@ export class ConfigureStep extends BaseFormStep {
           </ul>
           <p id="buttons">
             <button id="turn-on-sync" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="turn-on-sync">${gettext("Turn on sync")}</button>
-            <button id="change-sync-prefs" class="mzp-c-button" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="change-sync-prefs">${gettext("Change sync options")}</button>
+            <button id="change-sync-prefs" class="mzp-c-button button-secondary" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="change-sync-prefs">${gettext("Change sync options")}</button>
             <button id="next" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="configuration-next">${gettext("Next")}</button>
           </p>
         </div>

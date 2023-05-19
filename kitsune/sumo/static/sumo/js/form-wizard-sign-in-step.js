@@ -40,7 +40,7 @@ export class SignInStep extends BaseFormStep {
 
             <label for="email">${gettext("Email")}</label>
             <div class="tooltip-container">
-              <aside id="email-error" class="tooltip tooltip-error tooltip-top">${gettext("Valid email required")}</aside>
+              <aside id="email-error" class="tooltip">${gettext("Valid email required")}</aside>
               <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email address")}"/>
             </div>
 

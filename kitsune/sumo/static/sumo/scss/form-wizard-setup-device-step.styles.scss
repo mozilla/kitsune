@@ -1,8 +1,3 @@
-h3 {
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
 h3,
 ul,
 li {
@@ -18,22 +13,25 @@ li {
 #download-link {
   margin-inline-end: 8px;
   font-size: 1.375rem;
+  margin-inline-end: 16px;
 }
 
-#copy-button {
-  display: flex;
-  appearance: none;
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
+#copied-message {
+  color: var(--color-green-07);
+  padding-block: 8px;
+  line-height: 1.2;
 }
 
-#copy-button > img {
-  height: 16px;
+#copied-message img {
+  margin-inline-end: 8px;
 }
 
-#copy-button:focus-visible + .tooltip,
-#copy-button:hover + .tooltip {
-  visibility: visible;
+#copied-message,
+#setup-device-root[data-copied] #copy-button {
+  display: none;
+}
+
+#copy-button,
+#setup-device-root[data-copied] #copied-message {
+  display: initial;
 }
