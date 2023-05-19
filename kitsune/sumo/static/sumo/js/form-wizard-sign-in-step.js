@@ -57,7 +57,7 @@ export class SignInStep extends BaseFormStep {
 
           <p class="warning">
             <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
-            <span><strong>${gettext("Important:")}</strong> ${gettext("Make sure to create a recovery key in case you need to reset your password. For security purposes, Firefox is only able to keep synced data if a recovery key is set up. ")}</span>
+            <span><strong>${gettext("Important:")}</strong> ${gettext("Make sure to create a recovery key in case you need to reset your password. For security purposes, Firefox is only able to keep synced data if a recovery key is set up.")}</span>
           </p>
         </div>
       </template>
