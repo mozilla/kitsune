@@ -463,7 +463,7 @@ describe("k", () => {
       expect(name).to.equal("configure-sync");
       expect(payload).to.deep.equal({
         syncEnabled: true,
-        forgotPasswordLinkHref: `${FAKE_FXA_ROOT}/reset_password`,
+        forgotPasswordLinkHref: `${FAKE_FXA_ROOT}/reset_password?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites`,
       });
     });
 
@@ -521,7 +521,7 @@ describe("k", () => {
       };
       const EXPECTED_PAYLOAD = {
         syncEnabled: false,
-        forgotPasswordLinkHref: `${FAKE_FXA_ROOT}/reset_password`,
+        forgotPasswordLinkHref: `${FAKE_FXA_ROOT}/reset_password?utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites`,
       };
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });
