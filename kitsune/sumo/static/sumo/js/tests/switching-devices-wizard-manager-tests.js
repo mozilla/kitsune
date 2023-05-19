@@ -259,13 +259,15 @@ describe("k", () => {
     let constructValidManager = (
       ua = QUALIFIED_FX_UA,
       troubleshootingData = QUALIFIED_FX_TROUBLESHOOTING_DATA,
-      pollInterval
+      pollInterval,
+      uiTourTimeoutMs
     ) => {
       gManager = new SwitchingDevicesWizardManager(
         document.querySelector("form-wizard"),
         ua,
         troubleshootingData,
-        pollInterval
+        pollInterval,
+        uiTourTimeoutMs
       );
       return gManager;
     };
@@ -744,6 +746,52 @@ describe("k", () => {
       let manager = constructValidManager();
       await gGraphQLQuery;
       expect(manager.state.sumoEmail).to.equal(TEST_EMAIL);
+    });
+
+    it("should put the form wizard into the uitour-broken disqualified state if pinging takes too long", async () => {
+      let pinged = new Promise((resolve) => {
+        gSandbox.stub(gFakeUITour, "onPing").callsFake((data) => {
+          // Intentionally fail to respond
+          queueMicrotask(resolve);
+        });
+      });
+
+      let wizard = document.querySelector("form-wizard");
+      let disqualifyCalled = new Promise((resolve) => {
+        gSandbox.stub(wizard, "disqualify").callsFake(reason => {
+          resolve({ reason });
+        });
+      });
+      let manager = constructValidManager(
+        QUALIFIED_FX_UA,
+        QUALIFIED_FX_TROUBLESHOOTING_DATA,
+        1,
+        1
+      );
+
+      await pinged;
+      let { reason } = await disqualifyCalled;
+      expect(reason).to.equal("uitour-broken");
+
+      // Most of the subtests in this test file cause the
+      // SwitchingDevicesWizardManager to kick off an XHR to request
+      // FxA flow metrics after construction. The testing hooks are set
+      // up to ensure that those things proceed before moving onto the next
+      // subtest.
+      //
+      // This subtest is a little special in that initialization bails out
+      // before any of the XHRs can be made. So we do those here manually to
+      // keep the tests rolling and everything happy.
+      let params = new URLSearchParams({
+        utm_source: "support.mozilla.org",
+        utm_campaign: "migration",
+        entrypoint: "fx-new-device-sync",
+        form_type: "email",
+      });
+      let response = await window.fetch(`${FAKE_FXA_ROOT}/metrics-flow?${params}`);
+      await response.json();
+      response = await window.fetch("/graphql");
+      await response.json();
     });
   });
 
