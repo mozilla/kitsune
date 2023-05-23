@@ -46,11 +46,45 @@ button.for-sign-up {
   font-size: 0.75rem;
 }
 
-.tooltip-error.visible + input:invalid,
+.tooltip-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tooltip {
+  border-radius: 4px;
+  padding: 8px;
+  position: absolute;
+  background-color: p.$color-red-60;
+  color: var(--color-white);
+  width: max-content;
+  visibility: hidden;
+  top: -34px;
+}
+
+.tooltip::before {
+  background-color: p.$color-red-60;
+  content: "";
+  height: 12px;
+  position: absolute;
+  text-indent: -999px;
+  transform: rotate(45deg);
+  white-space: nowrap;
+  width: 12px;
+  bottom: -6px;
+  left: 12px;
+}
+
+.visible {
+  visibility: visible;
+}
+
+.tooltip.visible + input:invalid,
 input:not(:focus):not(:placeholder-shown):invalid {
   border: 2px solid p.$color-red-60;
 }
 
-.tooltip-error.visible + input:focus:invalid {
+.tooltip.visible + input:focus:invalid {
   box-shadow: 0 0 0 2px rgba(226, 40, 80, 0.5);
 }

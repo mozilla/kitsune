@@ -29,60 +29,11 @@ button.mzp-c-button {
   font-size: 0.8125rem;
 }
 
-.tooltip-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.tooltip {
-  border-radius: 4px;
-  padding: 8px;
-  position: absolute;
-  background-color: var(--color-light-gray-02);
-  width: max-content;
-  visibility: hidden;
-}
-
-.tooltip-top {
-  top: -34px;
-}
-
-.tooltip-top::before {
-  bottom: -6px;
-  left: 12px;
-}
-
-.tooltip-right {
-  left: 34px;
-}
-
-.tooltip-right::before {
-  left: -6px;
-  bottom: 0;
-  top: 10px;
-}
-
-.tooltip-error {
-  background-color: p.$color-red-60;
-  color: var(--color-white);
-}
-
-.tooltip::before {
-  background-color: var(--color-light-gray-02);
-  content: "";
-  height: 12px;
-  position: absolute;
-  text-indent: -999px;
-  transform: rotate(45deg);
-  white-space: nowrap;
-  width: 12px;
-}
-
-.tooltip-error::before {
-  background-color: p.$color-red-60;
-}
-
-.visible {
-  visibility: visible;
+.button-secondary,
+.button-secondary:hover,
+.button-secondary:focus,
+.button-secondary:active {
+  background-color: var(--color-light-gray-03);
+  border-color: var(--color-light-gray-03);
+  color: var(--color-text-form-step);
 }
