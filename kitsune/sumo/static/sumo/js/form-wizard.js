@@ -238,7 +238,10 @@ export class FormWizard extends HTMLElement {
       this.#progressBar.setAttribute("aria-valuenow", activeStepCount);
       this.#progressBar.setAttribute(
         "aria-label",
-        interpolate(gettext("Step %s of 3"), [activeStepCount])
+        interpolate(gettext("Step %s of %s"), [
+          activeStepCount,
+          this.#steps.length,
+        ])
       );
     }
   }

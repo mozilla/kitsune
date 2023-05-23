@@ -27,3 +27,4 @@ global.gettext = dom.window.gettext;
 global.jsdom = dom
 global.window.fetch = () => {};
 global.CustomEvent = dom.window.CustomEvent;
+global.requestAnimationFrame = () => {};

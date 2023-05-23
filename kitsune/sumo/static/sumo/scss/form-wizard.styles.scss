@@ -101,6 +101,22 @@ section {
   flex: 1;
 }
 
+.html-rtl {
+  .indicator[ready] {
+    translate: calc(100% - var(--progress, 0%));
+  }
+
+  .indicator {
+    translate: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator[ready] {
+    transition: none;
+  }
+}
+
 p {
   margin: 0;
   color: var(--color-dark-gray-10);
