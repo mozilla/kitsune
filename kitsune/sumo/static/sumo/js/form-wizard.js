@@ -28,7 +28,7 @@ import warningImageURL from "sumo/img/warning.svg";
  */
 export class FormWizard extends HTMLElement {
   #activeStep = null;
-  #progressIndicator = null;
+  #progressBar = null;
   #stepIndicator = null;
   #steps = [];
 
@@ -43,7 +43,9 @@ export class FormWizard extends HTMLElement {
               <slot name="active"></slot>
             </section>
           </div>
-          <progress max="100" value="0"></progress>
+          <div id="progress" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3">
+            <div class="indicator" role="presentation"></div>
+          </div>
           <div class="form-wizard-disqualified">
             <div class="disqualification" reason="need-fx-desktop">
               <span class="disqualification-header"><img class="warning-icon" src="${warningImageURL}" aria-hidden="true"/>${gettext("Use Firefox to continue")}</span>
@@ -58,7 +60,6 @@ export class FormWizard extends HTMLElement {
       </template>
     `;
   }
-
 
   static get styles() {
     let stylesheet = document.createElement("link");
@@ -76,7 +77,7 @@ export class FormWizard extends HTMLElement {
     let template = doc.querySelector("template");
     shadow.append(FormWizard.styles, template.content.cloneNode(true));
 
-    this.#progressIndicator = shadow.querySelector("progress");
+    this.#progressBar = shadow.getElementById("progress");
     this.#stepIndicator = shadow.getElementById("step-indicator");
   }
 
@@ -222,14 +223,23 @@ export class FormWizard extends HTMLElement {
       let activeStepIndex = this.#steps.findIndex(
         ({ name }) => name === this.activeStep
       );
+      let activeStepCount = activeStepIndex + 1;
       let progress =
         Math.ceil((activeStepIndex / (this.#steps.length - 1)) * 100) || 10;
-      this.#progressIndicator.value = progress;
-      this.#progressIndicator.setAttribute(
+      let indicator = this.#progressBar.querySelector(".indicator");
+      indicator.style.setProperty("--progress", progress + "%");
+      // Ensure progressbar starts translated at -100% before we
+      // set --progress to avoid a layout race.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          indicator.toggleAttribute("ready", true);
+        });
+      });
+      this.#progressBar.setAttribute("aria-valuenow", activeStepCount);
+      this.#progressBar.setAttribute(
         "aria-label",
-        gettext(`Step ${activeStepIndex + 1} of 3`)
+        interpolate(gettext("Step %s of 3"), [activeStepCount])
       );
-      this.#progressIndicator.style.setProperty("--progress", progress + "%");
     }
   }
 
