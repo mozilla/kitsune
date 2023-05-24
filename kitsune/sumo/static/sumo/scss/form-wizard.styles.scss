@@ -80,18 +80,41 @@ section {
   margin-block-start: 24px;
 }
 
-progress {
-  flex: 1;
-  max-height: 8px;
-  appearance: none;
-  border: none;
+#progress {
+  display: flex;
+  justify-content: start;
+  background-color: var(--color-light-gray-03);
+  height: 8px;
+  overflow: hidden;
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;
 }
 
-progress::-moz-progress-bar,
-progress::-webkit-progress-value {
+.indicator[ready] {
+  transition: 0.6s translate;
+  translate: calc(var(--progress, 0%) - 100%);
+}
+
+.indicator {
+  translate: -100%;
   background-color: var(--color-progress);
+  flex: 1;
+}
+
+.html-rtl {
+  .indicator[ready] {
+    translate: calc(100% - var(--progress, 0%));
+  }
+
+  .indicator {
+    translate: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator[ready] {
+    transition: none;
+  }
 }
 
 p {

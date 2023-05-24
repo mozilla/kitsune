@@ -83,15 +83,19 @@ describe("form-wizard custom element", () => {
     });
 
     it("should show a progress bar that updates when the active step changes", () => {
-      let progress = wizard.shadowRoot.querySelector("progress");
+      let progress = wizard.shadowRoot.querySelector("#progress");
+      let indicator = progress.querySelector(".indicator");
       expect(progress).to.exist;
-      expect(progress.value).to.equal(10);
+      expect(progress.getAttribute("aria-valuenow")).to.equal("1");
+      expect(indicator.style.getPropertyValue("--progress")).to.equal("10%");
 
       wizard.activeStep = "second";
-      expect(progress.value).to.equal(50);
+      expect(progress.getAttribute("aria-valuenow")).to.equal("2");
+      expect(indicator.style.getPropertyValue("--progress")).to.equal("50%");
 
       wizard.activeStep = "third";
-      expect(progress.value).to.equal(100);
+      expect(progress.getAttribute("aria-valuenow")).to.equal("3");
+      expect(indicator.style.getPropertyValue("--progress")).to.equal("100%");
     });
 
     it("should show an indicator of how many steps are in the form", () => {
