@@ -192,6 +192,24 @@ describe("form-wizard custom element", () => {
         expect(doneStep.state).to.deep.equal(EXPECTED_STEP_STATE);
         expect(emailEl.textContent).to.equal(MOCK_EMAIL);
       });
+
+      it("should update the step indicator if step metadata changes", () => {
+        const NEW_LABEL = "This is the new step label";
+        const NEW_METADATA = { name: "first", status: "active", label: NEW_LABEL };     
+        const EXPECTED_WIZARD_STEPS = [
+          NEW_METADATA,
+          { name: "second", status: "unavailable", label: "Second label" },
+          { name: "third", status: "unavailable", label: "Third label" },
+        ];
+
+        expect(wizard.steps).to.deep.equal(INITIAL_STEPS);
+        wizard.setStep("first", {}, NEW_METADATA);
+        expect(wizard.steps).to.deep.equal(EXPECTED_WIZARD_STEPS);
+
+        let indicator = wizard.shadowRoot.getElementById("first");
+        let title = indicator.querySelector(".title");
+        expect(title.textContent).to.equal(NEW_LABEL);
+      })
     });
   });
 

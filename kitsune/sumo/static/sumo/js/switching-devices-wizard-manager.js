@@ -68,9 +68,12 @@ export default class SwitchingDevicesWizardManager {
 
   /**
    * @typedef {object} SwitchingDevicesWizardStep
-   * @property {string} name
-   *   The name of the step to pass to <form-wizard>.setStep if this
-   *   SwitchingDevicesWizardStep is the one we're entering.
+   * @property {function} metadata
+   *   A function that accepts the state object from
+   *   SwitchingDevicesWizardManager. Returns an object consisting of
+   *   data about the form step including name, status, and a label.
+   *   Used to initialize the steps and passed to the 
+   *   <form-wizard>.setStep method to keep the indicator in sync.
    * @property {function} exitConditionsMet
    *   A function that accepts the state object from
    *   SwitchingDevicesWizardManager. Returns true the
@@ -89,9 +92,15 @@ export default class SwitchingDevicesWizardManager {
   // unit tested individually.
   steps = Object.freeze([
     {
-      name: "sign-into-fxa",
-      status: "active",
-      label: gettext("Create an account"),
+      metadata(state) {
+        return {
+          name: "sign-into-fxa",
+          status: "active",
+          label: state?.sumoEmail
+            ? gettext("Sign in to your account")
+            : gettext("Create an account"),
+        };
+      },
       exitConditionsMet(state) {
         return state.fxaSignedIn;
       },
@@ -111,7 +120,7 @@ export default class SwitchingDevicesWizardManager {
           context: state.context,
           redirect_to: window.location.href,
           redirect_immediately: true,
-        }
+        };
 
         let linkParams = new URLSearchParams();
         for (let param in baseParams) {
@@ -130,9 +139,13 @@ export default class SwitchingDevicesWizardManager {
       },
     },
     {
-      name: "configure-sync",
-      status: "unavailable",
-      label: gettext("Sync your data"),
+      metadata(state) {
+        return {
+          name: "configure-sync",
+          status: "unavailable",
+          label: gettext("Sync your data"),
+        }
+      },
       exitConditionsMet(state) {
         return state.syncEnabled && state.confirmedSyncChoices;
       },
@@ -158,9 +171,13 @@ export default class SwitchingDevicesWizardManager {
       },
     },
     {
-      name: "setup-new-device",
-      status: "unavailable",
-      label: gettext("Set up your new device"),
+      metadata(state) {
+        return {
+          name: "setup-new-device",
+          status: "unavailable",
+          label: gettext("Set up your new device"),
+        }
+      },
       exitConditionsMet(state) {
         return false;
       },
@@ -358,8 +375,9 @@ export default class SwitchingDevicesWizardManager {
   #recomputeCurrentStep() {
     for (let step of this.steps) {
       if (!step.exitConditionsMet(this.#state)) {
+        let metadata = step.metadata(this.#state);
         let payload = step.enter(this.#state);
-        this.#formWizard.setStep(step.name, payload);
+        this.#formWizard.setStep(metadata.name, payload, metadata);
         break;
       }
     }
@@ -372,8 +390,8 @@ export default class SwitchingDevicesWizardManager {
    * back to the starting state.
    */
   #setupFormWizardStepIndicator() {
-    let fwSteps = this.steps.map(({ name, status, label }) => {
-      return { name, status, label };
+    let fwSteps = this.steps.map(step => {
+      return step.metadata(this.#state);
     });
     this.#formWizard.steps = fwSteps;
   }

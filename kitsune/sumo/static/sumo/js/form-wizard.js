@@ -148,23 +148,27 @@ export class FormWizard extends HTMLElement {
    * currently "unavailable".
    *
    * @param {string} name - Name of the step to be updated.
-   * @param {object} data - Data to update the step with.
+   * @param {object} payload - Data to pass to the active form step.
+   * @param {object} metadata - Data about the step for form wizard updates.
    */
-  setStep(name, data) {
+  setStep(name, payload, metadata) {
     // Find the step getting updated and set its state.
     let formStep = this.getRootNode().querySelector(`[name="${name}"]`);
-    formStep.setState(data);
+    formStep.setState(payload);
 
     // Determine if the statuses of the steps need to change.
-    let currentStatus = this.#steps.find((step) => step.name === name)?.status;
+    const isCurrentStep = (step) => step.name === name;
+    let currentStatus = this.#steps.find(isCurrentStep)?.status;
     let isUnavailable = currentStatus === "unavailable";
     let nextSteps = this.#steps.map((step) => {
+      // Update the metadata for the current step only.
+      let nextStep = { ...step, ...(isCurrentStep(step) && metadata) };
       if (step.status === "active" && isUnavailable) {
-        return { ...step, status: "done" };
+        return { ...nextStep, status: "done" };
       } else if (step.name === name && isUnavailable) {
-        return { ...step, status: "active" };
+        return { ...nextStep, status: "active" };
       }
-      return step;
+      return nextStep;
     });
     this.steps = nextSteps;
   }
@@ -214,7 +218,9 @@ export class FormWizard extends HTMLElement {
     } else {
       this.#steps.forEach((step) => {
         let indicator = this.shadowRoot.getElementById(step.name);
+        let title = indicator.querySelector(".title");
         indicator.setAttribute("status", step.status);
+        title.textContent = gettext(step.label);
       });
     }
   }
