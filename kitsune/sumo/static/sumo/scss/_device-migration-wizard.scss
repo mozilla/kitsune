@@ -7,7 +7,7 @@
 }
 
 nav.switching-devices.tabs {
-    button.tabs--link:focus:not(:focus-visible) {
+    button.tabs--link:focus {
         box-shadow: none;
     }
 
