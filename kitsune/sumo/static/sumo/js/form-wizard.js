@@ -53,8 +53,8 @@ export class FormWizard extends HTMLElement {
             <div class="disqualification" reason="uitour-broken">
               <div class="disqualification-message">
                 ${interpolate(
-                  gettext("The setup assistant is currently unavailable for your version of Firefox. However, you can still perform a manual backup of your data by following the steps outlined in %s"),
-                  [`<a href="/kb/profile-manager-create-remote-switch-firefox-profiles">${gettext("this article.")}</a>`]
+                  gettext("The setup assistant is currently unavailable for your version of Firefox. However, you can still perform a manual backup of your data by following the steps outlined in <a href='%s'>this article.</a>"),
+                  ["/kb/profile-manager-create-remote-switch-firefox-profiles"]
                 )}
               </div>
             </div>
