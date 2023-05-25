@@ -536,6 +536,12 @@ export default class SwitchingDevicesWizardManager {
         this.#updateState({
           sumoEmail,
         });
+        // Ensure we update the label for the first step.
+        this.#formWizard.setStep(
+          "sign-into-fxa",
+          {},
+          { label: gettext("Sign in to your account") }
+        );
       }
     }
   }

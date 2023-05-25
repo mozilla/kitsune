@@ -161,11 +161,14 @@ export class FormWizard extends HTMLElement {
     let currentStatus = this.#steps.find(isCurrentStep)?.status;
     let isUnavailable = currentStatus === "unavailable";
     let nextSteps = this.#steps.map((step) => {
-      // Update the metadata for the current step only.
-      let nextStep = { ...step, ...(isCurrentStep(step) && metadata) };
+      // Update the label for the current step only.
+      let nextStep = {
+        ...step,
+        ...(isCurrentStep(step) && metadata && { label: metadata.label }),
+      };
       if (step.status === "active" && isUnavailable) {
         return { ...nextStep, status: "done" };
-      } else if (step.name === name && isUnavailable) {
+      } else if (isCurrentStep(step) && isUnavailable) {
         return { ...nextStep, status: "active" };
       }
       return nextStep;
