@@ -68,12 +68,9 @@ export default class SwitchingDevicesWizardManager {
 
   /**
    * @typedef {object} SwitchingDevicesWizardStep
-   * @property {function} metadata
-   *   A function that accepts the state object from
-   *   SwitchingDevicesWizardManager. Returns an object consisting of
-   *   data about the form step including name, status, and a label.
-   *   Used to initialize the steps and passed to the 
-   *   <form-wizard>.setStep method to keep the indicator in sync.
+   * @property {string} name
+   *   The name of the step to pass to <form-wizard>.setStep if this
+   *   SwitchingDevicesWizardStep is the one we're entering.
    * @property {function} exitConditionsMet
    *   A function that accepts the state object from
    *   SwitchingDevicesWizardManager. Returns true the
@@ -92,14 +89,12 @@ export default class SwitchingDevicesWizardManager {
   // unit tested individually.
   steps = Object.freeze([
     {
-      metadata(state) {
-        return {
-          name: "sign-into-fxa",
-          status: "active",
-          label: state?.sumoEmail
-            ? gettext("Sign in to your account")
-            : gettext("Create an account"),
-        };
+      name: "sign-into-fxa",
+      status: "active",
+      label: () => {
+        return this.#state.sumoEmail
+          ? gettext("Sign in to your account")
+          : gettext("Create an account");
       },
       exitConditionsMet(state) {
         return state.fxaSignedIn;
@@ -139,13 +134,9 @@ export default class SwitchingDevicesWizardManager {
       },
     },
     {
-      metadata(state) {
-        return {
-          name: "configure-sync",
-          status: "unavailable",
-          label: gettext("Sync your data"),
-        }
-      },
+      name: "configure-sync",
+      status: "unavailable",
+      label: () => gettext("Sync your data"),
       exitConditionsMet(state) {
         return state.syncEnabled && state.confirmedSyncChoices;
       },
@@ -171,13 +162,9 @@ export default class SwitchingDevicesWizardManager {
       },
     },
     {
-      metadata(state) {
-        return {
-          name: "setup-new-device",
-          status: "unavailable",
-          label: gettext("Set up your new device"),
-        }
-      },
+      name: "setup-new-device",
+      status: "unavailable",
+      label: () => gettext("Set up your new device"),
       exitConditionsMet(state) {
         return false;
       },
@@ -375,9 +362,8 @@ export default class SwitchingDevicesWizardManager {
   #recomputeCurrentStep() {
     for (let step of this.steps) {
       if (!step.exitConditionsMet(this.#state)) {
-        let metadata = step.metadata(this.#state);
         let payload = step.enter(this.#state);
-        this.#formWizard.setStep(metadata.name, payload, metadata);
+        this.#formWizard.setStep(step.name, payload);
         break;
       }
     }
@@ -390,8 +376,27 @@ export default class SwitchingDevicesWizardManager {
    * back to the starting state.
    */
   #setupFormWizardStepIndicator() {
-    let fwSteps = this.steps.map(step => {
-      return step.metadata(this.#state);
+    let fwSteps = this.steps.map(({ name, status, label }) => {
+      return { name, status, label: label() };
+    });
+    this.#formWizard.steps = fwSteps;
+  }
+
+  /**
+   * Update the #formWizard step indicator by modifying step data.
+   * Currently only used to update step labels.
+   * 
+   * @param {object} stepData
+   *   Data for the step being updated. Must contain a name for
+   *   identifying which step to update, can optionally contain
+   *   a label or status.
+   */
+  #updateFormWizardStepIndicator(stepData) {
+    let fwSteps = this.#formWizard.steps.map((step) => {
+      if (step.name === stepData.name) {
+        return Object.assign(step, stepData);
+      }
+      return step;
     });
     this.#formWizard.steps = fwSteps;
   }
@@ -536,12 +541,10 @@ export default class SwitchingDevicesWizardManager {
         this.#updateState({
           sumoEmail,
         });
-        // Ensure we update the label for the first step.
-        this.#formWizard.setStep(
-          "sign-into-fxa",
-          {},
-          { label: gettext("Sign in to your account") }
-        );
+        this.#updateFormWizardStepIndicator({
+          name: "sign-into-fxa",
+          label: gettext("Sign in to your account"),
+        });
       }
     }
   }

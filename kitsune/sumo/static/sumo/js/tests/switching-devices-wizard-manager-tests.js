@@ -391,7 +391,7 @@ describe("k", () => {
 
     it("should not let the user advance past the sign-into-fxa step unless signed in", async () => {
       let manager = constructValidManager();
-      let step = manager.steps.find((s) => s.metadata().name == "sign-into-fxa");
+      let step = manager.steps.find((s) => s.name == "sign-into-fxa");
 
       expect(step.exitConditionsMet({ fxaSignedIn: false })).to.be.false;
       expect(step.exitConditionsMet({ fxaSignedIn: true })).to.be.true;
@@ -399,7 +399,7 @@ describe("k", () => {
 
     it("should have the sign-into-fxa step emit the right payload if entering", async () => {
       let manager = constructValidManager();
-      let step = manager.steps.find((s) => s.metadata().name == "sign-into-fxa");
+      let step = manager.steps.find((s) => s.name == "sign-into-fxa");
 
       const TEST_STATE = {
         service: "sync",
@@ -471,7 +471,7 @@ describe("k", () => {
 
     it("should not let the user advance past the configure-sync step unless sync enabled and configured", async () => {
       let manager = constructValidManager();
-      let step = manager.steps.find((s) => s.metadata().name == "configure-sync");
+      let step = manager.steps.find((s) => s.name == "configure-sync");
       expect(
         step.exitConditionsMet({
           syncEnabled: false,
@@ -503,7 +503,7 @@ describe("k", () => {
 
     it("should have the configure-sync step emit the right payload if entering", async () => {
       let manager = constructValidManager();
-      let step = manager.steps.find((s) => s.metadata().name == "configure-sync");
+      let step = manager.steps.find((s) => s.name == "configure-sync");
 
       const TEST_STATE = {
         utm_source: "support.mozilla.org",
@@ -530,7 +530,7 @@ describe("k", () => {
 
     it("should not let the user exit the setup-new-device step", async () => {
       let manager = constructValidManager();
-      let step = manager.steps.find((s) => s.metadata().name == "setup-new-device");
+      let step = manager.steps.find((s) => s.name == "setup-new-device");
       expect(step.exitConditionsMet()).to.be.false;
       expect(
         step.exitConditionsMet({
@@ -543,7 +543,7 @@ describe("k", () => {
 
     it("should not supply a payload to the setup-new-device step when entering", async () => {
       let manager = constructValidManager();
-      let step = manager.steps.find((s) => s.metadata().name == "setup-new-device");
+      let step = manager.steps.find((s) => s.name == "setup-new-device");
 
       const TEST_STATE = {
         utm_source: "support.mozilla.org",
