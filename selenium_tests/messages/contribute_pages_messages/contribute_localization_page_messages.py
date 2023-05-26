@@ -6,8 +6,10 @@ class ContributeLocalizationMessages:
     HERO_PAGE_TITLE = "Help us localize support articles"
     HERO_SECOND_TITLE = "Let’s make Mozilla Support speak your language!"
     HERO_TEXT = (
-        "Help articles are not available in your language yet? You want to join the amazing team translating "
-        "them? You will help millions of users in your language. Pretty heroic, right?"
+        "Help articles are not available in your language yet? "
+        "You want to join the amazing team translating "
+        "them? You will help millions of users in your language. "
+        "Pretty heroic, right?"
     )
     HOW_TO_CONTRIBUTE_HEADER = "How you can contribute"
     HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_OUT = "Sign up as a volunteer"

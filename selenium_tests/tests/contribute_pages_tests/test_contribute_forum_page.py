@@ -3,24 +3,30 @@ import pytest_check as check
 import requests
 
 from selenium_tests.core.test_utilities import TestUtilities
-from selenium_tests.messages.contribute_pages_messages.contribute_forum_page_messages import (
-    ContributeForumMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_help_articles_page_messages import (
-    ContributeHelpArticlesMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_localization_page_messages import (
-    ContributeLocalizationMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_mobile_store_support_page_messages import (
-    ContributeMobileStoreSupportMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_page_messages import (
-    ContributePageMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_social_support_messages import (
-    ContributeSocialSupportMessages,
-)
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_forum_page_messages import (
+        ContributeForumMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_help_articles_page_messages import (
+        ContributeHelpArticlesMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_localization_page_messages import (
+        ContributeLocalizationMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_mobile_store_support_page_messages import (
+        ContributeMobileStoreSupportMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_page_messages import (
+        ContributePageMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_social_support_messages import (
+        ContributeSocialSupportMessages,
+    )
 from selenium_tests.messages.homepage_messages import HomepageMessages
 
 
@@ -82,8 +88,10 @@ class TestContributeForumPage(TestUtilities):
         check.equal(
             self.pages.ways_to_contribute_pages.get_how_to_contribute_option_four_text(),
             ContributeForumMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR,
-            f"Text is: {self.pages.ways_to_contribute_pages.get_how_to_contribute_option_four_text()}"
-            f"Expected is: {ContributeForumMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR}",
+            f"Text is: "
+            f"{self.pages.ways_to_contribute_pages.get_how_to_contribute_option_four_text()}"
+            f"Expected is: "
+            f"{ContributeForumMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR}",
         )
 
         check.equal(
@@ -101,10 +109,13 @@ class TestContributeForumPage(TestUtilities):
         )
 
         check.equal(
-            self.pages.ways_to_contribute_pages.get_other_ways_to_contribute_header_text(),
+            self.pages.ways_to_contribute_pages.
+            get_other_ways_to_contribute_header_text(),
             ContributeForumMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER,
-            f"Text is: {self.pages.ways_to_contribute_pages.get_other_ways_to_contribute_header_text()}"
-            f"Expected is: {ContributeForumMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER}",
+            f"Text is: "
+            f"{self.pages.ways_to_contribute_pages.get_other_ways_to_contribute_header_text()}"
+            f"Expected is: "
+            f"{ContributeForumMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER}",
         )
 
         other_ways_to_contribute_card_titles = [
@@ -196,7 +207,8 @@ class TestContributeForumPage(TestUtilities):
         )
 
         self.logger.info(
-            "Verifying that the 'other ways to contribute' cards are redirecting to the correct SUMO page"
+            "Verifying that the 'other ways to contribute' "
+            "cards are redirecting to the correct SUMO page"
         )
 
         ways_to_contribute_links = [

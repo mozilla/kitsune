@@ -79,7 +79,8 @@ class TestHomepage(TestUtilities):
             check.equal(
                 card_titles[counter] + " " + SupportPageMessages.TITLE_CONTAINS,
                 support_page_title,
-                f"Incorrect support page title: {support_page_title} for clicked card with title: {card_titles[counter]}!",
+                f"Incorrect support page title: {support_page_title} "
+                f"for clicked card with title: {card_titles[counter]}!",
             )
             self.pages.homepage.navigate_back()
             counter += 1

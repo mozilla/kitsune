@@ -23,6 +23,7 @@ class ContributePageMessages:
     RESPOND_TO_MOBILE_STORE_REVIEWS_CARD_TITLE = "Respond to mobile store reviews"
     ABOUT_US_HEADER = "About us"
     ABOUT_US_CONTENT = (
-        "Mozilla Support is a community of enthusiastic volunteers and employees trying to support our "
+        "Mozilla Support is a community of "
+        "enthusiastic volunteers and employees trying to support our "
         "users around the globe. Join us for an incredible adventure!"
     )

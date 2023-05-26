@@ -3,24 +3,30 @@ import pytest_check as check
 import requests
 
 from selenium_tests.core.test_utilities import TestUtilities
-from selenium_tests.messages.contribute_pages_messages.contribute_forum_page_messages import (
-    ContributeForumMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_help_articles_page_messages import (
-    ContributeHelpArticlesMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_localization_page_messages import (
-    ContributeLocalizationMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_mobile_store_support_page_messages import (
-    ContributeMobileStoreSupportMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_page_messages import (
-    ContributePageMessages,
-)
-from selenium_tests.messages.contribute_pages_messages.contribute_social_support_messages import (
-    ContributeSocialSupportMessages,
-)
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_forum_page_messages import (
+        ContributeForumMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_help_articles_page_messages import (
+        ContributeHelpArticlesMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_localization_page_messages import (
+        ContributeLocalizationMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_mobile_store_support_page_messages import (
+        ContributeMobileStoreSupportMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_page_messages import (
+        ContributePageMessages,
+    )
+from selenium_tests.messages.contribute_pages_messages.\
+    contribute_social_support_messages import (
+        ContributeSocialSupportMessages,
+    )
 from selenium_tests.messages.homepage_messages import HomepageMessages
 
 

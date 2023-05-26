@@ -14,9 +14,11 @@ class TestFooter(TestUtilities):
         for link in self.pages.footer_section.get_all_footer_links():
             url = link.get_attribute("href")
 
-            # I have noticed that one of our footer link: https://foundation.mozilla.org/ seems to reject
+            # I have noticed that one of our footer link:
+            # https://foundation.mozilla.org/ seems to reject
             # requests that do not identify a User-Agent.
-            # We are fetching the User-Agent via the JS executor, constructing and passing the header to our request.
+            # We are fetching the User-Agent via the JS executor,
+            # constructing and passing the header to our request.
 
             user_agent = self.driver.execute_script("return navigator.userAgent")
 
@@ -29,5 +31,6 @@ class TestFooter(TestUtilities):
 
             check.is_true(
                 response.status_code < 400,
-                f"The following url if broken: {url}. Received status code: {response.status_code}",
+                f"The following url if broken: {url}."
+                f" Received status code: {response.status_code}",
             )

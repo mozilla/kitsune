@@ -8,8 +8,10 @@ class ContributeSocialSupportMessages:
     HERO_PAGE_TITLE = "Support users on social media"
     HERO_SECOND_TITLE = "Let’s help people so they can keep using Firefox!"
     HERO_TEXT = (
-        "Many users ask support questions on social media. With social support, you can help them by reply to "
-        "their questions from our official account, @FirefoxSupport. Pretty cool, right?"
+        "Many users ask support questions on social media. "
+        "With social support, you can help them by reply to "
+        "their questions from our official account, "
+        "@FirefoxSupport. Pretty cool, right?"
     )
     HOW_TO_CONTRIBUTE_HEADER = "How you can contribute"
     HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_OUT = "Sign up as a volunteer"

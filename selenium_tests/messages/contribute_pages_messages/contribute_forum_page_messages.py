@@ -6,8 +6,10 @@ class ContributeForumMessages:
     HERO_PAGE_TITLE = "Answer questions in the support forum"
     HERO_SECOND_TITLE = "Where all the action happens"
     HERO_TEXT = (
-        'From hardcore web developers to "how do I install Firefox" first time users, everybody needs your '
-        "help in the forum! Share your knowledge by pointing people to the right help articles and providing "
+        'From hardcore web developers to "how do '
+        'I install Firefox" first time users, everybody needs your '
+        "help in the forum! Share your knowledge by "
+        "pointing people to the right help articles and providing "
         "troubleshooting steps for their individual questions."
     )
     HOW_TO_CONTRIBUTE_HEADER = "How you can contribute"

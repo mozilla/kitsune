@@ -6,9 +6,12 @@ class ContributeHelpArticlesMessages:
     HERO_PAGE_TITLE = "Help us write help articles"
     HERO_SECOND_TITLE = "Share your wisdom with the world!"
     HERO_TEXT = (
-        "If you like writing and teaching, then the Knowledge Base (KB) is the place for you. We need "
-        "contributors that can write, edit or proofread articles in English. Thousands of people are "
-        "accessing our Knowledge Base every week. Imagine how many will be helped by you!"
+        "If you like writing and teaching, then the "
+        "Knowledge Base (KB) is the place for you. We need "
+        "contributors that can write, edit or proofread "
+        "articles in English. Thousands of people are "
+        "accessing our Knowledge Base every week. "
+        "Imagine how many will be helped by you!"
     )
     HOW_TO_CONTRIBUTE_HEADER = "How you can contribute"
     HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_OUT = "Sign up as a volunteer"

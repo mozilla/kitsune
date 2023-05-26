@@ -6,8 +6,10 @@ class ContributeMobileStoreSupportMessages:
     HERO_PAGE_TITLE = "Support Firefox users on mobile store"
     HERO_SECOND_TITLE = "Help us respond to app reviews for our mobile products!"
     HERO_TEXT = (
-        "Smartphones are taking over the world. Nowdays, many people prefer to app reviews instead of going "
-        "to the support forum. By joining, you can help them by replying to their reviews from the comfort of "
+        "Smartphones are taking over the world. "
+        "Nowdays, many people prefer to app reviews instead of going "
+        "to the support forum. By joining, "
+        "you can help them by replying to their reviews from the comfort of "
         "your desk. Pretty simple, right?"
     )
     HOW_TO_CONTRIBUTE_HEADER = "How you can contribute"
