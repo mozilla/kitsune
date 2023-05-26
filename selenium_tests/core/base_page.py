@@ -12,6 +12,15 @@ class BasePage:
     def __init__(self, driver: WebDriver):
         self._driver = driver
 
+    def navigate_back(self):
+        self._driver.back()
+
+    def navigate_forward(self):
+        self._driver.forward()
+
+    def navigate_to(self, link):
+        self._driver.get(link)
+
     def _find_element(self, locator: tuple) -> WebElement:
         self._wait_until_element_is_visible(locator)
         return self._driver.find_element(*locator)
@@ -26,6 +35,9 @@ class BasePage:
     def _click(self, locator: tuple):
         self._find_element(locator).click()
 
+    def _click_on_web_element(self, web_element: WebElement):
+        web_element.click()
+
     def _get_text_of_element(self, locator: tuple) -> str:
         return self._find_element(locator).text
 
@@ -35,6 +47,9 @@ class BasePage:
         for element in elements:
             text.append(element.text)
         return text
+
+    def _get_number_of_elements(self, locator: tuple) -> int:
+        return len(self._find_elements(locator))
 
     @property
     def current_url(self) -> str:
