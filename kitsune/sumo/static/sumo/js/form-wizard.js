@@ -214,7 +214,9 @@ export class FormWizard extends HTMLElement {
     } else {
       this.#steps.forEach((step) => {
         let indicator = this.shadowRoot.getElementById(step.name);
+        let title = indicator.querySelector(".title");
         indicator.setAttribute("status", step.status);
+        title.textContent = gettext(step.label);
       });
     }
   }

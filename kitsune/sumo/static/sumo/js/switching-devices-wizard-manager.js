@@ -91,7 +91,11 @@ export default class SwitchingDevicesWizardManager {
     {
       name: "sign-into-fxa",
       status: "active",
-      label: gettext("Create an account"),
+      label: () => {
+        return this.#state.sumoEmail
+          ? gettext("Sign in to your account")
+          : gettext("Create an account");
+      },
       exitConditionsMet(state) {
         return state.fxaSignedIn;
       },
@@ -111,7 +115,7 @@ export default class SwitchingDevicesWizardManager {
           context: state.context,
           redirect_to: window.location.href,
           redirect_immediately: true,
-        }
+        };
 
         let linkParams = new URLSearchParams();
         for (let param in baseParams) {
@@ -132,7 +136,7 @@ export default class SwitchingDevicesWizardManager {
     {
       name: "configure-sync",
       status: "unavailable",
-      label: gettext("Sync your data"),
+      label: () => gettext("Sync your data"),
       exitConditionsMet(state) {
         return state.syncEnabled && state.confirmedSyncChoices;
       },
@@ -160,7 +164,7 @@ export default class SwitchingDevicesWizardManager {
     {
       name: "setup-new-device",
       status: "unavailable",
-      label: gettext("Set up your new device"),
+      label: () => gettext("Set up your new device"),
       exitConditionsMet(state) {
         return false;
       },
@@ -373,7 +377,26 @@ export default class SwitchingDevicesWizardManager {
    */
   #setupFormWizardStepIndicator() {
     let fwSteps = this.steps.map(({ name, status, label }) => {
-      return { name, status, label };
+      return { name, status, label: label() };
+    });
+    this.#formWizard.steps = fwSteps;
+  }
+
+  /**
+   * Update the #formWizard step indicator by modifying step data.
+   * Currently only used to update step labels.
+   * 
+   * @param {object} stepData
+   *   Data for the step being updated. Must contain a name for
+   *   identifying which step to update, can optionally contain
+   *   a label or status.
+   */
+  #updateFormWizardStepIndicator(stepData) {
+    let fwSteps = this.#formWizard.steps.map((step) => {
+      if (step.name === stepData.name) {
+        return Object.assign(step, stepData);
+      }
+      return step;
     });
     this.#formWizard.steps = fwSteps;
   }
@@ -517,6 +540,10 @@ export default class SwitchingDevicesWizardManager {
       if (sumoEmail) {
         this.#updateState({
           sumoEmail,
+        });
+        this.#updateFormWizardStepIndicator({
+          name: "sign-into-fxa",
+          label: gettext("Sign in to your account"),
         });
       }
     }
