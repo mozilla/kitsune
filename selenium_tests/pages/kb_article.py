@@ -4,7 +4,6 @@ from selenium_tests.core.base_page import BasePage
 
 
 class KbArticle(BasePage):
-
     __kb_article_heading = (By.XPATH, "//h1[@class='sumo-page-heading']")
 
     def __init__(self, driver: WebDriver):

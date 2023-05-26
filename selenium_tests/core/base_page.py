@@ -21,7 +21,6 @@ class BasePage:
     def navigate_to(self, link):
         self._driver.get(link)
 
-
     def _find_element(self, locator: tuple) -> WebElement:
         self._wait_until_element_is_visible(locator)
         return self._driver.find_element(*locator)

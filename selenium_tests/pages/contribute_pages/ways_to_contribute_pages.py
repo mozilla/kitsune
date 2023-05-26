@@ -12,12 +12,21 @@ class WaysToContributePages(BasePage):
     __hero_second_header = (By.XPATH, "//div[contains(@class,'hero')]/div/h2")
     __hero_text = (By.XPATH, "//div[contains(@class,'hero')]/div/p")
     __how_to_contribute_header = (By.XPATH, "//section[@class='mzp-l-content']/h2")
-    __all_how_to_contribute_option_links = (By.XPATH, "//section[@class='mzp-l-content']/div/ol/li/a")
-    __start_answering_how_to_contribute_option_text = (By.XPATH, "//section[@class='mzp-l-content']/div/ol/li[4]")
+    __all_how_to_contribute_option_links = (
+        By.XPATH,
+        "//section[@class='mzp-l-content']/div/ol/li/a",
+    )
+    __start_answering_how_to_contribute_option_text = (
+        By.XPATH,
+        "//section[@class='mzp-l-content']/div/ol/li[4]",
+    )
     __first_fact_text = (By.XPATH, "//div[contains(@class,'fact')]/span[1]")
     __second_fact_text = (By.XPATH, "//div[contains(@class,'fact')]/span[2]")
     __other_ways_to_contribute_header = (By.XPATH, "//div[@id='svelte']/section[2]/h2")
-    __other_ways_to_contribute_card_titles = (By.XPATH, "//div[@id='svelte']/section[2]//nav//span")
+    __other_ways_to_contribute_card_titles = (
+        By.XPATH,
+        "//div[@id='svelte']/section[2]//nav//span",
+    )
     __other_ways_to_contribute_card_list = (By.XPATH, "//div[@id='svelte']/section[2]//ul/a")
     __all_page_images = (By.XPATH, "//div[@id='svelte']//img")
 

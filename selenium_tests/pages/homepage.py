@@ -16,13 +16,19 @@ class Homepage(BasePage):
 
     # Product list section
     __product_list = (By.XPATH, "//div[contains(@class, 'card--product')]")
-    __product_card_titles = (By.XPATH, "//div[contains(@class, 'card--product')]/div[@class='card--details']/h3["
-                                       "@class='card--title']/a")
+    __product_card_titles = (
+        By.XPATH,
+        "//div[contains(@class, 'card--product')]/div[@class='card--details']/h3["
+        "@class='card--title']/a",
+    )
 
     # Featured articles section
     __featured_articles_list = (By.XPATH, "//div[contains(@class, 'card--article')]")
     __featured_articles_first_item_card = (By.XPATH, "//div[contains(@class, 'card--article')][1]")
-    __featured_articles_card_titles = (By.XPATH, "//div[contains(@class, 'card--article')]/div/h3/a")
+    __featured_articles_card_titles = (
+        By.XPATH,
+        "//div[contains(@class, 'card--article')]/div/h3/a",
+    )
 
     # Join our Community section
     __join_our_community_card_title = (

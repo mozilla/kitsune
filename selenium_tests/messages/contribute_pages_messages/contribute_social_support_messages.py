@@ -1,12 +1,16 @@
 class ContributeSocialSupportMessages:
-    STAGE_CONTRIBUTE_SOCIAL_SUPPORT_PAGE_URL = "https://support.allizom.org/en-US/contribute/social"
+    STAGE_CONTRIBUTE_SOCIAL_SUPPORT_PAGE_URL = (
+        "https://support.allizom.org/en-US/contribute/social"
+    )
     FIRST_BREADCRUMB = "Home"
     SECOND_BREADCRUMB = "Contribute"
     THIRD_BREADCRUMB = "Social support"
     HERO_PAGE_TITLE = "Support users on social media"
     HERO_SECOND_TITLE = "Let’s help people so they can keep using Firefox!"
-    HERO_TEXT = "Many users ask support questions on social media. With social support, you can help them by reply to " \
-                "their questions from our official account, @FirefoxSupport. Pretty cool, right?"
+    HERO_TEXT = (
+        "Many users ask support questions on social media. With social support, you can help them by reply to "
+        "their questions from our official account, @FirefoxSupport. Pretty cool, right?"
+    )
     HOW_TO_CONTRIBUTE_HEADER = "How you can contribute"
     HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_OUT = "Sign up as a volunteer"
     HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_IN = "Take the contributor's CPG training."

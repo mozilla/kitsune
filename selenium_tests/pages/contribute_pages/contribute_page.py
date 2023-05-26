@@ -9,12 +9,20 @@ class ContributePage(BasePage):
     __breadcrumbs = (By.XPATH, "//ol[@id='breadcrumbs']/li")
     __breadcrumb_homepage = (By.XPATH, "//ol[@id='breadcrumbs']/li[1]")
     __page_hero_main_header = (By.XPATH, "//div[contains(@class,'hero')]/div/h1")
-    __page_hero_main_header_subtext = (By.XPATH, "//div[contains(@class,'hero')]/div/h1/following-sibling::p[1]")
+    __page_hero_main_header_subtext = (
+        By.XPATH,
+        "//div[contains(@class,'hero')]/div/h1/following-sibling::p[1]",
+    )
     __page_hero_need_help_header = (By.XPATH, "//div[contains(@class,'hero')]/div/h2")
-    __page_hero_need_help_subtext = (By.XPATH, "//div[contains(@class,'hero')]/div/h1/following-sibling::p[2]")
+    __page_hero_need_help_subtext = (
+        By.XPATH,
+        "//div[contains(@class,'hero')]/div/h1/following-sibling::p[2]",
+    )
     __way_to_contribute_header = (By.XPATH, "//nav/preceding-sibling::h2")
-    __way_to_contribute_cards = (By.XPATH, "//h2[contains(text(),'Pick a way to "
-                                           "contribute')]/following-sibling::nav/ul/a")
+    __way_to_contribute_cards = (
+        By.XPATH,
+        "//h2[contains(text(),'Pick a way to " "contribute')]/following-sibling::nav/ul/a",
+    )
     __way_to_contribute_card_titles = (By.XPATH, "//nav/ul/a/li/span")
     __about_us_header = (By.XPATH, "//h2[contains(text(),'About us')]")
     __about_us_subtext = (By.XPATH, "//h2[contains(text(),'About us')]/following-sibling::p")

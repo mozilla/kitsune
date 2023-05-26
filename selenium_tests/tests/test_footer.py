@@ -6,13 +6,10 @@ from selenium_tests.core.test_utilities import TestUtilities
 
 
 class TestFooter(TestUtilities):
-
     # C945147
     @pytest.mark.smokeTest
     def test_all_footer_links_are_working(self):
-        self.logger.info(
-            "Verifying that footer links are not broken"
-        )
+        self.logger.info("Verifying that footer links are not broken")
 
         for link in self.pages.footer_section.get_all_footer_links():
             url = link.get_attribute("href")
@@ -26,11 +23,11 @@ class TestFooter(TestUtilities):
             if "HeadlessChrome" in user_agent:
                 user_agent = user_agent.replace("HeadlessChrome", "Chrome")
 
-            header = {'User-Agent': f'{user_agent}'}
+            header = {"User-Agent": f"{user_agent}"}
             print(header)
             response = requests.get(url, headers=header)
 
             check.is_true(
                 response.status_code < 400,
-                f"The following url if broken: {url}. Received status code: {response.status_code}"
+                f"The following url if broken: {url}. Received status code: {response.status_code}",
             )

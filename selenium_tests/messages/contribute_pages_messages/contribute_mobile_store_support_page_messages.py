@@ -1,13 +1,15 @@
-class ContributeMobileStoreSupportMessages():
+class ContributeMobileStoreSupportMessages:
     STAGE_CONTRIBUTE_MOBILE_SUPPORT_PAGE_URL = "https://support.allizom.org/en-US/contribute/store"
     FIRST_BREADCRUMB = "Home"
     SECOND_BREADCRUMB = "Contribute"
     THIRD_BREADCRUMB = "Mobile Store support"
     HERO_PAGE_TITLE = "Support Firefox users on mobile store"
     HERO_SECOND_TITLE = "Help us respond to app reviews for our mobile products!"
-    HERO_TEXT = "Smartphones are taking over the world. Nowdays, many people prefer to app reviews instead of going " \
-                "to the support forum. By joining, you can help them by replying to their reviews from the comfort of " \
-                "your desk. Pretty simple, right?"
+    HERO_TEXT = (
+        "Smartphones are taking over the world. Nowdays, many people prefer to app reviews instead of going "
+        "to the support forum. By joining, you can help them by replying to their reviews from the comfort of "
+        "your desk. Pretty simple, right?"
+    )
     HOW_TO_CONTRIBUTE_HEADER = "How you can contribute"
     HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_OUT = "Sign up as a volunteer"
     HOW_TO_CONTRIBUTE_OPTION_ONE_SIGNED_IN = "Take the contributor's CPG training."

@@ -2,7 +2,9 @@ import pytest
 import pytest_check as check
 
 from selenium_tests.core.test_utilities import TestUtilities
-from selenium_tests.messages.contribute_pages_messages.contribute_page_messages import ContributePageMessages
+from selenium_tests.messages.contribute_pages_messages.contribute_page_messages import (
+    ContributePageMessages,
+)
 from selenium_tests.messages.homepage_messages import HomepageMessages
 from selenium_tests.messages.support_page_messages import SupportPageMessages
 
@@ -16,8 +18,8 @@ class TestHomepage(TestUtilities):
         self.logger.info("Verifying that we are redirected to the 'Contribute' page successfully")
 
         assert (
-                self.pages.contribute_page.current_url
-                == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
+            self.pages.contribute_page.current_url
+            == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
         ), "We are not on the Contribute page!"
 
     # C876542
@@ -28,10 +30,10 @@ class TestHomepage(TestUtilities):
         )
 
         assert (
-                self.pages.homepage.get_community_card_title()
-                == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_TITLE
-                and self.pages.homepage.get_community_card_description()
-                == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_DESCRIPTION
+            self.pages.homepage.get_community_card_title()
+            == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_TITLE
+            and self.pages.homepage.get_community_card_description()
+            == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_DESCRIPTION
         ), "Incorrect strings are displayed"
 
     # C876541
@@ -44,7 +46,7 @@ class TestHomepage(TestUtilities):
         check.equal(
             self.pages.homepage.get_number_of_featured_articles(),
             HomepageMessages.EXPECTED_FEATURED_ARTICLES_COUNT,
-            "Unexpected featured article count"
+            "Unexpected featured article count",
         )
 
         article_name = self.pages.homepage.get_featured_articles_titles()[0]
@@ -58,7 +60,7 @@ class TestHomepage(TestUtilities):
         check.equal(
             self.pages.kb_article.get_text_of_article_title(),
             article_name,
-            "Incorrect featured article displayed on click"
+            "Incorrect featured article displayed on click",
         )
 
     # C873774
@@ -77,7 +79,7 @@ class TestHomepage(TestUtilities):
             check.equal(
                 card_titles[counter] + " " + SupportPageMessages.TITLE_CONTAINS,
                 support_page_title,
-                f"Incorrect support page title: {support_page_title} for clicked card with title: {card_titles[counter]}!"
+                f"Incorrect support page title: {support_page_title} for clicked card with title: {card_titles[counter]}!",
             )
             self.pages.homepage.navigate_back()
             counter += 1
