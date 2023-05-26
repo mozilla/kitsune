@@ -1,6 +1,7 @@
-import inspect
+import random
 import logging
 import pytest
+import inspect
 
 
 @pytest.mark.usefixtures("setup")
@@ -21,3 +22,6 @@ class TestUtilities:
         logger.setLevel(logging.INFO)
 
         return logger
+
+    def generate_random_number(self, min_value, max_value) -> int:
+        return random.randint(min_value, max_value)

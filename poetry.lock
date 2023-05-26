@@ -3269,6 +3269,20 @@ pluggy = ">=0.12,<2.0"
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
 
 [[package]]
+name = "pytest-check"
+version = "2.1.4"
+description = "A pytest plugin that allows multiple failures per test."
+optional = false
+python-versions = ">3.7"
+files = [
+    {file = "pytest-check-2.1.4.tar.gz", hash = "sha256:01b37fd703da0fa667b7017af1f0460c744a85f1ee87675ee3e0f94acc3df172"},
+    {file = "pytest_check-2.1.4-py3-none-any.whl", hash = "sha256:0c15d8c01ce31a13b73eb875854d060aca6f6c529aa9dd9fa0bd690c744eb171"},
+]
+
+[package.dependencies]
+pytest = "*"
+
+[[package]]
 name = "pytest-html"
 version = "3.2.0"
 description = "pytest plugin for generating HTML reports"
