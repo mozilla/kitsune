@@ -16,6 +16,8 @@
   position: relative;
 }
 
+:host([disqualified-mobile]) .form-wizard-content,
+:host([disqualified-mobile]) #progress,
 .form-wizard-root:not([disqualified]) > .form-wizard-disqualified {
   display: none;
 }
@@ -42,6 +44,19 @@
 
 .disqualification:not([active]) {
   display: none;
+}
+
+:host([disqualified-mobile]) .form-wizard-disqualified {
+  position: relative;
+}
+
+:host([disqualified-mobile]) .form-wizard-disqualified,
+:host([disqualified-mobile]) .disqualification {
+  background-color: transparent;
+}
+
+:host([disqualified-mobile]) .disqualification {
+  box-shadow: none;
 }
 
 .warning-icon {

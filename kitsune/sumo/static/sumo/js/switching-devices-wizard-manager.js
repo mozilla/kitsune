@@ -301,6 +301,9 @@ export default class SwitchingDevicesWizardManager {
         // See https://mozilla.github.io/ecosystem-platform/relying-parties/reference/metrics-for-relying-parties#relying-party-hosted-email-form.
         await this.#requestMetricsParams();
         return;
+      } else if (platform.mobile) {
+        this.#formWizard.classList.add("warning");
+        this.#formWizard.toggleAttribute("disqualified-mobile", true);
       }
     } catch (e) {
       console.error(e);
