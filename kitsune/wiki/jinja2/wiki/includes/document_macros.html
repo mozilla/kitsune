@@ -413,7 +413,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro kb_subtopic_documents(documents, active_topic="", is_fallback=False) %}
+{% macro kb_subtopic_documents(request, settings, documents, active_topic="", is_fallback=False) %}
   {% set active_topic_slug = active_topic or 'view-all' %}
   <section class="switching-devices topic-list {% if not active_topic %}is-active{% endif %}" id="tab-{{ active_topic_slug }}">
     {% if is_fallback %}
@@ -440,7 +440,7 @@
   </section>
 {% endmacro %}
 
-{% macro kb_subtopic_tabs(request, product, topic, subtopics, current_document) -%}
+{% macro kb_subtopic_tabs(request, settings, product, topic, subtopics, current_document) -%}
   <nav class="switching-devices tabs">
     <ul class="tabs--list subtopics">
       <li class="tabs--item">
@@ -467,15 +467,15 @@
   {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, [topic], [product], current_document)%}
 
   {% if all_fallback_docs %}
-    {{ kb_subtopic_documents(documents=all_fallback_docs, is_fallback=True) }}
+    {{ kb_subtopic_documents(request, settings, all_fallback_docs, True) }}
   {% endif %}
-  {{ kb_subtopic_documents(documents=all_docs) }}
+  {{ kb_subtopic_documents(request, settings, all_docs) }}
 
   {% for subtopic in subtopics %}
     {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, [subtopic], [product], current_document=current_document)%}
     {% if fallback_documents %}
-      {{ kb_subtopic_documents(documents=fallback_docs, active_topic=subtopic.slug, is_fallback=True) }}
+      {{ kb_subtopic_documents(request, settings, fallback_docs, subtopic.slug, True) }}
     {% endif %}
-    {{ kb_subtopic_documents(documents=documents, active_topic=subtopic.slug) }}
+    {{ kb_subtopic_documents(request, settings, documents, subtopic.slug) }}
   {% endfor %}
 {%- endmacro %}
