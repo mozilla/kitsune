@@ -1,4 +1,3 @@
-import trackEvent from "sumo/js/analytics";
 import { BaseFormStep } from "sumo/js/form-wizard";
 
 import keyImageURL from "sumo/img/key.svg";
