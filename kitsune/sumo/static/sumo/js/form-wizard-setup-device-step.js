@@ -35,11 +35,13 @@ export class SetupDeviceStep extends BaseFormStep {
   }
 
   connectedCallback() {
+    super.connectedCallback();
     let copyButton = this.shadowRoot.getElementById("copy-button");
     copyButton.addEventListener("click", this.copyLink);
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     let copyButton = this.shadowRoot.getElementById("copy-button");
     copyButton.removeEventListener("click", this.copyLink);
   }
