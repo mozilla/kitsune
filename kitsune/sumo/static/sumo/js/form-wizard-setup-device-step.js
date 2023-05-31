@@ -14,7 +14,7 @@ export class SetupDeviceStep extends BaseFormStep {
           </ul>
           <div class="download-link-wrapper">
             <a id="download-link" href="https://mzl.la/newdevice" target="_blank">https://mzl.la/newdevice</a>
-            <button id="copy-button" class="mzp-c-button mzp-t-md button-secondary">${gettext("Copy")}</button>
+            <button id="copy-button" class="mzp-c-button mzp-t-md button-secondary" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="copy-link-to-clipboard-button">${gettext("Copy")}</button>
             <span id="copied-message"><img src="${successIconUrl}" aria-hidden="true">${gettext("Copied!")}</span>
           </div>
         </div>
