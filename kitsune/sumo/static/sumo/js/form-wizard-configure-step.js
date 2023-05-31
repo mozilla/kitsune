@@ -43,11 +43,13 @@ export class ConfigureStep extends BaseFormStep {
   }
 
   connectedCallback() {
+    super.connectedCallback();
     let buttons = this.shadowRoot.querySelector("#buttons");
     buttons.addEventListener("click", this);
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     let buttons = this.shadowRoot.querySelector("#buttons");
     buttons.removeEventListener("click", this);
   }
@@ -98,4 +100,3 @@ export class ConfigureStep extends BaseFormStep {
 }
 
 customElements.define("configure-step", ConfigureStep);
-

@@ -1,3 +1,4 @@
+import trackEvent from "sumo/js/analytics";
 import wizardStylesURL from "../scss/form-wizard.styles.scss";
 import formStepStylesURL from "../scss/form-step.styles.scss";
 import warningImageURL from "sumo/img/warning.svg";
@@ -321,10 +322,57 @@ export class BaseFormStep extends HTMLElement {
     );
 
     this.render({}, this.#state);
+    this.handleInstrumentation = this.handleInstrumentation.bind(this);
   }
 
   get state() {
     return this.#state;
+  }
+
+  /**
+   * Subclasses that override this method should ensure that they call
+   * super.connectedCallback(); within the override in order to inherit
+   * the GA instrumentation behaviour.
+   */
+  connectedCallback() {
+    let instrumentedEls = this.shadowRoot.querySelectorAll("*[data-event-category]");
+    for (let element of instrumentedEls) {
+      element.addEventListener("click", this.handleInstrumentation);
+    }
+  }
+
+  /**
+   * Subclasses that override this method should ensure that they call
+   * super.disconnectedCallback(); within the override in order to clean up
+   * the GA instrumentation behaviour.
+   */
+  disconnectedCallback() {
+    let instrumentedEls = this.shadowRoot.querySelectorAll("*[data-event-category]");
+    for (let element of instrumentedEls) {
+      element.removeEventListener("click", this.handleInstrumentation);
+    }
+  }
+
+  /**
+   * Handles clicks on any elements in the step with a data-event-category attribute
+   * on it. The element can also provide the following other attributes:
+   *
+   * data-event-action
+   * data-event-label
+   * data-event-value
+   *
+   * See analytics.js for a sense of how this is passed along to GA.
+   *
+   * @param {Event} event
+   *   The click event that has been instrumented.
+   */
+  handleInstrumentation(event) {
+    trackEvent(
+      event.target.dataset.eventCategory,
+      event.target.dataset.eventAction,
+      event.target.dataset.eventLabel,
+      event.target.dataset.eventValue
+    );
   }
 
   /**

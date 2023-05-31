@@ -1,3 +1,4 @@
+import trackEvent from "sumo/js/analytics";
 import { BaseFormStep } from "sumo/js/form-wizard";
 
 import keyImageURL from "sumo/img/key.svg";
@@ -72,6 +73,7 @@ export class SignInStep extends BaseFormStep {
   }
 
   connectedCallback() {
+    super.connectedCallback();
     this.#formEl = this.shadowRoot.querySelector("form");
     this.#emailEl = this.shadowRoot.getElementById("email");
     this.#emailErrorEl = this.shadowRoot.getElementById("email-error");
@@ -82,6 +84,7 @@ export class SignInStep extends BaseFormStep {
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     this.#formEl.removeEventListener("submit", this);
     this.#emailEl.removeEventListener("blur", this);
     this.#emailEl.removeEventListener("input", this);
