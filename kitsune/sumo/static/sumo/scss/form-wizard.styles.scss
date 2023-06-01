@@ -18,7 +18,7 @@
 
 :host([disqualified-mobile]) .form-wizard-content,
 :host([disqualified-mobile]) #progress,
-.form-wizard-root:not([disqualified]) > .form-wizard-disqualified {
+.form-wizard-root:not([inert]) > .form-wizard-disqualified {
   display: none;
 }
 

@@ -186,7 +186,7 @@ export class FormWizard extends HTMLElement {
     }
 
     let root = this.shadowRoot.querySelector(".form-wizard-root");
-    root.toggleAttribute("disqualified", true);
+    root.toggleAttribute("inert", true);
   }
 
   /**
