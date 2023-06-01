@@ -33,7 +33,7 @@ Part 2: Developer's Guide
    zendesk
    seo
    notes
-
+   switching_devices
 
 Part 3: SUMO
 ============
