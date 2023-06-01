@@ -61,6 +61,7 @@ button.for-sign-up {
   width: max-content;
   visibility: hidden;
   top: -34px;
+  z-index: -1;
 }
 
 .tooltip::before {
@@ -78,6 +79,10 @@ button.for-sign-up {
 
 .visible {
   visibility: visible;
+}
+
+.tooltip.visible {
+  z-index: 0;
 }
 
 .tooltip.visible + input:invalid,
