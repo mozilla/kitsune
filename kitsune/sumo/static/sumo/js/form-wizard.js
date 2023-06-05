@@ -202,7 +202,7 @@ export class FormWizard extends HTMLElement {
 
         let subtitle = document.createElement("p");
         subtitle.classList.add("subtitle");
-        subtitle.textContent = `Step ${index + 1}`;
+        subtitle.textContent = interpolate(gettext("Step %s"), [index + 1]);
         item.appendChild(subtitle);
 
         let title = document.createElement("p");
