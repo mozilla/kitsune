@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import sinon from "sinon";
 import { FormWizard, BaseFormStep } from "sumo/js/form-wizard";
 
 /**
@@ -107,7 +108,10 @@ describe("form-wizard custom element", () => {
         let subtitle = step.querySelector(".subtitle");
         let title = step.querySelector(".title");
         expect(step.getAttribute("status")).to.equal(INITIAL_STEPS[i].status);
-        expect(subtitle.textContent).to.equal(`Step ${i + 1}`);
+        // Verifying that subtitle exists and that interpolate gets called as an
+        // indirect way of testing the text content of the element.
+        expect(subtitle).to.exist;
+        expect(global.interpolate).to.have.been.calledWith("Step %s", [i + 1]);
         expect(title.textContent).to.equal(INITIAL_STEPS[i].label);
       });
     });
