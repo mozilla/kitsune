@@ -202,7 +202,6 @@ import trackEvent from "sumo/js/analytics";
   });
 
   $(window).on('load', function() {
-    correctFixedHeader();
     $('[data-ui-type="carousel"]').each(function() {
       var $this = $(this);
       var $container = $(this).children().first();
@@ -281,15 +280,7 @@ import trackEvent from "sumo/js/analytics";
       }
     });
   }
-
-  function correctFixedHeader() {
-    var headerHeight = document.querySelector('header');
-    var scrollHeight = headerHeight.scrollHeight;
-    if (window.location.hash && document.querySelector(window.location.hash)) {
-      window.scrollBy(0, -scrollHeight);
-    }
-  }
-
+  
   function initAnnouncements() {
     var $announcements = $('#announcements');
 
@@ -314,9 +305,7 @@ import trackEvent from "sumo/js/analytics";
     var $pw = $form.find('input[name="password"]');
     $pw.attr('type', (this.checked) ? 'text' : 'password');
   });
-
-  $(window).on('hashchange', correctFixedHeader);
-
+  
   $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
     ev.preventDefault();
     // Send event to GA for metrics/reporting purposes.
