@@ -52,6 +52,7 @@ class Command(BaseCommand):
                     "--update",
                     "--width=200",
                     "--backup=off",
+                    "--no-fuzzy-matching",
                     domain_po,
                     domain_pot,
                 )
