@@ -27,6 +27,12 @@ class Command(BaseCommand):
             if locale in ("en_US", "xx"):
                 continue
 
+            # We need to use "sv_SE" instead of "sv" here because Pontoon
+            # uses "sv-SE" for Swedish instead of "sv".
+            # TODO: Remove this once Pontoon uses "sv" instead of "sv-SE"
+            #       for Swedish.
+            locale = "sv_SE" if locale == "sv" else locale
+
             for domain in ("django", "djangojs"):
                 domain_pot = Path(f"locale/templates/LC_MESSAGES/{domain}.pot")
                 if not domain_pot.is_file():
