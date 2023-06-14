@@ -6,24 +6,12 @@ import kitsune.sumo.models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("dashboards", "0001_initial"),
-        ("dashboards", "0002_auto_20150430_1304"),
-        ("dashboards", "0003_add_top100_to_wikimetric_code_choices"),
-        ("dashboards", "0004_change_locale_sr_Cyrl_to_sr"),
-        ("dashboards", "0005_auto_20151110_1307"),
-        ("dashboards", "0006_auto_20190507_1052"),
-        ("dashboards", "0007_auto_20190816_1824"),
-        ("dashboards", "0008_change_locale_bn_BD_to_bn"),
-        ("dashboards", "0009_auto_20200629_0826"),
-        ("dashboards", "0010_auto_20210726_1036"),
-    ]
 
     initial = True
 
     dependencies = [
-        ("products", "0001_initial"),
-        ("wiki", "0001_initial"),
+        ("products", "0001_squashed_0005_auto_20200629_0826"),
+        ("wiki", "0001_squashed_0013_alter_document_related_documents_and_more"),
     ]
 
     operations = [

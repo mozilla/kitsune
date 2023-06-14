@@ -11,29 +11,14 @@ import kitsune.wiki.permissions
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("wiki", "0001_initial"),
-        ("wiki", "0002_auto_20150430_1304"),
-        ("wiki", "0003_add_related_documents_field"),
-        ("wiki", "0004_change_locale_sr_Cyrl_to_sr"),
-        ("wiki", "0005_auto_20151002_1359"),
-        ("wiki", "0006_auto_20151110_1307"),
-        ("wiki", "0007_draftrevision"),
-        ("wiki", "0008_auto_20170724_0309"),
-        ("wiki", "0009_auto_20190507_1052"),
-        ("wiki", "0010_change_locale_bn_BD_to_bn"),
-        ("wiki", "0011_auto_20190816_1824"),
-        ("wiki", "0012_auto_20200629_0826"),
-        ("wiki", "0013_alter_document_related_documents_and_more"),
-    ]
 
     initial = True
 
     dependencies = [
-        ("products", "0001_initial"),
+        ("products", "0001_squashed_0005_auto_20200629_0826"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("taggit", "0001_initial"),
-        ("gallery", "0001_initial"),
+        ("gallery", "0001_squashed_0009_auto_20220107_0617"),
     ]
 
     operations = [

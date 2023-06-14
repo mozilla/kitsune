@@ -6,11 +6,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("upload", "0001_initial"),
-        ("upload", "0002_auto_20180523_0517"),
-        ("upload", "0003_auto_20200629_0826"),
-    ]
 
     initial = True
 

@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [("karma", "0001_initial"), ("karma", "0002_auto_20200629_0826")]
 
     initial = True
 
