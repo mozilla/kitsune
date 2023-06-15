@@ -36,6 +36,7 @@ from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
     DraftRevisionFactory,
+    HelpfulVoteFactory,
     LocaleFactory,
     RedirectRevisionFactory,
     RevisionFactory,
@@ -2625,41 +2626,46 @@ class HelpfulVoteTests(TestCaseBase):
         metadata = HelpfulVoteMetadata.objects.values_list("key", "value")
         self.assertEqual(0, len(metadata))
 
-    def test_helpfulvotes_graph_async_yes(self):
-        r = self.document.current_revision
-        response = post(
-            self.client,
-            "wiki.document_vote",
-            {"helpful": "Yes", "revision_id": r.id},
-            args=[self.document.slug],
-        )
-        self.assertEqual(200, response.status_code)
+    def test_helpfulvotes_graph_async(self):
+        """Test the wiki.get_helpful_votes_async endpoint."""
+        # Create votes and revisions over a period of 3 days.
+        period = 3
+        for day in range(period):
+            created = datetime.today() + timedelta(days=day)
+            if day == 0:
+                # On the first day, let's also vote for the original revision,
+                # so we get one day with two different revisions with votes.
+                HelpfulVoteFactory(
+                    revision=self.document.current_revision, helpful=True, created=created
+                )
+            rev = ApprovedRevisionFactory(
+                document=self.document,
+                created=created,
+                reviewed=created,
+            )
+            for helpful in (period - day) * (False,) + day * (True,):
+                HelpfulVoteFactory(revision=rev, helpful=helpful, created=created)
 
-        resp = get(self.client, "wiki.get_helpful_votes_async", args=[r.document.slug])
+        # Get the data.
+        resp = get(self.client, "wiki.get_helpful_votes_async", args=[self.document.slug])
         self.assertEqual(200, resp.status_code)
+
+        # Check the data.
         data = json.loads(resp.content)
-
-        self.assertEqual(1, len(data["datums"]))
-        assert "yes" in data["datums"][0]
-        assert "no" in data["datums"][0]
-
-    def test_helpfulvotes_graph_async_no(self):
-        r = self.document.current_revision
-        response = post(
-            self.client,
-            "wiki.document_vote",
-            {"helpful": "No", "revision_id": r.id},
-            args=[self.document.slug],
-        )
-        self.assertEqual(200, response.status_code)
-
-        resp = get(self.client, "wiki.get_helpful_votes_async", args=[r.document.slug])
-        self.assertEqual(200, resp.status_code)
-        data = json.loads(resp.content)
-
-        self.assertEqual(1, len(data["datums"]))
-        assert "yes" in data["datums"][0]
-        assert "no" in data["datums"][0]
+        self.assertIn("datums", data)
+        self.assertIn("annotations", data)
+        self.assertEqual(3, len(data["datums"]))
+        self.assertEqual(1, len(data["annotations"]))
+        self.assertEqual(data["datums"][0]["no"], 3)
+        self.assertEqual(data["datums"][0]["yes"], 1)
+        self.assertEqual(data["datums"][1]["no"], 2)
+        self.assertEqual(data["datums"][1]["yes"], 1)
+        self.assertEqual(data["datums"][2]["no"], 1)
+        self.assertEqual(data["datums"][2]["yes"], 2)
+        annotation = data["annotations"][0]
+        self.assertEqual("Article Revisions", annotation["name"])
+        self.assertEqual("revisions", annotation["slug"])
+        self.assertEqual(3, len(annotation["data"]))
 
     def test_helpfulvotes_graph_async_no_votes(self):
         r = self.document.current_revision
