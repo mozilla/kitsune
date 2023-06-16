@@ -7,11 +7,19 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+    replaces = [
+        ("announcements", "0001_initial"),
+        ("announcements", "0002_auto_20200629_0826"),
+        ("announcements", "0003_announcement_send_email"),
+        ("announcements", "0004_announcement_groups"),
+        ("announcements", "0005_auto_20230222_0105"),
+        ("announcements", "0006_remove_announcement_group_and_more"),
+    ]
 
     initial = True
 
     dependencies = [
-        ("wiki", "0001_squashed_0013_alter_document_related_documents_and_more"),
+        ("wiki", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("auth", "0001_initial"),
         ("auth", "0012_alter_user_first_name_max_length"),

@@ -8,6 +8,12 @@ import kitsune.search.models
 
 
 class Migration(migrations.Migration):
+    replaces = [
+        ("forums", "0001_initial"),
+        ("forums", "0002_auto_20221031_0956"),
+        ("forums", "0003_authority_to_guardian_data"),
+        ("forums", "0004_remove_authority"),
+    ]
 
     initial = True
 

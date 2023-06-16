@@ -4,6 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+    replaces = [
+        ("search", "0001_initial"),
+        ("search", "0002_delete_record"),
+        ("search", "0003_record"),
+        ("search", "0004_auto_20160106_1033"),
+        ("search", "0005_auto_20200629_0826"),
+        ("search", "0006_auto_20210526_0243"),
+    ]
 
     initial = True
 

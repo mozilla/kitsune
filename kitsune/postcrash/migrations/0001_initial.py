@@ -7,7 +7,7 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wiki', '0001_squashed_0013_alter_document_related_documents_and_more'),
+        ('wiki', '0001_initial'),
     ]
 
     operations = [

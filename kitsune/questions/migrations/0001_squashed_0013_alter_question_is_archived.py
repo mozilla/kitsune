@@ -10,16 +10,32 @@ import kitsune.tags.models
 
 
 class Migration(migrations.Migration):
+    replaces = [
+        ("questions", "0001_initial"),
+        ("questions", "0002_initial_data"),
+        ("questions", "0003_auto_20150430_1304"),
+        ("questions", "0004_new_aaq_waffle_flag"),
+        ("questions", "0005_change_locale_sr_Cyrl_to_sr"),
+        ("questions", "0006_ios_questionlocale"),
+        ("questions", "0007_auto_20151110_1307"),
+        ("questions", "0008_auto_20190507_1052"),
+        ("questions", "0009_change_bn_BD_to_bn"),
+        ("questions", "0010_auto_20190816_1824"),
+        ("questions", "0011_auto_20200629_0826"),
+        ("questions", "0012_aaqconfig"),
+        ("questions", "0013_alter_question_is_archived"),
+    ]
 
     initial = True
 
     dependencies = [
+        ("products", "0001_initial"),
         ("taggit", "0001_initial"),
         ("waffle", "0001_initial"),
         ("contenttypes", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("wiki", "0001_squashed_0013_alter_document_related_documents_and_more"),
-        ("products", "0001_squashed_0005_auto_20200629_0826"),
+        ("wiki", "0012_auto_20200629_0826"),
+        ("products", "0005_auto_20200629_0826"),
     ]
 
     operations = [
