@@ -7,6 +7,13 @@ import django.db.models.manager
 
 
 class Migration(migrations.Migration):
+    replaces = [
+        ("kbadge", "0001_initial"),
+        ("kbadge", "0002_auto_20181023_1319"),
+        ("kbadge", "0003_auto_20190816_1824"),
+        ("kbadge", "0004_auto_20200629_0826"),
+        ("kbadge", "0005_drop_ghost_columns"),
+    ]
 
     initial = True
 

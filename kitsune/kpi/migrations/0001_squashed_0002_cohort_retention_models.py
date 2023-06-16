@@ -5,6 +5,7 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
+    replaces = [("kpi", "0001_initial"), ("kpi", "0002_cohort_retention_models")]
 
     initial = True
 

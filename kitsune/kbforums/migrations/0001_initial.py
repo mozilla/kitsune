@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('wiki', '0001_squashed_0013_alter_document_related_documents_and_more'),
+        ('wiki', '0001_initial'),
     ]
 
     operations = [
