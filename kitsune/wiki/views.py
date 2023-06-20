@@ -2,15 +2,19 @@ import json
 import logging
 import re
 import time
-from datetime import datetime
+from datetime import datetime, time as datetime_time
 from functools import wraps
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+
+# from django.contrib.postgres.aggregates import ArrayAgg  TODO: Use once we move to Postgres.
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db import connection
+from django.db.models import Count, Q
+from django.db.models import Aggregate, TextField  # TODO: Delete once we move to Postgres.
+from django.db.models.functions import TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
@@ -70,7 +74,15 @@ from kitsune.wiki.tasks import (
 )
 from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision_or_404
 
+
 log = logging.getLogger("k.wiki")
+
+
+# TODO: Delete once we move to Postgres, and use imported "ArrayAgg".
+class ArrayAgg(Aggregate):
+    function = "JSON_ARRAYAGG"
+    name = "JSONArrayAgg"
+    output_field = TextField()
 
 
 def doc_page_cache(view):
@@ -1279,50 +1291,47 @@ def get_helpful_votes_async(request, document_slug):
     rev_data = []
     revisions = set()
     created_list = []
-    dates_with_data = set()
+    timestamps_with_data = set()
 
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "SELECT wiki_helpfulvote.revision_id, "
-            "    SUM(wiki_helpfulvote.helpful), "
-            "    SUM(NOT(wiki_helpfulvote.helpful)), "
-            "    wiki_helpfulvote.created "
-            "FROM wiki_helpfulvote "
-            "INNER JOIN wiki_revision ON "
-            "    wiki_helpfulvote.revision_id=wiki_revision.id "
-            "WHERE wiki_revision.document_id=%s "
-            "GROUP BY DATE(wiki_helpfulvote.created)",
-            [document.id],
+    results = (
+        HelpfulVote.objects.filter(revision__document=document)
+        .values(date_created=TruncDate("created"))
+        .annotate(
+            revisions=ArrayAgg("revision_id"),
+            count_helpful=Count("helpful", filter=Q(helpful=True)),
+            count_unhelpful=Count("helpful", filter=Q(helpful=False)),
         )
-
-        results = cursor.fetchall()
+    )
 
     for res in results:
-        revisions.add(int(res[0]))
-        created_list.append(res[3])
-        date = int(time.mktime(res[3].timetuple()) // 86400) * 86400
+        revisions.update(json.loads(res["revisions"]))  # TODO: Delete once we move to Postgres.
+        # revisions.update(res["revisions"])  TODO: Use once we move to Postgres.
+        created_list.append(res["date_created"])
+        timestamp = (time.mktime(res["date_created"].timetuple()) // 86400) * 86400
 
         datums.append(
             {
-                "yes": int(res[1]),
-                "no": int(res[2]),
-                "date": date,
+                "yes": res["count_helpful"],
+                "no": res["count_unhelpful"],
+                "date": timestamp,
             }
         )
-        dates_with_data.add(date)
+        timestamps_with_data.add(timestamp)
 
     if not created_list:
         send = {"datums": [], "annotations": []}
         return HttpResponse(json.dumps(send), content_type="application/json")
 
-    min_created = min(created_list)
-    max_created = max(created_list)
+    # The "created_list" is a list of date objects, while "min_created" and
+    # "max_created" are datetime objects that span the period from the beginning
+    # of the first day to the end of the last day that the document was voted on.
+    min_created = datetime.combine(min(created_list), datetime_time.min)
+    max_created = datetime.combine(max(created_list), datetime_time.max)
 
-    # Zero fill data
-    timestamp = int(time.mktime(res[3].timetuple()) // 86400) * 86400
+    # Zero fill the data.
     end = time.mktime(datetime.now().timetuple())
     while timestamp <= end:
-        if timestamp not in dates_with_data:
+        if timestamp not in timestamps_with_data:
             datums.append(
                 {
                     "yes": 0,
@@ -1330,7 +1339,7 @@ def get_helpful_votes_async(request, document_slug):
                     "date": timestamp,
                 }
             )
-            dates_with_data.add(timestamp)
+            timestamps_with_data.add(timestamp)
         timestamp += 24 * 60 * 60
 
     for flag in ImportantDate.objects.filter(date__gte=min_created, date__lte=max_created):
