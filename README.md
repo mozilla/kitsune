@@ -14,6 +14,9 @@ By participating in this project, you're agreeing to uphold the [Mozilla Communi
 
 See our [contribution guide](https://kitsune.readthedocs.io/en/latest/contributors.html), or dive into [setting up your development environment](https://kitsune.readthedocs.io/en/latest/hacking_howto.html).
 
+## Issues
+We use [Bugzilla](https://bugzilla.mozilla.org/enter_bug.cgi?product=support.mozilla.org) for submitting and prioritizing issues.
+
 ## Thanks to all of our contributors ❤️
 <a href = "https://github.com/mozilla/kitsune/contributors">
   <img src = "https://contrib.rocks/image?repo=mozilla/kitsune"/>
