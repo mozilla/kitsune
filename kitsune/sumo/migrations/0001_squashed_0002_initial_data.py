@@ -23,7 +23,6 @@ def remove_ratelimit_bypass_perm(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    replaces = [("sumo", "0001_initial"), ("sumo", "0002_initial_data")]
 
     initial = True
 
