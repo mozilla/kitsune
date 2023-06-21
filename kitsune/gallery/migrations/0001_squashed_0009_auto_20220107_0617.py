@@ -8,17 +8,6 @@ import kitsune.sumo.models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("gallery", "0001_initial"),
-        ("gallery", "0002_auto_20150430_1304"),
-        ("gallery", "0003_change_locale_sr_Cyrl_to_sr"),
-        ("gallery", "0004_auto_20151110_1307"),
-        ("gallery", "0005_auto_20190507_1052"),
-        ("gallery", "0006_change_bn_BD_and_bn_IN_to_bn"),
-        ("gallery", "0007_auto_20190816_1824"),
-        ("gallery", "0008_auto_20200629_0826"),
-        ("gallery", "0009_auto_20220107_0617"),
-    ]
 
     initial = True
 

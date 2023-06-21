@@ -11,44 +11,15 @@ import timezone_field.fields
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("users", "0001_initial"),
-        ("users", "0002_initial_data"),
-        ("users", "0003_auto_20150430_1304"),
-        ("users", "0004_auto_add_contrib_email_flags"),
-        ("users", "0005_set_initial_contrib_email_flag"),
-        ("users", "0006_auto_update_help_text_email_sent_fields"),
-        ("users", "0007_auto_add_screen_share_permission"),
-        ("users", "0008_auto_20150610_2214"),
-        ("users", "0009_change_locale_sr_Cyrl_to_sr"),
-        ("users", "0010_auto_20151110_1307"),
-        ("users", "0011_add_csat_email_sent_field"),
-        ("users", "0012_auto_20160106_1033"),
-        ("users", "0013_auto_20190304_1755"),
-        ("users", "0014_auto_20190419_0542"),
-        ("users", "0015_auto_20190523_0505"),
-        ("users", "0016_profile_has_subscriptions"),
-        ("users", "0017_auto_20190816_1732"),
-        ("users", "0018_change_bn_BD_and_bn_IN_to_bn"),
-        ("users", "0019_auto_20190917_0422"),
-        ("users", "0020_accountevent_squashed_0022_auto_20200402_0429"),
-        ("users", "0021_auto_20200522_0716"),
-        ("users", "0022_auto_20200629_0841"),
-        ("users", "0023_auto_20200826_0808"),
-        ("users", "0024_auto_20200914_0433"),
-        ("users", "0025_auto_20200926_0638"),
-        ("users", "0026_profile_fxa_refresh_token"),
-        ("users", "0027_profile_zendesk_id"),
-    ]
 
     initial = True
 
     dependencies = [
         ("auth", "0001_initial"),
-        ("wiki", "0001_initial"),
-        ("questions", "0001_initial"),
+        ("wiki", "0001_squashed_0013_alter_document_related_documents_and_more"),
+        ("questions", "0001_squashed_0013_alter_question_is_archived"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("products", "0004_product_codename"),
+        ("products", "0001_squashed_0005_auto_20200629_0826"),
     ]
 
     operations = [

@@ -4,11 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("inproduct", "0001_initial"),
-        ("inproduct", "0002_increase_max_lengths"),
-        ("inproduct", "0003_alter_redirect_platform_alter_redirect_product_and_more"),
-    ]
 
     initial = True
 

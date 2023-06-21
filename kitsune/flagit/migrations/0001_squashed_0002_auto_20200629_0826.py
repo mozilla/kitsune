@@ -7,7 +7,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-    replaces = [("flagit", "0001_initial"), ("flagit", "0002_auto_20200629_0826")]
 
     initial = True
 
