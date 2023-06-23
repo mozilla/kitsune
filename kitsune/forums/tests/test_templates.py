@@ -205,6 +205,21 @@ class PostsTemplateTests(ForumTestCase):
         self.assertEqual(200, response.status_code)
         assert b"2 Replies" in response.content
 
+    def test_num_posts(self):
+        """Verify the number of posts in all threads for a given post's author."""
+        t = ThreadFactory()
+
+        response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
+        self.assertEqual(200, response.status_code)
+        self.assertIn(b"1 post", response.content)
+
+        ThreadFactory(creator=t.creator)
+        ThreadFactory(creator=t.creator)
+
+        response = get(self.client, "forums.posts", args=[t.forum.slug, t.id])
+        self.assertEqual(200, response.status_code)
+        self.assertIn(b"3 posts", response.content)
+
     def test_youtube_in_post(self):
         """Verify youtube video embedding."""
         u = UserFactory()
