@@ -412,6 +412,22 @@ class ForumsTemplateTests(ForumTestCase):
         self.assertEqual(1, len(doc(".forums tr")))
         self.assertEqual(forum2.name, doc(".forums tr a").text())
 
+    def test_thread_counts(self):
+        """Verify the thread counts."""
+        forum1 = ThreadFactory().forum
+        forum2 = ThreadFactory().forum
+        ThreadFactory(forum=forum2)
+        forum3 = ThreadFactory().forum
+        ThreadFactory(forum=forum3)
+        ThreadFactory(forum=forum3)
+
+        response = get(self.client, "forums.forums")
+        doc = pq(response.content)
+        forum_names = doc("h5.sumo-card-heading a").text().split()
+        self.assertEqual(forum_names, [forum1.name, forum2.name, forum3.name])
+        forum_thread_counts = doc("td.threads").text().split()
+        self.assertEqual(forum_thread_counts, ["1", "2", "3"])
+
 
 class NewThreadTemplateTests(ForumTestCase):
     def test_preview(self):

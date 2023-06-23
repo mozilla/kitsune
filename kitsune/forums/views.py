@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, OuterRef, Subquery
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
@@ -30,12 +31,14 @@ def forums(request):
     """View all the forums."""
     qs = Forum.objects.filter(is_listed=True)
     qs = qs.select_related("last_post", "last_post__author")
-    qs = qs.extra(
-        select={
-            "thread_count": "SELECT COUNT(*) FROM forums_thread "
-            "WHERE forums_thread.forum_id = "
-            "forums_forum.id"
-        }
+    qs = qs.annotate(
+        thread_count=Subquery(
+            Thread.objects.filter(forum_id=OuterRef("id"))
+            .order_by()
+            .values("forum_id")
+            .annotate(count=Count("*"))
+            .values("count")
+        )
     )
     forums_ = [f for f in qs if f.allows_viewing_by(request.user)]
     return render(request, "forums/forums.html", {"forums": paginate(request, forums_)})
