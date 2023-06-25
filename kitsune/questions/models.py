@@ -10,7 +10,8 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.db import close_old_connections, connection, models
+from django.db import close_old_connections, models
+from django.db.models import Count
 from django.db.models.signals import post_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
@@ -327,21 +328,16 @@ class Question(AAQBase, BigVocabTaggableMixin):
     @property
     def helpful_replies(self):
         """Return answers that have been voted as helpful."""
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT votes.answer_id, "
-                "SUM(IF(votes.helpful=1,1,-1)) AS score "
-                "FROM questions_answervote AS votes "
-                "JOIN questions_answer AS ans "
-                "ON ans.id=votes.answer_id "
-                "AND ans.question_id=%s "
-                "GROUP BY votes.answer_id "
-                "HAVING score > 0 "
-                "ORDER BY score DESC LIMIT 2",
-                [self.id],
-            )
 
-            helpful_ids = [row[0] for row in cursor.fetchall()]
+        helpful_ids = list(
+            AnswerVote.objects.filter(helpful=True, answer__question=self)
+            .order_by()
+            .values("answer")
+            .annotate(score=Count("*"))
+            .filter(score__gt=0)
+            .order_by("-score")
+            .values_list("answer", flat=True)[:2]
+        )
 
         # Exclude the solution if it is set
         if self.solution and self.solution.id in helpful_ids:
