@@ -1659,7 +1659,8 @@ def what_links_here(request, document_slug):
         return HttpResponseRedirect(url)
 
     links = {}
-    for link_to in doc.links_to():
+    links_to = doc.links_to().prefetch_related("linked_from")
+    for link_to in links_to:
         if doc.locale == link_to.linked_from.locale:
             if link_to.kind not in links:
                 links[link_to.kind] = []
