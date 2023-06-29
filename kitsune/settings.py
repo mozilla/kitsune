@@ -601,7 +601,6 @@ else:
         FXA_SUBSCRIPTIONS = config(
             "FXA_SUBSCRIPTIONS", default="https://accounts.firefox.com/subscriptions"
         )
-        FXA_ROOT = config("FXA_ROOT", default="https://accounts.firefox.com")
         FXA_SET_ISSUER = config("FXA_SET_ISSUER", default="https://accounts.firefox.com")
         FXA_VERIFY_URL = config(
             "FXA_VERIFY_URL", default="https://oauth.accounts.firefox.com/v1/verify"
