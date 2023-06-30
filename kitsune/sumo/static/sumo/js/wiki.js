@@ -45,6 +45,7 @@ import ShowFor from "sumo/js/showfor";
           return false;
         }
       });
+
       initExitSupportFor();
       initArticlePreview();
       initPreviewDiff();
@@ -70,15 +71,10 @@ import ShowFor from "sumo/js/showfor";
     }
 
     initEditingTools();
-
     initDiffPicker();
-
     Marky.createFullToolbar('.editor-tools', '#id_content');
-
     initReadyForL10n();
-
     initArticleApproveModal();
-
     initRevisionList();
 
     $('img.lazy').lazyload();
@@ -411,8 +407,11 @@ import ShowFor from "sumo/js/showfor";
     // Hide and show the comment box based on the status of the
     // "Needs change" checkbox. Also, make the textarea required
     // when checked.
+    console.log('inside initNeedsChange');
+
     var $checkbox = $('#id_needs_change'),
-      $comment = $('#document-form li.comment,#approve-modal div.comment');
+      $comment = $('#id_needs_change_comment'),
+      $commentlabel = $('label[for="id_needs_change_comment"]');
 
     if ($checkbox.length > 0) {
       updateComment();
@@ -421,9 +420,11 @@ import ShowFor from "sumo/js/showfor";
 
     function updateComment() {
       if ($checkbox.is(':checked')) {
+        $commentlabel.slideDown();
         $comment.slideDown();
         $comment.find('textarea').prop('required', true);
       } else {
+        $commentlabel.hide();
         $comment.hide();
         $comment.find('textarea').prop('required', false);
       }
