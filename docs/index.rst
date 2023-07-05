@@ -26,7 +26,7 @@ Part 2: Developer's Guide
    celery
    email
    localization
-   search
+   elastic_search
    frontend
    svelte
    browser_permissions

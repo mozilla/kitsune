@@ -185,8 +185,7 @@ Locales API
             "name": "English",
             "localized_name": "English",
             "aaq_enabled": true
-         },
-         ...
+         }
       }
 
    :reqheader Accept: application/json
