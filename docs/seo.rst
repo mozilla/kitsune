@@ -5,7 +5,7 @@ SEO
 This document covers notes and policies related to SEO.
 
 Prefer ``meta`` tag if possible
-=============================
+===============================
 
 If an entire page should not be indexed, and/or none of its links
 followed, prefer to use the ``<meta name="robots" ...>`` tag by specifying

@@ -1,5 +1,6 @@
 # Search
 
+
 ## Development tips
 
 ### Adding fields to a live index
