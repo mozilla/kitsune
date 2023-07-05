@@ -24,6 +24,7 @@ from kitsune.questions.models import (
 from kitsune.questions.tasks import update_answer_pages
 from kitsune.questions.tests import (
     AnswerFactory,
+    AnswerVoteFactory,
     QuestionFactory,
     QuestionVoteFactory,
     TestCaseBase,
@@ -478,6 +479,32 @@ class QuestionTests(TestCaseBase):
         f = Follow.objects.get(user=q.creator)
         self.assertEqual(f.follow_object, q)
         self.assertEqual(f.actor_only, False)
+
+    def test_helpful_replies(self):
+        """Verify the "helpful_replies" property."""
+        answer1 = AnswerFactory()
+        question = answer1.question
+        AnswerVoteFactory(answer=answer1, helpful=False)
+        answer2 = AnswerFactory(question=question)
+        AnswerVoteFactory(answer=answer2, helpful=True)
+        AnswerVoteFactory(answer=answer2, helpful=False)
+        with self.subTest("ignore answers with no helpful votes"):
+            self.assertEqual(list(question.helpful_replies), [answer2])
+        answer3 = AnswerFactory(question=question)
+        AnswerVoteFactory(answer=answer3, helpful=True)
+        AnswerVoteFactory(answer=answer3, helpful=False)
+        AnswerVoteFactory(answer=answer3, helpful=True)
+        answer4 = AnswerFactory(question=question)
+        AnswerVoteFactory(answer=answer4, helpful=True)
+        AnswerVoteFactory(answer=answer4, helpful=False)
+        AnswerVoteFactory(answer=answer4, helpful=True)
+        AnswerVoteFactory(answer=answer4, helpful=True)
+        with self.subTest("limit to two most helpful answers"):
+            self.assertEqual(set(question.helpful_replies), set([answer3, answer4]))
+        question.solution = answer4
+        question.save()
+        with self.subTest("ignore the solution"):
+            self.assertEqual(list(question.helpful_replies), [answer3])
 
 
 class AddExistingTagTests(TestCaseBase):
