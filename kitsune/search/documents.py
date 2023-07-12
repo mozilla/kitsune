@@ -150,8 +150,8 @@ class QuestionDocument(SumoDocument):
     def prepare(cls, instance):
         """Override super method to exclude certain docs."""
         # Add a discard field in the document if the following conditions are met
-        # Question document is spam
-        if instance.is_spam:
+        # Question document is spam or question doesn't have any answers
+        if isinstance(instance, Question) and any([instance.is_spam, instance.num_answers == 0]):
             instance.es_discard_doc = "unindex_me"
 
         return super(QuestionDocument, cls).prepare(instance)
