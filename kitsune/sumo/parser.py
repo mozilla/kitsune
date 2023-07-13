@@ -12,7 +12,6 @@ from kitsune.gallery.models import Image, Video
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 
-
 ALLOWED_ATTRIBUTES = {
     "a": ["href", "title", "class", "rel", "data-mozilla-ui-reset", "data-mozilla-ui-preferences"],
     "div": ["id", "class", "style", "data-for", "title", "data-target", "data-modal"],
@@ -215,6 +214,9 @@ class WikiParser(Parser):
         self.registerInternalLinkHook("Button", self._hook_button)
         self.registerInternalLinkHook("UI", self._hook_ui_component)
 
+        # Register the abbr
+        self.registerTagHook("abbr", self._abbrTagHook)
+
         self.youtube_videos = set()
         self.ui_components = set()
 
@@ -287,6 +289,18 @@ class WikiParser(Parser):
             html = self.add_ui_component_embeds(html)
 
         return html
+
+    def _abbrTagHook(self, parser, body, attributes):
+        """<abbr[ title="FullText"]>An Abbreviation</abbr>"""
+        if not body:
+            return ""
+        if "title" in attributes:
+            text = [f"<abbr title='{attributes['title']}'>"]
+        else:
+            text = ["<abbr>"]
+        text.append(body.strip())
+        text.append("</abbr>")
+        return "".join(text)
 
     def add_youtube_embeds(self, html):
         """Insert youtube embeds.

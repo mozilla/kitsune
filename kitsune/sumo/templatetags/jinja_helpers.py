@@ -32,7 +32,7 @@ from kitsune.sumo.utils import webpack_static as webpack_static_func
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
-ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS | {"p"}
+ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS | {"p", "img"}
 ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
 # allow rel="nofollow"
 ALLOWED_BIO_ATTRIBUTES["a"].append("rel")
@@ -129,10 +129,14 @@ def wiki_to_html(
 @library.filter
 def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
     """Wiki Markup -> HTML Markup object with limited tags"""
-    html = parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
-    return Markup(
-        bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)
+    html = parser.wiki_to_html(
+        wiki_markup,
+        locale=locale,
+        nofollow=nofollow,
+        tags=ALLOWED_BIO_TAGS,
+        attributes=ALLOWED_BIO_ATTRIBUTES,
     )
+    return Markup(html)
 
 
 @library.filter
