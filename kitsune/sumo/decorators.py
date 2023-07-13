@@ -2,6 +2,7 @@ import json
 from functools import wraps
 
 from django import http
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
 from kitsune.sumo.utils import is_ratelimited
@@ -112,3 +113,16 @@ def ratelimit(name, rate, method="POST"):
         return _wrapped
 
     return _decorator
+
+
+def skip_if_read_only_mode(fn):
+    """
+    Ensures that the decorated function will be skipped if we're in read-only mode.
+    """
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not settings.READ_ONLY:
+            return fn(*args, **kwargs)
+
+    return wrapper
