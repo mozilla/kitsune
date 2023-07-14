@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from dataclasses import field as dfield
 from datetime import datetime
-from typing import Union, Self, overload
+from typing import Self, Union, overload
 
 from django.conf import settings
 from django.core.paginator import EmptyPage, PageNotAnInteger
@@ -144,7 +144,7 @@ class SumoDocument(DSLDocument):
             for f in fields:
                 # This will allow child classes to have their own methods
                 # in the form of prepare_field
-                prepare_method = getattr(obj, "prepare_{}".format(f), None)
+                prepare_method = getattr(obj, f"prepare_{f}", None)
                 value = obj.get_field_value(f, instance, prepare_method)
 
                 # Assign values to each field.

@@ -166,7 +166,7 @@ def index_objects_bulk(
     # if the request doesn't resolve within `timeout`,
     # sleep for `timeout` then try again up to `settings.ES_BULK_MAX_RETRIES` times,
     # before raising an exception:
-    success, errors = es_bulk(
+    _, errors = es_bulk(
         es_client(
             timeout=timeout,
             retry_on_timeout=True,

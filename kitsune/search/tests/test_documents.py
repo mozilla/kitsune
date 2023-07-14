@@ -12,6 +12,7 @@ from kitsune.search.documents import QuestionDocument, AnswerDocument
 class QuestionDocumentTests(TestCase):
     def test_annotation_has_correct_counts(self):
         question = QuestionFactory()
+        AnswerFactory(question=question, content="answer 1")
         [f(question=question) for f in [QuestionVoteFactory] * 4]
 
         document = QuestionDocument.prepare(question)

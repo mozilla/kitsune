@@ -1,10 +1,11 @@
 from kitsune.search.tests import Elastic7TestCase
-from kitsune.questions.tests import QuestionFactory
+from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from django.test.utils import override_settings
 from kitsune.search.es_utils import index_objects_bulk
 from elasticsearch.helpers.errors import BulkIndexError
 from elasticsearch.exceptions import NotFoundError
 from kitsune.search.documents import QuestionDocument
+from kitsune.questions.models import Question
 from unittest.mock import patch
 from kitsune.search.base import SumoDocument
 
@@ -41,6 +42,9 @@ class IndexObjectsBulkTestCase(Elastic7TestCase):
         mock_to_action.side_effect = make_first_doc_throw_exception
 
         ids = [QuestionFactory().id for _ in range(2)]
+        for question_id in ids:
+            question = Question.objects.get(id=question_id)
+            AnswerFactory(question=question, content=f"answer {question_id}")
 
         with self.assertRaises(BulkIndexError):
             index_objects_bulk("QuestionDocument", ids, elastic_chunk_size=1)

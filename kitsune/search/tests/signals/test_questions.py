@@ -1,5 +1,6 @@
 from unittest.mock import patch, call
 from kitsune.search.tests import Elastic7TestCase
+from kitsune.questions.models import Answer
 from kitsune.questions.tests import (
     QuestionFactory,
     AnswerFactory,
@@ -16,6 +17,7 @@ from elasticsearch.exceptions import NotFoundError
 class QuestionDocumentSignalsTests(Elastic7TestCase):
     def setUp(self):
         self.question = QuestionFactory()
+        AnswerFactory(question=self.question, content="answer 1")
         self.question_id = self.question.id
 
     def get_doc(self):
@@ -57,7 +59,13 @@ class QuestionDocumentSignalsTests(Elastic7TestCase):
         answer = AnswerFactory(question=self.question, content="foobar")
         answer.delete()
 
-        self.assertNotIn("en-US", self.get_doc().answer_content)
+        self.assertIn("answer 1", self.get_doc().answer_content["en-US"])
+
+    def test_question_without_answer(self):
+        Answer.objects.filter(question=self.question).delete()
+
+        with self.assertRaises(NotFoundError):
+            self.get_doc()
 
     def test_vote_delete(self):
         vote = QuestionVoteFactory(question=self.question)

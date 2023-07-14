@@ -1,9 +1,9 @@
 from math import ceil
 
+from dateutil.parser import parse as dateutil_parse
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, reset_queries
-from dateutil.parser import parse as dateutil_parse
 
 from kitsune.search.es_utils import get_doc_types, index_objects_bulk
 
