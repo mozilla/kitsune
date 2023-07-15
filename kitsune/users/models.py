@@ -73,6 +73,7 @@ class Profile(ModelBase):
         verbose_name=_lazy("Biography"),
         help_text=_lazy(
             "Some HTML supported: &#x3C;abbr title&#x3E; "
+            + "&#x3C;acronym title&#x3E; &#x3C;b&#x3E; "
             + "&#x3C;blockquote&#x3E; &#x3C;code&#x3E; "
             + "&#x3C;em&#x3E; &#x3C;i&#x3E; &#x3C;li&#x3E; "
             + "&#x3C;ol&#x3E; &#x3C;strong&#x3E; &#x3C;ul&#x3E;. "

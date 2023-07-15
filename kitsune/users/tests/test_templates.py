@@ -153,19 +153,19 @@ class ViewProfileTests(TestCaseBase):
         self.assertEqual(200, r.status_code)
         assert b"<p>my dude image </p>" in r.content
 
-    def test_bio_links_abbr(self):
-        self.profile.bio = '<abbr title="my full thing">MFT></abbr>'
+    def test_bio_abbr(self):
+        self.profile.bio = '<abbr title="my full thing">MFT</abbr>'
         self.profile.save()
         r = self.client.get(reverse("users.profile", args=[self.u.username]))
         self.assertEqual(200, r.status_code)
-        assert b'<abbr title="my full thing">MFT></abbr>' in r.content
+        assert b'<abbr title="my full thing">MFT</abbr>' in r.content
 
-    def test_bio_links_acronym(self):
-        self.profile.bio = '<acronymtitle="my full thing">MFT></acronym>'
+    def test_bio_acronym(self):
+        self.profile.bio = '<acronym title="my full thing">MFT</acronym>'
         self.profile.save()
         r = self.client.get(reverse("users.profile", args=[self.u.username]))
         self.assertEqual(200, r.status_code)
-        assert b'<acronym title="my full thing">MFT></acronym>' in r.content
+        assert b'<acronym title="my full thing">MFT</acronym>' in r.content
 
     def test_num_documents(self):
         """Verify the number of documents contributed by user."""
