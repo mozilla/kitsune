@@ -47,6 +47,9 @@ run: .docker-build
 init: .docker-build
 	${DC} run web bin/run-bootstrap.sh
 
+init-mac: .docker-build
+	${DC} run web bin/run-bootstrap.sh --optipng-fix
+
 shell: .docker-build
 	${DC} run web bash
 

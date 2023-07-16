@@ -23,9 +23,21 @@ and follow the following steps.
     make .env
     ```
 3. Pull base Kitsune Docker images, install node packages and build the Webpack bundle, and create your database.
+    On non-Apple silicon:
 
     ```
     make init
+    ```
+
+    On Apple silicon (M1, M2):
+
+    ```
+    make init-mac
+    ```
+
+    Then:
+    
+    ```
     make build
     ```
 
