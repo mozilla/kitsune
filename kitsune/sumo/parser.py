@@ -216,7 +216,6 @@ class WikiParser(Parser):
 
         # Register the abbr and acronym tags
         self.registerTagHook("abbr", self._abbr_tag_hook)
-        self.registerTagHook("acronym", self._acronym_tag_hook)
 
         self.youtube_videos = set()
         self.ui_components = set()
@@ -301,18 +300,6 @@ class WikiParser(Parser):
             text = ["<abbr>"]
         text.append(body.strip())
         text.append("</abbr>")
-        return "".join(text)
-
-    def _acronym_tag_hook(self, parser, body, attributes):
-        """<acronym[ title="FullText"]>An Acronym</acronym>"""
-        if not body:
-            return ""
-        if "title" in attributes:
-            text = [f"<acronym title='{attributes['title']}'>"]
-        else:
-            text = ["<acronym>"]
-        text.append(body.strip())
-        text.append("</acronym>")
         return "".join(text)
 
     def add_youtube_embeds(self, html):

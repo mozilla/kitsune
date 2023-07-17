@@ -134,9 +134,8 @@ def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofoll
         wiki_markup,
         locale=locale,
         nofollow=nofollow,
-        tags=wikimarkup.parser.ALLOWED_TAGS + ["abbr", "acronym"],
-        attributes=wikimarkup.parser.ALLOWED_ATTRIBUTES
-        | {"abbr": ["title"], "acronym": ["title"]},
+        tags=wikimarkup.parser.ALLOWED_TAGS + ["abbr"],
+        attributes=wikimarkup.parser.ALLOWED_ATTRIBUTES | {"abbr": ["title"]},
     )
     return Markup(
         bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)
