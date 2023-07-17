@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count, OuterRef, Subquery
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
@@ -122,11 +123,14 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None, is_reply
     else:
         last_post = None
     posts_ = posts_.select_related("author", "updated_by")
-    posts_ = posts_.extra(
-        select={
-            "author_post_count": "SELECT COUNT(*) FROM forums_post WHERE "
-            "forums_post.author_id = auth_user.id"
-        }
+    posts_ = posts_.annotate(
+        author_post_count=Subquery(
+            Post.objects.filter(author_id=OuterRef("author_id"))
+            .order_by()
+            .values("author_id")
+            .annotate(count=Count("*"))
+            .values("count")
+        )
     )
     posts_ = paginate(request, posts_, forum_constants.POSTS_PER_PAGE, count=count)
 
