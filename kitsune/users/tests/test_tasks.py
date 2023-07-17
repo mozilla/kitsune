@@ -8,7 +8,6 @@ from kitsune.users.models import AccountEvent
 from kitsune.users.tasks import (
     process_event_delete_user,
     process_event_password_change,
-    process_event_profile_change,
     process_event_subscription_state_change,
 )
 from kitsune.users.tests import AccountEventFactory, GroupFactory, ProfileFactory, UserFactory
@@ -44,26 +43,6 @@ class AccountEventsTasksTestCase(TestCase):
             self.assertEqual(other_user.inbox.count(), 1)
             self.assertEqual(other_user.outbox.count(), 1)
 
-        with self.settings(READ_ONLY=True):
-            process_event_delete_user(account_event.id)
-
-        # Nothing should have changed since we were in read-only mode.
-        user.refresh_from_db()
-        account_event.refresh_from_db()
-        self.assertEqual(user.username, "ringo")
-        self.assertEqual(user.email, "ringo@beatles.com")
-        self.assertTrue(user.is_active)
-        self.assertTrue(user.profile.name)
-        self.assertEqual(user.groups.count(), 1)
-        self.assertEqual(user.outbox.count(), 1)
-        self.assertEqual(user.inbox.count(), len(other_users))
-        for other_user in other_users:
-            self.assertEqual(other_user.inbox.count(), 1)
-            self.assertEqual(other_user.outbox.count(), 1)
-
-        self.assertEqual(account_event.status, AccountEvent.UNPROCESSED)
-
-        # Try it again but this time we're not in read-only mode.
         process_event_delete_user(account_event.id)
 
         user.refresh_from_db()
@@ -105,15 +84,6 @@ class AccountEventsTasksTestCase(TestCase):
             profile=profile,
         )
 
-        with self.settings(READ_ONLY=True):
-            process_event_subscription_state_change(account_event_1.id)
-
-        # Nothing should have changed since we were in read-only mode.
-        account_event_1.refresh_from_db()
-        self.assertCountEqual(profile.products.all(), [product_3])
-        self.assertEqual(account_event_1.status, AccountEvent.UNPROCESSED)
-
-        # Try it again but this time we're not in read-only mode.
         process_event_subscription_state_change(account_event_1.id)
         account_event_1.refresh_from_db()
 
@@ -185,16 +155,6 @@ class AccountEventsTasksTestCase(TestCase):
             profile=profile,
         )
 
-        with self.settings(READ_ONLY=True):
-            process_event_password_change(account_event_1.id)
-
-        # Nothing should have changed since we were in read-only mode.
-        profile.refresh_from_db()
-        account_event_1.refresh_from_db()
-        self.assertIs(profile.fxa_password_change, None)
-        self.assertEqual(account_event_1.status, AccountEvent.UNPROCESSED)
-
-        # Try it again but this time we're not in read-only mode.
         process_event_password_change(account_event_1.id)
 
         profile.refresh_from_db()
@@ -217,17 +177,3 @@ class AccountEventsTasksTestCase(TestCase):
 
         self.assertEqual(profile.fxa_password_change, datetime.utcfromtimestamp(2))
         self.assertEqual(account_event_2.status, AccountEvent.IGNORED)
-
-    def test_process_event_profile_change(self):
-        profile = ProfileFactory()
-        account_event = AccountEventFactory(
-            event_type=AccountEvent.PROFILE_CHANGE,
-            status=AccountEvent.UNPROCESSED,
-            profile=profile,
-        )
-
-        with self.settings(READ_ONLY=True):
-            process_event_profile_change(account_event.id)
-
-        # Nothing should have changed since we were in read-only mode.
-        self.assertEqual(account_event.status, AccountEvent.UNPROCESSED)

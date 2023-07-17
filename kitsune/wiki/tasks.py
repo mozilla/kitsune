@@ -18,6 +18,7 @@ from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
+from kitsune.sumo.decorators import skip_if_read_only_mode
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
@@ -159,6 +160,7 @@ def send_contributor_notification(
     email_utils.send_messages(msgs)
 
 
+@skip_if_read_only_mode
 def schedule_rebuild_kb():
     """Try to schedule a KB rebuild, if we're allowed to."""
     if not waffle.switch_is_active("wiki-rebuild-on-demand") or settings.CELERY_TASK_ALWAYS_EAGER:
@@ -174,6 +176,7 @@ def schedule_rebuild_kb():
 
 
 @shared_task
+@skip_if_read_only_mode
 def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
     base_url = "https://{0}%s".format(Site.objects.get_current().domain)
@@ -195,6 +198,7 @@ def add_short_links(doc_ids):
 
 
 @shared_task(rate_limit="3/h")
+@skip_if_read_only_mode
 def rebuild_kb():
     """Re-render all documents in the KB in chunks."""
     cache.delete(settings.WIKI_REBUILD_TOKEN)
@@ -261,6 +265,7 @@ def _rebuild_kb_chunk(data):
 
 
 @shared_task
+@skip_if_read_only_mode
 def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
     """Award the specific badge to the user if they've earned it."""
     try:
@@ -296,6 +301,7 @@ def maybe_award_badge(badge_template: Dict, year: int, user_id: int):
 
 
 @shared_task
+@skip_if_read_only_mode
 def render_document_cascade(base_doc_id):
     """Given a document, render it and all documents that may be affected."""
 
