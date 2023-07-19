@@ -1250,9 +1250,11 @@ TRUSTED_GROUPS = [
 ]
 
 # GraphQL configuration
-GRAPHENE = {
+GRAPHENE: dict[str, str | tuple[str, ...]] = {
     "SCHEMA": "kitsune.schema.schema",
 }
+if not DEV:
+    GRAPHENE["MIDDLEWARE"] = ("kitsune.graphql.middleware.DisableIntrospectionMiddleware",)
 
 # Contributor Groups
 LEGACY_CONTRIBUTOR_GROUPS = [
