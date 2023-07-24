@@ -23,6 +23,7 @@ from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import ngettext
 from django_jinja import library
 from markupsafe import Markup, escape
+import wikimarkup.parser
 
 from kitsune.products.models import Product
 from kitsune.sumo import parser
@@ -129,7 +130,13 @@ def wiki_to_html(
 @library.filter
 def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, nofollow=True):
     """Wiki Markup -> HTML Markup object with limited tags"""
-    html = parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
+    html = parser.wiki_to_html(
+        wiki_markup,
+        locale=locale,
+        nofollow=nofollow,
+        tags=wikimarkup.parser.ALLOWED_TAGS + ["abbr"],
+        attributes=wikimarkup.parser.ALLOWED_ATTRIBUTES | {"abbr": ["title"]},
+    )
     return Markup(
         bleach.clean(html, tags=ALLOWED_BIO_TAGS, attributes=ALLOWED_BIO_ATTRIBUTES, strip=True)
     )
