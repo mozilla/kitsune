@@ -100,7 +100,7 @@ class WatchFilter(ModelBase):
     #: indicated by the name field. See comments by
     #: :func:`~tidings.utils.hash_to_unsigned()` for more on what is reasonably
     #: small.
-    value = models.PositiveIntegerField()
+    value = models.PositiveBigIntegerField()
 
     class Meta(object):
         # There's no particular reason we couldn't allow multiple values for
