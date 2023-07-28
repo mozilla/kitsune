@@ -269,12 +269,14 @@ class EditDocumentVisibilityTests(TestCaseBase):
         authenticated users without the proper permission.
         """
         rev = RevisionFactory(is_approved=False)
-        user = UserFactory()
+        user = UserFactory(is_staff=True)
         # The document is in the "en-US" locale, so this permission won't provide access.
         locale_team, _ = Locale.objects.get_or_create(locale="de")
         locale_team.reviewers.add(user)
         self.client.login(username=user.username, password="testpass")
-        response = self.client.get(reverse("wiki.edit_document", args=[rev.document.slug]))
+        response = self.client.get(
+            reverse("wiki.edit_document_metadata", args=[rev.document.slug])
+        )
         self.assertEqual(404, response.status_code)
 
     def test_visibility_when_no_approved_content_and_authenticated_user_with_permission(self):
@@ -291,7 +293,7 @@ class EditDocumentVisibilityTests(TestCaseBase):
             "en-US__reviewers",
         ):
             with self.subTest(perm):
-                user = UserFactory(is_superuser=(perm == "superuser"))
+                user = UserFactory(is_superuser=(perm == "superuser"), is_staff=True)
                 if perm == "review_revision":
                     add_permission(user, Revision, "review_revision")
                 elif perm == "delete_document":
@@ -302,7 +304,9 @@ class EditDocumentVisibilityTests(TestCaseBase):
                     getattr(locale_team, role).add(user)
                 self.client.login(username=user.username, password="testpass")
                 rev = RevisionFactory(is_approved=False)
-                response = self.client.get(reverse("wiki.edit_document", args=[rev.document.slug]))
+                response = self.client.get(
+                    reverse("wiki.edit_document_metadata", args=[rev.document.slug])
+                )
                 self.assertEqual(response.status_code, 200)
                 self.client.logout()
 
@@ -310,10 +314,12 @@ class EditDocumentVisibilityTests(TestCaseBase):
         """
         Documents without approved content can be seen by their creator.
         """
-        creator = UserFactory()
+        creator = UserFactory(is_staff=True)
         rev = RevisionFactory(is_approved=False, creator=creator)
         self.client.login(username=creator.username, password="testpass")
-        response = self.client.get(reverse("wiki.edit_document", args=[rev.document.slug]))
+        response = self.client.get(
+            reverse("wiki.edit_document_metadata", args=[rev.document.slug])
+        )
         self.assertEqual(response.status_code, 200)
 
 
@@ -1548,7 +1554,7 @@ class DocumentEditingTests(TestCaseBase):
 
     def setUp(self):
         super(DocumentEditingTests, self).setUp()
-        self.u = UserFactory()
+        self.u = UserFactory(is_staff=True)
         # The "delete_document" permission is one of the ways to allow
         # a user to "see" documents that have no approved content.
         add_permission(self.u, Document, "delete_document")
@@ -1566,7 +1572,7 @@ class DocumentEditingTests(TestCaseBase):
         old_title = d.title
         data = new_document_data()
         data.update({"title": new_title, "slug": d.slug, "form": "doc"})
-        self.client.post(reverse("wiki.edit_document", args=[d.slug]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[d.slug]), data)
         self.assertEqual(new_title, Document.objects.get(id=d.id).title)
         assert Document.objects.get(title=old_title).redirect_url()
 
@@ -1576,7 +1582,7 @@ class DocumentEditingTests(TestCaseBase):
         new_title = "Ümlaut test"
         data = new_document_data()
         data.update({"title": new_title, "slug": d.slug, "form": "doc"})
-        self.client.post(reverse("wiki.edit_document", args=[d.slug]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[d.slug]), data)
         self.assertEqual(new_title, Document.objects.get(id=d.id).title)
 
     def test_retitling_template(self):
@@ -1589,7 +1595,7 @@ class DocumentEditingTests(TestCaseBase):
         # First try and change the title without also changing the category. It should fail.
         data = new_document_data()
         data.update({"title": new_title, "category": d.category, "slug": d.slug, "form": "doc"})
-        url = reverse("wiki.edit_document", args=[d.slug])
+        url = reverse("wiki.edit_document_metadata", args=[d.slug])
         res = self.client.post(url, data, follow=True)
         self.assertEqual(Document.objects.get(id=d.id).title, old_title)
         # This message gets HTML encoded.
@@ -1600,7 +1606,7 @@ class DocumentEditingTests(TestCaseBase):
 
         # Now try and change the title while also changing the category.
         data["category"] = CATEGORIES[0][0]
-        url = reverse("wiki.edit_document", args=[d.slug])
+        url = reverse("wiki.edit_document_metadata", args=[d.slug])
         self.client.post(url, data, follow=True)
         self.assertEqual(Document.objects.get(id=d.id).title, new_title)
 
@@ -1615,7 +1621,7 @@ class DocumentEditingTests(TestCaseBase):
         data.update(
             {"title": d.title, "category": CATEGORIES[0][0], "slug": d.slug, "form": "doc"}
         )
-        url = reverse("wiki.edit_document", args=[d.slug])
+        url = reverse("wiki.edit_document_metadata", args=[d.slug])
         res = self.client.post(url, data, follow=True)
         self.assertEqual(Document.objects.get(id=d.id).category, TEMPLATES_CATEGORY)
         # This message gets HTML encoded.
@@ -1626,7 +1632,7 @@ class DocumentEditingTests(TestCaseBase):
 
         # Now try and change the title while also changing the category.
         data["title"] = "not a template"
-        url = reverse("wiki.edit_document", args=[d.slug])
+        url = reverse("wiki.edit_document_metadata", args=[d.slug])
         self.client.post(url, data)
         self.assertEqual(Document.objects.get(id=d.id).category, CATEGORIES[0][0])
 
@@ -1646,7 +1652,7 @@ class DocumentEditingTests(TestCaseBase):
                 "form": "doc",
             }
         )
-        self.client.post(reverse("wiki.edit_document", args=[d.slug]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[d.slug]), data)
 
         self.assertEqual(
             sorted(Document.objects.get(id=d.id).products.values_list("id", flat=True)),
@@ -1654,7 +1660,7 @@ class DocumentEditingTests(TestCaseBase):
         )
 
         data.update({"products": [prod_desktop.id], "form": "doc"})
-        self.client.post(reverse("wiki.edit_document", args=[data["slug"]]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[data["slug"]]), data)
         self.assertEqual(
             sorted(Document.objects.get(id=d.id).products.values_list("id", flat=True)),
             sorted([prod.id for prod in [prod_desktop]]),
@@ -1771,14 +1777,14 @@ class DocumentEditingTests(TestCaseBase):
 
         # Give the user permission, now it should work.
         add_permission(self.u, Document, "edit_needs_change")
-        self.client.post(reverse("wiki.edit_document", args=[doc.slug]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[doc.slug]), data)
         doc = Document.objects.get(pk=doc.pk)
         assert doc.needs_change
         self.assertEqual(comment, doc.needs_change_comment)
 
         # Clear out needs_change.
         data.update({"needs_change": False, "needs_change_comment": comment})
-        self.client.post(reverse("wiki.edit_document", args=[doc.slug]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[doc.slug]), data)
         doc = Document.objects.get(pk=doc.pk)
         assert not doc.needs_change
         self.assertEqual("", doc.needs_change_comment)

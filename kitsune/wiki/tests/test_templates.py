@@ -804,7 +804,7 @@ class NewRevisionTests(TestCaseBase):
         response = self.client.get(reverse("wiki.edit_document", args=[self.d.slug]))
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
-        self.assertEqual(1, len(doc('#revision-form textarea[name="content"]')))
+        self.assertEqual(1, len(doc('textarea[name="content"]')))
         comment = doc("#id_comment")[0]
         assert "value" not in comment.attrib
         self.assertEqual("255", comment.attrib["maxlength"])
@@ -951,7 +951,7 @@ class NewRevisionTests(TestCaseBase):
     def test_edit_document_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
         that document."""
-        user = UserFactory()
+        user = UserFactory(is_staff=True)
         add_permission(user, Revision, "review_revision")
         self.client.login(username=user.username, password="testpass")
         self.d.current_revision = None
@@ -962,7 +962,7 @@ class NewRevisionTests(TestCaseBase):
         new_topics = [topics[0], TopicFactory()]
         data = new_document_data(t.id for t in new_topics)
         data["form"] = "doc"
-        self.client.post(reverse("wiki.edit_document", args=[self.d.slug]), data)
+        self.client.post(reverse("wiki.edit_document_metadata", args=[self.d.slug]), data)
         topic_ids = self.d.topics.values_list("id", flat=True)
         self.assertEqual(2, len(topic_ids))
         assert new_topics[0].id in topic_ids
@@ -1242,7 +1242,7 @@ class DocumentEditTests(TestCaseBase):
         super(DocumentEditTests, self).setUp()
         self.d = _create_document()
 
-        u = UserFactory()
+        u = UserFactory(is_staff=True)
         add_permission(u, Document, "change_document")
         self.client.login(username=u.username, password="testpass")
 
@@ -1251,7 +1251,7 @@ class DocumentEditTests(TestCaseBase):
         # Create a translation
         _create_document(title="Document Prueba", parent=self.d, locale="es")
         # Make sure is_localizable hidden field is rendered
-        response = get(self.client, "wiki.edit_document", args=[self.d.slug])
+        response = get(self.client, "wiki.edit_document_metadata", args=[self.d.slug])
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         is_localizable = doc('input[name="is_localizable"]')
@@ -1263,7 +1263,7 @@ class DocumentEditTests(TestCaseBase):
         data.update(title=new_title)
         data.update(form="doc")
         data.update(is_localizable="True")
-        response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
+        response = post(self.client, "wiki.edit_document_metadata", data, args=[self.d.slug])
         self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
         self.assertEqual(new_title, doc.title)
@@ -1274,7 +1274,7 @@ class DocumentEditTests(TestCaseBase):
         new_slug = "Test-Document"
         data.update(slug=new_slug)
         data.update(form="doc")
-        response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
+        response = post(self.client, "wiki.edit_document_metadata", data, args=[self.d.slug])
         self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
         self.assertEqual(new_slug, doc.slug)
@@ -1285,7 +1285,7 @@ class DocumentEditTests(TestCaseBase):
         new_title = "TeST DoCuMent"
         data.update(title=new_title)
         data.update(form="doc")
-        response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
+        response = post(self.client, "wiki.edit_document_metadata", data, args=[self.d.slug])
         self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
         self.assertEqual(new_title, doc.title)
@@ -1306,13 +1306,13 @@ class DocumentEditTests(TestCaseBase):
     # TODO: Factor with test_archive_permission_off.
     def test_archive_permission_on(self):
         """Shouldn't be able to change is_archive bit without permission."""
-        u = UserFactory()
+        u = UserFactory(is_staff=True)
         add_permission(u, Document, "change_document")
         add_permission(u, Document, "archive_document")
         self.client.login(username=u.username, password="testpass")
         data = new_document_data()
         data.update(form="doc", is_archived="on")
-        response = post(self.client, "wiki.edit_document", data, args=[self.d.slug])
+        response = post(self.client, "wiki.edit_document_metadata", data, args=[self.d.slug])
         self.assertEqual(200, response.status_code)
         doc = Document.objects.get(pk=self.d.pk)
         assert doc.is_archived

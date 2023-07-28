@@ -11,6 +11,7 @@ document_patterns = [
     re_path(r"^/revision/(?P<revision_id>\d+)$", views.revision, name="wiki.revision"),
     re_path(r"^/history$", views.document_revisions, name="wiki.document_revisions"),
     re_path(r"^/edit$", views.edit_document, name="wiki.edit_document"),
+    re_path(r"^/edit/metadata$", views.edit_document_metadata, name="wiki.edit_document_metadata"),
     re_path(
         r"^/edit/(?P<revision_id>\d+)$", views.edit_document, name="wiki.new_revision_based_on"
     ),
