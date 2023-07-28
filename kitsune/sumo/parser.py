@@ -44,7 +44,7 @@ IMAGE_PARAM_VALUES = {
 VIDEO_PARAMS = ["height", "width", "modal", "title", "placeholder"]
 YOUTUBE_PLACEHOLDER = "<p>YOUTUBE_EMBED_PLACEHOLDER_%s</p>"
 UI_COMPONENT_PLACEHOLDER = "<p>UI_COMPONENT_EMBED_PLACEHOLDER_%s</p>"
-ALLOWED_UI_COMPONENTS = frozenset(["device_migration_wizard"])
+ALLOWED_UI_COMPONENTS = frozenset(["device_migration_wizard", "details_start", "details_end"])
 
 
 def wiki_to_html(
@@ -461,6 +461,12 @@ def generate_youtube_embed(video_id):
 
 def generate_ui_component_embed(name):
     """Takes a UI component name and returns the embed markup."""
+    match name:
+        case "details_start":
+            return '<section class="mzp-c-details">'
+        case "details_end":
+            return "</section>"
+
     return render_to_string(f"wikiparser/hook_{name}.html", {"settings": settings})
 
 

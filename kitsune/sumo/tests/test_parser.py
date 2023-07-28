@@ -233,13 +233,18 @@ class TestWikiParser(TestCase):
                     .startswith("//www.youtube.com/embed/oHg5SJYRHA0")
                 )
 
-    def test_ui_component(self):
-        """Verify that the UI component hook works."""
+    def test_ui_component_device_migration_wizard(self):
+        """Verify that the UI component hook for the device-migration wizard works."""
         dmw = '<input type="text" id="x" name="x">'
         content_template = "<p>before</p>{}<p>after</p>"
         with patch("kitsune.sumo.parser.generate_ui_component_embed", return_value=dmw):
             result = self.p.parse(content_template.format("[[UI:device_migration_wizard]]"))
             self.assertEqual(result, content_template.format(dmw))
+
+    def test_ui_component_details_pair(self):
+        """Verify that the UI component hook for the details pair works."""
+        result = self.p.parse("[[UI:details_start]][[UI:details_end]]")
+        self.assertIn('<section class="mzp-c-details"></section>', result)
 
     def test_invalid_ui_component(self):
         """Verify error message shown for invalid UI component requests."""
