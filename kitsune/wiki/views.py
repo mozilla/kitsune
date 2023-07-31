@@ -546,7 +546,7 @@ def edit_document_metadata(request, document_slug, revision_id=None):
     """Edit document metadata."""
 
     # Initialize values and check basic perms
-    init_check = edit_init_and_perms(request, document_slug, revision_id, "doc")
+    init_check = edit_init_and_perms(request, document_slug, revision_id, "meta")
     # If we were redirected, return that response.
     if isinstance(init_check, HttpResponse):
         return init_check
