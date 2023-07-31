@@ -5,6 +5,7 @@ import KBox from "sumo/js/kbox";
 import CodeMirror from "codemirror";
 import "codemirror/addon/mode/simple";
 import "codemirror/addon/hint/show-hint";
+import "sumo/js/libs/django/prepopulate";
 import "sumo/js/codemirror.sumo-hint";
 import "sumo/js/codemirror.sumo-mode";
 import "sumo/js/protocol";
@@ -45,6 +46,7 @@ import ShowFor from "sumo/js/showfor";
           return false;
         }
       });
+
       initExitSupportFor();
       initArticlePreview();
       initPreviewDiff();
@@ -62,6 +64,10 @@ import ShowFor from "sumo/js/showfor";
       initPreValidation();
       initSummaryCount();
       initCodeMirrorEditor();
+    }
+
+    if($body.is('.new')) {
+      initPrepopulatedSlugs();
     }
 
     if ($body.is('.translate')) {  // Translate page
@@ -174,6 +180,24 @@ import ShowFor from "sumo/js/showfor";
         });
       });
     }
+  }
+  
+  function initPrepopulatedSlugs() {
+    var fields = {
+      title: {
+        id: '#id_slug',
+        dependency_ids: ['#id_title'],
+        dependency_list: ['#id_title'],
+        maxLength: 50
+      }
+    };
+
+    $.each(fields, function(i, field) {
+      $(field.id).addClass('prepopulated_field');
+      $(field.id).data('dependency_list', field.dependency_list)
+        .prepopulate($(field.dependency_ids.join(',')),
+          field.maxLength);
+    });
   }
 
   function initSummaryCount() {
