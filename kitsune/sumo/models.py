@@ -33,7 +33,7 @@ class ModelBase(models.Model):
         return queryset
 
     def update(self, **kw):
-        """Shortcicuit to the update method."""
+        """Shortcut to the update method."""
         self.__class__.objects.filter(pk=self.pk).update(**kw)
 
 
