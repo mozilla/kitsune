@@ -26,7 +26,7 @@ describe("configure-step custom element", () => {
       syncEnabled: false,
     });
     let shadow = step.shadowRoot;
-    expect(shadow.querySelector("#sync-status").hasAttribute("sync-enabled")).to.be.false;
+    expect(shadow.querySelector("#sync-status-container").hasAttribute("sync-enabled")).to.be.false;
     expect(shadow.querySelector("#buttons").hasAttribute("sync-enabled")).to.be.false;
     expect(shadow.querySelector("#next").disabled).to.be.true;
   });
@@ -36,7 +36,7 @@ describe("configure-step custom element", () => {
       syncEnabled: true,
     });
     let shadow = step.shadowRoot;
-    expect(shadow.querySelector("#sync-status").hasAttribute("sync-enabled")).to.be.true;
+    expect(shadow.querySelector("#sync-status-container").hasAttribute("sync-enabled")).to.be.true;
     expect(shadow.querySelector("#buttons").hasAttribute("sync-enabled")).to.be.true;
     expect(shadow.querySelector("#next").disabled).to.be.false;
   });
