@@ -1,5 +1,6 @@
 import { BaseFormStep } from "sumo/js/form-wizard";
 import infoImageURL from "sumo/img/info.svg";
+import keyImageURL from "sumo/img/key.svg";
 import syncingImageURL from "sumo/img/syncing.svg";
 import configureStepStylesURL from "../scss/form-wizard-configure-step.styles.scss";
 
@@ -25,6 +26,17 @@ export class ConfigureStep extends BaseFormStep {
 
             <li class="syncing">${gettext("Choose the data you want to sync, including bookmarks, history, passwords and more,  for seamless access on other devices where you sign in with your Firefox account.")}</li>
           </ul>
+
+          <p class="warning for-sign-up">
+            <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
+            <span>
+              ${interpolate(
+                gettext("Take a minute to create an <a href='%s'>account recovery key</a>, so you won’t get locked out if you lose your password."),
+                ["/kb/reset-your-firefox-account-password-recovery-keys#w_generate-and-store-your-account-recovery-key"]
+              )}
+            </span>
+          </p>
+
           <p id="buttons">
             <button id="turn-on-sync" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="turn-on-sync">${gettext("Turn on sync")}</button>
             <button id="change-sync-prefs" class="mzp-c-button button-secondary" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="change-sync-prefs">${gettext("Change sync options")}</button>

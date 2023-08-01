@@ -1,6 +1,5 @@
 import { BaseFormStep } from "sumo/js/form-wizard";
 
-import keyImageURL from "sumo/img/key.svg";
 import signInStepStylesURL from "../scss/form-wizard-sign-in-step.styles.scss";
 
 export class SignInStep extends BaseFormStep {
@@ -53,11 +52,6 @@ export class SignInStep extends BaseFormStep {
           </p>
           <p class="for-sign-in form-footer">
             ${gettext("Don’t have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
-          </p>
-
-          <p class="warning for-sign-up">
-            <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
-            <span><strong>${gettext("Important:")}</strong> ${gettext("Make sure to create a recovery key in case you need to reset your password. For security purposes, Firefox is only able to keep synced data if a recovery key is set up.")}</span>
           </p>
         </div>
       </template>

@@ -5,12 +5,6 @@
   display: none;
 }
 
-.key-icon {
-  width: 16px;
-  height: 16px;
-  margin-inline-end: 11px;
-}
-
 label,
 input[name="email"] {
   font-size: 0.8125rem;
@@ -34,16 +28,6 @@ button.for-sign-up {
 .form-footer {
   margin-block-end: 26px;
   font-size: 0.8125rem;
-}
-
-.warning {
-  display: flex;
-  align-items: start;
-  background-color: rgba(255, 234, 128, 0.4);
-  padding-inline: 16px;
-  padding-block: 8px;
-  border-radius: 8px;
-  font-size: 0.75rem;
 }
 
 .tooltip-container {
