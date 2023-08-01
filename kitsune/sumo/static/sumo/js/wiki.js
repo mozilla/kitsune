@@ -25,6 +25,10 @@ import ShowFor from "sumo/js/showfor";
 
     $('select.enable-if-js').prop("disabled", false);
 
+    if($body.is('.new')) {
+      initPrepopulatedSlugs();
+    }
+
     initDetailsTags();
 
     if ($body.is('.review')) { // Review pages
@@ -64,10 +68,6 @@ import ShowFor from "sumo/js/showfor";
       initPreValidation();
       initSummaryCount();
       initCodeMirrorEditor();
-    }
-
-    if($body.is('.new')) {
-      initPrepopulatedSlugs();
     }
 
     if ($body.is('.translate')) {  // Translate page
