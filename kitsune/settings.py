@@ -1051,9 +1051,10 @@ if config("SENTRY_DSN", None):
         server_name=PLATFORM_NAME,
         environment=config("SENTRY_ENVIRONMENT", default=""),
         before_send=filter_exceptions,
-        traces_sample_rate=0.2,
+        sample_rate=config("SENTRY_SAMPLE_RATE", 1.0),
+        traces_sample_rate=config("SENTRY_TRACES_SAMPLE_RATE", 0.01),
         _experiments={
-            "profiles_sample_rate": 0.2,
+            "profiles_sample_rate": config("SENTRY_PROFILES_SAMPLE_RATE", 0.01),
         },
     )
 
