@@ -38,6 +38,7 @@ export class FormWizard extends HTMLElement {
       <template>
         <div class="form-wizard-root">
           <div class="form-wizard-content">
+            <h2>${gettext("Setup assistant")}</h2>
             <section>
               <ul id="step-indicator"></ul>
               <slot name="active"></slot>

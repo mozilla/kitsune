@@ -7,9 +7,10 @@ export class SetupDeviceStep extends BaseFormStep {
     return `
       <template>
         <div id="setup-device-root">
-          <h3>${gettext("Start browsing!")}</h3>
+          <h3>${gettext("You’re all set on this device!")}</h3>
           <ul>
-            <li>${gettext("Enter this URL directly into the address bar on your new device to start the Firefox download, or keep it somewhere safe for when you’re ready to continue.")}</li>
+            <li>${gettext("To continue with the download and sync process on your new device, click the copy-paste button and save the link in a place that you will remember, such as a note-taking app or send it to your email. When you're on your new device, simply paste the download link into the default browser of your new device to download Firefox and we'll be there to assist you with the next steps.")}</li>
+            <li>${gettext("You can save the link to this article in a convenient location, and we'll be here to help you pick up where you left off whenever you're ready.")}</li>
           </ul>
           <div class="download-link-wrapper">
             <a id="download-link" href="https://mzl.la/newdevice" target="_blank">https://mzl.la/newdevice</a>
