@@ -1,5 +1,6 @@
 import { BaseFormStep } from "sumo/js/form-wizard";
 
+import keyImageURL from "sumo/img/key.svg";
 import signInStepStylesURL from "../scss/form-wizard-sign-in-step.styles.scss";
 
 export class SignInStep extends BaseFormStep {
@@ -14,8 +15,12 @@ export class SignInStep extends BaseFormStep {
           <h3 class="for-sign-up">${gettext("Create an account")}</h3>
           <h3 class="for-sign-in">${gettext("Sign in to your account")}</h3>
 
-          <p>
-            ${gettext("You’ll be able to sign into this account on another device to sync your data.")}
+          <p class="for-sign-up">
+            ${gettext("With an account, your data remains encrypted and protected, while also giving you access to other Mozilla products and services like Firefox Relay and Pocket.")}
+          </p>
+
+          <p class="for-sign-in">
+            ${gettext("A Firefox account allows you to securely sync your data when signing in from other devices and gives access to other fantastic Mozilla services.")}
           </p>
 
           <form method="get" novalidate>
@@ -33,13 +38,14 @@ export class SignInStep extends BaseFormStep {
             <input name="redirect_immediately" value="" type="hidden"/>
             <input name="redirect_to" value="" type="hidden"/>
 
-            <label for="email">${gettext("Enter your email")}</label>
+            <label for="email">${gettext("Email")}</label>
             <div class="tooltip-container">
               <aside id="email-error" class="tooltip">${gettext("Valid email required")}</aside>
-              <input id="email" name="email" type="email" required="true" placeholder="${gettext("user@example.com")}"/>
+              <input id="email" name="email" type="email" required="true" placeholder="${gettext("Enter your email address")}"/>
             </div>
 
-            <button id="continue" class="mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click">${gettext("Continue")}</button>
+            <button class="for-sign-up mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-button">${gettext("Sign up")}</button>
+            <button class="for-sign-in mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="sign-in-button">${gettext("Sign in")}</button>
           </form>
 
           <p class="for-sign-up form-footer">
@@ -47,6 +53,11 @@ export class SignInStep extends BaseFormStep {
           </p>
           <p class="for-sign-in form-footer">
             ${gettext("Don’t have an account?")} <a class='alternative-link' href='#' data-event-category="device-migration-wizard" data-event-action="click" data-event-label="signup-link">${gettext("Sign up")}</a>
+          </p>
+
+          <p class="warning for-sign-up">
+            <img class="key-icon" src="${keyImageURL}" aria-hidden="true"></img>
+            <span><strong>${gettext("Important:")}</strong> ${gettext("Make sure to create a recovery key in case you need to reset your password. For security purposes, Firefox is only able to keep synced data if a recovery key is set up.")}</span>
           </p>
         </div>
       </template>
@@ -104,7 +115,6 @@ export class SignInStep extends BaseFormStep {
 
   render() {
     let root = this.shadowRoot.querySelector("#sign-in-step-root");
-    let continueBtn = this.shadowRoot.querySelector("#continue");
 
     if (this.state.email) {
       // If the user somehow has managed to type something into the email
@@ -114,10 +124,8 @@ export class SignInStep extends BaseFormStep {
         this.#emailEl.value = this.state.email;
       }
       root.setAttribute("mode", "sign-in");
-      continueBtn.dataset.eventLabel = "sign-in-button";
     } else {
       root.setAttribute("mode", "sign-up");
-      continueBtn.dataset.eventLabel = "signup-button";
     }
 
     let form = this.shadowRoot.querySelector("form");

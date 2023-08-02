@@ -218,8 +218,6 @@ describe("sign-in-step custom element", () => {
 
     let root = step.shadowRoot.querySelector("#sign-in-step-root");
     expect(root.getAttribute("mode")).to.equal("sign-up");
-    let continueBtn = step.shadowRoot.querySelector("#continue");
-    expect(continueBtn.dataset.eventLabel).to.equal("signup-button");
 
     const TEST_STATE_WITH_EMAIL = {
       ...TEST_STATE_NO_EMAIL,
@@ -228,7 +226,6 @@ describe("sign-in-step custom element", () => {
 
     step.setState(TEST_STATE_WITH_EMAIL);
     expect(root.getAttribute("mode")).to.equal("sign-in");
-    expect(continueBtn.dataset.eventLabel).to.equal("sign-in-button");
   });
 
   it("should set the alternative links to linkHref", () => {
