@@ -142,29 +142,15 @@ export default class SwitchingDevicesWizardManager {
       },
       enter(state) {
         trackEvent("device-migration-wizard", "report-state", "configure-sync");
-        let utmParamsObj = {
-          utm_source: state.utm_source,
-          utm_campaign: state.utm_campaign,
-          utm_medium: state.utm_medium,
-        };
-
-        let resetPasswordParams = new URLSearchParams();
-        for (let param in utmParamsObj) {
-          if (utmParamsObj[param]) {
-            resetPasswordParams.set(param, utmParamsObj[param]);
-          }
-        }
-
         return {
           syncEnabled: state.syncEnabled,
-          forgotPasswordLinkHref: `${state.fxaRoot}/reset_password?${resetPasswordParams}`,
         };
       },
     },
     {
       name: "setup-new-device",
       status: "unavailable",
-      label: () => gettext("Set up your new device"),
+      label: () => gettext("Start browsing!"),
       exitConditionsMet(state) {
         return false;
       },

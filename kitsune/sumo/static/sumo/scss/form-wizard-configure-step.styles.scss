@@ -14,7 +14,7 @@
 #header {
   padding-block-end: 12px;
   border-bottom: 1px solid var(--color-light-gray-03);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .icon {
@@ -65,8 +65,8 @@
 }
 
 #instructions {
-  margin-inline-start: 18px;
-  margin-block-end: 30px;
+  list-style-type: none;
+  margin-block-end: 28px;
 }
 
 #instructions[sync-enabled] > .not-syncing,
@@ -74,6 +74,18 @@
   display: none;
 }
 
-li {
-  margin-block-end: 24px;
+.warning {
+  display: flex;
+  align-items: start;
+  background-color: rgba(255, 234, 128, 0.4);
+  padding-inline: 16px;
+  padding-block: 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+}
+
+.key-icon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 11px;
 }
