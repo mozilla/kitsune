@@ -30,6 +30,10 @@
     margin-right: p.$spacing-md;
   }
 
+  &:focus {
+    outline: 1px solid var(--color-link);
+  }
+
   &:hover  {
     color: var(--color-link);
   }
@@ -112,7 +116,6 @@
     .tabs--item {
       border-top: 1px solid var(--color-border);
       background-color: var(--page-bg);
-
       span {
         padding: 0;
       }
