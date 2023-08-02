@@ -77,22 +77,10 @@
   padding-block-start: 24px;
 }
 
-h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  line-height: 1;
-  color: var(--color-heading);
-  padding-inline-start: 32px;
-}
-
 section,
 ::slotted([slot="active"]) {
   display: flex;
   flex: 1;
-}
-
-section {
-  margin-block-start: 24px;
 }
 
 #progress {
@@ -140,7 +128,7 @@ p {
 ul {
   padding: 0;
   margin: 0;
-  margin-inline-end: 36px;
+  margin-inline-end: 48px;
 }
 
 .subtitle {
