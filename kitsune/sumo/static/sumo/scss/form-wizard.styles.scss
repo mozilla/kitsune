@@ -1,6 +1,8 @@
 :root,
 :host {
   --color-progress: var(--color-blue-06);
+  --doodle-height: 89px;
+  --doodle-margin: 8px;
 }
 
 :host {
@@ -81,6 +83,23 @@ section,
 ::slotted([slot="active"]) {
   display: flex;
   flex: 1;
+}
+
+.active-step-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+#doodle {
+  align-self: flex-end;
+  height: var(--doodle-height);
+  width: auto;
+  margin-block-end: var(--doodle-margin);
+  margin-block-start: calc(-1 * calc(var(--doodle-height) - var(--doodle-margin)));
+}
+
+.setup-new-device-doodle {
+  --doodle-height: 132px;
 }
 
 #progress {

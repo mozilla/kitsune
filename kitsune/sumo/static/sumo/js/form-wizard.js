@@ -2,6 +2,24 @@ import trackEvent from "sumo/js/analytics";
 import wizardStylesURL from "../scss/form-wizard.styles.scss";
 import formStepStylesURL from "../scss/form-step.styles.scss";
 import warningImageURL from "sumo/img/warning.svg";
+import signInDoodleURL from "sumo/img/fox-doodle-sign-in.png";
+import configureDoodleURL from "sumo/img/fox-doodle-configure.png";
+import setupDoodleURL from "sumo/img/fox-doodle-setup.png";
+
+const STEP_TO_DOODLE_MAP = {
+  "sign-into-fxa": {
+    src: signInDoodleURL,
+    alt: gettext("Fox tail sticking out from behind a stack of boxes."),
+  },
+  "configure-sync": {
+    src: configureDoodleURL,
+    alt: gettext("Fox sticking it's head our from behind a stack of boxes."),
+  },
+  "setup-new-device": {
+    src: setupDoodleURL,
+    alt: gettext("Fox popping out from the top of a stack of boxes."),
+  },
+};
 
 /**
  * A custom element for displaying multi-step forms. Designed to be used with
@@ -31,6 +49,7 @@ export class FormWizard extends HTMLElement {
   #activeStep = null;
   #progressBar = null;
   #stepIndicator = null;
+  #doodle = null;
   #steps = [];
 
   static get markup() {
@@ -40,7 +59,10 @@ export class FormWizard extends HTMLElement {
           <div class="form-wizard-content">
             <section>
               <ul id="step-indicator"></ul>
-              <slot name="active"></slot>
+              <div class="active-step-wrapper">
+                <slot name="active"></slot>
+                <img id="doodle" hidden />
+              </div>
             </section>
           </div>
           <div id="progress" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3">
@@ -84,6 +106,7 @@ export class FormWizard extends HTMLElement {
 
     this.#progressBar = shadow.getElementById("progress");
     this.#stepIndicator = shadow.getElementById("step-indicator");
+    this.#doodle = shadow.getElementById("doodle");
   }
 
   connectedCallback() {
@@ -104,6 +127,7 @@ export class FormWizard extends HTMLElement {
     this.#activeStep = name;
     this.#setActiveStepAttributes();
     this.#updateFormProgress();
+    this.#updateDoodle();
   }
 
   /**
@@ -251,6 +275,21 @@ export class FormWizard extends HTMLElement {
         ])
       );
     }
+  }
+
+  /**
+   * Update the src and alt text for the fox doodle so that it aligns with the
+   * active step. Also toggles visibility.
+   */
+  #updateDoodle() {
+    let doodleData = STEP_TO_DOODLE_MAP[this.activeStep];
+    if (doodleData) {
+      this.#doodle.src = doodleData.src;
+      this.#doodle.alt = doodleData.alt;
+      this.#doodle.classList.remove(...this.#doodle.classList);
+      this.#doodle.classList.add(`${this.activeStep}-doodle`);
+    }
+    this.#doodle.toggleAttribute("hidden", !doodleData);
   }
 
   /**
