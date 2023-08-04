@@ -22,3 +22,14 @@ def generate_video(v):
 @library.global_function
 def kb_documents_for(locale, topics=None, products=None, current_document=None):
     return documents_for(locale, topics, products, current_document)
+
+
+@library.global_function
+def restricted_to(document):
+    """Return a phrase that describes the set of users to which the document is restricted."""
+    parts = []
+    if document.restrict_to_staff:
+        parts.append("staff")
+    if document.restrict_to_group:
+        parts.append(f'"{document.restrict_to_group.name}" members')
+    return " and ".join(parts) or "everyone"

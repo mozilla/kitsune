@@ -76,6 +76,11 @@
       </div>
     </header>
 
+    {% if document.is_restricted %}
+    <div class="warning-box mzp-c-notification-bar mzp-t-warning">
+      {{ _('This document is restricted to {allowed}.')|fe(allowed=restricted_to(document)) }}
+    </div>
+    {% endif %}
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
@@ -83,7 +88,7 @@
       {% if document.gets_mozilla_account_cta %}
         {{ inpage_contact_cta(product=product, product_key='mozilla-account') }}
       {% endif %}
-      
+
       {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
       {% if share_link %}
         <p class="share-link">

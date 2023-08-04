@@ -3,6 +3,7 @@
 import urllib.parse
 from datetime import datetime
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from taggit.models import TaggedItem
 
@@ -10,6 +11,7 @@ from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import (
     CATEGORIES,
     MAJOR_SIGNIFICANCE,
@@ -21,11 +23,12 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
+    LocaleFactory,
     RedirectRevisionFactory,
     RevisionFactory,
     TemplateDocumentFactory,
@@ -390,6 +393,878 @@ class DocumentTests(TestCase):
     # recategorizing a template undefined in the tests. If this becomes
     # something we do in the future, we should revisit this and define
     # the behavior in a test.
+
+
+class VisibilityTests(TestCase):
+    """
+    Tests for the VisibilityManager class that manages Document and Revision objects.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.locale_de = LocaleFactory(locale="de")
+        self.locale_it = LocaleFactory(locale="it")
+        self.locale_fr = LocaleFactory(locale="fr")
+        self.group1 = GroupFactory(name="group1")
+        self.group2 = GroupFactory(name="group2")
+        self.anonymous = AnonymousUser()
+        self.user1 = UserFactory(groups=[self.group1])
+        self.user2 = UserFactory(groups=[self.group1, self.group2])
+        self.staff = UserFactory(is_staff=True)
+        self.superuser = UserFactory(is_superuser=True)
+        self.reviewer = UserFactory()
+        add_permission(self.reviewer, Revision, "review_revision")
+        self.deleter = UserFactory()
+        add_permission(self.deleter, Document, "delete_document")
+        self.de_locale_reviewer = UserFactory()
+        self.locale_de.reviewers.add(self.de_locale_reviewer)
+        self.locale_de.save()
+        self.it_locale_leader = UserFactory()
+        self.locale_it.leaders.add(self.it_locale_leader)
+        self.locale_it.save()
+
+        # Set up documents.
+        self.doc1 = DocumentFactory()
+        self.rev1 = ApprovedRevisionFactory(document=self.doc1, is_ready_for_localization=True)
+
+        self.doc1_de = DocumentFactory(locale="de", parent=self.doc1)
+        self.rev1_de = RevisionFactory(document=self.doc1_de, based_on=self.rev1)
+
+        self.doc1_it = DocumentFactory(locale="it", parent=self.doc1)
+        self.rev1_it = ApprovedRevisionFactory(document=self.doc1_it, based_on=self.rev1)
+
+        self.doc1_fr = DocumentFactory(locale="fr", parent=self.doc1)
+        self.rev1_fr = RevisionFactory(
+            creator=self.user1, document=self.doc1_fr, based_on=self.rev1, is_approved=False
+        )
+
+        self.doc2 = DocumentFactory()
+        self.rev2 = ApprovedRevisionFactory(document=self.doc2, is_ready_for_localization=True)
+
+        self.doc2_de = DocumentFactory(locale="de", parent=self.doc2)
+        self.rev2_de = ApprovedRevisionFactory(document=self.doc2_de, based_on=self.rev2)
+
+        self.doc2_it = DocumentFactory(locale="it", parent=self.doc2)
+        self.rev2_it = RevisionFactory(
+            creator=self.user1, document=self.doc2_it, based_on=self.rev2, is_approved=False
+        )
+
+        self.doc2_fr = DocumentFactory(locale="fr", parent=self.doc2)
+        self.rev2_fr = ApprovedRevisionFactory(document=self.doc2_fr, based_on=self.rev2)
+
+        # An archived article
+        self.doc3 = DocumentFactory(is_archived=True)
+        self.rev3 = ApprovedRevisionFactory(document=self.doc3)
+
+        # A template article
+        self.doc4 = TemplateDocumentFactory()
+        self.rev4 = ApprovedRevisionFactory(document=self.doc4)
+
+        # An article without a current revision.
+        self.doc5 = DocumentFactory()
+        self.rev5 = RevisionFactory(creator=self.user2, document=self.doc5, is_approved=False)
+
+        # Staff restricted articles should only show up for staff.
+        self.doc6 = DocumentFactory(restrict_to_staff=True)
+        self.rev6 = ApprovedRevisionFactory(document=self.doc6)
+
+        self.doc6_de = DocumentFactory(locale="de", parent=self.doc6)
+        self.rev6_de = ApprovedRevisionFactory(document=self.doc6_de, based_on=self.rev6)
+
+        self.doc6_it = DocumentFactory(locale="it", parent=self.doc6)
+        self.rev6_it = RevisionFactory(
+            document=self.doc6_it, based_on=self.rev6, is_approved=False
+        )
+
+        self.doc6_fr = DocumentFactory(locale="fr", parent=self.doc6)
+        self.rev6_fr = ApprovedRevisionFactory(document=self.doc6_fr, based_on=self.rev6)
+
+        # Group restricted articles should only show up for members of the group.
+        self.doc7 = DocumentFactory(restrict_to_group=self.group1)
+        self.rev7 = ApprovedRevisionFactory(document=self.doc7)
+
+        # Staff and group restricted articles should only show up for staff or
+        # members of the group.
+        self.doc8 = DocumentFactory(restrict_to_staff=True, restrict_to_group=self.group2)
+        self.rev8 = ApprovedRevisionFactory(document=self.doc8, is_ready_for_localization=True)
+
+        self.doc8_de = DocumentFactory(locale="de", parent=self.doc8)
+        self.rev8_de = ApprovedRevisionFactory(document=self.doc8_de, based_on=self.rev8)
+
+        self.doc8_it = DocumentFactory(locale="it", parent=self.doc8)
+        self.rev8_it = RevisionFactory(
+            creator=self.user2, document=self.doc8_it, based_on=self.rev8, is_approved=False
+        )
+
+        self.doc8_fr = DocumentFactory(locale="fr", parent=self.doc8)
+        self.rev8_fr = ApprovedRevisionFactory(document=self.doc8_fr, based_on=self.rev8)
+
+    def test_document_is_visible_for(self):
+        """
+        Test the Document.is_visible_for method. This also covers the testing
+        of the Document.is_unrestricted_for method, since that's used within
+        the Document.is_visible_for method.
+        """
+        for i, (doc, expected) in enumerate(
+            (
+                (self.doc1, True),
+                (self.doc2, True),
+                (self.doc3, True),
+                (self.doc4, True),
+                (self.doc5, False),
+                (self.doc6, False),
+                (self.doc7, False),
+                (self.doc8, False),
+                (self.doc1_de, False),
+                (self.doc2_de, True),
+                (self.doc6_de, False),
+                (self.doc8_de, False),
+                (self.doc1_it, True),
+                (self.doc2_it, False),
+                (self.doc6_it, False),
+                (self.doc8_it, False),
+                (self.doc1_fr, False),
+                (self.doc2_fr, True),
+                (self.doc6_fr, False),
+                (self.doc8_fr, False),
+            )
+        ):
+            with self.subTest(f"visible-anon-{i}"):
+                self.assertEqual(doc.is_visible_for(self.anonymous), expected)
+
+        for i, (doc, expected) in enumerate(
+            (
+                (self.doc1, True),
+                (self.doc2, True),
+                (self.doc3, True),
+                (self.doc4, True),
+                (self.doc5, False),
+                (self.doc6, False),
+                (self.doc7, True),
+                (self.doc8, False),
+                (self.doc1_de, False),
+                (self.doc2_de, True),
+                (self.doc6_de, False),
+                (self.doc8_de, False),
+                (self.doc1_it, True),
+                (self.doc2_it, True),
+                (self.doc6_it, False),
+                (self.doc8_it, False),
+                (self.doc1_fr, True),
+                (self.doc2_fr, True),
+                (self.doc6_fr, False),
+                (self.doc8_fr, False),
+            )
+        ):
+            with self.subTest(f"visible-user1-{i}"):
+                self.assertEqual(doc.is_visible_for(self.user1), expected)
+
+        for i, (doc, expected) in enumerate(
+            (
+                (self.doc1, True),
+                (self.doc2, True),
+                (self.doc3, True),
+                (self.doc4, True),
+                (self.doc5, True),
+                (self.doc6, False),
+                (self.doc7, True),
+                (self.doc8, True),
+                (self.doc1_de, False),
+                (self.doc2_de, True),
+                (self.doc6_de, False),
+                (self.doc8_de, True),
+                (self.doc1_it, True),
+                (self.doc2_it, False),
+                (self.doc6_it, False),
+                (self.doc8_it, True),
+                (self.doc1_fr, False),
+                (self.doc2_fr, True),
+                (self.doc6_fr, False),
+                (self.doc8_fr, True),
+            )
+        ):
+            with self.subTest(f"visible-user2-{i}"):
+                self.assertEqual(doc.is_visible_for(self.user2), expected)
+
+        for i, (doc, expected) in enumerate(
+            (
+                (self.doc1, True),
+                (self.doc2, True),
+                (self.doc3, True),
+                (self.doc4, True),
+                (self.doc5, False),
+                (self.doc6, True),
+                (self.doc7, False),
+                (self.doc8, True),
+                (self.doc1_de, False),
+                (self.doc2_de, True),
+                (self.doc6_de, True),
+                (self.doc8_de, True),
+                (self.doc1_it, True),
+                (self.doc2_it, False),
+                (self.doc6_it, False),
+                (self.doc8_it, False),
+                (self.doc1_fr, False),
+                (self.doc2_fr, True),
+                (self.doc6_fr, True),
+                (self.doc8_fr, True),
+            )
+        ):
+            with self.subTest(f"visible-staff-{i}"):
+                self.assertEqual(doc.is_visible_for(self.staff), expected)
+
+        for i, (doc, expected) in enumerate(
+            (
+                (self.doc1, True),
+                (self.doc2, True),
+                (self.doc3, True),
+                (self.doc4, True),
+                (self.doc5, True),
+                (self.doc6, True),
+                (self.doc7, True),
+                (self.doc8, True),
+                (self.doc1_de, True),
+                (self.doc2_de, True),
+                (self.doc6_de, True),
+                (self.doc8_de, True),
+                (self.doc1_it, True),
+                (self.doc2_it, True),
+                (self.doc6_it, True),
+                (self.doc8_it, True),
+                (self.doc1_fr, True),
+                (self.doc2_fr, True),
+                (self.doc6_fr, True),
+                (self.doc8_fr, True),
+            )
+        ):
+            with self.subTest(f"visible-superuser-{i}"):
+                self.assertEqual(doc.is_visible_for(self.superuser), expected)
+
+        for user_name in ("reviewer", "deleter"):
+            user = getattr(self, user_name)
+            for i, (doc, expected) in enumerate(
+                (
+                    (self.doc1, True),
+                    (self.doc2, True),
+                    (self.doc3, True),
+                    (self.doc4, True),
+                    (self.doc5, True),
+                    (self.doc6, False),
+                    (self.doc7, False),
+                    (self.doc8, False),
+                    (self.doc1_de, True),
+                    (self.doc2_de, True),
+                    (self.doc6_de, False),
+                    (self.doc8_de, False),
+                    (self.doc1_it, True),
+                    (self.doc2_it, True),
+                    (self.doc6_it, False),
+                    (self.doc8_it, False),
+                    (self.doc1_fr, True),
+                    (self.doc2_fr, True),
+                    (self.doc6_fr, False),
+                    (self.doc8_fr, False),
+                )
+            ):
+                with self.subTest(f"visible-{user_name}-{i}"):
+                    self.assertEqual(doc.is_visible_for(user), expected)
+
+        for i, (doc, expected) in enumerate(
+            (
+                (self.doc1, True),
+                (self.doc2, True),
+                (self.doc3, True),
+                (self.doc4, True),
+                (self.doc5, False),
+                (self.doc6, False),
+                (self.doc7, False),
+                (self.doc8, False),
+                (self.doc1_de, True),
+                (self.doc2_de, True),
+                (self.doc6_de, False),
+                (self.doc8_de, False),
+                (self.doc1_it, True),
+                (self.doc2_it, False),
+                (self.doc6_it, False),
+                (self.doc8_it, False),
+                (self.doc1_fr, False),
+                (self.doc2_fr, True),
+                (self.doc6_fr, False),
+                (self.doc8_fr, False),
+            )
+        ):
+            with self.subTest(f"visible-de_locale_reviewer-{i}"):
+                self.assertEqual(doc.is_visible_for(self.de_locale_reviewer), expected)
+
+        for i, (doc, expected) in enumerate(
+            (
+                (self.doc1, True),
+                (self.doc2, True),
+                (self.doc3, True),
+                (self.doc4, True),
+                (self.doc5, False),
+                (self.doc6, False),
+                (self.doc7, False),
+                (self.doc8, False),
+                (self.doc1_de, False),
+                (self.doc2_de, True),
+                (self.doc6_de, False),
+                (self.doc8_de, False),
+                (self.doc1_it, True),
+                (self.doc2_it, True),
+                (self.doc6_it, False),
+                (self.doc8_it, False),
+                (self.doc1_fr, False),
+                (self.doc2_fr, True),
+                (self.doc6_fr, False),
+                (self.doc8_fr, False),
+            )
+        ):
+            with self.subTest(f"visible-it_locale_leader-{i}"):
+                self.assertEqual(doc.is_visible_for(self.it_locale_leader), expected)
+
+    def test_document_manager_visible(self):
+        """
+        Test the Document.objects.visible method. This also covers the testing
+        of the Document.objects.unrestricted method, since that's used within
+        the Document.objects.visible method.
+        """
+        with self.subTest("visible-none-en"):
+            docs = Document.objects.visible(locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set([self.doc1.id, self.doc2.id, self.doc3.id, self.doc4.id]),
+            )
+
+        with self.subTest("visible-anon-en"):
+            docs = Document.objects.visible(self.anonymous, locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set([self.doc1.id, self.doc2.id, self.doc3.id, self.doc4.id]),
+            )
+
+        with self.subTest("visible-anon-en-extra"):
+            docs = Document.objects.visible(
+                self.anonymous, locale="en-US", is_archived=False, is_template=False
+            )
+            self.assertEqual(set(d.id for d in docs), set([self.doc1.id, self.doc2.id]))
+
+        with self.subTest("visible-anon-de"):
+            docs = Document.objects.visible(self.anonymous, locale="de")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_de.id]))
+
+        with self.subTest("visible-anon-it"):
+            docs = Document.objects.visible(self.anonymous, locale="it")
+            self.assertEqual(set(d.id for d in docs), set([self.doc1_it.id]))
+
+        with self.subTest("visible-anon-fr"):
+            docs = Document.objects.visible(self.anonymous, locale="fr")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_fr.id]))
+
+        with self.subTest("visible-user1-en"):
+            docs = Document.objects.visible(self.user1, locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set([self.doc1.id, self.doc2.id, self.doc3.id, self.doc4.id, self.doc7.id]),
+            )
+
+        with self.subTest("visible-user1-de"):
+            docs = Document.objects.visible(self.user1, locale="de")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_de.id]))
+
+        with self.subTest("visible-user1-it"):
+            docs = Document.objects.visible(self.user1, locale="it")
+            self.assertEqual(set(d.id for d in docs), set([self.doc1_it.id, self.doc2_it.id]))
+
+        with self.subTest("visible-user1-fr"):
+            docs = Document.objects.visible(self.user1, locale="fr")
+            self.assertEqual(set(d.id for d in docs), set([self.doc1_fr.id, self.doc2_fr.id]))
+
+        with self.subTest("visible-user2-en"):
+            docs = Document.objects.visible(self.user2, locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1.id,
+                        self.doc2.id,
+                        self.doc3.id,
+                        self.doc4.id,
+                        self.doc5.id,
+                        self.doc7.id,
+                        self.doc8.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-user2-de"):
+            docs = Document.objects.visible(self.user2, locale="de")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_de.id, self.doc8_de.id]))
+
+        with self.subTest("visible-user2-it"):
+            docs = Document.objects.visible(self.user2, locale="it")
+            self.assertEqual(set(d.id for d in docs), set([self.doc1_it.id, self.doc8_it.id]))
+
+        with self.subTest("visible-user2-fr"):
+            docs = Document.objects.visible(self.user2, locale="fr")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_fr.id, self.doc8_fr.id]))
+
+        with self.subTest("visible-staff-en"):
+            docs = Document.objects.visible(self.staff, locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1.id,
+                        self.doc2.id,
+                        self.doc3.id,
+                        self.doc4.id,
+                        self.doc6.id,
+                        self.doc8.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-staff-de"):
+            docs = Document.objects.visible(self.staff, locale="de")
+            self.assertEqual(
+                set(d.id for d in docs), set([self.doc2_de.id, self.doc6_de.id, self.doc8_de.id])
+            )
+
+        with self.subTest("visible-staff-it"):
+            docs = Document.objects.visible(self.staff, locale="it")
+            self.assertEqual(set(d.id for d in docs), set([self.doc1_it.id]))
+
+        with self.subTest("visible-staff-fr"):
+            docs = Document.objects.visible(self.staff, locale="fr")
+            self.assertEqual(
+                set(d.id for d in docs), set([self.doc2_fr.id, self.doc6_fr.id, self.doc8_fr.id])
+            )
+
+        with self.subTest("visible-superuser-en"):
+            docs = Document.objects.visible(self.superuser, locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1.id,
+                        self.doc2.id,
+                        self.doc3.id,
+                        self.doc4.id,
+                        self.doc5.id,
+                        self.doc6.id,
+                        self.doc7.id,
+                        self.doc8.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-superuser-de"):
+            docs = Document.objects.visible(self.superuser, locale="de")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1_de.id,
+                        self.doc2_de.id,
+                        self.doc6_de.id,
+                        self.doc8_de.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-superuser-it"):
+            docs = Document.objects.visible(self.superuser, locale="it")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1_it.id,
+                        self.doc2_it.id,
+                        self.doc6_it.id,
+                        self.doc8_it.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-superuser-fr"):
+            docs = Document.objects.visible(self.superuser, locale="fr")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1_fr.id,
+                        self.doc2_fr.id,
+                        self.doc6_fr.id,
+                        self.doc8_fr.id,
+                    ]
+                ),
+            )
+
+        for user_name in ("reviewer", "deleter"):
+            user = getattr(self, user_name)
+            with self.subTest(f"visible-{user_name}-en"):
+                docs = Document.objects.visible(user, locale="en-US")
+                self.assertEqual(
+                    set(d.id for d in docs),
+                    set(
+                        [
+                            self.doc1.id,
+                            self.doc2.id,
+                            self.doc3.id,
+                            self.doc4.id,
+                            self.doc5.id,
+                        ]
+                    ),
+                )
+
+            with self.subTest(f"visible-{user_name}-de"):
+                docs = Document.objects.visible(user, locale="de")
+                self.assertEqual(
+                    set(d.id for d in docs),
+                    set([self.doc1_de.id, self.doc2_de.id]),
+                )
+
+            with self.subTest(f"visible-{user_name}-it"):
+                docs = Document.objects.visible(user, locale="it")
+                self.assertEqual(
+                    set(d.id for d in docs),
+                    set([self.doc1_it.id, self.doc2_it.id]),
+                )
+
+            with self.subTest(f"visible-{user_name}-fr"):
+                docs = Document.objects.visible(user, locale="fr")
+                self.assertEqual(
+                    set(d.id for d in docs),
+                    set([self.doc1_fr.id, self.doc2_fr.id]),
+                )
+
+        with self.subTest("visible-de_locale_reviewer-en"):
+            docs = Document.objects.visible(self.de_locale_reviewer, locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1.id,
+                        self.doc2.id,
+                        self.doc3.id,
+                        self.doc4.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-de_locale_reviewer-de"):
+            docs = Document.objects.visible(self.de_locale_reviewer, locale="de")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set([self.doc1_de.id, self.doc2_de.id]),
+            )
+
+        with self.subTest("visible-de_locale_reviewer-it"):
+            docs = Document.objects.visible(self.de_locale_reviewer, locale="it")
+            self.assertEqual(set(d.id for d in docs), set([self.doc1_it.id]))
+
+        with self.subTest("visible-de_locale_reviewer-fr"):
+            docs = Document.objects.visible(self.de_locale_reviewer, locale="fr")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_fr.id]))
+
+        with self.subTest("visible-it_locale_leader-en"):
+            docs = Document.objects.visible(self.it_locale_leader, locale="en-US")
+            self.assertEqual(
+                set(d.id for d in docs),
+                set(
+                    [
+                        self.doc1.id,
+                        self.doc2.id,
+                        self.doc3.id,
+                        self.doc4.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-it_locale_leader-de"):
+            docs = Document.objects.visible(self.it_locale_leader, locale="de")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_de.id]))
+
+        with self.subTest("visible-it_locale_leader-it"):
+            docs = Document.objects.visible(self.it_locale_leader, locale="it")
+            self.assertEqual(set(d.id for d in docs), set([self.doc1_it.id, self.doc2_it.id]))
+
+        with self.subTest("visible-it_locale_leader-fr"):
+            docs = Document.objects.visible(self.it_locale_leader, locale="fr")
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_fr.id]))
+
+    def test_revision_manager_visible(self):
+        """
+        Test the Revision.objects.visible method. This also covers the testing
+        of the Revision.objects.unrestricted method, since that's used within
+        the Revision.objects.visible method.
+        """
+        with self.subTest("visible-none-en"):
+            revs = Revision.objects.visible(document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set([self.rev1.id, self.rev2.id, self.rev3.id, self.rev4.id]),
+            )
+
+        with self.subTest("visible-anon-en"):
+            revs = Revision.objects.visible(self.anonymous, document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set([self.rev1.id, self.rev2.id, self.rev3.id, self.rev4.id]),
+            )
+
+        with self.subTest("visible-anon-en-extra"):
+            revs = Revision.objects.visible(
+                self.anonymous,
+                document__locale="en-US",
+                document__is_archived=False,
+                document__is_template=False,
+            )
+            self.assertEqual(set(r.id for r in revs), set([self.rev1.id, self.rev2.id]))
+
+        with self.subTest("visible-anon-de"):
+            revs = Revision.objects.visible(self.anonymous, document__locale="de")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id]))
+
+        with self.subTest("visible-anon-it"):
+            revs = Revision.objects.visible(self.anonymous, document__locale="it")
+            self.assertEqual(set(r.id for r in revs), set([self.rev1_it.id]))
+
+        with self.subTest("visible-anon-fr"):
+            revs = Revision.objects.visible(self.anonymous, document__locale="fr")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_fr.id]))
+
+        with self.subTest("visible-user1-en"):
+            revs = Revision.objects.visible(self.user1, document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set([self.rev1.id, self.rev2.id, self.rev3.id, self.rev4.id, self.rev7.id]),
+            )
+
+        with self.subTest("visible-user1-de"):
+            revs = Revision.objects.visible(self.user1, document__locale="de")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id]))
+
+        with self.subTest("visible-user1-it"):
+            revs = Revision.objects.visible(self.user1, document__locale="it")
+            self.assertEqual(set(r.id for r in revs), set([self.rev1_it.id, self.rev2_it.id]))
+
+        with self.subTest("visible-user1-fr"):
+            revs = Revision.objects.visible(self.user1, document__locale="fr")
+            self.assertEqual(set(r.id for r in revs), set([self.rev1_fr.id, self.rev2_fr.id]))
+
+        with self.subTest("visible-user2-en"):
+            revs = Revision.objects.visible(self.user2, document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1.id,
+                        self.rev2.id,
+                        self.rev3.id,
+                        self.rev4.id,
+                        self.rev5.id,
+                        self.rev7.id,
+                        self.rev8.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-user2-de"):
+            revs = Revision.objects.visible(self.user2, document__locale="de")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id, self.rev8_de.id]))
+
+        with self.subTest("visible-user2-it"):
+            revs = Revision.objects.visible(self.user2, document__locale="it")
+            self.assertEqual(set(r.id for r in revs), set([self.rev1_it.id, self.rev8_it.id]))
+
+        with self.subTest("visible-user2-fr"):
+            revs = Revision.objects.visible(self.user2, document__locale="fr")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_fr.id, self.rev8_fr.id]))
+
+        with self.subTest("visible-staff-en"):
+            revs = Revision.objects.visible(self.staff, document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1.id,
+                        self.rev2.id,
+                        self.rev3.id,
+                        self.rev4.id,
+                        self.rev6.id,
+                        self.rev8.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-staff-de"):
+            revs = Revision.objects.visible(self.user2, document__locale="de")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id, self.rev8_de.id]))
+
+        with self.subTest("visible-staff-it"):
+            revs = Revision.objects.visible(self.staff, document__locale="it")
+            self.assertEqual(set(r.id for r in revs), set([self.rev1_it.id]))
+
+        with self.subTest("visible-staff-fr"):
+            revs = Revision.objects.visible(self.staff, document__locale="fr")
+            self.assertEqual(
+                set(r.id for r in revs), set([self.rev2_fr.id, self.rev6_fr.id, self.rev8_fr.id])
+            )
+
+        with self.subTest("visible-superuser-en"):
+            revs = Revision.objects.visible(self.superuser, document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1.id,
+                        self.rev2.id,
+                        self.rev3.id,
+                        self.rev4.id,
+                        self.rev5.id,
+                        self.rev6.id,
+                        self.rev7.id,
+                        self.rev8.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-superuser-de"):
+            revs = Revision.objects.visible(self.superuser, document__locale="de")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1_de.id,
+                        self.rev2_de.id,
+                        self.rev6_de.id,
+                        self.rev8_de.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-superuser-it"):
+            revs = Revision.objects.visible(self.superuser, document__locale="it")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1_it.id,
+                        self.rev2_it.id,
+                        self.rev6_it.id,
+                        self.rev8_it.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-superuser-fr"):
+            revs = Revision.objects.visible(self.superuser, document__locale="fr")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1_fr.id,
+                        self.rev2_fr.id,
+                        self.rev6_fr.id,
+                        self.rev8_fr.id,
+                    ]
+                ),
+            )
+
+        for user_name in ("reviewer", "deleter"):
+            user = getattr(self, user_name)
+            with self.subTest(f"visible-{user_name}-en"):
+                revs = Revision.objects.visible(user, document__locale="en-US")
+                self.assertEqual(
+                    set(r.id for r in revs),
+                    set(
+                        [
+                            self.rev1.id,
+                            self.rev2.id,
+                            self.rev3.id,
+                            self.rev4.id,
+                            self.rev5.id,
+                        ]
+                    ),
+                )
+
+            with self.subTest(f"visible-{user_name}-de"):
+                revs = Revision.objects.visible(user, document__locale="de")
+                self.assertEqual(
+                    set(r.id for r in revs),
+                    set([self.rev1_de.id, self.rev2_de.id]),
+                )
+
+            with self.subTest(f"visible-{user_name}-it"):
+                revs = Revision.objects.visible(user, document__locale="it")
+                self.assertEqual(
+                    set(r.id for r in revs),
+                    set([self.rev1_it.id, self.rev2_it.id]),
+                )
+
+            with self.subTest(f"visible-{user_name}-fr"):
+                revs = Revision.objects.visible(user, document__locale="fr")
+                self.assertEqual(
+                    set(r.id for r in revs),
+                    set([self.rev1_fr.id, self.rev2_fr.id]),
+                )
+
+        with self.subTest("visible-de_locale_reviewer-en"):
+            revs = Revision.objects.visible(self.de_locale_reviewer, document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1.id,
+                        self.rev2.id,
+                        self.rev3.id,
+                        self.rev4.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-de_locale_reviewer-de"):
+            revs = Revision.objects.visible(self.de_locale_reviewer, document__locale="de")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set([self.rev1_de.id, self.rev2_de.id]),
+            )
+
+        with self.subTest("visible-de_locale_reviewer-it"):
+            revs = Revision.objects.visible(self.de_locale_reviewer, document__locale="it")
+            self.assertEqual(set(r.id for r in revs), set([self.rev1_it.id]))
+
+        with self.subTest("visible-de_locale_reviewer-fr"):
+            revs = Revision.objects.visible(self.de_locale_reviewer, document__locale="fr")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_fr.id]))
+
+        with self.subTest("visible-it_locale_leader-en"):
+            revs = Revision.objects.visible(self.it_locale_leader, document__locale="en-US")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set(
+                    [
+                        self.rev1.id,
+                        self.rev2.id,
+                        self.rev3.id,
+                        self.rev4.id,
+                    ]
+                ),
+            )
+
+        with self.subTest("visible-it_locale_leader-de"):
+            revs = Revision.objects.visible(self.it_locale_leader, document__locale="de")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id]))
+
+        with self.subTest("visible-it_locale_leader-it"):
+            revs = Revision.objects.visible(self.it_locale_leader, document__locale="it")
+            self.assertEqual(set(r.id for r in revs), set([self.rev1_it.id, self.rev2_it.id]))
+
+        with self.subTest("visible-it_locale_leader-fr"):
+            revs = Revision.objects.visible(self.it_locale_leader, document__locale="fr")
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_fr.id]))
 
 
 class FromUrlTests(TestCase):

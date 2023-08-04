@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 import waffle
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
@@ -70,6 +70,16 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     is_template = models.BooleanField(default=False, editable=False, db_index=True)
     # Is this document localizable or not?
     is_localizable = models.BooleanField(default=True, db_index=True)
+
+    restrict_to_staff = models.BooleanField(default=False, db_index=True)
+    restrict_to_group = models.ForeignKey(
+        Group,
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.SET_NULL,
+        related_name="documents_restricted",
+    )
 
     # TODO: validate (against settings.SUMO_LANGUAGES?)
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE, db_index=True)
@@ -710,12 +720,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
 
     def is_visible_for(self, user):
         """
-        This document is effectively invisible when it has no approved content,
-        and the given user is not a superuser, nor allowed to delete documents or
-        review revisions, nor a creator of one of the document's (yet unapproved)
-        revisions.
+        This document is effectively invisible when it is restricted, or has no
+        approved content, and the given user is not a superuser, nor allowed to
+        delete documents or review revisions, nor a creator of one of the document's
+        (yet unapproved) revisions.
         """
-        return (
+        return self.is_unrestricted_for(user) and bool(
             self.current_revision
             or user.is_superuser
             or (
@@ -738,6 +748,27 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         return (
             self.parent.slug if self.parent else self.slug
         ) in settings.MOZILLA_ACCOUNT_ARTICLES
+
+    @property
+    def is_restricted(self):
+        """Is this document restricted in terms of visibility?"""
+        if self.parent:
+            # Translations follow their parent's restrictions.
+            return self.parent.is_restricted
+        return bool(self.restrict_to_staff or self.restrict_to_group)
+
+    def is_unrestricted_for(self, user):
+        """Is the given user unrestricted in their visibility of this document?"""
+        if self.parent:
+            # Translations follow their parent's restrictions.
+            return self.parent.is_unrestricted_for(user)
+
+        return bool(
+            user.is_superuser
+            or (not self.is_restricted)
+            or (self.restrict_to_staff and user.is_staff)
+            or (self.restrict_to_group and (self.restrict_to_group in user.groups.all()))
+        )
 
 
 class AbstractRevision(models.Model):

@@ -20,7 +20,7 @@
 
   <div class="sumo-page-section">
     <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
-      <h1 class="sumo-page-heading">{{ _('<em>Editing Description For:</em><br>{title}')|fe(title=document.title) }}</h1>
+      <h1 class="sumo-page-heading">{{ _('<em>Editing Metadata For:</em><br>{title}')|fe(title=document.title) }}</h1>
       {% if document.needs_change %}
         <p>
           {% trans comment=document.needs_change_comment %}
@@ -32,8 +32,26 @@
           {{ errorlist(document_form) }}
           <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
             {% csrf_token %}
+            {% if request.user.is_staff %}
+            <div class="mzp-c-emphasis-box field">
+              <fieldset>
+                  <legend>{{ _("Restrict Visibility") }}</legend>
+                  <p>{{ _("If one or both are selected, the document will be visible only to those users.") }}</p>
+                  <span class="checkbox {% if document_form.restrict_to_staff.errors %}has-error{% endif %}">
+                    {{ document_form.restrict_to_staff|safe }}
+                    {{ document_form.restrict_to_staff|label_with_help }}
+                    {{ document_form.restrict_to_staff.errors }}
+                  </span>
+                  <span class="{% if document_form.restrict_to_group.errors %}has-error{% endif %}">
+                    {{ document_form.restrict_to_group|label_with_help }}
+                    {{ document_form.restrict_to_group|safe }}
+                    {{ document_form.restrict_to_group.errors }}
+                  </span>
+              </fieldset>
+            </div>
+            {% endif %}
               {% for field in document_form.visible_fields() if
-                (field.name != 'is_localizable' or not document.translations.exists()) %}
+                not field.name.startswith('restrict_to_') and (field.name != 'is_localizable' or not document.translations.exists()) %}
                 <div class="field">
                   {{ field|label_with_help }}{{ field }}
                 </div>
@@ -43,7 +61,7 @@
             {% endif %}
             <input type="hidden" name="form" value="doc" />
             <div class="submit sumo-button-wrap align-end">
-              <button class="sumo-button primary-button" type="submit">{{ _('Save description') }}</button>
+              <button class="sumo-button primary-button" type="submit">{{ _('Save') }}</button>
             </div>
           </form>
       </div>
