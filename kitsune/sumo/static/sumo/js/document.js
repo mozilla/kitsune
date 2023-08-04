@@ -21,11 +21,12 @@ new AjaxVote(".document-vote form", {
 $(window).on("load", function() {
     // Wait for all content (including images) to load
     var hash = window.location.hash;
-    window.location.hash = ""; // Clear the hash initially
-    setTimeout(function() {
-        window.location.hash = hash; // Restore the hash after all images are loaded
-    }, 0);
-  }
+    if (hash) {
+      window.location.hash = ""; // Clear the hash initially
+      setTimeout(function() {
+          window.location.hash = hash; // Restore the hash after all images are loaded
+      }, 0);
+  }}
 );
 
 // For this singular document, we are going to load
