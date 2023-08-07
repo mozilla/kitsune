@@ -235,6 +235,15 @@ class HasRemoveTagPermissions(permissions.BasePermission):
         return super().has_object_permission(request, view, obj)
 
 
+class HasAddTagPermissions(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        """Simple permision check to match the one from the question view."""
+
+        if not request.user.has_perm("questions.tag_question"):
+            return False
+        return super().has_object_permission(request, view, obj)
+
+
 class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     queryset = Question.objects.all()
@@ -358,7 +367,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, HasAddTagPermissions],
+    )
     def add_tags(self, request, pk=None):
         question = self.get_object()
 

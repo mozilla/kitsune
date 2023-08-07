@@ -466,6 +466,7 @@ class TestQuestionViewSet(TestCase):
 
         u = UserFactory()
         add_permission(u, Tag, "add_tag")
+        add_permission(u, Question, "tag_question")
         self.client.force_authenticate(user=u)
 
         res = self.client.post(
