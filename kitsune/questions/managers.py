@@ -15,14 +15,17 @@ class QuestionManager(Manager):
     #     the status is "Responded"
     def responded(self):
         return self.filter(
-            solution__isnull=True, is_locked=False, last_answer__isnull=False
+            solution__isnull=True, is_locked=False, is_archived=False, last_answer__isnull=False
         ).exclude(last_answer__creator=F("creator"))
 
     # else if OP is last to post
     #      the status is "Needs Attention"
     def needs_attention(self):
         qs = self.filter(
-            solution__isnull=True, is_locked=False, updated__gte=datetime.now() - timedelta(days=7)
+            solution__isnull=True,
+            is_locked=False,
+            is_archived=False,
+            updated__gte=datetime.now() - timedelta(days=7),
         )
         return qs.filter(Q(last_answer__creator=F("creator")) | Q(last_answer__isnull=True))
 
