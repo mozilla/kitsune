@@ -13,7 +13,7 @@ const STEP_TO_DOODLE_MAP = {
   },
   "configure-sync": {
     src: configureDoodleURL,
-    alt: gettext("Fox sticking it's head our from behind a stack of boxes."),
+    alt: gettext("Fox sticking it's head out from behind a stack of boxes."),
   },
   "setup-new-device": {
     src: setupDoodleURL,
