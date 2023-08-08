@@ -26,7 +26,7 @@ describe("configure-step custom element", () => {
       syncEnabled: false,
     });
     let shadow = step.shadowRoot;
-    expect(shadow.querySelector("#sync-status").hasAttribute("sync-enabled")).to.be.false;
+    expect(shadow.querySelector("#sync-status-container").hasAttribute("sync-enabled")).to.be.false;
     expect(shadow.querySelector("#buttons").hasAttribute("sync-enabled")).to.be.false;
     expect(shadow.querySelector("#next").disabled).to.be.true;
   });
@@ -36,7 +36,7 @@ describe("configure-step custom element", () => {
       syncEnabled: true,
     });
     let shadow = step.shadowRoot;
-    expect(shadow.querySelector("#sync-status").hasAttribute("sync-enabled")).to.be.true;
+    expect(shadow.querySelector("#sync-status-container").hasAttribute("sync-enabled")).to.be.true;
     expect(shadow.querySelector("#buttons").hasAttribute("sync-enabled")).to.be.true;
     expect(shadow.querySelector("#next").disabled).to.be.false;
   });
@@ -62,17 +62,5 @@ describe("configure-step custom element", () => {
     nextButton.addEventListener("click", listener);
     nextButton.click();
     nextButton.removeEventListener("click", listener);
-  });
-
-  it("should set the reset password link with a href attribute", async () => {
-    const RESET_PASSWORD_URL = "https://example.com/reset_password";
-    step.setState({
-      syncEnabled: false,
-      forgotPasswordLinkHref: RESET_PASSWORD_URL,
-    });
-    let shadow = step.shadowRoot;
-
-    let forgotPasswordLink = shadow.querySelector("#forgot-password");
-    expect(forgotPasswordLink.href).to.equal(RESET_PASSWORD_URL);
   });
 });

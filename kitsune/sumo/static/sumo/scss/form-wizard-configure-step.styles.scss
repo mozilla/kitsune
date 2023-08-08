@@ -14,12 +14,12 @@
 #header {
   padding-block-end: 12px;
   border-bottom: 1px solid var(--color-light-gray-03);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 .icon {
-  height: 16px;
-  width: 16px;
+  height: 24px;
+  width: 24px;
   margin-inline-end: 12px;
 }
 
@@ -27,27 +27,18 @@
   margin-inline-start: auto;
 }
 
-#sync-status {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--color-white);
-  border-radius: 34px;
-  padding: 4px 16px;
-  margin-inline-start: 12px;
-  text-transform: uppercase;
-  background-color: p.$color-red-60;
+h3 {
+  margin-block: 0;
 }
 
-#sync-status[sync-enabled] {
-  background-color: var(--color-green-07);
+#sync-status-container {
+  margin-block-end: 16px;
 }
 
 #buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   margin-block-end: 0;
-  flex: 1;
-  justify-content: space-between;
 }
 
 #buttons > button {
@@ -61,19 +52,33 @@
 
 #next {
   align-self: end;
-  margin-block: 8px 16px;
+  margin-block: 0 16px;
 }
 
 #instructions {
-  margin-inline-start: 18px;
-  margin-block-end: 30px;
+  list-style-type: none;
+  margin-block-end: 28px;
 }
 
+#sync-status-container[sync-enabled] > .not-syncing,
+#sync-status-container:not([sync-enabled]) > .syncing,
 #instructions[sync-enabled] > .not-syncing,
 #instructions:not([sync-enabled]) > .syncing {
   display: none;
 }
 
-li {
-  margin-block-end: 24px;
+.warning {
+  display: flex;
+  align-items: start;
+  background-color: rgba(255, 234, 128, 0.4);
+  padding-inline: 16px;
+  padding-block: 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+}
+
+.key-icon {
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 11px;
 }
