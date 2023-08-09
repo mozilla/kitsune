@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import sinon from "sinon";
 import { FormWizard, BaseFormStep } from "sumo/js/form-wizard";
 import signInDoodleURL from "sumo/img/fox-doodle-sign-in.png";
 import configureDoodleURL from "sumo/img/fox-doodle-configure.png";
@@ -31,7 +32,7 @@ describe("form-wizard custom element", () => {
   let wizard;
   let slot;
 
-  beforeEach(() => {
+  function renderWizard() {
     $("body").empty().html(`
         <form-wizard>
           <test-form-step name="sign-into-fxa">
@@ -47,6 +48,10 @@ describe("form-wizard custom element", () => {
     `);
     wizard = document.querySelector("form-wizard");
     slot = wizard.shadowRoot.querySelector('slot[name="active"]');
+  }
+
+  beforeEach(() => {
+    renderWizard();
   });
 
   it("should render a form-wizard custom element", () => {
@@ -118,19 +123,6 @@ describe("form-wizard custom element", () => {
       });
     });
 
-    it("should show a doodle that changes when the active step changes", () => {
-      let doodle = wizard.shadowRoot.getElementById("doodle");
-      expect(doodle).to.exist;
-      expect(doodle.hidden).to.be.false;
-      expect(doodle.src.includes(signInDoodleURL)).to.be.true;
-
-      wizard.activeStep = "configure-sync";
-      expect(doodle.src.includes(configureDoodleURL)).to.be.true;
-
-      wizard.activeStep = "setup-new-device";
-      expect(doodle.src.includes(setupDoodleURL)).to.be.true;
-    });
-
     it("should update the statuses of the steps when the active step changes", () => {
       let indicator = wizard.shadowRoot.getElementById("step-indicator");
       let steps = indicator.children;
@@ -153,7 +145,11 @@ describe("form-wizard custom element", () => {
         const EXPECTED_WIZARD_STEPS = [
           { name: "sign-into-fxa", status: "done", label: "First label" },
           { name: "configure-sync", status: "active", label: "Second label" },
-          { name: "setup-new-device", status: "unavailable", label: "Third label" },
+          {
+            name: "setup-new-device",
+            status: "unavailable",
+            label: "Third label",
+          },
         ];
 
         expect(wizard.steps).to.deep.equal(INITIAL_STEPS);
@@ -171,8 +167,16 @@ describe("form-wizard custom element", () => {
       it("should update data for 'active' steps", () => {
         const EXPECTED_WIZARD_STEPS = [
           { name: "sign-into-fxa", status: "active", label: "First label" },
-          { name: "configure-sync", status: "unavailable", label: "Second label" },
-          { name: "setup-new-device", status: "unavailable", label: "Third label" },
+          {
+            name: "configure-sync",
+            status: "unavailable",
+            label: "Second label",
+          },
+          {
+            name: "setup-new-device",
+            status: "unavailable",
+            label: "Third label",
+          },
         ];
         const EXPECTED_STEP_STATE = { email: MOCK_EMAIL };
 
@@ -206,10 +210,55 @@ describe("form-wizard custom element", () => {
         let activeStep = slot.assignedElements()[0];
         expect(activeStep.getAttribute("name")).to.equal("setup-new-device");
 
-        let doneStep = wizard.getRootNode().querySelector("[name='configure-sync']");
+        let doneStep = wizard
+          .getRootNode()
+          .querySelector("[name='configure-sync']");
         let emailEl = doneStep.shadowRoot.getElementById("email");
         expect(doneStep.state).to.deep.equal(EXPECTED_STEP_STATE);
         expect(emailEl.textContent).to.equal(MOCK_EMAIL);
+      });
+    });
+
+    describe("fox doodle", () => {
+      let featureFlagCheck;
+
+      before(() => {
+        featureFlagCheck = sinon.stub(global.window.waffle, "flag_is_active");
+      });
+
+      after(() => {
+        featureFlagCheck.restore();
+      });
+
+      it("should show a doodle that changes when the active step changes", () => {
+        featureFlagCheck.returns(true);
+        renderWizard();
+
+        let doodle = wizard.shadowRoot.getElementById("doodle");
+        expect(doodle).to.exist;
+        expect(doodle.hidden).to.be.false;
+        expect(doodle.src.includes(signInDoodleURL)).to.be.true;
+
+        wizard.activeStep = "configure-sync";
+        expect(doodle.src.includes(configureDoodleURL)).to.be.true;
+
+        wizard.activeStep = "setup-new-device";
+        expect(doodle.src.includes(setupDoodleURL)).to.be.true;
+      });
+
+      it("should not show a doodle when the feature flag is not enabled", () => {
+        featureFlagCheck.returns(false);
+        renderWizard();
+
+        let doodle = wizard.shadowRoot.getElementById("doodle");
+        expect(doodle).to.exist;
+        expect(doodle.hidden).to.be.true;
+
+        wizard.activeStep = "configure-sync";
+        expect(doodle.hidden).to.be.true;
+
+        wizard.activeStep = "setup-new-device";
+        expect(doodle.hidden).to.be.true;
       });
     });
   });
