@@ -6,6 +6,30 @@ from kitsune.sumo.redis_utils import redis_client
 from kitsune.wiki.models import Document
 
 
+HELPFUL_AGGREGATE = "SUM(CASE WHEN limitedvotes.helpful THEN 1 ELSE 0 END)"
+UNHELPFUL_AGGREGATE = "SUM(CASE WHEN limitedvotes.helpful THEN 0 ELSE 1 END)"
+SQL_UNHELPFUL = f"""
+    SELECT doc_id, yes, no
+    FROM
+        (SELECT wiki_revision.document_id as doc_id,
+            {HELPFUL_AGGREGATE} as yes,
+            {UNHELPFUL_AGGREGATE} as no
+        FROM
+            (SELECT *
+             FROM wiki_helpfulvote
+             WHERE {{}}) as limitedvotes
+        INNER JOIN wiki_revision ON
+            limitedvotes.revision_id=wiki_revision.id
+        INNER JOIN wiki_document ON
+            wiki_document.id=wiki_revision.document_id
+        WHERE wiki_document.locale='en-US'
+        GROUP BY doc_id
+        HAVING {UNHELPFUL_AGGREGATE} > {HELPFUL_AGGREGATE}) as calculated
+"""
+TWO_WEEKS_AGO = "created <= (CURRENT_DATE - 7) AND created >= (CURRENT_DATE - 14)"
+PAST_WEEK = "created >= CURRENT_DATE - 7"
+
+
 def _get_old_unhelpful():
     """
     Gets the data from 2 weeks ago and formats it as output so that we can
@@ -14,28 +38,7 @@ def _get_old_unhelpful():
 
     old_formatted = {}
     with connection.cursor() as cursor:
-        cursor.execute(
-            """SELECT doc_id, yes, no
-            FROM
-                (SELECT wiki_revision.document_id as doc_id,
-                    SUM(limitedvotes.helpful) as yes,
-                    SUM(NOT(limitedvotes.helpful)) as no
-                FROM
-                    (SELECT * FROM wiki_helpfulvote
-                        WHERE created <= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
-                        AND created >= DATE_SUB(DATE_SUB(CURDATE(),
-                            INTERVAL 1 WEEK), INTERVAL 1 WEEK)
-                    ) as limitedvotes
-                INNER JOIN wiki_revision ON
-                    limitedvotes.revision_id=wiki_revision.id
-                INNER JOIN wiki_document ON
-                    wiki_document.id=wiki_revision.document_id
-                WHERE wiki_document.locale="en-US"
-                GROUP BY doc_id
-                HAVING no > yes
-                ) as calculated"""
-        )
-
+        cursor.execute(SQL_UNHELPFUL.format(TWO_WEEKS_AGO))
         old_data = cursor.fetchall()
 
     for data in old_data:
@@ -55,26 +58,7 @@ def _get_current_unhelpful(old_formatted):
 
     final = {}
     with connection.cursor() as cursor:
-        cursor.execute(
-            """SELECT doc_id, yes, no
-            FROM
-                (SELECT wiki_revision.document_id as doc_id,
-                    SUM(limitedvotes.helpful) as yes,
-                    SUM(NOT(limitedvotes.helpful)) as no
-                FROM
-                    (SELECT * FROM wiki_helpfulvote
-                        WHERE created >= DATE_SUB(CURDATE(), INTERVAL 1 WEEK)
-                    ) as limitedvotes
-                INNER JOIN wiki_revision ON
-                    limitedvotes.revision_id=wiki_revision.id
-                INNER JOIN wiki_document ON
-                    wiki_document.id=wiki_revision.document_id
-                WHERE wiki_document.locale="en-US"
-                GROUP BY doc_id
-                HAVING no > yes
-                ) as calculated"""
-        )
-
+        cursor.execute(SQL_UNHELPFUL.format(PAST_WEEK))
         current_data = cursor.fetchall()
 
     for data in current_data:
