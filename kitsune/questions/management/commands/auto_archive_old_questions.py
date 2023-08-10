@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
             sql = """
                 UPDATE questions_question
-                SET is_archived = 1
+                SET is_archived = TRUE
                 WHERE id IN (%s)
                 """ % ",".join(
                 map(str, q_ids)
