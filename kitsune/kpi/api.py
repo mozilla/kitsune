@@ -380,7 +380,7 @@ def _remap_date_counts(**kwargs):
         # For each date mentioned in qs, sum up the counts for that day
         # Note: days may be duplicated
         for x in qs:
-            key = date(x["year"], x["month"], x.get("day", 1))
+            key = date(int(x["year"]), int(x["month"]), int(x.get("day", 1)))
             res[key][label] += x["count"]
         yield res
 
