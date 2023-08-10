@@ -8,11 +8,10 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
 
-# from django.contrib.postgres.aggregates import ArrayAgg  TODO: Use once we move to Postgres.
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
-from django.db.models import Aggregate, TextField  # TODO: Delete once we move to Postgres.
 from django.db.models.functions import TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -78,13 +77,6 @@ from kitsune.wiki.utils import get_visible_document_or_404, get_visible_revision
 
 
 log = logging.getLogger("k.wiki")
-
-
-# TODO: Delete once we move to Postgres, and use imported "ArrayAgg".
-class ArrayAgg(Aggregate):
-    function = "JSON_ARRAYAGG"
-    name = "JSONArrayAgg"
-    output_field = TextField()
 
 
 def doc_page_cache(view):
@@ -1305,8 +1297,7 @@ def get_helpful_votes_async(request, document_slug):
     )
 
     for res in results:
-        revisions.update(json.loads(res["revisions"]))  # TODO: Delete once we move to Postgres.
-        # revisions.update(res["revisions"])  TODO: Use once we move to Postgres.
+        revisions.update(res["revisions"])
         created_list.append(res["date_created"])
         timestamp = (time.mktime(res["date_created"].timetuple()) // 86400) * 86400
 
