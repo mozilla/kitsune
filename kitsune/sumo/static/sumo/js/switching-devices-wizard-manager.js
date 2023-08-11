@@ -26,7 +26,7 @@ export default class SwitchingDevicesWizardManager {
   // How many milliseconds to wait before we give up on UITour and presume
   // we cannot contact it. This is for users that may have disabled UITour
   // via about:config, or have a corrupt permissions database.
-  #uiTourTimeoutMs = 1500;
+  #uiTourTimeoutMs = 3000;
 
   // Some of these #state properties use snake_case since there are some
   // properties that are going to be sent as queryParameters, and this
