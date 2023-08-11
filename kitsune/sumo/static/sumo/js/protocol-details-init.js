@@ -1,5 +1,16 @@
 import "sumo/js/protocol";
 
+
+export function collapsibleAccordionInit() {
+  'use strict';
+  // Initialize any header elements, or header elements wrapped by a "div.for"
+  // element (which is generated from the Wiki syntax "{for ...}{/for}") that
+  // are direct children of an element with the "mzp-c-details" class.
+  for (let hdr of ['h2', 'h3', 'h4', 'h5', 'h6']) {
+    window.Mzp.Details.init(`.mzp-c-details > ${hdr}, .mzp-c-details > div.for > ${hdr}`);
+  }
+}
+
 export default function detailsInit() {
   'use strict';
   var _mqWide = matchMedia('(max-width: 1055px)');
@@ -41,6 +52,8 @@ export default function detailsInit() {
   if ( forumDropdown ) {
     window.Mzp.Details.init('[data-has-dropdown]');
   }
+
+  collapsibleAccordionInit();
 }
 
 detailsInit();

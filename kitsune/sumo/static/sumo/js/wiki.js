@@ -13,6 +13,7 @@ import AjaxPreview from "sumo/js/ajaxpreview";
 import { initDiff } from "sumo/js/diff";
 import Marky from "sumo/js/markup";
 import ShowFor from "sumo/js/showfor";
+import collapsibleAccordionInit from "sumo/js/protocol-details-init";
 
 /*
  * wiki.js
@@ -181,7 +182,7 @@ import ShowFor from "sumo/js/showfor";
       });
     }
   }
-  
+
   function initPrepopulatedSlugs() {
     var fields = {
       title: {
@@ -241,6 +242,7 @@ import ShowFor from "sumo/js/showfor";
         $preview.find('select.enable-if-js').prop("disabled", false);
         $preview.find('.kbox').kbox();
         $('#preview-diff .output').empty();
+        collapsibleAccordionInit();
       }
     });
   }
