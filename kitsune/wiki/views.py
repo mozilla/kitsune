@@ -478,7 +478,7 @@ def edit_init_and_perms(request, document_slug, revision_id=None, doctype="doc")
         if not doc.allows(user, "create_revision"):
             raise PermissionDenied
     if doctype == "meta":
-        if not doc.allows(user, "edit") or not user.is_staff:
+        if not doc.allows(user, "edit"):
             raise PermissionDenied
 
     if doc.locale != request.LANGUAGE_CODE:

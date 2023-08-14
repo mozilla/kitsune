@@ -27,11 +27,9 @@
           <li {{ active|class_selected('edit') }}>
             <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
           </li>
-            {% if request.user.is_staff %}
-            <li {{ active|class_selected('edit_metadata') }}>
-              <a href="{{ url('wiki.edit_document_metadata', document.slug) }}">{{ _('Edit Article Metadata') }}</a>
-            </li>
-            {% endif %}
+          <li {{ active|class_selected('edit_metadata') }}>
+            <a href="{{ url('wiki.edit_document_metadata', document.slug) }}">{{ _('Edit Article Metadata') }}</a>
+          </li>
           {% endif %}
           {% if document and not document.is_archived and document.is_localizable %}
             <li {{ active|class_selected('localize') }}>
