@@ -951,7 +951,7 @@ class NewRevisionTests(TestCaseBase):
     def test_edit_document_POST_removes_old_tags(self):
         """Changing the tags on a document removes the old tags from
         that document."""
-        user = UserFactory(is_staff=True)
+        user = UserFactory()
         add_permission(user, Revision, "review_revision")
         self.client.login(username=user.username, password="testpass")
         self.d.current_revision = None
@@ -1242,7 +1242,7 @@ class DocumentEditTests(TestCaseBase):
         super(DocumentEditTests, self).setUp()
         self.d = _create_document()
 
-        u = UserFactory(is_staff=True)
+        u = UserFactory()
         add_permission(u, Document, "change_document")
         self.client.login(username=u.username, password="testpass")
 
@@ -1306,7 +1306,7 @@ class DocumentEditTests(TestCaseBase):
     # TODO: Factor with test_archive_permission_off.
     def test_archive_permission_on(self):
         """Shouldn't be able to change is_archive bit without permission."""
-        u = UserFactory(is_staff=True)
+        u = UserFactory()
         add_permission(u, Document, "change_document")
         add_permission(u, Document, "archive_document")
         self.client.login(username=u.username, password="testpass")

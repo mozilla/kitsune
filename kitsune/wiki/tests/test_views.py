@@ -269,7 +269,7 @@ class EditDocumentVisibilityTests(TestCaseBase):
         authenticated users without the proper permission.
         """
         rev = RevisionFactory(is_approved=False)
-        user = UserFactory(is_staff=True)
+        user = UserFactory()
         # The document is in the "en-US" locale, so this permission won't provide access.
         locale_team, _ = Locale.objects.get_or_create(locale="de")
         locale_team.reviewers.add(user)
@@ -293,7 +293,7 @@ class EditDocumentVisibilityTests(TestCaseBase):
             "en-US__reviewers",
         ):
             with self.subTest(perm):
-                user = UserFactory(is_superuser=(perm == "superuser"), is_staff=True)
+                user = UserFactory(is_superuser=(perm == "superuser"))
                 if perm == "review_revision":
                     add_permission(user, Revision, "review_revision")
                 elif perm == "delete_document":
@@ -314,7 +314,7 @@ class EditDocumentVisibilityTests(TestCaseBase):
         """
         Documents without approved content can be seen by their creator.
         """
-        creator = UserFactory(is_staff=True)
+        creator = UserFactory()
         rev = RevisionFactory(is_approved=False, creator=creator)
         self.client.login(username=creator.username, password="testpass")
         response = self.client.get(
@@ -1554,7 +1554,7 @@ class DocumentEditingTests(TestCaseBase):
 
     def setUp(self):
         super(DocumentEditingTests, self).setUp()
-        self.u = UserFactory(is_staff=True)
+        self.u = UserFactory()
         # The "delete_document" permission is one of the ways to allow
         # a user to "see" documents that have no approved content.
         add_permission(self.u, Document, "delete_document")
