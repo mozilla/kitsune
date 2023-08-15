@@ -23,13 +23,15 @@
               <a rel="ugc nofollow" href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
             </li>
           {% endif %}
-          {% if document and not document.is_archived and (document.allows(user, 'create_revision') or document.allows(user, 'edit')) and fallback_reason != "fallback_locale" %}
-          <li {{ active|class_selected('edit') }}>
-            <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
-          </li>
-          <li {{ active|class_selected('edit_metadata') }}>
-            <a href="{{ url('wiki.edit_document_metadata', document.slug) }}">{{ _('Edit Article Metadata') }}</a>
-          </li>
+          {% if document and not document.is_archived and document.allows(user, 'create_revision') and fallback_reason != "fallback_locale" %}
+            <li {{ active|class_selected('edit') }}>
+              <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
+            </li>
+              {% if document.allows(user, 'edit') %}
+                <li {{ active|class_selected('edit_metadata') }}>
+                  <a href="{{ url('wiki.edit_document_metadata', document.slug) }}">{{ _('Edit Article Metadata') }}</a>
+                </li>
+            {% endif %}
           {% endif %}
           {% if document and not document.is_archived and document.is_localizable %}
             <li {{ active|class_selected('localize') }}>
