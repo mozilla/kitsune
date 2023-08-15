@@ -161,3 +161,14 @@ urlpatterns += [
         r"^/discuss/watch_locale$", kbforums_views.watch_locale, name="wiki.discuss.watch_locale"
     ),
 ]
+
+urlpatterns += [
+    # Redirect for pocket articles
+    # This assumes pocket redirects take the form of:
+    # /pocket/<article_id>-<document_slug>
+    re_path(
+        r"^/pocket/(?:(?P<article_id>\d+)-)?(?P<document_slug>[\w-]+)(?P<extra_path>/[\w/-]*)?/?$",
+        views.pocket_article,
+        name="wiki.pocket_article",
+    ),
+]
