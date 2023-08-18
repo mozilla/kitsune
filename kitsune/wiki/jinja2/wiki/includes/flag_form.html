@@ -5,27 +5,30 @@
     <form action="{{ post_target }}" method="post">
       {% csrf_token %}
       <div class="field radio is-condensed">
-        <input type="radio" id="id_{{ post_target|slugify}}_spam" name="reason" value="spam" />
+        <input type="radio" name="reason" id="id_{{ post_target|slugify}}_spam" value="spam" required />
         <label for="id_{{ post_target|slugify}}_spam">{{ _('Spam or other unrelated content') }}</label>
       </div>
       <div class="field radio is-condensed">
-        <input type="radio" name="reason" id="id_{{ post_target|slugify}}_language" value="language" />
+        <input type="radio" name="reason" id="id_{{ post_target|slugify}}_language" value="language" required />
         <label for="id_{{ post_target|slugify}}_language">{{ _('Inappropriate language/dialog') }}</label>
       </div>
       {% if bug_support %}
       <div class="field radio is-condensed">
-        <input type="radio" name="reason" value="bug_support" id="id_{{ post_target|slugify}}_bug_support" />
+        <input type="radio" name="reason" id="id_{{ post_target|slugify}}_bug_support" value="bug_support" required />
         <label for="id_{{ post_target|slugify}}_bug_support">{{ _('Misplaced bug report or support request') }}</label>
       </div>
       {% endif %}
+      <div class="field radio is-condensed">
+        <input type="radio" name="reason" id="id_{{ post_target|slugify}}_abuse" value="abuse" required />
+        <label for="id_{{ post_target|slugify}}_abuse">{{ _('Abusive content') }}</label>
+      </div>
       <div class="field radio">
-        <input type="radio" id="id_{{ post_target|slugify}}_other" name="reason" value="other" />
+        <input type="radio" name="reason" id="id_{{ post_target|slugify}}_other" value="other" required />
         <label for="id_{{ post_target|slugify}}_other">{{ _('Other (please specify)') }}</label>
       </div>
       <div class="field has-md-textarea">
         <textarea name="other" placeholder="{{ _('Have more to say?') }}"></textarea>
       </div>
-
       <div class="sumo-button-wrap align-end">
         <button class="sumo-button primary-button" type="submit">{{ _('Submit') }}</button>
       </div>

@@ -6,10 +6,24 @@
   'use strict';
 
   $(function() {
-    $('#report-abuse [type="submit"]').on('click', function(ev) {
+    $('#report-abuse input[type=radio][name=reason]').on('change', function(ev) {
+      $(this).closest('form').siblings('.message').text('');
+    });
+
+    $('#report-abuse [type=submit]').on('click', function(ev) {
       ev.preventDefault();
-      var $this = $(this);
-      var $form = $this.closest('form');
+      let $form = $(this).closest('form');
+      let reason = $form.find('input[type=radio][name=reason]:checked').val();
+
+      if (!reason) {
+        $form.siblings('.message').text(gettext('Please select a reason.'));
+        return;
+      }
+
+      if (reason === 'other' && !$form.find('textarea[name=other]').val().trim()) {
+        $form.siblings('.message').text(gettext('Please provide more detail.'));
+        return;
+      }
 
       $.ajax({
         url: $form.attr('action'),
