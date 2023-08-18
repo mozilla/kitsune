@@ -11,6 +11,8 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db import connections, router
+from django.db.models import F, OuterRef, Subquery
+
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
@@ -18,6 +20,7 @@ from django.utils.translation import gettext as _
 from markupsafe import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
+from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.questions.models import QuestionLocale
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -203,35 +206,28 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
-    select = OrderedDict(
-        [
-            (
-                "num_visits",
-                "SELECT wdv.visits "
-                "FROM dashboards_wikidocumentvisits as wdv "
-                "WHERE wdv.period=%s "
-                "AND wdv.document_id=wiki_document.id",
-            ),
-        ]
-    )
-
-    docs = docs.extra(select=select, select_params=(mode,))
-
     if product:
         docs = docs.filter(products__in=[product])
 
     if category:
         docs = docs.filter(category__in=[category])
 
-    docs = docs.order_by("-num_visits", "title")
+    docs = docs.annotate(
+        num_visits=Subquery(
+            WikiDocumentVisits.objects.filter(document=OuterRef("pk"), period=mode).values(
+                "visits"
+            )
+        )
+    )
+
+    docs = docs.order_by(F("num_visits").desc(nulls_last=True), "title")
 
     if max:
         docs = docs[:max]
 
     rows = []
 
-    if docs.count():
-        max_visits = docs[0].num_visits
+    max_visits = docs[0].num_visits if docs.count() else None
 
     for d in docs:
         data = {
@@ -249,7 +245,7 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
         if d.current_revision:
             data["expiry_date"] = d.current_revision.expires
 
-        if d.num_visits:
+        if d.num_visits and max_visits:
             data["visits_ratio"] = float(d.num_visits) / max_visits
 
         if "expiry_date" in data and data["expiry_date"]:
