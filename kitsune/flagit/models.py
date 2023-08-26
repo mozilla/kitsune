@@ -40,7 +40,7 @@ class FlaggedObject(ModelBase):
     content_object = GenericForeignKey("content_type", "object_id")
 
     status = models.IntegerField(default=0, db_index=True, choices=STATUSES)
-    reason = models.CharField(max_length=64, choices=REASONS)
+    reason = models.CharField(max_length=64, choices=REASONS, default="spam")
     notes = models.TextField(default="", blank=True)
 
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="flags")
