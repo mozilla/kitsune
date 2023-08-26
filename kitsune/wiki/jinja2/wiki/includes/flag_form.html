@@ -5,7 +5,7 @@
     <form action="{{ post_target }}" method="post">
       {% csrf_token %}
       <div class="field radio is-condensed">
-        <input type="radio" id="id_{{ post_target|slugify}}_spam" name="reason" value="spam" />
+        <input type="radio" id="id_{{ post_target|slugify}}_spam" name="reason" value="spam" checked />
         <label for="id_{{ post_target|slugify}}_spam">{{ _('Spam or other unrelated content') }}</label>
       </div>
       <div class="field radio is-condensed">
@@ -18,6 +18,10 @@
         <label for="id_{{ post_target|slugify}}_bug_support">{{ _('Misplaced bug report or support request') }}</label>
       </div>
       {% endif %}
+      <div class="field radio is-condensed">
+        <input type="radio" id="id_{{ post_target|slugify}}_abuse" name="reason" value="abuse" />
+        <label for="id_{{ post_target|slugify}}_abuse">{{ _('Abusive content') }}</label>
+      </div>
       <div class="field radio">
         <input type="radio" id="id_{{ post_target|slugify}}_other" name="reason" value="other" />
         <label for="id_{{ post_target|slugify}}_other">{{ _('Other (please specify)') }}</label>
