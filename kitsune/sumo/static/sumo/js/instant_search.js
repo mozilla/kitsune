@@ -127,10 +127,10 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
 
   $(document).on('submit', '[data-instant-search="form"]', function(ev) {
     ev.preventDefault();
-    $(this).find('.searchbox').focus();
+    $(this).find('.searchbox').trigger('focus');
   });
-
-  $(document).on('keyup', '[data-instant-search="form"] input[type="search"]', function(ev) {
+  
+  $(document).on('input', '[data-instant-search="form"] input[type="search"]', function(ev) {
     var $this = $(this);
     var $form = $this.closest('form');
     var formId = $form.attr('id');
@@ -191,11 +191,11 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     }
 
     if (aaq_explore_step) {
-      $(".question-masthead").find("input[name=q]").focus();
+      $(".question-masthead").find("input[name=q]").trigger('focus');
     } else if ($(".hidden-search-masthead").length > 0) {
-      $(".hidden-search-masthead").find("input[name=q]").focus();
+      $(".hidden-search-masthead").find("input[name=q]").trigger('focus');
     } else {
-      $("#support-search-masthead").find("input[name=q]").focus();
+      $("#support-search-masthead").find("input[name=q]").trigger('focus');
     }
   });
 
