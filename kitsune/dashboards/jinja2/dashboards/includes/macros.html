@@ -255,7 +255,7 @@
   <div class="category-filter field">
     <form method="get">
       {% if product %}
-        <input type="hidden" name="product" value="{{ product }}">
+        <input type="hidden" name="product" value="{{ product.slug }}">
       {% endif %}
       <label>{{ _('Filter by type:') }}</label>
       <select data-submit name="category">
