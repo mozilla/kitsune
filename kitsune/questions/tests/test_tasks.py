@@ -19,6 +19,7 @@ class QuestionVoteTestCase(TestCase):
         """Test the "update_question_vote_chunk" task."""
         q1 = QuestionFactory()
         q2 = QuestionFactory()
+        q3 = QuestionFactory()
         QuestionVoteFactory(question=q1, created=datetime.now() - timedelta(days=1))
         QuestionVoteFactory(question=q1, created=datetime.now() - timedelta(days=2))
         QuestionVoteFactory(question=q1, created=datetime.now() - timedelta(days=9))
@@ -28,12 +29,16 @@ class QuestionVoteTestCase(TestCase):
         QuestionVoteFactory(question=q2, created=datetime.now() - timedelta(days=8))
         q1.refresh_from_db()
         q2.refresh_from_db()
+        q3.refresh_from_db()
         self.assertEqual(q1.num_votes_past_week, 0)
         self.assertEqual(q2.num_votes_past_week, 0)
+        self.assertEqual(q3.num_votes_past_week, 0)
 
         # Actually test the task.
-        update_question_vote_chunk([q1.id, q2.id])
+        update_question_vote_chunk([q1.id, q2.id, q3.id])
         q1.refresh_from_db()
         q2.refresh_from_db()
+        q3.refresh_from_db()
         self.assertEqual(q1.num_votes_past_week, 2)
         self.assertEqual(q2.num_votes_past_week, 3)
+        self.assertEqual(q3.num_votes_past_week, 0)
