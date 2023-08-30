@@ -111,11 +111,7 @@ export class FormWizard extends HTMLElement {
 
   connectedCallback() {
     // Report to GA whether or not the user sees the fox doodle.
-    trackEvent(
-      "device-migration-wizard",
-      "experiments",
-      this.showDoodle ? "doodle-shown" : "doodle-not-shown"
-    );
+    trackEvent("device-migration-wizard", "experiments", "doodle-shown", this.showDoodle);
 
     if (this.activeStep) {
       // Make sure the active step is shown.
