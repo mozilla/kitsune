@@ -37,11 +37,11 @@ describe('instant search', () => {
       expect($('#main-content').css('display')).to.not.equal('none');
 
       $searchInput.val('test');
-      $searchInput.trigger('keyup');
+      $searchInput.trigger('input');
       expect($('#main-content').css('display')).to.equal('none');
 
       $searchInput.val('');
-      $searchInput.trigger('keyup');
+      $searchInput.trigger('input');
       expect($('#main-content').css('display')).to.not.equal('none');
     });
 
@@ -50,7 +50,7 @@ describe('instant search', () => {
 
       const $searchInput = $('#search-q');
       $searchInput.val(query);
-      $searchInput.trigger('keyup');
+      $searchInput.trigger('input');
 
       clock.tick(200);
       // call the callback to actually render things
@@ -68,7 +68,7 @@ describe('instant search', () => {
 
       const $searchInput = $('#search-q');
       $searchInput.val(query);
-      $searchInput.trigger('keyup');
+      $searchInput.trigger('input');
 
       clock.tick(200);
       // call the callback to actually render things
