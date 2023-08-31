@@ -6,6 +6,8 @@
 <!DOCTYPE html>
 <html class="no-js" lang="{{ request.LANGUAGE_CODE }}"{% if DIR %} dir="{{ DIR }}"{% endif %}{% if settings.GTM_CONTAINER_ID %} data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %}>
 <head>
+  {% include "includes/google-analytics.html" %}
+
   {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
@@ -56,8 +58,6 @@
   {% if canonical_url %}
     <link rel="canonical" href="{{ canonical_url|safe }}" />
   {% endif %}
-
-  {% include "includes/google-analytics.html" %}
 </head>
 
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"

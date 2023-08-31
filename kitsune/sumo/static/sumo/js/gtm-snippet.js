@@ -34,7 +34,6 @@ import dntEnabled from "./libs/dnt-helper";
     // product should be first match or null
     product = (matches && matches.length > 0) ? matches[1] : null;
 
-
     w.gtag('config', GTM_CONTAINER_ID, {
       'dimension1': product
     });
