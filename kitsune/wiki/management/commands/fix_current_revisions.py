@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db.models import F
 
 from kitsune.wiki.models import Document, Revision
 
@@ -12,7 +13,9 @@ class Command(BaseCommand):
 
         for d in docs.iterator():
             revs = Revision.objects.filter(document_id=d["id"], is_approved=True)
-            revs = revs.order_by("-reviewed").values_list("id", flat=True)[:1]
+            revs = revs.order_by(F("reviewed").desc(nulls_last=True)).values_list("id", flat=True)[
+                :1
+            ]
 
             if len(revs):
                 rev_id = revs[0]
