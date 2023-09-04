@@ -1,29 +1,11 @@
-version: "3"
+version: '3'
 services:
-  chrome:
-    image: selenium/node-chrome:4.8.1-20230306
-    shm_size: 2gb
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-
-  firefox:
-    image: selenium/node-firefox:4.8.1-20230306
-    shm_size: 2gb
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-
-  selenium-hub:
-    image: selenium/hub:4.8.1-20230306
-    container_name: selenium-hub
+  selenoid:
+    image: "aerokube/selenoid"
+    network_mode: bridge
+    restart: always
     ports:
-      - "4442:4442"
-      - "4443:4443"
       - "4444:4444"
+    volumes:
+      - "$PWD:/etc/selenoid/" # assumed current dir contains browsers.json
+      - "/var/run/docker.sock:/var/run/docker.sock"

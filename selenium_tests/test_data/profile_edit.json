@@ -1,0 +1,35 @@
+{
+  "valid_user_edit": {
+    "username": "modifiedUsernameAutoTestt",
+      "display_name": "Modified display name",
+    "display_name_chrome": "Modified display name ch",
+    "display_name_firefox": "Modified displayed name fx",
+    "biography": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+    "website": "https://www.mediafax.ro/",
+    "twitter_username": "twitterTestUser",
+    "community_portal_username": "communityTestUsername123",
+    "people_directory_username": "peopleDirectoryUsername123",
+    "matrix_nickname": "matrixNickname123",
+    "country_code": "RO",
+    "country_value": "Romania",
+    "city": "Satu Mare",
+    "timezone": "Europe/Bucharest",
+    "preferred_language": "ro",
+    "involved_from_month_number": "2",
+    "involved_from_month_value": "Feb",
+    "involved_from_year": "2017"
+  },
+  "valid_user_edit_with_symbols":{
+      "username_with_valid_symbols_firefox": "5Testing@and.with+and-and_",
+      "username_with_valid_symbols_chrome": "6Testing@and.with+and-and_"
+  },
+  "invalid_username_with_symbols": {
+    "username_with_invalid_symbols": "testMozilla12^"
+  },
+  "uppercase_lowercase_valid_username": {
+    "uppercase_lowercase_username": "fICENCEp"
+  },
+  "biography_field_with_html_data": {
+    "biography_html_data": "Test\n<b>What the</b>\n\n<blockquote> Another test </blockquote>\n\n<code>\n\nhost_ip = socket.gethostbyname(socket.gethostname())\n\nif browser == \"chrome\":\nbrowser_options = ChromeOptions()\nbrowser_options.add_argument(\"-headless\")\nbrowser_options.add_argument('-window-size=1200x600')\nbrowser_options.add_argument(\"-disable-gpu\")\nbrowser_options.add_argument(\"--log-level=3\")\n\nelse:\nbrowser_options = FirefoxOptions()\nbrowser_options.add_argument(\"-headless\")\nbrowser_options.add_argument('-window-size=1200x600')\nbrowser_options.add_argument(\"-disable-gpu\")\nbrowser_options.log.level = 'warn'\n\ndriver = webdriver.Remote(\ncommand_executor=f'http://{host_ip}:4444',\noptions=browser_options\n)\n\n</code>\n\n<ul>\n<li> Test</li>\n<li>We</li>\n</ul>\n\n<ol>\n<li><i>www</i></li>\n</ol>\n\n<strong>Emil</strong>\n\n "
+  }
+}

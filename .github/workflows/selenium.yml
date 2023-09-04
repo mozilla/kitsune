@@ -1,0 +1,202 @@
+name: Selenium Tests
+
+on:
+    schedule:
+        - cron: '0 5 * * 1,3,5'
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+        TEST_ACCOUNT_12: ${{secrets.AUTOMATION_TEST_ACCOUNT_12}}
+        TEST_ACCOUNT_13: ${{secrets.AUTOMATION_TEST_ACCOUNT_13}}
+        TEST_ACCOUNT_MESSAGE_1: ${{secrets.AUTOMATION_TEST_ACCOUNT_MESSAGE_1}}
+        TEST_ACCOUNT_MESSAGE_2: ${{secrets.AUTOMATION_TEST_ACCOUNT_MESSAGE_2}}
+        TEST_ACCOUNT_MESSAGE_3: ${{secrets.AUTOMATION_TEST_ACCOUNT_MESSAGE_3}}
+        TEST_ACCOUNT_MESSAGE_4: ${{secrets.AUTOMATION_TEST_ACCOUNT_MESSAGE_4}}
+        TEST_ACCOUNT_MESSAGE_5: ${{secrets.AUTOMATION_TEST_ACCOUNT_MESSAGE_5}}
+        TEST_ACCOUNT_MESSAGE_6: ${{secrets.AUTOMATION_TEST_ACCOUNT_MESSAGE_6}}
+        TEST_ACCOUNT_SPECIAL_CHARS: ${{secrets.AUTOMATION_TEST_ACCOUNT_SPECIAL_CHARS}}
+        TEST_ACCOUNTS_PS: ${{secrets.AUTOMATION_ACCOUNTS_PASSWORD}}
+        TEST_ACCOUNT_MODERATOR: ${{secrets.AUTOMATION_MODERATOR_ACCOUNT}}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          pip3 install --user poetry
+          poetry install
+      - name: Start Selenoid container
+        working-directory: selenium_tests/docker/
+        run: |
+          docker pull selenoid/firefox:latest
+          docker pull selenoid/chrome:latest
+          docker-compose build
+          docker-compose up -d
+      - name: Run Homepage tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+          poetry run pytest -m homePageTests -n 2 --reruns 2 --browser firefox --html=reports/firefox_homepage_tests_report.html --capture=tee-sys
+      - name: Run Homepage tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m homePageTests -n 2 --reruns 2 --browser chrome --html=reports/chrome_homepage_tests_report.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+          docker compose restart
+      - name: Run Top-Navbar tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+          poetry run pytest -m topNavbarTests -n 2 --reruns 2 --browser firefox --html=reports/firefox_top_navbar_tests_report.html --capture=tee-sys
+      - name: Run Top-Navbar tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+          poetry run pytest -m topNavbarTests -n 2 --reruns 2 --browser chrome --html=reports/chrome_top_navbar_tests_report.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+          docker compose restart
+      - name: Run Footer tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+          poetry run pytest -m footerSectionTests -n 2 --reruns 2 --browser firefox --html=reports/firefox_footer_tests_report.html --capture=tee-sys
+      - name: Run Footer tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m footerSectionTests -n 2 --reruns 2 --browser chrome --html=reports/chrome_footer_tests_report.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+          docker compose restart
+      - name: Run Contribute Pages tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+          poetry run pytest -m contributePagesTests -n 2 --reruns 2 --browser firefox --html=reports/firefox_contribute_page_tests_report.html --capture=tee-sys
+      - name: Run Contribute Page tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m contributePagesTests -n 2 --reruns 2 --browser chrome --html=reports/chrome_contribute_page_tests_report.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+          docker compose restart
+      - name: Run Messaging System Tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+          poetry run pytest -m messagingSystem -n 2 --reruns 2 --browser firefox --html=reports/firefox_messaging_system_tests_report.html --capture=tee-sys
+      - name: Run Messaging System Tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m messagingSystem -n 2 --reruns 2 --browser chrome --html=reports/chrome_messaging_system_tests_report.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+          docker compose restart
+      - name: Run User Contribution Page Tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+          poetry run pytest -m userContributionTests -n 2 --reruns 2 --browser firefox --html=reports/firefox_user_contribution_tests.html --capture=tee-sys
+      - name: Run User Contribution Page Tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userContributionTests -n 2 --reruns 2 --browser chrome --html=reports/chrome_user_contribution_tests.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+            docker compose restart
+      - name: Run User Page Tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userPageTests -n 2 --reruns 2 --browser firefox --html=reports/firefox_user_page_tests.html --capture=tee-sys
+      - name: Run User Page Tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userPageTests -n 2 --reruns 2 --browser chrome --html=reports/chrome_user_page_tests.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+            docker compose restart
+      - name: Run User Settings Tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userSettings -n 2 --reruns 2 --browser firefox --html=reports/firefox_user_settings_page_tests.html --capture=tee-sys
+      - name: Run User Settings Tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userSettings -n 2 --reruns 2 --browser chrome --html=reports/chrome_user_settings_page_tests.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+            docker compose restart
+      - name: Run User Profile Tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userProfile -n 2 --reruns 2 --browser firefox --html=reports/firefox_user_profile_page_tests.html --capture=tee-sys
+      - name: Run User Profile Tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userProfile -n 2 --reruns 2 --browser chrome --html=reports/chrome_user_profile_page_tests.html --capture=tee-sys
+      - name: Restart Selenoid container
+        working-directory: selenium_tests/docker/
+        if: success() || failure()
+        run: |
+            docker compose restart
+      - name: Run User Questions Tests (Firefox)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userQuestions -n 2 --reruns 2 --browser firefox --html=reports/firefox_user_questions_page_tests.html --capture=tee-sys
+      - name: Run User Questions Tests (Chrome)
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            poetry run pytest -m userQuestions -n 2 --reruns 2 --browser chrome --html=reports/chrome_user_questions_page_tests.html --capture=tee-sys
+      - name: Stop Selenoid containers
+        if: success() || failure()
+        working-directory: selenium_tests/docker/
+        run: |
+          docker-compose down
+      - name: Combine Reports
+        working-directory: selenium_tests/
+        if: success() || failure()
+        run: |
+            cat reports/*.html > reports/combined_report.html
+      - name: Upload the combined test report as artifact
+        if: success() || failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Selenium test report
+          path: |
+            selenium_tests/reports/
