@@ -3,9 +3,9 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium_tests.core.base_page import BasePage
 
 
-class ContributePage(BasePage):
-    __breadcrumbs = (By.XPATH, "//ol[@id='breadcrumbs']/li")
-    __way_to_contribute_cards = (By.XPATH, "//ul[@class='svelte-5c0h9n']/a")
+class MyProfileMySubscriptions(BasePage):
+    __my_profile_user_navbar_options = (By.XPATH, "//ul[@id='user-nav']/li/a")
+    __my_profile_user_navbar_selected_element = (By.XPATH, "//a[@class='selected']")
 
     def __init__(self, driver: WebDriver):
         super().__init__(driver)

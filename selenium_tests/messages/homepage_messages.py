@@ -5,3 +5,4 @@ class HomepageMessages:
         "Grow and share your expertise with others. Answer questions and improve "
         "our knowledge base."
     )
+    EXPECTED_FEATURED_ARTICLES_COUNT = 4
