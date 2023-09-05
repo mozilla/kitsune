@@ -685,6 +685,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "rest_framework",
     "statici18n",
     "watchman",
+    "bandit",
     # 'axes',
     # Extra app for python migrations.
     "django_extensions",
@@ -842,13 +843,18 @@ EMAIL_LOGGING_REAL_BACKEND = config(
     "EMAIL_LOGGING_REAL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
 )
 EMAIL_SUBJECT_PREFIX = config("EMAIL_SUBJECT_PREFIX", default="[support] ")
-if EMAIL_LOGGING_REAL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
+if EMAIL_LOGGING_REAL_BACKEND in (
+    "bandit.backends.smtp.HijackSMTPBackend",
+    "django.core.mail.backends.smtp.EmailBackend",
+):
     EMAIL_HOST = config("EMAIL_HOST")
     EMAIL_HOST_USER = config("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
     EMAIL_PORT = config("EMAIL_PORT", default=25, cast=int)
     EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=False, cast=bool)
 
+# If using "bandit.backends.smtp.HijackSMTPBackend", set the target email address(es).
+BANDIT_EMAIL = config("BANDIT_EMAIL", default="", cast=Csv())
 
 # Celery
 CELERY_TASK_PROTOCOL = 2
