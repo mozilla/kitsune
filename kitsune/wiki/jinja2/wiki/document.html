@@ -76,16 +76,6 @@
       </div>
     </header>
 
-    {% if show_cta_banner %}
-      {{ sumo_banner(
-        id="id_ff_alert",
-        text=_('Unlock more from the Firefox suite: Sync, Monitor, Relay and <a href="https://www.mozilla.org/firefox/accounts/">more.</a>'),
-        image=webpack_static('sumo/img/FF_Master__icon.svg'),
-        button_text=_('Start Now'),
-        button_link="https://accounts.firefox.com",
-        modifier_class="hide-on-mobile",
-      ) }}
-    {% endif %}
     <article class="wiki-doc">
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}

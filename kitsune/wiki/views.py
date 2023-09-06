@@ -125,9 +125,6 @@ def doc_page_cache(view):
 def document(request, document_slug, document=None):
     """View a wiki document."""
 
-    # Whether or not the sumo banner CTA in KB should be visible
-    show_cta_banner = False
-
     fallback_reason = None
     full_locale_name = None
 
@@ -264,23 +261,6 @@ def document(request, document_slug, document=None):
         breadcrumbs.append((product.get_absolute_url(), product.title))
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
-    # Decide whether the sumo banner should be displayed in the KB.
-    # Base the decision on the English version of the document. If this is True
-    # all translation should display the banner
-    if doc.parent and doc.locale != settings.WIKI_DEFAULT_LANGUAGE:
-        doc_for_banner = (
-            doc.parent if doc.parent.locale == settings.WIKI_DEFAULT_LANGUAGE else None
-        )
-    else:
-        doc_for_banner = doc
-
-    if (
-        settings.SUMO_BANNER_STRING
-        and doc_for_banner
-        and not request.user.is_authenticated
-        and any(x in doc_for_banner.slug for x in settings.SUMO_BANNER_STRING)
-    ):
-        show_cta_banner = True
 
     data = {
         "document": doc,
@@ -295,7 +275,6 @@ def document(request, document_slug, document=None):
         "document_css_class": document_css_class,
         "any_localizable_revision": any_localizable_revision,
         "full_locale_name": full_locale_name,
-        "show_cta_banner": show_cta_banner,
         "switching_devices_product": switching_devices_product,
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,
