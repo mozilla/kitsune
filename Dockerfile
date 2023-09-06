@@ -13,7 +13,7 @@ ENV LANG=C.UTF-8 \
     POETRY_VERSION=1.3.2 \
     PIP_VERSION=23.0
 
-RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
+RUN useradd -d /app -M --uid 1000 --shell /bin/bash kitsune
 
 RUN set -xe \
     && apt-get update && apt-get install apt-transport-https \
