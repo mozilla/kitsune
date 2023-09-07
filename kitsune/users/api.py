@@ -53,14 +53,10 @@ def usernames(request):
     if not request.user.is_authenticated:
         return []
 
-    profile_ids = list(
-        Profile.objects.exclude(is_fxa_migrated=False)
-        .filter(Q(name__istartswith=pre))
-        .values_list("user_id", flat=True)[:10]
-    )
     users = (
-        User.objects.filter(Q(username__istartswith=pre) | Q(id__in=profile_ids))
-        .filter(is_active=True)
+        User.objects.filter(is_active=True)
+        .exclude(profile__is_fxa_migrated=False)
+        .filter(Q(username__istartswith=pre) | Q(profile__name__istartswith=pre))
         .select_related("profile")
     )[:10]
 
