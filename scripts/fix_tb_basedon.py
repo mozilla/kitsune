@@ -3,7 +3,7 @@
 
 """
 Finds revisions from the Thunderbird migration that don't have based_on
-set correctly, and are still relavent, and fixes that.
+set correctly, and are still relevent, and fixes that.
 
 Run this script like `./manage.py runscript fix_tb_basedon`.
 """
