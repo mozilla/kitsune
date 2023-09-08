@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, OuterRef, Subquery
+from django.db.models import Count, F, OuterRef, Subquery
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.utils.translation import gettext as _
@@ -55,7 +55,9 @@ def sort_threads(threads_, sort=0, desc=0):
     elif sort == 4:
         return threads_.order_by(prefix + "replies").all()
     elif sort == 5:
-        return threads_.order_by(prefix + "last_post__created").all()
+        if desc:
+            return threads_.order_by(F("last_post__created").desc(nulls_last=True)).all()
+        return threads_.order_by(F("last_post__created").asc(nulls_first=True)).all()
 
     # If nothing matches, use default sorting
     return threads_.all()

@@ -1,3 +1,4 @@
+from django.db.models import F
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
@@ -28,7 +29,9 @@ class ThreadsFeed(Feed):
         return forum.description
 
     def items(self, forum):
-        return forum.thread_set.order_by("-last_post__created")[: constants.THREADS_PER_PAGE]
+        return forum.thread_set.order_by(F("last_post__created").desc(nulls_last=True))[
+            : constants.THREADS_PER_PAGE
+        ]
 
     def item_title(self, item):
         return item.title
