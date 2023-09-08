@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta, timezone
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.cache import cache
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from elasticsearch_dsl import A
 
 from kitsune.products.models import Product
@@ -148,7 +148,7 @@ def top_contributors_l10n(
     users = (
         User.objects.filter(created_revisions__in=revisions, is_active=True)
         .annotate(query_count=Count("created_revisions"))
-        .order_by("-query_count")
+        .order_by(F("query_count").desc(nulls_last=True))
         .select_related("profile")
     )
     total = users.count()
