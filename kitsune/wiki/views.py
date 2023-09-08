@@ -278,6 +278,7 @@ def document(request, document_slug, document=None):
         "switching_devices_product": switching_devices_product,
         "switching_devices_topic": switching_devices_topic,
         "switching_devices_subtopics": switching_devices_subtopics,
+        "show_kb_banner": not product.slug == "firefox",
     }
 
     return render(request, "wiki/document.html", data)
