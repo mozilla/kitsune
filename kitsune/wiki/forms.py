@@ -229,8 +229,6 @@ class DocumentForm(forms.ModelForm):
         if parent_doc:
             # Products are not set on translations.
             doc.products.remove(*[p for p in doc.products.all()])
-            # A child always inherits parent topics.
-            doc.topics.add(*[t for t in parent_doc.topics.all()])
 
         return doc
 
