@@ -745,6 +745,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             self.parent.slug if self.parent else self.slug
         ) in settings.FIREFOX_SWITCHING_DEVICES_ARTICLES
 
+    @property
+    def gets_mozilla_account_cta(self):
+        return (
+            self.parent.slug if self.parent else self.slug
+        ) in settings.MOZILLA_ACCOUNT_ARTICLES
+
 
 class AbstractRevision(models.Model):
     # **%(class)s** is being used because it will allow  a unique reverse name for the field
