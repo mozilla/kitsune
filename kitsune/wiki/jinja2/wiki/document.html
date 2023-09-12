@@ -1,9 +1,9 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications, related_products_sidebar with context %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
-{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list, related_documents, kb_subtopic_tabs  %}
+{% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, inpage_contact_cta, topic_list, related_documents, kb_subtopic_tabs  %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
-{% from "includes/common_macros.html" import download_firefox, survey_cta_banner %}
+{% from "includes/common_macros.html" import download_firefox, sumo_banner, survey_cta_banner %}
 {% from "questions/includes/aaq_macros.html" import aaq_widget %}
 {% set classes = 'document' %}
 {% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
@@ -88,6 +88,10 @@
         {{ kb_subtopic_tabs(request, settings, switching_devices_product, switching_devices_topic, switching_devices_subtopics, document) }}
       {% endif %}
 
+      {% if document.gets_mozilla_account_cta %}
+        {{ inpage_contact_cta(product=product, product_key='mozilla-account') }}
+      {% endif %}
+      
       {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
       {% if share_link %}
         <p class="share-link">

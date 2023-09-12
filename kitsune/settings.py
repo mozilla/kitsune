@@ -1252,3 +1252,16 @@ FIREFOX_SWITCHING_DEVICES_ARTICLES = config(
 FIREFOX_SWITCHING_DEVICES_TOPIC = config(
     "FIREFOX_SWITCHING_DEVICES_TOPIC", default="back-up-your-data"
 )
+
+# Slugs of articles that have a special CTA for Mozilla account
+MOZILLA_ACCOUNT_ARTICLES = [
+    "firefox-accounts-supportmozillaorg",
+    "log-pocket-your-firefox-account",
+    "how-do-i-delete-my-firefox-account",
+    "how-reset-your-password-without-account-recovery-keys-access-data",
+    "reset-your-firefox-account-password-recovery-keys",
+    "what-if-im-locked-out-two-step-authentication",
+    "im-having-problems-my-firefox-account",
+    "accounts-blocked",
+    "im-having-problems-confirming-my-firefox-account",
+]
