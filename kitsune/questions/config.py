@@ -650,6 +650,17 @@ products = OrderedDict(
                 ),
             },
         ),
+        (
+            "mozilla-account",
+            {
+                "name": _lazy("Mozilla Account"),
+                "subtitle": _lazy("Mozilla account is the account system for Mozilla"),
+                "extra_fields": [],
+                "tags": [],
+                "product": "mozilla-account",
+                "categories": OrderedDict([]),
+            },
+        ),
     ]
 )
 
