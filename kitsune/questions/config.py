@@ -494,17 +494,6 @@ products = OrderedDict(
             },
         ),
         (
-            "pocket",
-            {
-                "name": _lazy("Pocket"),
-                "subtitle": _lazy("The web’s most intriguing articles"),
-                "extra_fields": [],
-                "tags": ["pocket"],
-                "product": "pocket",
-                "categories": OrderedDict([]),
-            },
-        ),
-        (
             "hubs",
             {
                 "name": _lazy("Hubs"),
