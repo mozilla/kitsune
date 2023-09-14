@@ -17,14 +17,13 @@ RUN useradd -d /app -M --uid 1000 --shell /bin/bash kitsune
 
 RUN set -xe \
     && apt-get update && apt-get install apt-transport-https \
-    && curl -sL https://deb.nodesource.com/setup_lts.x | bash - \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     gettext build-essential \
     libxml2-dev libxslt1-dev zlib1g-dev git \
     libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
     libmariadb3 mariadb-client \
-    optipng nodejs zip \
+    optipng zip \
     # python
     && python -m venv /venv \
     && pip install --upgrade pip==${PIP_VERSION} \
@@ -33,7 +32,9 @@ RUN set -xe \
     # clean up
     && rm -rf /var/lib/apt/lists/*
 
+COPY ./scripts/install_nodejs.sh ./
 COPY pyproject.toml poetry.lock ./
+RUN ./install_nodejs.sh && rm ./install_nodejs.sh
 RUN poetry install
 
 #########################
