@@ -10,8 +10,8 @@ ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/venv/bin:$PATH" \
-    POETRY_VERSION=1.3.2 \
-    PIP_VERSION=23.0
+    POETRY_VERSION=1.6 \
+    PIP_VERSION=23.2.1
 
 RUN useradd -d /app -M --uid 1000 --shell /bin/bash kitsune
 
