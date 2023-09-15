@@ -287,6 +287,10 @@ NON_SUPPORTED_LOCALES = {
     "uz": None,
 }
 
+FALLBACK_LANGUAGE_URL_MAP = dict(
+    (k.lower(), v if v else "en-US") for k, v in NON_SUPPORTED_LOCALES.items()
+)
+
 ES_LOCALE_ANALYZERS = {
     "ar": "arabic",
     "bg": "bulgarian",
@@ -500,7 +504,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware",
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
-    "kitsune.sumo.middleware.LocaleURLMiddleware",
+    "kitsune.sumo.middleware.LocaleMiddleware",
     "kitsune.sumo.middleware.Forbidden403Middleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",

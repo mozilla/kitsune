@@ -23,6 +23,10 @@ from kitsune.lib.tlds import VALID_TLDS
 from kitsune.sumo import paginator
 
 
+LANGUAGES_WITH_FALLBACKS_REGEX = re.compile(
+    rf"^/(?P<language>{'|'.join(settings.NON_SUPPORTED_LOCALES.keys())})(?P<slash>/|$)",
+    re.IGNORECASE,
+)
 POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
 POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 
@@ -204,8 +208,47 @@ def uselocale(locale):
     """
     currlocale = translation.get_language()
     translation.activate(locale)
-    yield
-    translation.activate(currlocale)
+    try:
+        yield
+    finally:
+        translation.activate(currlocale)
+
+
+def split_into_language_and_path(path):
+    """
+    Given a URL path that starts with a language, returns the
+    language and the rest of the path after the language.
+    """
+    language, slash, rest_of_path = path.lstrip("/").partition("/")
+    return (language, f"{slash}{rest_of_path}")
+
+
+def normalize_for_sumo(language):
+    """
+    Given a language code, returns the language code supported by SUMO in the
+    proper case, for example "eN-us" --> "en-US" or "sC" --> "it", or None if
+    SUMO doesn't support the language code.
+    """
+    if not language:
+        return None
+    lc_language = language.lower()
+    return settings.LANGUAGE_URL_MAP.get(lc_language) or settings.FALLBACK_LANGUAGE_URL_MAP.get(
+        lc_language
+    )
+
+
+def get_language_from_path(path, strict=False):
+    """
+    Adds a thin layer on top of django.utils.translation.get_language_from_path
+    that handles SUMO-specific language fallbacks as well as the normalization
+    of the returned language code.
+    """
+    language_from_path = translation.get_language_from_path(path, strict=strict)
+
+    if not language_from_path and (mo := LANGUAGES_WITH_FALLBACKS_REGEX.match(path)):
+        language_from_path = mo.group("language")
+
+    return normalize_for_sumo(language_from_path)
 
 
 class Progress(object):

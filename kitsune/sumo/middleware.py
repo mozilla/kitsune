@@ -26,11 +26,23 @@ from django.utils.deprecation import MiddlewareMixin
 from django.utils.encoding import iri_to_uri, smart_str
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
+import django.middleware.locale
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
+from kitsune.sumo.utils import (
+    get_language_from_path,
+    normalize_for_sumo,
+    split_into_language_and_path,
+)
 from kitsune.sumo.views import handle403
 from kitsune.users.auth import FXAAuthBackend
+
+
+LANGUAGES_WITH_COUNTRY_CODES_REGEX = re.compile(
+    rf"^/(?P<language>{'|'.join(lang for lang in settings.SUMO_LANGUAGES if '-' in lang)})(?P<slash>/|$)",
+    re.IGNORECASE,
+)
 
 
 class EnforceHostIPMiddleware(EnforceHostMiddleware):
@@ -106,6 +118,79 @@ class ValidateAccessTokenMiddleware(SessionRefresh):
                 profile.fxa_refresh_token = ""
                 profile.save()
                 logout(request)
+
+
+class LocaleMiddleware(django.middleware.locale.LocaleMiddleware):
+    """
+    Wrapper around Django's LocaleMiddleware that handles language code redirects
+    as well as the normalization of request.LANGUAGE_CODE and the language code of
+    any outgoing redirects.
+    """
+
+    def process_request(self, request):
+        normalized_language_from_path = get_language_from_path(request.path_info)
+
+        # Handle redirects requested via the "lang" query parameter.
+        # The "lang" query parameter overrides everything, even the language in the path.
+        if normalized_lang := normalize_for_sumo(request.GET.get("lang")):
+            if normalized_language_from_path:
+                # The path starts with a language code, so let's replace it.
+                _, path = split_into_language_and_path(request.path_info)
+                new_full_path = f"/{normalized_lang}{path}"
+            else:
+                new_full_path = f"/{normalized_lang}{request.path_info}"
+
+            # Remove "lang" from the query parameters, so we don't create an infinite loop,
+            # and if any query parameters remain, add them back to the new full path.
+            query = request.GET.copy()
+            query.pop("lang")
+            if query:
+                new_full_path += f"?{query.urlencode()}"
+
+            if request.user.is_anonymous:
+                request.session[settings.LANGUAGE_COOKIE_NAME] = normalized_lang
+
+            return HttpResponseRedirect(new_full_path)
+
+        # Handle redirects due to normalization, supported variants, and explicit fallbacks.
+        # Examples:
+        #    Requested --> Redirect
+        #       /en-us --> /en-US  (normalization of case)
+        #       /fr-ca --> /fr     (supported variant)
+        #       /en-gb --> /en-US  (supported variant)
+        #       /sc    --> /it     (explicit fallback)
+        #       /ak    --> /en-US  (explicit fallback)
+        if normalized_language_from_path:
+            requested_language, path = split_into_language_and_path(request.path_info)
+            if requested_language != normalized_language_from_path:
+                new_full_path = f"/{normalized_language_from_path}{path}"
+                if request.GET:
+                    new_full_path += f"?{request.GET.urlencode()}"
+                return HttpResponseRedirect(new_full_path)
+
+        response = super().process_request(request)
+
+        # Normalize the language code set by django.middleware.locale.LocaleMiddleware.
+        request.LANGUAGE_CODE = normalize_for_sumo(request.LANGUAGE_CODE)
+
+        return response
+
+    def process_response(self, request, response):
+        """
+        Normalize the language code of any outgoing redirects as needed.
+        """
+        response = super().process_response(request, response)
+        if (
+            isinstance(response, (HttpResponseRedirect, HttpResponsePermanentRedirect))
+            and response.url.startswith("/")
+            and (mo := LANGUAGES_WITH_COUNTRY_CODES_REGEX.match(response.url))
+            and (language := mo.group("language"))
+            != (normalized_language := normalize_for_sumo(language))
+        ):
+            response["Location"] = response.url.replace(
+                f"/{language}", f"/{normalized_language}", count=1
+            )
+        return response
 
 
 class LocaleURLMiddleware(MiddlewareMixin):
