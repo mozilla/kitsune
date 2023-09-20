@@ -17,7 +17,7 @@ from django.db.models import Aggregate, TextField  # TODO: Delete once we move t
 from django.db.models.functions import TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
@@ -26,6 +26,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product, Topic
+from kitsune.products.views import product_landing
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -1748,3 +1749,18 @@ def parse_accept_lang_header(lang_string):
     # Changed here to get the locale name only
     result = [k for k, v in result]
     return result
+
+
+def pocket_article(request, article_id=None, document_slug=None, extra_path=None):
+    """Pocket articles migrated to SUMO are redirected to the new URL"""
+    try:
+        # If we migrated the document, we should be able to find it
+        Document.objects.get(slug=document_slug)
+    except Document.DoesNotExist:
+        # If document doesn't exist, fail back to Pocket product page with message
+        messages.warning(
+            request,
+            _("Sorry, that article wasn't found."),
+        )
+        return redirect(product_landing, slug="pocket", permanent=True)
+    return HttpResponseRedirect(reverse("wiki.document", args=[document_slug]))

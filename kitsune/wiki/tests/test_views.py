@@ -2320,3 +2320,24 @@ class FallbackSystem(TestCaseBase):
         trans_content = "This article is translated into fr"
         assert en_content not in doc_content
         assert trans_content in doc_content
+
+
+class PocketArticleTests(TestCaseBase):
+    """Pocket article redirect tests."""
+
+    def setUp(self):
+        ProductFactory()
+
+    def test_pocket_redirect_to_kb_for_document_that_exists(self):
+        """Are we redirecting to our article page?"""
+        doc = DocumentFactory(title="an article title", slug="article-title")
+        RevisionFactory(document=doc, is_approved=True)
+        pocket_style_url = f"/kb/pocket/1111-{doc.slug}"
+        response = self.client.get(pocket_style_url, follow=True)
+        self.assertEqual(response.redirect_chain[-1][0], "/en-US/kb/article-title")
+
+    def test_pocket_redirect_when_kb_article_doesnt_exist(self):
+        """No match found, we should be sent to /products/pocket"""
+        pocket_style_url = "/kb/pocket/1111-wont-match"
+        response = self.client.get(pocket_style_url, follow=True)
+        self.assertEqual(response.redirect_chain[-1][0], "/products/pocket")
