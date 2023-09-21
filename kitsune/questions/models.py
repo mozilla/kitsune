@@ -1,7 +1,7 @@
 import logging
 import re
 from datetime import date, datetime, timedelta
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 import actstream
 import actstream.actions
@@ -15,10 +15,8 @@ from django.db.models import Count
 from django.db.models.signals import post_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
-from django.http import Http404
-from django.urls import resolve
-from django.utils.translation import override as translation_override
-from django.utils.translation import pgettext
+from django.urls import is_valid_path
+from django.utils.translation import override, pgettext
 from elasticsearch import ElasticsearchException
 from product_details import product_details
 from taggit.models import Tag
@@ -28,13 +26,15 @@ from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AnswerManager, QuestionLocaleManager, QuestionManager
 from kitsune.questions.tasks import update_answer_pages, update_question_votes
+from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
-from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.wiki.models import Document
+
 
 log = logging.getLogger("k.questions")
 
@@ -434,26 +434,19 @@ class Question(AAQBase, BigVocabTaggableMixin):
         we don't validate the existence of the question (this saves us
         from making a million or so db calls).
         """
-        parsed = urlparse(url)
-        locale, path = split_path(parsed.path)
+        parsed = urlsplit(url)
+        language, _ = split_into_language_and_path(parsed.path)
 
-        path = "/" + path
+        with override(language):
+            match = is_valid_path(parsed.path)
 
-        try:
-            view, view_args, view_kwargs = resolve(path)
-        except Http404:
+        if not (match and match.url_name == "questions.details"):
             return None
 
-        # Avoid circular import. kitsune.question.views import this.
-        import kitsune.questions.views
-
-        if view != kitsune.questions.views.question_details:
-            return None
-
-        question_id = view_kwargs["question_id"]
+        question_id = int(match.captured_kwargs["question_id"])
 
         if id_only:
-            return int(question_id)
+            return question_id
 
         try:
             question = cls.objects.get(id=question_id)
@@ -505,7 +498,7 @@ class Question(AAQBase, BigVocabTaggableMixin):
         """Text to use in elastic more_like_this query."""
         content = [self.title, self.content]
         if self.topic:
-            with translation_override(self.locale):
+            with override(self.locale):
                 # use the question's locale, rather than the user's
                 content += [pgettext("DB: products.Topic.title", self.topic.title)]
 

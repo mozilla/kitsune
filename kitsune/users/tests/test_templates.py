@@ -5,15 +5,15 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.tests import QuestionFactory
-from kitsune.sumo.tests import get
+from kitsune.sumo.tests import TestCase, get
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.models import Watch
 from kitsune.users.models import Profile
-from kitsune.users.tests import TestCaseBase, UserFactory, add_permission
+from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import RevisionFactory
 
 
-class EditProfileTests(TestCaseBase):
+class EditProfileTests(TestCase):
     def test_edit_my_ProfileFactory(self):
         user = UserFactory()
         url = reverse("users.edit_my_profile")
@@ -106,7 +106,7 @@ class EditProfileTests(TestCaseBase):
         self.assertEqual(data["username"], profile.user.username)
 
 
-class ViewProfileTests(TestCaseBase):
+class ViewProfileTests(TestCase):
     def setUp(self):
         self.u = UserFactory(profile__name="", profile__website="")
         self.profile = self.u.profile
@@ -199,7 +199,7 @@ class ViewProfileTests(TestCaseBase):
         assert badge_title.encode() in r.content
 
 
-class FlagProfileTests(TestCaseBase):
+class FlagProfileTests(TestCase):
     def test_flagged_and_deleted_ProfileFactory(self):
         u = UserFactory()
         p = u.profile
@@ -219,7 +219,7 @@ class FlagProfileTests(TestCaseBase):
         self.assertEqual(1, len(doc("#flagged-queue form.update")))
 
 
-class EditWatchListTests(TestCaseBase):
+class EditWatchListTests(TestCase):
     """Test manage watch list"""
 
     def setUp(self):

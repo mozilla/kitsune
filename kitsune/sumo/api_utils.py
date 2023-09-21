@@ -1,11 +1,10 @@
 from zoneinfo import ZoneInfo
 
 from django import forms
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.utils.translation import pgettext
+from django.utils.translation import override, pgettext
 
 from rest_framework import fields, permissions, serializers
 from rest_framework.authentication import SessionAuthentication, CSRFCheck
@@ -13,8 +12,7 @@ from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.renderers import JSONRenderer as DRFJSONRenderer
 
-from kitsune.sumo.utils import uselocale
-from kitsune.sumo.urlresolvers import get_best_language
+from kitsune.sumo.i18n import get_language_from_request
 from kitsune.users.models import Profile
 
 
@@ -42,9 +40,7 @@ class LocaleNegotiationMixin(object):
     """A mixin for CBV to select a locale based on Accept-Language headers."""
 
     def get_locale(self):
-        accept_language = self.request.META.get("HTTP_ACCEPT_LANGUAGE", "")
-        lang = get_best_language(accept_language)
-        return lang or settings.WIKI_DEFAULT_LANGUAGE
+        return get_language_from_request(self.request)
 
     def get_serializer_context(self):
         context = super(LocaleNegotiationMixin, self).get_serializer_context()
@@ -88,7 +84,7 @@ class LocalizedCharField(fields.CharField):
 
         if locale is None:
             return value
-        with uselocale(locale):
+        with override(locale):
             return pgettext(self.l10n_context, value)
 
 

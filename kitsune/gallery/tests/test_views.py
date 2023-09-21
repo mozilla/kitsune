@@ -6,7 +6,7 @@ from kitsune.gallery import views
 from kitsune.gallery.models import Image, Video
 from kitsune.gallery.tests import ImageFactory, VideoFactory
 from kitsune.gallery.views import _get_media_info
-from kitsune.sumo.tests import LocalizingClient, TestCase, post
+from kitsune.sumo.tests import TestCase, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 
@@ -14,8 +14,6 @@ TEST_IMG = "kitsune/upload/tests/media/test.jpg"
 
 
 class DeleteEditImageTests(TestCase):
-    client_class = LocalizingClient
-
     def setUp(self):
         super(DeleteEditImageTests, self).setUp()
 
@@ -158,8 +156,6 @@ class ViewHelpersTests(TestCase):
 
 
 class SearchTests(TestCase):
-    client_class = LocalizingClient
-
     def test_image_search(self):
         ImageFactory(title="fx2-quicktimeflash.png")
         ImageFactory(title="another-image.png")

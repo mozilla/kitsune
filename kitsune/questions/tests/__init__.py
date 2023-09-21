@@ -3,14 +3,8 @@ from datetime import datetime
 import factory
 
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
+from kitsune.sumo.tests import FuzzyUnicode, TestCase
 from kitsune.users.tests import UserFactory
-
-
-class TestCaseBase(TestCase):
-    """Base TestCase for the Questions app test cases."""
-
-    client_class = LocalizingClient
 
 
 def tags_eq(tagged_object, tag_names):

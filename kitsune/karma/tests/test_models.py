@@ -1,5 +1,6 @@
 from kitsune.karma.models import Title
-from kitsune.users.tests import TestCase, UserFactory
+from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory
 
 
 class KarmaTitleTests(TestCase):

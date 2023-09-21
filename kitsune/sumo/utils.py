@@ -1,7 +1,6 @@
 import json
 import re
 import sys
-from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache
 from urllib.parse import urlparse
@@ -12,7 +11,6 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.templatetags.static import static
-from django.utils import translation
 from django.utils.encoding import iri_to_uri
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django_ratelimit.core import is_ratelimited as is_ratelimited_core
@@ -23,10 +21,6 @@ from kitsune.lib.tlds import VALID_TLDS
 from kitsune.sumo import paginator
 
 
-LANGUAGES_WITH_FALLBACKS_REGEX = re.compile(
-    rf"^/(?P<language>{'|'.join(settings.NON_SUPPORTED_LOCALES.keys())})(?P<slash>/|$)",
-    re.IGNORECASE,
-)
 POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
 POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
 
@@ -184,71 +178,6 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
         raise TruncationException("Can't truncate enough to satisfy " "`max_length`.")
     dupe[key] = dupe[key][:-diff]
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
-
-
-@contextmanager
-def uselocale(locale):
-    """
-    Context manager for setting locale and returning to previous locale.
-
-    This is useful for when doing translations for things run by
-    celery workers or out of the HTTP request handling path. Example:
-
-        with uselocale('xx'):
-            subj = _('Subject of my email')
-            msg = render_email(email_template, email_kwargs)
-            mail.send_mail(subj, msg, ...)
-
-    In Kitsune, you can get the right locale from Profile.locale and
-    also request.LANGUAGE_CODE.
-
-    If Kitsune is handling an HTTP request already, you don't have to
-    run uselocale---the locale will already be set correctly.
-
-    """
-    currlocale = translation.get_language()
-    translation.activate(locale)
-    try:
-        yield
-    finally:
-        translation.activate(currlocale)
-
-
-def split_into_language_and_path(path):
-    """
-    Given a URL path that starts with a language, returns the
-    language and the rest of the path after the language.
-    """
-    language, slash, rest_of_path = path.lstrip("/").partition("/")
-    return (language, f"{slash}{rest_of_path}")
-
-
-def normalize_for_sumo(language):
-    """
-    Given a language code, returns the language code supported by SUMO in the
-    proper case, for example "eN-us" --> "en-US" or "sC" --> "it", or None if
-    SUMO doesn't support the language code.
-    """
-    if not language:
-        return None
-    lc_language = language.lower()
-    return settings.LANGUAGE_URL_MAP.get(lc_language) or settings.FALLBACK_LANGUAGE_URL_MAP.get(
-        lc_language
-    )
-
-
-def get_language_from_path(path, strict=False):
-    """
-    Adds a thin layer on top of django.utils.translation.get_language_from_path
-    that handles SUMO-specific language fallbacks as well as the normalization
-    of the returned language code.
-    """
-    language_from_path = translation.get_language_from_path(path, strict=strict)
-
-    if not language_from_path and (mo := LANGUAGES_WITH_FALLBACKS_REGEX.match(path)):
-        language_from_path = mo.group("language")
-
-    return normalize_for_sumo(language_from_path)
 
 
 class Progress(object):

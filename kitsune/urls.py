@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.conf.urls.i18n import i18n_patterns
 from django.urls import include, path, re_path
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import RedirectView
@@ -9,6 +8,7 @@ from waffle.views import wafflejs
 
 from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
+from kitsune.sumo.i18n import i18n_patterns
 
 # Note: This must come before importing admin because it patches the
 # admin.
@@ -43,6 +43,9 @@ urlpatterns = i18n_patterns(
     path("locales", sumo_views.locales, name="sumo.locales"),
     re_path(r"^windows7-support(?:\\/)?$", RedirectView.as_view(url="/home/?as=u")),
 )
+
+if settings.OIDC_ENABLE:
+    urlpatterns.append(path("", include("kitsune.users.urls_oidc")))
 
 urlpatterns += [
     path("1/", include("kitsune.inproduct.urls")),

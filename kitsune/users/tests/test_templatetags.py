@@ -20,7 +20,7 @@ class HelperTestCase(TestCase):
         self.u = UserFactory()
 
     def test_profile_url(self):
-        self.assertEqual("/user/%s/" % self.u.username, profile_url(self.u))
+        self.assertEqual("/en-US/user/%s/" % self.u.username, profile_url(self.u))
 
     def test_public_email(self):
         self.assertEqual(

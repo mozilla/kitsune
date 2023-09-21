@@ -4,15 +4,9 @@ import factory
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.contenttypes.models import ContentType
 
-from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
+from kitsune.sumo.tests import FuzzyUnicode
 from kitsune.tidings.models import Watch
 from kitsune.users.models import AccountEvent, ContributionAreas, Profile, Setting
-
-
-class TestCaseBase(TestCase):
-    """Base TestCase for the users app test cases."""
-
-    client_class = LocalizingClient
 
 
 class UserFactory(factory.django.DjangoModelFactory):

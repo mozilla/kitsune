@@ -6,14 +6,15 @@ from pyquery import PyQuery as pq
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.feeds import QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.models import Question
-from kitsune.questions.tests import QuestionFactory, TestCaseBase
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
 from kitsune.users.tests import UserFactory
 
 
-class ForumTestFeeds(TestCaseBase):
+class ForumTestFeeds(TestCase):
     def test_tagged_feed(self):
         """Test the tagged feed."""
         t = TagFactory(name="green", slug="green")

@@ -2,7 +2,7 @@
 from django.core import mail
 
 from kitsune.products.tests import ProductFactory
-from kitsune.sumo.tests import post
+from kitsune.sumo.tests import TestCase, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
@@ -17,7 +17,6 @@ from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
     RevisionFactory,
-    TestCaseBase,
 )
 
 
@@ -40,7 +39,7 @@ def _set_up_ready_watcher():
     return ready_watcher
 
 
-class ReviewTests(TestCaseBase):
+class ReviewTests(TestCase):
     """Tests for notifications sent during revision review"""
 
     def setUp(self):
@@ -215,7 +214,7 @@ class ReviewTests(TestCaseBase):
         self.assertEqual(MAJOR_SIGNIFICANCE, r.significance)
 
 
-class ReadyForL10nTests(TestCaseBase):
+class ReadyForL10nTests(TestCase):
     """Tests for notifications sent during ready for l10n"""
 
     def setUp(self):

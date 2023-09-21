@@ -3,7 +3,7 @@ from django.conf import settings
 
 from kitsune.kbforums.models import Post, Thread, ThreadLockedError
 from kitsune.kbforums.views import sort_threads
-from kitsune.sumo.tests import LocalizingClient, TestCase, get
+from kitsune.sumo.tests import TestCase, get
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
@@ -31,7 +31,7 @@ class PostFactory(factory.django.DjangoModelFactory):
 
 
 class KBForumTestCase(TestCase):
-    client_class = LocalizingClient
+    pass
 
 
 class PostTestCase(KBForumTestCase):

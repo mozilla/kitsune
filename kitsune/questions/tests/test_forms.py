@@ -4,11 +4,11 @@ from collections import OrderedDict
 from django.contrib.auth.models import AnonymousUser
 
 from kitsune.questions.forms import NewQuestionForm, WatchQuestionForm
-from kitsune.questions.tests import TestCaseBase
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
 
-class WatchQuestionFormTests(TestCaseBase):
+class WatchQuestionFormTests(TestCase):
     """Tests for WatchQuestionForm."""
 
     def test_anonymous_watch_with_email(self):
@@ -33,7 +33,7 @@ class WatchQuestionFormTests(TestCaseBase):
         assert form.is_valid()
 
 
-class TestNewQuestionForm(TestCaseBase):
+class TestNewQuestionForm(TestCase):
     """Tests for the NewQuestionForm"""
 
     def setUp(self):

@@ -7,26 +7,13 @@ from django.test.utils import override_settings
 
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question
-from kitsune.questions.tests import AnswerFactory, QuestionFactory, TestCaseBase
-from kitsune.sumo.tests import attrs_eq, post, starts_with
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
+from kitsune.sumo.tests import TestCase, attrs_eq, post, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.tests import UserFactory
 
-# These mails are generated using reverse() calls, which return different
-# results depending on whether a request is being processed at the time. This
-# is because reverse() depends on a thread-local var which is set/unset at
-# request boundaries by LocaleURLMiddleware. While a request is in progress,
-# reverse() prepends a locale code; otherwise, it doesn't. Thus, when making a
-# mock request that fires off a celery task that generates one of these emails,
-# expect a locale in reverse()d URLs. When firing off a celery task outside the
-# scope of a request, expect none.
-#
-# In production, with CELERY_TASK_ALWAYS_EAGER=False, celery tasks run in a
-# different interpreter (with no access to the thread-local), so reverse() will
-# never prepend a locale code unless passed force_locale=True. Thus, these
-# test-emails with locale prefixes are not identical to the ones sent in
-# production.
+
 ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on \
 testserver:
 
@@ -111,7 +98,7 @@ https://testserver/{locale}unsubscribe/"""
 SOLUTION_EMAIL = "Hi {to_user},\n\n" + SOLUTION_EMAIL_TO_ANONYMOUS
 
 
-class NotificationsTests(TestCaseBase):
+class NotificationsTests(TestCase):
     """Test that notifications get sent."""
 
     @mock.patch.object(QuestionReplyEvent, "fire")
@@ -278,7 +265,7 @@ class NotificationsTests(TestCaseBase):
         self.assertEqual(len(mail.outbox), 0)
 
 
-class TestAnswerNotifications(TestCaseBase):
+class TestAnswerNotifications(TestCase):
     """Assert that hitting the watch toggle toggles and that proper mails
     are sent to anonymous users, registered users, and the question
     asker."""
@@ -304,7 +291,7 @@ class TestAnswerNotifications(TestCaseBase):
             "replier": display_name(self.answer.creator),
             "question_id": self.question.id,
             "answer_id": self.answer.id,
-            "locale": "",
+            "locale": "en-US/",
             "asker": display_name(self.question.creator),
         }
 

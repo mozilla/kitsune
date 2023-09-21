@@ -6,13 +6,13 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import render
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext as _, override
 from django.views.decorators.cache import never_cache
 
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.decorators import cors_enabled
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, uselocale, webpack_static
+from kitsune.sumo.utils import get_next_url, webpack_static
 
 log = logging.getLogger("k.services")
 
@@ -41,7 +41,7 @@ def geoip_suggestion(request):
     for locale in locales:
         # English and native names for the language
         response["locales"][locale] = LOCALES.get(locale, "")
-        with uselocale(locale):
+        with override(locale):
             # This is using our JS-style string formatting.
             response[locale] = {
                 "suggestion": _("Would you like to view this page in " "%(language)s instead?"),

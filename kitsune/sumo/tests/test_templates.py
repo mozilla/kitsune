@@ -10,7 +10,7 @@ from kitsune.users.tests import UserFactory
 
 # def test_breadcrumb():
 #     """Make sure breadcrumb links start with /."""
-#     c = LocalizingClient()
+#     c = Client()
 #     response = c.get(reverse('search'))
 #
 #     doc = pq(response.content)

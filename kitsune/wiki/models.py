@@ -1,7 +1,7 @@
 import hashlib
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlsplit
 
 import waffle
 from django.conf import settings
@@ -10,18 +10,17 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
 from django.db.models import Q
-from django.http import Http404
-from django.urls import resolve
+from django.urls import is_valid_path
 from django.utils.encoding import smart_bytes
-from django.utils.translation import gettext_lazy as _lazy
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy, gettext as _, override
 from pyquery import PyQuery
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.apps import ProgrammingError
+from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.models import LocaleField, ModelBase
-from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tidings.models import NotificationsMixin
 from kitsune.wiki.config import (
@@ -57,10 +56,6 @@ class TitleCollision(Exception):
 
 class SlugCollision(Exception):
     """An attempt to create two pages of the same slug in one locale"""
-
-
-class _NotDocumentView(Exception):
-    """A URL not pointing to the document view was passed to from_url()."""
 
 
 class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPermissionMixin):
@@ -458,19 +453,19 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         host-having URLs.
 
         """
-        try:
-            components = _doc_components_from_url(
+        if not (
+            match := get_locale_and_slug_from_document_url(
                 url, required_locale=required_locale, check_host=check_host
             )
-        except _NotDocumentView:
+        ):
             return None
-        if not components:
-            return None
-        locale, path, slug = components
+
+        locale, slug = match
 
         doc = cls.objects
         if id_only:
             doc = doc.only("id")
+
         try:
             doc = doc.get(locale=locale, slug=slug)
         except cls.DoesNotExist:
@@ -506,9 +501,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
                 # don't want to override the redirects that are forcibly
                 # changing to (or staying within) a specific locale.
                 full_url = anchors[0].get("href")
-                (dest_locale, url) = split_path(full_url)
+                (dest_locale, url) = split_into_language_and_path(full_url)
                 if source_locale != dest_locale and dest_locale == settings.LANGUAGE_CODE:
-                    return "/" + source_locale + "/" + url
+                    return f"/{source_locale}{url}"
                 return full_url
 
     def redirect_document(self):
@@ -1092,44 +1087,37 @@ class DocumentImage(ModelBase):
         return "<DocumentImage: {doc} includes {img}>".format(doc=self.document, img=self.image)
 
 
-def _doc_components_from_url(url, required_locale=None, check_host=True):
-    """Return (locale, path, slug) if URL is a Document, False otherwise.
-
-    If URL doesn't even point to the document view, raise _NotDocumentView.
-
+def get_locale_and_slug_from_document_url(url, required_locale=None, check_host=True):
     """
-    # Extract locale and path from URL:
-    parsed = urlparse(url)  # Never has errors AFAICT
+    Return (locale, slug) if URL is a Document, False otherwise.
+    """
+    parsed = urlsplit(url)
+
     if check_host and parsed.netloc:
         return False
-    locale, path = split_path(parsed.path)
-    if required_locale and locale != required_locale:
-        return False
-    path = "/" + unquote(path)
 
-    try:
-        view, view_args, view_kwargs = resolve(path)
-    except Http404:
+    locale, _ = split_into_language_and_path(parsed.path)
+
+    if required_locale and (locale != required_locale):
         return False
 
-    import kitsune.wiki.views  # Views import models; models import views.
+    with override(locale):
+        match = is_valid_path(parsed.path)
 
-    if view != kitsune.wiki.views.document:
-        raise _NotDocumentView
-    return locale, path, view_kwargs["document_slug"]
+    if not (match and match.url_name == "wiki.document"):
+        return False
+
+    return (locale, match.kwargs["document_slug"])
 
 
-def points_to_document_view(url, required_locale=None):
-    """Return whether a URL reverses to the document view.
+def is_document_url(url, required_locale=None):
+    """
+    Return whether a URL reverses to the document view.
 
     To limit the universe of discourse to a certain locale, pass in a
     `required_locale`.
-
     """
-    try:
-        return not not _doc_components_from_url(url, required_locale=required_locale)
-    except _NotDocumentView:
-        return False
+    return bool(get_locale_and_slug_from_document_url(url, required_locale=required_locale))
 
 
 def user_num_documents(user):

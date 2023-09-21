@@ -9,8 +9,7 @@ from django.core.cache import cache
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import SumoPyQuery as pq
-from kitsune.sumo.tests import attrs_eq, get, post
+from kitsune.sumo.tests import SumoPyQuery as pq, TestCase, attrs_eq, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
@@ -40,7 +39,6 @@ from kitsune.wiki.tests import (
     LocaleFactory,
     RedirectRevisionFactory,
     RevisionFactory,
-    TestCaseBase,
     TranslatedRevisionFactory,
     new_document_data,
 )
@@ -115,7 +113,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
-class DocumentTests(TestCaseBase):
+class DocumentTests(TestCase):
     """Tests for the Document template"""
 
     def setUp(self):
@@ -485,7 +483,7 @@ class DocumentTests(TestCaseBase):
         self.assertEqual(doc(".wiki-doc .share-link a").attr("href"), "https://www.example.org")
 
 
-class RevisionTests(TestCaseBase):
+class RevisionTests(TestCase):
     """Tests for the Revision template"""
 
     def setUp(self):
@@ -620,7 +618,7 @@ class RevisionTests(TestCaseBase):
         assert not r2.is_ready_for_localization
 
 
-class NewDocumentTests(TestCaseBase):
+class NewDocumentTests(TestCase):
     """Tests for the New Document template"""
 
     def setUp(self):
@@ -782,7 +780,7 @@ class NewDocumentTests(TestCaseBase):
         self.assertEqual("ask", Document.objects.order_by("-id")[0].slug)
 
 
-class NewRevisionTests(TestCaseBase):
+class NewRevisionTests(TestCase):
     """Tests for the New Revision template"""
 
     def setUp(self):
@@ -1183,7 +1181,7 @@ class NewRevisionTests(TestCaseBase):
         self.assertEqual(1, len(trans_content(".user-messages .draft-warning")))
 
 
-class HistoryTests(TestCaseBase):
+class HistoryTests(TestCase):
     """Test the history listing of a document."""
 
     def setUp(self):
@@ -1235,7 +1233,7 @@ class HistoryTests(TestCaseBase):
         self.assertEqual(404, response.status_code)
 
 
-class DocumentEditTests(TestCaseBase):
+class DocumentEditTests(TestCase):
     """Test the editing of document level fields."""
 
     def setUp(self):
@@ -1337,7 +1335,7 @@ class DocumentEditTests(TestCaseBase):
         assert not notify_on_edit.called
 
 
-class DocumentListTests(TestCaseBase):
+class DocumentListTests(TestCase):
     """Tests for the All and Category template"""
 
     def setUp(self):
@@ -1369,7 +1367,7 @@ class DocumentListTests(TestCaseBase):
         )
 
 
-class DocumentRevisionsTests(TestCaseBase):
+class DocumentRevisionsTests(TestCase):
     """Tests for the Document Revisions template"""
 
     def test_document_revisions_list(self):
@@ -1454,7 +1452,7 @@ class DocumentRevisionsTests(TestCaseBase):
         self.assertEqual(0, len(doc("#revision-list th.l10n-head")))
 
 
-class ReviewRevisionTests(TestCaseBase):
+class ReviewRevisionTests(TestCase):
     """Tests for Review Revisions and Translations"""
 
     def setUp(self):
@@ -1972,7 +1970,7 @@ class ReviewRevisionTests(TestCaseBase):
         assert message in subject
 
 
-class CompareRevisionTests(TestCaseBase):
+class CompareRevisionTests(TestCase):
     """Tests for Review Revisions"""
 
     def setUp(self):
@@ -2031,7 +2029,7 @@ class CompareRevisionTests(TestCaseBase):
         self.assertEqual(404, response.status_code)
 
 
-class TranslateTests(TestCaseBase):
+class TranslateTests(TestCase):
     """Tests for the Translate page"""
 
     def setUp(self):
@@ -2357,7 +2355,7 @@ def _test_form_maintains_based_on_rev(client, doc, view, post_data, locale=None)
     or translate form is the current_revision of the document as of when the
     form was first loaded, even if other revisions have been approved in the
     meantime."""
-    tc = TestCaseBase()
+    tc = TestCase()
     response = client.get(reverse(view, locale=locale, args=[doc.slug]))
     orig_rev = doc.current_revision
     tc.assertEqual(orig_rev.id, int(pq(response.content)("input[name=based_on]").attr("value")))
@@ -2374,7 +2372,7 @@ def _test_form_maintains_based_on_rev(client, doc, view, post_data, locale=None)
     tc.assertEqual(orig_rev, fred_rev.based_on)
 
 
-class DocumentWatchTests(TestCaseBase):
+class DocumentWatchTests(TestCase):
     """Tests for un/subscribing to document edit notifications."""
 
     def setUp(self):
@@ -2409,7 +2407,7 @@ class DocumentWatchTests(TestCaseBase):
         ), "Watch was not destroyed"
 
 
-class LocaleWatchTests(TestCaseBase):
+class LocaleWatchTests(TestCase):
     """Tests for un/subscribing to a locale's ready for review emails."""
 
     def setUp(self):
@@ -2456,7 +2454,7 @@ class LocaleWatchTests(TestCaseBase):
         )
 
 
-class ArticlePreviewTests(TestCaseBase):
+class ArticlePreviewTests(TestCase):
     """Tests for preview view and template."""
 
     def setUp(self):
@@ -2508,7 +2506,7 @@ class ArticlePreviewTests(TestCaseBase):
         self.assertEqual("/es/kb/prueba", link[0].attrib["href"])
 
 
-class HelpfulVoteTests(TestCaseBase):
+class HelpfulVoteTests(TestCase):
     def setUp(self):
         super(HelpfulVoteTests, self).setUp()
 
@@ -2676,7 +2674,7 @@ class HelpfulVoteTests(TestCaseBase):
         self.assertEqual(0, len(data["datums"]))
 
 
-class SelectLocaleTests(TestCaseBase):
+class SelectLocaleTests(TestCase):
     """Test the locale selection page"""
 
     def setUp(self):
@@ -2697,7 +2695,7 @@ class SelectLocaleTests(TestCaseBase):
         )
 
 
-class RevisionDeleteTestCase(TestCaseBase):
+class RevisionDeleteTestCase(TestCase):
     def test_delete_revision_without_permissions(self):
         """Deleting a revision without permissions sends 403."""
         u = UserFactory()
@@ -2807,7 +2805,7 @@ class RevisionDeleteTestCase(TestCaseBase):
         Revision.objects.get(id=rev.id)
 
 
-class ApprovedWatchTests(TestCaseBase):
+class ApprovedWatchTests(TestCase):
     """Tests for un/subscribing to revision approvals."""
 
     def setUp(self):
@@ -2841,7 +2839,7 @@ class ApprovedWatchTests(TestCaseBase):
         assert not ApproveRevisionInLocaleEvent.is_notifying(self.user, locale=locale)
 
 
-class DocumentDeleteTestCase(TestCaseBase):
+class DocumentDeleteTestCase(TestCase):
     """Tests for document delete."""
 
     def setUp(self):
@@ -2905,7 +2903,7 @@ class DocumentDeleteTestCase(TestCaseBase):
         self._test_delete_document_with_permission()
 
 
-class RecentRevisionsTest(TestCaseBase):
+class RecentRevisionsTest(TestCase):
     def setUp(self):
         self.u1 = UserFactory()
         self.u2 = UserFactory()

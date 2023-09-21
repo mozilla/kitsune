@@ -5,17 +5,16 @@ from django.conf import settings
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client
 
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.sumo.tests import LocalizingClient, TestCase, post
+from kitsune.sumo.tests import TestCase, post
 from kitsune.upload.forms import MSG_IMAGE_LONG
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.tests import UserFactory
 
 
 class UploadImageTestCase(TestCase):
-    client_class = LocalizingClient
-
     def setUp(self):
         super(UploadImageTestCase, self).setUp()
         self.user = UserFactory(username="berker")
@@ -240,7 +239,7 @@ class UploadImageTestCase(TestCase):
         )
 
     def _test_non_owner_upload(self, object_name, object_pk, is_superuser=False, group_name=""):
-        other_client = LocalizingClient()
+        other_client = Client()
         other_user = UserFactory(username="ringo")
         other_client.login(username=other_user.username, password="testpass")
 

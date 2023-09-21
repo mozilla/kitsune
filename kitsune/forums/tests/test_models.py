@@ -21,12 +21,12 @@ class ForumModelTestCase(ForumTestCase):
     def test_forum_absolute_url(self):
         f = ForumFactory()
 
-        self.assertEqual("/forums/%s/" % f.slug, f.get_absolute_url())
+        self.assertEqual("/en-US/forums/%s/" % f.slug, f.get_absolute_url())
 
     def test_thread_absolute_url(self):
         t = ThreadFactory()
 
-        self.assertEqual("/forums/%s/%s" % (t.forum.slug, t.id), t.get_absolute_url())
+        self.assertEqual("/en-US/forums/%s/%s" % (t.forum.slug, t.id), t.get_absolute_url())
 
     def test_post_absolute_url(self):
         t = ThreadFactory(posts=[])

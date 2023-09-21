@@ -287,10 +287,6 @@ NON_SUPPORTED_LOCALES = {
     "uz": None,
 }
 
-FALLBACK_LANGUAGE_URL_MAP = dict(
-    (k.lower(), v if v else "en-US") for k, v in NON_SUPPORTED_LOCALES.items()
-)
-
 ES_LOCALE_ANALYZERS = {
     "ar": "arabic",
     "bg": "bulgarian",
@@ -399,27 +395,6 @@ WEBPACK_LRU_CACHE = 128
 if DEV or TEST:
     WEBPACK_LRU_CACHE = 0
 
-# Paths that don't require a locale prefix.
-SUPPORTED_NONLOCALES = (
-    "1",
-    "admin",
-    "api",
-    "favicon.ico",
-    "media",
-    "postcrash",
-    "robots.txt",
-    "manifest.json",
-    "services",
-    "wafflejs",
-    "geoip-suggestion",
-    "contribute.json",
-    "oidc",
-    "healthz",
-    "readiness",
-    "__debug__",
-    "graphql",
-)
-
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = config("SECRET_KEY")
 
@@ -489,11 +464,11 @@ MIDDLEWARE: tuple[str, ...] = (
     "django.middleware.csrf.CsrfViewMiddleware",
     "commonware.request.middleware.SetRemoteAddrFromForwardedFor",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
-    # VaryNoCacheMiddleware must be above LocaleURLMiddleware
-    # so that it can see the response has a vary on accept-language
+    # VaryNoCacheMiddleware must be above LocaleMiddleware
+    # so that it can see the response has a vary on accept-language.
     "kitsune.sumo.middleware.VaryNoCacheMiddleware",
-    # LocaleURLMiddleware requires access to request.user. These two must be
-    # loaded before the LocaleURLMiddleware
+    # LocaleMiddleware requires access to request.user. These two must be
+    # loaded before the LocaleMiddleware.
     "commonware.middleware.NoVarySessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # This has to come after NoVarySessionMiddleware.
@@ -502,8 +477,8 @@ MIDDLEWARE: tuple[str, ...] = (
     "kitsune.sumo.middleware.ValidateAccessTokenMiddleware",
     # refresh middleware for the Admin interface - uses IAM
     "kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware",
-    # LocaleURLMiddleware must be before any middleware that uses
-    # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
+    # LocaleMiddleware must be before any middleware that uses
+    # sumo.urlresolvers.reverse() to add locale prefixes to URLs.
     "kitsune.sumo.middleware.LocaleMiddleware",
     "kitsune.sumo.middleware.Forbidden403Middleware",
     "corsheaders.middleware.CorsMiddleware",

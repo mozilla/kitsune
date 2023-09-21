@@ -3,11 +3,10 @@ from unittest.mock import patch
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.functional import lazy
-from django.utils.translation import get_language
+from django.utils.translation import get_language, override
 
 from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation
 from kitsune.sumo.tests import TestCase
-from kitsune.sumo.utils import uselocale
 from kitsune.users.tests import UserFactory
 
 mock_translations = {
@@ -46,11 +45,11 @@ class SafeTranslationTests(TestCase):
         # Import translation now so it is affected by the mock.
         from django.utils.translation import gettext as _
 
-        with uselocale("en-US"):
+        with override("en-US"):
             self.assertEqual(_("Hello"), "Hello")
-        with uselocale("fr"):
+        with override("fr"):
             self.assertEqual(_("Hello"), "Bonjour")
-        with uselocale("es"):
+        with override("es"):
             self.assertEqual(_("Hello"), "Hola")
 
     @mock_gettext
@@ -109,17 +108,6 @@ class SafeTranslationTests(TestCase):
         self.assertEqual(method_name, "exception")
         assert "Bad translation" in method_args[0]
         self.assertEqual(method_args[1], "fr")
-
-
-class UseLocaleTests(TestCase):
-    def test_uselocale(self):
-        """Test that uselocale does what it says on the tin."""
-        with uselocale("en-US"):
-            self.assertEqual(get_language(), "en-us")
-        with uselocale("de"):
-            self.assertEqual(get_language(), "de")
-        with uselocale("fr"):
-            self.assertEqual(get_language(), "fr")
 
 
 class PremailerTests(TestCase):

@@ -16,7 +16,7 @@ from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.utils import send_message
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.sumo.tests import LocalizingClient, TestCase
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import AccountEvent, Deactivation, Profile, Setting, User
 from kitsune.users.tests import GroupFactory, ProfileFactory, UserFactory, add_permission
@@ -149,8 +149,6 @@ class ProfileNotificationTests(TestCase):
 
 
 class FXAAuthenticationTests(TestCase):
-    client_class = LocalizingClient
-
     def test_authenticate_does_not_update_session(self):
         self.client.get(reverse("users.fxa_authentication_init"))
         assert not self.client.session.get("is_contributor")

@@ -259,24 +259,36 @@ class DocumentTests(TestCase):
         self.assertEqual(None, rev.document.redirect_document())
 
     def test_redirect_nondefault_locales(self):
-        title1 = "title1"
-        title2 = "title2"
-
         redirect_to = ApprovedRevisionFactory(
-            document__title=title1,
-            document__locale="es",
-            document=DocumentFactory(title=title1, locale="es"),
+            document=DocumentFactory(title="title1", locale="es"),
         )
 
         redirector = RedirectRevisionFactory(
             target=redirect_to.document,
-            document__title=title2,
+            document__title="title2",
             document__locale="es",
             is_approved=True,
         )
 
         self.assertEqual(
             redirect_to.document.get_absolute_url(), redirector.document.redirect_url()
+        )
+
+    def test_redirect_when_changing_locale(self):
+        redirect_to = ApprovedRevisionFactory(
+            document=DocumentFactory(title="title1", locale="en-US"),
+        )
+
+        redirector = RedirectRevisionFactory(
+            target=redirect_to.document,
+            document__title="title2",
+            document__locale="es",
+            is_approved=True,
+        )
+
+        self.assertEqual(
+            reverse("wiki.document", locale="es", args=[redirect_to.document.slug]),
+            redirector.document.redirect_url(source_locale="es"),
         )
 
     def test_get_topics(self):

@@ -8,13 +8,12 @@ import factory.fuzzy
 from django.conf import settings
 from django.core.cache import cache
 from django.test import TestCase as OriginalTestCase
-from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.translation import trans_real
 from pyquery import PyQuery
 from waffle.models import Flag
 
-from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.urlresolvers import reverse
 
 
 def get(client, url, **kwargs):
@@ -71,29 +70,6 @@ def send_mail_raise_smtp(messages):
 
 def emailmessage_raise_smtp():
     raise SMTPRecipientsRefused(recipients=[])
-
-
-class LocalizingClient(Client):
-    """Client which prepends a locale so test requests can get through
-    LocaleURLMiddleware without resulting in a locale-prefix-adding 301.
-
-    Otherwise, we'd have to hard-code locales into our tests everywhere or
-    {mock out reverse() and make LocaleURLMiddleware not fire}.
-
-    """
-
-    def request(self, **request):
-        """Make a request, but prepend a locale if there isn't one already."""
-        # Fall back to defaults as in the superclass's implementation:
-        path = request.get("PATH_INFO", self.defaults.get("PATH_INFO", "/"))
-        locale, shortened = split_path(path)
-        if not locale:
-            request["PATH_INFO"] = "/%s/%s" % (settings.LANGUAGE_CODE, shortened)
-        return super(LocalizingClient, self).request(**request)
-
-    # If you use this, you might also find the force_locale=True argument to
-    # sumo.urlresolvers.reverse() handy, in case you need to force locale
-    # prepending in a one-off case or do it outside a mock request.
 
 
 def eq_msg(a, b, msg=None):

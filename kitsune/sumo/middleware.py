@@ -1,11 +1,9 @@
 import contextlib
 import re
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
 
 from django.conf import settings
+from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
@@ -19,30 +17,17 @@ from django.http import (
 )
 from django.http.request import split_domain_port
 from django.shortcuts import render
-from django.urls import Resolver404, is_valid_path, resolve
+from django.urls import get_script_prefix, is_valid_path
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.encoding import iri_to_uri, smart_str
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
-import django.middleware.locale
 
-from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
-from kitsune.sumo.utils import (
-    get_language_from_path,
-    normalize_for_sumo,
-    split_into_language_and_path,
-)
+from kitsune.sumo.i18n import get_language_from_request, normalize_language, normalize_path
 from kitsune.sumo.views import handle403
 from kitsune.users.auth import FXAAuthBackend
-
-
-LANGUAGES_WITH_COUNTRY_CODES_REGEX = re.compile(
-    rf"^/(?P<language>{'|'.join(lang for lang in settings.SUMO_LANGUAGES if '-' in lang)})(?P<slash>/|$)",
-    re.IGNORECASE,
-)
 
 
 class EnforceHostIPMiddleware(EnforceHostMiddleware):
@@ -120,148 +105,112 @@ class ValidateAccessTokenMiddleware(SessionRefresh):
                 logout(request)
 
 
-class LocaleMiddleware(django.middleware.locale.LocaleMiddleware):
+class LocaleMiddleware:
     """
-    Wrapper around Django's LocaleMiddleware that handles language code redirects
-    as well as the normalization of request.LANGUAGE_CODE and the language code of
-    any outgoing redirects.
+    This is a modified copy of Django's LocaleMiddleware, with the following differences:
+        1) Uses the new-style approach for middleware classes.
+        2) Handles language-related redirects that ensure that the "lang" query parameter
+           is respected, and also that all incoming language-based paths are normalized to
+           SUMO standards, like uppercase country-codes and language fallbacks.
+        3) The "request.LANGUAGE_CODE" is normalized to SUMO standards (i.e., uppercase
+           country-codes).
+        4) The language code used when creating the redirect for requests that 404 due to
+           the lack of a language code, is normalized to SUMO standards.
     """
 
-    def process_request(self, request):
-        normalized_language_from_path = get_language_from_path(request.path_info)
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-        # Handle redirects requested via the "lang" query parameter.
-        # The "lang" query parameter overrides everything, even the language in the path.
-        if normalized_lang := normalize_for_sumo(request.GET.get("lang")):
-            if normalized_language_from_path:
-                # The path starts with a language code, so let's replace it.
-                _, path = split_into_language_and_path(request.path_info)
-                new_full_path = f"/{normalized_lang}{path}"
-            else:
-                new_full_path = f"/{normalized_lang}{request.path_info}"
+    def __call__(self, request):
+        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
+        (
+            i18n_patterns_used,
+            prefixed_default_language,
+        ) = is_language_prefix_patterns_used(urlconf)
 
-            # Remove "lang" from the query parameters, so we don't create an infinite loop,
-            # and if any query parameters remain, add them back to the new full path.
-            query = request.GET.copy()
-            query.pop("lang")
-            if query:
-                new_full_path += f"?{query.urlencode()}"
+        if i18n_patterns_used:
+            # Handle redirects requested via the "lang" query parameter, which overrides
+            # everything, even the language in the path.
+            if normalized_lang := normalize_language(request.GET.get("lang")):
+                new_full_path = normalize_path(request.path_info, force_language=normalized_lang)
 
-            if request.user.is_anonymous:
-                request.session[settings.LANGUAGE_COOKIE_NAME] = normalized_lang
+                # Remove "lang" from the query parameters, so we don't create an infinite loop,
+                # and if any query parameters remain, add them back to the new full path.
+                query = request.GET.copy()
+                query.pop("lang")
+                if query:
+                    new_full_path += f"?{query.urlencode()}"
 
-            return HttpResponseRedirect(new_full_path)
+                if request.user.is_anonymous:
+                    request.session[settings.LANGUAGE_COOKIE_NAME] = normalized_lang
 
-        # Handle redirects due to normalization, supported variants, and explicit fallbacks.
-        # Examples:
-        #    Requested --> Redirect
-        #       /en-us --> /en-US  (normalization of case)
-        #       /fr-ca --> /fr     (supported variant)
-        #       /en-gb --> /en-US  (supported variant)
-        #       /sc    --> /it     (explicit fallback)
-        #       /ak    --> /en-US  (explicit fallback)
-        if normalized_language_from_path:
-            requested_language, path = split_into_language_and_path(request.path_info)
-            if requested_language != normalized_language_from_path:
-                new_full_path = f"/{normalized_language_from_path}{path}"
+                return HttpResponseRedirect(new_full_path)
+
+            # Handle redirects due to normalization, supported variants, and explicit fallbacks.
+            if request.path_info != (new_full_path := normalize_path(request.path_info)):
                 if request.GET:
                     new_full_path += f"?{request.GET.urlencode()}"
                 return HttpResponseRedirect(new_full_path)
 
-        response = super().process_request(request)
-
-        # Normalize the language code set by django.middleware.locale.LocaleMiddleware.
-        request.LANGUAGE_CODE = normalize_for_sumo(request.LANGUAGE_CODE)
-
-        return response
-
-    def process_response(self, request, response):
-        """
-        Normalize the language code of any outgoing redirects as needed.
-        """
-        response = super().process_response(request, response)
+        # Set the active language and the request's LANGUAGE_CODE.
+        language = get_language_from_request(
+            request, check_path=i18n_patterns_used, check_user=True
+        )
         if (
-            isinstance(response, (HttpResponseRedirect, HttpResponsePermanentRedirect))
-            and response.url.startswith("/")
-            and (mo := LANGUAGES_WITH_COUNTRY_CODES_REGEX.match(response.url))
-            and (language := mo.group("language"))
-            != (normalized_language := normalize_for_sumo(language))
+            i18n_patterns_used
+            and not prefixed_default_language
+            and not translation.get_language_from_path(request.path_info)
         ):
-            response["Location"] = response.url.replace(
-                f"/{language}", f"/{normalized_language}", count=1
+            language = settings.LANGUAGE_CODE
+        translation.activate(language)
+        request.LANGUAGE_CODE = language
+
+        response = self.get_response(request)
+
+        language = normalize_language(translation.get_language())
+        language_from_path = translation.get_language_from_path(request.path_info)
+        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
+        (
+            i18n_patterns_used,
+            prefixed_default_language,
+        ) = is_language_prefix_patterns_used(urlconf)
+
+        if (
+            response.status_code == 404
+            and not language_from_path
+            and i18n_patterns_used
+            and prefixed_default_language
+        ):
+            # Maybe the language code is missing in the URL? Try adding the
+            # language prefix and redirecting to that URL.
+            language_path = f"/{language}{request.path_info}"
+            path_valid = is_valid_path(language_path, urlconf)
+            path_needs_slash = not path_valid and (
+                settings.APPEND_SLASH
+                and not language_path.endswith("/")
+                and is_valid_path(f"{language_path}/", urlconf)
             )
+
+            if path_valid or path_needs_slash:
+                script_prefix = get_script_prefix()
+                # Insert language after the script prefix and before the
+                # rest of the URL
+                language_url = request.get_full_path(force_append_slash=path_needs_slash).replace(
+                    script_prefix, f"{script_prefix}{language}/", 1
+                )
+                # Redirect to the language-specific URL as detected by
+                # get_language_from_request(). HTTP caches may cache this
+                # redirect, so add the Vary header.
+                redirect = HttpResponseRedirect(language_url)
+                patch_vary_headers(redirect, ("Accept-Language", "Cookie"))
+                return redirect
+
+        if not (i18n_patterns_used and language_from_path):
+            patch_vary_headers(response, ("Accept-Language",))
+
+        response.headers.setdefault("Content-Language", language)
+
         return response
-
-
-class LocaleURLMiddleware(MiddlewareMixin):
-    """
-    Based on zamboni.amo.middleware.
-    Tried to use localeurl but it choked on 'en-US' with capital letters.
-
-    1. Search for the locale.
-    2. Save it in the request.
-    3. Strip them from the URL.
-    """
-
-    def process_request(self, request):
-        try:
-            urlname = resolve(request.path_info).url_name
-        except Resolver404:
-            urlname = None
-
-        if settings.OIDC_ENABLE and urlname in settings.OIDC_EXEMPT_URLS:
-            translation.activate(settings.LANGUAGE_CODE)
-            return
-
-        prefixer = Prefixer(request)
-        set_url_prefixer(prefixer)
-        full_path = prefixer.fix(prefixer.shortened_path)
-
-        if (lang := request.GET.get("lang", "").lower()) in settings.LANGUAGE_URL_MAP:
-            # The "lang" query parameter overrides everything, even the locale in the path.
-            prefixer.locale = settings.LANGUAGE_URL_MAP[lang]
-            new_path = prefixer.fix(prefixer.shortened_path)
-            # Remove "lang" from the query parameters so we don't create an infinite loop.
-            query = dict((smart_str(k), v) for k, v in request.GET.items() if k != "lang")
-
-            if request.user.is_anonymous:
-                cookie = settings.LANGUAGE_COOKIE_NAME
-                request.session[cookie] = request.GET["lang"]
-
-            return HttpResponseRedirect(urlparams(new_path, **query))
-
-        if full_path != request.path:
-            query_string = request.META.get("QUERY_STRING", "")
-            full_path = urllib.parse.quote(full_path.encode("utf-8"))
-
-            if query_string:
-                full_path = "%s?%s" % (full_path, query_string)
-
-            response = HttpResponseRedirect(full_path)
-
-            # Vary on Accept-Language if we changed the locale
-            old_locale = prefixer.locale
-            new_locale, _ = split_path(full_path)
-            if old_locale != new_locale:
-                response["Vary"] = "Accept-Language"
-
-            return response
-
-        request.path_info = "/" + prefixer.shortened_path
-        request.LANGUAGE_CODE = prefixer.locale
-        translation.activate(prefixer.locale)
-
-    def process_response(self, request, response):
-        """Unset the thread-local var we set during `process_request`."""
-        # This makes mistaken tests (that should use LocalizingClient but
-        # use Client instead) fail loudly and reliably. Otherwise, the set
-        # prefixer bleeds from one test to the next, making tests
-        # order-dependent and causing hard-to-track failures.
-        set_url_prefixer(None)
-        return response
-
-    def process_exception(self, request, exception):
-        set_url_prefixer(None)
 
 
 class Forbidden403Middleware(MiddlewareMixin):
