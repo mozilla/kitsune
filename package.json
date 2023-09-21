@@ -38,7 +38,7 @@
     "@urql/svelte": "^3.0.3",
     "codemirror": "^5.65.11",
     "d3": "^3.5.17",
-    "graphql": "^16.6.0",
+    "graphql": "^16.8.1",
     "jquery": "^3.6.3",
     "jquery-ui": "1.13.2",
     "nunjucks": "^3.2.4",
