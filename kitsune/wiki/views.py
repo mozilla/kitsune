@@ -1753,14 +1753,12 @@ def parse_accept_lang_header(lang_string):
 
 def pocket_article(request, article_id=None, document_slug=None, extra_path=None):
     """Pocket articles migrated to SUMO are redirected to the new URL"""
-    try:
-        # If we migrated the document, we should be able to find it
-        Document.objects.get(slug=document_slug)
-    except Document.DoesNotExist:
-        # If document doesn't exist, fail back to Pocket product page with message
-        messages.warning(
-            request,
-            _("Sorry, that article wasn't found."),
-        )
-        return redirect(product_landing, slug="pocket", permanent=True)
-    return HttpResponseRedirect(reverse("wiki.document", args=[document_slug]))
+    # If we migrated the document, we should be able to find it
+    if Document.objects.filter(slug=document_slug).exists():
+        return HttpResponseRedirect(reverse("wiki.document", args=[document_slug]))
+    # If document doesn't exist, fail back to Pocket product page with message
+    messages.warning(
+        request,
+        _("Sorry, that article wasn't found."),
+    )
+    return redirect(product_landing, slug="pocket", permanent=True)
