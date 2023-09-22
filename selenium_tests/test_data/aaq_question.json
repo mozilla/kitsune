@@ -1,0 +1,9 @@
+{
+  "valid_firefox_question": {
+    "subject": "Test Question ",
+    "topic_value": "bookmarks",
+    "question_body": "'''Lorem ipsum''' dolor ''sit amet'', consectetur [https://www.mediafax.ro adipiscing] elit, [[Stage test owl|sed]] do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt id aliquet risus feugiat in ante. Etiam non quam lacus suspendisse faucibus interdum posuere. Diam sollicitudin tempor id eu nisl nunc mi ipsum. Velit egestas dui id ornare arcu odio ut sem nulla. Risus nec feugiat in fermentum posuere urna nec tincidunt. Sed egestas egestas fringilla phasellus faucibus. Amet consectetur adipiscing elit duis tristique. Lorem mollis aliquam ut porttitor. Purus sit amet volutpat consequat mauris. Lobortis mattis aliquam faucibus purus in. Enim praesent elementum facilisis leo vel. Volutpat lacus laoreet non curabitur gravida arcu. Tempus iaculis urna id volutpat.",
+    "image_name": "test.image.jpg",
+    "image_path": "test_data/images/test-image.jpg"
+  }
+}

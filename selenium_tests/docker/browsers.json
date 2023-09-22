@@ -1,0 +1,27 @@
+{
+  "chrome": {
+    "default": "latest",
+    "versions": {
+      "latest": {
+        "image": "selenoid/chrome:latest",
+        "port": "4444",
+        "path": "/",
+        "sessionTimeout": "10m",
+        "shm-size": 2147483648
+      }
+    }
+  },
+  "firefox": {
+    "default": "latest",
+    "versions": {
+      "latest": {
+        "image": "selenoid/firefox:latest",
+        "port": "4444",
+        "path": "/wd/hub",
+        "sessionTimeout": "10m",
+        "shm-size": 2147483648
+
+      }
+    }
+  }
+}
