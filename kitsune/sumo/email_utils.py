@@ -2,12 +2,15 @@ import logging
 from functools import wraps
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import validate_email
 from django.template.loader import render_to_string
 from django.test.client import RequestFactory
 from django.utils import translation
+from jsonschema import ValidationError
 from premailer import transform
 
 from kitsune.sumo.utils import uselocale
@@ -19,6 +22,8 @@ def send_messages(messages):
     """Sends a a bunch of EmailMessages."""
     if not messages:
         return
+
+    messages = [message for message in messages if message]
 
     conn = mail.get_connection(fail_silently=True)
     conn.open()
@@ -58,6 +63,36 @@ def safe_translation(f):
 
             with uselocale(settings.WIKI_DEFAULT_LANGUAGE):
                 return f(settings.WIKI_DEFAULT_LANGUAGE, *args, **kwargs)
+
+    return wrapper
+
+
+def check_user_state(f):
+    """Check if the user can receive an email.
+
+    :checks if the user is active
+    :checks if the user has a profile and is migrated to Firefox Accounts
+
+    If the user is not active, log the error and return None.
+    """
+
+    @wraps(f)
+    def wrapper(locale, user_info, *args, **kwargs):
+        user = user_info
+        if isinstance(user_info, str):
+            try:
+                validate_email(user_info)
+            except ValidationError:
+                return None
+            try:
+                user = User.objects.get(email=user_info)
+            except User.DoesNotExist:
+                return None
+
+        if not user.is_active or (user.profile and not user.profile.is_fxa_migrated):
+            log.error("User %s is not active. Not sending email." % user.id)
+            return None
+        return f(locale, user, *args, **kwargs)
 
     return wrapper
 
@@ -170,10 +205,12 @@ def emails_with_users_and_watches(
 
         return mail
 
-    for u, w in users_and_watches:
-        if hasattr(u, "profile"):
-            locale = u.profile.locale
+    for user, watch in users_and_watches:
+        if hasattr(user, "profile"):
+            if not user.profile.is_fxa_migrated:
+                continue
+            locale = user.profile.locale
         else:
             locale = default_locale
 
-        yield _make_mail(locale, u, w)
+        yield _make_mail(locale, user, watch)

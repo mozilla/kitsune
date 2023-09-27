@@ -64,6 +64,7 @@ def send_reviewed_notification(revision_id: int, document_id: int, message: str)
 
     msgs = []
 
+    @email_utils.check_user_state
     @email_utils.safe_translation
     def _make_mail(locale, user):
         if revision.is_approved:
@@ -123,6 +124,7 @@ def send_contributor_notification(
 
     msgs = []
 
+    @email_utils.check_user_state
     @email_utils.safe_translation
     def _make_mail(locale, user):
         if revision.is_approved:

@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from django.utils.translation import gettext as _
 
 from kitsune.announcements.models import Announcement
-from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
+from kitsune.sumo.email_utils import check_user_state, make_mail, safe_translation, send_messages
 
 
 @shared_task
@@ -28,6 +28,7 @@ def send_group_email(announcement_id):
     text_template = "announcements/email/announcement.ltxt"
     html_template = "announcements/email/announcement.html"
 
+    @check_user_state
     @safe_translation
     def _make_mail(locale, user):
         if groups.count() == 1:
@@ -47,9 +48,9 @@ def send_group_email(announcement_id):
         return mail
 
     messages = []
-    for u in users:
+    for user in users:
         # Localize email each time.
-        locale = u.profile.locale or settings.LANGUAGE_CODE
-        messages.append(_make_mail(locale, u))
+        locale = user.profile.locale or settings.LANGUAGE_CODE
+        messages.append(_make_mail(locale, user))
 
     send_messages(messages)

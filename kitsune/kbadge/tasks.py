@@ -1,8 +1,8 @@
 from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.utils.translation import pgettext
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.models import Award
@@ -22,8 +22,9 @@ def send_award_notification(award_id: int):
         capture_exception(err)
         return
 
+    @email_utils.check_user_state
     @email_utils.safe_translation
-    def _make_mail(locale, context, email):
+    def _make_mail(locale, user, context):
         subject = _("You were awarded the '{title}' badge!").format(
             title=pgettext("DB: badger.Badge.title", award.badge.title)
         )
@@ -34,19 +35,19 @@ def send_award_notification(award_id: int):
             html_template="kbadge/email/award_notification.html",
             context_vars=context,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to_email=email,
+            to_email=user.email,
         )
 
         return mail
 
     msg = _make_mail(
         locale=award.user.profile.locale,
+        user=award.user,
         context={
             "host": Site.objects.get_current().domain,
             "award": award,
             "badge": award.badge,
         },
-        email=award.user.email,
     )
 
     # FIXME: this sends emails to the person who was awarded the

@@ -8,7 +8,7 @@ from django.db.models import F, Q
 from django.utils.translation import gettext as _
 
 from kitsune.questions.models import Answer
-from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
+from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages, check_user_state
 from kitsune.users.models import Profile
 from kitsune.wiki.models import Revision
 
@@ -36,6 +36,7 @@ class Command(BaseCommand):
             Answer.objects.filter(answer_filter).values_list("creator", flat=True)
         )
 
+        @check_user_state
         @safe_translation
         def _make_answer_email(locale, to):
             return make_mail(

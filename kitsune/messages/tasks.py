@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from celery import shared_task
 
 from kitsune.messages.models import InboxMessage
-from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
+from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages, check_user_state
 
 
 log = logging.getLogger("k.task")
@@ -22,8 +22,9 @@ def email_private_message(inbox_message_id):
 
     user = inbox_message.to
 
+    @check_user_state
     @safe_translation
-    def _send_mail(locale):
+    def _send_mail(locale, user):
         # Avoid circular import issues
         from kitsune.users.templatetags.jinja_helpers import display_name
 
@@ -50,7 +51,7 @@ def email_private_message(inbox_message_id):
             html_template="messages/email/private_message.html",
             context_vars=context,
             from_email=settings.TIDINGS_FROM_ADDRESS,
-            to_email=inbox_message.to.email,
+            to_email=user.email,
         )
 
         send_messages([mail])
@@ -60,4 +61,4 @@ def email_private_message(inbox_message_id):
     else:
         locale = settings.WIKI_DEFAULT_LANGUAGE
 
-    _send_mail(locale)
+    _send_mail(locale, user)

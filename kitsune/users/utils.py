@@ -21,15 +21,17 @@ def add_to_contributors(user, language_code, contribution_area=""):
         return
 
     group, created = Group.objects.get_or_create(name=ContributionAreas[area].value)
-    # don't fire an email if the user is already member of the group
+    # don't fire an email if the user is already member of the group or if the user
+    # is not using Firefox Accounts to login
     if user.groups.filter(pk=group.pk).exists():
         return
 
     user.groups.add(group)
     user.save()
 
+    @email_utils.check_user_state
     @email_utils.safe_translation
-    def _make_mail(locale):
+    def _make_mail(locale, user=user):
         mail = email_utils.make_mail(
             subject=_("Welcome to SUMO!"),
             text_template="users/email/contributor.ltxt",

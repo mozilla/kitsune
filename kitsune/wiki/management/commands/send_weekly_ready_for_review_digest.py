@@ -4,8 +4,8 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
 from django.db.models import F, ObjectDoesNotExist, Q
-from django.utils.translation import pgettext
 from django.utils.translation import gettext as _
+from django.utils.translation import pgettext
 
 from kitsune.products.models import Product
 from kitsune.sumo import email_utils
@@ -60,6 +60,8 @@ class Command(BaseCommand):
 
             for user in users:
                 docs_list = []
+                if not user.profile.is_fxa_migrated:
+                    continue
                 for product in products:
                     product_docs = docs.filter(
                         Q(parent=None, products__in=[product]) | Q(parent__products__in=[product])

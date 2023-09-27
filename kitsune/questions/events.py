@@ -31,7 +31,7 @@ class QuestionEvent(InstanceEvent):
         # what locale they want, so we give them en-US.
 
         @email_utils.safe_translation
-        def _make_mail(locale):
+        def _make_mail(locale, to_email=email):
             subject = _("Please confirm your email address")
             context = {
                 "activation_url": cls._activation_url(watch),
@@ -45,7 +45,7 @@ class QuestionEvent(InstanceEvent):
                 html_template="questions/email/activate_watch.html",
                 context_vars=context,
                 from_email=settings.TIDINGS_FROM_ADDRESS,
-                to_email=email,
+                to_email=to_email,
             )
 
             return mail
@@ -55,7 +55,7 @@ class QuestionEvent(InstanceEvent):
         else:
             locale = "en-US"
 
-        return _make_mail(locale)
+        return _make_mail(locale, email)
 
     @classmethod
     def _activation_url(cls, watch):
@@ -139,6 +139,8 @@ class QuestionReplyEvent(QuestionEvent):
             # model. In the case of the latter, there is no associated
             # profile, so we set the locale to en-US.
             if hasattr(u, "profile"):
+                if not u.profile.is_fxa_migrated:
+                    continue
                 locale = u.profile.locale
                 tzinfo = u.profile.timezone
             else:
@@ -198,7 +200,7 @@ class QuestionSolvedEvent(QuestionEvent):
 
         solution_url = add_utm(question.solution.get_absolute_url(), "questions-solved")
 
-        c = {
+        ctx = {
             "answerer": question.solution.creator,
             "asker": question.creator,
             "question_title": question.title,
@@ -206,19 +208,21 @@ class QuestionSolvedEvent(QuestionEvent):
             "solution_url": solution_url,
         }
 
-        for u, w in users_and_watches:
-            c["to_user"] = u  # '' if anonymous
-            c["watch"] = w[0]  # TODO: Expose all watches.
+        for user, watch in users_and_watches:
+            ctx["to_user"] = user  # '' if anonymous
+            ctx["watch"] = watch[0]  # TODO: Expose all watches.
 
-            # u here can be a Django User model or a Tidings EmailUser
+            # user here can be a Django User model or a Tidings EmailUser
             # model. In the case of the latter, there is no associated
             # profile, so we set the locale to en-US.
-            if hasattr(u, "profile"):
-                locale = u.profile.locale
+            if hasattr(user, "profile"):
+                if not user.profile.is_fxa_migrated:
+                    continue
+                locale = user.profile.locale
             else:
                 locale = "en-US"
 
-            yield _make_mail(locale, u, c)
+            yield _make_mail(locale, user, ctx)
 
     @classmethod
     def description_of_watch(cls, watch):
