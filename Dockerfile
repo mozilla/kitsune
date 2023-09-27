@@ -1,7 +1,7 @@
 #######################
 # Common dependencies #
 #######################
-FROM python:3.11-bullseye AS base
+FROM python:3.11-bookworm AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -80,7 +80,7 @@ RUN poetry install --no-dev
 ##########################
 # Clean production image #
 ##########################
-FROM python:3.11-slim-bullseye AS prod
+FROM python:3.11-slim-bookworm AS prod
 
 WORKDIR /app
 
