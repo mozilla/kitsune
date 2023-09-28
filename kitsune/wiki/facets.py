@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count, Q
+from django.db.models.functions import Now
 
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document, HelpfulVote
@@ -112,10 +113,13 @@ def _documents_for(locale, topics=None, products=None):
     votes_cache_key = f"votes_for:{cache_key}"
     votes_dict = cache.get(votes_cache_key)
     if votes_dict is None:
+        # NOTE: It's important to use "created__range" rather than "created__gt"
+        #       with Postgres, otherwise it won't use the index on the "created"
+        #       field, and the "HelpfulVote" query will be massively slower.
         votes_query = (
             HelpfulVote.objects.filter(
                 revision_id__in=qs.values_list("current_revision_id", flat=True),
-                created__gt=datetime.now() - timedelta(days=30),
+                created__range=(datetime.now() - timedelta(days=30), Now()),
                 helpful=True,
             )
             .values("revision_id")
