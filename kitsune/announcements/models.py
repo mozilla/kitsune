@@ -5,6 +5,7 @@ from typing import Self
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.db.models import Q, QuerySet
+from django.db.models.functions import Now
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
@@ -77,8 +78,8 @@ class Announcement(ModelBase):
         """Return visible announcements given a groups query."""
         return Announcement.objects.filter(
             # Show if interval is specified and current or show_until is None
-            Q(show_after__lt=datetime.now())
-            & (Q(show_until__gt=datetime.now()) | Q(show_until__isnull=True)),
+            Q(show_after__range=(datetime.min, Now()))
+            & (Q(show_until__range=(Now(), datetime.max)) | Q(show_until__isnull=True)),
             **query_kwargs,
         )
 
