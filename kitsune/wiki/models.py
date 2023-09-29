@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
 from django.db.models import Q
 from django.urls import is_valid_path
+from django.db.models.functions import Now
 from django.utils.encoding import smart_bytes
 from django.utils import translation
 from django.utils.translation import gettext_lazy as _lazy, gettext as _
@@ -645,9 +646,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     @property
     def recent_helpful_votes(self):
         """Return the number of helpful votes in the last 30 days."""
-        start = datetime.now() - timedelta(days=30)
         return HelpfulVote.objects.filter(
-            revision__document=self, created__gt=start, helpful=True
+            revision__document=self,
+            # Use "__range" to ensure the database index is used in Postgres.
+            created__range=(datetime.now() - timedelta(days=30), Now()),
+            helpful=True,
         ).count()
 
     def parse_and_calculate_links(self):
