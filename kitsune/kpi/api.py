@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.db import connections, router
 from django.db.models import Count, F
+from django.db.models.functions import Now
 
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -186,7 +187,8 @@ class KBVoteMetricList(CachedAPIView):
         locale = request.GET.get("locale")
         product = request.GET.get("product")
 
-        qs_kb_votes = HelpfulVote.objects.filter(created__gte=date(2011, 1, 1))
+        # Use "__range" to ensure the database index is used in Postgres.
+        qs_kb_votes = HelpfulVote.objects.filter(created__range=(date(2011, 1, 1), Now()))
 
         if locale:
             qs_kb_votes = qs_kb_votes.filter(revision__document__locale=locale)
@@ -334,7 +336,8 @@ def _daily_qs_for(model_cls):
 def _qs_for(model_cls):
     """Return the monthly grouped queryset we need for model_cls."""
     return (
-        model_cls.objects.filter(created__gte=date(2011, 1, 1))
+        # Use "__range" to ensure the database index is used in Postgres.
+        model_cls.objects.filter(created__range=(date(2011, 1, 1), Now()))
         .extra(
             select={
                 "day": "extract( day from created )",
