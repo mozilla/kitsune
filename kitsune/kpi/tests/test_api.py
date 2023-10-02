@@ -46,15 +46,18 @@ class KpiApiTests(TestCase):
 
     def test_questions(self):
         """Test questions API call."""
-        # A question with a solution:
-        a = AnswerFactory()
+        # Create a question with a solution. Note that it's important, and
+        # more realistic, to create the question prior to the answer, because
+        # the "QuestionsMetricList" code checks for answers created within a
+        # period of 3 days from the creation of their questions.
+        a = AnswerFactory(question=QuestionFactory())
         a.question.solution = a
         a.question.save()
-        # A question with an answer:
-        AnswerFactory()
-        # A question without answers:
+        # Create a question with an answer.
+        AnswerFactory(question=QuestionFactory())
+        # Create a question without any answers.
         QuestionFactory()
-        # A locked question that shouldn't be counted for anything
+        # Create a locked question that shouldn't be counted for anything.
         QuestionFactory(is_locked=True)
 
         r = self._get_api_result("api.kpi.questions")
