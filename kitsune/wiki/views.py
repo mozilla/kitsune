@@ -12,7 +12,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
-from django.db.models.functions import TruncDate
+from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -1339,7 +1339,7 @@ def get_helpful_votes_async(request, document_slug):
         flag_data.append({"x": int(time.mktime(flag.date.timetuple())), "text": _(flag.text)})
 
     for rev in Revision.objects.filter(
-        pk__in=revisions, created__gte=min_created, created__lte=max_created
+        pk__in=revisions, created__range=(min_created, max_created)
     ):
         rdate = rev.reviewed or rev.created
         rev_data.append(
@@ -1613,10 +1613,10 @@ def recent_revisions(request):
             filters.update(document__locale=form.cleaned_data["locale"])
         if form.cleaned_data.get("users"):
             filters.update(creator__in=form.cleaned_data["users"])
-        if form.cleaned_data.get("start"):
-            filters.update(created__gte=form.cleaned_data["start"])
-        if form.cleaned_data.get("end"):
-            filters.update(created__lte=form.cleaned_data["end"])
+        start = form.cleaned_data.get("start")
+        end = form.cleaned_data.get("end")
+        if start or end:
+            filters.update(created__range=(start or datetime.min, end or Now()))
 
     revs = Revision.objects.visible(request.user, **filters).order_by("-created")
 

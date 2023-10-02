@@ -795,6 +795,7 @@ class Revision(ModelBase, AbstractRevision):
     objects = RevisionManager()
 
     class Meta(object):
+        indexes = [models.Index(fields=["created"])]
         permissions = [
             ("review_revision", "Can review a revision"),
             ("mark_ready_for_l10n", "Can mark revision as ready for localization"),
