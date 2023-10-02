@@ -323,7 +323,8 @@ class Question(AAQBase, BigVocabTaggableMixin):
     def sync_num_votes_past_week(self):
         """Get the number of votes for this question in the past week."""
         last_week = datetime.now().date() - timedelta(days=7)
-        n = QuestionVote.objects.filter(question=self, created__gte=last_week).count()
+        # Use "__range" to ensure the database index is used in Postgres.
+        n = QuestionVote.objects.filter(question=self, created__range=(last_week, Now())).count()
         self.num_votes_past_week = n
         return n
 
