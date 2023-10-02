@@ -16,9 +16,10 @@ class Command(BaseCommand):
         two_days_ago = date.today() - timedelta(days=2)
         yesterday = date.today() - timedelta(days=1)
 
-        emails = Question.objects.filter(
-            created__gte=two_days_ago, created__lt=yesterday
-        ).values_list("creator__email", flat=True)
+        # Use "__range" to ensure the database index is used in Postgres.
+        emails = Question.objects.filter(created__range=(two_days_ago, yesterday)).values_list(
+            "creator__email", flat=True
+        )
 
         for email in emails:
             add_email_to_campaign("askers", email)

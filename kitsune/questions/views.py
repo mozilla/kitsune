@@ -11,6 +11,7 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
+from django.db.models.functions import Now
 from django.http import (
     Http404,
     HttpResponse,
@@ -187,14 +188,15 @@ def question_list(request, product_slug):
                 question_qs = question_qs.done()
 
     question_qs = question_qs.select_related("creator", "last_answer", "last_answer__creator")
-    # Exclude questions over 90 days old without an answer or
-    # older than 2 years or
-    # created by deactivated users
+    # Exclude questions over 90 days old without an answer or older than 2 years or created
+    # by deactivated users. Use "__range" to ensure the database index is used in Postgres.
     today = date.today()
     question_qs = (
-        question_qs.exclude(created__lt=today - timedelta(days=90), num_answers=0)
+        question_qs.exclude(
+            created__range=(datetime.min, today - timedelta(days=90)), num_answers=0
+        )
         .filter(creator__is_active=True)
-        .filter(updated__gt=today - timedelta(days=365 * 2))
+        .filter(updated__range=(today - timedelta(days=365 * 2), Now()))
     )
 
     question_qs = question_qs.prefetch_related("topic", "product")
