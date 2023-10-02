@@ -6,7 +6,7 @@ from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Count, OuterRef, Subquery
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Now
 from sentry_sdk import capture_exception
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -44,7 +44,10 @@ def update_question_vote_chunk(question_ids):
     Question.objects.filter(id__in=question_ids).update(
         num_votes_past_week=Coalesce(
             Subquery(
-                QuestionVote.objects.filter(question_id=OuterRef("id"), created__gte=past_week)
+                # Use "__range" to ensure the database index is used in Postgres.
+                QuestionVote.objects.filter(
+                    question_id=OuterRef("id"), created__range=(past_week, Now())
+                )
                 .order_by()
                 .values("question_id")
                 .annotate(count=Count("*"))
