@@ -320,7 +320,8 @@ def _daily_qs_for(model_cls):
     """Return the daily grouped queryset we need for model_cls."""
     # Limit to newer than 2011/1/1 and active creators.
     return (
-        model_cls.objects.filter(created__gte=date(2011, 1, 1), creator__is_active=1)
+        # Use "__range" to ensure the database index is used in Postgres.
+        model_cls.objects.filter(created__range=(date(2011, 1, 1), Now()), creator__is_active=1)
         .extra(
             select={
                 "day": "extract( day from created )",
