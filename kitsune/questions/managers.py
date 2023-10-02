@@ -22,11 +22,12 @@ class QuestionManager(Manager):
     # else if OP is last to post
     #      the status is "Needs Attention"
     def needs_attention(self):
+        # Use "__range" to ensure the database index is used in Postgres.
         qs = self.filter(
             solution__isnull=True,
             is_locked=False,
             is_archived=False,
-            updated__gte=datetime.now() - timedelta(days=7),
+            updated__range=(datetime.now() - timedelta(days=7), Now()),
         )
         return qs.filter(Q(last_answer__creator=F("creator")) | Q(last_answer__isnull=True))
 
