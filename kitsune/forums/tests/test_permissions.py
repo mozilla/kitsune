@@ -1,11 +1,12 @@
 from guardian.shortcuts import assign_perm
 
 from kitsune.access.utils import has_perm
-from kitsune.forums.tests import ForumTestCase, ForumFactory
+from kitsune.forums.tests import ForumFactory
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory, GroupFactory
 
 
-class ForumTestPermissions(ForumTestCase):
+class ForumTestPermissions(TestCase):
     """Make sure access helpers work on the forums."""
 
     def setUp(self):

@@ -8,10 +8,6 @@ from kitsune.sumo.tests import FuzzyUnicode, TestCase
 from kitsune.users.tests import UserFactory
 
 
-class ForumTestCase(TestCase):
-    pass
-
-
 class ForumFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Forum

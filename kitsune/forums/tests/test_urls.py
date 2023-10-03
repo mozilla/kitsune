@@ -1,11 +1,11 @@
 from guardian.shortcuts import assign_perm
 
-from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
-from kitsune.sumo.tests import get, post
+from kitsune.forums.tests import ForumFactory, PostFactory, ThreadFactory
+from kitsune.sumo.tests import TestCase, get, post
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
-class BelongsTestCase(ForumTestCase):
+class BelongsTestCase(TestCase):
     """
     Mixing and matching thread, forum, and post data in URLs should fail.
     """
