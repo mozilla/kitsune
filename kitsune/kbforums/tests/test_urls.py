@@ -1,10 +1,10 @@
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
-from kitsune.sumo.tests import get, post
+from kitsune.kbforums.tests import ThreadFactory
+from kitsune.sumo.tests import TestCase, get, post
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import DocumentFactory
 
 
-class KBBelongsTestCase(KBForumTestCase):
+class KBBelongsTestCase(TestCase):
     """
     Mixing and matching thread, forum, and post data in URLs should fail.
     """

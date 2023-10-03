@@ -6,8 +6,8 @@ from django.core import mail
 
 from kitsune.kbforums.events import NewPostEvent, NewThreadEvent
 from kitsune.kbforums.models import Post, Thread
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
-from kitsune.sumo.tests import attrs_eq, post, starts_with
+from kitsune.kbforums.tests import ThreadFactory
+from kitsune.sumo.tests import TestCase, attrs_eq, post, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
@@ -57,7 +57,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
 
-class NotificationsTests(KBForumTestCase):
+class NotificationsTests(TestCase):
     """Test that notifications get sent."""
 
     @mock.patch.object(NewPostEvent, "fire")

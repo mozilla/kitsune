@@ -1,12 +1,12 @@
 from kitsune.kbforums.events import NewPostEvent, NewThreadEvent
 from kitsune.kbforums.models import Thread
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
-from kitsune.sumo.tests import get, post
+from kitsune.kbforums.tests import ThreadFactory
+from kitsune.sumo.tests import TestCase, get, post
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
-class ThreadTests(KBForumTestCase):
+class ThreadTests(TestCase):
     """Test thread views."""
 
     def test_watch_forum(self):
@@ -95,7 +95,7 @@ class ThreadTests(KBForumTestCase):
         check("wiki.discuss.threads.feed")
 
 
-class ThreadPermissionsTests(KBForumTestCase):
+class ThreadPermissionsTests(TestCase):
     def setUp(self):
         super(ThreadPermissionsTests, self).setUp()
         self.doc = DocumentFactory()

@@ -3,15 +3,14 @@ from django.core import mail
 
 from unittest import mock
 
-from kitsune.kbforums.tests import KBForumTestCase
-from kitsune.sumo.tests import post, attrs_eq, starts_with
+from kitsune.sumo.tests import TestCase, post, attrs_eq, starts_with
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 
 PRIVATE_MESSAGE_EMAIL = "{sender} sent you the following"
 
 
-class NotificationsTests(KBForumTestCase):
+class NotificationsTests(TestCase):
     """Test that notifications get sent."""
 
     def setUp(self):
