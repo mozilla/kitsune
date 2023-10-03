@@ -1,6 +1,5 @@
 {% extends "users/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "users/includes/notification_macros.html" import notification_already_migrated %}
 {% from "questions/includes/aaq_macros.html" import progress_bar %}
 
 {% set title = _('Log In / Sign up') %}
@@ -23,37 +22,17 @@
 
 <section class="sumo-auth--wrap">
   <div class="mzp-l-content">
-
-    {% if notification == 'already_migrated' %}
-      {{ notification_already_migrated() }}
-    {% endif %}
-
-
     <div class="card feature-padding elevation-03">
       <div class="sumo-auth">
-        <figure class="sumo-auth--logo">
-          <img class="ff-logo" src="{{ webpack_static('sumo/img/FF_Master__icon.svg') }}" alt="{{ _('Firefox logo') }}"/>
-        </figure>
         <div class="sumo-auth--form">
           <div id="login-fxa">
             <article id="login" class="main login-form">
-              <div class="sumo-page-section">
-                <h1 class="sumo-page-heading">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
-                <p>
-                  {% if aaq_context and not aaq_context.has_subscriptions %}
-                    {{ _('Never miss an answer. A free Firefox Account lets you view your question history and track or post responses.')}}
-                  {% else %}
-                    {% trans url=url('wiki.document', 'firefox-accounts-mozilla-support-faq') %}
-                      We've upgraded our log-in system to replace Mozilla Support accounts with Firefox Accounts.
-                      Firefox Accounts offers one log-in for convenient and secure access to Mozilla services.
-                      <a href="{{ url }}">See our FAQ</a> for more information.
-                    {% endtrans %}
-                  {% endif %}
-                </p>
-
+              <div class="sumo-page-section content-zero-bottom-pad">
+                <h1 class="sumo-page-subheading sumo-header-medium">{{ _('Continue with your Mozilla account' ) }}</h1>
+                <p class="text-body-sm">{{ _('Get personalized support from staff and our<br> amazing community of contributors from around the world.' ) }}</p>
                 <div class="center-on-mobile">
                   <p class="login-button-wrap">
-                    <a rel="nofollow" href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}" class="sumo-button primary-button button-lg">{{ _('Continue with Firefox Accounts') }}</a>
+                    <a rel="nofollow" href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}" class="sumo-button primary-button button-lg button-full-width">{{ _('Sign In or Sign Up') }}</a>
                   </p>
 
                   <p class="help-text">
@@ -61,11 +40,16 @@
                       terms_url="https://www.mozilla.org/about/legal/terms/services/",
                       privacy_url="https://www.mozilla.org/privacy/firefox/"
                     %}
-                      Continuing with Firefox Accounts means you have agreed with the
+                    Continuing with your Mozilla account means you have agreed with the
                       <a href="{{ terms_url }}">Terms and Conditions</a> and
-                      <a href="{{ privacy_url }}">Privacy Policy</a>.
+                      <a href="{{ privacy_url }}">Privacy Policy</a>.'
                     {% endtrans %}
                   </p>
+                  <div class="trouble-text">
+                    <p class="help-text">
+                      {{ _('Having trouble signing in? Contact support' ) }}
+                    </p>
+                  </div>
                 </div>
               </div>
             </article>

@@ -3,8 +3,9 @@
 
 
 .sumo-auth {
-  @include c.grid-row();
   align-items: center;
+  align-content: center;
+  text-align: center;
 
   &--wrap {
     margin-top: auto;
@@ -14,14 +15,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    align-self: center;
+    max-width: 470px;
   }
 
   &--logo {
     display: none;
-  }
-
-  &--form {
-    @include c.col;
   }
 
   &--login-help {
@@ -53,11 +52,25 @@
         max-width: 300px;
       }
     }
-    &--logo,
-    &--form {
-      @include c.col(1, 2);
-    }
   }
+
+.trouble-text {
+  margin-top: 35px;
+  padding-top: 15px;
+  border-top: 1px solid var(--color-border);
+}
+
+.sumo-header-medium {
+  font-size: 2em;
+}
+
+.clear-bottom-pad {
+  padding-bottom: 0px;
+}
+
+.content-zero-bottom-pad {
+  padding-bottom: 0px;
+}
 
   @media #{p.$mq-xl} {
     &--wrap {
