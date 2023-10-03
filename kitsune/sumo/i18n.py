@@ -116,19 +116,23 @@ def get_language_from_request(request, check_path=False, check_user=False):
         2) Check the user's session for a locale
         3) Always return a language code normalized for SUMO
     """
-    if check_path and (
-        language := normalize_language(translation.get_language_from_path(request.path_info))
-    ):
-        return language
+    language = None
 
-    if check_user:
+    if check_path:
+        language = translation.get_language_from_path(request.path_info)
+
+    if check_user and not language:
         if request.user.is_authenticated:
             try:
-                return request.user.profile.locale
+                language = request.user.profile.locale
             except ObjectDoesNotExist:
                 pass
 
-        if language := normalize_language(request.session.get(settings.LANGUAGE_COOKIE_NAME)):
-            return language
+        if not language:
+            language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
 
-    return normalize_language(translation.get_language_from_request(request, check_path=False))
+    if not language:
+        # The call to "translation.get_language_from_request" always returns a language.
+        language = translation.get_language_from_request(request, check_path=False)
+
+    return normalize_language(language)
