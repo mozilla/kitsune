@@ -28,8 +28,7 @@ class LocalePrefixPattern(django.urls.LocalePrefixPattern):
         language_code = normalize_language(translation.get_language()) or settings.LANGUAGE_CODE
         if language_code == settings.LANGUAGE_CODE and not self.prefix_default_language:
             return ""
-        else:
-            return f"{language_code}/"
+        return f"{language_code}/"
 
 
 def i18n_patterns(*urls, prefix_default_language=True):
