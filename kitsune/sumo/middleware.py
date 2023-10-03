@@ -114,7 +114,7 @@ class LocaleMiddleware:
         2) The "request.LANGUAGE_CODE" is normalized to SUMO standards (i.e., uppercase
            country-codes).
         3) The language code used when creating the redirect for requests that 404 due to
-           the lack of a language code, is normalized to SUMO standards.
+           the lack of a language code, is normalized to use an uppercase country-code.
     """
 
     def __init__(self, get_response):
