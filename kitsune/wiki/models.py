@@ -1089,23 +1089,23 @@ class DocumentImage(ModelBase):
 
 def get_locale_and_slug_from_document_url(url, required_locale=None, check_host=True):
     """
-    Return (locale, slug) if URL is a Document, False otherwise.
+    Return (locale, slug) if URL is a Document, None otherwise.
     """
     parsed = urlparse(url)
 
     if check_host and parsed.netloc:
-        return False
+        return None
 
     locale, _ = split_into_language_and_path(parsed.path)
 
     if required_locale and (locale != required_locale):
-        return False
+        return None
 
     with override(locale):
         match = is_valid_path(parsed.path)
 
     if not (match and match.url_name == "wiki.document"):
-        return False
+        return None
 
     return (locale, match.kwargs["document_slug"])
 
