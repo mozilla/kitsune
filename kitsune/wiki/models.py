@@ -1110,7 +1110,7 @@ def get_locale_and_slug_from_document_url(url, required_locale=None, check_host=
     return (locale, match.kwargs["document_slug"])
 
 
-def is_document_url(url, required_locale=None):
+def points_to_document_view(url, required_locale=None):
     """
     Return whether a URL reverses to the document view.
 
