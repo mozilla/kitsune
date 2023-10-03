@@ -1,7 +1,7 @@
 import hashlib
 import logging
 from datetime import datetime, timedelta
-from urllib.parse import urlsplit
+from urllib.parse import urlparse
 
 import waffle
 from django.conf import settings
@@ -1091,7 +1091,7 @@ def get_locale_and_slug_from_document_url(url, required_locale=None, check_host=
     """
     Return (locale, slug) if URL is a Document, False otherwise.
     """
-    parsed = urlsplit(url)
+    parsed = urlparse(url)
 
     if check_host and parsed.netloc:
         return False

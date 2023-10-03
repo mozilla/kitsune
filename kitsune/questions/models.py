@@ -1,7 +1,7 @@
 import logging
 import re
 from datetime import date, datetime, timedelta
-from urllib.parse import urlsplit
+from urllib.parse import urlparse
 
 import actstream
 import actstream.actions
@@ -434,7 +434,7 @@ class Question(AAQBase, BigVocabTaggableMixin):
         we don't validate the existence of the question (this saves us
         from making a million or so db calls).
         """
-        parsed = urlsplit(url)
+        parsed = urlparse(url)
         language, _ = split_into_language_and_path(parsed.path)
 
         with override(language):
