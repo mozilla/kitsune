@@ -67,13 +67,13 @@ def normalize_language(language):
     return settings.LANGUAGE_URL_MAP.get(lc_language) or FALLBACK_LANGUAGE_URL_MAP.get(lc_language)
 
 
-def normalize_path(path, force_language=None):
+def normalize_path(path, force_language=False):
     """
     Normalizes the language code, if any, that starts the path. If "force_language" is
     given, it will replace any existing language code in the path, or prefix the path
     if the path didn't already start with a language code.
 
-    Example when "force_language=None":
+    Example when "force_language=False":
         Requested  --> Normalized
             /en-us --> /en-US  (normalization of case)
             /fr-ca --> /fr     (supported variant)
