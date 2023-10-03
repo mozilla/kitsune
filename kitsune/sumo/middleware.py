@@ -108,13 +108,12 @@ class ValidateAccessTokenMiddleware(SessionRefresh):
 class LocaleMiddleware:
     """
     This is a modified copy of Django's LocaleMiddleware, with the following differences:
-        1) Uses the new-style approach for middleware classes.
-        2) Handles language-related redirects that ensure that the "lang" query parameter
+        1) Handles language-related redirects that ensure that the "lang" query parameter
            is respected, and also that all incoming language-based paths are normalized to
            SUMO standards, like uppercase country-codes and language fallbacks.
-        3) The "request.LANGUAGE_CODE" is normalized to SUMO standards (i.e., uppercase
+        2) The "request.LANGUAGE_CODE" is normalized to SUMO standards (i.e., uppercase
            country-codes).
-        4) The language code used when creating the redirect for requests that 404 due to
+        3) The language code used when creating the redirect for requests that 404 due to
            the lack of a language code, is normalized to SUMO standards.
     """
 
