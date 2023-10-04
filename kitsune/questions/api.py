@@ -279,7 +279,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def helpful(self, request, pk=None):
         if is_ratelimited(request, "question-vote", "10/d"):
             raise GenericAPIException(
-                status.HTTP_429_TOO_MANY_REQUESTS, "You've exceeded the number of votes for questions allowed in a day."
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "You've exceeded the number of votes for questions allowed in a day.",
             )
 
         question = self.get_object()
@@ -332,7 +333,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except QuestionMetaData.DoesNotExist:
-            raise GenericAPIException(status.HTTP_404_NOT_FOUND, "No matching metadata object found.")
+            raise GenericAPIException(
+                status.HTTP_404_NOT_FOUND, "No matching metadata object found."
+            )
 
     @action(
         detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticatedOrReadOnly]
@@ -345,9 +348,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
         try:
             question.take(request.user, force=force)
         except InvalidUserException:
-            raise GenericAPIException(status.HTTP_400_BAD_REQUEST, "Question creator cannot take a question.")
+            raise GenericAPIException(
+                status.HTTP_400_BAD_REQUEST, "Question creator cannot take a question."
+            )
         except AlreadyTakenException:
-            raise GenericAPIException(status.HTTP_409_CONFLICT, "Conflict: question is already taken.")
+            raise GenericAPIException(
+                status.HTTP_409_CONFLICT, "Conflict: question is already taken."
+            )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -369,7 +376,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 if request.user.has_perm("taggit.add_tag"):
                     question.tags.add(tag)
                 else:
-                    raise GenericAPIException(status.HTTP_403_FORBIDDEN, "You are not authorized to create new tags.")
+                    raise GenericAPIException(
+                        status.HTTP_403_FORBIDDEN, "You are not authorized to create new tags."
+                    )
 
         data = [{"name": tag.name, "slug": tag.slug} for tag in question.tags.all()]
         return Response(data)
@@ -510,7 +519,8 @@ class AnswerViewSet(viewsets.ModelViewSet):
     def helpful(self, request, pk=None):
         if is_ratelimited(request, "answer-vote", "10/d"):
             raise GenericAPIException(
-                status.HTTP_429_TOO_MANY_REQUESTS, "You've exceeded the number of votes for answers allowed in a day."
+                status.HTTP_429_TOO_MANY_REQUESTS,
+                "You've exceeded the number of votes for answers allowed in a day.",
             )
 
         answer = self.get_object()
