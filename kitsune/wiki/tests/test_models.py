@@ -421,13 +421,14 @@ class FromUrlTests(TestCase):
         invalid_translate = reverse("wiki.document", locale="tr", args=[d_en.slug])
         self.assertEqual(d_en, Document.from_url(invalid_translate))
 
-    def test_check_host(self):
-        from_url = Document.from_url
-        d_en = DocumentFactory(locale="en-US", title="How to delete Google Chrome?")
-        sumo_host = "https://support.mozilla.org"
-        invalid_url = urllib.parse.urljoin(sumo_host, d_en.get_absolute_url())
-        self.assertIsNone(from_url(invalid_url))
-        self.assertEqual(d_en, from_url(invalid_url, check_host=False))
+    def test_when_url_includes_host(self):
+        doc = DocumentFactory(locale="en-US", title="How to delete Google Chrome?")
+        self.assertEqual(
+            doc,
+            Document.from_url(
+                urllib.parse.urljoin("https://support.mozilla.org", doc.get_absolute_url())
+            ),
+        )
 
 
 class LocalizableOrLatestRevisionTests(TestCase):

@@ -159,7 +159,7 @@ def pageviews_by_document(start_date, end_date, verbose=False):
             for result in results.get("rows", []):
                 path = result[0]
                 pageviews = int(result[1])
-                doc = Document.from_url(path, id_only=True, check_host=False)
+                doc = Document.from_url(path, id_only=True)
                 if not doc:
                     continue
 

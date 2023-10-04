@@ -435,7 +435,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         return reverse("wiki.document", locale=self.locale, args=[self.slug])
 
     @classmethod
-    def from_url(cls, url, required_locale=None, id_only=False, check_host=True):
+    def from_url(cls, url, required_locale=None, id_only=False):
         """Return the approved Document the URL represents, None if there isn't
         one.
 
@@ -445,19 +445,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         To limit the universe of discourse to a certain locale, pass in a
         `required_locale`. To fetch only the ID of the returned Document, set
         `id_only` to True.
-
-        If the URL has a host component, we assume it does not point to this
-        host and thus does not point to a Document, because that would be a
-        needlessly verbose way to specify an internal link. However, if you
-        pass check_host=False, we assume the URL's host is the one serving
-        Documents, which comes in handy for analytics whose metrics return
-        host-having URLs.
-
         """
         if not (
-            match := get_locale_and_slug_from_document_url(
-                url, required_locale=required_locale, check_host=check_host
-            )
+            match := get_locale_and_slug_from_document_url(url, required_locale=required_locale)
         ):
             return None
 
@@ -1087,14 +1077,12 @@ class DocumentImage(ModelBase):
         return "<DocumentImage: {doc} includes {img}>".format(doc=self.document, img=self.image)
 
 
-def get_locale_and_slug_from_document_url(url, required_locale=None, check_host=True):
+def get_locale_and_slug_from_document_url(url, required_locale=None):
     """
-    Return (locale, slug) if URL is a Document, None otherwise.
+    Return a tuple of the document's (locale, slug) if the URL resolves
+    to the document view, None otherwise.
     """
     parsed = urlparse(url)
-
-    if check_host and parsed.netloc:
-        return None
 
     locale, _ = split_into_language_and_path(parsed.path)
 
@@ -1110,7 +1098,7 @@ def get_locale_and_slug_from_document_url(url, required_locale=None, check_host=
     return (locale, match.kwargs["document_slug"])
 
 
-def points_to_document_view(url, required_locale=None):
+def resolves_to_document_view(url, required_locale=None):
     """
     Return whether a URL reverses to the document view.
 
