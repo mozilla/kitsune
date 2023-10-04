@@ -108,31 +108,23 @@ def normalize_path(path, force_language=False):
     return path
 
 
-def get_language_from_request(request, check_path=False, check_user=False):
+def get_language_from_user(request):
     """
-    A wrapper around Django's "get_language_from_request" that provides SUMO-specific
-    customizations:
-        1) Check for a logged-in user's locale in their profile
-        2) Check the user's session for a locale
-        3) Always return a language code normalized for SUMO
+    Return the normalized language code from the following user-related
+    sources, if possible, otherwise return None.
+        1) Check for a logged-in user's preferred language in their
+           profile.
+        2) Check for the user's preferred language in their session.
     """
     language = None
 
-    if check_path:
-        language = translation.get_language_from_path(request.path_info)
-
-    if check_user and not language:
-        if request.user.is_authenticated:
-            try:
-                language = request.user.profile.locale
-            except ObjectDoesNotExist:
-                pass
-
-        if not language:
-            language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
+    if request.user.is_authenticated:
+        try:
+            language = request.user.profile.locale
+        except ObjectDoesNotExist:
+            pass
 
     if not language:
-        # The call to "translation.get_language_from_request" always returns a language.
-        language = translation.get_language_from_request(request, check_path=False)
+        language = request.session.get(settings.LANGUAGE_COOKIE_NAME)
 
     return normalize_language(language)

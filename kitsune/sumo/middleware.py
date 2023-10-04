@@ -2,8 +2,8 @@ import contextlib
 import re
 import time
 
+import django.middleware.locale
 from django.conf import settings
-from django.conf.urls.i18n import is_language_prefix_patterns_used
 from django.contrib import messages
 from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
@@ -25,7 +25,7 @@ from django.utils.encoding import iri_to_uri, smart_str
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
-from kitsune.sumo.i18n import get_language_from_request, normalize_language, normalize_path
+from kitsune.sumo.i18n import get_language_from_user, normalize_language, normalize_path
 from kitsune.sumo.views import handle403
 from kitsune.users.auth import FXAAuthBackend
 
@@ -105,109 +105,93 @@ class ValidateAccessTokenMiddleware(SessionRefresh):
                 logout(request)
 
 
-class LocaleMiddleware:
-    """
-    This is a modified copy of Django's LocaleMiddleware, with the following differences:
-        1) Handles language-related redirects that ensure that the "lang" query parameter
-           is respected, and also that all incoming language-based paths are normalized to
-           SUMO standards, like uppercase country-codes and language fallbacks.
-        2) The "request.LANGUAGE_CODE" is normalized to SUMO standards (i.e., uppercase
-           country-codes).
-        3) The language code used when creating the redirect for requests that 404 due to
-           the lack of a language code, is normalized to use an uppercase country-code.
-    """
+class LocaleMiddleware(django.middleware.locale.LocaleMiddleware):
+    def process_request(self, request):
+        # Handle redirects requested via the "lang" query parameter, which overrides
+        # everything, even the language in the path.
+        if normalized_lang := normalize_language(request.GET.get("lang")):
+            new_full_path = normalize_path(request.path_info, force_language=normalized_lang)
 
-    def __init__(self, get_response):
-        self.get_response = get_response
+            # Remove "lang" from the query parameters, so we don't create an infinite loop,
+            # and if any query parameters remain, add them back to the new full path.
+            query = request.GET.copy()
+            query.pop("lang")
+            if query:
+                new_full_path += f"?{query.urlencode()}"
 
-    def __call__(self, request):
-        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
-        (
-            i18n_patterns_used,
-            prefixed_default_language,
-        ) = is_language_prefix_patterns_used(urlconf)
+            if request.user.is_anonymous:
+                request.session[settings.LANGUAGE_COOKIE_NAME] = normalized_lang
 
-        if i18n_patterns_used:
-            # Handle redirects requested via the "lang" query parameter, which overrides
-            # everything, even the language in the path.
-            if normalized_lang := normalize_language(request.GET.get("lang")):
-                new_full_path = normalize_path(request.path_info, force_language=normalized_lang)
+            return HttpResponseRedirect(new_full_path)
 
-                # Remove "lang" from the query parameters, so we don't create an infinite loop,
-                # and if any query parameters remain, add them back to the new full path.
-                query = request.GET.copy()
-                query.pop("lang")
-                if query:
-                    new_full_path += f"?{query.urlencode()}"
+        # Handle redirects due to normalization, supported variants, and explicit fallbacks.
+        if request.path_info != (new_full_path := normalize_path(request.path_info)):
+            if request.GET:
+                new_full_path += f"?{request.GET.urlencode()}"
+            return HttpResponseRedirect(new_full_path)
 
-                if request.user.is_anonymous:
-                    request.session[settings.LANGUAGE_COOKIE_NAME] = normalized_lang
+        # Stuff any language code we get from user-related sources into a cookie that
+        # Django's code will use if it can't get a supported language code from the path.
+        if language := get_language_from_user(request):
+            request.COOKIES[settings.LANGUAGE_COOKIE_NAME] = language
 
-                return HttpResponseRedirect(new_full_path)
+        response = super().process_request(request)
 
-            # Handle redirects due to normalization, supported variants, and explicit fallbacks.
-            if request.path_info != (new_full_path := normalize_path(request.path_info)):
-                if request.GET:
-                    new_full_path += f"?{request.GET.urlencode()}"
-                return HttpResponseRedirect(new_full_path)
+        # Normalize the request.LANGUAGE_CODE since Django's is always lowercase.
+        request.LANGUAGE_CODE = normalize_language(request.LANGUAGE_CODE)
 
-        # Set the active language and the request's LANGUAGE_CODE.
-        language = get_language_from_request(
-            request, check_path=i18n_patterns_used, check_user=True
-        )
-        if (
-            i18n_patterns_used
-            and not prefixed_default_language
-            and not translation.get_language_from_path(request.path_info)
-        ):
-            language = settings.LANGUAGE_CODE
-        translation.activate(language)
-        request.LANGUAGE_CODE = language
+        return response
 
-        response = self.get_response(request)
+    def process_response(self, request, response):
+        response = super().process_response(request, response)
 
-        language = normalize_language(translation.get_language())
-        language_from_path = translation.get_language_from_path(request.path_info)
-        urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
-        (
-            i18n_patterns_used,
-            prefixed_default_language,
-        ) = is_language_prefix_patterns_used(urlconf)
+        if response.status_code == 404:
+            # For the case of 404's where the language code is missing from the URL,
+            # Django will never handle those redirects when the active language code
+            # contains country codes, because Django always uses the language code
+            # returned from translation.get_language(), which is always lowercase.
+            # Django's call to is_valid_path will never be true, because language
+            # codes with lowercase country-codes, like "en-us", will never match
+            # any routes. Therefore, we have to handle those cases here.
 
-        if (
-            response.status_code == 404
-            and not language_from_path
-            and i18n_patterns_used
-            and prefixed_default_language
-        ):
-            # Maybe the language code is missing in the URL? Try adding the
-            # language prefix and redirecting to that URL.
-            language_path = f"/{language}{request.path_info}"
-            path_valid = is_valid_path(language_path, urlconf)
-            path_needs_slash = not path_valid and (
-                settings.APPEND_SLASH
-                and not language_path.endswith("/")
-                and is_valid_path(f"{language_path}/", urlconf)
-            )
+            language = translation.get_language()
+            normalized_language = normalize_language(language)
+            language_from_path = translation.get_language_from_path(request.path_info)
 
-            if path_valid or path_needs_slash:
-                script_prefix = get_script_prefix()
-                # Insert language after the script prefix and before the
-                # rest of the URL
-                language_url = request.get_full_path(force_append_slash=path_needs_slash).replace(
-                    script_prefix, f"{script_prefix}{language}/", 1
+            if (language != normalized_language) and not language_from_path:
+                # We want to use the normalized language from now on, so "en-US"
+                # instead of "en-us" for example.
+                language = normalized_language
+
+                # We're going to need the urlconf for the code copied from Django
+                # further below.
+                urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
+
+                # NOTE: Everything from here is copied directly Django.
+
+                # Maybe the language code is missing in the URL? Try adding the
+                # language prefix and redirecting to that URL.
+                language_path = "/%s%s" % (language, request.path_info)
+                path_valid = is_valid_path(language_path, urlconf)
+                path_needs_slash = not path_valid and (
+                    settings.APPEND_SLASH
+                    and not language_path.endswith("/")
+                    and is_valid_path("%s/" % language_path, urlconf)
                 )
-                # Redirect to the language-specific URL as detected by
-                # get_language_from_request(). HTTP caches may cache this
-                # redirect, so add the Vary header.
-                redirect = HttpResponseRedirect(language_url)
-                patch_vary_headers(redirect, ("Accept-Language", "Cookie"))
-                return redirect
 
-        if not (i18n_patterns_used and language_from_path):
-            patch_vary_headers(response, ("Accept-Language",))
-
-        response.headers.setdefault("Content-Language", language)
+                if path_valid or path_needs_slash:
+                    script_prefix = get_script_prefix()
+                    # Insert language after the script prefix and before the
+                    # rest of the URL
+                    language_url = request.get_full_path(
+                        force_append_slash=path_needs_slash
+                    ).replace(script_prefix, "%s%s/" % (script_prefix, language), 1)
+                    # Redirect to the language-specific URL as detected by
+                    # get_language_from_request(). HTTP caches may cache this
+                    # redirect, so add the Vary header.
+                    redirect = self.response_redirect_class(language_url)
+                    patch_vary_headers(redirect, ("Accept-Language", "Cookie"))
+                    return redirect
 
         return response
 

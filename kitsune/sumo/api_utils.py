@@ -13,7 +13,6 @@ from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.renderers import JSONRenderer as DRFJSONRenderer
 
-from kitsune.sumo.i18n import get_language_from_request
 from kitsune.users.models import Profile
 
 
@@ -41,7 +40,7 @@ class LocaleNegotiationMixin(object):
     """A mixin for CBV to select a locale based on Accept-Language headers."""
 
     def get_locale(self):
-        return get_language_from_request(self.request)
+        return translation.get_language_from_request(self.request)
 
     def get_serializer_context(self):
         context = super(LocaleNegotiationMixin, self).get_serializer_context()
