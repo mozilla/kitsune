@@ -3,7 +3,8 @@ from unittest.mock import patch
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.utils.functional import lazy
-from django.utils.translation import get_language, override
+from django.utils import translation
+from django.utils.translation import get_language
 
 from kitsune.sumo.email_utils import emails_with_users_and_watches, safe_translation
 from kitsune.sumo.tests import TestCase
@@ -45,11 +46,11 @@ class SafeTranslationTests(TestCase):
         # Import translation now so it is affected by the mock.
         from django.utils.translation import gettext as _
 
-        with override("en-US"):
+        with translation.override("en-US"):
             self.assertEqual(_("Hello"), "Hello")
-        with override("fr"):
+        with translation.override("fr"):
             self.assertEqual(_("Hello"), "Bonjour")
-        with override("es"):
+        with translation.override("es"):
             self.assertEqual(_("Hello"), "Hola")
 
     @mock_gettext

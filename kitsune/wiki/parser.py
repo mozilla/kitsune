@@ -5,7 +5,8 @@ from xml.sax.saxutils import quoteattr
 import bleach
 from bleach.css_sanitizer import CSSSanitizer
 from django.conf import settings
-from django.utils.translation import gettext as _, gettext_lazy as _lazy, override
+from django.utils import translation
+from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from html5lib import HTMLParser
 from html5lib.filters.alphabeticalattributes import Filter as sortAttributes
 from html5lib.serializer import HTMLSerializer
@@ -54,7 +55,7 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, doc_id=None
     if parser_cls is None:
         parser_cls = WikiParser
 
-    with override(locale):
+    with translation.override(locale):
         content = parser_cls(doc_id=doc_id).parse(
             wiki_markup,
             show_toc=False,

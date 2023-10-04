@@ -12,7 +12,8 @@ from django.db import IntegrityError, models
 from django.db.models import Q
 from django.urls import is_valid_path
 from django.utils.encoding import smart_bytes
-from django.utils.translation import gettext_lazy as _lazy, gettext as _, override
+from django.utils import translation
+from django.utils.translation import gettext_lazy as _lazy, gettext as _
 from pyquery import PyQuery
 
 from kitsune.gallery.models import Image
@@ -471,9 +472,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         except cls.DoesNotExist:
             try:
                 doc = doc.get(locale=settings.WIKI_DEFAULT_LANGUAGE, slug=slug)
-                translation = doc.translated_to(locale)
-                if translation:
-                    return translation
+                if translated := doc.translated_to(locale):
+                    return translated
                 return doc
             except cls.DoesNotExist:
                 return None
@@ -1101,7 +1101,7 @@ def get_locale_and_slug_from_document_url(url, required_locale=None, check_host=
     if required_locale and (locale != required_locale):
         return None
 
-    with override(locale):
+    with translation.override(locale):
         match = is_valid_path(parsed.path)
 
     if not (match and match.url_name == "wiki.document"):

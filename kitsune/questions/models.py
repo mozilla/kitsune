@@ -16,7 +16,8 @@ from django.db.models.signals import post_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
 from django.urls import is_valid_path
-from django.utils.translation import override, pgettext
+from django.utils import translation
+from django.utils.translation import pgettext
 from elasticsearch import ElasticsearchException
 from product_details import product_details
 from taggit.models import Tag
@@ -437,7 +438,7 @@ class Question(AAQBase, BigVocabTaggableMixin):
         parsed = urlparse(url)
         language, _ = split_into_language_and_path(parsed.path)
 
-        with override(language):
+        with translation.override(language):
             match = is_valid_path(parsed.path)
 
         if not (match and match.url_name == "questions.details"):
@@ -498,7 +499,7 @@ class Question(AAQBase, BigVocabTaggableMixin):
         """Text to use in elastic more_like_this query."""
         content = [self.title, self.content]
         if self.topic:
-            with override(self.locale):
+            with translation.override(self.locale):
                 # use the question's locale, rather than the user's
                 content += [pgettext("DB: products.Topic.title", self.topic.title)]
 

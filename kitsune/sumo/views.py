@@ -6,7 +6,8 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import render
-from django.utils.translation import gettext as _, override
+from django.utils import translation
+from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 
 from kitsune.lib.sumo_locales import LOCALES
@@ -41,7 +42,7 @@ def geoip_suggestion(request):
     for locale in locales:
         # English and native names for the language
         response["locales"][locale] = LOCALES.get(locale, "")
-        with override(locale):
+        with translation.override(locale):
             # This is using our JS-style string formatting.
             response[locale] = {
                 "suggestion": _("Would you like to view this page in " "%(language)s instead?"),
