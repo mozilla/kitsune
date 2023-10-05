@@ -1,6 +1,7 @@
 import contextlib
 import re
 import time
+from functools import wraps
 
 import django.middleware.locale
 from django.conf import settings
@@ -17,7 +18,7 @@ from django.http import (
 )
 from django.http.request import split_domain_port
 from django.shortcuts import render
-from django.urls import get_script_prefix, is_valid_path
+from django.urls import is_valid_path
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
@@ -130,70 +131,49 @@ class LocaleMiddleware(django.middleware.locale.LocaleMiddleware):
                 new_full_path += f"?{request.GET.urlencode()}"
             return HttpResponseRedirect(new_full_path)
 
-        # Stuff any language code we get from user-related sources into a cookie that
-        # Django's code will use if it can't get a supported language code from the path.
-        if language := get_language_from_user(request):
-            request.COOKIES[settings.LANGUAGE_COOKIE_NAME] = language
+        with normalized_get_language():
+            response = super().process_request(request)
 
-        response = super().process_request(request)
-
-        # Normalize the request.LANGUAGE_CODE since Django's is always lowercase.
-        request.LANGUAGE_CODE = normalize_language(request.LANGUAGE_CODE)
+        # Django won't check for a language code in SUMO's user-related sources, so
+        # let's check for that now. If there wasn't a supported language in the path,
+        # but there was a supported language in one of the user-related sources, we'll
+        # override Django's selected language with that one if it's different.
+        if (
+            (language_from_user := get_language_from_user(request))
+            and (language_from_user != request.LANGUAGE_CODE)
+            and not (translation.get_language_from_path(request.path_info))
+        ):
+            translation.activate(language_from_user)
+            request.LANGUAGE_CODE = language_from_user
 
         return response
 
     def process_response(self, request, response):
-        response = super().process_response(request, response)
+        with normalized_get_language():
+            return super().process_response(request, response)
 
-        if response.status_code == 404:
-            # For the case of 404's where the language code is missing from the URL,
-            # Django will never handle those redirects when the active language code
-            # contains country codes, because Django always uses the language code
-            # returned from translation.get_language(), which is always lowercase.
-            # Django's call to is_valid_path will never be true, because language
-            # codes with lowercase country-codes, like "en-us", will never match
-            # any routes. Therefore, we have to handle those cases here.
 
-            language = translation.get_language()
-            normalized_language = normalize_language(language)
-            language_from_path = translation.get_language_from_path(request.path_info)
+@contextlib.contextmanager
+def normalized_get_language():
+    """
+    Ensures that any use of django.utils.translation.get_language()
+    within its context will return a normalized language code. This
+    context manager only works when the "get_language" function is
+    acquired from the "django.utils.translation" module at call time,
+    so for example, if it's called like "translation.get_language()".
+    """
+    get_language = translation.get_language
 
-            if (language != normalized_language) and not language_from_path:
-                # We want to use the normalized language from now on, so "en-US"
-                # instead of "en-us" for example.
-                language = normalized_language
+    @wraps(get_language)
+    def get_normalized_language():
+        return normalize_language(get_language())
 
-                # We're going to need the urlconf for the code copied from Django
-                # further below.
-                urlconf = getattr(request, "urlconf", settings.ROOT_URLCONF)
+    translation.get_language = get_normalized_language
 
-                # NOTE: Everything from here is copied directly Django.
-
-                # Maybe the language code is missing in the URL? Try adding the
-                # language prefix and redirecting to that URL.
-                language_path = "/%s%s" % (language, request.path_info)
-                path_valid = is_valid_path(language_path, urlconf)
-                path_needs_slash = not path_valid and (
-                    settings.APPEND_SLASH
-                    and not language_path.endswith("/")
-                    and is_valid_path("%s/" % language_path, urlconf)
-                )
-
-                if path_valid or path_needs_slash:
-                    script_prefix = get_script_prefix()
-                    # Insert language after the script prefix and before the
-                    # rest of the URL
-                    language_url = request.get_full_path(
-                        force_append_slash=path_needs_slash
-                    ).replace(script_prefix, "%s%s/" % (script_prefix, language), 1)
-                    # Redirect to the language-specific URL as detected by
-                    # get_language_from_request(). HTTP caches may cache this
-                    # redirect, so add the Vary header.
-                    redirect = self.response_redirect_class(language_url)
-                    patch_vary_headers(redirect, ("Accept-Language", "Cookie"))
-                    return redirect
-
-        return response
+    try:
+        yield
+    finally:
+        translation.get_language = get_language
 
 
 class Forbidden403Middleware(MiddlewareMixin):
