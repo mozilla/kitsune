@@ -35,7 +35,7 @@
         ]
     },
     "[jinja-html]": {
-        "editor.formatOnSave": false,
+        "editor.formatOnSave": true,
         "editor.defaultFormatter": "HookyQR.beautify"
     },
     "[jsonc]": {
