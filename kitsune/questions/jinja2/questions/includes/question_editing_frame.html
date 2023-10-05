@@ -90,12 +90,20 @@ we can compute the edit-title URL.
               {% endif %}
 
               <div class="info card shade-bg highlight mb">
+              {% if is_loginless %}
+                {% trans %}
+                  Can't sign in to your account and need help? 
+                  You've found the right place. Complete the form below
+                  to contact our support staff.
+                {% endtrans %}
+              {% else %}
                 {% trans %}
                   Be descriptive.
                   Saying “playing video on YouTube is always choppy”
                   will help us understand the issue better than saying
                   “something is wrong” or “the app is broken”.
                 {% endtrans %}
+              {% endif %}
               </div>
 
               {% for field in form.hidden_fields() %}
@@ -115,7 +123,6 @@ we can compute the edit-title URL.
                         </p>
                       </li>
                     {% endif %}
-
                     {% if field.name == 'ff_version' or field.name == 'os' %}
                       {% set li_class='details' %}
                     {% endif %}
@@ -123,11 +130,21 @@ we can compute the edit-title URL.
 
                   <li class="{{ li_class }} {% if field.errors %}has-error invalid{% endif %} cf">
                     {{ field.label_tag()|safe }}
-
                     {% if field.name == 'content' %}
                       {{ content_editor(field) }}
                     {% elif field.name == 'troubleshooting' %}
                       {{ troubleshooting_instructions(field) }}
+                    {% elif field.name == 'description' and is_loginless %}
+                      <label for="{{ field.id_for_label }}">
+                        <span class="mzp-c-fieldnote">
+                          {{ _(
+                          "Include details such as your account email or specifics about"
+                          " your sign-in issue to help us get you back into your account quicker."
+                          ) }}
+                        </span>
+                      </label>
+                      {{ field }}
+                      {{ field.errors }}
                     {% else %}
                       {{ field|safe }}
                     {% endif %}

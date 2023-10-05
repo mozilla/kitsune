@@ -1156,8 +1156,12 @@ ZENDESK_USER_EMAIL = config("ZENDESK_USER_EMAIL", default="")
 ZENDESK_TICKET_FORM_ID = config("ZENDESK_TICKET_FORM_ID", default="360000417171", cast=int)
 ZENDESK_PRODUCT_FIELD_ID = config("ZENDESK_PRODUCT_FIELD_ID", default="360047198211", cast=int)
 ZENDESK_CATEGORY_FIELD_ID = config("ZENDESK_CATEGORY_FIELD_ID", default="360047206172", cast=int)
+ZENDESK_CONTACT_LABEL_ID = config("ZENDESK_CONTACT_LABEL_ID", default="1900002215047", cast=int)
 ZENDESK_OS_FIELD_ID = config("ZENDESK_OS_FIELD_ID", default="360018604871", cast=int)
 ZENDESK_COUNTRY_FIELD_ID = config("ZENDESK_COUNTRY_FIELD_ID", default="360026463511", cast=int)
+
+# Products that allow un-authenticated users to submit support requests
+LOGIN_EXCEPTIONS = ["mozilla-account"]
 
 # Django CSP configuration
 CSP_INCLUDE_NONCE_IN = ["script-src"]
