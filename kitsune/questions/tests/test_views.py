@@ -8,11 +8,11 @@ from pyquery import PyQuery as pq
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.tests import AnswerFactory, QuestionFactory, TestCaseBase
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import LocalizingClient, eq_msg, get, template_used
+from kitsune.sumo.tests import TestCase, eq_msg, get, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.models import Watch
 from kitsune.users.tests import UserFactory, add_permission
@@ -20,7 +20,6 @@ from kitsune.users.tests import UserFactory, add_permission
 
 class AAQSearchTests(Elastic7TestCase):
     search_tests = True
-    client_class = LocalizingClient
 
     def test_ratelimit(self):
         """Make sure posting new questions is ratelimited"""
@@ -72,7 +71,7 @@ class AAQSearchTests(Elastic7TestCase):
         self.assertEqual(200, res.status_code)
 
 
-class AAQTests(TestCaseBase):
+class AAQTests(TestCase):
     def setUp(self):
         product = ProductFactory(title="Firefox", slug="firefox")
         locale, _ = QuestionLocale.objects.get_or_create(locale=settings.LANGUAGE_CODE)
@@ -114,10 +113,8 @@ class AAQTests(TestCaseBase):
         assert template_used(response, "questions/new_question.html")
 
 
-class TestQuestionUpdates(TestCaseBase):
+class TestQuestionUpdates(TestCase):
     """Tests that questions are only updated in the right cases."""
-
-    client_class = LocalizingClient
 
     date_format = "%Y%M%d%H%m%S"
 
@@ -180,7 +177,7 @@ class TestQuestionUpdates(TestCaseBase):
         self._request_and_no_update(url, req_type="POST", data={"remove-tag-foo": 1})
 
 
-class TroubleshootingParsingTests(TestCaseBase):
+class TroubleshootingParsingTests(TestCase):
     def test_empty_troubleshooting_info(self):
         """Test a troubleshooting value that is valid JSON, but junk.
         This should trigger the parser to return None, which should not
@@ -253,7 +250,7 @@ class TroubleshootingParsingTests(TestCaseBase):
         assert parse_troubleshooting(troubleshooting) is not None
 
 
-class TestQuestionList(TestCaseBase):
+class TestQuestionList(TestCase):
     def test_locale_filter(self):
         """Only questions for the current locale should be shown on the
         questions front page for AAQ locales."""
@@ -289,7 +286,7 @@ class TestQuestionList(TestCaseBase):
         sub_test("de", "cupcakes?", "donuts?", "pastries?")
 
 
-class TestQuestionReply(TestCaseBase):
+class TestQuestionReply(TestCase):
     def setUp(self):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
@@ -331,7 +328,7 @@ class TestQuestionReply(TestCaseBase):
         self.assertEqual(q.needs_info, False)
 
 
-class TestMarkingSolved(TestCaseBase):
+class TestMarkingSolved(TestCase):
     def setUp(self):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
@@ -353,7 +350,7 @@ class TestMarkingSolved(TestCaseBase):
         self.assertEqual(res.status_code, 404)
 
 
-class TestVoteAnswers(TestCaseBase):
+class TestVoteAnswers(TestCase):
     def setUp(self):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
@@ -379,7 +376,7 @@ class TestVoteAnswers(TestCaseBase):
         self.assertEqual(res.status_code, 404)
 
 
-class TestVoteQuestions(TestCaseBase):
+class TestVoteQuestions(TestCase):
     def setUp(self):
         u = UserFactory()
         self.client.login(username=u.username, password="testpass")
@@ -393,7 +390,7 @@ class TestVoteQuestions(TestCaseBase):
         self.assertEqual(res.status_code, 404)
 
 
-class TestQuestionDetails(TestCaseBase):
+class TestQuestionDetails(TestCase):
     def setUp(self):
         self.question = QuestionFactory()
 
@@ -412,9 +409,7 @@ class TestQuestionDetails(TestCaseBase):
         self.assertEqual(200, res.status_code)
 
 
-class TestRateLimiting(TestCaseBase):
-    client_class = LocalizingClient
-
+class TestRateLimiting(TestCase):
     def _check_question_vote(self, q, ignored):
         """Try and vote on `q`. If `ignored` is false, assert the
         request worked. If `ignored` is True, assert the request didn't
@@ -550,7 +545,7 @@ class TestRateLimiting(TestCaseBase):
         self.assertEqual(Watch.objects.filter(object_id=q.id).count(), 10)
 
 
-class TestEditDetails(TestCaseBase):
+class TestEditDetails(TestCase):
     def setUp(self):
         u = UserFactory()
         add_permission(u, Question, "change_question")

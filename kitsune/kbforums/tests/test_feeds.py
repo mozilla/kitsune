@@ -3,11 +3,12 @@ import time
 from pyquery import PyQuery as pq
 
 from kitsune.kbforums.feeds import PostsFeed, ThreadsFeed
-from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory, get
+from kitsune.kbforums.tests import ThreadFactory, get
+from kitsune.sumo.tests import TestCase
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
-class FeedSortingTestCase(KBForumTestCase):
+class FeedSortingTestCase(TestCase):
     def test_threads_sort(self):
         """Ensure that threads are being sorted properly by date/time."""
         d = DocumentFactory()

@@ -7,18 +7,17 @@ from pyquery import PyQuery as pq
 from kitsune.forums.feeds import PostsFeed, ThreadsFeed
 from kitsune.forums.tests import (
     ForumFactory,
-    ForumTestCase,
     PostFactory,
     ThreadFactory,
 )
-from kitsune.sumo.tests import get
+from kitsune.sumo.tests import TestCase, get
 from kitsune.users.tests import UserFactory
 
 
 YESTERDAY = datetime.now() - timedelta(days=1)
 
 
-class ForumTestFeeds(ForumTestCase):
+class ForumTestFeeds(TestCase):
     def setUp(self):
         super(ForumTestFeeds, self).setUp()
 

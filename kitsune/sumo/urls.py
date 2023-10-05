@@ -1,18 +1,13 @@
-from django.urls import re_path
-from django.views.generic.base import RedirectView
+from django.urls import path
 from watchman import views as watchman_views
 
 from kitsune.sumo import views
 
+
 urlpatterns = [
-    re_path(r"^robots.txt$", views.robots, name="robots.txt"),
-    re_path(r"^manifest.json$", views.manifest, name="manifest.json"),
-    re_path("^locales$", views.locales, name="sumo.locales"),
-    re_path("^geoip-suggestion$", views.geoip_suggestion, name="sumo.geoip_suggestion"),
-    re_path(r"^healthz/$", watchman_views.ping, name="sumo.liveness"),
-    re_path(r"^readiness/$", watchman_views.status, name="sumo.readiness"),
-    # Shortcuts:
-    re_path(
-        r"^windows7-support(?:\\/)?$", RedirectView.as_view(url="/home/?as=u", permanent=False)
-    ),
+    path("robots.txt", views.robots, name="robots.txt"),
+    path("healthz/", watchman_views.ping, name="sumo.liveness"),
+    path("readiness/", watchman_views.status, name="sumo.readiness"),
+    path("manifest.json", views.manifest, name="manifest.json"),
+    path("geoip-suggestion", views.geoip_suggestion, name="sumo.geoip_suggestion"),
 ]

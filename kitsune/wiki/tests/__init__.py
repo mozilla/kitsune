@@ -7,7 +7,7 @@ from django.template.defaultfilters import slugify
 
 from kitsune.products.models import Product
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
+from kitsune.sumo.tests import FuzzyUnicode, TestCase
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.config import (
     CATEGORIES,
@@ -18,12 +18,6 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
 )
 from kitsune.wiki.models import Document, DraftRevision, HelpfulVote, Locale, Revision
-
-
-class TestCaseBase(TestCase):
-    """Base TestCase for the wiki app test cases."""
-
-    client_class = LocalizingClient
 
 
 class DocumentFactory(factory.django.DjangoModelFactory):

@@ -10,7 +10,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
-from kitsune.sumo.tests import SkipTest, template_used
+from kitsune.sumo.tests import SkipTest, TestCase, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import CATEGORIES, TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
@@ -30,14 +30,13 @@ from kitsune.wiki.tests import (
     RedirectRevisionFactory,
     RevisionFactory,
     TemplateDocumentFactory,
-    TestCaseBase,
     TranslatedRevisionFactory,
     new_document_data,
 )
 from kitsune.wiki.views import _document_lock_check, _document_lock_clear, _document_lock_steal
 
 
-class DocumentVisibilityTests(TestCaseBase):
+class DocumentVisibilityTests(TestCase):
     """Document view visibility tests."""
 
     def setUp(self):
@@ -114,7 +113,7 @@ class DocumentVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class RevisionVisibilityTests(TestCaseBase):
+class RevisionVisibilityTests(TestCase):
     """Revision visibility tests."""
 
     def setUp(self):
@@ -193,7 +192,7 @@ class RevisionVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class StealLockVisibilityTests(TestCaseBase):
+class StealLockVisibilityTests(TestCase):
     """Steal-lock visibility tests."""
 
     def setUp(self):
@@ -255,7 +254,7 @@ class StealLockVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class EditDocumentVisibilityTests(TestCaseBase):
+class EditDocumentVisibilityTests(TestCase):
     """Edit-document visibility tests."""
 
     def setUp(self):
@@ -323,7 +322,7 @@ class EditDocumentVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class PreviewRevisionVisibilityTests(TestCaseBase):
+class PreviewRevisionVisibilityTests(TestCase):
     """Preview visibility tests."""
 
     def setUp(self):
@@ -394,7 +393,7 @@ class PreviewRevisionVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class DocumentRevisionsVisibilityTests(TestCaseBase):
+class DocumentRevisionsVisibilityTests(TestCase):
     """Document revisions visibility tests."""
 
     def setUp(self):
@@ -473,7 +472,7 @@ class DocumentRevisionsVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class CompareRevisionsVisibilityTests(TestCaseBase):
+class CompareRevisionsVisibilityTests(TestCase):
     """Compare revisions visibility tests."""
 
     def setUp(self):
@@ -560,7 +559,7 @@ class CompareRevisionsVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class SelectLocaleVisibilityTests(TestCaseBase):
+class SelectLocaleVisibilityTests(TestCase):
     """Select locale visibility tests."""
 
     def setUp(self):
@@ -622,7 +621,7 @@ class SelectLocaleVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class TranslateVisibilityTests(TestCaseBase):
+class TranslateVisibilityTests(TestCase):
     """Translate visibility tests."""
 
     def setUp(self):
@@ -705,7 +704,7 @@ class TranslateVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 403)
 
 
-class WatchDocumentVisibilityTests(TestCaseBase):
+class WatchDocumentVisibilityTests(TestCase):
     """Watch document visibility tests."""
 
     def setUp(self):
@@ -769,7 +768,7 @@ class WatchDocumentVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 302)
 
 
-class UnwatchDocumentVisibilityTests(TestCaseBase):
+class UnwatchDocumentVisibilityTests(TestCase):
     """Unwatch document visibility tests."""
 
     def setUp(self):
@@ -833,7 +832,7 @@ class UnwatchDocumentVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 302)
 
 
-class GetHelpfulVotesAsyncVisibilityTests(TestCaseBase):
+class GetHelpfulVotesAsyncVisibilityTests(TestCase):
     """Get helpful votes async visibility tests."""
 
     def setUp(self):
@@ -920,7 +919,7 @@ class GetHelpfulVotesAsyncVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class AddContributorVisibilityTests(TestCaseBase):
+class AddContributorVisibilityTests(TestCase):
     """Add contributor visibility tests."""
 
     def setUp(self):
@@ -994,7 +993,7 @@ class AddContributorVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 302)
 
 
-class RemoveContributorVisibilityTests(TestCaseBase):
+class RemoveContributorVisibilityTests(TestCase):
     """Remove contributor visibility tests."""
 
     def setUp(self):
@@ -1065,7 +1064,7 @@ class RemoveContributorVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class ShowTranslationsVisibilityTests(TestCaseBase):
+class ShowTranslationsVisibilityTests(TestCase):
     """Show translations visibility tests."""
 
     def setUp(self):
@@ -1144,7 +1143,7 @@ class ShowTranslationsVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class WhatLinksHereVisibilityTests(TestCaseBase):
+class WhatLinksHereVisibilityTests(TestCase):
     """What-links-here visibility tests."""
 
     def setUp(self):
@@ -1223,7 +1222,7 @@ class WhatLinksHereVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 200)
 
 
-class DeleteDocumentVisibilityTests(TestCaseBase):
+class DeleteDocumentVisibilityTests(TestCase):
     """Delete document visibility tests."""
 
     def setUp(self):
@@ -1290,7 +1289,7 @@ class DeleteDocumentVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 403)
 
 
-class MarkReadyForL10nVisibilityTests(TestCaseBase):
+class MarkReadyForL10nVisibilityTests(TestCase):
     """Mark ready for l10n visibility tests."""
 
     def setUp(self):
@@ -1358,7 +1357,7 @@ class MarkReadyForL10nVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 403)
 
 
-class DeleteRevisionVisibilityTests(TestCaseBase):
+class DeleteRevisionVisibilityTests(TestCase):
     """Delete revision visibility tests."""
 
     def setUp(self):
@@ -1429,7 +1428,7 @@ class DeleteRevisionVisibilityTests(TestCaseBase):
         self.assertEqual(response.status_code, 403)
 
 
-class RedirectTests(TestCaseBase):
+class RedirectTests(TestCase):
     """Tests for the REDIRECT wiki directive"""
 
     def setUp(self):
@@ -1444,7 +1443,7 @@ class RedirectTests(TestCaseBase):
         self.assertContains(response, "REDIRECT ")
 
 
-class LocaleRedirectTests(TestCaseBase):
+class LocaleRedirectTests(TestCase):
     """Tests for fallbacks to en-US and such for slug lookups."""
 
     # Some of these may fail or be invalid if your WIKI_DEFAULT_LANGUAGE is de.
@@ -1476,7 +1475,7 @@ class LocaleRedirectTests(TestCaseBase):
         self.assertRedirects(response, self.de_doc.get_absolute_url() + "?x=y&x=z")
 
 
-class JsonViewTests(TestCaseBase):
+class JsonViewTests(TestCase):
     def setUp(self):
         super(JsonViewTests, self).setUp()
 
@@ -1485,7 +1484,7 @@ class JsonViewTests(TestCaseBase):
 
     def test_json_view_by_title(self):
         """Verify checking for an article by title."""
-        url = reverse("wiki.json", force_locale=True)
+        url = reverse("wiki.json")
         resp = self.client.get(url, {"title": "an article title"})
         self.assertEqual(200, resp.status_code)
         data = json.loads(resp.content)
@@ -1493,7 +1492,7 @@ class JsonViewTests(TestCaseBase):
 
     def test_json_view_by_slug(self):
         """Verify checking for an article by slug."""
-        url = reverse("wiki.json", force_locale=True)
+        url = reverse("wiki.json")
         resp = self.client.get(url, {"slug": "article-title"})
         self.assertEqual(200, resp.status_code)
         data = json.loads(resp.content)
@@ -1501,12 +1500,12 @@ class JsonViewTests(TestCaseBase):
 
     def test_json_view_404(self):
         """Searching for something that doesn't exist should 404."""
-        url = reverse("wiki.json", force_locale=True)
+        url = reverse("wiki.json")
         resp = self.client.get(url, {"title": "an article title ok."})
         self.assertEqual(404, resp.status_code)
 
 
-class WhatLinksWhereTests(TestCaseBase):
+class WhatLinksWhereTests(TestCase):
     def test_what_links_here(self):
         d1 = ApprovedRevisionFactory(content="", document__title="D1").document
         ApprovedRevisionFactory(content="[[D1]]", document__title="D2").document
@@ -1549,7 +1548,7 @@ class WhatLinksWhereTests(TestCaseBase):
         assert b"DAS-2" in resp.content
 
 
-class DocumentEditingTests(TestCaseBase):
+class DocumentEditingTests(TestCase):
     """Tests for the document-editing view"""
 
     def setUp(self):
@@ -1880,7 +1879,7 @@ class DocumentEditingTests(TestCaseBase):
         self.assertEqual(False, draft_revision.exists())
 
 
-class AddRemoveContributorTests(TestCaseBase):
+class AddRemoveContributorTests(TestCase):
     def setUp(self):
         super(AddRemoveContributorTests, self).setUp()
         self.user = UserFactory()
@@ -1915,7 +1914,7 @@ class AddRemoveContributorTests(TestCaseBase):
         assert self.contributor not in self.document.contributors.all()
 
 
-class VoteTests(TestCaseBase):
+class VoteTests(TestCase):
     def test_helpful_vote_bad_id(self):
         """Throw helpful_vote a bad ID, and see if it crashes."""
         response = self.client.post(
@@ -2024,7 +2023,7 @@ class VoteTests(TestCaseBase):
         self.assertEqual(10, HelpfulVote.objects.count())
 
 
-class TestDocumentLocking(TestCaseBase):
+class TestDocumentLocking(TestCase):
     def setUp(self):
         super(TestDocumentLocking, self).setUp()
         try:
@@ -2135,7 +2134,7 @@ class TestDocumentLocking(TestCaseBase):
         self._lock_workflow(trans_doc, edit_url)
 
 
-class FallbackSystem(TestCaseBase):
+class FallbackSystem(TestCase):
     """Check that fallback locales on article level are working correctly."""
 
     def setUp(self):

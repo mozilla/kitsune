@@ -1,6 +1,6 @@
 from django.urls import re_path
 
-from kitsune.dashboards import api, views
+from kitsune.dashboards import views
 
 urlpatterns = [
     re_path(r"^localization$", views.localization, name="dashboards.localization"),
@@ -39,6 +39,4 @@ urlpatterns = [
         views.locale_metrics,
         name="dashboards.locale_metrics",
     ),
-    # API to pull wiki metrics data.
-    re_path(r"^api/v1/wikimetrics/?$", api.WikiMetricList.as_view(), name="api.wikimetric_list"),
 ]

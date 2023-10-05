@@ -1,5 +1,5 @@
 from kitsune.messages.models import InboxMessage, OutboxMessage
-from kitsune.sumo.tests import LocalizingClient, TestCase
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 
@@ -101,8 +101,6 @@ class DeleteMessageTests(TestCase):
 
 
 class OutboxTests(TestCase):
-    client_class = LocalizingClient
-
     def setUp(self):
         super(OutboxTests, self).setUp()
         self.user1 = UserFactory()

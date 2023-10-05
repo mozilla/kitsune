@@ -10,7 +10,6 @@ from django.test.client import RequestFactory
 from django.utils import translation
 from premailer import transform
 
-from kitsune.sumo.utils import uselocale
 
 log = logging.getLogger("k.email")
 
@@ -41,7 +40,7 @@ def safe_translation(f):
     @wraps(f)
     def wrapper(locale, *args, **kwargs):
         try:
-            with uselocale(locale):
+            with translation.override(locale):
                 return f(locale, *args, **kwargs)
         except (TypeError, KeyError, ValueError, IndexError):
             # Types of errors, and examples.
@@ -56,7 +55,7 @@ def safe_translation(f):
             #    '{0} {1}'.format(42)
             log.exception('Bad translation in locale "%s"', locale)
 
-            with uselocale(settings.WIKI_DEFAULT_LANGUAGE):
+            with translation.override(settings.WIKI_DEFAULT_LANGUAGE):
                 return f(settings.WIKI_DEFAULT_LANGUAGE, *args, **kwargs)
 
     return wrapper

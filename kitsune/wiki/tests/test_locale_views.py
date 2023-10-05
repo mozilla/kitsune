@@ -1,6 +1,6 @@
 from pyquery import PyQuery as pq
 
-from kitsune.sumo.tests import LocalizingClient, TestCase
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.models import Locale
@@ -8,8 +8,6 @@ from kitsune.wiki.tests import LocaleFactory
 
 
 class LocaleListTests(TestCase):
-    client_class = LocalizingClient
-
     def test_locale_list(self):
         """Verify the locale list renders all locales."""
         LocaleFactory(locale="en-US")
@@ -23,8 +21,6 @@ class LocaleListTests(TestCase):
 
 
 class LocaleDetailsTests(TestCase):
-    client_class = LocalizingClient
-
     def test_locale_list(self):
         """Verify the locale list renders all locales."""
         lcl = LocaleFactory(locale="es")
@@ -50,8 +46,6 @@ class LocaleDetailsTests(TestCase):
 
 
 class AddRemoveLeaderTests(TestCase):
-    client_class = LocalizingClient
-
     def setUp(self):
         super(AddRemoveLeaderTests, self).setUp()
         self.locale = LocaleFactory(locale="es")
@@ -79,8 +73,6 @@ class AddRemoveLeaderTests(TestCase):
 
 
 class AddRemoveReviewerTests(TestCase):
-    client_class = LocalizingClient
-
     def setUp(self):
         super(AddRemoveReviewerTests, self).setUp()
         self.locale = LocaleFactory(locale="es")
@@ -108,8 +100,6 @@ class AddRemoveReviewerTests(TestCase):
 
 
 class AddRemoveEditorTests(TestCase):
-    client_class = LocalizingClient
-
     def setUp(self):
         super(AddRemoveEditorTests, self).setUp()
         self.locale = LocaleFactory(locale="es")

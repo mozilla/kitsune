@@ -4,7 +4,6 @@ from kitsune.forums.tests import ThreadFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests import Elastic7TestCase
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import ContributorFactory, UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, RevisionFactory
@@ -13,7 +12,6 @@ from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory, Revisio
 class UserSearchTests(Elastic7TestCase):
     """Tests for the Community Hub user search page."""
 
-    client_class = LocalizingClient
     search_tests = True
 
     def test_no_results(self):
@@ -44,7 +42,6 @@ class UserSearchTests(Elastic7TestCase):
 class LandingTests(Elastic7TestCase):
     """Tests for the Community Hub landing page."""
 
-    client_class = LocalizingClient
     search_tests = True
 
     def test_top_contributors(self):
@@ -101,8 +98,6 @@ class TopContributorsTests(Elastic7TestCase):
     """Tests for the Community Hub top contributors page."""
 
     search_tests = True
-
-    client_class = LocalizingClient
 
     def test_invalid_area(self):
         response = self.client.get(

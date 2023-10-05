@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 from django.conf import settings
 
 from kitsune.forums.models import Forum, Thread, ThreadLockedError
-from kitsune.forums.tests import ForumTestCase, PostFactory, ThreadFactory
+from kitsune.forums.tests import PostFactory, ThreadFactory
 from kitsune.forums.views import sort_threads
-from kitsune.sumo.tests import get
+from kitsune.sumo.tests import TestCase, get
 from kitsune.users.tests import UserFactory
 
 
-class PostTestCase(ForumTestCase):
+class PostTestCase(TestCase):
     def test_new_post_updates_thread(self):
         # Saving a new post in a thread should update the last_post
         # key in that thread to point to the new post.
@@ -143,7 +143,7 @@ class PostTestCase(ForumTestCase):
         self.assertEqual(302, r.redirect_chain[0][1])
 
 
-class ThreadTestCase(ForumTestCase):
+class ThreadTestCase(TestCase):
     def test_delete_no_session(self):
         """Delete a thread while logged out redirects."""
         r = get(

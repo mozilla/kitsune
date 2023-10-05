@@ -22,7 +22,7 @@ from kitsune.wiki.tasks import (
     schedule_rebuild_kb,
     send_reviewed_notification,
 )
-from kitsune.wiki.tests import RevisionFactory, TestCaseBase
+from kitsune.wiki.tests import RevisionFactory
 from kitsune.wiki.tests.test_parser import doc_rev_parser
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
@@ -102,7 +102,7 @@ class RebuildTestCase(TestCase):
         self.assertEqual(4, len(apply_async.call_args[1]["args"][0]))
 
 
-class ReviewMailTestCase(TestCaseBase):
+class ReviewMailTestCase(TestCase):
     """Test that the review mail gets sent."""
 
     def setUp(self):
@@ -177,7 +177,7 @@ class ReviewMailTestCase(TestCaseBase):
         assert 'foo & "bar"' in mail.outbox[0].body
 
 
-class TestDocumentRenderCascades(TestCaseBase):
+class TestDocumentRenderCascades(TestCase):
     def _clean(self, d):
         """Get a clean and normalized version of a documents html."""
         html = Document.objects.get(slug=d.slug).html

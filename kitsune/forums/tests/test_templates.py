@@ -2,13 +2,13 @@ from django.conf import settings
 from guardian.shortcuts import assign_perm
 
 from kitsune.forums.models import Post
-from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
+from kitsune.forums.tests import ForumFactory, PostFactory, ThreadFactory
 from kitsune.sumo.tests import SumoPyQuery as pq
-from kitsune.sumo.tests import get, post
+from kitsune.sumo.tests import TestCase, get, post
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
-class PostsTemplateTests(ForumTestCase):
+class PostsTemplateTests(TestCase):
     def test_empty_reply_errors(self):
         """Posting an empty reply shows errors."""
         u = UserFactory()
@@ -237,7 +237,7 @@ class PostsTemplateTests(ForumTestCase):
         assert doc("iframe")[0].attrib["src"].startswith("//www.youtube.com/embed/oHg5SJYRHA0")
 
 
-class ThreadsTemplateTests(ForumTestCase):
+class ThreadsTemplateTests(TestCase):
     def test_last_thread_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>)."""
         t = ThreadFactory()
@@ -362,7 +362,7 @@ class ThreadsTemplateTests(ForumTestCase):
         self.assertNotContains(response, "Post a new thread")
 
 
-class ForumsTemplateTests(ForumTestCase):
+class ForumsTemplateTests(TestCase):
     def test_last_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>)."""
         p = PostFactory()
@@ -444,7 +444,7 @@ class ForumsTemplateTests(ForumTestCase):
         self.assertEqual(forum_thread_counts, ["1", "2", "3"])
 
 
-class NewThreadTemplateTests(ForumTestCase):
+class NewThreadTemplateTests(TestCase):
     def test_preview(self):
         """Preview the thread post."""
         f = ForumFactory()

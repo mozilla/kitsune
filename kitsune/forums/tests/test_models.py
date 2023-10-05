@@ -6,27 +6,27 @@ from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Forum, Post, Thread
 from kitsune.forums.tests import (
     ForumFactory,
-    ForumTestCase,
     PostFactory,
     ThreadFactory,
 )
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 
 YESTERDAY = datetime.now() - timedelta(days=1)
 
 
-class ForumModelTestCase(ForumTestCase):
+class ForumModelTestCase(TestCase):
     def test_forum_absolute_url(self):
         f = ForumFactory()
 
-        self.assertEqual("/forums/%s/" % f.slug, f.get_absolute_url())
+        self.assertEqual("/en-US/forums/%s/" % f.slug, f.get_absolute_url())
 
     def test_thread_absolute_url(self):
         t = ThreadFactory()
 
-        self.assertEqual("/forums/%s/%s" % (t.forum.slug, t.id), t.get_absolute_url())
+        self.assertEqual("/en-US/forums/%s/%s" % (t.forum.slug, t.id), t.get_absolute_url())
 
     def test_post_absolute_url(self):
         t = ThreadFactory(posts=[])
@@ -176,7 +176,7 @@ class ForumModelTestCase(ForumTestCase):
         self.assertEqual(forum.last_post, None)
 
 
-class ThreadModelTestCase(ForumTestCase):
+class ThreadModelTestCase(TestCase):
     def test_delete_thread_with_last_forum_post(self):
         # Deleting the thread with a forum's last post should update
         # the last_post field on the forum
@@ -211,7 +211,7 @@ class ThreadModelTestCase(ForumTestCase):
         self.assertEqual(0, Thread.objects.filter(pk=t.id).count())
 
 
-class SaveDateTestCase(ForumTestCase):
+class SaveDateTestCase(TestCase):
     """
     Test that Thread and Post save methods correctly handle created
     and updated dates.

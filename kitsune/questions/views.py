@@ -45,8 +45,9 @@ from kitsune.questions.forms import (
 from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
 from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
 from kitsune.sumo.decorators import ratelimit
+from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import build_paged_url, is_ratelimited, paginate, simple_paginate
 from kitsune.tags.utils import add_existing_tag
 from kitsune.tidings.events import ActivationRequestFailed
@@ -520,8 +521,8 @@ def aaq(request, product_key=None, category_key=None, step=1):
     elif step == 3:
         # Check if the selected product has a forum in the user's locale
         if not has_public_forum:
-            locale, path = split_path(request.path)
-            path = "/" + settings.WIKI_DEFAULT_LANGUAGE + "/" + path
+            locale, path = split_into_language_and_path(request.path_info)
+            path = f"/{settings.WIKI_DEFAULT_LANGUAGE}{path}"
 
             old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
             new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]

@@ -4,12 +4,8 @@ import factory
 from django.template.defaultfilters import slugify
 
 from kitsune.forums.models import Forum, Post, Thread
-from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
+from kitsune.sumo.tests import FuzzyUnicode, TestCase
 from kitsune.users.tests import UserFactory
-
-
-class ForumTestCase(TestCase):
-    client_class = LocalizingClient
 
 
 class ForumFactory(factory.django.DjangoModelFactory):

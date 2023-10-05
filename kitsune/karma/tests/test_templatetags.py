@@ -1,6 +1,7 @@
 from kitsune.karma.models import Title
 from kitsune.karma.templatetags.jinja_helpers import karma_titles
-from kitsune.users.tests import GroupFactory, TestCase, UserFactory
+from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import GroupFactory, UserFactory
 
 
 class KarmaTitleHelperTests(TestCase):

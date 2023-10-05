@@ -9,8 +9,8 @@ from django.test.client import RequestFactory
 
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Post, Thread
-from kitsune.forums.tests import ForumFactory, ForumTestCase, PostFactory, ThreadFactory
-from kitsune.sumo.tests import attrs_eq, post, starts_with
+from kitsune.forums.tests import ForumFactory, PostFactory, ThreadFactory
+from kitsune.sumo.tests import TestCase, attrs_eq, post, starts_with
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
@@ -61,7 +61,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 
 
-class NotificationsTests(ForumTestCase):
+class NotificationsTests(TestCase):
     """Test that notifications get sent."""
 
     @mock.patch.object(NewPostEvent, "fire")

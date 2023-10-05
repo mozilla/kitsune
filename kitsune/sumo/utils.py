@@ -1,7 +1,6 @@
 import json
 import re
 import sys
-from contextlib import contextmanager
 from datetime import datetime
 from functools import lru_cache
 from urllib.parse import urlparse
@@ -12,7 +11,6 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.templatetags.static import static
-from django.utils import translation
 from django.utils.encoding import iri_to_uri
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django_ratelimit.core import is_ratelimited as is_ratelimited_core
@@ -180,32 +178,6 @@ def truncated_json_dumps(obj, max_length, key, ensure_ascii=False):
         raise TruncationException("Can't truncate enough to satisfy " "`max_length`.")
     dupe[key] = dupe[key][:-diff]
     return json.dumps(dupe, ensure_ascii=ensure_ascii)
-
-
-@contextmanager
-def uselocale(locale):
-    """
-    Context manager for setting locale and returning to previous locale.
-
-    This is useful for when doing translations for things run by
-    celery workers or out of the HTTP request handling path. Example:
-
-        with uselocale('xx'):
-            subj = _('Subject of my email')
-            msg = render_email(email_template, email_kwargs)
-            mail.send_mail(subj, msg, ...)
-
-    In Kitsune, you can get the right locale from Profile.locale and
-    also request.LANGUAGE_CODE.
-
-    If Kitsune is handling an HTTP request already, you don't have to
-    run uselocale---the locale will already be set correctly.
-
-    """
-    currlocale = translation.get_language()
-    translation.activate(locale)
-    yield
-    translation.activate(currlocale)
 
 
 class Progress(object):

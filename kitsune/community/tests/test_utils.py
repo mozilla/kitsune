@@ -8,13 +8,11 @@ from kitsune.community.utils import (
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests import Elastic7TestCase
-from kitsune.sumo.tests import LocalizingClient
 from kitsune.users.tests import ContributorFactory
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
 class TopContributorTests(Elastic7TestCase):
-    client_class = LocalizingClient
     search_tests = True
 
     def test_top_contributors_kb(self):

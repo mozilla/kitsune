@@ -4,17 +4,16 @@ from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Thread
 from kitsune.forums.tests import (
     ForumFactory,
-    ForumTestCase,
     PostFactory,
     ThreadFactory,
 )
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
-from kitsune.sumo.tests import get, post
+from kitsune.sumo.tests import TestCase, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import GroupFactory, UserFactory
 
 
-class PostPermissionsTests(ForumTestCase):
+class PostPermissionsTests(TestCase):
     """Test post views permissions."""
 
     def test_read_without_permission(self):
@@ -60,7 +59,7 @@ class PostPermissionsTests(ForumTestCase):
         self.assertEqual(405, response.status_code)
 
 
-class ThreadAuthorityPermissionsTests(ForumTestCase):
+class ThreadAuthorityPermissionsTests(TestCase):
     """Test thread views authority permissions."""
 
     def test_new_thread_without_view_permission(self):
@@ -142,7 +141,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         self.assertEqual(404, response.status_code)
 
 
-class ThreadTests(ForumTestCase):
+class ThreadTests(TestCase):
     """Test thread views."""
 
     def test_watch_forum(self):
@@ -232,7 +231,7 @@ class ThreadTests(ForumTestCase):
         assert "last=" in r["location"]
 
 
-class ThreadPermissionsTests(ForumTestCase):
+class ThreadPermissionsTests(TestCase):
     def test_edit_thread_403(self):
         """Editing a thread without permissions returns 403."""
         t = ThreadFactory()

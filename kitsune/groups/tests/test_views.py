@@ -77,7 +77,7 @@ class EditAvatarTests(TestCase):
 
         self.assertEqual(302, r.status_code)
         url = reverse("groups.profile", args=[self.group_profile.slug])
-        self.assertEqual("/en-US" + url, r["location"])
+        self.assertEqual(url, r["location"])
         assert not os.path.exists(old_path), "Old avatar was not removed."
 
     def test_delete_avatar(self):
@@ -90,7 +90,7 @@ class EditAvatarTests(TestCase):
         r = self.client.post(url)
         self.assertEqual(302, r.status_code)
         url = reverse("groups.profile", args=[self.group_profile.slug])
-        self.assertEqual("/en-US" + url, r["location"])
+        self.assertEqual(url, r["location"])
         gp = GroupProfile.objects.get(slug=self.group_profile.slug)
         self.assertEqual("", gp.avatar.name)
 

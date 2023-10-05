@@ -1,14 +1,15 @@
 import datetime
 
 from kitsune.kbforums.models import Thread
-from kitsune.kbforums.tests import KBForumTestCase, PostFactory, ThreadFactory
+from kitsune.kbforums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 
 
-class KBForumModelTestCase(KBForumTestCase):
+class KBForumModelTestCase(TestCase):
     def test_thread_absolute_url(self):
         t = ThreadFactory()
         exp_ = reverse(
@@ -43,7 +44,7 @@ class KBForumModelTestCase(KBForumTestCase):
         self.assertIsNone(t.last_post.id)
 
 
-class KBThreadModelTestCase(KBForumTestCase):
+class KBThreadModelTestCase(TestCase):
     def test_delete_last_and_only_post_in_thread(self):
         """Deleting the only post in a thread should delete the thread"""
         t = ThreadFactory(title="test")
@@ -53,7 +54,7 @@ class KBThreadModelTestCase(KBForumTestCase):
         self.assertEqual(0, Thread.objects.filter(pk=t.id).count())
 
 
-class KBSaveDateTestCase(KBForumTestCase):
+class KBSaveDateTestCase(TestCase):
     """
     Test that Thread and Post save methods correctly handle created
     and updated dates.

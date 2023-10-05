@@ -3,7 +3,7 @@ from django.conf import settings
 
 from kitsune.kbforums.models import Post, Thread, ThreadLockedError
 from kitsune.kbforums.views import sort_threads
-from kitsune.sumo.tests import LocalizingClient, TestCase, get
+from kitsune.sumo.tests import TestCase, get
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
@@ -30,11 +30,7 @@ class PostFactory(factory.django.DjangoModelFactory):
     thread = factory.SubFactory(ThreadFactory)
 
 
-class KBForumTestCase(TestCase):
-    client_class = LocalizingClient
-
-
-class PostTestCase(KBForumTestCase):
+class PostTestCase(TestCase):
     def test_new_post_updates_thread(self):
         """Saving a new post in a thread should update the last_post key in
         that thread to point to the new post."""
@@ -143,7 +139,7 @@ class PostTestCase(KBForumTestCase):
         self.assertEqual(302, r.redirect_chain[0][1])
 
 
-class ThreadTestCase(KBForumTestCase):
+class ThreadTestCase(TestCase):
     def test_delete_no_session(self):
         """Delete a thread while logged out redirects."""
         r = get(

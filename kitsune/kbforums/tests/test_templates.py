@@ -4,14 +4,14 @@ from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.kbforums.models import Post, Thread
-from kitsune.kbforums.tests import KBForumTestCase, PostFactory, ThreadFactory
-from kitsune.sumo.tests import get, post
+from kitsune.kbforums.tests import PostFactory, ThreadFactory
+from kitsune.sumo.tests import TestCase, get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
-class PostsTemplateTests(KBForumTestCase):
+class PostsTemplateTests(TestCase):
     def test_empty_reply_errors(self):
         """Posting an empty reply shows errors."""
         u = UserFactory()
@@ -180,7 +180,7 @@ class PostsTemplateTests(KBForumTestCase):
         self.assertEqual("nofollow", doc("ol.posts div.content a")[0].attrib["rel"])
 
 
-class ThreadsTemplateTests(KBForumTestCase):
+class ThreadsTemplateTests(TestCase):
     def test_last_thread_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>)."""
         u = UserFactory()
@@ -340,7 +340,7 @@ class ThreadsTemplateTests(KBForumTestCase):
         assert title.startswith("A thread with a very very long")
 
 
-class NewThreadTemplateTests(KBForumTestCase):
+class NewThreadTemplateTests(TestCase):
     def test_preview(self):
         """Preview the thread post."""
         u = UserFactory()
@@ -360,7 +360,7 @@ class NewThreadTemplateTests(KBForumTestCase):
         self.assertEqual(num_threads, d.thread_set.count())
 
 
-class FlaggedPostTests(KBForumTestCase):
+class FlaggedPostTests(TestCase):
     def test_flag_kbforum_post(self):
         u = UserFactory()
         t = ThreadFactory()
@@ -377,7 +377,7 @@ class FlaggedPostTests(KBForumTestCase):
         self.assertEqual(1, len(doc("#flagged-queue li")))
 
 
-class TestRatelimiting(KBForumTestCase):
+class TestRatelimiting(TestCase):
     def test_post_ratelimit(self):
         """Verify that rate limiting kicks in after 4 threads or replies."""
         d = ApprovedRevisionFactory().document
@@ -417,7 +417,7 @@ class TestRatelimiting(KBForumTestCase):
         self.assertEqual(4, Post.objects.count())
 
 
-class SEOTemplateTests(KBForumTestCase):
+class SEOTemplateTests(TestCase):
     def test_threads(self):
         """Test the threads view for SEO characteristics."""
         user = UserFactory()

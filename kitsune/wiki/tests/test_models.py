@@ -259,24 +259,36 @@ class DocumentTests(TestCase):
         self.assertEqual(None, rev.document.redirect_document())
 
     def test_redirect_nondefault_locales(self):
-        title1 = "title1"
-        title2 = "title2"
-
         redirect_to = ApprovedRevisionFactory(
-            document__title=title1,
-            document__locale="es",
-            document=DocumentFactory(title=title1, locale="es"),
+            document=DocumentFactory(title="title1", locale="es"),
         )
 
         redirector = RedirectRevisionFactory(
             target=redirect_to.document,
-            document__title=title2,
+            document__title="title2",
             document__locale="es",
             is_approved=True,
         )
 
         self.assertEqual(
             redirect_to.document.get_absolute_url(), redirector.document.redirect_url()
+        )
+
+    def test_redirect_when_changing_locale(self):
+        redirect_to = ApprovedRevisionFactory(
+            document=DocumentFactory(title="title1", locale="en-US"),
+        )
+
+        redirector = RedirectRevisionFactory(
+            target=redirect_to.document,
+            document__title="title2",
+            document__locale="es",
+            is_approved=True,
+        )
+
+        self.assertEqual(
+            reverse("wiki.document", locale="es", args=[redirect_to.document.slug]),
+            redirector.document.redirect_url(source_locale="es"),
         )
 
     def test_get_topics(self):
@@ -409,13 +421,14 @@ class FromUrlTests(TestCase):
         invalid_translate = reverse("wiki.document", locale="tr", args=[d_en.slug])
         self.assertEqual(d_en, Document.from_url(invalid_translate))
 
-    def test_check_host(self):
-        from_url = Document.from_url
-        d_en = DocumentFactory(locale="en-US", title="How to delete Google Chrome?")
-        sumo_host = "https://support.mozilla.org"
-        invalid_url = urllib.parse.urljoin(sumo_host, d_en.get_absolute_url())
-        self.assertIsNone(from_url(invalid_url))
-        self.assertEqual(d_en, from_url(invalid_url, check_host=False))
+    def test_when_url_includes_host(self):
+        doc = DocumentFactory(locale="en-US", title="How to delete Google Chrome?")
+        self.assertEqual(
+            doc,
+            Document.from_url(
+                urllib.parse.urljoin("https://support.mozilla.org", doc.get_absolute_url())
+            ),
+        )
 
 
 class LocalizableOrLatestRevisionTests(TestCase):

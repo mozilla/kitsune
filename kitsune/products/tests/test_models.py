@@ -17,7 +17,7 @@ class TopicModelTests(TestCase):
     def test_absolute_url(self):
         p = ProductFactory()
         t = TopicFactory(product=p)
-        expected = "/products/{p}/{t}".format(p=p.slug, t=t.slug)
+        expected = "/en-US/products/{p}/{t}".format(p=p.slug, t=t.slug)
         actual = t.get_absolute_url()
         self.assertEqual(actual, expected)
 
@@ -25,7 +25,7 @@ class TopicModelTests(TestCase):
         p = ProductFactory()
         t1 = TopicFactory(product=p)
         t2 = TopicFactory(parent=t1, product=p)
-        expected = "/products/{p}/{t1}/{t2}".format(p=p.slug, t1=t1.slug, t2=t2.slug)
+        expected = "/en-US/products/{p}/{t1}/{t2}".format(p=p.slug, t1=t1.slug, t2=t2.slug)
         actual = t2.get_absolute_url()
         self.assertEqual(actual, expected)
 
@@ -33,6 +33,6 @@ class TopicModelTests(TestCase):
 class ProductModelTests(TestCase):
     def test_absolute_url(self):
         p = ProductFactory()
-        expected = "/products/{p}".format(p=p.slug)
+        expected = "/en-US/products/{p}".format(p=p.slug)
         actual = p.get_absolute_url()
         self.assertEqual(actual, expected)

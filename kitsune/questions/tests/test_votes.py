@@ -1,10 +1,11 @@
 from django.core.management import call_command
 
 from kitsune.questions.models import Question
-from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory, TestCaseBase
+from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory
+from kitsune.sumo.tests import TestCase
 
 
-class TestVotes(TestCaseBase):
+class TestVotes(TestCase):
     """Test QuestionVote counting and cron job."""
 
     def test_vote_updates_count(self):

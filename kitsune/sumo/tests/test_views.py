@@ -6,7 +6,7 @@ from django.test import override_settings
 from django.test.client import RequestFactory
 from pyquery import PyQuery as pq
 
-from kitsune.sumo.middleware import LocaleURLMiddleware
+from kitsune.sumo.middleware import LocaleMiddleware
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.views import deprecated_redirect, redirect_to
@@ -33,7 +33,7 @@ class RedirectTests(TestCase):
         req = self.rf.get("/en-US/")
         req.user = UserFactory()
         # Since we're rendering a template we need this to run.
-        LocaleURLMiddleware(self.get_response).process_request(req)
+        LocaleMiddleware(self.get_response)(req)
         resp = deprecated_redirect(req, url="home")
         self.assertEqual(200, resp.status_code)
         doc = pq(resp.content)

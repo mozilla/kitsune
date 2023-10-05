@@ -1,11 +1,9 @@
 from kitsune.kbadge.tests import AwardFactory, BadgeFactory
-from kitsune.sumo.tests import LocalizingClient, TestCase
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
 class AwardsListTests(TestCase):
-    client = LocalizingClient()
-
     def test_list_empty(self):
         resp = self.client.get(reverse("kbadge.awards_list"), follow=True)
         self.assertEqual(200, resp.status_code)

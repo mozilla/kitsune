@@ -27,7 +27,7 @@ from kitsune.wiki.models import (
     Revision,
     SlugCollision,
     TitleCollision,
-    points_to_document_view,
+    resolves_to_document_view,
 )
 from kitsune.wiki.utils import generate_short_url
 
@@ -232,7 +232,7 @@ def _rebuild_kb_chunk(data):
             # If we know a redirect link to be broken (i.e. if it looks like a
             # link to a document but the document isn't there), log an error:
             url = document.redirect_url()
-            if url and points_to_document_view(url) and not document.redirect_document():
+            if url and resolves_to_document_view(url) and not document.redirect_document():
                 log.warn("Invalid redirect document: %d" % pk)
 
             html = document.parse_and_calculate_links()

@@ -6,7 +6,9 @@ from django.views.static import serve as servestatic
 from graphene_django.views import GraphQLView
 from waffle.views import wafflejs
 
+from kitsune.dashboards.api import WikiMetricList
 from kitsune.sumo import views as sumo_views
+from kitsune.sumo.i18n import i18n_patterns
 
 # Note: This must come before importing admin because it patches the
 # admin.
@@ -18,46 +20,53 @@ from django.contrib import admin  # noqa
 
 admin.autodiscover()
 
-urlpatterns = [
-    re_path(r"^search/", include("kitsune.search.urls")),
-    re_path(r"forums/", include("kitsune.forums.urls")),
-    re_path(r"^questions/", include("kitsune.questions.urls")),
-    re_path(r"^flagged/", include("kitsune.flagit.urls")),
-    re_path(r"^upload/", include("kitsune.upload.urls")),
-    re_path(r"^kb", include("kitsune.wiki.urls")),
-    re_path(r"^gallery/", include("kitsune.gallery.urls")),
-    re_path(r"^chat", RedirectView.as_view(url="questions/new")),
-    re_path(r"^messages/", include("kitsune.messages.urls")),
-    re_path(r"^1/", include("kitsune.inproduct.urls")),
-    re_path(r"^postcrash", include("kitsune.postcrash.urls")),
-    re_path(r"^groups/", include("kitsune.groups.urls")),
-    re_path(r"^kpi/", include("kitsune.kpi.urls")),
-    re_path(r"^products/", include("kitsune.products.urls")),
-    re_path(r"^announcements/", include("kitsune.announcements.urls")),
-    re_path(r"^community/", include("kitsune.community.urls")),
-    re_path(r"^badges/", include("kitsune.kbadge.urls")),
-    # JavaScript Waffle.
-    re_path(r"^wafflejs$", wafflejs, name="wafflejs"),
-    re_path(r"^", include("kitsune.dashboards.urls")),
-    re_path(r"^", include("kitsune.landings.urls")),
-    re_path(r"^", include("kitsune.kpi.urls_api")),
-    re_path(r"^", include("kitsune.tidings.urls")),
-    # Users
-    re_path("", include("kitsune.users.urls")),
-    # Services and sundry.
-    re_path(r"", include("kitsune.sumo.urls")),
+urlpatterns = i18n_patterns(
+    path("kb", include("kitsune.wiki.urls")),
+    path("search/", include("kitsune.search.urls")),
+    path("forums/", include("kitsune.forums.urls")),
+    path("questions/", include("kitsune.questions.urls")),
+    path("flagged/", include("kitsune.flagit.urls")),
+    path("upload/", include("kitsune.upload.urls")),
+    path("gallery/", include("kitsune.gallery.urls")),
+    path("chat", RedirectView.as_view(url="questions/new")),
+    path("messages/", include("kitsune.messages.urls")),
+    path("groups/", include("kitsune.groups.urls")),
+    path("kpi/", include("kitsune.kpi.urls")),
+    path("products/", include("kitsune.products.urls")),
+    path("announcements/", include("kitsune.announcements.urls")),
+    path("community/", include("kitsune.community.urls")),
+    path("badges/", include("kitsune.kbadge.urls")),
+    path("", include("kitsune.dashboards.urls")),
+    path("", include("kitsune.landings.urls")),
+    path("", include("kitsune.tidings.urls")),
+    path("", include("kitsune.users.urls")),
+    path("locales", sumo_views.locales, name="sumo.locales"),
+    re_path(r"^windows7-support(?:\\/)?$", RedirectView.as_view(url="/home/?as=u")),
+)
+
+if settings.OIDC_ENABLE:
+    urlpatterns.append(path("", include("kitsune.users.urls_oidc")))
+
+urlpatterns += [
+    path("1/", include("kitsune.inproduct.urls")),
+    path("postcrash", include("kitsune.postcrash.urls")),
+    path("wafflejs", wafflejs, name="wafflejs"),
+    path("", include("kitsune.kpi.urls_api")),
+    path("", include("kitsune.sumo.urls")),
     # v1 APIs
-    re_path(r"^api/1/kb/", include("kitsune.wiki.urls_api")),
-    re_path(r"^api/1/products/", include("kitsune.products.urls_api")),
-    re_path(r"^api/1/gallery/", include("kitsune.gallery.urls_api")),
-    re_path(r"^api/1/users/", include("kitsune.users.urls_api")),
+    path("api/1/kb/", include("kitsune.wiki.urls_api")),
+    path("api/1/products/", include("kitsune.products.urls_api")),
+    path("api/1/gallery/", include("kitsune.gallery.urls_api")),
+    path("api/1/users/", include("kitsune.users.urls_api")),
+    # API to pull wiki metrics data.
+    re_path(r"^api/v1/wikimetrics/?$", WikiMetricList.as_view(), name="api.wikimetric_list"),
     # v2 APIs
-    re_path(r"^api/2/", include("kitsune.notifications.urls_api")),
-    re_path(r"^api/2/", include("kitsune.questions.urls_api")),
-    re_path(r"^api/2/", include("kitsune.sumo.urls_api")),
+    path("api/2/", include("kitsune.notifications.urls_api")),
+    path("api/2/", include("kitsune.questions.urls_api")),
+    path("api/2/", include("kitsune.sumo.urls_api")),
     # These API urls include both v1 and v2 urls.
-    re_path(r"^api/", include("kitsune.users.urls_api")),
-    # contribute.json url
+    path("api/", include("kitsune.users.urls_api")),
+    # contribute.json
     re_path(
         r"^(?P<path>contribute\.json)$",
         servestatic,
