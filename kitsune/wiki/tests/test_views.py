@@ -2321,7 +2321,7 @@ class FallbackSystem(TestCase):
         assert trans_content in doc_content
 
 
-class PocketArticleTests(TestCaseBase):
+class PocketArticleTests(TestCase):
     """Pocket article redirect tests."""
 
     def setUp(self):
@@ -2333,10 +2333,16 @@ class PocketArticleTests(TestCaseBase):
         RevisionFactory(document=doc, is_approved=True)
         pocket_style_url = f"/kb/pocket/1111-{doc.slug}"
         response = self.client.get(pocket_style_url, follow=True)
-        self.assertEqual(response.redirect_chain[-1][0], "/en-US/kb/article-title")
+        redirect_chain = response.redirect_chain
+        self.assertEqual(len(redirect_chain), 2)
+        self.assertEqual(redirect_chain[0], (f"/en-US/kb/pocket/1111-{doc.slug}", 302))
+        self.assertEqual(redirect_chain[1], ("/en-US/kb/article-title", 302))
 
     def test_pocket_redirect_when_kb_article_doesnt_exist(self):
         """No match found, we should be sent to /products/pocket"""
         pocket_style_url = "/kb/pocket/1111-wont-match"
         response = self.client.get(pocket_style_url, follow=True)
-        self.assertEqual(response.redirect_chain[-1][0], "/products/pocket")
+        redirect_chain = response.redirect_chain
+        self.assertEqual(len(redirect_chain), 2)
+        self.assertEqual(redirect_chain[0], (f"/en-US{pocket_style_url}", 302))
+        self.assertEqual(redirect_chain[1], ("/en-US/products/pocket", 301))
