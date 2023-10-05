@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.views import redirect_to_login
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
@@ -462,7 +463,7 @@ def edit_details(request, question_id):
     return redirect(reverse("questions.details", kwargs={"question_id": question_id}))
 
 
-def aaq(request, product_key=None, category_key=None, step=1):
+def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False):
     """Ask a new question."""
 
     template = "questions/new_question.html"
@@ -509,6 +510,7 @@ def aaq(request, product_key=None, category_key=None, step=1):
         "current_product": product_config,
         "current_step": step,
         "host": Site.objects.get_current().domain,
+        "is_loginless": is_loginless,
     }
 
     if step > 1:
@@ -535,21 +537,24 @@ def aaq(request, product_key=None, category_key=None, step=1):
             return HttpResponseRedirect(path)
 
         if has_subscriptions:
-            zendesk_form = ZendeskForm(data=request.POST or None, product=product)
+            zendesk_form = ZendeskForm(
+                data=request.POST or None,
+                product=product,
+                user=request.user,
+            )
             context["form"] = zendesk_form
 
             if zendesk_form.is_valid():
                 try:
                     zendesk_form.send(request.user)
-
+                    email = zendesk_form.cleaned_data["email"]
                     messages.add_message(
                         request,
                         messages.SUCCESS,
                         _(
-                            "Done! Your message was sent to Mozilla Support, "
-                            "thank you for reaching out. "
-                            "We'll contact you via email as soon as possible."
-                        ),
+                            "Done! Thank you for reaching out Mozilla Support."
+                            " We've sent a confirmation email to {email}"
+                        ).format(email=email),
                     )
 
                     url = reverse("products.product", args=[product.slug])
@@ -618,11 +623,19 @@ def aaq_step2(request, product_key):
     return aaq(request, product_key=product_key, step=2)
 
 
-@login_required
 def aaq_step3(request, product_key, category_key=None):
     """Step 3: Show full question form."""
+
+    # Since removing the @login_required decorator for MA form
+    # need to catch unauthenticated, non-MA users here """
+    is_loginless = product_key in settings.LOGIN_EXCEPTIONS
+
+    if not is_loginless and not request.user.is_authenticated:
+        return redirect_to_login(next=request.path, login_url=reverse("users.login"))
+
     return aaq(
         request,
+        is_loginless=is_loginless,
         product_key=product_key,
         category_key=category_key,
         step=3,
