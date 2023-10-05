@@ -1,8 +1,11 @@
 import { BaseFormStep } from "sumo/js/form-wizard";
+import { ReminderDialog } from "sumo/js/form-wizard-reminder-dialog"
 import setupDeviceStepStyles from "../scss/form-wizard-setup-device-step.styles.scss";
 import successIconUrl from "sumo/img/success.svg";
 
 export class SetupDeviceStep extends BaseFormStep {
+  #reminderDialog = null;
+
   get template() {
     return `
       <template>
@@ -53,6 +56,26 @@ export class SetupDeviceStep extends BaseFormStep {
     setTimeout(() => {
       root.toggleAttribute("data-copied", false);
     }, 5000);
+  }
+
+  /**
+   * Opens the dialog to create calendar events to remind the user
+   * to download and install Firefox in the future.
+   *
+   * This is currently a public method to facilitate easier manual
+   * testing, as the step that will eventually present a button for
+   * opening the dialog isn't ready yet.
+   */
+  openReminderDialog() {
+    if (!this.#reminderDialog) {
+      let dialog = new ReminderDialog();
+      dialog.classList.add("reminder-dialog");
+      document.body.appendChild(dialog);
+
+      this.#reminderDialog = dialog;
+    }
+
+    this.#reminderDialog.showModal();
   }
 }
 customElements.define("setup-device-step", SetupDeviceStep);

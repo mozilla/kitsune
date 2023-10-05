@@ -30,11 +30,13 @@ describe("setup-device-step custom element", () => {
       value: {
         writeText: writeTextSpy,
       },
+      configurable: true,
     });
 
     let copyButton = step.shadowRoot.getElementById("copy-button");
     expect(copyButton).to.exist;
     copyButton.click();
     expect(writeTextSpy.calledOnceWith(DOWNLOAD_LINK)).to.be.true;
+    delete navigator.clipboard;
   })
 });

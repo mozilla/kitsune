@@ -1,0 +1,93 @@
+@use "@mozilla-protocol/core/protocol/css/includes/lib" as p;
+
+// Base elements - general HTML elements
+@import "protocol/css/base/elements/reset";
+@import "protocol/css/base/elements/common";
+@import "protocol/css/base/elements/forms";
+
+// Components from protocol-extra.scss
+@import "protocol/css/components/button";
+
+@import "./base/typography";
+
+.vbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.hbox {
+  display: flex;
+  flex-direction: row;
+}
+
+#header {
+  justify-content: space-between;
+  align-items: center;
+}
+
+#header > h1 {
+  margin: 0;
+}
+
+#reminder-dialog-content {
+  max-width: 548px;
+  padding: 24px;
+}
+
+#close {
+  display: flex;
+  padding: 0;
+}
+
+#close:not(:hover) {
+  border-color: transparent;
+}
+
+#directions,
+#calendar-reminder {
+  margin-block: 12px;
+}
+
+#choose-calendar {
+  flex: 1;
+  margin: 0;
+}
+
+#create-event {
+  margin-inline-start: 16px;
+}
+
+#copy-link-message {
+  display: flex;
+  flex: 1;
+}
+
+#copy-link-message,
+#copy-link-container {
+  align-items: center;
+}
+
+hr {
+  margin-block: 20px;
+  opacity: 0.1;
+}
+
+#copied-message {
+  color: var(--color-green-07);
+  padding-block: 4px;
+  line-height: 1.5;
+}
+
+#copied-message img {
+  margin-inline-end: 8px;
+}
+
+#copied-message,
+#reminder-dialog-content[data-copied] #copy-link {
+  display: none;
+}
+
+#copy-link,
+#reminder-dialog-content[data-copied] #copied-message {
+  display: initial;
+}
