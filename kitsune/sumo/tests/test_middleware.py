@@ -139,15 +139,13 @@ class PlusToSpaceTestCase(TestCase):
 
     def test_with_locale(self):
         """URLs with a locale should keep it."""
-        request = self.rf.get("/pa+th", {"a": "b"})
-        request.LANGUAGE_CODE = "ru"
+        request = self.rf.get("/ru/pa+th", {"a": "b"})
         response = self.ptsm.process_request(request)
         self.assertEqual("/ru/pa%20th?a=b", response.headers["location"])
 
-    def test_smart_query_string(self):
+    def test_with_non_unicode_query_string(self):
         """The request QUERY_STRING might not be unicode."""
-        request = self.rf.get("/pa+th")
-        request.LANGUAGE_CODE = "ja"
+        request = self.rf.get("/ja/pa+th")
         request.META["QUERY_STRING"] = "s=%E3%82%A2"
         response = self.ptsm.process_request(request)
         self.assertEqual("/ja/pa%20th?s=%E3%82%A2", response.headers["location"])
