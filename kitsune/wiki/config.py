@@ -28,12 +28,13 @@ COLLAPSIBLE_DOCUMENTS = {
         "como-fazer-o-firefox-parar-de-se-conectar-automati",
     ],
 }
+# Keys must be in lowercase, and fallbacks must be in the exact case supported by SUMO.
 FALLBACK_LOCALES = {
     "ca": ["es"],  # Bug 800880
     "eu": ["es"],  # Bug 800880
     "gl": ["es"],  # Bug 800880
     "wo": ["fr"],  # Bug 800880
-    "fy-NL": ["nl"],  # Bug 800880
+    "fy-nl": ["nl"],  # Bug 800880
 }
 
 # Wiki configuration.
