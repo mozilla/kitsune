@@ -22,7 +22,7 @@ from django.urls import is_valid_path
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.encoding import iri_to_uri, smart_str
+from django.utils.encoding import iri_to_uri
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
@@ -235,10 +235,8 @@ class PlusToSpaceMiddleware(MiddlewareMixin):
         p = re.compile(r"\+")
         if p.search(request.path_info):
             new = p.sub(" ", request.path_info)
-            if request.META.get("QUERY_STRING"):
-                new = "%s?%s" % (new, smart_str(request.META["QUERY_STRING"]))
-            if hasattr(request, "LANGUAGE_CODE"):
-                new = "/%s%s" % (request.LANGUAGE_CODE, new)
+            if request.GET:
+                new = f"{new}?{request.GET.urlencode()}"
             return HttpResponsePermanentRedirect(new)
 
 
