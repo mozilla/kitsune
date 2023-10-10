@@ -2320,6 +2320,33 @@ class FallbackSystem(TestCase):
         assert en_content not in doc_content
         assert trans_content in doc_content
 
+    def test_non_normalized_case_in_accept_language_header(self):
+        """
+        We should be able to handle the Accept-Language values no matter their case.
+        """
+        en_content = "This article is in English"
+
+        with self.subTest("wiki fallback"):
+            doc_content = self.get_data_from_translated_document(
+                header="fy-nl,fr;q=0.8,en-us;q=0.7", create_doc_locale="nl", req_doc_locale="fr"
+            )
+            self.assertNotIn(en_content, doc_content)
+            self.assertIn("This article is translated into nl", doc_content)
+
+        with self.subTest("global override"):
+            doc_content = self.get_data_from_translated_document(
+                header="sv-se,fr;q=0.8,en-us;q=0.7", create_doc_locale="sv", req_doc_locale="fr"
+            )
+            self.assertNotIn(en_content, doc_content)
+            self.assertIn("This article is translated into sv", doc_content)
+
+        with self.subTest("supported language"):
+            doc_content = self.get_data_from_translated_document(
+                header="pt-br,fr;q=0.8,en-us;q=0.7", create_doc_locale="pt-BR", req_doc_locale="fr"
+            )
+            self.assertNotIn(en_content, doc_content)
+            self.assertIn("This article is translated into pt-BR", doc_content)
+
 
 class PocketArticleTests(TestCase):
     """Pocket article redirect tests."""

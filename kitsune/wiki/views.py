@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import time
 from datetime import datetime, time as datetime_time
 from functools import wraps
@@ -21,6 +20,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation.trans_real import parse_accept_lang_header
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from kitsune.access.decorators import login_required
@@ -28,6 +28,7 @@ from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product, Topic
 from kitsune.products.views import product_landing
 from kitsune.sumo.decorators import ratelimit
+from kitsune.sumo.i18n import normalize_language
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -1676,16 +1677,15 @@ def get_fallback_locale(doc, request):
     """Get best fallback local based on locale mapping"""
 
     # Get locales that the current article is translated into.
-    translated_locales = doc.translations.values_list("locale", flat=True).exclude(
-        current_revision=None
+    translated_locales = set(
+        doc.translations.values_list("locale", flat=True).exclude(current_revision=None)
     )
 
     # Build a list of the request locale and all the ACCEPT_LANGUAGE locales.
+    all_accepted_locales = [request.LANGUAGE_CODE.lower()]
+    # Django's "parse_accept_lang_header()" always returns lowercase locales.
     accept_header = request.META.get("HTTP_ACCEPT_LANGUAGE") or ""
-    header_locales = parse_accept_lang_header(accept_header)
-    all_accepted_locales = []
-    all_accepted_locales.append(request.LANGUAGE_CODE)
-    all_accepted_locales.extend(header_locales)
+    all_accepted_locales.extend(loc for loc, _ in parse_accept_lang_header(accept_header))
 
     # For each locale specified in the user's ACCEPT_LANGUAGE header
     # check for, in order:
@@ -1695,14 +1695,12 @@ def get_fallback_locale(doc, request):
     #   * wiki fallbacks for that locale
 
     for locale in all_accepted_locales:
-        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        if locale == settings.WIKI_DEFAULT_LANGUAGE.lower():
             return None
 
-        elif locale in translated_locales:
-            return locale
-
-        elif settings.NON_SUPPORTED_LOCALES.get(locale) in translated_locales:
-            return settings.NON_SUPPORTED_LOCALES[locale]
+        elif (normalized_locale := normalize_language(locale)) in translated_locales:
+            # This path handles the settings.NON_SUPPORTED_LOCALES cases as well.
+            return normalized_locale
 
         for fallback in FALLBACK_LOCALES.get(locale, []):
             if fallback in translated_locales:
@@ -1710,45 +1708,6 @@ def get_fallback_locale(doc, request):
 
     # If all fails, return None as fallback Locale
     return None
-
-
-# Import from django.utils.translation.trans_real and changed as following
-#  * Removed lower() from piece to get the locale name as needed
-#  * As we need only the locale name, added code to get only locale name
-def parse_accept_lang_header(lang_string):
-    """
-    Parses the lang_string, which is the body of an HTTP Accept-Language
-    header, and returns a list of lang, ordered by 'q' values.
-    Any format errors in lang_string results in an empty list being returned.
-    """
-    accept_language_re = re.compile(
-        r"""
-        ([A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*|\*)      # "en", "en-au", "x-y-z", "es-419", "*"
-        (?:\s*;\s*q=(0(?:\.\d{,3})?|1(?:.0{,3})?))?   # Optional "q=1.00", "q=0.8"
-        (?:\s*,\s*|$)                                 # Multiple accepts per header.
-        """,
-        re.VERBOSE,
-    )
-    result = []
-    pieces = accept_language_re.split(lang_string)  # Changed here. Removed lower()
-    if pieces[-1]:
-        return []
-    for i in range(0, len(pieces) - 1, 3):
-        first, lang, priority = pieces[i : i + 3]
-        if first:
-            return []
-        if priority:
-            try:
-                priority = float(priority)
-            except ValueError:
-                return []
-        if not priority:  # if priority is 0.0 at this point make it 1.0
-            priority = 1.0
-        result.append((lang, priority))
-    result.sort(key=lambda k: k[1], reverse=True)
-    # Changed here to get the locale name only
-    result = [k for k, v in result]
-    return result
 
 
 def pocket_article(request, article_id=None, document_slug=None, extra_path=None):
