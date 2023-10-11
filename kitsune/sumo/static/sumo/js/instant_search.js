@@ -129,7 +129,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     ev.preventDefault();
     $(this).find('.searchbox').trigger('focus');
   });
-  
+
   $(document).on('input', '[data-instant-search="form"] input[type="search"]', function(ev) {
     var $this = $(this);
     var $form = $this.closest('form');
@@ -234,7 +234,7 @@ import nunjucksEnv from "sumo/js/nunjucks"; // has to be loaded after templates
     var $mainInput = $('#support-search-masthead input[name=q]');
     var thisLink = $(this).text();
     $('#support-search-masthead input[name=q]').trigger('focus').val(thisLink);
-    $mainInput.trigger("keyup");
+    $mainInput.trigger("input");
     ev.preventDefault();
   });
 
