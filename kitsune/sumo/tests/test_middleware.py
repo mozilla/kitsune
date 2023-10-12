@@ -93,14 +93,27 @@ class TrailingSlashMiddlewareTestCase(TestCase):
         response = self.client.get("/en-US/ohnoez")
         self.assertEqual(response.status_code, 404)
 
+    def test_no_trailing_slash_without_locale_in_path(self):
+        response = self.client.get("/ohnoez")
+        self.assertEqual(response.status_code, 404)
+
     def test_404_trailing_slash(self):
         response = self.client.get("/en-US/ohnoez/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_trailing_slash_without_locale_in_path(self):
+        response = self.client.get("/ohnoez/")
         self.assertEqual(response.status_code, 404)
 
     def test_remove_trailing_slash(self):
         response = self.client.get("/en-US/home/?xxx=%C3%83")
         self.assertEqual(response.status_code, 301)
         assert response.headers["Location"].endswith("/en-US/home?xxx=%C3%83")
+
+    def test_remove_trailing_slash_without_locale_in_path(self):
+        response = self.client.get("/home/?xxx=%C3%83")
+        self.assertEqual(response.status_code, 301)
+        assert response.headers["Location"].endswith("/home?xxx=%C3%83")
 
 
 class PlusToSpaceTestCase(TestCase):

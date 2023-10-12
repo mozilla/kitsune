@@ -22,7 +22,6 @@ from django.urls import is_valid_path
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.encoding import iri_to_uri
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
@@ -236,7 +235,7 @@ class PlusToSpaceMiddleware(MiddlewareMixin):
         if p.search(request.path_info):
             new = p.sub(" ", request.path_info)
             if request.GET:
-                new = f"{new}?{request.GET.urlencode()}"
+                new += f"?{request.GET.urlencode()}"
             return HttpResponsePermanentRedirect(new)
 
 
@@ -271,31 +270,15 @@ class RemoveSlashMiddleware(MiddlewareMixin):
             response.status_code == 404
             and request.path_info.endswith("/")
             and not is_valid_path(request.path_info)
-            and is_valid_path(request.path_info[:-1])
+            and (
+                is_valid_path((new_url := request.path_info[:-1]))
+                or is_valid_path(f"/{request.LANGUAGE_CODE}{new_url}")
+            )
         ):
-            # Use request.path because we munged app/locale in path_info.
-            newurl = request.path[:-1]
             if request.GET:
-                with safe_query_string(request):
-                    newurl += "?" + request.META["QUERY_STRING"]
-            return HttpResponsePermanentRedirect(newurl)
+                new_url += f"?{request.GET.urlencode()}"
+            return HttpResponsePermanentRedirect(new_url)
         return response
-
-
-@contextlib.contextmanager
-def safe_query_string(request):
-    """
-    Turn the QUERY_STRING into a unicode- and ascii-safe string.
-
-    We need unicode so it can be combined with a reversed URL, but it has to be
-    ascii to go in a Location header.  iri_to_uri seems like a good compromise.
-    """
-    qs = request.META["QUERY_STRING"]
-    try:
-        request.META["QUERY_STRING"] = iri_to_uri(qs)
-        yield
-    finally:
-        request.META["QUERY_STRING"] = qs
 
 
 class HostnameMiddleware(MiddlewareMixin):
