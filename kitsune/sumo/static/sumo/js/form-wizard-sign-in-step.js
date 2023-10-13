@@ -11,11 +11,11 @@ export class SignInStep extends BaseFormStep {
     return `
       <template>
         <div id="sign-in-step-root">
-          <h3 class="for-sign-up">${gettext("Create an account")}</h3>
+          <h3 class="for-sign-up">${gettext("Sign up for an account")}</h3>
           <h3 class="for-sign-in">${gettext("Sign in to your account")}</h3>
 
           <p>
-            ${gettext("You’ll be able to sign into this account on another device to sync your data.")}
+            ${gettext("You’ll be able to sign in to this account on another device to sync your data.")}
           </p>
 
           <form method="get" novalidate>

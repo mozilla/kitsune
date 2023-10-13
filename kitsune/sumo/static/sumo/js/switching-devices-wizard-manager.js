@@ -94,7 +94,7 @@ export default class SwitchingDevicesWizardManager {
       label: () => {
         return this.#state.sumoEmail
           ? gettext("Sign in to your account")
-          : gettext("Create an account");
+          : gettext("Sign up for an account");
       },
       exitConditionsMet(state) {
         return state.fxaSignedIn;
@@ -283,7 +283,7 @@ export default class SwitchingDevicesWizardManager {
         this.#recomputeCurrentStep();
 
         // We need to get some query parameters from the FxA server before we
-        // show the user any kind of form to create or sign-in to an account.
+        // show the user any kind of form to sign-up or sign-in to an account.
         // See https://mozilla.github.io/ecosystem-platform/relying-parties/reference/metrics-for-relying-parties#relying-party-hosted-email-form.
         await this.#requestMetricsParams();
         return;
@@ -374,7 +374,7 @@ export default class SwitchingDevicesWizardManager {
   /**
    * Update the #formWizard step indicator by modifying step data.
    * Currently only used to update step labels.
-   * 
+   *
    * @param {object} stepData
    *   Data for the step being updated. Must contain a name for
    *   identifying which step to update, can optionally contain
@@ -409,7 +409,7 @@ export default class SwitchingDevicesWizardManager {
 
   /**
    * Uses UITour to query for the current FxA sign-in state. A user
-   * is considered signed in if their FxA account is both setup and
+   * is considered signed in if their Mozilla account is both setup and
    * the account state is "ok" (as in, they have verified their email
    * address).
    *
