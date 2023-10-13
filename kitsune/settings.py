@@ -1210,6 +1210,7 @@ CSP_CONNECT_SRC = (
     "https://location.services.mozilla.com",
     "https://accounts.firefox.com/metrics-flow",
     "https://accounts.stage.mozaws.net/metrics-flow",
+    "https://basket.mozilla.org",
 )
 
 if DEBUG:
