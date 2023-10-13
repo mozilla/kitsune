@@ -12,7 +12,7 @@ export class ConfigureStep extends BaseFormStep {
         <div class="configure-step-wrapper">
           <p id="header">
             <img class="icon" src="${infoImageURL}" aria-hidden="true"></img>
-            <span>${gettext("You are now signed in to your Firefox account")}</span>
+            <span>${gettext("You are now signed in to your Mozilla account")}</span>
           </p>
 
           <div id="sync-status-container">
