@@ -148,7 +148,7 @@ class Migration(migrations.Migration):
                     "public_email",
                     models.BooleanField(
                         default=False,
-                        verbose_name="Make my email address visible to logged in users",
+                        verbose_name="Make my email address visible to signed in users",
                     ),
                 ),
                 (

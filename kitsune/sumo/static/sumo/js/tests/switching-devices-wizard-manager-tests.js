@@ -59,7 +59,7 @@ class FakeUITourResponder {
    * `UITour.getConfiguration`.
    *
    * At this time, only `getConfiguration("fxa")` is supported, and the
-   * default response indicates that no Firefox Account is currently
+   * default response indicates that no Mozilla account is currently
    * set up.
    *
    * @param {object} data

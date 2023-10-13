@@ -2,8 +2,8 @@
 Users
 =====
 
-Firefox Accounts
+Mozilla Accounts
 ================
 
-Kitsune uses Firefox Accounts for authentication:
+Kitsune uses Mozilla accounts for authentication:
 https://support.mozilla.org/kb/firefox-accounts-mozilla-support-faq

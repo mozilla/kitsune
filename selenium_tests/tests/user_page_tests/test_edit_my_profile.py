@@ -291,13 +291,13 @@ class TestEditMyProfile(TestUtilities):
 
         self.pages.top_navbar.click_on_edit_profile_option()
 
-        self.logger.info("Click on the 'Manage Firefox Account' button")
+        self.logger.info("Click on the 'Manage account' button")
 
         self.pages.edit_my_profile_page.click_manage_firefox_account_button()
 
         self.logger.info(
             "Verifying that the user was redirected to "
-            "the Firefox Account Settings page in a new tab"
+            "the Mozilla account settings page in a new tab"
         )
 
         self.pages.edit_my_profile_page._switch_next_child_tab()
@@ -305,7 +305,7 @@ class TestEditMyProfile(TestUtilities):
         assert (
             FxAPageMessages.ACCOUNT_SETTINGS_URL in self.pages.edit_my_profile_page.current_url()
         ), (
-            f"User was not redirected to the Firefox settings page. "
+            f"User was not redirected to the Mozilla account settings page. "
             f"The current url is {self.pages.edit_my_profile_page.current_url()}"
         )
 

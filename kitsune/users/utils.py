@@ -124,7 +124,7 @@ def anonymize_user(user):
 
 
 def get_oidc_fxa_setting(attr):
-    """Helper method to return the appropriate setting for Firefox Accounts authentication."""
+    """Helper method to return the appropriate setting for Mozilla accounts authentication."""
     FXA_CONFIGURATION = {
         "OIDC_OP_TOKEN_ENDPOINT": settings.FXA_OP_TOKEN_ENDPOINT,
         "OIDC_OP_AUTHORIZATION_ENDPOINT": settings.FXA_OP_AUTHORIZATION_ENDPOINT,

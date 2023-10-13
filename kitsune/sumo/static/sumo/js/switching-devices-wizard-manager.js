@@ -4,7 +4,7 @@ import UITour from "./libs/uitour";
 
 /**
  * This class is responsible for managing the state for a wizard that
- * guides a user through setting up a Firefox Account for the purposes
+ * guides a user through setting up a Mozilla account for the purposes
  * of migrating their data to a new device that they're switching to.
  *
  * This class will ingest events and callbacks, update its internal state,
@@ -503,8 +503,8 @@ export default class SwitchingDevicesWizardManager {
    * Queries SUMO for the email address of the currently signed in SUMO
    * user viewing the page. If the user is logged into SUMO and the account
    * has a valid email address, we will update the internal state so that
-   * the <form-wizard> can re-use that email address for signing into
-   * a Firefox Account for syncing.
+   * the <form-wizard> can re-use that email address for signing in to
+   * a Mozilla account for syncing.
    */
   async #checkForSUMOEmail() {
     const query = `

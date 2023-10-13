@@ -28,7 +28,7 @@
     <p class="mb-0"><strong>{{ user.email }}</strong></p>
     <p>
       {% trans a_open='<a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">'|safe, a_close='</a>'|safe %}
-        To change your email or avatar, visit the Firefox Accounts page. {{ a_open }} Learn more. {{ a_close }}
+        To change your email or avatar, visit the Mozilla accounts page. {{ a_open }} Learn more. {{ a_close }}
       {% endtrans %}
     </p>
 
@@ -42,7 +42,7 @@
 
     <div class="sumo-button-wrap align-end">
       <a href="https://accounts.firefox.com/settings" target="_blank"
-        class="sumo-button primary-button button-lg">{{ _('Manage Firefox Account') }}</a>
+        class="sumo-button primary-button button-lg">{{ _('Manage account') }}</a>
     </div>
 
     <hr class="section-break" />
@@ -103,7 +103,7 @@
         </div>
         <p>
           <button type="submit" id="delete-profile-button" class="sumo-button secondary-button button-lg warning-button"
-            disabled>{{ _('Delete My Account') }}</button>
+            disabled>{{ _('Delete Your Account') }}</button>
         </p>
       </form>
     </div>

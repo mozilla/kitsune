@@ -7,7 +7,7 @@ $(function () {
     max_filename_length: 80,  // max filename length in characters
     error_title_up: gettext('Error uploading image'),
     error_title_del: gettext('Error deleting image'),
-    error_login: gettext('Please check you are logged in, and try again.')
+    error_login: gettext('Please check you are signed in, and try again.')
   };
 
   $('input.delete', 'div.attachments-list').each(function () {

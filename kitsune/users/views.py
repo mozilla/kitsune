@@ -79,7 +79,7 @@ def user_auth(request, notification=None):
 def login(request):
     """
     This views is used as a wrapper for user_auth to login users
-    with Firefox Accounts.
+    with Mozilla accounts.
     """
     if request.method == "GET":
         url = reverse("users.auth") + "?" + request.GET.urlencode()
@@ -396,10 +396,10 @@ def become(request, username=None):
 class FXAAuthenticateView(OIDCAuthenticationRequestView):
     @staticmethod
     def get_settings(attr, *args):
-        """Override settings for Firefox Accounts.
+        """Override settings for Mozilla accounts.
 
         The default values for the OIDC lib are used for the SSO login in the admin
-        interface. For Firefox Accounts we need to pass different values, pointing to the
+        interface. For Mozilla accounts we need to pass different values, pointing to the
         correct endpoints and RP specific attributes.
         """
 
@@ -420,10 +420,10 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
 class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
     @staticmethod
     def get_settings(attr, *args):
-        """Override settings for Firefox Accounts.
+        """Override settings for Mozilla accounts.
 
         The default values for the OIDC lib are used for the SSO login in the admin
-        interface. For Firefox Accounts we need to pass different values, pointing to the
+        interface. For Mozilla accounts we need to pass different values, pointing to the
         correct endpoints and RP specific attributes.
         """
 
@@ -457,7 +457,7 @@ class FXAAuthenticationCallbackView(OIDCAuthenticationCallbackView):
 class FXALogoutView(OIDCLogoutView):
     @staticmethod
     def get_settings(attr, *args):
-        """Override the logout url for Firefox Accounts."""
+        """Override the logout url for Mozilla accounts."""
 
         val = get_oidc_fxa_setting(attr)
         if val is not None:
@@ -474,7 +474,7 @@ class WebhookView(View):
 
     @staticmethod
     def get_settings(attr, *args):
-        """Override the logout url for Firefox Accounts."""
+        """Override the logout url for Mozilla accounts."""
 
         val = get_oidc_fxa_setting(attr)
         if val is not None:
@@ -585,7 +585,7 @@ class WebhookView(View):
             fxa_uid = payload.get("sub", "")
             exp = payload.get("exp")
 
-            # If the issuer is not Firefox Accounts raise a 404 error
+            # If the issuer is not Mozilla accounts raise a 404 error
             if settings.FXA_SET_ISSUER != issuer:
                 raise Http404
 

@@ -78,7 +78,7 @@ def del_image_async(request, image_id):
     """Delete an image given its object id."""
     user = request.user
     if not user.is_authenticated:
-        message = _("You are not logged in.")
+        message = _("You are not signed in.")
         return HttpResponseForbidden(json.dumps({"status": "error", "message": message}))
 
     try:
