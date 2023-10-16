@@ -91,6 +91,10 @@
     padding-bottom: 9.5px;
   }
 
+  &.button-full-width {
+    width: 100%;
+  }
+
   &.button-xl {
     height: p.$spacing-2xl;
   }
