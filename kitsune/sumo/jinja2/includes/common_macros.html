@@ -71,7 +71,7 @@
       <div class="sumo-nav--dropdown-grid">
         <button class="mzp-c-menu-button-close" type="button"
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
-        <div class="sumo-nav--dropdown-col">
+        <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <a class="mzp-c-menu-item-link" href="{{ url('questions.aaq_step1') }}">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +99,7 @@
             </ul>
           </section>
         </div>
-        <div class="sumo-nav--dropdown-col">
+        <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <a class="mzp-c-menu-item-link" href="{{ url('products') }}">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
@@ -124,6 +124,30 @@
               <li><a href="{{ url('products.product', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
               <li><a href="{{ url('products.product', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
               <li><a class="color-link" href="{{ url('products') }}">{{ _('Browse All Articles') }}</a></li>
+            </ul>
+          </section>
+        </div>
+        <div class="sumo-nav--dropdown-thirds">
+          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+            <a class="mzp-c-menu-item-link" href="{{ url('products') }}">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24">
+                <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+                  stroke-linecap="round">
+                  <rect stroke-linejoin="round" width="18" height="18" rx="2" />
+                  <path d="M4 5h10M4 9h10M4 13h4" />
+                </g>
+              </svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('Mozilla Account') }}</h4>
+              <p class="mzp-c-menu-item-desc">
+                {{ _('Find help for common issues and learn about the benefits a Mozilla Account provides.') }}
+              </p>
+            </a>
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+              <li><a href="https://www.mozilla.org/en-US/firefox/accounts/">{{ _('What is it?') }}</a></li>
+              <li><a href="https://accounts.firefox.com/reset_password">{{ _('Reset Password') }}</a></li>
+              <li><a href="{{ url('wiki.document', 'switching-devices') }}">{{ _('Sync My Data') }}</a></li>
+              <li><a href="{{ url('products.product', 'mozilla-account')}}">{{ _('Get Help') }}</a></li>
             </ul>
           </section>
         </div>
