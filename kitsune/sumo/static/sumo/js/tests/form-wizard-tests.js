@@ -74,9 +74,16 @@ describe("form-wizard custom element", () => {
       { name: "setup-new-device", status: "unavailable", label: "Third label" },
     ];
 
+    let oldInterpolate = global.interpolate;
+
     // Reset the active step before each test in this block.
     beforeEach(() => {
+      global.interpolate = sinon.spy();
       wizard.steps = INITIAL_STEPS;
+    });
+
+    after(() => {
+      global.interpolate = oldInterpolate;
     });
 
     it("should show a different step when the active step changes", () => {
@@ -111,6 +118,7 @@ describe("form-wizard custom element", () => {
       let steps = indicator.children;
       expect(indicator).to.exist;
       expect(steps.length).to.equal(INITIAL_STEPS.length);
+
       [...steps].forEach((step, i) => {
         let subtitle = step.querySelector(".subtitle");
         let title = step.querySelector(".title");
@@ -121,6 +129,8 @@ describe("form-wizard custom element", () => {
         expect(global.interpolate).to.have.been.calledWith("Step %s", [i + 1]);
         expect(title.textContent).to.equal(INITIAL_STEPS[i].label);
       });
+
+      global.interpolate = oldInterpolate;
     });
 
     it("should update the statuses of the steps when the active step changes", () => {

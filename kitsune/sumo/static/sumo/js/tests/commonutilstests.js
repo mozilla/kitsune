@@ -132,9 +132,15 @@ describe('k', () => {
      * it was called appropriately.
      */
     let interpolateSpy;
+    let oldInterpolate = global.interpolate;
 
     beforeEach(() => {
       interpolateSpy = global.interpolate = sinon.spy();
+    });
+
+    // We have to put interpolate back when we're done.
+    after(() => {
+      global.interpolate = oldInterpolate;
     });
 
     it('should interpolate positional user input', function() {

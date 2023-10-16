@@ -15,3 +15,16 @@ nav.switching-devices.tabs {
         cursor: pointer;
     }
 }
+
+dialog.reminder-dialog {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0px 2px 6px rgba(58, 57, 68, 0.2);
+    padding: 0;
+}
+
+dialog.reminder-dialog .mzp-c-menu-list-list {
+    top: unset;
+    left: unset;
+    margin-block-start: 8px;
+}
