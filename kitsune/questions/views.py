@@ -297,6 +297,13 @@ def question_list(request, product_slug):
     if request.user.is_authenticated:
         request.session["questions_owner"] = owner
 
+    # get the product key
+    product_key = ""
+    for key, val in config.products.items():
+        if val.get("product") == product_slug:
+            product_key = key
+            break
+
     data = {
         "questions": questions_page,
         "feeds": feed_urls,
@@ -319,6 +326,7 @@ def question_list(request, product_slug):
         "all_products": product_slug == "all",
         "topic_list": topic_list,
         "topic": topic,
+        "product_key": product_key,
     }
 
     return render(request, "questions/question_list.html", data)

@@ -1,64 +1,66 @@
 {% macro help_topics(topics, product_slug=None, new_tab=False) -%}
-  <div class="sumo-card-grid">
-    <div class="scroll-wrap">
-      {% for topic in topics %}
-      {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
-      <div class="card card--topic">
-        <img
-          class="card--icon"
-          src="{{ topic.image_url }}"
-          alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
-        />
-        <div class="card--details">
-          <h3 class="card--title">
-            <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
-               data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
-              {{ pgettext('DB: products.Topic.title', topic.title) }}
-            </a>
-          </h3>
-        </div>
+<div class="sumo-card-grid">
+  <div class="scroll-wrap">
+    {% for topic in topics %}
+    {% set topic_url = url('products.documents', product_slug=product_slug or product.slug, topic_slug=topic.slug) %}
+    <div class="card card--topic">
+      <img class="card--icon" src="{{ topic.image_url }}"
+        alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon" />
+      <div class="card--details">
+        <h3 class="card--title">
+          <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %}
+            target="_blank" {% endif %} data-event-category="link click" data-event-action="topic"
+            data-event-label="{{topic.title}}">
+            {{ pgettext('DB: products.Topic.title', topic.title) }}
+          </a>
+        </h3>
       </div>
-      {% endfor %}
     </div>
+    {% endfor %}
   </div>
+</div>
 {%- endmacro %}
 
 {% macro topic_metadata(topics, product=None, product_key=None) %}
 {% if product_key and not settings.READ_ONLY %}
-  <section class="support-callouts mzp-l-content sumo-page-section--inner">
-    <div class="card card--ribbon is-inverse heading-is-one-line">
-      <div class="card--details">
-        <h3 class="card--title">
-          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
-              <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
-                <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
-                <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
-              </g>
+<section class="support-callouts mzp-l-content sumo-page-section--inner">
+  <div class="card card--ribbon is-inverse heading-is-one-line">
+    <div class="card--details">
+      <h3 class="card--title">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round"
+            stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
+              <path
+                d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031">
+              </path>
+              <path
+                d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z">
+              </path>
             </g>
-          </svg>
+          </g>
+        </svg>
 
-          {{ _('Still need help?') }}
-        </h3>
-        <p class="card--desc">
-          {% if product and product.has_subscriptions %}
-            {{ _('We’re here for you! If you haven’t found a solution after exploring our help articles, you can get in touch with our support team.') }}
-          {% else %}
-            {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
-          {% endif %}
-        </p>
-        {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
-        <a class="sumo-button primary-button button-lg"
-          href="{{ aaq_url }}" data-event-label="Get support">
-          {% if product and product.has_subscriptions %}
-            {{ _('Get Support') }}
-          {% else %}
-            {{ _('Ask the Community') }}
-          {% endif %}
-        </a>
-      </div>
+        {{ _('Still need help?') }}
+      </h3>
+      <p class="card--desc">
+        {% if product and product.has_subscriptions %}
+        {{ _('We’re here for you! If you haven’t found a solution after exploring our help articles, you can get in touch with our support team.') }}
+        {% else %}
+        {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
+        {% endif %}
+      </p>
+      {% set aaq_url=url('questions.aaq_step3', product_key=product_key) %}
+      <a class="sumo-button primary-button button-lg" href="{{ aaq_url }}" data-event-label="Get support">
+        {% if product and product.has_subscriptions %}
+        {{ _('Get Support') }}
+        {% else %}
+        {{ _('Ask the Community') }}
+        {% endif %}
+      </a>
     </div>
-  </section>
+  </div>
+</section>
 {% endif %}
 {%- endmacro %}
 
@@ -68,33 +70,33 @@
   <span class="details-heading"></span>
   <ul class="sidebar-nav--list">
     {% for topic in topics %}
-      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-      <li class="sidebar-nav--item {% if subtopics %}has-subtopics {% endif %}{% if selected_subtopic != None %} subtopic-selected{% endif %}">
-        <a class="
+    {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+    <li
+      class="sidebar-nav--item {% if subtopics %}has-subtopics {% endif %}{% if selected_subtopic != None %} subtopic-selected{% endif %}">
+      <a class="
           sidebar-nav--link
           {% if selected_topic == topic and selected_subtopic == None %}selected{% endif %}
           {% if selected_topic == topic and selected_subtopic != None %}show-selected-on-lg{% endif %}
-          "
-          href="{{ topic_url }}"
-          data-event-category="link click"
-          data-event-action="topic sidebar"
-          data-event-label="{{topic.title}}">
-          {{ pgettext('DB: products.Topic.title', topic.title) }}
-        </a>
+          " href="{{ topic_url }}" data-event-category="link click" data-event-action="topic sidebar"
+        data-event-label="{{topic.title}}">
+        {{ pgettext('DB: products.Topic.title', topic.title) }}
+      </a>
 
-        {% if selected_topic == topic %}
-        <ul class="sidebar-nav--sublist">
+      {% if selected_topic == topic %}
+      <ul class="sidebar-nav--sublist">
         {% for subtopic in subtopics %}
-          {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
-          <li class="sidebar-nav--subitem">
-            <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
-              {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-            </a>
-          </li>
+        {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
+        <li class="sidebar-nav--subitem">
+          <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}"
+            href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar"
+            data-event-label="{{subtopic.title}}">
+            {{ pgettext('DB: products.Topic.title', subtopic.title) }}
+          </a>
+        </li>
         {% endfor %}
-        </ul>
-        {% endif %}
-      </li>
+      </ul>
+      {% endif %}
+    </li>
     {% endfor %}
   </ul>
 </nav>
@@ -112,12 +114,13 @@
       </a>
     </li>
     {% for subtopic in subtopics %}
-      {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
-      <li class="tabs--item">
-        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
-          <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
-        </a>
-      </li>
+    {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
+    <li class="tabs--item">
+      <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}"
+        data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+        <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
+      </a>
+    </li>
     {% endfor %}
   </ul>
 </nav>

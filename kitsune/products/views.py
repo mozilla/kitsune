@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from product_details import product_details
 
-from kitsune.products.models import Product, Topic
+from kitsune.products.models import Product, Topic, ALL_PRODUCT_FORUMS
 from kitsune.questions import config as aaq_config
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import documents_for, topics_for
@@ -15,7 +15,7 @@ from kitsune.wiki.utils import get_featured_articles
 def product_list(request):
     """The product picker page."""
     template = "products/products.html"
-    products = Product.objects.filter(visible=True)
+    products = Product.objects.filter(visible=True, slug__in=ALL_PRODUCT_FORUMS)
     return render(request, template, {"products": products})
 
 

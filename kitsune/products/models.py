@@ -7,11 +7,22 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 
 HOT_TOPIC_SLUG = "hot"
+ALL_PRODUCT_FORUMS = [
+    "thunderbird",
+    "firefox-enterprise",
+    "mdn-plus",
+    "hubs",
+    "monitor",
+    "relay",
+    "focus-firefox",
+]
 
 
 class ProductQuerySet(models.QuerySet):
     def with_question_forums(self, request):
-        return self.filter(questions_locales__locale=request.LANGUAGE_CODE).filter(codename="")
+        return self.filter(questions_locales__locale=request.LANGUAGE_CODE).filter(
+            slug__in=ALL_PRODUCT_FORUMS
+        )
 
 
 class Product(ModelBase):

@@ -5,12 +5,12 @@
 {% set classes = 'questions' %}
 
 {% if all_products %}
-  {% set product_title = _('All Products') %}
+{% set product_title = _('All Products') %}
 {% elif multiple_products %}
-  {% set product_title = _('Multiple Products') %}
+{% set product_title = _('Multiple Products') %}
 {% else %}
-  {% set product_title = pgettext('DB: products.Product.title', products[0].title) %}
-  {% set logo = pgettext('DB: products.Product.image_alternate_url', products[0].image_alternate_url) %}
+{% set product_title = pgettext('DB: products.Product.title', products[0].title) %}
+{% set logo = pgettext('DB: products.Product.image_alternate_url', products[0].image_alternate_url) %}
 {% endif %}
 
 {% set title = _('{product} Support Forum')|f(product=product_title) %}
@@ -19,7 +19,7 @@
 
 {% set canonical_url = canonicalize(viewname='questions.list', product_slug=product_slug)|urlparams(None, request.GET) %}
 {% if questions.number > 1 %}
-  {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
+{% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
 
 {% set meta = (('robots', 'noindex'),) %}
@@ -27,7 +27,7 @@
 {# This takes kwargs, even though it doesn't say so, because it uses them.
    It's a Jinja Magic thing. #}
 {% macro questions_url() %}
-  {{ url('questions.list', product_slug)|urlparams(None, request.GET, **kwargs) }}
+{{ url('questions.list', product_slug)|urlparams(None, request.GET, **kwargs) }}
 {% endmacro %}
 
 {% block breadcrumbs %}{% endblock %}
@@ -58,42 +58,41 @@
           <div class="no-reply forum--masthead-text">
             <p class="page-heading--intro-text">
               {% if recent_unanswered_count > 0 %}
-                {% if request.user.is_authenticated %}
-                  {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
-                    {{recent_unanswered_count}} question in the last 24 hours has no reply.
-                    <a href="{{url}}">Help solve it!</a>
-                    {% pluralize recent_unanswered_count %}
-                    {{recent_unanswered_count}} questions in the last 24 hours have no reply.
-                    <a href="{{url}}">Help solve them!</a>
-                  {% endtrans %}
-                {% else %}
-                {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
-                  {{recent_unanswered_count}} question in the last 24 hours has no reply.
-                  <a href="/contribute/forum">Learn how to help solve it!</a>
-                  {% pluralize recent_unanswered_count %}
-                  {{recent_unanswered_count}} questions in the last 24 hours have no reply.
-                  <a href="/contribute/forum">Learn how to help solve them!</a>
-                {% endtrans %}
-                {% endif %}
+              {% if request.user.is_authenticated %}
+              {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
+              {{recent_unanswered_count}} question in the last 24 hours has no reply.
+              <a href="{{url}}">Help solve it!</a>
+              {% pluralize recent_unanswered_count %}
+              {{recent_unanswered_count}} questions in the last 24 hours have no reply.
+              <a href="{{url}}">Help solve them!</a>
+              {% endtrans %}
               {% else %}
-                {% if request.user.is_authenticated %}
-                  {% trans %}
-                    0 questions in the last 24 hours have no reply. Good job!
-                  {% endtrans %}
-                {% else %}
-                  {% trans %}
-                    0 questions in the last 24 hours have no reply. <a href="/contribute/forum">Learn how to help!</a>
-                  {% endtrans %}
-                {% endif %}
+              {% trans recent_unanswered_count, url=questions_url(filter='recently-unanswered', show='all') %}
+              {{recent_unanswered_count}} question in the last 24 hours has no reply.
+              <a href="/contribute/forum">Learn how to help solve it!</a>
+              {% pluralize recent_unanswered_count %}
+              {{recent_unanswered_count}} questions in the last 24 hours have no reply.
+              <a href="/contribute/forum">Learn how to help solve them!</a>
+              {% endtrans %}
+              {% endif %}
+              {% else %}
+              {% if request.user.is_authenticated %}
+              {% trans %}
+              0 questions in the last 24 hours have no reply. Good job!
+              {% endtrans %}
+              {% else %}
+              {% trans %}
+              0 questions in the last 24 hours have no reply. <a href="/contribute/forum">Learn how to help!</a>
+              {% endtrans %}
+              {% endif %}
               {% endif %}
             </p>
           </div>
         </div>
       </div>
       <div class="sumo-l-two-col--sidebar forum--masthead-cta">
-        <a
-          class="sumo-button primary-button button-lg feature-box"
-          href="{{ url('questions.aaq_step1') }}">
+        <a class="sumo-button primary-button button-lg feature-box"
+          href="{{ url('questions.aaq_step3', product_key=product_key) }}">
           {{ _('Ask the Community') }}
         </a>
       </div>
@@ -108,166 +107,176 @@
 
 {% block content %}
 {% if tags %}
-  <div id="tagged" class="tag-notification">
-    {{ _('Showing questions tagged:') }}
-    <ul class="tag-list">
-      {% for tag in tags -%}
-      <li><a class="tag" href="{{ questions_url(tagged=tags_to_text (tags|remove(tag))) }}">{{ tag.name }}</a></li>
-      {%- endfor %}
-    </ul>
-    <a class="show-all" href="{{ questions_url(tagged=None) }}">{{ _('Show all questions') }}</a>
-  </div>
+<div id="tagged" class="tag-notification">
+  {{ _('Showing questions tagged:') }}
+  <ul class="tag-list">
+    {% for tag in tags -%}
+    <li><a class="tag" href="{{ questions_url(tagged=tags_to_text (tags|remove(tag))) }}">{{ tag.name }}</a></li>
+    {%- endfor %}
+  </ul>
+  <a class="show-all" href="{{ questions_url(tagged=None) }}">{{ _('Show all questions') }}</a>
+</div>
 {% endif %}
 
 <nav id="owner-tabs" class="tabs">
-    <ul class="tabs--list subtopics">
-      <li class="tabs--item">
-        <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>
-          <span>{{ _('All') }}</span>
-        </a>
-      </li>
-      <li class="tabs--item">
-        <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>
-          <span>{{ _('Attention needed') }}</span>
-        </a>
-      </li>
-      <li class="tabs--item">
-        <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>
-          <span>{{ _('Responded') }}</span>
-        </a>
-      </li>
-      <li class="tabs--item">
-        <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>
-          <span>{{ _('Done') }}</span>
-        </a>
-      </li>
-    </ul>
-  </nav>
+  <ul class="tabs--list subtopics">
+    <li class="tabs--item">
+      <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>
+        <span>{{ _('All') }}</span>
+      </a>
+    </li>
+    <li class="tabs--item">
+      <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}"
+        {{ show|class_selected('needs-attention') }}>
+        <span>{{ _('Attention needed') }}</span>
+      </a>
+    </li>
+    <li class="tabs--item">
+      <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>
+        <span>{{ _('Responded') }}</span>
+      </a>
+    </li>
+    <li class="tabs--item">
+      <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>
+        <span>{{ _('Done') }}</span>
+      </a>
+    </li>
+  </ul>
+</nav>
 
-  <select data-sort-questions class="forum--mobile-sort hide-on-large">
-    {% for o, details in orders.items() %}
-      <option
-        value="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}"
-        {% if order == o %}selected{% endif %}>
-        {{ details[1] }}
-      </option>
+<select data-sort-questions class="forum--mobile-sort hide-on-large">
+  {% for o, details in orders.items() %}
+  <option
+    value="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}"
+    {% if order == o %}selected{% endif %}>
+    {{ details[1] }}
+  </option>
+  {% endfor %}
+</select>
+
+<div id="filter-section"></div>
+
+<div id="questions-list">
+  {% if questions.object_list %}
+  <section class="forum--question-list questions">
+    {% for question in questions.object_list %}
+    <article id="question-{{ question.id }}" class="forum--question-item">
+      <ul class="forum--question-item-side">
+        {% if question.is_solved %}
+        <li class="thread-solved">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span class="hover-label">{{ _('Solved') }}</span>
+        </li>
+        {% endif %}
+        {% if question.is_contributor(user) %}
+        <li class="thread-contributed">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 3.515v16.97M3.515 12h16.97" stroke="currentColor" stroke-width="2" fill="none"
+              fill-rule="evenodd" stroke-linecap="round" /></svg>
+          <span class="hover-label">{{ _('Contributed') }}</span>
+        </li>
+        {% endif %}
+        {% if question.is_locked %}
+        <li class="thread-locked">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <g transform="translate(3 2)" fill="none" fill-rule="evenodd">
+              <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" y="7"
+                width="18" height="13" rx="2" />
+              <path d="M4 7V5a5 5 0 1110 0v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+              <circle fill="currentColor" cx="9" cy="12" r="2" />
+              <path d="M7.549 15.628L9 12l1.451 3.627A1 1 0 019.524 17H8.478a1 1 0 01-.93-1.371z" fill="currentColor" />
+            </g>
+          </svg>
+          <span class="hover-label">{{ _('Locked') }}</span>
+        </li>
+        {% endif %}
+        {% if question.is_archived %}
+        <li class="thread-archived">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
+              <path d="M5 20V4M9 20V7M13 20V6M21 20L16.5 6" />
+            </g>
+          </svg>
+          <span class="hover-label">{{ _('Archived') }}</span>
+        </li>
+        {% endif %}
+      </ul>
+      <div class="forum--content">
+        <aside class="forum--meta question-meta {% if not question.num_answers %}urgent{% endif %}">
+          {% set tags = question.my_tags %}
+          <ul class="tag-list push-right">
+            {% if question.topic %}
+            {% set topic = question.topic %}
+            <li class="tag">
+              <a class="tag-name"
+                href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
+                {{ pgettext('DB: products.Product.title', topic.product.title) }}
+              </a>
+            </li>
+            {% endif %}
+            {% for tag in tags %}
+            <li class="tag"><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
+            {% endfor %}
+          </ul>
+
+          <dl class="forum--meta-details replies">
+            <li>
+              <span class="forum--meta-val">{{ question.num_answers }}</span>
+              <span
+                class="forum--meta-key">{% trans count=question.num_answers %}reply{% pluralize %}replies{% endtrans %}</span>
+            </li>
+            <li class="border-left-md">
+              <span class="forum--meta-val">{{ question.num_votes_past_week }}</span>
+              <span class="forum--meta-key">{{ _('votes this week') }}</span>
+            </li>
+            {% if question.num_visits %}
+            <li class="border-left-md">
+              <span class="forum--meta-val views-val">{{ question.num_visits }}</span>
+              <span
+                class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</span>
+            </li>
+            {% endif %}
+          </dl>
+        </aside>
+
+        <div class="content ui-truncatable truncated">
+          <h2 class="forum--question-item-heading"><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a>
+          </h2>
+          {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
+
+          <div class="forum--user-meta">
+            <p class="user-meta-asked-by">
+              {{ _('Asked by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.creator), username=display_name(question.creator), when=question.created|timesince) }}
+            </p>
+            {% if question.solution %}
+            <p class="user-meta-answered-by">
+              {{ _('Answered by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.solution.creator), username=display_name(question.solution.creator), when=question.solution.created|timesince) }}
+            </p>
+            {% else %}
+            {% if question.last_answer %}
+            <p class="user-meta-answered-by">
+              {{ _('<a href="{reply_url}">Last reply</a> by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(reply_url=question.last_answer.get_absolute_url(), user_url=profile_url(question.last_answer.creator), username=display_name(question.last_answer.creator), when=question.last_answer.created|timesince) }}
+            </p>
+            {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </article>
     {% endfor %}
-  </select>
+  </section>
 
-  <div id="filter-section"></div>
+  {{ questions|quick_paginator }}
 
-      <div id="questions-list">
-        {% if questions.object_list %}
-        <section class="forum--question-list questions">
-          {% for question in questions.object_list %}
-            <article id="question-{{ question.id }}" class="forum--question-item">
-              <ul class="forum--question-item-side">
-              {% if question.is_solved %}
-                <li class="thread-solved">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-width="2" d="M20 6L9 17l-5-5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span class="hover-label">{{ _('Solved') }}</span>
-                </li>
-                {% endif %}
-                {% if question.is_contributor(user) %}
-                  <li class="thread-contributed">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3.515v16.97M3.515 12h16.97" stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"/></svg>
-                    <span class="hover-label">{{ _('Contributed') }}</span>
-                  </li>
-                {% endif %}
-                {% if question.is_locked %}
-                  <li class="thread-locked">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <g transform="translate(3 2)" fill="none" fill-rule="evenodd">
-                        <rect stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" y="7" width="18" height="13" rx="2"/>
-                        <path d="M4 7V5a5 5 0 1110 0v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle fill="currentColor" cx="9" cy="12" r="2"/>
-                        <path d="M7.549 15.628L9 12l1.451 3.627A1 1 0 019.524 17H8.478a1 1 0 01-.93-1.371z" fill="currentColor"/>
-                      </g>
-                    </svg>
-                    <span class="hover-label">{{ _('Locked') }}</span>
-                  </li>
-                {% endif %}
-                {% if question.is_archived %}
-                  <li class="thread-archived">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                      <g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round">
-                        <path d="M5 20V4M9 20V7M13 20V6M21 20L16.5 6"/>
-                      </g>
-                    </svg>
-                    <span class="hover-label">{{ _('Archived') }}</span>
-                  </li>
-                {% endif %}
-              </ul>
-              <div class="forum--content">
-                <aside class="forum--meta question-meta {% if not question.num_answers %}urgent{% endif %}">
-                  {% set tags = question.my_tags %}
-                  <ul class="tag-list push-right">
-                  {% if question.topic %}
-                    {% set topic = question.topic %}
-                    <li class="tag">
-                      <a class="tag-name" href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                        {{ pgettext('DB: products.Product.title', topic.product.title) }}
-                      </a>
-                    </li>
-                  {% endif %}
-                  {% for tag in tags %}
-                    <li class="tag"><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
-                  {% endfor %}
-                  </ul>
-
-                  <dl class="forum--meta-details replies">
-                    <li>
-                      <span class="forum--meta-val">{{ question.num_answers }}</span>
-                      <span class="forum--meta-key">{% trans count=question.num_answers %}reply{% pluralize %}replies{% endtrans %}</span>
-                    </li>
-                    <li class="border-left-md">
-                      <span class="forum--meta-val">{{ question.num_votes_past_week }}</span>
-                      <span class="forum--meta-key">{{ _('votes this week') }}</span>
-                    </li>
-                    {% if question.num_visits %}
-                    <li class="border-left-md">
-                    <span class="forum--meta-val views-val">{{ question.num_visits }}</span>
-                    <span class="forum--meta-key">{% trans count=question.num_visits %}view{% pluralize %}views{% endtrans %}</span>
-                    </li>
-                    {% endif %}
-                  </dl>
-                </aside>
-
-                <div class="content ui-truncatable truncated">
-                  <h2 class="forum--question-item-heading"><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
-                  {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
-
-                  <div class="forum--user-meta">
-                    <p class="user-meta-asked-by">
-                      {{ _('Asked by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.creator), username=display_name(question.creator), when=question.created|timesince) }}
-                    </p>
-                    {% if question.solution %}
-                      <p class="user-meta-answered-by">
-                        {{ _('Answered by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(user_url=profile_url(question.solution.creator), username=display_name(question.solution.creator), when=question.solution.created|timesince) }}
-                      </p>
-                    {% else %}
-                      {% if question.last_answer %}
-                        <p class="user-meta-answered-by">
-                          {{ _('<a href="{reply_url}">Last reply</a> by <strong><a rel="nofollow" href="{user_url}">{username}</a></strong> {when}')|fe(reply_url=question.last_answer.get_absolute_url(), user_url=profile_url(question.last_answer.creator), username=display_name(question.last_answer.creator), when=question.last_answer.created|timesince) }}
-                        </p>
-                      {% endif %}
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </article>
-          {% endfor %}
-        </section>
-
-        {{ questions|quick_paginator }}
-
-      {% else %}
-        <p>{{ _('There are no questions that match the current filter settings.') }}</p>
-      {% endif %}
-    </div>
-  </div>
+  {% else %}
+  <p>{{ _('There are no questions that match the current filter settings.') }}</p>
+  {% endif %}
+</div>
+</div>
 {% endblock %}
 
 
@@ -275,11 +284,11 @@
 <div class="forum--sidebar-sort large-only">
   <select data-sort-questions>
     {% for o, details in orders.items() %}
-      <option
-        value="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}"
-        {% if order == o %}selected{% endif %}>
-        {{ details[1] }}
-      </option>
+    <option
+      value="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}"
+      {% if order == o %}selected{% endif %}>
+      {{ details[1] }}
+    </option>
     {% endfor %}
   </select>
 </div>
@@ -290,19 +299,24 @@
   <nav class="sidebar-nav">
     <span class="details-heading"></span>
     <ul class="sidebar-nav--list">
-      <li class="{% if filter == None %}selected{% endif %}"><a href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
+      <li class="{% if filter == None %}selected{% endif %}"><a
+          href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
       {% for f, desc in filters.items() %}
       <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
       {% endfor %}
       <li class="sidebar-subheading sidebar-nav--heading-item">{{ _('Show me') }}</li>
-      <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
-      <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
+      <li {{ owner|class_selected(None) }}><a
+          href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
+      <li {{ owner|class_selected('mine') }}><a
+          href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
     </ul>
   </nav>
 
   <div class="toggler">
-    <span class="expand" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
-    <span class="collapse" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
+    <span class="expand" data-toggle="collapsed" data-toggle-target="#questions-list"
+      data-toggle-sticky="sticky"></span>
+    <span class="collapse" data-toggle="collapsed" data-toggle-target="#questions-list"
+      data-toggle-sticky="sticky"></span>
   </div>
 </div>
 {% endif %}

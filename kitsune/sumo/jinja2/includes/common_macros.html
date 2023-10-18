@@ -15,28 +15,28 @@
 {% endmacro %}
 
 {% macro sumo_banner(id, text, modifier_class=None, image=None, button_text=None, button_link=None) %}
-  <div class="sumo-banner {{ modifer_class or '' }}" id="{{ id }}" data-close-initial="hidden">
-    <div class="content">
-      {% if image %}
-        <img class="icon" src="{{ image }}" alt="" role="presentation" />
-      {% endif %}
-      <p class="heading">
-        {{ text }}
-      </p>
-      {% if button_text %}
-        <a href="{{ button_link }}" class="sumo-button primary-button button-lg">
-          {{ button_text }}
-        </a>
-      {% endif %}
-      <button class="sumo-close-button close-button" data-close-id="{{ id }}" data-close-memory="session">
-        <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" />
-      </button>
-    </div>
+<div class="sumo-banner {{ modifer_class or '' }}" id="{{ id }}" data-close-initial="hidden">
+  <div class="content">
+    {% if image %}
+    <img class="icon" src="{{ image }}" alt="" role="presentation" />
+    {% endif %}
+    <p class="heading">
+      {{ text }}
+    </p>
+    {% if button_text %}
+    <a href="{{ button_link }}" class="sumo-button primary-button button-lg">
+      {{ button_text }}
+    </a>
+    {% endif %}
+    <button class="sumo-close-button close-button" data-close-id="{{ id }}" data-close-memory="session">
+      <img src="{{ webpack_static('protocol/img/icons/close-white.svg') }}" />
+    </button>
   </div>
+</div>
 {% endmacro %}
 
 {% macro survey_cta_banner() %}
-  {{ sumo_banner(
+{{ sumo_banner(
     id="cta_survey_banner",
     text=_("We need your input! Help us enhance your Mozilla support experience and shape the future of our site by joining our user research study."),
     image=webpack_static("sumo/img/FF_Master__icon.svg"),
@@ -73,7 +73,7 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('questions.aaq_step1') }}">
+            <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -82,54 +82,56 @@
                   <path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z" />
                 </g>
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Ask a Question') }}</h4>
+              <h4 class="mzp-c-menu-item-title">{{ _('Ask the Community') }}</h4>
               <p class="mzp-c-menu-item-desc">
                 {{ _('Get support from our contributors or staff members.') }}
               </p>
-            </a>
+            </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox Browser') }}</a></li>
-              <li><a
-                  href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
+              <li><a href="{{ url('questions.list', 'firefox') }}">{{ _('Firefox Desktop Support Forum') }}</a>
               </li>
-              <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox Focus') }}</a></li>
-              <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
-              <li><a class="color-link" href="{{ url('questions.aaq_step1') }}">{{ _('Browse All Products') }}</a></li>
+              <li><a href="{{ url('questions.list', 'mobile') }}">{{ _('Firefox for Android Support Forum') }}</a></li>
+              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox for iOS Support Forum') }}</a></li>
+              <li><a
+                  href="{{ url('questions.list', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN Support Forum') }}</a>
+              </li>
+              <li><a href="{{ url('questions.list', 'pocket') }}">{{ _('Pocket Support Forum') }}</a></li>
+              <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('Browse All Products') }}</a></li>
             </ul>
           </section>
         </div>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products') }}">
-              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24">
-                <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
-                  stroke-linecap="round">
-                  <rect stroke-linejoin="round" width="18" height="18" rx="2" />
-                  <path d="M4 5h10M4 9h10M4 13h4" />
-                </g>
-              </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Explore Our Help Articles') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Dig into the knowledge base, tips and tricks, troubleshooting, and so much more.') }}
-              </p>
-            </a>
+            <div>
+              <div class="mzp-c-menu-item-head">
+                <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24">
+                  <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+                    stroke-linecap="round">
+                    <rect stroke-linejoin="round" width="18" height="18" rx="2" />
+                    <path d="M4 5h10M4 9h10M4 13h4" />
+                  </g>
+                </svg>
+                <h4 class="mzp-c-menu-item-title">{{ _('Explore Our Help Articles') }}</h4>
+                <p class="mzp-c-menu-item-desc">
+                  {{ _('Dig into the knowledge base, tips and tricks, troubleshooting, and so much more.') }}
+                </p>
+              </div>
+            </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="{{ url('products.product', 'firefox') }}">{{ _('Firefox Browser') }}</a></li>
-              <li><a
-                  href="{{ url('products.product', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
-              </li>
-              <li><a href="{{ url('products.product', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
-              <li><a href="{{ url('products.product', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
+              <li><a href="{{ url('products.product', 'firefox') }}">{{ _('Firefox Desktop') }}</a></li>
               <li><a href="{{ url('products.product', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
+              <li><a href="{{ url('products.product', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
+              <li><a href="{{ url('products.product', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
+              </li>
+              <li><a href="{{ url('products.product', 'pocket') }}">{{ _('Pocket') }}</a></li>
               <li><a class="color-link" href="{{ url('products') }}">{{ _('Browse All Articles') }}</a></li>
             </ul>
           </section>
         </div>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products') }}">
+            <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
@@ -142,7 +144,7 @@
               <p class="mzp-c-menu-item-desc">
                 {{ _('Find help for common issues and learn about the benefits a Mozilla Account provides.') }}
               </p>
-            </a>
+            </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               <li><a href="https://www.mozilla.org/en-US/firefox/accounts/">{{ _('What is it?') }}</a></li>
               <li><a href="https://accounts.firefox.com/reset_password">{{ _('Reset Password') }}</a></li>
@@ -167,7 +169,7 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}">
+            <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -180,7 +182,7 @@
               <p class="mzp-c-menu-item-desc">
                 {{ _('Meet the community: read announcements, follow discussions and ask questions.') }}
               </p>
-            </a>
+            </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               {{ _discussion_nav_links(user, default_language, active) }}
             </ul>
@@ -188,7 +190,7 @@
         </div>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}">
+            <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path
@@ -200,7 +202,7 @@
               <p class="mzp-c-menu-item-desc">
                 {{ _('Explore resources to help you with your contributions.') }}
               </p>
-            </a>
+            </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               {{ _tools_nav_links(user, default_language, active) }}
             </ul>
@@ -312,8 +314,9 @@
     </div>
   </div>
   {% elif not request.path == url('users.auth') %}
-  <a rel="nofollow" href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Sign In">{{ _('Sign In/Up') }}</a>
+  <a rel="nofollow" href="{{ url('users.auth') }}" class="sumo-button secondary-button button-lg"
+    data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Sign In">{{ _('Sign In/Up') }}</a>
   {% endif %}
 </li>
 {% endmacro %}
@@ -368,36 +371,36 @@
 
 {% macro _discussion_nav_links(user, default_language, active=None) -%}
 <li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('Community Discussions') }}</a>
+    data-event-action="main navigation"
+    data-event-label="Community Discussions">{{ _('SUMO Community Discussions') }}</a>
 </li>
 <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Support Forum Home">{{ _('Support Forums') }}</a></li>
+    data-event-label="Support Forum Home">{{ _('Support Forum Discussions') }}</a></li>
 <li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('L10N Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Forum') }}</a></li>
-<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
-<li><a href="{{ url('forums.threads', 'buddies') }}">{{ _('New Contributors') }}</a></li>
+    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('Localization Discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support Discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}" data-event-category="navigation"
+    data-event-action="main navigation"
+    data-event-label="General Knowledge Base Discussions">{{ _('General Knowledge Base Discussions') }}</a></li>
+{# <li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li> #}
 {% endmacro %}
 
 {% macro _tools_nav_links(user, default_language, active=None) -%}
-<li><a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
-    data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}</a></li>
-<li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Community Hub">{{ _('Community Hub') }}</a></li>
-<li><a href="{{ url('wiki.category', 60) }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Templates">{{ _('Templates') }}</a></li>
 <li><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Dashboards">{{ _('Dashboards') }}</a></li>
+    data-event-label="Dashboards">{{ _('Knowledge Base Dashboards') }}</a></li>
 <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
     data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
-<li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
-    data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
+<li><a href="{{ url('wiki.category', 60) }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Templates">{{ _('Templates') }}</a></li>
 {% if user.has_perm('flagit.can_moderate') %}
 <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
     data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
 {% endif %}
-<!-- <li><a href="#">Tag Admin</a></li> -->
+<li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
+<li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Contributors Hub">{{ _('Contributors Hub') }}</a></li>
 {% endmacro %}
 
 {# This is designed to be used like this:
@@ -514,7 +517,8 @@
   <div class="scroll-wrap">
     {% for doc in articles %}
     <div class="card card--article zoom-on-hover">
-      <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="{{ doc.title }}" />
+      <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}"
+        alt="{{ doc.title }}" />
       <div class="card--details">
         <h3 class="card--title">
           <a class="expand-this-link" href="{{ url('wiki.document', doc.slug)  }}" {% if new_tab %} target="_blank"
