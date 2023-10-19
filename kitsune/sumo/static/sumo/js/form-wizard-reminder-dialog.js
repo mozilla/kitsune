@@ -218,12 +218,11 @@ export class ReminderDialog extends HTMLDialogElement {
     let day = new String(date.getDate()).padStart(2, "0");
 
     switch (format) {
-      case CALENDAR_FORMATS.ICAL: {
-        return `${year}${month}${day}T000000Z`;
-      }
       case CALENDAR_FORMATS.OUTLOOK: {
         return `${year}-${month}-${day}`
       }
+      case CALENDAR_FORMATS.ICAL:
+        // Intentional fall-through
       case CALENDAR_FORMATS.GCAL: {
         return `${year}${month}${day}`
       }
@@ -258,12 +257,11 @@ export class ReminderDialog extends HTMLDialogElement {
     let icsFile = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Mozilla.org/NONSGML support.mozilla.org switching devices wizard V1.0//EN
-METHOD:REQUEST
 BEGIN:VEVENT
 UID:${randomValue}
 DTSTAMP:${now}
-DTSTART;TZID=${timezone}:${dtStart}
-DTEND;TZID=${timezone}:${dtEnd}
+DTSTART:${dtStart}
+DTEND:${dtEnd}
 SUMMARY:${summary}
 DESCRIPTION:${description}
 END:VEVENT
