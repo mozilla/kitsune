@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from operator import itemgetter
 
 from django.conf import settings
@@ -193,8 +193,11 @@ class KBVoteMetricList(CachedAPIView):
         locale = request.GET.get("locale")
         product = request.GET.get("product")
 
-        # Use "__range" to ensure the database index is used in Postgres.
-        qs_kb_votes = HelpfulVote.objects.filter(created__range=(date(2011, 1, 1), Now()))
+        # Use "__range" to ensure the database index is used in Postgres,
+        # and only show the helpful votes from the last 365 days.
+        qs_kb_votes = HelpfulVote.objects.filter(
+            created__range=(datetime.now() - timedelta(days=365), Now())
+        )
 
         if locale:
             qs_kb_votes = qs_kb_votes.filter(revision__document__locale=locale)
@@ -326,8 +329,11 @@ def _daily_qs_for(model_cls):
     """Return the daily grouped queryset we need for model_cls."""
     # Limit to newer than 2011/1/1 and active creators.
     return (
-        # Use "__range" to ensure the database index is used in Postgres.
-        model_cls.objects.filter(created__range=(date(2011, 1, 1), Now()), creator__is_active=1)
+        # Use "__range" to ensure the database index is used in Postgres,
+        # and only get the objects from the last 365 days.
+        model_cls.objects.filter(
+            created__range=(datetime.now() - timedelta(days=365), Now()), creator__is_active=1
+        )
         .extra(
             select={
                 "day": "extract( day from created )",
@@ -343,8 +349,9 @@ def _daily_qs_for(model_cls):
 def _qs_for(model_cls):
     """Return the monthly grouped queryset we need for model_cls."""
     return (
-        # Use "__range" to ensure the database index is used in Postgres.
-        model_cls.objects.filter(created__range=(date(2011, 1, 1), Now()))
+        # Use "__range" to ensure the database index is used in Postgres,
+        # and only get the objects from the last 365 days.
+        model_cls.objects.filter(created__range=(datetime.now() - timedelta(days=365), Now()))
         .extra(
             select={
                 "day": "extract( day from created )",
