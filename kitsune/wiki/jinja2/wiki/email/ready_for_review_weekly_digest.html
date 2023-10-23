@@ -1,56 +1,56 @@
 {% extends 'email/base.html' %}
 
 {% block styles %}
-  ul {
-    padding: 0;
-  }
+ul {
+padding: 0;
+}
 {% endblock %}
 
 {% block content %}
-  <p>
-    {{ _('Hi {username},')|f(username=display_name(recipient)) }}
-  </p>
+<p>
+  {{ _('Hi {username},')|f(username=display_name(recipient)) }}
+</p>
 
-  <p>
-    {% trans %}
-      Our contributors have been working hard on articles and it would be great
-      if you could review them. The faster we get them published the faster
-      they start helping users.
-    {% endtrans %}
-  </p>
+<p>
+  {% trans %}
+  Our contributors have been working hard on articles and it would be great
+  if you could review them. The faster we get them published the faster
+  they start helping users.
+  {% endtrans %}
+</p>
 
-  <p>
-    {% trans %}
-      If you have a moment please help us by reviewing these articles:
-    {% endtrans %}
-  </p>
+<p>
+  {% trans %}
+  If you have a moment please help us by reviewing these articles:
+  {% endtrans %}
+</p>
 
-  {% for docs in docs_list %}
-    <p>
-      <strong>{{ docs['product'] }}</strong>
-      <ul>
-        {% for d in docs['docs'] %}
-          <li>
-            <a href="https://{{ host }}/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
-              {{ d.title }}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </p>
-  {% endfor %}
+{% for docs in docs_list %}
+<p>
+  <strong>{{ docs['product'] }}</strong>
+  <ul>
+    {% for d in docs['docs'] %}
+    <li>
+      <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
+        {{ d.title }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</p>
+{% endfor %}
 
-  <p>
-    {% trans %}
-      Many thanks for your contribution in behalf of SUMO and the happy users
-      who get help!
-    {% endtrans %}
-  </p>
+<p>
+  {% trans %}
+  Many thanks for your contribution in behalf of SUMO and the happy users
+  who get help!
+  {% endtrans %}
+</p>
 
-  <p>
-    {% trans %}
-      Regards,
-      <br />The SUMO team.
-    {% endtrans %}
-  </p>
+<p>
+  {% trans %}
+  Regards,
+  <br />The SUMO team.
+  {% endtrans %}
+</p>
 {% endblock %}
