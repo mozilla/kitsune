@@ -15,7 +15,7 @@ helping users.
 
 {% for d in docs['docs'] %}
 {{ d.title }}
-(https://{{ host }}/{{ locale }}{{ url('wiki.document_revisions', d.slug) }})
+(https://{{ host }}{{ url('wiki.document_revisions', d.slug) }})
 
 {% endfor %}
 
