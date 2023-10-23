@@ -18,7 +18,7 @@ class MyProfileEdit(BasePage):
     # Edit profile page
     __edit_my_profile_edit_input_form = (By.XPATH, "//article[@id='edit-profile']/form")
     __edit_my_profile_main_header = (By.XPATH, "//h1[@class='sumo-page-heading']")
-    __manage_firefox_account_button = (By.XPATH, "//a[contains(text(),'Manage Firefox Account')]")
+    __manage_firefox_account_button = (By.XPATH, "//a[contains(text(),'Manage account')]")
     __username_input_field = (By.XPATH, "//input[@id='id_username']")
     __username_error_message = (
         By.XPATH,

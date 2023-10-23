@@ -28,7 +28,7 @@ jQuery.fn.wrapDeleteInput = function (options) {
 
     options = $.extend({
         error_title_del: gettext('Error deleting'),
-        error_json: gettext('Please check you are logged in, and try again.'),
+        error_json: gettext('Please check you are signed in, and try again.'),
         onComplete: function() {}
     }, options);
 

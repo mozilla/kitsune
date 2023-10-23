@@ -473,7 +473,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # This has to come after NoVarySessionMiddleware.
     "django.contrib.messages.middleware.MessageMiddleware",
-    # refresh middleware for Firefox Accounts
+    # refresh middleware for Mozilla accounts
     "kitsune.sumo.middleware.ValidateAccessTokenMiddleware",
     # refresh middleware for the Admin interface - uses IAM
     "kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware",
@@ -554,14 +554,14 @@ else:
         OIDC_RP_CLIENT_ID = config("OIDC_RP_CLIENT_ID", default="")
         OIDC_RP_CLIENT_SECRET = config("OIDC_RP_CLIENT_SECRET", default="")
         OIDC_CREATE_USER = config("OIDC_CREATE_USER", default=False, cast=bool)
-        # Exempt Firefox Accounts urls
+        # Exempt Mozilla accounts urls
         OIDC_EXEMPT_URLS = [
             "users.fxa_authentication_init",
             "users.fxa_authentication_callback",
             "users.fxa_logout_url",
             "users.fxa_webhook",
         ]
-        # Firefox Accounts configuration
+        # Mozilla accounts configuration
         FXA_OP_TOKEN_ENDPOINT = config("FXA_OP_TOKEN_ENDPOINT", default="")
         FXA_OP_AUTHORIZATION_ENDPOINT = config("FXA_OP_AUTHORIZATION_ENDPOINT", default="")
         FXA_OP_USER_ENDPOINT = config("FXA_OP_USER_ENDPOINT", default="")

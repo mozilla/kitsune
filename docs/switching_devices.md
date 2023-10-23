@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In Q2 of 2023, we introduced a mechanism to make it easier for users to migrate their Firefox data from old devices to new devices. A critical part of this project was a page hosted on Kitsune that walked a user through creating a Firefox Account, making sure syncing was set up, and then giving them the URL to a specially attributed download of Firefox that prioritizes signing in to a Firefox Account during onboarding.
+In Q2 of 2023, we introduced a mechanism to make it easier for users to migrate their Firefox data from old devices to new devices. A critical part of this project was a page hosted on Kitsune that walked a user through creating a Mozilla account, making sure syncing was set up, and then giving them the URL to a specially attributed download of Firefox that prioritizes signing in to a Mozilla account during onboarding.
 
 The page doesn't just offer instructions on how to do these things, but instead has an interactive "wizard" that takes the user through each step.
 
