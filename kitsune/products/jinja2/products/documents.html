@@ -23,9 +23,10 @@
   {{ search_box(settings, id='support-search-sidebar', params=search_params) }}
 </div>
 
+{{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
+
 {{ aaq_widget(request, "topic") }}
 
-{{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endblock %}
 
 
