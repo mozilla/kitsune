@@ -79,6 +79,19 @@ export class SetupDeviceStep extends BaseFormStep {
     this.#emailEl.addEventListener("blur", this);
     this.#emailEl.addEventListener("input", this);
     this.#submitButton = this.shadowRoot.getElementById("submit");
+
+    // If the user went through Step 1 and gave us an email address,
+    // it got stored in session storage, so we can prefill the email
+    // field here.
+    try {
+      let step1Email = sessionStorage.getItem("switching-devices-email");
+      this.#emailEl.value = step1Email;
+      this.#onInput();
+    } catch (e) {
+      // We wrap this in a try/catch because session storage methods might
+      // throw if the user has disabled cookies or other types of site
+      // data storage, and we want this to be non-fatal.
+    }
   }
 
   handleEvent(event) {
@@ -94,12 +107,7 @@ export class SetupDeviceStep extends BaseFormStep {
         break;
       }
       case "input": {
-        if (this.#emailEl.value?.trim()) {
-          this.#hideError();
-        }
-
-        this.#submitButton.toggleAttribute("success", false);
-        this.#submitButton.disabled = !this.#emailEl.validity.valid;
+        this.#onInput();
         break;
       }
       case "submit": {
@@ -115,6 +123,15 @@ export class SetupDeviceStep extends BaseFormStep {
         break;
       }
     }
+  }
+
+  #onInput() {
+    if (this.#emailEl.value?.trim()) {
+      this.#hideError();
+    }
+
+    this.#submitButton.toggleAttribute("success", false);
+    this.#submitButton.disabled = !this.#emailEl.validity.valid;
   }
 
   #onClick(event) {
