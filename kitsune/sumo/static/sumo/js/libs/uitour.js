@@ -572,7 +572,7 @@ if (typeof Mozilla == "undefined") {
   };
 
   /**
-   * Request the browser open the Firefox Accounts page.
+   * Request the browser open the Mozilla accounts page.
    *
    * @param {Object} extraURLParams - An object containing additional
    * parameters for the URL opened by the browser for reasons of promotional
@@ -627,7 +627,7 @@ if (typeof Mozilla == "undefined") {
   };
 
   /**
-   * Request the browser open the "Connect Another Device" Firefox Accounts page.
+   * Request the browser open the "Connect Another Device" Mozilla accounts page.
    *
    * @param {Object} extraURLParams - An object containing additional
    * parameters for the URL opened by the browser for reasons of promotional

@@ -22,7 +22,7 @@ class FXAAuthBackendTests(TestCase):
 
     @patch("kitsune.users.auth.messages")
     def test_create_new_profile(self, message_mock):
-        """Test that a new profile is created through Firefox Accounts."""
+        """Test that a new profile is created through Mozilla accounts."""
         claims = {
             "email": "bar@example.com",
             "uid": "my_unique_fxa_id",
@@ -52,7 +52,7 @@ class FXAAuthBackendTests(TestCase):
     @patch("kitsune.users.auth.messages")
     def test_create_new_contributor(self, message_mock):
         """
-        Test that a new contributor can be created through Firefox Accounts
+        Test that a new contributor can be created through Mozilla accounts
         if is_contributor is True in session
         """
         GroupFactory(name=FuzzyChoice(ContributionAreas.get_groups()))
@@ -143,7 +143,7 @@ class FXAAuthBackendTests(TestCase):
             self.backend.request = request_mock
             self.backend.update_user(user, claims)
             message_mock.error.assert_called_with(
-                request_mock, "This Firefox Account is already used in another profile."
+                request_mock, "This Mozilla account is already used in another profile."
             )
             assert not User.objects.get(id=user.id).profile.is_fxa_migrated
             assert not User.objects.get(id=user.id).profile.fxa_uid
@@ -165,7 +165,7 @@ class FXAAuthBackendTests(TestCase):
     @patch("kitsune.users.auth.messages")
     def test_email_changed_in_FxA_match_by_uid(self, message_mock):
         """Test that the user email is updated successfully if it
-        is changed in Firefox Accounts and we match users by uid.
+        is changed in Mozilla accounts and we match users by uid.
         """
         user = UserFactory.create(
             profile__fxa_uid="my_unique_fxa_id",
@@ -182,7 +182,7 @@ class FXAAuthBackendTests(TestCase):
     @patch("mozilla_django_oidc.auth.requests")
     @patch("mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token")
     def test_link_sumo_account_fxa(self, verify_token_mock, requests_mock, message_mock):
-        """Test that an existing SUMO account is succesfully linked to Firefox Account."""
+        """Test that an existing SUMO account is succesfully linked to Mozilla account."""
 
         verify_token_mock.return_value = True
 
@@ -240,7 +240,7 @@ class FXAAuthBackendTests(TestCase):
             self.backend.update_user(user, claims)
             message_mock.error.assert_called_with(
                 request_mock,
-                "The e-mail address used with this Firefox Account"
+                "The e-mail address used with this Mozilla account"
                 " is already linked in another profile.",
             )
             self.assertEqual(User.objects.get(id=user.id).email, "bar@example.com")

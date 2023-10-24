@@ -23,7 +23,7 @@ class LogoutDeactivatedUsersMiddleware(MiddlewareMixin):
 
 class LogoutInvalidatedSessionsMiddleware(MiddlewareMixin):
     """Logs out any sessions started before a user changed their
-    Firefox Accounts password.
+    Mozilla account password.
     """
 
     def process_request(self, request):

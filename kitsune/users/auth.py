@@ -25,7 +25,7 @@ class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
         """Authenticate a user based on the OIDC code flow."""
 
         # If the request has the /fxa/callback/ path then probably there is a login
-        # with Firefox Accounts. In this case just return None and let
+        # with Mozilla accounts. In this case just return None and let
         # the FxA backend handle this request.
         if request and not request.path == django_reverse("oidc_authentication_callback"):
             return None
@@ -40,7 +40,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
     @staticmethod
     def get_settings(attr, *args):
-        """Override settings for Firefox Accounts Provider."""
+        """Override settings for Mozilla accounts Provider."""
         val = get_oidc_fxa_setting(attr)
         if val is not None:
             return val
@@ -90,7 +90,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         user = super(FXAAuthBackend, self).create_user(claims)
         # Create a user profile for the user and populate it with data from
-        # Firefox Accounts
+        # Mozilla accounts
         profile, created = Profile.objects.get_or_create(user=user)
         profile.is_fxa_migrated = True
         profile.fxa_uid = claims.get("uid")
@@ -120,7 +120,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         messages.success(
             self.request,
             _(
-                "<strong>Welcome!</strong> You are now logged in using Firefox Accounts. "
+                "<strong>Welcome!</strong> You are now signed in using Mozilla Accounts. "
                 + "{a_profile}Edit your profile.{a_close}<br>"
                 + "Already have a different Mozilla Support Account? "
                 + "{a_more}Read more.{a_close}"
@@ -147,10 +147,10 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # something went terribly wrong. Return None
         if not fxa_uid:
-            log.warning("Failed to get Firefox Account UID.")
+            log.warning("Failed to get Mozilla account UID.")
             return users
 
-        # A existing user is attempting to connect a Firefox Account to the SUMO profile
+        # A existing user is attempting to connect a Mozilla account to the SUMO profile
         # NOTE: this section will be dropped when the migration is complete
         if self.request and self.request.user and self.request.user.is_authenticated:
             return [self.request.user]
@@ -198,9 +198,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         subscriptions = claims.get("subscriptions", [])
 
         if (request := getattr(self, "request", None)) and not profile.is_fxa_migrated:
-            # Check if there is already a Firefox Account with this ID
+            # Check if there is already a Mozilla account with this ID
             if Profile.objects.filter(fxa_uid=fxa_uid).exists():
-                msg = _("This Firefox Account is already used in another profile.")
+                msg = _("This Mozilla account is already used in another profile.")
                 messages.error(request, msg)
                 return None
 
@@ -212,13 +212,13 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             request.session["oidc_login_next"] = reverse("users.edit_my_profile")
             messages.info(request, "fxa_notification_updated")
 
-        # There is a change in the email in Firefox Accounts. Let's update user's email
+        # There is a change in the email in Mozilla accounts. Let's update user's email
         # unless we have a superuser
         if email and (email != user.email) and not user.is_staff:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
                 if request:
                     msg = _(
-                        "The e-mail address used with this Firefox Account is already "
+                        "The e-mail address used with this Mozilla account is already "
                         "linked in another profile."
                     )
                     messages.error(request, msg)
