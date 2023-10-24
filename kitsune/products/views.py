@@ -84,9 +84,8 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
         subtopic = None
         doc_kw["topics"] = [topic]
 
-    has_subscriptions = product.has_subscriptions
     request.session["aaq_context"] = {
-        "has_subscriptions": has_subscriptions,
+        "has_ticketing_support": product.has_ticketing_support,
         "key": _get_aaq_product_key(product_slug),
     }
 

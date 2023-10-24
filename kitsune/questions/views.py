@@ -498,11 +498,11 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
         except Product.DoesNotExist:
             raise Http404
         has_public_forum = product.questions_enabled(locale=request.LANGUAGE_CODE)
-        has_subscriptions = product.has_subscriptions
+        has_ticketing_support = product.has_ticketing_support
         request.session["aaq_context"] = {
             "key": product_key,
             "has_public_forum": has_public_forum,
-            "has_subscriptions": has_subscriptions,
+            "has_ticketing_support": has_ticketing_support,
         }
 
     context = {
@@ -514,7 +514,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
     }
 
     if step > 1:
-        context["has_subscriptions"] = has_subscriptions
+        context["has_ticketing_support"] = has_ticketing_support
 
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
@@ -536,7 +536,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
 
             return HttpResponseRedirect(path)
 
-        if has_subscriptions:
+        if has_ticketing_support:
             zendesk_form = ZendeskForm(
                 data=request.POST or None,
                 product=product,

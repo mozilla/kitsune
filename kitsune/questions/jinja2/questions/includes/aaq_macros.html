@@ -100,14 +100,14 @@
 
         {{ _('Still need help?') }}
       </h2>
-      {% if aaq_context.has_subscriptions %}
+      {% if aaq_context.has_ticketing_support %}
         <p>{{ _('Send a message to our support team.') }}</p>
       {% elif request.user.is_authenticated %}
         <p>{{ _('Continue to post your question and get help.') }}</p>
       {% else %}
         <p>{{ _('Sign in/up to post your question and get help.') }}</p>
       {% endif %}
-      {% if not aaq_context.has_public_forum and not aaq_context.has_subscriptions %}
+      {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}
         {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
       {% else %}
         {% set next_step = url('questions.aaq_step3', product_key=aaq_context.key) %}
@@ -117,7 +117,7 @@
         data-event-category="link click"
         data-event-action="{{ location }}"
         data-event-label="aaq widget">
-        {% if aaq_context.has_subscriptions %}
+        {% if aaq_context.has_ticketing_support %}
           {{ _('Contact Support') }}
         {% else %}
           {{ _('Ask Now') }}
@@ -127,14 +127,14 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro explore_solutions(product, search_box, featured, topics, request, has_subscriptions=True) -%}
+{% macro explore_solutions(product, search_box, featured, topics, request, has_ticketing_support=True) -%}
 {% set search_params = {'product': product.product} %}
 <section class="sumo-page-section question-masthead shade-bg">
   <div class="mzp-l-content">
 
     {{ progress_bar(2) }}
 
-    {% if not has_subscriptions %}
+    {% if not has_ticketing_support %}
       {{ scam_banner() }}
     {% endif %}
 

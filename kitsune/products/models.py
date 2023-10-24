@@ -69,7 +69,7 @@ class Product(ModelBase):
         return webpack_static("products/img/product_placeholder_alternate.png")
 
     @property
-    def has_subscriptions(self):
+    def has_ticketing_support(self):
         """Return boolean if a product has subscriptions"""
         return bool(self.codename)
 
