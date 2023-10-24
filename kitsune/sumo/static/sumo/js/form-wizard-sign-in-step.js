@@ -96,6 +96,18 @@ export class SignInStep extends BaseFormStep {
         if (!this.#emailEl.validity.valid) {
           this.#emailErrorEl.classList.add("visible");
           event.preventDefault();
+        } else {
+          // The email is valid and we're about to redirect to FxA login.
+          // Let's quickly stash the email address in session storage so
+          // that we can prefill the email field in Step 3 for getting
+          // the reminder email.
+          try {
+            sessionStorage.setItem("switching-devices-email", this.#emailEl.value);
+          } catch (e) {
+            // We wrap this in a try/catch because session storage methods might
+            // throw if the user has disabled cookies or other types of site
+            // data storage, and we want this to be non-fatal.
+          }
         }
         break;
       }
