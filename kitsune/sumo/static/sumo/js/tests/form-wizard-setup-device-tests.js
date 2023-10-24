@@ -138,4 +138,37 @@ describe("setup-device-step custom element", () => {
       delete ReminderDialog.prototype.showModal;
     });
   });
+
+  describe("email prefilling", () => {
+    it("should not prefil if session storage is empty", async () => {
+      sessionStorage.removeItem("switching-devices-email");
+
+      // Prefilling the email address occurs when the element is bound
+      // to the DOM, so we'll disconnect and reconnect.
+      step.remove();
+      $("body").append(step);
+
+      let email = step.shadowRoot.querySelector("input[name=email]");
+      let submitBtn = step.shadowRoot.querySelector("#submit");
+      expect(email.value).to.be.empty;
+      expect(submitBtn.disabled).to.be.true;
+    });
+
+    it("should not prefil if session storage is empty", async () => {
+      const TEST_EMAIL = "test@test.com";
+      sessionStorage.setItem("switching-devices-email", TEST_EMAIL);
+
+      // Prefilling the email address occurs when the element is bound
+      // to the DOM, so we'll disconnect and reconnect.
+      step.remove();
+      $("body").append(step);
+
+      let email = step.shadowRoot.querySelector("input[name=email]");
+      let submitBtn = step.shadowRoot.querySelector("#submit");
+      expect(email.value).to.equal(TEST_EMAIL);
+      expect(submitBtn.disabled).to.be.false;
+
+      sessionStorage.removeItem("switching-devices-email");
+    });
+  });
 });
