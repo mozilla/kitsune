@@ -19,7 +19,6 @@
   </div>
 </section>
 {% endif %}
-
 <section class="sumo-auth--wrap">
   <div class="mzp-l-content">
     <div class="card feature-padding elevation-03">
@@ -50,7 +49,8 @@
                   </p>
                   <div class="trouble-text">
                     <p class="help-text">
-                      {{ _('Having trouble signing in? Contact support' ) }}
+                      {{ _('Having trouble signing in? ')}}
+                      <a href="{{ url('questions.aaq_step3', product_key='mozilla-account') }}">{{ _('Contact support') }}</a>
                     </p>
                   </div>
                 </div>
