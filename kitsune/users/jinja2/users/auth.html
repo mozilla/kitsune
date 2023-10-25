@@ -13,11 +13,11 @@
 
 {% set aaq_context = request.session.get('aaq_context') %}
 {% if aaq_context and aaq_context.key %}
-  <section class="sumo-page-section question-masthead shade-bg">
-    <div class="mzp-l-content">
-      {{ progress_bar(3, product_key=aaq_context.key) }}
-    </div>
-  </section>
+<section class="sumo-page-section question-masthead shade-bg">
+  <div class="mzp-l-content">
+    {{ progress_bar(3, product_key=aaq_context.key) }}
+  </div>
+</section>
 {% endif %}
 
 <section class="sumo-auth--wrap">
@@ -29,10 +29,13 @@
             <article id="login" class="main login-form">
               <div class="sumo-page-section content-zero-bottom-pad">
                 <h1 class="sumo-page-subheading sumo-header-medium">{{ _('Continue with your Mozilla account' ) }}</h1>
-                <p class="text-body-sm">{{ _('Get personalized support from staff and our<br> amazing community of contributors from around the world.' ) }}</p>
+                <p class="text-body-sm">
+                  {{ _('Get personalized support from staff and our<br> amazing community of contributors from around the world.' ) }}
+                </p>
                 <div class="center-on-mobile">
                   <p class="login-button-wrap">
-                    <a rel="nofollow" href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}" class="sumo-button primary-button button-lg button-full-width">{{ _('Sign In or Sign Up') }}</a>
+                    <a rel="nofollow" href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}"
+                      class="sumo-button primary-button button-lg button-full-width">{{ _('Sign In or Sign Up') }}</a>
                   </p>
 
                   <p class="help-text">
@@ -41,8 +44,8 @@
                       privacy_url="https://www.mozilla.org/privacy/firefox/"
                     %}
                     Continuing with your Mozilla account means you have agreed with the
-                      <a href="{{ terms_url }}">Terms and Conditions</a> and
-                      <a href="{{ privacy_url }}">Privacy Policy</a>.'
+                    <a href="{{ terms_url }}">Terms and Conditions</a> and
+                    <a href="{{ privacy_url }}">Privacy Policy</a>.
                     {% endtrans %}
                   </p>
                   <div class="trouble-text">
