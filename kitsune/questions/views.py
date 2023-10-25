@@ -544,7 +544,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
             )
             context["form"] = zendesk_form
 
-            if zendesk_form.is_valid():
+            if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
                 try:
                     zendesk_form.send(request.user)
                     email = zendesk_form.cleaned_data["email"]
@@ -565,6 +565,13 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
                         request, messages.ERROR, _("That didn't work. Please try again.")
                     )
                     capture_exception(err)
+
+            if getattr(request, "limited", False):
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    _("You've exceeded the number of submissions for today."),
+                )
 
             return render(request, template, context)
 
