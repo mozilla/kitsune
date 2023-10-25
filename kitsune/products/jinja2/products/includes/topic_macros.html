@@ -41,7 +41,7 @@
           {{ _('Still need help?') }}
         </h3>
         <p class="card--desc">
-          {% if product and product.has_subscriptions %}
+          {% if product and product.has_ticketing_support %}
             {{ _('We’re here for you! If you haven’t found a solution after exploring our help articles, you can get in touch with our support team.') }}
           {% else %}
             {{ _('We’re here for you. Post a question to our support forums and get answers from our community of experts.') }}
@@ -50,7 +50,7 @@
         {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
         <a class="sumo-button primary-button button-lg"
           href="{{ aaq_url }}" data-event-label="Get support">
-          {% if product and product.has_subscriptions %}
+          {% if product and product.has_ticketing_support %}
             {{ _('Get Support') }}
           {% else %}
             {{ _('Ask the Community') }}

@@ -20,7 +20,7 @@
 
 {% block contentwrap %}
   {% if current_step == 2 %}
-    {{ explore_solutions(current_product, search_box, featured, topics, request, has_subscriptions) }}
+    {{ explore_solutions(current_product, search_box, featured, topics, request, has_ticketing_support) }}
   {% else %}
     {{ super() }}
   {% endif %}
@@ -28,7 +28,7 @@
 
 {% block major_detail_instructions %}
   <h2 class="sumo-page-heading">
-    {% if has_subscriptions %}
+    {% if has_ticketing_support %}
       {{ _('Contact Support') }}
     {% else %}
       {{ _('Ask your question') }}

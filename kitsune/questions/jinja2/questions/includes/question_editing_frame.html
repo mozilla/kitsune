@@ -24,7 +24,7 @@ we can compute the edit-title URL.
     {% if current_step %}
       {{ progress_bar(current_step, product_key=current_product.key) }}
 
-      {% if current_step > 1 and not has_subscriptions %}
+      {% if current_step > 1 and not has_ticketing_support %}
         {{ scam_banner() }}
       {% endif %}
     {% endif %}
@@ -49,7 +49,7 @@ we can compute the edit-title URL.
     {% endblock %}
     <div class="sumo-l-two-col">
       <aside class="sumo-l-two-col--sidebar">
-        {% if form and not has_subscriptions %}
+        {% if form and not has_ticketing_support %}
           <div class="card has-moz-headings is-in-sidebar is-callout-bg text-center large-only">
               <img class="card--img" src="{{ webpack_static('sumo/img/Mozilla-Heads-Keith-Negley-180628__400.png') }}" alt="Illustration of community" />
               <div class="card--details">
@@ -80,7 +80,7 @@ we can compute the edit-title URL.
             <form id="question-form" method="post">
               {% csrf_token %}
 
-              {% if not has_subscriptions %}
+              {% if not has_ticketing_support %}
                 <p class="sumo-page-intro">
                   {% trans %}
                     Be nice. Our volunteers are Mozilla users just like you,
@@ -113,7 +113,7 @@ we can compute the edit-title URL.
                 {% set li_class='' %}
                 {% for field in form.visible_fields() if not field.name == 'notifications' %}
 
-                  {% if not has_subscriptions %}
+                  {% if not has_ticketing_support %}
                     {% if field.name == 'ff_version' %}
                       <li class="system-details-info show">
                         <p>
