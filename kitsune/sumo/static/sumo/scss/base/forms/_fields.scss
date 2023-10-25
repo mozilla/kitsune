@@ -407,3 +407,9 @@ textarea {
   margin-top: 52px;
   border-bottom: 1px solid var(--color-heading);
 }
+
+label.required::after {
+  content: "\A Required";
+  white-space: pre;
+  color: var(--color-marketing-red-01);
+}

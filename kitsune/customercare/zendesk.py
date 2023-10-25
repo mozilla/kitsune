@@ -1,29 +1,8 @@
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _lazy
 from zenpy import Zenpy
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
-
-# See docs/zendesk.md for details about getting the valid choice values for each field:
-CATEGORY_CHOICES = [
-    (None, _lazy("Select a topic")),
-    ("payment", _lazy("Payments & Billing")),
-    ("accounts", _lazy("Accounts & Login")),
-    ("technical", _lazy("Technical")),
-    ("feedback", _lazy("Provide Feedback/Request Features")),
-    ("not_listed", _lazy("Not listed")),
-]
-
-OS_CHOICES = [
-    (None, _lazy("Select platform")),
-    ("win10", _lazy("Windows")),
-    ("mac", _lazy("Mac OS")),
-    ("linux", _lazy("Linux")),
-    ("android", _lazy("Android")),
-    ("ios", _lazy("iOS")),
-    ("other", _lazy("Other")),
-]
 
 
 class ZendeskClient(object):
@@ -38,27 +17,42 @@ class ZendeskClient(object):
         }
         self.client = Zenpy(**creds)
 
-    def _user_to_zendesk_user(self, user, include_email=True):
-        fxa_uid = user.profile.fxa_uid
-        id_str = user.profile.zendesk_id
+    def _user_to_zendesk_user(self, user, ticket_fields=None):
+        if not user.is_authenticated:
+            name = "Anonymous User"
+            locale = "en-US"
+            id = None
+            external_id = None
+            user_fields = None
+        else:
+            fxa_uid = user.profile.fxa_uid
+            id_str = user.profile.zendesk_id
+            id = int(id_str) if id_str else None
+            name = user.profile.display_name
+            locale = user.profile.locale
+            user_fields = {"user_id": fxa_uid}
+            external_id = fxa_uid
         return ZendeskUser(
-            id=int(id_str) if id_str else None,
+            id=id,
             verified=True,
-            email=user.email if include_email else "",
-            name=user.profile.display_name,
-            locale=user.profile.locale,
-            user_fields={"user_id": fxa_uid},
-            external_id=fxa_uid,
+            email=ticket_fields.get("email") or user.email,
+            name=name,
+            locale=locale,
+            user_fields=user_fields,
+            external_id=external_id,
         )
 
-    def create_user(self, user):
+    def create_user(self, user, ticket_fields=None):
         """Given a Django user, create a user in Zendesk."""
-        zendesk_user = self._user_to_zendesk_user(user)
+        zendesk_user = self._user_to_zendesk_user(user, ticket_fields=ticket_fields)
         # call create_or_update to avoid duplicating users FxA previously created
         zendesk_user = self.client.users.create_or_update(zendesk_user)
 
-        user.profile.zendesk_id = str(zendesk_user.id)
-        user.profile.save(update_fields=["zendesk_id"])
+        # We can't save anything to AnonymousUser Profile
+        # as it has none
+        if user.is_authenticated:
+            user.profile.zendesk_id = str(zendesk_user.id)
+            user.profile.save(update_fields=["zendesk_id"])
 
         return zendesk_user
 
@@ -84,20 +78,41 @@ class ZendeskClient(object):
 
     def create_ticket(self, user, ticket_fields):
         """Create a ticket in Zendesk."""
+        custom_fields = [
+            {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": ticket_fields.get("product")},
+            {"id": settings.ZENDESK_OS_FIELD_ID, "value": ticket_fields.get("os")},
+            {"id": settings.ZENDESK_COUNTRY_FIELD_ID, "value": ticket_fields.get("country")},
+        ]
+        # If this is the normal, athenticated form we want to use the category field
+        if user.is_authenticated:
+            custom_fields.append(
+                {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": ticket_fields.get("category")},
+            )
+        # If this is the loginless form we want to use the contact label field (tag)
+        # and fix the category field to be "accounts"
+        else:
+            custom_fields.extend(
+                [
+                    {
+                        "id": settings.ZENDESK_CONTACT_LABEL_ID,
+                        "value": ticket_fields.get("category"),
+                    },
+                    {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": "accounts"},
+                ]
+            )
         ticket = Ticket(
             subject=ticket_fields.get("subject"),
             comment={"body": ticket_fields.get("description")},
             ticket_form_id=settings.ZENDESK_TICKET_FORM_ID,
-            custom_fields=[
-                {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": ticket_fields.get("product")},
-                {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": ticket_fields.get("category")},
-                {"id": settings.ZENDESK_OS_FIELD_ID, "value": ticket_fields.get("os")},
-                {"id": settings.ZENDESK_COUNTRY_FIELD_ID, "value": ticket_fields.get("country")},
-            ],
+            custom_fields=custom_fields,
         )
-        if user.profile.zendesk_id:
-            # TODO: is this necessary if we're updating users as soon as they're updated locally?
-            ticket.requester_id = self.update_user(user).id
+        if user.is_authenticated:
+            if user.profile.zendesk_id:
+                # TODO: is this necessary if we're
+                # updating users as soon as they're updated locally?
+                ticket.requester_id = self.update_user(user).id
+            else:
+                ticket.requester_id = self.create_user(user).id
         else:
-            ticket.requester_id = self.create_user(user).id
+            ticket.requester_id = self.create_user(user, ticket_fields=ticket_fields).id
         return self.client.tickets.create(ticket)
