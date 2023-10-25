@@ -72,6 +72,7 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
     """The document listing page for a product + topic."""
     product = get_object_or_404(Product, slug=product_slug)
     topic = get_object_or_404(Topic, slug=topic_slug, product=product, parent__isnull=True)
+
     template = "products/documents.html"
 
     doc_kw = {"locale": request.LANGUAGE_CODE, "products": [product]}
@@ -82,6 +83,12 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
     else:
         subtopic = None
         doc_kw["topics"] = [topic]
+
+    has_subscriptions = product.has_subscriptions
+    request.session["aaq_context"] = {
+        "has_subscriptions": has_subscriptions,
+        "key": _get_aaq_product_key(product_slug),
+    }
 
     documents, fallback_documents = documents_for(**doc_kw)
 
