@@ -1,7 +1,7 @@
 import json
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
@@ -31,6 +31,9 @@ def _get_aaq_product_key(slug):
 @check_simple_wiki_locale
 def product_landing(request, slug):
     """The product landing page."""
+    if slug == "firefox-accounts":
+        return redirect(product_landing, slug="mozilla-account", permanent=True)
+
     product = get_object_or_404(Product, slug=slug)
 
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
