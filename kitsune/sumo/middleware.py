@@ -2,6 +2,7 @@ import contextlib
 import re
 import time
 from functools import wraps
+from ipaddress import ip_address
 
 import django.middleware.locale
 from django.conf import settings
@@ -28,6 +29,25 @@ from mozilla_django_oidc.middleware import SessionRefresh
 from kitsune.sumo.i18n import get_language_from_user, normalize_language, normalize_path
 from kitsune.sumo.views import handle403
 from kitsune.users.auth import FXAAuthBackend
+
+
+class SetRemoteAddrFromForwardedFor:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        if not settings.TRUSTED_PROXY_COUNT:
+            raise MiddlewareNotUsed
+
+    def __call__(self, request):
+        if x_forwarded_for := request.headers.get("x-forwarded-for"):
+            ips = x_forwarded_for.replace(",", " ").split()
+            if len(ips) > settings.TRUSTED_PROXY_COUNT:
+                client_ip = ips[-(settings.TRUSTED_PROXY_COUNT + 1)]
+                try:
+                    request.META["REMOTE_ADDR"] = str(ip_address(client_ip))
+                except ValueError:
+                    pass
+
+        return self.get_response(request)
 
 
 class EnforceHostIPMiddleware(EnforceHostMiddleware):
