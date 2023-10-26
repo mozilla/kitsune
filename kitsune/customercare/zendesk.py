@@ -17,7 +17,7 @@ class ZendeskClient(object):
         }
         self.client = Zenpy(**creds)
 
-    def _user_to_zendesk_user(self, user, ticket_fields=None):
+    def _user_to_zendesk_user(self, user, email):
         if not user.is_authenticated:
             name = "Anonymous User"
             locale = "en-US"
@@ -35,16 +35,16 @@ class ZendeskClient(object):
         return ZendeskUser(
             id=id,
             verified=True,
-            email=ticket_fields.get("email") or user.email,
+            email=email or user.email,
             name=name,
             locale=locale,
             user_fields=user_fields,
             external_id=external_id,
         )
 
-    def create_user(self, user, ticket_fields=None):
+    def create_user(self, user, email=""):
         """Given a Django user, create a user in Zendesk."""
-        zendesk_user = self._user_to_zendesk_user(user, ticket_fields=ticket_fields)
+        zendesk_user = self._user_to_zendesk_user(user, email=email)
         # call create_or_update to avoid duplicating users FxA previously created
         zendesk_user = self.client.users.create_or_update(zendesk_user)
 
@@ -114,5 +114,5 @@ class ZendeskClient(object):
             else:
                 ticket.requester_id = self.create_user(user).id
         else:
-            ticket.requester_id = self.create_user(user, ticket_fields=ticket_fields).id
+            ticket.requester_id = self.create_user(user, email=ticket_fields.get("email", "")).id
         return self.client.tickets.create(ticket)
