@@ -263,8 +263,7 @@ def is_ratelimited(request, name, rate, method="POST"):
         if request.user.is_authenticated:
             key = f"user '{request.user.username}'"
         else:
-            ip = request.META.get("HTTP_X_CLUSTER_CLIENT_IP", request.META["REMOTE_ADDR"])
-            key = f"anonymous user {ip}"
+            key = f"anonymous user {request.META['REMOTE_ADDR']}"
         Record.objects.info(
             "sumo.ratelimit", "{key} hit the rate limit for {name}", key=key, name=name
         )
