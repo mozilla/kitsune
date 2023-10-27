@@ -636,8 +636,9 @@ def aaq_step3(request, product_key, category_key=None):
     # Since removing the @login_required decorator for MA form
     # need to catch unauthenticated, non-MA users here """
     is_loginless = product_key in settings.LOGIN_EXCEPTIONS
+    skip_auth = request.GET.get("skip_auth", False)
 
-    if not is_loginless and not request.user.is_authenticated:
+    if not ((is_loginless and skip_auth) or request.user.is_authenticated):
         return redirect_to_login(next=request.path, login_url=reverse("users.login"))
 
     return aaq(

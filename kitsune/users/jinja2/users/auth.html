@@ -50,7 +50,8 @@
                   <div class="trouble-text">
                     <p class="help-text">
                       {{ _('Having trouble signing in? ')}}
-                      <a href="{{ url('questions.aaq_step3', product_key='mozilla-account') }}">{{ _('Contact support') }}</a>
+                      <a
+                        href="{{ url('questions.aaq_step3', product_key='mozilla-account') }}?skip_auth=true">{{ _('Contact support') }}</a>
                     </p>
                   </div>
                 </div>

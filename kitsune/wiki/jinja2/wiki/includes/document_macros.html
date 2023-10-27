@@ -1,514 +1,519 @@
 {% macro contributor_list(contributors) -%}
-  <section id="doc-contributors" class="document--contributors sumo-page-section">
-    {% trans contributors=user_list(contributors), link=url('landings.contribute') %}
-    <p class="help-title text-body-md">These fine people helped write this article:</p>
-    <div class="document--contributors-list text-body-xs">{{ contributors }}</div>
-    {% endtrans %}
-  </section>
+<section id="doc-contributors" class="document--contributors sumo-page-section">
+  {% trans contributors=user_list(contributors), link=url('landings.contribute') %}
+  <p class="help-title text-body-md">These fine people helped write this article:</p>
+  <div class="document--contributors-list text-body-xs">{{ contributors }}</div>
+  {% endtrans %}
+</section>
 {%- endmacro %}
 
 
 {% macro document_title(document) -%}
-  <h1 class="sumo-page-heading">{{ document.title }}</h1>
+<h1 class="sumo-page-heading">{{ document.title }}</h1>
 {%- endmacro %}
 
 {% macro document_messages(document, redirected_from) -%}
-  {% if redirected_from %}
-    <div id="redirected-from">
-      {{ _('(Redirected from <a href="{href}">{title}</a>)')|fe(href=redirected_from.get_absolute_url()|urlparams(redirect='no'), title=redirected_from.title) }}
-    </div>
-  {% endif %}
-  {% if document.is_majorly_outdated() and not document.is_archived %}
-  <div class="mzp-c-notification-bar mzp-t-warning" >
-    <button class="mzp-c-notification-bar-button" type="button"></button>
-    <div>
-      {% trans url=document.parent.get_absolute_url(), title=document.parent.title %}
-        <p>This article may be out of date.</p>
-        <p>
-          An important change has been made to the English article on which
-          this is based. Until this page is updated, you might find this
-          helpful: <a href="{{ url }}">{{ title }}</a>
-        </p>
+{% if redirected_from %}
+<div id="redirected-from">
+  {{ _('(Redirected from <a href="{href}">{title}</a>)')|fe(href=redirected_from.get_absolute_url()|urlparams(redirect='no'), title=redirected_from.title) }}
+</div>
+{% endif %}
+{% if document.is_majorly_outdated() and not document.is_archived %}
+<div class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <div>
+    {% trans url=document.parent.get_absolute_url(), title=document.parent.title %}
+    <p>This article may be out of date.</p>
+    <p>
+      An important change has been made to the English article on which
+      this is based. Until this page is updated, you might find this
+      helpful: <a href="{{ url }}">{{ title }}</a>
+    </p>
+    {% endtrans %}
+  </div>
+</div>
+{% endif %}
+{% if document.is_archived %}
+<div class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <div>
+    <p>
+      {% trans %}
+      This article is no longer maintained, so its content might be out
+      of date.
       {% endtrans %}
-    </div>
+    </p>
   </div>
-  {% endif %}
-  {% if document.is_archived %}
-  <div class="mzp-c-notification-bar mzp-t-warning">
-    <button class="mzp-c-notification-bar-button" type="button"></button>
-    <div>
-      <p>
-        {% trans %}
-          This article is no longer maintained, so its content might be out
-          of date.
-        {% endtrans %}
-      </p>
-    </div>
-  </div>
-  {% endif %}
+</div>
+{% endif %}
 {%- endmacro %}
 
 {% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision=False, full_locale_name=None) -%}
-  <section id="doc-content" class="document--content {{ css_class }}">
-    {% if not fallback_reason %}
-      {{ document.html|safe }}
-    {% elif fallback_reason == 'no_translation' %}
-      {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
-      <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
-        <button class="mzp-c-notification-bar-button" type="button"></button>
-        <div>
-          {% trans help_link=url('wiki.document', 'localize-firefox-help'), document_trans_link=url('wiki.translate', document.slug) %}
-            No one has helped translate this article yet. If you already know how localizing for SUMO works,
-            <a href="{{ document_trans_link }}">start translating now</a>.
-            If you want to learn how to translate articles for SUMO,
-            <a href="{{ help_link }}">please start here</a>.
-          {% endtrans %}
-        </div>
-      </div>
-      {% endif %}
-
-      {{ document.html|safe }}
-
-    {% elif fallback_reason == 'translation_not_approved' %}
-    <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
-      <button class="mzp-c-notification-bar-button" type="button"></button>
-      <div>
-        {# L10n: This is shown for existing, never-approved translations #}
-        {% trans help_link=url('wiki.document', 'localize-firefox-help') %}
-          Our volunteers are working on translating this article.
-          Until it's ready, maybe the English version can be of some help.
-          If you want to help us translate articles like this one,
-          <a href="{{ help_link }}">please click here</a>.
-        {% endtrans %}
-      </div>
+<section id="doc-content" class="document--content {{ css_class }}">
+  {% if not fallback_reason %}
+  {{ document.html|safe }}
+  {% elif fallback_reason == 'no_translation' %}
+  {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
+  <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
+    <button class="mzp-c-notification-bar-button" type="button"></button>
+    <div>
+      {% trans help_link=url('wiki.document', 'localize-firefox-help'), document_trans_link=url('wiki.translate', document.slug) %}
+      No one has helped translate this article yet. If you already know how localizing for SUMO works,
+      <a href="{{ document_trans_link }}">start translating now</a>.
+      If you want to learn how to translate articles for SUMO,
+      <a href="{{ help_link }}">please start here</a>.
+      {% endtrans %}
     </div>
+  </div>
+  {% endif %}
 
-      {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
-        {# This is the actual fallback document, show it. #}
-        {{ document.html|safe }}
-      {% else %}
-        {{ document.parent.html|safe }}
-      {% endif %}
-    {% elif fallback_reason == 'fallback_locale' %}
-      <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
-        <button class="mzp-c-notification-bar-button" type="button"></button>
-        <div>
-          {% trans locale=full_locale_name[request.LANGUAGE_CODE], fallback_locale=full_locale_name[document.locale], help_link=url('wiki.document', 'localize-firefox-help'), eng_link=document.parent.get_absolute_url() %}
-            This page does not exist in {{ locale }}. You have been redirected to the {{ fallback_locale }} version instead.
-            If you would like to localize it into {{ locale }}, <a href="{{ help_link }}">click here</a>.
-            You can also see the <a href="{{ eng_link }}">English</a> version of this page.
-          {% endtrans %}
-        </div>
-      </div>
+  {{ document.html|safe }}
 
-      {{ document.html|safe }}
-    {% else %}
-      {{ _("This article doesn't have approved content yet.") }}
-    {% endif %}
-  </section>
+  {% elif fallback_reason == 'translation_not_approved' %}
+  <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
+    <button class="mzp-c-notification-bar-button" type="button"></button>
+    <div>
+      {# L10n: This is shown for existing, never-approved translations #}
+      {% trans help_link=url('wiki.document', 'localize-firefox-help') %}
+      Our volunteers are working on translating this article.
+      Until it's ready, maybe the English version can be of some help.
+      If you want to help us translate articles like this one,
+      <a href="{{ help_link }}">please click here</a>.
+      {% endtrans %}
+    </div>
+  </div>
+
+  {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+  {# This is the actual fallback document, show it. #}
+  {{ document.html|safe }}
+  {% else %}
+  {{ document.parent.html|safe }}
+  {% endif %}
+  {% elif fallback_reason == 'fallback_locale' %}
+  <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
+    <button class="mzp-c-notification-bar-button" type="button"></button>
+    <div>
+      {% trans locale=full_locale_name[request.LANGUAGE_CODE], fallback_locale=full_locale_name[document.locale], help_link=url('wiki.document', 'localize-firefox-help'), eng_link=document.parent.get_absolute_url() %}
+      This page does not exist in {{ locale }}. You have been redirected to the {{ fallback_locale }} version instead.
+      If you would like to localize it into {{ locale }}, <a href="{{ help_link }}">click here</a>.
+      You can also see the <a href="{{ eng_link }}">English</a> version of this page.
+      {% endtrans %}
+    </div>
+  </div>
+
+  {{ document.html|safe }}
+  {% else %}
+  {{ _("This article doesn't have approved content yet.") }}
+  {% endif %}
+</section>
 {%- endmacro %}
 
 {% macro topic_list(topics) -%}
-  {% set comma = joiner(', ') %}
-  {% for topic in topics -%}
-    {{ comma() }}
-    <a href="{{ url('wiki.topic', topic.slug) }}">{{ _(topic.name) }}</a>
-  {%- endfor %}
+{% set comma = joiner(', ') %}
+{% for topic in topics -%}
+{{ comma() }}
+<a href="{{ url('wiki.topic', topic.slug) }}">{{ _(topic.name) }}</a>
+{%- endfor %}
 {%- endmacro %}
 
 {% macro edit_messages(document, show_revision_warning) -%}
-  {% if show_revision_warning %}
-  <div class="mzp-c-notification-bar mzp-t-warning">
-    <button class="mzp-c-notification-bar-button" type="button"></button>
-    <div>
+{% if show_revision_warning %}
+<div class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <div>
     <p>{{ _('Warning: There are newer unreviewed revisions of this article.') }}</p>
     <p>
       {% trans url=url('wiki.document_revisions', document.slug) %}
-        See <a href="{{url}}">the history</a> to base your edit on an
-        existing unreviewed revision.
+      See <a href="{{url}}">the history</a> to base your edit on an
+      existing unreviewed revision.
       {% endtrans %}
     </p>
-    </div>
   </div>
+</div>
 
-  {% endif %}
+{% endif %}
 {%- endmacro %}
 
 {% macro revision_diff(revision_from, revision_to, revision_from_header=None, revision_to_header=None, show_picker=False) -%}
-  {% if revision_from and revision_to %}
-    <div class="revision-diff">
-      <header>
-        {% if show_picker %}
-          <div class="picker">
-            <a href="{{ url('wiki.document_revisions', revision_from.document.slug)|urlparams(locale=revision_from.document.locale) }}">{{ _('Change Revisions') }}</a>
-          </div>
-        {% endif %}
-        <div class="col">
-          <h3 class="sumo-card-heading">
-            {% if revision_from_header %}
-              {{ revision_from_header}}
-            {% else %}
-              <a href="{{ url('wiki.revision', revision_from.document.slug, revision_from.id) }}">
-                {{ _('Revision {num}:')|f(num=revision_from.id) }}
-              </a>
-            {% endif %}
-          </h3>
-          <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision_from.id, user=revision_from.creator, date=datetimeformat(revision_from.created, format='longdatetime')) }}</p>
-        </div>
-        <div class="col">
-          <h3 class="sumo-card-heading">
-            {% if revision_to_header %}
-              {{ revision_to_header}}
-            {% else %}
-              <a href="{{ url('wiki.revision', revision_to.document.slug, revision_to.id) }}">
-                {{ _('Revision {num}:')|f(num=revision_to.id) }}
-              </a>
-            {% endif %}
-          </h3>
-          <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision_to.id, user=revision_to.creator, date=datetimeformat(revision_to.created, format='longdatetime')) }}</p>
-        </div>
-      </header>
-      <h4 class="sumo-card-heading">{{ _('Keywords:') }}</h4>
-      <div class="diff-this">
-        <div class="from">{{ revision_from.keywords }}</div>
-        <div class="to">{{ revision_to.keywords }}</div>
-        <div class="output"></div>
-      </div>
-      <h4 class="sumo-card-heading">{{ _('Search results summary:') }}</h4>
-      <div class="diff-this">
-        <div class="from">{{ revision_from.summary }}</div>
-        <div class="to">{{ revision_to.summary }}</div>
-        <div class="output"></div>
-      </div>
-      <h4 class="sumo-card-heading">{{ _('Content:') }}</h4>
-      <div id="content-diff" class="diff-this">
-        <div class="from">{{ revision_from.content }}</div>
-        <div class="to">{{ revision_to.content }}</div>
-        <div class="output"></div>
-      </div>
+{% if revision_from and revision_to %}
+<div class="revision-diff">
+  <header>
+    {% if show_picker %}
+    <div class="picker">
+      <a
+        href="{{ url('wiki.document_revisions', revision_from.document.slug)|urlparams(locale=revision_from.document.locale) }}">{{ _('Change Revisions') }}</a>
     </div>
-  {% endif %}
+    {% endif %}
+    <div class="col">
+      <h3 class="sumo-card-heading">
+        {% if revision_from_header %}
+        {{ revision_from_header}}
+        {% else %}
+        <a href="{{ url('wiki.revision', revision_from.document.slug, revision_from.id) }}">
+          {{ _('Revision {num}:')|f(num=revision_from.id) }}
+        </a>
+        {% endif %}
+      </h3>
+      <p>
+        {{ _('Revision {id} by {user} on {date}')|fe(id=revision_from.id, user=revision_from.creator, date=datetimeformat(revision_from.created, format='longdatetime')) }}
+      </p>
+    </div>
+    <div class="col">
+      <h3 class="sumo-card-heading">
+        {% if revision_to_header %}
+        {{ revision_to_header}}
+        {% else %}
+        <a href="{{ url('wiki.revision', revision_to.document.slug, revision_to.id) }}">
+          {{ _('Revision {num}:')|f(num=revision_to.id) }}
+        </a>
+        {% endif %}
+      </h3>
+      <p>
+        {{ _('Revision {id} by {user} on {date}')|fe(id=revision_to.id, user=revision_to.creator, date=datetimeformat(revision_to.created, format='longdatetime')) }}
+      </p>
+    </div>
+  </header>
+  <h4 class="sumo-card-heading">{{ _('Keywords:') }}</h4>
+  <div class="diff-this">
+    <div class="from">{{ revision_from.keywords }}</div>
+    <div class="to">{{ revision_to.keywords }}</div>
+    <div class="output"></div>
+  </div>
+  <h4 class="sumo-card-heading">{{ _('Search results summary:') }}</h4>
+  <div class="diff-this">
+    <div class="from">{{ revision_from.summary }}</div>
+    <div class="to">{{ revision_to.summary }}</div>
+    <div class="output"></div>
+  </div>
+  <h4 class="sumo-card-heading">{{ _('Content:') }}</h4>
+  <div id="content-diff" class="diff-this">
+    <div class="from">{{ revision_from.content }}</div>
+    <div class="to">{{ revision_to.content }}</div>
+    <div class="output"></div>
+  </div>
+</div>
+{% endif %}
 {%- endmacro %}
 
 {% macro document_watch(document, user) -%}
-  {% if user.is_authenticated and document %}
-    <div class="doc-watch" id="doc-watch">
-      {% if document.is_watched_by(user) %}
-        <form action="{{ url('wiki.document_unwatch', document.slug) }}" method="post">
-          {% csrf_token %}
-          <input type="submit" class="sumo-button button-sm link-btn" value="{{ _('Stop article emails') }}" />
-        </form>
-      {% else %}
-        <form action="{{ url('wiki.document_watch', document.slug) }}" method="post">
-          {% csrf_token %}
-          <input type="submit" class="sumo-button" value="{{ _('Email me article changes') }}" />
-        </form>
-      {% endif %}
-    </div>
+{% if user.is_authenticated and document %}
+<div class="doc-watch" id="doc-watch">
+  {% if document.is_watched_by(user) %}
+  <form action="{{ url('wiki.document_unwatch', document.slug) }}" method="post">
+    {% csrf_token %}
+    <input type="submit" class="sumo-button button-sm link-btn" value="{{ _('Stop article emails') }}" />
+  </form>
+  {% else %}
+  <form action="{{ url('wiki.document_watch', document.slug) }}" method="post">
+    {% csrf_token %}
+    <input type="submit" class="sumo-button" value="{{ _('Email me article changes') }}" />
+  </form>
   {% endif %}
+</div>
+{% endif %}
 {%- endmacro %}
 
 {% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, translate=False) -%}
-  <div class="submit sumo-button-wrap reverse-on-desktop align-end">
-    <button class="sumo-button primary-button btn-submit" type="submit">{{ _('Submit for Review') }}</button>
-    {% if translate %}
-      <button class="sumo-button secondary-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
-    {% endif %}
-    <button class="sumo-button secondary-button btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
-    {% if include_diff %}
-      <button class="sumo-button secondary-button btn-diff" type="button">{{ _('Preview Changes') }}</button>
-    {% endif %}
-  </div>
-  {% if not buttons_only %}
-    <div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
-
-      <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target=".btn-submit" data-modal="true">
-        <p>
-          {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
-          can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
-        </p>
-        <div class="field comment">
-          <label for="id_comment">{{ _('Briefly describe your changes:') }}</label>
-          {{ form.comment|safe }}
-        </div>
-        {% if show_no_update_checkbox %}
-          <div class="field checkbox no-update">
-            <input type="checkbox" name="no-update" value="Yes" id="id_no_update" />
-            <label for="id_no_update">{{ _('This edit does not make this article up to date. The English differences should not change on the next edit.') }}</label>
-          </div>
-        {% endif %}
-        <div class="field checkbox notifications">
-          <input type="checkbox" name="notify-future-changes" id="id_notify-future-changes" value="Yes" />
-          <label for="id_notify-future-changes">{{ _('Notify me of any future changes to this page') }}</label>
-        </div>
-        <div class="sumo-button-wrap align-end">
-          <button class="sumo-button primary-button" type="submit" id="submit-document-form">{{ _('Submit') }}</button>
-        </div>
-      </div>
-    </div>
+<div class="submit sumo-button-wrap reverse-on-desktop align-end">
+  <button class="sumo-button primary-button btn-submit" type="submit">{{ _('Submit for Review') }}</button>
+  {% if translate %}
+  <button class="sumo-button secondary-button btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}"
+    type="button">{{ _('Save as Draft') }}</button>
   {% endif %}
+  <button class="sumo-button secondary-button btn-preview" data-preview-url="{{ url('wiki.preview') }}"
+    type="button">{{ _('Preview Content') }}</button>
+  {% if include_diff %}
+  <button class="sumo-button secondary-button btn-diff" type="button">{{ _('Preview Changes') }}</button>
+  {% endif %}
+</div>
+{% if not buttons_only %}
+<div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
+
+  <div id="submit-modal" class="kbox" title="{{ _('Submit Your Changes') }}" data-target=".btn-submit"
+    data-modal="true">
+    <p>
+      {% trans %}You rock! We'll send an email to let you know if your changes get approved. You
+      can follow the discussion about this article by clicking the Discussion tab.{% endtrans %}
+    </p>
+    <div class="field comment">
+      <label for="id_comment">{{ _('Briefly describe your changes:') }}</label>
+      {{ form.comment|safe }}
+    </div>
+    {% if show_no_update_checkbox %}
+    <div class="field checkbox no-update">
+      <input type="checkbox" name="no-update" value="Yes" id="id_no_update" />
+      <label
+        for="id_no_update">{{ _('This edit does not make this article up to date. The English differences should not change on the next edit.') }}</label>
+    </div>
+    {% endif %}
+    <div class="field checkbox notifications">
+      <input type="checkbox" name="notify-future-changes" id="id_notify-future-changes" value="Yes" />
+      <label for="id_notify-future-changes">{{ _('Notify me of any future changes to this page') }}</label>
+    </div>
+    <div class="sumo-button-wrap align-end">
+      <button class="sumo-button primary-button" type="submit" id="submit-document-form">{{ _('Submit') }}</button>
+    </div>
+  </div>
+</div>
+{% endif %}
 {%- endmacro %}
 
 {% macro show_for(products, header=None, close_button=False) -%}
-  {% if header == None %}
-    {% set header = _('Help with:') %}
+{% if header == None %}
+{% set header = _('Help with:') %}
+{% endif %}
+
+<section class="showfor" id="showfor-panel">
+  <script type="application/json" class="showfor-data">
+    {
+      {
+        showfor_data(products)
+      }
+    }
+
+  </script>
+
+  <h3 class="{% if close_button %}sumo-card-heading{% else %}sidebar-subheading force-top-margin{% endif %}">
+    {{ _('Customize this article') }}</h3>
+  {% if header %}
+  <p>
+    {{ header }}
+    {% if close_button %}
+    <span class="exit close-button" data-close-id="showfor-panel">&times;</span>
+    {% endif %}
+  </p>
   {% endif %}
 
-  <section class="showfor" id="showfor-panel">
-    <script type="application/json" class="showfor-data">
-      {{ showfor_data(products) }}
-    </script>
+  {% for prod in products %}
+  {% if prod.visible %}
+  {% set has_versions = prod.versions.count() > 1 %}
+  {% set has_platforms = prod.platforms.count() > 1 %}
 
-    <h3 class="{% if close_button %}sumo-card-heading{% else %}sidebar-subheading force-top-margin{% endif %}">{{ _('Customize this article') }}</h3>
-    {% if header %}
-      <p>
-        {{ header }}
-        {% if close_button %}
-          <span class="exit close-button" data-close-id="showfor-panel">&times;</span>
+  <div class="product" data-product="{{ prod.slug }}">
+    <div class="field checkbox is-condensed">
+      <input type="checkbox" id="id_{{ prod.slug}}" checked value="product:{{ prod.slug }}" />
+      <label for="id_{{ prod.slug}}">{{ prod.title }}</label>
+    </div>
+
+
+
+
+    {% if has_versions %}
+    <div class="selectbox-wrapper">
+      <select class="version">
+        {% for version in prod.versions.all() %}
+        {% if version.visible %}
+        <option value="version:{{ version.slug }}" data-min="{{ version.min_version }}"
+          data-max="{{ version.max_version }}" {% if version.default %}selected{% endif %}>
+          {{ version.name }}
+        </option>
         {% endif %}
-      </p>
+        {% endfor %}
+      </select>
+    </div>
     {% endif %}
 
-    {% for prod in products %}
-      {% if prod.visible %}
-        {% set has_versions = prod.versions.count() > 1 %}
-        {% set has_platforms = prod.platforms.count() > 1 %}
+    {% if has_platforms %}
+    <div class="selectbox-wrapper">
+      <select class="platform">
+        {% for platform in prod.platforms.all() %}
+        {% if platform.visible %}
+        <option value="platform:{{ platform.slug }}" {% if platform.default %}selected{% endif %}>
+          {{ platform.name }}
+        </option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endfor %}
 
-        <div class="product" data-product="{{ prod.slug }}">
-          <div class="field checkbox is-condensed">
-            <input
-              type="checkbox"
-              id="id_{{ prod.slug}}"
-              checked
-              value="product:{{ prod.slug }}"
-            />
-            <label for="id_{{ prod.slug}}">{{ prod.title }}</label>
-          </div>
-
-
-
-
-          {% if has_versions %}
-            <div class="selectbox-wrapper">
-              <select class="version">
-                {% for version in prod.versions.all() %}
-                  {% if version.visible %}
-                    <option value="version:{{ version.slug }}"
-                            data-min="{{ version.min_version }}"
-                            data-max="{{ version.max_version }}"
-                            {% if version.default %}selected{% endif %}>
-                      {{ version.name }}
-                    </option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            </div>
-          {% endif %}
-
-          {% if has_platforms %}
-            <div class="selectbox-wrapper">
-              <select class="platform">
-                {% for platform in prod.platforms.all() %}
-                  {% if platform.visible %}
-                    <option value="platform:{{ platform.slug }}" {% if platform.default %}selected{% endif %}>
-                      {{ platform.name }}
-                    </option>
-                  {% endif %}
-                {% endfor %}
-              </select>
-            </div>
-          {% endif %}
-        </div>
-      {% endif %}
-    {% endfor %}
-
-  </section>
+</section>
 
 {%- endmacro %}
 
 {% macro vote_form(document, source=None) -%}
-  {% if not header %}
-    {% set header = _('Was this article helpful?') %}
-  {% endif %}
-  {% if document.allows_vote(request) %}
-    <div class="document-vote elevation-01 text-center">
-      <form class="document-vote--form helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
-          {% csrf_token %}
-          <h4 class="document-vote--heading">{{ header }}</h4>
-          <div class="document-vote--buttons">
-            <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
-            {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
-            <button type="submit" class="btn helpful-button" name="helpful"><span class="hidden-text">{{ _('Yes') }}</span>👍</button>
-            <button type="submit" class="btn not-helpful-button" name="not-helpful"><span class="hidden-text">{{ _('No') }}</span>👎</button>
-            <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
-          </div>
-      </form>
+{% if not header %}
+{% set header = _('Was this article helpful?') %}
+{% endif %}
+{% if document.allows_vote(request) %}
+<div class="document-vote elevation-01 text-center">
+  <form class="document-vote--form helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}"
+    method="post">
+    {% csrf_token %}
+    <h4 class="document-vote--heading">{{ header }}</h4>
+    <div class="document-vote--buttons">
+      <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+      {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
+      <button type="submit" class="btn helpful-button" name="helpful"><span
+          class="hidden-text">{{ _('Yes') }}</span>👍</button>
+      <button type="submit" class="btn not-helpful-button" name="not-helpful"><span
+          class="hidden-text">{{ _('No') }}</span>👎</button>
+      <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
     </div>
-  {% endif %}
+  </form>
+</div>
+{% endif %}
 {%- endmacro %}
 
 {% macro revision_contributors_label(contributors) -%}
-  {# This macro is used in the reject and approve revision modals #}
-  {% if contributors|length == 1 %}
-    {{ _('Leave a message for {contributor}: ')|fe(contributor=contributors[0]) }}
-  {% else %}
-    {{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(contributors[:-1]), last=contributors[-1]) }}
-  {% endif %}
+{# This macro is used in the reject and approve revision modals #}
+{% if contributors|length == 1 %}
+{{ _('Leave a message for {contributor}: ')|fe(contributor=contributors[0]) }}
+{% else %}
+{{ _('Leave a message for {rest} and {last}:')|fe(rest=', '.join(contributors[:-1]), last=contributors[-1]) }}
+{% endif %}
 {%- endmacro %}
 
 {% macro document_lock_warning() -%}
-  {% if locked %}
-  <div id="locked-warning" class="mzp-c-notification-bar mzp-t-warning">
-    <button class="mzp-c-notification-bar-button" type="button"></button>
-    <div>
-      <p>{% trans user=locked_by.username %}
-        Warning: This page is also being edited by {{ user }}!
+{% if locked %}
+<div id="locked-warning" class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <div>
+    <p>{% trans user=locked_by.username %}
+      Warning: This page is also being edited by {{ user }}!
       {% endtrans %}</p>
-      <p>{{ _('If you know what you are doing, you can edit the document anyway.') }}</p>
+    <p>{{ _('If you know what you are doing, you can edit the document anyway.') }}</p>
 
-      <form id="steal-lock-form" method="post" action="url('wiki.steal_lock')">
-        {% csrf_token %}
-        <a href="#" id="unlock-button" class="sumo-button link-button">{{ _('Edit anyway') }}</a>
-      </form>
-    </div>
+    <form id="steal-lock-form" method="post" action="url('wiki.steal_lock')">
+      {% csrf_token %}
+      <a href="#" id="unlock-button" class="sumo-button link-button">{{ _('Edit anyway') }}</a>
+    </form>
   </div>
-  {% endif %}
+</div>
+{% endif %}
 {%- endmacro %}
 
 {% macro related_documents(document) %}
-  {% if document.related_documents.count() > 0 %}
-    {% set docs = document.related_documents.all() %}
-    <section id="related-documents" class="sumo-page-section wiki-related-documents">
-      <div class="text-center">
-        <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
-      </div>
-      <div class="sumo-card-grid">
-        <div class="scroll-wrap">
-          {% for related in docs %}
-          <div class="card card--article">
-              <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
-              <div class="card--details">
-                <h3 class="card--title">
-                  <a
-                    class="expand-this-link"
-                    href="{{ url('wiki.document', related.slug) }}"
-                    data-event-category="link click"
-                    data-event-action="product"
-                    data-event-label="{{ related.title }}"
-                  >
-                    {{ related.title }}
-                  </a>
-                </h3>
-                <div class="card--desc">
-                  <p>
-                  {{ related.html|striptags|truncate(length=150) }}
-                  </p>
-                </div>
-              </div>
+{% if document.related_documents.count() > 0 %}
+{% set docs = document.related_documents.all() %}
+<section id="related-documents" class="sumo-page-section wiki-related-documents">
+  <div class="text-center">
+    <h2 class="sumo-page-subheading">{{ _('Related Articles') }}</h2>
+  </div>
+  <div class="sumo-card-grid">
+    <div class="scroll-wrap">
+      {% for related in docs %}
+      <div class="card card--article">
+        <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
+        <div class="card--details">
+          <h3 class="card--title">
+            <a class="expand-this-link" href="{{ url('wiki.document', related.slug) }}" data-event-category="link click"
+              data-event-action="product" data-event-label="{{ related.title }}">
+              {{ related.title }}
+            </a>
+          </h3>
+          <div class="card--desc">
+            <p>
+              {{ related.html|striptags|truncate(length=150) }}
+            </p>
           </div>
-          {% endfor %}
         </div>
       </div>
-    </section>
-  {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 {% endmacro %}
 
 {% macro kb_subtopic_documents(request, settings, documents, active_topic="", is_fallback=False) %}
-  {% set active_topic_slug = active_topic or 'view-all' %}
-  <section class="switching-devices topic-list {% if not active_topic %}is-active{% endif %}" id="tab-{{ active_topic_slug }}">
-    {% if is_fallback %}
-      <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
-    {% endif %}
-    {% for document in documents %}
-        <article class="topic-article">
-          <div class="topic-article--icon-wrap">
-            <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
-          </div>
-          <div class="topic-article--text">
-            <h2 class="sumo-card-heading">
-              <a {% if is_fallback %} href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}" {% else %} href="{{ document['url'] }}" {% endif %}
-                data-event-category="device-migration-tabbed-menu"
-                data-event-action="link-click"
-                data-event-label="{{ document['document_title'] }}">
-                {{ document['document_title'] }}
-              </a>
-            </h2>
-            <p>{{ document['document_summary'] }}</p>
-          </div>
-        </article>
-    {% endfor %}
-  </section>
+{% set active_topic_slug = active_topic or 'view-all' %}
+<section class="switching-devices topic-list {% if not active_topic %}is-active{% endif %}"
+  id="tab-{{ active_topic_slug }}">
+  {% if is_fallback %}
+  <h2 class="sumo-page-subheading">{{ _('In English') }}</h2>
+  {% endif %}
+  {% for document in documents %}
+  <article class="topic-article">
+    <div class="topic-article--icon-wrap">
+      <img class="topic-article--icon" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="" />
+    </div>
+    <div class="topic-article--text">
+      <h2 class="sumo-card-heading">
+        <a {% if is_fallback %}
+          href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}"
+          {% else %} href="{{ document['url'] }}" {% endif %} data-event-category="device-migration-tabbed-menu"
+          data-event-action="link-click" data-event-label="{{ document['document_title'] }}">
+          {{ document['document_title'] }}
+        </a>
+      </h2>
+      <p>{{ document['document_summary'] }}</p>
+    </div>
+  </article>
+  {% endfor %}
+</section>
 {% endmacro %}
 
 {% macro kb_subtopic_tabs(request, settings, product, topic, subtopics, current_document) -%}
-  <nav class="switching-devices tabs">
-    <ul class="tabs--list subtopics">
-      <li class="tabs--item">
-      <button class="tabs--link is-active" id="kb-tab-all"
-        data-event-category="device-migration-tabbed-menu"
-        data-event-action="tab-click"
-        data-event-label="view-all">
+<nav class="switching-devices tabs">
+  <ul class="tabs--list subtopics">
+    <li class="tabs--item">
+      <button class="tabs--link is-active" id="kb-tab-all" data-event-category="device-migration-tabbed-menu"
+        data-event-action="tab-click" data-event-label="view-all">
         <span>{{ _('View All') }}</span>
       </button>
-      </li>
-      {% for subtopic in subtopics %}
-        <li class="tabs--item">
-          <button class="tabs--link" id="kb-subtopic-{{ subtopic.slug }}"
-             data-event-category="device-migration-tabbed-menu"
-             data-event-action="tab-click"
-             data-event-label="{{ subtopic.slug }}">
-            <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
-          </button>
-        </li>
-      {% endfor %}
-    </ul>
-  </nav>
+    </li>
+    {% for subtopic in subtopics %}
+    <li class="tabs--item">
+      <button class="tabs--link" id="kb-subtopic-{{ subtopic.slug }}" data-event-category="device-migration-tabbed-menu"
+        data-event-action="tab-click" data-event-label="{{ subtopic.slug }}">
+        <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
+      </button>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
 
-  {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, [topic], [product], current_document)%}
+{% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, [topic], [product], current_document)%}
 
-  {% if all_fallback_docs %}
-    {{ kb_subtopic_documents(request, settings, all_fallback_docs, True) }}
-  {% endif %}
-  {{ kb_subtopic_documents(request, settings, all_docs) }}
+{% if all_fallback_docs %}
+{{ kb_subtopic_documents(request, settings, all_fallback_docs, True) }}
+{% endif %}
+{{ kb_subtopic_documents(request, settings, all_docs) }}
 
-  {% for subtopic in subtopics %}
-    {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, [subtopic], [product], current_document=current_document)%}
-    {% if fallback_documents %}
-      {{ kb_subtopic_documents(request, settings, fallback_docs, subtopic.slug, True) }}
-    {% endif %}
-    {{ kb_subtopic_documents(request, settings, documents, subtopic.slug) }}
-  {% endfor %}
+{% for subtopic in subtopics %}
+{% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, [subtopic], [product], current_document=current_document)%}
+{% if fallback_documents %}
+{{ kb_subtopic_documents(request, settings, fallback_docs, subtopic.slug, True) }}
+{% endif %}
+{{ kb_subtopic_documents(request, settings, documents, subtopic.slug) }}
+{% endfor %}
 {%- endmacro %}
 
 {% macro inpage_contact_cta(product=None, product_key=None) %}
 {% if product_key %}
-  <section class="support-callouts mzp-l-content sumo-page-section--inner">
-    <div class="card card--ribbon is-inverse heading-is-one-line">
-      <div class="card--details">
-        <h3 class="card--title">
-          <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round">
-              <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
-                <path d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031"></path>
-                <path d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z"></path>
-              </g>
+<section class="support-callouts mzp-l-content sumo-page-section--inner">
+  <div class="card card--ribbon is-inverse heading-is-one-line">
+    <div class="card--details">
+      <h3 class="card--title">
+        <svg class="card--icon-sm" width="24px" height="24px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round"
+            stroke-linejoin="round">
+            <g transform="translate(2.000000, 1.878680)" stroke="#FFFFFF" stroke-width="2">
+              <path
+                d="M9,1.12132031 L2,1.12132031 C0.8954305,1.12132031 5.32907052e-15,2.01675081 5.32907052e-15,3.12132031 L5.32907052e-15,15.1213203 C5.32907052e-15,16.2258898 0.8954305,17.1213203 2,17.1213203 L11,17.1213203 L13,21.1213203 L15,17.1213203 L17,17.1213203 C18.1045695,17.1213203 19,16.2258898 19,15.1213203 L19,9.12132031">
+              </path>
+              <path
+                d="M15.5,0.621320312 C16.3284271,-0.207106783 17.6715729,-0.207106769 18.5,0.621320344 C19.3284271,1.44974746 19.3284271,2.79289318 18.5,3.62132031 L11,11.1213203 L7,12.1213203 L8,8.12132031 L15.5,0.621320312 Z">
+              </path>
             </g>
-          </svg>
-          {{ _('Still need help?') }}
-        </h3>
-        <p class="card--desc">         
-            {{ _("If you've tried the steps above and you're still unable to log in, send a message to our support team.") }}
-        </p>
-        {% set aaq_url=url('questions.aaq_step3', product_key=product_key) %}
-        <a class="sumo-button primary-button button-lg"
-          href="{{ aaq_url }}" 
-          data-event-category="link click"
-          data-event-action="{{ location }}"
-          data-event-label="inpage_cta">
-            {{ _('Contact Support') }}
-        </a>
-      </div>
+          </g>
+        </svg>
+        {{ _('Still need help?') }}
+      </h3>
+      <p class="card--desc">
+        {{ _("If you've tried the steps above and you're still unable to log in, send a message to our support team.") }}
+      </p>
+      {% set aaq_url=url('questions.aaq_step3', product_key=product_key) %}
+      <a class="sumo-button primary-button button-lg" href="{{ aaq_url }}?skip_auth=true"
+        data-event-category="link click" data-event-action="{{ location }}" data-event-label="inpage_cta">
+        {{ _('Contact Support') }}
+      </a>
     </div>
-  </section>
+  </div>
+</section>
 {% endif %}
 {%- endmacro %}
