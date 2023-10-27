@@ -384,6 +384,13 @@ STATICFILES_FINDERS = (
 
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
+# Set the TRUSTED_PROXY_COUNT to the number of trusted proxies (load balancers,
+# CDN's, etc.) in place prior to the Django instance or Kubernetes service. Each
+# of the proxies is assumed to append its IP to the "X-Forwarded-For" HTTP header
+# after the real client IP. The real client IP can be preceded by untrusted IPs,
+# so "X-Forwarded-For: untrusted-client-ip, ..., real-client-ip, proxy-ip, ...".
+TRUSTED_PROXY_COUNT = config("TRUSTED_PROXY_COUNT", cast=int, default=1)
+
 
 def immutable_file_test(path, url):
     return re.match(r"^.+\.[0-9a-f]{16}\..+$", url)
@@ -462,7 +469,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "commonware.request.middleware.SetRemoteAddrFromForwardedFor",
+    "kitsune.sumo.middleware.SetRemoteAddrFromForwardedFor",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
     # VaryNoCacheMiddleware must be above LocaleMiddleware
     # so that it can see the response has a vary on accept-language.

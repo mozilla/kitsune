@@ -1,3 +1,4 @@
+from django.core.exceptions import MiddlewareNotUsed
 from django.http import HttpResponse, HttpResponsePermanentRedirect
 from django.test import override_settings
 from django.test.client import RequestFactory
@@ -6,6 +7,7 @@ from kitsune.sumo.middleware import (
     CacheHeadersMiddleware,
     EnforceHostIPMiddleware,
     PlusToSpaceMiddleware,
+    SetRemoteAddrFromForwardedFor,
 )
 from kitsune.sumo.tests import TestCase
 
@@ -162,3 +164,33 @@ class PlusToSpaceTestCase(TestCase):
         request.META["QUERY_STRING"] = "s=%E3%82%A2"
         response = self.ptsm.process_request(request)
         self.assertEqual("/ja/pa%20th?s=%E3%82%A2", response.headers["location"])
+
+
+class SetRemoteAddrFromForwardedForMiddlewareTestCase(TestCase):
+    def test_when_no_trusted_proxies(self):
+        with self.settings(TRUSTED_PROXY_COUNT=0), self.assertRaises(MiddlewareNotUsed):
+            SetRemoteAddrFromForwardedFor(lambda *args, **kwargs: HttpResponse())
+
+    def test_when_one_or_more_trusted_proxies(self):
+        rf = RequestFactory()
+        mw = SetRemoteAddrFromForwardedFor(lambda *args, **kwargs: HttpResponse())
+        for proxy_count, forwarded_for, expected in [
+            (1, " ", "127.0.0.1"),
+            (1, "1.1.1.1", "127.0.0.1"),
+            (1, "684D:1:2:3:4:55:6:7", "127.0.0.1"),
+            (1, "1.1.1.1, 2.2.2.2", "1.1.1.1"),
+            (1, "684D:1:2:3:4:55:6:7, 2001:DB8::FF00:42:8329", "684d:1:2:3:4:55:6:7"),
+            (1, "3.3.3.3, 2001:DB8::FF00:42:8329, 684D:1:2:3:4:55:6:7", "2001:db8::ff00:42:8329"),
+            (1, " yädâ , yädâ.ÿådá.😜.🤪 , yädâ", "127.0.0.1"),
+            (1, " yädâ , yädâ, ,1.1.1.1, 2.2.2.2", "1.1.1.1"),
+            (2, "3.3.3.3", "127.0.0.1"),
+            (2, "2.2.2.2,  3.3.3.3,  4.4.4.4", "2.2.2.2"),
+            (2, "3.3.3.3, 4.4.4.4,5.5.5.5", "3.3.3.3"),
+            (2, "999.255.255.1, 4.4.4.4,5.5.5.5", "127.0.0.1"),
+        ]:
+            with self.settings(TRUSTED_PROXY_COUNT=proxy_count), self.subTest(
+                f"{proxy_count} with {forwarded_for}"
+            ):
+                request = rf.get("/", HTTP_X_FORWARDED_FOR=forwarded_for)
+                mw(request)
+                self.assertEqual(request.META["REMOTE_ADDR"], expected)
