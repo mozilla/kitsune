@@ -101,8 +101,8 @@ class ZendeskClient(object):
                 ]
             )
         ticket = Ticket(
-            subject=ticket_fields.get("subject"),
-            comment={"body": ticket_fields.get("description")},
+            subject=ticket_fields.get("subject") or ticket_fields.get("category"),
+            comment={"body": ticket_fields.get("description") or ticket_fields.get("category")},
             ticket_form_id=settings.ZENDESK_TICKET_FORM_ID,
             custom_fields=custom_fields,
         )
