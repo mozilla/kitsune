@@ -58,7 +58,7 @@ class ZendeskClient(object):
 
     def update_user(self, user):
         """Given a Django user, update a user in Zendesk."""
-        zendesk_user = self._user_to_zendesk_user(user, include_email=False)
+        zendesk_user = self._user_to_zendesk_user(user, email=user.email)
         zendesk_user = self.client.users.update(zendesk_user)
         return zendesk_user
 
