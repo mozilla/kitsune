@@ -42,7 +42,9 @@ class ZendeskForm(forms.Form):
     required_css_class = "required"
 
     product = forms.CharField(disabled=True, widget=forms.HiddenInput)
-    email = forms.EmailField(label=_lazy("Contact Email"), required=True, widget=forms.HiddenInput)
+    email = forms.EmailField(
+        label=_lazy("Contact e-mail"), required=True, widget=forms.HiddenInput
+    )
     category = forms.ChoiceField(
         label=_lazy("What do you need help with?"), required=True, choices=CATEGORY_CHOICES
     )
