@@ -80,7 +80,11 @@ describe("reminder-dialog custom element", () => {
     windowOpenSpy.restore();
   });
 
-  it("selector should allow the user to add an event to Microsoft Outlook", () => {
+  /**
+   * This test is disabled until we can sort out issues with how Outlook.com
+   * deeplinking works.
+   */
+  it.skip("selector should allow the user to add an event to Microsoft Outlook", () => {
     let windowOpenSpy = sandbox.spy(window, "open");
 
     let selector = dialog.shadow.querySelector("#choose-calendar");
