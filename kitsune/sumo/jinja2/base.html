@@ -254,7 +254,9 @@
         <section class="mzp-c-footer-col">
           <h5 class="mzp-c-footer-heading">{{ _('Mozilla Account') }}</h5>
           <ul class="mzp-c-footer-list">
-            <li><a rel="nofollow" href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
+            {% if not request.user.is_authenticated %}
+              <li><a rel="nofollow" href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
+            {% endif %}
             <li><a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account' )}}">{{ _('What is it?') }}</a></li>
             <li><a href="https://accounts.firefox.com/reset_password">{{ _('Reset Password') }}</a></li>
             <li><a href="{{ url('wiki.document', 'switching-devices') }}">{{ _('Sync My Data') }}</a></li>
