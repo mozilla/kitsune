@@ -1143,7 +1143,7 @@ ZENDESK_OS_FIELD_ID = config("ZENDESK_OS_FIELD_ID", default="360018604871", cast
 ZENDESK_COUNTRY_FIELD_ID = config("ZENDESK_COUNTRY_FIELD_ID", default="360026463511", cast=int)
 
 # Products that allow un-authenticated users to submit support requests
-LOGIN_EXCEPTIONS = ["mozilla-account"]
+LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
 
 # Django CSP configuration
 CSP_INCLUDE_NONCE_IN = ["script-src"]
