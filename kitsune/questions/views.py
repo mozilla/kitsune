@@ -12,18 +12,14 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
-from django.http import (
-    Http404,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseForbidden,
-    HttpResponseRedirect,
-)
+from django.http import (Http404, HttpResponse, HttpResponseBadRequest,
+                         HttpResponseForbidden, HttpResponseRedirect)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
-from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django.views.decorators.http import (require_GET, require_http_methods,
+                                          require_POST)
 from django_user_agents.utils import get_user_agent
 from sentry_sdk import capture_exception
 from taggit.models import Tag
@@ -35,21 +31,21 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.feeds import AnswersFeed, QuestionsFeed, TaggedQuestionsFeed
-from kitsune.questions.forms import (
-    FREQUENCY_CHOICES,
-    AnswerForm,
-    EditQuestionForm,
-    NewQuestionForm,
-    WatchQuestionForm,
-)
-from kitsune.questions.models import Answer, AnswerVote, Question, QuestionLocale, QuestionVote
-from kitsune.questions.utils import get_featured_articles, get_mobile_product_from_ua
+from kitsune.questions.feeds import (AnswersFeed, QuestionsFeed,
+                                     TaggedQuestionsFeed)
+from kitsune.questions.forms import (FREQUENCY_CHOICES, AnswerForm,
+                                     EditQuestionForm, NewQuestionForm,
+                                     WatchQuestionForm)
+from kitsune.questions.models import (Answer, AnswerVote, Question,
+                                      QuestionLocale, QuestionVote)
+from kitsune.questions.utils import (get_featured_articles,
+                                     get_mobile_product_from_ua)
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import build_paged_url, is_ratelimited, paginate, simple_paginate
+from kitsune.sumo.utils import (build_paged_url, is_ratelimited, paginate,
+                                simple_paginate)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.tidings.events import ActivationRequestFailed
 from kitsune.tidings.models import Watch
@@ -645,6 +641,8 @@ def aaq_step3(request, product_key, category_key=None):
             ),
         ]
     )
+
+    is_loginless = is_loginless or request.path == reverse("questions.aaq_step3", args=["mozilla-account"])
 
     if not is_loginless and not request.user.is_authenticated:
         return redirect_to_login(next=request.path, login_url=reverse("users.login"))
