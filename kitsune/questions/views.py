@@ -635,7 +635,16 @@ def aaq_step3(request, product_key, category_key=None):
 
     # Since removing the @login_required decorator for MA form
     # need to catch unauthenticated, non-MA users here """
-    is_loginless = product_key in settings.LOGIN_EXCEPTIONS
+    loginless_endpoints = settings.MOZILLA_ACCOUNT_ARTICLES + [reverse("users.auth")]
+    is_loginless = all(
+        [
+            product_key in settings.LOGIN_EXCEPTIONS,
+            any(
+                endpoint in request.META.get("HTTP_REFERER", "")
+                for endpoint in loginless_endpoints
+            ),
+        ]
+    )
 
     if not is_loginless and not request.user.is_authenticated:
         return redirect_to_login(next=request.path, login_url=reverse("users.login"))
