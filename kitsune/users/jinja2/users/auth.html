@@ -5,12 +5,22 @@
 {% set title = _('Log In / Sign up') %}
 {% set classes = 'login register contributor light-grey-bg' if contributor else 'login register light-grey-bg' %}
 
+
 {% block breadcrumbs %}
 {% endblock %}
 
 
 {% block contentwrap %}
-
+<div id="mozaccount-banner" class="mzp-c-notification-bar mzp-t-gradient">
+  <button class="mzp-c-notification-bar-button close-button" type="button"></button>
+  <p>
+    {{ _(
+      'Firefox accounts is now Mozilla accounts.'
+      "You'll still sign in with the same username and password,"
+      ' and there are no other changes to the products that you use. '
+      '<a href="{{ url="("wiki.document", "firefox-accounts-renamed-mozilla-accounts") }}">Learn More</a>' ) }}
+  </p>
+</div>
 {% set aaq_context = request.session.get('aaq_context') %}
 {% if aaq_context and aaq_context.key %}
 <section class="sumo-page-section question-masthead shade-bg">
@@ -19,6 +29,7 @@
   </div>
 </section>
 {% endif %}
+
 <section class="sumo-auth--wrap">
   <div class="mzp-l-content">
     <div class="card feature-padding elevation-03">
