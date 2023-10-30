@@ -92,7 +92,7 @@ we can compute the edit-title URL.
               <div class="info card shade-bg highlight mb">
               {% if is_loginless and not user.is_authenticated %}
                 {% trans %}
-                  Can't sign in to your account and need help? 
+                  Can't sign in to your account and need help?
                   You've found the right place. Complete the form below
                   to contact our support staff.
                 {% endtrans %}
@@ -136,7 +136,7 @@ we can compute the edit-title URL.
                       {{ troubleshooting_instructions(field) }}
                     {% elif field.name == 'description' and is_loginless %}
                       <label for="{{ field.id_for_label }}">
-                        <span class="mzp-c-fieldnote">
+                        <span class="fieldnote">
                           {{ _(
                           "Include details such as your account e-mail or specifics about"
                           " your sign-in issue to help us get you back into your account quicker."
