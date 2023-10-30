@@ -22,7 +22,7 @@ export class SetupDeviceStep extends BaseFormStep {
         <div id="setup-device-root">
           <h3>${gettext("Download Firefox on your new device")}</h3>
           <ul>
-            <li>${gettext("To finish the back-up, you’ll need to install Firefox and sign in to your account. Find it in your app store or send a download link to your email.")}</li>
+            <li>${gettext("Send this link to your email, or download it directly from the Firefox website. To finish, you'll need to install Firefox and sign in to your account.")}</li>
           </ul>
           <div class="email-calendar-wrapper">
             <form id="email-reminder-form" action="https://basket.mozilla.org/news/subscribe/" method="POST" novalidate="">
