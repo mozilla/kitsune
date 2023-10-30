@@ -1,3 +1,4 @@
+import trackEvent from "sumo/js/analytics";
 import reminderDialogStylesURL from "../scss/reminder-dialog.styles.scss";
 import closeIconURL from "sumo/img/close.svg";
 import successIconUrl from "sumo/img/success.svg";
@@ -95,6 +96,14 @@ export class ReminderDialog extends HTMLDialogElement {
 
     let createEventButton = this.#shadow.querySelector("#create-event");
     createEventButton.addEventListener("click", this);
+
+    this.addEventListener("close", e => {
+      trackEvent(
+        "device-migration-wizard",
+        "close",
+        "reminder-dialog"
+      );
+    })
   }
 
   handleEvent(event) {
@@ -293,6 +302,13 @@ END:VCALENDAR
   }
 
   #createEvent(calendarType) {
+    trackEvent(
+      "device-migration-wizard",
+      "create",
+      "create-calendar-event",
+      calendarType
+    );
+
     switch (calendarType) {
       case "gcal": {
         this.#openGCalTab();
