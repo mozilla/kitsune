@@ -639,7 +639,9 @@ def aaq_step3(request, product_key, category_key=None):
 
     referer = request.META.get("HTTP_REFERER", "")
     skip_auth = is_loginless and any(
-        uri in referer for uri in settings.MOZILLA_ACCOUNT_ARTICLES + [reverse("users.auth")]
+        uri in referer
+        for uri in settings.MOZILLA_ACCOUNT_ARTICLES
+        + [reverse("users.auth"), reverse("questions.aaq_step3", args=[product_key])]
     )
 
     if not (skip_auth or request.user.is_authenticated):
