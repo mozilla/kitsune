@@ -646,6 +646,10 @@ def aaq_step3(request, product_key, category_key=None):
         ]
     )
 
+    is_loginless = is_loginless or request.path == reverse(
+        "questions.aaq_step3", args=["mozilla-account"]
+    )
+
     if not is_loginless and not request.user.is_authenticated:
         return redirect_to_login(next=request.path, login_url=reverse("users.login"))
 
