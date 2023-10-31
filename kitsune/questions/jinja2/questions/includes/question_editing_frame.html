@@ -191,7 +191,7 @@ we can compute the edit-title URL.
               <div class="sumo-button-wrap aaq-form-buttons reverse-on-desktop align-right">
                 <button type="submit" class="sumo-button primary-button" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
                 {% block more_submit_buttons %}
-                <a class="sumo-button secondary-button push-right" href="{{ url('questions.aaq_step2', current_product.key) }}" class="cancel">{{ _('Cancel') }}</a>
+                <a class="sumo-button secondary-button push-right" href="{{ cancel_url }}" class="cancel">{{ _('Cancel') }}</a>
                 {% endblock %}
               </div>
             </form>
