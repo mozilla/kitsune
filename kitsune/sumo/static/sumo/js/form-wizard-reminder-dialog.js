@@ -40,7 +40,6 @@ export class ReminderDialog extends HTMLDialogElement {
             <div class="hbox">
               <select id="choose-calendar">
                 <option value="gcal">Google Calendar</option>
-                <option value="outlook">Outlook.com</option>
                 <option value="ics">${gettext("ICS file")}</option>
               </select>
               <button id="create-event" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="create-calendar-event">${gettext("Save")}</button>
