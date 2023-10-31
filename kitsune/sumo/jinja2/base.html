@@ -257,7 +257,7 @@
             {% if not request.user.is_authenticated %}
               <li><a rel="nofollow" href="{{ url('users.auth') }}">{{ _('Sign In/Up') }}</a></li>
             {% endif %}
-            <li><a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account' )}}">{{ _('What is it?') }}</a></li>
+            <li><a href="{{ url('wiki.document', 'access-mozilla-services-firefox-account' )}}">{{ _('What Is It?') }}</a></li>
             <li><a href="https://accounts.firefox.com/reset_password">{{ _('Reset Password') }}</a></li>
             <li><a href="{{ url('wiki.document', 'switching-devices') }}">{{ _('Sync Your Data') }}</a></li>
             <li><a href="{{ url('products.product', 'mozilla-account')}}">{{ _('Get Help') }}</a></li>
