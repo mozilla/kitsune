@@ -1146,7 +1146,7 @@ ZENDESK_COUNTRY_FIELD_ID = config("ZENDESK_COUNTRY_FIELD_ID", default="360026463
 LOGIN_EXCEPTIONS = frozenset(["mozilla-account"])
 
 # Django CSP configuration
-CSP_INCLUDE_NONCE_IN = ["script-src"]
+CSP_INCLUDE_NONCE_IN = ["script-src", "style-src"]
 
 CSP_DEFAULT_SRC = ("'none'",)
 

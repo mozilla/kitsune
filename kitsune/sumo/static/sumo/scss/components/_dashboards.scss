@@ -1,0 +1,8 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.absolute-graph {
+    display: block;
+    background-color: p.$color-green-60;
+    height: 1em;
+}
