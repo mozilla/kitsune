@@ -120,7 +120,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         messages.success(
             self.request,
             _(
-                "<strong>Welcome!</strong> You are now signed in using Mozilla Accounts. "
+                "<strong>Welcome!</strong> You are now signed in using your Mozilla account. "
                 + "{a_profile}Edit your profile.{a_close}<br>"
                 + "Already have a different Mozilla Support Account? "
                 + "{a_more}Read more.{a_close}"
