@@ -76,6 +76,7 @@ describe("reminder-dialog custom element", () => {
     expect(params.get("dates")).to.equal("20231015/20231015");
     expect(params.get("text")).to.not.be.empty;
     expect(params.get("details")).to.not.be.empty;
+    expect(params.get("details").includes("https://mzl.la/newdevice-reminder")).to.be.true;
 
     windowOpenSpy.restore();
   });
