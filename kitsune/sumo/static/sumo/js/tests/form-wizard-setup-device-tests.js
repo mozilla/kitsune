@@ -74,6 +74,23 @@ describe("setup-device-step custom element", () => {
       });
     });
 
+    it("should have the form send the document language if defined", () => {
+      const TEST_LANG = "test-lang";
+      document.documentElement.setAttribute("lang", TEST_LANG);
+
+      // Setting the language from the documentElement occurs at
+      // DOM binding time, so we remove and re-add the step to the
+      // DOM to kick it off.
+      step.remove();
+      document.body.appendChild(step);
+      assertFormElements(form, {
+        newsletters: { type: "hidden", value: "download-firefox-desktop-migration", disabled: false },
+        "source-url": { type: "hidden", value: window.location.href, disabled: false },
+        lang: { type: "hidden", value: TEST_LANG, disabled: false },
+        email: { type: "email", value: "", disabled: false },
+      });
+    });
+
     it("should display an error message if an incomplete email address is supplied", () => {
       expect([...emailErrorMessage.classList]).to.not.include("visible");
 
