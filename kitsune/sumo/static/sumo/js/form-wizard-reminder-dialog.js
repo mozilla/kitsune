@@ -4,6 +4,7 @@ import closeIconURL from "sumo/img/close.svg";
 import successIconUrl from "sumo/img/success.svg";
 
 const NEW_DEVICE_DOWNLOAD_URL = "https://mzl.la/newdevice";
+const NEW_DEVICE_DOWNLOAD_REMINDER_URL = "https://mzl.la/newdevice-reminder";
 
 const CALENDAR_FORMATS = Object.freeze({
   ICAL: 1,
@@ -250,9 +251,8 @@ export class ReminderDialog extends HTMLDialogElement {
     let { dtStart, dtEnd } = this.#generateDTStartDTEnd(CALENDAR_FORMATS.ICAL);
     let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    // mozilla/sumo#1503: The NEW_DEVICE_DOWNLOAD_URL should be replaced with
-    // a link that attributes the download to an event from an ICS file.
-    let { summary, description } = this.#generateEventSummaryAndDescription(NEW_DEVICE_DOWNLOAD_URL, CALENDAR_FORMATS.ICAL);
+    let linkURL = this.#generateCalendarLink(CALENDAR_FORMATS.ICAL);
+    let { summary, description } = this.#generateEventSummaryAndDescription(linkURL, CALENDAR_FORMATS.ICAL);
 
     // The random value here is not meant to be cryptographically
     // secure. The randomValue is used to create a unique UID for
@@ -284,6 +284,33 @@ END:VCALENDAR
     }, { once: true })
 
     anchor.click();
+  }
+
+  #generateCalendarLink(format) {
+    let params = new URLSearchParams();
+    params.set("utm_medium", "short-link-calendar");
+
+    let calendarType;
+
+    switch (format) {
+      case CALENDAR_FORMATS.OUTLOOK: {
+        calendarType = "outlook";
+        break;
+      }
+      case CALENDAR_FORMATS.ICAL:
+        calendarType = "ical"
+        break;
+      case CALENDAR_FORMATS.GCAL: {
+        calendarType = "gcal";
+        break;
+      }
+      default: {
+        throw new Error("#generateCalendarLink wasn't given a format for the link.");
+      }
+    }
+    params.set("utm_content", calendarType);
+
+    return `${NEW_DEVICE_DOWNLOAD_REMINDER_URL}?${params}`;
   }
 
   /**
@@ -328,9 +355,8 @@ END:VCALENDAR
   #openGCalTab() {
     const GCAL_ENDPOINT = "https://calendar.google.com/calendar/render?";
 
-    // mozilla/sumo#1503: The NEW_DEVICE_DOWNLOAD_URL should be replaced with
-    // a link that attributes the download to an event from Google Calendar.
-    let { summary, description } = this.#generateEventSummaryAndDescription(NEW_DEVICE_DOWNLOAD_URL, CALENDAR_FORMATS.GCAL);
+    let linkURL = this.#generateCalendarLink(CALENDAR_FORMATS.GCAL);
+    let { summary, description } = this.#generateEventSummaryAndDescription(linkURL, CALENDAR_FORMATS.GCAL);
     let { dtStart, dtEnd } = this.#generateDTStartDTEnd(CALENDAR_FORMATS.GCAL);
     let params = new URLSearchParams();
     params.set("action", "TEMPLATE");
@@ -343,9 +369,8 @@ END:VCALENDAR
   #openOutlookTab() {
     const OUTLOOK_ENDPOINT = "https://outlook.live.com/calendar/0/deeplink/compose/?";
 
-    // mozilla/sumo#1503: The NEW_DEVICE_DOWNLOAD_URL should be replaced with
-    // a link that attributes the download to an event from Microsoft Outlook.
-    let { summary, description } = this.#generateEventSummaryAndDescription(NEW_DEVICE_DOWNLOAD_URL, CALENDAR_FORMATS.OUTLOOK);
+    let linkURL = this.#generateCalendarLink(CALENDAR_FORMATS.OUTLOOK);
+    let { summary, description } = this.#generateEventSummaryAndDescription(linkURL, CALENDAR_FORMATS.OUTLOOK);
     let { dtStart, dtEnd } = this.#generateDTStartDTEnd(CALENDAR_FORMATS.OUTLOOK);
     let params = new URLSearchParams();
 
