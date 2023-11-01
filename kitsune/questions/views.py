@@ -63,7 +63,6 @@ from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
 
-
 log = logging.getLogger("k.questions")
 
 
@@ -531,7 +530,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
         context["cancel_url"] = get_next_url(request) or (
             reverse("products.product", args=[product.slug])
             if is_loginless
-            else reverse("questions.aaq_step2", args=[product.slug])
+            else reverse("questions.aaq_step2", args=[product_key])
         )
 
         # Check if the selected product has a forum in the user's locale
