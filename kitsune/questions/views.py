@@ -49,13 +49,20 @@ from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.i18n import split_into_language_and_path
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import build_paged_url, is_ratelimited, paginate, simple_paginate
+from kitsune.sumo.utils import (
+    build_paged_url,
+    get_next_url,
+    is_ratelimited,
+    paginate,
+    simple_paginate,
+)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.tidings.events import ActivationRequestFailed
 from kitsune.tidings.models import Watch
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import topics_for
+
 
 log = logging.getLogger("k.questions")
 
@@ -521,6 +528,12 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
         context["topics"] = topics_for(product, parent=None)
 
     elif step == 3:
+        context["cancel_url"] = get_next_url(request) or (
+            reverse("products.product", args=[product.slug])
+            if is_loginless
+            else reverse("questions.aaq_step2", args=[product.slug])
+        )
+
         # Check if the selected product has a forum in the user's locale
         if not has_public_forum:
             locale, path = split_into_language_and_path(request.path_info)
