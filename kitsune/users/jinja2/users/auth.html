@@ -1,6 +1,5 @@
 {% extends "users/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "questions/includes/aaq_macros.html" import progress_bar %}
 
 {% set title = _('Log In / Sign up') %}
 {% set classes = 'login register contributor light-grey-bg' if contributor else 'login register light-grey-bg' %}
@@ -21,14 +20,6 @@
       <a href="{{ url('wiki.document', 'firefox-accounts-renamed-mozilla-accounts') }}" target="_blank">{{ _('Learn More') }}</a>
   </p>
 </div>
-{% set aaq_context = request.session.get('aaq_context') %}
-{% if aaq_context and aaq_context.key %}
-<section class="sumo-page-section question-masthead shade-bg">
-  <div class="mzp-l-content">
-    {{ progress_bar(3, product_key=aaq_context.key) }}
-  </div>
-</section>
-{% endif %}
 
 <section class="sumo-auth--wrap">
   <div class="mzp-l-content">
