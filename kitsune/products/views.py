@@ -1,7 +1,7 @@
 import json
 
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
@@ -43,10 +43,8 @@ def product_landing(request, slug):
             topic_list.append({"id": t.id, "title": t.title})
         return HttpResponse(json.dumps({"topics": topic_list}), content_type="application/json")
 
-    show_product_banner = False
     if slug == "firefox":
         latest_version = product_details.firefox_versions["LATEST_FIREFOX_VERSION"]
-        show_product_banner = True
     else:
         versions = product.versions.filter(default=True)
         if versions:
@@ -65,7 +63,6 @@ def product_landing(request, slug):
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
-            "show_product_banner": show_product_banner,
         },
     )
 

@@ -35,17 +35,6 @@
   </div>
 {% endmacro %}
 
-{% macro survey_cta_banner() %}
-  {{ sumo_banner(
-    id="cta_survey_banner",
-    text=_("We need your input! Help us enhance your Mozilla support experience and shape the future of our site by joining our user research study."),
-    image=webpack_static("sumo/img/FF_Master__icon.svg"),
-    button_text=_("Get started"),
-    button_link="https://s.alchemer-ca.com/s3/cd2a121262f2",
-    modifier_class="hide-on-mobile"
-  ) }}
-{% endmacro %}
-
 {% macro scam_banner() %}
 <div class="sumo-banner sumo-banner-warning" id="id_scam_alert" data-close-initial="hidden">
   <div class="content">

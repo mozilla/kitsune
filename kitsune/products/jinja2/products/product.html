@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles, survey_cta_banner %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
 {% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set scripts = ('products',) %}
@@ -119,9 +119,6 @@
 {% block contentwrap %}
 <div id="main-content">
   <div class="mzp-l-content sumo-page-section--inner">
-    {% if show_product_banner and waffle.flag("product-cta-survey-banner") %}
-      {{ survey_cta_banner() }}
-    {% endif %}
     <div class="sumo-page-subheader">
       <div class="sumo-page-subheader--text">
         <div class="text-center-to-left-on-large">
