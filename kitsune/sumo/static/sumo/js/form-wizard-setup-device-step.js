@@ -80,6 +80,16 @@ export class SetupDeviceStep extends BaseFormStep {
     this.#emailEl.addEventListener("input", this);
     this.#submitButton = this.shadowRoot.getElementById("submit");
 
+    let lang = document.documentElement.getAttribute("lang");
+    if (lang) {
+      // If we found the document language, update the one that we'll
+      // request the email in. This defaults to navigator.language as
+      // a safe fallback in the event that lang isn't defined for some
+      // reason.
+      let langEl = this.#formEl.querySelector("input[name=lang]");
+      langEl.value = lang;
+    }
+
     // If the user went through Step 1 and gave us an email address,
     // it got stored in session storage, so we can prefill the email
     // field here.
