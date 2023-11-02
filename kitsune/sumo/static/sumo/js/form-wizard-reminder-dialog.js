@@ -1,3 +1,4 @@
+import trackEvent from "sumo/js/analytics";
 import reminderDialogStylesURL from "../scss/reminder-dialog.styles.scss";
 import closeIconURL from "sumo/img/close.svg";
 import successIconUrl from "sumo/img/success.svg";
@@ -35,20 +36,19 @@ export class ReminderDialog extends HTMLDialogElement {
             <button id="close" class="mzp-c-button mzp-t-neutral" aria-label="${gettext("Close")}" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="close-reminder-dialog"><img src="${closeIconURL}" aria-hidden="true"/></button>
           </div>
           <div class="vbox">
-            <div id="directions">${gettext("Save the download link to your calendar and finish the download whenever you’re ready.")}</div>
+            <div id="directions">${gettext("Save the download link to your calendar and install Firefox whenever you’re ready.")}</div>
             <label for="choose-calendar">${gettext("Choose calendar")}</label>
             <div class="hbox">
               <select id="choose-calendar">
                 <option value="gcal">Google Calendar</option>
-                <option value="outlook">Outlook.com</option>
-                <option value="ics">${gettext("Other calendar")}</option>
+                <option value="ics">${gettext("ICS file")}</option>
               </select>
               <button id="create-event" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="create-calendar-event">${gettext("Save")}</button>
             </div>
             <hr>
 
             <div class="hbox">
-              <span id="copy-link-message">${gettext("You can also access the link directly")}</span>
+              <span id="copy-link-message">${gettext("Copy download link directly")}</span>
               <div id="copy-link-container" class="hbox">
                 <button id="copy-link" class="mzp-c-button mzp-t-product mzp-t-secondary mzp-t-md" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="copy-link-to-clipboard-button">${gettext("Copy link")}</button>
                 <span id="copied-message"><img src="${successIconUrl}" aria-hidden="true">${gettext("Copied!")}</span>
@@ -96,6 +96,14 @@ export class ReminderDialog extends HTMLDialogElement {
 
     let createEventButton = this.#shadow.querySelector("#create-event");
     createEventButton.addEventListener("click", this);
+
+    this.addEventListener("close", e => {
+      trackEvent(
+        "device-migration-wizard",
+        "close",
+        "reminder-dialog"
+      );
+    })
   }
 
   handleEvent(event) {
@@ -116,18 +124,6 @@ export class ReminderDialog extends HTMLDialogElement {
   }
 
   /**
-   * This is a thin wrapper around window.location so that our automated
-   * tests can easily stub this out and override it (since the test
-   * framework we use gets upset when writing to window.location).
-   *
-   * @param {string} url
-   *   The URL to send the browser to.
-   */
-  redirect(url) {
-    window.location.href = url;
-  }
-
-  /**
    * Creates a summary and description string appropriate for a calendar
    * event for downloading and installing Firefox on a new device. This
    * will be translated to the current user's locale.
@@ -143,11 +139,20 @@ export class ReminderDialog extends HTMLDialogElement {
    *   The description for the event, including the linkURL.
    */
   #generateEventSummaryAndDescription(linkURL, format) {
-    let summary = gettext("Reminder to complete your Firefox backup");
-    let description = interpolate(
-      gettext("Your Firefox data has been successfully backed up.\n\nFollow this link to start your download: %s"),
-      [linkURL]
-    );
+    let summary = gettext("Download and install Firefox on your new device");
+    let description;
+
+    if (format == CALENDAR_FORMATS.ICAL) {
+      description = interpolate(
+        gettext(`Your Firefox data is successfully backed up. To get started on your new device, download Firefox and sign in to your account with the link below.\n\n%s`),
+        [linkURL]
+      );
+    } else {
+      description = interpolate(
+        gettext(`Your Firefox data is successfully backed up. To get started on your new device, download Firefox and sign in to your account with the link below.\n\n<a href="%s">Download Firefox</a>`),
+        [linkURL]
+      );
+    }
 
     if (format == CALENDAR_FORMATS.ICAL) {
       description = description.replace(/\n/g, "\\n");
@@ -269,7 +274,16 @@ END:VCALENDAR
 `;
     let blob = new Blob([icsFile], {type: "text/calendar;charset=utf-8;"});
     let blobURL = window.URL.createObjectURL(blob);
-    return blobURL;
+    let anchor = document.createElement("a");
+    anchor.href = blobURL;
+    anchor.setAttribute("download", gettext("FirefoxCalendarEvent.ics"));
+
+    this.shadow.appendChild(anchor);
+    anchor.addEventListener("click", e => {
+      anchor.remove();
+    }, { once: true })
+
+    anchor.click();
   }
 
   /**
@@ -288,6 +302,13 @@ END:VCALENDAR
   }
 
   #createEvent(calendarType) {
+    trackEvent(
+      "device-migration-wizard",
+      "create",
+      "create-calendar-event",
+      calendarType
+    );
+
     switch (calendarType) {
       case "gcal": {
         this.#openGCalTab();
@@ -298,8 +319,7 @@ END:VCALENDAR
         break;
       }
       case "ics": {
-        let icsDownload = this.#generateICSFileDownload();
-        this.redirect(icsDownload);
+        this.#generateICSFileDownload();
         break;
       }
     }

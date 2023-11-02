@@ -80,7 +80,11 @@ describe("reminder-dialog custom element", () => {
     windowOpenSpy.restore();
   });
 
-  it("selector should allow the user to add an event to Microsoft Outlook", () => {
+  /**
+   * This test is disabled until we can sort out issues with how Outlook.com
+   * deeplinking works.
+   */
+  it.skip("selector should allow the user to add an event to Microsoft Outlook", () => {
     let windowOpenSpy = sandbox.spy(window, "open");
 
     let selector = dialog.shadow.querySelector("#choose-calendar");
@@ -103,15 +107,26 @@ describe("reminder-dialog custom element", () => {
     windowOpenSpy.restore();
   });
 
-  it("selector should allow the user to download an .ics file", () => {
-    let redirectStub = sandbox.stub(dialog, "redirect");
+  it("selector should allow the user to download an .ics file", async () => {
+    let anchorClickPromise = new Promise(resolve => {
+      dialog.shadow.addEventListener("click", function onAnchorClick(event) {
+        if (event.target.hasAttribute("download")) {
+          event.preventDefault();
+          event.stopPropagation();
+
+          dialog.shadow.removeEventListener("click", onAnchorClick);
+          resolve(event.target.href);
+        }
+      });
+    });
     let selector = dialog.shadow.querySelector("#choose-calendar");
     selector.value = "ics";
 
     let createButton = dialog.shadow.querySelector("#create-event");
     createButton.click();
-    expect(redirectStub.calledOnce).to.be.true;
-    expect(redirectStub.getCall(0).args[0]).to.equal(TEST_BLOB_URL);
+
+    let href = await anchorClickPromise;
+    expect(href).to.equal(TEST_BLOB_URL);
   });
 
   it("should copy the download link to the clipboard if copy-link is clicked", () => {
