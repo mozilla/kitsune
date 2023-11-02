@@ -1,0 +1,13 @@
+@use '../config' as c;
+@use 'protocol/css/includes/lib' as p;
+
+.absolute-graph {
+    display: block;
+    background-color: p.$color-green-60;
+    height: 1em;
+}
+
+.dashboards td.status:has(.review),
+.dashboards td.status:has(.out-of-date) {
+    background-color: var(--color-warning);
+}
