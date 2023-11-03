@@ -162,6 +162,8 @@ export class SetupDeviceStep extends BaseFormStep {
       "reminder-email"
     );
 
+    this.#submitButton.disabled = true;
+
     let params = new URLSearchParams();
     for (let element of this.#formEl.elements) {
       // Since the button is inside of the <form> element, it'll get included as one
@@ -171,12 +173,11 @@ export class SetupDeviceStep extends BaseFormStep {
       }
     }
 
-
     let response;
     let responseBody;
 
     try {
-      response = await fetch(this.#formEl.action, {
+      response = await window.fetch(this.#formEl.action, {
         method: this.#formEl.method,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -185,7 +186,14 @@ export class SetupDeviceStep extends BaseFormStep {
       });
       responseBody = await response.json();
     } catch (e) {
+      this.#submitButton.disabled = false;
       this.#showError(ERROR_TYPES.OTHER);
+
+      let event = new CustomEvent(
+        "DeviceMigrationWizard:SetupDeviceStep:EmailSubmitted",
+        { bubbles: true }
+      );
+      this.dispatchEvent(event);
       return;
     }
 
@@ -193,7 +201,6 @@ export class SetupDeviceStep extends BaseFormStep {
         response.status < 300 &&
         responseBody.status == "ok") {
       this.#submitButton.toggleAttribute("success", true);
-      this.#submitButton.disabled = true;
       trackEvent(
         "device-migration-wizard",
         "success",
@@ -201,6 +208,7 @@ export class SetupDeviceStep extends BaseFormStep {
       );
     } else {
       this.#showError(ERROR_TYPES.OTHER);
+      this.#submitButton.disabled = false;
 
       if (responseBody.status) {
         trackEvent(
@@ -218,6 +226,12 @@ export class SetupDeviceStep extends BaseFormStep {
         );
       }
     }
+
+    let event = new CustomEvent(
+      "DeviceMigrationWizard:SetupDeviceStep:EmailSubmitted",
+      { bubbles: true }
+    );
+    this.dispatchEvent(event);
   }
 
   #showError(errorType) {

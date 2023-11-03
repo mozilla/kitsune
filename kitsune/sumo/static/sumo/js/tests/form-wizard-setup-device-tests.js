@@ -3,6 +3,8 @@ import sinon from "sinon";
 import { SetupDeviceStep } from "sumo/js/form-wizard-setup-device-step";
 import { ReminderDialog } from "sumo/js/form-wizard-reminder-dialog";
 
+const TEST_EMAIL_ADDRESS = "invalid@invalid.invalid";
+
 function assertFormElements(form, expectedElements) {
   let expectations = Object.assign({}, expectedElements);
 
@@ -56,6 +58,7 @@ describe("setup-device-step custom element", () => {
     let emailField;
     let submitBtn;
     let otherBtn;
+    let sandbox;
 
     beforeEach(() => {
       form = step.shadowRoot.querySelector("form");
@@ -63,7 +66,20 @@ describe("setup-device-step custom element", () => {
       emailField = form.querySelector("input[name=email]");
       submitBtn = form.querySelector("#submit");
       otherBtn = step.shadowRoot.querySelector("#open-reminder-dialog-button");
+
+      sandbox = sinon.createSandbox();
+
+      sandbox.stub(window, "fetch").resolves({
+        json: sandbox.stub().resolves({
+          status: "ok",
+        }),
+        status: 200,
+      });
     });
+
+    afterEach(() => {
+      sandbox.restore();
+    })
 
     it("should have a form that can register for a one-time newsletter", () => {
       assertFormElements(form, {
@@ -107,18 +123,17 @@ describe("setup-device-step custom element", () => {
     it("should allow a valid email address to be submitted", async () => {
       expect([...emailErrorMessage.classList]).to.not.include("visible");
 
-      let preventSubmitListener = new Promise((resolve) => {
+      let submitListener = new Promise((resolve) => {
         form.addEventListener(
           "submit",
           (e) => {
-            e.preventDefault();
             resolve();
           },
           { once: true }
         );
       });
 
-      emailField.value = "example@example.com";
+      emailField.value = TEST_EMAIL_ADDRESS;
       emailField.dispatchEvent(new CustomEvent("input", { bubbles: true }));
       emailField.dispatchEvent(new CustomEvent("blur", { bubbles: true }));
       expect(submitBtn.disabled).to.be.false;
@@ -126,7 +141,79 @@ describe("setup-device-step custom element", () => {
       expect(emailField.validity.valid).to.be.true;
       expect([...emailErrorMessage.classList]).to.not.include("visible");
       submitBtn.click();
-      await preventSubmitListener;
+      expect(submitBtn.disabled).to.be.true;
+      await submitListener;
+      expect(window.fetch.calledOnce).to.be.true;
+    });
+
+    it("should show an error message on a form submission error", async () => {
+      expect([...emailErrorMessage.classList]).to.not.include("visible");
+
+      let submitListener = new Promise((resolve) => {
+        step.addEventListener(
+          "DeviceMigrationWizard:SetupDeviceStep:EmailSubmitted",
+          (e) => {
+            resolve();
+          },
+          { once: true }
+        );
+      });
+
+      emailField.value = TEST_EMAIL_ADDRESS;
+      emailField.dispatchEvent(new CustomEvent("input", { bubbles: true }));
+      emailField.dispatchEvent(new CustomEvent("blur", { bubbles: true }));
+      expect(submitBtn.disabled).to.be.false;
+
+      expect(emailField.validity.valid).to.be.true;
+      expect([...emailErrorMessage.classList]).to.not.include("visible");
+
+      window.fetch.resolves({
+        json: sandbox.stub().throws(),
+        status: 500,
+      });
+
+      submitBtn.click();
+      expect(submitBtn.disabled).to.be.true;
+      await submitListener;
+      expect(window.fetch.calledOnce).to.be.true;
+      expect(submitBtn.disabled).to.be.false;
+      expect([...emailErrorMessage.classList]).to.include("visible");
+    });
+
+    it("should show an error message on a Basket error", async () => {
+      expect([...emailErrorMessage.classList]).to.not.include("visible");
+
+      let submitListener = new Promise((resolve) => {
+        step.addEventListener(
+          "DeviceMigrationWizard:SetupDeviceStep:EmailSubmitted",
+          (e) => {
+            resolve();
+          },
+          { once: true }
+        );
+      });
+
+      emailField.value = TEST_EMAIL_ADDRESS;
+      emailField.dispatchEvent(new CustomEvent("input", { bubbles: true }));
+      emailField.dispatchEvent(new CustomEvent("blur", { bubbles: true }));
+      expect(submitBtn.disabled).to.be.false;
+
+      expect(emailField.validity.valid).to.be.true;
+      expect([...emailErrorMessage.classList]).to.not.include("visible");
+
+      window.fetch.resolves({
+        json: sandbox.stub().resolves({
+          status: "not-ok",
+        }),
+        status: 200,
+      });
+
+      submitBtn.click();
+      expect(submitBtn.disabled).to.be.true;
+      await submitListener;
+      expect(window.fetch.calledOnce).to.be.true;
+      expect(submitBtn.disabled).to.be.false;
+      expect([...emailErrorMessage.classList]).to.include("visible");
     });
 
     it("should clear the success state if the email input is modified", async () => {
@@ -136,6 +223,7 @@ describe("setup-device-step custom element", () => {
       emailField.dispatchEvent(new CustomEvent("input", { bubbles: true }));
       emailField.dispatchEvent(new CustomEvent("blur", { bubbles: true }));
       expect(submitBtn.hasAttribute("success")).to.be.false;
+      expect(submitBtn.disabled).to.be.false;
     });
 
     it("should hide the error message if the reminder dialog is opened", async () => {
