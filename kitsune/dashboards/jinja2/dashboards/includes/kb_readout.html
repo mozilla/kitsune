@@ -20,7 +20,7 @@
       {{ number(row.visits) }}
     </td>
     <td>
-      <div class="absolute-graph" style="width: {{ row.percent }}%"></div>
+      <div class="absolute-graph" data-absolute-graph="{{ row.percent }}"></div>
     </td>
     <td class="status">
       {% if row.updated is defined %}
