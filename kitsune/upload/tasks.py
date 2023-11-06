@@ -60,7 +60,7 @@ def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE, pad=F
     file_width, file_height = original_image.size
 
     width, height = _scale_dimensions(file_width, file_height, longest_side)
-    resized_image = original_image.resize((width, height), Image.ANTIALIAS)
+    resized_image = original_image.resize((width, height), Image.LANCZOS)
 
     data = io.BytesIO()
 
