@@ -1,13 +1,182 @@
+/* L10n and Contributor Dashboards */
 @use '../config' as c;
 @use 'protocol/css/includes/lib' as p;
 
-.absolute-graph {
+.dashboards table {
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.dashboards tr:nth-child(even) {
+    background-color: var(--color-shade-bg);
+}
+
+.dashboards td,
+.dashboards th {
+    padding: 8px 4px;
+}
+
+.dashboards td {
+    vertical-align: middle;
+}
+
+.dashboards table.overview small {
+    font-size: 80%;
+    color: #999;
+    white-space: nowrap;
+}
+
+.dashboards div.percent-graph {
+    background-color: #f3f3f3;
+    height: 10px;
+    width: 70px;
+}
+
+.dashboards div.percent-graph div {
+    background-color: #dfdfdf;
+    height: 10px;
+}
+
+.dashboards div.absolute-graph {
     display: block;
     background-color: p.$color-green-60;
     height: 1em;
 }
 
+.dashboards #overview-options,
+.dashboards .table-footer {
+    margin: 0;
+    padding: 87px 12px;
+}
+
+.dashboards #overview-options label {
+    font-weight: bold;
+}
+
+.dashboards .table-footer {
+    font-size: 90%;
+}
+
+.dashboards table.documents .users {
+    font-size: 90%;
+    color: #999;
+}
+
+.dashboards table.overview td:nth-child(2) {
+    text-align: right;
+}
+
+.dashboards table.overview td:nth-child(4) {
+    width: 50%;
+}
+
+.dashboards table.documents td:nth-child(1) {
+    width: 261px;
+}
+
+.dashboards table.documents td:nth-child(2) {
+    padding-right: 6px;
+    text-align: right;
+    width: 110px;
+}
+
+.dashboards table.documents td:nth-child(3),
+.dashboards table.documents th:nth-child(3) {
+    padding-left: 0;
+    width: 160px;
+}
+
+.dashboards table.documents td:nth-child(4),
+.dashboards table.documents th:nth-child(4) {
+    text-align: right;
+    vertical-align: middle;
+    width: 203px;
+}
+
+.dashboards table.busy {
+    opacity: 0.5;
+}
+
+.dashboards ul.readout-modes {
+    float: right;
+}
+
+.dashboards ul.readout-modes,
+.dashboards ul.readout-modes li {
+    display: inline-block;
+}
+
+.dashboards ul.readout-modes li {
+    background: var(--color-marketing-gray-02);
+    border-radius: 5px;
+    cursor: pointer;
+    list-style: none;
+    margin: 10px 1px;
+    padding: 4px 20px;
+}
+
+.dashboards ul.readout-modes li:hover {
+    background: var(--color-marketing-gray-01);
+}
+
+.dashboards ul.readout-modes li.active {
+    background: var(--color-click);
+}
+
+.dashboards ul.readout-modes li.active:hover {
+    background: #4978bc;
+}
+
+.dashboards ul.readout-modes li.active a {
+    color: #fff;
+}
+
+.dashboards-detail h1 {
+    display: inline-block;
+}
+
+.dashboards summary.with-mode-selectors {
+    display: inline;
+}
+
+.dashboards details table {
+    display: block;  /* Makes collapse animation work */
+}
+
+
+/* Status badges */
+
 .dashboards td.status:has(.review),
-.dashboards td.status:has(.out-of-date) {
+.dashboards td.status:has(.out-of-date){
     background-color: var(--color-warning);
+}
+
+.dashboards td.status .update:after {
+    content: '\25C6';
+    color: #f8e687;
+}
+
+.dashboards td.status .out-of-date:after {
+    content: '\25C6';
+    color: orange;
+
+}
+
+.dashboards td.status .untranslated:after {
+    content: '\25B2';
+    color: red;
+
+}
+
+.dashboards td.status .ok:after {
+    content: '\25CF';
+    color: #add575;
+}
+
+.dashboards td a {
+    text-decoration:none
+}
+
+.dashboards td:hover a {
+    text-decoration:underline
 }
