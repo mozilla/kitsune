@@ -85,7 +85,6 @@ google-auth = "^2.16.0"
 graphene-django = "~3.0.0"
 django-guardian = "^2.4.0"
 django-email-bandit = "^2.0"
-zope-interface = "^6.1"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.11"
