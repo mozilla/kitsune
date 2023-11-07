@@ -13,7 +13,7 @@
 
 .dashboards td,
 .dashboards th {
-    padding: 8px 4px;
+    padding: p.$spacing-sm p.$spacing-xs;
 }
 
 .dashboards td {
@@ -29,7 +29,6 @@
 .dashboards div.percent-graph {
     background-color: #f3f3f3;
     height: 10px;
-    width: 70px;
 }
 
 .dashboards div.percent-graph div {
@@ -46,7 +45,7 @@
 .dashboards #overview-options,
 .dashboards .table-footer {
     margin: 0;
-    padding: 87px 12px;
+    padding: p.$spacing-md 0;
 }
 
 .dashboards #overview-options label {
@@ -71,26 +70,26 @@
 }
 
 .dashboards table.documents td:nth-child(1) {
-    width: 261px;
+    width: p.$content-xs;
 }
 
 .dashboards table.documents td:nth-child(2) {
-    padding-right: 6px;
+    padding-right: p.$spacing-xs;
     text-align: right;
-    width: 110px;
+    width: p.$layout-xl;
 }
 
 .dashboards table.documents td:nth-child(3),
 .dashboards table.documents th:nth-child(3) {
     padding-left: 0;
-    width: 160px;
+    width: p.$layout-2xl;
 }
 
 .dashboards table.documents td:nth-child(4),
 .dashboards table.documents th:nth-child(4) {
-    text-align: right;
+    text-align: center;
     vertical-align: middle;
-    width: 203px;
+    width: p.$content-xs;
 }
 
 .dashboards table.busy {
@@ -98,21 +97,19 @@
 }
 
 .dashboards ul.readout-modes {
-    float: right;
+    padding: p.$spacing-xs 0px;
 }
 
-.dashboards ul.readout-modes,
 .dashboards ul.readout-modes li {
     display: inline-block;
-}
-
-.dashboards ul.readout-modes li {
     background: var(--color-marketing-gray-02);
-    border-radius: 5px;
+    border-radius: p.$border-radius-sm;
     cursor: pointer;
     list-style: none;
-    margin: 10px 1px;
-    padding: 4px 20px;
+    margin: p.$spacing-sm p.$spacing-xs;
+    padding: p.$spacing-xs;
+    width: calc(25% - p.$spacing-md);
+    text-align: center;
 }
 
 .dashboards ul.readout-modes li:hover {
