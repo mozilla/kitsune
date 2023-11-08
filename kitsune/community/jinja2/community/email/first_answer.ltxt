@@ -6,12 +6,13 @@ made somebody's day!
 {% endtrans %}
 
 {% trans %}
-Mozilla support is fully powered by our volunteer community that is helping
-hundreds of users everyday. This community is formed by passionate Firefox and
-Thunderbird users who take some of their spare time to help others. We couldn't
-do it without your passion and enthusiasm. Your contribution, as minor as it
-might seem, has tremendous value. Solving one issue in the support forums can
-help up to 1000 users a day!
+Mozilla support is fully powered by our volunteer community that helps
+hundreds of users every day. This community is formed by
+passionate Firefox and Thunderbird users who take some of their
+spare time to help others. We couldn't do it without your passion
+and enthusiasm. Your contribution, as minor as it might seem, has
+tremendous value. Solving one issue in the support forums can help
+up to 1000 users a day!
 {% endtrans %}
 
 ---
@@ -25,7 +26,7 @@ us all hanging out on IRC, on the #sumo channel on irc.mozilla.org.
 {% endtrans %}
 
 * Introductions - https://{{ host }}/forums/contributors
-* IRC - https://www.mibbit.com/?server=irc.mozilla.org&channel=#sumo
+* Matrix - https://chat.mozilla.org/#/room/#SUMO:mozilla.org
 
 {% trans url='https://' + host + '/forums/contributors' %}
 The community forum is at {{ url }} .
@@ -36,11 +37,11 @@ The community forum is at {{ url }} .
 
 {% trans %}
 If you are interested in learning more about how this whole support thing
-works, check out our contributor training. This includes some cool
-troubleshooting info, guidelines, how-to questions, and info about where to
+works, check out our contributor guidelines. This includes some cool
+troubleshooting info, how-to questions, and info about where to
 find more help if stuck.
 {% endtrans %}
-https://{{ host }}/kb/introduction-contributor-quality-training
+https://{{ host }}/kb/how-contribute-support-forum?utm_source=onboardingemail&utm_medium=1intro&utm_term=cqt&utm_campaign=ContribOnboarding
 
 ---
 {{ _('Stay in touch') }}
@@ -53,6 +54,7 @@ Finally, if you want to follow all news related to SUMO, don’t forget about ou
 * {{ _('Official blog') }} - https://blog.mozilla.org/sumo/
 * {{ _('Twitter account') }} - https://twitter.com/sumo_mozilla
 * {{ _('Weekly meetings') }} - https://wiki.mozilla.org/Support/Weekly_Meetings
+* {{ _('Contributor meetings') }} - https://{{ host }}/kb/how-participate-sumo-contributor-meetings
 
 {% trans %}
 Thank you once more. We are looking forward to seeing you more often around
