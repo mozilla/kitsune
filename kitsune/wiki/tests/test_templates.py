@@ -506,11 +506,11 @@ class RevisionTests(TestCase):
         self.assertEqual(d.title, doc("h1.sumo-page-heading").text())
         self.assertEqual(pq(r.content_parsed)("div").text(), doc("#doc-content div").text())
         self.assertEqual(
-            "Created:\n              Jan 1, 2011, 12:00:00\u202fAM",
+            "Created:\n              Jan 1, 2011, 12:00:00 AM",
             doc(".revision-info li")[1].text_content().strip(),
         )
         self.assertEqual(
-            "Reviewed:\n                Jan 2, 2011, 12:00:00\u202fAM",
+            "Reviewed:\n                Jan 2, 2011, 12:00:00 AM",
             doc(".revision-info li")[5].text_content().strip(),
         )
         # is reviewed?
