@@ -140,40 +140,45 @@
     display: block;  /* Makes collapse animation work */
 }
 
-
 /* Status badges */
-
 .dashboards td.status:has(.review),
 .dashboards td.status:has(.out-of-date){
     background-color: var(--color-warning);
 }
 
-.dashboards td.status .update:after {
-    content: '\25C6';
-    color: #f8e687;
+.dashboards td.status {
+    .update:after {
+        content: '\25C6';
+        color: #f8e687;
+    }
+    .out-of-date:after {
+        content: '\25C6';
+        color: orange;
+
+    }
+    .untranslated:after {
+        content: '\25B2';
+        color: red;
+
+    }
+    .ok:after {
+        content: '\25CF';
+        color: #add575;
+    }
 }
-
-.dashboards td.status .out-of-date:after {
-    content: '\25C6';
-    color: orange;
-
-}
-
-.dashboards td.status .untranslated:after {
-    content: '\25B2';
-    color: red;
-
-}
-
-.dashboards td.status .ok:after {
-    content: '\25CF';
-    color: #add575;
-}
-
 .dashboards td a {
-    text-decoration:none
+    text-decoration:none;
+    &:hover {
+        text-decoration:underline;
+    }
 }
 
-.dashboards td:hover a {
-    text-decoration:underline
+.dashboards td a:has(span.ok) {
+    &:hover {
+        text-decoration:none;
+        cursor: initial;
+    }
+    &:visited {
+        color: inherit;
+    }
 }

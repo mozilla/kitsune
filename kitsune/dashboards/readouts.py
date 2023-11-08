@@ -74,7 +74,7 @@ most_visited_translation_from = (
 
 REVIEW_STATUSES = {
     1: (_lazy("Review Needed"), "wiki.document_revisions", "review"),
-    0: ("", "", "ok"),
+    0: ("Updated", "", "ok"),
 }
 SIGNIFICANCE_STATUSES = {
     MEDIUM_SIGNIFICANCE: (_lazy("Update Needed"), "wiki.edit_document", "update"),
