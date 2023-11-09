@@ -164,6 +164,7 @@
     .ok:after {
         content: '\25CF';
         color: #add575;
+        margin-left: p.$spacing-xs;
     }
 }
 .dashboards td a {
