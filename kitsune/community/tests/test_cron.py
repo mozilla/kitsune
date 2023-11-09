@@ -49,7 +49,7 @@ class WelcomeEmailsTests(TestCase):
         # Check that one link used the right host.
         assert "https://testserver/forums/contributors" in mail.outbox[0].body
         assert (
-            "The community forum is at https://testserver/forums/contributors ."
+            "The community forum is at https://testserver/forums/contributors."
             in mail.outbox[0].body
         )
         # Assumption: links will be done consistently, and so this is enough testing.
