@@ -10,8 +10,8 @@
 
   <p>
     {% trans %}
-      Mozilla support is fully powered by our volunteer community that is
-      helping hundreds of users everyday. This community is formed by
+      Mozilla support forum is fully powered by our volunteer community that helps
+      hundreds of users every day. This community is formed by
       passionate Firefox and Thunderbird users who take some of their
       spare time to help others. We couldn't do it without your passion
       and enthusiasm. Your contribution, as minor as it might seem, has
@@ -23,30 +23,23 @@
   <p><strong>{{ _('Tell us about yourself!') }}</strong></p>
 
   <p>
-    {% trans intro_url='/forums/contributors', irc_url='https://client01.chat.mibbit.com/?server=irc.mozilla.org&channel=#sumo' %}
+    {% trans intro_url='/forums/contributors', matrix_url='https://chat.mozilla.org/#/room/#SUMO:mozilla.org' %}
       We are always very happy to hear from new people who like helping
-      on the forums so if you haven’t met our community yet
-      <a href="{{ intro_url }}">
-        please take a minute to introduce yourself
-      </a>.
+      on the forums so if you haven’t met our community yet,
+      <a href="{{ intro_url }}">please take a minute to introduce yourself</a>.
       If you want to stay low-profile, that’s also ok :). You can also
-      find us all hanging out on IRC, on the
-      <a href="{{ irc_url }}">
-        #sumo channel
-      </a>.
+      find us all hanging out on Matrix, on the <a href="{{ matrix_url }}">#sumo channel</a>.
     {% endtrans %}
   </p>
 
   <p><strong>{{ _('Learn new things') }}</strong></p>
 
   <p>
-    {% trans training_url='/kb/introduction-contributor-quality-training?utm_source=training&utm_medium=1intro&utm_term=cqt&utm_campaign=Contributorqualitytraining' %}
+    {% trans onboarding_url='/kb/how-contribute-support-forum?utm_source=onboardingemail&utm_medium=1intro&utm_term=cqt&utm_campaign=ContribOnboarding' %}
       If you are interested in learning more about how this whole support
       thing works, check out our
-      <a href="{{ training_url }}">
-        contributor training
-      </a>.
-      This includes some cool troubleshooting info, guidelines, how-to
+      <a href="{{ onboarding_url }}">contributor guidelines</a>.
+      This includes some cool troubleshooting info, how-to
       questions, and info about where to find more help if stuck.
     {% endtrans %}
   </p>
@@ -54,16 +47,14 @@
   <p><strong>{{ _('Stay in touch') }}</strong></p>
 
   <p>
-    {% trans forums_url='/forums/contributors', blog_url='https://blog.mozilla.org/sumo/', twitter_url='https://twitter.com/sumo_mozilla', meetings_url='https://wiki.mozilla.org/Support/Weekly_Meetings' %}
+    {% trans forums_url='/forums/contributors', blog_url='https://blog.mozilla.org/sumo/', twitter_url='https://twitter.com/sumo_mozilla', meetings_url='https://wiki.mozilla.org/Support/Weekly_Meetings', participate_url='/kb/how-participate-sumo-contributor-meetings' %}
       Finally, if you want to follow all news related to SUMO, don’t
       forget about our
       <a href="{{ forums_url }}">community forums</a>,
       <a href="{{ blog_url }}">official blog</a> and
       <a href="{{ twitter_url }}">Twitter account</a>.
       We also
-      <a href="{{ meetings_url }}">
-        meet almost every Monday
-      </a> - and you can join us.
+      <a href="{{ meetings_url }}">meet every month</a> - and you can <a href="{{ participate_url }}">join us</a>.
     {% endtrans %}
   </p>
 

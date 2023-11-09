@@ -851,13 +851,13 @@ Django = ">=3.2"
 
 [[package]]
 name = "django"
-version = "4.1.12"
+version = "4.1.13"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Django-4.1.12-py3-none-any.whl", hash = "sha256:e92ce8f240a856615e96d8b955707f824c29ea0f51dff4f76777caa5e113ec72"},
-    {file = "Django-4.1.12.tar.gz", hash = "sha256:d02483ad49872238fa59875c1269293fe4f17ecee13c121893607cc0b284696b"},
+    {file = "Django-4.1.13-py3-none-any.whl", hash = "sha256:04ab3f6f46d084a0bba5a2c9a93a3a2eb3fe81589512367a75f79ee8acf790ce"},
+    {file = "Django-4.1.13.tar.gz", hash = "sha256:94a3f471e833c8f124ee7a2de11e92f633991d975e3fa5bdd91e8abd66426318"},
 ]
 
 [package.dependencies]
@@ -4506,4 +4506,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "6e78d397c9b65561674e927b2ee6b92753741d0cfa05cc943c3214544847f239"
+content-hash = "9704ab7a7599dee4b0f9a90ea5250680d4c2475f15c0e6a73f4e836be66faa45"

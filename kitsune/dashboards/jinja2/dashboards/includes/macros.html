@@ -41,16 +41,15 @@
               {{ row.title }}
               <div>{{ row.description }}</div>
             </td>
-            <td colspan="2">
+            <td>
               {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
-                {{ numerator }} of {{ denominator }}
+                {{ numerator }} 
+                <small>of {{ denominator }}</small>
               {% endtrans %}
             </td>
-          </tr>
-          <tr>
-            <td colspan="3">
+            <td>
+              {{ row.percent }}%
               <div class="percent-graph">
-                <span>{{ row.percent }}%</span>
                 <div style="width: {{ row.percent }}%"{% if should_color %} class="{{ 'best' if row.percent == 100 else ('better' if row.percent >= 20 else 'bad') }}"{% endif %}></div>
               </div>
             </td>
