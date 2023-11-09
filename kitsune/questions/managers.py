@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.db.models import F, Manager, Q
+from django.db.models.functions import Now
 
 from kitsune.questions import config
 
@@ -21,34 +22,38 @@ class QuestionManager(Manager):
     # else if OP is last to post
     #      the status is "Needs Attention"
     def needs_attention(self):
+        # Use "__range" to ensure the database index is used in Postgres.
         qs = self.filter(
             solution__isnull=True,
             is_locked=False,
             is_archived=False,
-            updated__gte=datetime.now() - timedelta(days=7),
+            updated__range=(datetime.now() - timedelta(days=7), Now()),
         )
         return qs.filter(Q(last_answer__creator=F("creator")) | Q(last_answer__isnull=True))
 
     def recently_unanswered(self):
+        # Use "__range" to ensure the database index is used in Postgres.
         return self.filter(
             last_answer__isnull=True,
             is_locked=False,
-            created__gte=datetime.now() - timedelta(hours=24),
+            created__range=(datetime.now() - timedelta(hours=24), Now()),
         )
 
     def new(self):
+        # Use "__range" to ensure the database index is used in Postgres.
         return self.filter(
             last_answer__isnull=True,
             is_locked=False,
-            created__gte=datetime.now() - timedelta(days=7),
+            created__range=(datetime.now() - timedelta(days=7), Now()),
         )
 
     def unhelpful_answers(self):
+        # Use "__range" to ensure the database index is used in Postgres.
         return self.filter(
             solution__isnull=True,
             is_locked=False,
             last_answer__creator=F("creator"),
-            created__gte=datetime.now() - timedelta(days=7),
+            created__range=(datetime.now() - timedelta(days=7), Now()),
         )
 
     def needs_info(self):

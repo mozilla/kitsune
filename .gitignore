@@ -60,6 +60,7 @@ celerybeat.pid
 *.zip
 dist/
 .mysql_history
+.psql_history
 .local
 .pdbhistory
 .minikube

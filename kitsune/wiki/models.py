@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models
 from django.db.models import Q
+from django.db.models.functions import Now
 from django.urls import is_valid_path
 from django.utils.encoding import smart_bytes
 from django.utils import translation
@@ -159,7 +160,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     #    test_firefox_versions.
 
     # TODO: Rethink indexes once controller code is near complete. Depending on
-    # how MySQL uses indexes, we probably don't need individual indexes on
+    # how PostgreSQL uses indexes, we probably don't need individual indexes on
     # title and locale as well as a combined (title, locale) one.
     class Meta(object):
         ordering = ["display_order", "id"]
@@ -645,9 +646,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     @property
     def recent_helpful_votes(self):
         """Return the number of helpful votes in the last 30 days."""
-        start = datetime.now() - timedelta(days=30)
         return HelpfulVote.objects.filter(
-            revision__document=self, created__gt=start, helpful=True
+            revision__document=self,
+            # Use "__range" to ensure the database index is used in Postgres.
+            created__range=(datetime.now() - timedelta(days=30), Now()),
+            helpful=True,
         ).count()
 
     def parse_and_calculate_links(self):
@@ -792,6 +795,7 @@ class Revision(ModelBase, AbstractRevision):
     objects = RevisionManager()
 
     class Meta(object):
+        indexes = [models.Index(fields=["created"])]
         permissions = [
             ("review_revision", "Can review a revision"),
             ("mark_ready_for_l10n", "Can mark revision as ready for localization"),

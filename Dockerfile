@@ -10,7 +10,7 @@ ENV LANG=C.UTF-8 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/venv/bin:$PATH" \
-    POETRY_VERSION=1.6 \
+    POETRY_VERSION=1.6.1 \
     PIP_VERSION=23.2.1
 
 RUN useradd -d /app -M --uid 1000 --shell /bin/bash kitsune
@@ -22,8 +22,7 @@ RUN set -xe \
     gettext build-essential \
     libxml2-dev libxslt1-dev zlib1g-dev git \
     libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
-    libmariadb3 mariadb-client \
-    optipng zip \
+    optipng postgresql zip \
     # python
     && python -m venv /venv \
     && pip install --upgrade pip==${PIP_VERSION} \
@@ -104,8 +103,7 @@ COPY --chown=kitsune:kitsune . .
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-    libmariadb3 optipng mariadb-client \
-    libxslt1.1 && \
+    libxslt1.1 optipng postgresql && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /app/media && chown kitsune:kitsune /app/media

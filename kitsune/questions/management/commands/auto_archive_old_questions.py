@@ -24,8 +24,8 @@ class Command(BaseCommand):
         days_180 = datetime.now() - timedelta(days=180)
         q_ids = list(
             Question.objects.filter(is_archived=False)
-            .filter(created__lte=days_180)
-            .values_list("id", flat=True)
+            # Use "__range" to ensure the database index is used in Postgres.
+            .filter(created__range=(datetime.min, days_180)).values_list("id", flat=True)
         )
 
         if q_ids:
@@ -33,7 +33,7 @@ class Command(BaseCommand):
 
             sql = """
                 UPDATE questions_question
-                SET is_archived = 1
+                SET is_archived = TRUE
                 WHERE id IN (%s)
                 """ % ",".join(
                 map(str, q_ids)

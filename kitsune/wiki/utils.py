@@ -4,6 +4,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Prefetch, Q
+from django.db.models.functions import Now
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
@@ -76,20 +77,16 @@ def _active_contributors_id(from_date, to_date, locale, product):
     :arg product: (optional) only count documents for a product
     """
     editors = (
-        Revision.objects.filter(created__gte=from_date)
+        Revision.objects.filter(created__gte=from_date, created__lt=to_date or Now())
         .values_list("creator", flat=True)
         .distinct()
     )
 
     reviewers = (
-        Revision.objects.filter(reviewed__gte=from_date)
+        Revision.objects.filter(reviewed__gte=from_date, reviewed__lt=to_date or Now())
         .values_list("reviewer", flat=True)
         .distinct()
     )
-
-    if to_date:
-        editors = editors.filter(created__lt=to_date)
-        reviewers = reviewers.filter(reviewed__lt=to_date)
 
     if locale:
         editors = editors.filter(document__locale=locale)

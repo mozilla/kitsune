@@ -1,11 +1,12 @@
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from operator import itemgetter
 
 from django.conf import settings
 from django.core.cache import cache
 from django.db import connections, router
 from django.db.models import Count, F
+from django.db.models.functions import Now
 
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -141,12 +142,18 @@ class QuestionsMetricList(CachedAPIView):
             qs = qs.filter(product__slug=product)
 
         # All answers that were created within 3 days of the question.
-        aq_72 = Answer.objects.filter(created__lt=F("question__created") + timedelta(days=3))
+        # Use "__range" to ensure the database index is used in Postgres.
+        aq_72 = Answer.objects.filter(
+            created__range=(F("question__created"), F("question__created") + timedelta(days=3))
+        )
         # Questions of said answers.
         rs_72 = qs.filter(id__in=aq_72.values_list("question"))
 
         # All answers that were created within 24 hours of the question.
-        aq_24 = Answer.objects.filter(created__lt=F("question__created") + timedelta(hours=24))
+        # Use "__range" to ensure the database index is used in Postgres.
+        aq_24 = Answer.objects.filter(
+            created__range=(F("question__created"), F("question__created") + timedelta(hours=24))
+        )
         # Questions of said answers.
         rs_24 = qs.filter(id__in=aq_24.values_list("question"))
 
@@ -186,7 +193,11 @@ class KBVoteMetricList(CachedAPIView):
         locale = request.GET.get("locale")
         product = request.GET.get("product")
 
-        qs_kb_votes = HelpfulVote.objects.filter(created__gte=date(2011, 1, 1))
+        # Use "__range" to ensure the database index is used in Postgres,
+        # and only show the helpful votes from the last 365 days.
+        qs_kb_votes = HelpfulVote.objects.filter(
+            created__range=(datetime.now() - timedelta(days=365), Now())
+        )
 
         if locale:
             qs_kb_votes = qs_kb_votes.filter(revision__document__locale=locale)
@@ -318,7 +329,11 @@ def _daily_qs_for(model_cls):
     """Return the daily grouped queryset we need for model_cls."""
     # Limit to newer than 2011/1/1 and active creators.
     return (
-        model_cls.objects.filter(created__gte=date(2011, 1, 1), creator__is_active=1)
+        # Use "__range" to ensure the database index is used in Postgres,
+        # and only get the objects from the last 365 days.
+        model_cls.objects.filter(
+            created__range=(datetime.now() - timedelta(days=365), Now()), creator__is_active=1
+        )
         .extra(
             select={
                 "day": "extract( day from created )",
@@ -334,7 +349,9 @@ def _daily_qs_for(model_cls):
 def _qs_for(model_cls):
     """Return the monthly grouped queryset we need for model_cls."""
     return (
-        model_cls.objects.filter(created__gte=date(2011, 1, 1))
+        # Use "__range" to ensure the database index is used in Postgres,
+        # and only get the objects from the last 365 days.
+        model_cls.objects.filter(created__range=(datetime.now() - timedelta(days=365), Now()))
         .extra(
             select={
                 "day": "extract( day from created )",
@@ -380,7 +397,7 @@ def _remap_date_counts(**kwargs):
         # For each date mentioned in qs, sum up the counts for that day
         # Note: days may be duplicated
         for x in qs:
-            key = date(x["year"], x["month"], x.get("day", 1))
+            key = date(int(x["year"]), int(x["month"]), int(x.get("day", 1)))
             res[key][label] += x["count"]
         yield res
 
