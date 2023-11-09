@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
+from django.db.models.functions import Now
 
 from kitsune.questions.models import Question, QuestionVote
 from kitsune.questions.tasks import update_question_vote_chunk
@@ -13,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         # Get all questions (id) with a vote in the last week.
         recent = datetime.now() - timedelta(days=7)
-        q = QuestionVote.objects.filter(created__gte=recent)
+        q = QuestionVote.objects.filter(created__range=(recent, Now()))
         q = q.values_list("question_id", flat=True).order_by("question")
         q = q.distinct()
         q_with_recent_votes = list(q)

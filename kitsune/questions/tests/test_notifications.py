@@ -167,11 +167,16 @@ class NotificationsTests(TestCase):
         post(self.client, "questions.solve", args=[q.id, a.id])
 
         # Order of emails is not important.
-        attrs_eq(mail.outbox[0], to=[u.email], subject="Solution found to Firefox Help question")
+        self.assertEqual(len(mail.outbox), 2)
+
+        attrs_eq(
+            mail.outbox[0],
+            to=["anon@ymous.com"],
+            subject="Solution found to Firefox Help question",
+        )
         starts_with(
             mail.outbox[0].body,
-            SOLUTION_EMAIL.format(
-                to_user=display_name(u),
+            SOLUTION_EMAIL_TO_ANONYMOUS.format(
                 replier=display_name(a.creator),
                 title=q.title,
                 asker=display_name(q.creator),
@@ -181,14 +186,11 @@ class NotificationsTests(TestCase):
             ),
         )
 
-        attrs_eq(
-            mail.outbox[1],
-            to=["anon@ymous.com"],
-            subject="Solution found to Firefox Help question",
-        )
+        attrs_eq(mail.outbox[1], to=[u.email], subject="Solution found to Firefox Help question")
         starts_with(
             mail.outbox[1].body,
-            SOLUTION_EMAIL_TO_ANONYMOUS.format(
+            SOLUTION_EMAIL.format(
+                to_user=display_name(u),
                 replier=display_name(a.creator),
                 title=q.title,
                 asker=display_name(q.creator),

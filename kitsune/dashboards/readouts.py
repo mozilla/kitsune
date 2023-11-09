@@ -11,6 +11,8 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db import connections, router
+from django.db.models import F, OuterRef, Subquery
+
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
@@ -18,6 +20,7 @@ from django.utils.translation import gettext as _
 from markupsafe import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
+from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.questions.models import QuestionLocale
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -203,35 +206,28 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
-    select = OrderedDict(
-        [
-            (
-                "num_visits",
-                "SELECT `wdv`.`visits` "
-                "FROM `dashboards_wikidocumentvisits` as `wdv` "
-                "WHERE `wdv`.`period`=%s "
-                "AND `wdv`.`document_id`=`wiki_document`.`id`",
-            ),
-        ]
-    )
-
-    docs = docs.extra(select=select, select_params=(mode,))
-
     if product:
         docs = docs.filter(products__in=[product])
 
     if category:
         docs = docs.filter(category__in=[category])
 
-    docs = docs.order_by("-num_visits", "title")
+    docs = docs.annotate(
+        num_visits=Subquery(
+            WikiDocumentVisits.objects.filter(document=OuterRef("pk"), period=mode).values(
+                "visits"
+            )
+        )
+    )
+
+    docs = docs.order_by(F("num_visits").desc(nulls_last=True), "title")
 
     if max:
         docs = docs[:max]
 
     rows = []
 
-    if docs.count():
-        max_visits = docs[0].num_visits
+    max_visits = docs[0].num_visits if docs.count() else None
 
     for d in docs:
         data = {
@@ -249,7 +245,7 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
         if d.current_revision:
             data["expiry_date"] = d.current_revision.expires
 
-        if d.num_visits:
+        if d.num_visits and max_visits:
             data["visits_ratio"] = float(d.num_visits) / max_visits
 
         if "expiry_date" in data and data["expiry_date"]:
@@ -348,7 +344,7 @@ def l10n_overview_rows(locale, product=None):
         "    AND NOT engdoc.is_archived "
         "    AND engdoc.latest_localizable_revision_id IS NOT NULL "
         "    AND engdoc.is_localizable "
-        '    AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" '
+        "    AND engdoc.html NOT LIKE '<p>REDIRECT <a%%' "
         "    AND NOT EXISTS " + ANY_SIGNIFICANT_UPDATES
     )
     translated_docs = single_result(
@@ -366,7 +362,7 @@ def l10n_overview_rows(locale, product=None):
     # such subqueries and never builds indexes on them. However, it seems to be
     # fast in practice.
     top_n_query = (
-        "SELECT SUM(istranslated) FROM "
+        "SELECT SUM(CASE WHEN istranslated THEN 1 ELSE 0 END) FROM "
         "    (SELECT transdoc.current_revision_id IS NOT NULL "
         # And there have been no significant updates since the current
         # translation:
@@ -380,7 +376,7 @@ def l10n_overview_rows(locale, product=None):
             + ",".join(ignore_categories)
             + ") "
             + "AND NOT engdoc.is_template "
-            + 'AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" ',
+            + "AND engdoc.html NOT LIKE '<p>REDIRECT <a%%' ",
         )
         + "LIMIT %s) t1 "
     )
@@ -624,7 +620,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
         # Review Needed: link to /history.
         query = (
             "SELECT engdoc.slug, engdoc.title, "
-            "dashboards_wikidocumentvisits.visits, "
+            "MAX(dashboards_wikidocumentvisits.visits) visits, "
             "count(engrev.document_id) "
             "FROM wiki_document engdoc "
             "LEFT JOIN dashboards_wikidocumentvisits ON "
@@ -649,9 +645,9 @@ class MostVisitedDefaultLanguageReadout(Readout):
             )
             + ") AND "
             "NOT engdoc.is_template AND "
-            'engdoc.html NOT LIKE "<p>REDIRECT <a%%" '
+            "engdoc.html NOT LIKE '<p>REDIRECT <a%%' "
             "GROUP BY engdoc.id "
-            "ORDER BY dashboards_wikidocumentvisits.visits DESC, "
+            "ORDER BY visits DESC, "
             "    engdoc.title ASC" + self._limit_clause(max)
         )
 
@@ -691,7 +687,7 @@ class CategoryReadout(Readout):
         # Review Needed: link to /history.
         query = (
             "SELECT engdoc.slug, engdoc.title, "
-            "   dashboards_wikidocumentvisits.visits, "
+            "   MAX(dashboards_wikidocumentvisits.visits) visits, "
             "   engdoc.needs_change, "
             + (NEEDS_REVIEW_ENG + ", " + UNREADY_FOR_L10N)
             + "FROM wiki_document engdoc "
@@ -701,7 +697,7 @@ class CategoryReadout(Readout):
             + extra_joins
             + "WHERE engdoc.locale=%s AND "
             "   NOT engdoc.is_archived " + (self.where_clause) + "GROUP BY engdoc.id "
-            "ORDER BY dashboards_wikidocumentvisits.visits DESC, "
+            "ORDER BY visits DESC, "
             "    engdoc.title ASC" + self._limit_clause(max)
         )
 
@@ -919,9 +915,8 @@ class UnreviewedReadout(Readout):
         query = (
             "SELECT wiki_document.slug, wiki_document.title, "
             "MAX(wiki_revision.created) maxcreated, "
-            "GROUP_CONCAT(DISTINCT auth_user.username "
-            "             ORDER BY wiki_revision.id SEPARATOR ', '), "
-            "dashboards_wikidocumentvisits.visits "
+            "STRING_AGG(DISTINCT auth_user.username, ', ' ORDER BY auth_user.username), "
+            "MAX(dashboards_wikidocumentvisits.visits) visits "
             "FROM wiki_document "
             "INNER JOIN wiki_revision ON "
             "            wiki_document.id=wiki_revision.document_id "
@@ -945,7 +940,7 @@ class UnreviewedReadout(Readout):
         return (
             "ORDER BY maxcreated DESC"
             if self.mode == MOST_RECENT
-            else "ORDER BY dashboards_wikidocumentvisits.visits DESC, " "wiki_document.title ASC"
+            else "ORDER BY visits DESC, " "wiki_document.title ASC"
         )
 
     def _format_row(self, row):
@@ -1050,13 +1045,13 @@ class UnreadyForLocalizationReadout(Readout):
         query = (
             "SELECT engdoc.slug, engdoc.title, "
             "MAX(wiki_revision.reviewed) maxreviewed, "
-            "visits.visits "
+            "MAX(dashboards_wikidocumentvisits.visits) visits "
             "FROM wiki_document engdoc "
             "INNER JOIN wiki_revision ON "
             "            engdoc.id=wiki_revision.document_id "
-            "LEFT JOIN dashboards_wikidocumentvisits visits ON "
-            "    engdoc.id=visits.document_id AND "
-            "    visits.period=%s "
+            "LEFT JOIN dashboards_wikidocumentvisits ON "
+            "    engdoc.id=dashboards_wikidocumentvisits.document_id AND "
+            "    dashboards_wikidocumentvisits.period=%s "
             + extra_joins
             + "WHERE engdoc.locale=%s "  # shouldn't be necessary
             "AND NOT engdoc.is_archived "
@@ -1086,7 +1081,7 @@ class UnreadyForLocalizationReadout(Readout):
         return (
             "ORDER BY maxreviewed DESC"
             if self.mode == MOST_RECENT
-            else "ORDER BY visits.visits DESC, engdoc.title ASC"
+            else "ORDER BY visits DESC, engdoc.title ASC"
         )
 
     def _format_row(self, row):
@@ -1125,11 +1120,11 @@ class NeedsChangesReadout(Readout):
         query = (
             "SELECT engdoc.slug, engdoc.title, "
             "   engdoc.needs_change_comment, "
-            "   visits.visits "
+            "   MAX(dashboards_wikidocumentvisits.visits) visits "
             "FROM wiki_document engdoc "
-            "LEFT JOIN dashboards_wikidocumentvisits visits ON "
-            "    engdoc.id=visits.document_id AND "
-            "    visits.period=%s "
+            "LEFT JOIN dashboards_wikidocumentvisits ON "
+            "    engdoc.id=dashboards_wikidocumentvisits.document_id AND "
+            "    dashboards_wikidocumentvisits.period=%s "
             + extra_joins
             + "WHERE engdoc.locale=%s "  # shouldn't be necessary
             "AND engdoc.needs_change "
@@ -1143,7 +1138,7 @@ class NeedsChangesReadout(Readout):
         # Put the most recently approved articles first, as those are the most
         # recent to have transitioned onto this dashboard or to change which
         # revision causes them to be on this dashboard.
-        return "ORDER BY visits.visits DESC, engdoc.title ASC"
+        return "ORDER BY visits DESC, engdoc.title ASC"
 
     def _format_row(self, row):
         (slug, title, comment, visits) = row

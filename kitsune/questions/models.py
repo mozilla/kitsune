@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db import close_old_connections, models
 from django.db.models import Count
+from django.db.models.functions import Now
 from django.db.models.signals import post_save
 from django.db.utils import IntegrityError
 from django.dispatch import receiver
@@ -322,7 +323,8 @@ class Question(AAQBase, BigVocabTaggableMixin):
     def sync_num_votes_past_week(self):
         """Get the number of votes for this question in the past week."""
         last_week = datetime.now().date() - timedelta(days=7)
-        n = QuestionVote.objects.filter(question=self, created__gte=last_week).count()
+        # Use "__range" to ensure the database index is used in Postgres.
+        n = QuestionVote.objects.filter(question=self, created__range=(last_week, Now())).count()
         self.num_votes_past_week = n
         return n
 
@@ -402,7 +404,8 @@ class Question(AAQBase, BigVocabTaggableMixin):
     def recent_asked_count(cls, extra_filter=None):
         """Returns the number of questions asked in the last 24 hours."""
         start = datetime.now() - timedelta(hours=24)
-        qs = cls.objects.filter(created__gt=start, creator__is_active=True)
+        # Use "__range" to ensure the database index is used in Postgres.
+        qs = cls.objects.filter(created__range=(start, Now()), creator__is_active=True)
         if extra_filter:
             qs = qs.filter(extra_filter)
         return qs.count()
@@ -412,10 +415,11 @@ class Question(AAQBase, BigVocabTaggableMixin):
         """Returns the number of questions that have not been answered in the
         last 24 hours.
         """
+        # Use "__range" to ensure the database index is used in Postgres.
         start = datetime.now() - timedelta(hours=24)
         qs = cls.objects.filter(
             num_answers=0,
-            created__gt=start,
+            created__range=(start, Now()),
             is_locked=False,
             is_archived=False,
             creator__is_active=1,

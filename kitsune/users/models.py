@@ -5,6 +5,7 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.functions import Upper
 from django.utils.translation import gettext_lazy as _lazy
 from timezone_field import TimeZoneField
 
@@ -130,6 +131,7 @@ class Profile(ModelBase):
     updated_column_name = "user__date_joined"
 
     class Meta(object):
+        indexes = [models.Index(Upper("name"), name="upper_name_idx")]
         permissions = (
             ("view_karma_points", "Can view karma points"),
             ("deactivate_users", "Can deactivate users"),

@@ -16,7 +16,7 @@ help:
 	@echo ""
 	@echo "init          - initialize the database and install Node packages"
 	@echo "djshell       - start a Django Python shell (ipython)"
-	@echo "dbshell       - start a MySQL shell"
+	@echo "dbshell       - start a PostgreSQL shell"
 	@echo "shell         - start a bash shell"
 	@echo "runshell      - start a bash shell with ports bound so you can run the server"
 	@echo "clean         - remove all build, test, coverage and Python artifacts"

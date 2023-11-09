@@ -1,3 +1,4 @@
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from django.utils.html import strip_tags, escape
@@ -24,7 +25,9 @@ class ThreadsFeed(Feed):
         return document.get_absolute_url()
 
     def items(self, document):
-        return document.thread_set.order_by("-last_post__created")[: constants.THREADS_PER_PAGE]
+        return document.thread_set.order_by(F("last_post__created").desc(nulls_last=True))[
+            : constants.THREADS_PER_PAGE
+        ]
 
     def item_title(self, item):
         return item.title
