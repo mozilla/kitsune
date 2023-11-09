@@ -18,7 +18,7 @@
     <td>
       {{ number(row.num_visits) }}
       {% if row.visits_ratio %}
-        <div class="absolute-graph" data-absolute-graph={{ row.visits_ratio * 100 }}></div>
+        <div class="absolute-graph" data-absolute-graph="{{ row.visits_ratio * 100 }}%"></div>
       {% endif %}
     </td>
     <td class="status {% if not row.latest_revision %}needs-review{% endif %}">

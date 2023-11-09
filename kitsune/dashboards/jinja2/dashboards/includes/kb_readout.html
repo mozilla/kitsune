@@ -20,7 +20,7 @@
       {{ number(row.visits) }}
     </td>
     <td>
-      <div class="absolute-graph" data-absolute-graph="{{ row.percent }}"></div>
+      <div class="absolute-graph" data-absolute-graph="{{ row.percent }}%"></div>
     </td>
     <td class="status">
       {% if row.updated is defined %}
@@ -28,14 +28,14 @@
       {% elif row.custom %}
         <div class="custom">{{ row.column4_data }}</div>
       {% else %}
-        {% if row.status %}
+        {% if row.status and row.status_class != "ok" %}
           <a href="{{ row.status_url }}">
             {{ row.status }}
             {% if row.status_class %}<span class="{{ row.status_class }}"></span>{% endif %}
           </a>
         {% else %}
           {# For having a bullet char without a link #}
-          <span class="{{ row.status_class }}"></span>
+          <span class="{{ row.status_class }}">{{ row.status }}</span>
         {% endif %}
       {% endif %}
     </td>

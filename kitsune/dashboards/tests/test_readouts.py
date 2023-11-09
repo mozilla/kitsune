@@ -395,7 +395,7 @@ class TemplateTests(ReadoutTestCase):
 
         self.assertEqual(1, len(self.rows(locale=locale, product=p)))
         self.assertEqual(t.title, self.row(locale=locale, product=p)["title"])
-        self.assertEqual("", self.row(locale=locale, product=p)["status"])
+        self.assertEqual("Updated", self.row(locale=locale, product=p)["status"])
 
     def test_needs_changes(self):
         """Test status for article that needs changes"""
@@ -450,7 +450,7 @@ class HowToContributeTests(ReadoutTestCase):
 
         self.assertEqual(1, len(self.rows(locale=locale, product=p)))
         self.assertEqual(d2.title, self.row(locale=locale, product=p)["title"])
-        self.assertEqual("", self.row(locale=locale, product=p)["status"])
+        self.assertEqual("Updated", self.row(locale=locale, product=p)["status"])
 
 
 class AdministrationTests(ReadoutTestCase):
@@ -469,7 +469,7 @@ class AdministrationTests(ReadoutTestCase):
 
         self.assertEqual(1, len(self.rows(locale=locale, product=p)))
         self.assertEqual(d2.title, self.row(locale=locale, product=p)["title"])
-        self.assertEqual("", self.row(locale=locale, product=p)["status"])
+        self.assertEqual("Updated", self.row(locale=locale, product=p)["status"])
 
 
 class MostVisitedTranslationsTests(ReadoutTestCase):
@@ -533,7 +533,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         translation = TranslatedRevisionFactory(document__locale="de", is_approved=True)
         row = self.row()
         self.assertEqual(row["title"], translation.document.title)
-        self.assertEqual(str(row["status"]), "")
+        self.assertEqual(str(row["status"]), "Updated")
         self.assertEqual(row["status_class"], "ok")
 
     def test_one_rejected_revision(self):

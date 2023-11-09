@@ -74,7 +74,7 @@ most_visited_translation_from = (
 
 REVIEW_STATUSES = {
     1: (_lazy("Review Needed"), "wiki.document_revisions", "review"),
-    0: ("", "", "ok"),
+    0: ("Updated", "", "ok"),
 }
 SIGNIFICANCE_STATUSES = {
     MEDIUM_SIGNIFICANCE: (_lazy("Update Needed"), "wiki.edit_document", "update"),
@@ -710,7 +710,7 @@ class CategoryReadout(Readout):
     def _format_row(self, row):
         (slug, title, visits, needs_changes, needs_review, unready_for_l10n) = row
         if needs_review:
-            status, view_name, dummy = REVIEW_STATUSES[needs_review]
+            status, view_name, _ = REVIEW_STATUSES[needs_review]
         elif needs_changes:
             status = _lazy("Changes Needed")
             view_name = "wiki.document_revisions"
@@ -718,7 +718,7 @@ class CategoryReadout(Readout):
             status = _lazy("Changes Not Ready For Localization")
             view_name = "wiki.document_revisions"
         else:
-            status, view_name, dummy = REVIEW_STATUSES[0]
+            status, view_name, _ = REVIEW_STATUSES[0]
 
         return dict(
             title=title,
