@@ -18,6 +18,14 @@ class ZendeskClient(object):
         self.client = Zenpy(**creds)
 
     def _user_to_zendesk_user(self, user, email):
+        """Given a Django user, return a Zendesk user."""
+        # If the user already exists in Zendesk return
+        # them instead of creating a new user
+        if self.get_user_by_email(email):
+            return self.get_user_by_email(email)
+
+        # If the user is not authenticated, we can't save anything to
+        # AnonymousUser Profile as it has none
         if not user.is_authenticated:
             name = "Anonymous User"
             locale = "en-US"
@@ -41,6 +49,11 @@ class ZendeskClient(object):
             user_fields=user_fields,
             external_id=external_id,
         )
+
+    def get_user_by_email(self, email):
+        """Given an email, return a user from Zendesk."""
+        for user in self.client.search(type="user", query=f"email:{email}"):
+            return user
 
     def create_user(self, user, email=""):
         """Given a Django user, create a user in Zendesk."""
