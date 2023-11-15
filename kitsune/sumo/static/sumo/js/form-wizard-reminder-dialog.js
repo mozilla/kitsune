@@ -1,8 +1,10 @@
+import trackEvent from "sumo/js/analytics";
 import reminderDialogStylesURL from "../scss/reminder-dialog.styles.scss";
 import closeIconURL from "sumo/img/close.svg";
 import successIconUrl from "sumo/img/success.svg";
 
 const NEW_DEVICE_DOWNLOAD_URL = "https://mzl.la/newdevice";
+const NEW_DEVICE_DOWNLOAD_REMINDER_URL = "https://mzl.la/newdevice-reminder";
 
 const CALENDAR_FORMATS = Object.freeze({
   ICAL: 1,
@@ -35,20 +37,19 @@ export class ReminderDialog extends HTMLDialogElement {
             <button id="close" class="mzp-c-button mzp-t-neutral" aria-label="${gettext("Close")}" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="close-reminder-dialog"><img src="${closeIconURL}" aria-hidden="true"/></button>
           </div>
           <div class="vbox">
-            <div id="directions">${gettext("Save the download link to your calendar and finish the download whenever you’re ready.")}</div>
+            <div id="directions">${gettext("Save the download link to your calendar and install Firefox whenever you’re ready.")}</div>
             <label for="choose-calendar">${gettext("Choose calendar")}</label>
             <div class="hbox">
               <select id="choose-calendar">
                 <option value="gcal">Google Calendar</option>
-                <option value="outlook">Outlook.com</option>
-                <option value="ics">${gettext("Other calendar")}</option>
+                <option value="ics">${gettext("ICS file")}</option>
               </select>
               <button id="create-event" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="create-calendar-event">${gettext("Save")}</button>
             </div>
             <hr>
 
             <div class="hbox">
-              <span id="copy-link-message">${gettext("You can also access the link directly")}</span>
+              <span id="copy-link-message">${gettext("Copy download link directly")}</span>
               <div id="copy-link-container" class="hbox">
                 <button id="copy-link" class="mzp-c-button mzp-t-product mzp-t-secondary mzp-t-md" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="copy-link-to-clipboard-button">${gettext("Copy link")}</button>
                 <span id="copied-message"><img src="${successIconUrl}" aria-hidden="true">${gettext("Copied!")}</span>
@@ -96,6 +97,14 @@ export class ReminderDialog extends HTMLDialogElement {
 
     let createEventButton = this.#shadow.querySelector("#create-event");
     createEventButton.addEventListener("click", this);
+
+    this.addEventListener("close", e => {
+      trackEvent(
+        "device-migration-wizard",
+        "close",
+        "reminder-dialog"
+      );
+    })
   }
 
   handleEvent(event) {
@@ -116,18 +125,6 @@ export class ReminderDialog extends HTMLDialogElement {
   }
 
   /**
-   * This is a thin wrapper around window.location so that our automated
-   * tests can easily stub this out and override it (since the test
-   * framework we use gets upset when writing to window.location).
-   *
-   * @param {string} url
-   *   The URL to send the browser to.
-   */
-  redirect(url) {
-    window.location.href = url;
-  }
-
-  /**
    * Creates a summary and description string appropriate for a calendar
    * event for downloading and installing Firefox on a new device. This
    * will be translated to the current user's locale.
@@ -143,11 +140,20 @@ export class ReminderDialog extends HTMLDialogElement {
    *   The description for the event, including the linkURL.
    */
   #generateEventSummaryAndDescription(linkURL, format) {
-    let summary = gettext("Reminder to complete your Firefox backup");
-    let description = interpolate(
-      gettext("Your Firefox data has been successfully backed up.\n\nFollow this link to start your download: %s"),
-      [linkURL]
-    );
+    let summary = gettext("Download and install Firefox on your new device");
+    let description;
+
+    if (format == CALENDAR_FORMATS.ICAL) {
+      description = interpolate(
+        gettext(`Your Firefox data is successfully backed up. To get started on your new device, download Firefox and sign in to your account with the link below.\n\n%s`),
+        [linkURL]
+      );
+    } else {
+      description = interpolate(
+        gettext(`Your Firefox data is successfully backed up. To get started on your new device, download Firefox and sign in to your account with the link below.\n\n<a href="%s">Download Firefox</a>`),
+        [linkURL]
+      );
+    }
 
     if (format == CALENDAR_FORMATS.ICAL) {
       description = description.replace(/\n/g, "\\n");
@@ -245,9 +251,8 @@ export class ReminderDialog extends HTMLDialogElement {
     let { dtStart, dtEnd } = this.#generateDTStartDTEnd(CALENDAR_FORMATS.ICAL);
     let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    // mozilla/sumo#1503: The NEW_DEVICE_DOWNLOAD_URL should be replaced with
-    // a link that attributes the download to an event from an ICS file.
-    let { summary, description } = this.#generateEventSummaryAndDescription(NEW_DEVICE_DOWNLOAD_URL, CALENDAR_FORMATS.ICAL);
+    let linkURL = this.#generateCalendarLink(CALENDAR_FORMATS.ICAL);
+    let { summary, description } = this.#generateEventSummaryAndDescription(linkURL, CALENDAR_FORMATS.ICAL);
 
     // The random value here is not meant to be cryptographically
     // secure. The randomValue is used to create a unique UID for
@@ -269,7 +274,43 @@ END:VCALENDAR
 `;
     let blob = new Blob([icsFile], {type: "text/calendar;charset=utf-8;"});
     let blobURL = window.URL.createObjectURL(blob);
-    return blobURL;
+    let anchor = document.createElement("a");
+    anchor.href = blobURL;
+    anchor.setAttribute("download", gettext("FirefoxCalendarEvent.ics"));
+
+    this.shadow.appendChild(anchor);
+    anchor.addEventListener("click", e => {
+      anchor.remove();
+    }, { once: true })
+
+    anchor.click();
+  }
+
+  #generateCalendarLink(format) {
+    let params = new URLSearchParams();
+    params.set("utm_medium", "short-link-calendar");
+
+    let calendarType;
+
+    switch (format) {
+      case CALENDAR_FORMATS.OUTLOOK: {
+        calendarType = "outlook";
+        break;
+      }
+      case CALENDAR_FORMATS.ICAL:
+        calendarType = "ical"
+        break;
+      case CALENDAR_FORMATS.GCAL: {
+        calendarType = "gcal";
+        break;
+      }
+      default: {
+        throw new Error("#generateCalendarLink wasn't given a format for the link.");
+      }
+    }
+    params.set("utm_content", calendarType);
+
+    return `${NEW_DEVICE_DOWNLOAD_REMINDER_URL}?${params}`;
   }
 
   /**
@@ -288,6 +329,13 @@ END:VCALENDAR
   }
 
   #createEvent(calendarType) {
+    trackEvent(
+      "device-migration-wizard",
+      "create",
+      "create-calendar-event",
+      calendarType
+    );
+
     switch (calendarType) {
       case "gcal": {
         this.#openGCalTab();
@@ -298,8 +346,7 @@ END:VCALENDAR
         break;
       }
       case "ics": {
-        let icsDownload = this.#generateICSFileDownload();
-        this.redirect(icsDownload);
+        this.#generateICSFileDownload();
         break;
       }
     }
@@ -308,9 +355,8 @@ END:VCALENDAR
   #openGCalTab() {
     const GCAL_ENDPOINT = "https://calendar.google.com/calendar/render?";
 
-    // mozilla/sumo#1503: The NEW_DEVICE_DOWNLOAD_URL should be replaced with
-    // a link that attributes the download to an event from Google Calendar.
-    let { summary, description } = this.#generateEventSummaryAndDescription(NEW_DEVICE_DOWNLOAD_URL, CALENDAR_FORMATS.GCAL);
+    let linkURL = this.#generateCalendarLink(CALENDAR_FORMATS.GCAL);
+    let { summary, description } = this.#generateEventSummaryAndDescription(linkURL, CALENDAR_FORMATS.GCAL);
     let { dtStart, dtEnd } = this.#generateDTStartDTEnd(CALENDAR_FORMATS.GCAL);
     let params = new URLSearchParams();
     params.set("action", "TEMPLATE");
@@ -323,9 +369,8 @@ END:VCALENDAR
   #openOutlookTab() {
     const OUTLOOK_ENDPOINT = "https://outlook.live.com/calendar/0/deeplink/compose/?";
 
-    // mozilla/sumo#1503: The NEW_DEVICE_DOWNLOAD_URL should be replaced with
-    // a link that attributes the download to an event from Microsoft Outlook.
-    let { summary, description } = this.#generateEventSummaryAndDescription(NEW_DEVICE_DOWNLOAD_URL, CALENDAR_FORMATS.OUTLOOK);
+    let linkURL = this.#generateCalendarLink(CALENDAR_FORMATS.OUTLOOK);
+    let { summary, description } = this.#generateEventSummaryAndDescription(linkURL, CALENDAR_FORMATS.OUTLOOK);
     let { dtStart, dtEnd } = this.#generateDTStartDTEnd(CALENDAR_FORMATS.OUTLOOK);
     let params = new URLSearchParams();
 

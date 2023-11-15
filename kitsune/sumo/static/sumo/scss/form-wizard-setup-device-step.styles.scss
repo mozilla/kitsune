@@ -8,35 +8,49 @@ ul {
   list-style-type: none;
 }
 
-.download-link-wrapper {
-  display: flex;
-  align-items: center;
-  margin-block-end: 72px;
+label[for="email"] {
+  color: var(--color-marketing-gray-07);
 }
 
-#download-link {
+#email {
+  margin-block-end: 0;
   margin-inline-end: 8px;
-  font-size: 1.375rem;
-  margin-inline-end: 16px;
-  white-space: nowrap;
+  max-width: 300px;
+  flex: 1;
 }
 
-#copied-message {
-  color: var(--color-green-07);
-  padding-block: 8px;
-  line-height: 1.2;
+#email-reminder-form,
+#email-reminder-form > .tooltip-container {
+  margin-block-end: 16px;
 }
 
-#copied-message img {
-  margin-inline-end: 8px;
+#email-consent-message {
+  font-size: 0.75rem;
 }
 
-#copied-message,
-#setup-device-root[data-copied] #copy-button {
+#email-error > .error {
   display: none;
 }
 
-#copy-button,
-#setup-device-root[data-copied] #copied-message {
-  display: initial;
+#email-error[error-type="invalid-email"] > .invalid-email,
+#email-error[error-type="other"] > .other {
+  display: inline;
+}
+
+#submit {
+  white-space: nowrap;
+}
+
+#submit > .success {
+  margin-inline-end: 2px;
+}
+
+#submit:not([success]) > .success,
+#submit[success] > .not-success {
+  display: none;
+}
+
+#submit[success] {
+  background-color: var(--color-green-07);
+  opacity: 1.0;
 }
