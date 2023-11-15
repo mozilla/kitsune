@@ -287,8 +287,10 @@ describe("sign-in-step custom element", () => {
     it("should display an error message if an incomplete email address is supplied", () => {
       expect([...emailErrorMessage.classList]).to.not.include("visible");
 
+      expect(sessionStorage.getItem("switching-devices-email")).to.be.null;
       emailField.value = "this-is-not-an-email-address";
       submitBtn.click();
+      expect(sessionStorage.getItem("switching-devices-email")).to.be.null;
 
       expect(emailField.validity.valid).to.be.false;
       expect([...emailErrorMessage.classList]).to.include("visible");
@@ -308,11 +310,15 @@ describe("sign-in-step custom element", () => {
         );
       });
 
-      emailField.value = "email@email.com";
+      expect(sessionStorage.getItem("switching-devices-email")).to.be.null;
+
+      const TEST_EMAIL = "email@email.com";
+      emailField.value = TEST_EMAIL;
       submitBtn.click();
       await preventSubmitListener;
 
       expect(emailField.validity.valid).to.be.true;
+      expect(sessionStorage.getItem("switching-devices-email")).to.equal(TEST_EMAIL);
       expect([...emailErrorMessage.classList]).to.not.include("visible");
     });
   });

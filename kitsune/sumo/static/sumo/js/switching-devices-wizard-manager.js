@@ -150,7 +150,7 @@ export default class SwitchingDevicesWizardManager {
     {
       name: "setup-new-device",
       status: "unavailable",
-      label: () => gettext("Start browsing!"),
+      label: () => gettext("Download Firefox"),
       exitConditionsMet(state) {
         return false;
       },
