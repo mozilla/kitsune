@@ -1,8 +1,11 @@
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _lazy
 from zenpy import Zenpy
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
+
+NO_RESPONSE = _lazy("No response provided.")
 
 
 class ZendeskClient(object):
@@ -76,7 +79,7 @@ class ZendeskClient(object):
             user=zendesk_user_id, identity=ZendeskIdentity(id=identity_id, value=email)
         )
 
-    def create_ticket(self, user, ticket_fields):
+    def create_ticket(self, user, ticket_fields, product_config):
         """Create a ticket in Zendesk."""
         custom_fields = [
             {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": ticket_fields.get("product")},
@@ -101,8 +104,8 @@ class ZendeskClient(object):
                 ]
             )
         ticket = Ticket(
-            subject=ticket_fields.get("subject") or ticket_fields.get("category"),
-            comment={"body": ticket_fields.get("description") or ticket_fields.get("category")},
+            subject=ticket_fields.get("subject") or f"{product_config['name']} support",
+            comment={"body": ticket_fields.get("description") or str(NO_RESPONSE)},
             ticket_form_id=settings.ZENDESK_TICKET_FORM_ID,
             custom_fields=custom_fields,
         )
