@@ -5,6 +5,7 @@
     initNeedsChange();
     initAnnouncements();
     initL10nStringsStats();
+    setProgressBarWidth();
   }
 
   // Hook up readout mode links (like "This Week" and "All Time") to swap
@@ -27,6 +28,7 @@
           $.get($button.attr('data-url'),
           function succeed(html) {
             $table.html(html).removeClass('busy');
+            setProgressBarWidth();
           });
           return false;
         });
@@ -192,6 +194,13 @@
           )
         );
       });
+  }
+
+  function setProgressBarWidth() {
+    const graphBars = document.getElementsByClassName("absolute-graph");
+    for (const bar of graphBars) {
+      bar.style.width = bar.getAttribute("data-absolute-graph");
+    }
   }
 
   $(init);
