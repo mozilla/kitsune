@@ -70,7 +70,7 @@ most_visited_translation_from = (
     "    AND NOT engdoc.is_archived "
     "    AND engdoc.latest_localizable_revision_id IS NOT NULL "
     "{extra_where} "
-    "ORDER BY dashboards_wikidocumentvisits.visits DESC, "
+    "ORDER BY dashboards_wikidocumentvisits.visits DESC NULLS LAST, "
     "         COALESCE(transdoc.title, engdoc.title) ASC "
 ).format
 
@@ -647,7 +647,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
             "NOT engdoc.is_template AND "
             "engdoc.html NOT LIKE '<p>REDIRECT <a%%' "
             "GROUP BY engdoc.id "
-            "ORDER BY visits DESC, "
+            "ORDER BY visits DESC NULLS LAST, "
             "    engdoc.title ASC" + self._limit_clause(max)
         )
 
@@ -697,7 +697,7 @@ class CategoryReadout(Readout):
             + extra_joins
             + "WHERE engdoc.locale=%s AND "
             "   NOT engdoc.is_archived " + (self.where_clause) + "GROUP BY engdoc.id "
-            "ORDER BY visits DESC, "
+            "ORDER BY visits DESC NULLS LAST, "
             "    engdoc.title ASC" + self._limit_clause(max)
         )
 
@@ -940,7 +940,7 @@ class UnreviewedReadout(Readout):
         return (
             "ORDER BY maxcreated DESC"
             if self.mode == MOST_RECENT
-            else "ORDER BY visits DESC, " "wiki_document.title ASC"
+            else "ORDER BY visits DESC NULLS LAST, " "wiki_document.title ASC"
         )
 
     def _format_row(self, row):
@@ -1079,9 +1079,9 @@ class UnreadyForLocalizationReadout(Readout):
         # recent to have transitioned onto this dashboard or to change which
         # revision causes them to be on this dashboard.
         return (
-            "ORDER BY maxreviewed DESC"
+            "ORDER BY maxreviewed DESC NULLS LAST"
             if self.mode == MOST_RECENT
-            else "ORDER BY visits DESC, engdoc.title ASC"
+            else "ORDER BY visits DESC NULLS LAST, engdoc.title ASC"
         )
 
     def _format_row(self, row):
@@ -1138,7 +1138,7 @@ class NeedsChangesReadout(Readout):
         # Put the most recently approved articles first, as those are the most
         # recent to have transitioned onto this dashboard or to change which
         # revision causes them to be on this dashboard.
-        return "ORDER BY visits DESC, engdoc.title ASC"
+        return "ORDER BY visits DESC NULLS LAST, engdoc.title ASC"
 
     def _format_row(self, row):
         (slug, title, comment, visits) = row
@@ -1198,7 +1198,7 @@ class CannedResponsesReadout(Readout):
             "    AND engvisits.period=%s " + extra_joins + "WHERE engdoc.category = %s "
             "    AND engdoc.locale = %s "
             "    AND NOT engdoc.is_archived "
-            "ORDER BY engvisits.visits DESC " + self._limit_clause(max)
+            "ORDER BY engvisits.visits DESC NULLS LAST " + self._limit_clause(max)
         )
 
         return query, params
