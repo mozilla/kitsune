@@ -52,7 +52,6 @@ import { getQueryParamsAsDict } from "sumo/js/main";
       }
       document.location = document.location.pathname + '?' + $.param(queryParams);
     });
-    setProgessBarWidth();
   });
 
   function addDatePicker(inputId) {
@@ -152,7 +151,6 @@ import { getQueryParamsAsDict } from "sumo/js/main";
     });
 
   }
-
 
   function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
     var graph = new Graph($container, {
@@ -284,14 +282,6 @@ import { getQueryParamsAsDict } from "sumo/js/main";
     };
 
     $.getJSON($contributors.data('url'), callback);
-  }
-
-  function setProgessBarWidth() {
-    const graphBars = document.getElementsByClassName("absolute-graph");
-    for (const bar of graphBars) {
-      bar.style.width = bar.getAttribute("data-absolute-graph");
-    }
-
   }
 
 })(jQuery);
