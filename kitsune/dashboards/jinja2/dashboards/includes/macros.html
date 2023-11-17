@@ -1,9 +1,7 @@
 {% macro print_readout(readout, locale=None, max_rows=10, product=None) %}
   {% if not readout.hide_readout %}
-    <details class="h2" open="open">
-      <summary class="with-mode-selectors">
-        <a id="{{ readout.slug }}">{{ readout.title }}</a>
-      </summary>
+    <details open>
+      <summary><h4 id="{{ readout.slug }}">{{ readout.title }}</h4></summary>
       <ul class="readout-modes" data-slug="{{ readout.slug }}">
         {% for key, name in readout.modes %}
           <li class="mode{% if key == readout.default_mode %} active
@@ -31,8 +29,8 @@
 {% macro overview_section(readouts, printed_rows) %}
 {# printed_rows is a tuple of pairs, (row, should_color), like so:
   ((row1, True/False), (row2, True/False), ... etc) #}
-  <details class="h2" open="open">
-    <summary>{{ _('Overview') }}</summary>
+  <details open>
+    <summary><h4>{{ _('Overview') }}</h4></summary>
     <table class="overview l10n-overview">
       {% for row, should_color in printed_rows %}
         {% if row.title == _('Top 100 Articles') %}
@@ -43,7 +41,7 @@
             </td>
             <td>
               {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
-                {{ numerator }} 
+                {{ numerator }}
                 <small>of {{ denominator }}</small>
               {% endtrans %}
             </td>
@@ -90,14 +88,6 @@
         <td></td>
       </tr>
     </table>
-    <div id="overview-options" class="choice-list">
-      <label>{{ _('Jump to:') }}</label>
-      <ul>
-        {% for slug, readout in readouts.items() if readout.short_title %}
-          <li><a href="#{{ slug }}">{{ readout.short_title }}</a></li>
-        {% endfor %}
-      </ul>
-    </div>
   </details>
 {% endmacro %}
 

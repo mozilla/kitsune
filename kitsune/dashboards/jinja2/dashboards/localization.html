@@ -83,21 +83,8 @@
                                      (overview_rows['all'], True),
                                      (overview_rows['templates'], True))) }}
 
-      <div id="stats-tabs" data-ui-type="tabbed-view">
-        <ul class="cf" data-tab-role="tabs">
-          <li>{{ _('Localization') }}</li>
-          <li>{{ _('Review') }}</li>
-        </ul>
-        <div data-tab-role="panels">
-          <div>
-            {{ print_readout(readouts['most-visited-translations'], max_rows=20, product=product) }}
-          </div>
-          <div>
-            {{ print_readout(readouts['unreviewed'], max_rows=10, product=product) }}
-          </div>
-        </div>
-      </div>
-
+      {{ print_readout(readouts['most-visited-translations'], max_rows=20, product=product) }}
+      {{ print_readout(readouts['unreviewed'], max_rows=10, product=product) }}
       {{ print_readout(readouts['template-translations'], max_rows=10, product=product) }}
     </article>
   </div>
