@@ -371,8 +371,4 @@
     :global(h2) {
         @include typography-mixins.text-display-sm(moz);
     }
-
-    :global(p) {
-        @include typography-mixins.text-body-md;
-    }
 </style>
