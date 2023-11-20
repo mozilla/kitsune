@@ -20,10 +20,10 @@ class ZendeskClient(object):
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""
         # If the user already exists in Zendesk return
-        # them instead of creating a new user
-        if self.filter_user_by_email(email):
-            return self.filter_user_by_email(email)
-
+        # the Zendesk user object
+        # instead of creating a new one
+        if zuser := self.get_user_by_email(email):
+            return zuser
         # If the user is not authenticated, we can't save anything to
         # AnonymousUser Profile as it has none
         if not user.is_authenticated:
@@ -50,10 +50,20 @@ class ZendeskClient(object):
             external_id=external_id,
         )
 
-    def filter_user_by_email(self, email):
+    def get_user_by_email(self, email):
         """Given an email, return a user from Zendesk."""
-        for user in self.client.search(type="user", query=f"email:{email}"):
-            return user
+        # This returns a generator, but we only want/expect one user
+        # If it returns more than one, we should fail
+        # Otherwise return the Zendesk user object
+        search_results = self.client.search(type="user", query=f"email:{email}")
+
+        user_found = None
+        for user in search_results:
+            if user_found is not None:
+                raise ValueError(f"Found more than one user with email {email}")
+            user_found = user
+
+        return user_found
 
     def create_user(self, user, email=""):
         """Given a Django user, create a user in Zendesk."""
