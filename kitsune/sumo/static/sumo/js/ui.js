@@ -127,11 +127,12 @@ import trackEvent from "sumo/js/analytics";
 
     $('[data-ui-type="tabbed-view"]').each(function() {
       var $tv = $(this);
-      var $tabs = $tv.children('[data-tab-role="tabs"]').children();
+      var $tabs = $tv.children('[data-tab-role="tabs"]').children().children();
       var $panels = $tv.children('[data-tab-role="panels"]').children();
 
       $tabs.each(function(i) {
-        $(this).on('click', function() {
+        $(this).on('click', function(e) {
+          e.preventDefault();
           $panels.hide();
           $panels.eq(i).show();
           $tabs.removeClass('selected');
