@@ -21,6 +21,7 @@ help:
 	@echo "runshell      - start a bash shell with ports bound so you can run the server"
 	@echo "clean         - remove all build, test, coverage and Python artifacts"
 	@echo "rebuild       - force a rebuild of the dev docker image"
+	@echo "format        - format source files"
 	@echo "lint          - run pre-commit hooks"
 	@echo "test          - run python tests"
 	@echo "test-js       - run js tests"
@@ -75,6 +76,9 @@ clean:
 lint: .docker-build
 	${DC} run web pre-commit run --all-files
 
+format: .docker-build
+	${DC} run web black kitsune/
+
 test: .docker-build
 	${DC} run web ./bin/run-unit-tests.sh
 
@@ -85,4 +89,4 @@ docs: .docker-build
 	${DC} run web $(MAKE) -C docs/ clean
 	${DC} run web $(MAKE) -C docs/ html
 
-.PHONY: build rebuild run init shell runshell djshell clean lint test test-js docs
+.PHONY: build rebuild run init shell runshell djshell clean lint format test test-js docs
