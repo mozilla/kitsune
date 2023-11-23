@@ -12,7 +12,7 @@ default: help
 
 help:
 	@echo "build         - build docker images for dev"
-	@echo "run           - docker-compose up the entire system for dev"
+	@echo "start         - docker-compose up the entire system for dev"
 	@echo ""
 	@echo "init          - initialize the database and install Node packages"
 	@echo "djshell       - start a Django Python shell (ipython)"
@@ -39,8 +39,9 @@ build:
 
 rebuild: clean build
 
-run: .docker-build
+start: .docker-build
 	${DC} up web
+run: start
 
 init: .docker-build
 	${DC} run web bin/run-bootstrap.sh
