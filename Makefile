@@ -27,12 +27,10 @@ help:
 	@echo "docs          - generate Sphinx HTML documentation"
 
 .env:
-	@if [ ! -f .env ]; then \
-		echo "Copying .env-dist to .env..."; \
-		cp .env-dist .env; \
-	fi
+	@echo "Copying .env-dist to .env...";
+	cp -n .env-dist .env;
 
-.docker-build:
+.docker-build: .env
 	${MAKE} build
 
 build:
