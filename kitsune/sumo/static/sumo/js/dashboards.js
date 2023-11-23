@@ -5,6 +5,7 @@
     initNeedsChange();
     initAnnouncements();
     initL10nStringsStats();
+    initLocalizationTabs();
     setProgressBarWidth();
   }
 
@@ -202,6 +203,37 @@
       bar.style.width = bar.getAttribute("data-absolute-graph");
     }
   }
+
+  function initLocalizationTabs() {
+    const tabs = document.querySelectorAll('.dashboards nav.localization.tabs .tabs--link');
+    const tabContents = document.querySelectorAll('.dashboards .localization.tabs--content');
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        // Remove active class from all tabs and hide all tab contents
+        tabs.forEach(function(tab) {
+          tab.classList.remove('is-active');
+        });
+
+        tabContents.forEach(function(content) {
+          content.classList.remove('is-active');
+        });
+
+        // Add active class to the selected tab and show its content
+        tab.classList.add('is-active');
+        const targetContent = document.getElementById('tab-' + tab.getAttribute('data-tab-content-id'));
+        if (targetContent) {
+          targetContent.classList.add('is-active');
+        }
+
+        window.location.hash = tab.id;
+      });
+    });
+
+    if (window.location.hash) {
+      $(window.location.hash).trigger('click');
+    }
+  };
 
   $(init);
 })(jQuery);

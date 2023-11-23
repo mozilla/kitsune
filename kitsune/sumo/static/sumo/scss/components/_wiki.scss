@@ -1197,8 +1197,8 @@ article {
 }
 
 #get-involved-box {
-  margin-top: 100px;
-  text-align: center;
+  margin-top: p.$spacing-lg;
+  margin-bottom: p.$spacing-2xl;
 
   .btn {
     font-size: p.$spacing-md;

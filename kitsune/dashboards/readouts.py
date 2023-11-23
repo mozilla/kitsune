@@ -1210,7 +1210,7 @@ class CannedResponsesReadout(Readout):
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = OrderedDict(
     (t.slug, t)  # type: ignore
-    for t in [MostVisitedTranslationsReadout, TemplateTranslationsReadout, UnreviewedReadout]
+    for t in [MostVisitedTranslationsReadout, UnreviewedReadout, TemplateTranslationsReadout]
 )
 
 # Contributors ones:

@@ -19,7 +19,7 @@ class LocalizationDashTests(TestCase):
     @staticmethod
     def _assert_readout_contains(doc, slug, contents):
         """Assert `doc` contains `contents` within the `slug` readout."""
-        html = doc("a#" + slug).closest("details").html()
+        html = doc("section#tab-" + slug).html()
         assert contents in html, "'" + contents + "' is not in the following: " + html
 
     def test_render(self):
