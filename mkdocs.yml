@@ -1,0 +1,98 @@
+site_name: Kitsune Documentation
+site_url: https://support.mozilla.org
+site_description: 'Kitsune is the platform that powers SuMo'
+repo_name: 'mozilla/kitsune'
+repo_url: 'https://github.com/mozilla/kitsune'
+markdown_extensions:
+    - admonition
+    - abbr
+    - def_list
+    - tables
+    - toc:
+        baselevel: 2
+        permalink: true
+    - pymdownx.betterem:
+        smart_enable: all
+    - pymdownx.arithmatex:
+        generic: true
+    - pymdownx.caret
+    - pymdownx.critic
+    - pymdownx.details
+    - pymdownx.inlinehilite
+    - pymdownx.magiclink
+    - pymdownx.highlight
+    - pymdownx.inlinehilite
+    - pymdownx.keys
+    - pymdownx.mark
+    - pymdownx.smartsymbols
+    - pymdownx.superfences
+    - pymdownx.tabbed:
+        alternate_style: true
+    - pymdownx.tasklist:
+        custom_checkbox: true
+    - pymdownx.tilde
+    - pymdownx.superfences
+theme:
+    name: material
+    features:
+        - navigation.instant
+        - navigation.instant.progress
+        - navigation.tracking
+        - navigation.top
+        - toc.follow
+    palette:
+    # Palette toggle for light mode
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      primary: deep purple
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      primary: deep purple
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+nav:
+    - Home: index.md
+    - Introduction:
+        - contributors.md
+        - hacking_howto.md
+        - contactus.md
+    - Developer's guide:
+        - conventions.md
+        - patching.md
+        - development.md
+        - tests.md
+        - celery.md
+        - email.md
+        - localization.md
+        - elastic_search.md
+        - frontend.md
+        - svelte.md
+        - browser_permissions.md
+        - zendesk.md
+        - seo.md
+        - notes.md
+        - switching_devices.md
+    - SuMo:
+        - api.md
+        - deployments.md
+        - k8s.md
+        - sla.md
+    - User Guide:
+        - users.md
+        - questions.md
+        - badges.md
+        - advanced-search.md
+    - Architectural Decisions: 
+        - architectural-decisions.md
+        - Record: architecture/decisions/0001-record-architecture-decisions.md
+        - Search - L10N content: architecture/decisions/0002-es-l10n-content.md
+        - Search - AAQ content: architecture/decisions/0003-es-aaq-documents.md
+        - Type Checking: architecture/decisions/0004-type-checking.md
+

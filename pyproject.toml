@@ -85,6 +85,8 @@ graphene-django = "~3.0.0"
 django-guardian = "^2.4.0"
 django-email-bandit = "^2.0"
 psycopg2 = "^2.9.9"
+mkdocs = "^1.5.3"
+mkdocs-material = "^9.4.10"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.11"
