@@ -6,8 +6,12 @@ This covers loosely how we do big feature changes.
 
 # Changes that involve new Python dependencies
 
+!!! warning
+
+    This section of documentation may be outdated.
+
 All python dependencies have an associated hash (or several) that are
-checked at download time. This ensures malicious code doesn\'t sneak in
+checked at download time. This ensures malicious code doesn't sneak in
 through dependencies being hacked, and also makes sure we always get the
 exact code we developed against. Changes in dependencies, malicious or
 not, will set off red flags and require human intervention.
@@ -41,7 +45,7 @@ To run migrations, you do:
 
     $ ./manage.py migrate
 
-It\'ll perform any migrations that haven\'t been performed for all apps.
+It will perform any migrations that haven't been performed for all apps.
 
 ## Creating a schema migration
 
@@ -65,12 +69,9 @@ To create a new migration the automatic way:
 
 6.  commit
 
-::: seealso
+!!! info
 
-<https://docs.djangoproject.com/en/stable/topics/migrations/#adding-migrations-to-apps>
-
-:   Django documentation: Adding migrations to apps
-:::
+    [Django documentation: Adding migrations to apps](https://docs.djangoproject.com/en/stable/topics/migrations/#adding-migrations-to-apps)
 
 # Creating a data migration
 
@@ -99,25 +100,19 @@ To create a data migration the automatic way:
 
 7.  commit
 
-::: seealso
+!!! info
 
-<https://docs.djangoproject.com/en/stable/topics/migrations/#data-migrations>
+    [Django documentation: Data Migrations](https://docs.djangoproject.com/en/stable/topics/migrations/#data-migrations)
 
-:   Django documentation: Data Migrations
-:::
-
-::: seealso
-<https://docs.djangoproject.com/en/stable/ref/migration-operations/#runpython>
-:::
 
 ## Data migrations for data in non-kitsune apps
 
-If you\'re doing a data migration that adds data to an app that\'s not
+If you're doing a data migration that adds data to an app that's not
 part of kitsune, but is instead a library (e.g. django-waffle), then
 create the data migration in the sumo app and add a dependency to the
 latest migration in the library app.
 
-For example, this adds a dependency to django-waffle\'s initial
+For example, this adds a dependency to django-waffle's initial
 migration:
 
     class Migration(migrations.Migration):
@@ -139,7 +134,7 @@ code that require reindexing.
 ## Things about non-trivial changes
 
 1.  We should roll multiple reindex-requiring changes into megapacks
-    when it makes sense and doesn\'t add complexity.
+    when it makes sense and does not add complexity.
 2.  Developers should test changes with recent sumo dumps.
 
 ## Workflow for making the changes
@@ -151,21 +146,21 @@ code that require reindexing.
 
 3.  get the pull request reviewed
 
-4.  rebase the changes so they\'re in two commits:
+4.  rebase the changes so they're in two commits:
 
     1.  a stage 1 commit that changes `ES_WRITE_INDEXES`, updates the
         mappings and updates the indexing code
     2.  a stage 2 commit that changes `ES_INDEXES`, changes
         `ES_WRITE_INDEXES`, and changes the search view code
 
-    **Avoid cosmetic changes that don\'t need to be made (e.g. pep-8
+    **Avoid cosmetic changes that don't need to be made (e.g. pep-8
     fixes, etc.)**
 
 5.  push those changes to the same pull request
 
 6.  get those two changes reviewed
 
-Once that\'s ok, then that branch should get updated from main, then
+Once that's ok, then that branch should get updated from main, then
 pushed to stage to get tested.
 
 That branch should **not** land in main, yet.
@@ -186,7 +181,7 @@ At that point:
 
 ## Workflow for pushing changes to stage
 
-Don\'t land the changes in main, yet!
+Don't land the changes in main, yet!
 
 If you hit problems, deploy the main branch back to the stage server and
 go back to coding/fixing.
@@ -206,7 +201,7 @@ go back to coding/fixing.
 
 ## Workflow for pushing those changes to production
 
-If we\'re also doing a production push, first push next to production
+If we're also doing a production push, first push next to production
 and verify that everything is fine. Then continue.
 
 1.  Tell the other sumo devs to hold off on pushing to main branch and
@@ -227,5 +222,5 @@ downtime.
 If everything is still fine, then merge the special branch into main and
 delete the old read index.
 
-Announce \"STUCK THE LANDING!\" after a successful mapping change
+Announce "STUCK THE LANDING!" after a successful mapping change
 deployment.

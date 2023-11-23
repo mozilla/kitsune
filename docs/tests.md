@@ -2,13 +2,10 @@
 title: All about testing
 ---
 
-::: warning
-::: title
-Warning
-:::
+!!! warning
 
-This section of documentation may be outdated.
-:::
+    This section of documentation may be outdated.
+
 
 Kitsune has a fairly comprehensive Python test suite. Changes should not
 break tests\-\--only change a test if there is a good reason to change
@@ -24,7 +21,7 @@ To run the tests, you need to do:
 
     ./manage.py test
 
-That doesn\'t provide the most sensible defaults for running the tests.
+That doesn't provide the most sensible defaults for running the tests.
 Here is a good command to alias to something short:
 
     ./manage.py test -s --noinput --logging-clear-handlers
@@ -52,7 +49,7 @@ Some other helpful flags are:
 `--no-skip`:
 
 :   All SkipTests show up as errors. This is handy when things
-    shouldn\'t be skipping silently with reckless abandon.
+    shouldn't be skipping silently with reckless abandon.
 
 ## Running a Subset of Tests
 
@@ -103,7 +100,7 @@ the new functionality. All apps have a `tests` module where tests should
 go. They will be discovered automatically by the test runner as long as
 the look like a test.
 
--   We use \"modelmakers\" instead of fixtures. Models should have
+-   We use "modelmakers" instead of fixtures. Models should have
     modelmakers defined in the tests module of the Django app. For
     example, `forums.tests.document` is the modelmaker for
     `forums.Models.Document` class.
@@ -111,7 +108,7 @@ the look like a test.
 # Changing Tests
 
 Unless the current behavior, and thus the test that verifies that
-behavior is correct, is demonstrably wrong, don\'t change tests. Tests
+behavior is correct, is demonstrably wrong, don't change tests. Tests
 may be refactored as long as its clear that the result is the same.
 
 # Removing Tests
@@ -139,8 +136,8 @@ and then run:
 Mocha tests are discovered using the pattern
 `kitsune/*/static/*/js/tests/**/*.js`. That means that any app can have
 a [tests]{.title-ref} directory in its JavaScript directory, and the
-files in there will all be considered test files. Files that don\'t
-define tests won\'t cause issues, so it is safe to put testing utilities
+files in there will all be considered test files. Files that don't
+define tests won't cause issues, so it is safe to put testing utilities
 in these directories as well.
 
 Here are a few tips for writing tests:
