@@ -1,29 +1,15 @@
 ---
-title: Welcome to Kitsune\'s documentation!
+title: Welcome to Kitsune's documentation!
 ---
 
-# Part 1: Contributor\'s Guide
+**Kitsune** is the platform that powers SuMo [support.mozilla.org](https://support.mozilla.org).  
+It is a web application based on [Django](https://djangoproject.com), a [Python](https://python.org) web application framework.
+
+
+# Contents
 
 ::: {.toctree maxdepth="2"}
-contributors hacking_howto contactus
-:::
-
-# Part 2: Developer\'s Guide
-
-::: {.toctree maxdepth="2"}
-conventions patching development tests celery email localization
+contributors hacking_howto contactus conventions patching development tests celery email localization
 elastic_search frontend svelte browser_permissions zendesk seo notes
-switching_devices
-:::
-
-# Part 3: SUMO
-
-::: {.toctree maxdepth="2"}
-api deployments k8s sla architectural-decisions
-:::
-
-# Part 4: User Guide
-
-::: {.toctree maxdepth="2"}
-users questions badges advanced-search
+switching_devices api deployments k8s sla architectural-decisions users questions badges advanced-search
 :::

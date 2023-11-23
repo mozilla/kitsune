@@ -23,3 +23,4 @@ Current developers:
 
 -   Tasos Katsoulas (tasos)
 -   Ryan Johnson (ryan)
+-   Smith Ellis (smith)
