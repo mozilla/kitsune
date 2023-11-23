@@ -40,6 +40,8 @@ theme:
         - navigation.tracking
         - navigation.top
         - toc.follow
+        - content.code.copy
+        - content.code.highlight
     palette:
     # Palette toggle for light mode
     - scheme: default
