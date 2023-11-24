@@ -2,7 +2,7 @@
 
 ## Summary
 
-```eval_rst
+```
 This chapter helps you get an installation of Kitsune up and running.
 
 If you have any problems getting Kitsune running, let us know. See :ref:`contact-us-chapter`.
@@ -18,10 +18,13 @@ and follow the following steps.
     ```
     git clone https://github.com/mozilla/kitsune.git
     ```
+
 2. Create a `.env` file (if one doesn't already exist).
+
     ```
     make .env
     ```
+
 3. Pull base Kitsune Docker images, install node packages and build the Webpack bundle, and create your database.
 
     ```
@@ -126,30 +129,26 @@ running this command::
 1.  Add a product with a slug matching one of the product values in `kitsune/questions/config.py`.
     You can do this through the admin interface at `/admin/products/product/add/`.
 
-        For instance, with a `config.py` value like:
+    For instance, with a `config.py` value like:
 
-        ```python
-        ...
-        "name": _lazy("Firefox"),
-        "product": "firefox",
-        ...
-        ```
+    ```py
+    "name": _lazy("Firefox"),
+    "product": "firefox",
+    ```
 
-        Create a product in the admin interface with its `slug` set to `firefox`.
+    Create a product in the admin interface with its `slug` set to `firefox`.
 
 2.  Add a topic matching a category from that product config,
     and associate it with the product you just created.
     You can do this through the admin interface at `/admin/products/topic/add/`.
 
-        For instance, with a category with a `config.py` value like:
+    For instance, with a category with a `config.py` value like:
 
-        ```python
-        ...
-        "topic": "download-and-install",
-        ...
-        ```
+    ```py
+    "topic": "download-and-install",
+    ```
 
-        Create a topic in the admin interface with its `slug` set to `download-and-install` and its product set to the product you just created.
+    Create a topic in the admin interface with its `slug` set to `download-and-install` and its product set to the product you just created.
 
 3.  Finally add an AAQ locale for that product.
     You can do this through the admin interface at `/admin/questions/questionlocale/add/`.
@@ -161,28 +160,26 @@ or have entered data yourself through the admin interface.
 
 1. Enter into the web container
 
-    ```
+    ```shell
     docker-compose exec web bash
     ```
 
 2. Build the indicies
 
-    ```
-    $ ./manage.py es_init && ./manage.py es_reindex
+    ```bash
+    ./manage.py es_init && ./manage.py es_reindex
     ```
 
 3. Now, exit from web's bash shell
-    ```
-    $ exit
+    ```bash
+    exit
     ```
 
-```eval_rst
-.. Note::
-  If after running these commands,
-  search doesn't seem to be working,
-  make sure you're not running any ad-blocking extensions in your browser.
-  They may be blocking the `analytics.js` script which search depends on.
-```
+!!! note "Search"
+
+    If after running these commands, search doesn't seem to be working,
+    make sure you're not running any ad-blocking extensions in your browser.
+    They may be blocking the `analytics.js` script which search depends on.
 
 ### Install linting tools
 
@@ -191,13 +188,13 @@ Install it globally,
 or in a venv,
 outside of the docker container with:
 
-```
-$ pip install pre-commit
+```bash
+pip install pre-commit
 ```
 
 Then set up its git pre-commit hook:
 
-```
+```bash
 $ pre-commit install
 ```
 
@@ -206,14 +203,14 @@ every time you commit,
 pre-commit will check your changes for style problems.
 To run it manually you can use the command:
 
-```
+```bash 
 $ pre-commit run
 ```
 
 which will run the checks for only your changes,
 or if you want to run the lint checks for all files:
 
-```
+```bash
 $ pre-commit run --all-files
 ```
 
@@ -221,14 +218,15 @@ For more details see the [pre-commit docs](https://pre-commit.com).
 
 ### Product Details Initialization
 
-```eval_rst
-One of the packages Kitsune uses, ``product_details``, needs to fetch
-JSON files containing historical Firefox version data and write them
-within its package directory. To set this up, run this command to do
-the initial fetch::
+!!! note 
 
-    docker-compose exec web ./manage.py update_product_details
-```
+    One of the packages Kitsune uses, ``product_details``, needs to fetch
+    JSON files containing historical Firefox version data and write them
+    within its package directory. To set this up, run this command to do
+    the initial fetch:
+    ```bash
+        docker-compose exec web ./manage.py update_product_details
+    ```
 
 ### Using Django Debug Toolbar
 
@@ -238,7 +236,7 @@ especially slow running SQL queries.
 
 To enable it, ensure `DEBUG` and `USE_DEBUG_TOOLBAR` are enabled in `.env`:
 
-```
+```py
 DEBUG=True
 USE_DEBUG_TOOLBAR=True
 ```
@@ -247,11 +245,8 @@ USE_DEBUG_TOOLBAR=True
 
 Running the test suite is easy:
 
-```
+```bash
 ./bin/run-unit-tests.sh
 ```
 
-```eval_rst
-For more information, see the :ref:`test documentation
-<tests-chapter>`.
-```
+For more information, see the [test documentation](tests.md).
