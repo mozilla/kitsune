@@ -71,3 +71,4 @@ locust*
 geckodriver.log
 chromedriver.log
 .node_repl_history
+_docs

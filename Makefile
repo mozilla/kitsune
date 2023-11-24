@@ -24,7 +24,8 @@ help:
 	@echo "lint          - run pre-commit hooks"
 	@echo "test          - run python tests"
 	@echo "test-js       - run js tests"
-	@echo "docs          - generate Sphinx HTML documentation"
+	@echo "docs          - generate mkdocs documentation"
+	@echo "servedocs     - serve live documentaion"
 
 .env:
 	@if [ ! -f .env ]; then \
@@ -67,7 +68,7 @@ clean:
 #	test related things
 	-rm -f .coverage
 #	docs files
-	-rm -rf docs/_build/
+	-rm -rf _docs/build/
 #	state files
 	-rm -f .docker-build*
 #	node stuff
@@ -83,7 +84,9 @@ test-js: .docker-build
 	${DC} run web npm run webpack:test
 
 docs: .docker-build
-	${DC} run web $(MAKE) -C docs/ clean
-	${DC} run web $(MAKE) -C docs/ html
+	${DC} run web mkdocs build -d "_docs/build/"
 
-.PHONY: build rebuild run init shell runshell djshell clean lint test test-js docs
+servedocs: .docker-build
+	${DC} run web mkdocs serve
+
+.PHONY: build rebuild run init shell runshell djshell clean lint test test-js docs servedocs

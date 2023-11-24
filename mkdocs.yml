@@ -3,6 +3,7 @@ site_url: https://support.mozilla.org
 site_description: 'Kitsune is the platform that powers SuMo'
 repo_name: 'mozilla/kitsune'
 repo_url: 'https://github.com/mozilla/kitsune'
+docs_dir: 'docs/'
 markdown_extensions:
     - admonition
     - abbr
