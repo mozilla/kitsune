@@ -1,7 +1,10 @@
 # Kitsune
 
+![Status Sustain](https://img.shields.io/badge/Status-Sustain-green)
+
 Kitsune is the platform that powers [SuMo (support.mozilla.org)](https://support.mozilla.org)
 
+## Usage
 It is a [Django](http://www.djangoproject.com/) application. There is [documentation](https://kitsune.readthedocs.io/en/latest/) online.
 
 ## Deployment
