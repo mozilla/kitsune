@@ -68,10 +68,9 @@ class ZendeskForm(forms.Form):
         else:
             self.fields["email"].initial = user.email
         self.label_suffix = ""
-
         if product.slug not in PRODUCTS_WITH_OS:
             del self.fields["os"]
 
-    def send(self, user):
+    def send(self, user, product_config):
         client = ZendeskClient()
-        return client.create_ticket(user, self.cleaned_data)
+        return client.create_ticket(user, self.cleaned_data, product_config)
