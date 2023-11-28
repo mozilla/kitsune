@@ -560,7 +560,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
 
             if zendesk_form.is_valid() and not is_ratelimited(request, "loginless", "3/d"):
                 try:
-                    zendesk_form.send(request.user, product_config)
+                    zendesk_form.send(request.user)
                     email = zendesk_form.cleaned_data["email"]
                     messages.add_message(
                         request,
