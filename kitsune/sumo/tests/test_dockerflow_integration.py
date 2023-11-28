@@ -1,5 +1,4 @@
 import json
-import logging
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from testfixtures import LogCapture
