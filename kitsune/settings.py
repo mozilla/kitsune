@@ -20,6 +20,8 @@ STAGE = config("STAGE", default=False, cast=bool)
 # TODO
 # LOG_LEVEL = config('LOG_LEVEL', default='INFO', cast=labmda x: getattr(logging, x))
 LOG_LEVEL = config("LOG_LEVEL", default=logging.INFO)
+# Set to 'json' for MozLog format (https://wiki.mozilla.org/Firefox/Services/Logging)
+LOG_FORMAT = config("LOG_FORMAT", default="")
 
 SYSLOG_TAG = "http_sumo_app"
 
@@ -499,6 +501,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "kitsune.users.middleware.LogoutDeactivatedUsersMiddleware",
     "kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware",
     "csp.middleware.CSPMiddleware",
+    "dockerflow.django.middleware.DockerflowMiddleware",
 )
 
 # SecurityMiddleware settings
@@ -666,6 +669,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "statici18n",
     "watchman",
     "bandit",
+    "dockerflow.django",
     # 'axes',
     # Extra app for python migrations.
     "django_extensions",
@@ -1004,6 +1008,11 @@ ACTSTREAM_SETTINGS = {
 SILENCED_SYSTEM_CHECKS = [
     "fields.W340",  # null has no effect on ManyToManyField.
     "fields.W342",  # ForeignKey(unique=True) is usually better served by a OneToOneField
+]
+
+DOCKERFLOW_CHECKS = [
+    "dockerflow.django.checks.check_database_connected",
+    "dockerflow.django.checks.check_migrations_applied",
 ]
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="", cast=Csv())

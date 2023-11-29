@@ -12,7 +12,10 @@ config = {
         "default": {
             "format": "{0}: %(asctime)s %(name)s:%(levelname)s %(message)s: "
             "%(pathname)s:%(lineno)s".format(settings.SYSLOG_TAG),
-        }
+        },
+        "json": {
+            "()": "dockerflow.logging.JsonLogFormatter",
+        },
     },
     "handlers": {
         "syslog": {
@@ -27,7 +30,7 @@ config = {
         },
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "default",
+            "formatter": "json" if settings.LOG_FORMAT == "json" else "default",
             "level": settings.LOG_LEVEL,
         },
     },
