@@ -9,7 +9,7 @@ from kitsune.kbadge.models import Award
 from kitsune.sumo import email_utils
 
 
-@shared_task
+@shared_task(queue="low_intensity")
 def send_award_notification(award_id: int):
     """Sends the award notification email
 

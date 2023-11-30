@@ -17,6 +17,7 @@ services:
       - kibana
       - redis
       - celery
+      - celery-low-intensity
       - mailcatcher
     ports:
       - "8000:8000"
@@ -60,6 +61,19 @@ services:
       context: .
       target: base
     command: celery -A kitsune worker -l info -n default@%h
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - postgres
+      - redis
+
+  celery-low-intensity:
+    build:
+      context: .
+      target: base
+    command: celery -A kitsune worker -l info -n lowintensity@%h -Q low_intensity
     env_file: .env
     volumes:
       - ./:/app:delegated

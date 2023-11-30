@@ -34,7 +34,7 @@ from kitsune.wiki.utils import generate_short_url
 log = logging.getLogger("k.task")
 
 
-@shared_task
+@shared_task(queue="low_intensity")
 def send_reviewed_notification(revision_id: int, document_id: int, message: str):
     """Send notification of review to the revision creator."""
 

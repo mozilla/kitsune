@@ -16,7 +16,7 @@ def claim_watches(user_id):
     Watch.objects.filter(email=user.email).update(email=None, user=user)
 
 
-@shared_task
+@shared_task(queue="low_intensity")
 def send_emails(event_info, exclude_user_ids=None):
     """
     Celery task that is JSON-serializer friendly, and that fires the event specified by

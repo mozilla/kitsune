@@ -14,7 +14,7 @@ from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
 log = logging.getLogger("k.task")
 
 
-@shared_task
+@shared_task(queue="low_intensity")
 def email_private_message(inbox_message_id):
     """Send notification of a new private message."""
     inbox_message = InboxMessage.objects.get(id=inbox_message_id)
