@@ -139,30 +139,39 @@ def document(request, document_slug, document=None):
     if doc.locale != request.LANGUAGE_CODE:
         # The "doc" is the parent document.
         if doc.current_revision:
-            # There is no translation, so we'll fall back to its approved parent,
-            # unless we find an approved translation in a fallback locale.
-            fallback_reason = "no_translation"
+            # Check for unapproved revisions
+            unapproved_translation_exists = Revision.objects.filter(
+                based_on=doc.current_revision,
+                is_approved=False,
+                document__locale=request.LANGUAGE_CODE,
+            ).exists()
+            if unapproved_translation_exists:
+                fallback_reason = "translation_not_approved"
+            else:
+                # There is no translation, so we'll fall back to its approved parent,
+                # unless we find an approved translation in a fallback locale.
+                fallback_reason = "no_translation"
 
-            # Find and show the defined fallback locale rather than the English
-            # version of the document. The fallback locale is defined based on
-            # the ACCEPT_LANGUAGE header, site-wide locale mapping and custom
-            # fallback locale. The custom fallback locale is defined in the
-            # FALLBACK_LOCALES array in kitsune/wiki/config.py. See bug 800880
-            # for more details
-            fallback_locale = get_fallback_locale(doc, request)
+                # Find and show the defined fallback locale rather than the English
+                # version of the document. The fallback locale is defined based on
+                # the ACCEPT_LANGUAGE header, site-wide locale mapping and custom
+                # fallback locale. The custom fallback locale is defined in the
+                # FALLBACK_LOCALES array in kitsune/wiki/config.py. See bug 800880
+                # for more details
+                fallback_locale = get_fallback_locale(doc, request)
 
-            # If a fallback locale is defined, show the document in that locale,
-            # otherwise continue with the document in the default language.
-            if fallback_locale:
-                # If we have a fallback locale, it means we're guaranteed to have
-                # a translation in that locale with approved content.
-                doc = doc.translated_to(fallback_locale)
-                # For showing the fallback locale explanation message to the user
-                fallback_reason = "fallback_locale"
-                full_locale_name = {
-                    request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
-                    fallback_locale: LOCALES[fallback_locale].native,
-                }
+                # If a fallback locale is defined, show the document in that locale,
+                # otherwise continue with the document in the default language.
+                if fallback_locale:
+                    # If we have a fallback locale, it means we're guaranteed to have
+                    # a translation in that locale with approved content.
+                    doc = doc.translated_to(fallback_locale)
+                    # For showing the fallback locale explanation message to the user
+                    fallback_reason = "fallback_locale"
+                    full_locale_name = {
+                        request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
+                        fallback_locale: LOCALES[fallback_locale].native,
+                    }
 
     if not doc.current_revision:
         # We've got a document, but it has no approved content.
