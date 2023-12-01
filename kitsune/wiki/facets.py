@@ -10,17 +10,17 @@ from kitsune.products.models import Topic
 from kitsune.wiki.models import Document, HelpfulVote
 
 
-def topics_for(product, parent=False):
+def topics_for(user, product, parent=False):
     """Returns a list of topics that apply to passed in product.
 
     :arg product: a Product instance
     :arg parent: (optional) limit to topics with the given parent
     """
 
-    docs = Document.objects.filter(
+    docs = Document.objects.visible(
+        user,
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
-        current_revision__isnull=False,
         products=product,
         category__in=settings.IA_DEFAULT_CATEGORIES,
     )
@@ -34,7 +34,7 @@ def topics_for(product, parent=False):
     return qs
 
 
-def documents_for(locale, topics=None, products=None, current_document=None):
+def documents_for(user, locale, topics=None, products=None, current_document=None):
     """Returns a tuple of lists of articles that apply to topics and products.
 
     The first item in the tuple is the list of articles for the locale
@@ -42,6 +42,7 @@ def documents_for(locale, topics=None, products=None, current_document=None):
     that aren't localized to the specified locale. If the specified locale
     is en-US, the second item will be None.
 
+    :arg user: the user making this request
     :arg locale: the locale
     :arg topics: (optional) a list of Topic instances
     :arg products: (optional) a list of Product instances
@@ -53,7 +54,7 @@ def documents_for(locale, topics=None, products=None, current_document=None):
         url
         document_parent_id
     """
-    documents = _documents_for(locale, topics, products)
+    documents = _documents_for(user, locale, topics, products)
 
     if exclude_current_document := isinstance(current_document, Document):
         if documents and current_document.locale == locale:
@@ -64,6 +65,7 @@ def documents_for(locale, topics=None, products=None, current_document=None):
     if locale != settings.WIKI_DEFAULT_LANGUAGE:
         # Start by getting all of the English documents for the given products and topics.
         en_documents = _documents_for(
+            user,
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             products=products,
             topics=topics,
@@ -84,19 +86,21 @@ def documents_for(locale, topics=None, products=None, current_document=None):
     return documents, fallback_documents
 
 
-def _documents_for(locale, topics=None, products=None):
+def _documents_for(user, locale, topics=None, products=None):
     """Returns a list of articles that apply to passed in locale, topics and products."""
-    # First try to get the results from the cache
     cache_key = _cache_key(locale, topics, products)
-    documents_cache_key = f"documents_for:{cache_key}"
-    documents = cache.get(documents_cache_key)
-    if documents is not None:
-        return documents
 
-    qs = Document.objects.filter(
+    if not user.is_authenticated:
+        # For anonymous users, first check the cache.
+        documents_cache_key = f"documents_for:{cache_key}"
+        documents = cache.get(documents_cache_key)
+        if documents is not None:
+            return documents
+
+    qs = Document.objects.visible(
+        user,
         locale=locale,
         is_archived=False,
-        current_revision__isnull=False,
         category__in=settings.IA_DEFAULT_CATEGORIES,
     )
     # speed up query by removing any ordering, since we're doing it in python:
@@ -148,7 +152,9 @@ def _documents_for(locale, topics=None, products=None):
     # sort the results by ascending display_order and descending votes
     doc_dicts.sort(key=lambda x: (x["display_order"], -x["helpful_votes"]))
 
-    cache.set(documents_cache_key, doc_dicts)
+    if not user.is_authenticated:
+        cache.set(documents_cache_key, doc_dicts)
+
     return doc_dicts
 
 

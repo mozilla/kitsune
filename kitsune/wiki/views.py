@@ -234,7 +234,7 @@ def document(request, document_slug, document=None):
             product=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
         )
         switching_devices_subtopics = topics_for(
-            product=switching_devices_product, parent=switching_devices_topic
+            request.user, product=switching_devices_product, parent=switching_devices_topic
         )
 
     if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
