@@ -3,14 +3,14 @@ from zoneinfo import ZoneInfo
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.db.models import F
 from django.http import HttpResponse
 from django.utils import translation
 from django.utils.translation import pgettext
 
-from rest_framework import fields, permissions, serializers
+from rest_framework import fields, filters, permissions, serializers
 from rest_framework.authentication import SessionAuthentication, CSRFCheck
 from rest_framework.exceptions import APIException, AuthenticationFailed
-from rest_framework.filters import BaseFilterBackend
 from rest_framework.renderers import JSONRenderer as DRFJSONRenderer
 
 from kitsune.users.models import Profile
@@ -184,7 +184,7 @@ class GenericRelatedField(fields.ReadOnlyField):
         return data
 
 
-class InequalityFilterBackend(BaseFilterBackend):
+class InequalityFilterBackend(filters.BaseFilterBackend):
     """A filter backend that allows for field__gt style filtering."""
 
     def filter_queryset(self, request, queryset, view):
@@ -350,3 +350,20 @@ class JSONRenderer(DRFJSONRenderer):
         # JSON spec: http://json.org/
 
         return json.replace(b"</", b"<\\/")
+
+
+class OrderingFilter(filters.OrderingFilter):
+    """
+    Sub-class of rest_framework.filters.OrderingFilter that simply ensures that
+    any null values in fields requested in descending order are sorted last.
+    """
+
+    def get_ordering(self, request, queryset, view):
+        """
+        Replaces any ordering fields requested in descending order with an F()
+        expression that ensures any null values are sorted last.
+        """
+        return [
+            F(field[1:]).desc(nulls_last=True) if field.startswith("-") else field
+            for field in super().get_ordering(request, queryset, view)
+        ]
