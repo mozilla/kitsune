@@ -30,7 +30,6 @@ global.jsdom = dom;
 global.window.fetch = () => {};
 global.CustomEvent = dom.window.CustomEvent;
 global.requestAnimationFrame = () => {};
-global.window.waffle = { flag_is_active: () => undefined };
 global.window.URL.createObjectURL = () => {};
 global.window.open = () => {};
 global.Blob = dom.window.Blob;

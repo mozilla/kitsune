@@ -230,18 +230,7 @@ describe("form-wizard custom element", () => {
     });
 
     describe("fox doodle", () => {
-      let featureFlagCheck;
-
-      before(() => {
-        featureFlagCheck = sinon.stub(global.window.waffle, "flag_is_active");
-      });
-
-      after(() => {
-        featureFlagCheck.restore();
-      });
-
       it("should show a doodle that changes when the active step changes", () => {
-        featureFlagCheck.returns(true);
         renderWizard();
 
         let doodle = wizard.shadowRoot.getElementById("doodle");
@@ -254,21 +243,6 @@ describe("form-wizard custom element", () => {
 
         wizard.activeStep = "setup-new-device";
         expect(doodle.src.includes(setupDoodleURL)).to.be.true;
-      });
-
-      it("should not show a doodle when the feature flag is not enabled", () => {
-        featureFlagCheck.returns(false);
-        renderWizard();
-
-        let doodle = wizard.shadowRoot.getElementById("doodle");
-        expect(doodle).to.exist;
-        expect(doodle.hidden).to.be.true;
-
-        wizard.activeStep = "configure-sync";
-        expect(doodle.hidden).to.be.true;
-
-        wizard.activeStep = "setup-new-device";
-        expect(doodle.hidden).to.be.true;
       });
     });
   });

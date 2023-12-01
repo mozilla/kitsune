@@ -110,13 +110,6 @@ export class FormWizard extends HTMLElement {
   }
 
   connectedCallback() {
-    // Report to GA whether or not the user sees the fox doodle.
-    trackEvent(
-      "device-migration-wizard",
-      "experiments",
-      this.showDoodle ? "doodle-shown" : "doodle-not-shown"
-    );
-
     if (this.activeStep) {
       // Make sure the active step is shown.
       this.#setActiveStepAttributes();
@@ -124,10 +117,6 @@ export class FormWizard extends HTMLElement {
       // If there's no active step, default to the first step.
       this.activeStep = this.firstElementChild?.getAttribute("name");
     }
-  }
-
-  get showDoodle() {
-    return window.waffle?.flag_is_active("show_device_migration_doodle");
   }
 
   get activeStep() {
@@ -293,10 +282,6 @@ export class FormWizard extends HTMLElement {
    * active step. Also toggles visibility.
    */
   #updateDoodle() {
-    if (!this.showDoodle) {
-      return;
-    }
-
     let doodleData = STEP_TO_DOODLE_MAP[this.activeStep];
     if (doodleData) {
       this.#doodle.src = doodleData.src;
