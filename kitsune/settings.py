@@ -378,7 +378,13 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STORAGES = {
+    "default": {
+        # Default storage engine - ours does not preserve filenames
+        "BACKEND": "kitsune.upload.storage.RenameFileStorage"
+    },
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
 
 # Set the TRUSTED_PROXY_COUNT to the number of trusted proxies (load balancers,
 # CDN's, etc.) in place prior to the Django instance or Kubernetes service. Each
@@ -771,8 +777,6 @@ SEARCH_CACHE_PERIOD = config("SEARCH_CACHE_PERIOD", default=15, cast=int)
 # Columns are 250 but this leaves 50 chars for the upload_to prefix
 MAX_FILENAME_LENGTH = 200
 MAX_FILEPATH_LENGTH = 250
-# Default storage engine - ours does not preserve filenames
-DEFAULT_FILE_STORAGE = "kitsune.upload.storage.RenameFileStorage"
 
 # GCP storage settings
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="")
