@@ -19,23 +19,29 @@ class ZendeskClient(object):
 
     def _user_to_zendesk_user(self, user, email):
         """Given a Django user, return a Zendesk user."""
-        # If the user already exists in Zendesk return
-        # the Zendesk user object
-        # instead of creating a new one
-        if zuser := self.get_user_by_email(email):
-            return zuser
-        # If the user is not authenticated, we can't save anything to
-        # AnonymousUser Profile as it has none
+        # Four possible cases to account for:
+        # 1. No Django User, No ZD User -> Create ZD User From Email
+        # 2. No Django User, ZD User -> Get Existing ZD User Using Email
+        # 3. Django User, No ZD User -> Create ZD User from Django User
+        # 4. Django User, ZD User -> Get ZD User, Update Django User with Zendesk ID
         if not user.is_authenticated:
+            # If the user already exists in Zendesk return
+            # the Zendesk user object
+            # instead of creating a new one
+            if zuser := self.get_user_by_email(email):
+                # No Django user, but yes ZD user
+                return zuser
+            # No Django user, no ZD user
             name = "Anonymous User"
             locale = "en-US"
             id = None
             external_id = None
             user_fields = None
+        # Yes Django user
         else:
             fxa_uid = user.profile.fxa_uid
             id_str = user.profile.zendesk_id
-            id = int(id_str) if id_str else None
+            id = int(id_str) if id_str else None  # Yes Or No ZD User
             name = user.profile.display_name
             locale = user.profile.locale
             user_fields = {"user_id": fxa_uid}
