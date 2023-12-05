@@ -6,7 +6,7 @@ import django_filters
 from django import forms
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, pagination, permissions, serializers, status, viewsets
+from rest_framework import pagination, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from taggit.models import Tag
@@ -26,6 +26,7 @@ from kitsune.sumo.api_utils import (
     DateTimeUTCField,
     GenericAPIException,
     OnlyCreatorEdits,
+    OrderingFilter,
     SplitSourceField,
 )
 from kitsune.sumo.utils import is_ratelimited
@@ -246,7 +247,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     filterset_class = QuestionFilter
     filter_backends = [
         DjangoFilterBackend,
-        filters.OrderingFilter,
+        OrderingFilter,
     ]
     ordering_fields = [
         "id",
@@ -486,7 +487,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
     filterset_class = AnswerFilter
     filter_backends = [
         DjangoFilterBackend,
-        filters.OrderingFilter,
+        OrderingFilter,
     ]
     filterset_fields = [
         "question",

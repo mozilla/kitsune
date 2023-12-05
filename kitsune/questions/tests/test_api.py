@@ -350,18 +350,29 @@ class TestQuestionViewSet(TestCase):
     def test_ordering(self):
         q1 = QuestionFactory()
         q2 = QuestionFactory()
+        q3 = QuestionFactory()
+        AnswerFactory(question=q1)
+        AnswerFactory(question=q2)
 
         res = self.client.get(reverse("question-list"))
-        self.assertEqual(res.data["results"][0]["id"], q2.id)
-        self.assertEqual(res.data["results"][1]["id"], q1.id)
+        self.assertEqual(res.data["results"][0]["id"], q3.id)
+        self.assertEqual(res.data["results"][1]["id"], q2.id)
+        self.assertEqual(res.data["results"][2]["id"], q1.id)
 
         res = self.client.get(reverse("question-list") + "?ordering=id")
         self.assertEqual(res.data["results"][0]["id"], q1.id)
         self.assertEqual(res.data["results"][1]["id"], q2.id)
+        self.assertEqual(res.data["results"][2]["id"], q3.id)
 
-        res = self.client.get(reverse("question-list") + "?ordering=-id")
+        res = self.client.get(reverse("question-list") + "?ordering=-last_answer")
         self.assertEqual(res.data["results"][0]["id"], q2.id)
         self.assertEqual(res.data["results"][1]["id"], q1.id)
+        self.assertEqual(res.data["results"][2]["id"], q3.id)
+
+        res = self.client.get(reverse("question-list") + "?ordering=last_answer")
+        self.assertEqual(res.data["results"][0]["id"], q1.id)
+        self.assertEqual(res.data["results"][1]["id"], q2.id)
+        self.assertEqual(res.data["results"][2]["id"], q3.id)
 
     def test_filter_product_with_slug(self):
         p1 = ProductFactory()

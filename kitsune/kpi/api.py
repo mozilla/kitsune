@@ -10,7 +10,7 @@ from django.db.models.functions import Now
 
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, serializers, viewsets
+from rest_framework import serializers, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -29,6 +29,7 @@ from kitsune.kpi.models import (
     EXIT_SURVEY_DONT_KNOW_CODE,
 )
 from kitsune.questions.models import Question, Answer, AnswerVote
+from kitsune.sumo.api_utils import OrderingFilter
 from kitsune.wiki.models import HelpfulVote
 from functools import reduce
 
@@ -491,7 +492,7 @@ class CohortViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = CohortFilter
     filter_backends = [
         DjangoFilterBackend,
-        filters.OrderingFilter,
+        OrderingFilter,
     ]
     ordering_fields = [
         "start",

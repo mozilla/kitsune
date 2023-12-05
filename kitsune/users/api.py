@@ -8,7 +8,7 @@ from django.db.models.functions import Now
 from django.utils.encoding import force_str
 from django.views.decorators.http import require_GET
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, serializers, viewsets
+from rest_framework import mixins, permissions, serializers, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from kitsune.access.decorators import login_required
 from kitsune.questions.models import Answer
 from kitsune.questions.utils import num_answers, num_questions, num_solutions
-from kitsune.sumo.api_utils import DateTimeUTCField, PermissionMod
+from kitsune.sumo.api_utils import DateTimeUTCField, OrderingFilter, PermissionMod
 from kitsune.sumo.decorators import json_view
 from kitsune.users.models import Profile, Setting
 from kitsune.users.templatetags.jinja_helpers import profile_avatar
@@ -248,7 +248,7 @@ class ProfileViewSet(
     ]
     filter_backends = [
         DjangoFilterBackend,
-        filters.OrderingFilter,
+        OrderingFilter,
     ]
     filterset_fields: list[str] = []
     ordering_fields: list[str] = []
