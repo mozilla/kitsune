@@ -1,11 +1,8 @@
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _lazy
 from zenpy import Zenpy
 from zenpy.lib.api_objects import Identity as ZendeskIdentity
 from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
-
-NO_RESPONSE = _lazy("No response provided.")
 
 
 class ZendeskClient(object):
@@ -21,6 +18,14 @@ class ZendeskClient(object):
         self.client = Zenpy(**creds)
 
     def _user_to_zendesk_user(self, user, email):
+        """Given a Django user, return a Zendesk user."""
+        # If the user already exists in Zendesk return
+        # the Zendesk user object
+        # instead of creating a new one
+        if zuser := self.get_user_by_email(email):
+            return zuser
+        # If the user is not authenticated, we can't save anything to
+        # AnonymousUser Profile as it has none
         if not user.is_authenticated:
             name = "Anonymous User"
             locale = "en-US"
@@ -44,6 +49,21 @@ class ZendeskClient(object):
             user_fields=user_fields,
             external_id=external_id,
         )
+
+    def get_user_by_email(self, email):
+        """Given an email, return a user from Zendesk."""
+        # This returns a generator, but we only want/expect one user
+        # If it returns more than one, we should fail
+        # Otherwise return the Zendesk user object
+        search_results = self.client.search(type="user", query=f"email:{email}")
+
+        user_found = None
+        for user in search_results:
+            if user_found is not None:
+                raise ValueError(f"Found more than one user with email {email}")
+            user_found = user
+
+        return user_found
 
     def create_user(self, user, email=""):
         """Given a Django user, create a user in Zendesk."""
@@ -79,7 +99,7 @@ class ZendeskClient(object):
             user=zendesk_user_id, identity=ZendeskIdentity(id=identity_id, value=email)
         )
 
-    def create_ticket(self, user, ticket_fields, product_config):
+    def create_ticket(self, user, ticket_fields):
         """Create a ticket in Zendesk."""
         custom_fields = [
             {"id": settings.ZENDESK_PRODUCT_FIELD_ID, "value": ticket_fields.get("product")},
@@ -104,8 +124,8 @@ class ZendeskClient(object):
                 ]
             )
         ticket = Ticket(
-            subject=ticket_fields.get("subject") or f"{product_config['name']} support",
-            comment={"body": ticket_fields.get("description") or NO_RESPONSE},
+            subject=ticket_fields.get("subject") or ticket_fields.get("category"),
+            comment={"body": ticket_fields.get("description") or ticket_fields.get("category")},
             ticket_form_id=settings.ZENDESK_TICKET_FORM_ID,
             custom_fields=custom_fields,
         )

@@ -20,6 +20,8 @@ STAGE = config("STAGE", default=False, cast=bool)
 # TODO
 # LOG_LEVEL = config('LOG_LEVEL', default='INFO', cast=labmda x: getattr(logging, x))
 LOG_LEVEL = config("LOG_LEVEL", default=logging.INFO)
+# Set to 'json' for MozLog format (https://wiki.mozilla.org/Firefox/Services/Logging)
+LOG_FORMAT = config("LOG_FORMAT", default="")
 
 SYSLOG_TAG = "http_sumo_app"
 
@@ -376,7 +378,13 @@ STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 )
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STORAGES = {
+    "default": {
+        # Default storage engine - ours does not preserve filenames
+        "BACKEND": "kitsune.upload.storage.RenameFileStorage"
+    },
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
 
 # Set the TRUSTED_PROXY_COUNT to the number of trusted proxies (load balancers,
 # CDN's, etc.) in place prior to the Django instance or Kubernetes service. Each
@@ -499,6 +507,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "kitsune.users.middleware.LogoutDeactivatedUsersMiddleware",
     "kitsune.users.middleware.LogoutInvalidatedSessionsMiddleware",
     "csp.middleware.CSPMiddleware",
+    "dockerflow.django.middleware.DockerflowMiddleware",
 )
 
 # SecurityMiddleware settings
@@ -666,6 +675,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     "statici18n",
     "watchman",
     "bandit",
+    "dockerflow.django",
     # 'axes',
     # Extra app for python migrations.
     "django_extensions",
@@ -767,8 +777,6 @@ SEARCH_CACHE_PERIOD = config("SEARCH_CACHE_PERIOD", default=15, cast=int)
 # Columns are 250 but this leaves 50 chars for the upload_to prefix
 MAX_FILENAME_LENGTH = 200
 MAX_FILEPATH_LENGTH = 250
-# Default storage engine - ours does not preserve filenames
-DEFAULT_FILE_STORAGE = "kitsune.upload.storage.RenameFileStorage"
 
 # GCP storage settings
 GS_BUCKET_NAME = config("GS_BUCKET_NAME", default="")
@@ -1004,6 +1012,11 @@ ACTSTREAM_SETTINGS = {
 SILENCED_SYSTEM_CHECKS = [
     "fields.W340",  # null has no effect on ManyToManyField.
     "fields.W342",  # ForeignKey(unique=True) is usually better served by a OneToOneField
+]
+
+DOCKERFLOW_CHECKS = [
+    "dockerflow.django.checks.check_database_connected",
+    "dockerflow.django.checks.check_migrations_applied",
 ]
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="", cast=Csv())

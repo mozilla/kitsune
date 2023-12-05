@@ -16,7 +16,7 @@ license = "BSD 3-Clause"
 [tool.poetry.dependencies]
 python = "^3.11"
 APScheduler = "^3.10.0"
-Django = "4.1.13"
+Django = "^4.2.7"
 babis = "^0.2.4"
 Pillow = "^9.4.0"
 bleach = {version = "^6.0.0", extras = ["css"]}
@@ -87,6 +87,7 @@ django-email-bandit = "^2.0"
 psycopg2 = "^2.9.9"
 mkdocs = "^1.5.3"
 mkdocs-material = "^9.4.10"
+dockerflow = "^2022.8.0"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.11"
@@ -113,13 +114,12 @@ pylint-django = "^2.5.3"
 rope = "^1.7.0"
 black = "^23.1.0"
 pytest = "^7.3.1"
-selenium = "^4.8.3"
-webdriver-manager = "^3.8.6"
 pytest-html = "^3.2.0"
 pytest-xdist = "^3.2.1"
 docker = "^6.0.1"
 pytest-rerunfailures = "^12.0"
 pytest-check = "^2.2.1"
+playwright = "^1.40.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

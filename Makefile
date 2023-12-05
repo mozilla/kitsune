@@ -12,7 +12,7 @@ default: help
 
 help:
 	@echo "build         - build docker images for dev"
-	@echo "run           - docker-compose up the entire system for dev"
+	@echo "start         - docker-compose up the entire system for dev"
 	@echo ""
 	@echo "init          - initialize the database and install Node packages"
 	@echo "djshell       - start a Django Python shell (ipython)"
@@ -21,6 +21,7 @@ help:
 	@echo "runshell      - start a bash shell with ports bound so you can run the server"
 	@echo "clean         - remove all build, test, coverage and Python artifacts"
 	@echo "rebuild       - force a rebuild of the dev docker image"
+	@echo "format        - format source files"
 	@echo "lint          - run pre-commit hooks"
 	@echo "test          - run python tests"
 	@echo "test-js       - run js tests"
@@ -28,12 +29,10 @@ help:
 	@echo "servedocs     - serve live documentaion"
 
 .env:
-	@if [ ! -f .env ]; then \
-		echo "Copying .env-dist to .env..."; \
-		cp .env-dist .env; \
-	fi
+	@echo "Copying .env-dist to .env...";
+	cp -n .env-dist .env;
 
-.docker-build:
+.docker-build: .env
 	${MAKE} build
 
 build:
@@ -42,8 +41,9 @@ build:
 
 rebuild: clean build
 
-run: .docker-build
+start: .docker-build
 	${DC} up web
+run: start
 
 init: .docker-build
 	${DC} run web bin/run-bootstrap.sh
@@ -77,6 +77,9 @@ clean:
 lint: .docker-build
 	${DC} run web pre-commit run --all-files
 
+format: .docker-build
+	${DC} run web black kitsune/
+
 test: .docker-build
 	${DC} run web ./bin/run-unit-tests.sh
 
@@ -89,4 +92,4 @@ docs: .docker-build
 servedocs: .docker-build
 	${DC} run web mkdocs serve
 
-.PHONY: build rebuild run init shell runshell djshell clean lint test test-js docs servedocs
+.PHONY: build rebuild run init shell runshell djshell clean lint format test test-js docs servedocs
