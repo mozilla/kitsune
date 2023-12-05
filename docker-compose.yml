@@ -59,7 +59,7 @@ services:
     build:
       context: .
       target: base
-    command: celery -A kitsune worker -l info -n default@%h
+    command: celery -A kitsune worker -l info -n default@%h -Q celery,priority
     env_file: .env
     volumes:
       - ./:/app:delegated
