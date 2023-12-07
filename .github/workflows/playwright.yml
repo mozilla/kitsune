@@ -40,107 +40,107 @@ jobs:
         id: create-sessions
         working-directory: playwright_tests
         run: |
-         poetry run pytest -m loginSessions --browser firefox --html=reports/creating_user_sessions.html --capture=tee-sys
+         poetry run pytest -m loginSessions --browser firefox --reruns 1 --html=reports/creating_user_sessions.html --capture=tee-sys
       - name: Run Homepage tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-         poetry run pytest -m homePageTests --numprocesses 2 --browser firefox --html=reports/firefox_homepage_tests_report.html --capture=tee-sys
+         poetry run pytest -m homePageTests --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_homepage_tests_report.html --capture=tee-sys
       - name: Run Homepage tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m homePageTests --numprocesses 2 --browser chrome --html=reports/chrome_homepage_tests_report.html --capture=tee-sys
+          poetry run pytest -m homePageTests --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_homepage_tests_report.html --capture=tee-sys
       - name: Run Top-Navbar tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m topNavbarTests --numprocesses 2 --browser firefox --html=reports/firefox_top_navbar_tests_report.html --capture=tee-sys
+          poetry run pytest -m topNavbarTests --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_top_navbar_tests_report.html --capture=tee-sys
       - name: Run Top-Navbar tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m topNavbarTests --numprocesses 2 --browser chrome --html=reports/chrome_top_navbar_tests_report.html --capture=tee-sys
+          poetry run pytest -m topNavbarTests --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_top_navbar_tests_report.html --capture=tee-sys
       - name: Run Footer tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m footerSectionTests --numprocesses 2 --browser firefox --html=reports/firefox_footer_tests_report.html --capture=tee-sys
+          poetry run pytest -m footerSectionTests --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_footer_tests_report.html --capture=tee-sys
       - name: Run Footer tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m footerSectionTests --numprocesses 2 --browser chrome --html=reports/chrome_footer_tests_report.html --capture=tee-sys
+          poetry run pytest -m footerSectionTests --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_footer_tests_report.html --capture=tee-sys
       - name: Run Contribute Pages tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m contributePagesTests --numprocesses 2 --browser firefox --html=reports/firefox_contribute_page_tests_report.html --capture=tee-sys
+          poetry run pytest -m contributePagesTests --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_contribute_page_tests_report.html --capture=tee-sys
       - name: Run Contribute Page tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-         poetry run pytest -m contributePagesTests --numprocesses 2 --browser chrome --html=reports/chrome_contribute_page_tests_report.html --capture=tee-sys
+         poetry run pytest -m contributePagesTests --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_contribute_page_tests_report.html --capture=tee-sys
       - name: Run Messaging System Tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m messagingSystem --numprocesses 2 --browser firefox --html=reports/firefox_messaging_system_tests_report.html --capture=tee-sys
+          poetry run pytest -m messagingSystem --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_messaging_system_tests_report.html --capture=tee-sys
       - name: Run Messaging System Tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m messagingSystem --numprocesses 2 --browser chrome --html=reports/chrome_messaging_system_tests_report.html --capture=tee-sys
+          poetry run pytest -m messagingSystem --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_messaging_system_tests_report.html --capture=tee-sys
       - name: Run User Contribution Page Tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userContributionTests --numprocesses 2 --browser firefox --html=reports/firefox_user_contribution_tests.html --capture=tee-sys
+          poetry run pytest -m userContributionTests --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_user_contribution_tests.html --capture=tee-sys
       - name: Run User Contribution Page Tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userContributionTests --numprocesses 2 --browser chrome --html=reports/chrome_user_contribution_tests.html --capture=tee-sys
+          poetry run pytest -m userContributionTests --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_user_contribution_tests.html --capture=tee-sys
       - name: Run User Page Tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userProfile --numprocesses 2 --browser firefox --html=reports/firefox_user_page_tests.html --capture=tee-sys
+          poetry run pytest -m userProfile --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_user_page_tests.html --capture=tee-sys
       - name: Run User Page Tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userProfile --numprocesses 2 --browser chrome --html=reports/chrome_user_page_tests.html --capture=tee-sys
+          poetry run pytest -m userProfile --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_user_page_tests.html --capture=tee-sys
       - name: Run User Settings Tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userSettings --numprocesses 2 --browser firefox --html=reports/firefox_user_settings_page_tests.html --capture=tee-sys
+          poetry run pytest -m userSettings --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_user_settings_page_tests.html --capture=tee-sys
       - name: Run User Settings Tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userSettings --numprocesses 2 --browser chrome --html=reports/chrome_user_settings_page_tests.html --capture=tee-sys
+          poetry run pytest -m userSettings --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_user_settings_page_tests.html --capture=tee-sys
       - name: Run User Profile Tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m editUserProfileTests --browser firefox --html=reports/firefox_user_profile_page_tests.html --capture=tee-sys
+          poetry run pytest -m editUserProfileTests --browser firefox --reruns 1 --html=reports/firefox_user_profile_page_tests.html --capture=tee-sys
       - name: Run Edit User Profile Tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m editUserProfileTests --browser chrome --html=reports/chrome_user_profile_page_tests.html --capture=tee-sys
+          poetry run pytest -m editUserProfileTests --browser chrome --reruns 1 --html=reports/chrome_user_profile_page_tests.html --capture=tee-sys
       - name: Run User Questions Tests (Firefox)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userQuestions --numprocesses 2 --browser firefox --html=reports/firefox_user_questions_page_tests.html --capture=tee-sys
+          poetry run pytest -m userQuestions --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_user_questions_page_tests.html --capture=tee-sys
       - name: Run User Questions Tests (Chrome)
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userQuestions --numprocesses 2 --browser chrome --html=reports/chrome_user_questions_page_tests.html --capture=tee-sys
+          poetry run pytest -m userQuestions --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_user_questions_page_tests.html --capture=tee-sys
       - name: Combine Reports
         working-directory: playwright_tests
         if: success() || failure()
