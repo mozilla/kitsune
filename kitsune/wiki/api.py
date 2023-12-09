@@ -34,14 +34,11 @@ class DocumentDetailSerializer(DocumentShortSerializer):
 class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
     """List all documents."""
 
-    queryset = Document.objects.all()
     serializer_class = DocumentShortSerializer
 
     def get_queryset(self):
-        queryset = self.queryset
-
-        queryset = queryset.filter(
-            category__in=settings.IA_DEFAULT_CATEGORIES, current_revision__isnull=False
+        queryset = Document.objects.visible(
+            self.request.user, category__in=settings.IA_DEFAULT_CATEGORIES
         )
 
         locale = self.get_locale()
@@ -83,13 +80,10 @@ class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
 
 
 class DocumentDetail(LocaleNegotiationMixin, generics.RetrieveAPIView):
-    queryset = Document.objects.all()
     serializer_class = DocumentDetailSerializer
 
     def get_object(self):
-        queryset = self.get_queryset()
-        queryset = queryset.filter(locale=self.get_locale(), current_revision__isnull=False)
-
+        queryset = Document.objects.visible(self.request.user, locale=self.get_locale())
         obj = get_object_or_404(queryset, **self.kwargs)
         self.check_object_permissions(self.request, obj)
         return obj
