@@ -22,7 +22,6 @@ CATEGORY_CHOICES_LOGINLESS = [
     ("fxa-emailverify-lockout", _lazy("I can't recover my account using email")),
     ("fxa-remove3rdprtylogin", _lazy("I'm having issues signing in with my Google or Apple ID")),
     ("fxa-2fa-lockout", _lazy("My security code isn't working or is lost")),
-    ("other-account-issue", _lazy("I have another sign in issue")),
 ]
 
 OS_CHOICES = [
