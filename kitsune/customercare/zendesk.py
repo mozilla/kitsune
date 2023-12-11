@@ -6,6 +6,7 @@ from zenpy.lib.api_objects import Ticket
 from zenpy.lib.api_objects import User as ZendeskUser
 
 NO_RESPONSE = _lazy("No response provided.")
+LOGINLESS_TAG = "loginless_ticket"
 
 
 class ZendeskClient(object):
@@ -115,6 +116,12 @@ class ZendeskClient(object):
             {"id": settings.ZENDESK_OS_FIELD_ID, "value": ticket_fields.get("os")},
             {"id": settings.ZENDESK_COUNTRY_FIELD_ID, "value": ticket_fields.get("country")},
         ]
+        ticket_kwargs = {
+            "subject": ticket_fields.get("subject") or f"{product_config['name']} support",
+            "comment": {"body": ticket_fields.get("description") or str(NO_RESPONSE)},
+            "ticket_form_id": settings.ZENDESK_TICKET_FORM_ID,
+        }
+
         # If this is the normal, athenticated form we want to use the category field
         if user.is_authenticated:
             custom_fields.append(
@@ -132,12 +139,10 @@ class ZendeskClient(object):
                     {"id": settings.ZENDESK_CATEGORY_FIELD_ID, "value": "accounts"},
                 ]
             )
-        ticket = Ticket(
-            subject=ticket_fields.get("subject") or f"{product_config['name']} support",
-            comment={"body": ticket_fields.get("description") or str(NO_RESPONSE)},
-            ticket_form_id=settings.ZENDESK_TICKET_FORM_ID,
-            custom_fields=custom_fields,
-        )
+            ticket_kwargs.update({"tags": [LOGINLESS_TAG]})
+        ticket_kwargs.update({"custom_fields": custom_fields})
+        ticket = Ticket(**ticket_kwargs)
+
         if user.is_authenticated:
             if user.profile.zendesk_id:
                 # TODO: is this necessary if we're
