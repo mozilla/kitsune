@@ -20,6 +20,7 @@ from kitsune.dashboards.readouts import (
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
@@ -30,6 +31,7 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
+from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -67,7 +69,13 @@ class KBOverviewTests(TestCase):
     def test_unapproved_articles(self):
         self.assertEqual(0, len(kb_overview_rows()))
         RevisionFactory()
+        # Documents without a current revision are invisible to anonymous users.
+        self.assertEqual(0, len(kb_overview_rows()))
+        ApprovedRevisionFactory()
         self.assertEqual(1, len(kb_overview_rows()))
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, "review_revision")
+        self.assertEqual(2, len(kb_overview_rows(user=reviewer)))
 
     def test_ready_for_l10n(self):
         d = DocumentFactory()
@@ -85,17 +93,17 @@ class KBOverviewTests(TestCase):
         self.assertEqual(True, data[0]["ready_for_l10n"])
 
     def test_filter_by_category(self):
-        RevisionFactory(document__category=CATEGORIES[1][0])
+        ApprovedRevisionFactory(document__category=CATEGORIES[1][0])
 
         self.assertEqual(1, len(kb_overview_rows()))
         self.assertEqual(0, len(kb_overview_rows(category=CATEGORIES[0][0])))
         self.assertEqual(1, len(kb_overview_rows(category=CATEGORIES[1][0])))
 
     def test_num_visits(self):
-        d1 = DocumentFactory()
-        d2 = DocumentFactory()
-        DocumentFactory()
-        DocumentFactory()
+        d1 = ApprovedRevisionFactory().document
+        d2 = ApprovedRevisionFactory().document
+        ApprovedRevisionFactory()
+        ApprovedRevisionFactory()
 
         WikiDocumentVisits.objects.create(document=d1, visits=5, period=LAST_30_DAYS)
         WikiDocumentVisits.objects.create(document=d2, visits=1, period=LAST_30_DAYS)

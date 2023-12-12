@@ -196,13 +196,13 @@ def _format_row_with_out_of_dateness(
     )
 
 
-def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=None):
+def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, category=None):
     """Return the iterable of dicts needed to draw the new KB dashboard overview"""
 
     if mode is None:
         mode = LAST_30_DAYS
 
-    docs = Document.objects.filter(locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False)
+    docs = Document.objects.visible(user, locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False)
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
@@ -277,7 +277,7 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
     return rows
 
 
-def l10n_overview_rows(locale, product=None):
+def l10n_overview_rows(locale, product=None, user=None):
     """Return the iterable of dicts needed to draw the Overview table."""
     # The Overview table is a special case: it has only a static number of
     # rows, so it has no expanded, all-rows view, and thus needs no slug, no
@@ -293,10 +293,10 @@ def l10n_overview_rows(locale, product=None):
         cursor.execute(sql, params)
         return cursor.fetchone()[0]
 
-    total = Document.objects.filter(
+    total = Document.objects.visible(
+        user,
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
-        current_revision__isnull=False,
         is_localizable=True,
         latest_localizable_revision__isnull=False,
     )

@@ -983,8 +983,8 @@ class WhatLinksHereTests(TestCase):
 
         self.assertEqual(len(d1.images), 1)
         self.assertEqual(d1.images[0], img)
-        self.assertEqual(len(img.documents), 1)
-        self.assertEqual(img.documents[0], d1)
+        self.assertEqual(len(img.documents()), 1)
+        self.assertEqual(img.documents()[0], d1)
 
 
 class TestLazyWikiImageTags(TestCase):

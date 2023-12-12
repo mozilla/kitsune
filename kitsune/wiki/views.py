@@ -205,7 +205,9 @@ def document(request, document_slug, document=None):
     redirected_from = None
     if redirect_slug and redirect_locale:
         try:
-            redirected_from = Document.objects.get(locale=redirect_locale, slug=redirect_slug)
+            redirected_from = Document.objects.get_visible(
+                request.user, locale=redirect_locale, slug=redirect_slug
+            )
         except Document.DoesNotExist:
             pass
 
@@ -1714,7 +1716,7 @@ def get_fallback_locale(doc, request):
 def pocket_article(request, article_id=None, document_slug=None, extra_path=None):
     """Pocket articles migrated to SUMO are redirected to the new URL"""
     # If we migrated the document, we should be able to find it
-    if Document.objects.filter(slug=document_slug).exists():
+    if Document.objects.visible(request.user, slug=document_slug).exists():
         return HttpResponseRedirect(reverse("wiki.document", args=[document_slug]))
     # If document doesn't exist, fail back to Pocket product page with message
     messages.warning(

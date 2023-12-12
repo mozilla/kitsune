@@ -93,11 +93,11 @@ class WikiDocument(SumoDocument):
     @classmethod
     def get_queryset(cls):
         return (
-            # do not include any documents without an approved revision
-            wiki_models.Document.objects.exclude(current_revision__isnull=True)
-            # all documents will need their current revision:
+            # Only include documents that are visible to everyone.
+            wiki_models.Document.objects.visible()
+            # All documents will need their current revision.
             .select_related("current_revision")
-            # parent documents will need their topics and products:
+            # Parent documents will need their topics and products.
             .prefetch_related("topics", "products")
         )
 
