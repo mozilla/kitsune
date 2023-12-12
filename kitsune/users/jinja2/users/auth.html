@@ -38,14 +38,14 @@
           <div id="login-fxa">
             <article id="login" class="main login-form">
               <div class="sumo-page-section content-zero-bottom-pad">
-                <h1 class="sumo-page-subheading sumo-header-medium">{{ _('Continue with your Mozilla account' ) }}</h1>
+                <h1 class="sumo-page-subheading sumo-header-medium">{{ _('Continue with a Mozilla account' ) }}</h1>
                 <p class="text-body-sm">
-                  {{ _('Get personalized support from staff and our<br> amazing community of contributors from around the world.' ) }}
+                  {{ _('Sign in or sign up to ask questions in our forums and contact support agents.' ) }}
                 </p>
                 <div class="center-on-mobile">
                   <p class="login-button-wrap">
                     <a rel="nofollow" href="{{ url('users.fxa_authentication_init') }}?next={{ next_url }}"
-                      class="sumo-button primary-button button-lg button-full-width">{{ _('Sign In or Sign Up') }}</a>
+                      class="sumo-button primary-button button-lg button-full-width">{{ _('Continue') }}</a>
                   </p>
 
                   <p class="help-text">
@@ -61,7 +61,7 @@
                   <div class="trouble-text">
                     <p class="help-text">
                       {{ _('Having trouble signing in? ')}}
-                      <a href="{{ url('questions.aaq_step3', product_key='mozilla-account') }}">{{ _('Contact support') }}</a>
+                      <a href="{{ url('questions.aaq_step3', product_key='mozilla-account') }}">{{ _("I can't sign in to my Mozilla account") }}</a>
                     </p>
                   </div>
                 </div>
