@@ -20,7 +20,7 @@ from kitsune.dashboards.readouts import (
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
@@ -31,7 +31,6 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -49,9 +48,12 @@ class MockRequest(object):
 class ReadoutTestCase(TestCase):
     """Test case for one readout. Provides some convenience methods."""
 
-    def rows(self, locale=None, product=None):
+    def rows(self, locale=None, product=None, user=None):
         """Return the rows show by the readout this class tests."""
-        return self.readout(MockRequest(), locale=locale, product=product).rows()
+        request = MockRequest()
+        if user:
+            request.user = user
+        return self.readout(request, locale=locale, product=product).rows()
 
     def row(self, locale=None, product=None):
         """Return first row shown by the readout this class tests."""
@@ -69,13 +71,13 @@ class KBOverviewTests(TestCase):
     def test_unapproved_articles(self):
         self.assertEqual(0, len(kb_overview_rows()))
         RevisionFactory()
-        # Documents without a current revision are invisible to anonymous users.
-        self.assertEqual(0, len(kb_overview_rows()))
-        ApprovedRevisionFactory()
         self.assertEqual(1, len(kb_overview_rows()))
-        reviewer = UserFactory()
-        add_permission(reviewer, Revision, "review_revision")
-        self.assertEqual(2, len(kb_overview_rows(user=reviewer)))
+        ApprovedRevisionFactory()
+        self.assertEqual(2, len(kb_overview_rows()))
+        RevisionFactory(document__restrict_to_staff=True)
+        self.assertEqual(2, len(kb_overview_rows()))
+        staff = UserFactory(is_staff=True)
+        self.assertEqual(3, len(kb_overview_rows(user=staff)))
 
     def test_ready_for_l10n(self):
         d = DocumentFactory()
@@ -93,20 +95,22 @@ class KBOverviewTests(TestCase):
         self.assertEqual(True, data[0]["ready_for_l10n"])
 
     def test_filter_by_category(self):
-        ApprovedRevisionFactory(document__category=CATEGORIES[1][0])
+        RevisionFactory(document__category=CATEGORIES[1][0])
 
         self.assertEqual(1, len(kb_overview_rows()))
         self.assertEqual(0, len(kb_overview_rows(category=CATEGORIES[0][0])))
         self.assertEqual(1, len(kb_overview_rows(category=CATEGORIES[1][0])))
 
     def test_num_visits(self):
-        d1 = ApprovedRevisionFactory().document
-        d2 = ApprovedRevisionFactory().document
-        ApprovedRevisionFactory()
-        ApprovedRevisionFactory()
+        d1 = DocumentFactory()
+        d2 = DocumentFactory()
+        DocumentFactory()
+        DocumentFactory()
+        d3 = DocumentFactory(restrict_to_staff=True)
 
         WikiDocumentVisits.objects.create(document=d1, visits=5, period=LAST_30_DAYS)
         WikiDocumentVisits.objects.create(document=d2, visits=1, period=LAST_30_DAYS)
+        WikiDocumentVisits.objects.create(document=d3, visits=4, period=LAST_30_DAYS)
 
         rows = kb_overview_rows(max=3)
 
@@ -346,13 +350,85 @@ class UnreviewedChangesTests(ReadoutTestCase):
 
     def test_unrevieweds_after_current(self):
         """Show unreviewed revisions with later creation dates than current"""
-        current = TranslatedRevisionFactory(
+        rev1 = TranslatedRevisionFactory(
             document__locale="de", reviewed=None, is_approved=True, created=datetime(2000, 1, 1)
         )
-        unreviewed = RevisionFactory(
-            reviewed=None, document=current.document, created=datetime(2000, 2, 1)
+        rev2 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 2, 1))
+        rev3 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 3, 1))
+
+        rev4 = TranslatedRevisionFactory(
+            document__locale="de", reviewed=None, is_approved=False, created=datetime(2023, 1, 1)
         )
-        assert unreviewed.document.title in self.titles()
+        rev5 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 2, 1))
+        rev6 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 3, 1))
+
+        doc_en = DocumentFactory(restrict_to_staff=True)
+        doc_de = DocumentFactory(parent=doc_en, locale="de")
+        TranslatedRevisionFactory(
+            document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 4, 1)
+        )
+        RevisionFactory(reviewed=None, document=doc_de, created=datetime(2023, 5, 1))
+        RevisionFactory(reviewed=None, document=doc_de, created=datetime(2023, 6, 1))
+        rev7 = RevisionFactory(reviewed=None, document=doc_en, created=datetime(2023, 7, 15))
+        rev8 = RevisionFactory(reviewed=None, document=doc_en, created=datetime(2023, 8, 20))
+
+        WikiDocumentVisits.objects.create(document=rev1.document, visits=5, period=LAST_30_DAYS)
+        WikiDocumentVisits.objects.create(document=rev4.document, visits=3, period=LAST_30_DAYS)
+        WikiDocumentVisits.objects.create(document=doc_de, visits=2, period=LAST_30_DAYS)
+
+        rows = self.rows()
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]["title"], rev1.document.title)
+        self.assertEqual(rows[0]["visits"], 5)
+        self.assertEqual(rows[0]["updated"], datetime(2000, 3, 1))
+        self.assertEqual(
+            rows[0]["users"],
+            ", ".join(
+                sorted(
+                    [
+                        rev2.creator.username,
+                        rev3.creator.username,
+                    ]
+                )
+            ),
+        )
+        self.assertEqual(rows[1]["title"], rev4.document.title)
+        self.assertEqual(rows[1]["visits"], 3)
+        self.assertEqual(rows[1]["updated"], datetime(2023, 3, 1))
+        self.assertEqual(
+            rows[1]["users"],
+            ", ".join(
+                sorted(
+                    [
+                        rev4.creator.username,
+                        rev5.creator.username,
+                        rev6.creator.username,
+                    ]
+                )
+            ),
+        )
+
+        # The English document is restricted.
+        rows = self.rows(locale="en-US")
+        self.assertEqual(len(rows), 0)
+
+        # Only staff can see it.
+        rows = self.rows(user=UserFactory(is_staff=True), locale="en-US")
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["title"], doc_en.title)
+        self.assertEqual(rows[0]["visits"], None)
+        self.assertEqual(rows[0]["updated"], datetime(2023, 8, 20))
+        self.assertEqual(
+            rows[0]["users"],
+            ", ".join(
+                sorted(
+                    [
+                        rev7.creator.username,
+                        rev8.creator.username,
+                    ]
+                )
+            ),
+        )
 
     def test_current_revision_null(self):
         """Show all unreviewed revisions if none have been approved yet."""
@@ -420,6 +496,7 @@ class TemplateTests(ReadoutTestCase):
         t = TemplateDocumentFactory(products=[p])
         ApprovedRevisionFactory(document=d)
         ApprovedRevisionFactory(document=TemplateDocumentFactory())
+        TemplateDocumentFactory(restrict_to_staff=True, products=[p])
 
         self.assertEqual(1, len(self.rows(locale=locale, product=p)))
         self.assertEqual(t.title, self.row(locale=locale, product=p)["title"])
