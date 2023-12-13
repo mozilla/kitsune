@@ -69,6 +69,8 @@ export class SignInStep extends BaseFormStep {
     this.#formEl.addEventListener("submit", this);
     this.#emailEl.addEventListener("blur", this);
     this.#emailEl.addEventListener("input", this);
+
+    this.#emailEl.focus();
   }
 
   disconnectedCallback() {
