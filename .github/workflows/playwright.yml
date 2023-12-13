@@ -141,6 +141,46 @@ jobs:
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
           poetry run pytest -m userQuestions --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_user_questions_page_tests.html --capture=tee-sys
+      - name: Run Contact Support Page Tests (Firefox)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m contactSupportPage --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_contact_support_page_tests.html --capture=tee-sys
+      - name: Run Contact Support Page Tests (Chrome)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m contactSupportPage --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_contact_support_page_tests.html --capture=tee-sys
+      - name: Run Product Solutions Page Tests (Firefox)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m productSolutionsPage --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_product_solutions_page_tests.html --capture=tee-sys
+      - name: Run Product Solutions Page Tests (Chrome)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m productSolutionsPage --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_product_solutions_page_tests.html --capture=tee-sys
+      - name: Run Product Topics Page Tests (Firefox)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m productTopicsPage --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_product_topics_page_tests.html --capture=tee-sys
+      - name: Run Product Topics Page Tests (Chrome)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m productTopicsPage --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_product_topics_page_tests.html --capture=tee-sys
+      - name: Run AAQ Tests (Firefox)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m aaqPage --numprocesses 2 --browser firefox --reruns 1 --html=reports/firefox_aaq_tests.html --capture=tee-sys
+      - name: Run AAQ Tests (Chrome)
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+          poetry run pytest -m aaqPage --numprocesses 2 --browser chrome --reruns 1 --html=reports/chrome_aaq_tests.html --capture=tee-sys
       - name: Combine Reports
         working-directory: playwright_tests
         if: success() || failure()

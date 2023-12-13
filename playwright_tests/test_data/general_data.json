@@ -1,0 +1,52 @@
+{
+  "freemium_products": [
+    "Firefox",
+    "Firefox for Android",
+    "Firefox for iOS",
+    "Firefox for Enterprise",
+    "Firefox Reality",
+    "Thunderbird",
+    "Firefox Focus"
+  ],
+  "premium_products": [
+    "MDN Plus",
+    "Mozilla VPN",
+    "Firefox Private Network",
+    "Firefox Relay",
+    "Pocket",
+    "Hubs",
+    "Mozilla Account"
+  ],
+  "product_topics": {
+    "Firefox": "https://support.allizom.org/en-US/products/firefox/fix-problems",
+    "Firefox for Android": "https://support.allizom.org/en-US/products/mobile/fix-problems",
+    "Firefox for iOS": "https://support.allizom.org/en-US/products/ios/install-and-update-firefox-ios",
+    "Firefox for Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise/deploy-firefox-for-enterprise",
+    "MDN Plus": "https://support.allizom.org/en-US/products/mdn-plus/getting-started",
+    "Firefox Reality": "https://support.allizom.org/en-US/products/firefox-reality/get-started",
+    "Mozilla VPN": "https://support.allizom.org/en-US/products/firefox-private-network-vpn/download-setup",
+    "Firefox Private Network": "https://support.allizom.org/en-US/products/firefox-private-network/accounts",
+    "Firefox Relay": "https://support.allizom.org/en-US/products/relay/technical",
+    "Pocket": "https://support.allizom.org/en-US/products/pocket/pocket-for-ios",
+    "Hubs": "https://support.allizom.org/en-US/products/hubs/hubs-get-started",
+    "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird/privacy-and-security-settings",
+    "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox/Focus-ios",
+    "Mozilla Account": "https://support.allizom.org/en-US/products/mozilla-account/passwords-recovery"
+  },
+  "product_solutions": {
+    "Firefox": "https://support.allizom.org/en-US/questions/new/desktop",
+    "Firefox for Android": "https://support.allizom.org/en-US/questions/new/mobile",
+    "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios",
+    "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise",
+    "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus",
+    "Firefox Reality": "https://support.allizom.org/en-US/questions/new/firefox-reality",
+    "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/firefox-private-network-vpn",
+    "Firefox Private Network": "https://support.allizom.org/en-US/questions/new/firefox-private-network",
+    "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay",
+    "Pocket": "https://support.allizom.org/en-US/questions/new/pocket",
+    "Hubs": "https://support.allizom.org/en-US/questions/new/hubs",
+    "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird",
+    "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus",
+    "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account"
+  }
+}
