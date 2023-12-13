@@ -80,10 +80,6 @@
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
-      {% if document.is_switching_devices_document %}
-        {{ kb_subtopic_tabs(request, settings, switching_devices_product, switching_devices_topic, switching_devices_subtopics, document) }}
-      {% endif %}
-
       {% if document.gets_mozilla_account_cta %}
         {{ inpage_contact_cta(product=product, product_key='mozilla-account') }}
       {% endif %}
