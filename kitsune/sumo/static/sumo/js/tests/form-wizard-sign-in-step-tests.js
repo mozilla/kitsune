@@ -92,6 +92,11 @@ describe("sign-in-step custom element", () => {
     assertFormElements(form, EXPECTED_FORM_ELEMENTS_WITH_FLOW_METRICS);
   });
 
+  it("should focus the email field automatically", () => {
+    let email = step.shadowRoot.querySelector("#email");
+    expect(step.shadowRoot.activeElement).to.equal(email);
+  });
+
   it("should set an email address if one is set in the state", () => {
     const TEST_STATE = {
       utm_source: "utm_source",
