@@ -304,6 +304,7 @@ export class FormWizard extends HTMLElement {
         step.slot = "active";
       } else {
         step.slot = "";
+        step.deactivate && step.deactivate();
       }
     }
   }
@@ -422,6 +423,14 @@ export class BaseFormStep extends HTMLElement {
     let prevState = Object.assign({}, this.#state);
     this.#state = Object.assign(this.#state, nextState);
     this.render(prevState, this.#state);
+  }
+
+  /**
+   * Method that can be implemented to handle any clean up needed when a form
+   * step is no longer active e.g. clearing error states.
+   */
+  deactivate() {
+    // NOOP
   }
 
   /**
