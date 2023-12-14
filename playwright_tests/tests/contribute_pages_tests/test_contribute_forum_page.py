@@ -180,8 +180,8 @@ class TestContributeForumPage(TestUtilities):
                 self.logger.info("Verifying that the Home breadcrumb redirects to the Homepage")
                 check.equal(
                     self.get_page_url(),
-                    HomepageMessages.STAGE_HOMEPAGE_URL,
-                    f"Expected to be on {HomepageMessages.STAGE_HOMEPAGE_URL}"
+                    HomepageMessages.STAGE_HOMEPAGE_URL_EN_US,
+                    f"Expected to be on {HomepageMessages.STAGE_HOMEPAGE_URL_EN_US}"
                     f"We are actual on {self.get_page_url()}",
                 )
 

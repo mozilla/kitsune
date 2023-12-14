@@ -70,7 +70,7 @@ class TestMyProfilePage(TestUtilities):
 
         expect(
             self.page
-        ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL)
+        ).to_have_url(HomepageMessages.STAGE_HOMEPAGE_URL_EN_US)
 
         self.logger.info("Verify that the 'Sign in/Up' button from the page header is displayed")
 
@@ -88,9 +88,18 @@ class TestMyProfilePage(TestUtilities):
 
         repliant_username = self.sumo_pages.top_navbar.get_text_of_logged_in_username()
 
-        self.logger.info("Posting a new AAQ question")
+        self.logger.info("Navigating to the Firefox AAQ form")
+        self.navigate_to_link(
+            super().aaq_question_test_data["products_aaq_url"]["Firefox"]
+        )
+
+        self.logger.info("Posting a new AAQ question for Firefox product")
         question_info = (
-            self.sumo_pages.aaq_flow.submit_valid_firefox_prod_question_via_ask_now_fx_solutions()
+            self.sumo_pages.aaq_flow.submit_an_aaq_question_for_a_product(
+                subject=super().aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=super().aaq_question_test_data["valid_firefox_question"]["topic_value"],
+                body=super().aaq_question_test_data["valid_firefox_question"]["question_body"]
+            )
         )
 
         self.sumo_pages.top_navbar.click_on_view_profile_option()
@@ -149,7 +158,7 @@ class TestMyProfilePage(TestUtilities):
         self.logger.info("Verifying that we are on the product support forum page after deletion")
 
         expect(
-            self.sumo_pages.product_support_page.product_product_title_element()
+            self.sumo_pages.product_support_page._product_product_title_element()
         ).to_be_visible()
 
     # C890832,  C2094281
@@ -172,9 +181,18 @@ class TestMyProfilePage(TestUtilities):
             self.sumo_pages.my_profile_page.get_my_profile_answers_text()
         )
 
+        self.logger.info("Navigating to the Firefox AAQ form")
+        self.navigate_to_link(
+            super().aaq_question_test_data["products_aaq_url"]["Firefox"]
+        )
+
         self.logger.info("Posting a new AAQ question")
         question_info = (
-            self.sumo_pages.aaq_flow.submit_valid_firefox_prod_question_via_ask_now_fx_solutions()
+            self.sumo_pages.aaq_flow.submit_an_aaq_question_for_a_product(
+                subject=super().aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=super().aaq_question_test_data["valid_firefox_question"]["topic_value"],
+                body=super().aaq_question_test_data["valid_firefox_question"]["question_body"]
+            )
         )
 
         self.logger.info("Posting a reply for the question")
@@ -227,7 +245,7 @@ class TestMyProfilePage(TestUtilities):
 
         self.logger.info("Verifying that we are on the product support forum page after deletion")
         expect(
-            self.sumo_pages.product_support_page.product_product_title_element()
+            self.sumo_pages.product_support_page._product_product_title_element()
         ).to_be_visible()
 
     #  C2094285, C2094284
