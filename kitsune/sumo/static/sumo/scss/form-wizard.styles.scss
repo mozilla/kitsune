@@ -12,7 +12,7 @@
   box-shadow: 0px 2px 6px rgba(58, 57, 68, 0.2);
 }
 
-.form-wizard-root {
+#form-wizard-root {
   display: flex;
   flex-direction: column;
   position: relative;
@@ -20,7 +20,7 @@
 
 :host([disqualified-mobile]) .form-wizard-content,
 :host([disqualified-mobile]) #progress,
-.form-wizard-root:not([inert]) > .form-wizard-disqualified {
+#form-wizard-root:not([inert]) > .form-wizard-disqualified {
   display: none;
 }
 

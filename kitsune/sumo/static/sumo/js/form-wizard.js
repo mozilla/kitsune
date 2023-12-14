@@ -55,7 +55,7 @@ export class FormWizard extends HTMLElement {
   static get markup() {
     return `
       <template>
-        <div class="form-wizard-root">
+        <div id="form-wizard-root">
           <div class="form-wizard-content">
             <section>
               <ul id="step-indicator"></ul>
@@ -117,6 +117,17 @@ export class FormWizard extends HTMLElement {
       // If there's no active step, default to the first step.
       this.activeStep = this.firstElementChild?.getAttribute("name");
     }
+
+    // We set up our aria attributes here instead of in
+    // hook_device_migration_wizard.html where the <form-wizard> is put into
+    // the markup of the page because that hook is only ever rendered when the
+    // SUMO article embedding the wizard is updated. By adding the attributes here,
+    // we can ensure that the attributes will apply, even for instances of SUMO
+    // kb articles embedding the form-wizard that might not get updated in a while.
+    let root = this.shadowRoot.querySelector("#form-wizard-root");
+    root.setAttribute("role", "dialog");
+    root.setAttribute("aria-label", gettext("Backup assistant"));
+    this.setAttribute("aria-describedby", "form-wizard-root");
   }
 
   get activeStep() {
@@ -208,7 +219,7 @@ export class FormWizard extends HTMLElement {
       child.toggleAttribute("active", child.getAttribute("reason") === reason);
     }
 
-    let root = this.shadowRoot.querySelector(".form-wizard-root");
+    let root = this.shadowRoot.querySelector("#form-wizard-root");
     root.toggleAttribute("inert", true);
   }
 

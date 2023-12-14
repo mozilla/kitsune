@@ -36,7 +36,7 @@ export class SignInStep extends BaseFormStep {
             <label for="email">${gettext("Enter your email")}</label>
             <div class="tooltip-container">
               <aside id="email-error" class="tooltip">${gettext("Valid email required")}</aside>
-              <input id="email" name="email" type="email" required="true" placeholder="${gettext("user@example.com")}"/>
+              <input id="email" name="email" type="email" required="true" placeholder="${gettext("user@example.com")}" pending-autofocus="" />
             </div>
 
             <button id="continue" class="mzp-c-button mzp-t-product" type="submit" data-event-category="device-migration-wizard" data-event-action="click">${gettext("Continue")}</button>
@@ -69,7 +69,6 @@ export class SignInStep extends BaseFormStep {
     this.#formEl.addEventListener("submit", this);
     this.#emailEl.addEventListener("blur", this);
     this.#emailEl.addEventListener("input", this);
-    this.#emailEl.focus();
   }
 
   disconnectedCallback() {
@@ -166,6 +165,18 @@ export class SignInStep extends BaseFormStep {
         fieldEl.value = this.state[fieldName];
       } else {
         fieldEl.disabled = true;
+      }
+    }
+
+    // If we've reached the point where we've got hasUpdatedFxAState set true,
+    // this means that we've confirmed that we're running on a non-disqualified
+    // version of Firefox Desktop. If focus hasn't moved anywhere else in the
+    // meantime, we'll move focus to the email field if it's never been moved
+    // there before.
+    if (this.state.hasUpdatedFxAState && this.#emailEl.hasAttribute("pending-autofocus")) {
+      this.#emailEl.removeAttribute("pending-autofocus");
+      if (document.activeElement == document.body) {
+        this.#emailEl.focus();
       }
     }
 
