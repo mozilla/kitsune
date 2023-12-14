@@ -30,10 +30,3 @@ class MyProfileMyQuestionsPage(BasePage):
     def get_text_of_first_listed_question(self) -> str:
         xpath = "//article[@id='profile']/ul/a[1]"
         return super()._get_element_inner_text_from_page(xpath)
-
-    def get_listed_question(self, question_name: str) -> Locator:
-        xpath = f"//article[@id='profile']/ul/a/li[text()='{question_name}']"
-        return super()._get_element_locator(xpath)
-
-    def get_all_my_posted_questions(self) -> list[str]:
-        return super()._get_text_of_elements(self.__my_profile_my_questions_titles)
