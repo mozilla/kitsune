@@ -34,10 +34,6 @@ class TestUtilities:
         user_message_test_data = json.load(user_message_test_data_file)
     user_message_test_data_file.close()
 
-    with open("test_data/general_data.json", "r") as general_test_data_file:
-        general_test_data = json.load(general_test_data_file)
-    general_test_data_file.close()
-
     user_secrets_accounts = {
         "TEST_ACCOUNT_12": os.environ.get("TEST_ACCOUNT_12"),
         "TEST_ACCOUNT_13": os.environ.get("TEST_ACCOUNT_13"),
@@ -131,9 +127,6 @@ class TestUtilities:
     def wait_for_given_timeout(self, milliseconds: int):
         self.page.wait_for_timeout(milliseconds)
 
-    def wait_for_url_to_be(self, expected_url: str):
-        self.page.wait_for_url(expected_url, timeout=4000)
-
     # Store authentication states
     def store_session_cookies(self, session_file_name: str):
         self.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
@@ -150,9 +143,6 @@ class TestUtilities:
         # A SUMO action needs to be done in order to have the page refreshed with the correct
         # session
         self.page.reload()
-
-    def get_user_agent(self) -> str:
-        return self.page.evaluate('window.navigator.userAgent ')
 
     def replace_special_chars_account(self, account: str) -> str:
         return account.replace(account, "testMozillaSpecialChars")

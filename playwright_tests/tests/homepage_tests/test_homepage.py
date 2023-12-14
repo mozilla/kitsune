@@ -94,10 +94,10 @@ class TestHomepage(TestUtilities):
             self.logger.info("Verifying that the correct product support page is displayed")
             assert (
                 expected_product_title
-                == self.sumo_pages.product_support_page._get_product_title_text()
+                == self.sumo_pages.product_support_page.get_product_title_text()
             ), (f"Incorrect support page displayed. "
                 f"Expected: {expected_product_title} "
-                f"Received: {self.sumo_pages.product_support_page._get_product_title_text()}")
+                f"Received: {self.sumo_pages.product_support_page.get_product_title_text()}")
 
             self.logger.info("Navigating back to the previous page")
             self.navigate_back()

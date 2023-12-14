@@ -14,8 +14,6 @@ class TopNavbar(BasePage):
     __ask_a_question_option = "//h4[contains(text(),'Ask a Question')]/parent::a"
     __aaq_firefox_browser_option = ("//div[@id='main-navigation']//h4[contains(text(), 'Ask a "
                                     "Question')]/../..//a[contains(text(),'Firefox Browser')]")
-    __browse_all_products_option = "//div[@id='main-navigation']//a[text()='Browse All Products']"
-
     # Contribute Tools
     __contribute_option = "//a[contains(text(),'Contribute')]"
 
@@ -78,17 +76,9 @@ class TopNavbar(BasePage):
         super()._hover_over_element(self.__signed_in_username)
         super()._click(self.__signed_in_my_questions_option)
 
-    def click_on_ask_a_question_option(self):
-        super()._hover_over_element(self.__get_help_option)
-        super()._click(self.__ask_a_question_option)
-
     def click_on_ask_a_question_firefox_browser_option(self):
         super()._hover_over_element(self.__get_help_option)
         super()._click(self.__aaq_firefox_browser_option)
-
-    def click_on_browse_all_products_option(self):
-        super()._hover_over_element(self.__get_help_option)
-        super()._click(self.__browse_all_products_option)
 
     def get_text_of_logged_in_username(self) -> str:
         return super()._get_text_of_element(self.__signed_in_username)

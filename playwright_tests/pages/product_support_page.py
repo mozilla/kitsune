@@ -8,8 +8,8 @@ class ProductSupportPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-    def _get_product_title_text(self) -> str:
+    def get_product_title_text(self) -> str:
         return super()._get_text_of_element(self.__product_title)
 
-    def _product_product_title_element(self) -> Locator:
+    def product_product_title_element(self) -> Locator:
         return super()._get_element_locator(self.__product_title)
