@@ -134,8 +134,8 @@ class TestContributePage(TestUtilities):
         self.logger.info("Verifying that the home breadcrumb redirects to the homepage")
         self.sumo_pages.contribute_page.click_on_home_breadcrumb()
 
-        assert self.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL, (
-            f"{HomepageMessages.STAGE_HOMEPAGE_URL} page was expected to be displayed"
+        assert self.get_page_url() == HomepageMessages.STAGE_HOMEPAGE_URL_EN_US, (
+            f"{HomepageMessages.STAGE_HOMEPAGE_URL_EN_US} page was expected to be displayed"
             f"{self.get_page_url()} is displayed instead"
         )
 

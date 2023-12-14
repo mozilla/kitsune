@@ -4,6 +4,92 @@
     "topic_value": "bookmarks",
     "question_body": "'''Lorem ipsum''' dolor ''sit amet'', consectetur [https://www.mediafax.ro adipiscing] elit, [[Stage test owl|sed]] do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt id aliquet risus feugiat in ante. Etiam non quam lacus suspendisse faucibus interdum posuere. Diam sollicitudin tempor id eu nisl nunc mi ipsum. Velit egestas dui id ornare arcu odio ut sem nulla. Risus nec feugiat in fermentum posuere urna nec tincidunt. Sed egestas egestas fringilla phasellus faucibus. Amet consectetur adipiscing elit duis tristique. Lorem mollis aliquam ut porttitor. Purus sit amet volutpat consequat mauris. Lobortis mattis aliquam faucibus purus in. Enim praesent elementum facilisis leo vel. Volutpat lacus laoreet non curabitur gravida arcu. Tempus iaculis urna id volutpat.",
     "image_name": "test.image.jpg",
-    "image_path": "test_data/images/test-image.jpg"
+    "image_path": "test_data/test-image.png"
+  },
+  "troubleshooting_information_kb_article_url": "https://support.mozilla.org/en-US/kb/use-troubleshooting-information-page-fix-firefox",
+  "troubleshooting_information_textarea_field": "Test Troubleshooting data",
+  "troubleshoot_product_and_os_versions": ["Test os", "Test product version"],
+  "products_aaq_url": {
+    "Firefox": "https://support.allizom.org/en-US/questions/new/desktop/form",
+    "Firefox for Android": "https://support.allizom.org/en-US/questions/new/mobile/form",
+    "Firefox for iOS": "https://support.allizom.org/en-US/questions/new/ios/form",
+    "Firefox for Enterprise": "https://support.allizom.org/en-US/questions/new/firefox-enterprise/form",
+    "MDN Plus": "https://support.allizom.org/en-US/questions/new/mdn-plus/form",
+    "Firefox Reality": "https://support.allizom.org/en-US/questions/new/firefox-reality/form",
+    "Mozilla VPN": "https://support.allizom.org/en-US/questions/new/firefox-private-network-vpn/form",
+    "Firefox Private Network": "https://support.allizom.org/en-US/questions/new/firefox-private-network/form",
+    "Firefox Relay": "https://support.allizom.org/en-US/questions/new/relay/form",
+    "Pocket": "https://support.allizom.org/en-US/questions/new/pocket/form",
+    "Hubs": "https://support.allizom.org/en-US/questions/new/hubs/form",
+    "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird/form",
+    "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus/form",
+    "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account/form"
+  },
+  "aaq_topic_tags": {
+    "Firefox": {
+      "Learn the Basics: get started": "get-started",
+      "Download, install and migration": "download-and-install",
+      "Privacy and security settings": "privacy-and-security",
+      "Customize controls, options and add-ons": "customize",
+      "Fix slowness, crashing, error messages and other problems": "fix-problems",
+      "Tips and tricks": "tips",
+      "Bookmarks": "bookmarks",
+      "Cookies": "cookies",
+      "Tabs": "tabs",
+      "Website breakages": "website-breakages",
+      "Firefox Sync": "sync",
+      "Other": "other",
+      "default_slug": "desktop"
+      },
+    "Firefox for Android": {
+      "Download, install and migration": "download-and-install",
+      "Privacy and security settings": "privacy-and-security",
+      "Customize controls, options and add-ons": "customize",
+      "Fix slowness, crashing, error messages and other problems": "fix-problems",
+      "Tips and tricks": "tips",
+      "Bookmarks": "bookmarks",
+      "Cookies": "cookies",
+      "Tabs": "tabs",
+      "Websites": "websites",
+      "Firefox Sync": "sync",
+      "Other": "other",
+      "default_slug": "mobile"
+    },
+    "Firefox for iOS": {
+      "Install and Update": "install-and-update-firefox-ios",
+      "How to use Firefox for iOS": "how-to-use-firefox-ios",
+      "Crash": "crash",
+      "Sync": "sync",
+      "Bookmarks": "bookmarks",
+      "Tabs": "tabs",
+      "Private Browsing mode": "privacy",
+      "default_slug": "ios"
+    },
+    "Firefox for Enterprise": {
+      "Deploy": "deployment",
+      "Manage updates, policies & customization": "customization",
+      "Manage add-ons": "customization",
+      "Manage certificates": "customization",
+      "default_slug": "none"
+    },
+    "Firefox Reality": {
+      "Get started with Firefox Reality": "get-started",
+      "Troubleshooting Firefox Reality": "troubleshooting",
+      "default_slug": "none"
+    },
+    "Thunderbird": {
+      "Download, install and migration": "download-and-install",
+      "Privacy and security settings": "privacy-and-security",
+      "Customize controls, options and add-ons": "customize",
+      "Fix slowness, crashing, error messages and other problems": "fix-problems",
+      "Calendar": "calendar",
+      "Other": "other",
+      "default_slug": "none"
+    },
+    "Firefox Focus": {
+      "Firefox Focus for iOS": "Focus-ios",
+      "Firefox Focus for Android": "firefox-focus-android",
+      "default_slug": "focus-firefox"
+    }
   }
 }

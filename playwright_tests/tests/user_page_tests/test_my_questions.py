@@ -23,9 +23,18 @@ class TestMyQuestions(TestUtilities):
             self.sumo_pages.my_profile_page.get_my_profile_questions_text()
         )
 
-        self.logger.info("Posting a new AAQ question")
+        self.logger.info("Navigating to the Firefox AAQ form")
+        self.navigate_to_link(
+            super().aaq_question_test_data["products_aaq_url"]["Firefox"]
+        )
+
+        self.logger.info("Posting a new AAQ question for Firefox product")
         question_info = (
-            self.sumo_pages.aaq_flow.submit_valid_firefox_prod_question_via_ask_now_fx_solutions()
+            self.sumo_pages.aaq_flow.submit_an_aaq_question_for_a_product(
+                subject=super().aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=super().aaq_question_test_data["valid_firefox_question"]["topic_value"],
+                body=super().aaq_question_test_data["valid_firefox_question"]["question_body"]
+            )
         )
 
         self.logger.info("Navigating back to the My Profile page")
@@ -35,9 +44,7 @@ class TestMyQuestions(TestUtilities):
         )
 
         assert (
-            self.number_extraction_from_string(
-                self.sumo_pages.my_profile_page.get_my_profile_questions_text()
-            )
+            new_number
             == original_number_of_questions + 1
         ), (
             f"The number of questions should have incremented! "
@@ -55,7 +62,7 @@ class TestMyQuestions(TestUtilities):
         self.logger.info("Verifying that we are on the product support forum page after deletion")
 
         expect(
-            self.sumo_pages.product_support_page.product_product_title_element()
+            self.sumo_pages.product_support_page._product_product_title_element()
         ).to_be_visible()
 
         # write tests to check my questions section as well
@@ -129,10 +136,18 @@ class TestMyQuestions(TestUtilities):
             self.sumo_pages.my_questions_page.is_question_list_displayed()
         ).to_be_hidden()
 
-        self.logger.info("Posting a new aaq question")
+        self.logger.info("Navigating to the Firefox AAQ form")
+        self.navigate_to_link(
+            super().aaq_question_test_data["products_aaq_url"]["Firefox"]
+        )
 
+        self.logger.info("Posting a new AAQ question for Firefox product")
         question_info = (
-            self.sumo_pages.aaq_flow.submit_valid_firefox_prod_question_via_ask_now_fx_solutions()
+            self.sumo_pages.aaq_flow.submit_an_aaq_question_for_a_product(
+                subject=super().aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=super().aaq_question_test_data["valid_firefox_question"]["topic_value"],
+                body=super().aaq_question_test_data["valid_firefox_question"]["question_body"]
+            )
         )
 
         self.logger.info(
@@ -211,9 +226,18 @@ class TestMyQuestions(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        self.logger.info("Posting a new aaq question")
+        self.logger.info("Navigating to the Firefox AAQ form")
+        self.navigate_to_link(
+            super().aaq_question_test_data["products_aaq_url"]["Firefox"]
+        )
+
+        self.logger.info("Posting a new AAQ question for Firefox product")
         question_info = (
-            self.sumo_pages.aaq_flow.submit_valid_firefox_prod_question_via_ask_now_fx_solutions()
+            self.sumo_pages.aaq_flow.submit_an_aaq_question_for_a_product(
+                subject=super().aaq_question_test_data["valid_firefox_question"]["subject"],
+                topic_name=super().aaq_question_test_data["valid_firefox_question"]["topic_value"],
+                body=super().aaq_question_test_data["valid_firefox_question"]["question_body"]
+            )
         )
 
         self.logger.info(
