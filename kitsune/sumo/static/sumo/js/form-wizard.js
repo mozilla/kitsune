@@ -302,6 +302,7 @@ export class FormWizard extends HTMLElement {
       let name = step.getAttribute("name");
       if (name === activeStep) {
         step.slot = "active";
+        step.activate && step.activate();
       } else {
         step.slot = "";
       }
