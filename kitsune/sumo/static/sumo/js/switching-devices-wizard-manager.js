@@ -62,6 +62,7 @@ export default class SwitchingDevicesWizardManager {
     sumoEmail: "",
     syncEnabled: false,
     confirmedSyncChoices: false,
+    hasUpdatedFxAState: false,
   };
 
   #state = Object.assign({}, this.#defaultState);
@@ -127,6 +128,7 @@ export default class SwitchingDevicesWizardManager {
         return {
           fxaRoot: state.fxaRoot,
           email: state.sumoEmail,
+          hasUpdatedFxAState: state.hasUpdatedFxAState,
           linkHref: `${state.fxaRoot}?${linkParams}`,
 
           ...baseParams,
@@ -423,6 +425,10 @@ export default class SwitchingDevicesWizardManager {
   async #updateFxAState() {
     let fxaConfig = await new Promise((resolve) => {
       UITour.getConfiguration("fxa", resolve);
+    });
+
+    this.#updateState({
+      hasUpdatedFxAState: true,
     });
 
     if (fxaConfig.setup && fxaConfig.accountStateOK) {

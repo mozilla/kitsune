@@ -386,6 +386,7 @@ describe("k", () => {
         context: "fx_desktop_v3",
         redirect_to: window.location.href,
         redirect_immediately: true,
+        hasUpdatedFxAState: true,
       });
     });
 
@@ -418,6 +419,7 @@ describe("k", () => {
         sumoEmail: "test@example.com",
         syncEnabled: false,
         confirmedSyncChoices: false,
+        hasUpdatedFxAState: true,
       };
       const EXPECTED_PAYLOAD = {
         service: "sync",
@@ -436,6 +438,7 @@ describe("k", () => {
         redirect_to: window.location.href,
         redirect_immediately: true,
         linkHref: `${FAKE_FXA_ROOT}?service=sync&action=email&utm_source=support.mozilla.org&utm_campaign=migration&utm_medium=mozilla-websites&entrypoint=fx-new-device-sync&entrypoint_experiment=experiment&entrypoint_variation=variation&flow_id=${FAKE_FXA_FLOW_ID}&flow_begin_time=${FAKE_FXA_FLOW_BEGIN_TIME}&context=fx_desktop_v3&redirect_to=https%3A%2F%2Fexample.com%2F%23search&redirect_immediately=true`,
+        hasUpdatedFxAState: true,
       };
       expect(step.enter(TEST_STATE)).to.deep.equal(EXPECTED_PAYLOAD);
     });
@@ -443,7 +446,9 @@ describe("k", () => {
     it("should send the user to the configure-sync step immediately if UITour says that the user is signed in", async () => {
       let setStepCalled = new Promise((resolve) => {
         gSetStepStub.callsFake((name, payload) => {
-          resolve({ name, payload });
+          if (name == "configure-sync") {
+            resolve({ name, payload });
+          }
         });
       });
 

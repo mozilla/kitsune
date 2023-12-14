@@ -251,7 +251,7 @@ describe("form-wizard custom element", () => {
     it("should put the root into the disqualified state and populate the header/message", () => {
       wizard.disqualify("need-fx-desktop");
 
-      let root = wizard.shadowRoot.querySelector(".form-wizard-root");
+      let root = wizard.shadowRoot.querySelector("#form-wizard-root");
       expect(root.hasAttribute("inert")).to.be.true;
 
       let needFxDesktop = wizard.shadowRoot.querySelector(

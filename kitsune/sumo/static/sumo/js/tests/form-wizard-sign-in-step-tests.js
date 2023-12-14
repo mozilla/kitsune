@@ -92,9 +92,59 @@ describe("sign-in-step custom element", () => {
     assertFormElements(form, EXPECTED_FORM_ELEMENTS_WITH_FLOW_METRICS);
   });
 
-  it("should focus the email field automatically", () => {
+  it("should focus the email field automatically after the hasUpdatedFxAState property is set to true", () => {
     let email = step.shadowRoot.querySelector("#email");
+    expect(step.shadowRoot.activeElement).to.not.equal(email);
+    expect(email.hasAttribute("pending-autofocus")).to.be.true;
+
+    const TEST_STATE = {
+      utm_source: "utm_source",
+      utm_campaign: "utm_campaign",
+      utm_medium: "utm_medium",
+      entrypoint: "entrypoint",
+      entrypoint_experiment: "entrypoint_experiment",
+      entrypoint_variation: "entrypoint_variation",
+      context: "context",
+      redirect_to: window.location.href,
+      redirect_immediately: true,
+      service: "sync",
+      action: "email",
+      hasUpdatedFxAState: true,
+    };
+    step.setState(TEST_STATE);
+
     expect(step.shadowRoot.activeElement).to.equal(email);
+    expect(email.hasAttribute("pending-autofocus")).to.be.false;
+  });
+
+  it("should not focus the email field automatically if focus moved after the hasUpdatedFxAState property is set to true", () => {
+    let email = step.shadowRoot.querySelector("#email");
+    expect(step.shadowRoot.activeElement).to.not.equal(email);
+    expect(email.hasAttribute("pending-autofocus")).to.be.true;
+
+    let someButton = document.createElement("button");
+    someButton.textContent = "I'm focused first.";
+    document.body.append(someButton);
+    someButton.focus();
+
+    const TEST_STATE = {
+      utm_source: "utm_source",
+      utm_campaign: "utm_campaign",
+      utm_medium: "utm_medium",
+      entrypoint: "entrypoint",
+      entrypoint_experiment: "entrypoint_experiment",
+      entrypoint_variation: "entrypoint_variation",
+      context: "context",
+      redirect_to: window.location.href,
+      redirect_immediately: true,
+      service: "sync",
+      action: "email",
+      hasUpdatedFxAState: true,
+    };
+    step.setState(TEST_STATE);
+
+    expect(step.shadowRoot.activeElement).to.not.equal(email);
+    expect(email.hasAttribute("pending-autofocus")).to.be.false;
   });
 
   it("should set an email address if one is set in the state", () => {
