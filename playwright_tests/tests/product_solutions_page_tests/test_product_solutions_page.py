@@ -1,7 +1,7 @@
 import pytest
 import pytest_check as check
 
-from playwright.sync_api import expect
+from playwright.sync_api import expect, TimeoutError
 from playwright_tests.core.testutilities import TestUtilities
 from playwright_tests.messages.AAQ_messages.aaq_widget import AAQWidgetMessages
 from playwright_tests.messages.product_solutions_page_messages.product_solutions_messages import (
@@ -78,10 +78,17 @@ class TestProductSolutionsPage(TestUtilities):
             if self.sumo_pages.product_solutions_page._is_popular_topics_section_displayed:
                 for topic in self.sumo_pages.product_solutions_page._get_popular_topics():
                     self.sumo_pages.product_solutions_page._click_on_a_popular_topic_card(topic)
-
-                    with self.page.context.expect_page() as tab:
-                        feature_article_page = tab.value
-                        print("Tab open")
+                    try:
+                        with self.page.context.expect_page() as tab:
+                            feature_article_page = tab.value
+                            print(f"Tab open for topic: {topic}")
+                    except TimeoutError:
+                        print("Trying to click on the popular topic again")
+                        self.sumo_pages.product_solutions_page._click_on_a_popular_topic_card(
+                            topic)
+                        with self.page.context.expect_page() as tab:
+                            feature_article_page = tab.value
+                            print(f"Tab open for topic: {topic}")
 
                     popular_topic = (feature_article_page
                                      .locator("//h1[@class='topic-title sumo-page-heading']")
@@ -94,7 +101,6 @@ class TestProductSolutionsPage(TestUtilities):
                         f"Received: {popular_topic}"
                     )
                     feature_article_page.close()
-
             else:
                 self.logger.info(f"{card} has no featured articles displayed!!!")
 
