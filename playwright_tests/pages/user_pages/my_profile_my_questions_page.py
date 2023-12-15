@@ -27,6 +27,10 @@ class MyProfileMyQuestionsPage(BasePage):
         xpath = f"//article[@id='profile']/ul/a[{index_of_question}]/li"
         super()._click(xpath)
 
+    def click_on_a_question_by_name(self, question_title: str):
+        xpath = f"//article[@id='profile']/ul/a/li[text()='{question_title}']"
+        super()._click(xpath)
+
     def get_text_of_first_listed_question(self) -> str:
         xpath = "//article[@id='profile']/ul/a[1]"
         return super()._get_element_inner_text_from_page(xpath)

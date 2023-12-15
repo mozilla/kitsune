@@ -244,7 +244,9 @@ class TestAAQPage(TestUtilities):
                 ).to_be_visible()
 
                 self.logger.info("Clicking on the question and deleting it")
-                self.sumo_pages.my_questions_page.click_on_a_question_by_index(1)
+                self.sumo_pages.my_questions_page.click_on_a_question_by_name(
+                    question_info['aaq_subject']
+                )
 
                 self.sumo_pages.question_page.click_delete_this_question_question_tools_option()
                 self.sumo_pages.question_page.click_delete_this_question_button()
