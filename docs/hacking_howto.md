@@ -54,7 +54,7 @@ faster and easier if you need to do that:
 
 ```
 make runshell
-bin/run-dev.sh
+./manage.py runserver 0.0.0.0:8000
 ```
 
 The end result of this method should be the same as using `make run`, but will potentially aid in debugging
