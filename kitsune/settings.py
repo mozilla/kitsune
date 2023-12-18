@@ -1160,7 +1160,6 @@ CSP_DEFAULT_SRC = ("'none'",)
 CSP_SCRIPT_SRC: tuple[str, ...] = (
     "'self'",
     "https://*.mozilla.org",
-    "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
     "https://*.google-analytics.com",
     "https://*.googletagmanager.com",
@@ -1172,7 +1171,6 @@ CSP_IMG_SRC = (
     "'self'",
     "data:",
     "https://*.mozaws.net",
-    "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
     "https://*.google-analytics.com",
     "https://profile.accounts.firefox.com",
@@ -1184,7 +1182,6 @@ CSP_IMG_SRC = (
 
 CSP_MEDIA_SRC = (
     "'self'",
-    "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
 )
 
@@ -1195,13 +1192,11 @@ CSP_FRAME_SRC = (
 
 CSP_FONT_SRC = (
     "'self'",
-    "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
 )
 
 CSP_STYLE_SRC: tuple[str, ...] = (
     "'self'",
-    "https://*.itsre-sumo.mozilla.net",
     "https://*.webservices.mozgcp.net",
     "https://*.jsdelivr.net",
 )
