@@ -61,7 +61,7 @@ class Command(BaseCommand):
 
             for user in users:
                 docs_list = []
-                docs = Document.objects.visible(user, id__in=doc_ids)
+                docs = Document.objects.unrestricted(user, id__in=doc_ids)
                 for product in products:
                     product_docs = docs.filter(
                         Q(parent=None, products__in=[product]) | Q(parent__products__in=[product])
