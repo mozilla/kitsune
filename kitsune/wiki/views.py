@@ -661,7 +661,7 @@ def document_revisions(request, document_slug, contributor_form=None):
 @login_required
 def review_revision(request, document_slug, revision_id):
     """Review a revision of a wiki document."""
-    rev = get_object_or_404(Revision, pk=revision_id, document__slug=document_slug)
+    rev = get_visible_revision_or_404(request.user, pk=revision_id, document__slug=document_slug)
     doc = rev.document
 
     if not doc.allows(request.user, "review_revision"):
