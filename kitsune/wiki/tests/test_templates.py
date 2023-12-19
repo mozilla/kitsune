@@ -221,7 +221,7 @@ class DocumentTests(TestCase):
         doc = pq(response.content)
         self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
         # Fallback message is shown.
-        self.assertEqual(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#not-approved")))
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()
@@ -267,7 +267,7 @@ class DocumentTests(TestCase):
         response = self.client.get(url)
         doc = pq(response.content)
         # Fallback message is shown.
-        self.assertEqual(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#no-translation")))
 
     def test_redirect(self):
         """Make sure documents with REDIRECT directives redirect properly.
