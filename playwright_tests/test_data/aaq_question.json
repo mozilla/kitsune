@@ -1,10 +1,15 @@
 {
   "valid_firefox_question": {
     "subject": "Test Question ",
+    "subject_updated": "Test Question Updated",
     "topic_value": "bookmarks",
     "question_body": "'''Lorem ipsum''' dolor ''sit amet'', consectetur [https://www.mediafax.ro adipiscing] elit, [[Stage test owl|sed]] do eiusmod tempor incididunt ut labore et dolore magna aliqua. Tincidunt id aliquet risus feugiat in ante. Etiam non quam lacus suspendisse faucibus interdum posuere. Diam sollicitudin tempor id eu nisl nunc mi ipsum. Velit egestas dui id ornare arcu odio ut sem nulla. Risus nec feugiat in fermentum posuere urna nec tincidunt. Sed egestas egestas fringilla phasellus faucibus. Amet consectetur adipiscing elit duis tristique. Lorem mollis aliquam ut porttitor. Purus sit amet volutpat consequat mauris. Lobortis mattis aliquam faucibus purus in. Enim praesent elementum facilisis leo vel. Volutpat lacus laoreet non curabitur gravida arcu. Tempus iaculis urna id volutpat.",
+    "body_updated": "Updated body",
+    "simple_body_text": "Body content test",
     "image_name": "test.image.jpg",
-    "image_path": "test_data/test-image.png"
+    "image_path": "test_data/test-image.png",
+    "question_reply": "Test reply to question",
+    "custom_tag": "test"
   },
   "troubleshooting_information_kb_article_url": "https://support.mozilla.org/en-US/kb/use-troubleshooting-information-page-fix-firefox",
   "troubleshooting_information_textarea_field": "Test Troubleshooting data",

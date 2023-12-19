@@ -14,6 +14,8 @@ from requests.exceptions import HTTPError
 
 @pytest.mark.usefixtures("setup")
 class TestUtilities:
+
+    # Fetching test data from json files.
     with open("test_data/profile_edit.json", "r") as edit_test_data_file:
         profile_edit_test_data = json.load(edit_test_data_file)
     edit_test_data_file.close()
@@ -38,6 +40,7 @@ class TestUtilities:
         general_test_data = json.load(general_test_data_file)
     general_test_data_file.close()
 
+    # Fetching user secrets from GH.
     user_secrets_accounts = {
         "TEST_ACCOUNT_12": os.environ.get("TEST_ACCOUNT_12"),
         "TEST_ACCOUNT_13": os.environ.get("TEST_ACCOUNT_13"),
@@ -56,7 +59,7 @@ class TestUtilities:
     def clear_fxa_email(self, fxa_username: str):
         requests.delete(f"https://restmail.net/mail/{fxa_username}")
 
-    # Mechanism of fetching the fxa verification code from restamil
+    # Mechanism of fetching the fxa verification code from restamil.
     def get_fxa_verification_code(self, fxa_username: str, max_attempts=5, poll_interval=5) -> str:
         for attempt in range(max_attempts):
             try:
@@ -80,29 +83,26 @@ class TestUtilities:
                 print(fxa_verification_code)
                 time.sleep(poll_interval)
 
-    # Extracting username from e-mail mechanism
+    # Extracting username from e-mail mechanism.
     def username_extraction_from_email(self, string_to_analyze: str) -> str:
         return re.match(r"(.+)@", string_to_analyze).group(1)
 
+    # Random number generator.
     def generate_random_number(self, min_value, max_value) -> int:
         return random.randint(min_value, max_value)
 
+    # Extracting numbers from string.
     def number_extraction_from_string(self, string_to_analyze: str) -> int:
         return int(re.findall(r"\d+", string_to_analyze)[0])
 
-    # Defining the logging mechanism
+    # Defining the logging mechanism.
     def get_logger(self):
         logger_name = inspect.stack()[1][3]
         logger = logging.getLogger(logger_name)
-
         file_handler = logging.FileHandler("reports/logs/logfile.log")
-
         formatter = logging.Formatter("%(asctime)s : %(levelname)s : %(name)s : %(message)s")
-
         file_handler.setFormatter(formatter)
-
         logger.addHandler(file_handler)
-
         logger.setLevel(logging.INFO)
 
         return logger
@@ -123,9 +123,10 @@ class TestUtilities:
     def navigate_to_homepage(self):
         self.page.goto(HomepageMessages.STAGE_HOMEPAGE_URL)
 
-    # Navigating to a specific given link
+    # Navigating to a specific given link and waiting for the load state to finish.
     def navigate_to_link(self, link: str):
         self.page.goto(link)
+        self.page.wait_for_load_state("domcontentloaded")
 
     # Wait for a given timeout
     def wait_for_given_timeout(self, milliseconds: int):
@@ -138,11 +139,13 @@ class TestUtilities:
     def store_session_cookies(self, session_file_name: str):
         self.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
 
+    # Deleting page cookies.
     def delete_cookies(self):
         self.context.clear_cookies()
         # Reloading the page for the deletion to take immediate action.
         self.page.reload()
 
+    # Starting an existing session by applying session cookies.
     def start_existing_session(self, session_file_name: str):
         with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
             cookies_data = json.load(file)
@@ -151,11 +154,14 @@ class TestUtilities:
         # session
         self.page.reload()
 
+    # Fetching the user agent.
     def get_user_agent(self) -> str:
         return self.page.evaluate('window.navigator.userAgent ')
 
+    # Replacing special chars from an account.
     def replace_special_chars_account(self, account: str) -> str:
         return account.replace(account, "testMozillaSpecialChars")
 
+    # Removing a particular character from a given string.
     def remove_character_from_string(self, string: str, character_to_remove: str) -> str:
         return string.replace(character_to_remove, "")

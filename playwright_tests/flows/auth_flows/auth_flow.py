@@ -4,10 +4,12 @@ from playwright_tests.pages.homepage import Homepage
 
 
 class AuthFlowPage(TestUtilities, AuthPage, Homepage):
+    # Providing OTP code to FxA auth.
     def __provide_otp_code(self, otp_code: str):
         super().add_data_to_otp_code_input_field(otp_code)
         super().click_on_otp_code_confirm_button()
 
+    # Providing the needed login credentials to FxA auth.
     def __provide_login_credentials_and_submit(self, username: str, password: str):
         super().add_data_to_email_input_field(username)
         super().click_on_enter_your_email_submit_button()
@@ -18,6 +20,7 @@ class AuthFlowPage(TestUtilities, AuthPage, Homepage):
             super().add_data_to_password_input_field(password)
             super().click_on_enter_your_password_submit_button()
 
+    # Sign in flow.
     def sign_in_flow(
         self, username: str, account_password: str, sign_in_with_same_account: bool
     ) -> str:

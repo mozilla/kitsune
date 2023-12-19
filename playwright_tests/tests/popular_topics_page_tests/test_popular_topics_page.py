@@ -1,7 +1,7 @@
 import pytest
 import pytest_check as check
 
-from playwright.sync_api import TimeoutError, expect
+from playwright.sync_api import TimeoutError, expect, Error
 from playwright_tests.core.testutilities import TestUtilities
 from playwright_tests.messages.AAQ_messages.aaq_widget import AAQWidgetMessages
 from playwright_tests.messages.contribute_pages_messages.con_page_messages import (
@@ -29,7 +29,7 @@ class TestPopularTopicsPage(TestUtilities):
                 self.sumo_pages.product_topics_page._click_on_a_navbar_option(option)
                 try:
                     self.wait_for_url_to_be(option_url)
-                except TimeoutError:
+                except (TimeoutError, Error):
                     self.logger.info("Failed click, retrying")
                     self.sumo_pages.product_topics_page._click_on_a_navbar_option(option)
                     self.wait_for_url_to_be(option_url)

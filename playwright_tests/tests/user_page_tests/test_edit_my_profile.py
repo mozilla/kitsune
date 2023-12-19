@@ -250,7 +250,7 @@ class TestEditMyProfile(TestUtilities):
             fxa_page = tab.value
             print("Tab open")
 
-        assert fxa_page.url in FxAPageMessages.ACCOUNT_SETTINGS_URL
+        assert FxAPageMessages.ACCOUNT_SETTINGS_URL in fxa_page.url
 
     #  C1491461
     @pytest.mark.editUserProfileTests

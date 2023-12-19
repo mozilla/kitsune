@@ -4,6 +4,7 @@ from playwright_tests.core.basepage import BasePage
 
 class SubmitKBArticlePage(BasePage):
     __kb_article_for_contributors_sidebar = "//nav[@id='for-contributors-sidebar']"
+    # New KB article form locators.
     __kb_article_form_title = "//input[@id='id_title']"
     __kb_article_form_slug = "//input[@id='id_slug']"
     __kb_article_category_select = "//select[@id='id_category']"
@@ -12,7 +13,7 @@ class SubmitKBArticlePage(BasePage):
     __kb_article_search_for_related_documents = "//input[@id='search-related']"
     __kb_article_keywords_input = "//input[@id='id_keywords']"
     __kb_article_search_result_summary_textarea = "//textarea[@id='id_summary']"
-    # try
+    # New KB article content locators.
     __kb_article_content_textarea = "//textarea[@id='id_content'][1]"
     __kb_article_insert_media = "//button[contains(@class, 'btn-media')]"
     __kb_article_insert_media_modal_images = "//div[@id='media-modal']//img"
@@ -32,9 +33,11 @@ class SubmitKBArticlePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
+    # For Contributors side navbar actions.
     def for_contributors_section(self) -> Locator:
         return super()._get_element_locator(self.__kb_article_for_contributors_sidebar)
 
+    # New KB form actions.
     def add_text_to_article_form_title_field(self, text: str):
         super()._fill(self.__kb_article_form_title, text)
 

@@ -236,7 +236,6 @@ class TestContributeArticlePage(TestUtilities):
                 )
 
     # Need to add tests for "How you can contribute" section
-
     # C2165418
     @pytest.mark.contributePagesTests
     def test_contribute_article_other_ways_to_contribute_redirect_to_the_correct_page(self):
