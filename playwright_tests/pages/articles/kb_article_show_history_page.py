@@ -3,6 +3,7 @@ from playwright_tests.core.basepage import BasePage
 
 
 class KBArticleShowHistoryPage(BasePage):
+    # Show History delete document section locators.
     __delete_this_document_button = "//div[@id='delete-doc']/a"
     __delete_this_document_confirmation_delete_button = "//div[@class='submit']/input"
     __delete_this_document_confirmation_cancel_button = "//div[@class='submit']/a"
@@ -11,6 +12,7 @@ class KBArticleShowHistoryPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
+    # Delete document actions.
     def click_on_delete_this_document_button(self):
         super()._click(self.__delete_this_document_button)
 

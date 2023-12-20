@@ -7,6 +7,7 @@ class EditProfileDataFlow(MyProfileEdit, TestUtilities):
     def __init__(self, page: Page):
         super().__init__(page)
 
+    # Editing a profile with data flow.
     def edit_profile_with_test_data(self):
         edit_test_data = super().profile_edit_test_data
 
@@ -44,6 +45,7 @@ class EditProfileDataFlow(MyProfileEdit, TestUtilities):
             edit_test_data["valid_user_edit"]["involved_from_year"]
         )
 
+    # Clear all profile edit input fields flow.
     def _clear_input_fields(self):
         super().clear_all_input_fields()
         super().clear_username_field()

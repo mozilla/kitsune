@@ -8,6 +8,8 @@ from playwright_tests.messages.contact_support_page_messages.contact_support_mes
     ContactSupportMessages)
 from playwright_tests.messages.contribute_pages_messages.con_page_messages import (
     ContributePageMessages)
+from playwright_tests.messages.product_solutions_page_messages.product_solutions_messages import \
+    ProductSolutionsMessages
 
 
 class TestAAQPage(TestUtilities):
@@ -63,6 +65,90 @@ class TestAAQPage(TestUtilities):
             expect(
                 self.sumo_pages.aaq_form_page.get_learn_more_button_locator()
             ).to_be_hidden()
+
+    # C1511570
+    @pytest.mark.aaqPage
+    @pytest.mark.parametrize("username", ['', 'TEST_ACCOUNT_12', 'TEST_ACCOUNT_MODERATOR'])
+    def test_scam_banner_premium_products_not_displayed(self, username):
+        if username != '':
+            self.logger.info("Signing in with a user account")
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts[username]
+            ))
+        self.logger.info("Navigating to each premium product solutions page")
+        for premium_product in super().general_test_data["premium_products"]:
+            self.navigate_to_link(
+                super().general_test_data["product_solutions"][premium_product]
+            )
+
+            self.logger.info("Verifying that the scam banner is not displayed")
+            expect(
+                self.sumo_pages.product_solutions_page.get_scam_banner_locator()
+            ).to_be_hidden()
+
+            if username != '':
+                self.logger.info("Clicking on the ask now button")
+                self.sumo_pages.product_solutions_page._click_ask_now_button()
+                self.wait_for_url_to_be(
+                    super().aaq_question_test_data["products_aaq_url"][premium_product]
+                )
+
+                self.logger.info("Verifying that the scam banner is not displayed")
+                expect(
+                    self.sumo_pages.product_solutions_page.get_scam_banner_locator()
+                ).to_be_hidden()
+
+    # C2190040
+    @pytest.mark.aaqPage
+    @pytest.mark.parametrize("username", ['', 'TEST_ACCOUNT_12', 'TEST_ACCOUNT_MODERATOR'])
+    def test_scam_banner_for_freemium_products_is_displayed(self, username):
+        if username != '':
+            self.logger.info("Signing in with a user account")
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts[username]
+            ))
+
+        self.logger.info("Navigating to each freemium product solutions page")
+        for freemium_product in super().general_test_data["freemium_products"]:
+            self.navigate_to_link(
+                super().general_test_data["product_solutions"][freemium_product]
+            )
+
+            self.logger.info("Clicking on the 'Learn More' button")
+            self.sumo_pages.product_solutions_page._click_on_scam_alert_banner_learn_more()
+
+            self.logger.info("Verifying that the correct kb article is displayed")
+            check.equal(
+                self.sumo_pages.kb_article_page.get_text_of_article_title(),
+                ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE,
+                f"Incorrect KB article title. "
+                f"Expected: {ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE} "
+                f"Received: {self.sumo_pages.kb_article_page.get_text_of_article_title()}"
+            )
+            if username != '':
+                self.logger.info("Navigating back to the product solutions page")
+                self.navigate_back()
+                self.wait_for_url_to_be(
+                    super().general_test_data["product_solutions"][freemium_product]
+                )
+
+                self.logger.info("Clicking on the ask now button")
+                self.sumo_pages.product_solutions_page._click_ask_now_button()
+                self.wait_for_url_to_be(
+                    super().aaq_question_test_data["products_aaq_url"][freemium_product]
+                )
+
+                self.logger.info("Clicking on the 'Learn More' button")
+                self.sumo_pages.product_solutions_page._click_on_scam_alert_banner_learn_more()
+
+                self.logger.info("Verifying that the correct kb article is displayed")
+                check.equal(
+                    self.sumo_pages.kb_article_page.get_text_of_article_title(),
+                    ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE,
+                    f"Incorrect KB article title. "
+                    f"Expected: {ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE} "
+                    f"Received: {self.sumo_pages.kb_article_page.get_text_of_article_title()}"
+                )
 
     # C890537
     @pytest.mark.aaqPage
@@ -145,7 +231,7 @@ class TestAAQPage(TestUtilities):
     # C890612
     @pytest.mark.aaqPage
     def test_aaq_form_cancel_button_freemium_products(self):
-        self.logger.info("Signing in with a normal user account")
+        self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -198,7 +284,7 @@ class TestAAQPage(TestUtilities):
     # C890614, C890613, C890538
     @pytest.mark.aaqPage
     def test_post_aaq_questions_for_all_freemium_products_topics(self):
-        self.logger.info("Signing in with a normal user account")
+        self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -266,7 +352,7 @@ class TestAAQPage(TestUtilities):
 
     @pytest.mark.aaqPage
     def test_share_firefox_data_functionality(self):
-        self.logger.info("Signing in with a normal user account")
+        self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -327,7 +413,7 @@ class TestAAQPage(TestUtilities):
 
     @pytest.mark.aaqPage
     def test_additional_system_details_user_agent_information(self):
-        self.logger.info("Signing in with a normal user account")
+        self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -371,7 +457,7 @@ class TestAAQPage(TestUtilities):
             "Firefox " + super().aaq_question_test_data["troubleshoot_product_and_os_versions"][1]
         ]
 
-        self.logger.info("Signing in with a normal user account")
+        self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))

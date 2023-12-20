@@ -11,7 +11,8 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
     def __init__(self, page: Page):
         super().__init__(page)
 
-    # Mozilla VPN has an extra optional dropdown menu for choosing an operating system
+    # Submitting an aaq question for a product flow.
+    # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
     def submit_an_aaq_question_for_a_product(self,
                                              subject: str,
                                              topic_name: str,
@@ -32,9 +33,11 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
         current_page_url = self._page.url
 
         # Returning the posted question subject and url for further usage.
-        return {"aaq_subject": question_subject, "question_page_url": current_page_url}
+        return {"aaq_subject": question_subject, "question_page_url": current_page_url,
+                "question_body": body}
 
-    # Mozilla VPN has an extra optional dropdown menu for choosing an operating system
+    # Populating the aaq form fields with given values without submitting the form.
+    # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
     def add__valid_data_to_all_input_fields_without_submitting(self,
                                                                subject: str,
                                                                topic_value: str,
@@ -69,6 +72,7 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
         # Returning the entered question subject for further usage.
         return aaq_subject
 
+    # Adding an image to the aaq form.
     def adding_an_image_to_aaq_form(self):
         super().get_upload_image_button_locator().set_input_files(
             super().aaq_question_test_data["valid_firefox_question"]["image_path"]

@@ -10,6 +10,7 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
+    # Submitting a KB article flow.
     def submit_simple_kb_article(self) -> str:
         self._page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 

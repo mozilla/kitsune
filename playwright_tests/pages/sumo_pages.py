@@ -14,6 +14,7 @@ from playwright_tests.pages.contact_support_pages.contact_support_page import Co
 from playwright_tests.pages.contribute_pages.contribute_page import ContributePage
 from playwright_tests.pages.contribute_pages.ways_to_contribute_pages import WaysToContributePages
 from playwright_tests.pages.footer import FooterSection
+from playwright_tests.pages.forums_pages.product_support_forum import ProductSupportForum
 from playwright_tests.pages.forums_pages.support_forums_page import SupportForumsPage
 from playwright_tests.pages.homepage import Homepage
 from playwright_tests.pages.messaging_system_pages.inbox_page import InboxPage
@@ -97,6 +98,7 @@ class SumoPages:
 
         # Forums
         self.support_forums_page = SupportForumsPage(page)
+        self.product_support_forum = ProductSupportForum(page)
 
         # Auth flow Page.
         self.auth_flow_page = AuthFlowPage(page)
