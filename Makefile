@@ -12,7 +12,8 @@ default: help
 
 help:
 	@echo "build         - build docker images for dev"
-	@echo "start         - docker-compose up the entire system for dev"
+	@echo "start         - docker compose up the entire system for dev"
+	@echo "watch         - docker compose up the entire system for dev and watch directories"
 	@echo ""
 	@echo "init          - initialize the database and install Node packages"
 	@echo "djshell       - start a Django Python shell (ipython)"
@@ -41,8 +42,13 @@ build:
 rebuild: clean build
 
 start: .docker-build
+	${DC} cp . web:/app
 	${DC} up web
 run: start
+
+watch: .docker-build
+	${DC} cp . web:/app
+	${DC} watch
 
 init: .docker-build
 	${DC} run web bin/run-bootstrap.sh

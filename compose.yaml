@@ -1,23 +1,14 @@
-version: "3.8"
 services:
   web:
     build:
       context: .
       target: base
     command: ./bin/run-prod.sh
-    env_file: .env
-    volumes:
-      - ./:/app:delegated
-    user: ${UID:-kitsune}
-    stdin_open: true
-    tty: true
     depends_on:
       - postgres
       - elasticsearch
-      - kibana
       - redis
       - celery
-      - mailcatcher
     ports:
       - "8000:8000"
 
@@ -44,14 +35,6 @@ services:
     volumes:
       - ./kitsune/search/dictionaries/synonyms:/usr/share/elasticsearch/config/synonyms
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.10.2
-    ports:
-      - 5601:5601
-    environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-
   redis:
     image: redis:3
 
@@ -67,11 +50,6 @@ services:
     depends_on:
       - postgres
       - redis
-
-  mailcatcher:
-    image: schickling/mailcatcher
-    ports:
-      - "1080:1080"
 
 volumes:
   pgvolume:

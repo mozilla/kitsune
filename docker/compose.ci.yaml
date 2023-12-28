@@ -1,14 +1,11 @@
-version: "3.8"
 services:
   test:
     build:
       context: .
       target: test
     env_file: .env-test
-    depends_on:
-      - postgres
-      - elasticsearch
-      - redis
+    volumes:
+      - ./:/app:delegated
 
   prod:
     build:
