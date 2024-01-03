@@ -56,8 +56,7 @@ class TestMyProfilePage(TestUtilities):
 
         self.sumo_pages.auth_flow_page.sign_in_flow(
             username=super().user_special_chars,
-            account_password=super().user_secrets_pass,
-            sign_in_with_same_account=False,
+            account_password=super().user_secrets_pass
         )
 
         self.logger.info("Accessing the 'My profile' page via the top-navbar menu")
@@ -324,8 +323,7 @@ class TestMyProfilePage(TestUtilities):
             self.remove_character_from_string(
                 self.sumo_pages.auth_flow_page.sign_in_flow(
                     username=super().user_special_chars,
-                    account_password=super().user_secrets_pass,
-                    sign_in_with_same_account=False,
+                    account_password=super().user_secrets_pass
                 ),
                 "*",
             ))

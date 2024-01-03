@@ -114,7 +114,6 @@ class TestProductSolutionsPage(TestUtilities):
         self.sumo_pages.top_navbar.click_on_browse_all_products_option()
 
         self.logger.info("Clicking on all product cards")
-        sign_in_with_the_same_account = False
 
         for freemium_product in super().general_test_data["freemium_products"]:
             self.sumo_pages.contact_support_page._click_on_a_particular_card(freemium_product)
@@ -145,19 +144,17 @@ class TestProductSolutionsPage(TestUtilities):
             self.sumo_pages.auth_flow_page.sign_in_flow(
                 username=super().user_special_chars,
                 account_password=super().user_secrets_pass,
-                sign_in_with_same_account=sign_in_with_the_same_account,
             )
 
             self.logger.info("Verifying that we are on the correct AAQ form page")
 
             expect(
                 self.page
-            ).to_have_url(super().aaq_question_test_data["products_aaq_url"][freemium_product])
+            ).to_have_url(super().aaq_question_test_data["products_aaq_url"][freemium_product],
+                          timeout=30000)
 
             self.logger.info("Signing out")
             self.sumo_pages.top_navbar.click_on_sign_out_button()
-
-            sign_in_with_the_same_account = True
 
             self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                              "Browse All products")
@@ -171,7 +168,6 @@ class TestProductSolutionsPage(TestUtilities):
         self.sumo_pages.top_navbar.click_on_browse_all_products_option()
 
         self.logger.info("Clicking on all product cards")
-        sign_in_with_the_same_account = False
 
         for premium_product in super().general_test_data["premium_products"]:
             self.sumo_pages.contact_support_page._click_on_a_particular_card(premium_product)
@@ -202,19 +198,17 @@ class TestProductSolutionsPage(TestUtilities):
             self.sumo_pages.auth_flow_page.sign_in_flow(
                 username=super().user_special_chars,
                 account_password=super().user_secrets_pass,
-                sign_in_with_same_account=sign_in_with_the_same_account,
             )
 
             self.logger.info("Verifying that we are on the correct AAQ form page")
 
             expect(
                 self.page
-            ).to_have_url(super().aaq_question_test_data["products_aaq_url"][premium_product])
+            ).to_have_url(super().aaq_question_test_data["products_aaq_url"][premium_product],
+                          timeout=30000)
 
             self.logger.info("Signing out")
             self.sumo_pages.top_navbar.click_on_sign_out_button()
-
-            sign_in_with_the_same_account = True
 
             self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                              "Browse All products")
