@@ -12,8 +12,7 @@ class TestLoginSessions(TestUtilities):
 
             self.sumo_pages.auth_flow_page.sign_in_flow(
                 username=super().user_secrets_accounts[i],
-                account_password=super().user_secrets_pass,
-                sign_in_with_same_account=False
+                account_password=super().user_secrets_pass
             )
 
             print(super().user_secrets_accounts[i])

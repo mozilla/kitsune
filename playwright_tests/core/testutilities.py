@@ -132,8 +132,13 @@ class TestUtilities:
     def wait_for_given_timeout(self, milliseconds: int):
         self.page.wait_for_timeout(milliseconds)
 
-    def wait_for_url_to_be(self, expected_url: str):
-        self.page.wait_for_url(expected_url, timeout=4000)
+    # Waits for URL to be. Default timeout is 4000.
+    def wait_for_url_to_be(self, expected_url: str, timeout=4000):
+        self.page.wait_for_url(expected_url, timeout=timeout)
+
+    # Wait for page to load.
+    def wait_for_page_to_load(self):
+        self.page.wait_for_load_state("load")
 
     # Store authentication states
     def store_session_cookies(self, session_file_name: str):

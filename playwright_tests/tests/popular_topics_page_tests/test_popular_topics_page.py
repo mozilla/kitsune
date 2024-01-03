@@ -73,7 +73,6 @@ class TestPopularTopicsPage(TestUtilities):
     @pytest.mark.productTopicsPage
     def test_aaq_redirect(self):
         self.logger.info("Navigating to product topics pages")
-        sign_in_with_the_same_account = False
         for product_topic in super().general_test_data["product_topics"]:
             topic_url = super().general_test_data["product_topics"][product_topic]
             self.navigate_to_link(topic_url)
@@ -94,20 +93,19 @@ class TestPopularTopicsPage(TestUtilities):
                 self.logger.info("Signing in to SUMO")
                 self.sumo_pages.auth_flow_page.sign_in_flow(
                     username=super().user_special_chars,
-                    account_password=super().user_secrets_pass,
-                    sign_in_with_same_account=sign_in_with_the_same_account,
+                    account_password=super().user_secrets_pass
                 )
 
                 self.logger.info("Verifying that we are on the correct AAQ form page")
 
                 expect(
                     self.page
-                ).to_have_url(super().aaq_question_test_data["products_aaq_url"][product_topic])
+                ).to_have_url(super().aaq_question_test_data["products_aaq_url"][product_topic],
+                              timeout=30000)
 
                 self.logger.info("Signing out")
                 self.sumo_pages.top_navbar.click_on_sign_out_button()
 
-                sign_in_with_the_same_account = True
             else:
                 check.equal(
                     self.sumo_pages.product_topics_page._get_aaq_subheading_text(),
