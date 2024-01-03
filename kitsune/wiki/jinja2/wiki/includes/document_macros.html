@@ -56,7 +56,7 @@
       {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
       <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
         <button class="mzp-c-notification-bar-button" type="button"></button>
-        <div>
+        <div id="no-translation">
           {% trans help_link=url('wiki.document', 'localize-firefox-help'), document_trans_link=url('wiki.translate', document.slug) %}
             No one has helped translate this article yet. If you already know how localizing for SUMO works,
             <a href="{{ document_trans_link }}">start translating now</a>.
@@ -72,7 +72,7 @@
     {% elif fallback_reason == 'translation_not_approved' %}
     <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
       <button class="mzp-c-notification-bar-button" type="button"></button>
-      <div>
+      <div id="not-approved">
         {# L10n: This is shown for existing, never-approved translations #}
         {% trans help_link=url('wiki.document', 'localize-firefox-help') %}
           Our volunteers are working on translating this article.
@@ -92,7 +92,7 @@
     {% elif fallback_reason == 'fallback_locale' %}
       <div id="doc-pending-fallback" class="mzp-c-notification-bar mzp-t-warning">
         <button class="mzp-c-notification-bar-button" type="button"></button>
-        <div>
+        <div id="fallback-locale">
           {% trans locale=full_locale_name[request.LANGUAGE_CODE], fallback_locale=full_locale_name[document.locale], help_link=url('wiki.document', 'localize-firefox-help'), eng_link=document.parent.get_absolute_url() %}
             This page does not exist in {{ locale }}. You have been redirected to the {{ fallback_locale }} version instead.
             If you would like to localize it into {{ locale }}, <a href="{{ help_link }}">click here</a>.
@@ -496,12 +496,12 @@
           </svg>
           {{ _('Still need help?') }}
         </h3>
-        <p class="card--desc">         
+        <p class="card--desc">
             {{ _("If you've tried the steps above and you're still unable to sign in, send a message to our support team.") }}
         </p>
         {% set aaq_url=url('questions.aaq_step3', product_key=product_key) %}
         <a class="sumo-button primary-button button-lg"
-          href="{{ aaq_url }}" 
+          href="{{ aaq_url }}"
           data-event-category="link click"
           data-event-action="{{ location }}"
           data-event-label="inpage_cta">

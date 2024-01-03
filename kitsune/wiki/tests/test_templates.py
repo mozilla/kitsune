@@ -190,6 +190,22 @@ class DocumentTests(TestCase):
         # Included content is English.
         self.assertEqual(pq(r.document.html).text(), doc("#doc-content").text())
 
+    def test_document_fallback_banner_with_unapproved_translation(self):
+        """The document template falls back to English if translation exists
+        but it has no approved revisions."""
+        user = UserFactory()
+        add_permission(user, Revision, "review_revision")
+        self.client.login(username=user.username, password="testpass")
+        r = ApprovedRevisionFactory(content="Test")
+        d2 = DocumentFactory(parent=r.document, locale="de", slug="german")
+        RevisionFactory(document=d2, is_approved=False)
+        url = reverse("wiki.document", args=[d2.slug], locale="de")
+        response = self.client.get(url)
+        doc = pq(response.content)
+
+        # Fallback message that says the article is being translated is shown
+        self.assertEqual(1, len(doc("#not-approved")))
+
     def test_document_fallback_with_translation_english_slug(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions, while visiting the English slug."""
@@ -205,7 +221,7 @@ class DocumentTests(TestCase):
         doc = pq(response.content)
         self.assertEqual(d2.title, doc("h1.sumo-page-heading").text())
         # Fallback message is shown.
-        self.assertEqual(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#not-approved")))
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc("#doc-pending-fallback").remove()
@@ -251,7 +267,7 @@ class DocumentTests(TestCase):
         response = self.client.get(url)
         doc = pq(response.content)
         # Fallback message is shown.
-        self.assertEqual(1, len(doc("#doc-pending-fallback")))
+        self.assertEqual(1, len(doc("#no-translation")))
 
     def test_redirect(self):
         """Make sure documents with REDIRECT directives redirect properly.
