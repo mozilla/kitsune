@@ -141,8 +141,8 @@ def document(request, document_slug, document=None):
         if doc.current_revision:
             # Check for unapproved revisions
             unapproved_translation_exists = Revision.objects.filter(
-                based_on=doc.current_revision,
                 is_approved=False,
+                document__parent=doc,
                 document__locale=request.LANGUAGE_CODE,
             ).exists()
             if unapproved_translation_exists:
