@@ -34,54 +34,54 @@ class SubmitKBArticlePage(BasePage):
         super().__init__(page)
 
     # For Contributors side navbar actions.
-    def for_contributors_section(self) -> Locator:
+    def _for_contributors_section(self) -> Locator:
         return super()._get_element_locator(self.__kb_article_for_contributors_sidebar)
 
     # New KB form actions.
-    def add_text_to_article_form_title_field(self, text: str):
+    def _add_text_to_article_form_title_field(self, text: str):
         super()._fill(self.__kb_article_form_title, text)
 
-    def add_text_to_related_documents_field(self, text: str):
+    def _add_text_to_related_documents_field(self, text: str):
         super()._fill(self.__kb_article_search_for_related_documents, text)
 
-    def add_text_to_keywords_field(self, text: str):
+    def _add_text_to_keywords_field(self, text: str):
         super()._fill(self.__kb_article_keywords_input, text)
 
-    def add_text_to_search_result_summary_field(self, text: str):
+    def _add_text_to_search_result_summary_field(self, text: str):
         super()._fill(self.__kb_article_search_result_summary_textarea, text)
 
-    def add_text_to_expiry_date_field(self, text: str):
+    def _add_text_to_expiry_date_field(self, text: str):
         super()._type(self.__kb_article_expiry_date, text, 0)
 
-    def add_text_to_changes_description_field(self, text: str):
+    def _add_text_to_changes_description_field(self, text: str):
         super()._fill(self.__kb_submit_changes_input_field, text)
 
-    def add_text_to_content_textarea(self, text: str):
+    def _add_text_to_content_textarea(self, text: str):
         super()._fill(self.__kb_article_content_textarea, text)
 
-    def is_content_textarea_displayed(self) -> bool:
+    def _is_content_textarea_displayed(self) -> bool:
         super()._wait_for_selector(self.__kb_article_content_textarea)
         return super()._is_element_visible(self.__kb_article_content_textarea)
 
-    def click_on_insert_media_button(self):
+    def _click_on_insert_media_button(self):
         super()._click(self.__kb_article_insert_media)
 
-    def click_on_toggle_syntax_highlight_option(self):
+    def _click_on_toggle_syntax_highlight_option(self):
         super()._click(self.__kb_article_toggle_syntax_highlighting)
 
-    def click_on_preview_content_button(self):
+    def _click_on_preview_content_button(self):
         super()._click(self.__kb_article_preview_content_button)
 
-    def click_on_submit_for_review_button(self):
+    def _click_on_submit_for_review_button(self):
         super()._click(self.__kb_article_submit_for_preview_button)
 
-    def click_on_changes_submit_button(self):
+    def _click_on_changes_submit_button(self):
         super()._click(self.__kb_submit_changes_button)
 
-    def is_showfor_panel_displayed(self) -> Locator:
+    def _is_showfor_panel_displayed(self) -> Locator:
         return super()._get_element_locator(self.__kb_article_showfor_panel)
 
-    def is_preview_content_section_displayed(self) -> Locator:
+    def _is_preview_content_section_displayed(self) -> Locator:
         return super()._get_element_locator(self.__kb_article_preview_content)
 
     def _click_on_a_relevant_to_option_checkbox(self, option_to_click: str):
@@ -113,5 +113,5 @@ class SubmitKBArticlePage(BasePage):
     def _click_on_insert_media_modal_button(self):
         super()._click(self.__kb_article_insert_media_modal_insert_button)
 
-    def select_category_option_by_text(self, option: str):
+    def _select_category_option_by_text(self, option: str):
         super()._select_option_by_label(self.__kb_article_category_select, option)

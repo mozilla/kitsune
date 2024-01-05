@@ -17,50 +17,50 @@ class TestEditMySettings(TestUtilities):
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-        self.sumo_pages.top_navbar.click_on_settings_profile_option()
+        self.sumo_pages.top_navbar._click_on_settings_profile_option()
 
         self.logger.info("Clicking on all available checkboxes")
-        self.sumo_pages.edit_my_profile_settings_page.click_on_all_settings_checkboxes()
+        self.sumo_pages.edit_my_profile_settings_page._click_on_all_settings_checkboxes()
 
         self.logger.info("Clicking on the 'Update' button")
-        self.sumo_pages.edit_my_profile_settings_page.click_on_update_button()
+        self.sumo_pages.edit_my_profile_settings_page._click_on_update_button()
 
         self.logger.info("Verifying that the correct notification banner is displayed")
         check.equal(
-            self.sumo_pages.edit_my_profile_settings_page.settings_saved_notif_banner_txt(),
+            self.sumo_pages.edit_my_profile_settings_page._settings_saved_notif_banner_txt(),
             EditSettingsPageMessages.MODIFIED_SETTINGS_NOTIFICATION_BANNER_MESSAGE,
             f"Incorrect message displayed inside the notification banner. Expected:"
             f" {EditSettingsPageMessages.MODIFIED_SETTINGS_NOTIFICATION_BANNER_MESSAGE} "
             f"but received: "
-            f"{self.sumo_pages.edit_my_profile_settings_page.settings_saved_notif_banner_txt()}",
+            f"{self.sumo_pages.edit_my_profile_settings_page._settings_saved_notif_banner_txt()}",
         )
 
         self.logger.info("Verifying that all the checkboxes are checked")
 
         assert (
-            self.sumo_pages.edit_my_profile_settings_page.are_all_checkbox_checked()
+            self.sumo_pages.edit_my_profile_settings_page._are_all_checkbox_checked()
         ), "Not all checkboxes are checked!"
 
         self.logger.info(
             "Unchecking all the available checkboxes and clicking on the 'Update' button"
         )
 
-        self.sumo_pages.edit_my_profile_settings_page.click_on_all_settings_checkboxes()
+        self.sumo_pages.edit_my_profile_settings_page._click_on_all_settings_checkboxes()
 
-        self.sumo_pages.edit_my_profile_settings_page.click_on_update_button()
+        self.sumo_pages.edit_my_profile_settings_page._click_on_update_button()
 
         self.logger.info("Verifying that the correct notification banner is displayed")
 
         check.equal(
-            self.sumo_pages.edit_my_profile_settings_page.settings_saved_notif_banner_txt(),
+            self.sumo_pages.edit_my_profile_settings_page._settings_saved_notif_banner_txt(),
             EditSettingsPageMessages.MODIFIED_SETTINGS_NOTIFICATION_BANNER_MESSAGE,
             f"Incorrect message displayed inside the notification banner. Expected:"
             f" {EditSettingsPageMessages.MODIFIED_SETTINGS_NOTIFICATION_BANNER_MESSAGE} "
             f"but received: "
-            f"{self.sumo_pages.edit_my_profile_settings_page.settings_saved_notif_banner_txt()}",
+            f"{self.sumo_pages.edit_my_profile_settings_page._settings_saved_notif_banner_txt()}",
         )
 
         self.logger.info("Verifying that all the checkboxes are unchecked")
         assert not (
-            self.sumo_pages.edit_my_profile_settings_page.are_all_checkbox_checked()
+            self.sumo_pages.edit_my_profile_settings_page._are_all_checkbox_checked()
         ), "Not all checkboxes are unchecked!"

@@ -18,12 +18,12 @@ class TestEditContributionAreas(TestUtilities):
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-        original_user = self.sumo_pages.top_navbar.get_text_of_logged_in_username()
+        original_user = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Clicking on the 'Edit Contribution areas option'")
-        self.sumo_pages.top_navbar.click_on_settings_profile_option()
+        self.sumo_pages.top_navbar._click_on_settings_profile_option()
 
-        self.sumo_pages.user_navbar.click_on_edit_contribution_areas_option()
+        self.sumo_pages.user_navbar._click_on_edit_contribution_areas_option()
 
         self.logger.info("Clicking on all checkboxes")
         self.sumo_pages.edit_my_profile_con_areas_page._click_on_unchecked_cont_areas_checkboxes()
@@ -57,15 +57,15 @@ class TestEditContributionAreas(TestUtilities):
             "Accessing the my profile page and verifying that "
             "the displayed groups are the correct ones"
         )
-        self.sumo_pages.user_navbar.click_on_my_profile_option()
+        self.sumo_pages.user_navbar._click_on_my_profile_option()
 
         assert (
-            self.sumo_pages.my_profile_page.get_my_profile_groups_items_text()
+            self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()
             == contribution_options
         ), (
             f"Not all groups are displayed. Expected:"
             f" {contribution_options} "
-            f"received: {self.sumo_pages.my_profile_page.get_my_profile_groups_items_text()}"
+            f"received: {self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()}"
         )
 
         self.logger.info(
@@ -83,12 +83,12 @@ class TestEditContributionAreas(TestUtilities):
             "Verifying that the user groups is successfully displayed for the original user"
         )
         assert (
-            self.sumo_pages.my_profile_page.get_my_profile_groups_items_text()
+            self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()
             == contribution_options
         ), (
             f"Not all groups are displayed. Expected:"
             f" {contribution_options} "
-            f"received: {self.sumo_pages.my_profile_page.get_my_profile_groups_items_text()}"
+            f"received: {self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()}"
         )
 
         self.logger.info("Signing in back with the original user")
@@ -100,9 +100,9 @@ class TestEditContributionAreas(TestUtilities):
         self.logger.info(
             "Accessing the edit contribution areas page and unchecking all the checkboxes"
         )
-        self.sumo_pages.top_navbar.click_on_settings_profile_option()
+        self.sumo_pages.top_navbar._click_on_settings_profile_option()
 
-        self.sumo_pages.user_navbar.click_on_edit_contribution_areas_option()
+        self.sumo_pages.user_navbar._click_on_edit_contribution_areas_option()
 
         (self.sumo_pages.edit_my_profile_con_areas_page
          ._click_on_all_checked_cont_areas_checkboxes())
@@ -127,10 +127,10 @@ class TestEditContributionAreas(TestUtilities):
             "Verifying that the profile groups section is no longer "
             "displayed inside the profile section"
         )
-        self.sumo_pages.user_navbar.click_on_my_profile_option()
+        self.sumo_pages.user_navbar._click_on_my_profile_option()
 
         expect(
-            self.sumo_pages.my_profile_page.groups_section_element()
+            self.sumo_pages.my_profile_page._groups_section_element()
         ).to_be_hidden()
 
         self.logger.info(
@@ -148,5 +148,5 @@ class TestEditContributionAreas(TestUtilities):
         )
 
         expect(
-            self.sumo_pages.my_profile_page.groups_section_element()
+            self.sumo_pages.my_profile_page._groups_section_element()
         ).to_be_hidden()

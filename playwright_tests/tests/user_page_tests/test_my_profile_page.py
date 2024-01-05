@@ -19,10 +19,10 @@ class TestMyProfilePage(TestUtilities):
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-        original_username = self.sumo_pages.top_navbar.get_text_of_logged_in_username()
+        original_username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Accessing the 'My profile' page via the top-navbar menu")
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
         self.logger.info(
             "Verifying that we are on the correct URL and viewing the correct profile"
@@ -33,18 +33,18 @@ class TestMyProfilePage(TestUtilities):
 
         self.logger.info("Verifying that the page header is the expected one")
         check.equal(
-            self.sumo_pages.my_profile_page.get_my_profile_page_header(),
+            self.sumo_pages.my_profile_page._get_my_profile_page_header(),
             MyProfileMessages.STAGE_MY_PROFILE_PAGE_HEADER,
-            f"Page header is {self.sumo_pages.my_profile_page.get_my_profile_page_header()}"
+            f"Page header is {self.sumo_pages.my_profile_page._get_my_profile_page_header()}"
             f"Expected to be {MyProfileMessages.STAGE_MY_PROFILE_PAGE_HEADER}",
         )
 
         self.logger.info("Verifying that the 'My profile' navbar option is selected")
         check.equal(
-            self.sumo_pages.my_profile_page.get_text_of_selected_navbar_option(),
+            self.sumo_pages.my_profile_page._get_text_of_selected_navbar_option(),
             UserProfileNavbarMessages.NAVBAR_OPTIONS[0],
             f"Selected navbar option is: "
-            f"{self.sumo_pages.my_profile_page.get_text_of_selected_navbar_option}"
+            f"{self.sumo_pages.my_profile_page._get_text_of_selected_navbar_option}"
             f"Expected to be: {UserProfileNavbarMessages.NAVBAR_OPTIONS[0]}",
         )
 
@@ -52,7 +52,7 @@ class TestMyProfilePage(TestUtilities):
     @pytest.mark.userProfile
     def test_my_profile_sign_out_button_functionality(self):
         self.logger.info("Signing in with a normal user account")
-        self.sumo_pages.top_navbar.click_on_signin_signup_button()
+        self.sumo_pages.top_navbar._click_on_signin_signup_button()
 
         self.sumo_pages.auth_flow_page.sign_in_flow(
             username=super().user_special_chars,
@@ -60,10 +60,10 @@ class TestMyProfilePage(TestUtilities):
         )
 
         self.logger.info("Accessing the 'My profile' page via the top-navbar menu")
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
         self.logger.info("Clicking on the 'Sign Out' button from the 'My Profile' page")
-        self.sumo_pages.my_profile_page.click_my_profile_page_sign_out_button()
+        self.sumo_pages.my_profile_page._click_my_profile_page_sign_out_button()
 
         self.logger.info("Verifying that the user is redirected to the homepage")
 
@@ -74,7 +74,7 @@ class TestMyProfilePage(TestUtilities):
         self.logger.info("Verify that the 'Sign in/Up' button from the page header is displayed")
 
         expect(
-            self.sumo_pages.top_navbar.sign_in_up_button_displayed_element()
+            self.sumo_pages.top_navbar._sign_in_up_button_displayed_element()
         ).to_be_visible()
 
     # C2108828
@@ -85,7 +85,7 @@ class TestMyProfilePage(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        repliant_username = self.sumo_pages.top_navbar.get_text_of_logged_in_username()
+        repliant_username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Navigating to the Firefox AAQ form")
         self.navigate_to_link(
@@ -101,11 +101,11 @@ class TestMyProfilePage(TestUtilities):
             )
         )
 
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
         self.logger.info("Extracting original number of posted solutions")
         original_number_of_solutions = self.number_extraction_from_string(
-            self.sumo_pages.my_profile_page.get_my_profile_solutions_text()
+            self.sumo_pages.my_profile_page._get_my_profile_solutions_text()
         )
 
         self.logger.info("Navigating to the previously posted question")
@@ -114,30 +114,31 @@ class TestMyProfilePage(TestUtilities):
         self.logger.info("Posting a reply for the question")
         question_test_data = super().question_test_data
 
-        self.sumo_pages.question_page.add_text_to_post_a_reply_textarea(
+        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
             question_test_data["question_reply_solution"]
         )
 
         self.logger.info("Clicking on the 'Post Reply' button and extracting answer id from url")
-        answer_id = self.sumo_pages.question_page.click_on_post_reply_button(
+        answer_id = self.sumo_pages.question_page._click_on_post_reply_button(
             repliant_username=repliant_username
         )
 
         self.logger.info("Marking the reply as the solution")
-        self.sumo_pages.question_page.click_on_solves_the_problem_button(target_reply_id=answer_id)
+        self.sumo_pages.question_page._click_on_solves_the_problem_button(
+            target_reply_id=answer_id)
 
         self.logger.info(
             "Accessing the 'My profile' page of the account which provided a solution"
         )
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
         new_number = self.number_extraction_from_string(
-            self.sumo_pages.my_profile_page.get_my_profile_solutions_text()
+            self.sumo_pages.my_profile_page._get_my_profile_solutions_text()
         )
 
         assert (
             self.number_extraction_from_string(
-                self.sumo_pages.my_profile_page.get_my_profile_solutions_text()
+                self.sumo_pages.my_profile_page._get_my_profile_solutions_text()
             )
             == original_number_of_solutions + 1
         ), (
@@ -150,9 +151,9 @@ class TestMyProfilePage(TestUtilities):
         self.logger.info("Deleting the my posted question")
         self.navigate_to_link(question_info["question_page_url"])
 
-        self.sumo_pages.question_page.click_delete_this_question_question_tools_option()
+        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
 
-        self.sumo_pages.question_page.click_delete_this_question_button()
+        self.sumo_pages.question_page._click_delete_this_question_button()
 
         self.logger.info("Verifying that we are on the product support forum page after deletion")
 
@@ -170,14 +171,14 @@ class TestMyProfilePage(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        repliant_user = self.sumo_pages.top_navbar.get_text_of_logged_in_username()
+        repliant_user = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Accessing the 'My profile' page via the top-navbar menu")
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
         self.logger.info("Extracting original number of posted answers")
         original_number_of_answers = self.number_extraction_from_string(
-            self.sumo_pages.my_profile_page.get_my_profile_answers_text()
+            self.sumo_pages.my_profile_page._get_my_profile_answers_text()
         )
 
         self.logger.info("Navigating to the Firefox AAQ form")
@@ -199,24 +200,24 @@ class TestMyProfilePage(TestUtilities):
 
         reply_text = question_test_data["non_solution_reply"]
 
-        self.sumo_pages.question_page.add_text_to_post_a_reply_textarea(reply_text)
+        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(reply_text)
 
         self.logger.info("Clicking on the 'Post Reply' button and extracting answer id from url")
-        answer_id = self.sumo_pages.question_page.click_on_post_reply_button(
+        answer_id = self.sumo_pages.question_page._click_on_post_reply_button(
             repliant_username=repliant_user
         )
 
         self.logger.info("Accessing the 'My profile' page by clicking on the replient username")
-        self.sumo_pages.question_page.click_on_the_reply_author(answer_id)
+        self.sumo_pages.question_page._click_on_the_reply_author(answer_id)
 
         self.logger.info("Verify that my number of profile answers has incremented successfully")
         new_number = self.number_extraction_from_string(
-            self.sumo_pages.my_profile_page.get_my_profile_answers_text()
+            self.sumo_pages.my_profile_page._get_my_profile_answers_text()
         )
 
         assert (
             self.number_extraction_from_string(
-                self.sumo_pages.my_profile_page.get_my_profile_answers_text()
+                self.sumo_pages.my_profile_page._get_my_profile_answers_text()
             )
             == original_number_of_answers + 1
         ), (
@@ -226,21 +227,21 @@ class TestMyProfilePage(TestUtilities):
             f"{new_number}"
         )
 
-        self.sumo_pages.my_profile_page.click_my_profile_answers_link()
+        self.sumo_pages.my_profile_page._click_my_profile_answers_link()
         self.logger.info(
             "Verify that my answer is successfully displayed inside the profile answers list"
         )
 
-        assert reply_text == self.sumo_pages.my_answers_page.get_my_answer_text(
+        assert reply_text == self.sumo_pages.my_answers_page._get_my_answer_text(
             answer_id=answer_id
         ), "My question reply is not displayed inside the my profile answers list"
 
         self.logger.info("Deleting the my posted question")
         self.navigate_to_link(question_info["question_page_url"])
 
-        self.sumo_pages.question_page.click_delete_this_question_question_tools_option()
+        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
 
-        self.sumo_pages.question_page.click_delete_this_question_button()
+        self.sumo_pages.question_page._click_delete_this_question_button()
 
         self.logger.info("Verifying that we are on the product support forum page after deletion")
         expect(
@@ -256,11 +257,11 @@ class TestMyProfilePage(TestUtilities):
         ))
 
         self.logger.info("Accessing the View Profile page")
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
         self.logger.info("Extracting the number of posted documents")
         original_number_of_documents = self.number_extraction_from_string(
-            self.sumo_pages.my_profile_page.get_my_profile_documents_text()
+            self.sumo_pages.my_profile_page._get_my_profile_documents_text()
         )
 
         self.logger.info("Create a new simple article")
@@ -268,16 +269,16 @@ class TestMyProfilePage(TestUtilities):
 
         self.logger.info("Accessing the View Profile page")
 
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
         self.logger.info("Verifying that the number of posted documents has incremented")
         new_number = self.number_extraction_from_string(
-            self.sumo_pages.my_profile_page.get_my_profile_documents_text()
+            self.sumo_pages.my_profile_page._get_my_profile_documents_text()
         )
 
         assert (
             self.number_extraction_from_string(
-                self.sumo_pages.my_profile_page.get_my_profile_documents_text()
+                self.sumo_pages.my_profile_page._get_my_profile_documents_text()
             )
             == original_number_of_documents + 1
         ), (
@@ -288,27 +289,27 @@ class TestMyProfilePage(TestUtilities):
         )
 
         self.logger.info("Click on the my posted documents link")
-        self.sumo_pages.my_profile_page.click_on_my_profile_document_link()
+        self.sumo_pages.my_profile_page._click_on_my_profile_document_link()
 
         self.logger.info(
             "Verifying that the posted document is listed inside the my profile documents list"
         )
         assert (
-            article_title in self.sumo_pages.my_documents_page.get_text_of_document_links()
+            article_title in self.sumo_pages.my_documents_page._get_text_of_document_links()
         ), f"The {article_title} is not listed inside the my posted documents list"
 
         self.logger.info(
             "Verifying that clicking on the posted article title redirects the "
             "user to that article"
         )
-        self.sumo_pages.my_documents_page.click_on_a_particular_document(article_title)
+        self.sumo_pages.my_documents_page._click_on_a_particular_document(article_title)
 
         self.logger.info("Deleting the created article")
-        self.sumo_pages.kb_article_page.click_on_show_history_option()
+        self.sumo_pages.kb_article_page._click_on_show_history_option()
 
-        self.sumo_pages.kb_article_show_history_page.click_on_delete_this_document_button()
+        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
 
-        self.sumo_pages.kb_article_show_history_page.click_on_confirmation_delete_button()
+        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
 
     # C1491023
     @pytest.mark.userProfile
@@ -317,7 +318,7 @@ class TestMyProfilePage(TestUtilities):
             "Signing in with an account that contains SUMO-supported and unsupported characters"
         )
 
-        self.sumo_pages.top_navbar.click_on_signin_signup_button()
+        self.sumo_pages.top_navbar._click_on_signin_signup_button()
 
         username = self.username_extraction_from_email(
             self.remove_character_from_string(
@@ -332,35 +333,36 @@ class TestMyProfilePage(TestUtilities):
             "Verifying that the username contains the supported characters "
             "and doesn't contain the unsupported ones in top navbar"
         )
-        assert self.sumo_pages.top_navbar.get_text_of_logged_in_username() == username, (
+        assert self.sumo_pages.top_navbar._get_text_of_logged_in_username() == username, (
             f" The displayed username inside the top-navbar is incorrect. "
             f"The displayed username should be: {username} "
-            f"but instead is : {self.sumo_pages.top_navbar.get_text_of_logged_in_username()}"
+            f"but instead is : {self.sumo_pages.top_navbar._get_text_of_logged_in_username()}"
         )
 
         self.logger.info(
             "Verifying that the username contains the supported characters "
             "and doesn't contain the unsupported ones in My Profile page"
         )
-        self.sumo_pages.top_navbar.click_on_view_profile_option()
+        self.sumo_pages.top_navbar._click_on_view_profile_option()
 
-        assert (self.sumo_pages.my_profile_page.get_my_profile_display_name_header_text()
+        assert (self.sumo_pages.my_profile_page._get_my_profile_display_name_header_text()
                 == username), (
             f"The displayed username inside the my profile page is incorrect. "
             f"The displayed username should be: {username}"
             f"but instead is: "
-            f"{self.sumo_pages.my_profile_page.get_my_profile_display_name_header_text()}"
+            f"{self.sumo_pages.my_profile_page._get_my_profile_display_name_header_text()}"
         )
 
         self.logger.info(
             "Verifying that the username contains the supported characters and "
             "doesn't contain the unsupported ones in Edit my Profile page"
         )
-        self.sumo_pages.top_navbar.click_on_edit_profile_option()
+        self.sumo_pages.top_navbar._click_on_edit_profile_option()
 
-        assert self.sumo_pages.edit_my_profile_page.get_username_input_field_value() == username, (
+        assert (
+            self.sumo_pages.edit_my_profile_page._get_username_input_field_value() == username), (
             f"The displayed username inside the Edit my Profile page is incorrect. "
             f"The displayed field value should be: {username}"
             f"but instead is: "
-            f"{self.sumo_pages.edit_my_profile_page.get_username_input_field_value()}"
+            f"{self.sumo_pages.edit_my_profile_page._get_username_input_field_value()}"
         )

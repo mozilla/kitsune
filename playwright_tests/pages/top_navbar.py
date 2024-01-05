@@ -19,6 +19,11 @@ class TopNavbar(BasePage):
     # Contribute Tools
     __contribute_option = "//a[contains(text(),'Contribute')]"
 
+    # Contributor Tools
+    __contributor_tools_option = "//a[contains(text(),'Contributor Tools')]"
+    __moderate_forum_content = ("//div[@id='main-navigation']//a[@data-event-label='Moderate "
+                                "Forum Content']")
+
     # Sign in button
     __signin_signup_button = "//div[@id='profile-navigation']//a[@data-event-label='Sign In']"
 
@@ -36,62 +41,67 @@ class TopNavbar(BasePage):
         super().__init__(page)
 
     # Support logo
-    def get_sumo_nav_logo(self) -> ElementHandle:
+    def _get_sumo_nav_logo(self) -> ElementHandle:
         return super()._get_element_handle(self.__sumo_nav_logo)
 
-    def click_on_sumo_nav_logo(self):
+    def _click_on_sumo_nav_logo(self):
         super()._click(self.__sumo_nav_logo)
 
-    def get_available_menu_titles(self) -> list[str]:
+    def _get_available_menu_titles(self) -> list[str]:
         return super()._get_text_of_elements(self.__menu_titles)
 
     # Contribute Tools
-    def click_on_contribute_top_navbar_option(self):
+    def _click_on_contribute_top_navbar_option(self):
         super()._click(self.__contribute_option)
 
+    # Contributor tools
+    def _click_on_moderate_forum_content_option(self):
+        super()._hover_over_element(self.__contributor_tools_option)
+        super()._click(self.__moderate_forum_content)
+
     # Sign in option
-    def click_on_signin_signup_button(self):
+    def _click_on_signin_signup_button(self):
         super()._click(self.__signin_signup_button)
 
     # Profile options
-    def click_on_view_profile_option(self):
+    def _click_on_view_profile_option(self):
         super()._hover_over_element(self.__signed_in_username)
         super()._click(self.__signed_in_view_profile_option)
 
-    def click_on_edit_profile_option(self):
+    def _click_on_edit_profile_option(self):
         super()._hover_over_element(self.__signed_in_username)
         super()._click(self.__signed_in_edit_profile_option)
 
-    def click_on_settings_profile_option(self):
+    def _click_on_settings_profile_option(self):
         super()._hover_over_element(self.__signed_in_username)
         super()._click(self.__signed_in_settings_option)
 
-    def click_on_inbox_option(self):
+    def _click_on_inbox_option(self):
         super()._hover_over_element(self.__signed_in_username)
         super()._click(self.__signed_in_inbox_option)
 
-    def click_on_sign_out_button(self):
+    def _click_on_sign_out_button(self):
         super()._hover_over_element(self.__signed_in_username)
         super()._click(self.__sign_out_button)
 
-    def click_on_my_questions_profile_option(self):
+    def _click_on_my_questions_profile_option(self):
         super()._hover_over_element(self.__signed_in_username)
         super()._click(self.__signed_in_my_questions_option)
 
-    def click_on_ask_a_question_option(self):
+    def _click_on_ask_a_question_option(self):
         super()._hover_over_element(self.__get_help_option)
         super()._click(self.__ask_a_question_option)
 
-    def click_on_ask_a_question_firefox_browser_option(self):
+    def _click_on_ask_a_question_firefox_browser_option(self):
         super()._hover_over_element(self.__get_help_option)
         super()._click(self.__aaq_firefox_browser_option)
 
-    def click_on_browse_all_products_option(self):
+    def _click_on_browse_all_products_option(self):
         super()._hover_over_element(self.__get_help_option)
         super()._click(self.__browse_all_products_option)
 
-    def get_text_of_logged_in_username(self) -> str:
+    def _get_text_of_logged_in_username(self) -> str:
         return super()._get_text_of_element(self.__signed_in_username)
 
-    def sign_in_up_button_displayed_element(self) -> Locator:
+    def _sign_in_up_button_displayed_element(self) -> Locator:
         return super()._get_element_locator(self.__signin_signup_button)

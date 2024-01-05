@@ -65,136 +65,137 @@ class MyProfilePage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-    def get_my_profile_display_name_header_text(self) -> str:
+    # My profile page actions.
+    def _get_my_profile_display_name_header_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_display_name_header)
 
-    def get_my_profile_display_name_username_text(self) -> str:
+    def _get_my_profile_display_name_username_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_username_info)
 
-    def get_my_profile_location_text(self) -> str:
+    def _get_my_profile_location_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_location_info)
 
-    def get_my_profile_website_text(self) -> str:
+    def _get_my_profile_website_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_website_info)
 
-    def get_my_profile_twitter_text(self) -> str:
+    def _get_my_profile_twitter_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_twitter_info)
 
-    def get_my_profile_community_portal_text(self) -> str:
+    def _get_my_profile_community_portal_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_community_portal_info)
 
-    def get_my_profile_people_directory_text(self) -> str:
+    def _get_my_profile_people_directory_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_people_directory_info)
 
-    def get_my_profile_matrix_text(self) -> str:
+    def _get_my_profile_matrix_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_matrix_info)
 
-    def get_my_contributed_from_text(self) -> str:
+    def _get_my_contributed_from_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_contributed_from_info)
 
-    def get_my_profile_bio_text(self) -> str:
+    def _get_my_profile_bio_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_bio_info)
 
-    def get_my_profile_page_header(self) -> str:
+    def _get_my_profile_page_header(self) -> str:
         return super()._get_text_of_element(self.__my_profile_page_header)
 
-    def get_my_profile_email_information(self) -> str:
+    def _get_my_profile_email_information(self) -> str:
         return super()._get_text_of_element(self.__my_profile_email_address)
 
-    def get_text_of_selected_navbar_option(self) -> str:
+    def _get_text_of_selected_navbar_option(self) -> str:
         return super()._get_text_of_element(self.__my_profile_user_navbar_selected_element)
 
-    def get_navbar_menu_options(self) -> list[ElementHandle]:
+    def _get_navbar_menu_options(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.__my_profile_user_navbar_options)
 
-    def get_text_of_all_navbar_menu_options(self) -> list[str]:
+    def _get_text_of_all_navbar_menu_options(self) -> list[str]:
         return super()._get_text_of_elements(self.__my_profile_user_navbar_options)
 
-    def get_text_of_publicly_displayed_username(self) -> str:
+    def _get_text_of_publicly_displayed_username(self) -> str:
         return super()._get_text_of_element(self.__my_profile_displayed_email_address)
 
-    def get_text_of_profile_subheading_location(self) -> str:
+    def _get_text_of_profile_subheading_location(self) -> str:
         return super()._get_text_of_element(self.__my_profile_page_subheading)
 
-    def get_my_profile_questions_text(self) -> str:
+    def _get_my_profile_questions_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_contributions_questions_link)
 
-    def get_my_profile_solutions_text(self) -> str:
+    def _get_my_profile_solutions_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_provided_solutions_text)
 
-    def get_my_profile_documents_text(self) -> str:
+    def _get_my_profile_documents_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_provided_documents_link)
 
-    def get_my_profile_answers_text(self) -> str:
+    def _get_my_profile_answers_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_contributions_answers_link)
 
-    def get_my_profile_groups_heading_text(self) -> str:
+    def _get_my_profile_groups_heading_text(self) -> str:
         return super()._get_text_of_element(self.__my_profile_groups_heading)
 
-    def get_my_profile_groups_items_text(self) -> set[str]:
+    def _get_my_profile_groups_items_text(self) -> set[str]:
         initial_list = set(super()._get_text_of_elements(self.__my_profile_groups_list_items))
         return initial_list
 
-    def click_on_edit_user_profile_button(self):
+    def _click_on_edit_user_profile_button(self):
         super()._click(self.__edit_user_profile_option)
 
-    def click_my_profile_answers_link(self):
+    def _click_my_profile_answers_link(self):
         super()._click(self.__my_profile_contributions_answers_link)
 
-    def click_on_my_profile_questions_link(self):
+    def _click_on_my_profile_questions_link(self):
         super()._click(self.__my_profile_contributions_questions_link)
 
-    def click_on_my_profile_document_link(self):
+    def _click_on_my_profile_document_link(self):
         super()._click(self.__my_profile_provided_documents_link)
 
-    def click_on_my_website_link(self):
+    def _click_on_my_website_link(self):
         super()._click(self.__my_profile_website_info)
 
-    def click_on_twitter_link(self):
+    def _click_on_twitter_link(self):
         super()._click(self.__my_profile_twitter_info)
 
-    def click_on_community_portal_link(self):
+    def _click_on_community_portal_link(self):
         super()._click(self.__my_profile_community_portal_info)
 
-    def click_on_people_directory_link(self):
+    def _click_on_people_directory_link(self):
         super()._click(self.__my_profile_people_directory_info)
 
-    def click_on_element(self, element: ElementHandle):
+    def _click_on_element(self, element: ElementHandle):
         element.click()
 
-    def click_my_profile_page_sign_out_button(self):
+    def _click_my_profile_page_sign_out_button(self):
         super()._click(self.__my_profile_sign_out_button)
 
-    def click_on_report_abuse_option(self):
+    def _click_on_report_abuse_option(self):
         super()._click(self.__report_abuse_profile_option)
 
-    def click_on_report_abuse_close_button(self):
+    def _click_on_report_abuse_close_button(self):
         super()._click(self.__report_abuse_close_panel_button)
 
-    def click_on_private_message_button(self):
+    def _click_on_private_message_button(self):
         super()._click(self.__private_message_button)
 
-    def publicly_displayed_email_element(self) -> Locator:
+    def _publicly_displayed_email_element(self) -> Locator:
         return super()._get_element_locator(self.__my_profile_displayed_email_address)
 
-    def is_website_information_displayed(self) -> bool:
+    def _is_website_information_displayed(self) -> bool:
         return super()._is_element_visible(self.__my_profile_website_info)
 
-    def groups_section_element(self) -> Locator:
+    def _groups_section_element(self) -> Locator:
         return super()._get_element_locator(self.__my_profile_groups_section)
 
-    def edit_user_profile_option_element(self) -> Locator:
+    def _edit_user_profile_option_element(self) -> Locator:
         return super()._get_element_locator(self.__edit_user_profile_option)
 
-    def is_report_user_option_displayed(self) -> Locator:
+    def _is_report_user_option_displayed(self) -> Locator:
         return super()._get_element_locator(self.__report_abuse_profile_option)
 
-    def is_report_abuse_panel_displayed(self) -> Locator:
+    def _is_report_abuse_panel_displayed(self) -> Locator:
         return super()._get_element_locator(self.__report_abuse_panel)
 
-    def is_deactivate_this_user_button_displayed(self) -> Locator:
+    def _is_deactivate_this_user_button_displayed(self) -> Locator:
         return super()._get_element_locator(self.__deactivate_this_user_button)
 
-    def deactivate_this_user_and_mark_content_as_spam_element(self) -> Locator:
+    def _deactivate_this_user_and_mark_content_as_spam_elem(self) -> Locator:
         return super()._get_element_locator(
             self.__deactivate_this_user_and_mark_all_content_as_spam)

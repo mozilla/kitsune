@@ -3,11 +3,12 @@ import pytest_check as check
 
 from playwright.sync_api import TimeoutError, expect, Error
 from playwright_tests.core.testutilities import TestUtilities
-from playwright_tests.messages.AAQ_messages.aaq_widget import AAQWidgetMessages
+from playwright_tests.messages.get_help_messages.AAQ_messages.aaq_widget import AAQWidgetMessages
 from playwright_tests.messages.contribute_pages_messages.con_page_messages import (
     ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.kb_article.kb_article_page_messages import KBArticlePageMessages
+from playwright_tests.messages.get_help_messages.kb_article.kb_article_page_messages import (
+    KBArticlePageMessages)
 
 
 class TestPopularTopicsPage(TestUtilities):
@@ -104,7 +105,7 @@ class TestPopularTopicsPage(TestUtilities):
                               timeout=30000)
 
                 self.logger.info("Signing out")
-                self.sumo_pages.top_navbar.click_on_sign_out_button()
+                self.sumo_pages.top_navbar._click_on_sign_out_button()
 
             else:
                 check.equal(

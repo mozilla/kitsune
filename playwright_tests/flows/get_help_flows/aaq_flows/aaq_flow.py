@@ -1,9 +1,9 @@
 from playwright.sync_api import Page
 from playwright_tests.core.testutilities import TestUtilities
-from playwright_tests.pages.product_solutions_pages.product_solutions_page import (
+from playwright_tests.pages.get_help_pages.product_solutions_pages.product_solutions_page import (
     ProductSolutionsPage)
 from playwright_tests.pages.top_navbar import TopNavbar
-from playwright_tests.pages.aaq_pages.aaq_form_page import AAQFormPage
+from playwright_tests.pages.get_help_pages.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.user_questions_pages.questions_page import QuestionPage
 
 
@@ -27,9 +27,9 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
             attach_image
         )
         # Submitting the question.
-        super().click_aaq_form_submit_button()
+        super()._click_aaq_form_submit_button()
         # Waiting for submitted question reply button visibility.
-        super().is_post_reply_button_visible()
+        super()._is_post_reply_button_visible()
         current_page_url = self._page.url
 
         # Returning the posted question subject and url for further usage.
@@ -47,33 +47,33 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
         random_number = str(super().generate_random_number(min_value=0, max_value=1000))
         aaq_subject = subject + random_number
         # Adding text to subject field.
-        super().add_text_to_aaq_form_subject_field(aaq_subject)
+        super()._add_text_to_aaq_form_subject_field(aaq_subject)
         # Selecting a topic.
-        super().select_aaq_form_topic_value(
+        super()._select_aaq_form_topic_value(
             topic_value
         )
         # Adding text to question body.
-        super().add_text_to_aaq_textarea_field(
+        super()._add_text_to_aaq_textarea_field(
             body_text
         )
         # Some products contain another OS dropdown menu. We are selecting an option for those.
         if os != "":
-            super().select_aaq_form_os_value(os)
+            super()._select_aaq_form_os_value(os)
 
         if attach_image:
             # Uploading an image to the aaq question form.
-            super().get_upload_image_button_locator().set_input_files(
+            super()._get_upload_image_button_locator().set_input_files(
                 super().aaq_question_test_data["valid_firefox_question"]["image_path"]
             )
 
             # Waiting for the image preview to be displayed.
-            super().uploaded_image_locator()
+            super()._uploaded_image_locator()
 
         # Returning the entered question subject for further usage.
         return aaq_subject
 
     # Adding an image to the aaq form.
     def adding_an_image_to_aaq_form(self):
-        super().get_upload_image_button_locator().set_input_files(
+        super()._get_upload_image_button_locator().set_input_files(
             super().aaq_question_test_data["valid_firefox_question"]["image_path"]
         )

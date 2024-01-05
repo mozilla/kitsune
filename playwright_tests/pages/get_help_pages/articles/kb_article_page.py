@@ -13,9 +13,9 @@ class KBArticlePage(BasePage):
         super().__init__(page)
 
     # KB Article page content actions.
-    def get_text_of_article_title(self) -> str:
+    def _get_text_of_article_title(self) -> str:
         return super()._get_text_of_element(self.__kb_article_heading)
 
     # KB Article editing tools section actions.
-    def click_on_show_history_option(self):
+    def _click_on_show_history_option(self):
         super()._click(self.__editing_tools_show_history_option)

@@ -3,6 +3,8 @@ from playwright_tests.core.basepage import BasePage
 
 
 class MyProfileEditContributionAreasPage(BasePage):
+
+    # My profile contribution areas page locators.
     __edit_contribution_areas_page_header = "//h3[@class='sumo-page-heading']"
     __edit_contribution_areas_checkboxes = "//input[@type='checkbox']"
     __edit_contribution_areas_kb_contributors = "//input[@value='kb-contributors']"
@@ -21,6 +23,7 @@ class MyProfileEditContributionAreasPage(BasePage):
     def __init__(self, page: Page):
         super().__init__(page)
 
+    # My profile contribution areas page actions.
     def _edit_con_areas_pref_banner_txt(self) -> str:
         return super()._get_text_of_element(
             self.__edit_contribution_areas_preferences_saved_banner_text)

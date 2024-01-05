@@ -13,7 +13,7 @@ class TestFooter(TestUtilities):
     def test_all_footer_links_are_working(self):
         self.logger.info("Verifying that footer links are not broken")
 
-        for link in self.sumo_pages.footer_section.get_all_footer_links():
+        for link in self.sumo_pages.footer_section._get_all_footer_links():
             relative_url = link.get_attribute("href")
 
             # Verify if URL is absolute, and construct the full URL if it's not
