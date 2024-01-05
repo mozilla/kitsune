@@ -151,13 +151,14 @@ class TestUtilities:
         self.page.reload()
 
     # Starting an existing session by applying session cookies.
-    def start_existing_session(self, session_file_name: str):
+    def start_existing_session(self, session_file_name: str) -> str:
         with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
             cookies_data = json.load(file)
         self.context.add_cookies(cookies=cookies_data['cookies'])
         # A SUMO action needs to be done in order to have the page refreshed with the correct
         # session
         self.page.reload()
+        return session_file_name
 
     # Fetching the user agent.
     def get_user_agent(self) -> str:

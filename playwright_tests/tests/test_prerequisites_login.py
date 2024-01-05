@@ -8,7 +8,7 @@ class TestLoginSessions(TestUtilities):
     def test_create_user_sessions_for_test_accounts(self):
 
         for i in super().user_secrets_accounts:
-            self.sumo_pages.top_navbar.click_on_signin_signup_button()
+            self.sumo_pages.top_navbar._click_on_signin_signup_button()
 
             self.sumo_pages.auth_flow_page.sign_in_flow(
                 username=super().user_secrets_accounts[i],

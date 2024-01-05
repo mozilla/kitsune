@@ -12,41 +12,41 @@ class EditProfileDataFlow(MyProfileEdit, TestUtilities):
         edit_test_data = super().profile_edit_test_data
 
         self._clear_input_fields()
-        super().send_text_to_username_field(edit_test_data["valid_user_edit"]["username"])
-        super().send_text_to_display_name_field(edit_test_data["valid_user_edit"]["display_name"])
-        super().send_text_to_biography_field(edit_test_data["valid_user_edit"]["biography"])
-        super().send_text_to_website_field(edit_test_data["valid_user_edit"]["website"])
-        super().send_text_to_twitter_username_field(
+        super()._send_text_to_username_field(edit_test_data["valid_user_edit"]["username"])
+        super()._send_text_to_display_name_field(edit_test_data["valid_user_edit"]["display_name"])
+        super()._send_text_to_biography_field(edit_test_data["valid_user_edit"]["biography"])
+        super()._send_text_to_website_field(edit_test_data["valid_user_edit"]["website"])
+        super()._send_text_to_twitter_username_field(
             edit_test_data["valid_user_edit"]["twitter_username"]
         )
-        super().send_text_to_community_portal_field(
+        super()._send_text_to_community_portal_field(
             edit_test_data["valid_user_edit"]["community_portal_username"]
         )
-        super().send_text_to_people_directory_username(
+        super()._send_text_to_people_directory_username(
             edit_test_data["valid_user_edit"]["people_directory_username"]
         )
-        super().send_text_to_matrix_nickname(
+        super()._send_text_to_matrix_nickname(
             edit_test_data["valid_user_edit"]["matrix_nickname"]
         )
-        super().select_country_dropdown_option_by_value(
+        super()._select_country_dropdown_option_by_value(
             edit_test_data["valid_user_edit"]["country_code"]
         )
-        super().sent_text_to_city_field(edit_test_data["valid_user_edit"]["city"])
-        super().select_timezone_dropdown_option_by_value(
+        super()._sent_text_to_city_field(edit_test_data["valid_user_edit"]["city"])
+        super()._select_timezone_dropdown_option_by_value(
             edit_test_data["valid_user_edit"]["timezone"]
         )
-        super().select_preferred_language_dropdown_option_by_value(
+        super()._select_preferred_language_dropdown_option_by_value(
             edit_test_data["valid_user_edit"]["preferred_language"]
         )
-        super().select_involved_from_month_option_by_value(
+        super()._select_involved_from_month_option_by_value(
             edit_test_data["valid_user_edit"]["involved_from_month_number"]
         )
-        super().select_involved_from_year_option_by_value(
+        super()._select_involved_from_year_option_by_value(
             edit_test_data["valid_user_edit"]["involved_from_year"]
         )
 
     # Clear all profile edit input fields flow.
     def _clear_input_fields(self):
-        super().clear_all_input_fields()
-        super().clear_username_field()
-        super().clear_biography_textarea_field()
+        super()._clear_all_input_fields()
+        super()._clear_username_field()
+        super()._clear_biography_textarea_field()

@@ -3,9 +3,9 @@ import pytest_check as check
 
 from playwright.sync_api import expect, TimeoutError
 from playwright_tests.core.testutilities import TestUtilities
-from playwright_tests.messages.AAQ_messages.aaq_widget import AAQWidgetMessages
-from playwright_tests.messages.product_solutions_page_messages.product_solutions_messages import (
-    ProductSolutionsMessages)
+from playwright_tests.messages.get_help_messages.AAQ_messages.aaq_widget import AAQWidgetMessages
+from playwright_tests.messages.get_help_messages.product_solutions_page_messages. \
+    product_solutions_messages import (ProductSolutionsMessages)
 
 
 class TestProductSolutionsPage(TestUtilities):
@@ -16,7 +16,7 @@ class TestProductSolutionsPage(TestUtilities):
     def test_featured_articles_redirect(self):
         self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                          "Browse All products")
-        self.sumo_pages.top_navbar.click_on_browse_all_products_option()
+        self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         self.logger.info("Clicking on all product cards")
 
@@ -60,7 +60,7 @@ class TestProductSolutionsPage(TestUtilities):
     def test_popular_topics_redirect(self):
         self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                          "Browse All products")
-        self.sumo_pages.top_navbar.click_on_browse_all_products_option()
+        self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         self.logger.info("Clicking on all product cards")
 
@@ -111,7 +111,7 @@ class TestProductSolutionsPage(TestUtilities):
     def test_ask_now_widget_redirect(self):
         self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                          "Browse All products")
-        self.sumo_pages.top_navbar.click_on_browse_all_products_option()
+        self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         self.logger.info("Clicking on all product cards")
 
@@ -154,18 +154,18 @@ class TestProductSolutionsPage(TestUtilities):
                           timeout=30000)
 
             self.logger.info("Signing out")
-            self.sumo_pages.top_navbar.click_on_sign_out_button()
+            self.sumo_pages.top_navbar._click_on_sign_out_button()
 
             self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                              "Browse All products")
-            self.sumo_pages.top_navbar.click_on_browse_all_products_option()
+            self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
     # C890382
     @pytest.mark.productSolutionsPage
     def test_contact_support_widget_redirect(self):
         self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                          "Browse All products")
-        self.sumo_pages.top_navbar.click_on_browse_all_products_option()
+        self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         self.logger.info("Clicking on all product cards")
 
@@ -208,8 +208,8 @@ class TestProductSolutionsPage(TestUtilities):
                           timeout=30000)
 
             self.logger.info("Signing out")
-            self.sumo_pages.top_navbar.click_on_sign_out_button()
+            self.sumo_pages.top_navbar._click_on_sign_out_button()
 
             self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                              "Browse All products")
-            self.sumo_pages.top_navbar.click_on_browse_all_products_option()
+            self.sumo_pages.top_navbar._click_on_browse_all_products_option()

@@ -5,10 +5,12 @@ from playwright.sync_api import expect
 from playwright_tests.core.testutilities import TestUtilities
 from playwright_tests.messages.contact_support_page_messages.contact_support_messages import (
     ContactSupportMessages)
-from playwright_tests.messages.forums_messages.support_forums_page_messages import (
-    SupportForumsPageMessages)
-from playwright_tests.messages.product_solutions_page_messages.product_solutions_messages import (
-    ProductSolutionsMessages)
+from playwright_tests.messages.contributor_tools_messages.forums_messages. \
+    support_forums_page_messages import (
+        SupportForumsPageMessages)
+from playwright_tests.messages.get_help_messages.product_solutions_page_messages. \
+    product_solutions_messages import (
+        ProductSolutionsMessages)
 
 
 class TestContactSupportPage(TestUtilities):
@@ -17,7 +19,7 @@ class TestContactSupportPage(TestUtilities):
     def test_contact_support_page_content(self):
         self.logger.info("Accessing the contact support page via the top navbar Get Help > Ask a "
                          "Question")
-        self.sumo_pages.top_navbar.click_on_ask_a_question_option()
+        self.sumo_pages.top_navbar._click_on_ask_a_question_option()
 
         self.logger.info("Verifying that the current milestone is the correct one")
         check.equal(
@@ -61,7 +63,7 @@ class TestContactSupportPage(TestUtilities):
     def test_contact_support_page_cards_redirect(self):
         self.logger.info("Accessing the contact support page via the top navbar Get Help > "
                          "Browse All products")
-        self.sumo_pages.top_navbar.click_on_browse_all_products_option()
+        self.sumo_pages.top_navbar._click_on_browse_all_products_option()
 
         self.logger.info("Clicking on all product cards")
 
@@ -93,7 +95,7 @@ class TestContactSupportPage(TestUtilities):
     def test_browse_all_product_forums_button_redirect(self):
         self.logger.info("Accessing the contact support page via the top navbar Get Help > Ask a "
                          "Question")
-        self.sumo_pages.top_navbar.click_on_ask_a_question_option()
+        self.sumo_pages.top_navbar._click_on_ask_a_question_option()
 
         self.sumo_pages.contact_support_page._click_on_browse_all_product_forums_button()
 

@@ -31,46 +31,46 @@ class ContributePage(BasePage):
         super().__init__(page)
 
     # Breadcrumbs
-    def get_breadcrumbs_text(self) -> list[str]:
+    def _get_breadcrumbs_text(self) -> list[str]:
         return super()._get_text_of_elements(self.__breadcrumbs)
 
-    def click_on_home_breadcrumb(self):
+    def _click_on_home_breadcrumb(self):
         super()._click(self.__breadcrumb_homepage)
 
     # Page Hero
-    def get_page_hero_main_header_text(self) -> str:
+    def _get_page_hero_main_header_text(self) -> str:
         return super()._get_text_of_element(self.__page_hero_main_header)
 
-    def get_page_hero_main_subtext(self) -> str:
+    def _get_page_hero_main_subtext(self) -> str:
         return super()._get_text_of_element(self.__page_hero_main_header_subtext)
 
-    def get_page_hero_need_help_header_text(self) -> str:
+    def _get_page_hero_need_help_header_text(self) -> str:
         return super()._get_text_of_element(self.__page_hero_need_help_header)
 
-    def get_page_hero_need_help_subtext(self) -> str:
+    def _get_page_hero_need_help_subtext(self) -> str:
         return super()._get_text_of_element(self.__page_hero_need_help_subtext)
 
     # Page images
-    def get_all_page_links(self) -> list[ElementHandle]:
+    def _get_all_page_links(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.__all_page_images)
 
     # Way to contribute
-    def get_way_to_contribute_header_text(self) -> str:
+    def _get_way_to_contribute_header_text(self) -> str:
         return super()._get_text_of_element(self.__way_to_contribute_header)
 
-    def get_way_to_contribute_card_titles_text(self) -> list[str]:
+    def _get_way_to_contribute_card_titles_text(self) -> list[str]:
         return super()._get_text_of_elements(self.__way_to_contribute_card_titles)
 
     # About us
-    def get_about_us_header_text(self) -> str:
+    def _get_about_us_header_text(self) -> str:
         return super()._get_text_of_element(self.__about_us_header)
 
-    def get_about_us_subtext(self) -> str:
+    def _get_about_us_subtext(self) -> str:
         return super()._get_text_of_element(self.__about_us_subtext)
 
     # Contribute cards
-    def get_list_of_contribute_cards(self) -> list[ElementHandle]:
+    def _get_list_of_contribute_cards(self) -> list[ElementHandle]:
         return super()._get_element_handles(self.__way_to_contribute_cards)
 
-    def click_on_way_to_contribute_card(self, way_to_contribute_card: ElementHandle):
+    def _click_on_way_to_contribute_card(self, way_to_contribute_card: ElementHandle):
         way_to_contribute_card.click()

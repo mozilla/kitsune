@@ -13,12 +13,12 @@ class KBArticleShowHistoryPage(BasePage):
         super().__init__(page)
 
     # Delete document actions.
-    def click_on_delete_this_document_button(self):
+    def _click_on_delete_this_document_button(self):
         super()._click(self.__delete_this_document_button)
 
-    def click_on_confirmation_delete_button(self):
+    def _click_on_confirmation_delete_button(self):
         super()._click(self.__delete_this_document_confirmation_delete_button)
 
-    def is_article_deleted_confirmation_messages_displayed(self) -> Locator:
+    def _is_article_deleted_confirmation_messages_displayed(self) -> Locator:
         super()._wait_for_selector(self.__article_deleted_confirmation_message)
         return super()._get_element_locator(self.__article_deleted_confirmation_message)

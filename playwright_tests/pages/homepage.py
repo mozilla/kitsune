@@ -27,35 +27,35 @@ class Homepage(BasePage):
         super().__init__(page)
 
     # Search
-    def click_on_first_popular_search(self):
+    def _click_on_first_popular_search(self):
         super()._click_on_first_item(self.__popular_searches)
 
-    def click_on_search_button(self):
+    def _click_on_search_button(self):
         super()._click(self.__search_bar_button)
 
     # Product Cards
-    def get_text_of_product_card_titles(self) -> list[str]:
+    def _get_text_of_product_card_titles(self) -> list[str]:
         return super()._get_text_of_elements(self.__product_card_titles)
 
-    def click_on_product_card(self, element_number):
+    def _click_on_product_card(self, element_number):
         super()._click_on_an_element_by_index(self.__product_list, element_number)
 
     # Featured articles
-    def get_number_of_featured_articles(self) -> int:
+    def _get_number_of_featured_articles(self) -> int:
         return super()._get_elements_count(self.__featured_articles_list)
 
-    def get_featured_articles_titles(self) -> list[str]:
+    def _get_featured_articles_titles(self) -> list[str]:
         return super()._get_text_of_elements(self.__featured_articles_card_titles)
 
-    def click_on_a_featured_card(self, element_number: int):
+    def _click_on_a_featured_card(self, element_number: int):
         super()._click_on_an_element_by_index(self.__featured_articles_card_items, element_number)
 
     # Learn More
-    def click_learn_more_option(self):
+    def _click_learn_more_option(self):
         super()._click(self.__learn_more_option)
 
-    def get_community_card_title(self) -> str:
+    def _get_community_card_title(self) -> str:
         return super()._get_text_of_element(self.__join_our_community_card_title)
 
-    def get_community_card_description(self) -> str:
+    def _get_community_card_description(self) -> str:
         return super()._get_text_of_element(self.__join_our_community_card_description)

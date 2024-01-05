@@ -46,7 +46,7 @@ class ProductSolutionsPage(BasePage):
     def _get_aaq_widget_button_name(self) -> str:
         return super()._get_text_of_element(self.__still_need_help_ask_now_button)
 
-    def get_still_need_help_locator(self) -> Locator:
+    def _get_still_need_help_locator(self) -> Locator:
         return super()._get_element_locator(self.__still_need_help_ask_now_button)
 
     # Breadcrumb actions.
@@ -89,5 +89,5 @@ class ProductSolutionsPage(BasePage):
     def _click_on_scam_alert_banner_learn_more(self):
         super()._click(self.__support_scam_banner_learn_more_button)
 
-    def get_scam_banner_locator(self) -> Locator:
+    def _get_scam_banner_locator(self) -> Locator:
         return super()._get_element_locator(self.__support_scams_banner)

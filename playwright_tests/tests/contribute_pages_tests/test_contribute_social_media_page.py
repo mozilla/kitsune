@@ -31,35 +31,35 @@ class TestContributeSocialMediaPage(TestUtilities):
             "Verifying that the correct hero main header is displayed"
         )
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_hero_main_header_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_hero_main_header_text(),
             ContributeSocialSupportMessages.HERO_PAGE_TITLE,
-            f"Text is: {self.sumo_pages.ways_to_contribute_pages.get_hero_main_header_text()}"
+            f"Actual: {self.sumo_pages.ways_to_contribute_pages._get_hero_main_header_text()}"
             f"Expected: {ContributeSocialSupportMessages.HERO_PAGE_TITLE}",
         )
 
         self.logger.info("Verifying that the correct hero second header is displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_hero_second_header_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_hero_second_header(),
             ContributeSocialSupportMessages.HERO_SECOND_TITLE,
             f"Text is: "
-            f"{self.sumo_pages.ways_to_contribute_pages.get_hero_second_header_text()}"
+            f"{self.sumo_pages.ways_to_contribute_pages._get_hero_second_header()}"
             f"Expected: {ContributeSocialSupportMessages.HERO_SECOND_TITLE}",
         )
 
         self.logger.info("Verifying that the correct get hero text is displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_hero_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_hero_text(),
             ContributeSocialSupportMessages.HERO_TEXT,
-            f"Text is: {self.sumo_pages.ways_to_contribute_pages.get_hero_text()}"
+            f"Text is: {self.sumo_pages.ways_to_contribute_pages._get_hero_text()}"
             f"Expected: {ContributeSocialSupportMessages.HERO_TEXT}",
         )
 
         self.logger.info("Verifying that the correct how to contribute header text is displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_how_to_contribute_header_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_how_to_contribute_header_text(),
             ContributeSocialSupportMessages.HOW_TO_CONTRIBUTE_HEADER,
             f"Text is: "
-            f"{self.sumo_pages.ways_to_contribute_pages.get_how_to_contribute_header_text()}"
+            f"{self.sumo_pages.ways_to_contribute_pages._get_how_to_contribute_header_text()}"
             f"Expected is: {ContributeSocialSupportMessages.HOW_TO_CONTRIBUTE_HEADER}",
         )
 
@@ -75,44 +75,44 @@ class TestContributeSocialMediaPage(TestUtilities):
 
         self.logger.info("Verifying that the correct how to contribute link option are displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_how_to_contribute_link_options_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_how_to_contribute_link_options_text(),
             card_titles,
             "How you can contribute steps are incorrect!",
         )
 
         self.logger.info("Verifying that the correct option four text is displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_how_to_contribute_option_four_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_how_to_contribute_option_four_text(),
             ContributeSocialSupportMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR,
             f"Text is: "
-            f"{self.sumo_pages.ways_to_contribute_pages.get_how_to_contribute_option_four_text()}"
+            f"{self.sumo_pages.ways_to_contribute_pages._get_how_to_contribute_option_four_text()}"
             f"Expected is: "
             f"{ContributeSocialSupportMessages.HOW_TO_CONTRIBUTE_OPTION_FOUR}",
         )
 
         self.logger.info("Verifying that the correct page first fact text is displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_first_fact_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_first_fact_text(),
             ContributeSocialSupportMessages.FACT_FIRST_LINE,
-            f"Text is: {self.sumo_pages.ways_to_contribute_pages.get_first_fact_text()}"
+            f"Text is: {self.sumo_pages.ways_to_contribute_pages._get_first_fact_text()}"
             f"Expected is: {ContributeSocialSupportMessages.FACT_FIRST_LINE}",
         )
 
         self.logger.info("Verifying that the correct second fact text is displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_second_fact_text(),
+            self.sumo_pages.ways_to_contribute_pages._get_second_fact_text(),
             ContributeSocialSupportMessages.FACT_SECOND_LINE,
-            f"Text is: {self.sumo_pages.ways_to_contribute_pages.get_second_fact_text()}"
+            f"Text is: {self.sumo_pages.ways_to_contribute_pages._get_second_fact_text()}"
             f"Expected is: {ContributeSocialSupportMessages.FACT_SECOND_LINE}",
         )
 
         self.logger.info("Verifying that the correct get other ways to contribute header is "
                          "displayed")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_header_txt(),
+            self.sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_header(),
             ContributeSocialSupportMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER,
             f"Text is: "
-            f"{self.sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_header_txt()}"
+            f"{self.sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_header()}"
             f"Expected is: "
             f"{ContributeSocialSupportMessages.OTHER_WAYS_TO_CONTRIBUTE_HEADER}",
         )
@@ -127,7 +127,7 @@ class TestContributeSocialMediaPage(TestUtilities):
         self.logger.info("Verifying that the other ways to contribute card titles are the "
                          "correct ones")
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_title_txt(),
+            self.sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_title(),
             other_ways_to_contribute_card_titles,
             "Other ways to contribute card titles are not the correct ones!",
         )
@@ -142,7 +142,7 @@ class TestContributeSocialMediaPage(TestUtilities):
 
         self.logger.info("Verifying that the Contribute forum page images are not broken")
 
-        for link in self.sumo_pages.ways_to_contribute_pages.get_all_page_image_links():
+        for link in self.sumo_pages.ways_to_contribute_pages._get_all_page_image_links():
             image_link = link.get_attribute("src")
             response = requests.get(image_link, stream=True)
             check.is_true(response.status_code < 400, f"The {image_link} image is broken")
@@ -163,19 +163,19 @@ class TestContributeSocialMediaPage(TestUtilities):
         ]
 
         check.equal(
-            self.sumo_pages.ways_to_contribute_pages.get_text_of_all_breadcrumbs(),
+            self.sumo_pages.ways_to_contribute_pages._get_text_of_all_breadcrumbs(),
             breadcrumbs,
             f"Breadcrumbs are: "
-            f"{self.sumo_pages.ways_to_contribute_pages.get_text_of_all_breadcrumbs()}"
+            f"{self.sumo_pages.ways_to_contribute_pages._get_text_of_all_breadcrumbs()}"
             f"Expected: {breadcrumbs}",
         )
 
         counter = 1
-        for breadcrumb in self.sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs():
+        for breadcrumb in self.sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs():
             breadcrumb_to_click = (
-                self.sumo_pages.ways_to_contribute_pages.get_interactable_breadcrumbs()[counter]
+                self.sumo_pages.ways_to_contribute_pages._get_interactable_breadcrumbs()[counter]
             )
-            self.sumo_pages.ways_to_contribute_pages.click_on_breadcrumb(breadcrumb_to_click)
+            self.sumo_pages.ways_to_contribute_pages._click_on_breadcrumb(breadcrumb_to_click)
 
             if counter == 1:
                 self.logger.info(
@@ -223,13 +223,13 @@ class TestContributeSocialMediaPage(TestUtilities):
         counter = 0
         for (
                 element
-        ) in self.sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list():
+        ) in self.sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list():
             card = (
-                self.sumo_pages.ways_to_contribute_pages.get_other_ways_to_contribute_card_list()[
+                self.sumo_pages.ways_to_contribute_pages._get_other_ways_to_contribute_card_list()[
                     counter
                 ]
             )
-            self.sumo_pages.ways_to_contribute_pages.click_on_other_way_to_contribute_card(card)
+            self.sumo_pages.ways_to_contribute_pages._click_on_other_way_to_contribute_card(card)
             check.equal(
                 ways_to_contribute_links[counter],
                 self.get_page_url(),

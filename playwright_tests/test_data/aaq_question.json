@@ -9,7 +9,9 @@
     "image_name": "test.image.jpg",
     "image_path": "test_data/test-image.png",
     "question_reply": "Test reply to question",
-    "custom_tag": "test"
+    "updated_reply": "Reply updated",
+    "custom_tag": "test",
+    "report_abuse_text": "Report Abuse test message"
   },
   "troubleshooting_information_kb_article_url": "https://support.mozilla.org/en-US/kb/use-troubleshooting-information-page-fix-firefox",
   "troubleshooting_information_textarea_field": "Test Troubleshooting data",
