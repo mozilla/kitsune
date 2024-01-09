@@ -25,15 +25,11 @@ services:
        - 3050:3050
        - 3000:3000 # browser-sync
        - 3001:3001 # browser-sync ui
-
     volumes:
       - vscode-home:/home/kitsune
-
     # Overrides default command so things don't shut down after the process ends.
     command: /bin/sh -c "while sleep 1000; do :; done"
-
     environment:
       - EDITOR=code --wait
-
 volumes:
   vscode-home:

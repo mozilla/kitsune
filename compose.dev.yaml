@@ -1,0 +1,40 @@
+services:
+  web:
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /app
+        - action: rebuild
+          path: package.json
+        - action: rebuild
+          path: package-lock.json
+        - action: rebuild
+          path: pyproject.toml
+        - action: rebuild
+          path: poerty.lock
+        - action: sync+restart
+          path: ./.env
+          target: /app/.env
+    stdin_open: true
+    tty: true
+    depends_on:
+      - postgres
+      - elasticsearch
+      - kibana
+      - redis
+      - celery
+      - mailcatcher
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - "1080:1080"

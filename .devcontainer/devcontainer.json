@@ -1,19 +1,19 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.106.0/containers/docker-existing-docker-compose
-// If you want to run as a non-root user in the container, see .devcontainer/docker-compose.yml.
+// If you want to run as a non-root user in the container, see .devcontainer/compose.yaml.
 {
     "name": "Kitsune",
 
     // Update the 'dockerComposeFile' list if you have more compose files or use different names.
-    // The .devcontainer/docker-compose.yml file contains any overrides you need/want to make.
-    "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
+    // The .devcontainer/compose.yaml file contains any overrides you need/want to make.
+    "dockerComposeFile": ["../compose.yaml", "compose.yaml"],
 
     // The 'service' property is the name of the service for the container that VS Code should
-    // use. Update this value and .devcontainer/docker-compose.yml to the real service name.
+    // use. Update this value and .devcontainer/compose.yaml to the real service name.
     "service": "web",
 
     // The optional 'workspaceFolder' property is the path VS Code should open by default when
-    // connected. This is typically a file mount in .devcontainer/docker-compose.yml
+    // connected. This is typically a file mount in .devcontainer/compose.yaml
     "workspaceFolder": "/app",
 
     // Set *default* container specific settings.json values on container create.

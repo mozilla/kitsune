@@ -86,7 +86,7 @@ After the above you can do some optional steps if you want to use the admin:
 -   Create a superuser
 
     ```
-    docker-compose exec web ./manage.py createsuperuser
+    docker compose exec web ./manage.py createsuperuser
     ```
 
 -   Create a profile for this user
@@ -107,7 +107,7 @@ add `ENABLE_DEV_LOGIN=True` to your `.env` file.
 You can create a normal user like so:
 
 ```
-docker-compose exec web ./manage.py shell_plus
+docker compose exec web ./manage.py shell_plus
 In [1]: u = User(username="foobar")
 In [2]: u.save()
 In [3]: Profile(user=u).save()
@@ -121,7 +121,7 @@ You can then log in as that user by visiting: `http://localhost:8000/user/foobar
 We include some sample data to get you started. You can install it by
 running this command::
 
-    docker-compose exec web ./manage.py generatedata
+    docker compose exec web ./manage.py generatedata
 ```
 
 ### Get AAQ working
@@ -161,7 +161,7 @@ or have entered data yourself through the admin interface.
 1. Enter into the web container
 
     ```shell
-    docker-compose exec web bash
+    docker compose exec web bash
     ```
 
 2. Build the indicies
@@ -225,7 +225,7 @@ For more details see the [pre-commit docs](https://pre-commit.com).
     within its package directory. To set this up, run this command to do
     the initial fetch:
     ```bash
-        docker-compose exec web ./manage.py update_product_details
+        docker compose exec web ./manage.py update_product_details
     ```
 
 ### Using Django Debug Toolbar
