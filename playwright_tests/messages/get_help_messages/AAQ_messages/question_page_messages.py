@@ -11,6 +11,7 @@ class QuestionPageMessages:
     CHOSEN_SOLUTION_REPLY_CARD = "Chosen Solution"
     UNDOING_A_SOLUTION = "The solution was undone successfully."
     FEED_FILE_NAME = "feed"
+    FEED_FILE_PATH = "/feed"
     MARKED_AS_SPAM_BANNER = "Marked as spam by "
     REPLY_MARKED_AS_SPAM_MESSAGE = "Marked as spam"
     QUESTION_REPLY_OWNER = "Question owner"

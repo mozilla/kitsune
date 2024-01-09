@@ -735,81 +735,133 @@ class TestPostedQuestions(TestUtilities):
     # C2191267, C2191116, C2134136, C2191091
     @pytest.mark.postedQuestions
     def test_subscribe_to_feed_option(self):
-        self.logger.info("Signing in with a non admin user account and posting a Firefox product "
-                         "question")
-        posted_question_one = self.post_firefox_product_question_flow('TEST_ACCOUNT_13')
+        self.logger.info("Signing in with a non admin user account")
+        self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts["TEST_ACCOUNT_13"]
+        ))
+
+        self.logger.info("Posting a Firefox product question")
+        self.navigate_to_link(super().aaq_question_test_data["products_aaq_url"]["Firefox"])
+
+        question_info_one = self.sumo_pages.aaq_flow.submit_an_aaq_question_for_a_product(
+            subject=super().aaq_question_test_data["valid_firefox_question"]["subject"],
+            topic_name=self.sumo_pages.aaq_form_page._get_aaq_form_topic_options()[0],
+            body=super().aaq_question_test_data["valid_firefox_question"]["simple_body_text"],
+            attach_image=False
+        )
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
 
-        posted_question_two = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+        self.logger.info("Signing in with a different non admin user account")
+        self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts["TEST_ACCOUNT_12"]
+        ))
+
+        self.logger.info("Posting a Firefox product question")
+        self.navigate_to_link(super().aaq_question_test_data["products_aaq_url"]["Firefox"])
+
+        question_info_two = self.sumo_pages.aaq_flow.submit_an_aaq_question_for_a_product(
+            subject=super().aaq_question_test_data["valid_firefox_question"]["subject"],
+            topic_name=self.sumo_pages.aaq_form_page._get_aaq_form_topic_options()[0],
+            body=super().aaq_question_test_data["valid_firefox_question"]["simple_body_text"],
+            attach_image=False
+        )
 
         self.navigate_to_link(
-            posted_question_one['question_details']['question_page_url']
+            question_info_one['question_page_url']
         )
 
         self.logger.info("Clicking on the 'Subscribe to feed' option from different user posted "
                          "question")
-        with self.page.expect_download() as download_info:
+        if self.browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
-        download = download_info.value
+            self.logger.info("Verifying that the url is updated to the feed endpoint")
+            expect(
+                self.page
+            ).to_have_url(
+                question_info_one['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
+            )
+        else:
+            with self.page.expect_download() as download_info:
+                self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
+            download = download_info.value
 
-        self.logger.info("Verifying that the received file contains the correct name")
-        check.is_in(
-            QuestionPageMessages.FEED_FILE_NAME,
-            download.suggested_filename,
-            f"Incorrect file name. "
-            f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
-            f"Received: {download.suggested_filename}"
-        )
+            self.logger.info("Verifying that the received file contains the correct name")
+            check.is_in(
+                QuestionPageMessages.FEED_FILE_NAME,
+                download.suggested_filename,
+                f"Incorrect file name. "
+                f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
+                f"Received: {download.suggested_filename}"
+            )
 
-        self.logger.info("Verifying that the received file is not empty")
-        assert (
-            os.path.getsize(download.path()) > 0
-        )
+            self.logger.info("Verifying that the received file is not empty")
+            assert (
+                os.path.getsize(download.path()) > 0
+            )
 
         self.navigate_to_link(
-            posted_question_two['question_details']['question_page_url']
+            question_info_two['question_page_url']
         )
-
-        with self.page.expect_download() as download_info:
+        if self.browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
-        download = download_info.value
+            self.logger.info("Verifying that the url is updated to the feed endpoint")
+            expect(
+                self.page
+            ).to_have_url(
+                question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
+            )
+            self.navigate_back()
+        else:
+            with self.page.expect_download() as download_info:
+                self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
+            download = download_info.value
 
-        self.logger.info("Verifying that the received file contains the correct name")
-        check.is_in(
-            QuestionPageMessages.FEED_FILE_NAME,
-            download.suggested_filename,
-            f"Incorrect file name. "
-            f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
-            f"Received: {download.suggested_filename}"
-        )
+            self.logger.info("Verifying that the received file contains the correct name")
+            check.is_in(
+                QuestionPageMessages.FEED_FILE_NAME,
+                download.suggested_filename,
+                f"Incorrect file name. "
+                f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
+                f"Received: {download.suggested_filename}"
+            )
 
-        self.logger.info("Verifying that the received file is not empty")
-        assert (
-            os.path.getsize(download.path()) > 0
-        )
+            self.logger.info("Verifying that the received file is not empty")
+            assert (
+                os.path.getsize(download.path()) > 0
+            )
 
         self.logger.info("Signing out")
         super().delete_cookies()
 
-        with self.page.expect_download() as download_info:
+        if self.browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
-        download = download_info.value
+            self.logger.info("Verifying that the url is updated to the feed endpoint")
+            expect(
+                self.page
+            ).to_have_url(
+                question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
+            )
+            self.navigate_back()
+        else:
+            with self.page.expect_download() as download_info:
+                self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
+            download = download_info.value
 
-        self.logger.info("Verifying that the received file contains the correct name")
-        check.is_in(
-            QuestionPageMessages.FEED_FILE_NAME,
-            download.suggested_filename,
-            f"Incorrect file name. "
-            f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
-            f"Received: {download.suggested_filename}"
-        )
+            self.logger.info("Verifying that the received file contains the correct name")
+            check.is_in(
+                QuestionPageMessages.FEED_FILE_NAME,
+                download.suggested_filename,
+                f"Incorrect file name. "
+                f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
+                f"Received: {download.suggested_filename}"
+            )
 
-        self.logger.info("Verifying that the received file is not empty")
-        assert (
-            os.path.getsize(download.path()) > 0
-        )
+            self.logger.info("Verifying that the received file is not empty")
+            assert (
+                os.path.getsize(download.path()) > 0
+            )
 
         self.logger.info("Signing in with an admin account")
 
@@ -817,30 +869,40 @@ class TestPostedQuestions(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        with self.page.expect_download() as download_info:
+        if self.browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
-        download = download_info.value
+            self.logger.info("Verifying that the url is updated to the feed endpoint")
+            expect(
+                self.page
+            ).to_have_url(
+                question_info_two['question_page_url'] + QuestionPageMessages.FEED_FILE_PATH
+            )
+            self.navigate_back()
+        else:
+            with self.page.expect_download() as download_info:
+                self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
+            download = download_info.value
 
-        self.logger.info("Verifying that the received file contains the correct name")
-        check.is_in(
-            QuestionPageMessages.FEED_FILE_NAME,
-            download.suggested_filename,
-            f"Incorrect file name. "
-            f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
-            f"Received: {download.suggested_filename}"
-        )
+            self.logger.info("Verifying that the received file contains the correct name")
+            check.is_in(
+                QuestionPageMessages.FEED_FILE_NAME,
+                download.suggested_filename,
+                f"Incorrect file name. "
+                f"Expected: {QuestionPageMessages.FEED_FILE_NAME} "
+                f"Received: {download.suggested_filename}"
+            )
 
-        self.logger.info("Verifying that the received file is not empty")
-        assert (
-            os.path.getsize(download.path()) > 0
-        )
+            self.logger.info("Verifying that the received file is not empty")
+            assert (
+                os.path.getsize(download.path()) > 0
+            )
 
         self.logger.info("Deleting the posted question")
         self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
         self.sumo_pages.question_page._click_delete_this_question_button()
 
         self.navigate_to_link(
-            posted_question_one['question_details']['question_page_url']
+            question_info_one['question_page_url']
         )
 
         self.logger.info("Deleting the posted question")
