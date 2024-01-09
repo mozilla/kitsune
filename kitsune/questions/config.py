@@ -494,17 +494,6 @@ products = OrderedDict(
             },
         ),
         (
-            "monitor",
-            {
-                "name": _lazy("Monitor"),
-                "subtitle": _lazy("Stay informed and take back control of your exposed data"),
-                "extra_fields": [],
-                "tags": ["monitor"],
-                "product": "monitor",
-                "categories": OrderedDict([]),
-            },
-        ),
-        (
             "pocket",
             {
                 "name": _lazy("Pocket"),
