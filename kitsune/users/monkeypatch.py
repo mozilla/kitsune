@@ -2,6 +2,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tidings.models import Watch
 
 
 def _activate_users(admin, request, qs):
@@ -15,6 +16,8 @@ _activate_users.short_description = "Activate selected users"  # type: ignore
 
 def _deactivate_users(admin, request, qs):
     num = qs.update(is_active=False)
+    # Stop all watches for deactivated user
+    Watch.objects.filter(user__in=qs).delete()
     msg = "%s users deactivated." % num if num != 1 else "One user deactivated."
     admin.message_user(request, msg)
 

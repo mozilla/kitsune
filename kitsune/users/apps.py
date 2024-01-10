@@ -5,3 +5,6 @@ class UserConfig(AppConfig):
     name = "kitsune.users"
     label = "users"
     default_auto_field = "django.db.models.AutoField"
+
+    def ready(self):
+        from kitsune.users import signals  # noqa

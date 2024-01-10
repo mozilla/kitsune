@@ -1,6 +1,8 @@
 import logging
 
 from kitsune.sumo.tests import TestCase
+from kitsune.tidings.models import Watch
+from kitsune.tidings.tests import WatchFactory
 from kitsune.users.forms import SettingsForm
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
@@ -25,3 +27,16 @@ class UserSettingsTests(TestCase):
         for setting in keys:
             SettingsForm.base_fields[setting]
             self.assertEqual(False, Setting.get_for_user(self.u, setting))
+
+
+class UserDeactivationTests(TestCase):
+    def setUp(self):
+        self.u = UserFactory()
+
+    def test_deactivate_user_clears_watches(self):
+        WatchFactory(user=self.u)
+        assert Watch.objects.filter(user=self.u).exists()
+
+        self.u.is_active = False
+        self.u.save()
+        assert not Watch.objects.filter(user=self.u).exists()
