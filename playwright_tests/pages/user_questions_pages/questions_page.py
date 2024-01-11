@@ -74,10 +74,24 @@ class QuestionPage(BasePage):
     __post_a_reply_textarea_link_button = "//button[@title='Insert a link...']"
     __post_a_reply_textarea_numbered_list_button = "//button[@title='Numbered List']"
     __post_a_reply_textarea_bulleted_list_button = "//button[@title='Bulleted List']"
-    __common_responses_option = "//a[@title='Common responses']"
     __last_reply_by = "//span[@class='forum--meta-val visits no-border']"
 
-    # I have this problem too locator.
+    # Common Responses locators.
+    __common_responses_option = "//a[@title='Common responses']"
+    __common_responses_search_field = "//input[@id='filter-responses-field']"
+    __common_responses_modal_close_button = "//div[@id='media-modal']/a"
+    __common_responses_categories_options = "//div[@id='responses-area']//li"
+    __common_responses_responses_options = ("//ul[@class='sidebar-nav']/li[@class='response' and "
+                                            "not(@style='display: none;')]")
+    __common_responses_no_cat_selected = "//h4[@class='nocat-label']"
+    __common_responses_switch_to_mode = "//div[@id='response-content-area']//button"
+    __common_responses_response_preview = ("//p[@class='response-preview-rendered']//div["
+                                           "@class='main-content']/div[@class='content']")
+    __common_responses_textarea_field = "//textarea[@id='response-content']"
+    __common_responses_insert_response_button = "//button[@id='insert-response']"
+    __common_responses_cancel_button = "//div[@id='response-submit-area']/a"
+
+    # I have this problem too locators.
     __i_have_this_problem_too_button = "//div[@class='me-too']//button"
     __i_have_this_problem_too_counter = "//span[@class='forum--meta-val have-problem']"
 
@@ -107,6 +121,20 @@ class QuestionPage(BasePage):
                                                    "@class='message']")
     __report_abuse_modal_close_button = ("//div[@class='mzp-c-modal-inner']//button["
                                          "@class='mzp-c-modal-button-close']")
+
+    # Signed out card locators.
+    __log_in_to_your_account_signed_out_card_option = ("//div[@class='question-tools "
+                                                       "ask-a-question card is-shaded']/p/a["
+                                                       "text()='log in to your account']")
+    __start_a_new_question_signed_out_card_option = ("//div[@class='question-tools ask-a-question "
+                                                     "card is-shaded']/p/a[text()='start a new "
+                                                     "question']")
+    __ask_a_question_signed_out_card_option = ("//div[@class='question-tools ask-a-question card "
+                                               "is-shaded']//a[text()='Ask a question']")
+    __i_have_this_problem_too_signed_out_card_option = ("//div[@class='question-tools "
+                                                        "ask-a-question card "
+                                                        "is-shaded']//button[text()='I have this "
+                                                        "problem, too']")
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -223,6 +251,10 @@ class QuestionPage(BasePage):
     def _click_on_the_reply_author(self, reply_id: str):
         xpath = f"//div[@id='{reply_id}']//a[@class='author-name']"
         super()._click(xpath)
+
+    def _get_text_content_of_reply(self, reply_id: str) -> str:
+        xpath = f"//div[@id='{reply_id}']//div[@class='content']"
+        return super()._get_text_of_element(xpath)
 
     def _get_display_name_of_question_reply_author(self, reply_id: str) -> str:
         xpath = f"//div[@id='{reply_id}']//a[@class='author-name']/span[@class='display-name']"
@@ -374,6 +406,9 @@ class QuestionPage(BasePage):
     def _get_post_a_reply_textarea_text(self) -> str:
         return super()._get_text_of_element(self.__post_a_reply_textarea)
 
+    def _get_post_a_reply_textarea_value(self) -> str:
+        return super()._get_element_input_value(self.__post_a_reply_textarea)
+
     def _get_posted_reply_locator(self, question_id: str) -> Locator:
         xpath = f"//div[@id='{question_id}']"
         return super()._get_element_locator(xpath)
@@ -467,3 +502,105 @@ class QuestionPage(BasePage):
 
     def _click_delete_this_question_button(self):
         super()._click(self.__delete_question_delete_button)
+
+    # Votes reply section
+    def _get_reply_votes_section_locator(self, reply_id: str) -> Locator:
+        xpath = f"//div[@id='{reply_id}']//form[@class='document-vote--form helpful']"
+        return super()._get_element_locator(xpath)
+
+    def _get_reply_vote_heading(self, reply_id: str) -> str:
+        xpath = f"//div[@id='{reply_id}']//h4[@class='document-vote--heading']"
+        return super()._get_text_of_element(xpath)
+
+    def _click_reply_vote_thumbs_up_button(self, reply_id: str):
+        xpath = f"//div[@id='{reply_id}']//button[@name='helpful']"
+        return super()._click(xpath)
+
+    def _get_thumbs_up_vote_message(self, reply_id: str) -> str:
+        xpath = f"//div[@id='{reply_id}']//p[@class='msg document-vote--heading']"
+        return super()._get_text_of_element(xpath)
+
+    def _get_thumbs_up_button_locator(self, reply_id: str) -> Locator:
+        xpath = f"//div[@id='{reply_id}']//button[@name='helpful']"
+        return super()._get_element_locator(xpath)
+
+    def _get_thumbs_down_button_locator(self, reply_id: str) -> Locator:
+        xpath = f"//div[@id='{reply_id}']//button[@name='not-helpful']"
+        return super()._get_element_locator(xpath)
+
+    def _click_reply_vote_thumbs_down_button(self, reply_id):
+        xpath = f"//div[@id='{reply_id}']//button[@name='not-helpful']"
+        super()._click(xpath)
+
+    def _get_helpful_count(self, reply_id) -> str:
+        xpath = f"//div[@id='{reply_id}']//button[@name='helpful']//strong[@class='helpful-count']"
+        return super()._get_text_of_element(xpath)
+
+    def _get_not_helpful_count(self, reply_id) -> str:
+        xpath = (f"//div[@id='{reply_id}']//button[@name='not-helpful']//strong["
+                 f"@class='helpful-count']")
+        return super()._get_text_of_element(xpath)
+
+    # Signed out card actions.
+    def _click_on_log_in_to_your_account_signed_out_card_link(self):
+        super()._click(self.__log_in_to_your_account_signed_out_card_option)
+
+    def _click_on_start_a_new_question_signed_out_card_link(self):
+        super()._click(self.__start_a_new_question_signed_out_card_option)
+
+    def _click_on_ask_a_question_signed_out_card_option(self):
+        super()._click(self.__ask_a_question_signed_out_card_option)
+
+    def _ask_a_question_signed_out_card_option_locator(self) -> Locator:
+        return super()._get_element_locator(self.__ask_a_question_signed_out_card_option)
+
+    def _click_on_i_have_this_problem_too_signed_out_card_option(self):
+        super()._click(self.__i_have_this_problem_too_signed_out_card_option)
+
+    def _get_i_have_this_problem_too_signed_out_card_locator(self) -> Locator:
+        return super()._get_element_locator(self.__i_have_this_problem_too_signed_out_card_option)
+
+    # Common responses actions.
+
+    def _click_on_common_responses_option(self):
+        super()._click(self.__common_responses_option)
+
+    def _type_into_common_responses_search_field(self, text: str):
+        super()._type(self.__common_responses_search_field, text, 100)
+
+    def _get_text_of_no_cat_responses(self) -> str:
+        return super()._get_text_of_element(self.__common_responses_no_cat_selected)
+
+    def _get_list_of_categories(self) -> list[str]:
+        return super()._get_text_of_elements(self.__common_responses_categories_options)
+
+    def _get_list_of_responses(self) -> list[str]:
+        return super()._get_text_of_elements(self.__common_responses_responses_options)
+
+    def _click_on_a_particular_category_option(self, option: str):
+        xpath = f"//ul[@class='category-list']/li[text()='{option}']"
+        super()._click(xpath)
+
+    def _click_on_a_particular_response_option(self, option: str):
+        xpath = f"//ul[@class='sidebar-nav']/li[text()='{option}']"
+        super()._click(xpath)
+
+    # Removing both newline characters and link syntax format.
+    def _get_text_of_response_editor_textarea_field(self) -> str:
+        return (super()._get_element_input_value(self.__common_responses_textarea_field)
+                .replace("\n", "")
+                .replace("[", "")
+                .replace("]", "")
+                )
+
+    def _get_text_of_response_preview(self) -> str:
+        return super()._get_text_of_element(self.__common_responses_response_preview)
+
+    def _click_on_switch_to_mode(self):
+        super()._click(self.__common_responses_switch_to_mode)
+
+    def _click_on_common_responses_cancel_button(self):
+        super()._click(self.__common_responses_cancel_button)
+
+    def _click_on_common_responses_insert_response_button(self):
+        super()._click(self.__common_responses_insert_response_button)

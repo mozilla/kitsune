@@ -207,6 +207,7 @@ class FXAAuthBackendTests(TestCase):
         requests_mock.get.return_value = get_json_mock
 
         post_json_mock = Mock()
+        post_json_mock.status_code = 200
         post_json_mock.json.return_value = {
             "id_token": "id_token",
             "access_token": "access_granted",
