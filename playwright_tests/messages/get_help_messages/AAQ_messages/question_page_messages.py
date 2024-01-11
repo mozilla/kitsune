@@ -17,3 +17,6 @@ class QuestionPageMessages:
     QUESTION_REPLY_OWNER = "Question owner"
     REPORT_ABUSE_SUCCESSFULLY = ("You have flagged this content. A moderator will review your "
                                  "submission shortly.")
+    THUMBS_DOWN_VOTE_MESSAGE = "Sorry to hear that."
+    THUMBS_UP_VOTE_MESSAGE = "Glad to hear it!"
+    HELPFUL_VOTE_HEADER = "Helpful?"
