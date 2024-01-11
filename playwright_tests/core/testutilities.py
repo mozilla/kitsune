@@ -126,7 +126,7 @@ class TestUtilities:
     # Navigating to a specific given link and waiting for the load state to finish.
     def navigate_to_link(self, link: str):
         self.page.goto(link)
-        self.page.wait_for_load_state("domcontentloaded")
+        self.wait_for_dom_to_load()
 
     # Wait for a given timeout
     def wait_for_given_timeout(self, milliseconds: int):
@@ -140,6 +140,12 @@ class TestUtilities:
     def wait_for_page_to_load(self):
         self.page.wait_for_load_state("load")
 
+    def wait_for_dom_to_load(self):
+        self.page.wait_for_load_state("domcontentloaded")
+
+    def wait_for_networkidle(self):
+        self.page.wait_for_load_state("networkidle")
+
     # Store authentication states
     def store_session_cookies(self, session_file_name: str):
         self.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
@@ -148,7 +154,7 @@ class TestUtilities:
     def delete_cookies(self):
         self.context.clear_cookies()
         # Reloading the page for the deletion to take immediate action.
-        self.page.reload()
+        self.refresh_page()
 
     # Starting an existing session by applying session cookies.
     def start_existing_session(self, session_file_name: str) -> str:
@@ -157,8 +163,11 @@ class TestUtilities:
         self.context.add_cookies(cookies=cookies_data['cookies'])
         # A SUMO action needs to be done in order to have the page refreshed with the correct
         # session
-        self.page.reload()
+        self.refresh_page()
         return session_file_name
+
+    def refresh_page(self):
+        self.page.reload()
 
     # Fetching the user agent.
     def get_user_agent(self) -> str:

@@ -11,7 +11,9 @@
     "question_reply": "Test reply to question",
     "updated_reply": "Reply updated",
     "custom_tag": "test",
-    "report_abuse_text": "Report Abuse test message"
+    "report_abuse_text": "Report Abuse test message",
+    "common_responses_category": "General",
+    "common_responses_response": "Zoom feature"
   },
   "troubleshooting_information_kb_article_url": "https://support.mozilla.org/en-US/kb/use-troubleshooting-information-page-fix-firefox",
   "troubleshooting_information_textarea_field": "Test Troubleshooting data",

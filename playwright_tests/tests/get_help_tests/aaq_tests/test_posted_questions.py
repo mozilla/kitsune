@@ -1888,13 +1888,227 @@ class TestPostedQuestions(TestUtilities):
         self.sumo_pages.question_page._click_delete_this_question_button()
 
     # Need to add test for preview as well.
-    # C2260447, C2260448, C2191244
+    # C2260447, C2260448, C2191244, C2191242
     @pytest.mark.postedQuestions
-    def test_quote_reply_functionality(self):
+    @pytest.mark.parametrize("quote_on", ['reply', 'question'])
+    def test_quote_reply_functionality(self, quote_on):
         self.logger.info("Signing in with a non admin user account and posting a Firefox product "
                          "question")
 
         posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+        question_id = self.sumo_pages.question_page._get_question_id()
+
+        if quote_on == "reply":
+            self.logger.info("Posting a reply to the question")
+            self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
+                super().aaq_question_test_data['valid_firefox_question']['question_reply']
+            )
+            reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
+                posted_question['username_one']
+            )
+
+        self.logger.info("Deleting user session")
+        self.delete_cookies()
+
+        username_two = self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts["TEST_ACCOUNT_13"]
+        ))
+
+        if quote_on == "reply":
+            self.logger.info("Clicking on the more options for the reply")
+            self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
+
+            self.logger.info("Clicking on 'Quote' option")
+            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(reply_id)
+        else:
+            self.logger.info("Clicking on the more options for the question")
+            self.sumo_pages.question_page._click_on_reply_more_options_button(question_id)
+
+            self.logger.info("Clicking on 'Quote' option")
+            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(question_id)
+
+        self.logger.info("Adding test to the textarea field")
+        self.sumo_pages.question_page._type_inside_the_post_a_reply_textarea(
+            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
+        )
+
+        self.logger.info("Posting the reply")
+        quote_id = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
+
+        self.logger.info("Verifying that the original repliant is displayed inside the quote")
+        check.is_in(
+            posted_question['username_one'],
+            self.sumo_pages.question_page._get_posted_quote_reply_username_text(quote_id)
+        )
+
+        if quote_on == "reply":
+            self.logger.info("Verifying that the original reply is displayed inside the quote")
+            check.equal(
+                super().aaq_question_test_data['valid_firefox_question']['question_reply'],
+                self.sumo_pages.question_page._get_blockquote_reply_text(quote_id).strip()
+            )
+        else:
+            self.logger.info("Verifying that the question details is displayed inside the quote")
+            check.equal(
+                super().aaq_question_test_data['valid_firefox_question']['simple_body_text'],
+                self.sumo_pages.question_page._get_blockquote_reply_text(quote_id).strip()
+            )
+
+        self.logger.info("Verifying that the new reply text is also displayed")
+        check.equal(
+            super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
+            self.sumo_pages.question_page._get_posted_reply_text(quote_id).strip()
+        )
+
+        self.logger.info("Clicking on the 'said' link")
+        self.sumo_pages.question_page._click_posted_reply_said_link(quote_id)
+
+        if quote_on == "reply":
+            self.logger.info("Verifying that the correct url is displayed")
+            expect(
+                self.page
+            ).to_have_url(
+                posted_question['question_details']['question_page_url'] + "#" + reply_id
+            )
+        else:
+            self.logger.info("Verifying that the correct url is displayed")
+            expect(
+                self.page
+            ).to_have_url(
+                posted_question['question_details']['question_page_url'] + "#" + question_id
+            )
+
+        self.logger.info("Deleting user session")
+        self.delete_cookies()
+
+        self.logger.info("Signing in with an admin account")
+        self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
+
+        if quote_on == "reply":
+            self.logger.info("Clicking on the more options for the reply")
+            self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
+
+            self.logger.info("Clicking on 'Quote' option")
+            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(reply_id)
+        else:
+            self.logger.info("Clicking on the more options for the reply")
+            self.sumo_pages.question_page._click_on_reply_more_options_button(question_id)
+
+            self.logger.info("Clicking on 'Quote' option")
+            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(question_id)
+
+        self.logger.info("Adding test to the textarea field")
+        self.sumo_pages.question_page._type_inside_the_post_a_reply_textarea(
+            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
+        )
+
+        self.logger.info("Posting the reply")
+        quote_id = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
+
+        self.logger.info("Verifying that the original repliant is displayed inside the quote")
+        check.is_in(
+            posted_question['username_one'],
+            self.sumo_pages.question_page._get_posted_quote_reply_username_text(quote_id)
+        )
+
+        if quote_on == "reply":
+            self.logger.info("Verifying that the original reply is displayed inside the quote")
+            check.equal(
+                super().aaq_question_test_data['valid_firefox_question']['question_reply'],
+                self.sumo_pages.question_page._get_blockquote_reply_text(quote_id).strip()
+            )
+        else:
+            self.logger.info("Verifying that the question is displayed inside the quote")
+            check.equal(
+                super().aaq_question_test_data['valid_firefox_question']['simple_body_text'],
+                self.sumo_pages.question_page._get_blockquote_reply_text(quote_id).strip()
+            )
+
+        self.logger.info("Verifying that the new reply text is also displayed")
+        check.equal(
+            super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
+            self.sumo_pages.question_page._get_posted_reply_text(quote_id).strip()
+        )
+
+        self.logger.info("Clicking on the 'said' link")
+        self.sumo_pages.question_page._click_posted_reply_said_link(quote_id)
+
+        if quote_on == "reply":
+            self.logger.info("Verifying that the correct url is displayed")
+            expect(
+                self.page
+            ).to_have_url(
+                posted_question['question_details']['question_page_url'] + "#" + reply_id
+            )
+        else:
+            self.logger.info("Verifying that the correct url is displayed")
+            expect(
+                self.page
+            ).to_have_url(
+                posted_question['question_details']['question_page_url'] + "#" + question_id
+            )
+
+        self.logger.info("Deleting the posted question")
+        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
+        self.sumo_pages.question_page._click_delete_this_question_button()
+
+    # To add tests for "I have this problem, too" option
+    # C2191117, C2191223, C2191226
+    @pytest.mark.postedQuestions
+    def test_quote_reply_functionality_signed_out(self):
+        self.logger.info("Signing in with a non admin user account and posting a Firefox product "
+                         "question")
+        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+        question_id = self.sumo_pages.question_page._get_question_id()
+
+        self.logger.info("Deleting user session")
+        self.delete_cookies()
+
+        self.logger.info("Clicking on the more options for the question")
+        self.sumo_pages.question_page._click_on_reply_more_options_button(question_id)
+
+        self.logger.info("Clicking on 'Quote' option for the question")
+        self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(question_id)
+
+        self.logger.info("Verifying that the url has updated to contain the correct fragment "
+                         "identifier")
+        expect(
+            self.page
+        ).to_have_url(
+            posted_question['question_details']['question_page_url'] + "#question-reply")
+
+        self.logger.info("Verifying that the reply textarea field is not displayed")
+        expect(
+            self.sumo_pages.question_page._get_post_a_reply_textarea_locator()
+        ).to_be_hidden()
+
+        self.logger.info("Verifying that the 'Ask a question' signed out card is not displayed")
+        expect(
+            self.sumo_pages.question_page._ask_a_question_signed_out_card_option_locator()
+        ).to_be_hidden()
+
+        self.logger.info("Verifying that the 'I have this problem, too' option is not displayed")
+        expect(
+            self.sumo_pages.question_page._get_i_have_this_problem_too_signed_out_card_locator()
+        ).to_be_hidden()
+
+        self.logger.info("Clicking on the 'start a new question' signed out card link")
+        self.sumo_pages.question_page._click_on_start_a_new_question_signed_out_card_link()
+
+        self.logger.info("Verifying that we are redirected to the Contact Support page")
+        expect(
+            self.page
+        ).to_have_url(ContactSupportMessages.PAGE_URL)
+
+        self.logger.info("Navigating back to the question page")
+        self.navigate_back()
+
+        self.logger.info("Signing in back with the OP")
+        self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts['TEST_ACCOUNT_12']
+        ))
 
         self.logger.info("Posting a reply to the question")
         self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
@@ -1907,97 +2121,242 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Deleting user session")
         self.delete_cookies()
 
-        username_two = self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts["TEST_ACCOUNT_13"]
-        ))
-
-        self.logger.info("Clicking on the more options for the reply")
+        self.logger.info("Clicking on the more options for the question")
         self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
 
-        self.logger.info("Clicking on 'Quote' option")
+        self.logger.info("Clicking on 'Quote' option for the reply")
         self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(reply_id)
 
-        self.logger.info("Adding test to the textarea field")
-        self.sumo_pages.question_page._type_inside_the_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
-        )
-
-        self.logger.info("Posting the reply")
-        quote_id = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
-
-        self.logger.info("Verifying that the original repliant is displayed inside the quote")
-        check.is_in(
-            posted_question['username_one'],
-            self.sumo_pages.question_page._get_posted_quote_reply_username_text(quote_id)
-        )
-
-        self.logger.info("Verifying that the original reply is displayed inside the quote")
-        check.equal(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply'],
-            self.sumo_pages.question_page._get_blockquote_reply_text(quote_id).strip()
-        )
-
-        self.logger.info("Verifying that the new reply text is also displayed")
-        check.equal(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
-            self.sumo_pages.question_page._get_posted_reply_text(quote_id).strip()
-        )
-
-        self.logger.info("Clicking on the 'said' link")
-        self.sumo_pages.question_page._click_posted_reply_said_link(quote_id)
-
-        self.logger.info("Verifying that the correct url is displayed")
+        self.logger.info("Verifying that the url has updated to contain the correct fragment "
+                         "identifier")
         expect(
             self.page
-        ).to_have_url(posted_question['question_details']['question_page_url'] + "#" + reply_id)
+        ).to_have_url(
+            posted_question['question_details']['question_page_url'] + "#question-reply"
+        )
+
+        self.logger.info("Verifying that the reply textarea field is not displayed")
+        expect(
+            self.sumo_pages.question_page._get_post_a_reply_textarea_locator()
+        ).to_be_hidden()
+
+        self.logger.info("Verifying that the 'Ask a question' signed out card is displayed")
+        expect(
+            self.sumo_pages.question_page._ask_a_question_signed_out_card_option_locator()
+        ).to_be_visible()
+
+        self.logger.info("Verifying that the 'I have this problem, too' option is displayed")
+        expect(
+            self.sumo_pages.question_page._get_i_have_this_problem_too_signed_out_card_locator()
+        ).to_be_visible()
+
+        self.logger.info("Clicking on the 'Ask a question' signed out option")
+        self.sumo_pages.question_page._click_on_ask_a_question_signed_out_card_option()
+
+        self.logger.info("Verifying that we are redirected to the Contact Support page")
+        expect(
+            self.page
+        ).to_have_url(ContactSupportMessages.PAGE_URL)
+
+        self.logger.info("Navigating back to the question page")
+        self.navigate_back()
+
+        self.logger.info("Clicking on the 'log in to your account' link")
+        self.sumo_pages.question_page._click_on_log_in_to_your_account_signed_out_card_link()
+
+        self.logger.info("Proceeding with the auth flow with an admin account")
+        self.sumo_pages.auth_flow_page.sign_in_flow(
+            username=super().user_special_chars,
+            account_password=super().user_secrets_pass,
+        )
+
+        self.logger.info("Verifying that we are redirected back to the question page")
+        expect(
+            self.page
+        ).to_have_url(posted_question['question_details']['question_page_url'])
+
+        self.logger.info("Verifying that the textarea field is displayed")
+        expect(
+            self.sumo_pages.question_page._get_post_a_reply_textarea_locator()
+        ).to_be_visible()
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+            self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
 
-        self.logger.info("Clicking on the more options for the reply")
-        self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
+        self.logger.info("Deleting the posted question")
+        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
+        self.sumo_pages.question_page._click_delete_this_question_button()
 
-        self.logger.info("Clicking on 'Quote' option")
-        self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(reply_id)
+    # C2191227
+    # Currently fails due to https://github.com/mozilla/sumo/issues/1216
+    @pytest.mark.skip
+    def test_question_reply_votes(self):
+        number_of_thumbs_up_votes = 0
+        number_of_thumbs_down_votes = 0
 
-        self.logger.info("Adding test to the textarea field")
-        self.sumo_pages.question_page._type_inside_the_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
+        self.logger.info("Signing in with a non admin user account and posting a Firefox product "
+                         "question")
+        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+        self.sumo_pages.question_page._get_question_id()
+
+        self.logger.info("Posting a reply to the question")
+        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
+            super().aaq_question_test_data['valid_firefox_question']['question_reply']
+        )
+        reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
+            posted_question['username_one']
         )
 
-        self.logger.info("Posting the reply")
-        quote_id = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
-
-        self.logger.info("Verifying that the original repliant is displayed inside the quote")
-        check.is_in(
-            posted_question['username_one'],
-            self.sumo_pages.question_page._get_posted_quote_reply_username_text(quote_id)
-        )
-
-        self.logger.info("Verifying that the original reply is displayed inside the quote")
-        check.equal(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply'],
-            self.sumo_pages.question_page._get_blockquote_reply_text(quote_id).strip()
-        )
-
-        self.logger.info("Verifying that the new reply text is also displayed")
-        check.equal(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
-            self.sumo_pages.question_page._get_posted_reply_text(quote_id).strip()
-        )
-
-        self.logger.info("Clicking on the 'said' link")
-        self.sumo_pages.question_page._click_posted_reply_said_link(quote_id)
-
-        self.logger.info("Verifying that the correct url is displayed")
+        self.logger.info("Verifying the vote reply is not available for self posted questions")
         expect(
-            self.page
-        ).to_have_url(posted_question['question_details']['question_page_url'] + "#" + reply_id)
+            self.sumo_pages.question_page._get_reply_votes_section_locator(reply_id)
+        ).to_be_hidden()
+
+        self.logger.info("Deleting user session")
+        self.delete_cookies()
+
+        self.logger.info("Signing in a different user")
+        self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts['TEST_ACCOUNT_13']
+        ))
+
+        self.logger.info("Verifying that the correct vote header is displayed")
+        check.equal(
+            self.sumo_pages.question_page._get_reply_vote_heading(reply_id),
+            QuestionPageMessages.HELPFUL_VOTE_HEADER
+        )
+
+        self.logger.info("Clicking on the 'thumbs up' button")
+        self.sumo_pages.question_page._click_reply_vote_thumbs_up_button(reply_id)
+        number_of_thumbs_up_votes += 1
+
+        self.logger.info("Verifying that the correct message is displayed")
+        check.equal(
+            self.sumo_pages.question_page._get_thumbs_up_vote_message(reply_id),
+            QuestionPageMessages.THUMBS_UP_VOTE_MESSAGE
+        )
+
+        self.logger.info("Refreshing the page")
+        self.refresh_page()
+
+        self.logger.info("Verifying that the correct number of thumbs up votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_helpful_count(reply_id)),
+            number_of_thumbs_up_votes
+        )
+
+        self.logger.info("Verifying that the correct number of thumbs down votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_not_helpful_count(reply_id)),
+            number_of_thumbs_down_votes
+        )
+
+        self.logger.info("Verifying that the thumbs up button contains the disabled attribute")
+        expect(
+            self.sumo_pages.question_page._get_thumbs_up_button_locator(reply_id)
+        ).to_have_attribute("disabled", "")
+
+        self.logger.info("Verifying that the thumbs down button contains the disabled attribute")
+        expect(
+            self.sumo_pages.question_page._get_thumbs_down_button_locator(reply_id)
+        ).to_have_attribute("disabled", "")
+
+        self.logger.info("Refreshing the page")
+        self.refresh_page()
+
+        self.logger.info("Verifying that the correct number of thumbs up votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_helpful_count(reply_id)),
+            number_of_thumbs_up_votes
+        )
+
+        self.logger.info("Verifying that the correct number of thumbs down votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_not_helpful_count(reply_id)),
+            number_of_thumbs_down_votes
+        )
+
+        self.logger.info("Deleting user session")
+        self.delete_cookies()
+
+        self.logger.info("Clicking on the 'thumbs up' button")
+        self.sumo_pages.question_page._click_reply_vote_thumbs_up_button(reply_id)
+        number_of_thumbs_up_votes += 1
+
+        self.logger.info("Refreshing the page")
+        self.refresh_page()
+
+        self.logger.info("Verifying that the correct number of thumbs up votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_helpful_count(reply_id)),
+            number_of_thumbs_up_votes
+        )
+
+        self.logger.info("Verifying that the correct number of thumbs down votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_not_helpful_count(reply_id)),
+            number_of_thumbs_down_votes
+        )
+
+        self.logger.info("Verifying that the thumbs up button contains the disabled attribute")
+        expect(
+            self.sumo_pages.question_page._get_thumbs_up_button_locator(reply_id)
+        ).to_have_attribute("disabled", "")
+
+        self.logger.info("Verifying that the thumbs down button contains the disabled attribute")
+        expect(
+            self.sumo_pages.question_page._get_thumbs_down_button_locator(reply_id)
+        ).to_have_attribute("disabled", "")
+
+        self.logger.info("Refreshing the page")
+        self.refresh_page()
+
+        self.logger.info("Verifying that the correct number of thumbs up votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_helpful_count(reply_id)),
+            number_of_thumbs_up_votes
+        )
+
+        self.logger.info("Verifying that the correct number of thumbs down votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_not_helpful_count(reply_id)),
+            number_of_thumbs_down_votes
+        )
+
+        self.logger.info("Signing in with an admin account")
+        self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
+        ))
+
+        self.logger.info("Clicking on the vote down button")
+        self.sumo_pages.question_page._click_reply_vote_thumbs_down_button(reply_id)
+        number_of_thumbs_down_votes += 1
+
+        self.logger.info("Verifying that the correct message is displayed")
+        check.equal(
+            self.sumo_pages.question_page._get_thumbs_up_vote_message(reply_id),
+            QuestionPageMessages.THUMBS_DOWN_VOTE_MESSAGE
+        )
+
+        self.logger.info("Refreshing the page")
+        self.refresh_page()
+
+        self.logger.info("Verifying that the correct number of thumbs up votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_helpful_count(reply_id)),
+            number_of_thumbs_up_votes
+        )
+
+        self.logger.info("Verifying that the correct number of thumbs down votes is displayed")
+        check.equal(
+            int(self.sumo_pages.question_page._get_not_helpful_count(reply_id)),
+            number_of_thumbs_down_votes
+        )
 
         self.logger.info("Deleting the posted question")
         self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
@@ -2127,6 +2486,134 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Navigating back to the posted question")
         self.navigate_to_link(posted_question['question_details']['question_page_url'])
 
+        self.logger.info("Deleting the posted question")
+        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
+        self.sumo_pages.question_page._click_delete_this_question_button()
+
+    # C2191261
+    @pytest.mark.postedQuestions
+    def test_common_responses(self):
+        self.logger.info("Signing in with a non admin user account and posting a Firefox product "
+                         "question")
+        self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+
+        self.logger.info("Deleting session cookies")
+        self.delete_cookies()
+
+        self.logger.info("Signing in with a different account")
+        username = self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts['TEST_ACCOUNT_13']
+        ))
+
+        self.logger.info("Clicking on the 'Common Responses' option")
+        self.sumo_pages.question_page._click_on_common_responses_option()
+
+        self.logger.info("Waiting for Network Idle")
+        self.wait_for_networkidle()
+
+        self.logger.info("Click on a category")
+        self.sumo_pages.question_page._click_on_a_particular_category_option(
+            super().aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
+        )
+
+        self.logger.info("Searching for a response")
+        self.sumo_pages.question_page._type_into_common_responses_search_field(
+            super().aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
+        )
+
+        self.logger.info("Waiting for Network Idle")
+        self.wait_for_networkidle()
+
+        self.logger.info("Verifying that the only item in the category field is the search option")
+        response_options = self.sumo_pages.question_page._get_list_of_responses()
+        self.logger.info(response_options)
+        self.logger.info(self.sumo_pages.question_page._get_list_of_responses())
+        assert (
+            len(response_options) == 1 and response_options[0] == super().aaq_question_test_data
+            ["valid_firefox_question"]["common_responses_response"]
+        )
+
+        self.logger.info("Clicking on the response option")
+        self.sumo_pages.question_page._click_on_a_particular_response_option(
+            super().aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
+        )
+
+        self.logger.info("Waiting for Networkidle")
+        self.wait_for_networkidle()
+
+        self.logger.info("Clicking on the 'Cancel button'")
+        self.sumo_pages.question_page._click_on_common_responses_cancel_button()
+
+        self.logger.info("Verifying that the form textarea does not contain the common response")
+
+        check.equal(
+            self.sumo_pages.question_page._get_post_a_reply_textarea_value(),
+            "",
+            f"Expected to be empty "
+            f"Received: {self.sumo_pages.question_page._get_post_a_reply_textarea_value()}"
+        )
+
+        self.logger.info("Clicking on the 'Common Responses' option")
+        self.sumo_pages.question_page._click_on_common_responses_option()
+
+        self.logger.info("Waiting for NetworkIdle")
+        self.wait_for_networkidle()
+
+        self.logger.info("Click on a category")
+        self.sumo_pages.question_page._click_on_a_particular_category_option(
+            super().aaq_question_test_data["valid_firefox_question"]["common_responses_category"]
+        )
+
+        self.logger.info("Searching for a response")
+        self.sumo_pages.question_page._type_into_common_responses_search_field(
+            super().aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
+        )
+
+        self.logger.info("Waiting for NetworkIdle")
+        self.wait_for_networkidle()
+
+        self.logger.info("Verifying that the only item in the category field is the search option")
+        response_options = self.sumo_pages.question_page._get_list_of_responses()
+        assert (
+            len(response_options) == 1 and response_options[0] == super().aaq_question_test_data
+            ["valid_firefox_question"]["common_responses_response"]
+        )
+
+        self.logger.info("Clicking on the response option")
+        self.sumo_pages.question_page._click_on_a_particular_response_option(
+            super().aaq_question_test_data["valid_firefox_question"]["common_responses_response"]
+        )
+
+        self.logger.info("Waiting for Networkidle")
+        self.wait_for_networkidle()
+
+        self.sumo_pages.question_page._click_on_switch_to_mode()
+        self.logger.info("Waiting for Networkidle")
+        self.wait_for_networkidle()
+
+        response = self.sumo_pages.question_page._get_text_of_response_preview()
+
+        self.logger.info("Clicking on the Insert Response button")
+        self.sumo_pages.question_page._click_on_common_responses_insert_response_button()
+
+        self.logger.info("Clicking on the post reply button")
+        reply_id = self.sumo_pages.question_page._click_on_post_reply_button(username)
+
+        self.logger.info("Verifying that the reply was successfully posted and contains the "
+                         "correct data")
+        check.equal(
+            self.sumo_pages.question_page._get_text_content_of_reply(reply_id),
+            response,
+            f"Expected: {self.sumo_pages.question_page._get_text_content_of_reply(reply_id)} "
+            f"Received: {response}"
+        )
+
+        self.logger.info("Deleting user session")
+        self.delete_cookies()
+
+        self.start_existing_session(super().username_extraction_from_email(
+            self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
+        ))
         self.logger.info("Deleting the posted question")
         self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
         self.sumo_pages.question_page._click_delete_this_question_button()
