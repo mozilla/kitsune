@@ -407,9 +407,11 @@ class VisibilityTests(TestCase):
         self.locale_fr = LocaleFactory(locale="fr")
         self.group1 = GroupFactory(name="group1")
         self.group2 = GroupFactory(name="group2")
+        self.group3 = GroupFactory(name="group3")
+        self.group4 = GroupFactory(name="group4")
         self.anonymous = AnonymousUser()
-        self.user1 = UserFactory(groups=[self.group1])
-        self.user2 = UserFactory(groups=[self.group1, self.group2])
+        self.user1 = UserFactory(groups=[self.group1, self.group4])
+        self.user2 = UserFactory(groups=[self.group2, self.group3])
         self.staff = UserFactory(is_staff=True)
         self.superuser = UserFactory(is_superuser=True)
         self.reviewer = UserFactory()
@@ -464,8 +466,8 @@ class VisibilityTests(TestCase):
         self.doc5 = DocumentFactory()
         self.rev5 = RevisionFactory(creator=self.user2, document=self.doc5, is_approved=False)
 
-        # Staff restricted articles should only show up for staff.
-        self.doc6 = DocumentFactory(restrict_to_staff=True)
+        # Articles restricted to members of "group1".
+        self.doc6 = DocumentFactory(restrict_to_groups=[self.group1])
         self.rev6 = ApprovedRevisionFactory(document=self.doc6)
 
         self.doc6_de = DocumentFactory(locale="de", parent=self.doc6)
@@ -479,13 +481,12 @@ class VisibilityTests(TestCase):
         self.doc6_fr = DocumentFactory(locale="fr", parent=self.doc6)
         self.rev6_fr = ApprovedRevisionFactory(document=self.doc6_fr, based_on=self.rev6)
 
-        # Group restricted articles should only show up for members of the group.
-        self.doc7 = DocumentFactory(restrict_to_group=self.group1)
+        # Articles restricted to members of "group1", "group2", and "group4".
+        self.doc7 = DocumentFactory(restrict_to_groups=[self.group1, self.group2, self.group4])
         self.rev7 = ApprovedRevisionFactory(document=self.doc7)
 
-        # Staff and group restricted articles should only show up for staff or
-        # members of the group.
-        self.doc8 = DocumentFactory(restrict_to_staff=True, restrict_to_group=self.group2)
+        # Articles restricted to members of "group2" and "group3".
+        self.doc8 = DocumentFactory(restrict_to_groups=[self.group2, self.group3])
         self.rev8 = ApprovedRevisionFactory(document=self.doc8, is_ready_for_localization=True)
 
         self.doc8_de = DocumentFactory(locale="de", parent=self.doc8)
@@ -539,12 +540,12 @@ class VisibilityTests(TestCase):
                 (self.doc3, True),
                 (self.doc4, True),
                 (self.doc5, False),
-                (self.doc6, False),
+                (self.doc6, True),
                 (self.doc7, True),
                 (self.doc8, False),
                 (self.doc1_de, False),
                 (self.doc2_de, True),
-                (self.doc6_de, False),
+                (self.doc6_de, True),
                 (self.doc8_de, False),
                 (self.doc1_it, True),
                 (self.doc2_it, True),
@@ -552,7 +553,7 @@ class VisibilityTests(TestCase):
                 (self.doc8_it, False),
                 (self.doc1_fr, True),
                 (self.doc2_fr, True),
-                (self.doc6_fr, False),
+                (self.doc6_fr, True),
                 (self.doc8_fr, False),
             )
         ):
@@ -592,33 +593,6 @@ class VisibilityTests(TestCase):
                 (self.doc2, True),
                 (self.doc3, True),
                 (self.doc4, True),
-                (self.doc5, False),
-                (self.doc6, True),
-                (self.doc7, False),
-                (self.doc8, True),
-                (self.doc1_de, False),
-                (self.doc2_de, True),
-                (self.doc6_de, True),
-                (self.doc8_de, True),
-                (self.doc1_it, True),
-                (self.doc2_it, False),
-                (self.doc6_it, False),
-                (self.doc8_it, False),
-                (self.doc1_fr, False),
-                (self.doc2_fr, True),
-                (self.doc6_fr, True),
-                (self.doc8_fr, True),
-            )
-        ):
-            with self.subTest(f"visible-staff-{i}"):
-                self.assertEqual(doc.is_visible_for(self.staff), expected)
-
-        for i, (doc, expected) in enumerate(
-            (
-                (self.doc1, True),
-                (self.doc2, True),
-                (self.doc3, True),
-                (self.doc4, True),
                 (self.doc5, True),
                 (self.doc6, True),
                 (self.doc7, True),
@@ -637,6 +611,8 @@ class VisibilityTests(TestCase):
                 (self.doc8_fr, True),
             )
         ):
+            with self.subTest(f"visible-staff-{i}"):
+                self.assertEqual(doc.is_visible_for(self.staff), expected)
             with self.subTest(f"visible-superuser-{i}"):
                 self.assertEqual(doc.is_visible_for(self.superuser), expected)
 
@@ -765,12 +741,21 @@ class VisibilityTests(TestCase):
             docs = Document.objects.visible(self.user1, locale="en-US")
             self.assertEqual(
                 set(d.id for d in docs),
-                set([self.doc1.id, self.doc2.id, self.doc3.id, self.doc4.id, self.doc7.id]),
+                set(
+                    [
+                        self.doc1.id,
+                        self.doc2.id,
+                        self.doc3.id,
+                        self.doc4.id,
+                        self.doc6.id,
+                        self.doc7.id,
+                    ]
+                ),
             )
 
         with self.subTest("visible-user1-de"):
             docs = Document.objects.visible(self.user1, locale="de")
-            self.assertEqual(set(d.id for d in docs), set([self.doc2_de.id]))
+            self.assertEqual(set(d.id for d in docs), set([self.doc2_de.id, self.doc6_de.id]))
 
         with self.subTest("visible-user1-it"):
             docs = Document.objects.visible(self.user1, locale="it")
@@ -778,7 +763,9 @@ class VisibilityTests(TestCase):
 
         with self.subTest("visible-user1-fr"):
             docs = Document.objects.visible(self.user1, locale="fr")
-            self.assertEqual(set(d.id for d in docs), set([self.doc1_fr.id, self.doc2_fr.id]))
+            self.assertEqual(
+                set(d.id for d in docs), set([self.doc1_fr.id, self.doc2_fr.id, self.doc6_fr.id])
+            )
 
         with self.subTest("visible-user2-en"):
             docs = Document.objects.visible(self.user2, locale="en-US")
@@ -819,7 +806,9 @@ class VisibilityTests(TestCase):
                         self.doc2.id,
                         self.doc3.id,
                         self.doc4.id,
+                        self.doc5.id,
                         self.doc6.id,
+                        self.doc7.id,
                         self.doc8.id,
                     ]
                 ),
@@ -828,17 +817,22 @@ class VisibilityTests(TestCase):
         with self.subTest("visible-staff-de"):
             docs = Document.objects.visible(self.staff, locale="de")
             self.assertEqual(
-                set(d.id for d in docs), set([self.doc2_de.id, self.doc6_de.id, self.doc8_de.id])
+                set(d.id for d in docs),
+                set([self.doc1_de.id, self.doc2_de.id, self.doc6_de.id, self.doc8_de.id]),
             )
 
         with self.subTest("visible-staff-it"):
             docs = Document.objects.visible(self.staff, locale="it")
-            self.assertEqual(set(d.id for d in docs), set([self.doc1_it.id]))
+            self.assertEqual(
+                set(d.id for d in docs),
+                set([self.doc1_it.id, self.doc2_it.id, self.doc6_it.id, self.doc8_it.id]),
+            )
 
         with self.subTest("visible-staff-fr"):
             docs = Document.objects.visible(self.staff, locale="fr")
             self.assertEqual(
-                set(d.id for d in docs), set([self.doc2_fr.id, self.doc6_fr.id, self.doc8_fr.id])
+                set(d.id for d in docs),
+                set([self.doc1_fr.id, self.doc2_fr.id, self.doc6_fr.id, self.doc8_fr.id]),
             )
 
         with self.subTest("visible-superuser-en"):
@@ -863,42 +857,21 @@ class VisibilityTests(TestCase):
             docs = Document.objects.visible(self.superuser, locale="de")
             self.assertEqual(
                 set(d.id for d in docs),
-                set(
-                    [
-                        self.doc1_de.id,
-                        self.doc2_de.id,
-                        self.doc6_de.id,
-                        self.doc8_de.id,
-                    ]
-                ),
+                set([self.doc1_de.id, self.doc2_de.id, self.doc6_de.id, self.doc8_de.id]),
             )
 
         with self.subTest("visible-superuser-it"):
             docs = Document.objects.visible(self.superuser, locale="it")
             self.assertEqual(
                 set(d.id for d in docs),
-                set(
-                    [
-                        self.doc1_it.id,
-                        self.doc2_it.id,
-                        self.doc6_it.id,
-                        self.doc8_it.id,
-                    ]
-                ),
+                set([self.doc1_it.id, self.doc2_it.id, self.doc6_it.id, self.doc8_it.id]),
             )
 
         with self.subTest("visible-superuser-fr"):
             docs = Document.objects.visible(self.superuser, locale="fr")
             self.assertEqual(
                 set(d.id for d in docs),
-                set(
-                    [
-                        self.doc1_fr.id,
-                        self.doc2_fr.id,
-                        self.doc6_fr.id,
-                        self.doc8_fr.id,
-                    ]
-                ),
+                set([self.doc1_fr.id, self.doc2_fr.id, self.doc6_fr.id, self.doc8_fr.id]),
             )
 
         for user_name in ("reviewer", "deleter"):
@@ -1039,12 +1012,21 @@ class VisibilityTests(TestCase):
             revs = Revision.objects.visible(self.user1, document__locale="en-US")
             self.assertEqual(
                 set(r.id for r in revs),
-                set([self.rev1.id, self.rev2.id, self.rev3.id, self.rev4.id, self.rev7.id]),
+                set(
+                    [
+                        self.rev1.id,
+                        self.rev2.id,
+                        self.rev3.id,
+                        self.rev4.id,
+                        self.rev6.id,
+                        self.rev7.id,
+                    ]
+                ),
             )
 
         with self.subTest("visible-user1-de"):
             revs = Revision.objects.visible(self.user1, document__locale="de")
-            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id]))
+            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id, self.rev6_de.id]))
 
         with self.subTest("visible-user1-it"):
             revs = Revision.objects.visible(self.user1, document__locale="it")
@@ -1052,7 +1034,9 @@ class VisibilityTests(TestCase):
 
         with self.subTest("visible-user1-fr"):
             revs = Revision.objects.visible(self.user1, document__locale="fr")
-            self.assertEqual(set(r.id for r in revs), set([self.rev1_fr.id, self.rev2_fr.id]))
+            self.assertEqual(
+                set(r.id for r in revs), set([self.rev1_fr.id, self.rev2_fr.id, self.rev6_fr.id])
+            )
 
         with self.subTest("visible-user2-en"):
             revs = Revision.objects.visible(self.user2, document__locale="en-US")
@@ -1093,24 +1077,33 @@ class VisibilityTests(TestCase):
                         self.rev2.id,
                         self.rev3.id,
                         self.rev4.id,
+                        self.rev5.id,
                         self.rev6.id,
+                        self.rev7.id,
                         self.rev8.id,
                     ]
                 ),
             )
 
         with self.subTest("visible-staff-de"):
-            revs = Revision.objects.visible(self.user2, document__locale="de")
-            self.assertEqual(set(r.id for r in revs), set([self.rev2_de.id, self.rev8_de.id]))
+            revs = Revision.objects.visible(self.staff, document__locale="de")
+            self.assertEqual(
+                set(r.id for r in revs),
+                set([self.rev1_de.id, self.rev2_de.id, self.rev6_de.id, self.rev8_de.id]),
+            )
 
         with self.subTest("visible-staff-it"):
             revs = Revision.objects.visible(self.staff, document__locale="it")
-            self.assertEqual(set(r.id for r in revs), set([self.rev1_it.id]))
+            self.assertEqual(
+                set(r.id for r in revs),
+                set([self.rev1_it.id, self.rev2_it.id, self.rev6_it.id, self.rev8_it.id]),
+            )
 
         with self.subTest("visible-staff-fr"):
             revs = Revision.objects.visible(self.staff, document__locale="fr")
             self.assertEqual(
-                set(r.id for r in revs), set([self.rev2_fr.id, self.rev6_fr.id, self.rev8_fr.id])
+                set(r.id for r in revs),
+                set([self.rev1_fr.id, self.rev2_fr.id, self.rev6_fr.id, self.rev8_fr.id]),
             )
 
         with self.subTest("visible-superuser-en"):
@@ -1135,42 +1128,21 @@ class VisibilityTests(TestCase):
             revs = Revision.objects.visible(self.superuser, document__locale="de")
             self.assertEqual(
                 set(r.id for r in revs),
-                set(
-                    [
-                        self.rev1_de.id,
-                        self.rev2_de.id,
-                        self.rev6_de.id,
-                        self.rev8_de.id,
-                    ]
-                ),
+                set([self.rev1_de.id, self.rev2_de.id, self.rev6_de.id, self.rev8_de.id]),
             )
 
         with self.subTest("visible-superuser-it"):
             revs = Revision.objects.visible(self.superuser, document__locale="it")
             self.assertEqual(
                 set(r.id for r in revs),
-                set(
-                    [
-                        self.rev1_it.id,
-                        self.rev2_it.id,
-                        self.rev6_it.id,
-                        self.rev8_it.id,
-                    ]
-                ),
+                set([self.rev1_it.id, self.rev2_it.id, self.rev6_it.id, self.rev8_it.id]),
             )
 
         with self.subTest("visible-superuser-fr"):
             revs = Revision.objects.visible(self.superuser, document__locale="fr")
             self.assertEqual(
                 set(r.id for r in revs),
-                set(
-                    [
-                        self.rev1_fr.id,
-                        self.rev2_fr.id,
-                        self.rev6_fr.id,
-                        self.rev8_fr.id,
-                    ]
-                ),
+                set([self.rev1_fr.id, self.rev2_fr.id, self.rev6_fr.id, self.rev8_fr.id]),
             )
 
         for user_name in ("reviewer", "deleter"):

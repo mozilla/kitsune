@@ -110,7 +110,7 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     """
     visits = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
-        .filter(document__restrict_to_staff=False, document__restrict_to_group__isnull=True)
+        .filter(document__restrict_to_groups__isnull=True)
         .exclude(document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES)
         .exclude(document__is_archived=True)
         .order_by("-visits")

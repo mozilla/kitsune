@@ -1576,8 +1576,7 @@ def _document_form_initial(document):
         "allow_discussion": document.allow_discussion,
         "needs_change": document.needs_change,
         "needs_change_comment": document.needs_change_comment,
-        "restrict_to_staff": document.restrict_to_staff,
-        "restrict_to_group": document.restrict_to_group,
+        "restrict_to_groups": document.restrict_to_groups.all(),
     }
 
 

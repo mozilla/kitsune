@@ -71,15 +71,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
     # Is this document localizable or not?
     is_localizable = models.BooleanField(default=True, db_index=True)
 
-    restrict_to_staff = models.BooleanField(default=False, db_index=True)
-    restrict_to_group = models.ForeignKey(
-        Group,
-        null=True,
-        blank=True,
-        default=None,
-        on_delete=models.SET_NULL,
-        related_name="documents_restricted",
-    )
+    restrict_to_groups = models.ManyToManyField(Group, related_name="restricted_documents")
 
     # TODO: validate (against settings.SUMO_LANGUAGES?)
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE, db_index=True)
@@ -727,6 +719,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         """
         return self.is_unrestricted_for(user) and bool(
             self.current_revision
+            or user.is_staff
             or user.is_superuser
             or (
                 user.is_authenticated
@@ -755,7 +748,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         if self.parent:
             # Translations follow their parent's restrictions.
             return self.parent.is_restricted
-        return bool(self.restrict_to_staff or self.restrict_to_group)
+        return self.restrict_to_groups.exists()
 
     def is_unrestricted_for(self, user):
         """Is the given user unrestricted in their visibility of this document?"""
@@ -764,10 +757,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             return self.parent.is_unrestricted_for(user)
 
         return bool(
-            user.is_superuser
+            user.is_staff
+            or user.is_superuser
             or (not self.is_restricted)
-            or (self.restrict_to_staff and user.is_staff)
-            or (self.restrict_to_group and (self.restrict_to_group in user.groups.all()))
+            or (
+                user.is_authenticated
+                and (set(self.restrict_to_groups.all()) & set(user.groups.all()))
+            )
         )
 
 

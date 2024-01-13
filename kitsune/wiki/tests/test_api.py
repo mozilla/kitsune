@@ -8,12 +8,16 @@ class TestDocumentViews(TestCase):
     def setUp(self):
         super().setUp()
         self.group1 = GroupFactory(name="group1")
-        self.user1 = UserFactory(groups=[self.group1])
-        self.staff = UserFactory(is_staff=True)
+        self.group2 = GroupFactory(name="group2")
+        self.group3 = GroupFactory(name="staff")
+        self.user1 = UserFactory(groups=[self.group1, self.group2])
+        self.staff = UserFactory(is_staff=True, groups=[self.group3])
         self.doc1 = DocumentFactory()
         self.doc2 = ApprovedRevisionFactory().document
-        self.doc3 = ApprovedRevisionFactory(document__restrict_to_staff=True).document
-        self.doc4 = ApprovedRevisionFactory(document__restrict_to_group=self.group1).document
+        self.doc3 = ApprovedRevisionFactory(document__restrict_to_groups=[self.group3]).document
+        self.doc4 = ApprovedRevisionFactory(
+            document__restrict_to_groups=[self.group1, self.group2]
+        ).document
 
     def test_anonymous_detail(self):
         res = self.client.get(reverse("document-detail", args=[self.doc1.slug]))
@@ -47,9 +51,10 @@ class TestDocumentViews(TestCase):
 
         self.client.login(username=self.staff.username, password="testpass")
         res = self.client.get(reverse("document-detail", args=[self.doc1.slug]))
-        self.assertEqual(res.status_code, 404)
-        res = self.client.get(reverse("document-detail", args=[self.doc4.slug]))
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(res.status_code, 200)
+        detail = res.json()
+        self.assertEqual(detail["slug"], self.doc1.slug)
+        self.assertEqual(detail["title"], self.doc1.title)
         res = self.client.get(reverse("document-detail", args=[self.doc2.slug]))
         self.assertEqual(res.status_code, 200)
         detail = res.json()
@@ -60,6 +65,11 @@ class TestDocumentViews(TestCase):
         detail = res.json()
         self.assertEqual(detail["slug"], self.doc3.slug)
         self.assertEqual(detail["title"], self.doc3.title)
+        res = self.client.get(reverse("document-detail", args=[self.doc4.slug]))
+        self.assertEqual(res.status_code, 200)
+        detail = res.json()
+        self.assertEqual(detail["slug"], self.doc4.slug)
+        self.assertEqual(detail["title"], self.doc4.title)
 
     def test_anonymous_list(self):
         res = self.client.get(reverse("document-list"))
@@ -88,13 +98,15 @@ class TestDocumentViews(TestCase):
         self.client.login(username=self.staff.username, password="testpass")
         res = self.client.get(reverse("document-list"))
         self.assertEqual(res.status_code, 200)
-        # Only the documents visible to staff should be present.
+        # All of the documents should be present.
         result = res.json()
-        self.assertEqual(result["count"], 2)
-        self.assertEqual(len(result["results"]), 2)
+        self.assertEqual(result["count"], 4)
+        self.assertEqual(len(result["results"]), 4)
         self.assertEqual(
-            set(d["slug"] for d in result["results"]), set((self.doc2.slug, self.doc3.slug))
+            set(d["slug"] for d in result["results"]),
+            set((self.doc1.slug, self.doc2.slug, self.doc3.slug, self.doc4.slug)),
         )
         self.assertEqual(
-            set(d["title"] for d in result["results"]), set((self.doc2.title, self.doc3.title))
+            set(d["title"] for d in result["results"]),
+            set((self.doc1.title, self.doc2.title, self.doc3.title, self.doc4.title)),
         )

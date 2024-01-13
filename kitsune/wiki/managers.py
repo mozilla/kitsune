@@ -26,55 +26,57 @@ class VisibilityManager(models.Manager):
 
     def unrestricted(self, user=None, **kwargs):
         """
-        Documents are unrestricted for a given user if the user is a superuser, or
-        if they're not restricted to staff or a specific group, or when the user is
-        staff and they're restricted by staff, or when the user is a member of the
-        specific group to which they're restricted. A translation (i.e., a document
-        with a parent), follows its parent's restrictions.
+        A document is unrestricted for a given user if that user is staff or a
+        superuser, or the document is not restricted to one or more groups, or
+        when the user is a member of at least one of the groups to which it's
+        restricted. A translation (i.e., a document with a parent), follows its
+        parent's restrictions.
         """
-        if user and user.is_superuser:
+        if user and (user.is_staff or user.is_superuser):
+            # Staff and superusers are never restricted.
             return self.filter(**kwargs)
 
         prefix = self.document_relation_prefix
+
+        # Authenticated users might have one or more groups to match against.
+        check_for_group_match = user and user.is_authenticated
 
         def unrestricted_condition(parent_prefix=""):
             """
             Create the unrestricted condition for either the document or
             the document's parent.
             """
-            restrict_to_staff = f"{prefix}{parent_prefix}restrict_to_staff"
-            restrict_to_group = f"{prefix}{parent_prefix}restrict_to_group"
+            restrict_to_groups = f"{prefix}{parent_prefix}restrict_to_groups"
 
             parent_condition = Q(**{f"{prefix}parent__isnull": not bool(parent_prefix)})
-            not_restricted = Q(**{restrict_to_staff: False}) & Q(
-                **{f"{restrict_to_group}__isnull": True}
-            )
+            not_restricted = Q(**{f"{restrict_to_groups}__isnull": True})
 
-            if not (user and user.is_authenticated):
+            if not check_for_group_match:
                 return parent_condition & not_restricted
 
-            staff_condition_fulfilled = Q(**{restrict_to_staff: True}) & Q(
-                **{restrict_to_staff: user.is_staff}
-            )
-            group_condition_fulfilled = Q(**{f"{restrict_to_group}__isnull": False}) & Q(
-                **{f"{restrict_to_group}__in": user.groups.all()}
-            )
+            group_condition_fulfilled = Q(**{f"{restrict_to_groups}__in": user.groups.all()})
 
-            return parent_condition & (
-                not_restricted | staff_condition_fulfilled | group_condition_fulfilled
-            )
+            return parent_condition & (not_restricted | group_condition_fulfilled)
 
-        return self.filter(
+        qs = self.filter(
             unrestricted_condition() | unrestricted_condition("parent__"),
             **kwargs,
         )
 
+        if check_for_group_match:
+            # If we're looking for a group match, we might get duplicate rows,
+            # because a single document might have multiple group matches if
+            # the user is a member of multiple groups.
+            qs = qs.distinct()
+
+        return qs
+
     def visible(self, user=None, **kwargs):
         """
         Documents are effectively invisible when they are restricted and the given
-        user doesn't meet the restrictions, or they have no approved content and
-        the given user is not a superuser, nor allowed to delete documents or review
-        revisions, nor a creator of one of the (yet unapproved) revisions.
+        user doesn't meet the restrictions, or they have no approved content and the
+        given user is not staff, nor a superuser, nor allowed to delete documents or
+        review revisions, nor a creator of one of the (yet unapproved) revisions.
         """
         prefix = self.document_relation_prefix
 
@@ -87,7 +89,9 @@ class VisibilityManager(models.Manager):
             return qs.filter(**{f"{prefix}current_revision__isnull": False})
 
         if not (
-            user.is_superuser or can_delete_documents_or_review_revisions(user, locale=locale)
+            user.is_staff
+            or user.is_superuser
+            or can_delete_documents_or_review_revisions(user, locale=locale)
         ):
             # Authenticated users without permission to see documents that
             # have no approved content, can only see those they have created.

@@ -139,13 +139,14 @@ class Topic(ModelBase):
         from kitsune.wiki.models import Document
 
         query = {
+            "user": user,
             "topics": self,
             "products": self.product,
             "is_archived": False,
             "category__in": settings.IA_DEFAULT_CATEGORIES,
         }
         query.update(kwargs)
-        return Document.objects.visible(user, **query)
+        return Document.objects.visible(**query)
 
     def get_absolute_url(self):
         if self.parent is None:

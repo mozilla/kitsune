@@ -20,7 +20,7 @@ from kitsune.dashboards.readouts import (
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
@@ -74,10 +74,11 @@ class KBOverviewTests(TestCase):
         self.assertEqual(1, len(kb_overview_rows()))
         ApprovedRevisionFactory()
         self.assertEqual(2, len(kb_overview_rows()))
-        RevisionFactory(document__restrict_to_staff=True)
+        group1 = GroupFactory(name="group1")
+        RevisionFactory(document__restrict_to_groups=[group1])
         self.assertEqual(2, len(kb_overview_rows()))
-        staff = UserFactory(is_staff=True)
-        self.assertEqual(3, len(kb_overview_rows(user=staff)))
+        user1 = UserFactory(groups=[group1])
+        self.assertEqual(3, len(kb_overview_rows(user=user1)))
 
     def test_ready_for_l10n(self):
         d = DocumentFactory()
@@ -106,7 +107,7 @@ class KBOverviewTests(TestCase):
         d2 = DocumentFactory()
         DocumentFactory()
         DocumentFactory()
-        d3 = DocumentFactory(restrict_to_staff=True)
+        d3 = DocumentFactory(restrict_to_groups=[GroupFactory(name="group1")])
 
         WikiDocumentVisits.objects.create(document=d1, visits=5, period=LAST_30_DAYS)
         WikiDocumentVisits.objects.create(document=d2, visits=1, period=LAST_30_DAYS)
@@ -362,7 +363,8 @@ class UnreviewedChangesTests(ReadoutTestCase):
         rev5 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 2, 1))
         rev6 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 3, 1))
 
-        doc_en = DocumentFactory(restrict_to_staff=True)
+        group1 = GroupFactory(name="group1")
+        doc_en = DocumentFactory(restrict_to_groups=[group1])
         doc_de = DocumentFactory(parent=doc_en, locale="de")
         TranslatedRevisionFactory(
             document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 4, 1)
@@ -412,8 +414,8 @@ class UnreviewedChangesTests(ReadoutTestCase):
         rows = self.rows(locale="en-US")
         self.assertEqual(len(rows), 0)
 
-        # Only staff can see it.
-        rows = self.rows(user=UserFactory(is_staff=True), locale="en-US")
+        # But members of group1 can see it.
+        rows = self.rows(user=UserFactory(groups=[group1]), locale="en-US")
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["title"], doc_en.title)
         self.assertEqual(rows[0]["visits"], None)
@@ -496,7 +498,7 @@ class TemplateTests(ReadoutTestCase):
         t = TemplateDocumentFactory(products=[p])
         ApprovedRevisionFactory(document=d)
         ApprovedRevisionFactory(document=TemplateDocumentFactory())
-        TemplateDocumentFactory(restrict_to_staff=True, products=[p])
+        TemplateDocumentFactory(restrict_to_groups=[GroupFactory(name="group1")], products=[p])
 
         self.assertEqual(1, len(self.rows(locale=locale, product=p)))
         self.assertEqual(t.title, self.row(locale=locale, product=p)["title"])

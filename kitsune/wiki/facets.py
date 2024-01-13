@@ -21,6 +21,7 @@ def topics_for(user, product, parent=False):
         user,
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
+        current_revision__isnull=False,
         products=product,
         category__in=settings.IA_DEFAULT_CATEGORIES,
     )
@@ -101,6 +102,7 @@ def _documents_for(user, locale, topics=None, products=None):
         user,
         locale=locale,
         is_archived=False,
+        current_revision__isnull=False,
         category__in=settings.IA_DEFAULT_CATEGORIES,
     )
     # speed up query by removing any ordering, since we're doing it in python:
