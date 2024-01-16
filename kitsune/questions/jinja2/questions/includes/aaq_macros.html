@@ -98,15 +98,22 @@
           </g>
         </svg>
 
-        {{ _('Still need help?') }}
+        {{ _('Ask a Question') }}
       </h2>
-      {% if aaq_context.has_ticketing_support %}
-        <p>{{ _('Send a message to our support team.') }}</p>
-      {% elif request.user.is_authenticated %}
-        <p>{{ _('Continue to post your question and get help.') }}</p>
+      {% if request.user.is_authenticated and aaq_context.has_ticketing_support %}
+        {# user authenticated and ticketing support #}
+        <p>Still need help? Continue to contact our support team.</p>
+      {% elif request.user.is_authenticated and aaq_context.has_public_forum %}
+        {# user is authenticated and forum support #}
+        <p>Still need help? Continue to ask your question on our forums.</p>
+      {% elif not aaq_context.has_ticketing_support %}
+        {# user not authenticated and forum support #}
+        <p>Still need help? Sign in to ask your question on our forums.</p>
       {% else %}
-        <p>{{ _('Sign in/up to post your question and get help.') }}</p>
+        {# user not authenticated and ticketing support #}
+        <p>Still need help? Sign in to contact our support team.</p>
       {% endif %}
+
       {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}
         {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
       {% else %}
@@ -117,11 +124,7 @@
         data-event-category="link click"
         data-event-action="{{ location }}"
         data-event-label="aaq widget">
-        {% if aaq_context.has_ticketing_support %}
-          {{ _('Contact Support') }}
-        {% else %}
-          {{ _('Ask Now') }}
-        {% endif %}
+        {{ _('Continue')}}
       </a>
     </div>
   {% endif %}
@@ -147,7 +150,7 @@
         {{ search_box(settings, id='question-search-masthead', params=search_params) }}
 
         <p class="page-heading--intro-text">
-            {{ _('Enter your question or keywords to find solutions in the knowledge base or forums') }}
+            {{ _('Browse our self-help options first or continue to ask your question and get help.') }}
         </p>
       </div>
       <div class="sumo-l-two-col--sidebar">
