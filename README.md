@@ -5,7 +5,7 @@
 Kitsune is the platform that powers [SuMo (support.mozilla.org)](https://support.mozilla.org)
 
 ## Usage
-It is a [Django](http://www.djangoproject.com/) application. There is [documentation](https://kitsune.readthedocs.io/en/latest/) online.
+It is a [Django](http://www.djangoproject.com/) application. There is [documentation](https://mozilla.github.io/kitsune/) online.
 
 ## Deployment
 You can access the staging site at <https://support.allizom.org/>.
