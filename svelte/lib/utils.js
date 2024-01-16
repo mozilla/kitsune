@@ -5,7 +5,7 @@ export function srcset(...sources) {
     .map(
       (source, index) =>
         encodeURI(source).replace(encodeURI(staticJinjaTag), staticJinjaTag) +
-        ` ${index + 1}x`
+        ` ${index + 1}x`,
     )
     .join(", ");
 }
