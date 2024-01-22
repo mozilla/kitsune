@@ -54,109 +54,24 @@
 {% macro aux_nav(user, hide_aaq_link=False) %}
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
   <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true"
-    aria-controls="mzp-c-menu-panel-help">{{ _('Get Help') }}</a>
+    aria-controls="mzp-c-menu-panel-help">{{ _('Explore Help Articles') }}</a>
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
     <div class="sumo-nav--dropdown-container">
       <div class="sumo-nav--dropdown-grid">
         <button class="mzp-c-menu-button-close" type="button"
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
-        <div class="sumo-nav--dropdown-thirds">
+        <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('questions.aaq_step1') }}"
-              data-event-name="link_click"
-              data-event-parameters='{"link_name": "main-menu.ask-a-question.aaq-step-1"}'>
-              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24">
-                <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6" />
-                  <path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z" />
-                </g>
-              </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Ask a Question') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Get support from our contributors or staff members.') }}
-              </p>
-            </a>
-            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li>
-                <a href="{{ url('questions.aaq_step2', 'desktop') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{
-                    "link_name": "main-menu.firefox-browser.aaq-step-2",
-                    "link_detail": "desktop"
-                  }'>
-                  {{ _('Firefox Browser') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{
-                    "link_name": "main-menu.mozilla-vpn.aaq-step-2",
-                    "link_detail": "firefox-private-network-vpn"
-                  }'>
-                  {{ _('Mozilla VPN') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.aaq_step2', 'ios') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{
-                    "link_name": "main-menu.firefox-for-ios.aaq-step-2",
-                    "link_detail": "ios"
-                  }'>
-                  {{ _('Firefox for iOS') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.aaq_step2', 'focus') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{
-                    "link_name": "main-menu.firefox-focus.aaq-step-2",
-                    "link_detail": "focus"
-                  }'>
-                  {{ _('Firefox Focus') }}
-                </a>
-              </li>
-              <li>
-                <a href="{{ url('questions.aaq_step2', 'mobile') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{
-                    "link_name": "main-menu.firefox-for-android.aaq-step-2",
-                    "link_detail": "mobile"
-                  }'>
-                  {{ _('Firefox for Android') }}
-                </a>
-              </li>
-              <li>
-                <a class="color-link" href="{{ url('questions.aaq_step1') }}"
-                  data-event-name="link_click"
-                  data-event-parameters='{"link_name": "main-menu.browse-all-products.aaq-step-1"}'>
-                  {{ _('Browse All Products') }}
-                </a>
-              </li>
-            </ul>
-          </section>
-        </div>
-        <div class="sumo-nav--dropdown-thirds">
-          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products') }}"
-              data-event-name="link_click"
-              data-event-parameters='{"link_name": "main-menu.explore-our-help-articles.list-products"}'>
-              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24">
-                <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
-                  stroke-linecap="round">
-                  <rect stroke-linejoin="round" width="18" height="18" rx="2" />
-                  <path d="M4 5h10M4 9h10M4 13h4" />
-                </g>
-              </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Explore Our Help Articles') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Dig into the knowledge base, tips and tricks, troubleshooting, and so much more.') }}
-              </p>
-            </a>
+          <div class="mzp-c-menu-item-head">
+            <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd"
+                stroke-linecap="round">
+                <rect stroke-linejoin="round" width="18" height="18" rx="2" />
+                <path d="M4 5h10M4 9h10M4 13h4" />
+              </g>
+            </svg>
+            <h4 class="mzp-c-menu-item-title">{{ _('Explore by product') }}</h4>
+          </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               <li>
                 <a href="{{ url('products.product', 'firefox') }}"
@@ -218,7 +133,7 @@
             </ul>
           </section>
         </div>
-        <div class="sumo-nav--dropdown-thirds">
+        <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
             <a class="mzp-c-menu-item-link" href="{{ url('products.product', 'mozilla-account') }}"
               data-event-name="link_click"
@@ -232,9 +147,6 @@
                 <path stroke="#000" stroke-width="2" d="M8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" clip-rule="evenodd"/>
               </svg>
               <h4 class="mzp-c-menu-item-title">{{ _('Mozilla Account') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Find help for common issues and learn about the benefits a Mozilla account provides.') }}
-              </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               <li>
@@ -274,11 +186,10 @@
     </div>
   </div>
 </li>
-{% if user.is_authenticated %}
 <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools">
-    {{ _('Contributor Tools') }}
-  </a>
+  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools"
+    data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Community Forums">{{ _('Community Forums') }}</a>
   <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
     <div class="sumo-nav--dropdown-container">
       <div class="sumo-nav--dropdown-grid">
@@ -286,9 +197,7 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}"
-              data-event-name="link_click"
-              data-event-parameters='{"link_name": "main-menu.discussions"}'>
+            <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -297,10 +206,111 @@
                     d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10" />
                 </g>
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Discussions') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Meet the community: read announcements, follow discussions and ask questions.') }}
-              </p>
+              <h4 class="mzp-c-menu-item-title">{{ _('Browse by product') }}</h4>
+            </div>
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+              <li><a href="{{ url('products.product', 'firefox')}}">{{ _('Firefox browser') }}</a></li>
+              <li><a href="{{ url('questions.list', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
+              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox of iOS') }}</a></li>
+              <li><a href="{{ url('questions.list', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
+              <li><a href="{{ url('questions.list', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
+              <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('View all forums') }}</a></li>
+            </ul>
+          </section>
+        </div>
+        <div class="sumo-nav--dropdown-col">
+          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+            <div class="mzp-c-menu-item-head">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24">
+                <path
+                  d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z"
+                  stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
+            </div>
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+              <li><a href="#">{{ _('Getting started') }}</a></li>
+              <li><a href="#">{{ _('Privacy and security') }}</a></li>
+              <li><a href="#">{{ _('Installation and setup') }}</a></li>
+              <li><a href="#">{{ _('Settings and customization') }}</a></li>
+              <li><a href="#">{{ _('Interface and features') }}</a></li>
+              <li><a href="#">{{ _('Troubleshooting') }}</a></li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</li>
+
+<li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+  <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('questions.home') }}" aria-haspopup="true"
+    aria-controls="mzp-c-menu-panel-help">{{ _('Ask a Question') }}</a>
+  <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
+    <div class="sumo-nav--dropdown-container">
+      <div class="sumo-nav--dropdown-grid">
+        <button class="mzp-c-menu-button-close" type="button"
+          aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}
+        </button>
+        <div class="sumo-nav--dropdown">
+          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+            <div class="mzp-c-menu-item-head">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24">
+                <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6" />
+                  <path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z" />
+                </g>
+              </svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('Get help with') }}</h4>
+            </div>
+            <ul class="mzp-c-menu-item-list sumo-nav--sublist-aaq">
+              <li><a href="{{ url('questions.aaq_step2', 'desktop') }}">{{ _('Firefox Browser') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'firefox-enterprise') }}">{{ _('Firefox for enterprise') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'relay') }}">{{ _('Firefox relay') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'ios') }}">{{ _('Firefox for iOS') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'focus') }}">{{ _('Firefox focus') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'monitor') }}">{{ _('Monitor') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'mozilla-account') }}">{{ _('Mozilla account') }}</a></li>
+              <li><a href="{{ url('questions.aaq_step2', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
+              <li><a
+                  href="{{ url('questions.aaq_step2', 'firefox-private-network-vpn') }}">{{ _('Mozilla VPN') }}</a>
+              </li>
+              <li><a href="{{ url('questions.aaq_step2', 'pocket') }}">{{ _('Pocket') }}</a></li>
+              <li><a class="color-link" href="{{ url('questions.aaq_step1') }}">{{ _('View all') }}</a></li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</li>
+
+<li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools"
+    data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Contributor Tools">{{ _('Contribute') }}</a>
+  <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
+    <div class="sumo-nav--dropdown-container">
+      <div class="sumo-nav--dropdown-grid">
+        <button class="mzp-c-menu-button-close" type="button"
+          aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
+        <div class="sumo-nav--dropdown-col">
+          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}">
+              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24">
+                <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path
+                    d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10" />
+                </g>
+              </svg>
+              <h4 class="mzp-c-menu-item-title">{{ _('Community discussions') }}</h4>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               {{ _discussion_nav_links(user, default_language, active) }}
@@ -309,12 +319,7 @@
         </div>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}"
-              data-event-name="link_click"
-              data-event-parameters='{
-                "link_name": "main-menu.tools.product-home",
-                "link_detail": "contributor"
-              }'>
+            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path
@@ -322,10 +327,7 @@
                   stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                   stroke-linejoin="round" />
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Tools') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Explore resources to help you with your contributions.') }}
-              </p>
+              <h4 class="mzp-c-menu-item-title">{{ _('Contributor tools') }}</h4>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
               {{ _tools_nav_links(user, default_language, active) }}
@@ -335,15 +337,6 @@
       </div>
     </div>
   </div>
-</li>
-{% endif %}
-
-<li class="mzp-c-menu-category">
-  <a class="mzp-c-menu-title sumo-nav--link" href="{{ url('landings.contribute') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "main-menu.contribute.contribute-home"}'>
-    {{ _('Contribute') }}
-  </a>
 </li>
 {% endmacro %}
 
@@ -498,96 +491,62 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro _discussion_nav_links(user, default_language, active=None, context="main-menu") -%}
-<li>
-  <a href="{{ url('forums.threads', 'contributors') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.community-discussions' }}"}'>
-    {{ _('Community Discussions') }}
-  </a>
+{% macro _discussion_nav_links(user, default_language, active=None) -%}
+<li><a href="{{ url('forums.threads', 'contributors') }}" data-event-category="navigation"
+    data-event-action="main navigation" data-event-label="Community Discussions">{{ _('SUMO Community discussions') }}</a>
 </li>
-<li>
-  <a href="{{ url('questions.home') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.support-forums' }}"}'>
-    {{ _('Support Forums') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('forums.threads', 'l10n-forum') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.l10n-discussions' }}"}'>
-    {{ _('L10N Discussions') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('forums.threads', 'social-media') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.social-support-forum' }}"}'>
-    {{ _('Social Support Forum') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.locale_discussions') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.article-discussions' }}"}'>
-    {{ _('Article Discussions') }}
-  </a>
-</li>
+<li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Support Forum Home">{{ _('Support forum discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'l10n-forum') }}" data-event-category="navigation"
+    data-event-action="main navigation" data-event-label="L10N Discussions">{{ _('Localization discussions') }}</a></li>
+<li><a href="{{ url('forums.threads', 'social-media') }}">{{ _('Social Support discussions') }}</a></li>
+<li><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation"
+    data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
+{% if context == "main-menu" %}
+  <li><a class="color-link" href="{{ url('forums.forums') }}">{{ _('View all Discussions') }}</a></li>
+{% endif %}
+{% if context == "sidebar" %}
+  <li><a href="{{ url('forums.threads', 'mobile-support') }}">{{ _('Mobile Support Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'knowledge-base-articles') }}">{{ _('Knowledge Base Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'forum-moderators') }}">{{ _('Forum Moderator Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'off-topic') }}">{{ _('Off Topic Discussions') }}</a></li>
+  <li><a href="{{ url('forums.threads', 'lost-threads') }}">{{ _('Lost Thread Discussions') }}</a></li>
+{% endif %}
 {% endmacro %}
 
-{% macro _tools_nav_links(user, default_language, active=None, context="main-menu") -%}
-<li>
-  <a href="{{ url('products.product', slug='contributor') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.guides' }}"}'>
-    {{ _('Guides') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('community.home') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.community-hub' }}"}'>
-    {{ _('Community Hub') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.category', 60) }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.templates.kb-list-articles' }}"}'>
-    {{ _('Templates') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('dashboards.contributors') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.dashboards' }}"}'>
-    {{ _('Dashboards') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('wiki.revisions') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.recent-revisions.kb-cms' }}"}'>
-    {{ _('Recent Revisions') }}
-  </a>
-</li>
-<li>
-  <a href="{{ url('gallery.home') }}"
-    data-event-name="link_click"
-    data-event-parameters='{"link_name": "{{ context + '.media-gallery' }}"}'>
-    {{ _('Media Gallery') }}
-  </a>
-</li>
+{% macro _tools_nav_links(user, default_language, active=None) -%}
 {% if user.has_perm('flagit.can_moderate') %}
   <li>
-    <a href="{{ url('flagit.queue') }}"
-      data-event-name="link_click"
-      data-event-parameters='{"link_name": "{{ context + '.moderate-forum-content' }}"}'>
-      {{ _('Moderate Forum Content') }}
+    <a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation"
+      data-event-label="Moderate Forum Content">{{ _('Moderate forum content') }}
     </a>
   </li>
 {% endif %}
+<li>
+  <a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Dashboards">{{ _('Knowledge base dashboards') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('products.product', slug='contributor') }}" data-event-category="navigation"
+     data-event-action="main navigation" data-event-label="Guides">{{ _('Guides') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Media Gallery">{{ _('Media Gallery') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Recent Revisions">{{ _('Recent Revisions') }}
+  </a>
+</li>
+<li>
+  <a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation"
+     data-event-label="Community Hub">{{ _('Community Hub') }}
+  </a>
+</li>
 {% endmacro %}
 
 {# This is designed to be used like this:
