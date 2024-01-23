@@ -118,7 +118,7 @@
           aria-controls="mzp-c-menu-panel-example">{{ _('Close Firefox menu') }}</button>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('forums.forums') }}">
+            <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
@@ -127,19 +127,21 @@
                     d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10" />
                 </g>
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Discussions') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Meet the community: read announcements, follow discussions and ask questions.') }}
-              </p>
-            </a>
+              <h4 class="mzp-c-menu-item-title">{{ _('Browse by product') }}</h4>
+            </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              {{ _discussion_nav_links(user, default_language, active) }}
+              <li><a href="{{ url('products.product', 'firefox')}}">{{ _('Firefox browser') }}</a></li>
+              <li><a href="{{ url('questions.list', 'focus-firefox') }}">{{ _('Firefox Focus') }}</a></li>
+              <li><a href="{{ url('questions.list', 'ios') }}">{{ _('Firefox of iOS') }}</a></li>
+              <li><a href="{{ url('questions.list', 'thunderbird') }}">{{ _('Thunderbird') }}</a></li>
+              <li><a href="{{ url('questions.list', 'mobile') }}">{{ _('Firefox for Android') }}</a></li>
+              <li><a class="color-link" href="{{ url('questions.home') }}">{{ _('View all forums') }}</a></li>
             </ul>
           </section>
         </div>
         <div class="sumo-nav--dropdown-col">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="{{ url('products.product', slug='contributor') }}">
+            <div class="mzp-c-menu-item-head">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path
@@ -147,13 +149,15 @@
                   stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"
                   stroke-linejoin="round" />
               </svg>
-              <h4 class="mzp-c-menu-item-title">{{ _('Tools') }}</h4>
-              <p class="mzp-c-menu-item-desc">
-                {{ _('Explore resources to help you with your contributions.') }}
-              </p>
-            </a>
+              <h4 class="mzp-c-menu-item-title">{{ _('Browse all forum threads by topic') }}</h4>
+            </div>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              {{ _tools_nav_links(user, default_language, active) }}
+              <li><a href="#">{{ _('Getting started') }}</a></li>
+              <li><a href="#">{{ _('Privacy and security') }}</a></li>
+              <li><a href="#">{{ _('Installation and setup') }}</a></li>
+              <li><a href="#">{{ _('Settings and customization') }}</a></li>
+              <li><a href="#">{{ _('Interface and features') }}</a></li>
+              <li><a href="#">{{ _('Troubleshooting') }}</a></li>
             </ul>
           </section>
         </div>
