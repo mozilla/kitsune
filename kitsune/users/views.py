@@ -54,7 +54,6 @@ from kitsune.users.tasks import (
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.utils import (
     add_to_contributors,
-    anonymize_user,
     deactivate_user,
     get_oidc_fxa_setting,
 )
@@ -146,7 +145,7 @@ def profile(request, username):
 @login_required
 @require_POST
 def close_account(request):
-    anonymize_user(request.user)
+    request.user.delete()
 
     # Log the user out
     auth.logout(request)

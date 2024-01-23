@@ -11,7 +11,7 @@
 {% block breadcrumbs %}{% endblock %}
 {% block content %}
       <article id="profile">
-        {% if is_owner and profile.is_fxa_migrated %}
+        {% if is_owner %}
         <h1 class="sumo-page-heading">{{ _('Your Account') }}</h1>
         <p class="mb-0"><strong>{{ user.email }}</strong></p>
         <p>

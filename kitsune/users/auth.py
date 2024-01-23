@@ -92,7 +92,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # Create a user profile for the user and populate it with data from
         # Mozilla accounts
         profile, created = Profile.objects.get_or_create(user=user)
-        profile.is_fxa_migrated = True
         profile.fxa_uid = claims.get("uid")
         profile.fxa_avatar = claims.get("avatar", "")
         profile.name = claims.get("displayName", "")
@@ -197,7 +196,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # Check if the user has active subscriptions
         subscriptions = claims.get("subscriptions", [])
 
-        if (request := getattr(self, "request", None)) and not profile.is_fxa_migrated:
+        if request := getattr(self, "request", None):
             # Check if there is already a Mozilla account with this ID
             if Profile.objects.filter(fxa_uid=fxa_uid).exists():
                 msg = _("This Mozilla account is already used in another profile.")
@@ -205,7 +204,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                 return None
 
             # If it's not migrated, we can assume that there isn't an FxA id too
-            profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
             # This is the first time an existing user is using FxA. Redirect to profile edit
             # in case the user wants to update any settings.

@@ -38,7 +38,6 @@ class ProfileAdmin(admin.ModelAdmin):
                     "public_email",
                     ("avatar", "delete_avatar"),
                     "bio",
-                    "is_fxa_migrated",
                     "fxa_uid",
                     "fxa_refresh_token",
                     "zendesk_id",
@@ -76,7 +75,7 @@ class ProfileAdmin(admin.ModelAdmin):
     form = ProfileAdminForm
     list_display = ["full_user", "name", "get_products"]
     list_select_related = True
-    list_filter = ["is_fxa_migrated", "country"]
+    list_filter = ["country"]
     search_fields = ["user__username", "user__email", "name", "fxa_uid"]
     autocomplete_fields = ["user"]
     readonly_fields = ["fxa_refresh_token", "zendesk_id"]

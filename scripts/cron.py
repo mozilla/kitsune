@@ -352,6 +352,20 @@ def job_cohort_analysis():
 def job_update_l10n_contributor_metrics():
     call_command("update_l10n_contributor_metrics")
 
+# Once per month
+@scheduled_job(
+    "cron",
+    month="*",
+    day="1",
+    hour="00",
+    minute="30",
+    max_instances=1,
+    coalesce=True,
+    skip=settings.READ_ONLY,
+)
+@babis.decorator(ping_after=settings.DMS_USER_MAINTENANCE)
+def job_update_l10n_contributor_metrics():
+    call_command("user_maintenance")
 
 def run():
     try:

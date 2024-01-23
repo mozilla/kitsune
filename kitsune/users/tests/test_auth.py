@@ -125,7 +125,6 @@ class FXAAuthBackendTests(TestCase):
         """Test connecting a SUMO account with an existing FxA in SUMO."""
         UserFactory.create(profile__fxa_uid="my_unique_fxa_id")
         user = UserFactory.create()
-        user.profile.is_fxa_migrated = False
         user.profile.save()
         claims = {
             "uid": "my_unique_fxa_id",
@@ -134,7 +133,6 @@ class FXAAuthBackendTests(TestCase):
         with self.subTest("without a request"):
             self.backend.update_user(user, claims)
             assert not message_mock.error.called
-            assert not User.objects.get(id=user.id).profile.is_fxa_migrated
             assert not User.objects.get(id=user.id).profile.fxa_uid
         # Test with a request.
         request_mock = Mock(spec=HttpRequest)
@@ -145,7 +143,6 @@ class FXAAuthBackendTests(TestCase):
             message_mock.error.assert_called_with(
                 request_mock, "This Mozilla account is already used in another profile."
             )
-            assert not User.objects.get(id=user.id).profile.is_fxa_migrated
             assert not User.objects.get(id=user.id).profile.fxa_uid
 
     def test_login_existing_user_by_email(self):
@@ -170,7 +167,6 @@ class FXAAuthBackendTests(TestCase):
         user = UserFactory.create(
             profile__fxa_uid="my_unique_fxa_id",
             email="foo@example.com",
-            profile__is_fxa_migrated=True,
         )
         claims = {"uid": "my_unique_fxa_id", "email": "bar@example.com", "subscriptions": "[]"}
         self.backend.update_user(user, claims)
@@ -189,7 +185,6 @@ class FXAAuthBackendTests(TestCase):
         user = UserFactory.create(
             email="sumo@example.com", profile__avatar="sumo_avatar", profile__name="Kenny Bania"
         )
-        user.profile.is_fxa_migrated = False
         user.profile.save()
         auth_request = RequestFactory().get("/foo", {"code": "foo", "state": "bar"})
         auth_request.session = {}
@@ -215,7 +210,6 @@ class FXAAuthBackendTests(TestCase):
         requests_mock.post.return_value = post_json_mock
 
         self.backend.authenticate(auth_request)
-        assert user.profile.is_fxa_migrated
         self.assertEqual(user.profile.fxa_uid, "my_unique_fxa_id")
         self.assertEqual(user.email, "fxa@example.com")
         self.assertEqual(user.profile.avatar, "sumo_avatar")
