@@ -3,10 +3,11 @@ import pytest_check as check
 
 from playwright_tests.core.testutilities import TestUtilities
 
-from playwright_tests.messages.contribute_pages_messages.con_page_messages import (
+from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
 from playwright_tests.messages.homepage_messages import HomepageMessages
-from playwright_tests.messages.get_help_messages.support_page_messages import SupportPageMessages
+from playwright_tests.messages.explore_help_articles.support_page_messages import (
+    SupportPageMessages)
 
 
 class TestHomepage(TestUtilities):
@@ -94,10 +95,11 @@ class TestHomepage(TestUtilities):
             self.logger.info("Verifying that the correct product support page is displayed")
             assert (
                 expected_product_title
-                == self.sumo_pages.product_support_page._get_product_title_text()
+                == self.sumo_pages.product_support_page._get_product_support_title_text()
             ), (f"Incorrect support page displayed. "
                 f"Expected: {expected_product_title} "
-                f"Received: {self.sumo_pages.product_support_page._get_product_title_text()}")
+                f"Received: "
+                f"{self.sumo_pages.product_support_page._get_product_support_title_text()}")
 
             self.logger.info("Navigating back to the previous page")
             self.navigate_back()

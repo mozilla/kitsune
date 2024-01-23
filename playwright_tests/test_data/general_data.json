@@ -33,6 +33,20 @@
     "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox/Focus-ios",
     "Mozilla Account": "https://support.allizom.org/en-US/products/mozilla-account/passwords-recovery"
   },
+  "product_support": {
+    "Firefox": "https://support.allizom.org/en-US/products/firefox",
+    "Firefox for Android": "https://support.allizom.org/en-US/products/mobile",
+    "Firefox for iOS": "https://support.allizom.org/en-US/products/ios",
+    "Mozilla VPN": "https://support.allizom.org/en-US/products/firefox-private-network-vpn",
+    "Firefox Relay": "https://support.allizom.org/en-US/products/relay",
+    "Monitor": "https://support.allizom.org/en-US/products/monitor",
+    "Pocket": "https://support.allizom.org/en-US/products/pocket",
+    "MDN Plus": "https://support.allizom.org/en-US/products/mdn-plus",
+    "Hubs": "https://support.allizom.org/en-US/products/hubs",
+    "Firefox Focus": "https://support.allizom.org/en-US/products/focus-firefox",
+    "Firefox for Enterprise": "https://support.allizom.org/en-US/products/firefox-enterprise",
+    "Thunderbird": "https://support.allizom.org/en-US/products/thunderbird"
+  },
   "product_solutions": {
     "Firefox": "https://support.allizom.org/en-US/questions/new/desktop",
     "Firefox for Android": "https://support.allizom.org/en-US/questions/new/mobile",

@@ -125,7 +125,7 @@ class BasePage:
         try:
             self._page.wait_for_selector(xpath, timeout=3500)
         except TimeoutError:
-            print("Use a different account button is not displayed")
+            print(f"{xpath} is not displayed")
 
     # Clears the browser session storage and reloads the page after.
     def clear_session_storage(self):

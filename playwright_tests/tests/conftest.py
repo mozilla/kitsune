@@ -75,7 +75,7 @@ def pytest_runtest_makereport(item):
                 file_name_edit = report.nodeid.split("::")
                 file_name = file_name_edit[2] + ".png"
                 destination_file = os.path.join(report_directory, file_name)
-                page.screenshot(path=destination_file)
+                page.screenshot(path=destination_file, full_page=True)
                 if file_name:
                     html = (
                         '<div><img src="%s" alt="screenshot" style="width:300px; height=200px"'

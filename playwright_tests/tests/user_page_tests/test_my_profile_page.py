@@ -265,7 +265,7 @@ class TestMyProfilePage(TestUtilities):
         )
 
         self.logger.info("Create a new simple article")
-        article_title = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
+        article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
         self.logger.info("Accessing the View Profile page")
 
@@ -295,14 +295,18 @@ class TestMyProfilePage(TestUtilities):
             "Verifying that the posted document is listed inside the my profile documents list"
         )
         assert (
-            article_title in self.sumo_pages.my_documents_page._get_text_of_document_links()
-        ), f"The {article_title} is not listed inside the my posted documents list"
+            article_details['article_title'] in self.sumo_pages.my_documents_page.
+            _get_text_of_document_links()
+        ), (f"The {article_details['article_title']} is not listed inside the my posted documents "
+            f"list")
 
         self.logger.info(
             "Verifying that clicking on the posted article title redirects the "
             "user to that article"
         )
-        self.sumo_pages.my_documents_page._click_on_a_particular_document(article_title)
+        self.sumo_pages.my_documents_page._click_on_a_particular_document(
+            article_details['article_title']
+        )
 
         self.logger.info("Deleting the created article")
         self.sumo_pages.kb_article_page._click_on_show_history_option()

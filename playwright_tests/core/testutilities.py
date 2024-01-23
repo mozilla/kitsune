@@ -32,6 +32,10 @@ class TestUtilities:
         kb_article_test_data = json.load(kb_article_test_data_file)
     kb_article_test_data_file.close()
 
+    with open("test_data/kb_new_thread.json", "r") as kb_new_thread_test_data_file:
+        kb_new_thread_test_data = json.load(kb_new_thread_test_data_file)
+    kb_article_test_data_file.close()
+
     with open("test_data/user_message.json", "r") as user_message_test_data_file:
         user_message_test_data = json.load(user_message_test_data_file)
     user_message_test_data_file.close()
@@ -88,12 +92,15 @@ class TestUtilities:
         return re.match(r"(.+)@", string_to_analyze).group(1)
 
     # Random number generator.
-    def generate_random_number(self, min_value, max_value) -> int:
-        return random.randint(min_value, max_value)
+    def generate_random_number(self, min_value, max_value) -> str:
+        return str(random.randint(min_value, max_value))
 
     # Extracting numbers from string.
     def number_extraction_from_string(self, string_to_analyze: str) -> int:
         return int(re.findall(r"\d+", string_to_analyze)[0])
+
+    def number_extraction_from_string_endpoint(self, endpoint: str, string_to_analyze: str) -> int:
+        return int(re.findall(fr'{endpoint}(\d+)', string_to_analyze)[0])
 
     # Defining the logging mechanism.
     def get_logger(self):
@@ -180,3 +187,7 @@ class TestUtilities:
     # Removing a particular character from a given string.
     def remove_character_from_string(self, string: str, character_to_remove: str) -> str:
         return string.replace(character_to_remove, "")
+
+    def create_slug_from_title(self, article_title: str) -> str:
+        initial_title = article_title.split()
+        return '-'.join(initial_title).lower()
