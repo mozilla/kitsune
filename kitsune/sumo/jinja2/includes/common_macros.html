@@ -1,5 +1,5 @@
 {% macro search_box(settings, id=False, prefix=None, target=None,
-                    placeholder=_('Find help...'),
+                    placeholder=_('Search questions, articles, or topics (example: saving passwords in Firefox)'),
                     params=None) %}
 <form data-instant-search="form" {% if id %}id="{{ id }}" {% endif %} action="{{ url('search') }}" method="get"
   {% if target %} target="{{ target }}" {% endif %} class="simple-search-form">
