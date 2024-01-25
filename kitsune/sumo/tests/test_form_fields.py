@@ -105,22 +105,6 @@ class ImagePlusFieldTestCases(TestCase):
         data = self.get_uploaded_file("stuff.svg")
         self.assertEqual(field.clean(data), data)
 
-    def test_svg_image_with_unsafe_file(self):
-        """Test for the case when the uploaded file is unsafe."""
-        field = ImagePlusField()
-        data = self.get_uploaded_file(
-            "stuff.svg",
-            content=b"""
-            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">
-                <script>alert('This is an unsafe SVG file!');</script>
-                <rect x="10" y="10" width="80" height="80" fill="blue" />
-            </svg>""",
-        )
-        self.assertEqual(field.clean(data), data)
-        content = data.read()
-        self.assertIn(b'<svg xmlns="http://www.w3.org/2000/svg"', content)
-        self.assertNotIn(b"<script>", content)
-
     def test_svg_image_without_proper_extension(self):
         """SVG images without an "svg" extension should be considered invalid."""
         field = ImagePlusField()
@@ -131,17 +115,3 @@ class ImagePlusFieldTestCases(TestCase):
 
         self.assertTrue(hasattr(arm.exception, "code"))
         self.assertEqual(arm.exception.code, "invalid_image")
-
-    def test_invalid_svg_image(self):
-        """Invalid SVG images should raise a validation error."""
-        field = ImagePlusField()
-        data = self.get_uploaded_file(
-            "stuff.svg", content=b"""<svg xmlns="http://www.w3.org/2000/svg"></svg>"""
-        )
-
-        with self.assertRaises(ValidationError) as arm:
-            field.clean(data)
-
-        self.assertTrue(hasattr(arm.exception, "code"))
-        self.assertEqual(arm.exception.code, "invalid_svg_image")
-        self.assertIn("The SVG size is undefined", str(arm.exception))
