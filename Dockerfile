@@ -21,7 +21,7 @@ RUN set -xe \
     && apt-get install -y --no-install-recommends \
     gettext build-essential \
     libxml2-dev libxslt1-dev zlib1g-dev git \
-    libjpeg-dev libcairo2-dev libffi-dev libssl-dev libxslt1.1 \
+    libjpeg-dev libffi-dev libssl-dev libxslt1.1 \
     optipng postgresql zip \
     # python
     && python -m venv /venv \
@@ -103,7 +103,7 @@ COPY --chown=kitsune:kitsune . .
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-    libcairo2 libxslt1.1 optipng postgresql && \
+    libxslt1.1 optipng postgresql && \
     rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /app/media && chown kitsune:kitsune /app/media
