@@ -18,7 +18,7 @@ python = "^3.11"
 APScheduler = "^3.10.4"
 Django = "^4.2.9"
 babis = "^0.2.4"
-Pillow = "^9.5.0"
+Pillow = "^10.2.0"
 bleach = {version = "^6.1.0", extras = ["css"]}
 boto3 = "^1.34.17"
 celery = "5.2.7"
