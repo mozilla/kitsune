@@ -25,4 +25,3 @@ class TestLoginSessions(TestUtilities):
             # Deleting cookies from browser storage (avoiding server invalidation from logout)
             # and reloading the page to be signed out before re-entering the loop.
             self.delete_cookies()
-            self.page.reload()

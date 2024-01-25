@@ -10,6 +10,10 @@ class TopNavbar(BasePage):
     __get_help_option = ("//li[@class='mzp-c-menu-category mzp-has-drop-down "
                          "mzp-js-expandable']/a[contains(text(), 'Get Help')]")
 
+    # Explore our help articles locator.
+    __explore_our_help_articles_option = ("//a[@class='mzp-c-menu-item-link']//h4[text()='Explore "
+                                          "Our Help Articles']")
+
     # Sub menu items ask a Question section
     __ask_a_question_option = "//h4[contains(text(),'Ask a Question')]/parent::a"
     __aaq_firefox_browser_option = ("//div[@id='main-navigation']//h4[contains(text(), 'Ask a "
@@ -58,6 +62,11 @@ class TopNavbar(BasePage):
     def _click_on_moderate_forum_content_option(self):
         super()._hover_over_element(self.__contributor_tools_option)
         super()._click(self.__moderate_forum_content)
+
+    # Explore our Help Articles actions.
+    def _click_on_explore_our_help_articles_option(self):
+        super()._hover_over_element(self.__get_help_option)
+        super()._click(self.__explore_our_help_articles_option)
 
     # Sign in option
     def _click_on_signin_signup_button(self):

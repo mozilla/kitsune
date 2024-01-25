@@ -3,10 +3,6 @@ from playwright_tests.core.basepage import BasePage
 
 
 class Homepage(BasePage):
-    # Searchbar section
-    __search_bar = "//form[@id='support-search-masthead']/input[@id='search-q']"
-    __search_bar_button = "//form[@id='support-search-masthead']/button[@class='search-button']"
-    __popular_searches = "p.popular-searches > a"
 
     # Product list section
     __product_list = "div.card--product"
@@ -25,13 +21,6 @@ class Homepage(BasePage):
 
     def __init__(self, page: Page):
         super().__init__(page)
-
-    # Search
-    def _click_on_first_popular_search(self):
-        super()._click_on_first_item(self.__popular_searches)
-
-    def _click_on_search_button(self):
-        super()._click(self.__search_bar_button)
 
     # Product Cards
     def _get_text_of_product_card_titles(self) -> list[str]:

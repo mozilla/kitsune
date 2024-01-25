@@ -127,6 +127,21 @@ jobs:
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
           poetry run pytest -m postedQuestions --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_aaq_questions_tests.html --capture=tee-sys
+      - name : Run KB Products Page Tests (${{ env.BROWSER }})
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+            poetry run pytest -m kbProductsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_products_page.html --capture=tee-sys
+      - name: Run Product Support Page Tests (${{ env.BROWSER }})
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+            poetry run pytest -m productSupportPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_product_support_page.html --capture=tee-sys
+      - name: Run KB Article Creation And Access Tests (${{ env.BROWSER }})
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+            poetry run pytest -m kbArticleCreationAndAccess --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_creation_and_access.html --capture=tee-sys
       - name: Combine Reports
         working-directory: playwright_tests
         if: success() || failure()
