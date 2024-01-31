@@ -170,7 +170,8 @@ class QuestionDocument(SumoDocument):
     def prepare_answer_content(self, instance):
         return [
             answer.content
-            for answer in (
+            for answer in
+            (
                 # when bulk indexing use answer queryset prefetched in `get_queryset` method
                 # this is to avoid running an extra query for each question in the chunk
                 instance.es_question_answers_not_spam

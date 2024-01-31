@@ -38,7 +38,7 @@ class FieldOperator(UnaryOperator):
         mapping = context["settings"].get("field_mappings", [])
         if field in mapping:
             field = mapping[field]
-            fields = field if type(field) is list else [field]
+            fields = field if isinstance(field, list) else [field]
         # change the the context for child tokens
         context = {
             **context,

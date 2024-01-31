@@ -77,7 +77,7 @@ lint: .docker-build
 	${DC} run web pre-commit run --all-files
 
 format: .docker-build
-	${DC} run web black kitsune/
+	${DC} run web ruff format kitsune/
 
 test: .docker-build
 	${DC} run web ./bin/run-unit-tests.sh

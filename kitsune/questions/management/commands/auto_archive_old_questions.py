@@ -25,7 +25,8 @@ class Command(BaseCommand):
         q_ids = list(
             Question.objects.filter(is_archived=False)
             # Use "__range" to ensure the database index is used in Postgres.
-            .filter(created__range=(datetime.min, days_180)).values_list("id", flat=True)
+            .filter(created__range=(datetime.min, days_180))
+            .values_list("id", flat=True)
         )
 
         if q_ids:
@@ -35,9 +36,7 @@ class Command(BaseCommand):
                 UPDATE questions_question
                 SET is_archived = TRUE
                 WHERE id IN (%s)
-                """ % ",".join(
-                map(str, q_ids)
-            )
+                """ % ",".join(map(str, q_ids))
 
             with connection.cursor() as cursor:
                 cursor.execute(sql)

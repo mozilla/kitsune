@@ -12,11 +12,10 @@ from datetime import datetime
 from django.conf import settings
 from django.db import connections, router
 from django.db.models import F, OuterRef, Subquery
-
 from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation import pgettext_lazy
-from django.utils.translation import gettext as _
 from markupsafe import Markup
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
@@ -81,7 +80,11 @@ REVIEW_STATUSES = {
 }
 SIGNIFICANCE_STATUSES = {
     MEDIUM_SIGNIFICANCE: (_lazy("Update Needed"), "wiki.edit_document", "update"),
-    MAJOR_SIGNIFICANCE: (_lazy("Immediate Update Needed"), "wiki.edit_document", "out-of-date"),
+    MAJOR_SIGNIFICANCE: (
+        _lazy("Immediate Update Needed"),
+        "wiki.edit_document",
+        "out-of-date",
+    ),
 }
 
 # The most significant approved change to the English article between {the
@@ -233,7 +236,9 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
         data = {
             "url": reverse("wiki.document", args=[d.slug], locale=settings.WIKI_DEFAULT_LANGUAGE),
             "trans_url": reverse(
-                "wiki.show_translations", args=[d.slug], locale=settings.WIKI_DEFAULT_LANGUAGE
+                "wiki.show_translations",
+                args=[d.slug],
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
             ),
             "title": d.title,
             "num_visits": d.num_visits,
@@ -577,11 +582,15 @@ class Readout(object):
     def get_absolute_url(self, locale, product=None):
         if self.slug in L10N_READOUTS:
             url = reverse(
-                "dashboards.localization_detail", kwargs={"readout_slug": self.slug}, locale=locale
+                "dashboards.localization_detail",
+                kwargs={"readout_slug": self.slug},
+                locale=locale,
             )
         elif self.slug in CONTRIBUTOR_READOUTS:
             url = reverse(
-                "dashboards.contributors_detail", kwargs={"readout_slug": self.slug}, locale=locale
+                "dashboards.contributors_detail",
+                kwargs={"readout_slug": self.slug},
+                locale=locale,
             )
         else:
             raise KeyError("This Readout was not found: %s" % self.slug)
@@ -776,7 +785,12 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         # Filter by product if specified.
         if self.product:
             extra_joins = PRODUCT_FILTER
-            params = (self.locale, period, self.product.id, settings.WIKI_DEFAULT_LANGUAGE)
+            params = (
+                self.locale,
+                period,
+                self.product.id,
+                settings.WIKI_DEFAULT_LANGUAGE,
+            )
 
             has_forum = self.product.questions_locales.filter(locale=self.locale).exists()
         else:
@@ -871,7 +885,14 @@ class TemplateTranslationsReadout(Readout):
     def _format_row(self, row):
         (eng_slug, eng_title, slug, title, significance, needs_review) = row
         return _format_row_with_out_of_dateness(
-            self.locale, eng_slug, eng_title, slug, title, None, significance, needs_review
+            self.locale,
+            eng_slug,
+            eng_title,
+            slug,
+            title,
+            None,
+            significance,
+            needs_review,
         )
 
     def sort_and_truncate(self, rows, max):
@@ -1089,7 +1110,9 @@ class UnreadyForLocalizationReadout(Readout):
         return dict(
             title=title,
             url=reverse(
-                "wiki.document_revisions", args=[slug], locale=settings.WIKI_DEFAULT_LANGUAGE
+                "wiki.document_revisions",
+                args=[slug],
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
             ),
             visits=visits,
             updated=reviewed,
@@ -1145,7 +1168,9 @@ class NeedsChangesReadout(Readout):
         return dict(
             title=title,
             url=reverse(
-                "wiki.document_revisions", args=[slug], locale=settings.WIKI_DEFAULT_LANGUAGE
+                "wiki.document_revisions",
+                args=[slug],
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
             ),
             visits=visits,
             custom=True,
@@ -1210,7 +1235,11 @@ class CannedResponsesReadout(Readout):
 # L10n Dashboard tables that have their own whole-page views:
 L10N_READOUTS = OrderedDict(
     (t.slug, t)  # type: ignore
-    for t in [MostVisitedTranslationsReadout, TemplateTranslationsReadout, UnreviewedReadout]
+    for t in [
+        MostVisitedTranslationsReadout,
+        TemplateTranslationsReadout,
+        UnreviewedReadout,
+    ]
 )
 
 # Contributors ones:
@@ -1233,7 +1262,8 @@ READOUTS = L10N_READOUTS.copy()
 READOUTS.update(CONTRIBUTOR_READOUTS)
 
 GROUP_L10N_READOUTS = OrderedDict(
-    (t.slug, t) for t in [MostVisitedTranslationsReadout, UnreviewedReadout]  # type: ignore
+    (t.slug, t)  # type: ignore
+    for t in [MostVisitedTranslationsReadout, UnreviewedReadout]  # type: ignore
 )
 # English group locale is the same as l10n dashboard.
 GROUP_CONTRIBUTOR_READOUTS = CONTRIBUTOR_READOUTS

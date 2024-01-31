@@ -20,7 +20,7 @@ def _insert_custom_filters(analyzer_name, filter_list, char=False):
 
     def mapping_func(position_filter_tuple):
         position, filter = position_filter_tuple
-        if type(filter) is dict:
+        if isinstance(filter, dict):
             prefix = analyzer_name
             default_filters = config.ES_DEFAULT_ANALYZER["char_filter" if char else "filter"]
             if filter in default_filters:

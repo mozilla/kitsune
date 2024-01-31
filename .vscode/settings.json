@@ -30,7 +30,4 @@
     "[svelte]": {
         "editor.defaultFormatter": "svelte.svelte-vscode"
     },
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    }
 }

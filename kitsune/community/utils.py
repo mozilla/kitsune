@@ -25,7 +25,8 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None, 
             # filter out answers by the question author
             "script",
             script="doc['creator_id'].value != doc['question_creator_id'].value",
-        ).filter(
+        )
+        .filter(
             # filter answers created between `start` and `end`, or within the last 90 days
             "range",
             created={"gte": start or datetime.now() - timedelta(days=90), "lte": end},
