@@ -103,9 +103,7 @@ class SearchClickthroughMetricList(CachedAPIView):
             INNER JOIN kpi_metric d ON n.start=d.start
             WHERE n.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s)
             AND d.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s)
-            """ + (
-            "AND n.start>=%s" if min_start else ""
-        )
+            """ + ("AND n.start>=%s" if min_start else "")
         args = [self.clicks_kind, self.searches_kind]
         if min_start:
             args.append(min_start)
