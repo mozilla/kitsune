@@ -918,21 +918,21 @@ Django = ">=3.2"
 
 [[package]]
 name = "django-csp"
-version = "3.7"
+version = "3.8rc0"
 description = "Django Content Security Policy support."
 optional = false
 python-versions = "*"
 files = [
-    {file = "django_csp-3.7-py2.py3-none-any.whl", hash = "sha256:01443a07723f9a479d498bd7bb63571aaa771e690f64bde515db6cdb76e8041a"},
-    {file = "django_csp-3.7.tar.gz", hash = "sha256:01eda02ad3f10261c74131cdc0b5a6a62b7c7ad4fd017fbefb7a14776e0a9727"},
+    {file = "django_csp-3.8rc0-py3-none-any.whl", hash = "sha256:7d4469e9828f53434d8b05f2226f5e5a4f91b8d05276382af7d47df7de7b4c8a"},
+    {file = "django_csp-3.8rc0.tar.gz", hash = "sha256:b2dd6b0d269a0ce0ff7148a23f4b15da2a45b41d0c20e0fd7477e80adec92b6f"},
 ]
 
 [package.dependencies]
-Django = ">=1.8"
+Django = ">=3.2"
 
 [package.extras]
 jinja2 = ["jinja2 (>=2.9.6)"]
-tests = ["jinja2 (>=2.9.6)", "mock (==1.0.1)", "pep8 (==1.4.6)", "pytest (<4.0)", "pytest-django", "pytest-flakes (==1.0.1)", "pytest-pep8 (==1.0.6)", "six (==1.12.0)"]
+tests = ["jinja2 (>=2.9.6)", "pytest", "pytest-cov", "pytest-django", "pytest-ruff"]
 
 [[package]]
 name = "django-debug-toolbar"
@@ -2920,6 +2920,8 @@ files = [
     {file = "psycopg2-2.9.9-cp310-cp310-win_amd64.whl", hash = "sha256:426f9f29bde126913a20a96ff8ce7d73fd8a216cfb323b1f04da402d452853c3"},
     {file = "psycopg2-2.9.9-cp311-cp311-win32.whl", hash = "sha256:ade01303ccf7ae12c356a5e10911c9e1c51136003a9a1d92f7aa9d010fb98372"},
     {file = "psycopg2-2.9.9-cp311-cp311-win_amd64.whl", hash = "sha256:121081ea2e76729acfb0673ff33755e8703d45e926e416cb59bae3a86c6a4981"},
+    {file = "psycopg2-2.9.9-cp312-cp312-win32.whl", hash = "sha256:d735786acc7dd25815e89cc4ad529a43af779db2e25aa7c626de864127e5a024"},
+    {file = "psycopg2-2.9.9-cp312-cp312-win_amd64.whl", hash = "sha256:a7653d00b732afb6fc597e29c50ad28087dcb4fbfb28e86092277a559ae4e693"},
     {file = "psycopg2-2.9.9-cp37-cp37m-win32.whl", hash = "sha256:5e0d98cade4f0e0304d7d6f25bbfbc5bd186e07b38eac65379309c4ca3193efa"},
     {file = "psycopg2-2.9.9-cp37-cp37m-win_amd64.whl", hash = "sha256:7e2dacf8b009a1c1e843b5213a87f7c544b2b042476ed7755be813eaf4e8347a"},
     {file = "psycopg2-2.9.9-cp38-cp38-win32.whl", hash = "sha256:ff432630e510709564c01dafdbe996cb552e0b9f3f065eb89bdce5bd31fabf4c"},
@@ -4792,4 +4794,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4b195c7ed47a191a50009675cdde566b34ee23e080a9d94343781a6083e44b53"
+content-hash = "53f10448f669599a7dff7ba2275d46d5745d4182b2743688d1d73dd12cba4080"
