@@ -19,10 +19,7 @@
   <div class="user-messages">
     {% if document.is_restricted %}
       <div class="warning-box mzp-c-notification-bar mzp-t-warning">
-        {{ _('This document is restricted to members of the group(s):') }}<br />
-        {% for group_name in document.restrict_to_groups.order_by('name').values_list('name', flat=True) %}
-          {{ group_name }}<br />
-        {% endfor %}
+        {{ _('This document is restricted.') }}
       </div>
     {% endif %}
     {{ edit_messages(document, show_revision_warning) }}
