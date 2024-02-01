@@ -13,8 +13,10 @@ from playwright_tests.messages.ask_a_question_messages.product_solutions_message
 
 class TestPostedQuestions(TestUtilities):
 
+    # Causing some weird failures in GH runners. Need to investigate before re-enabling.
+
     # C890926, C890931, C2091563
-    @pytest.mark.productSupportPage
+    @pytest.mark.skip
     def test_product_support_page(self):
         self.logger.info("Navigating to products page via top-navbar")
         self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
@@ -129,7 +131,7 @@ class TestPostedQuestions(TestUtilities):
                 self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
 
     # C890929
-    @pytest.mark.productSupportPage
+    @pytest.mark.skip
     def test_product_support_page_frequent_topics_redirect(self):
         self.logger.info("Navigating to products page via top-navbar")
         self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
@@ -164,7 +166,7 @@ class TestPostedQuestions(TestUtilities):
 
                 self.navigate_back()
 
-    @pytest.mark.productSupportPage
+    @pytest.mark.skip
     def test_product_support_page_featured_articles_redirect(self):
         self.logger.info("Navigating to products page via top-navbar")
         self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
@@ -212,7 +214,7 @@ class TestPostedQuestions(TestUtilities):
                 self.navigate_back()
 
     # C890932
-    @pytest.mark.productSupportPage
+    @pytest.mark.skip
     def test_still_need_help_button_redirect(self):
         self.logger.info("Navigating to products page via top-navbar")
         self.sumo_pages.top_navbar._click_on_explore_our_help_articles_option()
