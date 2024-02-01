@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from django import forms
 from django.contrib.auth.models import User
 from django.core import validators
@@ -81,30 +79,3 @@ class MultiUsernameField(forms.Field):
                     raise forms.ValidationError(msg.format(username=username))
 
         return users
-
-
-class ImagePlusField(forms.ImageField):
-    """
-    Same as django.forms.ImageField but with support for trusted SVG images as well.
-    """
-
-    default_validators = [
-        validators.FileExtensionValidator(
-            allowed_extensions=validators.get_available_image_extensions() + ["svg"]
-        )
-    ]
-
-    def to_python(self, data):
-        """
-        Check that the file-upload field data contains an image that
-        Pillow supports or an SVG image (assumed to be trusted).
-        """
-        try:
-            return super().to_python(data)
-        except ValidationError as verr:
-            if (getattr(verr, "code", None) != "invalid_image") or (
-                Path(data.name).suffix.lower() != ".svg"
-            ):
-                raise
-
-        return data
