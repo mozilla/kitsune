@@ -59,7 +59,7 @@ def product_landing(request, slug):
             "product_key": _get_aaq_product_key(product.slug),
             "product": product,
             "products": Product.objects.filter(visible=True),
-            "topics": topics_for(product=product, parent=None),
+            "topics": topics_for(request.user, product=product, parent=None),
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
@@ -89,7 +89,7 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
         "key": _get_aaq_product_key(product_slug),
     }
 
-    documents, fallback_documents = documents_for(**doc_kw)
+    documents, fallback_documents = documents_for(request.user, **doc_kw)
 
     return render(
         request,
@@ -98,8 +98,8 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
             "product": product,
             "topic": topic,
             "subtopic": subtopic,
-            "topics": topics_for(product=product, parent=None),
-            "subtopics": topics_for(product=product, parent=topic),
+            "topics": topics_for(request.user, product=product, parent=None),
+            "subtopics": topics_for(request.user, product=product, parent=topic),
             "documents": documents,
             "fallback_documents": fallback_documents,
             "search_params": {"product": product_slug},

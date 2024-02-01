@@ -47,7 +47,7 @@ def opensearch_plugin(request):
     return response
 
 
-def _fallback_results(locale, product_slugs):
+def _fallback_results(user, locale, product_slugs):
     """Return the top 20 articles by votes for the given product(s)."""
     products = []
     for slug in product_slugs:
@@ -57,7 +57,7 @@ def _fallback_results(locale, product_slugs):
         except Product.DoesNotExist:
             pass
 
-    docs, fallback = documents_for(locale, products=products)
+    docs, fallback = documents_for(user, locale, products=products)
     docs = docs + (fallback or [])
 
     return docs[:20]
@@ -117,7 +117,7 @@ def simple_search(request):
     # generate fallback results if necessary
     fallback_results = None
     if total == 0:
-        fallback_results = _fallback_results(language, cleaned["product"])
+        fallback_results = _fallback_results(request.user, language, cleaned["product"])
 
     data = {
         "num_results": total,

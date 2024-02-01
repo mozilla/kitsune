@@ -205,7 +205,9 @@ def document(request, document_slug, document=None):
     redirected_from = None
     if redirect_slug and redirect_locale:
         try:
-            redirected_from = Document.objects.get(locale=redirect_locale, slug=redirect_slug)
+            redirected_from = Document.objects.get_visible(
+                request.user, locale=redirect_locale, slug=redirect_slug
+            )
         except Document.DoesNotExist:
             pass
 
@@ -234,7 +236,7 @@ def document(request, document_slug, document=None):
             product=switching_devices_product, slug=settings.FIREFOX_SWITCHING_DEVICES_TOPIC
         )
         switching_devices_subtopics = topics_for(
-            product=switching_devices_product, parent=switching_devices_topic
+            request.user, product=switching_devices_product, parent=switching_devices_topic
         )
 
     if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
@@ -659,7 +661,7 @@ def document_revisions(request, document_slug, contributor_form=None):
 @login_required
 def review_revision(request, document_slug, revision_id):
     """Review a revision of a wiki document."""
-    rev = get_object_or_404(Revision, pk=revision_id, document__slug=document_slug)
+    rev = get_visible_revision_or_404(request.user, pk=revision_id, document__slug=document_slug)
     doc = rev.document
 
     if not doc.allows(request.user, "review_revision"):
@@ -1574,6 +1576,7 @@ def _document_form_initial(document):
         "allow_discussion": document.allow_discussion,
         "needs_change": document.needs_change,
         "needs_change_comment": document.needs_change_comment,
+        "restrict_to_groups": document.restrict_to_groups.all(),
     }
 
 
@@ -1712,7 +1715,7 @@ def get_fallback_locale(doc, request):
 def pocket_article(request, article_id=None, document_slug=None, extra_path=None):
     """Pocket articles migrated to SUMO are redirected to the new URL"""
     # If we migrated the document, we should be able to find it
-    if Document.objects.filter(slug=document_slug).exists():
+    if Document.objects.visible(request.user, slug=document_slug).exists():
         return HttpResponseRedirect(reverse("wiki.document", args=[document_slug]))
     # If document doesn't exist, fail back to Pocket product page with message
     messages.warning(

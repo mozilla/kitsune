@@ -53,12 +53,11 @@ class Image(Media):
         """Returns self.thumbnail, if set, else self.file"""
         return self.thumbnail.url if self.thumbnail else self.file.url
 
-    @property
-    def documents(self):
-        """Get the documents that include this image."""
+    def documents(self, user=None):
+        """Get the documents visible to the given user that include this image."""
         from kitsune.wiki.models import Document
 
-        return Document.objects.filter(documentimage__image=self)
+        return Document.objects.visible(user, documentimage__image=self)
 
 
 @auto_delete_files

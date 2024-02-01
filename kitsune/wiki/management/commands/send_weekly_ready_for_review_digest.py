@@ -47,19 +47,21 @@ class Command(BaseCommand):
         products = Product.objects.all()
 
         for loc in locales:
-            docs = revs.filter(document__locale=loc).values_list("document", flat=True).distinct()
-            docs = Document.objects.filter(id__in=docs)
+            doc_ids = (
+                revs.filter(document__locale=loc).values_list("document", flat=True).distinct()
+            )
 
             try:
                 leaders = Locale.objects.get(locale=loc).leaders.all()
                 reviewers = Locale.objects.get(locale=loc).reviewers.all()
-                users = list(set(chain(leaders, reviewers)))
+                users = set(user for user in chain(leaders, reviewers) if user.is_active)
             except ObjectDoesNotExist:
                 # Locale does not exist, so skip to the next locale
                 continue
 
             for user in users:
                 docs_list = []
+                docs = Document.objects.unrestricted(user, id__in=doc_ids)
                 for product in products:
                     product_docs = docs.filter(
                         Q(parent=None, products__in=[product]) | Q(parent__products__in=[product])

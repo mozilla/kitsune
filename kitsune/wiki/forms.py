@@ -2,6 +2,7 @@ import re
 
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.template.defaultfilters import slugify
 from django.utils.translation import gettext_lazy as _lazy
 
@@ -139,6 +140,13 @@ class DocumentForm(forms.ModelForm):
 
     is_archived = forms.BooleanField(label=_lazy("Obsolete:"), required=False)
 
+    restrict_to_groups = forms.ModelMultipleChoiceField(
+        label=_lazy("The document will be restricted to members of the selected group(s)."),
+        required=False,
+        queryset=Group.objects.order_by("name").all(),
+        help_text=_lazy("The document will be visible only to users in the selected group(s)."),
+    )
+
     allow_discussion = forms.BooleanField(
         label=_lazy("Allow discussion on this article?"), initial=True, required=False
     )
@@ -206,6 +214,7 @@ class DocumentForm(forms.ModelForm):
             "needs_change",
             "needs_change_comment",
             "related_documents",
+            "restrict_to_groups",
         )
 
     def save(self, parent_doc, **kwargs):

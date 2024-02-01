@@ -10,8 +10,9 @@ from collections import OrderedDict
 from datetime import datetime
 
 from django.conf import settings
-from django.db import connections, router
-from django.db.models import F, OuterRef, Subquery
+from django.contrib.postgres.aggregates import StringAgg
+from django.db.models import Count, Exists, F, Max, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _lazy
@@ -35,46 +36,13 @@ from kitsune.wiki.config import (
     REDIRECT_HTML,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Document, Revision
 
 log = logging.getLogger("k.dashboards.readouts")
 
 
 MOST_VIEWED = 1
 MOST_RECENT = 2
-
-# FROM clause for selecting most-visited translations:
-#
-# The "... EXISTS" bit in the transdoc left join prevents transdocs
-# for which there are only translated revisions that were reviewed and
-# rejected. In this case, we want it to show up as untranslated since
-# that's the most "correct" status.
-most_visited_translation_from = (
-    "FROM wiki_document engdoc "
-    "LEFT JOIN wiki_document transdoc ON "
-    "    transdoc.parent_id=engdoc.id "
-    "    AND transdoc.locale=%s "
-    "    AND EXISTS ("
-    "        SELECT * "
-    "        FROM wiki_revision transrev_inner "
-    "        WHERE transrev_inner.document_id=transdoc.id "
-    "        AND NOT (NOT transrev_inner.is_approved "
-    "                 AND transrev_inner.reviewed IS NOT NULL) "
-    "    ) "
-    "LEFT JOIN dashboards_wikidocumentvisits ON engdoc.id="
-    "    dashboards_wikidocumentvisits.document_id "
-    "    AND dashboards_wikidocumentvisits.period=%s "
-    "{extra_joins} "
-    "WHERE engdoc.locale=%s "
-    "    AND engdoc.is_localizable "
-    "    AND NOT engdoc.is_archived "
-    "    AND engdoc.latest_localizable_revision_id IS NOT NULL "
-    "{extra_where} "
-    "ORDER BY dashboards_wikidocumentvisits.visits DESC NULLS LAST, "
-    "         COALESCE(transdoc.title, engdoc.title) ASC "
-).format
-
-
 REVIEW_STATUSES = {
     1: (_lazy("Review Needed"), "wiki.document_revisions", "review"),
     0: ("Updated", "", "ok"),
@@ -83,87 +51,29 @@ SIGNIFICANCE_STATUSES = {
     MEDIUM_SIGNIFICANCE: (_lazy("Update Needed"), "wiki.edit_document", "update"),
     MAJOR_SIGNIFICANCE: (_lazy("Immediate Update Needed"), "wiki.edit_document", "out-of-date"),
 }
-
-# The most significant approved change to the English article between {the
-# English revision the current translated revision is based on} and {the latest
-# ready-for-localization revision}:
-MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE = """
-    (SELECT MAX(engrev.significance)
-     FROM wiki_revision engrev, wiki_revision transrev
-     WHERE engrev.is_approved
-     AND transrev.id=transdoc.current_revision_id
-     AND engrev.document_id=transdoc.parent_id
-     AND engrev.id>transrev.based_on_id
-     AND engrev.id<=engdoc.latest_localizable_revision_id)
-    """
-
-# Whether there are any unreviewed revs of the translation made since the
-# current one:
-NEEDS_REVIEW = """
-    (SELECT EXISTS
-        (SELECT *
-         FROM wiki_revision transrev
-         WHERE transrev.document_id=transdoc.id
-         AND transrev.reviewed IS NULL
-         AND (transrev.id>transdoc.current_revision_id OR
-              transdoc.current_revision_id IS NULL)
-        )
+MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY = Subquery(
+    Revision.objects.filter(
+        document=OuterRef("pk"),
+        is_approved=True,
     )
-    """
-
-# Whether there are unreviewed revisions of the English doc:
-NEEDS_REVIEW_ENG = (
-    "(SELECT EXISTS "
-    "    (SELECT * "
-    "     FROM wiki_revision engrev "
-    "     WHERE engrev.document_id=engdoc.id "
-    "     AND engrev.reviewed IS NULL "
-    "     AND (engrev.id>engdoc.current_revision_id OR "
-    "          engdoc.current_revision_id IS NULL)"
-    "     )"
-    ") "
-)
-
-# Whether the current revision is not ready for localization
-UNREADY_FOR_L10N = (
-    "(SELECT EXISTS "
-    "    (SELECT * "
-    "    FROM wiki_revision rev "
-    "    WHERE rev.document_id=engdoc.id "
-    "    AND (rev.id>engdoc.latest_localizable_revision_id OR "
-    "         engdoc.latest_localizable_revision_id IS NULL) "
-    "    AND rev.is_approved "
-    "    AND NOT rev.is_ready_for_localization "
-    "    AND (rev.significance>%s OR rev.significance IS NULL)"
-    "    )"
-    ") "
-)
-
-# Any ready-for-l10n, nontrivial-significance revision of the English doc newer
-# than the one our current translation is based on:
-ANY_SIGNIFICANT_UPDATES = (
-    "(SELECT id FROM wiki_revision engrev "
-    " WHERE engrev.document_id=engdoc.id "
-    " AND engrev.id>curtransrev.based_on_id "
-    " AND engrev.is_ready_for_localization "
-    " AND engrev.significance>=%s) "
-)
-
-# Filter by products when a product is selected.
-PRODUCT_FILTER = (
-    "INNER JOIN wiki_document_products docprod ON "
-    "    docprod.document_id=engdoc.id "
-    "    AND docprod.product_id=%s "
+    .filter(
+        Q(id__lte=F("document__latest_localizable_revision__id"))
+        | Q(id__gt=OuterRef("transdoc_current_revision_based_on_id")),
+    )
+    .order_by()
+    .values("document")
+    .annotate(max_significance=Max("significance"))
+    .values("max_significance")
 )
 
 
-def _cursor():
-    """Return a DB cursor for reading."""
+def get_visits_subquery(document=OuterRef("pk"), period=LAST_30_DAYS):
+    return Subquery(
+        WikiDocumentVisits.objects.filter(document=document, period=period).values("visits")
+    )
 
-    return connections[router.db_for_read(Document)].cursor()
 
-
-def _format_row_with_out_of_dateness(
+def row_to_dict_with_out_of_dateness(
     readout_locale, eng_slug, eng_title, slug, title, visits, significance, needs_review
 ):
     """Format a row for a readout that has the traffic-light-style
@@ -196,15 +106,15 @@ def _format_row_with_out_of_dateness(
     )
 
 
-def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=None):
+def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, category=None):
     """Return the iterable of dicts needed to draw the new KB dashboard overview"""
 
     if mode is None:
         mode = LAST_30_DAYS
 
-    docs = Document.objects.filter(locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False)
-
-    docs = docs.exclude(html__startswith=REDIRECT_HTML)
+    docs = Document.objects.unrestricted(
+        user, locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False
+    ).exclude(html__startswith=REDIRECT_HTML)
 
     if product:
         docs = docs.filter(products__in=[product])
@@ -212,15 +122,9 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
     if category:
         docs = docs.filter(category__in=[category])
 
-    docs = docs.annotate(
-        num_visits=Subquery(
-            WikiDocumentVisits.objects.filter(document=OuterRef("pk"), period=mode).values(
-                "visits"
-            )
-        )
+    docs = docs.annotate(num_visits=get_visits_subquery(period=mode)).order_by(
+        F("num_visits").desc(nulls_last=True), "title"
     )
-
-    docs = docs.order_by(F("num_visits").desc(nulls_last=True), "title")
 
     if max:
         docs = docs[:max]
@@ -277,7 +181,7 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
     return rows
 
 
-def l10n_overview_rows(locale, product=None):
+def l10n_overview_rows(locale, product=None, user=None):
     """Return the iterable of dicts needed to draw the Overview table."""
     # The Overview table is a special case: it has only a static number of
     # rows, so it has no expanded, all-rows view, and thus needs no slug, no
@@ -287,127 +191,119 @@ def l10n_overview_rows(locale, product=None):
     def percent_or_100(num, denom):
         return int(round(num / float(denom) * 100)) if denom else 100
 
-    def single_result(sql, params):
-        """Return the first column of the first row returned by a query."""
-        cursor = _cursor()
-        cursor.execute(sql, params)
-        return cursor.fetchone()[0]
+    ignore_categories = [
+        ADMINISTRATION_CATEGORY,
+        NAVIGATION_CATEGORY,
+        HOW_TO_CONTRIBUTE_CATEGORY,
+    ]
 
-    total = Document.objects.filter(
+    total = Document.objects.unrestricted(
+        user,
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
-        current_revision__isnull=False,
         is_localizable=True,
+        current_revision__isnull=False,
         latest_localizable_revision__isnull=False,
-    )
-    total = total.exclude(html__startswith=REDIRECT_HTML)
+    ).exclude(html__startswith=REDIRECT_HTML)
 
     if product:
         total = total.filter(products=product)
-        has_forum = product.questions_locales.filter(locale=locale).exists()
-
-    ignore_categories = [
-        str(ADMINISTRATION_CATEGORY),
-        str(NAVIGATION_CATEGORY),
-        str(HOW_TO_CONTRIBUTE_CATEGORY),
-    ]
-
-    if product and not has_forum:
-        ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
+        if not product.questions_locales.filter(locale=locale).exists():
+            # The product does not have a forum for this locale.
+            ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
     total = total.exclude(category__in=ignore_categories)
 
     total_docs = total.filter(is_template=False).count()
     total_templates = total.filter(is_template=True).count()
 
-    if product:
-        extra_joins = PRODUCT_FILTER
-        prod_param = (product.id,)
-    else:
-        extra_joins = ""
-        prod_param = tuple()
-
     # Translations whose based_on revision has no >10-significance, ready-for-
-    # l10n revisions after it. It *might* be possible to do this with the ORM
-    # by passing wheres and tables to extra():
+    # l10n revisions after it.
+
+    any_significant_updates_exist = Exists(
+        Revision.objects.filter(
+            document=OuterRef("parent"),
+            is_ready_for_localization=True,
+            significance__gte=MEDIUM_SIGNIFICANCE,
+            id__gt=OuterRef("current_revision__based_on__id"),
+        )
+    )
+
     up_to_date_translation_count = (
-        "SELECT COUNT(*) FROM wiki_document transdoc "
-        "INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id "
-        "INNER JOIN wiki_revision curtransrev "
-        "    ON transdoc.current_revision_id=curtransrev.id "
-        + extra_joins
-        + "WHERE transdoc.locale=%s "
-        "    AND engdoc.category NOT IN "
-        "        (" + ",".join(ignore_categories) + ")"
-        "    AND transdoc.is_template=%s "
-        "    AND NOT transdoc.is_archived "
-        "    AND NOT engdoc.is_archived "
-        "    AND engdoc.latest_localizable_revision_id IS NOT NULL "
-        "    AND engdoc.is_localizable "
-        "    AND engdoc.html NOT LIKE '<p>REDIRECT <a%%' "
-        "    AND NOT EXISTS " + ANY_SIGNIFICANT_UPDATES
-    )
-    translated_docs = single_result(
-        up_to_date_translation_count, prod_param + (locale, False, MEDIUM_SIGNIFICANCE)
-    )
-    translated_templates = single_result(
-        up_to_date_translation_count, prod_param + (locale, True, MEDIUM_SIGNIFICANCE)
+        Document.objects.unrestricted(
+            user,
+            locale=locale,
+            is_archived=False,
+            parent__isnull=False,
+            parent__is_archived=False,
+            parent__is_localizable=True,
+            current_revision__isnull=False,
+            parent__latest_localizable_revision__isnull=False,
+        )
+        .exclude(parent__category__in=ignore_categories)
+        .exclude(parent__html__startswith=REDIRECT_HTML)
+        .exclude(any_significant_updates_exist)
     )
 
-    # Of the top N most visited English articles, how many have up-to-date
-    # translations into German?
-    #
-    # TODO: Be very suspicious of this query. It selects from a subquery (known
-    # to MySQL's EXPLAIN as a "derived" table), and MySQL always materializes
-    # such subqueries and never builds indexes on them. However, it seems to be
-    # fast in practice.
+    if product:
+        up_to_date_translation_count = up_to_date_translation_count.filter(
+            parent__products=product
+        )
+
+    translated_docs = up_to_date_translation_count.filter(is_template=False).count()
+    translated_templates = up_to_date_translation_count.filter(is_template=True).count()
+
     top_n_query = (
-        "SELECT SUM(CASE WHEN istranslated THEN 1 ELSE 0 END) FROM "
-        "    (SELECT transdoc.current_revision_id IS NOT NULL "
-        # And there have been no significant updates since the current
-        # translation:
-        "        AND NOT EXISTS "
-        + ANY_SIGNIFICANT_UPDATES
-        + "        AS istranslated "
-        + most_visited_translation_from(
-            extra_joins="LEFT JOIN wiki_revision curtransrev "
-            "ON transdoc.current_revision_id=curtransrev.id " + extra_joins,
-            extra_where="AND engdoc.category NOT IN ("
-            + ",".join(ignore_categories)
-            + ") "
-            + "AND NOT engdoc.is_template "
-            + "AND engdoc.html NOT LIKE '<p>REDIRECT <a%%' ",
+        Document.objects.unrestricted(
+            user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+            is_template=False,
+            is_localizable=True,
+            parent__isnull=True,
+            current_revision__isnull=False,
+            latest_localizable_revision__isnull=False,
         )
-        + "LIMIT %s) t1 "
+        .exclude(category__in=ignore_categories)
+        .exclude(html__startswith=REDIRECT_HTML)
     )
 
-    top_20_translated = int(
-        single_result(  # Driver returns a Decimal.
-            top_n_query,
-            (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS)
-            + prod_param
-            + (settings.WIKI_DEFAULT_LANGUAGE, 20),
+    if product:
+        top_n_query = top_n_query.filter(products=product)
+
+    top_n_query = (
+        top_n_query.annotate(
+            is_translated=Exists(
+                Document.objects.filter(
+                    locale=locale,
+                    parent=OuterRef("pk"),
+                    current_revision__isnull=False,
+                )
+                .filter(
+                    Exists(
+                        Revision.objects.filter(document=OuterRef("pk")).filter(
+                            Q(is_approved=True) | Q(reviewed__isnull=True)
+                        )
+                    )
+                )
+                .exclude(any_significant_updates_exist)
+            )
         )
-        or 0
-    )  # SUM can return NULL.
-    top_50_translated = int(
-        single_result(  # Driver returns a Decimal.
-            top_n_query,
-            (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS)
-            + prod_param
-            + (settings.WIKI_DEFAULT_LANGUAGE, 50),
-        )
-        or 0
-    )  # SUM can return NULL.
-    top_100_translated = int(
-        single_result(  # Driver returns a Decimal.
-            top_n_query,
-            (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS)
-            + prod_param
-            + (settings.WIKI_DEFAULT_LANGUAGE, 100),
-        )
-        or 0
-    )  # SUM can return NULL.
+        .alias(num_visits=get_visits_subquery())
+        .order_by(F("num_visits").desc(nulls_last=True), "title")
+    )
+
+    top_20_translated = top_n_query[:20].aggregate(
+        num_translated=Count("pk", filter=Q(is_translated=True))
+    )["num_translated"]
+
+    top_50_translated = top_n_query[:50].aggregate(
+        num_translated=Count("pk", filter=Q(is_translated=True))
+    )["num_translated"]
+
+    top_100_translated = top_n_query[:100].aggregate(
+        num_translated=Count("pk", filter=Q(is_translated=True))
+    )["num_translated"]
 
     return {
         "top-20": {
@@ -490,36 +386,23 @@ class Readout(object):
 
         """
         self.request = request
+        self.user = getattr(request, "user", None)
         self.locale = locale or request.LANGUAGE_CODE
         self.mode = mode if mode is not None else self.default_mode
         # self.mode is allowed to be invalid.
         self.product = product
 
-    def sort_and_truncate(self, rows, max):
-        """Allows a readout to sort and truncate the rows list
-
-        This happens after generating the row structures which starts
-        with what we get back from SQL and incorporates _format_row
-        and before we render the rows to output.
-
-        :arg rows: the list of rows to sort
-        :arg max: the index at which to truncate
-        """
-        return rows
-
     def rows(self, max=None):
         """Return an iterable of dicts containing the data for the table.
 
-        This default implementation calls _query_and_params and _format_row.
+        This default implementation calls _query_and_params and row_to_dict.
         You can either implement those or, if you need more flexibility,
         override this.
 
         Limit to `max` rows.
 
         """
-        cursor = _cursor()
-        cursor.execute(*self._query_and_params(max))
-        return self.sort_and_truncate([self._format_row(r) for r in cursor.fetchall()], max)
+        return self.sort_and_truncate([self.row_to_dict(r) for r in self.get_queryset(max)], max)
 
     def render(self, max_rows=None, rows=None):
         """Return HTML table rows, optionally limiting to a number of rows."""
@@ -553,26 +436,25 @@ class Readout(object):
         """Whether this readout should be shown on the request."""
         return True
 
-    # To override:
-
-    def _query_and_params(self, max):
+    def get_queryset(self, max):
         """Return a tuple: (query, params to bind it to)."""
         raise NotImplementedError
 
-    def _format_row(self, row):
+    def row_to_dict(self, row):
         """Turn a DB row tuple into a dict for the template."""
         raise NotImplementedError
 
-    # Convenience methods:
+    def sort_and_truncate(self, rows, max):
+        """Allows a readout to sort and truncate the rows list
 
-    @staticmethod
-    def _limit_clause(max):
-        """Return a SQL LIMIT clause limiting returned rows to `max`.
+        This happens after generating the row structures which starts
+        with what we get back from SQL and incorporates row_to_dict
+        and before we render the rows to output.
 
-        Return '' if max is None.
-
+        :arg rows: the list of rows to sort
+        :arg max: the index at which to truncate
         """
-        return " LIMIT %i" % max if max else ""
+        return rows
 
     def get_absolute_url(self, locale, product=None):
         if self.slug in L10N_READOUTS:
@@ -603,59 +485,54 @@ class MostVisitedDefaultLanguageReadout(Readout):
     modes = PERIODS
     default_mode = LAST_30_DAYS
 
-    def _query_and_params(self, max):
-        if self.mode in [m[0] for m in self.modes]:
+    def get_queryset(self, max=None):
+        if self.mode in set(m[0] for m in self.modes):
             period = self.mode
         else:
             period = self.default_mode
 
-        # Filter by product if specified.
-        if self.product:
-            extra_joins = PRODUCT_FILTER
-            params = (period, self.product.id, self.locale)
-        else:
-            extra_joins = ""
-            params = (period, self.locale)
-
-        # Review Needed: link to /history.
-        query = (
-            "SELECT engdoc.slug, engdoc.title, "
-            "MAX(dashboards_wikidocumentvisits.visits) visits, "
-            "count(engrev.document_id) "
-            "FROM wiki_document engdoc "
-            "LEFT JOIN dashboards_wikidocumentvisits ON "
-            "    engdoc.id=dashboards_wikidocumentvisits.document_id "
-            "    AND dashboards_wikidocumentvisits.period=%s "
-            "LEFT JOIN wiki_revision engrev ON "
-            "    engrev.document_id=engdoc.id "
-            "    AND engrev.reviewed IS NULL "
-            "    AND engrev.id>engdoc.current_revision_id "
-            + extra_joins
-            + "WHERE engdoc.locale=%s AND "
-            "NOT engdoc.is_archived AND "
-            "NOT engdoc.category IN ("
-            + (
-                str(ADMINISTRATION_CATEGORY)
-                + ", "
-                + str(NAVIGATION_CATEGORY)
-                + ", "
-                + str(CANNED_RESPONSES_CATEGORY)
-                + ", "
-                + str(HOW_TO_CONTRIBUTE_CATEGORY)
+        qs = (
+            Document.objects.unrestricted(
+                self.user,
+                locale=self.locale,
+                is_archived=False,
+                is_template=False,
             )
-            + ") AND "
-            "NOT engdoc.is_template AND "
-            "engdoc.html NOT LIKE '<p>REDIRECT <a%%' "
-            "GROUP BY engdoc.id "
-            "ORDER BY visits DESC NULLS LAST, "
-            "    engdoc.title ASC" + self._limit_clause(max)
+            .exclude(
+                category__in=(
+                    NAVIGATION_CATEGORY,
+                    ADMINISTRATION_CATEGORY,
+                    CANNED_RESPONSES_CATEGORY,
+                    HOW_TO_CONTRIBUTE_CATEGORY,
+                )
+            )
+            .exclude(html__startswith=REDIRECT_HTML)
         )
 
-        return query, params
+        if self.product:
+            qs = qs.filter(products=self.product)
 
-    def _format_row(self, row):
-        (slug, title, visits, num_unreviewed) = row
-        needs_review = int(num_unreviewed > 0)
+        qs = (
+            qs.annotate(
+                needs_review=Exists(
+                    Revision.objects.filter(
+                        document=OuterRef("pk"),
+                        reviewed__isnull=True,
+                        id__gt=OuterRef("current_revision__id"),
+                    )
+                )
+            )
+            .annotate(num_visits=get_visits_subquery(period=period))
+            .order_by(F("num_visits").desc(nulls_last=True), "title")
+        )
+
+        if max:
+            qs = qs[:max]
+
+        return qs.values_list("slug", "title", "num_visits", "needs_review")
+
+    def row_to_dict(self, row):
+        (slug, title, visits, needs_review) = row
         status, view_name, dummy = REVIEW_STATUSES[needs_review]
         return dict(
             title=title,
@@ -673,37 +550,54 @@ class CategoryReadout(Readout):
     column3_label = _lazy("Visits")
     modes = []
     default_mode = None
-    where_clause = ""
+    filter_kwargs: dict[str, bool | int] = dict()
 
-    def _query_and_params(self, max):
-        # Filter by product if specified.
-        if self.product:
-            extra_joins = PRODUCT_FILTER
-            params = (TYPO_SIGNIFICANCE, LAST_30_DAYS, self.product.id, self.locale)
+    def get_queryset(self, max=None):
+        if self.mode in set(m[0] for m in self.modes):
+            period = self.mode
         else:
-            extra_joins = ""
-            params = (TYPO_SIGNIFICANCE, LAST_30_DAYS, self.locale)
+            period = self.default_mode
 
-        # Review Needed: link to /history.
-        query = (
-            "SELECT engdoc.slug, engdoc.title, "
-            "   MAX(dashboards_wikidocumentvisits.visits) visits, "
-            "   engdoc.needs_change, "
-            + (NEEDS_REVIEW_ENG + ", " + UNREADY_FOR_L10N)
-            + "FROM wiki_document engdoc "
-            "LEFT JOIN dashboards_wikidocumentvisits ON "
-            "   engdoc.id=dashboards_wikidocumentvisits.document_id "
-            "   AND dashboards_wikidocumentvisits.period=%s "
-            + extra_joins
-            + "WHERE engdoc.locale=%s AND "
-            "   NOT engdoc.is_archived " + (self.where_clause) + "GROUP BY engdoc.id "
-            "ORDER BY visits DESC NULLS LAST, "
-            "    engdoc.title ASC" + self._limit_clause(max)
+        qs = Document.objects.unrestricted(
+            self.user,
+            locale=self.locale,
+            is_archived=False,
+            **self.filter_kwargs,
+        ).exclude(html__startswith=REDIRECT_HTML)
+
+        if self.product:
+            qs = qs.filter(products=self.product)
+
+        qs = qs.annotate(
+            needs_review=Exists(
+                Revision.objects.filter(document=OuterRef("pk"), reviewed__isnull=True).filter(
+                    Q(id__gt=F("document__current_revision__id"))
+                    | Q(document__current_revision__isnull=True)
+                )
+            ),
+            unready_for_l10n=Exists(
+                Revision.objects.filter(
+                    document=OuterRef("pk"),
+                    is_approved=True,
+                    is_ready_for_localization=False,
+                )
+                .filter(
+                    Q(id__gt=F("document__latest_localizable_revision__id"))
+                    | Q(document__latest_localizable_revision__isnull=True)
+                )
+                .filter(Q(significance__gt=TYPO_SIGNIFICANCE) | Q(significance__isnull=True))
+            ),
+            num_visits=get_visits_subquery(period=period),
+        ).order_by(F("num_visits").desc(nulls_last=True), "title")
+
+        if max:
+            qs = qs[:max]
+
+        return qs.values_list(
+            "slug", "title", "num_visits", "needs_change", "needs_review", "unready_for_l10n"
         )
 
-        return query, params
-
-    def _format_row(self, row):
+    def row_to_dict(self, row):
         (slug, title, visits, needs_changes, needs_review, unready_for_l10n) = row
         if needs_review:
             status, view_name, _ = REVIEW_STATUSES[needs_review]
@@ -729,21 +623,21 @@ class TemplateReadout(CategoryReadout):
     title = _lazy("Templates")
     slug = "templates"
     details_link_text = _lazy("All templates...")
-    where_clause = "AND engdoc.is_template "
+    filter_kwargs = dict(is_template=True)
 
 
 class HowToContributeReadout(CategoryReadout):
     title = _lazy("How To Contribute")
     slug = "how-to-contribute"
     details_link_text = _lazy("All How To Contribute articles...")
-    where_clause = "AND engdoc.category=%s " % HOW_TO_CONTRIBUTE_CATEGORY
+    filter_kwargs = dict(category=HOW_TO_CONTRIBUTE_CATEGORY)
 
 
 class AdministrationReadout(CategoryReadout):
     title = _lazy("Administration")
     slug = "administration"
     details_link_text = _lazy("All Administration articles...")
-    where_clause = "AND engdoc.category=%s " % ADMINISTRATION_CATEGORY
+    filter_kwargs = dict(category=ADMINISTRATION_CATEGORY)
 
 
 class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
@@ -761,49 +655,83 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     slug = "most-visited-translations"
     details_link_text = _lazy("All translations...")
 
-    def _query_and_params(self, max):
-        if self.mode in [m[0] for m in self.modes]:
+    def get_queryset(self, max=None):
+        if self.mode in set(m[0] for m in self.modes):
             period = self.mode
         else:
             period = self.default_mode
 
         ignore_categories = [
-            str(ADMINISTRATION_CATEGORY),
-            str(NAVIGATION_CATEGORY),
-            str(HOW_TO_CONTRIBUTE_CATEGORY),
+            NAVIGATION_CATEGORY,
+            ADMINISTRATION_CATEGORY,
+            HOW_TO_CONTRIBUTE_CATEGORY,
         ]
 
-        # Filter by product if specified.
+        qs = Document.objects.unrestricted(
+            self.user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+            is_localizable=True,
+            parent__isnull=True,
+            latest_localizable_revision__isnull=False,
+        ).exclude(html__startswith=REDIRECT_HTML)
+
         if self.product:
-            extra_joins = PRODUCT_FILTER
-            params = (self.locale, period, self.product.id, settings.WIKI_DEFAULT_LANGUAGE)
+            qs = qs.filter(products=self.product)
+            if not self.product.questions_locales.filter(locale=self.locale).exists():
+                # The product does not have a forum for this locale.
+                ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
-            has_forum = self.product.questions_locales.filter(locale=self.locale).exists()
-        else:
-            extra_joins = ""
-            params = (self.locale, period, settings.WIKI_DEFAULT_LANGUAGE)
-
-        if self.product and not has_forum:
-            ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
-
-        extra_where = "AND NOT engdoc.category IN (" + ", ".join(ignore_categories) + ") "
-
-        # Immediate Update Needed or Update Needed: link to /edit.
-        # Review Needed: link to /history.
-        # These match the behavior of the corresponding readouts.
-        return (
-            "SELECT engdoc.slug, engdoc.title, transdoc.slug, "
-            "transdoc.title, dashboards_wikidocumentvisits.visits, "
-            + MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE
-            + ", "
-            + NEEDS_REVIEW
-            + most_visited_translation_from(extra_joins=extra_joins, extra_where=extra_where)
-            + self._limit_clause(max),
-            params,
+        transdoc_subquery = Document.objects.filter(
+            locale=self.locale,
+            parent=OuterRef("pk"),
+        ).filter(
+            Exists(
+                Revision.objects.filter(document=OuterRef("pk")).filter(
+                    Q(is_approved=True) | Q(reviewed__isnull=True)
+                )
+            )
         )
 
-    def _format_row(self, columns):
-        return _format_row_with_out_of_dateness(self.locale, *columns)
+        qs = (
+            qs.exclude(category__in=ignore_categories)
+            .annotate(
+                transdoc_slug=Subquery(transdoc_subquery.values("slug")),
+                transdoc_title=Subquery(transdoc_subquery.values("title")),
+                transdoc_current_revision_based_on_id=Subquery(
+                    transdoc_subquery.values("current_revision__based_on__id")
+                ),
+                needs_review=Exists(
+                    Revision.objects.filter(
+                        document__parent=OuterRef("pk"),
+                        document__locale=self.locale,
+                        reviewed__isnull=True,
+                    ).filter(
+                        Q(id__gt=F("document__current_revision__id"))
+                        | Q(document__current_revision__isnull=True),
+                    )
+                ),
+            )
+            .annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
+            .annotate(num_visits=get_visits_subquery(period=period))
+            .order_by(F("num_visits").desc(nulls_last=True), Coalesce("transdoc_title", "title"))
+        )
+
+        if max:
+            qs = qs[:max]
+
+        return qs.values_list(
+            "slug",
+            "title",
+            "transdoc_slug",
+            "transdoc_title",
+            "num_visits",
+            "most_significant_change",
+            "needs_review",
+        )
+
+    def row_to_dict(self, columns):
+        return row_to_dict_with_out_of_dateness(self.locale, *columns)
 
     def render(self, max_rows=None, rows=None):
         """Override parent render to add some filtering."""
@@ -841,36 +769,55 @@ class TemplateTranslationsReadout(Readout):
     modes = []
     default_mode = None
 
-    def _query_and_params(self, max):
-        # Filter by product if specified.
-        if self.product:
-            extra_joins = PRODUCT_FILTER
-            params = (self.locale, self.product.id, settings.WIKI_DEFAULT_LANGUAGE)
-        else:
-            extra_joins = ""
-            params = (self.locale, settings.WIKI_DEFAULT_LANGUAGE)
+    def get_queryset(self, max=None):
+        qs = Document.objects.unrestricted(
+            self.user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_template=True,
+            is_archived=False,
+            is_localizable=True,
+            parent__isnull=True,
+            latest_localizable_revision__isnull=False,
+        ).exclude(html__startswith=REDIRECT_HTML)
 
-        query = (
-            "SELECT engdoc.slug, engdoc.title, transdoc.slug, "
-            "transdoc.title, "
-            + MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE
-            + ", "
-            + NEEDS_REVIEW
-            + "FROM wiki_document engdoc "
-            "LEFT JOIN wiki_document transdoc ON "
-            "    transdoc.parent_id=engdoc.id "
-            "    AND transdoc.locale=%s " + extra_joins + "WHERE engdoc.locale=%s "
-            "    AND engdoc.is_localizable "
-            "    AND NOT engdoc.is_archived "
-            "    AND engdoc.latest_localizable_revision_id IS NOT NULL "
-            "    AND engdoc.is_template "
+        if self.product:
+            qs = qs.filter(products=self.product)
+
+        transdoc_subquery = Document.objects.filter(
+            locale=self.locale,
+            parent=OuterRef("pk"),
         )
 
-        return query, params
+        qs = qs.annotate(
+            transdoc_slug=Subquery(transdoc_subquery.values("slug")),
+            transdoc_title=Subquery(transdoc_subquery.values("title")),
+            transdoc_current_revision_based_on_id=Subquery(
+                transdoc_subquery.values("current_revision__based_on__id")
+            ),
+            needs_review=Exists(
+                Revision.objects.filter(
+                    document__parent=OuterRef("pk"),
+                    document__locale=self.locale,
+                    reviewed__isnull=True,
+                ).filter(
+                    Q(id__gt=F("document__current_revision__id"))
+                    | Q(document__current_revision__isnull=True),
+                )
+            ),
+        ).annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
 
-    def _format_row(self, row):
+        return qs.values_list(
+            "slug",
+            "title",
+            "transdoc_slug",
+            "transdoc_title",
+            "most_significant_change",
+            "needs_review",
+        )
+
+    def row_to_dict(self, row):
         (eng_slug, eng_title, slug, title, significance, needs_review) = row
-        return _format_row_with_out_of_dateness(
+        return row_to_dict_with_out_of_dateness(
             self.locale, eng_slug, eng_title, slug, title, None, significance, needs_review
         )
 
@@ -897,53 +844,55 @@ class UnreviewedReadout(Readout):
     slug = "unreviewed"
     column4_label = _lazy("Changed")
 
-    def _query_and_params(self, max):
-        english_id = "id" if self.locale == settings.WIKI_DEFAULT_LANGUAGE else "parent_id"
+    def get_queryset(self, max=None):
+        prefix = "" if self.locale == settings.WIKI_DEFAULT_LANGUAGE else "parent__"
 
-        # Filter by product if specified.
-        if self.product:
-            extra_joins = (
-                "INNER JOIN wiki_document_products docprod ON "
-                "    docprod.document_id=wiki_document." + english_id + " "
-                "    AND docprod.product_id=%s "
-            )
-            params = (LAST_30_DAYS, self.product.id, self.locale)
+        if self.mode == MOST_RECENT:
+            order_by_args = ("-max_created",)
         else:
-            extra_joins = ""
-            params = (LAST_30_DAYS, self.locale)
+            order_by_args = (F("num_visits").desc(nulls_last=True), "title")
 
-        query = (
-            "SELECT wiki_document.slug, wiki_document.title, "
-            "MAX(wiki_revision.created) maxcreated, "
-            "STRING_AGG(DISTINCT auth_user.username, ', ' ORDER BY auth_user.username), "
-            "MAX(dashboards_wikidocumentvisits.visits) visits "
-            "FROM wiki_document "
-            "INNER JOIN wiki_revision ON "
-            "            wiki_document.id=wiki_revision.document_id "
-            "INNER JOIN auth_user ON wiki_revision.creator_id=auth_user.id "
-            "LEFT JOIN dashboards_wikidocumentvisits ON "
-            "    wiki_document."
-            + english_id
-            + "        =dashboards_wikidocumentvisits.document_id AND "
-            "    dashboards_wikidocumentvisits.period=%s "
-            + extra_joins
-            + "WHERE wiki_revision.reviewed IS NULL "
-            "AND (wiki_document.current_revision_id IS NULL OR "
-            "     wiki_revision.id>wiki_document.current_revision_id) "
-            "AND wiki_document.locale=%s AND NOT wiki_document.is_archived "
-            "GROUP BY wiki_document.id " + self._order_clause() + self._limit_clause(max)
+        qs = (
+            Revision.objects.unrestricted(
+                self.user,
+                reviewed__isnull=True,
+                document__locale=self.locale,
+                **{f"document__{prefix}is_archived": False},
+            )
+            .filter(
+                Q(id__gt=F("document__current_revision__id"))
+                | Q(document__current_revision__isnull=True)
+            )
+            .exclude(**{f"document__{prefix}html__startswith": REDIRECT_HTML})
         )
 
-        return query, params
+        if self.product:
+            qs = qs.filter(**{f"document__{prefix}products": self.product})
 
-    def _order_clause(self):
-        return (
-            "ORDER BY maxcreated DESC"
-            if self.mode == MOST_RECENT
-            else "ORDER BY visits DESC NULLS LAST, " "wiki_document.title ASC"
+        qs = (
+            qs.order_by()
+            .values("document")
+            .annotate(
+                slug=F("document__slug"),
+                title=F("document__title"),
+                max_created=Max("created"),
+                usernames=StringAgg(
+                    "creator__username",
+                    delimiter=", ",
+                    distinct=True,
+                    ordering="creator__username",
+                ),
+                num_visits=get_visits_subquery(document=OuterRef("document")),
+            )
+            .order_by(*order_by_args)
         )
 
-    def _format_row(self, row):
+        if max:
+            qs = qs[:max]
+
+        return qs.values_list("slug", "title", "max_created", "usernames", "num_visits")
+
+    def row_to_dict(self, row):
         (slug, title, changed, users, visits) = row
         return dict(
             title=title,
@@ -986,13 +935,13 @@ class UnhelpfulReadout(Readout):
 
         data = []
         for r in output:
-            row = self._format_row(r)
+            row = self.row_to_dict(r)
             if row:
                 data.append(row)
 
         return data
 
-    def _format_row(self, strresult):
+    def row_to_dict(self, strresult):
         result = strresult.split("::")
 
         # Filter by product
@@ -1028,63 +977,58 @@ class UnreadyForLocalizationReadout(Readout):
     slug = "unready"
     column4_label = _lazy("Approved")
 
-    def _query_and_params(self, max):
-        # Filter by product if specified.
-        if self.product:
-            extra_joins = PRODUCT_FILTER
-            params = (
-                LAST_30_DAYS,
-                self.product.id,
-                settings.WIKI_DEFAULT_LANGUAGE,
-                TYPO_SIGNIFICANCE,
-            )
+    def get_queryset(self, max=None):
+        if self.mode == MOST_RECENT:
+            order_by_args = (F("max_reviewed").desc(nulls_last=True),)
         else:
-            extra_joins = ""
-            params = (LAST_30_DAYS, settings.WIKI_DEFAULT_LANGUAGE, TYPO_SIGNIFICANCE)
+            order_by_args = (F("num_visits").desc(nulls_last=True), "title")
 
-        query = (
-            "SELECT engdoc.slug, engdoc.title, "
-            "MAX(wiki_revision.reviewed) maxreviewed, "
-            "MAX(dashboards_wikidocumentvisits.visits) visits "
-            "FROM wiki_document engdoc "
-            "INNER JOIN wiki_revision ON "
-            "            engdoc.id=wiki_revision.document_id "
-            "LEFT JOIN dashboards_wikidocumentvisits ON "
-            "    engdoc.id=dashboards_wikidocumentvisits.document_id AND "
-            "    dashboards_wikidocumentvisits.period=%s "
-            + extra_joins
-            + "WHERE engdoc.locale=%s "  # shouldn't be necessary
-            "AND NOT engdoc.is_archived "
-            "AND engdoc.is_localizable "
-            "AND (engdoc.current_revision_id>"
-            "     engdoc.latest_localizable_revision_id OR "
-            "     engdoc.latest_localizable_revision_id IS NULL) "
-            # When picking the max(reviewed) date, consider only revisions that
-            # are ripe to be marked Ready:
-            "AND wiki_revision.is_approved "
-            "AND NOT wiki_revision.is_ready_for_localization "
-            "AND (wiki_revision.significance>%s OR "
-            "     wiki_revision.significance IS NULL) "  # initial revision
-            # An optimization: minimize rows before max():
-            "AND (wiki_revision.id>"
-            "     engdoc.latest_localizable_revision_id OR "
-            "     engdoc.latest_localizable_revision_id IS NULL) "
-            "GROUP BY engdoc.id " + self._order_clause() + self._limit_clause(max)
+        qs = (
+            Revision.objects.unrestricted(
+                self.user,
+                is_approved=True,
+                is_ready_for_localization=False,
+                document__locale=settings.WIKI_DEFAULT_LANGUAGE,
+                document__is_archived=False,
+                document__is_localizable=True,
+            )
+            .exclude(document__html__startswith=REDIRECT_HTML)
+            .filter(Q(significance__gt=TYPO_SIGNIFICANCE) | Q(significance__isnull=True))
+            .filter(
+                Q(id__gt=F("document__latest_localizable_revision__id"))
+                | Q(document__latest_localizable_revision__isnull=True)
+            )
+            .filter(
+                Q(
+                    document__current_revision__id__gt=F(
+                        "document__latest_localizable_revision__id"
+                    )
+                )
+                | Q(document__latest_localizable_revision__isnull=True)
+            )
         )
 
-        return query, params
+        if self.product:
+            qs = qs.filter(document__products=self.product)
 
-    def _order_clause(self):
-        # Put the most recently approved articles first, as those are the most
-        # recent to have transitioned onto this dashboard or to change which
-        # revision causes them to be on this dashboard.
-        return (
-            "ORDER BY maxreviewed DESC NULLS LAST"
-            if self.mode == MOST_RECENT
-            else "ORDER BY visits DESC NULLS LAST, engdoc.title ASC"
+        qs = (
+            qs.order_by()
+            .values("document")
+            .annotate(
+                slug=F("document__slug"),
+                title=F("document__title"),
+                max_reviewed=Max("reviewed"),
+                num_visits=get_visits_subquery(document=OuterRef("document")),
+            )
+            .order_by(*order_by_args)
         )
 
-    def _format_row(self, row):
+        if max:
+            qs = qs[:max]
+
+        return qs.values_list("slug", "title", "max_reviewed", "num_visits")
+
+    def row_to_dict(self, row):
         (slug, title, reviewed, visits) = row
         return dict(
             title=title,
@@ -1108,39 +1052,28 @@ class NeedsChangesReadout(Readout):
     modes = [(MOST_VIEWED, _lazy("Most Viewed"))]
     default_mode = MOST_VIEWED
 
-    def _query_and_params(self, max):
-        # Filter by product if specified.
-        if self.product:
-            extra_joins = PRODUCT_FILTER
-            params = (LAST_30_DAYS, self.product.id, settings.WIKI_DEFAULT_LANGUAGE)
-        else:
-            extra_joins = ""
-            params = (LAST_30_DAYS, settings.WIKI_DEFAULT_LANGUAGE)
+    def get_queryset(self, max=None):
+        qs = Document.objects.unrestricted(
+            self.user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+            needs_change=True,
+            parent__isnull=True,
+        ).exclude(html__startswith=REDIRECT_HTML)
 
-        query = (
-            "SELECT engdoc.slug, engdoc.title, "
-            "   engdoc.needs_change_comment, "
-            "   MAX(dashboards_wikidocumentvisits.visits) visits "
-            "FROM wiki_document engdoc "
-            "LEFT JOIN dashboards_wikidocumentvisits ON "
-            "    engdoc.id=dashboards_wikidocumentvisits.document_id AND "
-            "    dashboards_wikidocumentvisits.period=%s "
-            + extra_joins
-            + "WHERE engdoc.locale=%s "  # shouldn't be necessary
-            "AND engdoc.needs_change "
-            "AND NOT engdoc.is_archived "
-            "GROUP BY engdoc.id " + self._order_clause() + self._limit_clause(max)
+        if self.product:
+            qs = qs.filter(products=self.product)
+
+        qs = qs.annotate(num_visits=get_visits_subquery()).order_by(
+            F("num_visits").desc(nulls_last=True), "title"
         )
 
-        return query, params
+        if max:
+            qs = qs[:max]
 
-    def _order_clause(self):
-        # Put the most recently approved articles first, as those are the most
-        # recent to have transitioned onto this dashboard or to change which
-        # revision causes them to be on this dashboard.
-        return "ORDER BY visits DESC NULLS LAST, engdoc.title ASC"
+        return qs.values_list("slug", "title", "needs_change_comment", "num_visits")
 
-    def _format_row(self, row):
+    def row_to_dict(self, row):
         (slug, title, comment, visits) = row
         return dict(
             title=title,
@@ -1163,48 +1096,61 @@ class CannedResponsesReadout(Readout):
     def should_show_to(cls, request):
         return request.LANGUAGE_CODE in QuestionLocale.objects.locales_list()
 
-    def _query_and_params(self, max):
-        if self.product:
-            params = [
-                self.locale,
-                LAST_30_DAYS,
-                self.product.id,
-                CANNED_RESPONSES_CATEGORY,
-                settings.WIKI_DEFAULT_LANGUAGE,
-            ]
-            extra_joins = PRODUCT_FILTER
-        else:
-            params = [
-                self.locale,
-                LAST_30_DAYS,
-                CANNED_RESPONSES_CATEGORY,
-                settings.WIKI_DEFAULT_LANGUAGE,
-            ]
-            extra_joins = ""
+    def get_queryset(self, max=None):
+        qs = Document.objects.unrestricted(
+            self.user,
+            locale=settings.WIKI_DEFAULT_LANGUAGE,
+            is_archived=False,
+            parent__isnull=True,
+            category=CANNED_RESPONSES_CATEGORY,
+        ).exclude(html__startswith=REDIRECT_HTML)
 
-        query = (
-            "SELECT engdoc.slug, engdoc.title, "
-            "    transdoc.slug, transdoc.title, "
-            "    engvisits.visits, "
-            + MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE
-            + ", "
-            + NEEDS_REVIEW
-            + "FROM wiki_document engdoc "
-            "LEFT JOIN wiki_document transdoc ON "
-            "    transdoc.parent_id=engdoc.id "
-            "    AND transdoc.locale=%s "
-            "LEFT JOIN dashboards_wikidocumentvisits engvisits ON "
-            "    engdoc.id=engvisits.document_id "
-            "    AND engvisits.period=%s " + extra_joins + "WHERE engdoc.category = %s "
-            "    AND engdoc.locale = %s "
-            "    AND NOT engdoc.is_archived "
-            "ORDER BY engvisits.visits DESC NULLS LAST " + self._limit_clause(max)
+        if self.product:
+            qs = qs.filter(products=self.product)
+
+        transdoc_subquery = Document.objects.filter(
+            locale=self.locale,
+            parent=OuterRef("pk"),
         )
 
-        return query, params
+        qs = (
+            qs.annotate(
+                transdoc_slug=Subquery(transdoc_subquery.values("slug")),
+                transdoc_title=Subquery(transdoc_subquery.values("title")),
+                transdoc_current_revision_based_on_id=Subquery(
+                    transdoc_subquery.values("current_revision__based_on__id")
+                ),
+                needs_review=Exists(
+                    Revision.objects.filter(
+                        document__parent=OuterRef("pk"),
+                        document__locale=self.locale,
+                        reviewed__isnull=True,
+                    ).filter(
+                        Q(id__gt=F("document__current_revision__id"))
+                        | Q(document__current_revision__isnull=True),
+                    )
+                ),
+                num_visits=get_visits_subquery(),
+            )
+            .annotate(most_significant_change=MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY)
+            .order_by(F("num_visits").desc(nulls_last=True), Coalesce("transdoc_title", "title"))
+        )
 
-    def _format_row(self, row):
-        return _format_row_with_out_of_dateness(self.locale, *row)
+        if max:
+            qs = qs[:max]
+
+        return qs.values_list(
+            "slug",
+            "title",
+            "transdoc_slug",
+            "transdoc_title",
+            "num_visits",
+            "most_significant_change",
+            "needs_review",
+        )
+
+    def row_to_dict(self, row):
+        return row_to_dict_with_out_of_dateness(self.locale, *row)
 
 
 # L10n Dashboard tables that have their own whole-page views:

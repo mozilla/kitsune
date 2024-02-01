@@ -110,6 +110,7 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
     """
     visits = (
         WikiDocumentVisits.objects.filter(period=LAST_7_DAYS)
+        .filter(document__restrict_to_groups__isnull=True)
         .exclude(document__products__slug__in=settings.EXCLUDE_PRODUCT_SLUGS_FEATURED_ARTICLES)
         .exclude(document__is_archived=True)
         .order_by("-visits")
@@ -130,7 +131,7 @@ def get_featured_articles(product=None, locale=settings.WIKI_DEFAULT_LANGUAGE):
         visits = visits.prefetch_related(
             Prefetch(
                 "document__translations",
-                queryset=Document.objects.filter(
+                queryset=Document.objects.visible(
                     locale=locale, current_revision__is_approved=True, is_archived=False
                 ),
             )

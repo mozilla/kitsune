@@ -421,7 +421,7 @@ def question_details(
     extra_kwargs.update(ans_)
 
     products = Product.objects.with_question_forums(request)
-    topics = topics_for(product=question.product)
+    topics = topics_for(request.user, product=question.product)
 
     related_documents = question.related_documents
     related_questions = question.related_questions
@@ -526,7 +526,7 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
 
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
-        context["topics"] = topics_for(product, parent=None)
+        context["topics"] = topics_for(request.user, product, parent=None)
 
     elif step == 3:
         context["cancel_url"] = get_next_url(request) or (

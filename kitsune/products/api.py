@@ -63,8 +63,9 @@ class TopicSerializer(serializers.ModelSerializer):
         return TopicShortSerializer(subtopics, many=True).data
 
     def get_documents(self, obj):
+        user = getattr(self.context.get("request"), "user", None)
         locale = self.context.get("locale", settings.WIKI_DEFAULT_LANGUAGE)
-        docs = obj.documents(locale=locale)
+        docs = obj.documents(user, locale=locale)
         return DocumentShortSerializer(docs, many=True).data
 
 

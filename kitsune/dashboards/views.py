@@ -83,6 +83,7 @@ def contributors_overview(request):
         "dashboards/contributors_overview.html",
         {
             "overview_rows": kb_overview_rows(
+                user=request.user,
                 locale=request.LANGUAGE_CODE,
                 product=product,
                 mode=smart_int(request.GET.get("mode"), None),
@@ -151,6 +152,7 @@ def contributors(request):
         product=product,
         extra_data={
             "overview_rows": kb_overview_rows(
+                user=request.user,
                 locale=request.LANGUAGE_CODE,
                 product=product,
                 mode=smart_int(request.GET.get("mode"), None),
@@ -200,6 +202,7 @@ def contributors_overview_rows(request):
     product = _get_product(request)
 
     overview_rows = kb_overview_rows(
+        user=request.user,
         locale=request.LANGUAGE_CODE,
         product=product,
         mode=smart_int(request.GET.get("mode"), None),

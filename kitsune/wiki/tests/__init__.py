@@ -58,6 +58,16 @@ class DocumentFactory(factory.django.DjangoModelFactory):
             for t in extracted:
                 doc.tags.add(t)
 
+    @factory.post_generation
+    def restrict_to_groups(doc, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
+
+        if extracted is not None:
+            for p in extracted:
+                doc.restrict_to_groups.add(p)
+
 
 class TemplateDocumentFactory(DocumentFactory):
     category = TEMPLATES_CATEGORY

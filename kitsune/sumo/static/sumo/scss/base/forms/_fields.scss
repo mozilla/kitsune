@@ -28,9 +28,9 @@ fieldset {
 
 legend {
   margin: 0;
-  padding: 1em 0 0.5em; // margin was collapsing strangely here.
+  padding: 0 0 0.5em; // margin was collapsing strangely here.
   font-size: p.remify(24px);
-  font-weight: var(--global-weight-semibold);
+  font-weight: bold;
   color: var(--primary-heading-color);
 }
 
@@ -163,8 +163,11 @@ label {
         @include c.text-body-sm;
       }
     }
+  }
 
-
+  &.mzp-c-emphasis-box {
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 

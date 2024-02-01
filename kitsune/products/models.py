@@ -134,19 +134,19 @@ class Topic(ModelBase):
             path = [cur.slug] + path
         return path
 
-    def documents(self, **kwargs):
+    def documents(self, user=None, **kwargs):
         # Avoid circular imports
         from kitsune.wiki.models import Document
 
         query = {
+            "user": user,
             "topics": self,
             "products": self.product,
             "is_archived": False,
-            "current_revision__isnull": False,
             "category__in": settings.IA_DEFAULT_CATEGORIES,
         }
         query.update(kwargs)
-        return Document.objects.filter(**query)
+        return Document.objects.visible(**query)
 
     def get_absolute_url(self):
         if self.parent is None:

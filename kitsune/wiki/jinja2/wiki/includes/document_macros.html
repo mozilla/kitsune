@@ -464,7 +464,7 @@
     </ul>
   </nav>
 
-  {% set all_docs, all_fallback_docs = kb_documents_for(request.LANGUAGE_CODE, [topic], [product], current_document)%}
+  {% set all_docs, all_fallback_docs = kb_documents_for(request.user, request.LANGUAGE_CODE, [topic], [product], current_document)%}
 
   {% if all_fallback_docs %}
     {{ kb_subtopic_documents(request, settings, all_fallback_docs, True) }}
@@ -472,7 +472,7 @@
   {{ kb_subtopic_documents(request, settings, all_docs) }}
 
   {% for subtopic in subtopics %}
-    {% set documents, fallback_documents = kb_documents_for(request.LANGUAGE_CODE, [subtopic], [product], current_document=current_document)%}
+    {% set documents, fallback_documents = kb_documents_for(request.user, request.LANGUAGE_CODE, [subtopic], [product], current_document=current_document)%}
     {% if fallback_documents %}
       {{ kb_subtopic_documents(request, settings, fallback_docs, subtopic.slug, True) }}
     {% endif %}

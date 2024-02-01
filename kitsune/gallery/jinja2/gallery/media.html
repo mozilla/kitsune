@@ -79,7 +79,7 @@
 
       {% if media_type == 'image' %}
         <h2 class="sumo-page-subheading">{{ _('Articles') }}</h2>
-        {% set documents = media.documents %}
+        {% set documents = media.documents(request.user) %}
         <div class="documents">
           {% if documents %}
             <p>{{ _('The following articles include this image:') }}</p>

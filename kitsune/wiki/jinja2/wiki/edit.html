@@ -17,6 +17,11 @@
 
 {% block content %}
   <div class="user-messages">
+    {% if document.is_restricted %}
+      <div class="warning-box mzp-c-notification-bar mzp-t-warning">
+        {{ _('This document is restricted.') }}
+      </div>
+    {% endif %}
     {{ edit_messages(document, show_revision_warning) }}
     {{ document_lock_warning() }}
   </div>
