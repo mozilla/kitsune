@@ -6,7 +6,7 @@
 #id_restrict_to_groups {
   // Prevents flickering by hiding the un-selectized select
   // until selectize uses it to make a new one that's visible.
-  visibility: hidden;
+  display: none;
 }
 
 // These styles were pulled directly from the less files.

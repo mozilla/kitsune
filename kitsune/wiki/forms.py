@@ -141,9 +141,9 @@ class DocumentForm(forms.ModelForm):
     is_archived = forms.BooleanField(label=_lazy("Obsolete:"), required=False)
 
     restrict_to_groups = forms.ModelMultipleChoiceField(
-        label=_lazy("The document will be restricted to members of the selected group(s)."),
         required=False,
         queryset=Group.objects.order_by("name").all(),
+        label=_lazy("The document will be restricted to members of the selected group(s)."),
         help_text=_lazy("The document will be visible only to users in the selected group(s)."),
     )
 
