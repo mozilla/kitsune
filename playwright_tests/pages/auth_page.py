@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Page, Locator
 from playwright_tests.core.basepage import BasePage
 
 
@@ -78,3 +78,6 @@ class AuthPage(BasePage):
     def _is_continue_with_firefox_button_displayed(self) -> bool:
         super()._wait_for_selector(self.__continue_with_firefox_accounts_button)
         return super()._is_element_visible(self.__continue_with_firefox_accounts_button)
+
+    def _get_continue_with_firefox_button_locator(self) -> Locator:
+        return super()._get_element_locator(self.__continue_with_firefox_accounts_button)

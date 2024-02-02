@@ -82,7 +82,7 @@ def pytest_runtest_makereport(item):
                         'onclick="window.open(this.src)" align="right"/></div>' % file_name
                     )
 
-                extra.append(pytest_html.extras.html(html))
+                    extra.append(pytest_html.extras.html(html))
             report.extra = extra
     except Exception as e:
         print(e)

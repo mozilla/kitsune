@@ -132,16 +132,27 @@ jobs:
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
             poetry run pytest -m kbProductsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_products_page.html --capture=tee-sys
-      - name: Run Product Support Page Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-            poetry run pytest -m productSupportPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_product_support_page.html --capture=tee-sys
       - name: Run KB Article Creation And Access Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
             poetry run pytest -m kbArticleCreationAndAccess --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_creation_and_access.html --capture=tee-sys
+      - name: Run before kb thread tests setup (${{ env.BROWSER }})
+        id: kb-threads-setup
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+            poetry run pytest -m beforeThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_before_thread_tests_setup.html --capture=tee-sys
+      - name: Run KB article threads Tests  (${{ env.BROWSER }})
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success' && steps.kb-threads-setup.outcome == 'success'
+        run: |
+            poetry run pytest -m articleThreads --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_threads.html --capture=tee-sys
+      - name: Run KB article threads tear down (${{ env.BROWSER }})
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success' && steps.kb-threads-setup.outcome == 'success'
+        run: |
+            poetry run pytest -m afterThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_threads_tear_down.html --capture=tee-sys
       - name: Combine Reports
         working-directory: playwright_tests
         if: success() || failure()
