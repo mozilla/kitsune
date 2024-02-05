@@ -53,6 +53,7 @@ class WikiDocument(SumoDocument):
                 instance.is_archived,
                 instance.category
                 in [TEMPLATES_CATEGORY, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY],
+                instance.is_restricted,
             ]
         ):
             instance.es_discard_doc = "unindex_me"
