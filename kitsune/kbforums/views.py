@@ -22,6 +22,7 @@ from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, get_next_url, is_ratelimited
 from kitsune.users.models import Setting
+from kitsune.wiki.models import Document
 from kitsune.wiki.views import get_visible_document_or_404
 
 
@@ -433,7 +434,9 @@ def post_preview_async(request, document_slug):
 def locale_discussions(request):
     locale_name = LOCALES[request.LANGUAGE_CODE].native
     threads = Thread.objects.filter(
-        document__locale=request.LANGUAGE_CODE, document__allow_discussion=True
+        document__in=Document.objects.visible(
+            request.user, locale=request.LANGUAGE_CODE, allow_discussion=True
+        )
     )
     try:
         sort = int(request.GET.get("sort", 5))
