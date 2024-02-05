@@ -1,13 +1,17 @@
 from kitsune.kbforums.events import NewPostEvent, NewThreadEvent
 from kitsune.kbforums.models import Thread
-from kitsune.kbforums.tests import ThreadFactory
+from kitsune.kbforums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.tests import TestCase, get, post
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class ThreadTests(TestCase):
     """Test thread views."""
+
+    def tearDown(self):
+        self.client.logout()
+        super().tearDown()
 
     def test_watch_forum(self):
         """Watch then unwatch a forum."""
@@ -94,10 +98,51 @@ class ThreadTests(TestCase):
         check("wiki.discuss.new_thread")
         check("wiki.discuss.threads.feed")
 
+    def test_thread_visibility(self):
+        """Only show discussion threads for visible documents."""
+        group1 = GroupFactory(name="group1")
+        group2 = GroupFactory(name="group2")
+        user1 = UserFactory(groups=[group1, group2])
+        user2 = UserFactory()
+
+        doc1 = ApprovedRevisionFactory(document__allow_discussion=False).document
+        doc2 = ApprovedRevisionFactory(
+            document__allow_discussion=True, document__restrict_to_groups=[group1, group2]
+        ).document
+        doc3 = ApprovedRevisionFactory(document__allow_discussion=True).document
+        doc4 = ApprovedRevisionFactory(
+            document__allow_discussion=True, document__locale="de"
+        ).document
+
+        t1 = ThreadFactory(title="George", document=doc1)
+        PostFactory(thread=t1)
+        t2 = ThreadFactory(title="Ringo", document=doc2)
+        PostFactory(thread=t2)
+        t3 = ThreadFactory(title="McCartney", document=doc3)
+        PostFactory(thread=t3)
+        t4 = ThreadFactory(title="Lennon", document=doc4)
+        PostFactory(thread=t4)
+
+        self.client.login(username=user2.username, password="testpass")
+        response = get(self.client, "wiki.locale_discussions")
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn(t1.title, str(response.content))
+        self.assertNotIn(t2.title, str(response.content))
+        self.assertIn(t3.title, str(response.content))
+        self.assertNotIn(t4.title, str(response.content))
+
+        self.client.login(username=user1.username, password="testpass")
+        response = get(self.client, "wiki.locale_discussions")
+        self.assertEqual(200, response.status_code)
+        self.assertNotIn(t1.title, str(response.content))
+        self.assertIn(t2.title, str(response.content))
+        self.assertIn(t3.title, str(response.content))
+        self.assertNotIn(t4.title, str(response.content))
+
 
 class ThreadPermissionsTests(TestCase):
     def setUp(self):
-        super(ThreadPermissionsTests, self).setUp()
+        super().setUp()
         self.doc = DocumentFactory()
         self.u = UserFactory()
         self.thread = ThreadFactory(document=self.doc, creator=self.u)
@@ -108,7 +153,7 @@ class ThreadPermissionsTests(TestCase):
 
     def tearDown(self):
         self.client.logout()
-        super(ThreadPermissionsTests, self).tearDown()
+        super().tearDown()
 
     def test_edit_thread_403(self):
         """Editing a thread without permissions returns 403."""
