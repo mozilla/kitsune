@@ -1133,6 +1133,9 @@ class TestPostedQuestions(TestUtilities):
             super().aaq_question_test_data['valid_firefox_question']['custom_tag']
         )
 
+        # Adding a custom wait to avoid test flakiness.
+        self.wait_for_given_timeout(1000)
+
         self.logger.info("Verifying that the tag was removed")
         expect(
             self.sumo_pages.question_page._get_a_certain_tag(
