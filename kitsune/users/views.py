@@ -58,7 +58,7 @@ from kitsune.users.utils import (
     deactivate_user,
     get_oidc_fxa_setting,
 )
-from kitsune.wiki.models import user_documents, user_num_documents, user_redirects
+from kitsune.wiki.models import user_documents, user_redirects
 
 
 @logout_required
@@ -138,7 +138,7 @@ def profile(request, username):
             "num_questions": num_questions(user_profile.user),
             "num_answers": num_answers(user_profile.user),
             "num_solutions": num_solutions(user_profile.user),
-            "num_documents": user_num_documents(user_profile.user),
+            "num_documents": user_documents(user_profile.user, viewer=request.user).count(),
         },
     )
 
@@ -236,8 +236,8 @@ def documents_contributed(request, username):
         "users/documents_contributed.html",
         {
             "profile": user_profile,
-            "documents": user_documents(user_profile.user),
-            "redirects": user_redirects(user_profile.user),
+            "documents": user_documents(user_profile.user, viewer=request.user),
+            "redirects": user_redirects(user_profile.user, viewer=request.user),
         },
     )
 
