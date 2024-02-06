@@ -12,7 +12,7 @@ from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.tests import SkipTest, TestCase, template_used
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import CATEGORIES, TEMPLATE_TITLE_PREFIX, TEMPLATES_CATEGORY
 from kitsune.wiki.models import (
     Document,
@@ -1507,13 +1507,28 @@ class JsonViewTests(TestCase):
 
 class WhatLinksWhereTests(TestCase):
     def test_what_links_here(self):
+        group = GroupFactory()
+        user = UserFactory(groups=[group])
         d1 = ApprovedRevisionFactory(content="", document__title="D1").document
-        ApprovedRevisionFactory(content="[[D1]]", document__title="D2").document
+        ApprovedRevisionFactory(content="[[D1]]", document__title="D2")
+        ApprovedRevisionFactory(
+            content="[[D1]]",
+            document__title="D3",
+            document__restrict_to_groups=[group],
+        )
 
         url = reverse("wiki.what_links_here", args=[d1.slug])
         resp = self.client.get(url, follow=True)
         self.assertEqual(200, resp.status_code)
         assert b"D2" in resp.content
+        assert b"D3" not in resp.content
+
+        self.client.login(username=user.username, password="testpass")
+        resp = self.client.get(url, follow=True)
+        self.client.logout()
+        self.assertEqual(200, resp.status_code)
+        assert b"D2" in resp.content
+        assert b"D3" in resp.content
 
     def test_what_links_here_locale_filtering(self):
         d1 = DocumentFactory(title="D1", locale="de")
