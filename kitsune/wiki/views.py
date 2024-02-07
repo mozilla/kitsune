@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Q
+from django.db.models import Count, Exists, OuterRef, Q
 from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
@@ -1663,7 +1663,11 @@ def what_links_here(request, document_slug):
         return HttpResponseRedirect(url)
 
     links = {}
-    links_to = doc.links_to().select_related("linked_from")
+    links_to = (
+        doc.links_to()
+        .filter(Exists(Document.objects.visible(request.user, id=OuterRef("linked_from"))))
+        .select_related("linked_from")
+    )
     for link_to in links_to:
         if doc.locale == link_to.linked_from.locale:
             if link_to.kind not in links:
