@@ -14,7 +14,7 @@ class ContactSupportMessages:
         "Mozilla VPN": "VPN for Windows 10, Android and iOS devices",
         "Firefox Private Network": "Browse securely on public Wi-Fi",
         "Firefox Relay": "Service that lets you create aliases to hide your real email",
-        "Monitor": "Stay informed and take back control of your exposed data",
+        "Mozilla Monitor": "Stay informed and take back control of your exposed data",
         "Pocket": "The web’s most intriguing articles",
         "Hubs": "Virtual 3D meeting spaces for collaborating with friends, family, "
                 "and colleagues on your browser or VR headset",
