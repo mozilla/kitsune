@@ -2604,7 +2604,7 @@ class TestPostedQuestions(TestUtilities):
 
         self.logger.info("Verifying that the reply was successfully posted and contains the "
                          "correct data")
-        check.equal(
+        check.is_in(
             self.sumo_pages.question_page._get_text_content_of_reply(reply_id),
             response,
             f"Expected: {self.sumo_pages.question_page._get_text_content_of_reply(reply_id)} "

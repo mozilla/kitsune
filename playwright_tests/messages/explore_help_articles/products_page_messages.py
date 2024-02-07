@@ -7,7 +7,8 @@ class ProductsPageMessages:
         "Mozilla VPN": "VPN for Windows 10, Mac, Linux, Android, and iOS devices",
         "Firefox Relay": "Service that lets you create email masks to hide your real email "
                          "address",
-        "Monitor": "Find out if your private information has been exposed in a known data breach.",
+        "Mozilla Monitor": "Find out if your private information has been exposed in a known "
+                           "data breach.",
         "Pocket": "Discover and save stories for later.",
         "MDN Plus": "MDN Plus provides a custom user experience for MDN supporters.",
         "Hubs": "Collaborate and engage with each other through spatialized audio and with media "
