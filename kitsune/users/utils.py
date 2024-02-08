@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.sumo import email_utils
+from kitsune.tidings.models import Watch
 from kitsune.users.models import ContributionAreas, Deactivation, Setting
 
 log = logging.getLogger("k.users")
@@ -94,6 +95,7 @@ def deactivate_user(user, moderator):
     user.save()
     # Clear user settings to remove incoming notifications
     Setting.objects.filter(user=user).delete()
+    Watch.objects.filter(user=user).delete()
 
     deactivation = Deactivation(user=user, moderator=moderator)
     deactivation.save()
