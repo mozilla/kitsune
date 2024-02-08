@@ -1050,7 +1050,7 @@ if config("SENTRY_DSN", None):
         server_name=PLATFORM_NAME,
         environment=config("SENTRY_ENVIRONMENT", default=""),
         before_send=filter_exceptions,
-        sample_rate=config("SENTRY_SAMPLE_RATE", 1.0),
+        sample_rate=config("SENTRY_SAMPLE_RATE", 0.25),
     )
 
 # Dead Man Snitches
