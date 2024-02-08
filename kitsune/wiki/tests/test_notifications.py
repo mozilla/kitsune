@@ -4,19 +4,24 @@ from django.core import mail
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase, post
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import UserFactory, add_permission
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE,
     MEDIUM_SIGNIFICANCE,
     SIGNIFICANCES,
     TYPO_SIGNIFICANCE,
 )
-from kitsune.wiki.events import ApproveRevisionInLocaleEvent, ReadyRevisionEvent
+from kitsune.wiki.events import (
+    ApproveRevisionInLocaleEvent,
+    ReadyRevisionEvent,
+    ReviewableRevisionInLocaleEvent,
+)
 from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
     RevisionFactory,
+    new_document_data,
 )
 
 
@@ -44,9 +49,10 @@ class ReviewTests(TestCase):
 
     def setUp(self):
         """Have a user watch for revision approval. Log in."""
-        self.approved_watcher = UserFactory(email="approved@example.com")
+        self.group = GroupFactory()
+        self.approved_watcher = UserFactory(email="approved@example.com", groups=[self.group])
         ApproveRevisionInLocaleEvent.notify(self.approved_watcher, locale="en-US")
-        approver = UserFactory()
+        approver = UserFactory(groups=[self.group])
         add_permission(approver, Revision, "review_revision")
         add_permission(approver, Revision, "mark_ready_for_l10n")
         self.client.login(username=approver.username, password="testpass")
@@ -98,6 +104,42 @@ class ReviewTests(TestCase):
         _assert_ready_mail(mail.outbox[0])
         _assert_approved_mail(mail.outbox[1])
         _assert_creator_mail(mail.outbox[2])
+
+    def test_when_restricted(self):
+        """
+        Test notifications for ReadyRevisionEvent and ApproveRevisionInLocaleEvent
+        when the revision is for a restricted document.
+        """
+        rw = _set_up_ready_watcher()
+        creator = UserFactory(is_staff=True)
+        self._review_revision(
+            is_ready=True,
+            creator=creator,
+            significance=MEDIUM_SIGNIFICANCE,
+            document__restrict_to_groups=[self.group],
+        )
+        # 1 mail to the approved watcher, 1 to the creator, and 1 to the reviewer, but
+        # none to the ready watcher, since that user is not a member of self.group.
+        self.assertEqual(3, len(mail.outbox))
+        _assert_approved_mail(mail.outbox[0])
+        _assert_creator_mail(mail.outbox[1])
+
+        mail.outbox = []
+        other_group = GroupFactory()
+        rw.groups.add(other_group)
+        reviewer = UserFactory(is_superuser=True)
+        self.client.login(username=reviewer.username, password="testpass")
+        self._review_revision(
+            is_ready=True,
+            creator=creator,
+            significance=MEDIUM_SIGNIFICANCE,
+            document__restrict_to_groups=[other_group],
+        )
+        # 1 mail to the ready watcher, 1 to the creator, and 1 to the reviewer, but none
+        # to the approved watcher, since that user is not a member of the "other" group.
+        self.assertEqual(3, len(mail.outbox))
+        _assert_ready_mail(mail.outbox[0])
+        _assert_creator_mail(mail.outbox[1])
 
     def test_product_specific_ready(self):
         """Verify product-specific ready for review notifications."""
@@ -280,3 +322,46 @@ class ReadyForL10nTests(TestCase):
         ReadyRevisionEvent.notify(UserFactory(), product="firefox")
         self._mark_as_ready_revision(doc=doc)
         self.assertEqual(6, len(mail.outbox))
+
+
+class ReviewableRevisionInLocaleEventTests(TestCase):
+    """Tests notifications when a revision is created."""
+
+    def setUp(self):
+        self.group1 = GroupFactory()
+        self.group2 = GroupFactory()
+        self.group3 = GroupFactory()
+        self.watcher1 = UserFactory(email="ringo@example.com", groups=[self.group1, self.group2])
+        self.watcher2 = UserFactory(email="mccartney@example.com", groups=[self.group3])
+        add_permission(self.watcher1, Revision, "review_revision")
+        add_permission(self.watcher2, Revision, "review_revision")
+        ReviewableRevisionInLocaleEvent.notify(self.watcher1, locale="en-US")
+        ReviewableRevisionInLocaleEvent.notify(self.watcher2, locale="en-US")
+        creator = UserFactory(is_staff=True)
+        self.client.login(username=creator.username, password="testpass")
+
+    def test_when_restricted(self):
+        """
+        Test notifications for ReviewableRevisionInLocaleEvent when creating
+        a revision for a restricted document.
+        """
+        data = new_document_data()
+        data["restrict_to_groups"] = [self.group1.id, self.group2.id]
+        response = self.client.post(reverse("wiki.new_document"), data)
+        self.assertEqual(302, response.status_code)
+
+        self.assertEqual(1, len(mail.outbox))
+        self.assertIn(f"{data['title']} is ready for review", mail.outbox[0].subject)
+        self.assertIn(self.watcher1.email, mail.outbox[0].to)
+
+        mail.outbox = []
+
+        data["title"] = "Another Test Article"
+        data["slug"] = "another-test-article"
+        data["restrict_to_groups"] = [self.group3.id]
+        response = self.client.post(reverse("wiki.new_document"), data)
+        self.assertEqual(302, response.status_code)
+
+        self.assertEqual(1, len(mail.outbox))
+        self.assertIn(f"{data['title']} is ready for review", mail.outbox[0].subject)
+        self.assertIn(self.watcher2.email, mail.outbox[0].to)

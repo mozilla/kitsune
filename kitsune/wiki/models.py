@@ -12,8 +12,9 @@ from django.db import IntegrityError, models
 from django.db.models import Q
 from django.db.models.functions import Now
 from django.urls import is_valid_path
-from django.utils.encoding import smart_bytes
 from django.utils import translation
+from django.utils.encoding import smart_bytes
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _lazy, gettext as _
 from pyquery import PyQuery
 
@@ -742,7 +743,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             self.parent.slug if self.parent else self.slug
         ) in settings.MOZILLA_ACCOUNT_ARTICLES
 
-    @property
+    @cached_property
     def is_restricted(self):
         """Is this document restricted in terms of visibility?"""
         if self.parent:
@@ -751,19 +752,28 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         return self.restrict_to_groups.exists()
 
     def is_unrestricted_for(self, user):
-        """Is the given user unrestricted in their visibility of this document?"""
+        """
+        Is the given user unrestricted in their visibility of this document?
+        """
         if self.parent:
             # Translations follow their parent's restrictions.
             return self.parent.is_unrestricted_for(user)
 
-        return bool(
+        return (
             user.is_staff
             or user.is_superuser
             or (not self.is_restricted)
-            or (
-                user.is_authenticated
-                and (set(self.restrict_to_groups.all()) & set(user.groups.all()))
-            )
+            or (user.id in self.restrict_to_user_ids)
+        )
+
+    @cached_property
+    def restrict_to_user_ids(self):
+        """
+        Returns a set of user ids comprising all members of the groups specified in
+        "restrict_to_groups".
+        """
+        return set(
+            self.restrict_to_groups.filter(user__isnull=False).values_list("user", flat=True)
         )
 
 
