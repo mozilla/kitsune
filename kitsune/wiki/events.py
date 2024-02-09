@@ -70,6 +70,16 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
     }
 
 
+def filter_by_unrestricted(document, users_and_watches):
+    """
+    Given a document and an iterable of users and their watches, returns
+    a generator yielding only the users that are allowed to view the document.
+    """
+    for user, watches in users_and_watches:
+        if document.is_unrestricted_for(user):
+            yield (user, watches)
+
+
 class EditDocumentEvent(InstanceEvent):
     """Event fired when a certain document is edited"""
 
@@ -79,6 +89,10 @@ class EditDocumentEvent(InstanceEvent):
     def __init__(self, revision):
         super(EditDocumentEvent, self).__init__(revision.document)
         self.revision = revision
+
+    def _users_watching(self, **kwargs):
+        users_and_watches = super()._users_watching(**kwargs)
+        return filter_by_unrestricted(self.instance, users_and_watches)
 
     def _mails(self, users_and_watches):
         revision = self.revision
@@ -118,15 +132,15 @@ class EditDocumentEvent(InstanceEvent):
         }
 
 
-class _RevisionConstructor(object):
+class _RevisionConstructor:
     """An event that receives a revision when constructed"""
 
     def __init__(self, revision):
-        super(_RevisionConstructor, self).__init__()
+        super().__init__()
         self.revision = revision
 
 
-class _BaseProductFilter(object):
+class _BaseProductFilter:
     """A base class for product filters.
 
     It adds a _filter_by_product method that filters down a list of
@@ -163,8 +177,10 @@ class _BaseProductFilter(object):
 
 
 class _ProductFilter(_BaseProductFilter):
-    """An event that receives a revision when constructed and filters according
-    to that revision's document's products"""
+    """
+    An event filter for events constructed with a revision, that filters
+    by restricted visibility and the products of the revision's document.
+    """
 
     filters = {"product"}
 
@@ -173,16 +189,25 @@ class _ProductFilter(_BaseProductFilter):
 
     def _users_watching(self, **kwargs):
         # Get the users watching any or all products.
-        users = list(self._users_watching_by_filter(**kwargs))
+        users_and_watches = self._users_watching_by_filter(**kwargs)
+
+        # Weed out restricted users.
+        users_and_watches = filter_by_unrestricted(
+            self.revision.document,
+            users_and_watches,
+        )
 
         # Weed out the users that have a product filter that isn't one of the
         # document's products.
-        return self._filter_by_product(users)
+        return self._filter_by_product(users_and_watches)
 
 
 class _LocaleAndProductFilter(_BaseProductFilter):
-    """An event that receives a revision when constructed and filters according
-    to that revision's document's locale and products."""
+    """
+    An event filter for events constructed with a revision, that filters
+    by restricted visibility, the locale, and the products of the revision's
+    document.
+    """
 
     filters = {"locale", "product"}
 
@@ -193,11 +218,17 @@ class _LocaleAndProductFilter(_BaseProductFilter):
         locale = self.revision.document.locale
 
         # Get the users just subscribed to the locale (any and all products).
-        users = list(self._users_watching_by_filter(locale=locale, **kwargs))
+        users_and_watches = self._users_watching_by_filter(locale=locale, **kwargs)
+
+        # Weed out restricted users.
+        users_and_watches = filter_by_unrestricted(
+            self.revision.document,
+            users_and_watches,
+        )
 
         # Weed out the users that have a product filter that isn't one of the
         # document's products.
-        return self._filter_by_product(users)
+        return self._filter_by_product(users_and_watches)
 
 
 class ReviewableRevisionInLocaleEvent(_RevisionConstructor, _LocaleAndProductFilter, Event):
