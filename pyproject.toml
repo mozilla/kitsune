@@ -88,6 +88,7 @@ psycopg2 = "^2.9.9"
 mkdocs = "^1.5.3"
 mkdocs-material = "^9.5.3"
 dockerflow = "^2022.8.0"
+django-htmx = "^1.17.2"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.11"

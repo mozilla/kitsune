@@ -9,5 +9,7 @@
 
 @use './device-migration-wizard';
 
+@use './htmx';
+
 @import "../../../../../node_modules/codemirror/lib/codemirror";
 @import "../../../../../node_modules/codemirror/addon/hint/show-hint";

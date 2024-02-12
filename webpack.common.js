@@ -7,6 +7,7 @@ module.exports = {
   mode: "development",
   resolve: {
     alias: {
+      "htmx.org": "htmx.org/dist/htmx",
       selectize: "@selectize/selectize/dist",
       protocol: "@mozilla-protocol/core/protocol",
       sumo: path.resolve(__dirname, "kitsune/sumo/static/sumo"),

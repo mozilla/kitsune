@@ -1,6 +1,6 @@
 <div id="unhelpful-survey" class="document-vote elevation-01">
     <span class="close-button"></span>
-    <form action="{{ url('wiki.unhelpful_survey') }}" method="post" data-required="unhelpful-reason">
+    <form hx-post="{{ url('wiki.unhelpful_survey') }}" data-required="unhelpful-reason" hx-target="closest div.document-vote" hx-swap="outerHTML" hx-sync="this:drop">
         {% csrf_token %}
         <input type="hidden" name="vote_id" value="{{ vote_id }}" />
         <h3 class="sorry sumo-card-heading text-center">{{ _('Sorry to hear that, please tell us why?') }}<br /><span disabled class="helpful-button">👎</span></h3>
@@ -13,7 +13,7 @@
         </ul>
         <textarea name="comment" placeholder="{{ _('Tell us more.') }}"></textarea>
         <p class="character-counter">
-          <span id="remaining-characters">600</span> {{_('characters remaining.') }}
+          <span id="remaining-characters">600</span> {{ _('characters remaining.') }}
         </p>
         <input type="hidden" name="button" value="todo-delete-me" />
         <p class="disabled-reason error-text">
@@ -22,6 +22,5 @@
         <div class="sumo-button-wrap align-end">
           <button class="sumo-button button-sm primary-button" type="submit" data-type="submit">{{ _('Submit') }}</button>
         </div>
-
     </form>
 </div>

@@ -327,20 +327,17 @@
 {%- endmacro %}
 
 {% macro vote_form(document, source=None) -%}
-  {% if not header %}
-    {% set header = _('Was this article helpful?') %}
-  {% endif %}
   {% if document.allows_vote(request) %}
     <div class="document-vote elevation-01 text-center">
-      <form class="document-vote--form helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
-          {% csrf_token %}
-          <h4 class="document-vote--heading">{{ header }}</h4>
+      <form class="document-vote--form helpful" hx-post="{{ url('wiki.document_vote', document_slug=document.slug) }}" hx-target="closest div.document-vote" hx-swap="outerHTML" hx-sync="this:drop">
+          <div hx-trigger="load" hx-get="{{ url('csrftoken') }}" hx-target="this" hx-swap="outerHTML"></div>
+          <h4 class="document-vote--heading">{{ _('Was this article helpful?') }}</h4>
           <div class="document-vote--buttons">
             <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
             {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
             <button type="submit" class="btn helpful-button" name="helpful"><span class="hidden-text">{{ _('Yes') }}</span>👍</button>
             <button type="submit" class="btn not-helpful-button" name="not-helpful"><span class="hidden-text">{{ _('No') }}</span>👎</button>
-            <img class="wait" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
+            <img class="wait htmx-indicator" src="{{ webpack_static('sumo/img/spinner.gif') }}" alt="{{ _('Please wait...') }}" />
           </div>
       </form>
     </div>

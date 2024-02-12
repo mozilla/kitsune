@@ -163,7 +163,8 @@ function initAutoSubmitSelects() {
 function disableFormsOnSubmit() {
   $('form').on("submit", function(ev) {
     var $this = $(this);
-    if ($this.attr('method').toLowerCase() === 'post') {
+    var method = $this.attr('method');
+    if (method && (method.toLowerCase() === 'post')) {
       if ($this.data('disabled')) {
         ev.preventDefault();
       } else {

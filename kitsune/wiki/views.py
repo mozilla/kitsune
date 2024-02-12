@@ -16,11 +16,11 @@ from django.db.models.functions import Now, TruncDate
 from django.forms.utils import ErrorList
 from django.http import Http404, HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy as _lazy
 from django.utils.translation.trans_real import parse_accept_lang_header
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from django_htmx.http import trigger_client_event
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -1205,6 +1205,9 @@ def json_view(request):
 @ratelimit("document-vote", "10/d")
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
+    if not request.htmx:
+        return HttpResponseBadRequest()
+
     if "revision_id" not in request.POST:
         return HttpResponseBadRequest()
 
@@ -1214,7 +1217,7 @@ def helpful_vote(request, document_slug):
         # I don't think it makes sense to vote for an unapproved revision.
         raise PermissionDenied
 
-    survey = None
+    vote_recorded = None
 
     if revision.document.category == TEMPLATES_CATEGORY:
         return HttpResponseBadRequest()
@@ -1240,12 +1243,7 @@ def helpful_vote(request, document_slug):
                 vote.anonymous_id = request.anonymous.anonymous_id
 
             vote.save()
-
-            # Send a survey if flag is enabled and vote wasn't helpful.
-            if "helpful" not in request.POST:
-                survey = render_to_string(
-                    "wiki/includes/unhelpful_survey.html", {"vote_id": vote.id}
-                )
+            vote_recorded = vote
 
             # Save vote metadata: referrer and search query (if available)
             for name in ["referrer", "query", "source"]:
@@ -1255,19 +1253,27 @@ def helpful_vote(request, document_slug):
     else:
         message = _("You already voted on this Article.")
 
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        r = {"message": message}
-        if survey:
-            r.update(survey=survey)
+    if vote_recorded and not vote_recorded.helpful:
+        response = render(
+            request, "wiki/document_vote_survey.html", dict(vote_id=vote_recorded.id)
+        )
+    else:
+        response = render(request, "wiki/document_vote_message.html", dict(message=message))
 
-        return HttpResponse(json.dumps(r))
+    if vote_recorded:
+        event_details = dict(source=request.POST.get("source"))
+        event_details["helpful" if vote_recorded.helpful else "not-helpful"] = True
+        response = trigger_client_event(response, "vote", params=event_details, after="swap")
 
-    return HttpResponseRedirect(revision.document.get_absolute_url())
+    return response
 
 
 @require_POST
 def unhelpful_survey(request):
     """Ajax only view: Unhelpful vote survey processing."""
+    if not request.htmx:
+        return HttpResponseBadRequest()
+
     vote = get_object_or_404(HelpfulVote, id=smart_int(request.POST.get("vote_id")))
 
     # Only save the survey if it was for a not helpful vote and a survey
@@ -1281,7 +1287,9 @@ def unhelpful_survey(request):
         # Save the survey in JSON format, taking care not to exceed 1000 chars.
         vote.add_metadata("survey", truncated_json_dumps(survey, 1000, "comment"))
 
-    return HttpResponse(json.dumps({"message": _("Thanks for making us better!")}))
+    return render(
+        request, "wiki/document_vote_message.html", dict(message=_("Thanks for making us better!"))
+    )
 
 
 @require_GET

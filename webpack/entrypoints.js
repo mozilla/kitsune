@@ -1,6 +1,7 @@
 const entrypoints = {
   screen: ["sumo/scss/screen.scss"],
   common: [
+    "sumo/js/htmx.js",
     "sumo/js/i18n.js",
     "sumo/js/kbox.js",
     "sumo/js/main.js",

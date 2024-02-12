@@ -40,6 +40,7 @@
     "codemirror": "^5.65.11",
     "d3": "^3.5.17",
     "graphql": "^16.8.1",
+    "htmx.org": "^1.9.10",
     "jquery": "^3.6.3",
     "jquery-ui": "1.13.2",
     "nunjucks": "^3.2.4",

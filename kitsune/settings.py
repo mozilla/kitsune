@@ -473,6 +473,7 @@ MIDDLEWARE: tuple[str, ...] = (
     "django.middleware.csrf.CsrfViewMiddleware",
     "kitsune.sumo.middleware.SetRemoteAddrFromForwardedFor",
     "kitsune.sumo.middleware.EnforceHostIPMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
     # VaryNoCacheMiddleware must be above LocaleMiddleware
     # so that it can see the response has a vary on accept-language.
     "kitsune.sumo.middleware.VaryNoCacheMiddleware",
@@ -683,6 +684,7 @@ INSTALLED_APPS: tuple[str, ...] = (
     # are going to be generating activities". Putting it at the end is the safest.
     "actstream",
     "django_user_agents",
+    "django_htmx",
     # Last so we can override admin templates.
     "django.contrib.admin",
 )

@@ -1,5 +1,4 @@
 import "sumo/js/libs/jquery.lazyload";
-import AjaxVote from "sumo/js/ajaxvote";
 import {
   getQueryParamsAsDict,
   getReferrer,
@@ -9,14 +8,7 @@ import ShowFor from "sumo/js/showfor";
 
 new ShowFor();
 
-addReferrerAndQueryToVoteForm();
 determineLazyLoad();
-
-new AjaxVote(".document-vote form", {
-  positionMessage: false,
-  replaceFormWithMessage: true,
-  removeForm: true,
-});
 
 $(window).on("load", function() {
     // Wait for all content (including images) to load
@@ -30,7 +22,7 @@ $(window).on("load", function() {
 );
 
 // For this singular document, we are going to load
-// all images without lazy loading 
+// all images without lazy loading
 // TODO: We need a fix for the whole KB that won't
 // break the lazy loading.
 function determineLazyLoad() {
@@ -40,14 +32,4 @@ function determineLazyLoad() {
   else {
     $("img.lazy").lazyload();
   }
-};
-
-function addReferrerAndQueryToVoteForm() {
-  // Add the source/referrer and query terms to the helpful vote form
-  var urlParams = getQueryParamsAsDict(),
-    referrer = getReferrer(urlParams),
-    query = getSearchQuery(urlParams, referrer);
-  $(".document-vote form")
-    .append($('<input type="hidden" name="referrer"/>').attr("value", referrer))
-    .append($('<input type="hidden" name="query"/>').attr("value", query));
 };
