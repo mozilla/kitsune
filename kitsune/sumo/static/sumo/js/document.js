@@ -18,6 +18,19 @@ new AjaxVote(".document-vote form", {
   removeForm: true,
 });
 
+// Once the DOM is ready, dynamically load the CSRF token for the voting
+// form. This allows us to cache articles without caching the CSRF token.
+$(function() {
+    let $placeholders = $("form > div.csrftoken-placeholder");
+    if ($placeholders) {
+      $.get("/csrftoken").done(function(html) {
+        $placeholders.replaceWith(html);
+      }).fail(function(err) {
+        console.error(err);
+      });
+    }
+});
+
 $(window).on("load", function() {
     // Wait for all content (including images) to load
     var hash = window.location.hash;
@@ -30,7 +43,7 @@ $(window).on("load", function() {
 );
 
 // For this singular document, we are going to load
-// all images without lazy loading 
+// all images without lazy loading
 // TODO: We need a fix for the whole KB that won't
 // break the lazy loading.
 function determineLazyLoad() {

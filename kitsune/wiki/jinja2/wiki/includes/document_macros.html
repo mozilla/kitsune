@@ -333,7 +333,7 @@
   {% if document.allows_vote(request) %}
     <div class="document-vote elevation-01 text-center">
       <form class="document-vote--form helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
-          {% csrf_token %}
+          <div class="csrftoken-placeholder"></div>
           <h4 class="document-vote--heading">{{ header }}</h4>
           <div class="document-vote--buttons">
             <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />

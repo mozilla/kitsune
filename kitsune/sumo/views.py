@@ -9,6 +9,7 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_GET
 
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.decorators import cors_enabled
@@ -24,6 +25,12 @@ def locales(request):
     template = "sumo/locales.html"
 
     return render(request, template, dict(next_url=get_next_url(request) or reverse("home")))
+
+
+@never_cache
+@require_GET
+def csrftoken(request):
+    return render(request, "sumo/csrftoken_for_form.html")
 
 
 def geoip_suggestion(request):
