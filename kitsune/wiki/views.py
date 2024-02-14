@@ -1244,7 +1244,7 @@ def helpful_vote(request, document_slug):
             # Send a survey if flag is enabled and vote wasn't helpful.
             if "helpful" not in request.POST:
                 survey = render_to_string(
-                    "wiki/includes/unhelpful_survey.html", {"vote_id": vote.id}
+                    "wiki/includes/unhelpful_survey.html", {"vote_id": vote.id}, request
                 )
 
             # Save vote metadata: referrer and search query (if available)
