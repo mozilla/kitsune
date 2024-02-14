@@ -18,17 +18,34 @@ new AjaxVote(".document-vote form", {
   removeForm: true,
 });
 
-// Once the DOM is ready, dynamically load the CSRF token for the voting
-// form. This allows us to cache articles without caching the CSRF token.
-$(function() {
-    let $placeholders = $("form > div.csrftoken-placeholder");
-    if ($placeholders) {
-      $.get("/csrftoken").done(function(html) {
-        $placeholders.replaceWith(html);
-      }).fail(function(err) {
-        console.error(err);
+// The "DOMContentLoaded" event is guaranteed not to have been
+// called by the time the following code is run, because it always
+// waits until all deferred scripts have been loaded, and the code
+// in this file is always bundled into a script that is deferred.
+document.addEventListener("DOMContentLoaded", async () => {
+  // Once the DOM is ready, replace the value of any hidden form input
+  // elements holding a CSRF token with a dynamically fetched token.
+  // We do this because article pages are cached, so the CSRF token
+  // values delivered on page load are typically invalid. Note that
+  // the response from the fetch also sets the "csrftoken" cookie, if
+  // it hasn't already been set, or if it has, resets its expiry date.
+  const matches = document.querySelectorAll(
+    'form > input[name="csrfmiddlewaretoken"]'
+  );
+  if (matches.length > 0) {
+    try {
+      const response = await fetch("/csrftoken");
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      const data = await response.json();
+      matches.forEach((element) => {
+        element.setAttribute("value", data.csrfToken)
       });
+    } catch (err) {
+      console.error(err);
     }
+  }
 });
 
 $(window).on("load", function() {

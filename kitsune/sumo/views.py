@@ -4,7 +4,13 @@ import socket
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
+from django.http import (
+    HttpResponse,
+    HttpResponsePermanentRedirect,
+    HttpResponseRedirect,
+    JsonResponse,
+)
+from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.utils import translation
 from django.utils.translation import gettext as _
@@ -30,7 +36,7 @@ def locales(request):
 @never_cache
 @require_GET
 def csrftoken(request):
-    return render(request, "sumo/csrftoken_for_form.html")
+    return JsonResponse({"csrfToken": get_token(request)})
 
 
 def geoip_suggestion(request):
