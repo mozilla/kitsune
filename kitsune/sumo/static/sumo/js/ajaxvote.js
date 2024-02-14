@@ -73,7 +73,7 @@ export default function AjaxVote(form, options) {
             },
             error: function() {
               var msg = gettext('There was an error submitting your vote.');
-              self.showMessage(msg, $btn);
+              self.showMessage(msg, $btn, $form);
               $btns.prop("disabled", false);
               $form.removeClass('busy');
             }
