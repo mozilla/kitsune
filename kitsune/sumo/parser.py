@@ -61,53 +61,62 @@ def wiki_to_html(
     )
 
 
-def get_object_fallback(cls, title, locale, default=None, **kwargs):
-    """Return an instance of cls matching title and locale, or fall
-    back to the default locale.
-
-    When falling back to the default locale, follow any wiki redirects
-    internally.
-
-    If the fallback fails, the return value is `default`.
-
-    You may pass in additional kwargs which go straight to the query.
-
+def get_object_fallback(cls, title, locale, default=None, match_case_insensitive=True, **kwargs):
     """
+    Return an instance of cls matching title, locale, and any additional keyword arguments, and
+    also try the default locale if not found in the requested locale. If "match_case_insensitive"
+    is specified, also attempt a case-insensitive match of the title in both the requested and
+    default locales.
+
+    When falling back to the default locale, follow any wiki redirects internally.
+
+    If the fallback fails, return the provided "default".
+    """
+
+    def get(locale):
+        try:
+            # Always try a case-sensitive match of the title first, so that most
+            # of the time, we're taking advantage of the DB index on the title.
+            return cls.objects.get(title=title, locale=locale, **kwargs)
+        except cls.DoesNotExist:
+            if not match_case_insensitive:
+                raise
+            # We only run the much more expensive case-insensitive match if the
+            # case-sensitive match failed.
+            return cls.objects.get(title__iexact=title, locale=locale, **kwargs)
+
     try:
-        return cls.objects.get(title=title, locale=locale, **kwargs)
-    except (cls.DoesNotExist, IOError):
+        return get(locale)
+    except cls.DoesNotExist:
         pass
 
     # Fallback
     try:
-        default_lang_doc = cls.objects.get(
-            title=title, locale=settings.WIKI_DEFAULT_LANGUAGE, **kwargs
-        )
+        default_lang_object = get(settings.WIKI_DEFAULT_LANGUAGE)
 
-        # Return the translation of this English item:
-        if hasattr(default_lang_doc, "translated_to"):
-            trans = default_lang_doc.translated_to(locale)
+        # Return the translation of this English object.
+        if hasattr(default_lang_object, "translated_to"):
+            trans = default_lang_object.translated_to(locale)
             if trans and trans.current_revision:
                 return trans
 
         # Follow redirects internally in an attempt to find a
         # translation of the final redirect target in the requested
         # locale. This happens a lot when an English article is
-        # renamed and a redirect is left in its wake: we wouldn't want
+        # renamed and a redirect is left in its wake. We wouldn't want
         # the non-English user to be linked to the English redirect,
         # which would happily redirect them to the English final
         # article.
-        if hasattr(default_lang_doc, "redirect_document"):
-            target = default_lang_doc.redirect_document()
+        if hasattr(default_lang_object, "redirect_document"):
+            target = default_lang_object.redirect_document()
             if target:
                 trans = target.translated_to(locale)
                 if trans and trans.current_revision:
                     return trans
 
-        # Return the English item:
-        return default_lang_doc
-    # Okay, all else failed
-    except (cls.DoesNotExist, IOError):
+        # Return the English object.
+        return default_lang_object
+    except cls.DoesNotExist:
         return default
 
 

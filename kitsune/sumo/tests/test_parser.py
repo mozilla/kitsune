@@ -55,6 +55,9 @@ class GetObjectFallbackTests(TestCase):
         # Now it exists
         obj = get_object_fallback(Document, "A doc", "en-US", "!")
         self.assertEqual(d, obj)
+        # The title match should be case-insensitive.
+        obj = get_object_fallback(Document, "a doc", "en-US", "!")
+        self.assertEqual(d, obj)
 
     def test_from_french(self):
         # Create the English document
@@ -62,6 +65,9 @@ class GetObjectFallbackTests(TestCase):
         d.save()
         # Returns English document for French
         obj = get_object_fallback(Document, "A doc", "fr", "!")
+        self.assertEqual(d, obj)
+        # The title match should be case-insensitive.
+        obj = get_object_fallback(Document, "a doc", "fr", "!")
         self.assertEqual(d, obj)
 
     def test_french(self):
@@ -79,6 +85,10 @@ class GetObjectFallbackTests(TestCase):
         obj = get_object_fallback(Document, "A doc", "fr", "!")
         self.assertEqual(fr_d, obj)
 
+        # The title match should be case-insensitive.
+        obj = get_object_fallback(Document, "A Doc", "fr", "!")
+        self.assertEqual(fr_d, obj)
+
     def test_translated(self):
         """If a localization of the English fallback exists, use it."""
 
@@ -91,9 +101,17 @@ class GetObjectFallbackTests(TestCase):
         obj = get_object_fallback(Document, "A doc", "fr")
         self.assertEqual(en_d, obj)
 
+        # The title match should be case-insensitive.
+        obj = get_object_fallback(Document, "A Doc", "fr")
+        self.assertEqual(en_d, obj)
+
         # Approve a revision, then fr doc should be returned.
         ApprovedRevisionFactory(document=fr_d)
         obj = get_object_fallback(Document, "A doc", "fr")
+        self.assertEqual(fr_d, obj)
+
+        # The title match should be case-insensitive.
+        obj = get_object_fallback(Document, "A Doc", "fr")
         self.assertEqual(fr_d, obj)
 
     def test_redirect(self):
@@ -107,6 +125,11 @@ class GetObjectFallbackTests(TestCase):
         self.assertEqual(
             translated_target_rev.document,
             get_object_fallback(Document, "redirect", "de"),
+        )
+        # The title match should be case-insensitive.
+        self.assertEqual(
+            translated_target_rev.document,
+            get_object_fallback(Document, "reDirect", "de"),
         )
 
     def test_redirect_translations_only(self):
@@ -124,6 +147,11 @@ class GetObjectFallbackTests(TestCase):
         self.assertEqual(
             redirect_rev.document,
             get_object_fallback(Document, "redirect", redirect_rev.document.locale),
+        )
+        # The title match should be case-insensitive.
+        self.assertEqual(
+            redirect_rev.document,
+            get_object_fallback(Document, "reDirect", redirect_rev.document.locale),
         )
 
 
@@ -206,6 +234,15 @@ class TestWikiParser(TestCase):
                 "text": "Installing Firefox",
             },
             _get_wiki_link("Installing Firefox", locale=settings.WIKI_DEFAULT_LANGUAGE),
+        )
+        # The title match should be case-insensitive.
+        self.assertEqual(
+            {
+                "found": True,
+                "url": "/en-US/kb/installing-firefox",
+                "text": "Installing Firefox",
+            },
+            _get_wiki_link("Installing firefox", locale=settings.WIKI_DEFAULT_LANGUAGE),
         )
 
     def test_showfor(self):
@@ -317,6 +354,13 @@ class TestWikiInternalLinks(TestCase):
         self.assertEqual("Installing Firefox", link.text())
         assert not link.hasClass("new")
 
+    def test_simple_ci(self):
+        """Test case-insensitivity of simple internal link markup."""
+        link = pq_link(self.p, "[[Installing firefox]]")
+        self.assertEqual("/en-US/kb/installing-firefox", link.attr("href"))
+        self.assertEqual("Installing Firefox", link.text())
+        assert not link.hasClass("new")
+
     def test_simple_markup(self):
         text = "[[Installing Firefox]]"
         self.assertEqual(
@@ -424,6 +468,12 @@ class TestWikiImageTags(TestCase):
         """Simple image tag markup."""
         img = pq_img(self.p, "[[Image:test.jpg]]", "img")
         self.assertEqual("test.jpg", img.attr("alt"))
+        self.assertEqual(self.img.file.url, img.attr("src"))
+
+    def test_simple_ci(self):
+        """Test case-insensitivity of simple image tag markup."""
+        img = pq_img(self.p, "[[Image:TEST.jpg]]", "img")
+        self.assertEqual("TEST.jpg", img.attr("alt"))
         self.assertEqual(self.img.file.url, img.attr("src"))
 
     def test_simple_fallback(self):
