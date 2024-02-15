@@ -1034,14 +1034,10 @@ WAFFLE_OVERRIDE = config("WAFFLE_OVERRIDE", default=DEBUG, cast=bool)
 if config("SENTRY_DSN", None):
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.logging import ignore_logger
 
-    # see https://docs.sentry.io/learn/filtering/?platform=python
-    def filter_exceptions(event, hint):
-        # Ignore errors from specific loggers.
-        if event.get("logger", "") == "django.security.DisallowedHost":
-            return None
-
-        return event
+    ignore_logger("request.summary")
+    ignore_logger("django.security.DisallowedHost")
 
     sentry_sdk.init(
         dsn=config("SENTRY_DSN"),
@@ -1049,7 +1045,6 @@ if config("SENTRY_DSN", None):
         release=config("GIT_SHA", default=None),
         server_name=PLATFORM_NAME,
         environment=config("SENTRY_ENVIRONMENT", default=""),
-        before_send=filter_exceptions,
         sample_rate=config("SENTRY_SAMPLE_RATE", 0.25),
     )
 
