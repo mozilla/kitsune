@@ -248,7 +248,7 @@ class TestMyProfilePage(TestUtilities):
             self.sumo_pages.product_support_page._product_product_title_element()
         ).to_be_visible()
 
-    #  C2094285, C2094284
+    #  C2094285, C2094284, C891309
     @pytest.mark.userProfile
     def test_number_of_posted_articles_is_successfully_displayed(self):
         self.logger.info("Logging in with an moderator account")
