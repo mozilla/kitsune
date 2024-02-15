@@ -5,6 +5,7 @@ from kitsune.kbforums.models import Thread
 from kitsune.sumo.email_utils import emails_with_users_and_watches
 from kitsune.sumo.templatetags.jinja_helpers import add_utm
 from kitsune.tidings.events import Event, EventUnion, InstanceEvent
+from kitsune.wiki.events import filter_by_unrestricted
 from kitsune.wiki.models import Document
 
 
@@ -73,6 +74,10 @@ class NewPostEvent(InstanceEvent):
             self, NewThreadEvent(self.reply), NewPostInLocaleEvent(self.reply)
         ).send_emails(exclude=exclude)
 
+    def _users_watching(self, **kwargs):
+        users_and_watches = super()._users_watching(**kwargs)
+        return filter_by_unrestricted(self.instance.document, users_and_watches)
+
     def _mails(self, users_and_watches):
         return new_post_mails(self.reply, users_and_watches)
 
@@ -103,9 +108,11 @@ class NewThreadEvent(InstanceEvent):
 
     def send_emails(self, exclude=None):
         """Notify watches of the document and of the locale."""
-        return EventUnion(
-            self, NewThreadEvent(self.post), NewThreadInLocaleEvent(self.post)
-        ).send_emails(exclude=exclude)
+        return EventUnion(self, NewThreadInLocaleEvent(self.post)).send_emails(exclude=exclude)
+
+    def _users_watching(self, **kwargs):
+        users_and_watches = super()._users_watching(**kwargs)
+        return filter_by_unrestricted(self.instance, users_and_watches)
 
     def _mails(self, users_and_watches):
         return new_thread_mails(self.post, users_and_watches)
@@ -123,12 +130,14 @@ class NewThreadEvent(InstanceEvent):
 class _NewActivityInLocaleEvent(Event):
     filters = {"locale"}
 
-    def __init__(self, locale):
+    def __init__(self, document):
         super(_NewActivityInLocaleEvent, self).__init__()
-        self.locale = locale
+        self.document = document
+        self.locale = document.locale
 
     def _users_watching(self, **kwargs):
-        return self._users_watching_by_filter(locale=self.locale, **kwargs)
+        users_and_watches = self._users_watching_by_filter(locale=self.locale, **kwargs)
+        return filter_by_unrestricted(self.document, users_and_watches)
 
 
 class NewPostInLocaleEvent(_NewActivityInLocaleEvent):
@@ -137,7 +146,7 @@ class NewPostInLocaleEvent(_NewActivityInLocaleEvent):
     event_type = "kbthread reply in locale"
 
     def __init__(self, reply):
-        super(NewPostInLocaleEvent, self).__init__(reply.thread.document.locale)
+        super(NewPostInLocaleEvent, self).__init__(reply.thread.document)
         # Need to store the reply for _mails
         self.reply = reply
 
@@ -164,7 +173,7 @@ class NewThreadInLocaleEvent(_NewActivityInLocaleEvent):
     event_type = "kbforum thread in locale"
 
     def __init__(self, post):
-        super(NewThreadInLocaleEvent, self).__init__(post.thread.document.locale)
+        super(NewThreadInLocaleEvent, self).__init__(post.thread.document)
         # Need to store the post for _mails
         self.post = post
 

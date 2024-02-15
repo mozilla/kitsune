@@ -1,4 +1,9 @@
 {
   "new_thread_title": "Automation Thread ",
-  "new_thread_body": "Automation test thread body"
+  "updated_thread_title": "Automation Thread Updated",
+  "second_thread_updated_title": "Automation Thread Updated 2",
+  "new_thread_reduced_title": "Atest",
+  "new_thread_body": "Automation test thread body",
+  "new_thread_reduced_body": "Abody",
+  "thread_reply_body": "Automation thread reply"
 }

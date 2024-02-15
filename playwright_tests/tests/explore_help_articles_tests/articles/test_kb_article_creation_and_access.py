@@ -234,7 +234,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
         self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
 
-    # C2091580
+    # C2091580, C954321
     @pytest.mark.kbArticleCreationAndAccess
     def test_articles_discussions_allowed(self):
         self.logger.info("Signing in with a non-Admin account")
@@ -746,7 +746,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.sumo_pages.top_navbar._click_on_sumo_nav_logo()
 
         self.logger.info("Wait for ~1 minute until the kb article is available in search")
-        self.wait_for_given_timeout(60000)
+        self.wait_for_given_timeout(65000)
 
         if username == 'simple_user':
             self.logger.info("Deleting user session")

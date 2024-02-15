@@ -12,8 +12,9 @@ from django.db import IntegrityError, models
 from django.db.models import Q
 from django.db.models.functions import Now
 from django.urls import is_valid_path
-from django.utils.encoding import smart_bytes
 from django.utils import translation
+from django.utils.encoding import smart_bytes
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _lazy, gettext as _
 from pyquery import PyQuery
 
@@ -710,14 +711,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
         # Clear out both mobile and desktop templates.
         cache.delete(doc_html_cache_key(self.locale, self.slug))
 
-    def is_visible_for(self, user):
+    def is_visible_for(self, user, use_cache=True):
         """
         This document is effectively invisible when it is restricted, or has no
         approved content, and the given user is not a superuser, nor allowed to
         delete documents or review revisions, nor a creator of one of the document's
         (yet unapproved) revisions.
         """
-        return self.is_unrestricted_for(user) and bool(
+        return self.is_unrestricted_for(user, use_cache=use_cache) and bool(
             self.current_revision
             or user.is_staff
             or user.is_superuser
@@ -742,29 +743,41 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin, DocumentPer
             self.parent.slug if self.parent else self.slug
         ) in settings.MOZILLA_ACCOUNT_ARTICLES
 
-    @property
-    def is_restricted(self):
+    def get_is_restricted(self):
         """Is this document restricted in terms of visibility?"""
         if self.parent:
             # Translations follow their parent's restrictions.
             return self.parent.is_restricted
         return self.restrict_to_groups.exists()
 
-    def is_unrestricted_for(self, user):
-        """Is the given user unrestricted in their visibility of this document?"""
+    @cached_property
+    def is_restricted(self):
+        return self.get_is_restricted()
+
+    def is_unrestricted_for(self, user, use_cache=True):
+        """
+        Is the given user unrestricted in their visibility of this document?
+        """
         if self.parent:
             # Translations follow their parent's restrictions.
-            return self.parent.is_unrestricted_for(user)
+            return self.parent.is_unrestricted_for(user, use_cache=use_cache)
 
-        return bool(
-            user.is_staff
-            or user.is_superuser
-            or (not self.is_restricted)
-            or (
-                user.is_authenticated
-                and (set(self.restrict_to_groups.all()) & set(user.groups.all()))
+        if user.is_staff or user.is_superuser:
+            return True
+
+        is_restricted = self.is_restricted if use_cache else self.get_is_restricted()
+
+        if not is_restricted:
+            return True
+
+        if not use_cache or not hasattr(self, "unrestricted_for_user_ids"):
+            # Cache a set of user ids comprising all current members
+            # of the groups specified in "restrict_to_groups".
+            self.unrestricted_for_user_ids = set(
+                self.restrict_to_groups.filter(user__isnull=False).values_list("user", flat=True)
             )
-        )
+
+        return user.id in self.unrestricted_for_user_ids
 
 
 class AbstractRevision(models.Model):
@@ -1145,29 +1158,19 @@ def resolves_to_document_view(url, required_locale=None):
     return bool(get_locale_and_slug_from_document_url(url, required_locale=required_locale))
 
 
-def user_num_documents(user):
-    """Count the number of documents a user has contributed to."""
-    return (
-        Document.objects.filter(revisions__creator=user)
-        .exclude(html__startswith="<p>REDIRECT <a")
-        .distinct()
-        .count()
-    )
-
-
-def user_documents(user):
+def user_documents(user, viewer=None):
     """Return the documents a user has contributed to."""
     return (
-        Document.objects.filter(revisions__creator=user)
+        Document.objects.visible(viewer, revisions__creator=user)
         .exclude(html__startswith="<p>REDIRECT <a")
         .distinct()
     )
 
 
-def user_redirects(user):
+def user_redirects(user, viewer=None):
     """Return the redirects a user has contributed to."""
     return (
-        Document.objects.filter(revisions__creator=user)
+        Document.objects.visible(viewer, revisions__creator=user)
         .filter(html__startswith="<p>REDIRECT <a")
         .distinct()
     )

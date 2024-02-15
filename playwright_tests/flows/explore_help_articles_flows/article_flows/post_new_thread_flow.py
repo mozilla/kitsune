@@ -11,9 +11,13 @@ class PostNewDiscussionThreadFlow(TestUtilities, KBArticleDiscussionPage):
     def __init__(self, page: Page):
         super().__init__(page)
 
-    def add_new_kb_discussion_thread(self) -> dict[str, Any]:
-        thread_title = (super().kb_new_thread_test_data['new_thread_title'] + super()
-                        .generate_random_number(0, 1000))
+    def add_new_kb_discussion_thread(self, title='') -> dict[str, Any]:
+        if title == '':
+            thread_title = (super().kb_new_thread_test_data['new_thread_title'] + super()
+                            .generate_random_number(0, 1000))
+        else:
+            thread_title = (title + super()
+                            .generate_random_number(0, 1000))
         thread_body = super().kb_new_thread_test_data['new_thread_body']
 
         # Adding text to the title field.

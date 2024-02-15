@@ -191,3 +191,9 @@ class TestUtilities:
     def create_slug_from_title(self, article_title: str) -> str:
         initial_title = article_title.split()
         return '-'.join(initial_title).lower()
+
+    def is_descending(self, list_of_items: list[str]):
+        if all(list_of_items[i] >= list_of_items[i + 1] for i in range(len(list_of_items) - 1)):
+            return True
+        else:
+            return False

@@ -24,7 +24,7 @@ class TestFooter(TestUtilities):
                 url = relative_url
 
             # I have noticed that one of our footer link: https://foundation.mozilla.org/
-            # seems to reject requests that do not identify a User-Agent.
+            # seems to reject requests coming from Headless Chrome user-agent.
             # We are fetching the User-Agent via the JS executor,
             # constructing and passing the header to our request.
 

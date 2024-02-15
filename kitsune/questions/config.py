@@ -496,7 +496,7 @@ products = OrderedDict(
         (
             "monitor",
             {
-                "name": _lazy("Monitor"),
+                "name": _lazy("Mozilla Monitor"),
                 "subtitle": _lazy("Stay informed and take back control of your exposed data"),
                 "extra_fields": [],
                 "tags": ["monitor"],

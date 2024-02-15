@@ -1,5 +1,6 @@
 import pytest
 from playwright_tests.core.testutilities import TestUtilities
+from playwright.sync_api import expect
 
 
 class TestLoginSessions(TestUtilities):
@@ -9,6 +10,12 @@ class TestLoginSessions(TestUtilities):
 
         for i in super().user_secrets_accounts:
             self.sumo_pages.top_navbar._click_on_signin_signup_button()
+
+            # Also acts as a wait. Introduced in order to avoid flakiness which occurred on some
+            # GH runs.
+            expect(
+                self.sumo_pages.auth_page._get_continue_with_firefox_button_locator()
+            ).to_be_visible()
 
             self.sumo_pages.auth_flow_page.sign_in_flow(
                 username=super().user_secrets_accounts[i],

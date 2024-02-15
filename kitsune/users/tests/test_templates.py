@@ -9,8 +9,8 @@ from kitsune.sumo.tests import TestCase, get
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tidings.models import Watch
 from kitsune.users.models import Profile
-from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.tests import RevisionFactory
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
+from kitsune.wiki.tests import ApprovedRevisionFactory, RevisionFactory
 
 
 class EditProfileTests(TestCase):
@@ -162,13 +162,22 @@ class ViewProfileTests(TestCase):
 
     def test_num_documents(self):
         """Verify the number of documents contributed by user."""
-        u = UserFactory()
-        RevisionFactory(creator=u)
-        RevisionFactory(creator=u)
+        group1 = GroupFactory()
+        group2 = GroupFactory()
+        user = UserFactory(groups=[group1, group2])
+        RevisionFactory()
+        RevisionFactory(creator=user)
+        ApprovedRevisionFactory(creator=user)
+        ApprovedRevisionFactory(creator=user, document__restrict_to_groups=[group1, group2])
 
-        r = self.client.get(reverse("users.profile", args=[u.username]))
-        self.assertEqual(200, r.status_code)
-        assert b"2 documents" in r.content
+        response = self.client.get(reverse("users.profile", args=[user.username]))
+        self.assertEqual(200, response.status_code)
+        assert b"1 document" in response.content
+
+        self.client.login(username=user.username, password="testpass")
+        response = self.client.get(reverse("users.profile", args=[user.username]))
+        self.assertEqual(200, response.status_code)
+        assert b"3 documents" in response.content
 
     def test_deactivate_button(self):
         """Check that the deactivate button is shown appropriately"""

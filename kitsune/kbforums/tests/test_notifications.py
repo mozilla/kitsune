@@ -4,12 +4,17 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 
-from kitsune.kbforums.events import NewPostEvent, NewThreadEvent
+from kitsune.kbforums.events import (
+    NewPostEvent,
+    NewPostInLocaleEvent,
+    NewThreadEvent,
+    NewThreadInLocaleEvent,
+)
 from kitsune.kbforums.models import Post, Thread
-from kitsune.kbforums.tests import ThreadFactory
+from kitsune.kbforums.tests import PostFactory, ThreadFactory
 from kitsune.sumo.tests import TestCase, attrs_eq, post, starts_with
 from kitsune.users.models import Setting
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import GroupFactory, UserFactory
 from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 # Some of these contain a locale prefix on included links, while others don't.
@@ -454,3 +459,127 @@ class NotificationsTests(TestCase):
         s.save()
         post(self.client, "wiki.discuss.reply", data, args=[t2.document.slug, t2.pk])
         assert not NewPostEvent.is_notifying(u, t2)
+
+
+class RestrictedVisibilityTests(TestCase):
+    """Test that notifications respect a document's restricted visibility."""
+
+    def setUp(self):
+        super().setUp()
+        self.group = GroupFactory()
+        self.user1 = UserFactory(email="user1@example.com")
+        self.user2 = UserFactory(email="user2@example.com", groups=[self.group])
+
+    def test_post_event(self):
+        """
+        Test that post events on restricted documents will only notify
+        unrestricted users.
+        """
+        doc = DocumentFactory()
+        thread = ThreadFactory(document=doc)
+        NewPostEvent.notify(self.user1, thread)
+        NewPostEvent.notify(self.user2, thread)
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        post1 = PostFactory(thread=thread)
+        NewPostEvent(post1).fire(exclude=[post1.creator])
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(
+            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
+            set((self.user1.email, self.user2.email)),
+        )
+
+        doc.restrict_to_groups.add(self.group)
+
+        mail.outbox = []
+        post2 = PostFactory(thread=thread)
+        NewPostEvent(post2).fire(exclude=[post1.creator, post2.creator])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(self.user2.email, mail.outbox[0].to)
+
+    def test_thread_event(self):
+        """
+        Test that thread events on restricted documents will only notify
+        unrestricted users.
+        """
+        doc = DocumentFactory()
+        NewThreadEvent.notify(self.user1, doc)
+        NewThreadEvent.notify(self.user2, doc)
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        thread1 = ThreadFactory(document=doc)
+        post1 = PostFactory(thread=thread1)
+        NewThreadEvent(post1).fire(exclude=[post1.creator])
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(
+            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
+            set((self.user1.email, self.user2.email)),
+        )
+
+        doc.restrict_to_groups.add(self.group)
+
+        mail.outbox = []
+        thread2 = ThreadFactory(document=doc)
+        post2 = PostFactory(thread=thread2)
+        NewThreadEvent(post2).fire(exclude=[post1.creator, post2.creator])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(self.user2.email, mail.outbox[0].to)
+
+    def test_post_in_locale_event(self):
+        """
+        Test that NewPostInLocaleEvent events on restricted documents will only notify
+        unrestricted users.
+        """
+        doc = DocumentFactory()
+        thread = ThreadFactory(document=doc)
+        NewPostInLocaleEvent.notify(self.user1, locale=doc.locale)
+        NewPostInLocaleEvent.notify(self.user2, locale=doc.locale)
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        post1 = PostFactory(thread=thread)
+        NewPostInLocaleEvent(post1).fire(exclude=[post1.creator])
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(
+            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
+            set((self.user1.email, self.user2.email)),
+        )
+
+        doc.restrict_to_groups.add(self.group)
+
+        mail.outbox = []
+        post2 = PostFactory(thread=thread)
+        NewPostInLocaleEvent(post2).fire(exclude=[post1.creator, post2.creator])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(self.user2.email, mail.outbox[0].to)
+
+    def test_thread_in_locale_event(self):
+        """
+        Test that NewThreadInLocaleEvent events on restricted documents will only notify
+        unrestricted users.
+        """
+        doc = DocumentFactory()
+        NewThreadInLocaleEvent.notify(self.user1, locale=doc.locale)
+        NewThreadInLocaleEvent.notify(self.user2, locale=doc.locale)
+
+        self.assertEqual(len(mail.outbox), 0)
+
+        thread1 = ThreadFactory(document=doc)
+        post1 = PostFactory(thread=thread1)
+        NewThreadInLocaleEvent(post1).fire(exclude=[post1.creator])
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(
+            set((mail.outbox[0].to[0], mail.outbox[1].to[0])),
+            set((self.user1.email, self.user2.email)),
+        )
+
+        doc.restrict_to_groups.add(self.group)
+
+        mail.outbox = []
+        thread2 = ThreadFactory(document=doc)
+        post2 = PostFactory(thread=thread2)
+        NewThreadInLocaleEvent(post2).fire(exclude=[post1.creator, post2.creator])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(self.user2.email, mail.outbox[0].to)
