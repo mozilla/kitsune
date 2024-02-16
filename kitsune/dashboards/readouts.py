@@ -113,7 +113,7 @@ def kb_overview_rows(user=None, mode=None, max=None, locale=None, product=None, 
     if mode is None:
         mode = LAST_30_DAYS
 
-    docs = Document.objects.unrestricted(
+    docs = Document.objects.visible(
         user, locale=settings.WIKI_DEFAULT_LANGUAGE, is_archived=False
     ).exclude(html__startswith=REDIRECT_HTML)
 
@@ -198,7 +198,7 @@ def l10n_overview_rows(locale, product=None, user=None):
         HOW_TO_CONTRIBUTE_CATEGORY,
     ]
 
-    total = Document.objects.unrestricted(
+    total = Document.objects.visible(
         user,
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
@@ -231,7 +231,7 @@ def l10n_overview_rows(locale, product=None, user=None):
     )
 
     up_to_date_translation_count = (
-        Document.objects.unrestricted(
+        Document.objects.visible(
             user,
             locale=locale,
             is_archived=False,
@@ -255,7 +255,7 @@ def l10n_overview_rows(locale, product=None, user=None):
     translated_templates = up_to_date_translation_count.filter(is_template=True).count()
 
     top_n_query = (
-        Document.objects.unrestricted(
+        Document.objects.visible(
             user,
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             is_archived=False,
@@ -493,7 +493,7 @@ class MostVisitedDefaultLanguageReadout(Readout):
             period = self.default_mode
 
         qs = (
-            Document.objects.unrestricted(
+            Document.objects.visible(
                 self.user,
                 locale=self.locale,
                 is_archived=False,
@@ -559,7 +559,7 @@ class CategoryReadout(Readout):
         else:
             period = self.default_mode
 
-        qs = Document.objects.unrestricted(
+        qs = Document.objects.visible(
             self.user,
             locale=self.locale,
             is_archived=False,
@@ -668,7 +668,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             HOW_TO_CONTRIBUTE_CATEGORY,
         ]
 
-        qs = Document.objects.unrestricted(
+        qs = Document.objects.visible(
             self.user,
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             is_archived=False,
@@ -771,7 +771,7 @@ class TemplateTranslationsReadout(Readout):
     default_mode = None
 
     def get_queryset(self, max=None):
-        qs = Document.objects.unrestricted(
+        qs = Document.objects.visible(
             self.user,
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             is_template=True,
@@ -854,7 +854,7 @@ class UnreviewedReadout(Readout):
             order_by_args = (F("num_visits").desc(nulls_last=True), "title")
 
         qs = (
-            Revision.objects.unrestricted(
+            Revision.objects.visible(
                 self.user,
                 reviewed__isnull=True,
                 document__locale=self.locale,
@@ -985,7 +985,7 @@ class UnreadyForLocalizationReadout(Readout):
             order_by_args = (F("num_visits").desc(nulls_last=True), "title")
 
         qs = (
-            Revision.objects.unrestricted(
+            Revision.objects.visible(
                 self.user,
                 is_approved=True,
                 is_ready_for_localization=False,
@@ -1054,7 +1054,7 @@ class NeedsChangesReadout(Readout):
     default_mode = MOST_VIEWED
 
     def get_queryset(self, max=None):
-        qs = Document.objects.unrestricted(
+        qs = Document.objects.visible(
             self.user,
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             is_archived=False,
@@ -1098,7 +1098,7 @@ class CannedResponsesReadout(Readout):
         return request.LANGUAGE_CODE in QuestionLocale.objects.locales_list()
 
     def get_queryset(self, max=None):
-        qs = Document.objects.unrestricted(
+        qs = Document.objects.visible(
             self.user,
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             is_archived=False,
