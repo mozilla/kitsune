@@ -5,6 +5,7 @@ is_localizable=False or is_archived=True and Revisions with
 is_ready_for_localization=False do not exist.
 
 """
+
 import logging
 from collections import OrderedDict
 from datetime import datetime
@@ -57,8 +58,8 @@ MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE_SUBQUERY = Subquery(
         is_approved=True,
     )
     .filter(
-        Q(id__lte=F("document__latest_localizable_revision__id"))
-        | Q(id__gt=OuterRef("transdoc_current_revision_based_on_id")),
+        id__gt=OuterRef("transdoc_current_revision_based_on_id"),
+        id__lte=F("document__latest_localizable_revision__id"),
     )
     .order_by()
     .values("document")
