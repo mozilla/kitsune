@@ -25,8 +25,9 @@ class LocalizationDashTests(TestCase):
     def test_render(self):
         """Assert main dash and all the readouts render and don't crash."""
         # Put some stuff in the DB so at least one row renders for each readout:
+        doc_de = TranslatedRevisionFactory(document__locale="de", is_approved=True).document
         unreviewed = TranslatedRevisionFactory(
-            document__locale="de", reviewed=None, is_approved=False, is_ready_for_localization=True
+            document=doc_de, reviewed=None, is_approved=False, is_ready_for_localization=True
         )
 
         response = self.client.get(reverse("dashboards.localization", locale="de"), follow=False)
