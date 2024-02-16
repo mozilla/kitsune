@@ -71,14 +71,14 @@ class KBOverviewTests(TestCase):
     def test_unapproved_articles(self):
         self.assertEqual(0, len(kb_overview_rows()))
         RevisionFactory()
-        self.assertEqual(1, len(kb_overview_rows()))
+        self.assertEqual(0, len(kb_overview_rows()))
         ApprovedRevisionFactory()
-        self.assertEqual(2, len(kb_overview_rows()))
+        self.assertEqual(1, len(kb_overview_rows()))
         group1 = GroupFactory(name="group1")
-        RevisionFactory(document__restrict_to_groups=[group1])
-        self.assertEqual(2, len(kb_overview_rows()))
+        ApprovedRevisionFactory(document__restrict_to_groups=[group1])
+        self.assertEqual(1, len(kb_overview_rows()))
         user1 = UserFactory(groups=[group1])
-        self.assertEqual(3, len(kb_overview_rows(user=user1)))
+        self.assertEqual(2, len(kb_overview_rows(user=user1)))
 
     def test_ready_for_l10n(self):
         d = DocumentFactory()
@@ -96,18 +96,20 @@ class KBOverviewTests(TestCase):
         self.assertEqual(True, data[0]["ready_for_l10n"])
 
     def test_filter_by_category(self):
-        RevisionFactory(document__category=CATEGORIES[1][0])
+        ApprovedRevisionFactory(document__category=CATEGORIES[1][0])
 
         self.assertEqual(1, len(kb_overview_rows()))
         self.assertEqual(0, len(kb_overview_rows(category=CATEGORIES[0][0])))
         self.assertEqual(1, len(kb_overview_rows(category=CATEGORIES[1][0])))
 
     def test_num_visits(self):
-        d1 = DocumentFactory()
-        d2 = DocumentFactory()
-        DocumentFactory()
-        DocumentFactory()
-        d3 = DocumentFactory(restrict_to_groups=[GroupFactory(name="group1")])
+        d1 = ApprovedRevisionFactory().document
+        d2 = ApprovedRevisionFactory().document
+        ApprovedRevisionFactory()
+        ApprovedRevisionFactory()
+        d3 = ApprovedRevisionFactory(
+            document__restrict_to_groups=[GroupFactory(name="group1")]
+        ).document
 
         WikiDocumentVisits.objects.create(document=d1, visits=5, period=LAST_30_DAYS)
         WikiDocumentVisits.objects.create(document=d2, visits=1, period=LAST_30_DAYS)
@@ -357,8 +359,11 @@ class UnreviewedChangesTests(ReadoutTestCase):
         rev2 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 2, 1))
         rev3 = RevisionFactory(reviewed=None, document=rev1.document, created=datetime(2000, 3, 1))
 
+        doc_de = TranslatedRevisionFactory(
+            document__locale="de", reviewed=None, is_approved=True, created=datetime(2023, 1, 1)
+        ).document
         rev4 = TranslatedRevisionFactory(
-            document__locale="de", reviewed=None, is_approved=False, created=datetime(2023, 1, 1)
+            document=doc_de, reviewed=None, is_approved=False, created=datetime(2023, 1, 2)
         )
         rev5 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 2, 1))
         rev6 = RevisionFactory(reviewed=None, document=rev4.document, created=datetime(2023, 3, 1))
@@ -434,9 +439,10 @@ class UnreviewedChangesTests(ReadoutTestCase):
 
     def test_current_revision_null(self):
         """Show all unreviewed revisions if none have been approved yet."""
-        unreviewed = TranslatedRevisionFactory(
-            is_approved=False, reviewed=None, document__locale="de"
-        )
+        doc_de = TranslatedRevisionFactory(
+            is_approved=True, reviewed=None, document__locale="de"
+        ).document
+        unreviewed = TranslatedRevisionFactory(is_approved=False, reviewed=None, document=doc_de)
         assert unreviewed.document.title in self.titles()
 
     def test_rejected_newer_than_current(self):
@@ -449,9 +455,10 @@ class UnreviewedChangesTests(ReadoutTestCase):
     def test_by_product(self):
         """Test the product filtering of the readout."""
         p = ProductFactory(title="Firefox", slug="firefox")
-        unreviewed = TranslatedRevisionFactory(
-            is_approved=False, reviewed=None, document__locale="de"
-        )
+        doc_de = TranslatedRevisionFactory(
+            is_approved=True, reviewed=None, document__locale="de"
+        ).document
+        unreviewed = TranslatedRevisionFactory(is_approved=False, reviewed=None, document=doc_de)
 
         # There shouldn't be any rows yet.
         self.assertEqual(0, len(self.rows(product=p)))
@@ -496,9 +503,13 @@ class TemplateTests(ReadoutTestCase):
 
         d = DocumentFactory(products=[p])
         t = TemplateDocumentFactory(products=[p])
+        ApprovedRevisionFactory(document=t)
         ApprovedRevisionFactory(document=d)
         ApprovedRevisionFactory(document=TemplateDocumentFactory())
-        TemplateDocumentFactory(restrict_to_groups=[GroupFactory(name="group1")], products=[p])
+        rt = TemplateDocumentFactory(
+            restrict_to_groups=[GroupFactory(name="group1")], products=[p]
+        )
+        ApprovedRevisionFactory(document=rt)
 
         self.assertEqual(1, len(self.rows(locale=locale, product=p)))
         self.assertEqual(t.title, self.row(locale=locale, product=p)["title"])
@@ -519,6 +530,7 @@ class TemplateTests(ReadoutTestCase):
         """Test status for article that needs review"""
         locale = settings.WIKI_DEFAULT_LANGUAGE
         d = TemplateDocumentFactory()
+        ApprovedRevisionFactory(document=d)
         RevisionFactory(document=d)
 
         row = self.row(locale=locale)
@@ -828,12 +840,12 @@ class NeedsChangesTests(ReadoutTestCase):
 
     readout = NeedsChangesReadout
 
-    def test_unrevieweds_after_current(self):
+    def test_needs_change(self):
         """A document marked with needs_change=True should show up."""
         document = DocumentFactory(
             needs_change=True, needs_change_comment="Please update for Firefox.next"
         )
-        RevisionFactory(document=document)
+        ApprovedRevisionFactory(document=document)
         titles = self.titles()
         self.assertEqual(1, len(titles))
         assert document.title in titles
@@ -844,7 +856,7 @@ class NeedsChangesTests(ReadoutTestCase):
         d = DocumentFactory(
             needs_change=True, needs_change_comment="Please update for Firefox.next"
         )
-        RevisionFactory(document=d)
+        ApprovedRevisionFactory(document=d)
 
         # There shouldn't be any rows yet.
         self.assertEqual(0, len(self.rows(product=p)))
