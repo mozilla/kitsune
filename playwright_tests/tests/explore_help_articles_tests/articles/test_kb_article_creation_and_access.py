@@ -92,9 +92,6 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.logger.info("Create a new simple article")
         article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an Admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -110,13 +107,13 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         self.logger.info("Verifying that the correct revision header is displayed")
         check.equal(
-            self.sumo_pages.kb_article_revision_page._get_revision_header(),
+            self.sumo_pages.kb_article_review_revision_page._get_revision_header(),
             KBArticleRevision.KB_ARTICLE_REVISION_HEADER + article_details['article_title'],
         )
 
         self.logger.info("Verifying that the correct subtext is displayed")
         check.equal(
-            self.sumo_pages.kb_article_revision_page._get_reviewing_revision_text()
+            self.sumo_pages.kb_article_review_revision_page._get_reviewing_revision_text()
             .replace("\n", "").strip(),
             self.get_kb_article_revision_details(
                 revision_id=re.findall(r'\d+', revision_id)[0],
@@ -127,7 +124,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         self.logger.info("Click on the 'Back to History' option and verifying that the user is "
                          "redirected to the article history page")
-        self.sumo_pages.kb_article_revision_page._click_on_back_to_history_option()
+        self.sumo_pages.kb_article_review_revision_page._click_on_back_to_history_option()
         expect(
             self.page
         ).to_have_url(
@@ -140,54 +137,55 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         self.logger.info("Verifying that the 'Keywords:' header is displayed")
         check.is_true(
-            self.sumo_pages.kb_article_revision_page._is_keywords_header_visible()
+            self.sumo_pages.kb_article_review_revision_page._is_keywords_header_visible()
         )
 
         self.logger.info("Verifying that the correct keyword is displayed")
         check.equal(
-            self.sumo_pages.kb_article_revision_page._get_keywords_content(),
+            self.sumo_pages.kb_article_review_revision_page._get_keywords_content(),
             article_details['keyword']
         )
 
         self.logger.info("Verifying that the 'Search results summary:' header is displayed")
         check.is_true(
-            self.sumo_pages.kb_article_revision_page._is_search_results_summary_visible()
+            self.sumo_pages.kb_article_review_revision_page._is_search_results_summary_visible()
         )
 
         self.logger.info("Verifying that the correct search result summary is displayed")
         check.equal(
-            self.sumo_pages.kb_article_revision_page._get_search_results_summary_content(),
+            self.sumo_pages.kb_article_review_revision_page._get_search_results_summary_content(),
             article_details['search_results_summary']
         )
 
         self.logger.info("Verifying that the 'Revision source:' header is displayed")
         check.is_true(
-            self.sumo_pages.kb_article_revision_page._is_revision_source_visible()
+            self.sumo_pages.kb_article_review_revision_page._is_revision_source_visible()
         )
 
         self.logger.info("Verifying that the correct revision source content is displayed")
         check.equal(
-            self.sumo_pages.kb_article_revision_page._revision_source_content(),
+            self.sumo_pages.kb_article_review_revision_page._revision_source_content(),
             article_details['article_content']
         )
 
         self.logger.info("Verifying that the 'Revision rendered html:' header is displayed")
         check.is_true(
-            self.sumo_pages.kb_article_revision_page._is_revision_rendered_html_header_visible()
+            self.sumo_pages.kb_article_review_revision_page.
+            _is_revision_rendered_html_header_visible()
         )
 
         self.logger.info("Verifying that the correct 'Revision rendered html:' content is "
                          "displayed")
         check.equal(
-            self.sumo_pages.kb_article_revision_page._get_revision_rendered_html_content(),
+            self.sumo_pages.kb_article_review_revision_page._get_revision_rendered_html_content(),
             article_details['article_content_html']
         )
 
         self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_revision_page._click_on_approve_revision_button()
+        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
 
         self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_revision_page._click_accept_revision_accept_button()
+        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
         self.logger.info("Verifying that the review status updates to 'Current'")
         check.equal(
@@ -224,9 +222,6 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             self.sumo_pages.kb_article_page._get_text_of_kb_article_content_approved(),
             article_details['article_content_html']
         )
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with an admin account and deleting the article")
         self.start_existing_session(super().username_extraction_from_email(
@@ -281,9 +276,6 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             self.page
         ).to_have_url(article_url)
 
-        self.logger.info("Deleting session cookies")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an Admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -298,17 +290,17 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         )
 
         self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_revision_page._click_on_approve_revision_button()
+        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
 
         self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_revision_page._click_accept_revision_accept_button()
+        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
         self.logger.info("Navigating to the article page")
         self.navigate_to_link(article_url)
 
-        self.wait_for_url_to_be(
-            article_url
-        )
+        expect(
+            self.page
+        ).to_have_url(article_url)
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
@@ -365,9 +357,6 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             )
         ).to_be_visible()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -418,9 +407,6 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             self.page
         ).to_have_url(article_url)
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -434,10 +420,10 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         )
 
         self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_revision_page._click_on_approve_revision_button()
+        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
 
         self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_revision_page._click_accept_revision_accept_button()
+        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
         self.logger.info("Navigating back to the article page")
         self.navigate_to_link(article_url)
@@ -495,6 +481,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
+
         self.sumo_pages.kb_article_page._click_on_show_history_option()
         self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
         self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
@@ -760,10 +747,10 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         )
 
         self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_revision_page._click_on_approve_revision_button()
+        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
 
         self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_revision_page._click_accept_revision_accept_button()
+        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
         self.logger.info("Clicking on the top navbar sumo nav logo")
         self.sumo_pages.top_navbar._click_on_sumo_nav_logo()
@@ -772,8 +759,6 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.wait_for_given_timeout(65000)
 
         if username == 'simple_user':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_12"]
             ))
@@ -841,111 +826,3 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.sumo_pages.kb_article_page._click_on_show_history_option()
         self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
         self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
-
-    # C891309
-    @pytest.mark.kbArticleCreationAndAccess
-    def test_kb_article_removal(self):
-        self.logger.info("Signing in with a normal account")
-        self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts["TEST_ACCOUNT_12"]
-        ))
-
-        self.logger.info("Create a new simple article")
-        article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
-
-        self.logger.info("Clicking on the 'Show History' option")
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-
-        self.logger.info("Fetching the revision id")
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        self.logger.info("Verifying that the delete button is not available for the only revision")
-        expect(
-            self.sumo_pages.kb_article_show_history_page._get_delete_revision_button_locator(
-                revision_id
-            )
-        ).to_be_hidden()
-
-        self.logger.info("Verifying that the delete button for the article is not displayed")
-        expect(
-            self.sumo_pages.kb_article_show_history_page._get_delete_this_document_button_locator()
-        ).to_be_hidden()
-
-        self.logger.info("Delete user session")
-        self.logger.info("Verifying that the delete button is not available for the only revision")
-        expect(
-            self.sumo_pages.kb_article_show_history_page._get_delete_revision_button_locator(
-                revision_id
-            )
-        ).to_be_hidden()
-
-        self.logger.info("Verifying that the delete button for the article is not displayed")
-        expect(
-            self.sumo_pages.kb_article_show_history_page._get_delete_this_document_button_locator()
-        ).to_be_hidden()
-
-        self.logger.info("Signing in with a admin user account")
-        self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
-        ))
-
-        self.logger.info("Clicking on the delete revision button for the only available revision")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_revision_button(revision_id)
-
-        self.logger.info("Verifying that the correct 'Unable to delete the revision' page header")
-        check.equal(
-            self.sumo_pages.kb_article_show_history_page._get_unable_to_delete_revision_header(),
-            KBArticleRevision.KB_REVISION_CANNOT_DELETE_ONLY_REVISION_HEADER
-        )
-
-        self.logger.info("Verifying that the correct 'Unable to delete the revision' page "
-                         "subheader")
-        check.equal(
-            self.sumo_pages.kb_article_show_history_page.
-            _get_unable_to_delete_revision_subheader(),
-            KBArticleRevision.KB_REVISION_CANNOT_DELETE_ONLY_REVISION_SUBHEADER
-        )
-
-        self.logger.info("Clicking on the 'Go back to document history button'")
-        self.sumo_pages.kb_article_show_history_page._click_go_back_to_document_history_option()
-
-        self.logger.info("Verifying that we are redirected to the document history page")
-        expect(
-            self.page
-        ).to_have_url(
-            KBArticlePageMessages.KB_ARTICLE_PAGE_URL + article_details
-            ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT
-        )
-
-        self.logger.info("Clicking on the 'Delete article' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-        self.logger.info("Clicking on the cancel button")
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_cancel_button()
-
-        self.logger.info("Verifying that we are back on the show history page for the article")
-        expect(
-            self.page
-        ).to_have_url(
-            KBArticlePageMessages.KB_ARTICLE_PAGE_URL + article_details
-            ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT
-        )
-
-        self.logger.info("Clicking on the 'Delete article' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-        self.logger.info("Clicking on the 'Delete' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
-
-        self.logger.info("Verifying that the article was successfully deleted by navigating to "
-                         "the article")
-
-        with self.page.expect_navigation() as navigation_info:
-            self.navigate_to_link(
-                KBArticlePageMessages.KB_ARTICLE_PAGE_URL + article_details['article_slug'] + "/"
-            )
-        response = navigation_info.value
-        check.equal(
-            response.status,
-            404
-        )

@@ -6,10 +6,12 @@ class KBArticlePage(BasePage):
     __kb_article_heading = "//h1[@class='sumo-page-heading']"
     __kb_article_content = "//section[@id='doc-content']"
     __kb_article_content_approved_content = "//section[@id='doc-content']/p"
+    __kb_article_contributors = "//div[@class='document--contributors-list text-body-xs']/a"
 
     # Editing Tools options
     __editing_tools_article_option = "//a[text()='Article']"
     __editing_tools_edit_article_option = "//li/a[text()='Edit Article']"
+    __editing_tools_edit_article_metadata_option = "//a[text()='Edit Article Metadata']"
     __editing_tools_discussion_option = "//ul[@class='sidebar-nav--list']//a[text()='Discussion']"
     __editing_tools_show_history_option = "//a[contains(text(), 'Show History')]"
 
@@ -19,6 +21,13 @@ class KBArticlePage(BasePage):
     # KB Article page content actions.
     def _get_text_of_article_title(self) -> str:
         return super()._get_text_of_element(self.__kb_article_heading)
+
+    def _get_list_of_kb_article_contributors(self) -> list[str]:
+        return super()._get_text_of_elements(self.__kb_article_contributors)
+
+    def _click_on_a_particular_article_contributor(self, username: str):
+        xpath = f"//div[@class='document--contributors-list text-body-xs']/a[text()='{username}']"
+        super()._click(xpath)
 
     def _get_text_of_kb_article_content_approved(self) -> str:
         return super()._get_text_of_element(self.__kb_article_content_approved_content)
@@ -32,6 +41,9 @@ class KBArticlePage(BasePage):
 
     def _click_on_edit_article_option(self):
         super()._click(self.__editing_tools_edit_article_option)
+
+    def _click_on_edit_article_metadata(self):
+        super()._click(self.__editing_tools_edit_article_metadata_option)
 
     def _click_on_article_option(self):
         super()._click(self.__editing_tools_article_option)

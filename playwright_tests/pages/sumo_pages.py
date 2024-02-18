@@ -4,6 +4,8 @@ from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFl
 from playwright_tests.flows.explore_help_articles_flows.article_flows.add_kb_article_flow import (
     AddKbArticleFlow)
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
+from playwright_tests.flows.explore_help_articles_flows.article_flows.add_kb_revision_flow import \
+    AddKBArticleRevision
 from playwright_tests.flows.explore_help_articles_flows.article_flows.post_new_thread_flow import \
     PostNewDiscussionThreadFlow
 from playwright_tests.flows.messaging_system_flows.messaging_system_flow import (
@@ -12,14 +14,22 @@ from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import Edi
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
 from playwright_tests.pages.contribute.contributor_tools_pages.moderate_forum_content import \
     ModerateForumContent
+from playwright_tests.pages.contribute.contributor_tools_pages.recent_revisions_page import \
+    RecentRevisions
 from playwright_tests.pages.explore_help_articles.articles.kb_article_discussion_page import \
     KBArticleDiscussionPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
-from playwright_tests.pages.explore_help_articles.articles.kb_article_revision_page import \
-    KBArticleRevisionPage
+from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import \
+    KBArticleReviewRevisionPage
+from playwright_tests.pages.explore_help_articles.articles.kb_revision_preview_page import \
+    KBArticleRevisionsPreviewPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import (
     KBArticleShowHistoryPage)
 from playwright_tests.pages.auth_page import AuthPage
+from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_metadata import \
+    KBArticleEditMetadata
+from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import \
+    EditKBArticlePage
 from playwright_tests.pages.explore_help_articles.articles.products_page import ProductsPage
 from playwright_tests.pages.explore_help_articles.articles.submit_kb_article_page import \
     SubmitKBArticlePage
@@ -108,9 +118,12 @@ class SumoPages:
         # KB Articles.
         self.kb_submit_kb_article_form_page = SubmitKBArticlePage(page)
         self.kb_article_page = KBArticlePage(page)
+        self.kb_edit_article_page = EditKBArticlePage(page)
         self.kb_article_discussion_page = KBArticleDiscussionPage(page)
         self.kb_article_show_history_page = KBArticleShowHistoryPage(page)
-        self.kb_article_revision_page = KBArticleRevisionPage(page)
+        self.kb_article_review_revision_page = KBArticleReviewRevisionPage(page)
+        self.kb_article_preview_revision_page = KBArticleRevisionsPreviewPage(page)
+        self.kb_article_edit_article_metadata_page = KBArticleEditMetadata(page)
 
         # Product Topics page
         self.product_topics_page = ProductTopicPage(page)
@@ -127,6 +140,9 @@ class SumoPages:
         # Forums
         self.support_forums_page = SupportForumsPage(page)
         self.product_support_forum = ProductSupportForum(page)
+
+        # Dashboard pages.
+        self.recent_revisions_page = RecentRevisions(page)
 
         # Moderate Forum Page
         self.moderate_forum_content_page = ModerateForumContent(page)
@@ -145,6 +161,9 @@ class SumoPages:
 
         # KB article Flow
         self.submit_kb_article_flow = AddKbArticleFlow(page)
+
+        # KB article revision Flow
+        self.kb_article_revision_flow = AddKBArticleRevision(page)
 
         # KB article discussion Flow
         self.post_kb_discussion_thread_flow = PostNewDiscussionThreadFlow(page)

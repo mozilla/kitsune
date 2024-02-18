@@ -7,6 +7,7 @@ import re
 import json
 import random
 import os
+from datetime import datetime
 
 from playwright_tests.messages.homepage_messages import HomepageMessages
 from requests.exceptions import HTTPError
@@ -14,7 +15,6 @@ from requests.exceptions import HTTPError
 
 @pytest.mark.usefixtures("setup")
 class TestUtilities:
-
     # Fetching test data from json files.
     with open("test_data/profile_edit.json", "r") as edit_test_data_file:
         profile_edit_test_data = json.load(edit_test_data_file)
@@ -43,6 +43,10 @@ class TestUtilities:
     with open("test_data/general_data.json", "r") as general_test_data_file:
         general_test_data = json.load(general_test_data_file)
     general_test_data_file.close()
+
+    with open("test_data/different_endpoints.json", "r") as different_endpoints_file:
+        different_endpoints = json.load(different_endpoints_file)
+    different_endpoints_file.close()
 
     # Fetching user secrets from GH.
     user_secrets_accounts = {
@@ -158,19 +162,27 @@ class TestUtilities:
         self.context.storage_state(path=f"core/sessions/.auth/{session_file_name}.json")
 
     # Deleting page cookies.
-    def delete_cookies(self):
+    def delete_cookies(self, tried_once=False):
         self.context.clear_cookies()
         # Reloading the page for the deletion to take immediate action.
         self.refresh_page()
 
+        if not self.sumo_pages.top_navbar.is_sign_in_up_button_displayed and not tried_once:
+            self.delete_cookies(tried_once=True)
+
     # Starting an existing session by applying session cookies.
-    def start_existing_session(self, session_file_name: str) -> str:
+    def start_existing_session(self, session_file_name: str, tried_once=False) -> str:
+        if not tried_once:
+            self.delete_cookies()
         with open(f"core/sessions/.auth/{session_file_name}.json", 'r') as file:
             cookies_data = json.load(file)
         self.context.add_cookies(cookies=cookies_data['cookies'])
         # A SUMO action needs to be done in order to have the page refreshed with the correct
         # session
         self.refresh_page()
+
+        if self.sumo_pages.top_navbar.is_sign_in_up_button_displayed() and not tried_once:
+            self.start_existing_session(session_file_name, tried_once=True)
         return session_file_name
 
     def refresh_page(self):
@@ -197,3 +209,11 @@ class TestUtilities:
             return True
         else:
             return False
+
+    def extract_month_day_year_from_string(self, timestamp_str: str) -> str:
+        timestamp = datetime.strptime(timestamp_str, "%b %d, %Y, %I:%M:%S %p")
+        return timestamp.strftime("%b %d, %Y")
+
+    def extract_date_to_digit_format(self, date_str: str) -> int:
+        date = datetime.strptime(date_str, "%b %d, %Y")
+        return int(date.strftime("%m%d%Y"))

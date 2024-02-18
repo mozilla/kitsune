@@ -153,6 +153,16 @@ jobs:
         if: success() || failure() && steps.create-sessions.outcome == 'success' && steps.kb-threads-setup.outcome == 'success'
         run: |
             poetry run pytest -m afterThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_threads_tear_down.html --capture=tee-sys
+      - name: Run KB article show history Tests (${{ env.BROWSER }})
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+            poetry run pytest -m kbArticleShowHistory --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_show_history.html --capture=tee-sys
+      - name: Run KB article revisions dashboard Tests (${{ env.BROWSER }})
+        working-directory: playwright_tests
+        if: success() || failure() && steps.create-sessions.outcome == 'success'
+        run: |
+            poetry run pytest -m recentRevisionsDashboard --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_recent_revisions.html --capture=tee-sys
       - name: Combine Reports
         working-directory: playwright_tests
         if: success() || failure()

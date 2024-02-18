@@ -2,7 +2,7 @@ from playwright.sync_api import Page
 from playwright_tests.core.basepage import BasePage
 
 
-class KBArticleRevisionPage(BasePage):
+class KBArticleReviewRevisionPage(BasePage):
     __revision_header = "//h1[@class='sumo-page-heading']"
     __reviewing_revision_text = "//article[@id='review-revision']//a[text()='Back to History']/.."
     __back_to_history_link = "//article[@id='review-revision']//a[text()='Back to History']"
@@ -96,3 +96,6 @@ class KBArticleRevisionPage(BasePage):
 
     def _click_accept_revision_accept_button(self):
         super()._click(self.__modal_accept_button)
+
+    def _check_ready_for_localization_checkbox(self):
+        super()._click(self.__ready_for_localization_modal_checkbox)

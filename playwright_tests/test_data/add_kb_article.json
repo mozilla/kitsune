@@ -1,5 +1,7 @@
 {
   "kb_article_title": "Automation test article ",
+  "kb_template_title": "Template: Automation test article",
+  "updated_kb_article_title": "Updated test article",
   "different_slug": "different-slug-",
   "category_options": "Navigation",
   "relevant_to_option": "Hubs",
@@ -7,12 +9,17 @@
   "selected_child_topic": "How to use Firefox for Android",
   "related_documents": "Stage test owl",
   "keywords": "auto test keyword",
+  "updated_keywords": "auto updated keyword",
   "search_result_summary": "This is a search result summary test",
+  "updated_search_result_summary": "Updated This is a search result summary test",
   "article_content": "'''Lorem ipsum''' dolor ''sit amet'', consectetur [https://www.mediafax.ro adipiscing] elit, [[Stage test owl|sed]] do eiusmod tempor incididunt # ut labore * et dolore magna aliqua. Tincidunt id aliquet risus feugiat in ante. Etiam non quam lacus suspendisse faucibus interdum posuere. Diam sollicitudin tempor id eu nisl nunc mi ipsum. Velit egestas dui id ornare arcu odio ut sem nulla. Risus nec feugiat in fermentum posuere urna nec tincidunt. Sed egestas egestas fringilla phasellus faucibus. Amet consectetur adipiscing elit duis tristique. Lorem mollis aliquam ut porttitor. Purus sit amet volutpat consequat mauris. Lobortis mattis aliquam faucibus purus in. Enim praesent elementum facilisis leo vel. Volutpat lacus laoreet non curabitur gravida arcu. Tempus iaculis urna id volutpat.",
+  "updated_article_content": "Updated Content",
   "article_content_html_rendered": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt # ut labore * et dolore magna aliqua. Tincidunt id aliquet risus feugiat in ante. Etiam non quam lacus suspendisse faucibus interdum posuere. Diam sollicitudin tempor id eu nisl nunc mi ipsum. Velit egestas dui id ornare arcu odio ut sem nulla. Risus nec feugiat in fermentum posuere urna nec tincidunt. Sed egestas egestas fringilla phasellus faucibus. Amet consectetur adipiscing elit duis tristique. Lorem mollis aliquam ut porttitor. Purus sit amet volutpat consequat mauris. Lobortis mattis aliquam faucibus purus in. Enim praesent elementum facilisis leo vel. Volutpat lacus laoreet non curabitur gravida arcu. Tempus iaculis urna id volutpat.",
+  "updated_article_content_html_rendered": "Updated Content",
   "article_heading_one": "=Heading one=",
   "article_heading_two": "==Heading two==",
   "article_heading_three": "===Heading three===",
   "expiry_date": "05.02.2050",
+  "updated_expiry_date": "07.05.2051",
   "changes_description": "Automation description test"
 }
