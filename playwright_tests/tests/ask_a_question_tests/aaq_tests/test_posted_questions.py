@@ -1898,7 +1898,9 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Signing in with a non admin user account and posting a Firefox product "
                          "question")
 
-        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
+        # Using a user which doesn't have any special permissions applied & which doesn't belong to
+        # any group in order to catch cases like https://github.com/mozilla/sumo/issues/1676
+        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_MESSAGE_5')
         question_id = self.sumo_pages.question_page._get_question_id()
 
         if quote_on == "reply":
