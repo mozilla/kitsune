@@ -169,8 +169,14 @@ class AAQFormPage(BasePage):
     def _click_on_show_details_option(self):
         super()._click(self.__show_details_option)
 
-    def _click_on_try_these_manual_steps_link(self):
-        super()._click(self.__try_these_manual_steps_link)
+    # Instead of clicking on the 'Try these manual steps' button we are going to perform the
+    # assertion by checking that the element has the correct href value. Navigating to prod can
+    # yield a 429 error which we want to avoid.
+    def _get_try_these_manual_steps_link(self) -> str:
+        return super()._get_element_attribute_value(
+            self.__try_these_manual_steps_link,
+            "href"
+        )
 
     # Email me when someone answers the thread section actions.
     def _click_on_email_me_when_someone_answers_the_thread_checkbox(self):

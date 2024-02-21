@@ -5,12 +5,12 @@ from playwright.sync_api import expect
 from playwright_tests.core.testutilities import TestUtilities
 from playwright_tests.messages.ask_a_question_messages.AAQ_messages.aaq_form_page_messages import (
     AAQFormMessages)
+from playwright_tests.messages.ask_a_question_messages.AAQ_messages.question_page_messages import \
+    QuestionPageMessages
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
     ContactSupportMessages)
 from playwright_tests.messages.contribute_messages.con_pages.con_page_messages import (
     ContributePageMessages)
-from playwright_tests.messages.ask_a_question_messages.product_solutions_messages import (
-    ProductSolutionsMessages)
 
 
 class TestAAQPage(TestUtilities):
@@ -115,40 +115,24 @@ class TestAAQPage(TestUtilities):
                 super().general_test_data["product_solutions"][freemium_product]
             )
 
-            self.logger.info("Clicking on the 'Learn More' button")
-            self.sumo_pages.product_solutions_page._click_on_scam_alert_banner_learn_more()
-
-            self.logger.info("Verifying that the correct kb article is displayed")
+            self.logger.info("Verifying that the 'Learn More' button contains the correct link")
             check.equal(
-                self.sumo_pages.kb_article_page._get_text_of_article_title(),
-                ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE,
-                f"Incorrect KB article title. "
-                f"Expected: {ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE} "
-                f"Received: {self.sumo_pages.kb_article_page._get_text_of_article_title()}"
+                self.sumo_pages.product_solutions_page._get_scam_alert_banner_link(),
+                QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
             )
-            if username != '':
-                self.logger.info("Navigating back to the product solutions page")
-                self.navigate_back()
-                self.wait_for_url_to_be(
-                    super().general_test_data["product_solutions"][freemium_product]
-                )
 
+            if username != '':
                 self.logger.info("Clicking on the ask now button")
                 self.sumo_pages.product_solutions_page._click_ask_now_button()
                 self.wait_for_url_to_be(
                     super().aaq_question_test_data["products_aaq_url"][freemium_product]
                 )
 
-                self.logger.info("Clicking on the 'Learn More' button")
-                self.sumo_pages.product_solutions_page._click_on_scam_alert_banner_learn_more()
-
-                self.logger.info("Verifying that the correct kb article is displayed")
+                self.logger.info(
+                    "Verifying that the 'Learn More' button contains the correct link")
                 check.equal(
-                    self.sumo_pages.kb_article_page._get_text_of_article_title(),
-                    ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE,
-                    f"Incorrect KB article title. "
-                    f"Expected: {ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE} "
-                    f"Received: {self.sumo_pages.kb_article_page._get_text_of_article_title()}"
+                    self.sumo_pages.product_solutions_page._get_scam_alert_banner_link(),
+                    QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
                 )
 
     # C890537
@@ -364,18 +348,11 @@ class TestAAQPage(TestUtilities):
         self.logger.info("Clicking on the 'Share Data' option")
         self.sumo_pages.aaq_form_page._click_on_share_data_button()
 
-        self.logger.info(
-            "Clicking on the 'try these manual steps' option")
-        self.sumo_pages.aaq_form_page._click_on_try_these_manual_steps_link()
-
-        self.logger.info("Verifying that we are redirected to the correct page")
-        assert (
-            super().aaq_question_test_data["troubleshooting_information_kb_article_url"] in
-            self.get_page_url()
+        self.logger.info("Verifying that the 'try these manual steps' contains the correct link")
+        check.equal(
+            self.sumo_pages.aaq_form_page._get_try_these_manual_steps_link(),
+            QuestionPageMessages.TRY_THESE_MANUAL_STEPS_LINK
         )
-
-        self.logger.info("Navigating back to the aaq form")
-        self.navigate_to_link(super().aaq_question_test_data["products_aaq_url"]["Firefox"])
 
         self.logger.info("Adding data inside AAQ form fields without submitting the form")
         self.sumo_pages.aaq_flow.add__valid_data_to_all_input_fields_without_submitting(
@@ -383,9 +360,6 @@ class TestAAQPage(TestUtilities):
             topic_value=self.sumo_pages.aaq_form_page._get_aaq_form_topic_options()[0],
             body_text=super().aaq_question_test_data["valid_firefox_question"]["question_body"]
         )
-
-        self.logger.info("Clicking on the 'Share Data' option")
-        self.sumo_pages.aaq_form_page._click_on_share_data_button()
 
         self.logger.info("Adding text inside the troubleshooting information field")
         self.sumo_pages.aaq_form_page._add_text_to_troubleshooting_information_textarea(

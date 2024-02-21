@@ -225,6 +225,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             article_details['article_content_html']
         )
 
+        self.logger.info("Deleting user session")
+        self.delete_cookies()
+
         self.logger.info("Signing in with an admin account and deleting the article")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -274,6 +277,10 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.logger.info("Navigating to the article page")
         self.navigate_to_link(article_url)
 
+        expect(
+            self.page
+        ).to_have_url(article_url)
+
         self.logger.info("Deleting session cookies")
         self.delete_cookies()
 
@@ -298,6 +305,10 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         self.logger.info("Navigating to the article page")
         self.navigate_to_link(article_url)
+
+        self.wait_for_url_to_be(
+            article_url
+        )
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
@@ -400,8 +411,12 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             404
         )
 
-        self.logger.info("Navigating back to the article page and signing in with an admin accout")
+        self.logger.info("Navigating back to the article page and signing in with admin")
         self.navigate_back()
+
+        expect(
+            self.page
+        ).to_have_url(article_url)
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
@@ -446,6 +461,10 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.logger.info("Navigating back")
         self.navigate_back()
 
+        expect(
+            self.page
+        ).to_have_url(article_url)
+
         self.logger.info("Deleting user session")
         self.delete_cookies()
 
@@ -467,6 +486,10 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         self.logger.info("Navigating back to the article page")
         self.navigate_back()
+
+        expect(
+            self.page
+        ).to_have_url(article_url)
 
         self.logger.info("Signing in with an admin account and deleting the article")
         self.start_existing_session(super().username_extraction_from_email(

@@ -167,7 +167,7 @@ class TestArticleThreads(TestUtilities):
         thread_info = (self.sumo_pages.post_kb_discussion_thread_flow.
                        add_new_kb_discussion_thread())
 
-        self.logger.info("Verifying that the thread counter is 0")
+        self.logger.info("Verifying that the thread counter is not 0")
         check.equal(
             self.number_extraction_from_string(
                 self.sumo_pages.kb_article_discussion_page._get_thread_page_counter_replies_text()
@@ -1265,33 +1265,6 @@ class TestArticleThreads(TestUtilities):
 
         self.__clearing_newly_created_thread(thread_info_one['thread_id'])
         self.__clearing_newly_created_thread(thread_info_two['thread_id'])
-
-    # # Currently fails due to https://github.com/mozilla/sumo/issues/1221
-    # @pytest.mark.articleThreads
-    # @pytest.mark.parametrize("username", ['TEST_ACCOUNT_12', 'TEST_ACCOUNT_MODERATOR', ''])
-    # def test_article_thread_type_filter(self, username):
-
-    #
-    # @pytest.mark.articleThreads
-    # def test_article_thread_last_post_filter(self):
-
-    # @pytest.mark.articleThreads
-    # def test_article_thread_private_message(self):
-
-    # @pytest.mark.articleThreads
-    # def test_article_thread_reply_edit(self):
-    #
-    # @pytest.mark.articleThreads
-    # def test_article_thread_reply_deletion(self):
-    #
-    # @pytest.mark.articleThreads
-    # def test_quote_functionality(self):
-    #
-    # @pytest.mark.articleThreads
-    # def test_link_to_this_post_functionality(self):
-    #
-    # @pytest.mark.articleThreads
-    # def test_report_abuse_functionality(self):
 
     # To be used in specific tests
     def __posting_a_new_test_article_manually(self, approve_it: bool,

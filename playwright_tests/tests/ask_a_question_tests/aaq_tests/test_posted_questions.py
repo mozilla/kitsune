@@ -13,8 +13,6 @@ from playwright_tests.messages.auth_pages_messages.fxa_page_messages import (
     FxAPageMessages)
 from playwright_tests.messages.ask_a_question_messages.contact_support_messages import (
     ContactSupportMessages)
-from playwright_tests.messages.ask_a_question_messages.product_solutions_messages import (
-    ProductSolutionsMessages)
 
 
 class TestPostedQuestions(TestUtilities):
@@ -45,19 +43,12 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.product_solutions_page._get_still_need_help_locator()
         ).to_be_hidden()
 
-        self.logger.info("Clicking on the 'Learn More' button")
-        self.sumo_pages.product_solutions_page._click_on_scam_alert_banner_learn_more()
-
-        self.logger.info("Verifying that the correct kb article is displayed")
+        self.logger.info(
+            "Verifying that the 'Learn More' button contains the correct link")
         check.equal(
-            self.sumo_pages.kb_article_page._get_text_of_article_title(),
-            ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE,
-            f"Incorrect KB article title. "
-            f"Expected: {ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE} "
-            f"Received: {self.sumo_pages.kb_article_page._get_text_of_article_title()}"
+            self.sumo_pages.product_solutions_page._get_scam_alert_banner_link(),
+            QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
         )
-
-        self.navigate_back()
 
         self.logger.info("Deleting session cookies")
         super().delete_cookies()
@@ -77,19 +68,12 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.product_solutions_page._get_still_need_help_locator()
         ).to_be_hidden()
 
-        self.logger.info("Clicking on the 'Learn More' button")
-        self.sumo_pages.product_solutions_page._click_on_scam_alert_banner_learn_more()
-
-        self.logger.info("Verifying that the correct kb article is displayed")
+        self.logger.info(
+            "Verifying that the 'Learn More' button contains the correct link")
         check.equal(
-            self.sumo_pages.kb_article_page._get_text_of_article_title(),
-            ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE,
-            f"Incorrect KB article title. "
-            f"Expected: {ProductSolutionsMessages.AVOID_TECH_SUPPORT_SCAMS_ARTICLE_TITLE} "
-            f"Received: {self.sumo_pages.kb_article_page._get_text_of_article_title()}"
+            self.sumo_pages.product_solutions_page._get_scam_alert_banner_link(),
+            QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
         )
-
-        self.navigate_back()
 
         self.logger.info("Deleting the posted question")
         self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
@@ -1900,7 +1884,7 @@ class TestPostedQuestions(TestUtilities):
 
         # Using a user which doesn't have any special permissions applied & which doesn't belong to
         # any group in order to catch cases like https://github.com/mozilla/sumo/issues/1676
-        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_MESSAGE_5')
+        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_MESSAGE_6')
         question_id = self.sumo_pages.question_page._get_question_id()
 
         if quote_on == "reply":
