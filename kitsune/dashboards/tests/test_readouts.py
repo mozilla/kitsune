@@ -20,7 +20,7 @@ from kitsune.dashboards.readouts import (
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import GroupFactory, UserFactory
+from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.wiki.config import (
     ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY,
@@ -31,6 +31,7 @@ from kitsune.wiki.config import (
     TEMPLATES_CATEGORY,
     TYPO_SIGNIFICANCE,
 )
+from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import (
     ApprovedRevisionFactory,
     DocumentFactory,
@@ -55,9 +56,9 @@ class ReadoutTestCase(TestCase):
             request.user = user
         return self.readout(request, locale=locale, product=product).rows()
 
-    def row(self, locale=None, product=None):
+    def row(self, locale=None, product=None, user=None):
         """Return first row shown by the readout this class tests."""
-        return self.rows(locale=locale, product=product)[0]
+        return self.rows(locale=locale, product=product, user=user)[0]
 
     def titles(self, locale=None, product=None):
         """Return the titles shown by the Unreviewed Changes readout."""
@@ -606,7 +607,17 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         unreviewed = TranslatedRevisionFactory(
             document__locale="de", reviewed=None, is_approved=False
         )
+
+        # Anonymous users can only see the English document. They can't see the
+        # localized document because it doesn't yet have an approved revision.
         row = self.row()
+        self.assertEqual(row["title"], unreviewed.document.parent.title)
+        self.assertEqual(row["status"], "Translation Needed")
+
+        # However, reviewers can see the unreviewed translation.
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, "review_revision")
+        row = self.row(user=reviewer)
         self.assertEqual(row["title"], unreviewed.document.title)
         self.assertEqual(row["status"], "Review Needed")
 
@@ -888,7 +899,13 @@ class CannedResponsesTests(ReadoutTestCase):
             document=de_doc, based_on=eng_rev, is_approved=False, reviewed=None
         )
 
-        self.assertEqual("review", self.row()["status_class"])
+        # Anonymous users can't see a document without an approved revision.
+        self.assertEqual("untranslated", self.row()["status_class"])
+
+        # However, reviewers can.
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, "review_revision")
+        self.assertEqual("review", self.row(user=reviewer)["status_class"])
 
         # Approve it, so now every this is ok.
         de_rev.is_approved = True

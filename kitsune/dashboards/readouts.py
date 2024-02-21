@@ -683,7 +683,8 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                 # The product does not have a forum for this locale.
                 ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
-        transdoc_subquery = Document.objects.filter(
+        transdoc_subquery = Document.objects.visible(
+            self.user,
             locale=self.locale,
             parent=OuterRef("pk"),
         ).filter(
@@ -784,7 +785,8 @@ class TemplateTranslationsReadout(Readout):
         if self.product:
             qs = qs.filter(products=self.product)
 
-        transdoc_subquery = Document.objects.filter(
+        transdoc_subquery = Document.objects.visible(
+            self.user,
             locale=self.locale,
             parent=OuterRef("pk"),
         )
@@ -1109,7 +1111,8 @@ class CannedResponsesReadout(Readout):
         if self.product:
             qs = qs.filter(products=self.product)
 
-        transdoc_subquery = Document.objects.filter(
+        transdoc_subquery = Document.objects.visible(
+            self.user,
             locale=self.locale,
             parent=OuterRef("pk"),
         )
