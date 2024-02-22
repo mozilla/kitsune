@@ -20,3 +20,7 @@ class QuestionPageMessages:
     THUMBS_DOWN_VOTE_MESSAGE = "Sorry to hear that."
     THUMBS_UP_VOTE_MESSAGE = "Glad to hear it!"
     HELPFUL_VOTE_HEADER = "Helpful?"
+    AVOID_SCAM_SUPPORT_LEARN_MORE_LINK = ("https://support.mozilla.org/kb/avoid-and-report"
+                                          "-mozilla-tech-support-scams")
+    TRY_THESE_MANUAL_STEPS_LINK = ("https://support.mozilla.org/kb/use-troubleshooting"
+                                   "-information-page-fix-firefox")

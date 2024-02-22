@@ -86,8 +86,15 @@ class ProductSolutionsPage(BasePage):
         return super()._get_element_handle(self.__product_title_heading)
 
     # Support scam banner actions
-    def _click_on_scam_alert_banner_learn_more(self):
-        super()._click(self.__support_scam_banner_learn_more_button)
+
+    # Instead of clicking on the 'Learn More' button we are going to perform the assertion
+    # by checking that the element has the correct href value. Navigating to prod can yield
+    # a 429 error which we want to avoid.
+    def _get_scam_alert_banner_link(self) -> str:
+        return super()._get_element_attribute_value(
+            self.__support_scam_banner_learn_more_button,
+            "href"
+        )
 
     def _get_scam_banner_locator(self) -> Locator:
         return super()._get_element_locator(self.__support_scams_banner)
