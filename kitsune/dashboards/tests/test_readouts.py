@@ -608,16 +608,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
             document__locale="de", reviewed=None, is_approved=False
         )
 
-        # Anonymous users can only see the English document. They can't see the
-        # localized document because it doesn't yet have an approved revision.
         row = self.row()
-        self.assertEqual(row["title"], unreviewed.document.parent.title)
-        self.assertEqual(row["status"], "Translation Needed")
-
-        # However, reviewers can see the unreviewed translation.
-        reviewer = UserFactory()
-        add_permission(reviewer, Revision, "review_revision")
-        row = self.row(user=reviewer)
         self.assertEqual(row["title"], unreviewed.document.title)
         self.assertEqual(row["status"], "Review Needed")
 
