@@ -14,12 +14,10 @@ from django.templatetags.static import static
 from django.utils.encoding import iri_to_uri
 from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 from django_ratelimit.core import is_ratelimited as is_ratelimited_core
-from timeout_decorator import timeout
 
 from kitsune.journal.models import Record
 from kitsune.lib.tlds import VALID_TLDS
 from kitsune.sumo import paginator
-
 
 POTENTIAL_LINK_REGEX = re.compile(r"[^\s/]+\.([^\s/.]{2,})")
 POTENTIAL_IP_REGEX = re.compile(r"(?:[0-9]{1,3}\.){3}[0-9]{1,3}")
@@ -316,15 +314,6 @@ def has_blocked_link(data):
     return False
 
 
-@timeout(seconds=settings.REGEX_TIMEOUT, use_signals=False)
-def match_regex_with_timeout(compiled_regex, data):
-    """Matches the specified regex.
-
-    Adds a timeout to avoid catastrophic backtracking.
-    """
-    return any(compiled_regex.findall(data))
-
-
 def check_for_spam_content(data):
     """Check for spam content in a given text.
 
@@ -338,7 +327,7 @@ def check_for_spam_content(data):
     digits = "".join(filter(type(data).isdigit, data))
     is_toll_free = settings.TOLL_FREE_REGEX.match(digits)
 
-    is_nanp_number = match_regex_with_timeout(settings.NANP_REGEX, data)
+    is_nanp_number = any(settings.NANP_REGEX.findall(data))
 
     has_links = has_blocked_link(data)
 
