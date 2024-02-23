@@ -683,8 +683,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                 # The product does not have a forum for this locale.
                 ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
-        transdoc_subquery = Document.objects.visible(
-            self.user,
+        transdoc_subquery = Document.objects.filter(
             locale=self.locale,
             parent=OuterRef("pk"),
         ).filter(
