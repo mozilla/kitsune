@@ -1797,15 +1797,15 @@ class ReviewRevisionTests(TestCase):
 
         # Now render the review page
         self.client.login(username="admin", password="testpass")
-        url = reverse("wiki.review_revision", args=[es_document.slug, es_revision.id])
+        url = reverse("wiki.review_revision", args=[es_document.slug, es_revision.id], locale="es")
         response = self.client.get(url, follow=True)
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         # There's no 'Recent English Changes' <details> section
         self.assertEqual(3, len(doc("details")))
-        self.assertEqual("Approved English version:", doc("#content-fields h3").eq(0).text())
+        self.assertEqual("Versión English aprobada:", doc("#content-fields h3").eq(0).text())
         rev_message = doc("#content-fields p").eq(0).text()
-        assert "by %s" % en_revision.creator.username in rev_message
+        self.assertIn(f"por {en_revision.creator.username}", rev_message)
 
     def test_review_translation_of_rejected_parent(self):
         """Translate rejected English document a 2nd time.
@@ -1827,14 +1827,14 @@ class ReviewRevisionTests(TestCase):
 
         # Now render the review page
         self.client.login(username="admin", password="testpass")
-        url = reverse("wiki.review_revision", args=[es_document.slug, es_revision.id])
+        url = reverse("wiki.review_revision", args=[es_document.slug, es_revision.id], locale="es")
         response = self.client.get(url, follow=True)
         self.assertEqual(200, response.status_code)
         doc = pq(response.content)
         # There's no 'Recent English Changes' <details> section
         self.assertEqual(3, len(doc("details")))
         self.assertEqual(
-            "The English version has no approved content to show.",
+            "La versión English carece aún de contenido aprobado.",
             doc("details .warning-box").text(),
         )
 
