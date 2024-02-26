@@ -683,7 +683,10 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                 # The product does not have a forum for this locale.
                 ignore_categories.append(CANNED_RESPONSES_CATEGORY)
 
-        transdoc_subquery = Document.objects.filter(
+        # We need to use the "unrestricted" method here, instead of "visible",
+        # because it doesn't filter out the translations that need review.
+        transdoc_subquery = Document.objects.unrestricted(
+            self.user,
             locale=self.locale,
             parent=OuterRef("pk"),
         ).filter(
