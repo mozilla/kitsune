@@ -1282,9 +1282,9 @@ class TestArticleThreads(TestUtilities):
                 revision_id
             )
 
-            self.sumo_pages.kb_article_revision_page._click_on_approve_revision_button()
+            self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
 
-            self.sumo_pages.kb_article_revision_page._click_accept_revision_accept_button()
+            self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
         return kb_article_url
 
@@ -1312,9 +1312,9 @@ class TestArticleThreads(TestUtilities):
             revision_id
         )
 
-        self.sumo_pages.kb_article_revision_page._click_on_approve_revision_button()
+        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
 
-        self.sumo_pages.kb_article_revision_page._click_accept_revision_accept_button()
+        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
     # Will perform a cleanup by deleting the test article at the end.
     # Need be executed after all other methods from this test class in th GH workflow file.

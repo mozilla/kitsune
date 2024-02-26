@@ -3,10 +3,13 @@ class KBArticleRevision:
     UNREVIEWED_REVISION_HEADER = " Unreviewed Revision: "
     KB_ARTICLE_REVISION_NO_CURRENT_REV_TEXT = "This document does not have a current revision."
     KB_ARTICLE_REVISION_KEYWORD_HEADER = "Keywords:"
+    KB_ARTICLE_REVISION_NO_STATUS = "No"
+    KB_ARTICLE_REVISION_YES_STATUS = "Yes"
     KB_REVISION_CANNOT_DELETE_ONLY_REVISION_HEADER = ("Unable to delete only revision of the "
                                                       "document")
     KB_REVISION_CANNOT_DELETE_ONLY_REVISION_SUBHEADER = ("To delete the document, please notify "
                                                          "an admin.")
+    KB_REVISION_PREVIEW = "/revision/"
 
     def get_kb_article_revision_details(self,
                                         revision_id: str,

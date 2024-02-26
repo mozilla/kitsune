@@ -27,6 +27,8 @@ class TopNavbar(BasePage):
     __contributor_tools_option = "//a[contains(text(),'Contributor Tools')]"
     __moderate_forum_content = ("//div[@id='main-navigation']//a[@data-event-label='Moderate "
                                 "Forum Content']")
+    __recent_revisions_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[text("
+                                 ")='Recent Revisions']")
 
     # Sign in button
     __signin_signup_button = "//div[@id='profile-navigation']//a[@data-event-label='Sign In']"
@@ -62,6 +64,10 @@ class TopNavbar(BasePage):
     def _click_on_moderate_forum_content_option(self):
         super()._hover_over_element(self.__contributor_tools_option)
         super()._click(self.__moderate_forum_content)
+
+    def _click_on_recent_revisions_option(self):
+        super()._hover_over_element(self.__contributor_tools_option)
+        super()._click(self.__recent_revisions_option)
 
     # Explore our Help Articles actions.
     def _click_on_explore_our_help_articles_option(self):
@@ -114,3 +120,6 @@ class TopNavbar(BasePage):
 
     def _sign_in_up_button_displayed_element(self) -> Locator:
         return super()._get_element_locator(self.__signin_signup_button)
+
+    def is_sign_in_up_button_displayed(self) -> bool:
+        return super()._is_element_visible(self.__signin_signup_button)

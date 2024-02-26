@@ -15,20 +15,25 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
     def submit_simple_kb_article(self,
                                  article_title=None,
                                  article_slug=None,
+                                 article_category=None,
                                  allow_discussion=True,
                                  selected_relevancy=True,
                                  selected_topics=True,
                                  search_summary=None,
                                  article_content=None,
-                                 submit_article=True) -> dict[str, Any]:
+                                 submit_article=True,
+                                 is_template=False) -> dict[str, Any]:
         self._page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
         kb_article_test_data = super().kb_article_test_data
 
         if article_title is None:
-            kb_article_title = (kb_article_test_data["kb_article_title"] + self.
-                                generate_random_number(0, 1000))
-
+            if is_template:
+                kb_article_title = (kb_article_test_data["kb_template_title"] + self.
+                                    generate_random_number(0, 5000))
+            else:
+                kb_article_title = (kb_article_test_data["kb_article_title"] + self.
+                                    generate_random_number(0, 5000))
         else:
             kb_article_title = article_title
 
@@ -41,7 +46,10 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
             kb_article_slug = article_slug
             super()._add_text_to_article_slug_field(kb_article_slug)
 
-        super()._select_category_option_by_text(kb_article_test_data["category_options"])
+        if article_category is None:
+            super()._select_category_option_by_text(kb_article_test_data["category_options"])
+        else:
+            super()._select_category_option_by_text(article_category)
 
         if selected_relevancy is True:
             super()._click_on_a_relevant_to_option_checkbox(
@@ -106,5 +114,6 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
                 "article_slug": slug,
                 "article_review_description": kb_article_test_data["changes_description"],
                 "keyword": kb_article_test_data["keywords"],
-                "search_results_summary": kb_article_test_data["search_result_summary"]
+                "search_results_summary": kb_article_test_data["search_result_summary"],
+                "expiry_date": kb_article_test_data["expiry_date"]
                 }

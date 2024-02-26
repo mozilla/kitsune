@@ -59,6 +59,10 @@ class BasePage:
     def _get_element_inner_text_from_page(self, xpath: str) -> str:
         return self._page.inner_text(xpath)
 
+    # Get Element text content.
+    def _get_element_text_content(self, xpath: str) -> str:
+        return self._page.text_content(xpath)
+
     # Clicking on a particular element.
     def _click(self, xpath: str):
         self._get_element_locator(xpath).click()

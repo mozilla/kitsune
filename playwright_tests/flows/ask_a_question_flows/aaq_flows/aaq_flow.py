@@ -44,7 +44,7 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
                                                                body_text: str,
                                                                os='',
                                                                attach_image=False):
-        aaq_subject = subject + super().generate_random_number(min_value=0, max_value=1000)
+        aaq_subject = subject + super().generate_random_number(min_value=0, max_value=5000)
         # Adding text to subject field.
         super()._add_text_to_aaq_form_subject_field(aaq_subject)
         # Selecting a topic.

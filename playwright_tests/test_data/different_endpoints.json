@@ -1,0 +1,12 @@
+{
+  "kb_categories_links":
+          {
+            "Troubleshooting": "https://support.allizom.org/en-US/kb/category/10",
+            "How to": "https://support.allizom.org/en-US/kb/category/20",
+            "How to contribute": "https://support.allizom.org/en-US/kb/category/30",
+            "Administration": "https://support.allizom.org/en-US/kb/category/40",
+            "Navigation": "https://support.allizom.org/en-US/kb/category/50",
+            "Templates": "https://support.allizom.org/en-US/kb/category/60",
+            "Canned Responses": "https://support.allizom.org/en-US/kb/category/70"
+          }
+}

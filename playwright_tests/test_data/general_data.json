@@ -17,6 +17,15 @@
     "Hubs",
     "Mozilla Account"
   ],
+  "kb_article_categories": [
+    "Troubleshooting",
+    "How to",
+    "How to contribute",
+    "Administration",
+    "Navigation",
+    "Templates",
+    "Canned Responses"
+  ],
   "product_topics": {
     "Firefox": "https://support.allizom.org/en-US/products/firefox/fix-problems",
     "Firefox for Android": "https://support.allizom.org/en-US/products/mobile/fix-problems",
@@ -62,5 +71,8 @@
     "Thunderbird": "https://support.allizom.org/en-US/questions/new/thunderbird",
     "Firefox Focus": "https://support.allizom.org/en-US/questions/new/focus",
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account"
+  },
+  "dashboard_links": {
+    "recent_revisions": "https://support.allizom.org/en-US/kb/revisions"
   }
 }
