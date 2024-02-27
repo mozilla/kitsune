@@ -243,8 +243,7 @@ class TestArticleThreads(TestUtilities):
         self.logger.info("Clicking on the 'Discussion' editing tools navbar option")
         self.sumo_pages.kb_article_page._click_on_editing_tools_discussion_option()
 
-        self.logger.info("Deleting session cookies and signing in with a normal account")
-        self.delete_cookies()
+        self.logger.info("Signing in with a normal account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
@@ -266,8 +265,7 @@ class TestArticleThreads(TestUtilities):
             self.get_page_url()
         )
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        self.delete_cookies()
+        self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
         ))
@@ -373,9 +371,6 @@ class TestArticleThreads(TestUtilities):
             KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
 
-        self.logger.info("Deleting user session and signing in with a non-admin account")
-        self.delete_cookies()
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
@@ -393,7 +388,6 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username == 'TEST_ACCOUNT_MODERATOR':
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -464,7 +458,6 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username == "TEST_ACCOUNT_12":
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_12"]
             ))
@@ -504,9 +497,6 @@ class TestArticleThreads(TestUtilities):
         kb_url = self.__posting_a_new_test_article_manually(approve_it=False,
                                                             post_it=True)
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an admin account and approving the article")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -523,9 +513,6 @@ class TestArticleThreads(TestUtilities):
         self.logger.info("Posting a new kb article discussion thread")
         thread_info_one = (self.sumo_pages.post_kb_discussion_thread_flow.
                            add_new_kb_discussion_thread())
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a normal user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -612,9 +599,6 @@ class TestArticleThreads(TestUtilities):
         thread_info_one = (self.sumo_pages.post_kb_discussion_thread_flow.
                            add_new_kb_discussion_thread())
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with a normal user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_12']
@@ -637,9 +621,6 @@ class TestArticleThreads(TestUtilities):
             TestArticleThreads.article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -654,8 +635,6 @@ class TestArticleThreads(TestUtilities):
         self.sumo_pages.kb_article_discussion_page._click_on_lock_this_article_thread_option()
 
         if username == 'TEST_ACCOUNT_12':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
@@ -686,7 +665,6 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username != 'TEST_ACCOUNT_MODERATOR':
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -700,8 +678,6 @@ class TestArticleThreads(TestUtilities):
         self.sumo_pages.kb_article_discussion_page._click_on_lock_this_article_thread_option()
 
         if username == 'TEST_ACCOUNT_12':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
@@ -747,9 +723,6 @@ class TestArticleThreads(TestUtilities):
         thread_info_one = (self.sumo_pages.post_kb_discussion_thread_flow.
                            add_new_kb_discussion_thread())
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with a normal user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_12']
@@ -771,9 +744,6 @@ class TestArticleThreads(TestUtilities):
         self.navigate_to_link(
             TestArticleThreads.article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -801,8 +771,6 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username == 'TEST_ACCOUNT_12':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
@@ -819,8 +787,6 @@ class TestArticleThreads(TestUtilities):
             ).to_be_hidden()
 
         if username != 'TEST_ACCOUNT_MODERATOR':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.logger.info("Signing in with an admin account")
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -830,8 +796,6 @@ class TestArticleThreads(TestUtilities):
         self.sumo_pages.kb_article_discussion_page._click_on_lock_this_article_thread_option()
 
         if username == 'TEST_ACCOUNT_12':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
@@ -860,8 +824,6 @@ class TestArticleThreads(TestUtilities):
         ).to_be_hidden()
 
         if username != "TEST_ACCOUNT_MODERATOR":
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -892,8 +854,6 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username == 'TEST_ACCOUNT_12':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
@@ -910,8 +870,6 @@ class TestArticleThreads(TestUtilities):
             ).to_be_hidden()
 
         if username != 'TEST_ACCOUNT_MODERATOR':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.logger.info("Signing in with an admin account")
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -921,8 +879,6 @@ class TestArticleThreads(TestUtilities):
         self.sumo_pages.kb_article_discussion_page._click_on_lock_this_article_thread_option()
 
         if username == 'TEST_ACCOUNT_12':
-            self.logger.info("Deleting user session")
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
@@ -973,9 +929,6 @@ class TestArticleThreads(TestUtilities):
         thread_info_one = (self.sumo_pages.post_kb_discussion_thread_flow.
                            add_new_kb_discussion_thread())
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with a normal user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_12']
@@ -1003,9 +956,6 @@ class TestArticleThreads(TestUtilities):
             kb_article_url + KBArticlePageMessages.KB_ARTICLE_DISCUSSIONS_ENDPOINT
         )
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -1026,17 +976,16 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username == 'TEST_ACCOUNT_12':
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
-            self.logger.info("Verifying that the unsitcky this thread option is not availabe")
+            self.logger.info("Verifying that the unsitcky this thread option is not available")
             expect(
                 self.sumo_pages.kb_article_discussion_page._get_sticky_this_thread_locator()
             ).to_be_hidden()
         if username == '':
             self.delete_cookies()
-            self.logger.info("Verifying that the unsitcky this thread option is not availabe")
+            self.logger.info("Verifying that the unsitcky this thread option is not available")
             expect(
                 self.sumo_pages.kb_article_discussion_page._get_sticky_this_thread_locator()
             ).to_be_hidden()
@@ -1058,7 +1007,6 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username != 'TEST_ACCOUNT_MODERATOR':
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -1078,7 +1026,6 @@ class TestArticleThreads(TestUtilities):
         )
 
         if username == 'TEST_ACCOUNT_12':
-            self.delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_12']
             ))
@@ -1101,7 +1048,6 @@ class TestArticleThreads(TestUtilities):
             thread_info_two['thread_title']
         )
 
-        self.delete_cookies()
         self.start_existing_session(self.username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -1128,9 +1074,6 @@ class TestArticleThreads(TestUtilities):
         self.logger.info("Posting a new kb article discussion thread")
         thread_info_one = (self.sumo_pages.post_kb_discussion_thread_flow.
                            add_new_kb_discussion_thread())
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a normal user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1333,7 +1276,6 @@ class TestArticleThreads(TestUtilities):
 
     # Clears all posted article threads.
     def __clearing_newly_created_thread(self, thread_id: str):
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))

@@ -319,9 +319,6 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.logger.info("Navigating back to the 'Show History page'")
         self.sumo_pages.kb_article_page._click_on_show_history_option()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with a non-Admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
@@ -606,9 +603,6 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.logger.info("Clicking on the 'Accept' button")
         self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with a non-Admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
@@ -618,9 +612,6 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
         self.logger.info("Creating a new revision for the document")
         self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a normal account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -770,9 +761,6 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
         self.logger.info("Clicking on the 'Accept' button")
         self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
-
-        self.logger.info("Delete user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a non-admin account")
         creator_username = self.start_existing_session(super().username_extraction_from_email(

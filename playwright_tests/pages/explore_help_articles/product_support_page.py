@@ -31,9 +31,9 @@ class ProductSupportPage(BasePage):
     # Join our community section locators.
     __join_our_community_section_header = ("//div[@class='card card--callout is-full-width "
                                            "has-moz-headings']//h3[@class='card--title']")
-    __join_our_community_section_paragrah_and_learn_more_option = ("//div[@class='card "
-                                                                   "card--callout is-full-width "
-                                                                   "has-moz-headings']//p")
+    __join_our_community_section_paragraph_and_learn_more_option = ("//div[@class='card "
+                                                                    "card--callout is-full-width "
+                                                                    "has-moz-headings']//p")
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -97,10 +97,10 @@ class ProductSupportPage(BasePage):
 
     def _get_join_our_community_content_text(self) -> str:
         return super()._get_text_of_elements(
-            self.__join_our_community_section_paragrah_and_learn_more_option
+            self.__join_our_community_section_paragraph_and_learn_more_option
         )[0]
 
     def _click_join_our_community_learn_more_link(self):
         return (super()._click_on_an_element_by_index
-                (self.__join_our_community_section_paragrah_and_learn_more_option, 1)
+                (self.__join_our_community_section_paragraph_and_learn_more_option, 1)
                 )

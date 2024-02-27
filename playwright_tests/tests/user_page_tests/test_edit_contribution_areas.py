@@ -72,7 +72,6 @@ class TestEditContributionAreas(TestUtilities):
             "Signing in with a different account and verifying "
             "that the original user groups are displayed"
         )
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_13']
         ))
@@ -92,7 +91,6 @@ class TestEditContributionAreas(TestUtilities):
         )
 
         self.logger.info("Signing in back with the original user")
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
@@ -136,7 +134,6 @@ class TestEditContributionAreas(TestUtilities):
         self.logger.info(
             "Logging in with a different user and accessing the original user profile"
         )
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_13']
         ))

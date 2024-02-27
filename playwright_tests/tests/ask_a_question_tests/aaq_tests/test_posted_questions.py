@@ -24,9 +24,6 @@ class TestPostedQuestions(TestUtilities):
                          "question")
         self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        super().delete_cookies()
-
         if username == 'TEST_ACCOUNT_13':
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -49,9 +46,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.product_solutions_page._get_scam_alert_banner_link(),
             QuestionPageMessages.AVOID_SCAM_SUPPORT_LEARN_MORE_LINK
         )
-
-        self.logger.info("Deleting session cookies")
-        super().delete_cookies()
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -128,7 +122,6 @@ class TestPostedQuestions(TestUtilities):
 
         if username == 'TEST_ACCOUNT_MODERATOR':
             self.logger.info("Deleting session cookies and signing in with an admin account")
-            super().delete_cookies()
 
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -211,7 +204,6 @@ class TestPostedQuestions(TestUtilities):
 
         if username != 'TEST_ACCOUNT_MODERATOR':
             self.logger.info("Deleting session cookies and signing in with an admin account")
-            super().delete_cookies()
 
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -227,9 +219,6 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Signing in with a non admin user account and posting a Firefox product "
                          "question")
         posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_13')
-
-        self.logger.info("Deleting session cookies")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a non admin user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -279,9 +268,7 @@ class TestPostedQuestions(TestUtilities):
         )
 
         if username == 'TEST_ACCOUNT_MODERATOR':
-            self.logger.info("Deleting session cookies and signing in with an admin account")
-            super().delete_cookies()
-
+            self.logger.info("Signing in with an admin account")
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -371,9 +358,7 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._click_on_the_additional_system_panel_close_button()
 
         if username != 'TEST_ACCOUNT_MODERATOR':
-            self.logger.info("Deleting session cookies and signing in with an admin account")
-            super().delete_cookies()
-
+            self.logger.info("Signing in with an admin account")
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -388,9 +373,6 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Signing in with a non admin user account and posting a Firefox product "
                          "question")
         posted_question_one = self.post_firefox_product_question_flow('TEST_ACCOUNT_13')
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a non admin user account and posting a Firefox product "
                          "question")
@@ -442,7 +424,6 @@ class TestPostedQuestions(TestUtilities):
 
         self.logger.info("Navigating back to the question page and deleting session cookies")
         self.navigate_back()
-        self.delete_cookies()
 
         self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -483,9 +464,6 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Signing in with a non admin user account and posting a Firefox product "
                          "question")
         posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_13')
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a different non admin user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -532,9 +510,7 @@ class TestPostedQuestions(TestUtilities):
                 self.sumo_pages.question_page._get_archive_this_question_locator()
             ).to_be_hidden()
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        super().delete_cookies()
-
+        self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -545,9 +521,6 @@ class TestPostedQuestions(TestUtilities):
         elif status == "archived":
             self.logger.info("Clicking on the 'Archive this question' option")
             self.sumo_pages.question_page._click_on_archive_this_question_option()
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a different non admin user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -604,9 +577,7 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_add_image_section_locator()
         ).to_be_hidden()
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        super().delete_cookies()
-
+        self.logger.info("Signing in with an admin account")
         repliant_username = super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         )
@@ -642,9 +613,7 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Signing in with a normal user account and verifying that the admin's "
                          "reply is visible")
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        super().delete_cookies()
-
+        self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
         ))
@@ -653,9 +622,7 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_posted_reply_locator(reply_id)
         ).to_be_visible()
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        super().delete_cookies()
-
+        self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -667,9 +634,7 @@ class TestPostedQuestions(TestUtilities):
             self.logger.info("Clicking on the 'Archive this question' option")
             self.sumo_pages.question_page._click_on_archive_this_question_option()
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        super().delete_cookies()
-
+        self.logger.info("Signing in with an admin account")
         second_repliant = super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
         )
@@ -697,9 +662,7 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_posted_reply_locator(reply_id_two)
         ).to_be_visible()
 
-        self.logger.info("Deleting session cookies and signing in with an admin account")
-        super().delete_cookies()
-
+        self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -734,9 +697,6 @@ class TestPostedQuestions(TestUtilities):
             attach_image=False
         )
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with a different non admin user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
@@ -758,7 +718,7 @@ class TestPostedQuestions(TestUtilities):
 
         self.logger.info("Clicking on the 'Subscribe to feed' option from different user posted "
                          "question")
-        if self.browser == "chrome":
+        if self.requested_browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
             self.logger.info("Verifying that the url is updated to the feed endpoint")
             expect(
@@ -788,7 +748,7 @@ class TestPostedQuestions(TestUtilities):
         self.navigate_to_link(
             question_info_two['question_page_url']
         )
-        if self.browser == "chrome":
+        if self.requested_browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
             self.logger.info("Verifying that the url is updated to the feed endpoint")
             expect(
@@ -819,7 +779,7 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Signing out")
         super().delete_cookies()
 
-        if self.browser == "chrome":
+        if self.requested_browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
             self.logger.info("Verifying that the url is updated to the feed endpoint")
             expect(
@@ -853,7 +813,7 @@ class TestPostedQuestions(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        if self.browser == "chrome":
+        if self.requested_browser == "chrome":
             self.sumo_pages.question_page._click_on_subscribe_to_feed_option()
             self.logger.info("Verifying that the url is updated to the feed endpoint")
             expect(
@@ -919,9 +879,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_mark_as_spam_locator()
         ).to_be_hidden()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         username = self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -966,7 +923,6 @@ class TestPostedQuestions(TestUtilities):
             404
         )
 
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -997,7 +953,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_marked_as_spam_banner_locator()
         ).to_be_hidden()
 
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -1048,9 +1003,6 @@ class TestPostedQuestions(TestUtilities):
             expect(
                 self.sumo_pages.question_page._get_remove_tag_button_locator(tag)
             ).to_be_hidden()
-
-        if username == 'TEST_ACCOUNT_13':
-            super().delete_cookies()
 
         self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1103,9 +1055,6 @@ class TestPostedQuestions(TestUtilities):
             posted_question['question_details']['question_page_url']
         )
 
-        if username == 'TEST_ACCOUNT_13':
-            super().delete_cookies()
-
         self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -1143,9 +1092,6 @@ class TestPostedQuestions(TestUtilities):
             )
         ).to_be_hidden()
 
-        if username == "TEST_ACCOUNT_13":
-            super().delete_cookies()
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -1179,9 +1125,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_email_updates_option()
         ).to_be_visible()
 
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -1209,9 +1152,6 @@ class TestPostedQuestions(TestUtilities):
         reply_id_one = self.sumo_pages.question_page._click_on_post_reply_button(
             posted_question['username_one']
         )
-
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
 
         self.logger.info("Signin in with a different non admin user")
         username_two = self.start_existing_session(super().username_extraction_from_email(
@@ -1244,9 +1184,6 @@ class TestPostedQuestions(TestUtilities):
 
         self.logger.info("Closing the dropdown menu")
         self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id_one)
-
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1281,8 +1218,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_reply_section_locator(reply_id_one)
         ).to_be_hidden()
 
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
         self.logger.info("Signing in with the reply OP user account and verifying that the reply "
                          "marked as spam is no longer displayed")
 
@@ -1293,9 +1228,6 @@ class TestPostedQuestions(TestUtilities):
         expect(
             self.sumo_pages.question_page._get_reply_section_locator(reply_id_one)
         ).to_be_hidden()
-
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
 
         self.logger.info("Signing in with the admin account and unmarking the reply from spam")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1338,9 +1270,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_marked_as_spam_locator(reply_id_one)
         ).to_be_hidden()
 
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
-
         self.logger.info("Signing in with the reply OP and verifying that the reply is visible "
                          "again")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1355,9 +1284,6 @@ class TestPostedQuestions(TestUtilities):
         expect(
             self.sumo_pages.question_page._get_marked_as_spam_locator(reply_id_one)
         ).to_be_hidden()
-
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
 
         self.logger.info("Signing in with the admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1397,9 +1323,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_displayed_user_title_of_question_reply(reply_id),
             QuestionPageMessages.QUESTION_REPLY_OWNER
         )
-
-        self.logger.info("Deleting user session")
-        super().delete_cookies()
 
         if username == 'TEST_ACCOUNT_13':
             self.logger.info("Signin in with a different non admin user")
@@ -1531,7 +1454,6 @@ class TestPostedQuestions(TestUtilities):
         )
 
         if username == 'TEST_ACCOUNT_13':
-            super().delete_cookies()
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
@@ -1583,7 +1505,6 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Navigating back")
         self.navigate_back()
 
-        self.delete_cookies()
         if username == 'TEST_ACCOUNT_13':
             username_two = self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -1620,7 +1541,6 @@ class TestPostedQuestions(TestUtilities):
 
             self.logger.info("Navigating back")
             self.navigate_back()
-            self.delete_cookies()
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1717,9 +1637,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_i_have_this_problem_too_locator()
         ).to_be_hidden()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -1781,9 +1698,6 @@ class TestPostedQuestions(TestUtilities):
         expect(
             self.sumo_pages.question_page._get_solved_the_problem_button_locator(reply_id)
         ).to_be_hidden()
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with the first username")
         self.start_existing_session(super().username_extraction_from_email(
@@ -1853,9 +1767,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_undo_button_locator()
         ).to_be_hidden()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -1895,9 +1806,6 @@ class TestPostedQuestions(TestUtilities):
             reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
                 posted_question['username_one']
             )
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         username_two = self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -1966,9 +1874,6 @@ class TestPostedQuestions(TestUtilities):
             ).to_have_url(
                 posted_question['question_details']['question_page_url'] + "#" + question_id
             )
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -2169,9 +2074,6 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_post_a_reply_textarea_locator()
         ).to_be_visible()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
@@ -2205,9 +2107,6 @@ class TestPostedQuestions(TestUtilities):
         expect(
             self.sumo_pages.question_page._get_reply_votes_section_locator(reply_id)
         ).to_be_hidden()
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.logger.info("Signing in a different user")
         self.start_existing_session(super().username_extraction_from_email(
@@ -2435,8 +2334,7 @@ class TestPostedQuestions(TestUtilities):
         self.sumo_pages.question_page._click_abuse_modal_close_button()
 
         if username == "TEST_ACCOUNT_13":
-            self.logger.info("Deleting user cookies and signing in with a admin account")
-            self.delete_cookies()
+            self.logger.info("Signing in with a admin account")
             self.start_existing_session(super().username_extraction_from_email(
                 self.user_secrets_accounts['TEST_ACCOUNT_MODERATOR']
             ))
@@ -2485,9 +2383,6 @@ class TestPostedQuestions(TestUtilities):
         self.logger.info("Signing in with a non admin user account and posting a Firefox product "
                          "question")
         self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
-
-        self.logger.info("Deleting session cookies")
-        self.delete_cookies()
 
         self.logger.info("Signing in with a different account")
         username = self.start_existing_session(super().username_extraction_from_email(
@@ -2596,9 +2491,6 @@ class TestPostedQuestions(TestUtilities):
             f"Expected: {self.sumo_pages.question_page._get_text_content_of_reply(reply_id)} "
             f"Received: {response}"
         )
-
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]

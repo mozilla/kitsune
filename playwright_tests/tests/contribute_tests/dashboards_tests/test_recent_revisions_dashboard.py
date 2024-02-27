@@ -85,9 +85,6 @@ class TestRecentRevisionsDashboard(TestUtilities):
         self.logger.info("Clearing the user search field")
         self.sumo_pages.recent_revisions_page._clearing_the_user_field()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing back in with the admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -137,9 +134,6 @@ class TestRecentRevisionsDashboard(TestUtilities):
         self.logger.info("Clicking on the 'Accept' button")
         self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
         self.logger.info("Signing in with a non admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -184,7 +178,6 @@ class TestRecentRevisionsDashboard(TestUtilities):
 
         self.logger.info("Signing in with an admin account and verifying that the revision is "
                          "displayed")
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
@@ -237,11 +230,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
             )
         ).to_be_visible()
 
-        self.logger.info("Signing back in with an admin account an deleting the article")
-        self.logger.info("Deleting user session")
-        self.delete_cookies()
-
-        self.logger.info("Signing back in with the admin account")
+        self.logger.info("Signing back in with an admin account and deleting the article")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
@@ -324,9 +313,6 @@ class TestRecentRevisionsDashboard(TestUtilities):
         ).to_be_hidden()
 
         self.navigate_to_link(article_url)
-
-        self.logger.info("Signing in with a different user non-admin user")
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
@@ -423,7 +409,6 @@ class TestRecentRevisionsDashboard(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Signing in with an admin account")
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))

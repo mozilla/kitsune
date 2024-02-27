@@ -97,7 +97,7 @@ class TestMessagingSystem(TestUtilities):
             "Verifying that the receiver is automatically added inside the 'To' field"
         )
         # Firefox GH runner fails here. We are running this assertion only in Chrome for now
-        if self.browser == "chrome":
+        if self.requested_browser == "chrome":
             assert self.sumo_pages.new_message_page._get_user_to_text() == user_two, (
                 f"Incorrect 'To' receiver. Expected: {user_two}. "
                 f"Received: {self.sumo_pages.new_message_page._get_user_to_text()}"
@@ -157,7 +157,6 @@ class TestMessagingSystem(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Signing in with the user which received the message")
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
@@ -246,7 +245,6 @@ class TestMessagingSystem(TestUtilities):
             "Signing in with the receiver account and verifying that the message "
             "is displayed inside the inbox section"
         )
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
