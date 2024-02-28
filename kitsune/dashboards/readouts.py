@@ -74,19 +74,27 @@ def get_visits_subquery(document=OuterRef("pk"), period=LAST_30_DAYS):
     )
 
 
-def get_visible_or_no_translation_condition(user, locale):
+def visible_translation_exists(user, locale):
     """
-    Returns a queryset expression for Document queries that only includes documents
-    that either do not have a translation for the given locale, or have a translation
-    that is visible to the given user.
+    Returns a combinable queryset expression for Document queries that only
+    includes documents that have a translation for the given locale that is
+    visible to the given user.
     """
-    return ~Q(translations__locale=locale) | Exists(
+    return Exists(
         Document.objects.visible(
             user,
             locale=locale,
             parent=OuterRef("pk"),
         )
     )
+
+
+def no_translation_exists(locale):
+    """
+    Returns a combinable queryset expression for Document queries that only
+    includes documents that do not have a translation for the given locale.
+    """
+    return ~Q(translations__locale=locale)
 
 
 def row_to_dict_with_out_of_dateness(
@@ -691,10 +699,12 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
                 is_localizable=True,
                 parent__isnull=True,
                 latest_localizable_revision__isnull=False,
-            ).exclude(html__startswith=REDIRECT_HTML)
-            # Only include documents that either do not have a translation for the
-            # given locale, or have a translation that is visible to the current user.
-            .filter(get_visible_or_no_translation_condition(self.user, self.locale))
+            )
+            .exclude(html__startswith=REDIRECT_HTML)
+            .filter(
+                no_translation_exists(self.locale)
+                | visible_translation_exists(self.user, self.locale)
+            )
         )
 
         if self.product:
@@ -800,10 +810,12 @@ class TemplateTranslationsReadout(Readout):
                 is_localizable=True,
                 parent__isnull=True,
                 latest_localizable_revision__isnull=False,
-            ).exclude(html__startswith=REDIRECT_HTML)
-            # Only include documents that either do not have a translation for the
-            # given locale, or have a translation that is visible to the current user.
-            .filter(get_visible_or_no_translation_condition(self.user, self.locale))
+            )
+            .exclude(html__startswith=REDIRECT_HTML)
+            .filter(
+                no_translation_exists(self.locale)
+                | visible_translation_exists(self.user, self.locale)
+            )
         )
 
         if self.product:
@@ -1130,10 +1142,12 @@ class CannedResponsesReadout(Readout):
                 is_archived=False,
                 parent__isnull=True,
                 category=CANNED_RESPONSES_CATEGORY,
-            ).exclude(html__startswith=REDIRECT_HTML)
-            # Only include documents that either do not have a translation for the
-            # given locale, or have a translation that is visible to the current user.
-            .filter(get_visible_or_no_translation_condition(self.user, self.locale))
+            )
+            .exclude(html__startswith=REDIRECT_HTML)
+            .filter(
+                no_translation_exists(self.locale)
+                | visible_translation_exists(self.user, self.locale)
+            )
         )
 
         if self.product:
