@@ -74,6 +74,29 @@ def get_visits_subquery(document=OuterRef("pk"), period=LAST_30_DAYS):
     )
 
 
+def visible_translation_exists(user, locale):
+    """
+    Returns a combinable queryset expression for Document queries that only
+    includes documents that have a translation for the given locale that is
+    visible to the given user.
+    """
+    return Exists(
+        Document.objects.visible(
+            user,
+            locale=locale,
+            parent=OuterRef("pk"),
+        )
+    )
+
+
+def no_translation_exists(locale):
+    """
+    Returns a combinable queryset expression for Document queries that only
+    includes documents that do not have a translation for the given locale.
+    """
+    return ~Q(translations__locale=locale)
+
+
 def row_to_dict_with_out_of_dateness(
     readout_locale, eng_slug, eng_title, slug, title, visits, significance, needs_review
 ):
@@ -668,14 +691,21 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             HOW_TO_CONTRIBUTE_CATEGORY,
         ]
 
-        qs = Document.objects.visible(
-            self.user,
-            locale=settings.WIKI_DEFAULT_LANGUAGE,
-            is_archived=False,
-            is_localizable=True,
-            parent__isnull=True,
-            latest_localizable_revision__isnull=False,
-        ).exclude(html__startswith=REDIRECT_HTML)
+        qs = (
+            Document.objects.visible(
+                self.user,
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
+                is_archived=False,
+                is_localizable=True,
+                parent__isnull=True,
+                latest_localizable_revision__isnull=False,
+            )
+            .exclude(html__startswith=REDIRECT_HTML)
+            .filter(
+                no_translation_exists(self.locale)
+                | visible_translation_exists(self.user, self.locale)
+            )
+        )
 
         if self.product:
             qs = qs.filter(products=self.product)
@@ -771,21 +801,27 @@ class TemplateTranslationsReadout(Readout):
     default_mode = None
 
     def get_queryset(self, max=None):
-        qs = Document.objects.visible(
-            self.user,
-            locale=settings.WIKI_DEFAULT_LANGUAGE,
-            is_template=True,
-            is_archived=False,
-            is_localizable=True,
-            parent__isnull=True,
-            latest_localizable_revision__isnull=False,
-        ).exclude(html__startswith=REDIRECT_HTML)
+        qs = (
+            Document.objects.visible(
+                self.user,
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
+                is_template=True,
+                is_archived=False,
+                is_localizable=True,
+                parent__isnull=True,
+                latest_localizable_revision__isnull=False,
+            )
+            .exclude(html__startswith=REDIRECT_HTML)
+            .filter(
+                no_translation_exists(self.locale)
+                | visible_translation_exists(self.user, self.locale)
+            )
+        )
 
         if self.product:
             qs = qs.filter(products=self.product)
 
-        transdoc_subquery = Document.objects.visible(
-            self.user,
+        transdoc_subquery = Document.objects.filter(
             locale=self.locale,
             parent=OuterRef("pk"),
         )
@@ -1099,19 +1135,25 @@ class CannedResponsesReadout(Readout):
         return request.LANGUAGE_CODE in QuestionLocale.objects.locales_list()
 
     def get_queryset(self, max=None):
-        qs = Document.objects.visible(
-            self.user,
-            locale=settings.WIKI_DEFAULT_LANGUAGE,
-            is_archived=False,
-            parent__isnull=True,
-            category=CANNED_RESPONSES_CATEGORY,
-        ).exclude(html__startswith=REDIRECT_HTML)
+        qs = (
+            Document.objects.visible(
+                self.user,
+                locale=settings.WIKI_DEFAULT_LANGUAGE,
+                is_archived=False,
+                parent__isnull=True,
+                category=CANNED_RESPONSES_CATEGORY,
+            )
+            .exclude(html__startswith=REDIRECT_HTML)
+            .filter(
+                no_translation_exists(self.locale)
+                | visible_translation_exists(self.user, self.locale)
+            )
+        )
 
         if self.product:
             qs = qs.filter(products=self.product)
 
-        transdoc_subquery = Document.objects.visible(
-            self.user,
+        transdoc_subquery = Document.objects.filter(
             locale=self.locale,
             parent=OuterRef("pk"),
         )

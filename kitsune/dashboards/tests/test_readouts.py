@@ -608,7 +608,14 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
             document__locale="de", reviewed=None, is_approved=False
         )
 
-        row = self.row()
+        # A document will be excluded for anonymous users, if its
+        # only translation doesn't have an approved revision.
+        self.assertEqual(len(self.rows()), 0)
+
+        # However, reviewers can.
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, "review_revision")
+        row = self.row(user=reviewer)
         self.assertEqual(row["title"], unreviewed.document.title)
         self.assertEqual(row["status"], "Review Needed")
 
@@ -663,8 +670,14 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
             document__locale="de", is_approved=False, reviewed=datetime.now()
         )
 
-        row = self.row()
-        self.assertEqual(row["status_class"], "untranslated")
+        # A document will be excluded for anonymous users, if its
+        # only translation doesn't have an approved revision.
+        self.assertEqual(len(self.rows()), 0)
+
+        # However, reviewers can.
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, "review_revision")
+        self.assertEqual("untranslated", self.row(user=reviewer)["status_class"])
 
     def test_spam(self):
         """Don't offer unapproved (often spam) articles for translation."""
@@ -890,8 +903,9 @@ class CannedResponsesTests(ReadoutTestCase):
             document=de_doc, based_on=eng_rev, is_approved=False, reviewed=None
         )
 
-        # Anonymous users can't see a document without an approved revision.
-        self.assertEqual("untranslated", self.row()["status_class"])
+        # A document will be excluded for anonymous users, if its
+        # only translation doesn't have an approved revision.
+        self.assertEqual(len(self.rows()), 0)
 
         # However, reviewers can.
         reviewer = UserFactory()
