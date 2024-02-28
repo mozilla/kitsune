@@ -227,6 +227,10 @@ class Profile(ModelBase):
     def is_subscriber(self):
         return self.products.exists()
 
+    @property
+    def is_staff(self):
+        return self.user.groups.filter(name="Staff").exists()
+
 
 class Setting(ModelBase):
     """User specific value per setting"""

@@ -38,12 +38,15 @@
                     {{ name_link(message.sender) }}
                     {{ datetimeformat(message.created) }}
                   </div>
+                  <span class="message-view">
+                    <a class="read message text-body-sm" href="{{ url('messages.read', message.id) }}">
+                      {{ message.content_parsed|striptags|truncate(length=160) }}
+                    </a>
+                  </span>
+                  <span class="delete-button">
+                    <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
+                  </span>
                 </div>
-
-                <a class="read" href="{{ url('messages.read', message.id) }}" title="{{ _('Read message') }}">
-                  {{ message.content_parsed|striptags|truncate(length=160) }}
-                </a>
-                <a class="delete" href="{{ url('messages.delete', message.id) }}" title="{{ _('Delete message') }}">&#x2716;</a>
               </li>
             {% endfor %}
           </ol>

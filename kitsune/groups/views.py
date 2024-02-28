@@ -38,6 +38,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
     is_paginated = paginator.num_pages > 1
     user_can_edit = _user_can_edit(request.user, prof)
     user_can_manage_leaders = _user_can_manage_leaders(request.user, prof)
+    user_can_message_group = request.user.profile.is_staff
     return render(
         request,
         "groups/profile.html",
@@ -47,6 +48,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
             "members": members,
             "user_can_edit": user_can_edit,
             "user_can_manage_leaders": user_can_manage_leaders,
+            "user_can_message_group": user_can_message_group,
             "is_paginated": is_paginated,
             "member_form": member_form or AddUserForm(),
             "leader_form": leader_form or AddUserForm(),

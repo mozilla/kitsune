@@ -63,6 +63,7 @@
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
+      data-groupnames-api="{{ url('users.api.groupnames') }}"
       data-media-url="{{ MEDIA_URL }}"
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"

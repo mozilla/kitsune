@@ -66,7 +66,7 @@
       }
 
       .avatar-details {
-        width: 190px;
+        width: 100%;
         flex: 0 0 auto;
       }
     }
@@ -81,6 +81,16 @@
 .avatar-details {
   display: flex;
   align-items: center;
+  gap: 12px;
+
+  span {
+    flex: 1;
+    text-align:justify;
+  }
+
+  .message-view {
+    flex: 2;
+  }
 
   .avatar {
     display: block;
@@ -94,8 +104,14 @@
     }
   }
 
-  .user {
-    flex: 1 1 auto;
+  .time {
+    @include c.text-body-xs;
+    font-weight: bold;
+    color: var(--color-text);
+    padding-right: 5px;
+  }
+
+  .user, .group {
 
     a {
       font-weight: bold;
@@ -106,6 +122,13 @@
       &:hover time {
         color: var(--color-link);
       }
+    }
+
+    p {
+      font-weight: bold;
+      color: var(--color-heading);
+      text-decoration: none;
+      padding-right:5px;
     }
 
     time {

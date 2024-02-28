@@ -1,8 +1,10 @@
 from django.conf import settings
 from django_jinja import library
+from django.utils.translation import gettext as _
 from markupsafe import Markup, escape
 
 from kitsune.groups.models import GroupProfile
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import webpack_static
 
@@ -25,3 +27,13 @@ def group_link(group):
         return Markup(html)
     except GroupProfile.DoesNotExist:
         return group.name
+
+
+@library.global_function
+def private_message_group(group):
+    """Return a link to private message the group."""
+    url = urlparams(reverse("messages.new"), to_group=group)
+    msg = _("Private message group members")
+    return Markup(
+        f'<p class="pm"><a class="sumo-button primary-button button-lg" href="{url}">{msg}</a></p>'
+    )

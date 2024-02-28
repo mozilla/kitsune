@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Q
 from django.db.models.functions import Now
@@ -59,6 +59,7 @@ def usernames(request):
         .exclude(profile__is_fxa_migrated=False)
         .filter(Q(username__istartswith=pre) | Q(profile__name__istartswith=pre))
         .select_related("profile")
+        .distinct()
     )[:10]
 
     autocomplete_list = []
@@ -95,6 +96,52 @@ def usernames(request):
                 }
             ] + autocomplete_list
         except User.DoesNotExist:
+            pass
+
+    return autocomplete_list
+
+
+@login_required
+@require_GET
+@json_view
+def groupnames(request):
+    """An API to provide auto-complete data for user names."""
+    term = request.GET.get("term", "")
+    query = request.GET.get("query", "")
+    pre = term or query
+
+    if not pre:
+        return []
+    if not request.user.is_authenticated:
+        return []
+
+    groups = (Group.objects.filter(Q(name__istartswith=pre)))[:10]
+
+    autocomplete_list = []
+    exact_match_in_list = False
+
+    for group in groups:
+        if group.name.lower() == pre.lower():
+            exact_match_in_list = True
+        autocomplete_list.append(
+            {
+                "groupname": group.name,
+            }
+        )
+
+    if not exact_match_in_list:
+        # The front-end dropdown which uses this API requires the exact match to be in the list
+        # if it exists, so that user can be selected. Our code above won't necessarily always
+        # return an exact match, even if it exists, so if it's missing attempt to fetch it and
+        # prepend it to the list
+        try:
+            exact_match = Group.objects.filter(name__iexact=pre).get()
+            autocomplete_list = [
+                {
+                    "groupname": exact_match.name,
+                }
+            ] + autocomplete_list
+        except Group.DoesNotExist:
             pass
 
     return autocomplete_list

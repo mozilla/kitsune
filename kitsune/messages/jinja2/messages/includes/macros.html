@@ -10,7 +10,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro name_link(user=None, name=None) -%}
+{% macro name_link(user=None, name=None, group=None) -%}
   {% if user -%}
     <a rel="nofollow" href="{{ profile_url(user) }}">{% if name %}{{ name }}{% else %}{{ display_name(user) }}{% endif %}</a>
   {%- else -%}
@@ -60,16 +60,36 @@
   </span>
   <span class="to">
     {% if message.recipients > 1 -%}
+      <p>To: 
       {% set comma = joiner(', ') %}
       {% for user in message.to.all() -%}
         {{ comma() }}
         {{ name_link(user) }}
       {%- endfor %}
     {% else %}{# Save a query! #}
+    <p>
       {{ name_link(message.recipient) }}
     {% endif %}
     {{ datetimeformat(message.created) }}
+    </p>
   </span>
+  {% if request.user.profile.is_staff %}
+    <span class="to_group">
+      {% if message.recipient_groups > 1 -%}
+        <p>{{ _('To Groups') }}:
+        {% set comma = joiner(', ') %}
+        {% for group in message.to_group.all() -%}
+          {{ comma() }}
+          {{ group_link(group) }}
+        {%- endfor %}
+      {% else %}{# Save a query! #}
+        <p>{{ _('To Group') }}:
+        {{ group_link(message.recipient_group) }}
+      {% endif %}
+      {{ datetimeformat(message.created) }}
+      </p>
+    </span>
+  {% endif %}
   <div class="message">{{ message.content_parsed }}</div>
 {%- endmacro %}
 

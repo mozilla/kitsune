@@ -67,7 +67,7 @@ const entrypoints = {
     "sumo/js/gallery.js",
   ],
   wiki: [
-    "sumo/js/users.autocomplete.js",
+    "sumo/js/object.autocomplete.js",
     "sumo/js/wiki.js",
     "sumo/js/dashboards.js",
     "sumo/js/editable.js",
@@ -90,11 +90,11 @@ const entrypoints = {
     "sumo/js/reportabuse.js",
   ],
   messages: [
-    "sumo/js/users.autocomplete.js",
+    "sumo/js/object.autocomplete.js",
     "sumo/js/messages.js",
   ],
   groups: [
-    "sumo/js/users.autocomplete.js",
+    "sumo/js/object.autocomplete.js",
     "sumo/js/groups.js",
     "sumo/js/editable.js",
   ],

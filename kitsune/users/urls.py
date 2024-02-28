@@ -8,6 +8,7 @@ from kitsune.users.models import Profile
 # API patterns. All start with /users/api.
 api_patterns = [
     re_path(r"^usernames", api.usernames, name="users.api.usernames"),
+    re_path(r"^groupnames", api.groupnames, name="users.api.groupnames"),
 ]
 
 # These will all start with /user/<user_id>/
