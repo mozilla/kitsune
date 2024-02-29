@@ -15,6 +15,12 @@ from requests.exceptions import HTTPError
 
 @pytest.mark.usefixtures("setup")
 class TestUtilities:
+    logger = None
+    page = None
+    context = None
+    sumo_pages = None
+    requested_browser = None
+
     # Fetching test data from json files.
     with open("test_data/profile_edit.json", "r") as edit_test_data_file:
         profile_edit_test_data = json.load(edit_test_data_file)

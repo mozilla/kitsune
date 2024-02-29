@@ -51,7 +51,8 @@ class EditKBArticlePage(BasePage):
         super()._fill(self.__edit_article_content_textarea_field, text)
 
     def _get_edit_article_expiry_date_value(self) -> str:
-        return super()._get_element_attribute_value(self.__edit_article_expiry_date_field)
+        return super()._get_element_attribute_value(self.__edit_article_expiry_date_field,
+                                                    "value")
 
     def _fill_edit_article_expiry_date(self, text: str):
         super()._type(self.__edit_article_expiry_date_field, text, 0)

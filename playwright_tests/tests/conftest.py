@@ -30,7 +30,7 @@ def setup(request, browser, logger_setup):
         request.cls.page = page
         request.cls.context = context
         request.cls.sumo_pages = sumo_pages
-        request.cls.browser = requested_browser
+        request.cls.requested_browser = requested_browser
         request.cls.logger = logger
         yield
         context.close()

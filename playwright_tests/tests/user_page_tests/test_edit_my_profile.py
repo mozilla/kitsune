@@ -62,11 +62,11 @@ class TestEditMyProfile(TestUtilities):
 
         profile_edit_data = super().profile_edit_test_data
 
-        if self.browser == "chrome":
+        if self.requested_browser == "chrome":
             new_username = profile_edit_data["valid_user_edit_with_symbols"][
                 "username_with_valid_symbols_chrome"
             ]
-        elif self.browser == "firefox":
+        elif self.requested_browser == "firefox":
             new_username = profile_edit_data["valid_user_edit_with_symbols"][
                 "username_with_valid_symbols_firefox"
             ]
@@ -441,11 +441,11 @@ class TestEditMyProfile(TestUtilities):
 
         original_username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
-        if self.browser == "chrome":
+        if self.requested_browser == "chrome":
             new_display_name = super().profile_edit_test_data["valid_user_edit"][
                 "display_name_chrome"
             ]
-        elif self.browser == "firefox":
+        elif self.requested_browser == "firefox":
             new_display_name = super().profile_edit_test_data["valid_user_edit"][
                 "display_name_firefox"
             ]
@@ -566,7 +566,6 @@ class TestEditMyProfile(TestUtilities):
         )
 
         self.logger.info("Signing in with a different user")
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -628,8 +627,6 @@ class TestEditMyProfile(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Signing in with a different user")
-        self.delete_cookies()
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -781,7 +778,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing in with a different user and verifying that the correct website information "
             "is displayed for the first user"
         )
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -894,7 +890,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing in with a different user and verifying "
             "that the correct community portal information is displayed for the first user"
         )
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -959,7 +954,6 @@ class TestEditMyProfile(TestUtilities):
         self.navigate_back()
 
         self.logger.info("Clearing the community portal field changes")
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
@@ -1010,8 +1004,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing in with a different user and verifying that "
             "the correct people directory information is displayed for the first user"
         )
-        self.delete_cookies()
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -1089,7 +1081,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing in with a different user and verifying that the correct Matrix information "
             "is displayed for the first user"
         )
-        self.delete_cookies()
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -1167,7 +1158,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing in with a different user and verifying that the correct Country information "
             "is displayed for the first user"
         )
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -1188,7 +1178,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing out, accessing the profile and verifying that the "
             "Country information is displayed"
         )
-
         self.delete_cookies()
         self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(username_one))
 
@@ -1244,7 +1233,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing in with a different user and verifying that the correct City information "
             "is displayed for the first user"
         )
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -1333,7 +1321,6 @@ class TestEditMyProfile(TestUtilities):
             "Signing in with a different user and verifying that the "
             "correct involved from information is displayed for the first user"
         )
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
@@ -1599,7 +1586,6 @@ class TestEditMyProfile(TestUtilities):
 
         self.logger.info("Signing in with a moderator account")
         self.sumo_pages.top_navbar._click_on_sumo_nav_logo()
-        self.delete_cookies()
 
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]

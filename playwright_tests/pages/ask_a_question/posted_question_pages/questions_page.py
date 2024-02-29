@@ -157,8 +157,8 @@ class QuestionPage(BasePage):
         xpath = f"//ol[@id='breadcrumbs']/li[text()='{question_title}']"
         return super()._get_element_locator(xpath)
 
-    def _click_on_breadcrumb_locator(self, element: Locator):
-        super()._click(element)
+    def _click_on_breadcrumb(self, breadcrumb_xpath: str):
+        super()._click(breadcrumb_xpath)
 
     # Get email updates actions.
     def _get_email_updates_option(self) -> Locator:
@@ -273,8 +273,8 @@ class QuestionPage(BasePage):
         return super()._get_text_of_elements(self.__question_tags_options)
 
     def _get_remove_tag_button_locator(self, tag_name: str) -> Locator:
-        xpath = xpath = (f"//ul[@class='tag-list cf']//a[text()='{tag_name}']/following-sibling"
-                         f"::button[@class='remover']")
+        xpath = (f"//ul[@class='tag-list cf']//a[text()='{tag_name}']/following-sibling::button["
+                 f"@class='remover']")
         return super()._get_element_locator(xpath)
 
     def _add_text_to_add_a_tag_input_field(self, text: str):
@@ -421,7 +421,7 @@ class QuestionPage(BasePage):
         xpath = f"//div[@id='{reply_id}']//div[@class='content']/em/p"
         return super()._get_text_of_element(xpath)
 
-    def _click_posted_reply_said_link(self, reply_id: str) -> str:
+    def _click_posted_reply_said_link(self, reply_id: str):
         xpath = f"//div[@id='{reply_id}']//div[@class='content']//a"
         super()._click(xpath)
 

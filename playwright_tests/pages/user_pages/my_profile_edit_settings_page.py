@@ -72,65 +72,21 @@ class MyProfileEditSettingsPage(BasePage):
     def _is_watch_forum_threads_i_start_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__watch_forum_threads_I_start_checkbox)
 
-        # checkbox_background_color = super()._get_css_value_of_pseudo_html_element(
-        #     "label[" 'for="id_forums_watch_new_thread"]', ":before", "background-color"
-        # )
-        # if checkbox_background_color == EditSettingsPageMessages.CHECKBOX_CHECKED_COLOR:
-        #     return True
-        # else:
-        #     return False
-
     def _is_watch_forum_threads_i_comment_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__watch_forum_threads_I_comment_in_checkbox)
 
-        # checkbox_background_color = super()._get_css_value_of_pseudo_html_element(
-        #     "label[" 'for="id_forums_watch_after_reply"]', ":before", "background-color"
-        # )
-        # if checkbox_background_color == EditSettingsPageMessages.CHECKBOX_CHECKED_COLOR:
-        #     return True
-        # else:
-        #     return False
-
     def _is_watch_kb_discussion_threads_i_start_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__watch_kb_discussions_threads_I_start_checkbox)
-        # checkbox_background_color = super()._get_css_value_of_pseudo_html_element(
-        #     "label[" 'for="id_kbforums_watch_new_thread"]', ":before", "background-color"
-        # )
-        # if checkbox_background_color == EditSettingsPageMessages.CHECKBOX_CHECKED_COLOR:
-        #     return True
-        # else:
-        #     return False
 
     def _is_watch_kb_discussion_threads_i_comment_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(
             self.__watch_kb_discussion_threads_I_comment_in_checkbox)
-        # checkbox_background_color = super()._get_css_value_of_pseudo_html_element(
-        #     "label[" 'for="id_kbforums_watch_after_reply"]', ":before", "background-color"
-        # )
-        # if checkbox_background_color == EditSettingsPageMessages.CHECKBOX_CHECKED_COLOR:
-        #     return True
-        # else:
-        #     return False
 
     def _is_watch_question_threads_i_comment_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__watch_question_threads_I_comment_in_checkbox)
-        # checkbox_background_color = super()._get_css_value_of_pseudo_html_element(
-        #     "label[" 'for="id_questions_watch_after_reply"]', ":before", "background-color"
-        # )
-        # if checkbox_background_color == EditSettingsPageMessages.CHECKBOX_CHECKED_COLOR:
-        #     return True
-        # else:
-        #     return False
 
     def _is_send_emails_for_private_messages_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__send_emails_for_private_messages_checkbox)
-        # checkbox_background_color = super()._get_css_value_of_pseudo_html_element(
-        #     "label[" 'for="id_email_private_messages"]', ":before", "background-color"
-        # )
-        # if checkbox_background_color == EditSettingsPageMessages.CHECKBOX_CHECKED_COLOR:
-        #     return True
-        # else:
-        #     return False
 
     def _notification_banner_element(self) -> Locator:
         return super()._get_element_locator(
