@@ -4,7 +4,8 @@
 
 {% block content %}
   <article id="group-profile" class="main">
-    <h1>{{ _('Edit {group} profile information')|f(group=profile.group.name) }}</h1>
+  <h1>{{ _('Edit Group Description') }}</h1>
+    <strong>{{ _('Editing description for group {group}')|f(group=profile.group.name) }}</strong>
 
     <form action="" method="post">
       {% csrf_token %}

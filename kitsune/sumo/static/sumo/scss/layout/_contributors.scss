@@ -231,10 +231,16 @@ ol.headings-list {
   }
 }
 
+
 .users {
   display: flex;
   flex-wrap: wrap;
   margin: p.$spacing-lg 0;
+
+  img {
+    width: 200px;
+    height: 200px;
+  }
 
   li {
     flex: 1 1 100%;
@@ -263,4 +269,31 @@ ol.headings-list {
       }
     }
   }
+}
+.avatar, .info {
+  display: flex;
+  flex-direction: column; // Stack children vertically
+  align-items: center; // Center-align children horizontally
+  justify-content: center; // Center-align children vertically, if there's enough height
+  
+  img {
+    margin: 0 auto; // Center-align the image specifically if needed
+    width: 200px;
+    height: 200px;
+  }
+
+  .pm {
+    width: 100%; // Ensure the paragraph fills the width to center the button inside it
+    display: flex;
+    justify-content: center; // Center-align the button
+  }
+}
+
+.group-avatar {
+  width: 200px;
+  height: 200px;
+}
+
+.button {
+  width: 200px;
 }
