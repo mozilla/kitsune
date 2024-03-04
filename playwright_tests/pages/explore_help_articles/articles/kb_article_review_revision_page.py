@@ -26,7 +26,12 @@ class KBArticleReviewRevisionPage(BasePage):
     __revision_rendered_html_header = "//h3[text()='Revision rendered html:']"
     __revision_rendered_html_content = "//div[@id='doc-content']/p"
 
+    __defer_revision_button = "//button[@id='btn-reject']"
     __approve_revision_button = "//button[@id='btn-approve']"
+
+    # Defer revision modal
+    __defer_button = "//form[@id='reject-modal']//button"
+    __cancel_defer = "//form[@id='reject-modal']//a"
 
     # Approve revision modal
     __accept_revision_modal_header = "//div[@class='kbox-title']"
@@ -34,6 +39,7 @@ class KBArticleReviewRevisionPage(BasePage):
     # Need to add locators for approving own edit revision warning.
     __ready_for_localization_modal_checkbox = "//input[@id='id_is_ready_for_localization']"
     __needs_change_modal_checkbox = "//input[@id='id_needs_change']"
+    __needs_change_comment_textarea = "//textarea[@id='id_needs_change_comment']"
     __modal_accept_button = "//button[text()='Accept']"
     __modal_cancel_button = "//form[@id='approve-modal']//a[text()='Cancel']"
 
@@ -87,6 +93,15 @@ class KBArticleReviewRevisionPage(BasePage):
     def _get_revision_rendered_html_content(self) -> str:
         return super()._get_text_of_element(self.__revision_rendered_html_content)
 
+    def _click_on_defer_revision_button(self):
+        super()._click(self.__defer_revision_button)
+
+    def _click_on_defer_confirm_button(self):
+        super()._click(self.__defer_button)
+
+    def _click_on_cancel_defer_button(self):
+        super()._click(self.__cancel_defer)
+
     def _click_on_approve_revision_button(self):
         super()._click(self.__approve_revision_button)
 
@@ -99,3 +114,12 @@ class KBArticleReviewRevisionPage(BasePage):
 
     def _check_ready_for_localization_checkbox(self):
         super()._click(self.__ready_for_localization_modal_checkbox)
+
+    def _is_needs_change_checkbox_checked(self) -> bool:
+        return super()._is_checkbox_checked(self.__needs_change_modal_checkbox)
+
+    def _click_on_needs_change_checkbox(self):
+        super()._click(self.__needs_change_modal_checkbox)
+
+    def _add_text_to_needs_change_comment(self, text: str):
+        super()._fill(self.__needs_change_comment_textarea, text)

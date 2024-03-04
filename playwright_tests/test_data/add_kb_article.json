@@ -20,6 +20,7 @@
   "article_heading_two": "==Heading two==",
   "article_heading_three": "===Heading three===",
   "expiry_date": "05.02.2050",
+  "old_expiry_date": "05.02.2002",
   "updated_expiry_date": "07.05.2051",
   "changes_description": "Automation description test"
 }

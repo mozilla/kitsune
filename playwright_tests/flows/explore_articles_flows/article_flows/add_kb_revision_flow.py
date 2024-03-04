@@ -1,6 +1,10 @@
+from typing import Any
+
 from playwright_tests.core.testutilities import TestUtilities
 from playwright.sync_api import Page
 from playwright_tests.pages.explore_help_articles.articles.kb_article_page import KBArticlePage
+from playwright_tests.pages.explore_help_articles.articles.kb_article_review_revision_page import \
+    KBArticleReviewRevisionPage
 from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import \
     KBArticleShowHistoryPage
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import (
@@ -10,7 +14,8 @@ from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page 
 class AddKBArticleRevision(TestUtilities,
                            KBArticlePage,
                            EditKBArticlePage,
-                           KBArticleShowHistoryPage):
+                           KBArticleShowHistoryPage,
+                           KBArticleReviewRevisionPage):
     def __init__(self, page: Page):
         super().__init__(page)
 
@@ -21,7 +26,7 @@ class AddKBArticleRevision(TestUtilities,
                                expiry_date=None,
                                changes_description=None,
                                is_admin=False
-                               ) -> str:
+                               ) -> dict[str, Any]:
 
         super()._click_on_edit_article_option()
 
@@ -71,4 +76,26 @@ class AddKBArticleRevision(TestUtilities,
 
         super()._click_edit_article_changes_panel_submit_button()
 
-        return super()._get_last_revision_id()
+        return {"revision_id": super()._get_last_revision_id(),
+                "changes_description": self.kb_article_test_data['changes_description']
+                }
+
+    def approve_kb_revision(self, revision_id: str,
+                            revision_needs_change=False,
+                            ready_for_l10n=False):
+        super()._click_on_review_revision(
+            revision_id
+        )
+        super()._click_on_approve_revision_button()
+
+        if revision_needs_change:
+            if not super()._is_needs_change_checkbox_checked():
+                super()._click_on_needs_change_checkbox()
+            super()._add_text_to_needs_change_comment(
+                super().kb_revision_test_data['needs_change_message']
+            )
+
+        if ready_for_l10n:
+            super()._check_ready_for_localization_checkbox()
+
+        super()._click_accept_revision_accept_button()

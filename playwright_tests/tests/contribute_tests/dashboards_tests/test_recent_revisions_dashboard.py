@@ -142,7 +142,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
         username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Creating a new revision for the article")
-        second_revision_id = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+        second_revision_details = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
 
         self.logger.info("Navigating to the Recent Revisions dashboard and verifying that own "
                          "revision is visible")
@@ -194,7 +194,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
 
         self.logger.info("Clicking on the 'Review' option")
         self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            second_revision_id
+            second_revision_details['revision_id']
         )
 
         self.logger.info("Click on 'Approve Revision' button")
@@ -320,7 +320,7 @@ class TestRecentRevisionsDashboard(TestUtilities):
         username = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Creating a new revision for the article")
-        second_revision_id = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+        second_revision_details = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
 
         self.logger.info("Navigating to the Recent Revisions dashboard")
         self.sumo_pages.top_navbar._click_on_recent_revisions_option()
@@ -342,13 +342,15 @@ class TestRecentRevisionsDashboard(TestUtilities):
             self.page
         ).to_have_url(
             article_url + KBArticleRevision.
-            KB_REVISION_PREVIEW + str(self.number_extraction_from_string(second_revision_id))
+            KB_REVISION_PREVIEW + str(self.number_extraction_from_string(
+                second_revision_details['revision_id']
+            ))
         )
 
         self.logger.info("Verifying that the revision id is the correct one")
         check.equal(
             self.sumo_pages.kb_article_preview_revision_page._get_preview_revision_id_text(),
-            str(self.number_extraction_from_string(second_revision_id))
+            str(self.number_extraction_from_string(second_revision_details['revision_id']))
         )
 
         self.logger.info("Navigating back")

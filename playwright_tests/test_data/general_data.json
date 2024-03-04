@@ -73,6 +73,7 @@
     "Mozilla Account": "https://support.allizom.org/en-US/questions/new/mozilla-account"
   },
   "dashboard_links": {
-    "recent_revisions": "https://support.allizom.org/en-US/kb/revisions"
+    "recent_revisions": "https://support.allizom.org/en-US/kb/revisions",
+    "kb_overview": "https://support.allizom.org/en-US/contributors/kb-overview"
   }
 }

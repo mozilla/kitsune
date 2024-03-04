@@ -42,6 +42,10 @@ class TestUtilities:
         kb_new_thread_test_data = json.load(kb_new_thread_test_data_file)
     kb_article_test_data_file.close()
 
+    with open("test_data/kb_revision.json", "r") as kb_revision_test_data_file:
+        kb_revision_test_data = json.load(kb_revision_test_data_file)
+    kb_revision_test_data_file.close()
+
     with open("test_data/user_message.json", "r") as user_message_test_data_file:
         user_message_test_data = json.load(user_message_test_data_file)
     user_message_test_data_file.close()
@@ -142,8 +146,13 @@ class TestUtilities:
 
     # Navigating to a specific given link and waiting for the load state to finish.
     def navigate_to_link(self, link: str):
-        self.page.goto(link)
+        with self.page.expect_navigation() as navigation_info:
+            self.page.goto(link)
+        response = navigation_info.value
         self.wait_for_dom_to_load()
+
+        if response.status >= 400:
+            self.refresh_page()
 
     # Wait for a given timeout
     def wait_for_given_timeout(self, milliseconds: int):
@@ -219,6 +228,10 @@ class TestUtilities:
     def extract_month_day_year_from_string(self, timestamp_str: str) -> str:
         timestamp = datetime.strptime(timestamp_str, "%b %d, %Y, %I:%M:%S %p")
         return timestamp.strftime("%b %d, %Y")
+
+    def convert_string_to_datetime(self, timestamp_str: str) -> str:
+        date_object = datetime.strptime(timestamp_str, "%m.%d.%Y")
+        return date_object.strftime("%B {:d}, %Y").format(date_object.day)
 
     def extract_date_to_digit_format(self, date_str: str) -> int:
         date = datetime.strptime(date_str, "%b %d, %Y")

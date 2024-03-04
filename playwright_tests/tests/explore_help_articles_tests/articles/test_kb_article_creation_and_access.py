@@ -78,8 +78,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         )
 
         self.logger.info("Deleting the created article")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2081446, # C2081447
     @pytest.mark.kbArticleCreationAndAccess
@@ -228,9 +227,8 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2091580, C954321
     @pytest.mark.kbArticleCreationAndAccess
@@ -284,16 +282,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.logger.info("Clicking on the 'Show History' option")
         self.sumo_pages.kb_article_page._click_on_show_history_option()
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
-        )
 
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         self.logger.info("Navigating to the article page")
         self.navigate_to_link(article_url)
@@ -364,9 +355,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
 
         self.logger.info("Navigating to the article and deleting it")
         self.navigate_to_link(article_url)
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2091581
     @pytest.mark.kbArticleCreationAndAccess
@@ -414,16 +405,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.logger.info("Clicking on the 'Show History' option")
         self.sumo_pages.kb_article_page._click_on_show_history_option()
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
-        )
 
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         self.logger.info("Navigating back to the article page")
         self.navigate_to_link(article_url)
@@ -482,9 +466,8 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2091665
     @pytest.mark.kbArticleCreationAndAccess
@@ -566,7 +549,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         #     KBArticlePageMessages.KB_ARTICLE_SUBMISSION_TITLE_ERRORS[1]
         # )
 
-        self.logger.info("Submitting the question")
+        self.logger.info("Submitting the form")
         self.sumo_pages.kb_submit_kb_article_form_page._click_on_submit_for_review_button()
         self.sumo_pages.kb_submit_kb_article_form_page._add_text_to_changes_description_field(
             self.kb_article_test_data["changes_description"]
@@ -602,7 +585,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         #     self.sumo_pages.kb_submit_kb_article_form_page.get_kb_slug_error()
         # ).to_be_hidden()
 
-        self.logger.info("Submitting the question")
+        self.logger.info("Submitting the form")
         self.sumo_pages.kb_submit_kb_article_form_page._click_on_submit_for_review_button()
         self.sumo_pages.kb_submit_kb_article_form_page._add_text_to_changes_description_field(
             self.kb_article_test_data["changes_description"]
@@ -634,7 +617,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         #     self.sumo_pages.kb_submit_kb_article_form_page.get_kb_slug_error()
         # ).to_be_visible()
 
-        self.logger.info("Submitting the question")
+        self.logger.info("Submitting the form")
         self.sumo_pages.kb_submit_kb_article_form_page._click_on_submit_for_review_button()
         self.sumo_pages.kb_submit_kb_article_form_page._add_text_to_changes_description_field(
             self.kb_article_test_data["changes_description"]
@@ -651,9 +634,8 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
             KBArticlePageMessages.KB_ARTICLE_PAGE_URL + article_details
             ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT)
 
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2091665
     @pytest.mark.kbArticleCreationAndAccess
@@ -741,16 +723,9 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         self.logger.info("Clicking on the 'Show History' option")
         self.sumo_pages.kb_article_page._click_on_show_history_option()
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
-        )
 
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         self.logger.info("Clicking on the top navbar sumo nav logo")
         self.sumo_pages.top_navbar._click_on_sumo_nav_logo()
@@ -823,6 +798,5 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
                 self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
             ))
 
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()

@@ -1,17 +1,22 @@
 from playwright.sync_api import Page
 
 from playwright_tests.flows.ask_a_question_flows.aaq_flows.aaq_flow import AAQFlow
-from playwright_tests.flows.explore_help_articles_flows.article_flows.add_kb_article_flow import (
+from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_article_flow import (
     AddKbArticleFlow)
 from playwright_tests.flows.auth_flows.auth_flow import AuthFlowPage
-from playwright_tests.flows.explore_help_articles_flows.article_flows.add_kb_revision_flow import \
+from playwright_tests.flows.explore_articles_flows.article_flows.add_kb_revision_flow import \
     AddKBArticleRevision
-from playwright_tests.flows.explore_help_articles_flows.article_flows.post_new_thread_flow import \
+from playwright_tests.flows.explore_articles_flows.article_flows.delete_kb_article_flow import \
+    DeleteKbArticleFlow
+from playwright_tests.flows.explore_articles_flows.article_flows.edit_article_meta_flow import \
+    EditArticleMetaFlow
+from playwright_tests.flows.explore_articles_flows.article_flows.post_new_thread_flow import \
     PostNewDiscussionThreadFlow
 from playwright_tests.flows.messaging_system_flows.messaging_system_flow import (
     MessagingSystemFlows)
 from playwright_tests.flows.user_profile_flows.edit_profile_data_flow import EditProfileDataFlow
 from playwright_tests.pages.ask_a_question.aaq_pages.aaq_form_page import AAQFormPage
+from playwright_tests.pages.contribute.contributor_tools_pages.kb_dashboard_page import KBDashboard
 from playwright_tests.pages.contribute.contributor_tools_pages.moderate_forum_content import \
     ModerateForumContent
 from playwright_tests.pages.contribute.contributor_tools_pages.recent_revisions_page import \
@@ -26,7 +31,7 @@ from playwright_tests.pages.explore_help_articles.articles.kb_revision_preview_p
 from playwright_tests.pages.explore_help_articles.articles.kb_article_show_history_page import (
     KBArticleShowHistoryPage)
 from playwright_tests.pages.auth_page import AuthPage
-from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_metadata import \
+from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_meta import \
     KBArticleEditMetadata
 from playwright_tests.pages.explore_help_articles.articles.kb_edit_article_page import \
     EditKBArticlePage
@@ -142,6 +147,7 @@ class SumoPages:
         self.product_support_forum = ProductSupportForum(page)
 
         # Dashboard pages.
+        self.kb_dashboard_page = KBDashboard(page)
         self.recent_revisions_page = RecentRevisions(page)
 
         # Moderate Forum Page
@@ -165,5 +171,11 @@ class SumoPages:
         # KB article revision Flow
         self.kb_article_revision_flow = AddKBArticleRevision(page)
 
+        # KB article deletion Flow
+        self.kb_article_deletion_flow = DeleteKbArticleFlow(page)
+
         # KB article discussion Flow
         self.post_kb_discussion_thread_flow = PostNewDiscussionThreadFlow(page)
+
+        # KB article edit metadata Flow
+        self.edit_article_metadata_flow = EditArticleMetaFlow(page)

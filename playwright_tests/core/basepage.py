@@ -38,6 +38,10 @@ class BasePage:
     def _get_text_of_element(self, xpath: str) -> str:
         return self._get_element_locator(xpath).inner_text()
 
+    # Returning true if the inner text of an element is empty
+    def _is_element_empty(self, xpath: str) -> bool:
+        return not self._get_element_locator(xpath).inner_text()
+
     # Elements count retrieval.
     def _get_elements_count(self, xpath: str) -> int:
         return self._get_element_locator(xpath).count()

@@ -29,6 +29,8 @@ class TopNavbar(BasePage):
                                 "Forum Content']")
     __recent_revisions_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[text("
                                  ")='Recent Revisions']")
+    __dashboards_option = ("//ul[@class='mzp-c-menu-item-list sumo-nav--sublist']//a[text("
+                           ")='Dashboards']")
 
     # Sign in button
     __signin_signup_button = "//div[@id='profile-navigation']//a[@data-event-label='Sign In']"
@@ -68,6 +70,10 @@ class TopNavbar(BasePage):
     def _click_on_recent_revisions_option(self):
         super()._hover_over_element(self.__contributor_tools_option)
         super()._click(self.__recent_revisions_option)
+
+    def _click_on_dashboards_option(self):
+        super()._hover_over_element(self.__contributor_tools_option)
+        super()._click(self.__dashboards_option)
 
     # Explore our Help Articles actions.
     def _click_on_explore_our_help_articles_option(self):
