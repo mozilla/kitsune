@@ -7,10 +7,8 @@ import dntEnabled from "./libs/dnt-helper";
 (function(w) {
   'use strict';
 
-  var GTM_CONTAINER_ID = document.getElementsByTagName('html')[0].getAttribute('data-gtm-container-id');
-
-  var matches;
-  var product;
+  let html = document.getElementsByTagName('html')[0];
+  let GTM_CONTAINER_ID = html.getAttribute('data-gtm-container-id');
 
   w.dataLayer = w.dataLayer || [];
 
@@ -28,15 +26,23 @@ import dntEnabled from "./libs/dnt-helper";
 
     w.gtag('js', new Date());
 
-    // check for first string after '/products/' and before the next '/'
-    matches = w.location.href.match(/.*?\/products\/([\w-]*)\/?/);
+    let configParameters = {};
+    if (html.getAttribute("lang")) {
+      configParameters.locale = html.getAttribute("lang");
+    }
+    if (html.dataset.gaTopics) {
+      configParameters.topics = html.dataset.gaTopics;
+    }
+    if (html.dataset.gaProducts) {
+      configParameters.products = html.dataset.gaProducts;
+    }
+    if (html.dataset.gaContentGroup) {
+      configParameters.content_group = html.dataset.gaContentGroup;
+    }
+    if (html.dataset.gaDefaultSlug) {
+      configParameters.default_slug = html.dataset.gaDefaultSlug;
+    }
 
-    // product should be first match or null
-    product = (matches && matches.length > 0) ? matches[1] : null;
-
-    w.gtag('config', GTM_CONTAINER_ID, {
-      'dimension1': product
-    });
-
+    w.gtag('config', GTM_CONTAINER_ID, configParameters);
   }
 })(window);

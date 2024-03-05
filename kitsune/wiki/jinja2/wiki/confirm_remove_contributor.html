@@ -3,6 +3,7 @@
 {% set title = _('Remove contributor | {document}')|f(document=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Remove Contributor'))] %}
+{% set ga_content_group = "kb-cms" %}
 
 {% block content %}
     <article id="remove-member" class="sumo-page-section">

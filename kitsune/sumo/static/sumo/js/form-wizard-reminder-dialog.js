@@ -34,7 +34,7 @@ export class ReminderDialog extends HTMLDialogElement {
         <div id="reminder-dialog-content">
           <div id="header" class="hbox">
             <h1 class="text-display-xxs">${gettext("Add to calendar")}</h1>
-            <button id="close" class="mzp-c-button mzp-t-neutral" aria-label="${gettext("Close")}" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="close-reminder-dialog"><img src="${closeIconURL}" aria-hidden="true"/></button>
+            <button id="close" class="mzp-c-button mzp-t-neutral" aria-label="${gettext("Close")}" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "close-reminder-dialog"}'><img src="${closeIconURL}" aria-hidden="true"/></button>
           </div>
           <div class="vbox">
             <div id="directions">${gettext("Save the download link to your calendar and install Firefox whenever you’re ready.")}</div>
@@ -44,14 +44,14 @@ export class ReminderDialog extends HTMLDialogElement {
                 <option value="gcal">Google Calendar</option>
                 <option value="ics">${gettext("ICS file")}</option>
               </select>
-              <button id="create-event" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="create-calendar-event">${gettext("Save")}</button>
+              <button id="create-event" class="mzp-c-button mzp-t-product" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "create-calendar-event"}'>${gettext("Save")}</button>
             </div>
             <hr>
 
             <div class="hbox">
               <span id="copy-link-message">${gettext("Copy download link directly")}</span>
               <div id="copy-link-container" class="hbox">
-                <button id="copy-link" class="mzp-c-button mzp-t-product mzp-t-secondary mzp-t-md" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="copy-link-to-clipboard-button">${gettext("Copy link")}</button>
+                <button id="copy-link" class="mzp-c-button mzp-t-product mzp-t-secondary mzp-t-md" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "copy-link-to-clipboard-button"}'>${gettext("Copy link")}</button>
                 <span id="copied-message"><img src="${successIconUrl}" aria-hidden="true">${gettext("Copied!")}</span>
               </div>
             </div>
@@ -99,11 +99,7 @@ export class ReminderDialog extends HTMLDialogElement {
     createEventButton.addEventListener("click", this);
 
     this.addEventListener("close", e => {
-      trackEvent(
-        "device-migration-wizard",
-        "close",
-        "reminder-dialog"
-      );
+      trackEvent("dmw_reminder_dialog_close");
     })
   }
 
@@ -329,12 +325,9 @@ END:VCALENDAR
   }
 
   #createEvent(calendarType) {
-    trackEvent(
-      "device-migration-wizard",
-      "create",
-      "create-calendar-event",
-      calendarType
-    );
+    trackEvent("dmw_calendar_event_create", {
+      "calendar_event_type": calendarType
+    });
 
     switch (calendarType) {
       case "gcal": {

@@ -37,7 +37,7 @@ export class SetupDeviceStep extends BaseFormStep {
                   <span class="other error">${gettext("An error occurred in our system. Please try again later.")}</span>
                 </aside>
                 <input id="email" name="email" type="email" required="true" placeholder="${gettext("example@example.com")}"/>
-                <button id="submit" type="submit" class="mzp-c-button mzp-t-product mzp-t-lg" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="send-email-reminder" disabled="">
+                <button id="submit" type="submit" class="mzp-c-button mzp-t-product mzp-t-lg" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "send-email-reminder"}' disabled="">
                   <span class="not-success">${gettext("Send link")}</span>
                   <img class="success" src="${successIconUrl}" aria-hidden="true"/>
                   <span class="success">${gettext("Sent")}</span>
@@ -48,7 +48,7 @@ export class SetupDeviceStep extends BaseFormStep {
                 ["https://www.mozilla.org/en-US/privacy/websites/#campaigns"]
               )}</div>
             </form>
-            <button id="open-reminder-dialog-button" class="mzp-c-button mzp-t-product mzp-t-secondary" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="open-reminder-dialog">${gettext("Add to calendar")}</button>
+            <button id="open-reminder-dialog-button" class="mzp-c-button mzp-t-product mzp-t-secondary" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "open-reminder-dialog"}'>${gettext("Add to calendar")}</button>
           </div>
         </div>
       </template>
@@ -156,11 +156,7 @@ export class SetupDeviceStep extends BaseFormStep {
    * newsletter that gives them a link to download Firefox on their new device.
    */
   async #submitEmail() {
-    trackEvent(
-      "device-migration-wizard",
-      "submit",
-      "reminder-email"
-    );
+    trackEvent("dmw_reminder_email_submit");
 
     this.#submitButton.disabled = true;
 
@@ -201,29 +197,19 @@ export class SetupDeviceStep extends BaseFormStep {
         response.status < 300 &&
         responseBody.status == "ok") {
       this.#submitButton.toggleAttribute("success", true);
-      trackEvent(
-        "device-migration-wizard",
-        "success",
-        "reminder-email"
-      );
+      trackEvent("dmw_reminder_email_success");
     } else {
       this.#showError(ERROR_TYPES.OTHER);
       this.#submitButton.disabled = false;
 
       if (responseBody.status) {
-        trackEvent(
-          "device-migration-wizard",
-          "error",
-          "reminder-email",
-          responseBody.status
-        );
+        trackEvent("dmw_reminder_email_error", {
+          "status": responseBody.status
+        });
       } else {
-        trackEvent(
-          "device-migration-wizard",
-          "error",
-          "reminder-email",
-          response.status
-        );
+        trackEvent("dmw_reminder_email_error", {
+          "status": response.status
+        });
       }
     }
 

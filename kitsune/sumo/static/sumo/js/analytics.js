@@ -1,65 +1,35 @@
-(function($) {
-  'use strict';
-  // Track clicks to form buttons with data-event-category attr.
-  $('body').on('click', 'button[data-event-category]', function(ev) {
-    ev.preventDefault();
-
-    var $this = $(this);
-    trackEvent(
-      $this.attr('data-event-category'),
-      $this.attr('data-event-action'),
-      $this.attr('data-event-label'),
-      $this.attr('data-event-value')
-    );
-
-    // Delay the form post by 250ms to ensure the event is tracked.
-    setTimeout(function() {
-      $this.closest('form').trigger('submit');
-    }, 250);
-
-    return false;
-  });
-
-  // Track clicks to links with data-event-category attr.
-  $('body').on('click', 'a[data-event-category]', function(ev) {
-    var $this = $(this);
-    var newTab = ev.metaKey || ev.ctrlKey || $this.attr('target') == '_blank'; // is a new tab/window being opened?
-
-    // unless user is ctrl-click'ing, prevent default action (navigation) while
-    // we wait for the event to be tracked
-    // (if a new tab/window is being opened, no need to delay/prevent anything)
-    if (!newTab) {
-      ev.preventDefault();
-    }
-
-    // track event before setting the navigation timeout below so the event
-    // actually has time to be tracked
-    trackEvent(
-      $this.attr('data-event-category'),
-      $this.attr('data-event-action'),
-      $this.attr('data-event-label'),
-      $this.attr('data-event-value')
-    );
-
-    if (!newTab) {
-      var href = $this.attr('href');
-
-      // Delay the click navigation by 250ms to ensure the event is tracked.
-      setTimeout(function () {
-        document.location.href = href;
-      }, 250);
-
-      return false;
-    }
-  });
-})(jQuery);
-
-export default function trackEvent(category, action, label, value) {
+export default function trackEvent(name, parameters) {
   if (window.gtag) {
-    window.gtag('event', action, {
-      'event_category': category,
-      'event_label': label,
-      'value': value
-    });
+    window.gtag('event', name, parameters);
   }
 }
+
+export function addGAEventListeners(containerSelector) {
+  const elementsWithGAEvent = document.querySelectorAll(`${containerSelector} *[data-event-name]`);
+  elementsWithGAEvent.forEach((elementWithGAEvent) => {
+    elementWithGAEvent.addEventListener("click", (event) => {
+      let eventParameters;
+      const element = event.currentTarget;
+      if (element.dataset.eventParameters) {
+        eventParameters = JSON.parse(element.dataset.eventParameters);
+      }
+      if ((element.dataset.eventName === "link_click") && element.hasAttribute("href")) {
+        if (!eventParameters) {
+          eventParameters = {};
+        }
+        if ("link_url" in eventParameters === false) {
+          eventParameters.link_url = element.getAttribute("href");
+        }
+      }
+      trackEvent(element.dataset.eventName, eventParameters);
+    });
+  });
+}
+
+// The "DOMContentLoaded" event is guaranteed not to have been
+// called by the time the following code is run, because it always
+// waits until all deferred scripts have been loaded, and the code
+// in this file is always bundled into a script that is deferred.
+document.addEventListener("DOMContentLoaded", () => {
+  addGAEventListeners("body");
+});

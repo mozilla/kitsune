@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% set title = 'Download Firefox Integrity Check' %}
+{% set ga_content_group = "firefox-integrity-check-home" %}
 
 {% block content %}
   <article id="wiki-doc" class="main">
@@ -14,7 +15,11 @@
         <li>Mozilla will never send email messages with attached programs or files or ask you for any sensitive information such as passwords.</li>
       </ul>
     </p>
-    <a href="/media/downloads/FirefoxIntegrityCheck.exe" class="btn">{{ title }}</a>
+    <a href="/media/downloads/FirefoxIntegrityCheck.exe" class="btn"
+      data-event-name="link_click"
+      data-event-parameters='{"link_name": "firefox-integrity-check-download"}'>
+      {{ title }}
+    </a>
     </section>
   </article>
 {% endblock %}

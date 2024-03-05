@@ -23,9 +23,11 @@
             <h3 class="card--title">
               <a class="expand-this-link title"
                 href="{{ url('questions.aaq_step2', product_key=key) }}"
-                data-event-category="link click"
-                data-event-action="product"
-                data-event-label="{{ product.name }}">
+                data-event-name="link_click"
+                data-event-parameters='{
+                  "link_name": "aaq-step-2",
+                  "link_detail": "{{ product.slug }}"
+                }'>
                 {{ product.name }}
               </a>
             </h3>
@@ -108,15 +110,19 @@
         <p>{{ _('Sign in/up to post your question and get help.') }}</p>
       {% endif %}
       {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}
+        {% set link_name = "aaq-widget.community-support.kb-article" %}
         {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
       {% else %}
+        {% set link_name = "aaq-widget.aaq-step-3" %}
         {% set next_step = url('questions.aaq_step3', product_key=aaq_context.key) %}
       {% endif %}
       <a class="sumo-button primary-button feature-box"
         href="{{ next_step }}"
-        data-event-category="link click"
-        data-event-action="{{ location }}"
-        data-event-label="aaq widget">
+        data-event-name="link_click"
+        data-event-parameters='{
+          "link_name": "{{ link_name }}",
+          "link_detail": "{{ aaq_context.key }}"
+        }'>
         {% if aaq_context.has_ticketing_support %}
           {{ _('Contact Support') }}
         {% else %}

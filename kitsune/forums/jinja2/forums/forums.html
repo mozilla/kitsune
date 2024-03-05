@@ -6,6 +6,7 @@
 {% if forums.number > 1 %}
 {% set canonical_url = canonical_url|urlparams(page=forums.number) %}
 {% endif %}
+{% set ga_content_group = "list-contributor-forums" %}
 
 {% block content %}
 <article class="sumo-page-section">

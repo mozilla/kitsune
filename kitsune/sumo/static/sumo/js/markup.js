@@ -552,23 +552,23 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             '<form class="simple-search-form" id="gallery-modal-search"><input type="text" name="q" class="searchbox"' +
             'placeholder="' + gettext('Search Gallery') + '" />' +
             '<button type="submit" class="submit-button search-button" title="' + gettext('Search Gallery') + '">' +
-            gettext('Search Gallery') + '</button>' + 
+            gettext('Search Gallery') + '</button>' +
           '</form>' +
           '<div class="type">' +
             '<span>' + gettext('Show:') + '</span>' +
             '<ol><li data-type="image" class="selected">' + gettext('Images') + '</li>' +
-            '<li data-type="video">' + gettext('Videos') + '</li></ol>' + 
+            '<li data-type="video">' + gettext('Videos') + '</li></ol>' +
           '</div>' +
-          '<div class="locale-filter">' + gettext('Show media for:') + ' <select></select>' + 
-          '</div>' + 
+          '<div class="locale-filter">' + gettext('Show media for:') + ' <select></select>' +
+          '</div>' +
         '</div>' +
         '<div class="placeholder">' + '</div>' +
           '<div class="submit sumo-button-wrap reverse-on-desktop align-end">' +
             '<button class="sumo-button primary-button">' + gettext('Insert Media') + '</button>' +
             '<a href="' + galleryUrl + '#upload" class="upload sumo-button secondary-button" target="_blank">' +
             gettext('Upload Media') + '</a>' +
-            '<a href="#cancel" class="kbox-cancel sumo-button push-left">' + gettext('Cancel') + '</a>' + 
-          '</div>' +            
+            '<a href="#cancel" class="kbox-cancel sumo-button push-left">' + gettext('Cancel') + '</a>' +
+          '</div>' +
       '</section>'
   ),
       selectedText = me.getSelectedText(),
@@ -852,7 +852,7 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
       var $responseTextbox = $('#id_content');
       var targetContent = $responseTextbox.val();
 
-      trackEvent('Canned response usage', slug);
+      trackEvent('common_forum_response_insert', {slug});
 
       $responseTextbox.val(targetContent + sourceContent);
     }

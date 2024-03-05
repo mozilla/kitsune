@@ -28,6 +28,14 @@
   {% set meta = (('robots', 'noindex'),) %}
 {% endif %}
 
+{% set ga_content_group = "support-forum-question-details" %}
+{% if product %}
+  {% set ga_products = "/" + product.slug + "/" %}
+{% endif %}
+{% if topic %}
+  {% set ga_topics = "/" + topic.slug + "/" %}
+{% endif %}
+
 {% block breadcrumbs %}
 
 {% if aaq_final_step %}
@@ -262,7 +270,13 @@
           {{ attachments_form('auth.User', user.pk, images, settings, user) }}
 
           <div class="answer-tools sumo-button-wrap align-end reverse-on-desktop">
-            <button type="submit" class="sumo-button primary-button button-lg">{{ _('Post Reply') }}</button>
+            <button type="submit" class="sumo-button primary-button button-lg"
+              data-event-name="answer_submit"
+              data-event-parameters='{
+                "question_ID": "{{ question.id }}"
+              }'>
+              {{ _('Post Reply') }}
+            </button>
             <input type="submit" class="sumo-button secondary-button button-lg" id="preview" name="preview" value="{{ _('Preview Reply') }}"
               data-preview-url="{{ url('questions.answer_preview_async') }}"
               data-preview-container-id="answer-preview"

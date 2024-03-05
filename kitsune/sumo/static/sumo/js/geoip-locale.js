@@ -95,7 +95,7 @@ function handleLocale(countryName) {
         $localisedMessage.append($('<button class="sumo-button button-sm cancel" />').text(data[suggestedLocale].cancel));
       }
 
-      trackEvent('Geo IP Targeting', 'show banner');
+      trackEvent('geoip_targeting_banner_show');
     })
     .error(function(err) {
       console.error('GeoIP suggestion error', err);
@@ -110,7 +110,7 @@ function handleLocale(countryName) {
       var $this = $(this);
       $announceBar.find('.close-button').trigger("click");
       if ($this.hasClass('confirm')) {
-        trackEvent('Geo IP Targeting', 'click yes');
+        trackEvent('geoip_targeting_banner_accept');
         // Delay the click navigation by 250ms to ensure the event is tracked.
         setTimeout(function() {
           var newQsVar = 'lang=' + suggestedLocale;
@@ -122,7 +122,7 @@ function handleLocale(countryName) {
           window.location.search += newQsVar;
         }, 250);
       } else {
-        trackEvent('Geo IP Targeting', 'click no');
+        trackEvent('geoip_targeting_banner_reject');
       }
     });
 

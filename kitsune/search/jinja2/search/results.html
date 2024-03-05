@@ -3,6 +3,7 @@
 {% from "search/includes/result.html" import search_result with context %}
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q), ('WT.oss_r', num_results), ('robots', 'noindex, nofollow')) %}
+{% set ga_content_group = "search-form" %}
 
 {% block masthead %}
 <div class="search-results-visible">
@@ -50,11 +51,9 @@
                 <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
                 <div class="card--details">
                   <h3 class="card--title">
-                    <a
-                      tabindex="-1"
-                      class="expand-this-link title"
-                      href="{{ doc.url }}"
-                    >
+                    <a tabindex="-1" class="expand-this-link title" href="{{ doc.url }}"
+                      data-event-name="link_click"
+                      data-event-parameters='{"link_name": "search-fallback.kb-article"}'>
                       {{ doc.document_title }}
                     </a>
                   </h3>

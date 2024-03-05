@@ -4,6 +4,13 @@
 {% set crumbs = [(url('questions.home'), _('Support Forums')),
                  (url('questions.details', question.id), question.title),
                  (None, _('Delete question'))] %}
+{% set ga_content_group = "support-forum-question-delete" %}
+{% if question.product %}
+  {% set ga_products = "/" + question.product.slug + "/" %}
+{% endif %}
+{% if question.topic %}
+  {% set ga_topics = "/" + question.topic.slug + "/" %}
+{% endif %}
 
 {% block content %}
   <div class="grid_12">

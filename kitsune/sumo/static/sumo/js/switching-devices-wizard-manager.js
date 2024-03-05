@@ -101,7 +101,7 @@ export default class SwitchingDevicesWizardManager {
         return state.fxaSignedIn;
       },
       enter(state) {
-        trackEvent("device-migration-wizard", "report-state", "sign-into-fxa");
+        trackEvent("dmw_state_report", {dmw_state: "sign-into-fxa"});
         let baseParams = {
           service: state.service,
           action: state.action,
@@ -143,7 +143,7 @@ export default class SwitchingDevicesWizardManager {
         return state.syncEnabled && state.confirmedSyncChoices;
       },
       enter(state) {
-        trackEvent("device-migration-wizard", "report-state", "configure-sync");
+        trackEvent("dmw_state_report", {dmw_state: "configure-sync"});
         return {
           syncEnabled: state.syncEnabled,
         };
@@ -157,7 +157,7 @@ export default class SwitchingDevicesWizardManager {
         return false;
       },
       enter(state) {
-        trackEvent("device-migration-wizard", "report-state", "setup-new-device");
+        trackEvent("dmw_state_report", {dmw_state: "setup-new-device"});
         return {};
       },
     },
@@ -260,7 +260,7 @@ export default class SwitchingDevicesWizardManager {
           await Promise.race([uiTourPromise, timeoutPromise]);
         } catch (e) {
           // UITour ping timed out, so let's disqualify because UITour is broken.
-          trackEvent("device-migration-wizard", "report-state", "uitour-broken");
+          trackEvent("dmw_state_report", {dmw_state: "uitour-broken"});
           this.#formWizard.disqualify("uitour-broken");
           return;
         }
@@ -299,7 +299,7 @@ export default class SwitchingDevicesWizardManager {
       // UA computation didn't meet our criteria OR failed.
     }
 
-    trackEvent("device-migration-wizard", "report-state", "need-fx-desktop");
+    trackEvent("dmw_state_report", {dmw_state: "need-fx-desktop"});
     this.#formWizard.disqualify("need-fx-desktop");
   }
 

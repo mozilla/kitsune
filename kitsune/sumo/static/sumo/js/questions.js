@@ -1,7 +1,6 @@
 import questionmarkIcon from "sumo/img/questions/icon.questionmark.png";
 import "sumo/js/libs/jquery.cookie";
 import _throttle from "underscore/modules/throttle";
-import trackEvent from "sumo/js/analytics";
 import KBox from "sumo/js/kbox";
 import AjaxPreview from "sumo/js/ajaxpreview";
 import AjaxVote from "sumo/js/ajaxvote";
@@ -25,12 +24,6 @@ function init() {
 
   if ($body.is('.new-question')) {
     initQuestion();
-
-    if (window.location.search.indexOf('step=aaq-register') > -1) {
-      trackEvent('Ask A Question Flow', 'step 1 page');
-    } else if (window.location.search.indexOf('step=aaq-question') > -1) {
-      trackEvent('Ask A Question Flow', 'step 2 page');
-    }
   }
 
   if ($body.is('.edit-question')) {
@@ -43,10 +36,6 @@ function init() {
     $('#flag-filter input[type="checkbox"]').on('click', function() {
       window.location = $(this).data('url');
     });
-
-    if (window.location.pathname.indexOf('questions/new/confirm') > -1) {
-      trackEvent('Ask A Question Flow', 'step 3 confirm page');
-    }
   }
 
   if ($body.is('.answers')) {
@@ -254,8 +243,8 @@ function initAjaxForm($container, formSelector, boxSelector, onKboxClose) {
         }
 
         if (!response.ignored) {
-          // Trigger a document event for others to listen for.
-          $(document).trigger('vote', $.extend(data, {url: url}));
+          // Trigger an event for others to listen for.
+          document.dispatchEvent(new CustomEvent("vote-for-question", { bubbles: true, detail: { url } }));
         }
       },
       error: function() {

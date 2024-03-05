@@ -1,35 +1,37 @@
-import "jquery-ui/ui/widgets/tabs";
+import trackEvent from "sumo/js/analytics";
 
-$(function() {
-  // initiate tabs
-  var tabs = $('#search-tabs').tabs(),
-    cache_search_date = $('.showhide-input');
+// The "DOMContentLoaded" event is guaranteed not to have been
+// called by the time the following code is run, because it always
+// waits until all deferred scripts have been loaded, and the code
+// in this file is always bundled into a script that is deferred.
+document.addEventListener("DOMContentLoaded", () => {
+  const locale = document.querySelector("html").getAttribute("lang");
 
-  $('#tab-wrapper form').on("submit", function() {
-    $('input.auto-fill').each(function() {
-      if ($(this).val() === $(this).attr('placeholder')) {
-        $(this).val('');
+  // On page load, after confirming that we're on the search
+  // page, send a "search" event if there's a search term.
+  if (window.location.pathname === `/${locale}/search/`) {
+    const params = new URL(window.location.href).searchParams;
+    const searchTerm = params.get("q");
+    if (searchTerm) {
+      let contentFilter = "";
+      let productFilter = params.get("product") || "";
+
+      switch (params.get("w")) {
+        case "1":
+          contentFilter = "wiki";
+          break;
+        case "2":
+          contentFilter = "aaq";
+          break;
+        default:
+          contentFilter = "all-results";
       }
-    });
-  });
 
-  $('select', cache_search_date).trigger(function () {
-    if ($(this).val() === 0) {
-      $('input', $(this).parent()).hide();
-    } else {
-      $('input', $(this).parent()).show();
+      trackEvent("search", {
+        "search_term": searchTerm,
+        "search_product_filter": productFilter,
+        "search_content_filter": contentFilter
+      });
     }
-  }).trigger();
-
-  switch (parseInt($('#where').text(), 10)) {
-    case 4:
-      tabs.tabs({active: 2});
-      break;
-    case 2:
-      tabs.tabs({active: 1});
-      break;
-    case 1:
-    default:
-      tabs.tabs({active: 0});
   }
 });

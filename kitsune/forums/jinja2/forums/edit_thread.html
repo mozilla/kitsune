@@ -6,6 +6,7 @@
 (url('forums.threads', forum.slug), forum.name),
 (url('forums.posts', forum.slug, thread.id), thread.title),
 (None, _('Edit thread'))] %}
+{% set ga_content_group = "contributor-forum-thread-edit" %}
 
 {% block content %}
   <div id="edit-thread" class="grid_12">
