@@ -1,65 +1,66 @@
-(function($) {
-  'use strict';
-  // Track clicks to form buttons with data-event-category attr.
-  $('body').on('click', 'button[data-event-category]', function(ev) {
-    ev.preventDefault();
-
-    var $this = $(this);
-    trackEvent(
-      $this.attr('data-event-category'),
-      $this.attr('data-event-action'),
-      $this.attr('data-event-label'),
-      $this.attr('data-event-value')
-    );
-
-    // Delay the form post by 250ms to ensure the event is tracked.
-    setTimeout(function() {
-      $this.closest('form').trigger('submit');
-    }, 250);
-
-    return false;
-  });
-
-  // Track clicks to links with data-event-category attr.
-  $('body').on('click', 'a[data-event-category]', function(ev) {
-    var $this = $(this);
-    var newTab = ev.metaKey || ev.ctrlKey || $this.attr('target') == '_blank'; // is a new tab/window being opened?
-
-    // unless user is ctrl-click'ing, prevent default action (navigation) while
-    // we wait for the event to be tracked
-    // (if a new tab/window is being opened, no need to delay/prevent anything)
-    if (!newTab) {
-      ev.preventDefault();
-    }
-
-    // track event before setting the navigation timeout below so the event
-    // actually has time to be tracked
-    trackEvent(
-      $this.attr('data-event-category'),
-      $this.attr('data-event-action'),
-      $this.attr('data-event-label'),
-      $this.attr('data-event-value')
-    );
-
-    if (!newTab) {
-      var href = $this.attr('href');
-
-      // Delay the click navigation by 250ms to ensure the event is tracked.
-      setTimeout(function () {
-        document.location.href = href;
-      }, 250);
-
-      return false;
-    }
-  });
-})(jQuery);
-
-export default function trackEvent(category, action, label, value) {
+export default function trackEvent(name, parameters) {
+  console.log("--------------------");
+  console.log(`event: "${name}"`);
+  console.log(`parameters: ${JSON.stringify(parameters)}`);
+  console.log("--------------------");
   if (window.gtag) {
-    window.gtag('event', action, {
-      'event_category': category,
-      'event_label': label,
-      'value': value
-    });
+    window.gtag('event', name, parameters);
   }
 }
+
+// The "DOMContentLoaded" event is guaranteed not to have been
+// called by the time the following code is run, because it always
+// waits until all deferred scripts have been loaded, and the code
+// in this file is always bundled into a script that is deferred.
+document.addEventListener("DOMContentLoaded", () => {
+  const linksWithGAEvent = document.querySelectorAll("body a[data-event-name]");
+  const buttonsWithGAEvent = document.querySelectorAll("body button[data-event-name]");
+
+  linksWithGAEvent.forEach((linkWithGAEvent) => {
+    linkWithGAEvent.addEventListener("click", (event) => {
+      let eventParameters;
+      let link = event.currentTarget;
+      // Is a new tab/window being opened?
+      let newTab = event.metaKey || event.ctrlKey || link.getAttribute("target") === '_blank';
+
+      if (link.dataset.eventParameters) {
+        eventParameters = JSON.parse(link.dataset.eventParameters);
+      }
+
+      trackEvent(link.dataset.eventName, eventParameters);
+
+      if (!newTab) {
+        // Prevent the default action (navigation) while we wait for the event to be tracked.
+        // If a new tab/window is being opened, there's no need to delay/prevent anything.
+        event.preventDefault();
+        // Delay the click navigation by 250ms to ensure the event is tracked.
+        setTimeout(function () {
+          document.location.href = link.getAttribute("href");
+        }, 250);
+      }
+    });
+  });
+
+  buttonsWithGAEvent.forEach((buttonWithGAEvent) => {
+    buttonWithGAEvent.addEventListener("click", (event) => {
+      let eventParameters;
+      let button = event.currentTarget;
+      let closestForm = button.closest("form");
+
+      if (button.dataset.eventParameters) {
+        eventParameters = JSON.parse(button.dataset.eventParameters);
+      }
+
+      trackEvent(button.dataset.eventName, eventParameters);
+
+      if (closestForm) {
+        event.preventDefault();
+        // Delay the form post by 250ms to ensure the event is tracked.
+        setTimeout(function() {
+          closestForm.dispatchEvent("submit");
+        }, 250);
+      }
+    });
+  });
+
+});
