@@ -165,11 +165,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             ['article_slug'] + KBArticlePageMessages.KB_ARTICLE_HISTORY_URL_ENDPOINT
         )
 
-        self.logger.info("Clicking on the 'Delete article' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-        self.logger.info("Clicking on the 'Delete' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
         self.logger.info("Verifying that the article was successfully deleted by navigating to "
                          "the article")
@@ -237,14 +234,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.logger.info("Navigating back")
             self.navigate_back()
 
-            self.logger.info("Clicking on the 'Show History' option")
-            self.sumo_pages.kb_article_page._click_on_show_history_option()
-
-            self.logger.info("Clicking on the 'Delete article' button")
-            self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-            self.logger.info("Clicking on the 'Delete' button")
-            self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+            self.logger.info("Deleting the article")
+            self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2101637, C2489543, C2102169
     @pytest.mark.kbArticleShowHistory
@@ -278,16 +269,9 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.sumo_pages.kb_article_page._click_on_show_history_option()
 
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
-        )
 
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         self.logger.info("Verifying that the username which created the revision is added inside "
                          "the 'Contributors' list")
@@ -327,7 +311,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         username_two = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Creating a new revision for the document")
-        self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+        second_revision_details = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision(
+        )
 
         self.logger.info("Verifying that the 'Edit Contributors' option is not displayed for "
                          "users which don't have the necessary permissions")
@@ -396,18 +381,10 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.sumo_pages.kb_article_show_history_page._get_list_of_all_contributors()
         )
 
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            second_revision_details['revision_id']
         )
-
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
         self.logger.info("Verifying that second username is displayed inside the 'Contributors' "
                          "list")
@@ -501,14 +478,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.sumo_pages.kb_article_page._get_list_of_kb_article_contributors()
         )
 
-        self.logger.info("Navigating back to the 'Show History page'")
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-
-        self.logger.info("Clicking on the 'Delete article' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-        self.logger.info("Clicking on the 'Delete' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2101638
     @pytest.mark.kbArticleShowHistory
@@ -563,14 +534,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.sumo_pages.kb_article_page._get_list_of_kb_article_contributors()
         )
 
-        self.logger.info("Navigating back to the 'Show History page'")
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-
-        self.logger.info("Clicking on the 'Delete article' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-        self.logger.info("Clicking on the 'Delete' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2101634, C2489553
     @pytest.mark.kbArticleShowHistory
@@ -592,16 +557,9 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.sumo_pages.kb_article_page._click_on_show_history_option()
 
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
-        )
 
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         self.logger.info("Signing in with a non-Admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -611,25 +569,18 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         username_two = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
         self.logger.info("Creating a new revision for the document")
-        self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+        second_revision_details = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision(
+        )
 
         self.logger.info("Signing in with a normal account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            second_revision_details['revision_id']
         )
-
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
@@ -649,7 +600,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
         self.logger.info("Clicking on the revision editor")
         self.sumo_pages.kb_article_show_history_page._click_on_a_particular_revision_editor(
-            revision_id, username_two
+            second_revision_details['revision_id'], username_two
         )
 
         self.logger.info("Verifying that we are redirected to the editor homepage")
@@ -713,7 +664,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
         self.logger.info("Clicking on the revision editor")
         self.sumo_pages.kb_article_show_history_page._click_on_a_particular_revision_editor(
-            revision_id, username_two
+            second_revision_details['revision_id'], username_two
         )
 
         self.logger.info("Verifying that we are redirected to the editor homepage")
@@ -724,11 +675,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.logger.info("Navigating back")
         self.navigate_back()
 
-        self.logger.info("Clicking on the 'Delete article' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-        self.logger.info("Clicking on the 'Delete' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
     # C2499415
     @pytest.mark.kbArticleShowHistory
@@ -751,16 +699,9 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.sumo_pages.kb_article_page._click_on_show_history_option()
 
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
-        )
 
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
         self.logger.info("Signing in with a non-admin account")
         creator_username = self.start_existing_session(super().username_extraction_from_email(
@@ -768,12 +709,12 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         ))
 
         self.logger.info("Submitting a new revision")
-        second_revision_id = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
+        second_revision_details = self.sumo_pages.kb_article_revision_flow.submit_new_kb_revision()
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
         revision_time = self.sumo_pages.kb_article_show_history_page._get_revision_time(
-            second_revision_id
+            second_revision_details['revision_id']
         )
 
         self.logger.info("Clicking on the first revision")
@@ -789,7 +730,9 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.navigate_back()
 
         self.logger.info("Clicking on the revision time")
-        self.sumo_pages.kb_article_show_history_page._click_on_a_revision_date(second_revision_id)
+        self.sumo_pages.kb_article_show_history_page._click_on_a_revision_date(
+            second_revision_details['revision_id']
+        )
 
         self.logger.info("Verifying that the revision information content is expanded by default")
         expect(
@@ -824,7 +767,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.logger.info("Verifying that the revision id is the correct one")
         check.equal(
             self.sumo_pages.kb_article_preview_revision_page._get_preview_revision_id_text(),
-            str(self.number_extraction_from_string(second_revision_id))
+            str(self.number_extraction_from_string(second_revision_details['revision_id']))
         )
 
         self.logger.info("Verifying that the correct revision time is displayed")
@@ -936,25 +879,16 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
 
         self.sumo_pages.kb_article_page._click_on_show_history_option()
 
-        self.logger.info("Clicking on the 'Review' option")
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            second_revision_id
-        )
-
-        self.logger.info("Click on 'Approve Revision' button")
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.logger.info("Clicking on the 'Ready for Localization' checkbox")
-        self.sumo_pages.kb_article_review_revision_page._check_ready_for_localization_checkbox()
-
-        self.logger.info("Clicking on the 'Accept' button")
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(
+            second_revision_details['revision_id'], ready_for_l10n=True)
 
         self.logger.info("Deleting user session")
         self.delete_cookies()
 
         self.logger.info("Clicking on the revision time")
-        self.sumo_pages.kb_article_show_history_page._click_on_a_revision_date(second_revision_id)
+        self.sumo_pages.kb_article_show_history_page._click_on_a_revision_date(
+            second_revision_details['revision_id']
+        )
 
         self.logger.info("Verifying that the correct reviewed status is displayed")
         check.equal(
@@ -1018,14 +952,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             self.page
         ).to_have_url(
             article_url + QuestionPageMessages.EDIT_QUESTION_URL_ENDPOINT + "/" + str(
-                self.number_extraction_from_string(second_revision_id))
+                self.number_extraction_from_string(second_revision_details['revision_id']))
         )
 
-        self.logger.info("Clicking on the 'Show History' option")
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-
-        self.logger.info("Clicking on the 'Delete article' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-
-        self.logger.info("Clicking on the 'Delete' button")
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()

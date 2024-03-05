@@ -8,6 +8,7 @@ class KBArticleShowHistoryPage(BasePage):
     __show_history_category_link = "//dt[text()='Category:']/following-sibling::dd/a"
     __show_history_revision_history_for = ("//dt[text()='Revision history "
                                            "for:']/following-sibling::dd[1]")
+    __ready_for_l10_modal_submit_button = "//button[@id='submit-l10n']"
 
     # Document contributors locators
     __show_history_page_banner = "//li[@class='mzp-c-notification-bar mzp-t-success']/p"
@@ -54,12 +55,22 @@ class KBArticleShowHistoryPage(BasePage):
         xpath = f"//tr[@id='{revision_id}']//a[contains(text(),'{username}')]"
         super()._click(xpath)
 
+    def _click_on_ready_for_l10n_option(self, revision_id: str):
+        xpath = f"//tr[@id='{revision_id}']/td[@class='l10n']/a"
+        super()._click(xpath)
+
+    def _click_on_submit_l10n_readiness_button(self):
+        super()._click(self.__ready_for_l10_modal_submit_button)
+
     # Delete document actions.
     def _click_on_delete_this_document_button(self):
         super()._click(self.__delete_this_document_button)
 
     def _get_delete_this_document_button_locator(self) -> Locator:
         return super()._get_element_locator(self.__delete_this_document_button)
+
+    def _is_delete_button_displayed(self) -> bool:
+        return super()._is_element_visible(self.__delete_this_document_button)
 
     def _click_on_confirmation_delete_button(self):
         super()._click(self.__delete_this_document_confirmation_delete_button)

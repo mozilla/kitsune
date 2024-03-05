@@ -1251,13 +1251,8 @@ class TestArticleThreads(TestUtilities):
         self.sumo_pages.kb_article_page._click_on_show_history_option()
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
 
-        self.sumo_pages.kb_article_show_history_page._click_on_review_revision(
-            revision_id
-        )
-
-        self.sumo_pages.kb_article_review_revision_page._click_on_approve_revision_button()
-
-        self.sumo_pages.kb_article_review_revision_page._click_accept_revision_accept_button()
+        self.logger.info("Approving the revision")
+        self.sumo_pages.kb_article_revision_flow.approve_kb_revision(revision_id)
 
     # Will perform a cleanup by deleting the test article at the end.
     # Need be executed after all other methods from this test class in th GH workflow file.
@@ -1267,9 +1262,9 @@ class TestArticleThreads(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         self.navigate_to_link(TestArticleThreads.article_url)
-        self.sumo_pages.kb_article_page._click_on_show_history_option()
-        self.sumo_pages.kb_article_show_history_page._click_on_delete_this_document_button()
-        self.sumo_pages.kb_article_show_history_page._click_on_confirmation_delete_button()
+
+        self.logger.info("Deleting the created article")
+        self.sumo_pages.kb_article_deletion_flow.delete_kb_article()
 
         with open("test_data/test_article", 'w'):
             pass

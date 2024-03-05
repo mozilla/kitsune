@@ -17,12 +17,14 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
                                  article_slug=None,
                                  article_category=None,
                                  allow_discussion=True,
+                                 allow_translations=True,
                                  selected_relevancy=True,
                                  selected_topics=True,
                                  search_summary=None,
                                  article_content=None,
                                  submit_article=True,
-                                 is_template=False) -> dict[str, Any]:
+                                 is_template=False,
+                                 expiry_date=None) -> dict[str, Any]:
         self._page.goto(KBArticlePageMessages.CREATE_NEW_KB_ARTICLE_STAGE_URL)
 
         kb_article_test_data = super().kb_article_test_data
@@ -50,6 +52,9 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
             super()._select_category_option_by_text(kb_article_test_data["category_options"])
         else:
             super()._select_category_option_by_text(article_category)
+
+        if not allow_translations:
+            super()._check_allow_translations_checkbox()
 
         if selected_relevancy is True:
             super()._click_on_a_relevant_to_option_checkbox(
@@ -90,7 +95,9 @@ class AddKbArticleFlow(TestUtilities, SubmitKBArticlePage):
         if article_content is None:
             super()._add_text_to_content_textarea(kb_article_test_data["article_content"])
 
-        super()._add_text_to_expiry_date_field(kb_article_test_data["expiry_date"])
+        if expiry_date is not None:
+            super()._add_text_to_expiry_date_field(expiry_date)
+
         # We need to evaluate in order to fetch the slug field value
         slug = self._page.evaluate(
             'document.getElementById("id_slug").value'

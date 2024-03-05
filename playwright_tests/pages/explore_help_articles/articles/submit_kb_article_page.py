@@ -10,6 +10,7 @@ class SubmitKBArticlePage(BasePage):
     __kb_article_category_select = "//select[@id='id_category']"
     __kb_article_is_localizable_checkbox = "//input[@id='id_is_localizable']"
     __kb_article_allow_discussions_on_article = "//label[@for='id_allow_discussion']"
+    __kb_article_allow_translations = "//label[@for='id_is_localizable']"
     __kb_article_search_for_related_documents = "//input[@id='search-related']"
     __kb_article_keyword_input = "//input[@id='id_keywords']"
     __kb_article_search_result_summary_textarea = "//textarea[@id='id_summary']"
@@ -147,3 +148,6 @@ class SubmitKBArticlePage(BasePage):
 
     def _is_allow_discussion_on_article_checkbox_checked(self) -> bool:
         return super()._is_checkbox_checked(self.__kb_article_allow_discussions_on_article)
+
+    def _check_allow_translations_checkbox(self):
+        super()._click(self.__kb_article_allow_translations)

@@ -15,6 +15,7 @@ class KBArticleEditMetadata(BasePage):
     __obsolete_checkbox = "//input[@id='id_is_archived']"
     __allow_discussion_checkbox = "//input[@id='id_allow_discussion']"
     __needs_change_checkbox = "//input[@id='id_needs_change']"
+    __needs_change_textarea = "//textarea[@id='id_needs_change_comment']"
     __save_changes_button = "//button[text()='Save']"
 
     def __init__(self, page: Page):
@@ -83,11 +84,14 @@ class KBArticleEditMetadata(BasePage):
     def _click_on_allow_discussion_on_article_checkbox(self):
         super()._click(self.__allow_discussion_checkbox)
 
-    def _is_needs_change_checkbox_checked(self) -> bool:
+    def _is_needs_change_checkbox(self) -> bool:
         return super()._is_checkbox_checked(self.__needs_change_checkbox)
 
     def _click_needs_change_checkbox(self):
         super()._click(self.__needs_change_checkbox)
+
+    def _fill_needs_change_textarea(self, text: str):
+        super()._fill(self.__needs_change_textarea, text)
 
     def _click_on_save_changes_button(self):
         super()._click(self.__save_changes_button)
