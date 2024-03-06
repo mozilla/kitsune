@@ -47,9 +47,12 @@ import trackEvent from "sumo/js/analytics";
 
     // Fire an event after 10 seconds to track "read".
     setTimeout(function() {
-      trackEvent(
-        'Article Read',
-        getEnglishSlug() + ' / ' + getLocale());
+      trackEvent('article_read', {
+        "locale": getLocale(),
+        "default_slug": getEnglishSlug(),
+        "products": getProducts(),
+        "topics": getTopics()
+      });
     }, 10000);
 
     function getLocale() {
@@ -58,6 +61,14 @@ import trackEvent from "sumo/js/analytics";
 
     function getEnglishSlug() {
       return $('body').data('default-slug');
+    }
+
+    function getProducts() {
+      return $('body').data('document-products-parameter');
+    }
+
+    function getTopics() {
+      return $('body').data('document-topics-parameter');
     }
   }
 

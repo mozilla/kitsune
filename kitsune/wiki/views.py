@@ -221,6 +221,13 @@ def document(request, document_slug, document=None):
 
     product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
+    # Create serialized versions of the document's products and topics to be used
+    # within GA as parameters/dimensions.
+    products_parameter = f"/{'/'.join(products.order_by('slug').values_list('slug', flat=True))}/"
+    topics_parameter = (
+        f"/{'/'.join(doc.get_topics().order_by('slug').values_list('slug', flat=True))}/"
+    )
+
     # Switching devices section
     switching_devices_product = switching_devices_topic = switching_devices_subtopics = None
     if doc.is_switching_devices_document:
@@ -275,6 +282,8 @@ def document(request, document_slug, document=None):
         "product_topics": product_topics,
         "product": product,
         "products": products,
+        "topics_parameter": topics_parameter,
+        "products_parameter": products_parameter,
         "related_products": doc.related_products.exclude(pk=product.pk),
         "breadcrumb_items": breadcrumbs,
         "document_css_class": document_css_class,
