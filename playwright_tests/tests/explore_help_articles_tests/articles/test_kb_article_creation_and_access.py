@@ -392,7 +392,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         )
 
         self.logger.info("Navigating back to the article page and signing in with admin")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         expect(
             self.page
@@ -429,7 +429,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         )
 
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         expect(
             self.page
@@ -455,7 +455,7 @@ class TestKBArticleCreationAndAccess(TestUtilities, KBArticleRevision):
         )
 
         self.logger.info("Navigating back to the article page")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         expect(
             self.page

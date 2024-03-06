@@ -1,9 +1,20 @@
 from playwright.sync_api import Page
 from playwright_tests.core.testutilities import TestUtilities
+from playwright_tests.pages.top_navbar import TopNavbar
 from playwright_tests.pages.user_pages.my_profile_edit import MyProfileEdit
+from playwright_tests.pages.user_pages.my_profile_edit_contribution_areas_page import \
+    MyProfileEditContributionAreasPage
+from playwright_tests.pages.user_pages.my_profile_edit_settings_page import \
+    MyProfileEditSettingsPage
+from playwright_tests.pages.user_pages.my_profile_user_navbar import UserNavbar
 
 
-class EditProfileDataFlow(MyProfileEdit, TestUtilities):
+class EditProfileDataFlow(MyProfileEdit,
+                          TestUtilities,
+                          MyProfileEditContributionAreasPage,
+                          TopNavbar,
+                          UserNavbar,
+                          MyProfileEditSettingsPage):
     def __init__(self, page: Page):
         super().__init__(page)
 
@@ -50,3 +61,19 @@ class EditProfileDataFlow(MyProfileEdit, TestUtilities):
         super()._clear_all_input_fields()
         super()._clear_username_field()
         super()._clear_biography_textarea_field()
+
+    def check_all_user_settings(self):
+        super()._click_on_settings_profile_option()
+        super()._click_on_all_settings_checkboxes()
+        super()._click_on_update_button()
+
+    def check_all_profile_contribution_areas(self, checked: bool):
+        super()._click_on_settings_profile_option()
+        super()._click_on_edit_contribution_areas_option()
+
+        if not checked:
+            super()._click_on_unchecked_cont_areas_checkboxes()
+        else:
+            super()._click_on_all_checked_cont_areas_checkboxes()
+
+        super()._click_on_update_contribution_areas_button()

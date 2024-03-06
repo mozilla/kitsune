@@ -12,7 +12,6 @@ class TestFooter(TestUtilities):
     @pytest.mark.footerSectionTests
     def test_all_footer_links_are_working(self):
         self.logger.info("Verifying that footer links are not broken")
-
         for link in self.sumo_pages.footer_section._get_all_footer_links():
             relative_url = link.get_attribute("href")
 

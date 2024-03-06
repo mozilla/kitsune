@@ -16,7 +16,7 @@
     "common_responses_response": "Zoom feature"
   },
   "troubleshooting_information_kb_article_url": "https://support.mozilla.org/en-US/kb/use-troubleshooting-information-page-fix-firefox",
-  "troubleshooting_information_textarea_field": "Test Troubleshooting data",
+  "troubleshooting_information": "Test Troubleshooting data",
   "troubleshoot_product_and_os_versions": ["Test os", "Test product version"],
   "products_aaq_url": {
     "Firefox": "https://support.allizom.org/en-US/questions/new/desktop/form",

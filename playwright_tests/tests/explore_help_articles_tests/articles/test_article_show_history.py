@@ -29,6 +29,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.logger.info("Create a new simple article")
         article_details = self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
+        article_url = self.get_page_url()
+
         self.logger.info("Fetching the revision id")
         revision_id = self.sumo_pages.kb_article_show_history_page._get_last_revision_id()
         revision_id_number = self.number_extraction_from_string(revision_id)
@@ -53,7 +55,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             )
 
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         self.logger.info("Verifying that the delete button for the article is not displayed")
         expect(
@@ -74,7 +76,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             )
 
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         self.logger.info("Delete user session")
         self.delete_cookies()
@@ -89,7 +91,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
             FxAPageMessages.AUTH_PAGE_URL in self.get_page_url()
         )
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         self.logger.info("Verifying that manually navigating to the delete endpoint returns the "
                          "auth page")
@@ -104,7 +106,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         )
 
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         self.logger.info("Verifying that the delete button is not available for the only revision")
         expect(
@@ -250,6 +252,8 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         self.logger.info("Create a new simple article")
         self.sumo_pages.submit_kb_article_flow.submit_simple_kb_article()
 
+        article_url = self.get_page_url()
+
         self.logger.info("Verifying that no users are added inside the contributors list")
         expect(
             self.sumo_pages.kb_article_show_history_page._get_all_contributors_locator()
@@ -334,7 +338,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         )
 
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         self.logger.info("Clicking on the Article menu option")
         self.sumo_pages.kb_article_page._click_on_article_option()
@@ -367,7 +371,7 @@ class TestKBArticleShowHistory(TestUtilities, KBArticleShowHistoryPageMessages):
         )
 
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(article_url)
 
         self.logger.info("Signing in with a normal account")
         self.start_existing_session(super().username_extraction_from_email(

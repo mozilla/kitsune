@@ -17,13 +17,7 @@ class TestEditMySettings(TestUtilities):
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-        self.sumo_pages.top_navbar._click_on_settings_profile_option()
-
-        self.logger.info("Clicking on all available checkboxes")
-        self.sumo_pages.edit_my_profile_settings_page._click_on_all_settings_checkboxes()
-
-        self.logger.info("Clicking on the 'Update' button")
-        self.sumo_pages.edit_my_profile_settings_page._click_on_update_button()
+        self.sumo_pages.edit_profile_flow.check_all_user_settings()
 
         self.logger.info("Verifying that the correct notification banner is displayed")
         check.equal(
@@ -45,9 +39,7 @@ class TestEditMySettings(TestUtilities):
             "Unchecking all the available checkboxes and clicking on the 'Update' button"
         )
 
-        self.sumo_pages.edit_my_profile_settings_page._click_on_all_settings_checkboxes()
-
-        self.sumo_pages.edit_my_profile_settings_page._click_on_update_button()
+        self.sumo_pages.edit_profile_flow.check_all_user_settings()
 
         self.logger.info("Verifying that the correct notification banner is displayed")
 
