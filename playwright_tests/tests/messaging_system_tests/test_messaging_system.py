@@ -23,19 +23,16 @@ class TestMessagingSystem(TestUtilities):
         ))
 
         self.logger.info("Navigating to the inbox page")
-
         self.sumo_pages.top_navbar._click_on_inbox_option()
 
         self.logger.info(
             "Clearing the inbox if there are messages"
         )
-
         if self.sumo_pages.inbox_page._are_inbox_messages_displayed():
             self.sumo_pages.inbox_page._delete_all_inbox_messages()
             self.logger.info("Messages found. Clearing the list")
 
-        self.logger.info("Verifying that the correct page message is displayed")
-
+        self.logger.info("Verifying that the correct message is displayed")
         check.equal(
             self.sumo_pages.inbox_page._get_text_of_inbox_no_message_header(),
             InboxPageMessages.NO_MESSAGES_IN_INBOX_TEXT,
@@ -47,20 +44,15 @@ class TestMessagingSystem(TestUtilities):
         )
 
         self.logger.info("Navigating to the 'Sent Messages' page")
-
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
 
-        self.logger.info(
-            "Verifying if there are messages displayed inside the inbox section. "
-            "If there are, we are clearing them all"
-        )
-
+        self.logger.info("Verifying if there are messages displayed inside the inbox section. If "
+                         "there are, we are clearing them all")
         if self.sumo_pages.sent_message_page._are_sent_messages_displayed():
             self.sumo_pages.sent_message_page._delete_all_displayed_sent_messages()
             self.logger.info("Messages found. Clearing the list")
 
         self.logger.info("Verifying that the correct page message is displayed")
-
         check.equal(
             self.sumo_pages.sent_message_page._get_sent_messages_no_message_text(),
             SentMessagesPageMessages.NO_MESSAGES_IN_SENT_MESSAGES_TEXT,
@@ -79,13 +71,14 @@ class TestMessagingSystem(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
         )
 
-        self.logger.info("Signing in with user one")
+        self.logger.info("Signing in with a simple user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_1"]
         ))
 
         user_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
+        self.logger.info("Navigating to the profile page for user two")
         self.navigate_to_link(
             MyProfileMessages.get_my_profile_stage_url(username=user_two)
         )
@@ -93,9 +86,7 @@ class TestMessagingSystem(TestUtilities):
         self.logger.info("Clicking on the 'Private Message button'")
         self.sumo_pages.my_profile_page._click_on_private_message_button()
 
-        self.logger.info(
-            "Verifying that the receiver is automatically added inside the 'To' field"
-        )
+        self.logger.info("Verifying that the receiver is automatically added inside the To field")
         # Firefox GH runner fails here. We are running this assertion only in Chrome for now
         if self.requested_browser == "chrome":
             assert self.sumo_pages.new_message_page._get_user_to_text() == user_two, (
@@ -103,13 +94,10 @@ class TestMessagingSystem(TestUtilities):
                 f"Received: {self.sumo_pages.new_message_page._get_user_to_text()}"
             )
 
-        self.logger.info("Adding text into the new message textarea field")
-        self.sumo_pages.new_message_page._fill_into_new_message_body_textarea(
-            self.user_message_test_data["valid_user_message"]["message"]
+        self.logger.info("Sending a message to the user")
+        self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+            message_body=self.user_message_test_data["valid_user_message"]["message"]
         )
-
-        self.logger.info("Clicking on the 'Send' button")
-        self.sumo_pages.new_message_page._click_on_new_message_send_button()
 
         self.logger.info("Verifying that the correct message sent banner is displayed")
         check.equal(
@@ -122,10 +110,8 @@ class TestMessagingSystem(TestUtilities):
             f"{self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text()}",
         )
 
-        self.logger.info(
-            "Clicking on the 'Sent Messages option' "
-            "and verifying that the message was successfully sent"
-        )
+        self.logger.info("Clicking on the 'Sent Messages option' and verifying that the message "
+                         "was successfully sent")
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
 
         self.logger.info("Verifying that the sent message is displayed")
@@ -133,11 +119,8 @@ class TestMessagingSystem(TestUtilities):
             username=user_two
         )).to_be_visible()
 
-        self.logger.info(
-            "Deleting the message from the sent messages link "
-            "and verifying that the message is no longer displayed"
-        )
-
+        self.logger.info("Deleting the message from the sent messages link and verifying that "
+                         "the message is no longer displayed")
         self.sumo_pages.sent_message_page._click_on_sent_message_delete_button(username=user_two)
         self.sumo_pages.sent_message_page._click_on_delete_page_delete_button()
 
@@ -157,24 +140,19 @@ class TestMessagingSystem(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Signing in with the user which received the message")
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_2"]
         ))
 
-        self.logger.info(
-            "Accessing the Inbox section " "and verifying that the message was received"
-        )
+        self.logger.info("Accessing the Inbox section and verifying that the message was received")
         self.sumo_pages.top_navbar._click_on_inbox_option()
 
         expect(self.sumo_pages.inbox_page._inbox_message(
             username=user_one
         )).to_be_visible()
 
-        self.logger.info(
-            "Deleting the message and verifying that it "
-            "is no longer displayed inside the inbox section"
-        )
+        self.logger.info("Deleting the message and verifying that it is no longer displayed "
+                         "inside the inbox section")
         self.sumo_pages.inbox_page._click_on_inbox_message_delete_button(username=user_one)
 
         self.sumo_pages.inbox_page._click_on_delete_page_delete_button()
@@ -184,7 +162,6 @@ class TestMessagingSystem(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Verifying that the correct banner is displayed")
-
         check.equal(
             self.sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text(),
             SentMessagesPageMessages.DELETE_MESSAGE_BANNER_TEXT,
@@ -209,16 +186,13 @@ class TestMessagingSystem(TestUtilities):
 
         user_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
-        self.logger.info(
-            "Accessing the 'New Message page " "and sending a message to another user'"
-        )
+        self.logger.info("Accessing the New Message page and sending a message to another user")
         self.sumo_pages.top_navbar._click_on_inbox_option()
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_new_message()
         self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
             message_body=super().user_message_test_data["valid_user_message"]["message"],
         )
-        self.sumo_pages.new_message_page._click_on_new_message_send_button()
 
         self.logger.info("Verifying that the correct banner is displayed")
         check.equal(
@@ -231,9 +205,8 @@ class TestMessagingSystem(TestUtilities):
             f"{self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text()}",
         )
 
-        self.logger.info(
-            "Verifying that the sent message is displayed inside the 'sent messages' page"
-        )
+        self.logger.info("Verifying that the sent message is displayed inside the 'sent "
+                         "messages' page")
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
 
         expect(self.sumo_pages.sent_message_page._sent_messages(test_user)).to_be_visible()
@@ -241,11 +214,8 @@ class TestMessagingSystem(TestUtilities):
         self.logger.info("Clearing the sent messages list")
         self.sumo_pages.sent_message_page._delete_all_displayed_sent_messages()
 
-        self.logger.info(
-            "Signing in with the receiver account and verifying that the message "
-            "is displayed inside the inbox section"
-        )
-
+        self.logger.info("Signing in with the receiver account and verifying that the message is "
+                         "displayed inside the inbox section")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_4"]
         ))
@@ -257,7 +227,6 @@ class TestMessagingSystem(TestUtilities):
         )).to_be_visible()
 
         self.logger.info("Clearing the inbox")
-
         self.sumo_pages.inbox_page._delete_all_inbox_messages()
 
     # C891412, C891413
@@ -274,22 +243,19 @@ class TestMessagingSystem(TestUtilities):
         self.logger.info("Accessing the inbox section via the top-navbar")
         self.sumo_pages.top_navbar._click_on_inbox_option()
 
-        self.logger.info(
-            "Verifying that we are on the correct page "
-            "and the 'Inbox' navbar option is highlighted"
-        )
+        self.logger.info("Verifying that we are on the correct page and the 'Inbox' navbar "
+                         "option is highlighted")
         expect(self.page).to_have_url(InboxPageMessages.INBOX_PAGE_STAGE_URL)
 
         expect(
             self.sumo_pages.mess_system_user_navbar._get_inbox_navbar_element()
         ).to_have_css("background-color", InboxPageMessages.NAVBAR_INBOX_SELECTED_BG_COLOR)
 
+        self.logger.info("Clicking on the sent messages navbar option")
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
 
-        self.logger.info(
-            "Verifying that we are on the correct page "
-            "and the 'Sent Messages' page is successfully displayed"
-        )
+        self.logger.info("Verifying that we are on the correct page and the 'Sent Messages' page "
+                         "is successfully displayed")
         expect(
             self.page
         ).to_have_url(SentMessagesPageMessages.SENT_MESSAGES_PAGE_URL)
@@ -317,10 +283,8 @@ class TestMessagingSystem(TestUtilities):
         self.logger.info("Clicking on the navbar inbox messaging system navbar option")
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_inbox()
 
-        self.logger.info(
-            "Verifying that we are on the correct page "
-            "and the 'Inbox' navbar option is highlighted"
-        )
+        self.logger.info("Verifying that we are on the correct page and the 'Inbox' navbar "
+                         "option is highlighted")
         expect(self.page).to_have_url(InboxPageMessages.INBOX_PAGE_STAGE_URL)
 
         expect(
@@ -341,19 +305,17 @@ class TestMessagingSystem(TestUtilities):
         self.logger.info("Accessing the New Message page")
         self.sumo_pages.top_navbar._click_on_inbox_option()
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_new_message()
+
+        self.logger.info("Submitting the form without any data")
         self.sumo_pages.new_message_page._click_on_new_message_send_button()
 
         self.logger.info("Verifying that we are still on the 'New Message page'")
         expect(self.page).to_have_url(NewMessagePageMessages.NEW_MESSAGE_PAGE_STAGE_URL)
 
-        self.logger.info("Adding a valid user inside the 'To' field")
-        self.sumo_pages.new_message_page._type_into_new_message_to_input_field(text=user_two)
-        self.sumo_pages.new_message_page._click_on_a_searched_user(username=user_two)
-
-        self.logger.info(
-            "Clicking the 'Send' button and verifying that we are still on the same page"
+        self.logger.info("Sending a message and verifying that we are on the same page")
+        self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
+            recipient_username=user_two
         )
-        self.sumo_pages.new_message_page._click_on_new_message_send_button()
 
         expect(self.page).to_have_url(NewMessagePageMessages.NEW_MESSAGE_PAGE_STAGE_URL)
 
@@ -383,7 +345,6 @@ class TestMessagingSystem(TestUtilities):
         #         ]
         #     )
         self.logger.info("Adding 9990 characters inside the input field")
-
         self.sumo_pages.new_message_page._fill_into_new_message_body_textarea(
             text=super().user_message_test_data["valid_user_message"][
                 "9990_characters_long_message"
@@ -395,6 +356,7 @@ class TestMessagingSystem(TestUtilities):
             f"Expected: {NewMessagePageMessages.TEN_CHARACTERS_REMAINING_MESSAGE}"
             f"Displayed: {self.sumo_pages.new_message_page._get_characters_remaining_text()}",
         )
+
         self.logger.info("Verifying that the characters remaining color is the expected one")
         expect(self.sumo_pages.new_message_page._get_characters_remaining_text_element()
                ).to_have_css("color", NewMessagePageMessages.ENOUGH_CHARACTERS_REMAINING_COLOR)
@@ -409,7 +371,6 @@ class TestMessagingSystem(TestUtilities):
         #     )
 
         self.logger.info("Adding one character inside the textarea field")
-
         self.sumo_pages.new_message_page._type_into_new_message_body_textarea(
             text=super().user_message_test_data["valid_user_message"]["one_character_message"]
         )
@@ -437,7 +398,6 @@ class TestMessagingSystem(TestUtilities):
         #     )
 
         self.logger.info("Adding 9 characters inside the textarea field")
-
         self.sumo_pages.new_message_page._type_into_new_message_body_textarea(
             text=super().user_message_test_data["valid_user_message"]["9_characters_message"]
         )
@@ -475,6 +435,7 @@ class TestMessagingSystem(TestUtilities):
         user_two = super().username_extraction_from_email(
             super().user_secrets_accounts["TEST_ACCOUNT_13"]
         )
+
         self.logger.info("Signing in with a normal user account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_12"]
@@ -489,6 +450,7 @@ class TestMessagingSystem(TestUtilities):
         self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=user_two,
             message_body=super().user_message_test_data["valid_user_message"]["message"],
+            submit_message=False
         )
 
         self.logger.info("Clicking on the 'Cancel' button")
@@ -501,9 +463,8 @@ class TestMessagingSystem(TestUtilities):
 
         expect(self.page).to_have_url(InboxPageMessages.INBOX_PAGE_STAGE_URL)
 
-        self.logger.info(
-            "Navigating to the 'Sent Messages' page nad verifying that the message was not sent"
-        )
+        self.logger.info("Navigating to the 'Sent Messages' page nad verifying that the message "
+                         "was not sent")
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
 
         expect(self.sumo_pages.sent_message_page._sent_messages(username=user_two)
@@ -514,9 +475,8 @@ class TestMessagingSystem(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
-        self.logger.info(
-            "Navigating to the receiver inbox and verifying that no message was received"
-        )
+        self.logger.info("Navigating to the receiver inbox and verifying that no message was "
+                         "received")
         self.sumo_pages.top_navbar._click_on_inbox_option()
 
         expect(
@@ -547,6 +507,7 @@ class TestMessagingSystem(TestUtilities):
         self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
             message_body=super().user_message_test_data["valid_user_message"]["message"],
+            submit_message=False
         )
 
         self.logger.info("Clicking on  the 'Preview' button")
@@ -558,7 +519,6 @@ class TestMessagingSystem(TestUtilities):
         ).to_be_visible()
 
         self.logger.info("Verifying that all the preview items are displayed")
-
         check.equal(
             self.sumo_pages.new_message_page._get_text_of_test_data_first_paragraph_text(),
             NewMessagePageMessages.PREVIEW_MESSAGE_CONTENT_FIRST_PARAGRAPH_TEXT,
@@ -622,10 +582,8 @@ class TestMessagingSystem(TestUtilities):
             self.sumo_pages.new_message_page._new_message_preview_internal_link_test_data_element()
         ).to_be_visible()
 
-        self.logger.info(
-            "Clicking on the internal link and "
-            "verifying that the user is redirected to the correct article"
-        )
+        self.logger.info("Clicking on the internal link and verifying that the user is "
+                         "redirected to the correct article")
         self.sumo_pages.new_message_page._click_on_preview_internal_link()
 
         assert (
@@ -637,9 +595,8 @@ class TestMessagingSystem(TestUtilities):
             f"Received: {self.sumo_pages.kb_article_page._get_text_of_article_title()}"
         )
 
-        self.logger.info(
-            "Verifying that the message was no sent by checking the 'Sent Messages page'"
-        )
+        self.logger.info("Verifying that the message was no sent by checking the 'Sent Messages "
+                         "page'")
         self.sumo_pages.top_navbar._click_on_inbox_option()
 
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
@@ -648,12 +605,8 @@ class TestMessagingSystem(TestUtilities):
             self.sumo_pages.sent_message_page._sent_messages(username=test_user)
         ).to_be_hidden()
 
-        self.logger.info(
-            "Signing in with the potential message receiver "
-            "and verifying that no message was received"
-        )
-
-        self.logger.info("Signing in with a normal user account")
+        self.logger.info("Signing in with the potential message receiver and verifying that no "
+                         "message was received")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
@@ -672,37 +625,29 @@ class TestMessagingSystem(TestUtilities):
         )
 
         self.logger.info("Signing in with a normal user account")
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_5"]
         ))
 
         user_one = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
-        self.logger.info(
-            "Accessing the 'New Message' page and sending a message to a different user"
-        )
+        self.logger.info("Accessing the 'New Message' page and sending a message to a different "
+                         "user")
         self.sumo_pages.top_navbar._click_on_inbox_option()
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_new_message()
         self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
             recipient_username=test_user,
             message_body=super().user_message_test_data["valid_user_message"]["message"],
         )
-        self.sumo_pages.new_message_page._click_on_new_message_send_button()
 
         self.logger.info("Navigating to the sent messages page")
-
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
 
         self.logger.info("Clicking on the 'Delete Selected' button")
-
         self.sumo_pages.sent_message_page._click_on_delete_selected_button()
 
-        self.logger.info(
-            "Verifying that the correct message is displayed "
-            "and is no longer displayed when dismissed"
-        )
-
+        self.logger.info("Verifying that the correct message is displayed and is no longer "
+                         "displayed when dismissed")
         check.equal(
             self.sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text(),
             SentMessagesPageMessages.NO_MESSAGES_SELECTED_BANNER_TEXT,
@@ -713,30 +658,22 @@ class TestMessagingSystem(TestUtilities):
             f"{self.sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text()}",
         )
 
-        self.logger.info(
-            "Verifying that the message is still listed inside the sent messages section"
-        )
-
+        self.logger.info("Verifying that the message is still listed inside the sent messages "
+                         "section")
         expect(
             self.sumo_pages.sent_message_page._sent_messages(username=test_user)
         ).to_be_visible()
 
         self.logger.info("Sending another message to self twice")
-
         for i in range(2):
             self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_new_message()
             self.sumo_pages.messaging_system_flow.complete_send_message_form_with_data(
                 recipient_username=user_one,
                 message_body=super().user_message_test_data["valid_user_message"]["message"],
             )
-            self.sumo_pages.new_message_page._click_on_new_message_send_button()
 
-        self.logger.info(
-            "Clicking on the 'delete selected' button while no messages is selected "
-            "and verifying that the correct "
-            "banner is displayed"
-        )
-
+        self.logger.info("Clicking on the 'delete selected' button while no messages is selected "
+                         "and verifying that the correct banner is displayed")
         self.sumo_pages.inbox_page._click_on_inbox_delete_selected_button()
 
         check.equal(
@@ -768,10 +705,8 @@ class TestMessagingSystem(TestUtilities):
             f"Received: {self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text()}",
         )
 
-        self.logger.info(
-            "Navigating to the sent messages section and "
-            "clearing all messages via the 'delete selected button'"
-        )
+        self.logger.info("Navigating to the sent messages section and clearing all messages via "
+                         "the 'delete selected button'")
         self.sumo_pages.mess_system_user_navbar._click_on_messaging_system_navbar_sent_messages()
 
         self.sumo_pages.sent_message_page._delete_all_sent_messages_via_delete_selected_button()
@@ -786,7 +721,6 @@ class TestMessagingSystem(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Verifying that the correct banner is displayed")
-
         check.equal(
             self.sumo_pages.sent_message_page._get_sent_messages_page_deleted_banner_text(),
             SentMessagesPageMessages.MULTIPLE_MESSAGES_DELETION_BANNER_TEXT,
@@ -800,7 +734,6 @@ class TestMessagingSystem(TestUtilities):
         self.logger.info(
             "Signing in with the receiver account and navigating to the inbox section"
         )
-
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MESSAGE_6"]
         ))
@@ -808,7 +741,6 @@ class TestMessagingSystem(TestUtilities):
         self.sumo_pages.top_navbar._click_on_inbox_option()
 
         self.logger.info("Verifying that the messages are displayed inside the inbox section")
-
         expect(
             self.sumo_pages.inbox_page._inbox_message(username=user_one)
         ).to_be_visible()
@@ -818,16 +750,13 @@ class TestMessagingSystem(TestUtilities):
         )
         self.sumo_pages.inbox_page._delete_all_inbox_messages_via_delete_selected_button()
 
-        self.logger.info(
-            "Verifying that the messages are no longer displayed inside the inbox section"
-        )
-
+        self.logger.info("Verifying that the messages are no longer displayed inside the inbox "
+                         "section")
         expect(
             self.sumo_pages.inbox_page._inbox_message(username=user_one)
         ).to_be_hidden()
 
         self.logger.info("Verifying that the correct banner is displayed")
-
         check.equal(
             self.sumo_pages.inbox_page._get_text_inbox_page_message_banner_text(),
             InboxPageMessages.MESSAGE_DELETED_BANNER_TEXT,

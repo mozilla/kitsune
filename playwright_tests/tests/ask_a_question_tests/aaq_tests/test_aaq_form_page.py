@@ -319,8 +319,7 @@ class TestAAQPage(TestUtilities):
                     question_info['aaq_subject']
                 )
 
-                self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-                self.sumo_pages.question_page._click_delete_this_question_button()
+                self.sumo_pages.aaq_flow.deleting_question_flow()
 
                 self.logger.info(
                     "Verifying that the question is no longer displayed inside My Questions page")
@@ -363,7 +362,7 @@ class TestAAQPage(TestUtilities):
 
         self.logger.info("Adding text inside the troubleshooting information field")
         self.sumo_pages.aaq_form_page._add_text_to_troubleshooting_information_textarea(
-            super().aaq_question_test_data["troubleshooting_information_textarea_field"]
+            super().aaq_question_test_data["troubleshooting_information"]
         )
 
         self.logger.info("Submitting the aaq question")
@@ -375,7 +374,7 @@ class TestAAQPage(TestUtilities):
 
         expect(
             self.sumo_pages.question_page._get_more_information_with_text_locator(
-                super().aaq_question_test_data["troubleshooting_information_textarea_field"]
+                super().aaq_question_test_data["troubleshooting_information"]
             )
         ).to_be_visible()
 
@@ -383,8 +382,7 @@ class TestAAQPage(TestUtilities):
         self.sumo_pages.question_page._click_on_the_additional_system_panel_close_button()
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     @pytest.mark.aaqPage
     def test_additional_system_details_user_agent_information(self):
@@ -421,8 +419,7 @@ class TestAAQPage(TestUtilities):
             self.sumo_pages.question_page._click_on_the_additional_system_panel_close_button()
 
             self.logger.info("Deleting the posted question")
-            self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-            self.sumo_pages.question_page._click_delete_this_question_button()
+            self.sumo_pages.aaq_flow.deleting_question_flow()
 
     @pytest.mark.aaqPage
     def test_system_details_information(self):
@@ -480,5 +477,4 @@ class TestAAQPage(TestUtilities):
                 )
 
                 self.logger.info("Deleting the posted question")
-                self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-                self.sumo_pages.question_page._click_delete_this_question_button()
+                self.sumo_pages.aaq_flow.deleting_question_flow()

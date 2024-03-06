@@ -20,20 +20,10 @@ class TestEditContributionAreas(TestUtilities):
 
         original_user = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
-        self.logger.info("Clicking on the 'Edit Contribution areas option'")
-        self.sumo_pages.top_navbar._click_on_settings_profile_option()
-
-        self.sumo_pages.user_navbar._click_on_edit_contribution_areas_option()
-
-        self.logger.info("Clicking on all checkboxes")
-        self.sumo_pages.edit_my_profile_con_areas_page._click_on_unchecked_cont_areas_checkboxes()
-
-        self.logger.info("Clicking on the 'Update' button")
-
-        self.sumo_pages.edit_my_profile_con_areas_page._click_on_update_contribution_areas_button()
+        self.logger.info("Checking all contributor checkboxes")
+        self.sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=False)
 
         self.logger.info("Verifying that the correct notification banner text is displayed")
-
         check.equal(
             self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(),
             EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT,
@@ -53,10 +43,8 @@ class TestEditContributionAreas(TestUtilities):
             self.sumo_pages.edit_my_profile_con_areas_page._get_contrib_areas_checkbox_labels()
         )
 
-        self.logger.info(
-            "Accessing the my profile page and verifying that "
-            "the displayed groups are the correct ones"
-        )
+        self.logger.info("Accessing the my profile page and verifying that the displayed groups "
+                         "are the correct ones")
         self.sumo_pages.user_navbar._click_on_my_profile_option()
 
         assert (
@@ -68,19 +56,16 @@ class TestEditContributionAreas(TestUtilities):
             f"received: {self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()}"
         )
 
-        self.logger.info(
-            "Signing in with a different account and verifying "
-            "that the original user groups are displayed"
-        )
+        self.logger.info("Signing in with a different account and verifying that the original "
+                         "user groups are displayed")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts['TEST_ACCOUNT_13']
         ))
 
         self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
 
-        self.logger.info(
-            "Verifying that the user groups is successfully displayed for the original user"
-        )
+        self.logger.info("Verifying that the user groups is successfully displayed for the "
+                         "original user")
         assert (
             self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()
             == contribution_options
@@ -95,21 +80,9 @@ class TestEditContributionAreas(TestUtilities):
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-        self.logger.info(
-            "Accessing the edit contribution areas page and unchecking all the checkboxes"
-        )
-        self.sumo_pages.top_navbar._click_on_settings_profile_option()
-
-        self.sumo_pages.user_navbar._click_on_edit_contribution_areas_option()
-
-        (self.sumo_pages.edit_my_profile_con_areas_page
-         ._click_on_all_checked_cont_areas_checkboxes())
-
-        self.logger.info(
-            "Clicking on the update button and verifying that "
-            "the correct notification banner is displayed"
-        )
-        self.sumo_pages.edit_my_profile_con_areas_page._click_on_update_contribution_areas_button()
+        self.logger.info("Unchecking all contributor checkboxes and verifying that the correct "
+                         "notification banner is displayed")
+        self.sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=True)
 
         check.equal(
             self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(),
@@ -121,10 +94,8 @@ class TestEditContributionAreas(TestUtilities):
             f"{self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt()}",
         )
 
-        self.logger.info(
-            "Verifying that the profile groups section is no longer "
-            "displayed inside the profile section"
-        )
+        self.logger.info("Verifying that the profile groups section is no longer displayed "
+                         "inside the profile section")
         self.sumo_pages.user_navbar._click_on_my_profile_option()
 
         expect(
@@ -140,10 +111,8 @@ class TestEditContributionAreas(TestUtilities):
 
         self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
 
-        self.logger.info(
-            "Verifying that the groups section is not longer displayed for the original user"
-        )
-
+        self.logger.info("Verifying that the groups section is not longer displayed for the "
+                         "original user")
         expect(
             self.sumo_pages.my_profile_page._groups_section_element()
         ).to_be_hidden()

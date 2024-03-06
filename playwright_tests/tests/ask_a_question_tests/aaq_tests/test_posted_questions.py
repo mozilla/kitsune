@@ -70,8 +70,7 @@ class TestPostedQuestions(TestUtilities):
         )
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191092,  C2191263
     @pytest.mark.postedQuestions
@@ -108,8 +107,7 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191262, C2436105,  C2191263
     # To add image tests
@@ -146,21 +144,12 @@ class TestPostedQuestions(TestUtilities):
             posted_question['question_details']['question_body']
         )
 
-        self.logger.info("Adding text inside the Subject field")
-        self.sumo_pages.aaq_form_page._clear_subject_input_field()
-        self.sumo_pages.aaq_form_page._add_text_to_aaq_form_subject_field(
-            super().aaq_question_test_data['valid_firefox_question']['subject_updated']
-        )
-
-        self.logger.info("Adding text inside the body field")
-        self.sumo_pages.aaq_form_page._clear_the_question_body_textarea_field()
-        self.sumo_pages.aaq_form_page._add_text_to_aaq_textarea_field(
-            super().aaq_question_test_data['valid_firefox_question']['body_updated']
-        )
-
-        self.logger.info("Adding information inside the troubleshoot information textarea")
-        self.sumo_pages.aaq_form_page._add_text_to_troubleshooting_information_textarea(
-            super().aaq_question_test_data['troubleshooting_information_textarea_field']
+        self.logger.info("Editing the question with new data")
+        self.sumo_pages.aaq_flow.editing_question_flow(
+            subject=super().aaq_question_test_data['valid_firefox_question']['subject_updated'],
+            body=super().aaq_question_test_data['valid_firefox_question']['body_updated'],
+            troubleshoot=super().aaq_question_test_data['troubleshooting_information'],
+            submit_edit=False
         )
 
         self.logger.info("Clicking on the 'Cancel' button")
@@ -210,8 +199,7 @@ class TestPostedQuestions(TestUtilities):
             ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191263
     @pytest.mark.postedQuestions
@@ -244,7 +232,7 @@ class TestPostedQuestions(TestUtilities):
         )
 
         self.logger.info("Navigating back to the posted question")
-        self.navigate_back()
+        self.navigate_to_link(posted_question['question_details']['question_page_url'])
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -252,8 +240,7 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191262, C2436105, C2191263
     # To add image tests
@@ -293,25 +280,12 @@ class TestPostedQuestions(TestUtilities):
 
         )
 
-        self.logger.info("Adding text inside the Subject field")
-        self.sumo_pages.aaq_form_page._clear_subject_input_field()
-        self.sumo_pages.aaq_form_page._add_text_to_aaq_form_subject_field(
-            super().aaq_question_test_data['valid_firefox_question']['subject_updated']
+        self.logger.info("Editing the question with new data")
+        self.sumo_pages.aaq_flow.editing_question_flow(
+            subject=super().aaq_question_test_data['valid_firefox_question']['subject_updated'],
+            body=super().aaq_question_test_data['valid_firefox_question']['body_updated'],
+            troubleshoot=super().aaq_question_test_data['troubleshooting_information']
         )
-
-        self.logger.info("Adding text inside the body field")
-        self.sumo_pages.aaq_form_page._clear_the_question_body_textarea_field()
-        self.sumo_pages.aaq_form_page._add_text_to_aaq_textarea_field(
-            super().aaq_question_test_data['valid_firefox_question']['body_updated']
-        )
-
-        self.logger.info("Adding information inside the troubleshoot information textarea")
-        self.sumo_pages.aaq_form_page._add_text_to_troubleshooting_information_textarea(
-            super().aaq_question_test_data['troubleshooting_information_textarea_field']
-        )
-
-        self.logger.info("Clicking on the 'Submit' button")
-        self.sumo_pages.aaq_form_page._click_aaq_edit_submit_button()
 
         self.logger.info("Verifying that the 'Modified' text is displayed")
         expect(
@@ -350,7 +324,7 @@ class TestPostedQuestions(TestUtilities):
             self.logger.info("Verifying that the more information section displays the update")
             expect(
                 self.sumo_pages.question_page._get_more_information_with_text_locator(
-                    super().aaq_question_test_data['troubleshooting_information_textarea_field']
+                    super().aaq_question_test_data['troubleshooting_information']
                 )
             ).to_be_visible()
 
@@ -364,8 +338,7 @@ class TestPostedQuestions(TestUtilities):
             ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191263
     @pytest.mark.postedQuestions
@@ -378,9 +351,7 @@ class TestPostedQuestions(TestUtilities):
                          "question")
         posted_question_two = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
 
-        self.navigate_to_link(
-            posted_question_one['question_details']['question_page_url']
-        )
+        self.navigate_to_link(posted_question_one['question_details']['question_page_url'])
 
         self.logger.info("Verifying that the 'Delete this question' option is not available")
         expect(
@@ -400,9 +371,7 @@ class TestPostedQuestions(TestUtilities):
             403
         )
 
-        self.navigate_to_link(
-            posted_question_two['question_details']['question_page_url']
-        )
+        self.navigate_to_link(posted_question_two['question_details']['question_page_url'])
 
         self.logger.info("Verifying that the 'Delete this question' option is not available")
         expect(
@@ -423,7 +392,7 @@ class TestPostedQuestions(TestUtilities):
         )
 
         self.logger.info("Navigating back to the question page and deleting session cookies")
-        self.navigate_back()
+        self.navigate_to_link(posted_question_two['question_details']['question_page_url'])
 
         self.logger.info("Signing in with a admin user account")
         self.start_existing_session(super().username_extraction_from_email(
@@ -443,16 +412,12 @@ class TestPostedQuestions(TestUtilities):
         ).to_have_url(posted_question_two['question_details']['question_page_url'])
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
-        self.navigate_to_link(
-            posted_question_one['question_details']['question_page_url']
-        )
+        self.navigate_to_link(posted_question_one['question_details']['question_page_url'])
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191264, C2191265
     # To add coverage for images as well
@@ -586,11 +551,6 @@ class TestPostedQuestions(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        self.logger.info("Adding text inside the textarea field")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-
         self.logger.info("Verifying that the 'needs more information from the user' checkbox is "
                          "available")
         expect(
@@ -602,8 +562,11 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_add_image_section_locator()
         ).to_be_visible()
 
-        self.logger.info("Clicking on the 'Post a reply button'")
-        reply_id = self.sumo_pages.question_page._click_on_post_reply_button(repliant_username)
+        self.logger.info("Submitting a reply to the question")
+        reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=repliant_username,
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
+        )
 
         self.logger.info("Verifying that posted reply is visible")
         expect(
@@ -647,14 +610,11 @@ class TestPostedQuestions(TestUtilities):
             self.sumo_pages.question_page._get_thread_locked_locator()
         ).to_be_hidden()
 
-        self.logger.info("Posting a question reply")
-        self.logger.info("Adding text inside the textarea field")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
+        self.logger.info("Submitting a reply to the question")
+        reply_id_two = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=second_repliant,
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
-
-        self.logger.info("Clicking on the 'Post a reply button'")
-        reply_id_two = self.sumo_pages.question_page._click_on_post_reply_button(second_repliant)
 
         self.logger.info("Verifying that the posted reply is visible")
 
@@ -668,16 +628,14 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
         self.navigate_to_link(
             posted_question['question_details']['question_page_url']
         )
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191267, C2191116, C2134136, C2191091
     @pytest.mark.postedQuestions
@@ -842,16 +800,14 @@ class TestPostedQuestions(TestUtilities):
             )
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
         self.navigate_to_link(
             question_info_one['question_page_url']
         )
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # To work on adding a check inside the moderate forum content page
     # C2191491
@@ -958,8 +914,7 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191096, C2191098, C2191100
     @pytest.mark.postedQuestions
@@ -1097,8 +1052,7 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191091
     @pytest.mark.postedQuestions
@@ -1135,8 +1089,7 @@ class TestPostedQuestions(TestUtilities):
         ).to_be_visible()
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191268
     @pytest.mark.postedQuestions
@@ -1145,12 +1098,10 @@ class TestPostedQuestions(TestUtilities):
                          "question")
         posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
 
-        self.logger.info("Posting a reply to the question")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-        reply_id_one = self.sumo_pages.question_page._click_on_post_reply_button(
-            posted_question['username_one']
+        self.logger.info("Submitting a reply to the question")
+        reply_id_one = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=posted_question['username_one'],
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
         self.logger.info("Signin in with a different non admin user")
@@ -1158,11 +1109,11 @@ class TestPostedQuestions(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_13"]
         ))
 
-        self.logger.info("Posting a reply to the question")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
+        self.logger.info("Submitting a reply to the question")
+        reply_id_two = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=username_two,
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
-        reply_id_two = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
 
         self.logger.info("Clicking on the self reply menu and verifying that the 'mark as spam' "
                          "option is not displayed for non-admin users")
@@ -1191,8 +1142,7 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Clicking on the 'Mark as Spam' option for one of the replies")
-        self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id_one)
-        self.sumo_pages.question_page._click_on_mark_as_spam_for_a_certain_reply(reply_id_one)
+        self.sumo_pages.aaq_flow.spam_marking_a_reply(reply_id_one)
 
         self.logger.info("Verifying that the 'Marked as spam' message is displayed for that reply")
         check.equal(
@@ -1234,8 +1184,7 @@ class TestPostedQuestions(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         self.logger.info("Clicking on the 'Mark as Spam' option for one of the replies")
-        self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id_one)
-        self.sumo_pages.question_page._click_on_mark_as_spam_for_a_certain_reply(reply_id_one)
+        self.sumo_pages.aaq_flow.spam_marking_a_reply(reply_id_one)
 
         self.logger.info("Verifying that the 'Marked as spam' message is no longer displayed")
         expect(
@@ -1291,8 +1240,7 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # Need to expand this to contain additional text format.
     # C2191270, C2191259
@@ -1305,12 +1253,10 @@ class TestPostedQuestions(TestUtilities):
 
         page_url = self.get_page_url()
 
-        self.logger.info("Posting a reply to the question")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-        reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
-            posted_question['username_one']
+        self.logger.info("Submitting a reply to the question")
+        reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=posted_question['username_one'],
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
         self.logger.info("Verifying that the reply contains the correct name and user status")
@@ -1360,12 +1306,12 @@ class TestPostedQuestions(TestUtilities):
                 )
 
             self.logger.info("Navigating back")
-            self.navigate_back()
-            self.logger.info("Posting a reply to the question")
-            self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-                super().aaq_question_test_data['valid_firefox_question']['question_reply']
+            self.navigate_to_link(page_url)
+
+            reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=username_two,
+                reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
             )
-            reply_id = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
 
             self.logger.info(
                 "Verifying that the reply contains the correct name and no user status")
@@ -1396,16 +1342,10 @@ class TestPostedQuestions(TestUtilities):
             super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
-        self.logger.info("Clearing the textarea field")
-        self.sumo_pages.aaq_form_page._clear_the_question_body_textarea_field()
-
-        self.logger.info("Adding new text inside the textarea field")
-        self.sumo_pages.aaq_form_page._add_text_to_aaq_textarea_field(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
+        self.sumo_pages.aaq_flow.editing_reply_flow(
+            reply_body=super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
+            submit_reply=False
         )
-
-        self.logger.info("Clicking on the 'Cancel' option")
-        self.sumo_pages.aaq_form_page._click_aaq_form_cancel_button()
 
         self.logger.info("Verifying that the question reply is the original one")
         check.equal(
@@ -1430,16 +1370,9 @@ class TestPostedQuestions(TestUtilities):
             super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
-        self.logger.info("Clearing the textarea field")
-        self.sumo_pages.aaq_form_page._clear_the_question_body_textarea_field()
-
-        self.logger.info("Adding new text inside the textarea field")
-        self.sumo_pages.aaq_form_page._add_text_to_aaq_textarea_field(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
+        self.sumo_pages.aaq_flow.editing_reply_flow(
+            reply_body=super().aaq_question_test_data['valid_firefox_question']['updated_reply']
         )
-
-        self.logger.info("Clicking on the 'Update Answer' button")
-        self.sumo_pages.aaq_form_page._click_on_update_answer_button()
 
         self.logger.info("Verifying that the reply contains the updated text")
         check.equal(
@@ -1459,8 +1392,7 @@ class TestPostedQuestions(TestUtilities):
             ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191272
     @pytest.mark.postedQuestions
@@ -1473,11 +1405,9 @@ class TestPostedQuestions(TestUtilities):
         page_url = self.get_page_url()
 
         self.logger.info("Posting a reply to the question")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-        reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
-            posted_question['username_one']
+        reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=posted_question['username_one'],
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
         self.logger.info("Verifying that the 'Delete this post' option is not available for self "
@@ -1503,7 +1433,7 @@ class TestPostedQuestions(TestUtilities):
             )
 
         self.logger.info("Navigating back")
-        self.navigate_back()
+        self.navigate_to_link(posted_question['question_details']['question_page_url'])
 
         if username == 'TEST_ACCOUNT_13':
             username_two = self.start_existing_session(super().username_extraction_from_email(
@@ -1511,13 +1441,14 @@ class TestPostedQuestions(TestUtilities):
             ))
 
             self.logger.info("Posting a reply to the question")
-            self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-                super().aaq_question_test_data['valid_firefox_question']['question_reply']
+            self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=username_two,
+                reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
             )
-            self.sumo_pages.question_page._click_on_post_reply_button(username_two)
 
             self.logger.info("Verifying that the 'Delete this post' option is not available for "
                              "replies posted by others")
+            self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
             expect(
                 self.sumo_pages.question_page._get_delete_this_post_reply_locator(reply_id)
             ).to_be_hidden()
@@ -1540,35 +1471,21 @@ class TestPostedQuestions(TestUtilities):
                 )
 
             self.logger.info("Navigating back")
-            self.navigate_back()
+            self.navigate_to_link(posted_question['question_details']['question_page_url'])
 
         self.logger.info("Signing in with an admin account")
         self.start_existing_session(super().username_extraction_from_email(
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
 
-        self.logger.info("Clicking on the more options for the reply")
-        self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
-
-        self.logger.info("Clicking on the 'Delete this post' option")
-        self.sumo_pages.question_page._click_on_delete_this_post_for_a_certain_reply(reply_id)
-
-        self.logger.info("Clicking on the cancel delete button")
-        self.sumo_pages.question_page._click_on_cancel_delete_button()
+        self.sumo_pages.aaq_flow.delete_question_reply(reply_id, delete_reply=False)
 
         self.logger.info("Verifying that the reply was not deleted")
         expect(
             self.sumo_pages.question_page._get_posted_reply_locator(reply_id)
         ).to_be_visible()
 
-        self.logger.info("Clicking on the more options for the reply")
-        self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
-
-        self.logger.info("Clicking on the 'Delete this post' option")
-        self.sumo_pages.question_page._click_on_delete_this_post_for_a_certain_reply(reply_id)
-
-        self.logger.info("Clicking on the delete button")
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.delete_question_reply(reply_id, delete_reply=True)
 
         self.logger.info("Verifying that the reply is no longer displayed")
         expect(
@@ -1576,8 +1493,7 @@ class TestPostedQuestions(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2192383, C2191224
     # Need to re-verify this for signed out case before submitting this
@@ -1663,8 +1579,7 @@ class TestPostedQuestions(TestUtilities):
         ).to_be_hidden()
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2192384
     @pytest.mark.postedQuestions
@@ -1674,11 +1589,9 @@ class TestPostedQuestions(TestUtilities):
         posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
 
         self.logger.info("Posting a reply to the question")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-        reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
-            posted_question['username_one']
+        reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=posted_question['username_one'],
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
         self.logger.info("Deleting user session")
@@ -1782,8 +1695,7 @@ class TestPostedQuestions(TestUtilities):
         )
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # Need to add test for preview as well.
     # C2260447, C2260448, C2191244, C2191242
@@ -1795,16 +1707,14 @@ class TestPostedQuestions(TestUtilities):
 
         # Using a user which doesn't have any special permissions applied & which doesn't belong to
         # any group in order to catch cases like https://github.com/mozilla/sumo/issues/1676
-        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_MESSAGE_6')
+        posted_question = self.post_firefox_product_question_flow('TEST_ACCOUNT_12')
         question_id = self.sumo_pages.question_page._get_question_id()
 
         if quote_on == "reply":
             self.logger.info("Posting a reply to the question")
-            self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-                super().aaq_question_test_data['valid_firefox_question']['question_reply']
-            )
-            reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
-                posted_question['username_one']
+            reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=posted_question['username_one'],
+                reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
             )
 
         username_two = self.start_existing_session(super().username_extraction_from_email(
@@ -1812,25 +1722,21 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         if quote_on == "reply":
-            self.logger.info("Clicking on the more options for the reply")
-            self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
-
-            self.logger.info("Clicking on 'Quote' option")
-            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(reply_id)
+            self.logger.info("Posting a quoted reply for question reply")
+            quote_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=username_two,
+                reply=super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
+                quoted_reply=True,
+                reply_for_id=reply_id
+            )
         else:
-            self.logger.info("Clicking on the more options for the question")
-            self.sumo_pages.question_page._click_on_reply_more_options_button(question_id)
-
-            self.logger.info("Clicking on 'Quote' option")
-            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(question_id)
-
-        self.logger.info("Adding test to the textarea field")
-        self.sumo_pages.question_page._type_inside_the_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
-        )
-
-        self.logger.info("Posting the reply")
-        quote_id = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
+            self.logger.info("Posting a quoted reply for question")
+            quote_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=username_two,
+                reply=super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
+                quoted_reply=True,
+                reply_for_id=question_id
+            )
 
         self.logger.info("Verifying that the original repliant is displayed inside the quote")
         check.is_in(
@@ -1881,25 +1787,21 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         if quote_on == "reply":
-            self.logger.info("Clicking on the more options for the reply")
-            self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
-
-            self.logger.info("Clicking on 'Quote' option")
-            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(reply_id)
+            self.logger.info("Posting a quoted reply for question reply")
+            quote_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=username_two,
+                reply=super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
+                quoted_reply=True,
+                reply_for_id=reply_id
+            )
         else:
-            self.logger.info("Clicking on the more options for the reply")
-            self.sumo_pages.question_page._click_on_reply_more_options_button(question_id)
-
-            self.logger.info("Clicking on 'Quote' option")
-            self.sumo_pages.question_page._click_on_quote_for_a_certain_reply(question_id)
-
-        self.logger.info("Adding test to the textarea field")
-        self.sumo_pages.question_page._type_inside_the_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['updated_reply']
-        )
-
-        self.logger.info("Posting the reply")
-        quote_id = self.sumo_pages.question_page._click_on_post_reply_button(username_two)
+            self.logger.info("Posting a quoted reply for question reply")
+            quote_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=username_two,
+                reply=super().aaq_question_test_data['valid_firefox_question']['updated_reply'],
+                quoted_reply=True,
+                reply_for_id=question_id
+            )
 
         self.logger.info("Verifying that the original repliant is displayed inside the quote")
         check.is_in(
@@ -1945,8 +1847,7 @@ class TestPostedQuestions(TestUtilities):
             )
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # To add tests for "I have this problem, too" option
     # C2191117, C2191223, C2191226
@@ -2004,12 +1905,9 @@ class TestPostedQuestions(TestUtilities):
             self.user_secrets_accounts['TEST_ACCOUNT_12']
         ))
 
-        self.logger.info("Posting a reply to the question")
-        self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['question_reply']
-        )
-        reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
-            posted_question['username_one']
+        reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+            repliant_username=posted_question['username_one'],
+            reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
         )
 
         self.logger.info("Deleting user session")
@@ -2080,8 +1978,7 @@ class TestPostedQuestions(TestUtilities):
         ))
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191227
     # Currently fails due to https://github.com/mozilla/sumo/issues/1216
@@ -2247,8 +2144,7 @@ class TestPostedQuestions(TestUtilities):
         )
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2260449, C2260450, C2191243, C2191245
     @pytest.mark.postedQuestions
@@ -2264,11 +2160,9 @@ class TestPostedQuestions(TestUtilities):
 
         if flagged_content == "question_reply":
             self.logger.info("Posting a reply to the question")
-            self.sumo_pages.question_page._add_text_to_post_a_reply_textarea(
-                super().aaq_question_test_data['valid_firefox_question']['question_reply']
-            )
-            reply_id = self.sumo_pages.question_page._click_on_post_reply_button(
-                posted_question['username_one']
+            reply_id = self.sumo_pages.aaq_flow.post_question_reply_flow(
+                repliant_username=posted_question['username_one'],
+                reply=super().aaq_question_test_data['valid_firefox_question']['question_reply']
             )
 
         self.logger.info("Deleting user session")
@@ -2306,32 +2200,15 @@ class TestPostedQuestions(TestUtilities):
             ))
 
         if flagged_content == "question_content":
-            self.logger.info("Clicking on the more options for the question")
-            self.sumo_pages.question_page._click_on_reply_more_options_button(
-                self.sumo_pages.question_page._get_question_id()
-            )
-
-            self.logger.info("Clicking on the report abuse option")
-            self.sumo_pages.question_page._click_on_report_abuse_for_a_certain_reply(
-                self.sumo_pages.question_page._get_question_id()
+            self.sumo_pages.aaq_flow.report_question_abuse(
+                answer_id=self.sumo_pages.question_page._get_question_id(),
+                text=super().aaq_question_test_data['valid_firefox_question']['report_abuse_text']
             )
         else:
-            self.logger.info("Clicking on the more options for the question reply")
-            self.sumo_pages.question_page._click_on_reply_more_options_button(reply_id)
-
-            self.logger.info("Clicking on the report abuse option")
-            self.sumo_pages.question_page._click_on_report_abuse_for_a_certain_reply(reply_id)
-
-        self.logger.info("Adding text inside the report abuse textarea field")
-        self.sumo_pages.question_page._add_text_to_report_abuse_textarea(
-            super().aaq_question_test_data['valid_firefox_question']['report_abuse_text']
-        )
-
-        self.logger.info("Clicking on submit button")
-        self.sumo_pages.question_page._click_on_report_abuse_submit_button()
-
-        self.logger.info("Closing the report this modal button")
-        self.sumo_pages.question_page._click_abuse_modal_close_button()
+            self.sumo_pages.aaq_flow.report_question_abuse(
+                answer_id=reply_id,
+                text=super().aaq_question_test_data['valid_firefox_question']['report_abuse_text']
+            )
 
         if username == "TEST_ACCOUNT_13":
             self.logger.info("Signing in with a admin account")
@@ -2374,8 +2251,7 @@ class TestPostedQuestions(TestUtilities):
         self.navigate_to_link(posted_question['question_details']['question_page_url'])
 
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     # C2191261
     @pytest.mark.postedQuestions
@@ -2496,8 +2372,7 @@ class TestPostedQuestions(TestUtilities):
             self.user_secrets_accounts["TEST_ACCOUNT_MODERATOR"]
         ))
         self.logger.info("Deleting the posted question")
-        self.sumo_pages.question_page._click_delete_this_question_question_tools_option()
-        self.sumo_pages.question_page._click_delete_this_question_button()
+        self.sumo_pages.aaq_flow.deleting_question_flow()
 
     def post_firefox_product_question_flow(self, username: str):
         username_one = self.start_existing_session(super().username_extraction_from_email(

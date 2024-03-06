@@ -16,8 +16,8 @@ class TestHomepage(TestUtilities):
     def test_join_our_community_card_learn_more_redirects_to_contribute_page(self):
         self.logger.info("Clicking on the 'Learn More' option")
         self.sumo_pages.homepage._click_learn_more_option()
-        self.logger.info("Verifying that we are redirected to the 'Contribute' page successfully")
 
+        self.logger.info("Verifying that we are redirected to the 'Contribute' page successfully")
         assert (
             self.get_page_url()
             == ContributePageMessages.STAGE_CONTRIBUTE_PAGE_URL
@@ -29,7 +29,6 @@ class TestHomepage(TestUtilities):
         self.logger.info(
             "Verifying that the 'Join Our Community' card has the correct strings applied"
         )
-
         assert (
             self.sumo_pages.homepage._get_community_card_title()
             == HomepageMessages.JOIN_OUR_COMMUNITY_CARD_TITLE
@@ -43,30 +42,22 @@ class TestHomepage(TestUtilities):
         self.logger.info(
             "Verifying that the correct number of featured articles are present on the homepage"
         )
-
         check.equal(
             self.sumo_pages.homepage._get_number_of_featured_articles(),
             HomepageMessages.EXPECTED_FEATURED_ARTICLES_COUNT,
             "Unexpected featured article count"
         )
 
-        self.logger.info(
-            "Clicking on each featured article card and verifying that the user is redirected to "
-            "the correct article page."
-        )
+        self.logger.info("Clicking on each featured article card and verifying that the user is "
+                         "redirected to the correct article page.")
         counter = 0
         for featured_article in self.sumo_pages.homepage._get_featured_articles_titles():
             articles_names = self.sumo_pages.homepage._get_featured_articles_titles()
 
-            self.logger.info(
-                f"Clicking on: {articles_names[counter]} article card"
-            )
+            self.logger.info(f"Clicking on: {articles_names[counter]} article card")
             self.sumo_pages.homepage._click_on_a_featured_card(counter)
 
-            self.logger.info(
-                "Verifying that the correct article title is displayed."
-            )
-
+            self.logger.info("Verifying that the correct article title is displayed.")
             assert (
                 self.sumo_pages.kb_article_page._get_text_of_article_title()
                 == articles_names[counter]
@@ -80,10 +71,8 @@ class TestHomepage(TestUtilities):
     # C873774
     @pytest.mark.homePageTests
     def test_product_cards_are_functional_and_redirect_to_the_proper_support_page(self):
-        self.logger.info(
-            "Verifying that the product cards are redirecting to the correct support page"
-        )
-
+        self.logger.info("Verifying that the product cards are redirecting to the correct "
+                         "support page")
         card_titles = self.sumo_pages.homepage._get_text_of_product_card_titles()
         counter = 0
         for product_card in card_titles:

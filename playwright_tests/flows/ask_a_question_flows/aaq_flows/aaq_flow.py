@@ -76,3 +76,72 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
         super()._get_upload_image_button_locator().set_input_files(
             super().aaq_question_test_data["valid_firefox_question"]["image_path"]
         )
+
+    def deleting_question_flow(self):
+        super()._click_delete_this_question_question_tools_option()
+        super()._click_delete_this_question_button()
+
+    def editing_question_flow(self, subject='', body='', troubleshoot='', submit_edit=True):
+        if subject != '':
+            super()._clear_subject_input_field()
+            super()._add_text_to_aaq_form_subject_field(subject)
+
+        if body != '':
+            super()._clear_the_question_body_textarea_field()
+            super()._add_text_to_aaq_textarea_field(body)
+
+        if troubleshoot != '':
+            super()._add_text_to_troubleshooting_information_textarea(troubleshoot)
+
+        if submit_edit:
+            super()._click_aaq_edit_submit_button()
+
+    def editing_reply_flow(self, reply_body: str, submit_reply=True):
+        super()._clear_the_question_body_textarea_field()
+        super()._add_text_to_aaq_textarea_field(reply_body)
+
+        if submit_reply:
+            super()._click_on_update_answer_button()
+        else:
+            super()._click_aaq_form_cancel_button()
+
+    def delete_question_reply(self, answer_id: str, delete_reply:bool):
+        super()._click_on_reply_more_options_button(answer_id)
+        super()._click_on_delete_this_post_for_a_certain_reply(answer_id)
+
+        if delete_reply:
+            super()._click_delete_this_question_button()
+        else:
+            super()._click_on_cancel_delete_button()
+
+    def post_question_reply_flow(self,
+                                 repliant_username: str,
+                                 reply='',
+                                 submit_reply=True,
+                                 quoted_reply=False,
+                                 reply_for_id='') -> str:
+        if quoted_reply:
+            super()._click_on_reply_more_options_button(reply_for_id)
+            super()._click_on_quote_for_a_certain_reply(reply_for_id)
+
+        if reply != '' and quoted_reply:
+            super()._type_inside_the_post_a_reply_textarea(reply)
+        elif reply != '' and not quoted_reply:
+            super()._add_text_to_post_a_reply_textarea(reply)
+
+        if submit_reply:
+            return super()._click_on_post_reply_button(repliant_username)
+
+    def report_question_abuse(self, answer_id: str, text=''):
+        super()._click_on_reply_more_options_button(answer_id)
+        super()._click_on_report_abuse_for_a_certain_reply(answer_id)
+
+        if text != '':
+            super()._add_text_to_report_abuse_textarea(text)
+
+        super()._click_on_report_abuse_submit_button()
+        super()._click_abuse_modal_close_button()
+
+    def spam_marking_a_reply(self, reply_id: str):
+        super()._click_on_reply_more_options_button(reply_id)
+        super()._click_on_mark_as_spam_for_a_certain_reply(reply_id)
