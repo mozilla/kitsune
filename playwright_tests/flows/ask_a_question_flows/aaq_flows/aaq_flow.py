@@ -13,13 +13,13 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
 
     # Submitting an aaq question for a product flow.
     # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
-    def submit_an_aaq_question_for_a_product(self,
-                                             subject: str,
-                                             topic_name: str,
-                                             body: str,
-                                             os="",
-                                             attach_image=False):
-        question_subject = self.add__valid_data_to_all_input_fields_without_submitting(
+    def submit_an_aaq_question(self,
+                               subject: str,
+                               topic_name: str,
+                               body: str,
+                               os="",
+                               attach_image=False):
+        question_subject = self.add__valid_data_to_all_aaq_fields_without_submitting(
             subject,
             topic_name,
             body,
@@ -38,12 +38,12 @@ class AAQFlow(AAQFormPage, ProductSolutionsPage, TopNavbar, TestUtilities, Quest
 
     # Populating the aaq form fields with given values without submitting the form.
     # Mozilla VPN has an extra optional dropdown menu for choosing an operating system.
-    def add__valid_data_to_all_input_fields_without_submitting(self,
-                                                               subject: str,
-                                                               topic_value: str,
-                                                               body_text: str,
-                                                               os='',
-                                                               attach_image=False):
+    def add__valid_data_to_all_aaq_fields_without_submitting(self,
+                                                             subject: str,
+                                                             topic_value: str,
+                                                             body_text: str,
+                                                             os='',
+                                                             attach_image=False):
         aaq_subject = subject + super().generate_random_number(min_value=0, max_value=5000)
         # Adding text to subject field.
         super()._add_text_to_aaq_form_subject_field(aaq_subject)

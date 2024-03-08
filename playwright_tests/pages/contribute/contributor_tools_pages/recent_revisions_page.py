@@ -69,7 +69,7 @@ class RecentRevisions(BasePage):
     def _add_end_date(self, end_date: str):
         super()._type(self.__end_date_input_field, end_date, 0)
 
-    def _get_recent_revision_based_on_article_locator(self, title: str) -> Locator:
+    def _get_recent_revision_based_on_article(self, title: str) -> Locator:
         xpath = f"//div[@id='revisions-fragment']//div[@class='title']//a[text()='{title}']"
         return super()._get_element_locator(xpath)
 

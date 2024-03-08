@@ -7,6 +7,7 @@ class KBArticlePage(BasePage):
     __kb_article_content = "//section[@id='doc-content']"
     __kb_article_content_approved_content = "//section[@id='doc-content']/p"
     __kb_article_contributors = "//div[@class='document--contributors-list text-body-xs']/a"
+    __learn_more_kb_article_option = "//a[text()='Learn More']"
 
     # Editing Tools options
     __editing_tools_article_option = "//a[text()='Article']"
@@ -53,3 +54,6 @@ class KBArticlePage(BasePage):
 
     def _click_on_editing_tools_discussion_option(self):
         super()._click(self.__editing_tools_discussion_option)
+
+    def _click_on_volunteer_learn_more_option(self):
+        super()._click(self.__learn_more_kb_article_option)

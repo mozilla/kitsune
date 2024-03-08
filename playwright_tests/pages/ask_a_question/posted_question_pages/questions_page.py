@@ -331,7 +331,7 @@ class QuestionPage(BasePage):
     def _click_on_more_system_details_option(self):
         super()._click(self.__more_system_details_option)
 
-    def _click_on_the_additional_system_panel_close_button(self):
+    def _click_on_the_additional_system_panel_close(self):
         super()._click(self.__close_additional_system_details_button)
 
     def _get_reply_section_locator(self, answer_id: str) -> Locator:

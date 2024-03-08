@@ -1,5 +1,6 @@
+import allure
 import pytest
-import pytest_check as check
+from pytest_check import check
 from playwright.sync_api import expect
 
 from playwright_tests.core.testutilities import TestUtilities
@@ -13,106 +14,82 @@ class TestEditContributionAreas(TestUtilities):
     # C2206070
     @pytest.mark.userContributionTests
     def test_all_checkboxes_can_be_selected_and_saved(self):
-        self.logger.info("Signing in with a simple user account")
-        self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts['TEST_ACCOUNT_12']
-        ))
+        with allure.step("Signing in with a non-admin account"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_12']
+            ))
 
         original_user = self.sumo_pages.top_navbar._get_text_of_logged_in_username()
 
-        self.logger.info("Checking all contributor checkboxes")
-        self.sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=False)
+        with allure.step("Checking all contributor checkboxes"):
+            self.sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=False)
 
-        self.logger.info("Verifying that the correct notification banner text is displayed")
-        check.equal(
-            self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(),
-            EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT,
-            f"Incorrect notification banner message displayed. "
-            f"Expected: "
-            f"{EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT}"
-            f" received: "
-            f"{self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt()}",
-        )
+        with check, allure.step("Verifying that the correct notification banner text is "
+                                "displayed"):
+            assert self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(
+            ) == EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT
 
-        self.logger.info("Verifying that all the checkboxes are checked")
-        assert (
-            self.sumo_pages.edit_my_profile_con_areas_page._are_all_cont_pref_checkboxes_checked()
-        ), "Not all checkbox options are checked!"
+        with allure.step("Verifying that all the checkboxes are checked"):
+            assert (
+                self.sumo_pages.edit_my_profile_con_areas_page._are_all_cont_pref_checked()
+            ), "Not all checkbox options are checked!"
 
         contribution_options = (
             self.sumo_pages.edit_my_profile_con_areas_page._get_contrib_areas_checkbox_labels()
         )
 
-        self.logger.info("Accessing the my profile page and verifying that the displayed groups "
-                         "are the correct ones")
-        self.sumo_pages.user_navbar._click_on_my_profile_option()
+        with allure.step("Accessing the my profile page and verifying that the displayed groups "
+                         "are the correct ones"):
+            self.sumo_pages.user_navbar._click_on_my_profile_option()
+            assert (
+                self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()
+                == contribution_options
+            )
 
-        assert (
-            self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()
-            == contribution_options
-        ), (
-            f"Not all groups are displayed. Expected:"
-            f" {contribution_options} "
-            f"received: {self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()}"
-        )
+        with allure.step("Signing in with a different account and verifying that the original "
+                         "user groups are displayed"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_13']
+            ))
 
-        self.logger.info("Signing in with a different account and verifying that the original "
-                         "user groups are displayed")
-        self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts['TEST_ACCOUNT_13']
-        ))
+        with allure.step("Navigating to the user page and verifying that the user groups is "
+                         "successfully displayed"):
+            self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
+            assert (
+                self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()
+                == contribution_options
+            )
 
-        self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
+        with allure.step("Signing in back with the original user"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_12']
+            ))
 
-        self.logger.info("Verifying that the user groups is successfully displayed for the "
-                         "original user")
-        assert (
-            self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()
-            == contribution_options
-        ), (
-            f"Not all groups are displayed. Expected:"
-            f" {contribution_options} "
-            f"received: {self.sumo_pages.my_profile_page._get_my_profile_groups_items_text()}"
-        )
+        with allure.step("Accessing the edit contribution areas page and unchecking all "
+                         "checkboxes"):
+            self.sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=True)
 
-        self.logger.info("Signing in back with the original user")
-        self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts['TEST_ACCOUNT_12']
-        ))
+        with check, allure.step("Clicking on the update button and verifying that the correct "
+                                "notification banner is displayed"):
+            assert self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(
+            ) == EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT
 
-        self.logger.info("Unchecking all contributor checkboxes and verifying that the correct "
-                         "notification banner is displayed")
-        self.sumo_pages.edit_profile_flow.check_all_profile_contribution_areas(checked=True)
+        with allure.step("Verifying that the profile groups section is no longer displayed "
+                         "inside the profile section"):
+            self.sumo_pages.user_navbar._click_on_my_profile_option()
+            expect(
+                self.sumo_pages.my_profile_page._groups_section_element()
+            ).to_be_hidden()
 
-        check.equal(
-            self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt(),
-            EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT,
-            f"Incorrect notification banner text is displayed."
-            f" Expected:"
-            f"{EditContributionAreasPageMessages.PREFERENCES_SAVED_NOTIFICATION_BANNER_TEXT}"
-            f" received: "
-            f"{self.sumo_pages.edit_my_profile_con_areas_page._edit_con_areas_pref_banner_txt()}",
-        )
+        with allure.step("Logging in with a different user and accessing the original user "
+                         "profile"):
+            self.start_existing_session(super().username_extraction_from_email(
+                self.user_secrets_accounts['TEST_ACCOUNT_13']
+            ))
 
-        self.logger.info("Verifying that the profile groups section is no longer displayed "
-                         "inside the profile section")
-        self.sumo_pages.user_navbar._click_on_my_profile_option()
-
-        expect(
-            self.sumo_pages.my_profile_page._groups_section_element()
-        ).to_be_hidden()
-
-        self.logger.info(
-            "Logging in with a different user and accessing the original user profile"
-        )
-        self.start_existing_session(super().username_extraction_from_email(
-            self.user_secrets_accounts['TEST_ACCOUNT_13']
-        ))
-
-        self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
-
-        self.logger.info("Verifying that the groups section is not longer displayed for the "
-                         "original user")
-        expect(
-            self.sumo_pages.my_profile_page._groups_section_element()
-        ).to_be_hidden()
+        with allure.step("Navigating to the my profile page and verifying that the groups "
+                         "section is no longer displayed for the original user"):
+            self.navigate_to_link(MyProfileMessages.get_my_profile_stage_url(original_user))
+            expect(
+                self.sumo_pages.my_profile_page._groups_section_element()
+            ).to_be_hidden()

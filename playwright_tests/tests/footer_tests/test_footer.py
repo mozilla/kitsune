@@ -1,6 +1,7 @@
+import allure
 import pytest
 import requests
-import pytest_check as check
+from pytest_check import check
 
 from playwright_tests.core.testutilities import TestUtilities
 from urllib.parse import urljoin
@@ -39,11 +40,5 @@ class TestFooter(TestUtilities):
 
             # Some links are returning status code 429.
             # We are currently treating them as pass cases.
-
-            check.is_true(
-                response.status_code < 400 or response.status_code == 429,
-                f"The following url is broken: "
-                f"{url}. "
-                f"Received status code: "
-                f"{response.status_code}"
-            )
+            with check, allure.step(f"Verifying that {url} is not broken are not broken"):
+                assert response.status_code < 400 or response.status_code == 429
