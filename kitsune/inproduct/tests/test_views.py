@@ -11,14 +11,14 @@ from kitsune.sumo.tests import TestCase
 class RedirectTestCase(TestCase):
     test_urls = (
         ("firefox/3.6.12/WINNT/en-US/", "/en-US/"),
-        ("mobile/4.0/Android/en-US/", "/en-US/products/mobile"),
+        ("mobile/4.0/Android/en-US/", "/en-US/products/mobile/"),
         ("firefox/3.6.12/MACOSX/en-US", "/en-US/"),
         ("firefox/3.6.12/WINNT/fr/", "/fr/"),
         ("firefox/3.6.12/WINNT/fr-FR/", "/fr/"),
         ("firefox-home/1.1/iPhone/en-US/", "/en-US/"),
-        ("firefox/4.0/Linux/en-US/prefs-applications", "/en-US/kb/Applications"),
-        ("firefox/4.0/Linux/en-US/prefs-applications/", "/en-US/kb/Applications"),
-        ("firefox/5.0/NONE/en-US/", "/en-US/does-not-exist"),
+        ("firefox/4.0/Linux/en-US/prefs-applications", "/en-US/kb/Applications/"),
+        ("firefox/4.0/Linux/en-US/prefs-applications/", "/en-US/kb/Applications/"),
+        ("firefox/5.0/NONE/en-US/", "/en-US/does-not-exist/"),
         ("firefox/4.0/Android/en-US/foo", 404),
         # Make sure Basque doesn't trigger the EU ballot logic.
         ("firefox/29.0/Darwin/eu/", "/eu/"),
@@ -33,36 +33,36 @@ class RedirectTestCase(TestCase):
 
     test_eu_urls = (
         ("firefox/3.6.12/WINNT/en-US/eu/", "/en-US/"),
-        ("mobile/4.0/Android/en-US/eu/", "/en-US/products/mobile"),
+        ("mobile/4.0/Android/en-US/eu/", "/en-US/products/mobile/"),
         ("firefox/3.6.12/MACOSX/en-US/eu", "/en-US/"),
         ("firefox/3.6.12/WINNT/fr/eu/", "/fr/"),
         ("firefox/3.6.12/WINNT/fr-FR/eu/", "/fr/"),
         ("firefox-home/1.1/iPhone/en-US/eu/", "/en-US/"),
-        ("firefox/4.0/Linux/en-US/eu/prefs-applications", "/en-US/kb/Applications"),
-        ("firefox/4.0/Linux/en-US/eu/prefs-applications/", "/en-US/kb/Applications"),
-        ("firefox/5.0/NONE/en-US/eu/", "/en-US/does-not-exist"),
+        ("firefox/4.0/Linux/en-US/eu/prefs-applications", "/en-US/kb/Applications/"),
+        ("firefox/4.0/Linux/en-US/eu/prefs-applications/", "/en-US/kb/Applications/"),
+        ("firefox/5.0/NONE/en-US/eu/", "/en-US/does-not-exist/"),
         ("firefox/4.0/Android/en-US/eu/foo", 404),
         # Basque is awesome.
         ("firefox/30.0/WINNT/eu/eu/", "/eu/"),
-        ("firefox/4.0/Linux/eu/eu/prefs-applications", "/eu/kb/Applications"),
+        ("firefox/4.0/Linux/eu/eu/prefs-applications", "/eu/kb/Applications/"),
     )
 
     def setUp(self):
         super(RedirectTestCase, self).setUp()
 
         # Create redirects to test with.
-        RedirectFactory(target="kb/Applications", topic="prefs-applications")
-        RedirectFactory(target="")
-        RedirectFactory(product="mobile", target="products/mobile")
-        RedirectFactory(platform="iPhone", target="")
-        RedirectFactory(product="mobile", platform="Android", topic="foo", target="")
-        RedirectFactory(version="5.0", target="does-not-exist")
-        RedirectFactory(platform="martian", target="https://martian.com")
-        RedirectFactory(product="firefox", topic="learn", target="kb/learn?utm_source=yada")
+        RedirectFactory(target="kb/Applications/", topic="prefs-applications")
+        RedirectFactory(target="/")
+        RedirectFactory(product="mobile", target="products/mobile/")
+        RedirectFactory(platform="iPhone", target="/")
+        RedirectFactory(product="mobile", platform="Android", topic="foo", target="/")
+        RedirectFactory(version="5.0", target="does-not-exist/")
+        RedirectFactory(platform="martian", target="https://martian.com/")
+        RedirectFactory(product="firefox", topic="learn", target="kb/learn/?utm_source=yada")
         RedirectFactory(
             product="monitor",
             topic="share",
-            target="kb/share?utm_content=firefox-share&utm_source=blue",
+            target="kb/share/?utm_content=firefox-share&utm_source=blue",
         )
 
     def test_target(self):
@@ -75,8 +75,8 @@ class RedirectTestCase(TestCase):
 
     def test_external_target(self):
         tests = (
-            ("mobile/4.0/MARTIAN/en-US/", "https://martian.com"),
-            ("mobile/4.0/MARTIAN/en-US/eu/", "https://martian.com"),
+            ("mobile/4.0/MARTIAN/en-US/", "https://martian.com/"),
+            ("mobile/4.0/MARTIAN/en-US/eu/", "https://martian.com/"),
         )
         self._targets(tests, "")
 
@@ -84,35 +84,35 @@ class RedirectTestCase(TestCase):
         """Test that incoming query parameters are preserved."""
 
         tests = (
-            ("firefox/112/Linux/en-US/learn", "/en-US/kb/learn", "utm_source=yada&as=u"),
+            ("firefox/112/Linux/en-US/learn", "/en-US/kb/learn/", "utm_source=yada&as=u"),
             (
                 "firefox/112/Linux/en-US/learn?utm_source=firefox",
-                "/en-US/kb/learn",
+                "/en-US/kb/learn/",
                 "utm_source=firefox&as=u",
             ),
             (
                 "firefox/112/Linux/en-US/learn?utm_content=learn&utm_source=firefox",
-                "/en-US/kb/learn",
+                "/en-US/kb/learn/",
                 "utm_source=firefox&utm_content=learn&as=u",
             ),
             (
                 "firefox/112/Linux/en-US/learn?utm_content=learn",
-                "/en-US/kb/learn",
+                "/en-US/kb/learn/",
                 "utm_source=yada&utm_content=learn&as=u",
             ),
             (
                 "monitor/112/Linux/en-US/share",
-                "/en-US/kb/share",
+                "/en-US/kb/share/",
                 "utm_content=firefox-share&utm_source=blue&as=u",
             ),
             (
                 "monitor/112/Linux/en-US/eu/share",
-                "/en-US/kb/share",
+                "/en-US/kb/share/",
                 "utm_content=firefox-share&utm_source=blue&as=u&eu=1",
             ),
             (
                 "mobile/4.0/martian/en-US?utm_source=aliens",
-                "https://martian.com",
+                "https://martian.com/",
                 "utm_source=aliens",
             ),
         )
