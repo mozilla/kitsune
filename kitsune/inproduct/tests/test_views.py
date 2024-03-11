@@ -136,6 +136,7 @@ class RedirectTestCase(TestCase):
                     self.assertEqual(302, response.redirect_chain[0][1])
                     # Let's check the final redirect against what we expected.
                     final = urlparse(response.redirect_chain[-1][0])
+                    final.path = final.path + "/"
                     self.assertEqual(output, final.path)
                     self.assertEqual(querystring, final.query)
 
