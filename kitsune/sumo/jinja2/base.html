@@ -4,7 +4,12 @@
   {% set meta = [('robots', 'noindex')] %}
 {% endif %}
 <!DOCTYPE html>
-<html class="no-js" lang="{{ request.LANGUAGE_CODE }}"{% if DIR %} dir="{{ DIR }}"{% endif %}{% if settings.GTM_CONTAINER_ID %} data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %}>
+<html class="no-js" lang="{{ request.LANGUAGE_CODE }}"
+  {% if DIR %}dir="{{ DIR }}"{% endif %}
+  {% if settings.GTM_CONTAINER_ID %}data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %}
+  {% if ga_content_group %}data-ga-content-group="{{ ga_content_group }}"{% endif %}
+  {% if ga_topics %}data-ga-topics="{{ ga_topics }}"{% endif %}
+  {% if ga_products %}data-ga-products="{{ ga_products }}"{% endif %}>
 <head>
   {% include "includes/google-analytics.html" %}
 

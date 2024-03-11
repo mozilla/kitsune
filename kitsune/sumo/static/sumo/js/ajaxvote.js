@@ -64,8 +64,10 @@ export default function AjaxVote(form, options) {
               self.voted = true;
 
               if (!data.ignored) {
-                // Trigger a document event for others to listen for.
+                // Trigger a document event for jQuery event listeners.
                 $(document).trigger('vote', $.extend(data, {url: url}));
+                // Also trigger a document event for non-jQuery event listeners.
+                document.dispatchEvent(new CustomEvent("vote", {"detail": data}));
               }
 
               // Hide other forms
