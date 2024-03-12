@@ -29,6 +29,14 @@
 
 {% endblock %}
 
+{% block product_announcement %}
+  {% if product.slug == 'hubs' %}
+  <div id="hubs-banner" class="mzp-c-notification-bar mzp-t-warning">
+    <button class="mzp-c-notification-bar-button close-button" type="button"></button>
+    <p>{{ _('Mozilla Hubs will shut down on May 31, 2024. For more information about the shutdown and how you can support Hubs\' life beyond Mozilla, please read <a href="https://hubs.mozilla.com/labs/sunset/">this article</a>.') }}</p>
+  </div>
+  {% endif %}
+{% endblock %}
 
 {% block content %}
     <article id="document-list">
@@ -87,8 +95,6 @@
       {% endif %}
 
       {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
-
-
 
       <section class="topic-list">
         {% for document in documents %}
