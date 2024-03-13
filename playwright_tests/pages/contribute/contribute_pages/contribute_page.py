@@ -58,7 +58,7 @@ class ContributePage(BasePage):
     def _get_way_to_contribute_header_text(self) -> str:
         return super()._get_text_of_element(self.__way_to_contribute_header)
 
-    def _get_way_to_contribute_card_titles_text(self) -> list[str]:
+    def _get_way_to_contribute_cards(self) -> list[str]:
         return super()._get_text_of_elements(self.__way_to_contribute_card_titles)
 
     # About us

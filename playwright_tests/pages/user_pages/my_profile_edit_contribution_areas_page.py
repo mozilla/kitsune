@@ -85,7 +85,7 @@ class MyProfileEditContributionAreasPage(BasePage):
         return super()._is_checkbox_checked(
             self.__edit_contribution_areas_mobile_support_contributors)
 
-    def _are_all_cont_pref_checkboxes_checked(self) -> bool:
+    def _are_all_cont_pref_checked(self) -> bool:
         is_checked = [
             self._is_kb_contributors_checkbox_checked(),
             self._is_l10n_contributors_checkbox_checked(),

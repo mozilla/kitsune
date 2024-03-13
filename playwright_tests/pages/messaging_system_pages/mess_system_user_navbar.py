@@ -18,10 +18,10 @@ class MessagingSystemUserNavbar(BasePage):
     def _click_on_messaging_system_navbar_inbox(self):
         super()._click(self.__messaging_system_user_navbar_inbox_option)
 
-    def _click_on_messaging_system_navbar_sent_messages(self):
+    def _click_on_messaging_system_nav_sent_messages(self):
         super()._click(self.__messaging_system_user_navbar_sent_messages_option)
 
-    def _click_on_messaging_system_navbar_new_message(self):
+    def _click_on_messaging_system_nav_new_message(self):
         super()._click(self.__messaging_system_user_navbar_new_message_option)
 
     # Need to add logic for fetching the background color of selected navbar elements

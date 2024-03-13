@@ -196,6 +196,6 @@ class MyProfilePage(BasePage):
     def _is_deactivate_this_user_button_displayed(self) -> Locator:
         return super()._get_element_locator(self.__deactivate_this_user_button)
 
-    def _deactivate_this_user_and_mark_content_as_spam_elem(self) -> Locator:
+    def _deactivate_user_and_mark_content_as_spam_button(self) -> Locator:
         return super()._get_element_locator(
             self.__deactivate_this_user_and_mark_all_content_as_spam)

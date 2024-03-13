@@ -146,7 +146,7 @@ class KBArticleDiscussionPage(BasePage):
     def _get_thread_post_a_reply_textarea_field(self) -> Locator:
         return super()._get_element_locator(self.__thread_post_a_reply_textarea_field)
 
-    def _fill_the_thread_post_a_reply_textarea_field(self, text: str):
+    def _fill_the_thread_post_a_reply_textarea(self, text: str):
         super()._fill(self.__thread_post_a_reply_textarea_field, text)
 
     def _get_thread_page_counter_replies_text(self) -> str:

@@ -56,10 +56,10 @@ class WaysToContributePages(BasePage):
     def _get_how_to_contribute_header_text(self) -> str:
         return super()._get_text_of_element(self.__how_to_contribute_header)
 
-    def _get_how_to_contribute_link_options_text(self) -> list[str]:
+    def _get_how_to_contribute_link_options(self) -> list[str]:
         return super()._get_text_of_elements(self.__all_how_to_contribute_option_links)
 
-    def _get_how_to_contribute_option_four_text(self) -> str:
+    def _get_how_to_contribute_option_four(self) -> str:
         return super()._get_text_of_element(self.__start_answering_how_to_contribute_option_text)
 
     def _get_first_fact_text(self) -> str:
@@ -72,7 +72,7 @@ class WaysToContributePages(BasePage):
     def _get_other_ways_to_contribute_header(self) -> str:
         return super()._get_text_of_element(self.__other_ways_to_contribute_header)
 
-    def _get_other_ways_to_contribute_card_title(self) -> list[str]:
+    def _get_other_ways_to_contribute_cards(self) -> list[str]:
         return super()._get_text_of_elements(self.__other_ways_to_contribute_card_titles)
 
     def _get_other_ways_to_contribute_card_list(self) -> list[ElementHandle]:

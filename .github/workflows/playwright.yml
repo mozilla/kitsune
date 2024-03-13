@@ -51,132 +51,135 @@ jobs:
         id: create-sessions
         working-directory: playwright_tests
         run: |
-         poetry run pytest -m loginSessions --browser ${{ env.BROWSER }} --reruns 1 --html=reports/creating_user_sessions.html --capture=tee-sys
+         poetry run pytest -m loginSessions --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Homepage tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-         poetry run pytest -m homePageTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_homepage_tests_report.html --capture=tee-sys
+         poetry run pytest -m homePageTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Top-Navbar tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m topNavbarTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_top_navbar_tests_report.html --capture=tee-sys
+          poetry run pytest -m topNavbarTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Footer tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m footerSectionTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_footer_tests_report.html --capture=tee-sys
+          poetry run pytest -m footerSectionTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Contribute Pages tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m contributePagesTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_contribute_page_tests_report.html --capture=tee-sys
+          poetry run pytest -m contributePagesTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Messaging System Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m messagingSystem --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_messaging_system_tests_report.html --capture=tee-sys
+          poetry run pytest -m messagingSystem --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run User Contribution Page Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userContributionTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_user_contribution_tests.html --capture=tee-sys
+          poetry run pytest -m userContributionTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run User Page Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userProfile --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_user_page_tests.html --capture=tee-sys
+          poetry run pytest -m userProfile --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run User Settings Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userSettings --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_user_settings_page_tests.html --capture=tee-sys
+          poetry run pytest -m userSettings --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run User Profile Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m editUserProfileTests --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_user_profile_page_tests.html --capture=tee-sys
+          poetry run pytest -m editUserProfileTests --browser ${{ env.BROWSER }} --reruns 1
       - name: Run User Questions Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m userQuestions --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_user_questions_page_tests.html --capture=tee-sys
+          poetry run pytest -m userQuestions --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Contact Support Page Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m contactSupportPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_contact_support_page_tests.html --capture=tee-sys
+          poetry run pytest -m contactSupportPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Product Solutions Page Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m productSolutionsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_product_solutions_page_tests.html --capture=tee-sys
+          poetry run pytest -m productSolutionsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run Product Topics Page Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m productTopicsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_product_topics_page_tests.html --capture=tee-sys
+          poetry run pytest -m productTopicsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run AAQ Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m aaqPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_aaq_tests.html --capture=tee-sys
+          poetry run pytest -m aaqPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run AAQ Questions Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-          poetry run pytest -m postedQuestions --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_aaq_questions_tests.html --capture=tee-sys
+          poetry run pytest -m postedQuestions --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name : Run KB Products Page Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-            poetry run pytest -m kbProductsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_products_page.html --capture=tee-sys
+            poetry run pytest -m kbProductsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run KB Article Creation And Access Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-            poetry run pytest -m kbArticleCreationAndAccess --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_creation_and_access.html --capture=tee-sys
+            poetry run pytest -m kbArticleCreationAndAccess --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run before kb thread tests setup (${{ env.BROWSER }})
         id: kb-threads-setup
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-            poetry run pytest -m beforeThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_before_thread_tests_setup.html --capture=tee-sys
+            poetry run pytest -m beforeThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run KB article threads Tests  (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success' && steps.kb-threads-setup.outcome == 'success'
         run: |
-            poetry run pytest -m articleThreads --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_threads.html --capture=tee-sys
+            poetry run pytest -m articleThreads --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run KB article threads tear down (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success' && steps.kb-threads-setup.outcome == 'success'
         run: |
-            poetry run pytest -m afterThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_threads_tear_down.html --capture=tee-sys
+            poetry run pytest -m afterThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run KB article show history Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-            poetry run pytest -m kbArticleShowHistory --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_show_history.html --capture=tee-sys
+            poetry run pytest -m kbArticleShowHistory --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run KB article revisions dashboard Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-            poetry run pytest -m recentRevisionsDashboard --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_article_recent_revisions.html --capture=tee-sys
+            poetry run pytest -m recentRevisionsDashboard --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
       - name: Run KB Dashboard Tests (${{ env.BROWSER }})
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-            poetry run pytest -m kbDashboard --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1 --html=reports/${{ env.BROWSER }}_kb_dashboard.html --capture=tee-sys
-      - name: Combine Reports
+            poetry run pytest -m kbDashboard --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
+      - name: Generating Allure Report
         working-directory: playwright_tests
         if: success() || failure()
         run: |
-          cat reports/*.html > reports/combined_report_${{ env.BROWSER }}.html
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+            brew install allure
+            allure generate --single-file reports/allure_reports
       - name: Upload the combined test report as artifact
         if: success() || failure()
         uses: actions/upload-artifact@v2
         with:
           name: Playwright test report
           path: |
-            playwright_tests/reports/
+            playwright_tests/allure-report
