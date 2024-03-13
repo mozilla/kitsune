@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox, featured_articles, sumo_banner %}
 {% from 'products/includes/topic_macros.html' import help_topics, topic_metadata with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set scripts = ('products',) %}
@@ -11,15 +11,6 @@
 {% set canonical_url = canonicalize(model_url=product.get_absolute_url()) %}
 
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
-
-{% block product_announcement %}
-  {% if product.slug == 'hubs' %}
-  <div id="hubs-banner" class="mzp-c-notification-bar mzp-t-warning">
-    <button class="mzp-c-notification-bar-button close-button" type="button"></button>
-    <p>{{ _('Mozilla Hubs will shut down on May 31, 2024. For more information about the shutdown and how you can support Hubs\' life beyond Mozilla, please read <a href="https://hubs.mozilla.com/labs/sunset/">this article</a>.') }}</p>
-  </div>
-  {% endif %}
-{% endblock %}
 
 {% block base_container_classes %}container_wide{% endblock %}
 
@@ -129,6 +120,18 @@
 
 {% block contentwrap %}
 <div id="main-content">
+  {% if product.slug == 'hubs' %}
+    <section class="support-callouts mzp-l-content sumo-page-section--inner">
+      {{ sumo_banner(
+              id="id_ff_alert",
+              text=_('Mozilla Hubs will shut down on May 31, 2024. For more information about the shutdown and how you can support Hubs\' life beyond Mozilla.'),
+              image=webpack_static('sumo/img/FF_Master__icon.svg'),
+              button_text=_('Learn more'),
+              button_link="https://hubs.mozilla.com/labs/sunset/",
+              modifier_class="hide-on-mobile",
+            ) }}
+    </section>
+  {% endif %}
   <div class="mzp-l-content sumo-page-section--inner">
     <div class="sumo-page-subheader">
       <div class="sumo-page-subheader--text">

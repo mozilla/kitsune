@@ -13,15 +13,6 @@
 {% endif %}
 {% set extra_body_attrs = {'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
-{% block product_announcement %}
-  {% if product.slug == 'hubs' %}
-  <div id="hubs-banner" class="mzp-c-notification-bar mzp-t-warning">
-    <button class="mzp-c-notification-bar-button close-button" type="button"></button>
-    <p>{{ _('Mozilla Hubs will shut down on May 31, 2024. For more information about the shutdown and how you can support Hubs\' life beyond Mozilla, please read <a href="https://hubs.mozilla.com/labs/sunset/">this article</a>.') }}</p>
-  </div>
-  {% endif %}
-{% endblock %}
-
 {% block title %}
   {{ document.title }} | {% if not products or products|count > 1 %}{{ pgettext('site_title', 'Mozilla Support') }}{% else %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endif %}
 {% endblock %}
@@ -84,7 +75,16 @@
         {{ document_title(document) }}
       </div>
     </header>
-
+    {% if product.slug == 'hubs' %}
+      {{ sumo_banner(
+              id="id_ff_alert",
+              text=_('Mozilla Hubs will shut down on May 31, 2024. For more information about the shutdown and how you can support Hubs\' life beyond Mozilla.'),
+              image=webpack_static('sumo/img/FF_Master__icon.svg'),
+              button_text=_('Learn more'),
+              button_link="https://hubs.mozilla.com/labs/sunset/",
+              modifier_class="hide-on-mobile",
+            ) }}
+    {% endif %}
     {% if document.is_restricted %}
       <div class="warning-box mzp-c-notification-bar mzp-t-warning">
         {{ _('This document is restricted.') }}
