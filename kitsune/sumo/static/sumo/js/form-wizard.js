@@ -385,7 +385,7 @@ export class BaseFormStep extends HTMLElement {
    * the GA instrumentation behaviour.
    */
   connectedCallback() {
-    let instrumentedEls = this.shadowRoot.querySelectorAll("*[data-event-category]");
+    let instrumentedEls = this.shadowRoot.querySelectorAll("*[data-event-name]");
     for (let element of instrumentedEls) {
       element.addEventListener("click", this.handleInstrumentation);
     }
@@ -397,19 +397,17 @@ export class BaseFormStep extends HTMLElement {
    * the GA instrumentation behaviour.
    */
   disconnectedCallback() {
-    let instrumentedEls = this.shadowRoot.querySelectorAll("*[data-event-category]");
+    let instrumentedEls = this.shadowRoot.querySelectorAll("*[data-event-name]");
     for (let element of instrumentedEls) {
       element.removeEventListener("click", this.handleInstrumentation);
     }
   }
 
   /**
-   * Handles clicks on any elements in the step with a data-event-category attribute
+   * Handles clicks on any elements in the step with a data-event-name attribute
    * on it. The element can also provide the following other attributes:
    *
-   * data-event-action
-   * data-event-label
-   * data-event-value
+   * data-event-parameters
    *
    * See analytics.js for a sense of how this is passed along to GA.
    *
@@ -417,12 +415,11 @@ export class BaseFormStep extends HTMLElement {
    *   The click event that has been instrumented.
    */
   handleInstrumentation(event) {
-    trackEvent(
-      event.target.dataset.eventCategory,
-      event.target.dataset.eventAction,
-      event.target.dataset.eventLabel,
-      event.target.dataset.eventValue
-    );
+    let eventParameters;
+    if (event.target.dataset.eventParameters) {
+      eventParameters = JSON.parse(event.target.dataset.eventParameters);
+    }
+    trackEvent(event.target.dataset.eventName, eventParameters);
   }
 
   /**

@@ -43,7 +43,7 @@ export class ConfigureStep extends BaseFormStep {
           </p>
 
           <p id="buttons">
-            <button id="next" class="mzp-c-button mzp-t-product" data-event-category="device-migration-wizard" data-event-action="click" data-event-label="configuration-next">${gettext("Continue")}</button>
+            <button id="next" class="mzp-c-button mzp-t-product" data-event-name="dmw_click" data-event-parameters='{"dmw_click_target": "configuration-next"}'>${gettext("Continue")}</button>
           </p>
         </div>
       </template>
@@ -70,9 +70,8 @@ export class ConfigureStep extends BaseFormStep {
 
     for (let link of [notSyncingInstructionLink, syncingInstructionLink]) {
       link.addEventListener("click", this);
-      link.dataset.eventCategory = "device-migration-wizard";
-      link.dataset.eventAction = "click";
-      link.dataset.eventLabel = link.id;
+      link.dataset.eventName = "dmw_click";
+      link.dataset.eventParameters = `{"dmw_click_target": "${link.id}"}`;
     }
   }
 
