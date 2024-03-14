@@ -12,7 +12,11 @@
         <div class="card--details">
           <h3 class="card--title">
             <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
-               data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
+              data-event-name="click_internal_link"
+              data-event-parameters='{
+                "link_type": "topic",
+                "link_url": "{{ topic_url }}"
+              }'>
               {{ pgettext('DB: products.Topic.title', topic.title) }}
             </a>
           </h3>
@@ -76,9 +80,11 @@
           {% if selected_topic == topic and selected_subtopic != None %}show-selected-on-lg{% endif %}
           "
           href="{{ topic_url }}"
-          data-event-category="link click"
-          data-event-action="topic sidebar"
-          data-event-label="{{topic.title}}">
+          data-event-name="click_internal_link"
+          data-event-parameters='{
+            "link_type": "topic-sidebar",
+            "link_url": "{{ topic_url }}"
+          }'>
           {{ pgettext('DB: products.Topic.title', topic.title) }}
         </a>
 
@@ -87,7 +93,12 @@
         {% for subtopic in subtopics %}
           {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
           <li class="sidebar-nav--subitem">
-            <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+            <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}"
+              data-event-name="click_internal_link"
+              data-event-parameters='{
+                "link_type": "subtopic-sidebar",
+                "link_url": "{{ subtopic_url }}"
+              }'>
               {{ pgettext('DB: products.Topic.title', subtopic.title) }}
             </a>
           </li>
@@ -106,7 +117,12 @@
   <ul class="tabs--list subtopics">
     {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
     <li class="tabs--item">
-      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}">
+      <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}"
+        data-event-name="click_internal_link"
+        data-event-parameters='{
+          "link_type": "topic-tab",
+          "link_url": "{{ topic_url }}"
+        }'>
         <span class="mobile-only">{{ _('All') }}</span>
         <span class="hide-on-mobile">{{ _('All articles and threads') }}</span>
       </a>
@@ -114,7 +130,12 @@
     {% for subtopic in subtopics %}
       {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
       <li class="tabs--item">
-        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}" data-event-category="link click" data-event-action="subtopic sidebar" data-event-label="{{subtopic.title}}">
+        <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}"
+          data-event-name="click_internal_link"
+          data-event-parameters='{
+            "link_type": "subtopic-tab",
+            "link_url": "{{ subtopic_url }}"
+          }'>
           <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
         </a>
       </li>

@@ -104,8 +104,12 @@
             </div>
             <div class="topic-article--text">
               <h2 class="sumo-card-heading">
-                <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
-                  data-event-label="{{ document['document_title'] }}">
+                <a href="{{ document['url'] }}"
+                  data-event-name="click_internal_link"
+                  data-event-parameters='{
+                    "link_type": "kb-article",
+                    "link_url": "{{ document["url"] }}"
+                  }'>
                   {{ document['document_title'] }}
                 </a>
               </h2>
