@@ -26,7 +26,14 @@
           <img class="card--icon" src="{{ product.image_alternate_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
           <div class="card--details">
             <h3 class="card--title">
-              <a class="expand-this-link title" href="{{ url('questions.list', product.slug) }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+              {% set questions_url = url('questions.list', product.slug) %}
+              <a class="expand-this-link title" href="{{ questions_url }}"
+                data-event-name="click_internal_link"
+                data-event-parameters='{
+                  "link_type": "product-questions",
+                  "link_detail": "{{ product.slug }}",
+                  "link_url": "{{ questions_url }}"
+                }'>
                 {{ _('<strong>{product}</strong> Support Forum')|fe(product=pgettext('DB: products.Product.title', product.title)) }}
               </a>
             </h3>
@@ -37,7 +44,14 @@
       </div>
     </div>
     <div class="sumo-button-wrap align-end product">
-      <a class="sumo-button primary-button button-lg title" href="{{ url('questions.list', 'all') }}" data-event-category="link click" data-event-action="product" data-event-label="Firefox">
+      {% set questions_url = url('questions.list', 'all') %}
+      <a class="sumo-button primary-button button-lg title" href="{{ questions_url }}"
+        data-event-name="click_internal_link"
+        data-event-parameters='{
+          "link_type": "product-questions",
+          "link_detail": "all",
+          "link_url": "{{ questions_url }}"
+        }'>
         {{ _('{product} Support Forum')|fe(product=_('All Products')) }}
       </a>
     </div>

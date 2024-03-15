@@ -112,7 +112,10 @@ def product_list(request):
     return render(
         request,
         "questions/product_list.html",
-        {"products": Product.objects.with_question_forums(request)},
+        {
+            "ga_content_group": "support-forums",
+            "products": Product.objects.with_question_forums(request),
+        },
     )
 
 
@@ -326,7 +329,11 @@ def question_list(request, product_slug):
         "all_products": product_slug == "all",
         "topic_list": topic_list,
         "topic": topic,
+        "ga_content_group": "support-forum",
     }
+
+    if products:
+        data["ga_products"] = f"/{'/'.join(product.slug for product in products)}/"
 
     return render(request, "questions/question_list.html", data)
 
@@ -436,8 +443,15 @@ def question_details(
             "related_documents": related_documents,
             "related_questions": related_questions,
             "question_images": question_images,
+            "ga_content_group": "support-forum-question-detail",
         }
     )
+
+    if question.product:
+        extra_kwargs.update(ga_products=f"/{question.product.slug}/")
+
+    if question.topic:
+        extra_kwargs.update(ga_topics=f"/{question.topic.slug}/")
 
     # Add noindex to questions without a solution.
     if not question.solution_id:
@@ -519,10 +533,12 @@ def aaq(request, product_key=None, category_key=None, step=1, is_loginless=False
         "current_step": step,
         "host": Site.objects.get_current().domain,
         "is_loginless": is_loginless,
+        "ga_content_group": f"aaq-step-{step}",
     }
 
     if step > 1:
         context["has_ticketing_support"] = has_ticketing_support
+        context["ga_products"] = f"/{product.slug}/"
 
     if step == 2:
         context["featured"] = get_featured_articles(product, locale=request.LANGUAGE_CODE)
@@ -716,17 +732,22 @@ def edit_question(request, question_id):
                 reverse("questions.details", kwargs={"question_id": question.id})
             )
 
-    return render(
-        request,
-        "questions/edit_question.html",
-        {
-            "question": question,
-            "form": form,
-            "images": images,
-            "current_product": question.product_config,
-            "current_category": question.category_config,
-        },
-    )
+    context = {
+        "question": question,
+        "form": form,
+        "images": images,
+        "current_product": question.product_config,
+        "current_category": question.category_config,
+        "ga_content_group": "support-forum-question-edit",
+    }
+
+    if question.product:
+        context.update(ga_products=f"/{question.product.slug}/")
+
+    if question.topic:
+        context.update(ga_topics=f"/{question.topic.slug}/")
+
+    return render(request, "questions/edit_question.html", context)
 
 
 @require_POST
@@ -1093,7 +1114,15 @@ def delete_question(request, question_id):
 
     if request.method == "GET":
         # Render the confirmation page
-        return render(request, "questions/confirm_question_delete.html", {"question": question})
+        context = {
+            "question": question,
+            "ga_content_group": "support-forum-question-delete",
+        }
+        if question.product:
+            context.update(ga_products=f"/{question.product.slug}/")
+        if question.topic:
+            context.update(ga_topics=f"/{question.topic.slug}/")
+        return render(request, "questions/confirm_question_delete.html", context)
 
     # Capture the product slug to build the questions.list url below.
     product = question.product_slug
@@ -1115,7 +1144,16 @@ def delete_answer(request, question_id, answer_id):
 
     if request.method == "GET":
         # Render the confirmation page
-        return render(request, "questions/confirm_answer_delete.html", {"answer": answer})
+        context = {
+            "answer": answer,
+            "ga_content_group": "support-forum-answer-delete",
+        }
+        question = answer.question
+        if question.product:
+            context.update(ga_products=f"/{question.product.slug}/")
+        if question.topic:
+            context.update(ga_topics=f"/{question.topic.slug}/")
+        return render(request, "questions/confirm_answer_delete.html", context)
 
     # Handle confirm delete form POST
     log.warning("User %s is deleting answer with id=%s" % (request.user, answer.id))
@@ -1173,7 +1211,17 @@ def edit_answer(request, question_id, answer_id):
 
     if request.method == "GET":
         form = AnswerForm({"content": answer.content}, user=request.user)
-        return render(request, "questions/edit_answer.html", {"form": form, "answer": answer})
+        context = {
+            "form": form,
+            "answer": answer,
+            "ga_content_group": "support-forum-answer-edit",
+        }
+        question = answer.question
+        if question.product:
+            context.update(ga_products=f"/{question.product.slug}/")
+        if question.topic:
+            context.update(ga_topics=f"/{question.topic.slug}/")
+        return render(request, "questions/edit_answer.html", context)
 
     form = AnswerForm(request.POST, **{"user": request.user})
 
@@ -1333,6 +1381,7 @@ def metrics(request, locale_code=None):
         "current_locale": locale_code,
         "product": product,
         "products": Product.objects.filter(visible=True),
+        "ga_content_group": "support-forum-metrics",
     }
 
     return render(request, template, data)

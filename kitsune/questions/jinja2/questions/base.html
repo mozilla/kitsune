@@ -2,3 +2,6 @@
 {% if not scripts %}
   {% set scripts = ('questions',) %}
 {% endif %}
+{% if not ga_content_group %}
+  {% set ga_content_group = "support-forums-other" %}
+{% endif %}

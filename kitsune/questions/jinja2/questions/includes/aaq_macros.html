@@ -22,10 +22,13 @@
           <div class="card--details">
             <h3 class="card--title">
               <a class="expand-this-link title"
-                href="{{ url('questions.aaq_step2', product_key=key) }}"
-                data-event-category="link click"
-                data-event-action="product"
-                data-event-label="{{ product.name }}">
+                href="{{ aaq_step_2_link }}"
+                data-event-name="click_internal_link"
+                data-event-parameters='{
+                  "link_type": "aaq-step-2",
+                  "link_detail": "{{ product.slug }}",
+                  "link_url": "{{ aaq_step_2_link }}"
+                }'>
                 {{ product.name }}
               </a>
             </h3>
@@ -108,15 +111,19 @@
         <p>{{ _('Sign in/up to post your question and get help.') }}</p>
       {% endif %}
       {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}
+        {% set link_type = "aaq-widget-for-community-support-article" %}
         {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
       {% else %}
+        {% set link_type = "aaq-widget-for-aaq-step-3" %}
         {% set next_step = url('questions.aaq_step3', product_key=aaq_context.key) %}
       {% endif %}
       <a class="sumo-button primary-button feature-box"
         href="{{ next_step }}"
-        data-event-category="link click"
-        data-event-action="{{ location }}"
-        data-event-label="aaq widget">
+        data-event-name="click_internal_link"
+        data-event-parameters='{
+          "link_type": "{{ link_type }}",
+          "link_url": "{{ next_step }}"
+        }'>
         {% if aaq_context.has_ticketing_support %}
           {{ _('Contact Support') }}
         {% else %}
@@ -170,7 +177,7 @@
         <div class="text-center-to-left-on-large aaq-popular-topics">
           <h2 class="sumo-page-subheading">{{ _('Popular Topics') }}</h2>
         </div>
-        {{ help_topics(topics, product_slug=product.product, new_tab=True, context="aaq-flow") }}
+        {{ help_topics(topics, product_slug=product.product, new_tab=True) }}
       </div>
   </section>
 </div>
