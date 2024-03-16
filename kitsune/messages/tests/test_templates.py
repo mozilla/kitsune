@@ -23,7 +23,7 @@ class SendMessageTestCase(TestCase):
 
     def _test_send_message_to(self, to):
         # Post a new message and verify it was sent.
-        data = {"to": to, "message": "hi there"}
+        data = {"to": to, "to_group": "", "message": "hi there"}
         response = self.client.post(reverse("messages.new", locale="en-US"), data, follow=True)
         self.assertEqual(200, response.status_code)
         self.assertEqual("Your message was sent!", pq(response.content)("ul.user-messages").text())
