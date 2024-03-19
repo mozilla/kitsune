@@ -21,6 +21,7 @@
 
           <div class="card--details">
             <h3 class="card--title">
+              {% set aaq_step_2_link = url('questions.aaq_step2', product_key=key) %}
               <a class="expand-this-link title"
                 href="{{ aaq_step_2_link }}"
                 data-event-name="click_internal_link"
@@ -122,6 +123,7 @@
         data-event-name="click_internal_link"
         data-event-parameters='{
           "link_type": "{{ link_type }}",
+          "link_detail": "{{ aaq_context.key }}",
           "link_url": "{{ next_step }}"
         }'>
         {% if aaq_context.has_ticketing_support %}

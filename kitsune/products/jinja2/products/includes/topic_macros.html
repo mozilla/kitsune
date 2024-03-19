@@ -15,6 +15,7 @@
               data-event-name="click_internal_link"
               data-event-parameters='{
                 "link_type": "topic",
+                "link_detail": "{{ topic.slug }}",
                 "link_url": "{{ topic_url }}"
               }'>
               {{ pgettext('DB: products.Topic.title', topic.title) }}
@@ -53,7 +54,13 @@
         </p>
         {% set aaq_url=url('questions.aaq_step2', product_key=product_key) %}
         <a class="sumo-button primary-button button-lg"
-          href="{{ aaq_url }}" data-event-label="Get support">
+          href="{{ aaq_url }}"
+          data-event-name="click_internal_link"
+          data-event-parameters='{
+            "link_type": "aaq-card-for-aaq-step-2",
+            "link_detail": "{{ product_key }}",
+            "link_url": "{{ aaq_url }}"
+          }'>
           {% if product and product.has_ticketing_support %}
             {{ _('Get Support') }}
           {% else %}
@@ -83,6 +90,7 @@
           data-event-name="click_internal_link"
           data-event-parameters='{
             "link_type": "topic-sidebar",
+            "link_detail": "{{ topic.slug }}",
             "link_url": "{{ topic_url }}"
           }'>
           {{ pgettext('DB: products.Topic.title', topic.title) }}
@@ -97,6 +105,7 @@
               data-event-name="click_internal_link"
               data-event-parameters='{
                 "link_type": "subtopic-sidebar",
+                "link_detail": "{{ subtopic.slug }}",
                 "link_url": "{{ subtopic_url }}"
               }'>
               {{ pgettext('DB: products.Topic.title', subtopic.title) }}
@@ -121,6 +130,7 @@
         data-event-name="click_internal_link"
         data-event-parameters='{
           "link_type": "topic-tab",
+          "link_detail": "{{ topic.slug }}",
           "link_url": "{{ topic_url }}"
         }'>
         <span class="mobile-only">{{ _('All') }}</span>
@@ -134,6 +144,7 @@
           data-event-name="click_internal_link"
           data-event-parameters='{
             "link_type": "subtopic-tab",
+            "link_detail": "{{ subtopic.slug }}",
             "link_url": "{{ subtopic_url }}"
           }'>
           <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>

@@ -11,6 +11,7 @@
                  data-event-name="click_internal_link"
                  data-event-parameters='{
                    "link_type": "product",
+                   "link_detail": "{{ product.slug }}",
                    "link_url": "{{ prod_url }}"
                  }'>
                 {{ pgettext('DB: products.Product.title', product.title) }}
