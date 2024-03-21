@@ -55,9 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (closestForm) {
         event.preventDefault();
-        // Delay the form post by 250ms to ensure the event is tracked.
+        // Delay the form submission by 250ms to ensure the event is tracked.
         setTimeout(function() {
-          closestForm.dispatchEvent("submit");
+          if (closestForm.requestSubmit) {
+            closestForm.requestSubmit(button);
+          } else {
+            closestForm.submit();
+          }
         }, 250);
       }
     });
