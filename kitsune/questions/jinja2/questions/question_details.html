@@ -28,6 +28,14 @@
   {% set meta = (('robots', 'noindex'),) %}
 {% endif %}
 
+{% set ga_content_group = "support-forum-question-detail" %}
+{% if product %}
+  {% set ga_products = "/" + product.slug + "/" %}
+{% endif %}
+{% if topic %}
+  {% set ga_topics = "/" + topic.slug + "/" %}
+{% endif %}
+
 {% block breadcrumbs %}
 
 {% if aaq_final_step %}
