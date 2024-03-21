@@ -389,13 +389,13 @@
               <img class="card--icon-sm" src="{{ webpack_static('protocol/img/icons/reader-mode.svg') }}" alt="todo: title" />
               <div class="card--details">
                 <h3 class="card--title">
-                  <a
-                    class="expand-this-link"
-                    href="{{ url('wiki.document', related.slug) }}"
-                    data-event-category="link click"
-                    data-event-action="product"
-                    data-event-label="{{ related.title }}"
-                  >
+                  {% set related_url = url('wiki.document', related.slug) %}
+                  <a class="expand-this-link" href="{{ related_url }}"
+                    data-event-name="click_internal_link"
+                    data-event-parameters='{
+                      "link_type": "related.kb-article",
+                      "link_url": "{{ related_url }}"
+                    }'>
                     {{ related.title }}
                   </a>
                 </h3>
@@ -435,9 +435,12 @@
         {% set aaq_url=url('questions.aaq_step3', product_key=product_key) %}
         <a class="sumo-button primary-button button-lg"
           href="{{ aaq_url }}"
-          data-event-category="link click"
-          data-event-action="{{ location }}"
-          data-event-label="inpage_cta">
+          data-event-name="click_internal_link"
+          data-event-parameters='{
+            "link_type": "in-article-aaq-card.aaq-step-3",
+            "link_detail": "{{ product_key }}",
+            "link_url": "{{ aaq_url }}"
+          }'>
             {{ _('Contact Support') }}
         </a>
       </div>
