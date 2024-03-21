@@ -14,8 +14,8 @@
             <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" {% if new_tab %} target="_blank" {% endif %}
               data-event-name="click_internal_link"
               data-event-parameters='{
-                "link_type": "topic",
-                "link_detail": "{{ topic.slug }}",
+                "link_type": "product-and-topic-home",
+                "link_detail": "{{ (product_slug or product.slug) + '/' + topic.slug }}",
                 "link_url": "{{ topic_url }}"
               }'>
               {{ pgettext('DB: products.Topic.title', topic.title) }}
@@ -89,8 +89,8 @@
           href="{{ topic_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "sidebar.topic",
-            "link_detail": "{{ topic.slug }}",
+            "link_type": "sidebar.product-and-topic-home",
+            "link_detail": "{{ product.slug + '/' + topic.slug }}",
             "link_url": "{{ topic_url }}"
           }'>
           {{ pgettext('DB: products.Topic.title', topic.title) }}
@@ -104,8 +104,8 @@
             <a class="sidebar-nav--sublink {% if subtopic == selected_subtopic %}selected{% endif %}" href="{{ subtopic_url }}"
               data-event-name="click_internal_link"
               data-event-parameters='{
-                "link_type": "sidebar.subtopic",
-                "link_detail": "{{ subtopic.slug }}",
+                "link_type": "sidebar.product-and-topic-and-subtopic-home",
+                "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}",
                 "link_url": "{{ subtopic_url }}"
               }'>
               {{ pgettext('DB: products.Topic.title', subtopic.title) }}
@@ -129,8 +129,8 @@
       <a class="tabs--link {% if not selected_subtopic %}is-active{% endif %}" href="{{ topic_url }}"
         data-event-name="click_internal_link"
         data-event-parameters='{
-          "link_type": "tab.topic",
-          "link_detail": "{{ topic.slug }}",
+          "link_type": "tab.product-and-topic-home",
+          "link_detail": "{{ product.slug + '/' + topic.slug }}",
           "link_url": "{{ topic_url }}"
         }'>
         <span class="mobile-only">{{ _('All') }}</span>
@@ -143,8 +143,8 @@
         <a class="tabs--link {% if subtopic == selected_subtopic %}is-active{% endif %}" href="{{ subtopic_url }}"
           data-event-name="click_internal_link"
           data-event-parameters='{
-            "link_type": "tab.subtopic",
-            "link_detail": "{{ subtopic.slug }}",
+            "link_type": "tab.product-and-topic-and-subtopic-home",
+            "link_detail": "{{ product.slug + '/' + topic.slug + '/' + subtopic.slug }}",
             "link_url": "{{ subtopic_url }}"
           }'>
           <span>{{ pgettext('DB: products.Topic.title', subtopic.title) }}</span>
