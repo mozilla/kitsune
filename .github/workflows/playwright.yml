@@ -1,8 +1,18 @@
 name: Playwright Tests
 on:
     schedule:
-        # Firefox tests running on Monday, Wednesday and Friday. Chrome runs Tuesday and Thursday.
-        - cron: '0 5 * * 1,2,3,4,5'
+        # Playwright tests are running automatically in Firefox on each Monday & in Chrome on each Friday.
+        - cron: '0 5 * * 1,5'
+    workflow_dispatch:
+        inputs:
+            Browsers:
+                description: Browsers
+                required: true
+                default: firefox
+                type: choice
+                options:
+                    - firefox
+                    - chrome
 
 env:
     TEST_ACCOUNT_12: ${{secrets.AUTOMATION_TEST_ACCOUNT_12}}
@@ -39,135 +49,35 @@ jobs:
             pip3 install playwright
             python -m playwright install
       - name: Set up browsers env
-        if: "github.event_name == 'schedule' || github.event_name == 'workflow_run'"
+        if: "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
         run: |
-            current_day=$(date +\%u)
-            if [ $current_day -eq 1 ] || [ $current_day -eq 3 ] || [ $current_day -eq 5 ]; then
-            echo "BROWSER=firefox" >> $GITHUB_ENV
-            elif [ $current_day -eq 2 ] || [ $current_day -eq 4 ]; then
-            echo "BROWSER=chrome" >> $GITHUB_ENV
+            if [ "${{ github.event_name }}" == 'schedule' ]; then
+                current_day=$(date +\%u)
+                if [ $current_day -eq 1 ]; then
+                    echo "BROWSER=firefox" >> $GITHUB_ENV
+                elif [ $current_day -eq 5 ]; then
+                    echo "BROWSER=chrome" >> $GITHUB_ENV
+                fi
+            elif [ "${{ github.event_name }}" == 'workflow_dispatch' ]; then
+                echo "BROWSER=${{inputs.Browsers}}" >> $GITHUB_ENV
             fi
       - name: Creating User Sessions for ${{ env.BROWSER }}
         id: create-sessions
         working-directory: playwright_tests
         run: |
          poetry run pytest -m loginSessions --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Homepage tests (${{ env.BROWSER }})
+      - name: Run Playwright Tests
         working-directory: playwright_tests
         if: success() || failure() && steps.create-sessions.outcome == 'success'
         run: |
-         poetry run pytest -m homePageTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Top-Navbar tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m topNavbarTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Footer tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m footerSectionTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Contribute Pages tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m contributePagesTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Messaging System Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m messagingSystem --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run User Contribution Page Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m userContributionTests --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run User Page Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m userProfile --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run User Settings Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m userSettings --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run User Profile Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m editUserProfileTests --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run User Questions Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m userQuestions --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Contact Support Page Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m contactSupportPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Product Solutions Page Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m productSolutionsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run Product Topics Page Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m productTopicsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run AAQ Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m aaqPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run AAQ Questions Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-          poetry run pytest -m postedQuestions --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name : Run KB Products Page Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-            poetry run pytest -m kbProductsPage --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run KB Article Creation And Access Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-            poetry run pytest -m kbArticleCreationAndAccess --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run before kb thread tests setup (${{ env.BROWSER }})
-        id: kb-threads-setup
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-            poetry run pytest -m beforeThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run KB article threads Tests  (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success' && steps.kb-threads-setup.outcome == 'success'
-        run: |
-            poetry run pytest -m articleThreads --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run KB article threads tear down (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success' && steps.kb-threads-setup.outcome == 'success'
-        run: |
-            poetry run pytest -m afterThreadTests --numprocesses 1 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run KB article show history Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-            poetry run pytest -m kbArticleShowHistory --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run KB article revisions dashboard Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-            poetry run pytest -m recentRevisionsDashboard --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
-      - name: Run KB Dashboard Tests (${{ env.BROWSER }})
-        working-directory: playwright_tests
-        if: success() || failure() && steps.create-sessions.outcome == 'success'
-        run: |
-            poetry run pytest -m kbDashboard --numprocesses 2 --browser ${{ env.BROWSER }} --reruns 1
+            declare -a tests=("homePageTests" "topNavbarTests" "footerSectionTests" "contributePagesTests" "messagingSystem" "userContributionTests" "userProfile" "userSettings" "editUserProfileTests" "userQuestions" "contactSupportPage" "productSolutionsPage" "productTopicsPage" "aaqPage" "postedQuestions" "kbProductsPage" "kbArticleCreationAndAccess" "beforeThreadTests" "articleThreads" "afterThreadTests" "kbArticleShowHistory" "recentRevisionsDashboard" "kbDashboard")
+            for test in "${tests[@]}"; do
+                num_processes=2
+                if [[ "$test" =~ ^(beforeThreadTests|afterThreadTests)$ ]]; then
+                  num_processes=1
+                fi
+                poetry run pytest -m $test --numprocesses $num_processes --browser ${{ env.BROWSER }} --reruns 1
+            done
       - name: Generating Allure Report
         working-directory: playwright_tests
         if: success() || failure()
