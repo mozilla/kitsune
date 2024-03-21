@@ -16,14 +16,7 @@ def product_list(request):
     """The product picker page."""
     template = "products/products.html"
     products = Product.objects.filter(visible=True)
-    return render(
-        request,
-        template,
-        {
-            "products": products,
-            "ga_content_group": "products",
-        },
-    )
+    return render(request, template, {"products": products})
 
 
 def _get_aaq_product_key(slug):
@@ -67,8 +60,6 @@ def product_landing(request, slug):
             "product": product,
             "products": Product.objects.filter(visible=True),
             "topics": topics_for(request.user, product=product, parent=None),
-            "ga_products": f"/{product.slug}/",
-            "ga_content_group": "product",
             "search_params": {"product": slug},
             "latest_version": latest_version,
             "featured": get_featured_articles(product, locale=request.LANGUAGE_CODE),
@@ -107,9 +98,6 @@ def document_listing(request, product_slug, topic_slug, subtopic_slug=None):
             "product": product,
             "topic": topic,
             "subtopic": subtopic,
-            "ga_topics": f"/{topic.slug}/",
-            "ga_products": f"/{product.slug}/",
-            "ga_content_group": "product-and-topic",
             "topics": topics_for(request.user, product=product, parent=None),
             "subtopics": topics_for(request.user, product=product, parent=topic),
             "documents": documents,

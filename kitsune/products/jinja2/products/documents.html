@@ -12,6 +12,9 @@
   {% set canonical_url = canonicalize(model_url=topic.get_absolute_url()) %}
 {% endif %}
 {% set search_params = {'product': product.slug} %}
+{% set ga_content_group = "product-and-topic-home" %}
+{% set ga_products = "/" + product.slug + "/" %}
+{% set ga_topics = "/" + topic.slug + "/" %}
 
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
