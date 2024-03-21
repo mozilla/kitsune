@@ -112,10 +112,10 @@
         <p>{{ _('Sign in/up to post your question and get help.') }}</p>
       {% endif %}
       {% if not aaq_context.has_public_forum and not aaq_context.has_ticketing_support %}
-        {% set link_type = "aaq-widget-for-community-support-article" %}
+        {% set link_type = "aaq-widget.community-support.kb-article" %}
         {% set next_step = url('wiki.document', 'get-community-support')|urlparams(exit_aaq=1) %}
       {% else %}
-        {% set link_type = "aaq-widget-for-aaq-step-3" %}
+        {% set link_type = "aaq-widget.aaq-step-3" %}
         {% set next_step = url('questions.aaq_step3', product_key=aaq_context.key) %}
       {% endif %}
       <a class="sumo-button primary-button feature-box"
